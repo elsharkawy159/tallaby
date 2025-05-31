@@ -35,22 +35,27 @@ const sidebarLinks: SidebarLink[] = [
     href: "/",
     icon: Home,
   },
+  // {
+  //   title: "Orders",
+  //   href: "/orders",
+  //   icon: ShoppingCart,
+  //   submenu: [
+  //     {
+  //       title: "All Orders",
+  //       href: "/orders",
+  //       icon: ShoppingCart,
+  //     },
+  //     // {
+  //     //   title: "Returns",
+  //     //   href: "/orders/returns",
+  //     //   icon: RefreshCcw,
+  //     // },
+  //   ],
+  // },
   {
     title: "Orders",
     href: "/orders",
     icon: ShoppingCart,
-    submenu: [
-      {
-        title: "All Orders",
-        href: "/orders",
-        icon: ShoppingCart,
-      },
-      // {
-      //   title: "Returns",
-      //   href: "/orders/returns",
-      //   icon: RefreshCcw,
-      // },
-    ],
   },
   {
     title: "Products",
