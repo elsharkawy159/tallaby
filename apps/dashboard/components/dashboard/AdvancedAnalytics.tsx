@@ -5,7 +5,6 @@ import {
   CardTitle,
 } from "@workspace/ui/components/card";
 import { Badge } from "@workspace/ui/components/badge";
-import { Progress } from "@workspace/ui/components/progress";
 import {
   TrendingUp,
   TrendingDown,
@@ -19,8 +18,6 @@ import {
   Line,
   AreaChart,
   Area,
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -28,7 +25,6 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { cn } from "@workspace/ui/lib/utils";
 
 const customerBehaviorData = [
   { time: "00:00", visitors: 45, purchases: 12, bounceRate: 68 },

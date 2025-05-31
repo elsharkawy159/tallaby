@@ -1,4 +1,4 @@
-import { OrdersManagement } from "@/components/OrdersManagement";
+import { OrdersManagement } from "@/components/dashboard/OrdersManagement";
 
 const Orders = () => {
   return <OrdersManagement />;

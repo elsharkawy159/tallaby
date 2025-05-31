@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Sidebar } from "@/components/Sidebar";
+import { Sidebar } from "@/components/dashboard/Sidebar";
 import { Navbar } from "@/components/layout/Navbar";
 import { GuidanceWidget } from "@/components/layout/GuidanceWidget";
 

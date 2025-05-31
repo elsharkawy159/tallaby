@@ -26,7 +26,6 @@ import {
 import { CalendarIcon, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@workspace/ui/lib/utils";
-import { toast } from "@/hooks/use-toast";
 import { useTranslations } from "next-intl";
 
 interface NewCampaignModalProps {
@@ -46,13 +45,13 @@ export const NewCampaignModal = ({ children }: NewCampaignModalProps) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!campaignName || !campaignType || !budget || !startDate || !endDate) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields",
-      });
-      return;
-    }
+    // if (!campaignName || !campaignType || !budget || !startDate || !endDate) {
+    //   Toaster({
+    //     title: "Error",
+    //     description: "Please fill in all required fields",
+    //   });
+    //   return;
+    // }
 
     // Simulate campaign creation
     const campaignData = {
@@ -67,9 +66,9 @@ export const NewCampaignModal = ({ children }: NewCampaignModalProps) => {
 
     console.log("Creating campaign:", campaignData);
 
-    toast({
-      title: "Campaign created successfully!",
-    });
+    // Toaster({
+    //   title: "Campaign created successfully!",
+    // });
 
     // Reset form
     setCampaignName("");

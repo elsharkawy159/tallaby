@@ -4,7 +4,7 @@ import { Menu, Search, Moon, Sun, Globe } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { useTheme } from "next-themes";
-import { NotificationCenter } from "@/components/NotificationCenter";
+import { NotificationCenter } from "../dashboard/NotificationCenter";
 
 interface NavbarProps {
   onMenuToggle: () => void;

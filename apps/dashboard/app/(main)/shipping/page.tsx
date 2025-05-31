@@ -1,4 +1,4 @@
-import { ShippingDashboard } from "@/components/ShippingDashboard";
+import { ShippingDashboard } from "@/components/dashboard/ShippingDashboard";
 
 const Shipping = () => {
   return <ShippingDashboard />;

@@ -1,4 +1,4 @@
-import { FinancialDashboard } from "@/components/FinancialDashboard";
+import { FinancialDashboard } from "@/components/dashboard/FinancialDashboard";
 
 const Financial = () => {
   return <FinancialDashboard />;

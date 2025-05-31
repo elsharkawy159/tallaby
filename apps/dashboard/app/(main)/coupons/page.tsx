@@ -1,4 +1,5 @@
-import { CouponsManagement } from "@/components/CouponsManagement";
+
+import { CouponsManagement } from "@/components/dashboard/CouponsManagement";
 
 const Coupons = () => {
   return <CouponsManagement />;

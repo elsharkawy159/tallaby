@@ -52,7 +52,7 @@ export const MetricsGrid = () => {
           key={metric.title}
           className="hover:shadow-lg transition-shadow duration-200"
         >
-          <CardContent className="p-6">
+          <CardContent>
             <div className="flex items-center justify-between">
               <div className="flex-1">
                 <p className="text-sm font-medium text-gray-600 mb-1">

@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Sidebar } from "../Sidebar";
+import { Sidebar } from "../dashboard/Sidebar";
 import { Navbar } from "./Navbar";
 import { GuidanceWidget } from "./GuidanceWidget";
 

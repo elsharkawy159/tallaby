@@ -318,7 +318,7 @@ export const CouponsManagement = () => {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <Card>
-          <CardContent className="p-6">
+          <CardContent>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Active Coupons</p>
@@ -333,7 +333,7 @@ export const CouponsManagement = () => {
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-6">
+          <CardContent>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Redemptions</p>
@@ -348,7 +348,7 @@ export const CouponsManagement = () => {
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-6">
+          <CardContent>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Avg Discount</p>
@@ -361,7 +361,7 @@ export const CouponsManagement = () => {
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-6">
+          <CardContent>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Revenue Impact</p>

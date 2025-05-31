@@ -1,4 +1,4 @@
-import { ReviewsManagement } from "@/components/ReviewsManagement";
+import { ReviewsManagement } from "@/components/dashboard/ReviewsManagement";
 
 const Reviews = () => {
   return <ReviewsManagement />;

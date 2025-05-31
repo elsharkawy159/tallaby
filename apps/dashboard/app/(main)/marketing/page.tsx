@@ -1,4 +1,4 @@
-import { MarketingDashboard } from "@/components/MarketingDashboard";
+import { MarketingDashboard } from "@/components/dashboard/MarketingDashboard";
 
 const Marketing = () => {
   return <MarketingDashboard />;

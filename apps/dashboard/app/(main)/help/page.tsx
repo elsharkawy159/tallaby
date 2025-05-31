@@ -1,6 +1,5 @@
-"use client";
-import { useState } from "react";
-import { HelpSupport } from "@/components/HelpSupport";
+
+import { HelpSupport } from "@/components/dashboard/HelpSupport";
 
 const Help = () => {
   return <HelpSupport />;

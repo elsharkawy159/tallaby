@@ -1,4 +1,4 @@
-import { ProductsManagement } from "@/components/ProductsManagement";
+import { ProductsManagement } from "@/components/dashboard/ProductsManagement";
 
 const Products = () => {
   return <ProductsManagement />;

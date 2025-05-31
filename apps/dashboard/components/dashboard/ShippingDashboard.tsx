@@ -95,7 +95,7 @@ export const ShippingDashboard = () => {
       {/* Shipping Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <Card>
-          <CardContent className="p-6">
+          <CardContent>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Active Shipments</p>
@@ -110,7 +110,7 @@ export const ShippingDashboard = () => {
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Pending Pickup</p>
@@ -125,7 +125,7 @@ export const ShippingDashboard = () => {
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">On-Time Delivery</p>
@@ -140,7 +140,7 @@ export const ShippingDashboard = () => {
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Avg. Shipping Cost</p>

@@ -23,7 +23,6 @@ import {
   AccordionTrigger,
 } from "@workspace/ui/components/accordion";
 
-
 const faqs = [
   {
     question: "How do I add a new product to my store?",
@@ -119,7 +118,7 @@ export const HelpSupport = () => {
 
       {/* Search Bar */}
       <Card className="mb-8">
-        <CardContent className="p-6">
+        <CardContent>
           <div className="text-center mb-4">
             <h2 className="text-xl font-semibold mb-2">How can we help you?</h2>
             <p className="text-gray-600">
