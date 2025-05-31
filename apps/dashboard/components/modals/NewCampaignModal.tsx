@@ -25,7 +25,7 @@ import {
 } from "@workspace/ui/components/popover";
 import { CalendarIcon, Plus } from "lucide-react";
 import { format } from "date-fns";
-import { cn } from "@/lib/utils";
+import { cn } from "@workspace/ui/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { useTranslations } from "next-intl";
 
@@ -34,7 +34,7 @@ interface NewCampaignModalProps {
 }
 
 export const NewCampaignModal = ({ children }: NewCampaignModalProps) => {
-  const t  = useTranslations();
+  const t = useTranslations();
   const [open, setOpen] = useState(false);
   const [campaignName, setCampaignName] = useState("");
   const [campaignType, setCampaignType] = useState("");

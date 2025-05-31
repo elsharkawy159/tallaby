@@ -1,5 +1,3 @@
-//@ts-ignore
-//@ts-nocheck
 "use client";
 import Link from "next/link";
 import { Button } from "@workspace/ui/components/button";
@@ -160,12 +158,33 @@ const brands = [
   },
 ];
 
+interface Brand {
+  id: string;
+  name: string;
+  slug: string;
+  logoUrl: string;
+  description: string;
+  website: string;
+  isVerified: boolean;
+  isOfficial: boolean;
+  averageRating: number;
+  reviewCount: number;
+  productCount: number;
+  createdAt: string;
+}
+
+interface RowProps {
+  row: {
+    original: Brand;
+  };
+}
+
 export default function BrandsPage() {
   const columns = [
     {
       accessorKey: "name",
       header: "Brand Name",
-      cell: ({ row }) => {
+      cell: ({ row }: RowProps) => {
         const brand = row.original;
         return (
           <div className="flex items-center gap-3">
@@ -200,18 +219,28 @@ export default function BrandsPage() {
       },
     },
     {
+      accessorKey: "description",
+      header: "Description",
+      cell: ({ row }: RowProps) => {
+        return (
+          <div className="max-w-[300px] truncate">
+            {row.original.description}
+          </div>
+        );
+      },
+    },
+    {
       accessorKey: "website",
       header: "Website",
-      cell: ({ row }) => {
-        const website = row.getValue("website") as string;
+      cell: ({ row }: RowProps) => {
         return (
           <a
-            href={website}
+            href={row.original.website}
             target="_blank"
             rel="noopener noreferrer"
             className="text-blue-600 hover:underline"
           >
-            {website.replace(/(^\w+:|^)\/\//, "").replace(/\/$/, "")}
+            {row.original.website.replace(/^https?:\/\//, "")}
           </a>
         );
       },
@@ -219,10 +248,11 @@ export default function BrandsPage() {
     {
       accessorKey: "productCount",
       header: "Products",
-      cell: ({ row }) => {
+      cell: ({ row }: RowProps) => {
         return (
-          <div className="text-center font-medium">
-            {row.getValue("productCount")}
+          <div className="flex items-center gap-1">
+            <Package className="h-4 w-4 text-gray-500" />
+            <span>{row.original.productCount}</span>
           </div>
         );
       },
@@ -230,17 +260,12 @@ export default function BrandsPage() {
     {
       accessorKey: "averageRating",
       header: "Rating",
-      cell: ({ row }) => {
-        const rating = parseFloat(row.getValue("averageRating"));
-        const reviews = row.original.reviewCount;
-
+      cell: ({ row }: RowProps) => {
         return (
-          <div className="flex flex-col items-center">
-            <div className="flex items-center">
-              <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-              <span className="ml-1 font-medium">{rating.toFixed(1)}</span>
-            </div>
-            <div className="text-xs text-gray-500">{reviews} reviews</div>
+          <div className="flex items-center gap-1">
+            <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+            <span>{row.original.averageRating.toFixed(1)}</span>
+            <span className="text-gray-500">({row.original.reviewCount})</span>
           </div>
         );
       },
@@ -248,14 +273,13 @@ export default function BrandsPage() {
     {
       accessorKey: "createdAt",
       header: "Created",
-      cell: ({ row }) => {
-        const date = new Date(row.getValue("createdAt"));
-        return <div>{date.toLocaleDateString()}</div>;
+      cell: ({ row }: RowProps) => {
+        return new Date(row.original.createdAt).toLocaleDateString();
       },
     },
     {
       id: "actions",
-      cell: ({ row }) => {
+      cell: ({ row }: RowProps) => {
         const brand = row.original;
 
         return (

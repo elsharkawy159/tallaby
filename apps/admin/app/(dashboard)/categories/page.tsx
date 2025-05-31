@@ -5,6 +5,25 @@ import { Plus, FolderTree, Tag, RefreshCw } from "lucide-react";
 import { DataTable } from "../_components/data-table/data-table";
 import { getCategoriesColumns } from "./_components/columns";
 
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  parentId: string | null;
+  description: string;
+  level: number;
+  imageUrl: string;
+  productCount: number;
+  isActive: boolean;
+  showInMenu: boolean;
+  displayOrder: number;
+  createdAt: string;
+}
+
+interface CategoryNode extends Category {
+  children: CategoryNode[];
+}
+
 // Mock data for demonstration
 const categories = [
   {
@@ -178,9 +197,9 @@ const categories = [
 ];
 
 // Function to build hierarchical tree structure
-function buildCategoryTree(categories: any[]) {
-  const idToCategory = new Map();
-  const rootCategories: any[] = [];
+function buildCategoryTree(categories: Category[]): CategoryNode[] {
+  const idToCategory = new Map<string, CategoryNode>();
+  const rootCategories: CategoryNode[] = [];
 
   // First pass: create a map from ID to category node
   categories.forEach((category) => {
@@ -189,7 +208,7 @@ function buildCategoryTree(categories: any[]) {
 
   // Second pass: link children to parents
   categories.forEach((category) => {
-    const node = idToCategory.get(category.id);
+    const node = idToCategory.get(category.id)!;
     if (category.parentId) {
       const parent = idToCategory.get(category.parentId);
       if (parent) {
@@ -255,7 +274,7 @@ export default function CategoriesPage() {
                 </div>
                 {category.children.length > 0 && (
                   <div className="pl-4 mt-2 border-l-2 border-gray-200">
-                    {category.children.map((child: any) => (
+                    {category.children.map((child: CategoryNode) => (
                       <div
                         key={child.id}
                         className="flex items-center py-1 hover:bg-gray-50 pl-2 -ml-2 rounded"

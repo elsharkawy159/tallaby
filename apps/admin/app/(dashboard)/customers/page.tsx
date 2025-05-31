@@ -12,13 +12,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@workspace/ui/components/tabs";
-import {
-  DownloadIcon,
-  FilterIcon,
-  PlusIcon,
-  RefreshCw,
-  Users,
-} from "lucide-react";
+import { DownloadIcon, FilterIcon, PlusIcon, Users } from "lucide-react";
 import Link from "next/link";
 import { getCustomersColumns } from "./_components/table-columns";
 import { DataTable } from "../_components/data-table/data-table";
@@ -173,7 +167,6 @@ export default function CustomersPage() {
   // Calculate customer metrics
   const totalCustomers = customers.length;
   const verifiedCustomers = customers.filter((c) => c.isVerified).length;
-  const suspendedCustomers = customers.filter((c) => c.isSuspended).length;
   const newCustomersThisMonth = customers.filter((c) => {
     const createdDate = new Date(c.createdAt);
     const now = new Date();

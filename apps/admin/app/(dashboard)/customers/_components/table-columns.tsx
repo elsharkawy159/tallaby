@@ -6,7 +6,6 @@ import {
   ShoppingCart,
   Check,
   X,
-  User,
   AlertTriangle,
 } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";

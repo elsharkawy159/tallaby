@@ -3,7 +3,6 @@ import { Button } from "@workspace/ui/components/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card";
@@ -13,7 +12,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@workspace/ui/components/tabs";
-import { DownloadIcon, FilterIcon, PlusIcon, RefreshCw } from "lucide-react";
+import { DownloadIcon, FilterIcon, RefreshCw } from "lucide-react";
 import { DataTable } from "../_components/data-table/data-table";
 import { getOrdersColumns } from "./_components/table-columns";
 

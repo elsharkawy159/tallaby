@@ -127,7 +127,7 @@ export function getOrdersColumns(): ColumnDef<Order>[] {
 
         let variant: "default" | "secondary" | "destructive" | "outline" =
           "default";
-        let label = status
+        const label = status
           .replace(/_/g, " ")
           .replace(/\b\w/g, (l) => l.toUpperCase());
 
@@ -162,7 +162,7 @@ export function getOrdersColumns(): ColumnDef<Order>[] {
 
         let variant: "default" | "secondary" | "destructive" | "outline" =
           "default";
-        let label = status.charAt(0).toUpperCase() + status.slice(1);
+        const label = status.charAt(0).toUpperCase() + status.slice(1);
 
         switch (status) {
           case "pending":

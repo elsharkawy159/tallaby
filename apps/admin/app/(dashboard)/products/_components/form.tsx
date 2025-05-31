@@ -1,5 +1,4 @@
-//@ts-ignore
-//@ts-nocheck
+
 "use client";
 
 import { useState } from "react";
@@ -23,8 +22,8 @@ import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { Trash } from "lucide-react";
 import { productSchema } from "../../_lib/validations/product-schema";
-import { FormWrapper } from "@/components/forms/form-wrapper";
 import { FormInputField } from "@/components/forms/form-field";
+import { FormWrapper } from "@/components/forms/form-wrapper";
 
 // Mock data for brands and categories
 const brands = [

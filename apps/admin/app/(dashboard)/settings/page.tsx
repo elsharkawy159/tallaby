@@ -42,8 +42,6 @@ import {
   Mail,
 } from "lucide-react";
 import * as z from "zod";
-import { FormWrapper } from "../../../../components/forms/form-wrapper";
-import { FormInputField } from "../../../../components/forms/form-field";
 
 // General settings validation schema
 const generalSettingsSchema = z.object({

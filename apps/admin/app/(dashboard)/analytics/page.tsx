@@ -23,8 +23,6 @@ import {
   Package,
   TrendingUp,
   Download,
-  Calendar,
-  BarChart2,
   PieChart as PieChartIcon,
   LineChart as LineChartIcon,
   RefreshCw,

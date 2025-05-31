@@ -40,7 +40,7 @@ import {
   AreaChart,
   Area,
 } from "recharts";
-import { cn } from "@/lib/utils";
+import { cn } from "@workspace/ui/lib/utils";
 import { AdvancedAnalytics } from "./AdvancedAnalytics";
 import { PerformanceMetrics } from "./PerformanceMetrics";
 

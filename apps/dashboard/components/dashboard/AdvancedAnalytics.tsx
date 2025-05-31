@@ -28,7 +28,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { cn } from "@/lib/utils";
+import { cn } from "@workspace/ui/lib/utils";
 
 const customerBehaviorData = [
   { time: "00:00", visitors: 45, purchases: 12, bounceRate: 68 },
