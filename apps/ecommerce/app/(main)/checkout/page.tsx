@@ -24,7 +24,7 @@ const Checkout = () => {
   // const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [shippingMethod, setShippingMethod] = useState("standard");
-  const [paymentMethod, setPaymentMethod] = useState("card");
+  const [paymentMethod, setPaymentMethod] = useState("cash");
   const [sameAsShipping, setSameAsShipping] = useState(true);
   const [loading, setLoading] = useState(false);
 
@@ -342,18 +342,27 @@ const Checkout = () => {
                       value={paymentMethod}
                       onValueChange={setPaymentMethod}
                     >
-                      <div className="flex items-center space-x-2 p-4 border rounded-lg">
+                      <Label
+                        htmlFor="cash"
+                        className="flex items-center space-x-2 p-4 border rounded-lg"
+                      >
+                        <RadioGroupItem value="cash" id="cash" />
+                        <span className="font-medium">Cash on Delivery</span>
+                      </Label>
+                      <Label
+                        htmlFor="card"
+                        className="flex items-center space-x-2 p-4 border rounded-lg"
+                      >
                         <RadioGroupItem value="card" id="card" />
-                        <Label htmlFor="card" className="font-medium">
-                          Credit/Debit Card
-                        </Label>
-                      </div>
-                      <div className="flex items-center space-x-2 p-4 border rounded-lg">
+                        <span className="font-medium">Credit/Debit Card</span>
+                      </Label>
+                      <Label
+                        htmlFor="paypal"
+                        className="flex items-center space-x-2 p-4 border rounded-lg"
+                      >
                         <RadioGroupItem value="paypal" id="paypal" />
-                        <Label htmlFor="paypal" className="font-medium">
-                          PayPal
-                        </Label>
-                      </div>
+                        <span className="font-medium">PayPal</span>
+                      </Label>
                     </RadioGroup>
                   </div>
 

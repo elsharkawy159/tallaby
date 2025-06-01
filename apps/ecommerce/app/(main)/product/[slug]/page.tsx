@@ -22,6 +22,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import ProductCard from "@/components/product/ProductCard";
+import Link from "next/link";
 
 const ProductDetail = () => {
   const [selectedImage, setSelectedImage] = useState(0);
@@ -308,9 +309,11 @@ const ProductDetail = () => {
                   <Share className="h-5 w-5" />
                 </Button>
               </div>
-              <Button variant="secondary" className="w-full" size="lg">
-                Buy Now
-              </Button>
+              <Link href="/cart" className="block">
+                <Button variant="secondary" className="w-full" size="lg">
+                  Buy Now
+                </Button>
+              </Link>
             </div>
 
             {/* Shipping Info */}

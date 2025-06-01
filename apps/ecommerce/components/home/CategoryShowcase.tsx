@@ -73,6 +73,38 @@ const CategoryShowcase = () => {
         "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=200&h=200&fit=crop",
     },
     {
+      id: "1",
+      name: "Electronics",
+      slug: "electronics",
+      description: "Latest gadgets and tech",
+      image_url:
+        "https://images.unsplash.com/photo-1518770660439-4636190af475?w=200&h=200&fit=crop",
+    },
+    {
+      id: "2",
+      name: "Fashion",
+      slug: "fashion",
+      description: "Trendy clothing & accessories",
+      image_url:
+        "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=200&h=200&fit=crop",
+    },
+    {
+      id: "3",
+      name: "Home & Kitchen",
+      slug: "home-kitchen",
+      description: "Everything for your home",
+      image_url:
+        "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=200&h=200&fit=crop",
+    },
+    {
+      id: "4",
+      name: "Beauty",
+      slug: "beauty",
+      description: "Wellness & beauty products",
+      image_url:
+        "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=200&h=200&fit=crop",
+    },
+    {
       id: "8",
       name: "Supermarket",
       slug: "supermarket",
@@ -181,7 +213,7 @@ const CategoryShowcase = () => {
 
         <div
           ref={scrollContainerRef}
-          className="flex space-x-4 overflow-x-auto scrollbar-hide pb-4"
+          className="flex space-x-4 overflow-x-auto scrollbar-hide pb-4 2xl:justify-center"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {categories.map((category) => (
