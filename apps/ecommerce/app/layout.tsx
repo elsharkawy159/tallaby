@@ -1,29 +1,21 @@
-import { Geist, Geist_Mono } from "next/font/google"
+import { Montserrat } from "next/font/google";
 
-import "@workspace/ui/globals.css"
+import "@workspace/ui/globals.css";
 
-const fontSans = Geist({
+const montserrat = Montserrat({
   subsets: ["latin"],
-  variable: "--font-sans",
-})
-
-const fontMono = Geist_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
-})
+  variable: "--font-montserrat",
+  weight: ["400", "500", "600", "700"],
+});
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased `}
-      >
-       {children}
-      </body>
+      <body className={`${montserrat.variable} antialiased`}>{children}</body>
     </html>
-  )
+  );
 }

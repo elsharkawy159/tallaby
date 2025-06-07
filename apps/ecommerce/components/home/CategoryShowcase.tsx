@@ -1,7 +1,12 @@
 "use client";
+import { cn } from "@/lib/utils";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from "@workspace/ui/components/carousel";
+import Autoplay from "embla-carousel-autoplay";
 import Link from "next/link";
-import { useRef, useEffect } from "react";
-
 
 interface Category {
   id: string;
@@ -11,9 +16,7 @@ interface Category {
   image_url: string;
 }
 
-const CategoryShowcase = () => {
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-
+const CategoryShowcase = ({ className }: { className?: string }) => {
   // Demo categories data
   const categories: Category[] = [
     {
@@ -170,74 +173,45 @@ const CategoryShowcase = () => {
     },
   ];
 
-  // Auto-swipe functionality
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
-    const autoScroll = () => {
-      const scrollAmount = 200; // Width of category item
-      const maxScroll = container.scrollWidth - container.clientWidth;
-
-      if (container.scrollLeft >= maxScroll) {
-        container.scrollTo({ left: 0, behavior: "smooth" });
-      } else {
-        container.scrollBy({ left: scrollAmount, behavior: "smooth" });
-      }
-    };
-
-    const interval = setInterval(autoScroll, 3000); // Auto-swipe every 3 seconds
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const scroll = (direction: "left" | "right") => {
-    if (scrollContainerRef.current) {
-      const scrollAmount = 400;
-      const scrollLeft = scrollContainerRef.current.scrollLeft;
-      const newScrollLeft =
-        direction === "left"
-          ? scrollLeft - scrollAmount
-          : scrollLeft + scrollAmount;
-
-      scrollContainerRef.current.scrollTo({
-        left: newScrollLeft,
-        behavior: "smooth",
-      });
-    }
-  };
-
   return (
-    <section className="py-8 bg-gradient-to-r from-yellow-50 to-orange-50">
-      <div>
-
-        <div
-          ref={scrollContainerRef}
-          className="flex space-x-4 overflow-x-auto scrollbar-hide pb-4 2xl:justify-center"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-        >
+    <section
+      className={cn(
+        "py-6 px-16 rounded-t-[50px] bg-background container mx-auto",
+        className
+      )}
+    >
+      <Carousel
+        opts={{
+          align: "start",
+          dragFree: false,
+        }}
+        plugins={[
+          Autoplay({
+            delay: 3000,
+          }),
+        ]}
+      >
+        <CarouselContent>
           {categories.map((category) => (
-            <Link
-              key={category.id}
-              href={`/category/${category.slug}`}
-              className="flex-none group"
-            >
-              <div className="w-32 text-center">
-                <div className="relative overflow-hidden rounded-full w-20 h-20 mx-auto mb-3 bg-white shadow-md group-hover:shadow-lg transition-shadow">
-                  <img
-                    src={category.image_url}
-                    alt={category.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                  />
+            <Link href={`/category/${category.slug}`} className="group block">
+              <CarouselItem key={category.id} className="basis-auto">
+                <div className="w-32 text-center">
+                  <div className="relative overflow-hidden rounded-full size-[100px] mx-auto mb-2.5 bg-white shadow-sm">
+                    <img
+                      src={category.image_url}
+                      alt={category.name}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    />
+                  </div>
+                  <h3 className="text-sm font-medium text-center group-hover:text-primary transition-colors">
+                    {category.name}
+                  </h3>
                 </div>
-                <h3 className="text-sm font-medium text-gray-900 text-center group-hover:text-primary transition-colors">
-                  {category.name}
-                </h3>
-              </div>
+              </CarouselItem>
             </Link>
           ))}
-        </div>
-      </div>
+        </CarouselContent>
+      </Carousel>
     </section>
   );
 };

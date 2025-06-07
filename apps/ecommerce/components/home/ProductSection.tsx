@@ -3,6 +3,13 @@ import ProductCard from "@/components/product/ProductCard";
 import { Button } from "@workspace/ui/components/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRef } from "react";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselPrevious,
+  CarouselNext,
+} from "@workspace/ui/components/carousel";
 
 interface ProductSectionProps {
   title: string;
@@ -227,62 +234,56 @@ const ProductSection = ({ title, categoryId }: ProductSectionProps) => {
 
   return (
     <section className="py-12">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
-            {title}
-          </h2>
-          <div className="flex space-x-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => scroll("left")}
-              className="hidden md:flex"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => scroll("right")}
-              className="hidden md:flex"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-
-        <div
-          ref={scrollContainerRef}
-          className="flex space-x-4 overflow-x-auto scrollbar-hide pb-4"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        <Carousel
+          opts={{
+            align: "start",
+            dragFree: false,
+          }}
+          className="flex container mx-auto flex-col md:flex-row items-start md:items-center mb-8 gap-5"
         >
-          {products.map((product) => (
-            <div key={product.id} className="flex-none w-72">
-              <ProductCard
-                id={product.id}
-                brand={product.brand}
-                name={product.name}
-                feature={product.feature}
-                model={product.model}
-                slug={product.slug}
-                price={product.price}
-                originalPrice={product.originalPrice}
-                rating={product.rating}
-                reviewCount={product.reviewCount}
-                image={product.image}
-                badges={product.badges}
-              />
+          {/* Left Text Block */}
+          <div className="w-[230px] shrink-0">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+              Trending
+            </h2>
+            <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+              Trending Now: What Everyone's Talking About
+            </p>
+            <Button
+              className="!px-8 gap-1"
+              variant="secondary"
+            >
+              View More
+              <ChevronRight className="size-6" />
+            </Button>
+            <div className="flex gap-5 items-center mt-12 ml-8">
+              <CarouselPrevious className="relative left-0" />
+              <CarouselNext className="relative right-0" />
             </div>
-          ))}
-        </div>
+          </div>
 
-        <div className="text-center mt-8">
-          <Button variant="outline" className="px-8">
-            View All {title}
-          </Button>
-        </div>
-      </div>
+          {/* Carousel Section */}
+            <CarouselContent>
+              {products.map((product) => (
+                <CarouselItem key={product.id} className="basis-auto">
+                  <ProductCard
+                    id={product.id}
+                    brand={product.brand}
+                    name={product.name}
+                    feature={product.feature}
+                    model={product.model}
+                    slug={product.slug}
+                    price={product.price}
+                    originalPrice={product.originalPrice}
+                    rating={product.rating}
+                    reviewCount={product.reviewCount}
+                    image={product.image}
+                    badges={product.badges}
+                  />
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+        </Carousel>
     </section>
   );
 };

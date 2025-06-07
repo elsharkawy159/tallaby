@@ -59,7 +59,7 @@ const ProductCard = ({
   const fullProductTitle = `${brand} ${name} ${feature} ${model}`.trim();
 
   return (
-    <Card className="group hover:shadow-xl transition-all duration-300 overflow-hidden border-0 shadow-md">
+    <Card className="group hover:shadow-xl w-[285px] transition-all duration-300 overflow-hidden border-0 shadow-md">
       <CardContent className="p-0">
         {/* Product Image */}
         <div className="relative overflow-hidden bg-gray-50">
