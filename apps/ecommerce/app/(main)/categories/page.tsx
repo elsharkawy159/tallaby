@@ -178,7 +178,7 @@ const Categories = () => {
               Discover millions of products across hundreds of categories from
               trusted sellers worldwide
             </p>
-            <Badge className="bg-secondary text-black text-lg px-4 py-2">
+            <Badge className="bg-accent text-black text-lg px-4 py-2">
               200+ Categories Available
             </Badge>
           </div>
@@ -305,7 +305,7 @@ const Categories = () => {
                 <Link href="/products">
                   <Button
                     size="lg"
-                    className="bg-secondary text-black hover:bg-secondary/90"
+                    className="bg-accent text-black hover:bg-accent/90"
                   >
                     Advanced Search
                   </Button>

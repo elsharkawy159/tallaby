@@ -110,7 +110,7 @@ const Returns = () => {
               We want you to love your purchase. If you're not completely
               satisfied, we offer easy returns within 30 days of purchase.
             </p>
-            <Badge className="bg-secondary text-black text-lg px-4 py-2">
+            <Badge className="bg-accent text-black text-lg px-4 py-2">
               30-Day Return Window
             </Badge>
           </div>
@@ -133,7 +133,7 @@ const Returns = () => {
                     <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
                       <step.icon className="h-8 w-8 text-white" />
                     </div>
-                    <Badge className="absolute -top-2 -right-2 bg-secondary text-black">
+                    <Badge className="absolute -top-2 -right-2 bg-accent text-black">
                       {step.step}
                     </Badge>
                   </div>
@@ -294,7 +294,7 @@ const Returns = () => {
               <Link href="/contact">
                 <Button
                   size="lg"
-                  className="bg-secondary text-black hover:bg-secondary/90"
+                  className="bg-accent text-black hover:bg-accent/90"
                 >
                   Contact Support
                 </Button>

@@ -13,7 +13,7 @@ const page = () => {
       <HeroCarousel />
 
       {/* Trending Products */}
-      <ProductSection title="🔥 Trending Products" />
+      <ProductSection title="🔥 Trending" />
 
       {/* Why Shop With Us */}
       <FeaturesSection />

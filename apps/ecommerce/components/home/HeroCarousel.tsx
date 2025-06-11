@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button } from "@workspace/ui/components/button";
 import Link from "next/link";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
@@ -32,7 +31,7 @@ const HeroCarousel = () => {
   }, [banners.length]);
 
   return (
-    <section className="relative h-[500px] mb-20">
+    <section className="relative h-[70vh] w-full mb-20">
       <div className="w-full h-full">
         {banners.map((banner, index) => (
           <Link href={banner.href} key={banner.id}>

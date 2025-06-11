@@ -11,27 +11,27 @@ const Footer = () => {
             <h3 className="font-semibold mb-4">Stylist</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/about" className="hover:text-secondary">
+                <Link href="/about" className="hover:text-accent">
                   About Us
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="hover:text-secondary">
+                <Link href="/contact" className="hover:text-accent">
                   Contact Us
                 </Link>
               </li>
               <li>
-                <Link href="/stores" className="hover:text-secondary">
+                <Link href="/stores" className="hover:text-accent">
                   Stores
                 </Link>
               </li>
               <li>
-                <Link href="/help" className="hover:text-secondary">
+                <Link href="/help" className="hover:text-accent">
                   Size Guide
                 </Link>
               </li>
               <li>
-                <Link href="/categories" className="hover:text-secondary">
+                <Link href="/categories" className="hover:text-accent">
                   Categories
                 </Link>
               </li>
@@ -43,32 +43,32 @@ const Footer = () => {
             <h3 className="font-semibold mb-4">Customer Service</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/returns" className="hover:text-secondary">
+                <Link href="/returns" className="hover:text-accent">
                   Return Policy
                 </Link>
               </li>
               <li>
-                <Link href="/help" className="hover:text-secondary">
+                <Link href="/help" className="hover:text-accent">
                   Language and User Info
                 </Link>
               </li>
               <li>
-                <Link href="/help" className="hover:text-secondary">
+                <Link href="/help" className="hover:text-accent">
                   Help and Contact Us
                 </Link>
               </li>
               <li>
-                <Link href="/terms" className="hover:text-secondary">
+                <Link href="/terms" className="hover:text-accent">
                   Terms and Conditions
                 </Link>
               </li>
               <li>
-                <Link href="/security" className="hover:text-secondary">
+                <Link href="/security" className="hover:text-accent">
                   Security Center
                 </Link>
               </li>
               <li>
-                <Link href="/faq" className="hover:text-secondary">
+                <Link href="/faq" className="hover:text-accent">
                   FAQ
                 </Link>
               </li>
@@ -80,17 +80,17 @@ const Footer = () => {
             <h3 className="font-semibold mb-4">Work With Us</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/careers" className="hover:text-secondary">
+                <Link href="/careers" className="hover:text-accent">
                   Careers
                 </Link>
               </li>
               <li>
-                <Link href="/become-seller" className="hover:text-secondary">
+                <Link href="/become-seller" className="hover:text-accent">
                   Influencer Program
                 </Link>
               </li>
               <li>
-                <Link href="/become-seller" className="hover:text-secondary">
+                <Link href="/become-seller" className="hover:text-accent">
                   Become a Partner
                 </Link>
               </li>
@@ -101,16 +101,16 @@ const Footer = () => {
           <div>
             <h3 className="font-semibold mb-4">Follow Us On</h3>
             <div className="flex space-x-4 mb-6">
-              <a href="#" className="hover:text-secondary">
+              <a href="#" className="hover:text-accent">
                 <Facebook className="h-5 w-5" />
               </a>
-              <a href="#" className="hover:text-secondary">
+              <a href="#" className="hover:text-accent">
                 <Instagram className="h-5 w-5" />
               </a>
-              <a href="#" className="hover:text-secondary">
+              <a href="#" className="hover:text-accent">
                 <Twitter className="h-5 w-5" />
               </a>
-              <a href="#" className="hover:text-secondary">
+              <a href="#" className="hover:text-accent">
                 <Youtube className="h-5 w-5" />
               </a>
             </div>

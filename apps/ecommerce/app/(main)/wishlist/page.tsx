@@ -98,7 +98,7 @@ const Wishlist = () => {
 
                     <Button
                       onClick={() => handleAddToCart(item.product_id)}
-                      className="w-full bg-secondary hover:bg-secondary/90 text-black font-medium"
+                      className="w-full bg-accent hover:bg-accent/90 text-black font-medium"
                     >
                       <ShoppingCart className="h-4 w-4 mr-2" />
                       Add to Cart

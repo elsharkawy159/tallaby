@@ -104,7 +104,7 @@ const SidebarContent = ({
         <div className="flex justify-end p-4">
           <button
             onClick={onToggleCollapse}
-            className="text-white hover:text-secondary transition-colors"
+            className="text-white hover:text-accent transition-colors"
           >
             {isCollapsed ? (
               <ChevronRight size={20} />

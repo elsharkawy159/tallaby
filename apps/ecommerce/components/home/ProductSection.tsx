@@ -48,7 +48,7 @@ const ProductSection = ({ title, categoryId }: ProductSectionProps) => {
       rating: 4.8,
       reviewCount: 2847,
       image:
-        "https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=400&h=400&fit=crop",
+        "/png product.png",
       badges: ["Best Seller", "Limited Deal"],
     },
     {
@@ -63,7 +63,7 @@ const ProductSection = ({ title, categoryId }: ProductSectionProps) => {
       rating: 4.7,
       reviewCount: 1923,
       image:
-        "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=400&fit=crop",
+        "/png product.png",
       badges: ["New Arrival"],
     },
     {
@@ -78,7 +78,7 @@ const ProductSection = ({ title, categoryId }: ProductSectionProps) => {
       rating: 4.9,
       reviewCount: 3421,
       image:
-        "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop",
+        "/png product.png",
       badges: ["Best Seller"],
     },
     {
@@ -93,7 +93,7 @@ const ProductSection = ({ title, categoryId }: ProductSectionProps) => {
       rating: 4.6,
       reviewCount: 2156,
       image:
-        "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&h=400&fit=crop",
+        "/png product.png",
       badges: ["Limited Edition"],
     },
     {
@@ -107,7 +107,7 @@ const ProductSection = ({ title, categoryId }: ProductSectionProps) => {
       rating: 4.5,
       reviewCount: 1876,
       image:
-        "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=400&h=400&fit=crop",
+        "/png product.png",
       badges: ["Eco-Friendly"],
     },
     {
@@ -122,7 +122,7 @@ const ProductSection = ({ title, categoryId }: ProductSectionProps) => {
       rating: 4.4,
       reviewCount: 3892,
       image:
-        "https://images.unsplash.com/photo-1520975954732-35dd22299614?w=400&h=400&fit=crop",
+        "/png product.png",
       badges: ["Classic"],
     },
     {
@@ -137,7 +137,7 @@ const ProductSection = ({ title, categoryId }: ProductSectionProps) => {
       rating: 4.3,
       reviewCount: 987,
       image:
-        "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=400&h=400&fit=crop",
+        "/png product.png",
       badges: ["Trending"],
     },
     {
@@ -152,7 +152,7 @@ const ProductSection = ({ title, categoryId }: ProductSectionProps) => {
       rating: 4.7,
       reviewCount: 743,
       image:
-        "https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=400&h=400&fit=crop",
+        "/png product.png",
       badges: ["Gaming", "High Performance"],
     },
     {
@@ -167,7 +167,7 @@ const ProductSection = ({ title, categoryId }: ProductSectionProps) => {
       rating: 4.8,
       reviewCount: 2341,
       image:
-        "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&h=400&fit=crop",
+        "/png product.png",
       badges: ["Best Seller", "Smart Technology"],
     },
     {
@@ -182,7 +182,7 @@ const ProductSection = ({ title, categoryId }: ProductSectionProps) => {
       rating: 4.9,
       reviewCount: 1654,
       image:
-        "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=400&fit=crop",
+        "/png product.png",
       badges: ["Eco-Friendly", "Premium"],
     },
     {
@@ -197,7 +197,7 @@ const ProductSection = ({ title, categoryId }: ProductSectionProps) => {
       rating: 4.8,
       reviewCount: 4521,
       image:
-        "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&h=400&fit=crop",
+        "/png product.png",
       badges: ["Best Seller", "Professional Grade"],
     },
     {
@@ -211,7 +211,7 @@ const ProductSection = ({ title, categoryId }: ProductSectionProps) => {
       rating: 4.9,
       reviewCount: 876,
       image:
-        "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=400&fit=crop",
+        "/png product.png",
       badges: ["Professional", "New Release"],
     },
   ];
@@ -233,57 +233,41 @@ const ProductSection = ({ title, categoryId }: ProductSectionProps) => {
   };
 
   return (
-    <section className="py-12">
-        <Carousel
-          opts={{
-            align: "start",
-            dragFree: false,
-          }}
-          className="flex container mx-auto flex-col md:flex-row items-start md:items-center mb-8 gap-5"
-        >
-          {/* Left Text Block */}
-          <div className="w-[230px] shrink-0">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-              Trending
-            </h2>
-            <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-              Trending Now: What Everyone's Talking About
-            </p>
-            <Button
-              className="!px-8 gap-1"
-              variant="secondary"
-            >
-              View More
-              <ChevronRight className="size-6" />
-            </Button>
-            <div className="flex gap-5 items-center mt-12 ml-8">
-              <CarouselPrevious className="relative left-0" />
-              <CarouselNext className="relative right-0" />
-            </div>
+    <section className="py-12 container mx-auto">
+      <Carousel
+        opts={{
+          align: "start",
+          dragFree: false,
+        }}
+        className="flex flex-row items-center mb-8 gap-5"
+      >
+        {/* Left Text Block */}
+        <div className="w-[230px] shrink-0">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+            {title}
+          </h2>
+          <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+            Trending Now: What Everyone's Talking About
+          </p>
+          <Button className="!px-8 gap-1" variant="secondary">
+            View More
+            <ChevronRight className="size-6" />
+          </Button>
+          <div className="flex gap-5 items-center mt-12 ml-8">
+            <CarouselPrevious className="relative left-0" />
+            <CarouselNext className="relative right-0" />
           </div>
+        </div>
 
-          {/* Carousel Section */}
-            <CarouselContent>
-              {products.map((product) => (
-                <CarouselItem key={product.id} className="basis-auto">
-                  <ProductCard
-                    id={product.id}
-                    brand={product.brand}
-                    name={product.name}
-                    feature={product.feature}
-                    model={product.model}
-                    slug={product.slug}
-                    price={product.price}
-                    originalPrice={product.originalPrice}
-                    rating={product.rating}
-                    reviewCount={product.reviewCount}
-                    image={product.image}
-                    badges={product.badges}
-                  />
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-        </Carousel>
+        {/* Carousel Section */}
+        <CarouselContent className="p-1.5">
+          {products.map((product) => (
+            <CarouselItem key={product.id} className="basis-auto">
+              <ProductCard {...product} />
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+      </Carousel>
     </section>
   );
 };

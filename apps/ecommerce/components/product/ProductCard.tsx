@@ -1,8 +1,8 @@
-import { Heart, Star, ShoppingCart, Badge as BadgeIcon } from "lucide-react";
+import { Heart, Star } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
 import { Card, CardContent } from "@workspace/ui/components/card";
-import { Badge } from "@workspace/ui/components/badge";
 import Link from "next/link";
+import Image from "next/image";
 
 interface ProductCardProps {
   id: string;
@@ -16,143 +16,68 @@ interface ProductCardProps {
   rating: number;
   reviewCount: number;
   image: string;
-  badges?: string[];
-  isWishlisted?: boolean;
-  onAddToCart?: () => void;
-  onToggleWishlist?: () => void;
 }
 
 const ProductCard = ({
-  id,
-  brand,
   name,
-  feature,
-  model,
   slug,
   price,
-  originalPrice,
   rating,
   reviewCount,
   image,
-  badges = [],
 }: ProductCardProps) => {
-  // const { addToCart } = useCart();
-  // const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
-
-  const discountPercentage = originalPrice
-    ? Math.round(((originalPrice - price) / originalPrice) * 100)
-    : 0;
-  // const wishlistStatus = isInWishlist(id);
-
-  // const handleAddToCart = () => {
-  //   addToCart(id, 1);
-  // };
-
-  // const handleToggleWishlist = () => {
-  //   if (wishlistStatus) {
-  //     removeFromWishlist(id);
-  //   } else {
-  //     addToWishlist(id);
-  //   }
-  // };
-
-  const fullProductTitle = `${brand} ${name} ${feature} ${model}`.trim();
-
   return (
-    <Card className="group hover:shadow-xl w-[285px] transition-all duration-300 overflow-hidden border-0 shadow-md">
-      <CardContent className="p-0">
+    <Card className="group bg-white shadow-sm border-0 p-0 relative w-[285px] overflow-hidden rounded-lg">
+      <CardContent className="p-2">
         {/* Product Image */}
-        <div className="relative overflow-hidden bg-gray-50">
+        <div className="relative rounded-md overflow-hidden">
           <Link href={`/product/${slug}`}>
-            <img
+            <Image
               src={image}
-              alt={fullProductTitle}
-              className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300 cursor-pointer"
+              alt={name}
+              width={270}
+              height={310}
+              className="w-full bg-gray-100 aspect-[2.6/3] h-full object-cover"
+              priority
             />
           </Link>
 
           {/* Wishlist Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className={`absolute top-2 right-2 bg-white/90 hover:bg-white shadow-sm`}
-            // onClick={handleToggleWishlist}
-          >
-            <Heart
-              className={`h-4 w-4`}
-            />
-          </Button>
+          <button className="absolute top-3 right-3  rounded-full">
+            <Heart className="size-5 text-gray-600" />
+          </button>
 
-          {/* Discount Badge */}
-          {discountPercentage > 0 && (
-            <Badge className="absolute top-2 left-2 bg-red-500 hover:bg-red-600 text-white">
-              -{discountPercentage}%
-            </Badge>
-          )}
-
-          {/* Product Badges */}
-          {badges.length > 0 && (
-            <div className="absolute top-12 left-2 flex flex-col gap-1">
-              {badges.map((badge, index) => (
-                <Badge
-                  key={index}
-                  variant="secondary"
-                  className="text-xs font-semibold"
-                >
-                  {badge}
-                </Badge>
-              ))}
-            </div>
-          )}
+          {/* Image Carousel Dots */}
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1">
+            {[1, 2, 3].map((_, index) => (
+              <div
+                key={index}
+                className={`w-2 h-2 rounded-full ${
+                  index === 0 ? "bg-primary" : "bg-white/60"
+                }`}
+              />
+            ))}
+          </div>
         </div>
 
         {/* Product Info */}
-        <div className="p-4">
-          <Link href={`/product/${slug}`}>
-            <h3 className="font-medium text-gray-900 mb-2 line-clamp-2 hover:text-primary cursor-pointer text-sm leading-tight">
-              {fullProductTitle}
-            </h3>
-          </Link>
-
-          {/* Rating */}
-          <div className="flex items-center mb-3">
-            <div className="flex items-center">
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  className={`h-3 w-3 ${
-                    i < Math.floor(rating)
-                      ? "text-yellow-400 fill-current"
-                      : "text-gray-300"
-                  }`}
-                />
-              ))}
-            </div>
-            <span className="text-xs text-gray-600 ml-2">
-              {rating} ({reviewCount})
-            </span>
+        <div className="space-y-2 mt-2">
+          <div className="flex items-center gap-4.5 justify-between mb-2">
+            <h3 className="text-base font-medium line-clamp-1">{name}</h3>
+            <span className="text-lg font-semibold">{price}$</span>
           </div>
 
-          {/* Price */}
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-2">
-              <span className="text-lg font-bold text-gray-900">${price}</span>
-              {originalPrice && (
-                <span className="text-sm text-gray-500 line-through">
-                  ${originalPrice}
-                </span>
-              )}
-            </div>
+          {/* Rating */}
+          <div className="flex items-center gap-1">
+            <span className="text-base font-medium">{rating}</span>
+            <Star className="h-4 w-4 text-yellow-400 fill-current" />
+            <span className="text-gray-500 text-sm">({reviewCount})</span>
           </div>
 
           {/* Add to Cart Button */}
-          <Button
-            // onClick={handleAddToCart}
-            className="w-full bg-primary hover:bg-primary/90 text-white font-medium"
-            size="sm"
-          >
-            <ShoppingCart className="h-4 w-4 mr-2" />
-            Add to Cart
+          <Button className="w-1/2 absolute bottom-0 right-0 font-bold py-2.5 rounded-none">
+          {/* <Button className="w-1/2 absolute bottom-0 right-0 font-bold py-2.5 rounded-none [clip-path:polygon(0_0,100%_0,100%_70%,95%_100%,0_100%)]"> */}
+            Add to cart
           </Button>
         </div>
       </CardContent>

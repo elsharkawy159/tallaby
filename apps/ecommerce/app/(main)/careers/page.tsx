@@ -177,12 +177,12 @@ const Careers = () => {
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div>
-                <Badge className="bg-secondary text-black mb-4">
+                <Badge className="bg-accent text-black mb-4">
                   We're Hiring
                 </Badge>
                 <h1 className="text-4xl md:text-6xl font-bold mb-6">
                   Build the Future of
-                  <span className="block text-secondary">E-Commerce</span>
+                  <span className="block text-accent">E-Commerce</span>
                 </h1>
                 <p className="text-xl mb-8">
                   Join our mission to create the world's most trusted and
@@ -192,7 +192,7 @@ const Careers = () => {
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Button
                     size="lg"
-                    className="bg-secondary text-black hover:bg-secondary/90"
+                    className="bg-accent text-black hover:bg-accent/90"
                   >
                     View Open Positions
                   </Button>
@@ -400,7 +400,7 @@ const Careers = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 size="lg"
-                className="bg-secondary text-black hover:bg-secondary/90"
+                className="bg-accent text-black hover:bg-accent/90"
               >
                 Send Us Your Resume
               </Button>

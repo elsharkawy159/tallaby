@@ -57,13 +57,13 @@ const Header = () => {
 
             <Link href="/cart" className="relative">
               <ShoppingCart className="size-6 text-white" />
-              <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-xs size-4 rounded-full flex items-center justify-center">
+              <span className="absolute flex items-center justify-center leading-0 -top-1.5 -right-1.5 bg-red-500 text-white text-xs size-4 rounded-full flex items-center justify-center">
                 2
               </span>
             </Link>
             <Link href="/wishlist" className="relative">
               <Heart className="size-6 text-white" />
-              <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-xs size-4 rounded-full flex items-center justify-center">
+              <span className="absolute flex items-center justify-center leading-0 -top-1.5 -right-1.5 bg-red-500 text-white text-xs size-4 rounded-full flex items-center justify-center">
                 5
               </span>
             </Link>

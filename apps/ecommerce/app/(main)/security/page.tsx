@@ -119,7 +119,7 @@ const Security = () => {
         {/* Hero Section */}
         <section className="bg-gradient-to-br from-primary to-primary/80 text-white py-16">
           <div className="container mx-auto px-4 text-center">
-            <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center mx-auto mb-6">
+            <div className="w-20 h-20 bg-accent rounded-full flex items-center justify-center mx-auto mb-6">
               <Shield className="h-10 w-10 text-black" />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
@@ -129,7 +129,7 @@ const Security = () => {
               Your security and privacy are our top priorities. Learn about our
               security measures and how you can protect your account.
             </p>
-            <Badge className="bg-secondary text-black text-lg px-4 py-2">
+            <Badge className="bg-accent text-black text-lg px-4 py-2">
               Bank-Level Security
             </Badge>
           </div>
@@ -297,7 +297,7 @@ const Security = () => {
               <Link href="/profile">
                 <Button
                   size="lg"
-                  className="bg-secondary text-black hover:bg-secondary/90"
+                  className="bg-accent text-black hover:bg-accent/90"
                 >
                   Update Security Settings
                 </Button>

@@ -82,7 +82,7 @@ const Stores = () => {
                   placeholder="Enter your location..."
                   className="pl-10 py-3 text-lg bg-white text-gray-900"
                 />
-                <Button className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-secondary text-black hover:bg-secondary/90">
+                <Button className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-accent text-black hover:bg-accent/90">
                   <Navigation className="h-4 w-4 mr-2" />
                   Find Stores
                 </Button>
@@ -235,7 +235,7 @@ const Stores = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 size="lg"
-                className="bg-secondary text-black hover:bg-secondary/90"
+                className="bg-accent text-black hover:bg-accent/90"
               >
                 Book Appointment
               </Button>

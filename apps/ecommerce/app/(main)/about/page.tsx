@@ -80,10 +80,10 @@ const About = () => {
         {/* Hero Section */}
         <section className="bg-gradient-to-br from-primary to-primary/80 text-white py-20">
           <div className="container mx-auto px-4 text-center">
-            <Badge className="bg-secondary text-black mb-4">Our Story</Badge>
+            <Badge className="bg-accent text-black mb-4">Our Story</Badge>
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
               Connecting You to the World's
-              <span className="block text-secondary">Best Products</span>
+              <span className="block text-accent">Best Products</span>
             </h1>
             <p className="text-xl mb-8 max-w-3xl mx-auto">
               We're on a mission to create the most trusted and diverse
@@ -92,7 +92,7 @@ const About = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/products">
-                <Button className="bg-secondary text-black hover:bg-secondary/90">
+                <Button className="bg-accent text-black hover:bg-accent/90">
                   Shop Now
                 </Button>
               </Link>
@@ -229,7 +229,7 @@ const About = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/products">
-                <Button className="bg-secondary text-black hover:bg-secondary/90">
+                <Button className="bg-accent text-black hover:bg-accent/90">
                   Start Shopping
                 </Button>
               </Link>
