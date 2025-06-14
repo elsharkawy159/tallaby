@@ -1,7 +1,16 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { Search, ShoppingCart, Heart, User, Menu, X } from "lucide-react";
+import {
+  Search,
+  ShoppingCart,
+  Heart,
+  User,
+  Menu,
+  X,
+  Home,
+  Compass,
+} from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 // import { useWishlist } from "@/hooks/useWishlist";
@@ -11,11 +20,18 @@ import { cn } from "@/lib/utils";
 // import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@workspace/auth/hooks/use-auth";
 import { AuthDialog } from "@workspace/auth/components/auth-dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@workspace/ui/components/sheet";
+
 const Header = () => {
   // const { cartItems } = useCart();
   // const { wishlistItems } = useWishlist();
   const { isVisible } = useScrollingNavbar();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
   const { user } = useAuth();
 
@@ -41,8 +57,62 @@ const Header = () => {
               <span className="text-4xl font-bold text-white">Bahja</span>
             </Link>
 
-            {/* Become a Partner button - hidden on mobile */}
-            <Button className="text:sm">Become a Partner</Button>
+            <div className="flex items-center gap-3">
+              {/* Become a Partner button - hidden on mobile */}
+              <Button className="text-sm" size="sm">
+                Become a Partner
+              </Button>
+              {/* Mobile menu - Replace with Sheet */}
+              <div>
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button variant="ghost" size="icon" className="text-white">
+                      <Menu className="size-6" />
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="left" className="w-[300px] sm:w-[400px]">
+                    <SheetHeader>
+                      <SheetTitle>Menu</SheetTitle>
+                    </SheetHeader>
+                    <div className="mt-6 px-4">
+                      <nav className="space-y-4">
+                        <div className="space-y-2">
+                          <h3 className="font-semibold text-sm text-gray-500">
+                            Categories
+                          </h3>
+                          <div className="flex flex-col space-y-2">
+                            <CategoryNav />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <h3 className="font-semibold text-sm text-gray-500">
+                            Quick Links
+                          </h3>
+                          <Link
+                            href="/products"
+                            className="block py-2 text-gray-700 hover:text-primary"
+                          >
+                            All Products
+                          </Link>
+                          <Link
+                            href="/stores"
+                            className="block py-2 text-gray-700 hover:text-primary"
+                          >
+                            Stores
+                          </Link>
+                          <Link
+                            href="/about"
+                            className="block py-2 text-gray-700 hover:text-primary"
+                          >
+                            About
+                          </Link>
+                        </div>
+                      </nav>
+                    </div>
+                  </SheetContent>
+                </Sheet>
+              </div>
+            </div>
           </div>
 
           {/* Search bar - full width on mobile, hidden on desktop */}
@@ -117,52 +187,26 @@ const Header = () => {
             <CategoryNav />
           </div>
         </div>
-
-        {/* Mobile menu */}
-        {isMobileMenuOpen && (
-          <div className="lg:hidden bg-white border-t border-gray-200">
-            <div className="container mx-auto  py-4">
-              <nav className="space-y-2">
-                <Link
-                  href="/categories"
-                  className="block py-2 text-gray-700 hover:text-primary"
-                >
-                  All Categories
-                </Link>
-                <Link
-                  href="/products"
-                  className="block py-2 text-gray-700 hover:text-primary"
-                >
-                  All Products
-                </Link>
-                <Link
-                  href="/stores"
-                  className="block py-2 text-gray-700 hover:text-primary"
-                >
-                  Stores
-                </Link>
-                <Link
-                  href="/about"
-                  className="block py-2 text-gray-700 hover:text-primary"
-                >
-                  About
-                </Link>
-              </nav>
-            </div>
-          </div>
-        )}
       </header>
 
-      {/* Mobile bottom navigation */}
+      {/* Mobile bottom navigation - Updated */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
         <div className="container mx-auto">
-          <nav className="grid grid-cols-4 py-4">
+          <nav className="grid grid-cols-4 py-3">
             <Link
-              href="/shopping"
+              href="/"
               className="flex flex-col items-center text-gray-600 hover:text-primary"
             >
-              <ShoppingCart className="size-5" />
-              <span className="text-xs mt-1">Shop</span>
+              <Home className="size-5" />
+              <span className="text-xs mt-1">Home</span>
+            </Link>
+
+            <Link
+              href="/explore"
+              className="flex flex-col items-center text-gray-600 hover:text-primary"
+            >
+              <Compass className="size-5" />
+              <span className="text-xs mt-1">Explore</span>
             </Link>
 
             <Link
@@ -172,20 +216,24 @@ const Header = () => {
               <ShoppingCart className="size-5" />
               <span className="text-xs mt-1">Cart</span>
             </Link>
-            <Link
-              href="/wishlist"
-              className="flex flex-col items-center text-gray-600 hover:text-primary"
-            >
-              <Heart className="size-5" />
-              <span className="text-xs mt-1">Wishlist</span>
-            </Link>
-            <Link
-              href="/profile"
-              className="flex flex-col items-center text-gray-600 hover:text-primary"
-            >
-              <User className="size-5" />
-              <span className="text-xs mt-1">Profile</span>
-            </Link>
+
+            {user ? (
+              <Link
+                href="/profile"
+                className="flex flex-col items-center text-gray-600 hover:text-primary"
+              >
+                <User className="size-5" />
+                <span className="text-xs mt-1">Profile</span>
+              </Link>
+            ) : (
+              <button
+                onClick={() => setIsAuthDialogOpen(true)}
+                className="flex flex-col items-center text-gray-600 hover:text-primary"
+              >
+                <User className="size-5" />
+                <span className="text-xs mt-1">Sign In</span>
+              </button>
+            )}
           </nav>
         </div>
       </div>

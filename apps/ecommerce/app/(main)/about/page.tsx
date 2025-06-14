@@ -1,6 +1,3 @@
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
-
 import { Users, Target, Award, Globe, Heart, Truck } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@workspace/ui/components/button";
