@@ -68,8 +68,6 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
-
       <main className="flex-1 container mx-auto px-4 py-8 flex items-center justify-center">
         <Card className="w-full max-w-md">
           <CardHeader>
@@ -243,8 +241,6 @@ const Auth = () => {
           </CardContent>
         </Card>
       </main>
-
-      <Footer />
     </div>
   );
 };

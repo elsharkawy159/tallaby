@@ -113,8 +113,6 @@ const Security = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
-
       <main className="flex-1">
         {/* Hero Section */}
         <section className="bg-gradient-to-br from-primary to-primary/80 text-white py-16">
@@ -315,8 +313,6 @@ const Security = () => {
           </div>
         </section>
       </main>
-
-      <Footer />
     </div>
   );
 };

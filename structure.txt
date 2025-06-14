@@ -1,0 +1,398 @@
++-- multi-vendor-commerce
+    +-- .eslintrc.js
+    +-- .gitignore
+    +-- .npmrc
+    +-- generate_structure.ps1
+    +-- generate_structure.py
+    +-- package.json
+    +-- pnpm-lock.yaml
+    +-- pnpm-workspace.yaml
+    +-- project_structure.txt
+    +-- README.md
+    +-- structure.txt
+    +-- tsconfig.json
+    +-- turbo.json
+    +-- apps
+    |   +-- admin
+    |   |   +-- .gitignore
+    |   |   +-- eslint.config.mjs
+    |   |   +-- next.config.ts
+    |   |   +-- next-env.d.ts
+    |   |   +-- package.json
+    |   |   +-- postcss.config.mjs
+    |   |   +-- README.md
+    |   |   +-- tsconfig.json
+    |   |   +-- app
+    |   |   |   +-- favicon.ico
+    |   |   |   +-- globals.css
+    |   |   |   +-- layout.tsx
+    |   |   |   +-- (dashboard)
+    |   |   |       +-- layout.tsx
+    |   |   |       +-- page.tsx
+    |   |   |       +-- _components
+    |   |   |       |   +-- cards
+    |   |   |       |   |   +-- chart-card.tsx
+    |   |   |       |   |   +-- metric-card.tsx
+    |   |   |       |   |   +-- summary-card.tsx
+    |   |   |       |   +-- charts
+    |   |   |       |   |   +-- area-chart.tsx
+    |   |   |       |   |   +-- bar-chart.tsx
+    |   |   |       |   |   +-- line-chart.tsx
+    |   |   |       |   |   +-- pie-chart.tsx
+    |   |   |       |   +-- data-table
+    |   |   |       |   |   +-- data-table.tsx
+    |   |   |       |   |   +-- data-table-column-header.tsx
+    |   |   |       |   |   +-- data-table-faceted-filter.tsx
+    |   |   |       |   |   +-- data-table-pagination.tsx
+    |   |   |       |   |   +-- data-table-toolbar.tsx
+    |   |   |       |   |   +-- data-table-view-options.tsx
+    |   |   |       |   +-- dialogs
+    |   |   |       |   |   +-- alert-dialog.tsx
+    |   |   |       |   |   +-- confirm-dialog.tsx
+    |   |   |       |   +-- layout
+    |   |   |       |       +-- header.tsx
+    |   |   |       |       +-- sidebar.tsx
+    |   |   |       +-- _lib
+    |   |   |       |   +-- utils
+    |   |   |       |   |   +-- api.ts
+    |   |   |       |   |   +-- format.ts
+    |   |   |       |   |   +-- hooks.ts
+    |   |   |       |   +-- validations
+    |   |   |       |       +-- order-schema.ts
+    |   |   |       |       +-- product-schema.ts
+    |   |   |       |       +-- user-schema.ts
+    |   |   |       +-- analytics
+    |   |   |       |   +-- page.tsx
+    |   |   |       +-- brands
+    |   |   |       |   +-- page.tsx
+    |   |   |       +-- categories
+    |   |   |       |   +-- page.tsx
+    |   |   |       |   +-- _components
+    |   |   |       |       +-- columns.tsx
+    |   |   |       +-- customers
+    |   |   |       |   +-- page.tsx
+    |   |   |       |   +-- _components
+    |   |   |       |       +-- table-columns.tsx
+    |   |   |       +-- orders
+    |   |   |       |   +-- page.tsx
+    |   |   |       |   +-- _components
+    |   |   |       |       +-- table-columns.tsx
+    |   |   |       +-- payments
+    |   |   |       |   +-- page.tsx
+    |   |   |       +-- products
+    |   |   |       |   +-- actions.ts
+    |   |   |       |   +-- page.tsx
+    |   |   |       |   +-- 
+    |   |   |       |   +-- _components
+    |   |   |       |   |   +-- form.tsx
+    |   |   |       |   |   +-- product-images-gallery.tsx
+    |   |   |       |   |   +-- product-inventory-table.tsx
+    |   |   |       |   |   +-- product-reviews-table.tsx
+    |   |   |       |   |   +-- product-variants-table.tsx
+    |   |   |       |   |   +-- table-columns.tsx
+    |   |   |       |   +-- create
+    |   |   |       |       +-- page.tsx
+    |   |   |       +-- promotions
+    |   |   |       |   +-- coupons
+    |   |   |       |       +-- page.tsx
+    |   |   |       +-- sellers
+    |   |   |       |   +-- page.tsx
+    |   |   |       +-- settings
+    |   |   |       |   +-- page.tsx
+    |   |   |       +-- shipping
+    |   |   |           +-- page.tsx
+    |   |   +-- components
+    |   |   |   +-- deploy-button.tsx
+    |   |   |   +-- env-var-warning.tsx
+    |   |   |   +-- form-message.tsx
+    |   |   |   +-- header-auth.tsx
+    |   |   |   +-- hero.tsx
+    |   |   |   +-- loading.tsx
+    |   |   |   +-- next-logo.tsx
+    |   |   |   +-- submit-button.tsx
+    |   |   |   +-- supabase-logo.tsx
+    |   |   |   +-- theme-switcher.tsx
+    |   |   |   +-- forms
+    |   |   |   |   +-- data-picket-field.tsx
+    |   |   |   |   +-- form-field.tsx
+    |   |   |   |   +-- form-wrapper.tsx
+    |   |   |   |   +-- image-upload-field.tsx
+    |   |   |   |   +-- select-field.tsx
+    |   |   |   +-- tutorial
+    |   |   |   |   +-- code-block.tsx
+    |   |   |   |   +-- connect-supabase-steps.tsx
+    |   |   |   |   +-- fetch-data-steps.tsx
+    |   |   |   |   +-- sign-up-user-steps.tsx
+    |   |   |   |   +-- tutorial-step.tsx
+    |   |   |   +-- typography
+    |   |   |       +-- inline-code.tsx
+    |   |   +-- public
+    |   |       +-- file.svg
+    |   |       +-- globe.svg
+    |   |       +-- next.svg
+    |   |       +-- vercel.svg
+    |   |       +-- window.svg
+    |   +-- dashboard
+    |   |   +-- .gitignore
+    |   |   +-- eslint.config.mjs
+    |   |   +-- next.config.ts
+    |   |   +-- next-env.d.ts
+    |   |   +-- package.json
+    |   |   +-- postcss.config.mjs
+    |   |   +-- README.md
+    |   |   +-- tsconfig.json
+    |   |   +-- app
+    |   |   |   +-- favicon.ico
+    |   |   |   +-- globals.css
+    |   |   |   +-- layout.tsx
+    |   |   |   +-- (main)
+    |   |   |       +-- layout.tsx
+    |   |   |       +-- page.tsx
+    |   |   |       +-- coupons
+    |   |   |       |   +-- page.tsx
+    |   |   |       +-- financial
+    |   |   |       |   +-- page.tsx
+    |   |   |       +-- help
+    |   |   |       |   +-- page.tsx
+    |   |   |       +-- marketing
+    |   |   |       |   +-- page.tsx
+    |   |   |       +-- orders
+    |   |   |       |   +-- page.tsx
+    |   |   |       +-- products
+    |   |   |       |   +-- page.tsx
+    |   |   |       +-- reports
+    |   |   |       |   +-- page.tsx
+    |   |   |       +-- reviews
+    |   |   |       |   +-- page.tsx
+    |   |   |       +-- settings
+    |   |   |       |   +-- page.tsx
+    |   |   |       +-- shipping
+    |   |   |           +-- page.tsx
+    |   |   +-- components
+    |   |   |   +-- dashboard
+    |   |   |   |   +-- AdvancedAnalytics.tsx
+    |   |   |   |   +-- AnalyticsDashboard.tsx
+    |   |   |   |   +-- ChartsSection.tsx
+    |   |   |   |   +-- CouponsManagement.tsx
+    |   |   |   |   +-- FinancialDashboard.tsx
+    |   |   |   |   +-- HelpSupport.tsx
+    |   |   |   |   +-- MarketingDashboard.tsx
+    |   |   |   |   +-- MetricsGrid.tsx
+    |   |   |   |   +-- NotificationCenter.tsx
+    |   |   |   |   +-- OrdersManagement.tsx
+    |   |   |   |   +-- PerformanceMetrics.tsx
+    |   |   |   |   +-- ProductsManagement.tsx
+    |   |   |   |   +-- ProfileSettings.tsx
+    |   |   |   |   +-- QuickActions.tsx
+    |   |   |   |   +-- RealTimeWidget.tsx
+    |   |   |   |   +-- RecentOrdersTable.tsx
+    |   |   |   |   +-- ReportsAnalytics.tsx
+    |   |   |   |   +-- ReviewsManagement.tsx
+    |   |   |   |   +-- ShippingDashboard.tsx
+    |   |   |   |   +-- Sidebar.tsx
+    |   |   |   +-- layout
+    |   |   |   |   +-- DashboardLayout.tsx
+    |   |   |   |   +-- GuidanceWidget.tsx
+    |   |   |   |   +-- Navbar.tsx
+    |   |   |   +-- modals
+    |   |   |       +-- NewCampaignModal.tsx
+    |   |   |       +-- ProductModal.tsx
+    |   |   +-- contexts
+    |   |   |   +-- LanguageContext.tsx
+    |   |   |   +-- ThemeContext.tsx
+    |   |   +-- hooks
+    |   |   |   +-- use-mobile.tsx
+    |   |   |   +-- useScrollDirection.tsx
+    |   |   |   +-- use-toast.ts
+    |   |   +-- i18n
+    |   |   |   +-- request.tsx
+    |   |   +-- lib
+    |   |   |   +-- utils.ts
+    |   |   +-- messages
+    |   |   |   +-- ar.json
+    |   |   |   +-- en.json
+    |   |   +-- public
+    |   |       +-- file.svg
+    |   |       +-- globe.svg
+    |   |       +-- next.svg
+    |   |       +-- vercel.svg
+    |   |       +-- window.svg
+    |   +-- ecommerce
+    |       +-- components.json
+    |       +-- eslint.config.js
+    |       +-- next.config.mjs
+    |       +-- next-env.d.ts
+    |       +-- package.json
+    |       +-- postcss.config.mjs
+    |       +-- tsconfig.json
+    |       +-- app
+    |       |   +-- favicon.ico
+    |       |   +-- layout.tsx
+    |       |   +-- not-found.tsx
+    |       |   +-- (main)
+    |       |       +-- layout.tsx
+    |       |       +-- page.tsx
+    |       |       +-- about
+    |       |       |   +-- page.tsx
+    |       |       +-- auth
+    |       |       |   +-- page.tsx
+    |       |       +-- become-seller
+    |       |       |   +-- page.tsx
+    |       |       +-- careers
+    |       |       |   +-- page.tsx
+    |       |       +-- cart
+    |       |       |   +-- page.tsx
+    |       |       +-- categories
+    |       |       |   +-- page.tsx
+    |       |       +-- checkout
+    |       |       |   +-- page.tsx
+    |       |       +-- contact
+    |       |       |   +-- page.tsx
+    |       |       +-- faq
+    |       |       |   +-- page.tsx
+    |       |       +-- help
+    |       |       |   +-- page.tsx
+    |       |       +-- login
+    |       |       |   +-- page.tsx
+    |       |       +-- product
+    |       |       |   +-- 
+    |       |       +-- products
+    |       |       |   +-- page.tsx
+    |       |       +-- profile
+    |       |       |   +-- page.tsx
+    |       |       +-- register
+    |       |       |   +-- page.tsx
+    |       |       +-- returns
+    |       |       |   +-- page.tsx
+    |       |       +-- security
+    |       |       |   +-- page.tsx
+    |       |       +-- single-product
+    |       |       |   +-- page.tsx
+    |       |       +-- stores
+    |       |       |   +-- page.tsx
+    |       |       +-- terms
+    |       |       |   +-- page.tsx
+    |       |       +-- wishlist
+    |       |           +-- page.tsx
+    |       +-- components
+    |       |   +-- home
+    |       |   |   +-- BrandsSection.tsx
+    |       |   |   +-- CategoryShowcase.tsx
+    |       |   |   +-- DealsSection.tsx
+    |       |   |   +-- FeaturesSection.tsx
+    |       |   |   +-- HeroCarousel.tsx
+    |       |   |   +-- HeroSection.tsx
+    |       |   |   +-- NewsletterSection.tsx
+    |       |   |   +-- ProductSection.tsx
+    |       |   |   +-- TestimonialsSection.tsx
+    |       |   |   +-- VendorRecruitment.tsx
+    |       |   +-- layout
+    |       |   |   +-- CategoryNav.tsx
+    |       |   |   +-- Footer.tsx
+    |       |   |   +-- Header.tsx
+    |       |   +-- product
+    |       |       +-- ProductCard.tsx
+    |       +-- hooks
+    |       |   +-- useCart.ts
+    |       |   +-- use-mobile.tsx
+    |       |   +-- useScrollingNavbar.ts
+    |       |   +-- useWishlist.ts
+    |       +-- lib
+    |       |   +-- .gitkeep
+    |       |   +-- utils.ts
+    |       +-- public
+    |           +-- banner.jpg
+    |           +-- banner2.jpg
+    |           +-- png product.png
+    +-- packages
+        +-- db
+        |   +-- index.ts
+        |   +-- package.json
+        |   +-- drizzle
+        |   |   +-- 0000_mighty_butterfly.sql
+        |   |   +-- index.ts
+        |   |   +-- relations.ts
+        |   |   +-- schema.ts
+        |   |   +-- meta
+        |   |       +-- _journal.json
+        |   |       +-- 0000_snapshot.json
+        |   +-- supabase
+        |       +-- client.ts
+        |       +-- middleware.ts
+        |       +-- server.ts
+        +-- eslint-config
+        |   +-- base.js
+        |   +-- next.js
+        |   +-- package.json
+        |   +-- react-internal.js
+        |   +-- README.md
+        +-- typescript-config
+        |   +-- base.json
+        |   +-- nextjs.json
+        |   +-- package.json
+        |   +-- react-library.json
+        |   +-- README.md
+        +-- ui
+            +-- components.json
+            +-- eslint.config.js
+            +-- package.json
+            +-- postcss.config.mjs
+            +-- tsconfig.json
+            +-- tsconfig.lint.json
+            +-- src
+                +-- components
+                |   +-- .gitkeep
+                |   +-- accordion.tsx
+                |   +-- alert.tsx
+                |   +-- alert-dialog.tsx
+                |   +-- aspect-ratio.tsx
+                |   +-- avatar.tsx
+                |   +-- badge.tsx
+                |   +-- breadcrumb.tsx
+                |   +-- button.tsx
+                |   +-- calendar.tsx
+                |   +-- card.tsx
+                |   +-- carousel.tsx
+                |   +-- chart.tsx
+                |   +-- checkbox.tsx
+                |   +-- collapsible.tsx
+                |   +-- command.tsx
+                |   +-- context-menu.tsx
+                |   +-- dialog.tsx
+                |   +-- drawer.tsx
+                |   +-- dropdown-menu.tsx
+                |   +-- form.tsx
+                |   +-- hover-card.tsx
+                |   +-- input.tsx
+                |   +-- input-otp.tsx
+                |   +-- label.tsx
+                |   +-- menubar.tsx
+                |   +-- navigation-menu.tsx
+                |   +-- pagination.tsx
+                |   +-- popover.tsx
+                |   +-- progress.tsx
+                |   +-- radio-group.tsx
+                |   +-- resizable.tsx
+                |   +-- scroll-area.tsx
+                |   +-- select.tsx
+                |   +-- separator.tsx
+                |   +-- sheet.tsx
+                |   +-- sidebar.tsx
+                |   +-- skeleton.tsx
+                |   +-- slider.tsx
+                |   +-- sonner.tsx
+                |   +-- switch.tsx
+                |   +-- table.tsx
+                |   +-- tabs.tsx
+                |   +-- textarea.tsx
+                |   +-- toggle.tsx
+                |   +-- toggle-group.tsx
+                |   +-- tooltip.tsx
+                +-- hooks
+                |   +-- .gitkeep
+                |   +-- use-mobile.ts
+                +-- lib
+                |   +-- utils.ts
+                +-- styles
+                    +-- globals.css
+                    +-- fonts

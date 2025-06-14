@@ -22,19 +22,17 @@ const Wishlist = () => {
   // if (loading) {
   //   return (
   //     <div className="min-h-screen flex flex-col">
-  //       <Header />
+  //
   //       <div className="flex-1 flex items-center justify-center">
   //         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
   //       </div>
-  //       <Footer />
+  //
   //     </div>
   //   );
   // }
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
-
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold">My Wishlist</h1>
@@ -110,8 +108,6 @@ const Wishlist = () => {
           </div>
         )} */}
       </main>
-
-      <Footer />
     </div>
   );
 };

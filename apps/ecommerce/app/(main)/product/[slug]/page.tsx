@@ -1,7 +1,5 @@
 "use client";
 import { useState } from "react";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
 import { Button } from "@workspace/ui/components/button";
 import { Badge } from "@workspace/ui/components/badge";
 import {
@@ -37,11 +35,7 @@ const ProductDetail = () => {
     originalPrice: 39.99,
     rating: 4.5,
     reviewCount: 128,
-    images: [
-      "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=600&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=600&h=600&fit=crop",
-    ],
+    images: ["/png product.png", "/png product.png", "/png product.png"],
     description:
       "Experience ultimate comfort with our premium cotton t-shirt. Made from 100% organic cotton, this shirt offers a perfect blend of style and comfort for everyday wear.",
     features: [
@@ -77,8 +71,7 @@ const ProductDetail = () => {
       originalPrice: 120.0,
       rating: 4.7,
       reviewCount: 89,
-      image:
-        "https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=400&h=400&fit=crop",
+      image: "/png product.png",
     },
     {
       id: "3",
@@ -90,8 +83,7 @@ const ProductDetail = () => {
       price: 59.99,
       rating: 4.3,
       reviewCount: 67,
-      image:
-        "https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=400&h=400&fit=crop",
+      image: "/png product.png",
     },
     {
       id: "4",
@@ -103,8 +95,7 @@ const ProductDetail = () => {
       price: 34.99,
       rating: 4.4,
       reviewCount: 95,
-      image:
-        "https://images.unsplash.com/photo-1581803118522-7b72a50f7e9f?w=400&h=400&fit=crop",
+      image: "/png product.png",
     },
     {
       id: "5",
@@ -116,8 +107,7 @@ const ProductDetail = () => {
       price: 39.99,
       rating: 4.2,
       reviewCount: 73,
-      image:
-        "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=400&h=400&fit=crop",
+      image: "/png product.png",
     },
   ];
 
@@ -153,8 +143,6 @@ const ProductDetail = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
-
       <main className="flex-1 container mx-auto px-4 py-8">
         {/* Breadcrumb */}
         <nav className="text-sm text-gray-600 mb-6">
@@ -448,8 +436,6 @@ const ProductDetail = () => {
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 };

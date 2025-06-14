@@ -47,8 +47,7 @@ const ProductSection = ({ title, categoryId }: ProductSectionProps) => {
       originalPrice: 1299,
       rating: 4.8,
       reviewCount: 2847,
-      image:
-        "/png product.png",
+      image: "/png product.png",
       badges: ["Best Seller", "Limited Deal"],
     },
     {
@@ -62,8 +61,7 @@ const ProductSection = ({ title, categoryId }: ProductSectionProps) => {
       originalPrice: 1199,
       rating: 4.7,
       reviewCount: 1923,
-      image:
-        "/png product.png",
+      image: "/png product.png",
       badges: ["New Arrival"],
     },
     {
@@ -77,8 +75,7 @@ const ProductSection = ({ title, categoryId }: ProductSectionProps) => {
       originalPrice: 399,
       rating: 4.9,
       reviewCount: 3421,
-      image:
-        "/png product.png",
+      image: "/png product.png",
       badges: ["Best Seller"],
     },
     {
@@ -92,8 +89,7 @@ const ProductSection = ({ title, categoryId }: ProductSectionProps) => {
       originalPrice: 179,
       rating: 4.6,
       reviewCount: 2156,
-      image:
-        "/png product.png",
+      image: "/png product.png",
       badges: ["Limited Edition"],
     },
     {
@@ -106,8 +102,7 @@ const ProductSection = ({ title, categoryId }: ProductSectionProps) => {
       price: 189,
       rating: 4.5,
       reviewCount: 1876,
-      image:
-        "/png product.png",
+      image: "/png product.png",
       badges: ["Eco-Friendly"],
     },
     {
@@ -121,8 +116,7 @@ const ProductSection = ({ title, categoryId }: ProductSectionProps) => {
       originalPrice: 119,
       rating: 4.4,
       reviewCount: 3892,
-      image:
-        "/png product.png",
+      image: "/png product.png",
       badges: ["Classic"],
     },
     {
@@ -136,8 +130,7 @@ const ProductSection = ({ title, categoryId }: ProductSectionProps) => {
       originalPrice: 99,
       rating: 4.3,
       reviewCount: 987,
-      image:
-        "/png product.png",
+      image: "/png product.png",
       badges: ["Trending"],
     },
     {
@@ -151,8 +144,7 @@ const ProductSection = ({ title, categoryId }: ProductSectionProps) => {
       originalPrice: 2199,
       rating: 4.7,
       reviewCount: 743,
-      image:
-        "/png product.png",
+      image: "/png product.png",
       badges: ["Gaming", "High Performance"],
     },
     {
@@ -166,8 +158,7 @@ const ProductSection = ({ title, categoryId }: ProductSectionProps) => {
       originalPrice: 749,
       rating: 4.8,
       reviewCount: 2341,
-      image:
-        "/png product.png",
+      image: "/png product.png",
       badges: ["Best Seller", "Smart Technology"],
     },
     {
@@ -181,8 +172,7 @@ const ProductSection = ({ title, categoryId }: ProductSectionProps) => {
       originalPrice: 139,
       rating: 4.9,
       reviewCount: 1654,
-      image:
-        "/png product.png",
+      image: "/png product.png",
       badges: ["Eco-Friendly", "Premium"],
     },
     {
@@ -196,8 +186,7 @@ const ProductSection = ({ title, categoryId }: ProductSectionProps) => {
       originalPrice: 449,
       rating: 4.8,
       reviewCount: 4521,
-      image:
-        "/png product.png",
+      image: "/png product.png",
       badges: ["Best Seller", "Professional Grade"],
     },
     {
@@ -210,27 +199,10 @@ const ProductSection = ({ title, categoryId }: ProductSectionProps) => {
       price: 2499,
       rating: 4.9,
       reviewCount: 876,
-      image:
-        "/png product.png",
+      image: "/png product.png",
       badges: ["Professional", "New Release"],
     },
   ];
-
-  const scroll = (direction: "left" | "right") => {
-    if (scrollContainerRef.current) {
-      const scrollAmount = 320; // Width of product card + gap
-      const scrollLeft = scrollContainerRef.current.scrollLeft;
-      const newScrollLeft =
-        direction === "left"
-          ? scrollLeft - scrollAmount
-          : scrollLeft + scrollAmount;
-
-      scrollContainerRef.current.scrollTo({
-        left: newScrollLeft,
-        behavior: "smooth",
-      });
-    }
-  };
 
   return (
     <section className="py-12 container mx-auto">

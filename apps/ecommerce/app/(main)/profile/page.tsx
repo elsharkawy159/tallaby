@@ -1,7 +1,6 @@
 "use client";
-import { useState } from "react";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
@@ -13,6 +12,9 @@ import {
   TabsTrigger,
 } from "@workspace/ui/components/tabs";
 import { Badge } from "@workspace/ui/components/badge";
+import { Toaster } from "@workspace/ui/components/sonner";
+import { toast } from "sonner";
+import { useAuth } from "@workspace/auth/hooks/use-auth";
 import {
   User,
   Mail,
@@ -22,18 +24,54 @@ import {
   Shield,
   Heart,
   Package,
+  LogOut,
 } from "lucide-react";
 import Link from "next/link";
 
 const Profile = () => {
+  const router = useRouter();
+  const { user, signOut } = useAuth();
   const [profile, setProfile] = useState({
-    firstName: "John",
-    lastName: "Doe",
-    email: "john.doe@example.com",
-    phone: "+1 (555) 123-4567",
-    dateOfBirth: "1990-01-15",
-    gender: "male",
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    dateOfBirth: "",
+    gender: "",
   });
+
+  useEffect(() => {
+    if (!user) {
+      router.push("/");
+      return;
+    }
+
+    // Update profile with user data
+    setProfile({
+      firstName: user.user_metadata?.first_name || "",
+      lastName: user.user_metadata?.last_name || "",
+      email: user.email || "",
+      phone: user.phone || "",
+      dateOfBirth: user.user_metadata?.date_of_birth || "",
+      gender: user.user_metadata?.gender || "",
+    });
+  }, [user, router]);
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast.success("Signed out successfully");
+      router.push("/");
+    } catch (error) {
+      toast.error("Error signing out");
+    }
+  };
+
+  const handleProfileUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    // TODO: Implement profile update logic with Supabase
+    toast.success("Profile updated");
+  };
 
   const recentOrders = [
     {
@@ -75,10 +113,13 @@ const Profile = () => {
     },
   ];
 
+  if (!user) {
+    return null; // or a loading state
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
-
+      <Toaster />
       <main className="flex-1 container mx-auto px-4 py-8">
         {/* Breadcrumb */}
         <nav className="text-sm text-gray-600 mb-6">
@@ -98,9 +139,15 @@ const Profile = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold">
-                    {profile.firstName} {profile.lastName}
+                    {profile.firstName || profile.lastName
+                      ? `${profile.firstName} ${profile.lastName}`
+                      : user.email}
                   </h3>
-                  <p className="text-sm text-gray-600">Customer since 2023</p>
+                  <p className="text-sm text-gray-600">
+                    {user.app_metadata?.provider === "email"
+                      ? "Email account"
+                      : `${user.app_metadata?.provider} account`}
+                  </p>
                 </div>
               </div>
               <nav className="space-y-2">
@@ -139,6 +186,15 @@ const Profile = () => {
                   <Shield className="h-4 w-4" />
                   <span>Security</span>
                 </Link>
+                <Separator className="my-2" />
+                <Button
+                  variant="outline"
+                  onClick={handleSignOut}
+                  className="flex items-center space-x-2 rounded-md hover:bg-red-50 text-red-500 hover:text-red-600 w-full"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Sign Out</span>
+                </Button>
               </nav>
             </div>
           </div>
@@ -161,7 +217,7 @@ const Profile = () => {
                 </TabsList>
 
                 <TabsContent value="personal" className="mt-6">
-                  <form className="space-y-6">
+                  <form onSubmit={handleProfileUpdate} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
                         <Label htmlFor="firstName">First Name</Label>
@@ -239,7 +295,13 @@ const Profile = () => {
                     </div>
 
                     <div className="flex justify-end space-x-4">
-                      <Button variant="outline">Cancel</Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => router.back()}
+                      >
+                        Cancel
+                      </Button>
                       <Button type="submit">Save Changes</Button>
                     </div>
                   </form>
@@ -335,8 +397,6 @@ const Profile = () => {
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 };

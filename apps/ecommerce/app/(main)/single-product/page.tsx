@@ -133,11 +133,9 @@ const SingleProduct = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col">
-        <Header />
         <div className="flex-1 flex items-center justify-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
         </div>
-        <Footer />
       </div>
     );
   }
@@ -145,7 +143,6 @@ const SingleProduct = () => {
   if (!product) {
     return (
       <div className="min-h-screen flex flex-col">
-        <Header />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <h1 className="text-2xl font-bold mb-4">Product Not Found</h1>
@@ -154,15 +151,12 @@ const SingleProduct = () => {
             </p>
           </div>
         </div>
-        <Footer />
       </div>
     );
   }
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
-
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Product Images */}
@@ -374,8 +368,6 @@ const SingleProduct = () => {
           </Tabs>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 };

@@ -121,7 +121,7 @@ const Checkout = () => {
   // if (!user) {
   //   return (
   //     <div className="min-h-screen flex flex-col">
-  //       <Header />
+  //
   //       <div className="flex-1 flex items-center justify-center">
   //         <div className="text-center">
   //           <h1 className="text-2xl font-bold mb-4">Please Sign In</h1>
@@ -133,7 +133,7 @@ const Checkout = () => {
   //           </Link>
   //         </div>
   //       </div>
-  //       <Footer />
+  //
   //     </div>
   //   );
   // }
@@ -141,7 +141,7 @@ const Checkout = () => {
   // if (cartItems.length === 0) {
   //   return (
   //     <div className="min-h-screen flex flex-col">
-  //       <Header />
+  //
   //       <div className="flex-1 flex items-center justify-center">
   //         <div className="text-center">
   //           <h1 className="text-2xl font-bold mb-4">Your cart is empty</h1>
@@ -153,15 +153,13 @@ const Checkout = () => {
   //           </Link>
   //         </div>
   //       </div>
-  //       <Footer />
+  //
   //     </div>
   //   );
   // }
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
-
       <main className="flex-1 container mx-auto px-4 py-8">
         {/* Breadcrumb */}
         <nav className="text-sm text-gray-600 mb-6">
@@ -529,8 +527,6 @@ const Checkout = () => {
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 };
