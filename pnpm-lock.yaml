@@ -521,8 +521,8 @@ importers:
         version: 3.24.2
     devDependencies:
       '@tailwindcss/postcss':
-        specifier: ^4.0.8
-        version: 4.0.8
+        specifier: ^4.1.11
+        version: 4.1.11
       '@turbo/gen':
         specifier: ^2.4.2
         version: 2.4.2(@types/node@20.17.19)(typescript@5.7.3)
@@ -542,8 +542,8 @@ importers:
         specifier: workspace:*
         version: link:../typescript-config
       tailwindcss:
-        specifier: ^4.0.8
-        version: 4.0.8
+        specifier: ^4.1.11
+        version: 4.1.11
       typescript:
         specifier: ^5.7.3
         version: 5.7.3

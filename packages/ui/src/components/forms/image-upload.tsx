@@ -189,7 +189,7 @@ export function ImageUpload({ onChange, value, form }: ImageUploadProps) {
     <div className="h-full">
       <label
         {...getRootProps()}
-        className="relative flex h-96 w-full cursor-pointer flex-col items-center justify-center rounded-[8px] border-2 border-dashed border-primary bg-[#E3DEFF]/[.22] py-6 hover:bg-[#E3DEFF]/[.40]"
+        className="relative flex h-96 w-full cursor-pointer flex-col items-center justify-center rounded-[8px] border-2 border-dashed border-primary bg-[#E3DEFF]/22 py-6 hover:bg-[#E3DEFF]/40"
       >
         <div className="space-y-2 text-center">
           <Image
