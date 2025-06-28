@@ -1,0 +1,282 @@
+# Cursor Rules - Multi-Vendor E-commerce Monorepo
+
+## Project Overview
+
+This is a Turborepo monorepo for a multi-vendor e-commerce platform with three main applications:
+
+- **ecommerce**: Customer-facing store
+- **dashboard**: Vendor dashboard for sellers
+- **admin**: Admin panel for platform management
+
+## Tech Stack
+
+- **Framework**: Next.js 15+ with App Router
+- **Language**: TypeScript (strict mode)
+- **Styling**: Tailwind CSS + shadcn/ui components
+
+## Form Preferences
+
+- **Form Library**: Use [react-hook-form](https://react-hook-form.com/) for form state management and validation.
+  - Use the `useForm` hook to manage form state.
+  - Use the `Controller` component for controlled UI components (e.g., custom inputs, shadcn/ui components).
+- **Validation**: Use [Zod](https://zod.dev/) for schema-based validation.
+  - Integrate Zod with react-hook-form using the `zodResolver` from `@hookform/resolvers/zod`.
+  - Define a Zod schema for each form's data shape and validation rules.
+- **onSubmit**: The form's `onSubmit` handler receives the validated form data as its argument.
+  - Example: `const handleSubmit = (data: FormData) => { /* ... */ }`
+  - Always type the data argument using the inferred Zod schema type.
+- **Type Safety**: Infer form types from the Zod schema using `z.infer<typeof schema>`.
+- **Error Handling**: Display validation errors from react-hook-form using error messages in the UI.
+- **Accessibility**: Ensure all form fields have associated labels and error messages are accessible.
+
+### Example Pattern
+
+- **Database**: Supabase with Drizzle ORM
+- **Monorepo**: Turborepo with pnpm workspaces
+- **UI Library**: Custom shadcn/ui components in packages/ui
+
+## Project Structure & File Organization
+
+### Monorepo Structure
+
+```
+apps/
+├── admin/          # Admin dashboard
+├── dashboard/      # Vendor dashboard
+└── ecommerce/      # Customer store
+
+packages/
+├── ui/             # Shared UI components
+├── db/             # Database schema & utilities
+├── eslint-config/  # Shared ESLint configs
+└── typescript-config/ # Shared TypeScript configs
+```
+
+### Component File Structure
+
+For any component that requires complex logic, split into these files:
+
+```
+ComponentName/
+├── component-name.tsx        # Main component (default export)
+├── component-name.chunks.tsx # Sub-components and component parts
+├── component-name.server.ts  # Server actions, API calls, data fetching
+├── component-name.lib.ts     # Utility functions and business logic
+├── component-name.dto.ts     # Data transfer objects and API schemas
+└── component-name.types.ts   # TypeScript interfaces and types
+```
+
+**File Naming Rules:**
+
+- Use kebab-case for all files
+- Component files: `component-name.tsx`
+- Always include the suffix for specialized files (.server, .lib, .dto, .types, .chunks)
+
+## Coding Standards
+
+### TypeScript
+
+- Use strict TypeScript configuration
+- Prefer interfaces over types for object shapes
+- Use proper return types for all functions
+- Leverage Drizzle schema types for database operations
+
+### React/Next.js
+
+- Use App Router exclusively (no Pages Router)
+- Prefer Server Components over Client Components when possible
+- Use "use client" directive only when necessary
+- Implement proper error boundaries and loading states
+
+### Component Guidelines
+
+1. **Main Component (.tsx)**:
+
+   - Default export the main component
+   - Keep JSX clean and readable
+   - Import chunks and types from respective files
+
+2. **Chunks (.chunks.tsx)**:
+
+   - Export sub-components used within the main component
+   - Keep component parts modular and reusable
+   - Name exports descriptively (e.g., `ProductCardImage`, `ProductCardActions`)
+
+3. **Server Logic (.server.ts)**:
+
+   - Server actions for form handling
+   - Database queries using Drizzle
+   - API route handlers logic
+   - Authentication checks
+
+4. **Library Functions (.lib.ts)**:
+
+   - Pure utility functions
+   - Business logic calculations
+   - Data transformations
+   - Validation helpers
+
+5. **DTOs (.dto.ts)**:
+
+   - API request/response schemas
+   - Form validation schemas (using zod)
+   - Data transformation interfaces
+
+6. **Types (.types.ts)**:
+   - Component prop interfaces
+   - Internal component state types
+   - Utility types and generics
+
+### Shared Components (packages/ui)
+
+- Create reusable components used across 2+ applications
+- Follow shadcn/ui patterns and conventions
+- Export components from packages/ui/src/components/index.ts
+- Use compound component patterns for complex UI elements
+
+### Database & API
+- Use Drizzle ORM for all database CRUD (Create, Read, Update, Delete) operations.
+- Always define and use Drizzle schema types for type safety in all database interactions.
+- Organize CRUD logic in `.server.ts` files for server actions and API handlers.
+- For each resource, implement the following standard CRUD patterns:
+  - **Create**: Insert new records using Drizzle's `insert` method.
+  - **Read**: Fetch single or multiple records using `select`, with proper filtering and pagination.
+  - **Update**: Update records using `update` with `where` clauses for precise targeting.
+  - **Delete**: Remove records using `delete` with appropriate constraints.
+- Always handle errors with try-catch blocks and return meaningful error messages.
+- Use transactions for multi-step or related operations to ensure data consistency.
+- Revalidate relevant Next.js paths after mutations to keep UI in sync.
+- Place all relation definitions in `packages/db/drizzle/relations.ts` and import as needed.
+- Never access the database directly from client components; always use server actions or API routes.
+- For real-time features, use Supabase client in conjunction with Drizzle for database sync.
+- Always validate input data with Zod schemas before performing any CRUD operation.
+- Return typed results using Drizzle schema types for all CRUD functions. 
+- Use Drizzle ORM for all database operations
+- Define relations in packages/db/drizzle/relations.ts
+- Use proper TypeScript types from Drizzle schema
+- Implement server actions for form submissions
+- Use Supabase client for real-time features
+
+### Styling Guidelines
+
+- Use Tailwind CSS utility classes
+- Leverage shadcn/ui component variants
+- Create custom variants using cva (class-variance-authority)
+- Use CSS variables for consistent theming
+- Mobile-first responsive design approach
+
+## Business Logic Guidelines
+
+### E-commerce Specific
+
+- Handle multi-vendor scenarios (vendor-specific pricing, inventory, shipping)
+- Implement proper order status workflows
+- Calculate commissions and vendor payouts correctly
+- Handle cart state management properly
+- Implement wishlist functionality across apps
+
+### Vendor Dashboard
+
+- Show vendor-specific data only
+- Implement proper order management workflows
+- Handle product listing and inventory management
+- Provide analytics and reporting features
+
+### Admin Panel
+
+- Implement proper role-based access control
+- Provide comprehensive platform analytics
+- Handle vendor approval workflows
+- Manage platform-wide settings and configurations
+
+## Code Quality & Performance
+
+### Performance
+
+- Use Next.js Image component for optimized images
+- Implement proper loading states and skeleton UIs
+- Use React.memo() for expensive re-renders
+- Implement pagination for large data sets
+- Use Suspense boundaries for data fetching
+
+### Error Handling
+
+- Implement proper error boundaries
+- Use try-catch blocks in server actions
+- Provide meaningful error messages to users
+- Log errors appropriately for debugging
+
+### Security
+
+- Validate all inputs using zod schemas
+- Implement proper authentication checks
+- Use CSRF protection for forms
+- Sanitize user-generated content
+
+## Import/Export Conventions
+
+### Import Order
+
+1. React and Next.js imports
+2. Third-party library imports
+3. Internal package imports (@/...)
+4. Relative imports (./...)
+5. Type imports (import type {...})
+
+### Export Patterns
+
+- Default export for main components
+- Named exports for utilities, types, and chunks
+- Re-export from index files for clean imports
+
+## Example Implementation
+
+```typescript
+// product-card.tsx
+import type { ProductCardProps } from './product-card.types'
+import { ProductCardImage, ProductCardActions } from './product-card.chunks'
+import { formatPrice, isOnSale } from './product-card.lib'
+
+export default function ProductCard({ product, variant = 'default' }: ProductCardProps) {
+  return (
+    <div className="group relative">
+      <ProductCardImage product={product} />
+      <div className="p-4">
+        <h3 className="text-lg font-semibold">{product.title}</h3>
+        <p className="text-muted-foreground">{formatPrice(product.price)}</p>
+        <ProductCardActions product={product} />
+      </div>
+    </div>
+  )
+}
+```
+
+## Testing Guidelines
+
+- Write unit tests for utility functions (.lib.ts files)
+- Test components with React Testing Library
+- Mock external dependencies properly
+- Test server actions with proper mocking
+
+## Documentation
+
+- Document complex business logic with JSDoc comments
+- Maintain README files for each major feature
+- Update component documentation when adding new props
+- Document API endpoints and their expected payloads
+
+## Version Control
+
+- Use conventional commits for clear history
+- Create feature branches for new developments
+- Use proper PR templates and reviews
+- Tag releases appropriately
+
+## Performance Monitoring
+
+- Monitor Core Web Vitals in production
+- Track database query performance
+- Monitor API response times
+- Use proper analytics for user behavior tracking
+
+Always prioritize code maintainability, type safety, and performance. When in doubt, favor explicit code over clever solutions, and always consider the multi-tenant nature of the platform in your implementations.

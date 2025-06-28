@@ -117,7 +117,7 @@ const SidebarContent = ({
 
       {/* Profile Section */}
       {!isCollapsed && (
-        <div className="flex flex-col items-center py-8 px-6 border-b border-primary-foreground/20">
+        <div className="flex flex-col items-center py-5 px-6 border-b border-primary-foreground/20">
           <div className="w-[120px] h-[120px] rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mb-4 shadow-xl">
             <span className="text-white text-4xl font-bold">JD</span>
           </div>
@@ -129,14 +129,14 @@ const SidebarContent = ({
           </p>
 
           {/* Quick Chat Button */}
-          <Button
+          {/* <Button
             variant="outline"
             size="sm"
             className="mt-4 bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white"
           >
             <MessageCircle className="h-4 w-4 mr-2" />
             {t("sidebar.quickChat")}
-          </Button>
+          </Button> */}
         </div>
       )}
 

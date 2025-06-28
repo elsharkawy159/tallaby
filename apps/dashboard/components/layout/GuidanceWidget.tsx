@@ -12,7 +12,13 @@ import {
 import { Button } from "@workspace/ui/components/button";
 import { Card } from "@workspace/ui/components/card";
 
-export const GuidanceWidget = () => {
+export const GuidanceWidget = ({
+  title,
+  tips,
+}: {
+  title: string;
+  tips: string[];
+}) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const guidanceOptions = [
@@ -55,7 +61,7 @@ export const GuidanceWidget = () => {
         <div className="fixed bottom-20 right-6 z-50 w-80">
           <Card className="bg-white shadow-xl border border-gray-200 p-4">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-gray-900">Need Help?</h3>
+              <h3 className="font-semibold text-gray-900">{title}</h3>
               <Button
                 variant="ghost"
                 size="icon"
@@ -67,19 +73,19 @@ export const GuidanceWidget = () => {
             </div>
 
             <div className="space-y-2">
-              {guidanceOptions.map((option, index) => (
+              {tips.map((tip, index) => (
                 <button
                   key={index}
-                  onClick={option.action}
+                  onClick={() => console.log("Opening tip...")}
                   className="w-full flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors text-left"
                 >
-                  <option.icon className="h-5 w-5 text-primary mt-0.5" />
+                  <HelpCircle className="h-5 w-5 text-primary mt-0.5" />
                   <div>
                     <div className="font-medium text-gray-900 text-sm">
-                      {option.title}
+                      {tip}
                     </div>
                     <div className="text-xs text-gray-500">
-                      {option.description}
+                      {tip}
                     </div>
                   </div>
                 </button>

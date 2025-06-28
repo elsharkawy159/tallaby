@@ -1,0 +1,25 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Next.js Performance & LCP Guidelines
+
+* **Profile & Audit:** Always profile your Next.js app to find rendering bottlenecks. Use the React/Next.js Profiler (Chrome DevTools or React DevTools Profiler) and run Lighthouse audits in a **production build** (`next build && next start`) to measure Core Web Vitals like LCP. Fix any issues flagged by Lighthouse (run it in an incognito window to avoid interference).
+
+* **Pre-render content:** Favor **Static Generation** (`getStaticProps`/`getStaticPaths`) so pages are built at deploy time and served instantly. Use SSR (`getServerSideProps`) only when data truly must be fetched per-request. Pre-rendering drastically reduces time-to-first-byte and speeds up LCP.
+
+* **Minimize JavaScript:** Keep the initial JS bundle small. Remove unused code, leverage Next.js’s automatic code splitting, and use dynamic imports or `React.lazy` to lazy-load components. This ensures only essential code is sent on first load, speeding up parsing/execution.
+
+* **Optimize images with `<Image>`:** Use Next.js’s `<Image>` component for all images. It automatically resizes, compresses, and lazy-loads images to improve load performance. Always supply explicit `width` and `height` (or use `layout="fill"`) so the browser can reserve space and avoid layout shifts.
+
+* **Prioritize LCP images:** Identify the element that becomes the Largest Contentful Paint (often a hero/banner image or key text block) and give that `<Image>` the `priority` prop. Next.js will preload that image, significantly improving LCP. (During development, Next.js warns if the LCP `<Image>` lacks `priority`.)
+
+* **Defer non-critical work:** Use `<Script strategy="lazyOnload">` or `afterInteractive` for third-party scripts and any code not needed for initial render. This defers loading until after content is painted, freeing up the main thread and preventing render-blocking that can delay LCP.
+
+* **Optimize fonts and CSS:** Use Next.js’s built-in font optimization (`next/font`) or preload critical font files to avoid FOIT/FOUT. Only load necessary font subsets. Ensuring fonts and critical CSS are preloaded reduces layout shifts and speeds up the rendering of text content (which often factors into LCP).
+
+* **Use CDN & caching:** Deploy on a global CDN (e.g. Vercel Edge Network) so assets are served from locations near users. Enable HTTP/2 or HTTP/3, Brotli/Gzip compression, and long-term cache headers for static assets. Fast, cached responses lower load time and improve LCP.
+
+
+* **Continuous measurement:** Monitor Core Web Vitals in production (e.g. using Next.js Analytics or the Web Vitals library). Set performance budgets and regularly check Lighthouse. Aim for LCP < 2.5s and CLS < 0.1. Proactively fixing regressions keeps the experience smooth.
