@@ -27,14 +27,16 @@ export default async function SellersPage({ searchParams }: SellersPageProps) {
     <div className="space-y-6">
       <SellersClientWrapper
         initialFilters={initialFilters as any}
-        initialStats={initialStats || {
-          totalSellers: 0,
-          activeSellers: 0,
-          pendingSellers: 0,
-          suspendedSellers: 0,
-          totalProducts: 0,
-          totalRevenue: 0,
-        }}
+        initialStats={
+          initialStats || {
+            totalSellers: 0,
+            activeSellers: 0,
+            pendingSellers: 0,
+            suspendedSellers: 0,
+            totalProducts: 0,
+            totalRevenue: 0,
+          }
+        }
       />
     </div>
   );
