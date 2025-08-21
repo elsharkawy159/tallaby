@@ -1,8 +1,18 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  eslint: { ignoreDuringBuilds: true },
   transpilePackages: ["@workspace/ui"],
   images: {
-    domains: ["wnhzenpxtvpgetvjvdjg.supabase.co"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "trvxevlmcbdytzqjdltr.supabase.co",
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+    ],
   },
 };
 

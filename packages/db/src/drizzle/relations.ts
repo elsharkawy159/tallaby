@@ -554,7 +554,7 @@ export const reviewCommentsRelations = relations(reviewComments, ({one}) => ({
 		fields: [reviewComments.sellerId],
 		references: [sellers.id]
 	}),
-	user: one(users, {
+			user: one(users, {
 		fields: [reviewComments.userId],
 		references: [users.id]
 	}),

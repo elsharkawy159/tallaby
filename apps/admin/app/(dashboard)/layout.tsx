@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import Sidebar from "./_components/layout/sidebar";
 import Header from "./_components/layout/header";
 import { ScrollArea } from "@workspace/ui/components/scroll-area";
+import { Toaster } from "@workspace/ui/components/sonner";
 
 interface DashboardShellProps {
   children: ReactNode;
@@ -19,6 +20,7 @@ export default function DashboardLayout({ children }: DashboardShellProps) {
           </main>
         </ScrollArea>
       </div>
+      <Toaster />
     </div>
   );
 }

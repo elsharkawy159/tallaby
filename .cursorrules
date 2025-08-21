@@ -14,6 +14,131 @@ This is a Turborepo monorepo for a multi-vendor e-commerce platform with three m
 - **Language**: TypeScript (strict mode)
 - **Styling**: Tailwind CSS + shadcn/ui components
 
+## Code Cleanliness & Organization Rules
+
+### ⚡ Always Maintain Clean Codebase
+
+**MANDATORY**: Before making any changes or when touching existing code, always:
+
+1. **Remove Unused Code**:
+   - Delete unused imports, variables, functions, and components
+   - Remove commented-out code blocks (unless marked with TODO/FIXME)
+   - Eliminate dead code paths and unreachable statements
+   - Remove unused dependencies from package.json files
+   - Clean up unused CSS classes and styles
+
+2. **Fix File Naming**:
+   - Rename files to follow kebab-case convention (e.g., `UserProfile.tsx` → `user-profile.tsx`)
+   - Ensure component files match their component names
+   - Fix misnamed utility files, types, and server files
+   - Update all import statements when renaming files
+
+3. **Reorganize Folder Structure**:
+   - Move components to correct directories based on project structure
+   - Split large components into the proper file structure (.tsx, .chunks.tsx, .lib.ts, .types.ts, etc.)
+   - Organize related files into appropriate folders
+   - Move shared components to `packages/ui` if used across multiple apps
+
+4. **Refactor Legacy Code**:
+   - Update old code to match current coding standards and patterns
+   - Convert class components to functional components with hooks
+   - Replace old import patterns with current conventions
+   - Update deprecated APIs and libraries
+   - Apply consistent formatting and naming conventions
+
+5. **Consolidate Duplicated Code**:
+   - Identify and extract reusable components, functions, and utilities
+   - Move shared logic to appropriate packages or utility files
+   - Remove code duplication across apps and components
+   - Create shared types and interfaces where applicable
+
+### 🧹 Code Cleanup Checklist
+
+When working on any file, ensure:
+
+- [ ] All imports are used and properly ordered
+- [ ] No console.logs or debugging code left behind
+- [ ] File follows correct naming convention
+- [ ] Component is in the right directory
+- [ ] No TODO comments without issue tracking
+- [ ] Proper TypeScript types are used
+- [ ] No any types unless absolutely necessary
+- [ ] Code follows project patterns and conventions
+- [ ] Related files are properly organized
+
+### 📁 File Organization Enforcement
+
+**Component Organization**:
+```
+❌ Wrong:
+components/
+├── ProductCard.tsx        # PascalCase filename
+├── product_card_utils.js  # snake_case, wrong extension
+├── productCardTypes.ts    # camelCase
+└── ProductCardChunks.tsx  # Not following pattern
+
+✅ Correct:
+product-card/
+├── product-card.tsx        # Main component
+├── product-card.chunks.tsx # Sub-components
+├── product-card.lib.ts     # Utilities
+├── product-card.types.ts   # Types
+└── product-card.server.ts  # Server actions
+```
+
+**Import Organization**:
+```typescript
+❌ Wrong:
+import { Button } from './button'
+import React from 'react'
+import { someUtil } from '../utils/someUtil'
+import type { User } from '@/types'
+import { clsx } from 'clsx'
+
+✅ Correct:
+import React from 'react'
+import { clsx } from 'clsx'
+import { Button } from '@/components/ui/button'
+import { someUtil } from '@/lib/utils'
+import type { User } from '@/types'
+```
+
+### 🔄 Refactoring Guidelines
+
+**When editing existing code**:
+
+1. **Assess the entire file/component** before making changes
+2. **Identify improvement opportunities**:
+   - Can this be split into smaller components?
+   - Are there unused props or variables?
+   - Does the file structure match our patterns?
+   - Can logic be extracted to utility functions?
+3. **Apply improvements incrementally** while maintaining functionality
+4. **Update related files** that might be affected by changes
+5. **Ensure consistency** with the rest of the codebase
+
+**Legacy Code Migration Priority**:
+1. **High Priority**: Security issues, performance problems, deprecated APIs
+2. **Medium Priority**: Code structure, naming conventions, type safety
+3. **Low Priority**: Code style, minor optimizations
+
+### 🚀 Automation Rules
+
+**Always run these before committing**:
+```bash
+# Remove unused imports and variables
+pnpm lint --fix
+
+# Format code consistently
+pnpm format
+
+# Type check for unused exports
+pnpm type-check
+
+# Remove unused dependencies
+pnpm deps:clean
+```
+
 ## Form Preferences
 
 - **Form Library**: Use [react-hook-form](https://react-hook-form.com/) for form state management and validation.

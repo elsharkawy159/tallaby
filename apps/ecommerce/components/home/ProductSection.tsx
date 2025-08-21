@@ -10,6 +10,7 @@ import {
   CarouselPrevious,
   CarouselNext,
 } from "@workspace/ui/components/carousel";
+import Link from "next/link";
 
 interface ProductSectionProps {
   title: string;
@@ -221,9 +222,11 @@ const ProductSection = ({ title, categoryId }: ProductSectionProps) => {
           <p className="text-lg text-gray-600 mb-6 leading-relaxed">
             Trending Now: What Everyone's Talking About
           </p>
-          <Button className="!px-8 gap-1" variant="secondary">
-            View More
-            <ChevronRight className="size-6" />
+          <Button asChild className="!px-8 gap-1" variant="secondary">
+            <Link href="/products">
+              View More
+              <ChevronRight className="size-6" />
+            </Link>
           </Button>
           <div className="flex gap-5 items-center mt-12 ml-8">
             <CarouselPrevious className="relative left-0" />

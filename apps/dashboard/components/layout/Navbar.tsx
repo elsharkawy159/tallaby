@@ -1,20 +1,59 @@
 "use client";
-import { useState } from "react";
-import { Menu, Search, Moon, Sun, Globe } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
-import { Input } from "@workspace/ui/components/input";
-import { useTheme } from "next-themes";
+
 import { NotificationCenter } from "../dashboard/NotificationCenter";
+import { UserNav } from "./user-nav";
+import { usePathname } from "next/navigation";
 
 interface NavbarProps {
-  onMenuToggle: () => void;
-  pageTitle?: string;
+  onMenuToggle?: () => void;
 }
 
-export const Navbar = ({ onMenuToggle, pageTitle }: NavbarProps) => {
-  const { theme, setTheme } = useTheme();
-  const [searchQuery, setSearchQuery] = useState("");
-
+export const Navbar = ({ onMenuToggle }: NavbarProps) => {
+  const pathname = usePathname();
+  let pageTitle = "";
+  switch (pathname) {
+    case "/":
+      pageTitle = "Analytics Dashboard";
+      break;
+    case "/products":
+      pageTitle = "My Products";
+      break;
+    case "/products/new":
+      pageTitle = "Add New Product";
+      break;
+    case "/orders":
+      pageTitle = "Orders";
+      break;
+    case "/coupons":
+      pageTitle = "Coupons";
+      break;
+    case "/settings":
+      pageTitle = "Settings";
+      break;
+    case "/financial":
+      pageTitle = "Financial";
+      break;
+    case "/reviews":
+      pageTitle = "Reviews";
+      break;
+    case "/marketing":
+      pageTitle = "Marketing";
+      break;
+    case "/shipping":
+      pageTitle = "Shipping";
+      break;
+    case "/reports":
+      pageTitle = "Reports";
+      break;
+    case "/help":
+      pageTitle = "Help";
+      break;
+    default:
+      pageTitle = "Dashboard";
+      break;
+  }
   return (
     <nav className="fixed top-0 right-0 left-72 bg-white dark:bg-gray-800 border-b border-l border-gray-200 dark:border-gray-700 z-30">
       <div className="px-6 py-4">
@@ -29,7 +68,7 @@ export const Navbar = ({ onMenuToggle, pageTitle }: NavbarProps) => {
               <Menu className="h-5 w-5" />
             </Button>
             {pageTitle && (
-              <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white capitalize">
                 {pageTitle}
               </h1>
             )}
@@ -37,7 +76,7 @@ export const Navbar = ({ onMenuToggle, pageTitle }: NavbarProps) => {
 
           <div className="flex items-center gap-4">
             {/* Search */}
-            <div className="relative hidden md:block">
+            {/* <div className="relative hidden md:block">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 type="text"
@@ -46,7 +85,7 @@ export const Navbar = ({ onMenuToggle, pageTitle }: NavbarProps) => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 w-64 bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600"
               />
-            </div>
+            </div> */}
 
             {/* Notifications */}
             <NotificationCenter />
@@ -69,7 +108,7 @@ export const Navbar = ({ onMenuToggle, pageTitle }: NavbarProps) => {
             </DropdownMenu> */}
 
             {/* Theme Toggle */}
-            <Button
+            {/* <Button
               variant="ghost"
               size="sm"
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
@@ -79,7 +118,10 @@ export const Navbar = ({ onMenuToggle, pageTitle }: NavbarProps) => {
               ) : (
                 <Moon className="h-5 w-5" />
               )}
-            </Button>
+            </Button> */}
+
+            {/* User Navigation */}
+            <UserNav />
           </div>
         </div>
       </div>

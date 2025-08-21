@@ -192,9 +192,13 @@ const CategoryShowcase = ({ className }: { className?: string }) => {
         ]}
       >
         <CarouselContent>
-          {categories.map((category) => (
-            <Link href={`/category/${category.slug}`} className="group block">
-              <CarouselItem key={category.id} className="basis-auto">
+          {categories.map((category, index) => (
+            <Link
+              key={`${category.id}-${index}`}
+              href={`/category/${category.slug}`}
+              className="group block"
+            >
+              <CarouselItem className="basis-auto">
                 <div className="w-32 text-center">
                   <div className="relative overflow-hidden rounded-full size-[100px] mx-auto mb-2.5 bg-white shadow-sm">
                     <img

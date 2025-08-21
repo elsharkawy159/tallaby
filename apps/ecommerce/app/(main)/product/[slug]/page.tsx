@@ -37,8 +37,13 @@ interface Review {
   helpful: number;
 }
 
-const ProductDetail = async ({ params }: { params: { slug: string } }) => {
-  const product = await getProduct(params.slug);
+const ProductDetail = async ({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) => {
+  const { slug } = await params;
+  const product = await getProduct(slug);
 
   const reviews: Review[] = [
     {

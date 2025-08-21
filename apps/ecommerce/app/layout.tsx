@@ -3,7 +3,6 @@ import { Montserrat } from "next/font/google";
 import "@workspace/ui/globals.css";
 import { Providers } from "./providers";
 
-
 const montserrat = Montserrat({
   subsets: ["latin"],
   variable: "--font-montserrat",

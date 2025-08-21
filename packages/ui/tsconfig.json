@@ -6,6 +6,6 @@
       "@workspace/ui/*": ["./src/*"]
     }
   },
-  "include": ["."],
+  "include": [".", "../../apps/dashboard/components/inputs/image-upload.tsx"],
   "exclude": ["node_modules", "dist"]
 }

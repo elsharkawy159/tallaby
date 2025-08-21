@@ -1,10 +1,22 @@
-
-import AddProduct from "./add-product";
-import { fetchCategoriesAction, fetchBrandsAction } from "./add-product.server";
+import AddProductMultiStep from "./add-product-multi-step";
+import {
+  fetchCategoriesAction,
+  fetchBrandsAction,
+  fetchProductAction,
+} from "./add-product.server";
 import type { CategoryOption, BrandOption } from "./add-product.schema";
 
+interface PageProps {
+  searchParams: Promise<{ page?: string; id?: string }>;
+}
+
 // Main page component
-export default async function AddProductPage() {
+export default async function AddProductPage({ searchParams }: PageProps) {
+  const resolvedSearchParams = await searchParams;
+  const isEditMode =
+    resolvedSearchParams.page === "edit" && resolvedSearchParams.id;
+  const productId = resolvedSearchParams.id;
+
   // Fetch categories and brands in parallel
   const [categoriesResult, brandsResult] = await Promise.all([
     fetchCategoriesAction(),
@@ -52,7 +64,24 @@ export default async function AddProductPage() {
   const categories: CategoryOption[] = categoriesResult.data || "";
   const brands: BrandOption[] = brandsResult.data || "";
 
-  return <AddProduct categories={categories} brands={brands} />;
+  // Fetch product data if in edit mode
+  let productData = null;
+  if (isEditMode && productId) {
+    const productResult = await fetchProductAction(productId);
+    if (productResult.success) {
+      productData = productResult.data;
+    }
+  }
+
+  return (
+    <AddProductMultiStep
+      categories={categories}
+      brands={brands}
+      isEditMode={!!isEditMode}
+      productId={productId}
+      initialData={productData}
+    />
+  );
 }
 
 // Metadata for the page

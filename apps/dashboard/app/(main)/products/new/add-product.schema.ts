@@ -1,8 +1,8 @@
 import { z } from "zod";
 
-// Main product schema based on database structure
+// Enhanced product schema based on complete database structure
 export const addProductFormSchema = z.object({
-  // Basic Information
+  // ===== BASIC PRODUCT INFORMATION =====
   title: z
     .string()
     .min(1, "Product name is required")
@@ -14,63 +14,40 @@ export const addProductFormSchema = z.object({
   description: z.string().optional(),
   bulletPoints: z.array(z.string()).optional(),
 
-  // Product ID/SKU
-  productId: z.string().optional(), // For display purposes, auto-generated
-
-  // Categories & Brand
+  // ===== CATEGORIES & BRAND =====
   mainCategoryId: z.string().min(1, "Main category is required"),
   brandId: z.string().optional(),
 
-  // Pricing
+  // ===== PRICING (Products Table) =====
   basePrice: z.number().min(0.01, "Base price must be greater than 0"),
   listPrice: z.number().optional(),
+
+  // ===== LISTING PRICING (ProductListings Table) =====
+  price: z.number().min(0.01, "Listing price is required"),
   salePrice: z.number().optional(),
 
-  // Inventory
+  // ===== INVENTORY & SKU =====
+  sku: z.string().min(1, "SKU is required"),
   stockQuantity: z
     .number()
     .min(0, "Stock quantity must be 0 or greater")
     .default(0),
-  sku: z.string().optional(), // Auto-generated if not provided
+  maxOrderQuantity: z.number().optional(),
+  restockDate: z.string().optional(), // Date string
 
-  // Product Images
+  // ===== PRODUCT IMAGES =====
   images: z
-    .array(
-      z.object({
-        url: z.string().url("Invalid image URL"),
-        altText: z.string().optional(),
-        isPrimary: z.boolean().default(false),
-        position: z.number().default(0),
-      })
-    )
-    .optional(),
+    .array(z.string().min(1, "Image URL is required"))
+    .min(1, "At least one product image is required"),
 
-  // Product Flags/Settings
+  // ===== PRODUCT STATUS FLAGS =====
   isActive: z.boolean().default(true),
   isAdult: z.boolean().default(false),
   isPlatformChoice: z.boolean().default(false),
   isBestSeller: z.boolean().default(false),
+  isFeatured: z.boolean().default(false),
 
-  // Tax & Shipping
-  taxClass: z
-    .enum(["standard", "reduced", "zero", "exempt"])
-    .default("standard"),
-  weight: z.number().optional(),
-  dimensions: z
-    .object({
-      length: z.number().optional(),
-      width: z.number().optional(),
-      height: z.number().optional(),
-    })
-    .optional(),
-
-  // SEO
-  metaTitle: z.string().optional(),
-  metaDescription: z.string().optional(),
-  metaKeywords: z.string().optional(),
-  searchKeywords: z.string().optional(),
-
-  // Listing Information
+  // ===== CONDITION & FULFILLMENT =====
   condition: z
     .enum([
       "new",
@@ -82,6 +59,7 @@ export const addProductFormSchema = z.object({
       "used_acceptable",
     ])
     .default("new"),
+  conditionDescription: z.string().optional(),
   fulfillmentType: z
     .enum(["seller_fulfilled", "platform_fulfilled", "fba", "digital"])
     .default("seller_fulfilled"),
@@ -89,10 +67,43 @@ export const addProductFormSchema = z.object({
     .number()
     .min(1, "Handling time must be at least 1 day")
     .default(1),
-  maxOrderQuantity: z.number().optional(),
+
+  // ===== PHYSICAL ATTRIBUTES =====
+  weight: z.number().optional(),
+  dimensions: z
+    .object({
+      length: z.number().optional(),
+      width: z.number().optional(),
+      height: z.number().optional(),
+      unit: z.enum(["cm", "in"]).default("cm"),
+    })
+    .optional(),
+
+  // ===== TAX & LEGAL =====
+  taxClass: z
+    .enum(["standard", "reduced", "zero", "exempt"])
+    .default("standard"),
+
+  // ===== SEO & MARKETING =====
+  metaTitle: z
+    .string()
+    .max(60, "Meta title should be under 60 characters")
+    .optional(),
+  metaDescription: z
+    .string()
+    .max(160, "Meta description should be under 160 characters")
+    .optional(),
+  metaKeywords: z.string().optional(),
+  searchKeywords: z.string().optional(),
+
+  // ===== NOTES & ADDITIONAL INFO =====
+  notes: z.string().optional(),
+
+  // ===== ATTRIBUTES (JSONB) =====
+  attributes: z.record(z.any()).optional(),
 });
 
-// Default values for the form
+// Enhanced default values
 export const defaultValues: Partial<AddProductFormData> = {
   title: "",
   slug: "",
@@ -102,29 +113,36 @@ export const defaultValues: Partial<AddProductFormData> = {
   mainCategoryId: "",
   basePrice: 0,
   listPrice: undefined,
+  price: 0,
   salePrice: undefined,
-  stockQuantity: 0,
   sku: "",
+  stockQuantity: 0,
+  maxOrderQuantity: undefined,
+  restockDate: undefined,
   images: [],
   isActive: true,
   isAdult: false,
   isPlatformChoice: false,
   isBestSeller: false,
-  taxClass: "standard",
+  isFeatured: false,
+  condition: "new",
+  conditionDescription: "",
+  fulfillmentType: "seller_fulfilled",
+  handlingTime: 1,
   weight: undefined,
   dimensions: {
     length: undefined,
     width: undefined,
     height: undefined,
+    unit: "cm",
   },
+  taxClass: "standard",
   metaTitle: "",
   metaDescription: "",
   metaKeywords: "",
   searchKeywords: "",
-  condition: "new",
-  fulfillmentType: "seller_fulfilled",
-  handlingTime: 1,
-  maxOrderQuantity: undefined,
+  notes: "",
+  attributes: {},
 };
 
 // Infer TypeScript type from schema
@@ -137,6 +155,7 @@ export interface CategoryOption {
   slug: string;
   level: number;
   parentId?: string;
+  description?: string;
 }
 
 export interface BrandOption {
@@ -144,19 +163,39 @@ export interface BrandOption {
   name: string;
   slug: string;
   isVerified: boolean;
+  logoUrl?: string;
 }
 
-// Image upload types
+// Enhanced image types - simplified for string URLs
 export interface ProductImage {
   url: string;
-  altText?: string;
-  isPrimary: boolean;
-  position: number;
-  file?: File; // For new uploads
+  // Note: For now, we're using simple string URLs
+  // This can be enhanced later to include alt text, position, etc.
 }
 
-// Form step types for multi-step form
-export type FormStep = "basic" | "images" | "pricing" | "settings" | "seo";
+// Form validation helpers
+export const validateImageDimensions = (
+  file: File
+): Promise<{ width: number; height: number }> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      resolve({ width: img.width, height: img.height });
+    };
+    img.onerror = () => reject(new Error("Invalid image file"));
+    img.src = URL.createObjectURL(file);
+  });
+};
+
+// Form step configuration for multi-step form
+export type FormStep =
+  | "basic"
+  | "images"
+  | "pricing"
+  | "inventory"
+  | "settings"
+  | "seo"
+  | "advanced";
 
 export interface FormStepConfig {
   id: FormStep;
@@ -187,27 +226,37 @@ export const formSteps: FormStepConfig[] = [
   },
   {
     id: "pricing",
-    title: "Pricing & Inventory",
-    description: "Set prices and stock levels",
-    fields: ["basePrice", "listPrice", "salePrice", "stockQuantity", "sku"],
+    title: "Pricing",
+    description: "Set base and listing prices",
+    fields: ["basePrice", "listPrice", "price", "salePrice"],
+  },
+  {
+    id: "inventory",
+    title: "Inventory & Stock",
+    description: "Manage stock levels and SKU",
+    fields: ["sku", "stockQuantity", "maxOrderQuantity", "restockDate"],
   },
   {
     id: "settings",
     title: "Product Settings",
-    description: "Configure product options",
+    description: "Condition, fulfillment, and status",
     fields: [
+      "condition",
+      "conditionDescription",
+      "fulfillmentType",
+      "handlingTime",
       "isActive",
       "isAdult",
       "isPlatformChoice",
       "isBestSeller",
-      "condition",
-      "fulfillmentType",
-      "handlingTime",
-      "maxOrderQuantity",
-      "taxClass",
-      "weight",
-      "dimensions",
+      "isFeatured",
     ],
+  },
+  {
+    id: "advanced",
+    title: "Physical Properties",
+    description: "Weight, dimensions, and tax class",
+    fields: ["weight", "dimensions", "taxClass", "notes"],
   },
   {
     id: "seo",
@@ -215,4 +264,34 @@ export const formSteps: FormStepConfig[] = [
     description: "Search engine optimization",
     fields: ["metaTitle", "metaDescription", "metaKeywords", "searchKeywords"],
   },
+];
+
+// Option configurations for select fields
+export const conditionOptions = [
+  { value: "new", label: "New" },
+  { value: "renewed", label: "Renewed" },
+  { value: "refurbished", label: "Refurbished" },
+  { value: "used_like_new", label: "Used - Like New" },
+  { value: "used_very_good", label: "Used - Very Good" },
+  { value: "used_good", label: "Used - Good" },
+  { value: "used_acceptable", label: "Used - Acceptable" },
+];
+
+export const fulfillmentOptions = [
+  { value: "seller_fulfilled", label: "Seller Fulfilled" },
+  { value: "platform_fulfilled", label: "Platform Fulfilled" },
+  { value: "fba", label: "FBA (Fulfillment by Amazon)" },
+  { value: "digital", label: "Digital Download" },
+];
+
+export const taxClassOptions = [
+  { value: "standard", label: "Standard Tax Rate" },
+  { value: "reduced", label: "Reduced Tax Rate" },
+  { value: "zero", label: "Zero Tax Rate" },
+  { value: "exempt", label: "Tax Exempt" },
+];
+
+export const dimensionUnits = [
+  { value: "cm", label: "Centimeters (cm)" },
+  { value: "in", label: "Inches (in)" },
 ];

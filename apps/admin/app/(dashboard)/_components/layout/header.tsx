@@ -184,7 +184,7 @@ export default function Header() {
                 size="icon"
                 className="rounded-full h-8 w-8 overflow-hidden"
               >
-                <div className="bg-primary text-primary-foreground flex items-center justify-center h-full w-full font-semibold">
+                <div className="bg-primary text-white flex items-center justify-center h-full w-full font-semibold">
                   A
                 </div>
               </Button>

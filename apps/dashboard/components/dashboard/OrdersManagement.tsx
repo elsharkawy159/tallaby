@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select";
-import { GuidanceWidget } from "@/components/layout/GuidanceWidget";
+// import { GuidanceWidget } from "@/components/layout/GuidanceWidget";
 
 interface Order {
   id: string;
@@ -239,7 +239,7 @@ export const OrdersManagement = () => {
         </div>
       </div>
 
-      <GuidanceWidget />
+      {/* <GuidanceWidget /> */}
     </div>
   );
 };

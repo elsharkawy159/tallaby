@@ -1,0 +1,764 @@
+---
+alwaysApply: false
+---
+# Form Handling Rules - Next.js with App Router
+
+## 🎯 Form Architecture Overview
+
+**Always follow this form structure pattern:**
+
+```
+FormName/
+├── form-name.tsx              # Main form component (Client Component)
+├── form-name.schema.ts        # Zod validation schema
+├── form-name.server.ts        # Server actions ("use server")
+├── form-name.types.ts         # TypeScript interfaces
+└── form-name.fields.tsx       # Reusable form field components
+```
+
+## 📋 Core Form Technologies
+
+- **Validation**: Zod schemas for type-safe validation
+- **Form State**: react-hook-form with zodResolver
+- **UI Components**: shadcn/ui form components
+- **Server Actions**: Next.js server actions with "use server"
+- **Transitions**: useTransition for pending states
+- **Reusability**: Extract common form patterns
+
+## 🏗️ Form Implementation Pattern
+
+### **1. Zod Schema Definition**
+
+```typescript
+// form-name.schema.ts
+import { z } from 'zod'
+
+export const formNameSchema = z.object({
+  email: z
+    .string()
+    .min(1, 'Email is required')
+    .email('Please enter a valid email address'),
+  
+  firstName: z
+    .string()
+    .min(1, 'First name is required')
+    .min(2, 'First name must be at least 2 characters')
+    .max(50, 'First name must be less than 50 characters'),
+  
+  lastName: z
+    .string()
+    .min(1, 'Last name is required')
+    .min(2, 'Last name must be at least 2 characters')
+    .max(50, 'Last name must be less than 50 characters'),
+  
+  phone: z
+    .string()
+    .optional()
+    .refine((val) => !val || /^\+?[\d\s-()]+$/.test(val), {
+      message: 'Please enter a valid phone number'
+    }),
+  
+  role: z.enum(['customer', 'seller'], {
+    required_error: 'Please select a role'
+  }),
+  
+  acceptTerms: z
+    .boolean()
+    .refine((val) => val === true, {
+      message: 'You must accept the terms and conditions'
+    })
+})
+
+// Export the inferred type
+export type FormNameData = z.infer<typeof formNameSchema>
+
+// Default values (must match schema structure)
+export const formNameDefaults: Partial<FormNameData> = {
+  email: '',
+  firstName: '',
+  lastName: '',
+  phone: '',
+  role: 'customer',
+  acceptTerms: false
+}
+```
+
+### **2. Server Action (Backend Handler)**
+
+```typescript
+// form-name.server.ts
+'use server'
+
+import { z } from 'zod'
+import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
+import { formNameSchema, type FormNameData } from './form-name.schema'
+import { createUser } from '@/lib/database/users'
+import { sendWelcomeEmail } from '@/lib/email'
+
+// Server action result type
+type ActionResult = {
+  success: boolean
+  message: string
+  errors?: Record<string, string[]>
+}
+
+export const handleFormSubmission = async (
+  data: FormNameData
+): Promise<ActionResult> => {
+  try {
+    // 1. Validate data on server (double validation)
+    const validatedData = formNameSchema.parse(data)
+    
+    // 2. Check if user already exists
+    const existingUser = await getUserByEmail(validatedData.email)
+    if (existingUser) {
+      return {
+        success: false,
+        message: 'User with this email already exists',
+        errors: { email: ['Email is already taken'] }
+      }
+    }
+    
+    // 3. Create user in database
+    const newUser = await createUser({
+      email: validatedData.email,
+      firstName: validatedData.firstName,
+      lastName: validatedData.lastName,
+      phone: validatedData.phone || null,
+      role: validatedData.role
+    })
+    
+    // 4. Send welcome email (optional async operation)
+    await sendWelcomeEmail(newUser.email, newUser.firstName)
+    
+    // 5. Revalidate relevant paths
+    revalidatePath('/dashboard')
+    revalidatePath('/users')
+    
+    // 6. Return success
+    return {
+      success: true,
+      message: 'Account created successfully! Welcome aboard.'
+    }
+    
+  } catch (error) {
+    console.error('Form submission error:', error)
+    
+    // Handle Zod validation errors
+    if (error instanceof z.ZodError) {
+      const fieldErrors: Record<string, string[]> = {}
+      error.errors.forEach((err) => {
+        const field = err.path.join('.')
+        if (!fieldErrors[field]) fieldErrors[field] = []
+        fieldErrors[field].push(err.message)
+      })
+      
+      return {
+        success: false,
+        message: 'Please fix the validation errors',
+        errors: fieldErrors
+      }
+    }
+    
+    // Handle other errors
+    return {
+      success: false,
+      message: 'Something went wrong. Please try again later.'
+    }
+  }
+}
+
+// Optional: Separate action for specific operations
+export const checkEmailAvailability = async (email: string): Promise<boolean> => {
+  try {
+    const user = await getUserByEmail(email)
+    return !user // true if email is available
+  } catch {
+    return false
+  }
+}
+```
+
+### **3. Reusable Form Field Components**
+
+```typescript
+// form-name.fields.tsx
+import { Control, FieldPath } from 'react-hook-form'
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage
+} from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
+import type { FormNameData } from './form-name.schema'
+
+// Generic form field wrapper
+interface FormFieldWrapperProps<T extends Record<string, any>> {
+  control: Control<T>
+  name: FieldPath<T>
+  label: string
+  placeholder?: string
+  description?: string
+  required?: boolean
+}
+
+// Text input field
+export const TextFormField = <T extends Record<string, any>>({
+  control,
+  name,
+  label,
+  placeholder,
+  description,
+  required = false
+}: FormFieldWrapperProps<T> & { type?: 'text' | 'email' | 'tel' }) => (
+  <FormField
+    control={control}
+    name={name}
+    render={({ field }) => (
+      <FormItem>
+        <FormLabel className={required ? "after:content-['*'] after:ml-0.5 after:text-red-500" : ''}>
+          {label}
+        </FormLabel>
+        <FormControl>
+          <Input 
+            placeholder={placeholder}
+            {...field}
+            autoComplete={name}
+          />
+        </FormControl>
+        {description && (
+          <p className="text-sm text-muted-foreground">{description}</p>
+        )}
+        <FormMessage />
+      </FormItem>
+    )}
+  />
+)
+
+// Select field
+export const SelectFormField = <T extends Record<string, any>>({
+  control,
+  name,
+  label,
+  placeholder,
+  options,
+  required = false
+}: FormFieldWrapperProps<T> & {
+  options: { value: string; label: string }[]
+}) => (
+  <FormField
+    control={control}
+    name={name}
+    render={({ field }) => (
+      <FormItem>
+        <FormLabel className={required ? "after:content-['*'] after:ml-0.5 after:text-red-500" : ''}>
+          {label}
+        </FormLabel>
+        <Select onValueChange={field.onChange} defaultValue={field.value}>
+          <FormControl>
+            <SelectTrigger>
+              <SelectValue placeholder={placeholder} />
+            </SelectTrigger>
+          </FormControl>
+          <SelectContent>
+            {options.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <FormMessage />
+      </FormItem>
+    )}
+  />
+)
+
+// Checkbox field
+export const CheckboxFormField = <T extends Record<string, any>>({
+  control,
+  name,
+  label,
+  description,
+  required = false
+}: Omit<FormFieldWrapperProps<T>, 'placeholder'>) => (
+  <FormField
+    control={control}
+    name={name}
+    render={({ field }) => (
+      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+        <FormControl>
+          <Checkbox
+            checked={field.value}
+            onCheckedChange={field.onChange}
+          />
+        </FormControl>
+        <div className="space-y-1 leading-none">
+          <FormLabel className={required ? "after:content-['*'] after:ml-0.5 after:text-red-500" : ''}>
+            {label}
+          </FormLabel>
+          {description && (
+            <p className="text-sm text-muted-foreground">{description}</p>
+          )}
+        </div>
+        <FormMessage />
+      </FormItem>
+    )}
+  />
+)
+```
+
+### **4. Main Form Component**
+
+```typescript
+// form-name.tsx
+'use client'
+
+import { useTransition } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { toast } from 'sonner'
+
+import { Button } from '@/components/ui/button'
+import { Form } from '@/components/ui/form'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+
+import { 
+  formNameSchema, 
+  formNameDefaults, 
+  type FormNameData 
+} from './form-name.schema'
+import { handleFormSubmission } from './form-name.server'
+import { 
+  TextFormField, 
+  SelectFormField, 
+  CheckboxFormField 
+} from './form-name.fields'
+
+interface FormNameProps {
+  initialData?: Partial<FormNameData>
+  onSuccess?: () => void
+  onCancel?: () => void
+}
+
+export const FormName = ({ 
+  initialData, 
+  onSuccess, 
+  onCancel 
+}: FormNameProps) => {
+  const [isPending, startTransition] = useTransition()
+
+  // Setup form with react-hook-form
+  const form = useForm<FormNameData>({
+    resolver: zodResolver(formNameSchema),
+    defaultValues: {
+      ...formNameDefaults,
+      ...initialData
+    }
+  })
+
+  // Handle form submission with useTransition
+  const handleSubmit = (data: FormNameData) => {
+    startTransition(async () => {
+      try {
+        const result = await handleFormSubmission(data)
+        
+        if (result.success) {
+          toast.success(result.message)
+          form.reset() // Reset form on success
+          onSuccess?.() // Call optional success callback
+        } else {
+          toast.error(result.message)
+          
+          // Set server-side field errors
+          if (result.errors) {
+            Object.entries(result.errors).forEach(([field, messages]) => {
+              form.setError(field as keyof FormNameData, {
+                type: 'server',
+                message: messages[0] // Show first error message
+              })
+            })
+          }
+        }
+      } catch (error) {
+        console.error('Form submission error:', error)
+        toast.error('Something went wrong. Please try again.')
+      }
+    })
+  }
+
+  return (
+    <Card className="w-full max-w-2xl mx-auto">
+      <CardHeader>
+        <CardTitle>Create Account</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form 
+            onSubmit={form.handleSubmit(handleSubmit)} 
+            className="space-y-6"
+          >
+            {/* Personal Information */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <TextFormField
+                control={form.control}
+                name="firstName"
+                label="First Name"
+                placeholder="Enter your first name"
+                required
+              />
+              
+              <TextFormField
+                control={form.control}
+                name="lastName"
+                label="Last Name"
+                placeholder="Enter your last name"
+                required
+              />
+            </div>
+
+            {/* Contact Information */}
+            <TextFormField
+              control={form.control}
+              name="email"
+              label="Email Address"
+              placeholder="Enter your email address"
+              required
+            />
+
+            <TextFormField
+              control={form.control}
+              name="phone"
+              label="Phone Number"
+              placeholder="Enter your phone number (optional)"
+            />
+
+            {/* Role Selection */}
+            <SelectFormField
+              control={form.control}
+              name="role"
+              label="Account Type"
+              placeholder="Select your account type"
+              required
+              options={[
+                { value: 'customer', label: 'Customer' },
+                { value: 'seller', label: 'Seller' }
+              ]}
+            />
+
+            {/* Terms and Conditions */}
+            <CheckboxFormField
+              control={form.control}
+              name="acceptTerms"
+              label="I accept the terms and conditions"
+              description="You must accept our terms and conditions to create an account"
+              required
+            />
+
+            {/* Form Actions */}
+            <div className="flex gap-4 pt-4">
+              {onCancel && (
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={onCancel}
+                  disabled={isPending}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+              )}
+              
+              <Button 
+                type="submit" 
+                disabled={isPending || !form.formState.isValid}
+                className="flex-1"
+              >
+                {isPending ? 'Creating Account...' : 'Create Account'}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
+  )
+}
+```
+
+## 🎨 Advanced Form Patterns
+
+### **Multi-Step Forms**
+
+```typescript
+// multi-step-form.tsx
+'use client'
+
+import { useState, useTransition } from 'react'
+import { useForm, useWatch } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Button } from '@/components/ui/button'
+import { Progress } from '@/components/ui/progress'
+
+const STEPS = [
+  { id: 'personal', title: 'Personal Info', fields: ['firstName', 'lastName', 'email'] },
+  { id: 'account', title: 'Account Setup', fields: ['role', 'phone'] },
+  { id: 'confirm', title: 'Confirmation', fields: ['acceptTerms'] }
+] as const
+
+export const MultiStepForm = () => {
+  const [currentStep, setCurrentStep] = useState(0)
+  const [isPending, startTransition] = useTransition()
+
+  const form = useForm<FormNameData>({
+    resolver: zodResolver(formNameSchema),
+    defaultValues: formNameDefaults,
+    mode: 'onChange' // Validate on change for better UX
+  })
+
+  const watchedFields = useWatch({ control: form.control })
+
+  // Check if current step is valid
+  const isStepValid = (stepIndex: number) => {
+    const step = STEPS[stepIndex]
+    return step.fields.every(field => {
+      const fieldState = form.getFieldState(field)
+      return !fieldState.error && fieldState.isDirty
+    })
+  }
+
+  const handleNext = () => {
+    if (currentStep < STEPS.length - 1) {
+      setCurrentStep(prev => prev + 1)
+    }
+  }
+
+  const handlePrevious = () => {
+    if (currentStep > 0) {
+      setCurrentStep(prev => prev - 1)
+    }
+  }
+
+  const handleSubmit = (data: FormNameData) => {
+    startTransition(async () => {
+      const result = await handleFormSubmission(data)
+      // Handle result...
+    })
+  }
+
+  const progress = ((currentStep + 1) / STEPS.length) * 100
+
+  return (
+    <div className="space-y-6">
+      {/* Progress indicator */}
+      <div className="space-y-2">
+        <div className="flex justify-between text-sm text-muted-foreground">
+          <span>Step {currentStep + 1} of {STEPS.length}</span>
+          <span>{Math.round(progress)}% complete</span>
+        </div>
+        <Progress value={progress} className="h-2" />
+      </div>
+
+      {/* Step content */}
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          {/* Render current step fields */}
+          {currentStep === 0 && (
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold">{STEPS[0].title}</h2>
+              {/* Personal info fields */}
+            </div>
+          )}
+
+          {/* Navigation buttons */}
+          <div className="flex justify-between">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handlePrevious}
+              disabled={currentStep === 0}
+            >
+              Previous
+            </Button>
+
+            {currentStep === STEPS.length - 1 ? (
+              <Button
+                type="submit"
+                disabled={!form.formState.isValid || isPending}
+              >
+                {isPending ? 'Submitting...' : 'Submit'}
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                onClick={handleNext}
+                disabled={!isStepValid(currentStep)}
+              >
+                Next
+              </Button>
+            )}
+          </div>
+        </form>
+      </Form>
+    </div>
+  )
+}
+```
+
+### **Dynamic Form Fields**
+
+```typescript
+// dynamic-form.tsx
+'use client'
+
+import { useFieldArray } from 'react-hook-form'
+import { Button } from '@/components/ui/button'
+import { Plus, Trash2 } from 'lucide-react'
+
+// Schema with dynamic fields
+const dynamicFormSchema = z.object({
+  productName: z.string().min(1, 'Product name is required'),
+  variants: z.array(z.object({
+    name: z.string().min(1, 'Variant name is required'),
+    price: z.number().min(0, 'Price must be positive'),
+    sku: z.string().min(1, 'SKU is required')
+  })).min(1, 'At least one variant is required')
+})
+
+export const DynamicForm = () => {
+  const form = useForm<z.infer<typeof dynamicFormSchema>>({
+    resolver: zodResolver(dynamicFormSchema),
+    defaultValues: {
+      productName: '',
+      variants: [{ name: '', price: 0, sku: '' }]
+    }
+  })
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: 'variants'
+  })
+
+  const handleAddVariant = () => {
+    append({ name: '', price: 0, sku: '' })
+  }
+
+  const handleRemoveVariant = (index: number) => {
+    if (fields.length > 1) {
+      remove(index)
+    }
+  }
+
+  return (
+    <Form {...form}>
+      <form className="space-y-6">
+        {/* Product name field */}
+        <TextFormField
+          control={form.control}
+          name="productName"
+          label="Product Name"
+          required
+        />
+
+        {/* Dynamic variants */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-medium">Product Variants</h3>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleAddVariant}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Variant
+            </Button>
+          </div>
+
+          {fields.map((field, index) => (
+            <div key={field.id} className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border rounded-lg">
+              <TextFormField
+                control={form.control}
+                name={`variants.${index}.name`}
+                label="Variant Name"
+                required
+              />
+              
+              <TextFormField
+                control={form.control}
+                name={`variants.${index}.price`}
+                label="Price"
+                type="number"
+                required
+              />
+              
+              <TextFormField
+                control={form.control}
+                name={`variants.${index}.sku`}
+                label="SKU"
+                required
+              />
+
+              <div className="flex items-end">
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => handleRemoveVariant(index)}
+                  disabled={fields.length === 1}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </form>
+    </Form>
+  )
+}
+```
+
+## ✅ Form Best Practices Checklist
+
+### **Schema Design**
+- [ ] Use descriptive error messages
+- [ ] Include proper validation rules (min, max, regex)
+- [ ] Export inferred types
+- [ ] Define default values that match schema structure
+- [ ] Use appropriate Zod types (enum, refine, optional)
+
+### **Server Actions**
+- [ ] Always validate data server-side
+- [ ] Handle all error types (Zod, database, network)
+- [ ] Return consistent result structure
+- [ ] Use revalidatePath for cache updates
+- [ ] Include proper error logging
+
+### **Client Components**
+- [ ] Use useTransition for pending states
+- [ ] Handle both client and server errors
+- [ ] Provide loading feedback
+- [ ] Reset form on success
+- [ ] Include accessibility attributes
+
+### **Reusability**
+- [ ] Extract common field patterns
+- [ ] Use generic types for field components
+- [ ] Create consistent styling patterns
+- [ ] Include proper TypeScript types
+- [ ] Document component props
+
+
+Remember: **Always validate twice (client + server), use transitions for UX, keep components reusable, and provide clear error feedback!**

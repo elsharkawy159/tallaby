@@ -46,7 +46,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@workspace/ui/components/dialog";
-import { CouponForm } from "@/components/forms/coupon-form";
+// import { CouponForm } from "@/components/forms/coupon-form";
 import { GuidanceWidget } from "@/components/layout/GuidanceWidget";
 
 interface Coupon {
@@ -484,7 +484,7 @@ export const CouponsManagement = () => {
                   : "Create a new promotional coupon"}
               </DialogDescription>
             </DialogHeader>
-            <CouponForm
+            {/* <CouponForm
               defaultValues={editingCoupon}
               onSubmit={handleSaveCoupon}
               onCancel={() => setIsModalOpen(false)}
@@ -495,7 +495,7 @@ export const CouponsManagement = () => {
                 { id: "3", name: "AirPods Pro" },
                 { id: "4", name: "iPad Pro" },
               ]}
-            />
+            /> */}
           </DialogContent>
         </Dialog>
 

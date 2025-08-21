@@ -3,13 +3,15 @@ import { ProductsFilter } from "@/components/productsPage/ProductsFilter";
 import ProductsList from "@/components/productsPage/ProductsList";
 import ProductsSorting from "@/components/productsPage/ProductsSorting";
 
-const ProductsPage = ({
+const ProductsPage = async ({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) => {
+  const resolvedSearchParams = await searchParams;
   const { page, pageSize, search, categories, priceMin, priceMax } =
-    searchParams;
+    resolvedSearchParams;
+
   return (
     <main className="container flex flex-col lg:flex-row md:gap-7 mx-auto py-10">
       <ProductsFilter />
@@ -18,7 +20,7 @@ const ProductsPage = ({
         <div className="flex justify-end">
           <ProductsSorting />
         </div>
-        <ProductsList searchParams={searchParams} />
+        <ProductsList searchParams={resolvedSearchParams} />
       </div>
     </main>
   );

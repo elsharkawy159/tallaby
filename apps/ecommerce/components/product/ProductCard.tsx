@@ -3,6 +3,7 @@ import { Button } from "@workspace/ui/components/button";
 import { Card, CardContent } from "@workspace/ui/components/card";
 import Link from "next/link";
 import Image from "next/image";
+import { getPublicUrl } from "@workspace/ui/lib/utils";
 
 interface ProductCardProps {
   id: string;
@@ -15,7 +16,7 @@ interface ProductCardProps {
   originalPrice?: number;
   rating: number;
   reviewCount: number;
-  image: string;
+  image: string[];
 }
 
 const ProductCard = ({
@@ -31,9 +32,9 @@ const ProductCard = ({
       <CardContent className="p-2">
         {/* Product Image */}
         <div className="relative rounded-md overflow-hidden">
-          <Link href={`/product/${slug}`}>
+          <Link href={`/products/${slug}`}>
             <Image
-              src={image}
+              src={getPublicUrl(image[0] as string, "products")}
               alt={name}
               width={270}
               height={310}

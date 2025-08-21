@@ -1,5 +1,4 @@
 "use client";
-import { useState } from "react";
 import Link from "next/link";
 import {
   Search,
@@ -7,7 +6,6 @@ import {
   Heart,
   User,
   Menu,
-  X,
   Home,
   Compass,
 } from "lucide-react";
@@ -15,11 +13,12 @@ import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 // import { useWishlist } from "@/hooks/useWishlist";
 import { useScrollingNavbar } from "@/hooks/useScrollingNavbar";
+import { useAuthDialog } from "@/hooks/use-auth-dialog";
+import { useAuth } from "@/providers/auth-provider";
 import CategoryNav from "./CategoryNav";
+import { UserMenu } from "./user-menu";
 import { cn } from "@/lib/utils";
 // import { useCart } from "@/hooks/useCart";
-import { useAuth } from "@workspace/auth/hooks/use-auth";
-import { AuthDialog } from "@workspace/auth/components/auth-dialog";
 import {
   Sheet,
   SheetContent,
@@ -32,13 +31,8 @@ const Header = () => {
   // const { cartItems } = useCart();
   // const { wishlistItems } = useWishlist();
   const { isVisible } = useScrollingNavbar();
-  const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
-  const { user } = useAuth();
-
-  // const cartItemsCount = cartItems.reduce(
-  //   (total, item) => total + item.quantity,
-  //   0
-  // );
+  const { open: openAuthDialog } = useAuthDialog();
+  const { user, isLoading } = useAuth();
 
   return (
     <>
@@ -59,9 +53,10 @@ const Header = () => {
 
             <div className="flex items-center gap-3">
               {/* Become a Partner button - hidden on mobile */}
-              <Button className="text-sm" size="sm">
-                Become a Partner
+              <Button asChild className="text-sm" size="sm">
+                <Link href="/become-seller">Become a Partner</Link>
               </Button>
+
               {/* Mobile menu - Replace with Sheet */}
               <div>
                 <Sheet>
@@ -146,17 +141,17 @@ const Header = () => {
 
             {/* Right side actions */}
             <div className="flex items-center gap-6">
-              {user ? (
-                <Link
-                  href="/profile"
-                  className="text-white hover:text-gray-200"
-                >
-                  <User className="size-6" />
-                </Link>
+              {isLoading ? (
+                <div className="text-white opacity-50">
+                  <User className="size-6 animate-pulse" />
+                </div>
+              ) : user ? (
+                <UserMenu variant="desktop" />
               ) : (
                 <button
-                  className="text-white hover:text-gray-200 hover:bg-transparent cursor-pointer"
-                  onClick={() => setIsAuthDialogOpen(true)}
+                  className="text-white hover:text-gray-200 hover:bg-transparent cursor-pointer transition-colors"
+                  onClick={() => openAuthDialog("signin")}
+                  title="Sign in to your account"
                 >
                   <User className="size-6" />
                 </button>
@@ -176,7 +171,9 @@ const Header = () => {
                 <Heart className="size-6" />
               </Link>
 
-              <Button>Become a Partner</Button>
+              <Button asChild className="text-sm" size="sm">
+                <Link href="/become-seller">Become a Partner</Link>
+              </Button>
             </div>
           </div>
         </div>
@@ -217,18 +214,21 @@ const Header = () => {
               <span className="text-xs mt-1">Cart</span>
             </Link>
 
-            {user ? (
-              <Link
-                href="/profile"
-                className="flex flex-col items-center text-gray-600 hover:text-primary"
-              >
-                <User className="size-5" />
-                <span className="text-xs mt-1">Profile</span>
-              </Link>
+            {isLoading ? (
+              <div className="flex flex-col items-center text-gray-400 opacity-50">
+                <User className="size-5 animate-pulse" />
+                <span className="text-xs mt-1">Loading...</span>
+              </div>
+            ) : user ? (
+              <div className="flex flex-col items-center">
+                <UserMenu variant="mobile" />
+                <span className="text-xs mt-1 text-gray-600">Profile</span>
+              </div>
             ) : (
               <button
-                onClick={() => setIsAuthDialogOpen(true)}
-                className="flex flex-col items-center text-gray-600 hover:text-primary"
+                onClick={() => openAuthDialog("signin")}
+                className="flex flex-col items-center text-gray-600 hover:text-primary transition-colors"
+                title="Sign in to your account"
               >
                 <User className="size-5" />
                 <span className="text-xs mt-1">Sign In</span>
@@ -237,9 +237,6 @@ const Header = () => {
           </nav>
         </div>
       </div>
-
-      {/* Auth Dialog */}
-      <AuthDialog open={isAuthDialogOpen} onOpenChange={setIsAuthDialogOpen} />
     </>
   );
 };

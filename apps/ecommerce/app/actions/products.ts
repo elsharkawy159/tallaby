@@ -50,17 +50,7 @@ export async function getProducts(params: SearchParams) {
         category: {
           name: categories.name,
         },
-        images: sql<Array<{ url: string; alt_text: string }>>`
-          COALESCE(
-            json_agg(
-              json_build_object(
-                'url', ${productImages.url},
-                'alt_text', ${productImages.altText}
-              )
-            ) FILTER (WHERE ${productImages.id} IS NOT NULL),
-            '[]'
-          )
-        `,
+        images: products.images,
       })
       .from(products)
       .leftJoin(brands, eq(products.brandId, brands.id))

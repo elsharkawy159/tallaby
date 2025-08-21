@@ -26,8 +26,8 @@ import { useTranslations } from "next-intl";
 import { ScrollArea, ScrollBar } from "@workspace/ui/components/scroll-area";
 
 interface SidebarProps {
-  isOpen: boolean;
-  onToggle: () => void;
+  isOpen?: boolean;
+  onToggle?: () => void;
 }
 
 export const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
