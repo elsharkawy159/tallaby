@@ -109,9 +109,35 @@ export async function getSellers(filters: SellerFilters = {}) {
       })
       .from(sellers)
       .where(whereClause)
-      .orderBy(desc(sellers.createdAt));
+      .orderBy(desc(sellers.joinDate));
 
-    return { success: true, data: sellersData };
+    // Cast the JSON fields to proper types
+    const typedSellersData = sellersData.map((seller) => ({
+      ...seller,
+      legalAddress: seller.legalAddress as Record<string, unknown>,
+      verificationDetails: seller.verificationDetails as Record<string, unknown> | null,
+      approvedCategories: seller.approvedCategories as string[] | null,
+      feeStructure: seller.feeStructure as Record<string, unknown> | null,
+      taxInformation: seller.taxInformation as Record<string, unknown> | null,
+      paymentDetails: seller.paymentDetails as Record<string, unknown> | null,
+      fulfillmentOptions: seller.fulfillmentOptions as string[] | null,
+      externalIds: seller.externalIds as Record<string, unknown> | null,
+      sellerMetrics: seller.sellerMetrics as Record<string, unknown> | null,
+      isVerified: seller.isVerified ?? false,
+      storeRating: seller.storeRating ?? 0,
+      positiveRatingPercent: seller.positiveRatingPercent ?? 0,
+      totalRatings: seller.totalRatings ?? 0,
+      productCount: seller.productCount ?? 0,
+      commissionRate: seller.commissionRate ?? 15,
+      payoutSchedule: seller.payoutSchedule ?? "biweekly",
+      sellerLevel: seller.sellerLevel ?? "standard",
+      walletBalance: seller.walletBalance ?? "0",
+      joinDate: seller.joinDate ?? new Date().toISOString(),
+      createdAt: seller.createdAt ?? new Date().toISOString(),
+      updatedAt: seller.updatedAt ?? new Date().toISOString(),
+    }));
+
+    return { success: true, data: typedSellersData };
   } catch (error) {
     console.error("Error fetching sellers:", error);
     return { success: false, error: "Failed to fetch sellers" };
@@ -226,7 +252,10 @@ export async function updateSellerStatus(
   }
 }
 
-export async function updateSeller(sellerId: string, data: any) {
+export async function updateSeller(
+  sellerId: string,
+  data: Record<string, unknown>
+) {
   try {
     const validatedData = sellerUpdateSchema.parse(data);
 

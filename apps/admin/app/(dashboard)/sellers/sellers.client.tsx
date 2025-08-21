@@ -20,7 +20,7 @@ import { Filter, Download, Plus, Search, X } from "lucide-react";
 import { toast } from "sonner";
 import { updateSellerStatus } from "./sellers.server";
 import { getStatusOptions, getBusinessTypeOptions } from "./sellers.lib";
-import type { SellerFilters, SellerStatus } from "./sellers.types";
+import type { SellerFilters, SellerStats, SellerStatus } from "./sellers.types";
 import { SellersDataWrapper } from "./sellers.data";
 import { SellersTableSkeleton } from "./sellers.skeleton";
 
@@ -35,7 +35,10 @@ export const SellersFilters = ({
 }: SellersFiltersProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleFilterChange = (key: keyof SellerFilters, value: any) => {
+  const handleFilterChange = (
+    key: keyof SellerFilters,
+    value: string | boolean | undefined
+  ) => {
     onFiltersChange({
       ...filters,
       [key]: value,
@@ -201,7 +204,7 @@ export const SellersActions = ({ onAction }: SellersActionsProps) => {
 interface SellersTabsProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
-  stats: any;
+  stats: SellerStats;
 }
 
 export const SellersTabs = ({
@@ -259,7 +262,7 @@ export const SellersHeader = ({ onFiltersChange }: SellersHeaderProps) => {
 // Client wrapper component to handle state management
 interface SellersClientWrapperProps {
   initialFilters: SellerFilters;
-  initialStats: any;
+  initialStats: SellerStats;
 }
 
 export const SellersClientWrapper = ({

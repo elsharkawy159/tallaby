@@ -8,8 +8,6 @@ import {
   Pencil,
   Trash,
   Star,
-  MoveUp,
-  MoveDown,
   ArrowUp,
   ArrowDown,
   ImagePlus,
@@ -22,7 +20,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@workspace/ui/components/dialog";
 import {
   DropdownMenu,

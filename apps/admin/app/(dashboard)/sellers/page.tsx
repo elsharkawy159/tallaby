@@ -1,15 +1,13 @@
-import { Suspense } from "react";
 import { getSellerStats } from "./sellers.server";
-import { SellersDataWrapper } from "./sellers.data";
 import { SellersClientWrapper } from "./sellers.client";
-import { SellersTableSkeleton } from "./sellers.skeleton";
 import type { SellersPageProps } from "./sellers.types";
 
 export default async function SellersPage({ searchParams }: SellersPageProps) {
   // Parse search params for initial filters
+  const resolvedSearchParams = await searchParams;
   const initialFilters = {
-    status: searchParams?.status as any,
-    search: searchParams?.search,
+    status: resolvedSearchParams?.status,
+    search: resolvedSearchParams?.search,
   };
 
   // Get initial stats
@@ -28,8 +26,15 @@ export default async function SellersPage({ searchParams }: SellersPageProps) {
   return (
     <div className="space-y-6">
       <SellersClientWrapper
-        initialFilters={initialFilters}
-        initialStats={initialStats}
+        initialFilters={initialFilters as any}
+        initialStats={initialStats || {
+          totalSellers: 0,
+          activeSellers: 0,
+          pendingSellers: 0,
+          suspendedSellers: 0,
+          totalProducts: 0,
+          totalRevenue: 0,
+        }}
       />
     </div>
   );

@@ -30,14 +30,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@workspace/ui/components/dialog";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/card";
 import { Avatar, AvatarFallback } from "@workspace/ui/components/avatar";
 import { Textarea } from "@workspace/ui/components/textarea";
 import { DataTable } from "@/app/(dashboard)/_components/data-table/data-table";

@@ -31,7 +31,6 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select";
 import {
-  AlertTriangle,
   Save,
   Users,
   Store,
@@ -39,7 +38,6 @@ import {
   Globe,
   CreditCard,
   Lock,
-  Mail,
 } from "lucide-react";
 import * as z from "zod";
 
@@ -70,7 +68,7 @@ const userSettingsSchema = z
   .refine(
     (data) => !data.newPassword || data.newPassword === data.confirmPassword,
     {
-      message: "Passwords don't match",
+      message: "Passwords don&apos;t match",
       path: ["confirmPassword"],
     }
   )

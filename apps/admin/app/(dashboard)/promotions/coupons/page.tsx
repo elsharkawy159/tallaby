@@ -7,7 +7,6 @@ import { Badge } from "@workspace/ui/components/badge";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card";
@@ -22,7 +21,6 @@ import {
   Plus,
   Filter,
   Download,
-  Search,
   MoreHorizontal,
   TagIcon,
   Calendar,

@@ -1,4 +1,3 @@
-import { CheckIcon, PlusCircledIcon } from "@radix-ui/react-icons";
 import { Column } from "@tanstack/react-table";
 import { cn } from "@workspace/ui/lib/utils";
 import { Badge } from "@workspace/ui/components/badge";

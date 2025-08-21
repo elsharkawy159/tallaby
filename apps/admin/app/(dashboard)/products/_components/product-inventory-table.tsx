@@ -7,33 +7,13 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@workspace/ui/components/button";
 import { Badge } from "@workspace/ui/components/badge";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/card";
-import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@workspace/ui/components/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@workspace/ui/components/alert-dialog";
 import {
   Tooltip,
   TooltipContent,
@@ -42,15 +22,7 @@ import {
 } from "@workspace/ui/components/tooltip";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
-import {
-  Edit,
-  AlertTriangle,
-  MoreHorizontal,
-  RefreshCw,
-  Truck,
-  CheckCircle,
-  HistoryIcon,
-} from "lucide-react";
+import { Edit, AlertTriangle, RefreshCw, CheckCircle } from "lucide-react";
 import {
   Tabs,
   TabsContent,

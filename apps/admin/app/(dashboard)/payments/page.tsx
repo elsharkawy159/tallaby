@@ -7,7 +7,6 @@ import { Badge } from "@workspace/ui/components/badge";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card";
@@ -31,7 +30,6 @@ import {
   Download,
   CreditCard,
   DollarSign,
-  BarChart2,
   AlertTriangle,
   Search,
   MoreHorizontal,
@@ -40,7 +38,6 @@ import {
   Clock,
   ArrowUpCircle,
   ArrowDownCircle,
-  Calendar,
 } from "lucide-react";
 import {
   DropdownMenu,

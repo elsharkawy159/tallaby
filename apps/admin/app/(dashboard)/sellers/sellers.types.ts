@@ -11,9 +11,9 @@ export interface Seller {
   taxId?: string | null;
   businessType: string;
   registrationNumber?: string | null;
-  legalAddress: any;
+  legalAddress: Record<string, unknown>;
   status: SellerStatus | null;
-  verificationDetails?: Record<string, any> | null;
+  verificationDetails?: Record<string, unknown> | null;
   returnPolicy?: string | null;
   shippingPolicy?: string | null;
   isVerified: boolean;
@@ -21,9 +21,9 @@ export interface Seller {
   supportEmail: string;
   supportPhone?: string | null;
   commissionRate: number;
-  feeStructure?: Record<string, any> | null;
-  taxInformation?: Record<string, any> | null;
-  paymentDetails?: Record<string, any> | null;
+  feeStructure?: Record<string, unknown> | null;
+  taxInformation?: Record<string, unknown> | null;
+  paymentDetails?: Record<string, unknown> | null;
   storeRating?: number | null;
   positiveRatingPercent?: number | null;
   totalRatings: number;
@@ -34,10 +34,10 @@ export interface Seller {
   lastPayoutAmount?: string | null;
   walletBalance: string;
   stripeAccountId?: string | null;
-  externalIds?: Record<string, any> | null;
+  externalIds?: Record<string, unknown> | null;
   sellerLevel: string;
   joinDate: string;
-  sellerMetrics?: Record<string, any> | null;
+  sellerMetrics?: Record<string, unknown> | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -69,10 +69,10 @@ export interface SellerActionData {
 }
 
 export interface SellersPageProps {
-  searchParams?: {
+  searchParams?: Promise<{
     status?: string;
     search?: string;
     page?: string;
     limit?: string;
-  };
+  }>;
 }

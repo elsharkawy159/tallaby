@@ -12,7 +12,7 @@ import { cn } from "@workspace/ui/lib/utils";
 
 interface FormWrapperProps<T extends z.ZodType> {
   schema: T;
-  defaultValues?: any;
+  defaultValues?: z.infer<T>;
   onSubmit: (values: z.infer<T>) => Promise<void> | void;
   children: React.ReactNode;
   className?: string;

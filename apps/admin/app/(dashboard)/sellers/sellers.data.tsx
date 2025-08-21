@@ -24,7 +24,14 @@ export const SellersData = async ({ filters, onAction }: SellersDataProps) => {
   }
 
   const sellers = sellersResult.data || [];
-  const stats = statsResult.data;
+  const stats = statsResult.data || {
+    totalSellers: 0,
+    activeSellers: 0,
+    pendingSellers: 0,
+    suspendedSellers: 0,
+    totalProducts: 0,
+    totalRevenue: 0,
+  };
 
   return (
     <>

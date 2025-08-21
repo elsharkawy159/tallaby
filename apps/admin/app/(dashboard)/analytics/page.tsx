@@ -88,7 +88,7 @@ export default function AnalyticsPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Analytics</h1>
           <p className="text-muted-foreground">
-            Monitor your store's performance and insights
+            Monitor your store&apos;s performance and insights
           </p>
         </div>
         <div className="flex items-center gap-4">

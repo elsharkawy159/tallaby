@@ -1,11 +1,20 @@
 "use client";
 
-import { ResponsiveContainer, BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
+import {
+  ResponsiveContainer,
+  BarChart as RechartsBarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+} from "recharts";
 
 interface DataPoint {
   name: string;
   value: number;
-  [key: string]: any;
+  [key: string]: string | number;
 }
 
 interface BarChartProps {
@@ -14,7 +23,11 @@ interface BarChartProps {
   className?: string;
 }
 
-export function BarChart({ data, isMultiple = false, className }: BarChartProps) {
+export function BarChart({
+  data,
+  isMultiple = false,
+  className,
+}: BarChartProps) {
   // Format currency for tooltip
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -25,8 +38,8 @@ export function BarChart({ data, isMultiple = false, className }: BarChartProps)
   };
 
   // Get data keys for multiple series
-  const dataKeys = isMultiple 
-    ? Object.keys(data[0]).filter(key => key !== "name") 
+  const dataKeys = isMultiple
+    ? Object.keys(data[0]).filter((key) => key !== "name")
     : ["value"];
 
   // Define colors for multiple series
@@ -39,13 +52,13 @@ export function BarChart({ data, isMultiple = false, className }: BarChartProps)
           data={data}
           margin={{ top: 10, right: 30, left: 0, bottom: 5 }}
         >
-          <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.4} vertical={false} />
-          <XAxis 
-            dataKey="name" 
-            tickLine={false}
-            axisLine={false}
+          <CartesianGrid
+            strokeDasharray="3 3"
+            strokeOpacity={0.4}
+            vertical={false}
           />
-          <YAxis 
+          <XAxis dataKey="name" tickLine={false} axisLine={false} />
+          <YAxis
             tickLine={false}
             axisLine={false}
             tickFormatter={(value) => {
@@ -63,7 +76,8 @@ export function BarChart({ data, isMultiple = false, className }: BarChartProps)
             contentStyle={{
               borderRadius: "4px",
               border: "none",
-              boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+              boxShadow:
+                "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
             }}
           />
           {isMultiple && <Legend />}

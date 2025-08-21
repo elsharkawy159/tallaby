@@ -33,13 +33,10 @@ import {
   Package,
   MapPin,
   Clock,
-  ShoppingBag,
   CheckCircle,
-  XCircle,
-  AlertTriangle,
-  Loader,
   Search,
   MoreHorizontal,
+  AlertTriangle,
 } from "lucide-react";
 import {
   DropdownMenu,

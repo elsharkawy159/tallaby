@@ -29,6 +29,7 @@ import {
   CreditCard,
 } from "lucide-react";
 import type { Seller, SellerStatus } from "./sellers.types";
+import type { SellerStats } from "./sellers.types";
 import {
   getStatusColor,
   getStatusLabel,
@@ -83,7 +84,7 @@ export const SellerCard = ({ seller, onAction }: SellerCardProps) => {
   return (
     <div className="flex items-center gap-3 p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50">
       <Avatar className="h-10 w-10">
-        <AvatarImage src={seller.logoUrl} />
+        <AvatarImage src={seller.logoUrl || undefined} />
         <AvatarFallback>{getInitials(seller.businessName)}</AvatarFallback>
       </Avatar>
 
@@ -103,7 +104,7 @@ export const SellerCard = ({ seller, onAction }: SellerCardProps) => {
       </div>
 
       <div className="flex items-center gap-4">
-        <StatusBadge status={seller.status} />
+        <StatusBadge status={seller.status || "pending"} />
 
         <div className="text-right">
           <div className="text-sm font-medium">
@@ -199,7 +200,7 @@ export const SellerRow = ({ seller, onAction }: SellerRowProps) => {
       <td className="py-4 px-4">
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10">
-            <AvatarImage src={seller.logoUrl} />
+            <AvatarImage src={seller.logoUrl || undefined} />
             <AvatarFallback>{getInitials(seller.businessName)}</AvatarFallback>
           </Avatar>
           <div>
@@ -220,7 +221,7 @@ export const SellerRow = ({ seller, onAction }: SellerRowProps) => {
       </td>
 
       <td className="py-4 px-4 text-center">
-        <StatusBadge status={seller.status} />
+        <StatusBadge status={seller.status || "pending"} />
       </td>
 
       <td className="py-4 px-4 text-center">{seller.productCount}</td>
@@ -342,7 +343,11 @@ export const StatsCard = ({ title, value, subtitle, icon }: StatsCardProps) => (
   </div>
 );
 
-export const SellerStatsCards = ({ stats }: { stats: any }) => (
+export const SellerStatsCards = ({
+  stats,
+}: {
+  stats: SellerStats;
+}) => (
   <div className="grid grid-cols-1 gap-4 md:grid-cols-4 mb-6">
     <StatsCard
       title="Total Sellers"

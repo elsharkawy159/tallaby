@@ -1,6 +1,5 @@
 "use client";
 
-import { Control } from "react-hook-form";
 import {
   FormControl,
   FormDescription,
@@ -20,10 +19,14 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select";
 import { Checkbox } from "@workspace/ui/components/checkbox";
+import type { Control, FieldPath, FieldValues } from "react-hook-form";
 
-interface FormFieldProps {
-  control: Control<any>;
-  name: string;
+interface FormFieldProps<
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+> {
+  control: Control<TFieldValues>;
+  name: TName;
   label?: string;
   description?: string;
   placeholder?: string;
@@ -41,7 +44,10 @@ interface FormFieldProps {
   className?: string;
 }
 
-export function FormInputField({
+export function FormInputField<
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+>({
   control,
   name,
   label,
@@ -51,7 +57,7 @@ export function FormInputField({
   options,
   disabled = false,
   className,
-}: FormFieldProps) {
+}: FormFieldProps<TFieldValues, TName>) {
   return (
     <FormField
       control={control}

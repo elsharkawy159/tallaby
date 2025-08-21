@@ -5,7 +5,7 @@ import { type ComponentProps } from "react";
 import { useFormStatus } from "react-dom";
 
 type Props = ComponentProps<typeof Button> & {
-  pendingText?: any;
+  pendingText?: string;
 };
 
 export function SubmitButton({

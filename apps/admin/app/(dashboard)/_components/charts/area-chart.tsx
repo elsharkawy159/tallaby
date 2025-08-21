@@ -1,12 +1,21 @@
 "use client";
 
-import { ResponsiveContainer, AreaChart as RechartsAreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
+import {
+  ResponsiveContainer,
+  AreaChart as RechartsAreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+} from "recharts";
 import { format } from "date-fns";
 
 interface DataPoint {
   date: string;
   value?: number;
-  [key: string]: any;
+  [key: string]: string | number | undefined;
 }
 
 interface AreaChartProps {
@@ -15,7 +24,11 @@ interface AreaChartProps {
   className?: string;
 }
 
-export function AreaChart({ data, isMultiple = false, className }: AreaChartProps) {
+export function AreaChart({
+  data,
+  isMultiple = false,
+  className,
+}: AreaChartProps) {
   // Format date for tooltip
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -32,8 +45,8 @@ export function AreaChart({ data, isMultiple = false, className }: AreaChartProp
   };
 
   // Get data keys for multiple series
-  const dataKeys = isMultiple 
-    ? Object.keys(data[0]).filter(key => key !== "date") 
+  const dataKeys = isMultiple
+    ? Object.keys(data[0]).filter((key) => key !== "date")
     : ["value"];
 
   // Define colors for multiple series
@@ -48,15 +61,34 @@ export function AreaChart({ data, isMultiple = false, className }: AreaChartProp
         >
           <defs>
             {dataKeys.map((key, index) => (
-              <linearGradient key={key} id={`color-${key}`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor={colors[index % colors.length]} stopOpacity={0.8} />
-                <stop offset="95%" stopColor={colors[index % colors.length]} stopOpacity={0.1} />
+              <linearGradient
+                key={key}
+                id={`color-${key}`}
+                x1="0"
+                y1="0"
+                x2="0"
+                y2="1"
+              >
+                <stop
+                  offset="5%"
+                  stopColor={colors[index % colors.length]}
+                  stopOpacity={0.8}
+                />
+                <stop
+                  offset="95%"
+                  stopColor={colors[index % colors.length]}
+                  stopOpacity={0.1}
+                />
               </linearGradient>
             ))}
           </defs>
-          <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.4} vertical={false} />
-          <XAxis 
-            dataKey="date" 
+          <CartesianGrid
+            strokeDasharray="3 3"
+            strokeOpacity={0.4}
+            vertical={false}
+          />
+          <XAxis
+            dataKey="date"
             tickLine={false}
             axisLine={false}
             tickFormatter={(dateStr) => {
@@ -65,7 +97,7 @@ export function AreaChart({ data, isMultiple = false, className }: AreaChartProp
             }}
             minTickGap={15}
           />
-          <YAxis 
+          <YAxis
             tickLine={false}
             axisLine={false}
             tickFormatter={(value) => {
@@ -84,7 +116,8 @@ export function AreaChart({ data, isMultiple = false, className }: AreaChartProp
             contentStyle={{
               borderRadius: "4px",
               border: "none",
-              boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+              boxShadow:
+                "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
             }}
           />
           {isMultiple && <Legend />}

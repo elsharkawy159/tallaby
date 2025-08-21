@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -24,6 +23,7 @@ import { Trash } from "lucide-react";
 import { productSchema } from "../../_lib/validations/product-schema";
 import { FormWrapper } from "@/components/forms/form-wrapper";
 import { FormInputField } from "@/components/forms/form-field";
+import type { z } from "zod";
 
 // Mock data for brands and categories
 const brands = [
@@ -46,8 +46,10 @@ const categories = [
   { label: "Computers", value: "cat_07" },
 ];
 
+type ProductFormData = z.infer<typeof productSchema>;
+
 interface ProductFormProps {
-  initialData?: any;
+  initialData?: Partial<ProductFormData>;
   isEditing?: boolean;
 }
 
@@ -60,7 +62,7 @@ export function ProductForm({
   );
 
   const form = useForm({
-    resolver: zodResolver(productSchema),
+    resolver: zodResolver(productSchema) as any,
     defaultValues: initialData || {
       title: "",
       slug: "",
@@ -81,7 +83,7 @@ export function ProductForm({
     },
   });
 
-  const { control, formState } = form;
+  const { control } = form;
 
   const addBulletPoint = () => {
     setBulletPoints([...bulletPoints, ""]);
@@ -99,7 +101,7 @@ export function ProductForm({
     setBulletPoints(newBulletPoints);
   };
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: Record<string, unknown>) => {
     // Include the bullet points
     const formData = {
       ...data,
@@ -127,7 +129,7 @@ export function ProductForm({
   return (
     <FormWrapper
       schema={productSchema}
-      defaultValues={form.formState.defaultValues}
+      defaultValues={form.formState.defaultValues as any}
       onSubmit={onSubmit}
       submitText={isEditing ? "Update Product" : "Create Product"}
       showReset
