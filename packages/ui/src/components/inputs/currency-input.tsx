@@ -5,20 +5,13 @@ import { cn } from "@workspace/ui/lib/utils";
 import { Input } from "@workspace/ui/components/input";
 import { BaseField, type BaseFieldProps } from "./base-field";
 import { Controller, useFormContext } from "react-hook-form";
-import { DollarSign } from "lucide-react";
 
 export interface CurrencyInputProps extends Omit<BaseFieldProps, "children"> {
   placeholder?: string;
   currency?: string;
-  showCurrencySymbol?: boolean;
-  decimalPlaces?: number;
   min?: number;
   max?: number;
-  step?: number;
   allowNegative?: boolean;
-  thousandSeparator?: boolean;
-  prefix?: string;
-  suffix?: string;
   onChange?: (value: number) => void;
 }
 
@@ -44,17 +37,11 @@ export const CurrencyInput = React.forwardRef<
   (
     {
       name,
-      placeholder = "0.00",
+      placeholder = "",
       currency = "EGP",
-      showCurrencySymbol = true,
-      decimalPlaces = 2,
       min = 0,
       max,
-      step = 0.01,
       allowNegative = false,
-      thousandSeparator = true,
-      prefix,
-      suffix,
       onChange,
       disabled = false,
       ...baseProps
@@ -69,22 +56,7 @@ export const CurrencyInput = React.forwardRef<
     const fieldError = errors[name]?.message as string;
     const currencySymbol = currencySymbols[currency] || currency;
 
-    const formatNumber = (value: number): string => {
-      if (isNaN(value)) return "";
-
-      const formatted = value.toFixed(decimalPlaces);
-
-      if (thousandSeparator) {
-        const parts = formatted.split(".");
-        parts[0] = parts[0]?.replace(/\B(?=(\d{3})+(?!\d))/g, ",") || "";
-        return parts.join(".");
-      }
-
-      return formatted;
-    };
-
     const parseNumber = (value: string): number => {
-      // Remove commas and other non-numeric characters except decimal point and minus
       const cleaned = value.replace(/[^\d.-]/g, "");
       const parsed = parseFloat(cleaned);
 
@@ -94,6 +66,10 @@ export const CurrencyInput = React.forwardRef<
       if (max !== undefined && parsed > max) return max;
 
       return parsed;
+    };
+
+    const formatNumber = (value: number): string => {
+      return value.toFixed(2);
     };
 
     return (
@@ -109,47 +85,35 @@ export const CurrencyInput = React.forwardRef<
           control={control}
           render={({ field }) => (
             <div className="relative">
-              {(showCurrencySymbol || prefix) && (
-                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground flex items-center gap-1">
-                  {showCurrencySymbol && (
-                    <span className="text-sm font-medium">
-                      {currencySymbol}
-                    </span>
-                  )}
-                  {prefix && <span className="text-sm">{prefix}</span>}
-                </div>
-              )}
+              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
+                <span className="text-sm font-medium">{currencySymbol}</span>
+              </div>
 
               <Input
                 {...field}
                 id={name}
-                type="text"
+                type="number"
                 placeholder={placeholder}
                 disabled={disabled}
                 className={cn(
-                  (showCurrencySymbol || prefix) && "pl-12",
-                  suffix && "pr-8",
+                  "pl-12",
                   fieldError && "border-red-500 focus:border-red-500"
                 )}
-                value={field.value ? formatNumber(field.value) : ""}
                 onChange={(e) => {
                   const numericValue = parseNumber(e.target.value);
                   field.onChange(numericValue);
                   onChange?.(numericValue);
                 }}
                 onBlur={(e) => {
-                  // Re-format on blur to ensure consistent display
                   const numericValue = parseNumber(e.target.value);
                   field.onChange(numericValue);
+                  // Only format to 2 decimal places on blur
+                  if (numericValue > 0) {
+                    field.onChange(parseFloat(numericValue.toFixed(2)));
+                  }
                   field.onBlur();
                 }}
               />
-
-              {suffix && (
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
-                  <span className="text-sm">{suffix}</span>
-                </div>
-              )}
             </div>
           )}
         />

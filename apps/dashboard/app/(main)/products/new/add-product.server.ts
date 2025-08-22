@@ -272,17 +272,10 @@ export const addProductAction = async (
     // Validate the data
     const validatedData = addProductFormSchema.parse(data);
 
-    // Get current seller ID
-    const sellerId = await getCurrentSellerId();
-
-    // Generate SKU if not provided
-    const productSku = validatedData.sku || generateSKU("PRD");
-
-    // Check if seller exists (mock check for now)
-
-    // Start database transaction
-    const result = await db.transaction(async (tx: any) => {
-      console.log("Inserting product with data:", {
+    // Insert the product directly
+    const [newProduct] = await db
+      .insert(products)
+      .values({
         title: validatedData.title,
         slug: validatedData.slug,
         description: validatedData.description || null,
@@ -301,62 +294,14 @@ export const addProductAction = async (
         metaDescription: validatedData.metaDescription || null,
         metaKeywords: validatedData.metaKeywords || null,
         searchKeywords: validatedData.searchKeywords || null,
-      });
+      })
+      .returning();
 
-      // 1. Insert the main product
-      const [newProduct] = await tx
-        .insert(products)
-        .values({
-          title: validatedData.title,
-          slug: validatedData.slug,
-          description: validatedData.description || null,
-          bulletPoints: validatedData.bulletPoints || null,
-          images: validatedData.images,
-          brandId: validatedData.brandId || null,
-          mainCategoryId: validatedData.mainCategoryId,
-          basePrice: validatedData.basePrice.toString(),
-          listPrice: validatedData.listPrice?.toString() || null,
-          isActive: validatedData.isActive,
-          isAdult: validatedData.isAdult,
-          isPlatformChoice: validatedData.isPlatformChoice,
-          isBestSeller: validatedData.isBestSeller,
-          taxClass: validatedData.taxClass,
-          metaTitle: validatedData.metaTitle || null,
-          metaDescription: validatedData.metaDescription || null,
-          metaKeywords: validatedData.metaKeywords || null,
-          searchKeywords: validatedData.searchKeywords || null,
-        })
-        .returning();
-
-      // 2. Create product listing for the seller
-      // const [newListing] = await tx
-      //   .insert(productListings)
-      //   .values({
-      //     productId: newProduct.id,
-      //     sellerId: sellerId,
-      //     sku: productSku,
-      //     condition: validatedData.condition,
-      //     price: validatedData.price.toString(),
-      //     salePrice: validatedData.salePrice?.toString() || null,
-      //     quantity: validatedData.stockQuantity,
-      //     fulfillmentType: validatedData.fulfillmentType,
-      //     handlingTime: validatedData.handlingTime,
-      //     maxOrderQuantity: validatedData.maxOrderQuantity || null,
-      //     isActive: validatedData.isActive,
-      //   })
-      //   .returning();
-
-      // console.log("Product listing created successfully:", newListing);
-
-      return newProduct;
-    });
-
-    // Revalidate the products page
     revalidatePath("/products");
 
     return {
       success: true,
-      data: { productId: result.id },
+      data: { productId: newProduct.id },
       message: "Product created successfully!",
     };
   } catch (error: any) {
@@ -375,7 +320,6 @@ export const addProductAction = async (
       };
     }
 
-    // Check for specific database errors
     if (error?.message?.includes("foreign key")) {
       return {
         success: false,
@@ -383,10 +327,42 @@ export const addProductAction = async (
       };
     }
 
-    if (error?.message?.includes("unique constraint")) {
+    // Check for unique constraint violations
+    if (
+      error?.code === "23505" ||
+      error?.cause?.code === "23505" ||
+      error?.message?.includes("unique constraint")
+    ) {
+
+      // Get the actual constraint details (might be nested in cause)
+      const constraintName =
+        error?.constraint_name || error?.cause?.constraint_name;
+      const detail = error?.detail || error?.cause?.detail;
+
+
+      // Check if it's a slug constraint violation
+      if (constraintName === "products_slug_unique") {
+        return {
+          success: false,
+          message:
+            "A product with this slug already exists. Please choose a different slug.",
+        };
+      }
+
+      // Check if it's an SKU constraint violation
+      if (constraintName?.includes("sku")) {
+        return {
+          success: false,
+          message:
+            "A product with this SKU already exists. Please choose a different SKU.",
+        };
+      }
+
+      // Generic unique constraint error
       return {
         success: false,
-        message: "Product with this slug or SKU already exists",
+        message:
+          "A product with this information already exists. Please check your input.",
       };
     }
 

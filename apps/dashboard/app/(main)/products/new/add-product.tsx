@@ -381,7 +381,6 @@ export default function AddProduct({
                             label="Base Price"
                             placeholder="0.00"
                             required
-                            showCurrencySymbol
                             currency="EGP"
                             helpText="This is the standard retail price"
                           />
@@ -394,7 +393,6 @@ export default function AddProduct({
                             {...field}
                             label="List Price (MSRP)"
                             placeholder="0.00"
-                            showCurrencySymbol
                             currency="EGP"
                             helpText="Manufacturer's suggested retail price"
                           />
@@ -411,7 +409,7 @@ export default function AddProduct({
                             label="Your Selling Price"
                             placeholder="0.00"
                             required
-                            showCurrencySymbol
+
                             currency="EGP"
                             helpText="The price customers will pay"
                           />
@@ -424,7 +422,6 @@ export default function AddProduct({
                             {...field}
                             label="Sale Price"
                             placeholder="0.00"
-                            showCurrencySymbol
                             currency="EGP"
                             helpText="Optional promotional price"
                           />

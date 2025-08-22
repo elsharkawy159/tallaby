@@ -26,7 +26,11 @@ import {
   Search,
   Truck,
 } from "lucide-react";
-import type { AddProductFormData, BrandOption, CategoryOption } from "./add-product.schema";
+import type {
+  AddProductFormData,
+  BrandOption,
+  CategoryOption,
+} from "./add-product.schema";
 import {
   conditionOptions,
   fulfillmentOptions,
@@ -226,7 +230,6 @@ export const PricingStep = () => {
                 label="Base Price"
                 placeholder="0.00"
                 required
-                showCurrencySymbol
                 currency="EGP"
                 helpText="This is the standard retail price"
               />
@@ -239,7 +242,6 @@ export const PricingStep = () => {
                 {...field}
                 label="List Price (MSRP)"
                 placeholder="0.00"
-                showCurrencySymbol
                 currency="EGP"
                 helpText="Manufacturer's suggested retail price"
               />
@@ -256,7 +258,6 @@ export const PricingStep = () => {
                 label="Your Selling Price"
                 placeholder="0.00"
                 required
-                showCurrencySymbol
                 currency="EGP"
                 helpText="The price customers will pay"
               />
@@ -269,7 +270,6 @@ export const PricingStep = () => {
                 {...field}
                 label="Sale Price"
                 placeholder="0.00"
-                showCurrencySymbol
                 currency="EGP"
                 helpText="Optional promotional price"
               />

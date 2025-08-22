@@ -5,6 +5,7 @@ import {
   fetchProductAction,
 } from "./add-product.server";
 import type { CategoryOption, BrandOption } from "./add-product.schema";
+import { Button } from "@workspace/ui/components";
 
 interface PageProps {
   searchParams: Promise<{ page?: string; id?: string }>;
@@ -50,12 +51,12 @@ export default async function AddProductPage({ searchParams }: PageProps) {
             {!categoriesResult.success && categoriesResult.message}
             {!brandsResult.success && brandsResult.message}
           </p>
-          <button
+          <Button
             onClick={() => window.location.reload()}
             className="px-4 py-2 bg-[#145163] text-white rounded-lg hover:bg-[#145163]/90 transition-colors"
           >
             Try Again
-          </button>
+          </Button>
         </div>
       </div>
     );

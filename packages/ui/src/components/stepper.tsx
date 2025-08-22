@@ -79,7 +79,7 @@ export const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
                       status === "completed" &&
                         "border-green-500 bg-green-500 text-white",
                       status === "current" &&
-                        "border-blue-500 bg-blue-500 text-white",
+                        "border-primary bg-primary text-white",
                       status === "pending" &&
                         "border-gray-300 bg-white text-gray-400",
                       status === "error" &&
@@ -121,7 +121,7 @@ export const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
                         size === "md" && "text-base",
                         size === "lg" && "text-lg",
                         status === "completed" && "text-green-600",
-                        status === "current" && "text-blue-600",
+                        status === "current" && "text-primary",
                         status === "pending" && "text-gray-500",
                         status === "error" && "text-red-600"
                       )}
@@ -134,7 +134,7 @@ export const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
                       className={cn(
                         "mt-1 text-xs transition-colors duration-200",
                         status === "completed" && "text-green-600",
-                        status === "current" && "text-blue-600",
+                        status === "current" && "text-primary",
                         status === "pending" && "text-gray-500",
                         status === "error" && "text-red-600"
                       )}
@@ -181,7 +181,7 @@ export const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
                     size === "md" && "h-8 w-8",
                     size === "lg" && "h-10 w-10",
                     status === "completed" && "bg-green-500 text-white",
-                    status === "current" && "bg-blue-500 text-white",
+                    status === "current" && "bg-primary text-white",
                     status === "pending" && "bg-gray-200 text-gray-400",
                     status === "error" && "bg-red-500 text-white",
                     isClickable && "cursor-pointer hover:opacity-80"
@@ -248,7 +248,7 @@ export const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
                     status === "completed" &&
                       "border-green-500 bg-green-500 text-white",
                     status === "current" &&
-                      "border-blue-500 bg-blue-500 text-white",
+                      "border-primary bg-primary text-white",
                     status === "pending" &&
                       "border-gray-300 bg-white text-gray-400",
                     status === "error" &&
@@ -290,7 +290,7 @@ export const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
                       size === "md" && "text-base",
                       size === "lg" && "text-lg",
                       status === "completed" && "text-green-600",
-                      status === "current" && "text-blue-600",
+                      status === "current" && "text-primary",
                       status === "pending" && "text-gray-500",
                       status === "error" && "text-red-600"
                     )}
@@ -302,7 +302,7 @@ export const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
                       className={cn(
                         "mt-1 text-xs transition-colors duration-200",
                         status === "completed" && "text-green-600",
-                        status === "current" && "text-blue-600",
+                        status === "current" && "text-primary",
                         status === "pending" && "text-gray-500",
                         status === "error" && "text-red-600"
                       )}
@@ -370,7 +370,7 @@ export const ProgressStepper = React.forwardRef<
         {showProgress && (
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div
-              className="bg-blue-500 h-2 rounded-full transition-all duration-300 ease-out"
+              className="bg-primary h-2 rounded-full transition-all duration-300 ease-out"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -385,18 +385,6 @@ export const ProgressStepper = React.forwardRef<
             <span>{Math.round(progress)}% complete</span>
           </div>
         )}
-
-        {/* Current step info */}
-        <div className="text-center">
-          <h3 className="text-lg font-semibold text-gray-900">
-            {steps[currentStep]?.title}
-          </h3>
-          {steps[currentStep]?.description && (
-            <p className="mt-1 text-sm text-gray-600">
-              {steps[currentStep].description}
-            </p>
-          )}
-        </div>
       </div>
     );
   }

@@ -2,7 +2,7 @@
 
 import React, { useCallback, useState, useEffect } from "react";
 import Image from "next/image";
-import { X, LoaderCircle, Upload } from "lucide-react";
+import { X, LoaderCircle, Upload, ImageIcon, CheckCircle2 } from "lucide-react";
 import { useDropzone } from "react-dropzone";
 import {
   DragDropContext,
@@ -212,7 +212,7 @@ export function ImageUpload({
 
   const isMaxReached = filesToUpload.length >= maxImages;
 
-  const { getRootProps, getInputProps } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: {
       "image/*": [],
     },
@@ -243,128 +243,198 @@ export function ImageUpload({
   );
 
   return (
-    <>
-      <div className="flex-1">
+    <div className="space-y-6 flex gap-4 items-start">
+
+
+      {/* Image Gallery */}
+      {filesToUpload.length > 0 && (
+        <div className="flex gap-6">
+          {/* Thumbnail Grid */}
+          <div className="lg:col-span-1">
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <ImageIcon className="h-4 w-4" />
+                Image Gallery
+                <span className="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                  {filesToUpload.length}/{maxImages}
+                </span>
+              </h3>
+
+              <DragDropContext onDragEnd={handleOnDragEnd}>
+                <Droppable droppableId="images" direction="vertical">
+                  {(droppableProvided) => (
+                    <RadioGroup
+                      defaultValue={
+                        form.getValues("cover") ??
+                        filesToUpload[0]?.liveSource ??
+                        ""
+                      }
+                      className="flex flex-col gap-3"
+                      onValueChange={(cover) =>
+                        form.setValue("attachments.cover", cover)
+                      }
+                      {...droppableProvided.droppableProps}
+                      ref={droppableProvided.innerRef}
+                    >
+                      {filesToUpload.map((file, idx) => (
+                        <Draggable
+                          key={file.liveSource || file.preview || ""}
+                          draggableId={file.liveSource || file.preview || ""}
+                          index={idx}
+                        >
+                          {(provided, snapshot) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                              className={`relative rounded-lg border transition-all duration-200 ${
+                                snapshot.isDragging
+                                  ? "bg-blue-50 border-blue-200 shadow-lg scale-105 rotate-2"
+                                  : "bg-white border-gray-200 hover:border-gray-300 hover:shadow-md"
+                              }`}
+                            >
+                              <FilePreview
+                                file={file}
+                                removeFile={removeFile}
+                                idx={idx}
+                                bucket={bucket}
+                              />
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
+                      {droppableProvided.placeholder}
+                    </RadioGroup>
+                  )}
+                </Droppable>
+              </DragDropContext>
+            </div>
+          </div>
+
+          {/* Preview Area */}
+          <div className="lg:col-span-2">
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-green-500" />
+                Preview
+                {filesToUpload[0]?.isUploaded && (
+                  <span className="text-xs font-normal text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                    Ready
+                  </span>
+                )}
+              </h3>
+
+              <div className="relative w-full h-[400px] bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+                {filesToUpload.length > 0 ? (
+                  <div className="w-full h-full flex items-center justify-center p-2">
+                    <Image
+                      src={
+                        filesToUpload[0].liveSource
+                          ? getPublicUrl(filesToUpload[0].liveSource, bucket)
+                          : filesToUpload[0].preview || ""
+                      }
+                      width={600}
+                      height={600}
+                      className="w-full h-full object-contain rounded-lg max-w-xl"
+                      alt="Selected image preview"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
+                    <ImageIcon className="h-16 w-16 mb-4 opacity-50" />
+                    <p className="text-sm font-medium">No image selected</p>
+                    <p className="text-xs text-gray-400">
+                      Choose an image from the gallery
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+            {/* Upload Zone */}
+            <div className="relative flex-1 mt-11">
         <label
           {...getRootProps()}
-          className={`relative flex h-30 w-full flex-col items-center justify-center rounded-[8px] border-2 border-dashed py-6 transition-all ${
+          className={`group relative flex min-h-[200px] w-full flex-col items-center justify-center rounded-xl border-2 border-dashed transition-all duration-200 ease-in-out ${
             isMaxReached
-              ? "cursor-not-allowed border-gray-300 bg-gray-50 opacity-60"
-              : "cursor-pointer border-primary bg-[#E3DEFF]/[.22] hover:bg-[#E3DEFF]/[.40]"
+              ? "cursor-not-allowed border-gray-200 bg-gray-50/50 opacity-60"
+              : isDragActive
+                ? "cursor-pointer border-primary/60 bg-primary/5 scale-[1.02] shadow-lg"
+                : "cursor-pointer border-gray-200 bg-gray-50/30 hover:border-primary/40 hover:bg-primary/5 hover:shadow-md"
           }`}
         >
-          <div className="space-y-2 text-center">
-            <Upload
-              className={`size-6 mb-3 mx-auto ${
-                isMaxReached
-                  ? "text-gray-400"
-                  : "text-gray-500 dark:text-gray-400"
-              }`}
-            />
-
-            <p
-              className={`text-sm font-semibold ${
-                isMaxReached ? "text-gray-500" : "text-primary"
-              }`}
+          <div className="space-y-4 text-center px-6 py-8">
+            <div
+              className={`relative transition-transform duration-200 ${isDragActive ? "scale-110" : "group-hover:scale-105"}`}
             >
-              {isMaxReached
-                ? `Maximum ${maxImages} images reached`
-                : "Click to upload or drag and drop"}
-            </p>
-            <p className="text-sm font-light text-foreground">
-              PNG, JPG or WebP (MAX. 2MB)
-            </p>
-            <p className="text-xs text-gray-500 mt-2">
-              {filesToUpload.length}/{maxImages} images uploaded
-            </p>
+              {isMaxReached ? (
+                <ImageIcon className="mx-auto h-12 w-12 text-gray-400" />
+              ) : (
+                <Upload className="mx-auto h-12 w-12 text-gray-400 group-hover:text-primary transition-colors duration-200" />
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <p
+                className={`text-lg font-semibold transition-colors duration-200 ${
+                  isMaxReached
+                    ? "text-gray-500"
+                    : isDragActive
+                      ? "text-primary"
+                      : "text-gray-700 group-hover:text-primary"
+                }`}
+              >
+                {isMaxReached
+                  ? `Maximum ${maxImages} images reached`
+                  : isDragActive
+                    ? "Drop images here"
+                    : "Click to upload or drag and drop"}
+              </p>
+
+              <p className="text-sm text-gray-500 leading-relaxed">
+                PNG, JPG or WebP (MAX. 2MB per file)
+              </p>
+
+              <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
+                <div className="flex items-center gap-1">
+                  <div className="w-2 h-2 rounded-full bg-gray-300"></div>
+                  <span>Drag & drop</span>
+                </div>
+                <span>•</span>
+                <div className="flex items-center gap-1">
+                  <div className="w-2 h-2 rounded-full bg-gray-300"></div>
+                  <span>Click to browse</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Progress indicator */}
+            <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+              <span className="font-medium">{filesToUpload.length}</span>
+              <span>of</span>
+              <span className="font-medium">{maxImages}</span>
+              <span>images uploaded</span>
+            </div>
           </div>
+
+          {/* Subtle background pattern */}
+          <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-transparent via-transparent to-gray-50/20 pointer-events-none" />
         </label>
+
         <Input
           {...getInputProps()}
           id="dropzone-file"
-          accept="image/png, image/jpeg"
+          accept="image/png, image/jpeg, image/webp"
           type="file"
           className="hidden"
           disabled={isMaxReached}
         />
       </div>
-      <div className="h-full flex mt-4 gap-4">
-        {filesToUpload.length > 0 && (
-          <div className="flex flex-col w-full max-w-24 gap-4">
-            <DragDropContext onDragEnd={handleOnDragEnd}>
-              <Droppable droppableId="images" direction="vertical">
-                {(droppableProvided, droppableSnapshot) => (
-                  <RadioGroup
-                    defaultValue={
-                      form.getValues("cover") ??
-                      filesToUpload[0]?.liveSource ??
-                      ""
-                    }
-                    className={`flex flex-col gap-4`}
-                    onValueChange={(cover) =>
-                      form.setValue("attachments.cover", cover)
-                    }
-                    {...droppableProvided.droppableProps}
-                    ref={droppableProvided.innerRef}
-                  >
-                    {filesToUpload.map((file, idx) => (
-                      <Draggable
-                        key={file.liveSource || file.preview || ""}
-                        draggableId={file.liveSource || file.preview || ""}
-                        index={idx}
-                      >
-                        {(provided, snapshot) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            className={`relative rounded-md border p-1 ${
-                              snapshot.isDragging ? "bg-blue-50" : "bg-white"
-                            }`}
-                          >
-                            <FilePreview
-                              file={file}
-                              removeFile={removeFile}
-                              idx={idx}
-                              bucket={bucket}
-                            />
-                            {/* {idx === 0 && (
-                            <div className="absolute font-semibold text-white rounded-md w-full h-full bg-black/50 top-0 left-0 flex items-center justify-center">
-                              PRIMARY
-                            </div>
-                          )} */}
-                          </div>
-                        )}
-                      </Draggable>
-                    ))}
-                    {droppableProvided.placeholder}
-                  </RadioGroup>
-                )}
-              </Droppable>
-            </DragDropContext>
-          </div>
-        )}
-
-        <div className="flex-1 h-full">
-          {filesToUpload.length > 0 && (
-            <div className="w-full h-full bg-gray-50 dark:bg-gray-800 rounded-lg flex items-center justify-center p-4">
-              <Image
-                src={
-                  filesToUpload[0].liveSource
-                    ? getPublicUrl(filesToUpload[0].liveSource, bucket)
-                    : filesToUpload[0].preview || ""
-                }
-                width={500}
-                height={500}
-                className="w-full h-auto object-contain rounded-lg shadow-lg"
-                alt={`Selected image`}
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              />
-            </div>
-          )}
-        </div>
-      </div>
-    </>
+    </div>
   );
 }
 
@@ -396,35 +466,35 @@ const FilePreview = React.memo(
       <div className="relative group">
         <AspectRatio
           ratio={4 / 3}
-          className="relative overflow-hidden rounded-md"
+          className="relative overflow-hidden rounded-lg"
         >
           {imageSrc ? (
             <Image
               src={imageSrc}
               fill
-              className="object-cover transition-transform"
+              className="object-cover transition-transform duration-200 group-hover:scale-105"
               alt={`Image ${idx + 1}`}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           ) : (
-            <div className="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-              <span className="text-xs text-gray-500">No image</span>
+            <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+              <ImageIcon className="h-8 w-8 text-gray-400" />
             </div>
           )}
 
           {/* Loading overlay for uploading images */}
           {isUploading && (
-            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center rounded-lg">
               <div className="text-center text-white">
-                <LoaderCircle className="w-4 h-4 animate-spin mx-auto mb-1" />
-                <span className="text-xs">Uploading...</span>
+                <LoaderCircle className="w-6 h-6 animate-spin mx-auto mb-2" />
+                <span className="text-sm font-medium">Uploading...</span>
               </div>
             </div>
           )}
 
           {/* Primary image indicator */}
           {isPrimary && isUploaded && (
-            <div className="absolute top-1 left-1 bg-primary text-white text-xs px-1.5 py-0.5 rounded-full font-medium">
+            <div className="absolute top-2 left-2 bg-primary text-white text-xs px-2 py-1 rounded-full font-semibold shadow-sm">
               Cover
             </div>
           )}
@@ -441,26 +511,33 @@ const FilePreview = React.memo(
                 removeFile(sourceToRemove);
               }
             }}
-            className="absolute top-1 right-1 hover:text-white size-5 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-lg"
+            className="absolute top-2 right-2 hover:text-white size-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-lg hover:scale-110"
             aria-label="Remove image"
           >
-            <X size={10} />
+            <X size={12} />
           </Button>
 
           {/* Upload status indicator */}
-          <div className="absolute bottom-1 right-1">
+          <div className="absolute bottom-2 right-2">
             {isUploaded && (
-              <div
-                className="w-2 h-2 bg-green-500 rounded-full shadow-sm"
-                title="Uploaded"
-              />
+              <div className="flex items-center gap-1 bg-green-500 text-white text-xs px-2 py-1 rounded-full shadow-sm">
+                <CheckCircle2 size={10} />
+                <span className="font-medium">Done</span>
+              </div>
             )}
             {isUploading && (
-              <div
-                className="w-2 h-2 bg-blue-500 rounded-full animate-pulse shadow-sm"
-                title="Uploading"
-              />
+              <div className="flex items-center gap-1 bg-blue-500 text-white text-xs px-2 py-1 rounded-full shadow-sm">
+                <LoaderCircle size={10} className="animate-spin" />
+                <span className="font-medium">Uploading</span>
+              </div>
             )}
+          </div>
+
+          {/* Drag handle indicator */}
+          <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <div className="w-6 h-6 bg-black/20 backdrop-blur-sm rounded flex items-center justify-center">
+              <div className="w-3 h-3 bg-white rounded-sm"></div>
+            </div>
           </div>
         </AspectRatio>
       </div>
