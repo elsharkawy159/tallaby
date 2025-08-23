@@ -1,10 +1,9 @@
 "use server";
 
-import { db } from "@workspace/db";
 import {
+  db,
   sellers,
   products,
-  productListings,
   orders,
   orderItems,
   categories,
@@ -13,6 +12,7 @@ import {
 import { eq, and, desc, asc, count } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import type { SellerStatus } from "@/lib/utils/seller";
+import { getUser } from "./auth";
 
 // Types
 export interface VendorProfile {
@@ -46,40 +46,31 @@ export interface VendorProduct {
   id: string;
   title: string;
   slug: string;
-  description?: string;
-  images: string[];
-  brandId?: string;
-  mainCategoryId: string;
-  listPrice?: string;
-  basePrice: string;
-  averageRating?: number;
-  reviewCount: number;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-  listing?: VendorProductListing;
-}
-
-export interface VendorProductListing {
-  id: string;
-  productId: string;
-  variantId?: string;
-  sellerId: string;
+  images: any;
   sku: string;
   condition: string;
-  conditionDescription?: string;
-  price: string;
+  basePrice: string;
   salePrice?: string;
+  listPrice?: string;
   quantity: number;
-  fulfillmentType: string;
-  handlingTime: number;
-  restockDate?: string;
-  maxOrderQuantity?: number;
-  isFeatured: boolean;
-  isBuyBox: boolean;
   isActive: boolean;
-  notes?: string;
+  isFeatured: boolean;
+  averageRating?: number;
+  reviewCount: number;
+  createdAt: string;
+  updatedAt: string;
+  // Related data
+  brand?: {
+    id: string;
+    name: string;
+  };
+  category?: {
+    id: string;
+    name: string;
+  };
 }
+
+// Removed VendorProductListing - data is now part of VendorProduct
 
 export interface VendorOrder {
   id: string;
@@ -176,82 +167,57 @@ export const updateVendorProfile = async (
 
 // Product Operations
 export const getVendorProducts = async (
-  sellerId: string,
   page: number = 1,
   limit: number = 20,
   search?: string
 ): Promise<{ products: VendorProduct[]; total: number }> => {
   try {
     const offset = (page - 1) * limit;
+    const { user } = await getUser();
 
-    // Get product listings for this seller
-    const listings = await db
-      .select()
-      .from(productListings)
-      .where(eq(productListings.sellerId, sellerId))
+    // Select only essential fields with proper joins
+    const productsData = await db
+      .select({
+        id: products.id,
+        title: products.title,
+        slug: products.slug,
+        images: products.images,
+        sku: products.sku,
+        condition: products.condition,
+        basePrice: products.basePrice,
+        salePrice: products.salePrice,
+        listPrice: products.listPrice,
+        quantity: products.quantity,
+        isActive: products.isActive,
+        isFeatured: products.isFeatured,
+        averageRating: products.averageRating,
+        reviewCount: products.reviewCount,
+        createdAt: products.createdAt,
+        updatedAt: products.updatedAt,
+        brand: {
+          id: brands.id,
+          name: brands.name,
+        },
+        category: {
+          id: categories.id,
+          name: categories.name,
+        },
+      })
+      .from(products)
+      .leftJoin(brands, eq(products.brandId, brands.id))
+      .leftJoin(categories, eq(products.mainCategoryId, categories.id))
+      .where(eq(products.sellerId, user.id))
+      .orderBy(desc(products.updatedAt))
       .limit(limit)
       .offset(offset);
 
-    if (listings.length === 0) {
-      return { products: [], total: 0 };
-    }
-
-    // Get products for these listings
-    const productIds = listings.map((listing) => listing.productId);
-    const productsData = await db
-      .select()
-      .from(products)
-      .where(eq(products.id, productIds[0])); // Simplified - get first product for now
-
-    // Get total count
     const totalResult = await db
       .select({ count: count() })
-      .from(productListings)
-      .where(eq(productListings.sellerId, sellerId));
-
-    // Combine data
-    const combinedProducts = listings.map((listing) => {
-      const product = productsData.find((p) => p.id === listing.productId);
-      return {
-        id: listing.productId,
-        title: product?.title || "Unknown Product",
-        slug: product?.slug || "",
-        description: product?.description || "",
-        images: product?.images || [],
-        brandId: product?.brandId || "",
-        mainCategoryId: product?.mainCategoryId || "",
-        listPrice: product?.listPrice || "",
-        basePrice: product?.basePrice || "",
-        averageRating: product?.averageRating || 0,
-        reviewCount: product?.reviewCount || 0,
-        isActive: product?.isActive || false,
-        createdAt: product?.createdAt || "",
-        updatedAt: product?.updatedAt || "",
-        listing: {
-          id: listing.id,
-          productId: listing.productId,
-          variantId: listing.variantId,
-          sellerId: listing.sellerId,
-          sku: listing.sku,
-          condition: listing.condition,
-          conditionDescription: listing.conditionDescription,
-          price: listing.price,
-          salePrice: listing.salePrice,
-          quantity: listing.quantity,
-          fulfillmentType: listing.fulfillmentType,
-          handlingTime: listing.handlingTime,
-          restockDate: listing.restockDate,
-          maxOrderQuantity: listing.maxOrderQuantity,
-          isFeatured: listing.isFeatured,
-          isBuyBox: listing.isBuyBox,
-          isActive: listing.isActive,
-          notes: listing.notes,
-        },
-      };
-    });
+      .from(products)
+      .where(eq(products.sellerId, user.id));
 
     return {
-      products: combinedProducts as VendorProduct[],
+      products: productsData as VendorProduct[],
       total: totalResult[0]?.count || 0,
     };
   } catch (error) {
@@ -261,71 +227,46 @@ export const getVendorProducts = async (
 };
 
 export const getVendorProduct = async (
-  sellerId: string,
   productId: string
 ): Promise<VendorProduct | null> => {
   try {
-    // Get product listing first
-    const listingResult = await db
-      .select()
-      .from(productListings)
-      .where(
-        and(
-          eq(productListings.productId, productId),
-          eq(productListings.sellerId, sellerId)
-        )
-      )
-      .limit(1);
+    const { user } = await getUser();
 
-    if (listingResult.length === 0) return null;
-    const listing = listingResult[0];
-
-    // Get product data
     const productResult = await db
-      .select()
+      .select({
+        id: products.id,
+        title: products.title,
+        slug: products.slug,
+        images: products.images,
+        sku: products.sku,
+        condition: products.condition,
+        basePrice: products.basePrice,
+        salePrice: products.salePrice,
+        listPrice: products.listPrice,
+        quantity: products.quantity,
+        isActive: products.isActive,
+        isFeatured: products.isFeatured,
+        averageRating: products.averageRating,
+        reviewCount: products.reviewCount,
+        createdAt: products.createdAt,
+        updatedAt: products.updatedAt,
+        brand: {
+          id: brands.id,
+          name: brands.name,
+        },
+        category: {
+          id: categories.id,
+          name: categories.name,
+        },
+      })
       .from(products)
-      .where(eq(products.id, productId))
+      .leftJoin(brands, eq(products.brandId, brands.id))
+      .leftJoin(categories, eq(products.mainCategoryId, categories.id))
+      .where(and(eq(products.id, productId), eq(products.sellerId, user.id)))
       .limit(1);
 
     if (productResult.length === 0) return null;
-    const product = productResult[0];
-
-    return {
-      id: product.id,
-      title: product.title,
-      slug: product.slug,
-      description: product.description || "",
-      images: product.images || [],
-      brandId: product.brandId || "",
-      mainCategoryId: product.mainCategoryId,
-      listPrice: product.listPrice || "",
-      basePrice: product.basePrice,
-      averageRating: product.averageRating || 0,
-      reviewCount: product.reviewCount || 0,
-      isActive: product.isActive,
-      createdAt: product.createdAt,
-      updatedAt: product.updatedAt,
-      listing: {
-        id: listing.id,
-        productId: listing.productId,
-        variantId: listing.variantId,
-        sellerId: listing.sellerId,
-        sku: listing.sku,
-        condition: listing.condition,
-        conditionDescription: listing.conditionDescription,
-        price: listing.price,
-        salePrice: listing.salePrice,
-        quantity: listing.quantity,
-        fulfillmentType: listing.fulfillmentType,
-        handlingTime: listing.handlingTime,
-        restockDate: listing.restockDate,
-        maxOrderQuantity: listing.maxOrderQuantity,
-        isFeatured: listing.isFeatured,
-        isBuyBox: listing.isBuyBox,
-        isActive: listing.isActive,
-        notes: listing.notes,
-      },
-    } as VendorProduct;
+    return productResult[0] as VendorProduct;
   } catch (error) {
     console.error("Error fetching vendor product:", error);
     return null;
@@ -361,6 +302,8 @@ export const createVendorProduct = async (
         images: productData.images,
         brandId: productData.brandId,
         mainCategoryId: productData.mainCategoryId,
+        sellerId,
+        sku: productData.sku,
         listPrice: productData.listPrice,
         basePrice: productData.basePrice,
         isActive: true,
@@ -374,7 +317,7 @@ export const createVendorProduct = async (
     const product = productResult[0];
 
     // Create product listing
-    await db.insert(productListings).values({
+    await db.insert(products).values({
       productId: product.id,
       sellerId,
       sku: productData.sku,
@@ -399,38 +342,23 @@ export const createVendorProduct = async (
 };
 
 export const updateVendorProduct = async (
-  sellerId: string,
   productId: string,
-  productData: Partial<VendorProduct>,
-  listingData: Partial<VendorProductListing>
+  productData: Partial<VendorProduct>
 ): Promise<{ success: boolean; message: string }> => {
   try {
-    // Update product
-    if (Object.keys(productData).length > 0) {
-      await db
-        .update(products)
-        .set({
-          ...productData,
-          updatedAt: new Date().toISOString(),
-        })
-        .where(eq(products.id, productId));
+    const { user } = await getUser();
+
+    if (Object.keys(productData).length === 0) {
+      return { success: false, message: "No data to update" };
     }
 
-    // Update product listing
-    if (Object.keys(listingData).length > 0) {
-      await db
-        .update(productListings)
-        .set({
-          ...listingData,
-          updatedAt: new Date().toISOString(),
-        } as any)
-        .where(
-          and(
-            eq(productListings.productId, productId),
-            eq(productListings.sellerId, sellerId)
-          )
-        );
-    }
+    await db
+      .update(products)
+      .set({
+        ...(productData as any),
+        updatedAt: new Date().toISOString(),
+      })
+      .where(and(eq(products.id, productId), eq(products.sellerId, user.id)));
 
     revalidatePath("/products");
     revalidatePath(`/products/${productId}`);
@@ -442,22 +370,19 @@ export const updateVendorProduct = async (
 };
 
 export const deleteVendorProduct = async (
-  sellerId: string,
   productId: string
 ): Promise<{ success: boolean; message: string }> => {
   try {
-    // Delete product listing first (due to foreign key constraints)
-    await db
-      .delete(productListings)
-      .where(
-        and(
-          eq(productListings.productId, productId),
-          eq(productListings.sellerId, sellerId)
-        )
-      );
+    const { user } = await getUser();
 
-    // Delete product
-    await db.delete(products).where(eq(products.id, productId));
+    const result = await db
+      .delete(products)
+      .where(and(eq(products.id, productId), eq(products.sellerId, user.id)))
+      .returning({ id: products.id });
+
+    if (result.length === 0) {
+      return { success: false, message: "Product not found or access denied" };
+    }
 
     revalidatePath("/products");
     return { success: true, message: "Product deleted successfully" };
@@ -529,7 +454,7 @@ export const getVendorOrders = async (
           id: item.id,
           orderId: item.orderId,
           productId: item.productId,
-          productListingId: item.listingId || "",
+          productListingId: item.id || "",
           quantity: item.quantity,
           unitPrice: item.price,
           totalPrice: item.total,
@@ -598,18 +523,15 @@ export const getVendorAnalytics = async (
         // Total products
         db
           .select({ count: count() })
-          .from(productListings)
-          .where(eq(productListings.sellerId, sellerId)),
+          .from(products)
+          .where(eq(products.sellerId, sellerId)),
 
         // Active products
         db
           .select({ count: count() })
-          .from(productListings)
+          .from(products)
           .where(
-            and(
-              eq(productListings.sellerId, sellerId),
-              eq(productListings.isActive, true)
-            )
+            and(eq(products.sellerId, sellerId), eq(products.isActive, true))
           ),
 
         // Order items for this seller

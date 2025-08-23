@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-// Enhanced product schema based on complete database structure
+// Product schema matching the database products table structure
 export const addProductFormSchema = z.object({
   // ===== BASIC PRODUCT INFORMATION =====
   title: z
@@ -18,34 +18,36 @@ export const addProductFormSchema = z.object({
   mainCategoryId: z.string().min(1, "Main category is required"),
   brandId: z.string().optional(),
 
-  // ===== PRICING (Products Table) =====
-  basePrice: z.number().min(0.01, "Base price must be greater than 0"),
-  listPrice: z.number().optional(),
-
-  // ===== LISTING PRICING (ProductListings Table) =====
-  price: z.number().min(0.01, "Listing price is required"),
-  salePrice: z.number().optional(),
-
   // ===== INVENTORY & SKU =====
   sku: z.string().min(1, "SKU is required"),
-  stockQuantity: z
+  quantity: z
     .number()
+    .int()
     .min(0, "Stock quantity must be 0 or greater")
     .default(0),
-  maxOrderQuantity: z.number().optional(),
-  restockDate: z.string().optional(), // Date string
+  maxOrderQuantity: z.number().int().optional(),
 
-  // ===== PRODUCT IMAGES =====
+  // ===== PHYSICAL DIMENSIONS =====
+  dimensionUnits: z
+    .object({
+      length: z.number().optional(),
+      width: z.number().optional(),
+      height: z.number().optional(),
+      weight: z.number().optional(),
+      unit: z.enum(["cm", "in"]).default("cm"),
+      weightUnit: z.enum(["kg", "lb"]).default("kg"),
+    })
+    .optional(),
+
+  // ===== PRODUCT IMAGES (JSONB) =====
   images: z
-    .array(z.string().min(1, "Image URL is required"))
+    .array(z.string())
     .min(1, "At least one product image is required"),
 
-  // ===== PRODUCT STATUS FLAGS =====
-  isActive: z.boolean().default(true),
-  isAdult: z.boolean().default(false),
-  isPlatformChoice: z.boolean().default(false),
-  isBestSeller: z.boolean().default(false),
-  isFeatured: z.boolean().default(false),
+  // ===== PRICING =====
+  basePrice: z.number().min(0.01, "Base price must be greater than 0"),
+  listPrice: z.number().optional(),
+  salePrice: z.number().optional(),
 
   // ===== CONDITION & FULFILLMENT =====
   condition: z
@@ -65,19 +67,22 @@ export const addProductFormSchema = z.object({
     .default("seller_fulfilled"),
   handlingTime: z
     .number()
+    .int()
     .min(1, "Handling time must be at least 1 day")
     .default(1),
 
-  // ===== PHYSICAL ATTRIBUTES =====
-  weight: z.number().optional(),
-  dimensions: z
-    .object({
-      length: z.number().optional(),
-      width: z.number().optional(),
-      height: z.number().optional(),
-      unit: z.enum(["cm", "in"]).default("cm"),
-    })
-    .optional(),
+  // ===== PRODUCT STATUS FLAGS =====
+  isActive: z.boolean().default(false),
+  isAdult: z.boolean().default(false),
+  isPlatformChoice: z.boolean().default(false),
+  isBestSeller: z.boolean().default(false),
+  isFeatured: z.boolean().default(false),
+  isBuyBox: z.boolean().default(false),
+
+  // ===== RATINGS & REVIEWS =====
+  averageRating: z.number().optional(),
+  reviewCount: z.number().int().default(0),
+  totalQuestions: z.number().int().default(0),
 
   // ===== TAX & LEGAL =====
   taxClass: z
@@ -98,12 +103,9 @@ export const addProductFormSchema = z.object({
 
   // ===== NOTES & ADDITIONAL INFO =====
   notes: z.string().optional(),
-
-  // ===== ATTRIBUTES (JSONB) =====
-  attributes: z.record(z.any()).optional(),
 });
 
-// Enhanced default values
+// Default values matching the updated schema
 export const defaultValues: Partial<AddProductFormData> = {
   title: "",
   slug: "",
@@ -111,38 +113,40 @@ export const defaultValues: Partial<AddProductFormData> = {
   bulletPoints: [],
   brandId: "",
   mainCategoryId: "",
+  sku: "",
+  quantity: 0,
+  maxOrderQuantity: undefined,
+  dimensionUnits: {
+    length: undefined,
+    width: undefined,
+    height: undefined,
+    weight: undefined,
+    unit: "cm",
+    weightUnit: "kg",
+  },
+  images: [],
   basePrice: undefined,
   listPrice: undefined,
-  price: undefined,
   salePrice: undefined,
-  sku: "",
-  stockQuantity: undefined,
-  maxOrderQuantity: undefined,
-  restockDate: undefined,
-  images: [],
-  isActive: true,
+  condition: "new",
+  conditionDescription: "",
+  fulfillmentType: "platform_fulfilled",
+  handlingTime: 1,
+  isActive: false,
   isAdult: false,
   isPlatformChoice: false,
   isBestSeller: false,
   isFeatured: false,
-  condition: "new",
-  conditionDescription: "",
-  fulfillmentType: "seller_fulfilled",
-  handlingTime: 1,
-  weight: undefined,
-  dimensions: {
-    length: undefined,
-    width: undefined,
-    height: undefined,
-    unit: "cm",
-  },
+  isBuyBox: false,
+  averageRating: undefined,
+  reviewCount: 0,
+  totalQuestions: 0,
   taxClass: "standard",
   metaTitle: "",
   metaDescription: "",
   metaKeywords: "",
   searchKeywords: "",
   notes: "",
-  attributes: {},
 };
 
 // Infer TypeScript type from schema
@@ -194,8 +198,7 @@ export type FormStep =
   | "pricing"
   | "inventory"
   | "settings"
-  | "seo"
-  | "advanced";
+  | "seo";
 
 export interface FormStepConfig {
   id: FormStep;
@@ -227,14 +230,14 @@ export const formSteps: FormStepConfig[] = [
   {
     id: "pricing",
     title: "Pricing",
-    description: "Set base and listing prices",
-    fields: ["basePrice", "listPrice", "price", "salePrice"],
+    description: "Set product prices",
+    fields: ["basePrice", "listPrice", "salePrice"],
   },
   {
     id: "inventory",
     title: "Inventory & Stock",
     description: "Manage stock levels and SKU",
-    fields: ["sku", "stockQuantity", "maxOrderQuantity", "restockDate"],
+    fields: ["sku", "quantity", "maxOrderQuantity", "dimensionUnits"],
   },
   {
     id: "settings",
@@ -250,19 +253,21 @@ export const formSteps: FormStepConfig[] = [
       "isPlatformChoice",
       "isBestSeller",
       "isFeatured",
+      "isBuyBox",
+      "taxClass",
     ],
-  },
-  {
-    id: "advanced",
-    title: "Physical Properties",
-    description: "Weight, dimensions, and tax class",
-    fields: ["weight", "dimensions", "taxClass", "notes"],
   },
   {
     id: "seo",
     title: "SEO & Marketing",
-    description: "Search engine optimization",
-    fields: ["metaTitle", "metaDescription", "metaKeywords", "searchKeywords"],
+    description: "Search engine optimization and notes",
+    fields: [
+      "metaTitle",
+      "metaDescription",
+      "metaKeywords",
+      "searchKeywords",
+      "notes",
+    ],
   },
 ];
 
@@ -278,10 +283,10 @@ export const conditionOptions = [
 ];
 
 export const fulfillmentOptions = [
-  { value: "seller_fulfilled", label: "Seller Fulfilled" },
   { value: "platform_fulfilled", label: "Platform Fulfilled" },
-  { value: "fba", label: "FBA (Fulfillment by Amazon)" },
-  { value: "digital", label: "Digital Download" },
+  { value: "seller_fulfilled", label: "Seller Fulfilled" },
+  // { value: "fba", label: "FBA (Fulfillment by Amazon)" },
+  // { value: "digital", label: "Digital Download" },
 ];
 
 export const taxClassOptions = [
@@ -294,4 +299,9 @@ export const taxClassOptions = [
 export const dimensionUnits = [
   { value: "cm", label: "Centimeters (cm)" },
   { value: "in", label: "Inches (in)" },
+];
+
+export const weightUnits = [
+  { value: "kg", label: "Kilograms (kg)" },
+  { value: "lb", label: "Pounds (lb)" },
 ];

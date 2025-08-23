@@ -3,24 +3,11 @@
 import {
   db,
   products,
-  productImages,
   brands,
   categories,
-  productListings,
   productVariants,
 } from "@workspace/db";
-import {
-  and,
-  asc,
-  desc,
-  eq,
-  gte,
-  ilike,
-  inArray,
-  lte,
-  or,
-  sql,
-} from "drizzle-orm";
+import { and, asc, desc, eq, gte, ilike, inArray, lte, sql } from "drizzle-orm";
 import { SearchParams } from "@/hooks/use-url-params";
 
 export async function getProducts(params: SearchParams) {
@@ -55,7 +42,6 @@ export async function getProducts(params: SearchParams) {
       .from(products)
       .leftJoin(brands, eq(products.brandId, brands.id))
       .leftJoin(categories, eq(products.mainCategoryId, categories.id))
-      .leftJoin(productImages, eq(products.id, productImages.productId))
       .where(
         and(
           eq(products.isActive, true),
@@ -149,27 +135,17 @@ export async function getProduct(slug: string) {
         description: products.description,
         features: products.bulletPoints,
         inStock: sql<boolean>`EXISTS (
-          SELECT 1 FROM ${productListings}
-          WHERE ${productListings.productId} = ${products.id}
-          AND ${productListings.isActive} = true
-          AND ${productListings.quantity} > 0
+          SELECT 1 FROM ${productVariants}
+          WHERE ${productVariants.productId} = ${products.id}
+          AND ${productVariants.isActive} = true
+          AND ${productVariants.stock} > 0
         )`,
         brand: {
           name: brands.name,
           rating: brands.averageRating,
           reviews: brands.reviewCount,
         },
-        images: sql<Array<{ url: string; alt_text: string }>>`
-          COALESCE(
-            json_agg(
-              json_build_object(
-                'url', ${productImages.url},
-                'alt_text', ${productImages.altText}
-              )
-            ) FILTER (WHERE ${productImages.id} IS NOT NULL),
-            '[]'
-          )
-        `,
+        images: products.images,
         variants: sql<Array<{ attributes: any }>>`
           COALESCE(
             json_agg(
@@ -183,7 +159,6 @@ export async function getProduct(slug: string) {
       })
       .from(products)
       .leftJoin(brands, eq(products.brandId, brands.id))
-      .leftJoin(productImages, eq(products.id, productImages.productId))
       .leftJoin(productVariants, eq(products.id, productVariants.productId))
       .where(and(eq(products.slug, slug), eq(products.isActive, true)))
       .groupBy(
@@ -232,7 +207,7 @@ export async function getProduct(slug: string) {
         rating: product[0].brand?.rating || 0,
         reviews: product[0].brand?.reviews || 0,
       },
-      images: product[0].images.map((img: any) => img.url),
+      images: (product[0].images as string[]) || [],
       colors: Array.from(colors),
       sizes: Array.from(sizes),
     };

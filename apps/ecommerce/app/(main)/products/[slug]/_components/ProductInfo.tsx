@@ -54,7 +54,7 @@ export const ProductInfo = ({
         </div>
       </div>
 
-      <p className="text-gray-600">{description}</p>
+      <p className="text-gray-600 text-sm">{description}</p>
     </div>
   );
 };

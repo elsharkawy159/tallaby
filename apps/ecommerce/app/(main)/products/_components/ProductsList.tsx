@@ -1,5 +1,5 @@
-import ProductCard from "@/components/product/ProductCard";
-import { getProducts } from "@/app/actions/products";
+import ProductCard from "@/app/(main)/products/[slug]/_components/ProductCard";
+import { getProducts } from "@/actions/products";
 import Pagination from "./Pagination";
 
 const ProductsList = async ({

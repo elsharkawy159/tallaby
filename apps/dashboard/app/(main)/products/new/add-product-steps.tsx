@@ -308,7 +308,7 @@ export const InventoryStep = () => {
 
           <TextInput
             form={form}
-            name="stockQuantity"
+            name="quantity"
             label="Stock Quantity"
             type="number"
             placeholder="0"
@@ -324,7 +324,7 @@ export const InventoryStep = () => {
           />
         </div>
 
-        <FormField
+        {/* <FormField
           name="restockDate"
           render={({ field }) => (
             <DateInput
@@ -335,7 +335,7 @@ export const InventoryStep = () => {
               }
             />
           )}
-        />
+        /> */}
       </CardContent>
     </Card>
   );
@@ -358,7 +358,7 @@ export const ProductSettingsStep = () => {
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
+          {/* <FormField
             name="condition"
             render={({ field }) => (
               <SelectInput
@@ -369,7 +369,7 @@ export const ProductSettingsStep = () => {
                 required
               />
             )}
-          />
+          /> */}
           <FormField
             name="fulfillmentType"
             render={({ field }) => (
@@ -383,7 +383,7 @@ export const ProductSettingsStep = () => {
             )}
           />
         </div>
-
+{/* 
         <FormField
           name="conditionDescription"
           render={({ field }) => (
@@ -394,9 +394,9 @@ export const ProductSettingsStep = () => {
               rows={3}
             />
           )}
-        />
+        /> */}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6"> */}
           <TextInput
             form={form}
             name="handlingTime"
@@ -406,7 +406,7 @@ export const ProductSettingsStep = () => {
             required
           />
 
-          <FormField
+          {/* <FormField
             name="taxClass"
             render={({ field }) => (
               <SelectInput
@@ -417,10 +417,10 @@ export const ProductSettingsStep = () => {
                 required
               />
             )}
-          />
-        </div>
+          /> */}
+        {/* </div> */}
 
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+        {/* <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
           <FormField
             name="isActive"
             render={({ field }) => (
@@ -449,7 +449,7 @@ export const ProductSettingsStep = () => {
               <SwitchInput {...field} label="Adult Content" />
             )}
           />
-        </div>
+        </div> */}
       </CardContent>
     </Card>
   );
@@ -474,14 +474,14 @@ export const PhysicalPropertiesStep = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <TextInput
             form={form}
-            name="weight"
+            name="dimensionUnits.weight"
             label="Weight (kg)"
             type="number"
             placeholder="0.0"
           />
 
           <FormField
-            name="dimensions.unit"
+            name="dimensionUnits.unit"
             render={({ field }) => (
               <SelectInput
                 {...field}
@@ -496,7 +496,7 @@ export const PhysicalPropertiesStep = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <TextInput
             form={form}
-            name="dimensions.length"
+            name="dimensionUnits.length"
             label="Length"
             type="number"
             placeholder="0.0"
@@ -504,7 +504,7 @@ export const PhysicalPropertiesStep = () => {
 
           <TextInput
             form={form}
-            name="dimensions.width"
+            name="dimensionUnits.width"
             label="Width"
             type="number"
             placeholder="0.0"
@@ -512,7 +512,7 @@ export const PhysicalPropertiesStep = () => {
 
           <TextInput
             form={form}
-            name="dimensions.height"
+            name="dimensionUnits.height"
             label="Height"
             type="number"
             placeholder="0.0"

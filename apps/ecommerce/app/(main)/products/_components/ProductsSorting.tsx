@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { useUrlParams } from "../../hooks/use-url-params";
+import { useUrlParams } from "../../../../hooks/use-url-params";
 import {
   Select,
   SelectTrigger,

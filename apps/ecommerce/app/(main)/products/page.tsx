@@ -1,7 +1,6 @@
-import Pagination from "@/components/productsPage/Pagination";
-import { ProductsFilter } from "@/components/productsPage/ProductsFilter";
-import ProductsList from "@/components/productsPage/ProductsList";
-import ProductsSorting from "@/components/productsPage/ProductsSorting";
+import { ProductsFilter } from "@/app/(main)/products/_components/ProductsFilter";
+import ProductsList from "@/app/(main)/products/_components/ProductsList";
+import ProductsSorting from "@/app/(main)/products/_components/ProductsSorting";
 
 const ProductsPage = async ({
   searchParams,

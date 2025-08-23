@@ -14,17 +14,40 @@ import { MoreHorizontal, Edit, Trash2, Eye, Copy, Plus } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import type { VendorProduct } from "@/actions/vendor";
+import { getPublicUrl } from "@/lib/utils";
+import { deleteProductAction } from "../new/add-product.server";
 
 interface VendorProductsTableProps {
   products: VendorProduct[];
   total: number;
 }
 
-const formatCurrency = (amount: string) => {
+const formatCurrency = (amount: string | number) => {
+  const value = typeof amount === "string" ? parseFloat(amount) : amount;
   return new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "USD",
-  }).format(parseFloat(amount));
+    currency: "EGP",
+  }).format(value);
+};
+
+const getDisplayPrice = (product: VendorProduct) => {
+  // If there's a sale price and it's different from base price, show both
+  if (
+    product.salePrice &&
+    parseFloat(product.salePrice) !== parseFloat(product.basePrice)
+  ) {
+    return {
+      currentPrice: formatCurrency(product.salePrice),
+      originalPrice: formatCurrency(product.basePrice),
+      isOnSale: true,
+    };
+  }
+  // Otherwise show the base price
+  return {
+    currentPrice: formatCurrency(product.basePrice),
+    originalPrice: null,
+    isOnSale: false,
+  };
 };
 
 const getProductImage = (images: any) => {
@@ -129,7 +152,10 @@ export function VendorProductsTable({
 
               <div className="relative h-12 w-12 rounded-lg overflow-hidden bg-gray-100">
                 <Image
-                  src={getProductImage(product.images)}
+                  src={getPublicUrl(
+                    getProductImage(product.images),
+                    "products"
+                  )}
                   alt={product.title}
                   fill
                   className="object-cover"
@@ -140,22 +166,63 @@ export function VendorProductsTable({
                 <p className="text-sm font-medium text-gray-900 truncate">
                   {product.title}
                 </p>
-                <p className="text-sm text-gray-500 truncate">
-                  SKU: {product.listing?.sku || "N/A"}
-                </p>
+                <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <span>SKU: {product.sku || "N/A"}</span>
+                  {product.category && (
+                    <>
+                      <span>•</span>
+                      <span>{product.category.name}</span>
+                    </>
+                  )}
+                  {product.brand && (
+                    <>
+                      <span>•</span>
+                      <span>{product.brand.name}</span>
+                    </>
+                  )}
+                </div>
               </div>
 
               <div className="text-right">
-                <p className="text-sm font-medium text-gray-900">
-                  {formatCurrency(product.listing?.price || product.basePrice)}
-                </p>
-                <p className="text-sm text-gray-500">
-                  {product.listing?.quantity || 0} in stock
-                </p>
+                {(() => {
+                  const priceInfo = getDisplayPrice(product);
+                  return (
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-end gap-2">
+                        <span className="text-sm font-medium text-gray-900">
+                          {priceInfo.currentPrice}
+                        </span>
+                        {priceInfo.isOnSale && priceInfo.originalPrice && (
+                          <span className="text-xs text-gray-500 line-through">
+                            {priceInfo.originalPrice}
+                          </span>
+                        )}
+                        {priceInfo.isOnSale && (
+                          <Badge
+                            variant="destructive"
+                            className="text-xs px-1 py-0"
+                          >
+                            Sale
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-500">
+                        {product.quantity || 0} in stock
+                      </p>
+                    </div>
+                  );
+                })()}
               </div>
 
               <div className="flex items-center space-x-2">
-                {getStatusBadge(product.isActive)}
+                <div className="flex flex-col items-end gap-1">
+                  {getStatusBadge(product.isActive)}
+                  {product.isFeatured && (
+                    <Badge variant="secondary" className="text-xs">
+                      Featured
+                    </Badge>
+                  )}
+                </div>
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -186,7 +253,10 @@ export function VendorProductsTable({
                       <Copy className="h-4 w-4 mr-2" />
                       Duplicate
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="text-red-600">
+                    <DropdownMenuItem
+                      className="text-red-600"
+                      onClick={() => deleteProductAction(product.id)}
+                    >
                       <Trash2 className="h-4 w-4 mr-2" />
                       Delete
                     </DropdownMenuItem>

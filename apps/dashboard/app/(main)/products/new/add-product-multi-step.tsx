@@ -7,10 +7,8 @@ import { Button } from "@workspace/ui/components/button";
 import { Form } from "@workspace/ui/components/form";
 import { Stepper, ProgressStepper } from "@workspace/ui/components/stepper";
 import type { AddProductFormData } from "./add-product.schema";
-import { addProductAction } from "./add-product.server";
-import { useAddProductFormStore } from "@/stores";
+import { addProduct, updateProduct } from "./add-product.server";
 
-// Import separated files
 import type { AddProductMultiStepProps } from "./add-product-multi-step.types";
 import { FORM_STEPS } from "./add-product-multi-step.constants";
 import { isStepValid } from "./add-product-multi-step.lib";
@@ -89,10 +87,9 @@ export default function AddProductMultiStep({
       try {
         let result;
         if (isEditMode && productId) {
-          const { updateProductAction } = await import("./add-product.server");
-          result = await updateProductAction(productId, data);
+          result = await updateProduct(productId, data);
         } else {
-          result = await addProductAction(data);
+          result = await addProduct(data);
         }
 
         if (result.success) {

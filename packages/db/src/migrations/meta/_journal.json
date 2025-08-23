@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1751205197057,
-      "tag": "0000_jittery_blockbuster",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1753407598216,
-      "tag": "0001_chunky_warhawk",
+      "when": 1755915863354,
+      "tag": "0000_brown_william_stryker",
       "breakpoints": true
     }
   ]

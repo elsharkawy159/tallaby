@@ -1,5 +1,5 @@
 "use client";
-import ProductCard from "@/components/product/ProductCard";
+import ProductCard from "@/app/(main)/products/[slug]/_components/ProductCard";
 import { Button } from "@workspace/ui/components/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRef } from "react";

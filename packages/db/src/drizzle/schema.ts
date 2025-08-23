@@ -54,7 +54,6 @@ export const notificationType = pgEnum("notification_type", [
   "order_update",
   "shipment_update",
   "price_drop",
-  "restock",
   "review_response",
   "marketing",
 ]);
@@ -159,7 +158,6 @@ export const cartItems = pgTable(
     productId: uuid("product_id").notNull(),
     variantId: uuid("variant_id"),
     sellerId: uuid("seller_id").notNull(),
-    listingId: uuid("listing_id"),
     quantity: integer().default(1).notNull(),
     price: numeric({ precision: 10, scale: 2 }).notNull(),
     savedForLater: boolean("saved_for_later").default(false),
@@ -190,11 +188,6 @@ export const cartItems = pgTable(
       foreignColumns: [carts.id],
       name: "cart_items_cart_id_carts_id_fk",
     }).onDelete("cascade"),
-    foreignKey({
-      columns: [table.listingId],
-      foreignColumns: [productListings.id],
-      name: "cart_items_listing_id_product_listings_id_fk",
-    }),
     foreignKey({
       columns: [table.productId],
       foreignColumns: [products.id],
@@ -557,7 +550,6 @@ export const orderItems = pgTable(
     productId: uuid("product_id").notNull(),
     variantId: uuid("variant_id"),
     sellerId: uuid("seller_id").notNull(),
-    listingId: uuid("listing_id"),
     sku: text().notNull(),
     productName: text("product_name").notNull(),
     variantName: text("variant_name"),
@@ -628,11 +620,6 @@ export const orderItems = pgTable(
       "btree",
       table.status.asc().nullsLast().op("enum_ops")
     ),
-    foreignKey({
-      columns: [table.listingId],
-      foreignColumns: [productListings.id],
-      name: "order_items_listing_id_product_listings_id_fk",
-    }),
     foreignKey({
       columns: [table.orderId],
       foreignColumns: [orders.id],
@@ -968,114 +955,6 @@ export const productQuestions = pgTable(
   ]
 );
 
-export const productImages = pgTable(
-  "product_images",
-  {
-    id: uuid().defaultRandom().primaryKey().notNull(),
-    productId: uuid("product_id").notNull(),
-    variantId: uuid("variant_id"),
-    url: text().notNull(),
-    altText: text("alt_text"),
-    position: integer().default(0),
-    isPrimary: boolean("is_primary").default(false),
-    width: integer(),
-    height: integer(),
-    size: integer(),
-    createdAt: timestamp("created_at", {
-      withTimezone: true,
-      mode: "string",
-    }).defaultNow(),
-  },
-  (table) => [
-    index("prod_img_product_id_idx").using(
-      "btree",
-      table.productId.asc().nullsLast().op("uuid_ops")
-    ),
-    index("prod_img_variant_id_idx").using(
-      "btree",
-      table.variantId.asc().nullsLast().op("uuid_ops")
-    ),
-    foreignKey({
-      columns: [table.productId],
-      foreignColumns: [products.id],
-      name: "product_images_product_id_products_id_fk",
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [table.variantId],
-      foreignColumns: [productVariants.id],
-      name: "product_images_variant_id_product_variants_id_fk",
-    }).onDelete("cascade"),
-  ]
-);
-
-export const productListings = pgTable(
-  "product_listings",
-  {
-    id: uuid().defaultRandom().primaryKey().notNull(),
-    productId: uuid("product_id").notNull(),
-    variantId: uuid("variant_id"),
-    sellerId: uuid("seller_id").notNull(),
-    sku: text().notNull(),
-    condition: itemCondition().default("new"),
-    conditionDescription: text("condition_description"),
-    price: numeric({ precision: 10, scale: 2 }).notNull(),
-    salePrice: numeric("sale_price", { precision: 10, scale: 2 }),
-    quantity: integer().default(0).notNull(),
-    fulfillmentType:
-      fulfillmentType("fulfillment_type").default("seller_fulfilled"),
-    handlingTime: integer("handling_time").default(1),
-    restockDate: date("restock_date"),
-    maxOrderQuantity: integer("max_order_quantity"),
-    isFeatured: boolean("is_featured").default(false),
-    isBuyBox: boolean("is_buy_box").default(false),
-    isActive: boolean("is_active").default(true),
-    notes: text(),
-    createdAt: timestamp("created_at", {
-      withTimezone: true,
-      mode: "string",
-    }).defaultNow(),
-    updatedAt: timestamp("updated_at", {
-      withTimezone: true,
-      mode: "string",
-    }).defaultNow(),
-  },
-  (table) => [
-    index("listing_product_id_idx").using(
-      "btree",
-      table.productId.asc().nullsLast().op("uuid_ops")
-    ),
-    index("listing_seller_id_idx").using(
-      "btree",
-      table.sellerId.asc().nullsLast().op("uuid_ops")
-    ),
-    index("listing_variant_id_idx").using(
-      "btree",
-      table.variantId.asc().nullsLast().op("uuid_ops")
-    ),
-    uniqueIndex("unique_listing_idx").using(
-      "btree",
-      table.productId.asc().nullsLast().op("uuid_ops"),
-      table.variantId.asc().nullsLast().op("uuid_ops"),
-      table.sellerId.asc().nullsLast().op("uuid_ops")
-    ),
-    foreignKey({
-      columns: [table.productId],
-      foreignColumns: [products.id],
-      name: "product_listings_product_id_products_id_fk",
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [table.sellerId],
-      foreignColumns: [sellers.id],
-      name: "product_listings_seller_id_sellers_id_fk",
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [table.variantId],
-      foreignColumns: [productVariants.id],
-      name: "product_listings_variant_id_product_variants_id_fk",
-    }).onDelete("cascade"),
-  ]
-);
-
 export const refunds = pgTable(
   "refunds",
   {
@@ -1121,47 +1000,6 @@ export const refunds = pgTable(
       columns: [table.returnId],
       foreignColumns: [returns.id],
       name: "refunds_return_id_returns_id_fk",
-    }),
-  ]
-);
-
-export const productViews = pgTable(
-  "product_views",
-  {
-    id: uuid().defaultRandom().primaryKey().notNull(),
-    productId: uuid("product_id").notNull(),
-    userId: uuid("user_id"),
-    sessionId: text("session_id"),
-    ip: text(),
-    userAgent: text("user_agent"),
-    referrer: text(),
-    createdAt: timestamp("created_at", {
-      withTimezone: true,
-      mode: "string",
-    }).defaultNow(),
-  },
-  (table) => [
-    index("product_views_created_at_idx").using(
-      "btree",
-      table.createdAt.asc().nullsLast().op("timestamptz_ops")
-    ),
-    index("product_views_product_id_idx").using(
-      "btree",
-      table.productId.asc().nullsLast().op("uuid_ops")
-    ),
-    index("product_views_user_id_idx").using(
-      "btree",
-      table.userId.asc().nullsLast().op("uuid_ops")
-    ),
-    foreignKey({
-      columns: [table.productId],
-      foreignColumns: [products.id],
-      name: "product_views_product_id_products_id_fk",
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [table.userId],
-      foreignColumns: [users.id],
-      name: "product_views_user_id_users_id_fk",
     }),
   ]
 );
@@ -1220,12 +1058,25 @@ export const products = pgTable(
     images: jsonb("images"),
     brandId: uuid("brand_id"),
     mainCategoryId: uuid("main_category_id").notNull(),
+    sellerId: uuid("seller_id").notNull(),
+    sku: text().notNull(),
+    condition: itemCondition().default("new"),
+    conditionDescription: text("condition_description"),
     listPrice: numeric("list_price", { precision: 10, scale: 2 }),
     basePrice: numeric("base_price", { precision: 10, scale: 2 }).notNull(),
+    salePrice: numeric("sale_price", { precision: 10, scale: 2 }),
+    quantity: integer().default(0).notNull(),
+    fulfillmentType:
+      fulfillmentType("fulfillment_type").default("seller_fulfilled"),
+    handlingTime: integer("handling_time").default(1),
+    maxOrderQuantity: integer("max_order_quantity"),
+    dimensionUnits: jsonb("dimension_units"),
     averageRating: real("average_rating"),
     reviewCount: integer("review_count").default(0),
     totalQuestions: integer("total_questions").default(0),
-    isActive: boolean("is_active").default(true),
+    isFeatured: boolean("is_featured").default(false),
+    isBuyBox: boolean("is_buy_box").default(false),
+    isActive: boolean("is_active").default(false),
     isAdult: boolean("is_adult").default(false),
     isPlatformChoice: boolean("is_platform_choice").default(false),
     isBestSeller: boolean("is_best_seller").default(false),
@@ -1234,6 +1085,7 @@ export const products = pgTable(
     metaDescription: text("meta_description"),
     metaKeywords: text("meta_keywords"),
     searchKeywords: text("search_keywords"),
+    notes: text(),
     createdAt: timestamp("created_at", {
       withTimezone: true,
       mode: "string",
@@ -1252,6 +1104,14 @@ export const products = pgTable(
       "btree",
       table.mainCategoryId.asc().nullsLast().op("uuid_ops")
     ),
+    index("product_seller_id_idx").using(
+      "btree",
+      table.sellerId.asc().nullsLast().op("uuid_ops")
+    ),
+    index("product_sku_idx").using(
+      "btree",
+      table.sku.asc().nullsLast().op("text_ops")
+    ),
     uniqueIndex("product_slug_idx").using(
       "btree",
       table.slug.asc().nullsLast().op("text_ops")
@@ -1259,6 +1119,11 @@ export const products = pgTable(
     index("product_title_idx").using(
       "btree",
       table.title.asc().nullsLast().op("text_ops")
+    ),
+    uniqueIndex("unique_product_seller_sku_idx").using(
+      "btree",
+      table.sellerId.asc().nullsLast().op("uuid_ops"),
+      table.sku.asc().nullsLast().op("text_ops")
     ),
     foreignKey({
       columns: [table.brandId],
@@ -1270,7 +1135,13 @@ export const products = pgTable(
       foreignColumns: [categories.id],
       name: "products_main_category_id_categories_id_fk",
     }),
+    foreignKey({
+      columns: [table.sellerId],
+      foreignColumns: [sellers.id],
+      name: "products_seller_id_sellers_id_fk",
+    }),
     unique("products_slug_unique").on(table.slug),
+    unique("products_seller_sku_unique").on(table.sellerId, table.sku),
   ]
 );
 
@@ -1861,6 +1732,7 @@ export const productVariants = pgTable(
     weight: numeric({ precision: 6, scale: 2 }),
     dimensions: jsonb(),
     isActive: boolean("is_active").default(true),
+    stock: integer("stock").default(0),
     createdAt: timestamp("created_at", {
       withTimezone: true,
       mode: "string",

@@ -1,8 +1,8 @@
 import AddProductMultiStep from "./add-product-multi-step";
 import {
-  fetchCategoriesAction,
-  fetchBrandsAction,
-  fetchProductAction,
+  getCategories,
+  getBrands,
+  getProduct,
 } from "./add-product.server";
 import type { CategoryOption, BrandOption } from "./add-product.schema";
 import { Button } from "@workspace/ui/components";
@@ -20,10 +20,11 @@ export default async function AddProductPage({ searchParams }: PageProps) {
 
   // Fetch categories and brands in parallel
   const [categoriesResult, brandsResult] = await Promise.all([
-    fetchCategoriesAction(),
-    fetchBrandsAction(),
+    getCategories(),
+    getBrands(),
   ]);
-
+  console.log("categoriesResult", categoriesResult);
+  console.log("brandsResult", brandsResult);
   // Handle errors
   if (!categoriesResult.success || !brandsResult.success) {
     return (
@@ -68,7 +69,7 @@ export default async function AddProductPage({ searchParams }: PageProps) {
   // Fetch product data if in edit mode
   let productData = null;
   if (isEditMode && productId) {
-    const productResult = await fetchProductAction(productId);
+    const productResult = await getProduct(productId);
     if (productResult.success) {
       productData = productResult.data;
     }

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import "@workspace/ui/globals.css";
 import { Providers } from "./providers";
+import NextTopLoader from "nextjs-toploader";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -22,6 +23,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${montserrat.variable} antialiased`}>
+        <NextTopLoader
+          color="var(--accent)"
+          crawlSpeed={200}
+          height={3}
+          showSpinner={false}
+          easing="ease"
+          speed={200}
+        />
         <Providers>{children}</Providers>
       </body>
     </html>

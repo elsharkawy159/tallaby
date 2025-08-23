@@ -1,8 +1,7 @@
 "use client";
-import React from "react";
 import { Button } from "@workspace/ui/components/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useUrlParams } from "../../hooks/use-url-params";
+import { useUrlParams } from "../../../../hooks/use-url-params";
 
 export interface PaginationProps {
   page: number;
@@ -11,10 +10,7 @@ export interface PaginationProps {
   totalPages: number;
 }
 
-const Pagination: React.FC<PaginationProps> = ({
-  page,
-  totalPages,
-}) => {
+const Pagination = ({ page, totalPages }: PaginationProps) => {
   const { updateParams } = useUrlParams();
   const canGoPrevious = page > 1;
   const canGoNext = page < totalPages;

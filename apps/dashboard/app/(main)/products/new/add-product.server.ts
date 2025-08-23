@@ -5,21 +5,16 @@ import { z } from "zod";
 import {
   db,
   products,
-  productImages,
-  productListings,
   productCategories,
   categories,
   brands,
-  sellers,
 } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { eq, and, desc, count } from "drizzle-orm";
 import {
   addProductFormSchema,
   type AddProductFormData,
-  type CategoryOption,
-  type BrandOption,
 } from "./add-product.schema";
-import { generateSKU } from "./add-product.lib";
+import { getCurrentSeller } from "@/actions/seller";
 
 export interface ActionResult {
   success: boolean;
@@ -30,45 +25,32 @@ export interface ActionResult {
 
 // Mock seller ID - in real app, this would come from auth session
 const getCurrentSellerId = async (): Promise<string> => {
-  // TODO: Get from auth session
-  // const session = await getServerSession();
-  // return session.user.sellerId;
-
-  // For development, use a hardcoded seller ID
-  // In production, this should come from the authenticated user's session
-  return "550e8400-e29b-41d4-a716-446655440000"; // Test seller ID
+  const seller = await getCurrentSeller();
+  return seller?.id || "";
 };
 
-// Fetch categories from database
-export const fetchCategoriesAction = async (): Promise<ActionResult> => {
+// Fetch categories with simplified query
+export const getCategories = async (): Promise<ActionResult> => {
   try {
-    const categoriesData = await db
-      .select({
-        id: categories.id,
-        name: categories.name,
-        slug: categories.slug,
-        level: categories.level,
-        parentId: categories.parentId,
-      })
-      .from(categories)
-      .orderBy(categories.level, categories.displayOrder);
-
-    const categoryOptions: CategoryOption[] = categoriesData.map(
-      (cat: any) => ({
-        id: cat.id,
-        name: cat.name,
-        slug: cat.slug,
-        level: cat.level,
-        parentId: cat.parentId || undefined,
-      })
-    );
+    const categoriesData = await db.query.categories.findMany({
+      where: eq(categories.isActive, true),
+      columns: {
+        id: true,
+        name: true,
+        slug: true,
+        level: true,
+        parentId: true,
+      },
+      orderBy: [categories.level, categories.displayOrder],
+    });
 
     return {
       success: true,
-      data: categoryOptions,
+      data: categoriesData,
       message: "Categories fetched successfully",
     };
   } catch (error) {
+    console.error("Error fetching categories:", error);
     return {
       success: false,
       data: [],
@@ -77,29 +59,22 @@ export const fetchCategoriesAction = async (): Promise<ActionResult> => {
   }
 };
 
-// Fetch brands from database
-export const fetchBrandsAction = async (): Promise<ActionResult> => {
+// Fetch brands with simplified query
+export const getBrands = async (): Promise<ActionResult> => {
   try {
-    const brandsData = await db
-      .select({
-        id: brands.id,
-        name: brands.name,
-        slug: brands.slug,
-        isVerified: brands.isVerified,
-      })
-      .from(brands)
-      .orderBy(brands.name);
-
-    const brandOptions: BrandOption[] = brandsData.map((brand: any) => ({
-      id: brand.id,
-      name: brand.name,
-      slug: brand.slug,
-      isVerified: brand.isVerified,
-    }));
+    const brandsData = await db.query.brands.findMany({
+      columns: {
+        id: true,
+        name: true,
+        slug: true,
+        isVerified: true,
+      },
+      orderBy: brands.name,
+    });
 
     return {
       success: true,
-      data: brandOptions,
+      data: brandsData,
       message: "Brands fetched successfully",
     };
   } catch (error) {
@@ -113,18 +88,16 @@ export const fetchBrandsAction = async (): Promise<ActionResult> => {
 };
 
 // Check if slug is available
-export const checkSlugAvailabilityAction = async (
+export const checkSlugAvailability = async (
   slug: string
 ): Promise<ActionResult> => {
   try {
-    const existingProduct = await db
-      .select({ id: products.id })
-      .from(products)
-      // @ts-ignore
-      .where(eq(products.slug, slug))
-      .limit(1);
+    const existingProduct = await db.query.products.findFirst({
+      where: eq(products.slug, slug),
+      columns: { id: true },
+    });
 
-    const isAvailable = existingProduct.length === 0;
+    const isAvailable = !existingProduct;
 
     return {
       success: true,
@@ -140,76 +113,63 @@ export const checkSlugAvailabilityAction = async (
   }
 };
 
-// Upload image action (mock implementation)
-export const uploadImageAction = async (file: File): Promise<ActionResult> => {
+// Fetch a single product by ID with all related data
+export const getProduct = async (productId: string): Promise<ActionResult> => {
   try {
-    // TODO: Implement actual file upload to cloud storage
-    // For now, return a mock URL
-    const mockUrl = `https://images.example.com/${Date.now()}-${file.name}`;
+    // Get product with all related data using findFirst with relations
+    const productData = await db.query.products.findFirst({
+      where: eq(products.id, productId),
+      with: {
+        brand: {
+          columns: {
+            id: true,
+            name: true,
+            slug: true,
+            isVerified: true,
+          },
+        },
+        category: {
+          columns: {
+            id: true,
+            name: true,
+            slug: true,
+            level: true,
+          },
+        },
+        seller: {
+          columns: {
+            id: true,
+            displayName: true,
+            businessName: true,
+          },
+        },
+        productCategories: {
+          with: {
+            category: {
+              columns: {
+                id: true,
+                name: true,
+                slug: true,
+              },
+            },
+          },
+        },
+      },
+    });
 
-    // Simulate upload delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    if (!productData) {
+      return {
+        success: false,
+        message: "Product not found",
+      };
+    }
 
     return {
       success: true,
-      data: { url: mockUrl },
-      message: "Image uploaded successfully",
-    };
-  } catch (error) {
-    console.error("Error uploading image:", error);
-    return {
-      success: false,
-      message: "Failed to upload image",
-    };
-  }
-};
-
-// Fetch a single product by ID
-export const fetchProductAction = async (
-  productId: string
-): Promise<ActionResult> => {
-  try {
-    // TODO: Fix Drizzle ORM version conflicts
-    // For now, return mock data to test the UI
-    console.log("Fetching product with ID:", productId);
-
-    // Mock product data for testing
-    const mockProduct = {
-      title: "Sample Product",
-      slug: "sample-product",
-      description: "This is a sample product for testing edit functionality",
-      bulletPoints: ["Feature 1", "Feature 2", "Feature 3"],
-      mainCategoryId: "550e8400-e29b-41d4-a716-446655440001",
-      brandId: "",
-      basePrice: 99.99,
-      listPrice: 129.99,
-      price: 99.99,
-      salePrice: 129.99,
-      sku: "SAMPLE-001",
-      stockQuantity: 10,
-      isActive: true,
-      isAdult: false,
-      isPlatformChoice: false,
-      isBestSeller: false,
-      isFeatured: false,
-      condition: "new" as const,
-      fulfillmentType: "seller_fulfilled" as const,
-      handlingTime: 1,
-      taxClass: "standard" as const,
-      metaTitle: "Sample Product - Meta Title",
-      metaDescription: "Sample product meta description",
-      metaKeywords: "sample, product, test",
-      searchKeywords: "sample product test",
-      images: ["https://via.placeholder.com/400x400?text=Product+Image"],
-    };
-
-    return {
-      success: true,
-      data: mockProduct,
+      data: productData,
       message: "Product fetched successfully",
     };
   } catch (error) {
-    console.error("Error fetching product:", error);
     return {
       success: false,
       message: "Failed to fetch product",
@@ -217,24 +177,151 @@ export const fetchProductAction = async (
   }
 };
 
+// Get all products with pagination and filtering
+export const getProducts = async (params?: {
+  limit?: number;
+  offset?: number;
+  sellerId?: string;
+  categoryId?: string;
+  isActive?: boolean;
+}): Promise<ActionResult> => {
+  try {
+    const {
+      limit = 20,
+      offset = 0,
+      sellerId,
+      categoryId,
+      isActive,
+    } = params || {};
+
+    // Build where conditions
+    const conditions = [];
+    if (sellerId) conditions.push(eq(products.sellerId, sellerId));
+    if (categoryId) conditions.push(eq(products.mainCategoryId, categoryId));
+    if (typeof isActive === "boolean")
+      conditions.push(eq(products.isActive, isActive));
+
+    // Use findMany with relations
+    const productsData = await db.query.products.findMany({
+      where: conditions.length > 0 ? and(...conditions) : undefined,
+      with: {
+        brand: {
+          columns: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+        category: {
+          columns: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+      },
+      columns: {
+        id: true,
+        title: true,
+        slug: true,
+        images: true,
+        sku: true,
+        basePrice: true,
+        listPrice: true,
+        salePrice: true,
+        quantity: true,
+        isActive: true,
+        isFeatured: true,
+        createdAt: true,
+      },
+      orderBy: desc(products.createdAt),
+      limit,
+      offset,
+    });
+
+    // Get total count for pagination using findMany without limit
+    const totalCount = await db
+      .select({ count: count() })
+      .from(products)
+      .where(conditions.length > 0 ? and(...conditions) : undefined);
+
+    const total = totalCount[0]?.count || 0;
+
+    return {
+      success: true,
+      data: {
+        products: productsData.map((product) => ({
+          ...product,
+          brandName: product.brand?.name,
+          categoryName: product.category?.name,
+        })),
+        pagination: {
+          total,
+          limit,
+          offset,
+          hasNext: offset + limit < total,
+          hasPrev: offset > 0,
+        },
+      },
+      message: "Products fetched successfully",
+    };
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    return {
+      success: false,
+      message: "Failed to fetch products",
+    };
+  }
+};
+
 // Update an existing product
-export const updateProductAction = async (
+export const updateProduct = async (
   productId: string,
   data: AddProductFormData
 ): Promise<ActionResult> => {
   try {
-    // TODO: Fix Drizzle ORM version conflicts
-    // For now, simulate update success
-    console.log("Updating product with ID:", productId, "Data:", data);
-
     // Validate the data
     const validatedData = addProductFormSchema.parse(data);
 
-    // Simulate database update delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await db.transaction(async (tx) => {
+      // Update the product
+      await tx
+        .update(products)
+        .set({
+          title: validatedData.title,
+          slug: validatedData.slug,
+          description: validatedData.description,
+          bulletPoints: validatedData.bulletPoints,
+          images: validatedData.images,
+          brandId: validatedData.brandId,
+          mainCategoryId: validatedData.mainCategoryId,
+          sku: validatedData.sku,
+          basePrice: validatedData.basePrice.toString(),
+          listPrice: validatedData.listPrice?.toString(),
+          salePrice: validatedData.salePrice?.toString(),
+          quantity: validatedData.quantity,
+          condition: validatedData.condition,
+          fulfillmentType: validatedData.fulfillmentType,
+          handlingTime: validatedData.handlingTime,
+          maxOrderQuantity: validatedData.maxOrderQuantity,
+          isActive: validatedData.isActive,
+          isAdult: validatedData.isAdult,
+          isPlatformChoice: validatedData.isPlatformChoice,
+          isBestSeller: validatedData.isBestSeller,
+          isFeatured: validatedData.isFeatured,
+          taxClass: validatedData.taxClass,
+          metaTitle: validatedData.metaTitle,
+          metaDescription: validatedData.metaDescription,
+          metaKeywords: validatedData.metaKeywords,
+          searchKeywords: validatedData.searchKeywords,
+          notes: validatedData.notes,
+          updatedAt: new Date().toISOString(),
+        })
+        .where(eq(products.id, productId));
+    });
 
     revalidatePath("/products");
-    revalidatePath(`/products/new`);
+    revalidatePath(`/products/${productId}`);
 
     return {
       success: true,
@@ -264,47 +351,37 @@ export const updateProductAction = async (
   }
 };
 
-// Main add product action
-export const addProductAction = async (
+// Main add product action with transaction
+export const addProduct = async (
   data: AddProductFormData
 ): Promise<ActionResult> => {
   try {
     // Validate the data
     const validatedData = addProductFormSchema.parse(data);
 
-    // Insert the product directly
-    const [newProduct] = await db
-      .insert(products)
-      .values({
-        title: validatedData.title,
-        slug: validatedData.slug,
-        description: validatedData.description || null,
-        bulletPoints: validatedData.bulletPoints || null,
-        images: validatedData.images,
-        brandId: validatedData.brandId || null,
-        mainCategoryId: validatedData.mainCategoryId,
-        basePrice: validatedData.basePrice.toString(),
-        listPrice: validatedData.listPrice?.toString() || null,
-        isActive: validatedData.isActive,
-        isAdult: validatedData.isAdult,
-        isPlatformChoice: validatedData.isPlatformChoice,
-        isBestSeller: validatedData.isBestSeller,
-        taxClass: validatedData.taxClass,
-        metaTitle: validatedData.metaTitle || null,
-        metaDescription: validatedData.metaDescription || null,
-        metaKeywords: validatedData.metaKeywords || null,
-        searchKeywords: validatedData.searchKeywords || null,
-      })
-      .returning();
+    // Get current seller ID
+    const seller = await getCurrentSeller();
+    if (!seller) {
+      return {
+        success: false,
+        message: "Seller not found",
+      };
+    }
+
+    await db.insert(products).values({
+      ...validatedData,
+      sellerId: seller.id,
+    } as any);
 
     revalidatePath("/products");
 
     return {
       success: true,
-      data: { productId: newProduct.id },
       message: "Product created successfully!",
     };
   } catch (error: any) {
+    console.error("Error creating product:", error);
+
     if (error instanceof z.ZodError) {
       const fieldErrors: Record<string, string> = {};
       error.errors.forEach((err) => {
@@ -320,49 +397,29 @@ export const addProductAction = async (
       };
     }
 
-    if (error?.message?.includes("foreign key")) {
-      return {
-        success: false,
-        message: "Invalid category, brand, or seller reference",
-      };
-    }
-
-    // Check for unique constraint violations
-    if (
-      error?.code === "23505" ||
-      error?.cause?.code === "23505" ||
-      error?.message?.includes("unique constraint")
-    ) {
-
-      // Get the actual constraint details (might be nested in cause)
-      const constraintName =
-        error?.constraint_name || error?.cause?.constraint_name;
-      const detail = error?.detail || error?.cause?.detail;
-
-
-      // Check if it's a slug constraint violation
-      if (constraintName === "products_slug_unique") {
+    // Handle unique constraint violations
+    if (error?.code === "23505") {
+      if (error?.constraint?.includes("slug")) {
         return {
           success: false,
           message:
             "A product with this slug already exists. Please choose a different slug.",
         };
       }
-
-      // Check if it's an SKU constraint violation
-      if (constraintName?.includes("sku")) {
+      if (error?.constraint?.includes("sku")) {
         return {
           success: false,
           message:
-            "A product with this SKU already exists. Please choose a different SKU.",
+            "A product with this SKU already exists for this seller. Please choose a different SKU.",
         };
       }
+    }
 
-      // Generic unique constraint error
+    // Handle foreign key constraint violations
+    if (error?.code === "23503") {
       return {
         success: false,
-        message:
-          "A product with this information already exists. Please check your input.",
+        message: "Invalid category, brand, or seller reference",
       };
     }
 
@@ -378,8 +435,7 @@ export const saveDraftAction = async (
   data: Partial<AddProductFormData>
 ): Promise<ActionResult> => {
   try {
-    // TODO: Implement draft saving to database
-    // For now, just simulate saving
+    // TODO: Implement draft saving to database or localStorage alternative
     await new Promise((resolve) => setTimeout(resolve, 500));
 
     return {
@@ -394,24 +450,12 @@ export const saveDraftAction = async (
   }
 };
 
-// Delete product action
+// Delete product action with proper transaction handling
 export const deleteProductAction = async (
   productId: string
 ): Promise<ActionResult> => {
   try {
-    await db.transaction(async (tx: any) => {
-      // Delete in correct order due to foreign key constraints
-      await tx
-        .delete(productImages)
-        .where(eq(productImages.productId as any, productId));
-      await tx
-        .delete(productListings)
-        .where(eq(productListings.productId as any, productId));
-      await tx
-        .delete(productCategories)
-        .where(eq(productCategories.productId as any, productId));
-      await tx.delete(products).where(eq(products.id as any, productId));
-    });
+    await db.delete(products).where(eq(products.id, productId));
 
     revalidatePath("/products");
 
@@ -420,6 +464,7 @@ export const deleteProductAction = async (
       message: "Product deleted successfully",
     };
   } catch (error) {
+    console.error("Error deleting product:", error);
     return {
       success: false,
       message: "Failed to delete product",
