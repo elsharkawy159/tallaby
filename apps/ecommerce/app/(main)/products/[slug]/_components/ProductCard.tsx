@@ -4,29 +4,19 @@ import { Card, CardContent } from "@workspace/ui/components/card";
 import Link from "next/link";
 import Image from "next/image";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
+import { Product } from "../product-page.types";
 
-interface ProductCardProps {
-  id: string;
-  brand: string;
-  name: string;
-  feature: string;
-  model: string;
-  slug: string;
-  price: number;
-  originalPrice?: number;
-  rating: number;
-  reviewCount: number;
-  image: string[];
-}
+const ProductCard = ({ ...product }: Product) => {
+  const {
+    slug,
+    title,
+    images,
+    base_price,
+    average_rating,
+    review_count,
+    sale_price,
+  } = product;
 
-const ProductCard = ({
-  name,
-  slug,
-  price,
-  rating,
-  reviewCount,
-  image,
-}: ProductCardProps) => {
   return (
     <Card className="group bg-white shadow-sm border-0 p-0 relative w-[285px] overflow-hidden rounded-[8px_8px_0_8px]">
       <CardContent className="p-2">
@@ -34,11 +24,11 @@ const ProductCard = ({
         <div className="relative rounded-md overflow-hidden">
           <Link href={`/products/${slug}`}>
             <Image
-              src={getPublicUrl(image[0] as string, "products")}
-              alt={name}
+              src={getPublicUrl(images[0] as string, "products")}
+              alt={title}
               width={270}
               height={310}
-              className="w-full bg-gray-100 aspect-[2.6/3] h-full object-cover"
+              className="w-full bg-gray-100 aspect-[2.6/3] h-full object-contain bg-white"
               priority
             />
           </Link>
@@ -64,15 +54,17 @@ const ProductCard = ({
         {/* Product Info */}
         <div className="space-y-2 mt-2.5">
           <div className="flex items-center gap-4.5 justify-between mb-2">
-            <h3 className="text-base font-medium line-clamp-1">{name}</h3>
-            <span className="text-lg font-semibold">{price}$</span>
+            <h3 className="text-base font-medium line-clamp-2">{title}</h3>
+            <span className="text-lg font-semibold">
+              {sale_price ? sale_price : base_price}$
+            </span>
           </div>
 
           {/* Rating */}
           <div className="flex text-sm items-center gap-1">
-            <span className="font-medium">{rating}</span>
+            <span className="font-medium">{average_rating || 0}</span>
             <Star className="h-4 w-4 text-yellow-400 fill-current" />
-            <span className="text-gray-500">({reviewCount})</span>
+            <span className="text-gray-500">({review_count || 0})</span>
           </div>
 
           {/* Add to Cart Button */}

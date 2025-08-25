@@ -1,7 +1,9 @@
+"use client";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useCart } from "@/hooks/useCart";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import { Button } from "@workspace/ui/components/button";
 import { Card, CardContent } from "@workspace/ui/components/card";
 import { Heart, ShoppingCart, Trash2 } from "lucide-react";
@@ -33,6 +35,7 @@ const Wishlist = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <DynamicBreadcrumb />
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold">My Wishlist</h1>

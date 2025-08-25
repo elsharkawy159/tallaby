@@ -13,6 +13,7 @@ import { Button } from "@workspace/ui/components/button";
 import { Badge } from "@workspace/ui/components/badge";
 import type { Product, Review, FAQ } from "../product-page.types";
 import Image from "next/image";
+import { getPublicUrl } from "@workspace/ui/lib/utils";
 
 interface ProductTabsProps {
   product: Product;
@@ -121,10 +122,10 @@ export const ProductTabs = ({ product }: ProductTabsProps) => {
   );
 
   return (
-    <section className="bg-white py-8">
+    <section className="bg-white py-6 lg:py-8">
       <div className="container mx-auto px-4">
         {/* Tab Navigation */}
-        <div className="flex border-b border-gray-200 mb-8">
+        <div className="flex border-b border-gray-200 mb-6 lg:mb-8 overflow-x-auto">
           {[
             { id: "reviews", label: "Reviews", icon: MessageCircle },
             { id: "faq", label: "FAQ", icon: HelpCircle },
@@ -135,13 +136,13 @@ export const ProductTabs = ({ product }: ProductTabsProps) => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-6 py-3 font-medium transition-colors ${
+                className={`flex items-center gap-1 lg:gap-2 px-3 lg:px-6 py-2 lg:py-3 font-medium transition-colors text-sm lg:text-base whitespace-nowrap ${
                   activeTab === tab.id
                     ? "text-primary border-b-2 border-primary"
                     : "text-gray-600 hover:text-gray-900"
                 }`}
               >
-                <Icon className="h-5 w-5" />
+                <Icon className="h-4 w-4 lg:h-5 lg:w-5" />
                 {tab.label}
               </button>
             );
@@ -152,14 +153,14 @@ export const ProductTabs = ({ product }: ProductTabsProps) => {
         <div className="min-h-[400px]">
           {/* Reviews Tab */}
           {activeTab === "reviews" && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
               {/* Reviews List */}
-              <div className="lg:col-span-2 space-y-6">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-bold text-gray-900">
+              <div className="lg:col-span-2 space-y-4 lg:space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <h3 className="text-lg lg:text-xl font-bold text-gray-900">
                     Customer Reviews
                   </h3>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" className="w-fit">
                     Write a Review
                   </Button>
                 </div>
@@ -167,20 +168,20 @@ export const ProductTabs = ({ product }: ProductTabsProps) => {
                 {mockReviews.map((review) => (
                   <div
                     key={review.id}
-                    className="border border-gray-200 rounded-lg p-6"
+                    className="border border-gray-200 rounded-lg p-4 lg:p-6"
                   >
-                    <div className="flex items-start gap-4 mb-4">
-                      <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
-                        <span className="text-lg font-semibold text-gray-600">
+                    <div className="flex items-start gap-3 lg:gap-4 mb-3 lg:mb-4">
+                      <div className="w-10 h-10 lg:w-12 lg:h-12 bg-gray-200 rounded-full flex items-center justify-center">
+                        <span className="text-base lg:text-lg font-semibold text-gray-600">
                           {review.user.charAt(0).toUpperCase()}
                         </span>
                       </div>
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="font-semibold text-gray-900">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-2">
+                          <span className="font-semibold text-gray-900 text-sm lg:text-base">
                             {review.user}
                           </span>
-                          <span className="text-sm text-gray-500">
+                          <span className="text-xs lg:text-sm text-gray-500">
                             {review.date}
                           </span>
                         </div>
@@ -189,18 +190,20 @@ export const ProductTabs = ({ product }: ProductTabsProps) => {
                         </div>
                       </div>
                     </div>
-                    <p className="text-gray-700 mb-4">{review.comment}</p>
-                    <div className="flex items-center justify-between">
+                    <p className="text-gray-700 mb-3 lg:mb-4 text-sm lg:text-base">
+                      {review.comment}
+                    </p>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div className="flex gap-2">
                         {["#f3f4f6", "#e5e7eb", "#d1d5db"].map((color, i) => (
                           <div
                             key={i}
-                            className="w-8 h-8 rounded-lg border border-gray-200"
+                            className="w-6 h-6 lg:w-8 lg:h-8 rounded-lg border border-gray-200"
                             style={{ backgroundColor: color }}
                           />
                         ))}
                       </div>
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" className="w-fit">
                         Helpful ({review.helpful})
                       </Button>
                     </div>
@@ -213,21 +216,21 @@ export const ProductTabs = ({ product }: ProductTabsProps) => {
               </div>
 
               {/* Rating Summary */}
-              <div className="space-y-6">
-                <div className="border border-gray-200 rounded-lg p-6">
-                  <div className="text-center mb-4">
-                    <div className="text-3xl font-bold text-gray-900 mb-2">
+              <div className="space-y-4 lg:space-y-6">
+                <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+                  <div className="text-center mb-3 lg:mb-4">
+                    <div className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
                       {product.rating}
                     </div>
                     <div className="flex justify-center mb-2">
                       {renderStars(product.rating)}
                     </div>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-xs lg:text-sm text-gray-600">
                       Based on {product.reviewCount} ratings
                     </p>
                   </div>
 
-                  <div className="space-y-3">
+                  <div className="space-y-2 lg:space-y-3">
                     {renderRatingBar(5, 83)}
                     {renderRatingBar(4, 56)}
                     {renderRatingBar(3, 15)}
@@ -236,11 +239,11 @@ export const ProductTabs = ({ product }: ProductTabsProps) => {
                   </div>
                 </div>
 
-                <div className="border border-gray-200 rounded-lg p-6">
-                  <h4 className="font-semibold text-gray-900 mb-4">
+                <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+                  <h4 className="font-semibold text-gray-900 mb-3 lg:mb-4 text-sm lg:text-base">
                     Leave a Review
                   </h4>
-                  <p className="text-sm text-gray-600 mb-4">
+                  <p className="text-xs lg:text-sm text-gray-600 mb-3 lg:mb-4">
                     You can only review products you've purchased. Share your
                     experience with the product, the vendor, and the delivery.
                   </p>
@@ -255,18 +258,18 @@ export const ProductTabs = ({ product }: ProductTabsProps) => {
 
           {/* FAQ Tab */}
           {activeTab === "faq" && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-bold text-gray-900">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+              <div className="space-y-4 lg:space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <h3 className="text-lg lg:text-xl font-bold text-gray-900">
                     Frequently Asked Questions
                   </h3>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" className="w-fit">
                     View More
                   </Button>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-3 lg:space-y-4">
                   {mockFAQs.map((faq) => (
                     <div
                       key={faq.id}
@@ -274,20 +277,22 @@ export const ProductTabs = ({ product }: ProductTabsProps) => {
                     >
                       <button
                         onClick={() => toggleFAQ(faq.id)}
-                        className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
+                        className="w-full px-4 lg:px-6 py-3 lg:py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
                       >
-                        <span className="font-medium text-gray-900">
+                        <span className="font-medium text-gray-900 text-sm lg:text-base">
                           {faq.question}
                         </span>
                         {expandedFAQs.has(faq.id) ? (
-                          <ChevronUp className="h-5 w-5 text-gray-500" />
+                          <ChevronUp className="h-4 w-4 lg:h-5 lg:w-5 text-gray-500" />
                         ) : (
-                          <ChevronDown className="h-5 w-5 text-gray-500" />
+                          <ChevronDown className="h-4 w-4 lg:h-5 lg:w-5 text-gray-500" />
                         )}
                       </button>
                       {expandedFAQs.has(faq.id) && (
-                        <div className="px-6 pb-4">
-                          <p className="text-gray-700">{faq.answer}</p>
+                        <div className="px-4 lg:px-6 pb-3 lg:pb-4">
+                          <p className="text-gray-700 text-sm lg:text-base">
+                            {faq.answer}
+                          </p>
                         </div>
                       )}
                     </div>
@@ -295,16 +300,16 @@ export const ProductTabs = ({ product }: ProductTabsProps) => {
                 </div>
               </div>
 
-              <div className="space-y-6">
-                <div className="border border-gray-200 rounded-lg p-6">
-                  <h4 className="font-semibold text-gray-900 mb-4">
+              <div className="space-y-4 lg:space-y-6">
+                <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+                  <h4 className="font-semibold text-gray-900 mb-3 lg:mb-4 text-sm lg:text-base">
                     Have a Question?
                   </h4>
-                  <div className="space-y-4">
+                  <div className="space-y-3 lg:space-y-4">
                     <input
                       type="text"
                       placeholder="Type your question here..."
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                      className="w-full px-3 lg:px-4 py-2 lg:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm lg:text-base"
                     />
                     <Button className="w-full">Send Question</Button>
                   </div>
@@ -315,30 +320,29 @@ export const ProductTabs = ({ product }: ProductTabsProps) => {
 
           {/* Gallery Tab */}
           {activeTab === "gallery" && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xl font-bold text-gray-900">
+            <div className="space-y-4 lg:space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <h3 className="text-lg lg:text-xl font-bold text-gray-900">
                   Product Gallery
                 </h3>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="w-fit">
                   View More
                 </Button>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 lg:gap-4">
                 {product?.images?.map((image, index) => (
                   <div
                     key={index}
-                    className="aspect-square bg-gray-200 rounded-lg border border-gray-200 hover:border-primary transition-colors cursor-pointer"
+                    className="aspect-square bg-gray-200 rounded-lg border border-gray-200 hover:border-primary transition-colors cursor-pointer overflow-hidden"
                   >
-                    <div className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 rounded-lg flex items-center justify-center">
-                      <Image
-                        src={image}
-                        alt={product.name}
-                        width={100}
-                        height={100}
-                      />
-                    </div>
+                    <Image
+                      src={getPublicUrl(image, "products")}
+                      alt={product.name}
+                      width={150}
+                      height={150}
+                      className="w-full h-full object-contain bg-white"
+                    />
                   </div>
                 ))}
               </div>

@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { ProfileSidebar, ProfileForm } from "./profile.chunks";
 import { getUserAddresses } from "./profile.server";
+import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import Link from "next/link";
 
 async function ProfileData() {
@@ -26,15 +27,8 @@ async function ProfileData() {
 export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <DynamicBreadcrumb customLabels={{ profile: "My Account" }} />
       <main className="container mx-auto px-4 py-8">
-        {/* Breadcrumb */}
-        <nav className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-          <Link href="/" className="hover:text-primary">
-            Home
-          </Link>{" "}
-          /<span className="text-primary font-medium"> My Account</span>
-        </nav>
-
         <Suspense fallback={null}>
           <ProfileData />
         </Suspense>

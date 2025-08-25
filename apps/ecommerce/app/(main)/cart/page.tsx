@@ -1,6 +1,7 @@
 "use client";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import { Button } from "@workspace/ui/components/button";
 import { Separator } from "@workspace/ui/components/separator";
 import { Minus, Plus, X, ShoppingBag, ArrowLeft } from "lucide-react";
@@ -75,15 +76,8 @@ const Cart = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <DynamicBreadcrumb customLabels={{ cart: "Shopping Cart" }} />
       <main className="flex-1 container mx-auto px-4 py-8">
-        {/* Breadcrumb */}
-        <nav className="text-sm text-gray-600 mb-6">
-          <Link href="/" className="hover:text-primary">
-            Home
-          </Link>{" "}
-          /<span className="text-primary font-medium"> Shopping Cart</span>
-        </nav>
-
         <h1 className="text-3xl font-bold mb-8">
           Shopping Cart ({itemCount} items)
         </h1>

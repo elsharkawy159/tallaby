@@ -2,6 +2,7 @@ import { Users, Target, Award, Globe, Heart, Truck } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@workspace/ui/components/button";
 import { Badge } from "@workspace/ui/components/badge";
+import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 
 const About = () => {
   const stats = [
@@ -71,6 +72,7 @@ const About = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <DynamicBreadcrumb />
       <main className="flex-1">
         {/* Hero Section */}
         <section className="bg-gradient-to-br from-primary to-primary/80 text-white py-20">

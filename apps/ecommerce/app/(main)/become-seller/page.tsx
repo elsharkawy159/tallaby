@@ -15,6 +15,7 @@ import {
   getPricingPlansData,
 } from "./become-seller.lib";
 import { getSellerApplicationStatus } from "./become-seller.server";
+import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import Link from "next/link";
 
 // Metadata for SEO
@@ -49,6 +50,9 @@ export default async function BecomeSeller() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <DynamicBreadcrumb
+        customLabels={{ "become-seller": "Become a Seller" }}
+      />
       <main className="flex-1">
         {/* Hero Section */}
         <HeroSection />

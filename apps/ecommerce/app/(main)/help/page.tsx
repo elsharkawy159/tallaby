@@ -1,5 +1,6 @@
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import {
@@ -146,6 +147,7 @@ const Help = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <DynamicBreadcrumb />
       <main className="flex-1">
         {/* Hero Section */}
         <section className="bg-gradient-to-br from-primary to-primary/80 text-white py-16">

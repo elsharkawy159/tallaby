@@ -5,6 +5,7 @@ import { useCart } from "@/hooks/useCart";
 // import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
@@ -160,20 +161,8 @@ const Checkout = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <DynamicBreadcrumb />
       <main className="flex-1 container mx-auto px-4 py-8">
-        {/* Breadcrumb */}
-        <nav className="text-sm text-gray-600 mb-6">
-          <Link href="/" className="hover:text-primary">
-            Home
-          </Link>{" "}
-          /
-          <Link href="/cart" className="hover:text-primary">
-            {" "}
-            Cart
-          </Link>{" "}
-          /<span className="text-primary font-medium"> Checkout</span>
-        </nav>
-
         <h1 className="text-3xl font-bold mb-8">Checkout</h1>
 
         {/* Progress Steps */}

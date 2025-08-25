@@ -1,5 +1,6 @@
 import { Button } from "@workspace/ui/components/button";
 import { Badge } from "@workspace/ui/components/badge";
+import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import {
   ArrowRight,
   Shirt,
@@ -162,163 +163,166 @@ const Categories = () => {
   ];
 
   return (
-    <main className="flex-1">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary to-primary/80 text-white py-16">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Explore All Categories
-          </h1>
-          <p className="text-xl mb-8 max-w-2xl mx-auto">
-            Discover millions of products across hundreds of categories from
-            trusted sellers worldwide
-          </p>
-          <Badge className="bg-accent text-black text-lg px-4 py-2">
-            200+ Categories Available
-          </Badge>
-        </div>
-      </section>
-
-      {/* Main Categories Grid */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Shop by Category</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Find exactly what you're looking for in our organized category
-              structure
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {mainCategories.map((category) => (
-              <div key={category.id} className="group">
-                <Link href={`/category/${category.id}`}>
-                  <div className="bg-white border rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 group-hover:-translate-y-1">
-                    <div className="relative overflow-hidden">
-                      <img
-                        src={category.image}
-                        alt={category.name}
-                        className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                      <div className="absolute top-4 right-4">
-                        <Badge className="bg-white text-primary">
-                          {category.productCount} Products
-                        </Badge>
-                      </div>
-                    </div>
-
-                    <div className="p-6">
-                      <div className="flex items-center space-x-3 mb-3">
-                        <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-                          <category.icon className="h-5 w-5 text-white" />
-                        </div>
-                        <h3 className="text-xl font-bold group-hover:text-primary transition-colors">
-                          {category.name}
-                        </h3>
-                      </div>
-
-                      <p className="text-gray-600 mb-4">
-                        {category.description}
-                      </p>
-
-                      <div className="mb-4">
-                        <p className="text-sm font-medium mb-2">
-                          Popular Subcategories:
-                        </p>
-                        <div className="flex flex-wrap gap-1">
-                          {category.subcategories
-                            .slice(0, 3)
-                            .map((sub, index) => (
-                              <Badge
-                                key={index}
-                                variant="secondary"
-                                className="text-xs"
-                              >
-                                {sub}
-                              </Badge>
-                            ))}
-                          {category.subcategories.length > 3 && (
-                            <Badge variant="outline" className="text-xs">
-                              +{category.subcategories.length - 3} more
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="group-hover:bg-primary group-hover:text-white transition-colors"
-                        >
-                          Browse Category
-                          <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Brands */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Featured Brands</h2>
-            <p className="text-gray-600">Shop from your favorite brands</p>
-          </div>
-          <div className="flex flex-wrap justify-center gap-8">
-            {featuredBrands.map((brand, index) => (
-              <div
-                key={index}
-                className="bg-white px-6 py-4 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-              >
-                <span className="font-bold text-gray-700">{brand}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Quick Actions */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="bg-primary text-white rounded-2xl p-8 md:p-12 text-center">
-            <h2 className="text-3xl font-bold mb-4">
-              Can't Find What You're Looking For?
-            </h2>
+    <>
+      <DynamicBreadcrumb />
+      <main className="flex-1">
+        {/* Hero Section */}
+        <section className="bg-gradient-to-br from-primary to-primary/80 text-white py-16">
+          <div className="container mx-auto px-4 text-center">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+              Explore All Categories
+            </h1>
             <p className="text-xl mb-8 max-w-2xl mx-auto">
-              Use our advanced search or contact our customer service team for
-              personalized assistance
+              Discover millions of products across hundreds of categories from
+              trusted sellers worldwide
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/products">
-                <Button
-                  size="lg"
-                  className="bg-accent text-black hover:bg-accent/90"
-                >
-                  Advanced Search
-                </Button>
-              </Link>
-              <Link href="/contact">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="border-white text-white hover:bg-white hover:text-primary"
-                >
-                  Contact Support
-                </Button>
-              </Link>
+            <Badge className="bg-accent text-black text-lg px-4 py-2">
+              200+ Categories Available
+            </Badge>
+          </div>
+        </section>
+
+        {/* Main Categories Grid */}
+        <section className="py-16">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold mb-4">Shop by Category</h2>
+              <p className="text-gray-600 max-w-2xl mx-auto">
+                Find exactly what you're looking for in our organized category
+                structure
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {mainCategories.map((category) => (
+                <div key={category.id} className="group">
+                  <Link href={`/category/${category.id}`}>
+                    <div className="bg-white border rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 group-hover:-translate-y-1">
+                      <div className="relative overflow-hidden">
+                        <img
+                          src={category.image}
+                          alt={category.name}
+                          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <div className="absolute top-4 right-4">
+                          <Badge className="bg-white text-primary">
+                            {category.productCount} Products
+                          </Badge>
+                        </div>
+                      </div>
+
+                      <div className="p-6">
+                        <div className="flex items-center space-x-3 mb-3">
+                          <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                            <category.icon className="h-5 w-5 text-white" />
+                          </div>
+                          <h3 className="text-xl font-bold group-hover:text-primary transition-colors">
+                            {category.name}
+                          </h3>
+                        </div>
+
+                        <p className="text-gray-600 mb-4">
+                          {category.description}
+                        </p>
+
+                        <div className="mb-4">
+                          <p className="text-sm font-medium mb-2">
+                            Popular Subcategories:
+                          </p>
+                          <div className="flex flex-wrap gap-1">
+                            {category.subcategories
+                              .slice(0, 3)
+                              .map((sub, index) => (
+                                <Badge
+                                  key={index}
+                                  variant="secondary"
+                                  className="text-xs"
+                                >
+                                  {sub}
+                                </Badge>
+                              ))}
+                            {category.subcategories.length > 3 && (
+                              <Badge variant="outline" className="text-xs">
+                                +{category.subcategories.length - 3} more
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="group-hover:bg-primary group-hover:text-white transition-colors"
+                          >
+                            Browse Category
+                            <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                </div>
+              ))}
             </div>
           </div>
-        </div>
-      </section>
-    </main>
+        </section>
+
+        {/* Featured Brands */}
+        <section className="py-16 bg-gray-50">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold mb-4">Featured Brands</h2>
+              <p className="text-gray-600">Shop from your favorite brands</p>
+            </div>
+            <div className="flex flex-wrap justify-center gap-8">
+              {featuredBrands.map((brand, index) => (
+                <div
+                  key={index}
+                  className="bg-white px-6 py-4 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                >
+                  <span className="font-bold text-gray-700">{brand}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Quick Actions */}
+        <section className="py-16">
+          <div className="container mx-auto px-4">
+            <div className="bg-primary text-white rounded-2xl p-8 md:p-12 text-center">
+              <h2 className="text-3xl font-bold mb-4">
+                Can't Find What You're Looking For?
+              </h2>
+              <p className="text-xl mb-8 max-w-2xl mx-auto">
+                Use our advanced search or contact our customer service team for
+                personalized assistance
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link href="/products">
+                  <Button
+                    size="lg"
+                    className="bg-accent text-black hover:bg-accent/90"
+                  >
+                    Advanced Search
+                  </Button>
+                </Link>
+                <Link href="/contact">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="border-white text-white hover:bg-white hover:text-primary"
+                  >
+                    Contact Support
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </>
   );
 };
 

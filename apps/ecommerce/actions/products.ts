@@ -1,13 +1,18 @@
 "use server";
 
+import { db, products, brands, categories } from "@workspace/db";
 import {
-  db,
-  products,
-  brands,
-  categories,
-  productVariants,
-} from "@workspace/db";
-import { and, asc, desc, eq, gte, ilike, inArray, lte, sql } from "drizzle-orm";
+  and,
+  asc,
+  desc,
+  eq,
+  gt,
+  gte,
+  ilike,
+  inArray,
+  lte,
+  sql,
+} from "drizzle-orm";
 import { SearchParams } from "@/hooks/use-url-params";
 
 export async function getProducts(params: SearchParams) {
@@ -22,13 +27,16 @@ export async function getProducts(params: SearchParams) {
   } = params;
 
   try {
+    // Base price expression from JSON price column
+    const basePriceExpr = sql<number>`(products.price->>'base')::numeric`;
+
     // Build the base query
     let query = db
       .select({
         id: products.id,
         title: products.title,
         slug: products.slug,
-        base_price: products.basePrice,
+        base_price: basePriceExpr,
         average_rating: products.averageRating,
         review_count: products.reviewCount,
         brand: {
@@ -45,30 +53,23 @@ export async function getProducts(params: SearchParams) {
       .where(
         and(
           eq(products.isActive, true),
-          // Search condition
           search ? ilike(products.title, `%${search}%`) : undefined,
-          // Category filter
           categoryIds.length > 0
             ? inArray(products.mainCategoryId, categoryIds)
             : undefined,
-          // Price range
-          priceMin
-            ? gte(products.basePrice, priceMin.toString() as any)
-            : undefined,
-          priceMax
-            ? lte(products.basePrice, priceMax.toString() as any)
-            : undefined
-        )
+          priceMin ? sql`${basePriceExpr} >= ${priceMin}` : undefined,
+          priceMax ? sql`${basePriceExpr} <= ${priceMax}` : undefined
+        ) as any
       )
       .groupBy(products.id, brands.name, categories.name);
 
     // Add sorting
     switch (sort) {
       case "price-low":
-        query = query.orderBy(asc(products.basePrice)) as any;
+        query = query.orderBy(asc(basePriceExpr as any)) as any;
         break;
       case "price-high":
-        query = query.orderBy(desc(products.basePrice)) as any;
+        query = query.orderBy(desc(basePriceExpr as any)) as any;
         break;
       case "newest":
         query = query.orderBy(desc(products.createdAt)) as any;
@@ -91,13 +92,9 @@ export async function getProducts(params: SearchParams) {
           categoryIds.length > 0
             ? inArray(products.mainCategoryId, categoryIds)
             : undefined,
-          priceMin
-            ? gte(products.basePrice, priceMin.toString() as any)
-            : undefined,
-          priceMax
-            ? lte(products.basePrice, priceMax.toString() as any)
-            : undefined
-        )
+          priceMin ? sql`${basePriceExpr} >= ${priceMin}` : undefined,
+          priceMax ? sql`${basePriceExpr} <= ${priceMax}` : undefined
+        ) as any
       );
 
     // Execute both queries in parallel
@@ -121,98 +118,101 @@ export async function getProducts(params: SearchParams) {
   }
 }
 
-export async function getProduct(slug: string) {
-  try {
-    const product = await db
-      .select({
-        id: products.id,
-        name: products.title,
-        slug: products.slug,
-        price: products.basePrice,
-        originalPrice: products.listPrice,
-        rating: products.averageRating,
-        reviewCount: products.reviewCount,
-        description: products.description,
-        features: products.bulletPoints,
-        inStock: sql<boolean>`EXISTS (
-          SELECT 1 FROM ${productVariants}
-          WHERE ${productVariants.productId} = ${products.id}
-          AND ${productVariants.isActive} = true
-          AND ${productVariants.stock} > 0
-        )`,
-        brand: {
-          name: brands.name,
-          rating: brands.averageRating,
-          reviews: brands.reviewCount,
-        },
-        images: products.images,
-        variants: sql<Array<{ attributes: any }>>`
-          COALESCE(
-            json_agg(
-              json_build_object(
-                'attributes', ${productVariants.attributes}
-              )
-            ) FILTER (WHERE ${productVariants.id} IS NOT NULL),
-            '[]'
-          )
-        `,
-      })
-      .from(products)
-      .leftJoin(brands, eq(products.brandId, brands.id))
-      .leftJoin(productVariants, eq(products.id, productVariants.productId))
-      .where(and(eq(products.slug, slug), eq(products.isActive, true)))
-      .groupBy(
-        products.id,
-        brands.name,
-        brands.averageRating,
-        brands.reviewCount
-      )
-      .limit(1);
+// Define types for better type safety
+interface ProductVariant {
+  id: string;
+  attributes: any;
+  stock: number;
+  isActive: boolean;
+}
 
-    if (!product[0]) {
+interface Brand {
+  name: string;
+  averageRating: number | null;
+  reviewCount: number;
+}
+
+interface ProductWithDetails {
+  id: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  isActive: boolean;
+  brand: Brand;
+  variants: any[] | null;
+  // Add other product fields as needed
+  availableSizes: string[];
+  availableColors: { name: string; hex: string }[];
+}
+
+export async function getProduct(slug: string): Promise<ProductWithDetails> {
+  try {
+    const product = await db.query.products.findFirst({
+      where: and(eq(products.slug, slug), eq(products.isActive, true)),
+      with: {
+        brand: {
+          columns: {
+            name: true,
+            averageRating: true,
+            reviewCount: true,
+          },
+        },
+      },
+      columns: {
+        id: true,
+        slug: true,
+        title: true,
+        description: true,
+        isActive: true,
+        variants: true,
+      },
+    });
+
+    if (!product) {
       throw new Error("Product not found");
     }
 
     // Extract sizes and colors from variants
-    const variants = product[0].variants || [];
+    const variants = (product.variants as any[]) || [];
     const sizes = new Set<string>();
     const colors = new Set<{ name: string; hex: string }>();
 
     variants.forEach((variant: any) => {
-      const attrs = variant.attributes || {};
-      if (attrs.size) sizes.add(attrs.size);
+      const attrs = (variant && (variant.attributes || variant)) || ({} as any);
+
+      // Handle size attribute
+      if (attrs.size) {
+        sizes.add(attrs.size);
+      }
+
+      // Handle color attribute
       if (attrs.color) {
-        colors.add({
-          name: attrs.color.name || attrs.color,
-          hex: attrs.color.hex || "#000000",
-        });
+        const colorName =
+          typeof attrs.color === "string"
+            ? attrs.color
+            : attrs.color.name || "Unknown";
+
+        const colorHex =
+          typeof attrs.color === "object" && attrs.color.hex
+            ? attrs.color.hex
+            : "#000000";
+
+        // Add to Set (note: Set with objects requires manual duplicate checking)
+        const existingColor = Array.from(colors).find(
+          (c) => c.name === colorName
+        );
+        if (!existingColor) {
+          colors.add({ name: colorName, hex: colorHex });
+        }
       }
     });
 
     // Transform the data to match the expected format
-    const transformedProduct = {
-      id: product[0].id,
-      name: product[0].name,
-      price: Number(product[0].price),
-      originalPrice: product[0].originalPrice
-        ? Number(product[0].originalPrice)
-        : undefined,
-      rating: product[0].rating || 0,
-      reviewCount: product[0].reviewCount || 0,
-      description: product[0].description || "",
-      features: (product[0].features as string[]) || [],
-      inStock: product[0].inStock,
-      seller: {
-        name: product[0].brand?.name || "",
-        rating: product[0].brand?.rating || 0,
-        reviews: product[0].brand?.reviews || 0,
-      },
-      images: (product[0].images as string[]) || [],
-      colors: Array.from(colors),
-      sizes: Array.from(sizes),
-    };
-
-    return transformedProduct;
+    return {
+      ...product,
+      availableSizes: Array.from(sizes),
+      availableColors: Array.from(colors),
+    } as ProductWithDetails;
   } catch (error) {
     console.error("Error fetching product:", error);
     throw new Error("Failed to fetch product");

@@ -1,6 +1,6 @@
 "use server";
 
-import { db, sellers, users, productListings, orderItems } from "@workspace/db";
+import { db, sellers, users, orderItems } from "@workspace/db";
 
 import {
   eq,
@@ -181,12 +181,9 @@ export async function getSellerStats(): Promise<{
 
     const suspendedSellers = suspendedSellersResult[0]?.count || 0;
 
-    // Get total products count
-    const totalProductsResult = await db
-      .select({ count: count() })
-      .from(productListings);
 
-    const totalProducts = totalProductsResult[0]?.count || 0;
+
+    const totalProducts = 0;
 
     // Get total revenue (sum of all order items)
     const totalRevenueResult = await db
@@ -296,18 +293,6 @@ export async function getSellerById(sellerId: string) {
 
 export async function deleteSeller(sellerId: string) {
   try {
-    // Check if seller has any products or orders
-    const productCount = await db
-      .select({ count: count() })
-      .from(productListings)
-      .where(eq(productListings.sellerId, sellerId));
-
-    if (productCount[0]?.count && productCount[0].count > 0) {
-      return {
-        success: false,
-        error: "Cannot delete seller with existing products",
-      };
-    }
 
     await db.delete(sellers).where(eq(sellers.id, sellerId));
 

@@ -1,5 +1,6 @@
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import {
   Card,
   CardContent,
@@ -11,6 +12,7 @@ import { Separator } from "@workspace/ui/components/separator";
 const Terms = () => {
   return (
     <div className="min-h-screen flex flex-col">
+      <DynamicBreadcrumb customLabels={{ terms: "Terms & Conditions" }} />
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">

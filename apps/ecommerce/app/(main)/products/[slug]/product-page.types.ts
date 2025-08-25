@@ -4,23 +4,27 @@ export interface ProductPageProps {
 
 export interface Product {
   id: string;
-  name: string;
+  title: string;
   slug?: string;
-  price: number;
-  originalPrice?: number;
-  rating: number;
-  reviewCount: number;
+  base_price: number;
+  sale_price?: number;
+  average_rating: number;
+  review_count: number;
   description: string;
-  features: string[];
-  inStock: boolean;
-  seller: {
-    name: string;
-    rating: number;
-    reviews: number;
-  };
+  bulletPoints: string[];
+  isActive: boolean;
+  isBuyBox: boolean;
+  isFeatured: boolean;
+  isBestSeller: boolean;
+  isPlatformChoice: boolean;
   images: string[];
-  colors: Array<{ name: string; hex: string }>;
-  sizes: string[];
+  brand: {
+    name: string;
+  };
+  category: {
+    name: string;
+  };
+
 }
 
 export interface Review {
