@@ -36,7 +36,7 @@ export const addProductSchema = z
       .optional(),
 
     // Category & Brand
-    mainCategoryId: z.string().min(1, "Main category is required"),
+    categoryId: z.string().min(1, "Main category is required"),
     brandId: z.string().optional(),
 
     // Pricing

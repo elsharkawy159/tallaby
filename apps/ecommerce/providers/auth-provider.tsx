@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { createContext, type ReactNode, useContext } from "react";
 import {
-  getCurrentUser,
+  getUser,
   signOutAction,
   getUserWithSellerProfile,
 } from "@/actions/auth";
@@ -42,8 +42,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { isLoading, data: user } = useQuery<User | null, Error>({
     queryKey: ["user"],
     queryFn: async () => {
-      const user = await getCurrentUser();
-      return user ?? null;
+      const user = await getUser();
+      return user?.user ?? null;
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
   });

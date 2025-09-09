@@ -2,64 +2,57 @@ import type { StepperStep } from "@workspace/ui/components/stepper";
 
 export const FORM_STEPS: StepperStep[] = [
   {
-    id: "basic",
-    title: "Basic Information",
-    description: "Product name, description, and category",
+    id: "general",
+    title: "General",
+    description: "Basic info, category, brand, and images",
   },
   {
-    id: "images",
-    title: "Product Images",
-    description: "Upload product photos",
+    id: "listing",
+    title: "Listing",
+    description: "Pricing, inventory, settings, and dimensions",
   },
   {
-    id: "pricing",
-    title: "Pricing",
-    description: "Set base and listing prices",
-  },
-  {
-    id: "inventory",
-    title: "Inventory & Stock",
-    description: "Manage stock levels and SKU",
-  },
-  {
-    id: "settings",
-    title: "Product Settings",
-    description: "Condition, fulfillment, and status",
-  },
-  {
-    id: "physical",
-    title: "Physical Properties",
-    description: "Weight, dimensions, and tax class",
-  },
-  {
-    id: "seo",
-    title: "SEO & Marketing",
-    description: "Search engine optimization",
+    id: "variants-seo",
+    title: "Variants & SEO",
+    description: "Product variants and SEO settings",
   },
 ];
 
 export const STEP_VALIDATION_FIELDS: Record<string, string[]> = {
-  basic: [
+  general: [
     "title",
     "slug",
     "description",
     "bulletPoints",
-    "mainCategoryId",
+    "categoryId",
     "brandId",
+    "images",
   ],
-  images: ["images"],
-  pricing: ["basePrice", "listPrice", "price", "salePrice"],
-  inventory: ["sku", "stockQuantity", "maxOrderQuantity", "restockDate"],
-  settings: [
+  listing: [
+    "sku",
+    "quantity",
+    "maxOrderQuantity",
     "condition",
     "fulfillmentType",
     "handlingTime",
+    "taxClass",
+    "price.base",
+    "price.list",
+    "price.sale",
+    "dimensions.length",
+    "dimensions.width",
+    "dimensions.height",
+    "dimensions.weight",
     "isActive",
-    "isAdult",
     "isPlatformChoice",
-    "isBestSeller",
+    "isMostSelling",
     "isFeatured",
   ],
-  physical: ["weight", "dimensions", "taxClass", "notes"],
-  seo: ["metaTitle", "metaDescription", "metaKeywords", "searchKeywords"],
+  "variants-seo": [
+    "variants",
+    "seo.metaTitle",
+    "seo.metaDescription",
+    "seo.metaKeywords",
+    "seo.searchKeywords",
+  ],
 };

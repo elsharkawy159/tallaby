@@ -12,7 +12,6 @@ import {
   FileText,
   HelpCircle,
   X,
-  MessageCircle,
   Gift,
   ChevronLeft,
   ChevronRight,
@@ -24,6 +23,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { ScrollArea, ScrollBar } from "@workspace/ui/components/scroll-area";
+import { useSiteData } from "@/providers/site-data";
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -33,18 +33,20 @@ interface SidebarProps {
 export const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
   const t = useTranslations();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const { seller } = useSiteData();
+  console.log("seller", seller.data);
 
   const navigationItems = [
     { name: t("nav.dashboard"), icon: BarChart3, href: "/" },
     { name: t("nav.products"), icon: Package, href: "/products" },
     { name: t("nav.orders"), icon: ShoppingBag, href: "/orders" },
-    { name: t("nav.coupons"), icon: Gift, href: "/coupons" },
-    { name: t("nav.settings"), icon: Settings, href: "/settings" },
-    { name: t("nav.financial"), icon: DollarSign, href: "/financial" },
     { name: t("nav.reviews"), icon: Star, href: "/reviews" },
-    { name: t("nav.marketing"), icon: TrendingUp, href: "/marketing" },
+    // { name: t("nav.marketing"), icon: TrendingUp, href: "/marketing" },
     { name: t("nav.shipping"), icon: Truck, href: "/shipping" },
-    { name: t("nav.reports"), icon: FileText, href: "/reports" },
+    // { name: t("nav.reports"), icon: FileText, href: "/reports" },
+    // { name: t("nav.coupons"), icon: Gift, href: "/coupons" },
+    // { name: t("nav.financial"), icon: DollarSign, href: "/financial" },
+    { name: t("nav.settings"), icon: Settings, href: "/settings" },
     { name: t("nav.help"), icon: HelpCircle, href: "/help" },
   ];
 
@@ -61,6 +63,7 @@ export const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
           navigationItems={navigationItems}
           isCollapsed={isCollapsed}
           onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
+          seller={seller.data}
         />
       </aside>
 
@@ -79,7 +82,11 @@ export const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
             <X size={24} />
           </Button>
         </div>
-        <SidebarContent navigationItems={navigationItems} isCollapsed={false} />
+        <SidebarContent
+          navigationItems={navigationItems}
+          isCollapsed={false}
+          seller={seller.data}
+        />
       </aside>
     </>
   );
@@ -89,10 +96,12 @@ const SidebarContent = ({
   navigationItems,
   isCollapsed,
   onToggleCollapse,
+  seller,
 }: {
   navigationItems: any[];
   isCollapsed: boolean;
   onToggleCollapse?: () => void;
+  seller: any;
 }) => {
   const pathname = usePathname();
   const t = useTranslations();
@@ -118,14 +127,16 @@ const SidebarContent = ({
       {/* Profile Section */}
       {!isCollapsed && (
         <div className="flex flex-col items-center py-5 px-6 border-b border-primary-foreground/20">
-          <div className="w-[120px] h-[120px] rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mb-4 shadow-xl">
-            <span className="text-white text-4xl font-bold">JD</span>
+          <div className="w-[120px] h-[120px] rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mb-4 shadow-md">
+            <span className="text-white text-4xl font-bold capitalize">
+              {seller?.businessName?.[0]}{seller?.businessName?.[1]}
+            </span>
           </div>
           <h2 className="text-white font-semibold text-lg mb-1">
-            {t("user.johnDoe")}
+            {seller?.businessName}
           </h2>
           <p className="text-primary-foreground/80 text-sm text-center">
-            {t("sidebar.premiumElectronicsStore")}
+            {seller?.approvedCategories?.[0]}
           </p>
 
           {/* Quick Chat Button */}

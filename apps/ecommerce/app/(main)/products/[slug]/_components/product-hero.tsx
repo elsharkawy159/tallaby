@@ -32,7 +32,7 @@ export const ProductHero = ({ product }: ProductHeroProps) => {
                   <Star
                     key={i}
                     className={`h-4 w-4 sm:h-5 sm:w-5 ${
-                      i < Math.floor(product.average_rating)
+                      i < Math.floor(product.averageRating)
                         ? "text-yellow-400 fill-current"
                         : "text-gray-300"
                     }`}
@@ -40,10 +40,10 @@ export const ProductHero = ({ product }: ProductHeroProps) => {
                 ))}
               </div>
               <span className="text-base lg:text-lg font-semibold text-gray-900">
-                {product.average_rating}
+                {product.averageRating}
               </span>
               <span className="text-sm lg:text-base text-gray-600">
-                ({product.review_count})
+                ({product.reviewCount})
               </span>
             </div>
 
@@ -55,11 +55,11 @@ export const ProductHero = ({ product }: ProductHeroProps) => {
           {/* Price */}
           <div className="flex items-center gap-3">
             <span className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary">
-              ${product.base_price}
+              ${product.price.base}
             </span>
-            {product.sale_price && (
+            {product.price.discountType && (
               <span className="text-lg sm:text-xl lg:text-2xl text-gray-500 line-through">
-                ${product.sale_price}
+                ${product.price.final}
               </span>
             )}
           </div>
@@ -93,50 +93,52 @@ export const ProductHero = ({ product }: ProductHeroProps) => {
         )}
 
         {/* Color Selection */}
-        {product.colors.length > 0 && (
-          <div>
-            <h3 className="font-semibold text-gray-900 mb-3 text-sm sm:text-base">
-              Colors: {product.colors[0]?.name}
-            </h3>
-            <div className="flex gap-2 sm:gap-3">
-              {product.colors.map((color) => (
-                <button
-                  key={color.name}
-                  className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 transition-all ${
-                    product.colors[0]?.name === color.name
-                      ? "border-primary scale-110"
-                      : "border-gray-300 hover:border-gray-400"
-                  }`}
-                  style={{ backgroundColor: color.hex }}
-                  title={color.name}
-                />
-              ))}
+        {Array.isArray((product as any).colors) &&
+          (product as any).colors.length > 0 && (
+            <div>
+              <h3 className="font-semibold text-gray-900 mb-3 text-sm sm:text-base">
+                Colors: {(product as any).colors?.[0]?.name}
+              </h3>
+              <div className="flex gap-2 sm:gap-3">
+                {(product as any).colors.map((color: any) => (
+                  <button
+                    key={color.name}
+                    className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 transition-all ${
+                      (product as any).colors?.[0]?.name === color.name
+                        ? "border-primary scale-110"
+                        : "border-gray-300 hover:border-gray-400"
+                    }`}
+                    style={{ backgroundColor: color.hex }}
+                    title={color.name}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* Size Selection */}
-        {product.sizes.length > 0 && (
-          <div>
-            <h3 className="font-semibold text-gray-900 mb-3 text-sm sm:text-base">
-              Sizes
-            </h3>
-            <div className="flex flex-wrap gap-2 sm:gap-3">
-              {product.sizes.map((size) => (
-                <button
-                  key={size}
-                  className={`px-3 py-2 sm:px-4 sm:py-2 border rounded-lg transition-all text-sm sm:text-base ${
-                    product.sizes[0] === size
-                      ? "border-primary bg-primary text-white"
-                      : "border-gray-300 hover:border-gray-400 hover:bg-gray-50"
-                  }`}
-                >
-                  {size}
-                </button>
-              ))}
+        {Array.isArray((product as any).sizes) &&
+          (product as any).sizes.length > 0 && (
+            <div>
+              <h3 className="font-semibold text-gray-900 mb-3 text-sm sm:text-base">
+                Sizes
+              </h3>
+              <div className="flex flex-wrap gap-2 sm:gap-3">
+                {(product as any).sizes.map((size: any) => (
+                  <button
+                    key={size}
+                    className={`px-3 py-2 sm:px-4 sm:py-2 border rounded-lg transition-all text-sm sm:text-base ${
+                      (product as any).sizes?.[0] === size
+                        ? "border-primary bg-primary text-white"
+                        : "border-gray-300 hover:border-gray-400 hover:bg-gray-50"
+                    }`}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
       </div>
     </>
   );

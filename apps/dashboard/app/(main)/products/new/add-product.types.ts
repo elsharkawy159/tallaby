@@ -6,7 +6,7 @@ export interface AddProductFormData {
   bulletPoints?: string[];
 
   // Category & Brand
-  mainCategoryId: string;
+  categoryId: string;
   brandId?: string;
 
   // Pricing

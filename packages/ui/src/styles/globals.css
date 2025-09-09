@@ -15,11 +15,11 @@
   --popover-foreground: #171717;
   --primary: #145163;
   --primary-foreground: #fafafa;
-  --secondary: #89A8B1;
+  --secondary: #89a8b1;
   --secondary-foreground: #171717;
   --muted: #f7f7f7;
   --muted-foreground: #808080;
-  --accent: #FDAD28;
+  --accent: #fdad28;
   --accent-foreground: #171717;
   --destructive: #dc2626;
   --destructive-foreground: #dc2626;
@@ -51,11 +51,11 @@
   --popover-foreground: #fafafa;
   --primary: #2563eb;
   --primary-foreground: #fafafa;
-  --secondary: #89A8B1;
+  --secondary: #89a8b1;
   --secondary-foreground: #171717;
   --muted: #404040;
   --muted-foreground: #a3a3a3;
-  --accent: #FDAD28;
+  --accent: #fdad28;
   --accent-foreground: #fafafa;
   --destructive: #b91c1c;
   --destructive-foreground: #ef4444;
@@ -129,11 +129,9 @@
 /* Add Montserrat utility class */
 @layer utilities {
   .font-montserrat {
-    font-family:
-      var(--font-montserrat)
+    font-family: var(--font-montserrat);
   }
 }
-
 
 @utility container {
   margin-inline: auto;

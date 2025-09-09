@@ -5,6 +5,9 @@ import { getLocale } from "next-intl/server";
 import { NextIntlClientProvider } from "next-intl";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@workspace/ui/components/sonner";
+import { getSiteData } from "@/actions/site-data";
+import { SiteDataProvider } from "@/providers/site-data";
+
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -13,8 +16,8 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  title: "Dashboard",
-  description: "Dashboard",
+  title: "Vendor Dashboard",
+  description: "Vendor Dashboard",
 };
 
 export default async function RootLayout({
@@ -22,11 +25,14 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // const queryClient = new QueryClient();
   const locale = await getLocale();
 
   return (
     <html lang={locale} suppressHydrationWarning>
       <body className={`${montserrat.variable} antialiased`}>
+        {/* <QueryClientProvider client={queryClient}> */}
+        <SiteDataProvider promise={getSiteData()}>
         <NextIntlClientProvider>
           <ThemeProvider
             attribute="class"
@@ -37,7 +43,9 @@ export default async function RootLayout({
             {children}
             <Toaster />
           </ThemeProvider>
-        </NextIntlClientProvider>
+          </NextIntlClientProvider>
+          </SiteDataProvider>
+        {/* </QueryClientProvider> */}
       </body>
     </html>
   );

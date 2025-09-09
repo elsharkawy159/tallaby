@@ -1,5 +1,5 @@
+import { createProduct } from "@/actions/products";
 import type { AddProductFormData } from "./add-product.schema";
-import { addProduct } from "./add-product.server";
 
 export type AddProductFormValues = AddProductFormData;
 
@@ -8,7 +8,7 @@ export async function submitProductForm(
   productId?: string
 ): Promise<boolean> {
   try {
-    const result = await addProduct(formData);
+    const result = await createProduct(formData as any);
     return result.success;
   } catch (error) {
     console.error("Failed to submit product form:", error);

@@ -68,7 +68,7 @@ export function ProductForm({
       slug: "",
       description: "",
       brandId: "",
-      mainCategoryId: "",
+      categoryId: "",
       basePrice: 0,
       listPrice: 0,
       isActive: true,
@@ -192,7 +192,7 @@ export function ProductForm({
                 />
                 <FormInputField
                   control={control}
-                  name="mainCategoryId"
+                  name="categoryId"
                   label="Main Category"
                   type="select"
                   options={categories}

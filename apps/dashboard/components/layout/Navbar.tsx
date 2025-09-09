@@ -1,10 +1,11 @@
 "use client";
-import { Menu } from "lucide-react";
+import { Menu, Sun, Moon } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
 
 import { NotificationCenter } from "../dashboard/NotificationCenter";
 import { UserNav } from "./user-nav";
 import { usePathname } from "next/navigation";
+import { useTheme } from "next-themes";
 
 interface NavbarProps {
   onMenuToggle?: () => void;
@@ -12,6 +13,7 @@ interface NavbarProps {
 
 export const Navbar = ({ onMenuToggle }: NavbarProps) => {
   const pathname = usePathname();
+  const { setTheme, theme } = useTheme();
   let pageTitle = "";
   switch (pathname) {
     case "/":
@@ -108,17 +110,18 @@ export const Navbar = ({ onMenuToggle }: NavbarProps) => {
             </DropdownMenu> */}
 
             {/* Theme Toggle */}
-            {/* <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            >
-              {theme === "dark" ? (
-                <Sun className="h-5 w-5" />
-              ) : (
-                <Moon className="h-5 w-5" />
-              )}
-            </Button> */}
+            <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          >
+            {theme === "dark" ? (
+              <Sun className="h-5 w-5" />
+            ) : (
+              <Moon className="h-5 w-5" />
+            )}
+            <span className="sr-only">Toggle theme</span>
+          </Button>
 
             {/* User Navigation */}
             <UserNav />

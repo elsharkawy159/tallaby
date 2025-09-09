@@ -1,55 +1,41 @@
 import { z } from "zod";
 
-// Product schema matching the database products table structure
+// Product schema aligned with DB products + product_variants
 export const addProductFormSchema = z.object({
-  // ===== BASIC PRODUCT INFORMATION =====
-  title: z
-    .string()
-    .min(1, "Product name is required")
-    .max(255, "Product name must be less than 255 characters"),
-  slug: z
-    .string()
-    .min(1, "Product slug is required")
-    .max(255, "Slug must be less than 255 characters"),
+  // products
+  title: z.string().min(1, "Product name is required").max(255),
+  slug: z.string().min(1, "Product slug is required").max(255),
   description: z.string().optional(),
   bulletPoints: z.array(z.string()).optional(),
 
-  // ===== CATEGORIES & BRAND =====
-  mainCategoryId: z.string().min(1, "Main category is required"),
-  brandId: z.string().optional(),
+  categoryId: z.string().min(1, "Main category is required"),
+  brandId: z.string().min(1, "Brand is required"),
 
-  // ===== INVENTORY & SKU =====
   sku: z.string().min(1, "SKU is required"),
-  quantity: z
-    .number()
-    .int()
-    .min(0, "Stock quantity must be 0 or greater")
-    .default(0),
+  quantity: z.number().int().min(0).default(0),
   maxOrderQuantity: z.number().int().optional(),
 
-  // ===== PHYSICAL DIMENSIONS =====
-  dimensionUnits: z
+  dimensions: z
     .object({
       length: z.number().optional(),
       width: z.number().optional(),
       height: z.number().optional(),
       weight: z.number().optional(),
-      unit: z.enum(["cm", "in"]).default("cm"),
-      weightUnit: z.enum(["kg", "lb"]).default("kg"),
+      unit: z.enum(["cm", "in"]).default("cm").optional(),
+      weightUnit: z.enum(["kg", "g", "lb"]).default("kg").optional(),
     })
     .optional(),
 
-  // ===== PRODUCT IMAGES (JSONB) =====
-  images: z
-    .array(z.string())
-    .min(1, "At least one product image is required"),
+  images: z.array(z.string()).min(1, "At least one product image is required"),
 
-  // ===== PRICING =====
-  basePrice: z.number().min(0.01, "Base price must be greater than 0"),
-  listPrice: z.number().optional(),
-  salePrice: z.number().optional(),
+  price: z.object({
+    base: z.number().min(0.01, "Base price must be greater than 0"),
+    list: z.number().min(0.01, "List price must be greater than 0"),
+    discountValue: z.number().optional(),
+    discountType: z.enum(["amount", "percent"]).default("amount").optional(),
+    final: z.number().min(0.01, "Final price must be greater than 0"),
+  }),
 
-  // ===== CONDITION & FULFILLMENT =====
   condition: z
     .enum([
       "new",
@@ -65,58 +51,58 @@ export const addProductFormSchema = z.object({
   fulfillmentType: z
     .enum(["seller_fulfilled", "platform_fulfilled", "fba", "digital"])
     .default("seller_fulfilled"),
-  handlingTime: z
-    .number()
-    .int()
-    .min(1, "Handling time must be at least 1 day")
-    .default(1),
+  handlingTime: z.number().int().min(1).default(1),
 
-  // ===== PRODUCT STATUS FLAGS =====
-  isActive: z.boolean().default(false),
-  isAdult: z.boolean().default(false),
+  isActive: z.boolean().default(true),
   isPlatformChoice: z.boolean().default(false),
-  isBestSeller: z.boolean().default(false),
+  isMostSelling: z.boolean().default(false),
   isFeatured: z.boolean().default(false),
-  isBuyBox: z.boolean().default(false),
 
-  // ===== RATINGS & REVIEWS =====
-  averageRating: z.number().optional(),
-  reviewCount: z.number().int().default(0),
-  totalQuestions: z.number().int().default(0),
-
-  // ===== TAX & LEGAL =====
   taxClass: z
     .enum(["standard", "reduced", "zero", "exempt"])
     .default("standard"),
 
-  // ===== SEO & MARKETING =====
-  metaTitle: z
-    .string()
-    .max(60, "Meta title should be under 60 characters")
+  seo: z
+    .object({
+      metaTitle: z.string().max(60).optional(),
+      metaDescription: z.string().max(160).optional(),
+      metaKeywords: z.string().optional(),
+      searchKeywords: z.string().optional(),
+    })
     .optional(),
-  metaDescription: z
-    .string()
-    .max(160, "Meta description should be under 160 characters")
-    .optional(),
-  metaKeywords: z.string().optional(),
-  searchKeywords: z.string().optional(),
 
-  // ===== NOTES & ADDITIONAL INFO =====
   notes: z.string().optional(),
+
+  // product_variants
+  variants: z
+    .array(
+      z.object({
+        title: z.string().min(1, "Variant title is required").max(255),
+        sku: z.string().min(1, "Variant SKU is required").max(100),
+        price: z.number().min(0.01, "Price must be greater than 0"),
+        stock: z.number().int().min(0).default(0),
+        imageUrl: z.string().url().optional(),
+        option1: z.string().optional(),
+        option2: z.string().optional(),
+        option3: z.string().optional(),
+        barCode: z.string().optional(),
+        position: z.number().int().min(1).optional(),
+      })
+    )
+    .optional(),
 });
 
-// Default values matching the updated schema
 export const defaultValues: Partial<AddProductFormData> = {
   title: "",
   slug: "",
   description: "",
   bulletPoints: [],
   brandId: "",
-  mainCategoryId: "",
+  categoryId: "",
   sku: "",
   quantity: 0,
   maxOrderQuantity: undefined,
-  dimensionUnits: {
+  dimensions: {
     length: undefined,
     width: undefined,
     height: undefined,
@@ -125,34 +111,34 @@ export const defaultValues: Partial<AddProductFormData> = {
     weightUnit: "kg",
   },
   images: [],
-  basePrice: undefined,
-  listPrice: undefined,
-  salePrice: undefined,
+  price: {
+    base: undefined as unknown as number,
+    list: undefined as unknown as number,
+    discountValue: undefined,
+    discountType: "percent",
+    final: undefined as unknown as number,
+  },
   condition: "new",
   conditionDescription: "",
   fulfillmentType: "platform_fulfilled",
   handlingTime: 1,
   isActive: false,
-  isAdult: false,
   isPlatformChoice: false,
-  isBestSeller: false,
+  isMostSelling: false,
   isFeatured: false,
-  isBuyBox: false,
-  averageRating: undefined,
-  reviewCount: 0,
-  totalQuestions: 0,
   taxClass: "standard",
-  metaTitle: "",
-  metaDescription: "",
-  metaKeywords: "",
-  searchKeywords: "",
+  seo: {
+    metaTitle: "",
+    metaDescription: "",
+    metaKeywords: "",
+    searchKeywords: "",
+  },
   notes: "",
+  variants: [],
 };
 
-// Infer TypeScript type from schema
 export type AddProductFormData = z.infer<typeof addProductFormSchema>;
 
-// Category and Brand types
 export interface CategoryOption {
   id: string;
   name: string;
@@ -166,18 +152,22 @@ export interface BrandOption {
   id: string;
   name: string;
   slug: string;
+  logoUrl?: string | null;
+  description?: string;
+  website?: string | null;
   isVerified: boolean;
-  logoUrl?: string;
+  isOfficial?: boolean;
+  averageRating?: number | null;
+  reviewCount?: number;
+  productCount?: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-// Enhanced image types - simplified for string URLs
 export interface ProductImage {
   url: string;
-  // Note: For now, we're using simple string URLs
-  // This can be enhanced later to include alt text, position, etc.
 }
 
-// Form validation helpers
 export const validateImageDimensions = (
   file: File
 ): Promise<{ width: number; height: number }> => {
@@ -191,87 +181,6 @@ export const validateImageDimensions = (
   });
 };
 
-// Form step configuration for multi-step form
-export type FormStep =
-  | "basic"
-  | "images"
-  | "pricing"
-  | "inventory"
-  | "settings"
-  | "seo";
-
-export interface FormStepConfig {
-  id: FormStep;
-  title: string;
-  description: string;
-  fields: string[];
-}
-
-export const formSteps: FormStepConfig[] = [
-  {
-    id: "basic",
-    title: "Basic Information",
-    description: "Product name, description, and category",
-    fields: [
-      "title",
-      "slug",
-      "description",
-      "bulletPoints",
-      "mainCategoryId",
-      "brandId",
-    ],
-  },
-  {
-    id: "images",
-    title: "Product Images",
-    description: "Upload product photos",
-    fields: ["images"],
-  },
-  {
-    id: "pricing",
-    title: "Pricing",
-    description: "Set product prices",
-    fields: ["basePrice", "listPrice", "salePrice"],
-  },
-  {
-    id: "inventory",
-    title: "Inventory & Stock",
-    description: "Manage stock levels and SKU",
-    fields: ["sku", "quantity", "maxOrderQuantity", "dimensionUnits"],
-  },
-  {
-    id: "settings",
-    title: "Product Settings",
-    description: "Condition, fulfillment, and status",
-    fields: [
-      "condition",
-      "conditionDescription",
-      "fulfillmentType",
-      "handlingTime",
-      "isActive",
-      "isAdult",
-      "isPlatformChoice",
-      "isBestSeller",
-      "isFeatured",
-      "isBuyBox",
-      "taxClass",
-    ],
-  },
-  {
-    id: "seo",
-    title: "SEO & Marketing",
-    description: "Search engine optimization and notes",
-    fields: [
-      "metaTitle",
-      "metaDescription",
-      "metaKeywords",
-      "searchKeywords",
-      "notes",
-    ],
-  },
-];
-
-// Option configurations for select fields
 export const conditionOptions = [
   { value: "new", label: "New" },
   { value: "renewed", label: "Renewed" },
@@ -304,4 +213,5 @@ export const dimensionUnits = [
 export const weightUnits = [
   { value: "kg", label: "Kilograms (kg)" },
   { value: "lb", label: "Pounds (lb)" },
+  { value: "g", label: "Grams (g)" },
 ];

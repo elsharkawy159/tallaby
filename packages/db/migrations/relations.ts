@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { reviews, reviewComments, sellers, users, orders, orderItems, products, userAddresses, paymentMethods, returns, coupons, couponUsage, shipments, wishlists, carts, payments, refunds, sellerDocuments, userDevices, wishlistItems, cartItems, brands, categories, productQuestions, sellerPayouts, deliveries, notifications, productAnswers, reviewVotes, returnItems, searchLogs, shipmentItems, sellerPayoutItems, productCategories } from "./schema";
+import { reviews, reviewComments, sellers, users, userAddresses, orders, orderItems, products, productVariants, categories, paymentMethods, returns, coupons, couponUsage, shipments, wishlists, carts, payments, refunds, sellerDocuments, userDevices, wishlistItems, cartItems, brands, productQuestions, sellerPayouts, deliveries, notifications, productAnswers, reviewVotes, returnItems, searchLogs, shipmentItems, sellerPayoutItems, shippingAddresses } from "./schema";
 
 export const reviewCommentsRelations = relations(reviewComments, ({one}) => ({
 	review: one(reviews, {
@@ -60,9 +60,9 @@ export const sellersRelations = relations(sellers, ({one, many}) => ({
 
 export const usersRelations = relations(users, ({one, many}) => ({
 	reviewComments: many(reviewComments),
+	userAddresses: many(userAddresses),
 	paymentMethods: many(paymentMethods),
 	returns: many(returns),
-	userAddresses: many(userAddresses),
 	user: one(users, {
 		fields: [users.referredBy],
 		references: [users.id],
@@ -78,14 +78,29 @@ export const usersRelations = relations(users, ({one, many}) => ({
 	sellerDocuments: many(sellerDocuments),
 	sellers: many(sellers),
 	userDevices: many(userDevices),
-	orders: many(orders),
 	productQuestions: many(productQuestions),
+	orders: many(orders),
 	deliveries: many(deliveries),
 	notifications: many(notifications),
 	productAnswers: many(productAnswers),
 	reviewVotes: many(reviewVotes),
 	searchLogs: many(searchLogs),
 	reviews: many(reviews),
+	shippingAddresses: many(shippingAddresses),
+}));
+
+export const userAddressesRelations = relations(userAddresses, ({one, many}) => ({
+	user: one(users, {
+		fields: [userAddresses.userId],
+		references: [users.id]
+	}),
+	paymentMethods: many(paymentMethods),
+	orders_billingAddressId: many(orders, {
+		relationName: "orders_billingAddressId_userAddresses_id"
+	}),
+	orders_shippingAddressId: many(orders, {
+		relationName: "orders_shippingAddressId_userAddresses_id"
+	}),
 }));
 
 export const orderItemsRelations = relations(orderItems, ({one, many}) => ({
@@ -100,6 +115,10 @@ export const orderItemsRelations = relations(orderItems, ({one, many}) => ({
 	seller: one(sellers, {
 		fields: [orderItems.sellerId],
 		references: [sellers.id]
+	}),
+	productVariant: one(productVariants, {
+		fields: [orderItems.variantId],
+		references: [productVariants.id]
 	}),
 	returnItems: many(returnItems),
 	reviews: many(reviews),
@@ -145,7 +164,7 @@ export const productsRelations = relations(products, ({one, many}) => ({
 		references: [brands.id]
 	}),
 	category: one(categories, {
-		fields: [products.mainCategoryId],
+		fields: [products.categoryId],
 		references: [categories.id]
 	}),
 	seller: one(sellers, {
@@ -153,9 +172,30 @@ export const productsRelations = relations(products, ({one, many}) => ({
 		references: [sellers.id]
 	}),
 	productQuestions: many(productQuestions),
+	productVariants: many(productVariants),
 	searchLogs: many(searchLogs),
 	reviews: many(reviews),
-	productCategories: many(productCategories),
+}));
+
+export const productVariantsRelations = relations(productVariants, ({one, many}) => ({
+	orderItems: many(orderItems),
+	wishlistItems: many(wishlistItems),
+	product: one(products, {
+		fields: [productVariants.productId],
+		references: [products.id]
+	}),
+}));
+
+export const categoriesRelations = relations(categories, ({one, many}) => ({
+	category: one(categories, {
+		fields: [categories.parentId],
+		references: [categories.id],
+		relationName: "categories_parentId_categories_id"
+	}),
+	categories: many(categories, {
+		relationName: "categories_parentId_categories_id"
+	}),
+	products: many(products),
 }));
 
 export const paymentMethodsRelations = relations(paymentMethods, ({one, many}) => ({
@@ -168,20 +208,6 @@ export const paymentMethodsRelations = relations(paymentMethods, ({one, many}) =
 		references: [users.id]
 	}),
 	payments: many(payments),
-}));
-
-export const userAddressesRelations = relations(userAddresses, ({one, many}) => ({
-	paymentMethods: many(paymentMethods),
-	user: one(users, {
-		fields: [userAddresses.userId],
-		references: [users.id]
-	}),
-	orders_billingAddressId: many(orders, {
-		relationName: "orders_billingAddressId_userAddresses_id"
-	}),
-	orders_shippingAddressId: many(orders, {
-		relationName: "orders_shippingAddressId_userAddresses_id"
-	}),
 }));
 
 export const returnsRelations = relations(returns, ({one, many}) => ({
@@ -299,6 +325,10 @@ export const wishlistItemsRelations = relations(wishlistItems, ({one}) => ({
 		fields: [wishlistItems.productId],
 		references: [products.id]
 	}),
+	productVariant: one(productVariants, {
+		fields: [wishlistItems.variantId],
+		references: [productVariants.id]
+	}),
 	wishlist: one(wishlists, {
 		fields: [wishlistItems.wishlistId],
 		references: [wishlists.id]
@@ -322,19 +352,6 @@ export const cartItemsRelations = relations(cartItems, ({one}) => ({
 
 export const brandsRelations = relations(brands, ({many}) => ({
 	products: many(products),
-}));
-
-export const categoriesRelations = relations(categories, ({one, many}) => ({
-	products: many(products),
-	category: one(categories, {
-		fields: [categories.parentId],
-		references: [categories.id],
-		relationName: "categories_parentId_categories_id"
-	}),
-	categories: many(categories, {
-		relationName: "categories_parentId_categories_id"
-	}),
-	productCategories: many(productCategories),
 }));
 
 export const productQuestionsRelations = relations(productQuestions, ({one, many}) => ({
@@ -449,13 +466,9 @@ export const sellerPayoutItemsRelations = relations(sellerPayoutItems, ({one}) =
 	}),
 }));
 
-export const productCategoriesRelations = relations(productCategories, ({one}) => ({
-	category: one(categories, {
-		fields: [productCategories.categoryId],
-		references: [categories.id]
-	}),
-	product: one(products, {
-		fields: [productCategories.productId],
-		references: [products.id]
+export const shippingAddressesRelations = relations(shippingAddresses, ({one}) => ({
+	user: one(users, {
+		fields: [shippingAddresses.userId],
+		references: [users.id]
 	}),
 }));

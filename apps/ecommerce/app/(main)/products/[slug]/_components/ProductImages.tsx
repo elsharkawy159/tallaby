@@ -55,7 +55,7 @@ export const ProductImages = ({ images, productName }: ProductImagesProps) => {
               }`}
             >
               <Image
-                src={getPublicUrl(image, "products") || ""}
+                src={image ? getPublicUrl(image, "products") : "/png product.png"}
                 alt={`${productName} ${index + 1}`}
                 width={140}
                 height={140}
@@ -74,7 +74,7 @@ export const ProductImages = ({ images, productName }: ProductImagesProps) => {
             onMouseLeave={handleMouseLeave}
           >
             <Image
-              src={getPublicUrl(activeImage || "", "products")}
+              src={activeImage ? getPublicUrl(activeImage, "products") : "/png product.png"}
               alt={productName}
               className="w-full h-full object-contain bg-white"
               fill
@@ -89,7 +89,7 @@ export const ProductImages = ({ images, productName }: ProductImagesProps) => {
               <div
                 className="w-full h-full bg-cover bg-no-repeat"
                 style={{
-                  backgroundImage: `url(${getPublicUrl(activeImage || "", "products")})`,
+                  backgroundImage: `url(${activeImage ? getPublicUrl(activeImage, "products") : "/png product.png"})`,
                   backgroundPosition: `${zoomPosition.x}% ${zoomPosition.y}%`,
                   backgroundSize: "400%",
                 }}

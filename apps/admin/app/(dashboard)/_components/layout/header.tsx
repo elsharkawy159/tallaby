@@ -6,22 +6,10 @@ import {
   Moon,
   Sun,
   Search,
-  User,
-  LogOut,
-  Settings,
-  HelpCircle,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@workspace/ui/components/dropdown-menu";
 import {
   Dialog,
   DialogContent,
@@ -31,6 +19,7 @@ import {
   DialogTrigger,
 } from "@workspace/ui/components/dialog";
 import { Badge } from "@workspace/ui/components/badge";
+import { UserNav } from "./user-nav";
 // import { signOutAction } from "@/app/actions";
 
 export default function Header() {
@@ -177,43 +166,7 @@ export default function Header() {
             </DialogContent>
           </Dialog>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-full h-8 w-8 overflow-hidden"
-              >
-                <div className="bg-primary text-white flex items-center justify-center h-full w-full font-semibold">
-                  A
-                </div>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <User className="mr-2 h-4 w-4" />
-                <span>Profile</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <HelpCircle className="mr-2 h-4 w-4" />
-                <span>Help</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                // onClick={signOutAction}
-                className="text-red-600 hover:!text-red-700"
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Log out</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <UserNav />
         </div>
       </div>
     </header>

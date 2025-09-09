@@ -8,7 +8,13 @@ export const signInSchema = z.object({
 export const orderUpdateSchema = z.object({
   orderId: z.string().uuid("Invalid order ID"),
   updates: z.object({
-    status: z.enum(["pending", "confirmed", "shipped", "delivered", "cancelled"]),
+    status: z.enum([
+      "pending",
+      "confirmed",
+      "shipped",
+      "delivered",
+      "cancelled",
+    ]),
     notes: z.string().optional(),
   }),
 });
@@ -24,7 +30,7 @@ export const signUpSchema = z
   });
 
 export const resetPasswordSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
+  resetEmail: z.string().email("Please enter a valid email address"),
 });
 
 export type SignInFormData = z.infer<typeof signInSchema>;
@@ -113,7 +119,7 @@ export const productCreationSchema = z.object({
     .max(2000, "Description must be less than 2000 characters")
     .optional(),
 
-  mainCategoryId: z.string().uuid("Please select a valid category"),
+  categoryId: z.string().uuid("Please select a valid category"),
 
   brandId: z.string().uuid("Please select a valid brand").optional(),
 
@@ -201,7 +207,7 @@ export type ProductCreationData = z.infer<typeof productCreationSchema>;
 export const productCreationDefaults: Partial<ProductCreationData> = {
   title: "",
   description: "",
-  mainCategoryId: "",
+  categoryId: "",
   brandId: "",
   listPrice: "",
   basePrice: "",

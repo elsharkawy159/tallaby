@@ -45,3 +45,4 @@ export * from "./carousel";
 export * from "./collapsible";
 export * from "./inputs";
 export * from "./stepper";
+export * from "./category-popover";

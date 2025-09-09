@@ -1,4 +1,4 @@
-import { pgTable, index, foreignKey, uuid, text, boolean, timestamp, integer, numeric, real, jsonb, unique, pgPolicy, date, uniqueIndex, primaryKey, pgEnum } from "drizzle-orm/pg-core"
+import { pgTable, index, foreignKey, uuid, text, boolean, timestamp, real, integer, numeric, jsonb, varchar, smallint, unique, pgPolicy, date, uniqueIndex, bigint, pgEnum } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 export const addressType = pgEnum("address_type", ['shipping', 'billing', 'both'])
@@ -44,13 +44,42 @@ export const reviewComments = pgTable("review_comments", {
 		}),
 ]);
 
+export const userAddresses = pgTable("user_addresses", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	userId: uuid("user_id").notNull(),
+	addressType: addressType("address_type").default('both'),
+	fullName: text("full_name").notNull(),
+	phone: text().notNull(),
+	company: text(),
+	addressLine1: text("address_line1").notNull(),
+	addressLine2: text("address_line2"),
+	city: text().notNull(),
+	state: text().notNull(),
+	postalCode: text("postal_code").notNull(),
+	country: text().default('\'Egypt').notNull(),
+	isDefault: boolean("is_default").default(false),
+	isBusinessAddress: boolean("is_business_address").default(false),
+	deliveryInstructions: text("delivery_instructions"),
+	accessCode: text("access_code"),
+	latitude: real(),
+	longitude: real(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("address_user_id_idx").using("btree", table.userId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: "user_addresses_user_id_users_id_fk"
+		}).onDelete("cascade"),
+]);
+
 export const orderItems = pgTable("order_items", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	orderId: uuid("order_id").notNull(),
 	productId: uuid("product_id").notNull(),
 	variantId: uuid("variant_id"),
 	sellerId: uuid("seller_id").notNull(),
-	listingId: uuid("listing_id"),
 	sku: text().notNull(),
 	productName: text("product_name").notNull(),
 	variantName: text("variant_name"),
@@ -64,7 +93,7 @@ export const orderItems = pgTable("order_items", {
 	commissionAmount: numeric("commission_amount", { precision: 10, scale:  2 }).notNull(),
 	commissionRate: real("commission_rate").notNull(),
 	sellerEarning: numeric("seller_earning", { precision: 10, scale:  2 }).notNull(),
-	currency: text().default('USD'),
+	currency: text().default('\'EGP'),
 	condition: itemCondition().default('new'),
 	fulfillmentType: fulfillmentType("fulfillment_type").default('seller_fulfilled'),
 	status: orderStatus().default('pending'),
@@ -79,6 +108,7 @@ export const orderItems = pgTable("order_items", {
 	cancelledAt: timestamp("cancelled_at", { withTimezone: true, mode: 'string' }),
 	metadata: jsonb(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow(),
 }, (table) => [
 	index("order_items_order_id_idx").using("btree", table.orderId.asc().nullsLast().op("uuid_ops")),
 	index("order_items_product_id_idx").using("btree", table.productId.asc().nullsLast().op("uuid_ops")),
@@ -98,6 +128,28 @@ export const orderItems = pgTable("order_items", {
 			columns: [table.sellerId],
 			foreignColumns: [sellers.id],
 			name: "order_items_seller_id_sellers_id_fk"
+		}),
+	foreignKey({
+			columns: [table.variantId],
+			foreignColumns: [productVariants.id],
+			name: "order_items_variant_id_fkey"
+		}).onDelete("cascade"),
+]);
+
+export const categories = pgTable("categories", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	name: varchar(),
+	slug: varchar(),
+	level: smallint(),
+	parentId: uuid("parent_id"),
+	shopifyId: varchar("shopify_id"),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.parentId],
+			foreignColumns: [table.id],
+			name: "categories_parent_id_fkey"
 		}),
 ]);
 
@@ -162,36 +214,6 @@ export const returns = pgTable("returns", {
 	unique("returns_rma_number_unique").on(table.rmaNumber),
 ]);
 
-export const userAddresses = pgTable("user_addresses", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	userId: uuid("user_id").notNull(),
-	addressType: addressType("address_type").default('both'),
-	fullName: text("full_name").notNull(),
-	phone: text().notNull(),
-	company: text(),
-	addressLine1: text("address_line1").notNull(),
-	addressLine2: text("address_line2"),
-	city: text().notNull(),
-	state: text().notNull(),
-	postalCode: text("postal_code").notNull(),
-	country: text().notNull(),
-	isDefault: boolean("is_default").default(false),
-	isBusinessAddress: boolean("is_business_address").default(false),
-	deliveryInstructions: text("delivery_instructions"),
-	accessCode: text("access_code"),
-	latitude: real(),
-	longitude: real(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
-}, (table) => [
-	index("address_user_id_idx").using("btree", table.userId.asc().nullsLast().op("uuid_ops")),
-	foreignKey({
-			columns: [table.userId],
-			foreignColumns: [users.id],
-			name: "user_addresses_user_id_users_id_fk"
-		}).onDelete("cascade"),
-]);
-
 export const users = pgTable("users", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	email: text().notNull(),
@@ -224,11 +246,11 @@ export const users = pgTable("users", {
 		}),
 	unique("users_email_unique").on(table.email),
 	unique("users_referral_code_unique").on(table.referralCode),
-	pgPolicy("Enable insert for authenticated users only", { as: "permissive", for: "insert", to: ["public"], withCheck: sql`(auth.uid() = id)`  }),
+	pgPolicy("Admins can view all users", { as: "permissive", for: "select", to: ["authenticated"], using: sql`((auth.jwt() ->> 'user_role'::text) = 'admin'::text)` }),
+	pgPolicy("Enable insert for authenticated users only", { as: "permissive", for: "insert", to: ["public"] }),
+	pgPolicy("Users can manage own profile", { as: "permissive", for: "all", to: ["authenticated"] }),
 	pgPolicy("Users can update own profile", { as: "permissive", for: "update", to: ["public"] }),
 	pgPolicy("Users can view own profile", { as: "permissive", for: "select", to: ["public"] }),
-	pgPolicy("Users can manage own profile", { as: "permissive", for: "all", to: ["authenticated"] }),
-	pgPolicy("Admins can view all users", { as: "permissive", for: "select", to: ["authenticated"] }),
 ]);
 
 export const couponUsage = pgTable("coupon_usage", {
@@ -564,6 +586,11 @@ export const wishlistItems = pgTable("wishlist_items", {
 			name: "wishlist_items_product_id_products_id_fk"
 		}).onDelete("cascade"),
 	foreignKey({
+			columns: [table.variantId],
+			foreignColumns: [productVariants.id],
+			name: "wishlist_items_variant_id_fkey"
+		}),
+	foreignKey({
 			columns: [table.wishlistId],
 			foreignColumns: [wishlists.id],
 			name: "wishlist_items_wishlist_id_wishlists_id_fk"
@@ -609,7 +636,7 @@ export const products = pgTable("products", {
 	description: text(),
 	bulletPoints: jsonb("bullet_points"),
 	brandId: uuid("brand_id"),
-	mainCategoryId: uuid("main_category_id").notNull(),
+	categoryId: uuid("category_id").notNull(),
 	averageRating: real("average_rating"),
 	reviewCount: integer("review_count").default(0),
 	totalQuestions: integer("total_questions").default(0),
@@ -617,10 +644,6 @@ export const products = pgTable("products", {
 	isPlatformChoice: boolean("is_platform_choice").default(false),
 	isMostSelling: boolean("is_most_selling").default(false),
 	taxClass: text("tax_class").default('standard'),
-	metaTitle: text("meta_title"),
-	metaDescription: text("meta_description"),
-	metaKeywords: text("meta_keywords"),
-	searchKeywords: text("search_keywords"),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	images: jsonb(),
@@ -628,17 +651,17 @@ export const products = pgTable("products", {
 	sku: text().notNull(),
 	condition: itemCondition().default('new'),
 	conditionDescription: text("condition_description"),
-	quantity: integer().default(25).notNull(),
+	quantity: numeric().notNull(),
 	fulfillmentType: fulfillmentType("fulfillment_type").default('seller_fulfilled'),
-	handlingTime: integer("handling_time").default(1),
+	handlingTime: numeric("handling_time").default('1'),
 	maxOrderQuantity: integer("max_order_quantity"),
 	isFeatured: boolean("is_featured").default(false),
 	dimensions: jsonb(),
-	variants: jsonb(),
 	price: jsonb(),
+	seo: jsonb(),
 }, (table) => [
 	index("product_brand_id_idx").using("btree", table.brandId.asc().nullsLast().op("uuid_ops")),
-	index("product_main_category_id_idx").using("btree", table.mainCategoryId.asc().nullsLast().op("uuid_ops")),
+	index("product_main_category_id_idx").using("btree", table.categoryId.asc().nullsLast().op("uuid_ops")),
 	index("product_seller_id_idx").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops")),
 	index("product_sku_idx").using("btree", table.sku.asc().nullsLast().op("text_ops")),
 	uniqueIndex("product_slug_idx").using("btree", table.slug.asc().nullsLast().op("text_ops")),
@@ -650,80 +673,19 @@ export const products = pgTable("products", {
 			name: "products_brand_id_brands_id_fk"
 		}),
 	foreignKey({
-			columns: [table.mainCategoryId],
+			columns: [table.categoryId],
 			foreignColumns: [categories.id],
-			name: "products_main_category_id_categories_id_fk"
+			name: "products_category_id_fkey"
 		}),
 	foreignKey({
 			columns: [table.sellerId],
 			foreignColumns: [sellers.id],
-			name: "products_seller_id_sellers_id_fk"
-		}),
+			name: "products_seller_id_fkey"
+		}).onDelete("cascade"),
 	unique("products_slug_unique").on(table.slug),
-	pgPolicy("Allow authenticated read access", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
-	pgPolicy("Allow authenticated insert access", { as: "permissive", for: "insert", to: ["authenticated"] }),
+	pgPolicy("Allow authenticated insert access", { as: "permissive", for: "insert", to: ["authenticated"], withCheck: sql`true`  }),
+	pgPolicy("Allow authenticated read access", { as: "permissive", for: "select", to: ["authenticated"] }),
 	pgPolicy("Public full access", { as: "permissive", for: "all", to: ["public"] }),
-]);
-
-export const orders = pgTable("orders", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	orderNumber: text("order_number").notNull(),
-	userId: uuid("user_id").notNull(),
-	cartId: uuid("cart_id"),
-	subtotal: numeric({ precision: 10, scale:  2 }).notNull(),
-	shippingCost: numeric("shipping_cost", { precision: 10, scale:  2 }).default('0'),
-	tax: numeric({ precision: 10, scale:  2 }).default('0'),
-	discountAmount: numeric("discount_amount", { precision: 10, scale:  2 }).default('0'),
-	giftWrapCost: numeric("gift_wrap_cost", { precision: 10, scale:  2 }).default('0'),
-	totalAmount: numeric("total_amount", { precision: 10, scale:  2 }).notNull(),
-	currency: text().default('USD'),
-	status: orderStatus().default('pending'),
-	paymentStatus: paymentStatus("payment_status").default('pending'),
-	paymentMethod: text("payment_method").notNull(),
-	shippingAddressId: uuid("shipping_address_id"),
-	billingAddressId: uuid("billing_address_id"),
-	isGift: boolean("is_gift").default(false),
-	giftMessage: text("gift_message"),
-	couponCode: text("coupon_code"),
-	notes: text(),
-	isBusinessOrder: boolean("is_business_order").default(false),
-	customerIp: text("customer_ip"),
-	customerUserAgent: text("customer_user_agent"),
-	referralSource: text("referral_source"),
-	metadata: jsonb(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
-	processedAt: timestamp("processed_at", { withTimezone: true, mode: 'string' }),
-	shippedAt: timestamp("shipped_at", { withTimezone: true, mode: 'string' }),
-	deliveredAt: timestamp("delivered_at", { withTimezone: true, mode: 'string' }),
-	cancelledAt: timestamp("cancelled_at", { withTimezone: true, mode: 'string' }),
-}, (table) => [
-	index("order_number_idx").using("btree", table.orderNumber.asc().nullsLast().op("text_ops")),
-	index("order_status_idx").using("btree", table.status.asc().nullsLast().op("enum_ops")),
-	index("order_user_id_idx").using("btree", table.userId.asc().nullsLast().op("uuid_ops")),
-	foreignKey({
-			columns: [table.billingAddressId],
-			foreignColumns: [userAddresses.id],
-			name: "orders_billing_address_id_user_addresses_id_fk"
-		}),
-	foreignKey({
-			columns: [table.cartId],
-			foreignColumns: [carts.id],
-			name: "orders_cart_id_carts_id_fk"
-		}),
-	foreignKey({
-			columns: [table.shippingAddressId],
-			foreignColumns: [userAddresses.id],
-			name: "orders_shipping_address_id_user_addresses_id_fk"
-		}),
-	foreignKey({
-			columns: [table.userId],
-			foreignColumns: [users.id],
-			name: "orders_user_id_users_id_fk"
-		}),
-	unique("orders_order_number_unique").on(table.orderNumber),
-	pgPolicy("Users can view their own rows", { as: "permissive", for: "select", to: ["authenticated"], using: sql`(user_id = auth.uid())` }),
-	pgPolicy("Users can insert their own rows", { as: "permissive", for: "insert", to: ["authenticated"] }),
 ]);
 
 export const productQuestions = pgTable("product_questions", {
@@ -782,35 +744,89 @@ export const sellerPayouts = pgTable("seller_payouts", {
 		}).onDelete("cascade"),
 ]);
 
-export const categories = pgTable("categories", {
+export const orders = pgTable("orders", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
-	parentId: uuid("parent_id"),
-	name: text().notNull(),
-	slug: text().notNull(),
-	description: text(),
-	imageUrl: text("image_url"),
-	iconUrl: text("icon_url"),
-	level: integer().default(1).notNull(),
-	displayOrder: integer("display_order").default(0),
-	isActive: boolean("is_active").default(true),
-	showInMenu: boolean("show_in_menu").default(true),
-	showInHomeSlider: boolean("show_in_home_slider").default(false),
-	metaTitle: text("meta_title"),
-	metaDescription: text("meta_description"),
-	metaKeywords: text("meta_keywords"),
-	attributes: jsonb(),
-	commissionRate: real("commission_rate"),
+	orderNumber: text("order_number").notNull(),
+	userId: uuid("user_id").notNull(),
+	cartId: uuid("cart_id"),
+	subtotal: numeric({ precision: 10, scale:  2 }).notNull(),
+	shippingCost: numeric("shipping_cost", { precision: 10, scale:  2 }).default('0'),
+	tax: numeric({ precision: 10, scale:  2 }).default('0'),
+	discountAmount: numeric("discount_amount", { precision: 10, scale:  2 }).default('0'),
+	giftWrapCost: numeric("gift_wrap_cost", { precision: 10, scale:  2 }).default('0'),
+	totalAmount: numeric("total_amount", { precision: 10, scale:  2 }).notNull(),
+	currency: text().default('\'EGP'),
+	status: orderStatus().default('pending'),
+	paymentStatus: paymentStatus("payment_status").default('pending'),
+	paymentMethod: text("payment_method").default('\'cash').notNull(),
+	shippingAddressId: uuid("shipping_address_id"),
+	billingAddressId: uuid("billing_address_id"),
+	isGift: boolean("is_gift").default(false),
+	giftMessage: text("gift_message"),
+	couponCode: text("coupon_code"),
+	notes: text(),
+	isBusinessOrder: boolean("is_business_order").default(false),
+	customerIp: text("customer_ip"),
+	customerUserAgent: text("customer_user_agent"),
+	referralSource: text("referral_source"),
+	metadata: jsonb(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	processedAt: timestamp("processed_at", { withTimezone: true, mode: 'string' }),
+	shippedAt: timestamp("shipped_at", { withTimezone: true, mode: 'string' }),
+	deliveredAt: timestamp("delivered_at", { withTimezone: true, mode: 'string' }),
+	cancelledAt: timestamp("cancelled_at", { withTimezone: true, mode: 'string' }),
 }, (table) => [
-	index("category_name_idx").using("btree", table.name.asc().nullsLast().op("text_ops")),
-	index("category_parent_id_idx").using("btree", table.parentId.asc().nullsLast().op("uuid_ops")),
-	uniqueIndex("category_slug_idx").using("btree", table.slug.asc().nullsLast().op("text_ops")),
+	index("order_number_idx").using("btree", table.orderNumber.asc().nullsLast().op("text_ops")),
+	index("order_status_idx").using("btree", table.status.asc().nullsLast().op("enum_ops")),
+	index("order_user_id_idx").using("btree", table.userId.asc().nullsLast().op("uuid_ops")),
 	foreignKey({
-			columns: [table.parentId],
-			foreignColumns: [table.id],
-			name: "categories_parent_id_categories_id_fk"
+			columns: [table.billingAddressId],
+			foreignColumns: [userAddresses.id],
+			name: "orders_billing_address_id_user_addresses_id_fk"
 		}),
+	foreignKey({
+			columns: [table.cartId],
+			foreignColumns: [carts.id],
+			name: "orders_cart_id_carts_id_fk"
+		}),
+	foreignKey({
+			columns: [table.shippingAddressId],
+			foreignColumns: [userAddresses.id],
+			name: "orders_shipping_address_id_user_addresses_id_fk"
+		}),
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: "orders_user_id_users_id_fk"
+		}),
+	unique("orders_order_number_unique").on(table.orderNumber),
+	pgPolicy("Users can insert their own rows", { as: "permissive", for: "insert", to: ["authenticated"], withCheck: sql`(user_id = auth.uid())`  }),
+	pgPolicy("Users can view their own rows", { as: "permissive", for: "select", to: ["authenticated"] }),
+]);
+
+export const productVariants = pgTable("product_variants", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	productId: uuid("product_id"),
+	title: varchar(),
+	price: numeric(),
+	stock: integer().default(0),
+	sku: varchar(),
+	imageUrl: varchar("image_url"),
+	position: integer().default(1),
+	option1: varchar(),
+	option2: varchar(),
+	option3: varchar(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow(),
+	barCode: varchar("bar_code"),
+}, (table) => [
+	foreignKey({
+			columns: [table.productId],
+			foreignColumns: [products.id],
+			name: "product_variants_product_id_fkey"
+		}).onDelete("cascade"),
+	unique("product_variants_id_key").on(table.id),
 ]);
 
 export const deliveries = pgTable("deliveries", {
@@ -1071,20 +1087,31 @@ export const sellerPayoutItems = pgTable("seller_payout_items", {
 		}).onDelete("cascade"),
 ]);
 
-export const productCategories = pgTable("product_categories", {
-	productId: uuid("product_id").notNull(),
-	categoryId: uuid("category_id").notNull(),
-	isPrimary: boolean("is_primary").default(false),
+export const shippingAddresses = pgTable("shipping_addresses", {
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	id: bigint({ mode: "number" }).primaryKey().generatedAlwaysAsIdentity({ name: "shipping_addresses_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 9223372036854775807, cache: 1 }),
+	userId: uuid("user_id").notNull(),
+	firstName: text("first_name").notNull(),
+	lastName: text("last_name").notNull(),
+	addressLine1: text("address_line1").notNull(),
+	addressLine2: text("address_line2"),
+	city: text().notNull(),
+	state: text().notNull(),
+	postalCode: text("postal_code").notNull(),
+	country: text().default('USA').notNull(),
+	phone: text(),
+	isDefault: boolean("is_default").default(false),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
 }, (table) => [
+	index("idx_shipping_addresses_user_id").using("btree", table.userId.asc().nullsLast().op("uuid_ops")),
 	foreignKey({
-			columns: [table.categoryId],
-			foreignColumns: [categories.id],
-			name: "product_categories_category_id_categories_id_fk"
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: "fk_user"
 		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.productId],
-			foreignColumns: [products.id],
-			name: "product_categories_product_id_products_id_fk"
-		}).onDelete("cascade"),
-	primaryKey({ columns: [table.productId, table.categoryId], name: "product_categories_product_id_category_id_pk"}),
+	pgPolicy("Users can delete their own shipping addresses", { as: "permissive", for: "delete", to: ["authenticated"], using: sql`(( SELECT auth.uid() AS uid) = user_id)` }),
+	pgPolicy("Users can insert their own shipping addresses", { as: "permissive", for: "insert", to: ["authenticated"] }),
+	pgPolicy("Users can update their own shipping addresses", { as: "permissive", for: "update", to: ["authenticated"] }),
+	pgPolicy("Users can view their own shipping addresses", { as: "permissive", for: "select", to: ["authenticated"] }),
 ]);

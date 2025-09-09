@@ -2,14 +2,23 @@ import { Star, Truck, RotateCcw, Calendar, CheckCircle } from "lucide-react";
 import { Separator } from "@workspace/ui/components/separator";
 import { ProductActions } from "./ProductActions";
 import type { Product } from "../product-page.types";
+import { getCartItems } from "@/actions/cart";
 
 interface ProductDetailsProps {
   product: Product;
 }
 
-export const ProductDetails = ({ product }: ProductDetailsProps) => {
+export const ProductDetails = async ({ product }: ProductDetailsProps) => {
+  const cart = await getCartItems();
+  const isInCart = Boolean(
+    cart?.success &&
+      cart.data?.items?.some(
+        (it: any) => it.productId === product.id && !it.savedForLater
+      )
+  );
+
   return (
-    <div className="space-y-4 lg:space-y-6 w-full lg:max-w-96">
+    <aside className="space-y-4 lg:space-y-6 w-full lg:max-w-96">
       {/* Shipping Info */}
       <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-6">
         <h3 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">
@@ -20,7 +29,7 @@ export const ProductDetails = ({ product }: ProductDetailsProps) => {
         <div className="flex items-center gap-3 mb-3 lg:mb-4">
           <div className="w-10 h-10 lg:w-12 lg:h-12 bg-gray-200 rounded-full flex items-center justify-center">
             <span className="text-base lg:text-lg font-semibold text-gray-600">
-              {product.seller.name.charAt(0).toUpperCase()}
+              {product.seller.name?.charAt(0)?.toUpperCase?.()}
             </span>
           </div>
           <div>
@@ -30,7 +39,8 @@ export const ProductDetails = ({ product }: ProductDetailsProps) => {
             <div className="flex items-center gap-1">
               <Star className="h-3 w-3 lg:h-4 lg:w-4 text-yellow-400 fill-current" />
               <span className="text-xs lg:text-sm text-gray-600">
-                {product.seller.rating} ({product.seller.reviews} reviews)
+                ({product.seller.totalRatings} reviews,{" "}
+                {product.seller.positiveRatingPercent}% positive)
               </span>
             </div>
           </div>
@@ -80,7 +90,7 @@ export const ProductDetails = ({ product }: ProductDetailsProps) => {
 
       {/* Product Actions */}
       <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-6">
-        <ProductActions product={product} />
+        <ProductActions product={product} isInCart={isInCart} />
       </div>
 
       {/* Trust Badges */}
@@ -109,6 +119,6 @@ export const ProductDetails = ({ product }: ProductDetailsProps) => {
           </div>
         </div>
       </div>
-    </div>
+    </aside>
   );
 };

@@ -19,13 +19,10 @@ import {
   type ForgotPasswordFormData,
 } from "@/lib/validations/auth-schemas";
 
-import {
-  signInAction,
-  signUpAction,
-  forgotPasswordAction,
-} from "@/actions/auth";
+
 
 import type { AuthFormProps } from "./auth-dialog.types";
+import { forgotPasswordAction, signInAction, signUpUser } from "@/actions/auth";
 
 // Sign In Form Component
 export function SignInForm({
@@ -111,19 +108,19 @@ export function SignUpForm({
   const handleSubmit = (data: SignUpFormData) => {
     startTransition(async () => {
       try {
-        const result = await signUpAction(data);
+        const result = await signUpUser(data);
 
         if (result.success) {
-          toast.success(result.message);
+          toast.success("Account created successfully! Please check your email to verify your account.");
           form.reset();
           onSuccess();
 
           // If user is signed in automatically, refresh the page
-          if (result.data?.session) {
+          if (result.data?.id) {
             window.location.reload();
           }
         } else {
-          toast.error(result.message);
+          toast.error(result.error);
         }
       } catch (error) {
         console.error("Sign up error:", error);

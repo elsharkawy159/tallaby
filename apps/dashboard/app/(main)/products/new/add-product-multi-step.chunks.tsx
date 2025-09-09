@@ -1,13 +1,9 @@
 import React from "react";
 import type { CategoryOption, BrandOption } from "./add-product.schema";
 import {
-  BasicInformationStep,
-  ProductImagesStep,
-  PricingStep,
-  InventoryStep,
-  ProductSettingsStep,
-  PhysicalPropertiesStep,
-  SeoMarketingStep,
+  BasicInformationStep as GeneralStep,
+  ListingStep,
+  VariantsSeoStep,
 } from "./add-product-steps";
 
 interface StepRendererProps {
@@ -24,29 +20,15 @@ export const StepRenderer = ({
   switch (currentStep) {
     case 0:
       return (
-        <BasicInformationStep
-          categories={categories || []}
-          brands={brands || []}
-        />
+        <GeneralStep categories={categories || []} brands={brands || []} />
       );
     case 1:
-      return <ProductImagesStep />;
+      return <ListingStep />;
     case 2:
-      return <PricingStep />;
-    case 3:
-      return <InventoryStep />;
-    case 4:
-      return <ProductSettingsStep />;
-    case 5:
-      return <PhysicalPropertiesStep />;
-    case 6:
-      return <SeoMarketingStep />;
+      return <VariantsSeoStep />;
     default:
       return (
-        <BasicInformationStep
-          categories={categories || []}
-          brands={brands || []}
-        />
+        <GeneralStep categories={categories || []} brands={brands || []} />
       );
   }
 };

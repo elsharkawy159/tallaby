@@ -220,10 +220,10 @@ export const ProductTabs = ({ product }: ProductTabsProps) => {
                 <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
                   <div className="text-center mb-3 lg:mb-4">
                     <div className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
-                      {product.rating}
+                      {product.averageRating}
                     </div>
                     <div className="flex justify-center mb-2">
-                      {renderStars(product.rating)}
+                      {renderStars(Math.round(product.averageRating))}
                     </div>
                     <p className="text-xs lg:text-sm text-gray-600">
                       Based on {product.reviewCount} ratings
@@ -338,7 +338,7 @@ export const ProductTabs = ({ product }: ProductTabsProps) => {
                   >
                     <Image
                       src={getPublicUrl(image, "products")}
-                      alt={product.name}
+                      alt={product.title}
                       width={150}
                       height={150}
                       className="w-full h-full object-contain bg-white"

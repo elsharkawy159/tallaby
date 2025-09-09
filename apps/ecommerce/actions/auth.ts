@@ -1,208 +1,346 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { createClient } from "@/supabase/server";
-import type { User } from "@supabase/supabase-js";
-
-import type {
-  SignInFormData,
-  SignUpFormData,
-  ForgotPasswordFormData,
+import { db, users, sellers } from "@workspace/db";
+import { eq } from "drizzle-orm";
+import { cookies, headers } from "next/headers";
+import {
+  signInSchema,
+  forgotPasswordSchema,
+  type SignInFormData,
+  type ForgotPasswordFormData,
 } from "@/lib/validations/auth-schemas";
 
-export interface AuthResponse {
-  success: boolean;
-  message: string;
-  data?: any;
-}
-
-/* Sign up a new user */
-export async function signUpAction(
-  formData: SignUpFormData
-): Promise<AuthResponse> {
+export async function getUser() {
   try {
     const supabase = await createClient();
+    const { data, error } = await supabase.auth.getUser();
+    if (error) return null;
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
 
-    const { data, error } = await supabase.auth.signUp({
-      email: formData.email,
-      password: formData.password,
-      options: {
-        data: {
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          full_name: `${formData.firstName} ${formData.lastName}`,
-          role: "customer",
+export async function getUserProfile() {
+  try {
+    const session = await getUser();
+    if (!session?.user.id) {
+      return null;
+    }
+
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, session.user.id),
+      columns: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        fullName: true,
+        phone: true,
+        role: true,
+        avatar: true,
+        isVerified: true,
+        preferredLanguage: true,
+        defaultCurrency: true,
+      },
+    });
+
+    return user;
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    return null;
+  }
+}
+
+export async function getUserWithAddresses() {
+  try {
+    const session = await getUser();
+    if (!session?.user.id) {
+      return null;
+    }
+
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, session.user.id),
+      with: {
+        userAddresses: {
+          orderBy: (addresses, { desc }) => [desc(addresses.isDefault)],
+        },
+        paymentMethods: {
+          where: (methods, { eq }) => eq(methods.isDefault, true),
+          limit: 1,
         },
       },
     });
 
-    if (error) {
-      return {
-        success: false,
-        message: error.message,
-      };
-    }
-
-    revalidatePath("/");
-
-    return {
-      success: true,
-      message: data.session
-        ? "Account created successfully!"
-        : "Account created! Please check your email to verify your account.",
-      data,
-    };
+    return user;
   } catch (error) {
-    return {
-      success: false,
-      message: "Something went wrong. Please try again.",
-    };
+    console.error("Error fetching user with addresses:", error);
+    return null;
   }
 }
 
-/* Sign in an existing user */
-export async function signInAction(
-  formData: SignInFormData
-): Promise<AuthResponse> {
-  try {
-    const supabase = await createClient();
+// Return the current Supabase auth user (or null)
 
+// Sign in with email + password
+export async function signInAction(raw: unknown) {
+  try {
+    const parsed = signInSchema.safeParse(raw as SignInFormData);
+    if (!parsed.success) {
+      return {
+        success: false,
+        message: parsed.error.issues[0]?.message ?? "Invalid input",
+      };
+    }
+
+    const supabase = await createClient();
     const { data, error } = await supabase.auth.signInWithPassword({
-      email: formData.email,
-      password: formData.password,
+      email: parsed.data.email,
+      password: parsed.data.password,
     });
 
     if (error) {
-      return {
-        success: false,
-        message: error.message,
-      };
+      return { success: false, message: error.message };
     }
 
-    return {
-      success: true,
-      message: "Logged in successfully!",
-      data,
-    };
-  } catch (error) {
-    return {
-      success: false,
-      message: "Something went wrong. Please try again.",
-    };
+    // Update last login timestamp if user exists in our users table
+    if (data.user?.id) {
+      try {
+        await db
+          .update(users)
+          .set({ lastLoginAt: new Date().toISOString() })
+          .where(eq(users.id, data.user.id));
+      } catch {}
+    }
+
+    return { success: true, message: "Signed in successfully" };
+  } catch (err) {
+    console.error("signInAction error:", err);
+    return { success: false, message: "Failed to sign in" };
   }
 }
 
-/* Send password reset email */
-export async function forgotPasswordAction(
-  formData: ForgotPasswordFormData
-): Promise<AuthResponse> {
+// Send password reset email
+export async function forgotPasswordAction(raw: unknown) {
   try {
+    const parsed = forgotPasswordSchema.safeParse(
+      raw as ForgotPasswordFormData
+    );
+    if (!parsed.success) {
+      return {
+        success: false,
+        message: parsed.error.issues[0]?.message ?? "Invalid input",
+      };
+    }
+
     const supabase = await createClient();
+    const headersList = await headers();
+    const host = headersList.get("host");
+    const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
+    const origin = `${protocol}://${host}`;
+    const redirectTo = `${origin}/auth/reset-password`;
 
     const { error } = await supabase.auth.resetPasswordForEmail(
-      formData.email,
+      parsed.data.email,
       {
-        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/reset-password`,
+        redirectTo,
       }
     );
-
     if (error) {
-      return {
-        success: false,
-        message: error.message,
-      };
+      return { success: false, message: error.message };
     }
 
     return {
       success: true,
-      message: "Password reset instructions sent to your email.",
+      message: "Password reset instructions sent to your email",
     };
-  } catch (error) {
-    return {
-      success: false,
-      message: "Something went wrong. Please try again.",
-    };
+  } catch (err) {
+    console.error("forgotPasswordAction error:", err);
+    return { success: false, message: "Failed to send reset instructions" };
   }
 }
 
-/* Sign out the current user */
-export async function signOutAction(): Promise<AuthResponse> {
+// Complete password reset when in recovery session
+export async function resetPasswordAction(input: { password: string }) {
   try {
-    const supabase = await createClient();
-
-    const { error } = await supabase.auth.signOut();
-
-    if (error) {
+    if (!input?.password || input.password.length < 8) {
       return {
         success: false,
-        message: error.message,
+        message: "Password must be at least 8 characters",
       };
     }
-
-    revalidatePath("/");
-    redirect("/");
-  } catch (error) {
-    return {
-      success: false,
-      message: "Something went wrong during sign out.",
-    };
+    const supabase = await createClient();
+    const { error } = await supabase.auth.updateUser({
+      password: input.password,
+    });
+    if (error) {
+      return { success: false, message: error.message };
+    }
+    return { success: true, message: "Password has been updated" };
+  } catch (err) {
+    console.error("resetPasswordAction error:", err);
+    return { success: false, message: "Failed to update password" };
   }
 }
 
-/* Get current user */
-export async function getCurrentUser(): Promise<User | null> {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
-
-  if (error) return null;
-
-  return user;
+// Sign out current user
+export async function signOutAction() {
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+    return { success: true };
+  } catch (err) {
+    console.error("signOutAction error:", err);
+    return { success: false };
+  }
 }
 
+// Get Supabase user and matched seller profile
 export async function getUserWithSellerProfile() {
-  const supabase = await createClient();
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data.user) {
+      return { user: null, seller: null, error };
+    }
 
-  // Get the current authenticated user
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
+    const seller = await db.query.sellers.findFirst({
+      where: eq(sellers.id, data.user.id),
+    });
 
-  if (userError || !user) {
-    return {
-      user: null,
-      seller: null,
-      error: userError || new Error("No user found"),
-    };
+    return { user: data.user, seller: seller ?? null, error: null };
+  } catch (err) {
+    console.error("getUserWithSellerProfile error:", err);
+    return { user: null, seller: null, error: err };
+  }
+}
+
+export async function checkIfSeller() {
+  try {
+    const user = await getUserProfile();
+    if (!user) return false;
+
+    if (user.role === "seller" || user.role === "admin") {
+      const seller = await db.query.sellers.findFirst({
+        where: eq(sellers.id, user.id),
+        columns: {
+          id: true,
+          status: true,
+          isVerified: true,
+        },
+      });
+
+      return seller && seller.status === "approved";
+    }
+
+    return false;
+  } catch (error) {
+    console.error("Error checking seller status:", error);
+    return false;
+  }
+}
+
+export async function getSessionId() {
+  const cookieStore = await cookies();
+  let sessionId = cookieStore.get("session_id")?.value;
+
+  if (!sessionId) {
+    sessionId = crypto.randomUUID();
+    cookieStore.set("session_id", sessionId, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 30, // 30 days
+    });
   }
 
-  // Fetch user data from 'users' table
-  const { data: userData, error: userTableError } = await supabase
-    .from("users")
-    .select("*")
-    .eq("id", user.id)
-    .single();
+  return sessionId;
+}
 
-  if (userTableError) {
-    return { user: null, seller: null, error: userTableError };
+export async function signUpUser(data: {
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone?: string;
+  referralCode?: string;
+}) {
+  try {
+    // Check if user exists
+    const existingUser = await db.query.users.findFirst({
+      where: eq(users.email, data.email),
+    });
+
+    if (existingUser) {
+      return { success: false, error: "User already exists" };
+    }
+
+    // Generate referral code
+    const userReferralCode = `REF${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+
+    // Handle referral
+    let referredById = null;
+    if (data.referralCode) {
+      const referrer = await db.query.users.findFirst({
+        where: eq(users.referralCode, data.referralCode),
+      });
+      if (referrer) {
+        referredById = referrer.id;
+      }
+    }
+
+    const newUser = await db
+      .insert(users)
+      .values({
+        email: data.email,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        fullName: `${data.firstName} ${data.lastName}`,
+        phone: data.phone,
+        referralCode: userReferralCode,
+        referredBy: referredById,
+      })
+      .returning();
+
+    return { success: true, data: newUser[0] };
+  } catch (error) {
+    console.error("Error creating user:", error);
+    return { success: false, error: "Failed to create user" };
   }
+}
 
-  // Fetch seller profile from 'sellers' table
-  const { data: sellerData, error: sellerError } = await supabase
-    .from("sellers")
-    .select("*")
-    .eq("id", user.id)
-    .single();
+export async function updateUserProfile(data: {
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  preferredLanguage?: string;
+  defaultCurrency?: string;
+  receiveMarketingEmails?: boolean;
+}) {
+  try {
+    const user = await getUser();
+    if (!user) {
+      return { success: false, error: "Unauthorized" };
+    }
 
-  // sellerData can be null if user is not a seller
-  return {
-    user: userData,
-    seller: sellerData,
-    error: sellerError || null,
-  };
+    const fullName =
+      data.firstName && data.lastName
+        ? `${data.firstName} ${data.lastName}`
+        : undefined;
+
+    const updatedUser = await db
+      .update(users)
+      .set({
+        ...data,
+        ...(fullName && { fullName }),
+        updatedAt: new Date().toISOString(),
+      })
+      .where(eq(users.id, user.user.id))
+      .returning();
+
+    return { success: true, data: updatedUser[0] };
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    return { success: false, error: "Failed to update profile" };
+  }
 }

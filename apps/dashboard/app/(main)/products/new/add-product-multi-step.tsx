@@ -7,13 +7,16 @@ import { Button } from "@workspace/ui/components/button";
 import { Form } from "@workspace/ui/components/form";
 import { Stepper, ProgressStepper } from "@workspace/ui/components/stepper";
 import type { AddProductFormData } from "./add-product.schema";
-import { addProduct, updateProduct } from "./add-product.server";
 
 import type { AddProductMultiStepProps } from "./add-product-multi-step.types";
 import { FORM_STEPS } from "./add-product-multi-step.constants";
 import { isStepValid } from "./add-product-multi-step.lib";
-import { StepRenderer } from "./add-product-multi-step.chunks";
 import { useAddProductForm } from "./add-product-multi-step.hooks";
+import { updateProduct } from "@/actions/products";
+import { createProduct } from "@/actions/products";
+import { BasicInformationStep, ListingStep, VariantsSeoStep } from "./add-product-steps";
+import Link from "next/link";
+import { ChevronLeft, LoaderCircle } from "lucide-react";
 
 export default function AddProductMultiStep({
   categories,
@@ -24,7 +27,7 @@ export default function AddProductMultiStep({
 }: AddProductMultiStepProps) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
-
+console.log("brands", brands)
   // Use custom hook for form management
   const { form, isFormDirty, setFormData, defaultValues } = useAddProductForm({
     initialData,
@@ -87,9 +90,9 @@ export default function AddProductMultiStep({
       try {
         let result;
         if (isEditMode && productId) {
-          result = await updateProduct(productId, data);
+          result = await updateProduct(productId, data as any);
         } else {
-          result = await addProduct(data);
+          result = await createProduct(data as any);
         }
 
         if (result.success) {
@@ -102,7 +105,7 @@ export default function AddProductMultiStep({
           setFormData({});
         } else {
           toast.error(
-            result.message ||
+            result.error ||
               `Failed to ${isEditMode ? "update" : "create"} product`
           );
         }
@@ -131,17 +134,25 @@ export default function AddProductMultiStep({
   };
 
   const renderCurrentStep = () => {
-    return (
-      <StepRenderer
-        currentStep={currentStep}
-        categories={categories}
-        brands={brands}
-      />
-    );
+  
+      switch (currentStep) {
+        case 0:
+          return (
+            <BasicInformationStep categories={categories || []} brands={brands || []} />
+          );
+        case 1:
+          return <ListingStep />;
+        case 2:
+          return <VariantsSeoStep />;
+        default:
+          return (
+        <BasicInformationStep categories={categories || []} brands={brands || []} />
+      );
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50/30">
+    <div className="min-h-screen bg-gray-50/30 pb-80">
       {/* Header */}
       <div className="sticky top-0 z-50 bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
@@ -151,7 +162,10 @@ export default function AddProductMultiStep({
               variant="ghost"
               className="h-10 text-sm hover:bg-gray-100"
             >
-              <a href="/products">← Back to Products</a>
+              <Link href="/products">
+                <ChevronLeft className="h-4 w-4" />
+                Back
+              </Link>
             </Button>
           </div>
 
@@ -180,7 +194,7 @@ export default function AddProductMultiStep({
             >
               {isPending ? (
                 <span className="flex items-center gap-2">
-                  <span className="animate-spin">⏳</span>
+                  <LoaderCircle className="animate-spin" />
                   {isEditMode ? "Updating Product..." : "Creating Product..."}
                 </span>
               ) : isEditMode ? (
@@ -224,7 +238,7 @@ export default function AddProductMultiStep({
             className="space-y-8"
             id="add-product-form"
           >
-            <div className="mb-5">{renderCurrentStep()}</div>
+            <div className="mb-5 space-y-5">{renderCurrentStep()}</div>
 
             <div className="flex justify-between items-center p-6">
               <Button

@@ -14,7 +14,7 @@ export const productSchema = z.object({
   description: z.string().optional(),
   bulletPoints: z.array(z.string()).optional(),
   brandId: z.string().uuid("Brand ID must be a valid UUID"),
-  mainCategoryId: z.string().uuid("Main category ID must be a valid UUID"),
+  categoryId: z.string().uuid("Category ID must be a valid UUID"),
   basePrice: z
     .number()
     .min(0.01, "Base price must be greater than 0")

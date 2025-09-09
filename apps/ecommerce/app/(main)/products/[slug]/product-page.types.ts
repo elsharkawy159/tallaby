@@ -5,11 +5,16 @@ export interface ProductPageProps {
 export interface Product {
   id: string;
   title: string;
-  slug?: string;
-  base_price: number;
-  sale_price?: number;
-  average_rating: number;
-  review_count: number;
+  slug: string;
+  price: {
+    base?: number;
+    list: number;
+    final: number;
+    discountType?: string;
+    discountValue?: number;
+  };
+  averageRating: number;
+  reviewCount: number;
   description: string;
   bulletPoints: string[];
   isActive: boolean;
@@ -19,12 +24,29 @@ export interface Product {
   isPlatformChoice: boolean;
   images: string[];
   brand: {
+    id: string;
     name: string;
+    logoUrl?: string;
   };
   category: {
+    id: string;
     name: string;
+    slug: string;
   };
-
+  seller: {
+    id: string;
+    name: string;
+    slug: string;
+    reviewsCount?: number;
+    isVerified?: boolean;
+    totalRatings?: number;
+    positiveRatingPercent?: number;
+  };
+  quantity: boolean;
+  stockCount?: number;
+  tags?: string[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Review {

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import "@workspace/ui/globals.css";
+import "./globals.css";
 import { Providers } from "./providers";
 import NextTopLoader from "nextjs-toploader";
 

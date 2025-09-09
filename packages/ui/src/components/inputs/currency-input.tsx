@@ -13,6 +13,7 @@ export interface CurrencyInputProps extends Omit<BaseFieldProps, "children"> {
   max?: number;
   allowNegative?: boolean;
   onChange?: (value: number) => void;
+  value?: number;
 }
 
 const currencySymbols: Record<string, string> = {
@@ -43,6 +44,7 @@ export const CurrencyInput = React.forwardRef<
       max,
       allowNegative = false,
       onChange,
+      value,
       disabled = false,
       ...baseProps
     },
@@ -95,6 +97,9 @@ export const CurrencyInput = React.forwardRef<
                 type="number"
                 placeholder={placeholder}
                 disabled={disabled}
+                value={
+                  value ?? (typeof field.value === "number" ? field.value : "")
+                }
                 className={cn(
                   "pl-12",
                   fieldError && "border-red-500 focus:border-red-500"

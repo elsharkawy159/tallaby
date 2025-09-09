@@ -2,30 +2,56 @@
 
 import { useState } from "react";
 import { Button } from "@workspace/ui/components/button";
-import { Heart, ShoppingCart, Minus, Plus } from "lucide-react";
+import { Heart, ShoppingCart, Minus, Plus, ChevronRight } from "lucide-react";
 import type { Product } from "../product-page.types";
+import { AddToCartButton } from "./add-to-cart-button.client";
+import { useCart } from "@/hooks/use-cart";
+import { useWishlist } from "@/hooks/use-wishlist";
+import Link from "next/link";
 
 interface ProductActionsProps {
   product: Product;
   onAddToCart?: (quantity: number) => void;
   onBuyNow?: (quantity: number) => void;
+  isInCart?: boolean;
 }
 
 export const ProductActions = ({
   product,
   onAddToCart,
   onBuyNow,
+  isInCart: propIsInCart,
 }: ProductActionsProps) => {
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
+
+  // Hooks
+  const { addToCart, isInCart, isAdding } = useCart();
+  const { toggleWishlist, isAdding: isWishlistAdding } = useWishlist();
 
   const handleQuantityChange = (delta: number) => {
     setQuantity((prev) => Math.max(1, prev + delta));
   };
 
-  const handleWishlist = () => {
-    setIsWishlisted(!isWishlisted);
+  const handleWishlist = async () => {
+    const result = await toggleWishlist(product.id);
+    if (result?.success) {
+      setIsWishlisted(!isWishlisted);
+    }
   };
+
+  const handleAddToCart = async () => {
+    const result = await addToCart({
+      productId: product.id,
+      quantity,
+    });
+
+    if (result.success && onAddToCart) {
+      onAddToCart(quantity);
+    }
+  };
+
+  const isInCartStatus = propIsInCart ?? isInCart(product.id);
 
   return (
     <div className="space-y-3 lg:space-y-4">
@@ -59,20 +85,30 @@ export const ProductActions = ({
 
       {/* Action Buttons */}
       <div className="space-y-2 lg:space-y-3">
-        <Button
-          className="w-full h-10 lg:h-12 text-sm lg:text-lg font-semibold bg-primary hover:bg-primary/90"
-          onClick={() => onAddToCart?.(quantity)}
-          disabled={!product.inStock}
-        >
-          <ShoppingCart className="h-4 w-4 lg:h-5 lg:w-5 mr-2" />
-          Add to Cart
-        </Button>
+        {isInCartStatus ? (
+          <Button
+            asChild
+            className="w-full h-10 lg:h-12 text-sm lg:text-lg font-semibold bg-primary hover:bg-primary/90"
+          >
+            <Link href="/cart">
+              Go To Cart <ChevronRight className="h-4 w-4" />
+            </Link>
+          </Button>
+        ) : (
+          <Button
+            className="w-full h-10 lg:h-12 text-sm lg:text-lg font-semibold bg-primary hover:bg-primary/90"
+            onClick={handleAddToCart}
+            disabled={!product.quantity || isAdding}
+          >
+            {isAdding ? "Adding..." : "Add to Cart"}
+          </Button>
+        )}
 
         <Button
           variant="outline"
           className="w-full h-10 lg:h-12 text-sm lg:text-lg font-semibold border-2 border-primary text-primary hover:bg-primary hover:text-white"
           onClick={() => onBuyNow?.(quantity)}
-          disabled={!product.inStock}
+          disabled={!product.quantity}
         >
           Buy Now
         </Button>
@@ -81,16 +117,23 @@ export const ProductActions = ({
           variant="ghost"
           className="w-full h-10 lg:h-12 text-sm lg:text-lg font-semibold border-2 border-gray-300 hover:border-primary hover:text-primary"
           onClick={handleWishlist}
+          disabled={isWishlistAdding}
         >
           <Heart
-            className={`h-4 w-4 lg:h-5 lg:w-5 mr-2 ${isWishlisted ? "fill-current text-red-500" : ""}`}
+            className={`h-4 w-4 lg:h-5 lg:w-5 mr-2 ${
+              isWishlisted ? "fill-current text-red-500" : ""
+            }`}
           />
-          {isWishlisted ? "Wishlisted" : "Add to Wishlist"}
+          {isWishlistAdding
+            ? "Adding..."
+            : isWishlisted
+              ? "Wishlisted"
+              : "Add to Wishlist"}
         </Button>
       </div>
 
       {/* Stock Status */}
-      {!product.inStock && (
+      {!product.quantity && (
         <div className="text-center p-2 lg:p-3 bg-red-50 border border-red-200 rounded-lg">
           <p className="text-red-600 font-medium text-sm lg:text-base">
             Currently Out of Stock

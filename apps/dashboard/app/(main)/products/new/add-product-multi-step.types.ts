@@ -1,5 +1,4 @@
 import type {
-  AddProductFormData,
   CategoryOption,
   BrandOption,
 } from "./add-product.schema";

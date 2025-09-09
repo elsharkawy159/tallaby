@@ -1,6 +1,5 @@
-import { useState } from "react";
+
 import Link from "next/link";
-import { ChevronDown } from "lucide-react";
 import { ScrollArea, ScrollBar } from "@workspace/ui/components/scroll-area";
 
 interface Category {
@@ -11,7 +10,6 @@ interface Category {
 }
 
 const CategoryNav = () => {
-  const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
 
   // Demo categories data
   const categories: Category[] = [

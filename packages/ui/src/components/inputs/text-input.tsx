@@ -1,3 +1,4 @@
+"use client";
 import { UseFormReturn, FieldValues, Path, PathValue } from "react-hook-form";
 import {
   FormControl,
@@ -10,6 +11,7 @@ import {
 import { Input } from "@workspace/ui/components/input";
 import { cn } from "@workspace/ui/lib/utils";
 import { Globe, Hash, Mail, Phone, Search, Eye, EyeOff } from "lucide-react";
+import { useState } from "react";
 
 interface TextInputProps<TFieldValues extends FieldValues> {
   form: UseFormReturn<TFieldValues>;
@@ -23,6 +25,7 @@ interface TextInputProps<TFieldValues extends FieldValues> {
   disabled?: boolean;
   showIcon?: boolean;
   onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
+  autoFocus?: boolean;
 }
 
 export function TextInput<TFieldValues extends FieldValues>({
@@ -37,11 +40,11 @@ export function TextInput<TFieldValues extends FieldValues>({
   disabled = false,
   showIcon = true,
   onBlur,
+  autoFocus = false,
 }: TextInputProps<TFieldValues>) {
   if (!form) {
     throw new Error("TextInput must be used within a FormProvider");
   }
-
 
   const getInputIcon = () => {
     if (!showIcon) return null;
@@ -63,9 +66,12 @@ export function TextInput<TFieldValues extends FieldValues>({
   };
   const inputIcon = getInputIcon();
 
-  // Determine input type for password visibility toggle
-  const inputType = type;
+  // Password visibility state
+  const [isVisible, setIsVisible] = useState(false);
 
+  // Determine input type for password visibility toggle
+  const inputType =
+    type === "password" ? (isVisible ? "text" : "password") : type;
   return (
     <FormField
       control={form.control}
@@ -85,13 +91,14 @@ export function TextInput<TFieldValues extends FieldValues>({
                 </div>
               )}
               <Input
+                autoFocus={autoFocus}
                 {...field}
                 placeholder={placeholder}
                 type={inputType}
                 className={cn(
                   "h-11 rounded-lg",
                   inputIcon && "pl-10",
-                  type === "password" && "pr-10",
+                  type === "password" && "pe-9",
                   className
                 )}
                 disabled={disabled}
@@ -120,14 +127,16 @@ export function TextInput<TFieldValues extends FieldValues>({
               {type === "password" && (
                 <button
                   type="button"
-                  tabIndex={-1}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-                  aria-label={type === "password" ? "Hide password" : "Show password"}
+                  className="text-muted-foreground/80 hover:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-md transition-[color,box-shadow] outline-none focus:z-10 focus-visible:ring-[3px] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+                  onClick={() => setIsVisible((prevState) => !prevState)}
+                  aria-label={isVisible ? "Hide password" : "Show password"}
+                  aria-pressed={isVisible}
+                  aria-controls={field.name}
                 >
-                  {type === "password" ? (
-                    <EyeOff className="h-4 w-4 cursor-pointer" />
+                  {isVisible ? (
+                    <EyeOff className="h-4 w-4" aria-hidden="true" />
                   ) : (
-                    <Eye className="h-4 w-4 cursor-pointer" />
+                    <Eye className="h-4 w-4" aria-hidden="true" />
                   )}
                 </button>
               )}
