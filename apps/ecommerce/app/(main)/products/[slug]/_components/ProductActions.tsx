@@ -2,10 +2,9 @@
 
 import { useState } from "react";
 import { Button } from "@workspace/ui/components/button";
-import { Heart, ShoppingCart, Minus, Plus, ChevronRight } from "lucide-react";
+import { Heart, Minus, Plus, ChevronRight } from "lucide-react";
 import type { Product } from "../product-page.types";
-import { AddToCartButton } from "./add-to-cart-button.client";
-import { useCart } from "@/hooks/use-cart";
+import { useCartStore } from "@/stores/cart-store";
 import { useWishlist } from "@/hooks/use-wishlist";
 import Link from "next/link";
 
@@ -26,7 +25,7 @@ export const ProductActions = ({
   const [isWishlisted, setIsWishlisted] = useState(false);
 
   // Hooks
-  const { addToCart, isInCart, isAdding } = useCart();
+  const { addToCart, isInCart, isAdding } = useCartStore();
   const { toggleWishlist, isAdding: isWishlistAdding } = useWishlist();
 
   const handleQuantityChange = (delta: number) => {

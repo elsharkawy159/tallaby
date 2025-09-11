@@ -1,12 +1,12 @@
 "use client";
 
-import { Heart, Loader2, Star } from "lucide-react";
+import { Heart, Loader2, Star, Trash } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
 import { Card, CardContent } from "@workspace/ui/components/card";
 import Link from "next/link";
 import Image from "next/image";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
-import { useCart } from "@/hooks/use-cart";
+import { useCartStore } from "@/stores/cart-store";
 import { useWishlist } from "@/hooks/use-wishlist";
 import { useState } from "react";
 
@@ -84,13 +84,12 @@ const ProductCard = (product: ProductCardProps) => {
   const {
     addToCart,
     isInCart,
-    isAdding,
     getItemQuantity,
     updateQuantity,
     isUpdating,
     removeFromCart,
     cartItems,
-  } = useCart();
+  } = useCartStore();
   const { toggleWishlist, isAdding: isWishlistAdding } = useWishlist();
   const [isWishlisted, setIsWishlisted] = useState(false);
 
@@ -196,7 +195,7 @@ const ProductCard = (product: ProductCardProps) => {
         <div className="space-y-2 mt-2.5">
           <div className="flex items-center gap-4.5 justify-between mb-2">
             <h3 className="text-base font-medium line-clamp-2">{title}</h3>
-            <span className="text-lg font-semibold">{price}$</span>
+            <span className="text-lg font-semibold">{price}</span>
           </div>
 
           {/* Rating */}
@@ -214,7 +213,7 @@ const ProductCard = (product: ProductCardProps) => {
                 className="size-7 shrink-0 p-0 cursor-pointer rounded-full border-2 text-xl border-white flex items-center justify-center"
                 aria-label="Decrease quantity"
               >
-                -
+                {cartQuantity === 1 ? <Trash className="size-4" /> : "-"}
               </span>
               <span className="min-w-[2rem] text-center font-medium">
                 {isUpdating ? (
@@ -235,9 +234,10 @@ const ProductCard = (product: ProductCardProps) => {
             <Button
               className="absolute text-sm bottom-0 right-0 font-bold py-2.5 rounded-none [clip-path:polygon(17%_0,100%_0,100%_100%,0_100%,20_20%)] pl-10"
               onClick={handleAddToCart}
-              disabled={isAdding}
+              // disabled={isAdding}
             >
-              {isAdding ? "Adding..." : "Add to cart"}
+              {/* {isAdding ? "Adding..." : "Add to cart"} */}
+              Add to cart
             </Button>
           )}
         </div>

@@ -1,0 +1,183 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useCartStore } from "@/stores/cart-store";
+import { Button } from "@workspace/ui/components/button";
+import { Badge } from "@workspace/ui/components/badge";
+import { ScrollArea } from "@workspace/ui/components/scroll-area";
+import { Trash2, ShoppingCart, Plus, Minus } from "lucide-react";
+import { cn } from "@/lib/utils";
+import Image from "next/image";
+import { getPublicUrl } from "@workspace/ui/lib/utils";
+
+interface CartSheetProps {
+  className?: string;
+}
+
+export default function CartSheet({ className }: CartSheetProps) {
+  const {
+    cartData,
+    itemCount,
+    subtotal,
+    cartItems,
+    updateQuantity,
+    removeFromCart,
+    isUpdating,
+    isRemoving,
+  } = useCartStore();
+
+  const [isVisible, setIsVisible] = useState(false);
+
+  // Show cart sheet when there are items
+  useEffect(() => {
+    setIsVisible(cartItems.length > 0);
+  }, [cartItems.length]);
+
+  if (!isVisible) return null;
+
+  const formatPrice = (price: string | number) => {
+    const numPrice = typeof price === "string" ? parseFloat(price) : price;
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "EGP",
+    }).format(numPrice);
+  };
+
+  const handleQuantityChange = async (itemId: string, newQuantity: number) => {
+    if (newQuantity <= 0) {
+      await removeFromCart(itemId);
+    } else {
+      await updateQuantity(itemId, newQuantity);
+    }
+  };
+
+  return (
+    <div
+      className={cn(
+        "fixed right-0 top-0 h-full w-[130px] bg-background border-l border-border shadow-lg z-50 flex flex-col",
+        className
+      )}
+    >
+      {/* Header */}
+      <div className="p-3 border-b border-border bg-muted/50">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1">
+            <ShoppingCart className="h-4 w-4" />
+            <span className="text-xs font-medium">Cart</span>
+          </div>
+          <Badge variant="secondary" className="text-xs h-5 px-1">
+            {itemCount}
+          </Badge>
+        </div>
+      </div>
+
+      {/* Cart Items */}
+      <ScrollArea className="flex-1 h-96">
+        <div className="p-2 space-y-2">
+          {cartItems.map((item) => (
+            <div
+              key={item.id}
+              className="bg-card border border-border rounded-lg p-2 space-y-2"
+            >
+              {/* Product Image */}
+              <div className="aspect-square bg-muted rounded-md overflow-hidden">
+                {item.product.images && item.product.images[0] ? (
+                  <Image
+                    src={getPublicUrl(item.product.images[0], "products")}
+                    alt={item.product.title}
+                    width={120}
+                    height={120}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
+                    No Image
+                  </div>
+                )}
+              </div>
+
+              {/* Product Info */}
+              <div className="space-y-1">
+                <h4
+                  className="text-xs font-medium leading-tight overflow-hidden"
+                  style={{
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical",
+                  }}
+                  title={item.product.title}
+                >
+                  {item.product.title}
+                </h4>
+                <p className="text-xs text-muted-foreground">
+                  {formatPrice(item.price)}
+                </p>
+              </div>
+
+              {/* Quantity Controls */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1">
+                  {item.quantity === 1 ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                      onClick={() => removeFromCart(item.id)}
+                      disabled={isRemoving}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-6 w-6 p-0"
+                      onClick={() =>
+                        handleQuantityChange(item.id, item.quantity - 1)
+                      }
+                      disabled={isUpdating || isRemoving}
+                    >
+                      <Minus className="h-3 w-3" />
+                    </Button>
+                  )}
+                  <span className="text-xs font-medium min-w-[20px] text-center">
+                    {item.quantity}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-6 w-6 p-0"
+                    onClick={() =>
+                      handleQuantityChange(item.id, item.quantity + 1)
+                    }
+                    disabled={isUpdating || isRemoving}
+                  >
+                    <Plus className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </ScrollArea>
+
+      {/* Footer */}
+      <div className="border-t border-border bg-muted/50 p-3 space-y-2">
+        <div className="flex items-center justify-between text-sm">
+          <span className="font-medium">Total:</span>
+          <span className="font-bold">{formatPrice(subtotal)}</span>
+        </div>
+        <Button
+          size="sm"
+          className="w-full text-xs h-8"
+          onClick={() => {
+            // Navigate to cart page or open cart drawer
+            window.location.href = "/cart";
+          }}
+        >
+          View Cart
+        </Button>
+      </div>
+    </div>
+  );
+}

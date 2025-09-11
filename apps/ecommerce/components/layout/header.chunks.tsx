@@ -2,13 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import {
-  Search,
-  ShoppingCart,
-  Heart,
-  User,
-  Menu,
-} from "lucide-react";
+import { Search, ShoppingCart, Heart, User, Menu } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import {
@@ -38,7 +32,7 @@ import {
   getLogoText,
   getBecomeSellerUrl,
 } from "./header.lib";
-import { useCart } from "@/hooks/use-cart";
+import { useCartStore } from "@/stores/cart-store";
 
 export const Logo = ({ className }: LogoProps) => {
   return (
@@ -136,7 +130,7 @@ export const UserAuth = ({ variant = "desktop", className }: UserAuthProps) => {
 };
 
 export const CartLink = ({ className }: { className?: string }) => {
-  const { itemCount } = useCart();
+  const { itemCount } = useCartStore();
   return (
     <Link
       href="/cart"

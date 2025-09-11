@@ -36,11 +36,7 @@ export const signUpSchema = z
       .string()
       .min(1, "Password is required")
       .min(8, "Password must be at least 8 characters")
-      .max(128, "Password must not exceed 128 characters")
-      .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        "Password must contain at least one lowercase letter, one uppercase letter, and one number"
-      ),
+      .max(128, "Password must not exceed 128 characters"),
     confirmPassword: z.string().min(1, "Please confirm your password"),
   })
   .refine((data) => data.password === data.confirmPassword, {

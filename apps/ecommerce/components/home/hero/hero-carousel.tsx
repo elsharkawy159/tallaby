@@ -24,22 +24,22 @@ const HeroCarousel = () => {
       image: "/banner2.jpg",
     },
     {
-      id: 2,
+      id: 3,
       href: "/products",
       image: "/banner3.jpg",
     },
     {
-      id: 2,
+      id: 4,
       href: "/products",
       image: "/banner4.jpg",
     },
     {
-      id: 2,
+      id: 5,
       href: "/products",
       image: "/banner5.jpg",
     },
     {
-      id: 2,
+      id: 6,
       href: "/products",
       image: "/banner6.jpg",
     },

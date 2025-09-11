@@ -23,7 +23,7 @@ type CartResponse = {
 
 export default function CartClient({
   initialData,
-}: {
+}: {red
   initialData: CartResponse;
 }) {
   const [isPending, startTransition] = useTransition();

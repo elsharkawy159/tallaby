@@ -31,19 +31,6 @@ export async function getUserProfile() {
 
     const user = await db.query.users.findFirst({
       where: eq(users.id, session.user.id),
-      columns: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        fullName: true,
-        phone: true,
-        role: true,
-        avatar: true,
-        isVerified: true,
-        preferredLanguage: true,
-        defaultCurrency: true,
-      },
     });
 
     return user;
@@ -83,41 +70,19 @@ export async function getUserWithAddresses() {
 // Return the current Supabase auth user (or null)
 
 // Sign in with email + password
-export async function signInAction(raw: unknown) {
-  try {
-    const parsed = signInSchema.safeParse(raw as SignInFormData);
-    if (!parsed.success) {
-      return {
-        success: false,
-        message: parsed.error.issues[0]?.message ?? "Invalid input",
-      };
-    }
-
-    const supabase = await createClient();
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: parsed.data.email,
-      password: parsed.data.password,
-    });
-
-    if (error) {
-      return { success: false, message: error.message };
-    }
-
-    // Update last login timestamp if user exists in our users table
-    if (data.user?.id) {
-      try {
-        await db
-          .update(users)
-          .set({ lastLoginAt: new Date().toISOString() })
-          .where(eq(users.id, data.user.id));
-      } catch {}
-    }
-
-    return { success: true, message: "Signed in successfully" };
-  } catch (err) {
-    console.error("signInAction error:", err);
-    return { success: false, message: "Failed to sign in" };
+export async function signInAction({
+  email,
+  password,
+}: {
+  email: string;
+  password: string;
+}) {
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) {
+    return { success: false, message: error.message };
   }
+  return { success: true, message: "Signed in successfully" };
 }
 
 // Send password reset email
@@ -185,15 +150,8 @@ export async function resetPasswordAction(input: { password: string }) {
 
 // Sign out current user
 export async function signOutAction() {
-  try {
-    const supabase = await createClient();
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
-    return { success: true };
-  } catch (err) {
-    console.error("signOutAction error:", err);
-    return { success: false };
-  }
+  const supabase = await createClient();
+  await supabase.auth.signOut();
 }
 
 // Get Supabase user and matched seller profile
@@ -264,47 +222,41 @@ export async function signUpUser(data: {
   lastName: string;
   phone?: string;
   referralCode?: string;
+  password?: string; // Supabase requires a password for sign up
 }) {
+  const supabase = await createClient();
+
   try {
-    // Check if user exists
-    const existingUser = await db.query.users.findFirst({
-      where: eq(users.email, data.email),
+    // Supabase signUp requires a password, so make sure it's provided
+    if (!data.password) {
+      return { success: false, error: "Password is required" };
+    }
+
+    // Prepare user metadata
+    const userMetadata: Record<string, any> = {
+      firstName: data.firstName,
+      lastName: data.lastName,
+      fullName: `${data.firstName} ${data.lastName}`,
+    };
+    if (data.phone) userMetadata.phone = data.phone;
+    if (data.referralCode) userMetadata.referralCode = data.referralCode;
+
+    const { data: signUpData, error } = await supabase.auth.signUp({
+      email: data.email,
+      password: data.password,
+      options: {
+        data: userMetadata,
+      },
     });
 
-    if (existingUser) {
-      return { success: false, error: "User already exists" };
+    if (error) {
+      // If user already exists, Supabase returns a specific error
+      return { success: false, error: error.message };
     }
 
-    // Generate referral code
-    const userReferralCode = `REF${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-
-    // Handle referral
-    let referredById = null;
-    if (data.referralCode) {
-      const referrer = await db.query.users.findFirst({
-        where: eq(users.referralCode, data.referralCode),
-      });
-      if (referrer) {
-        referredById = referrer.id;
-      }
-    }
-
-    const newUser = await db
-      .insert(users)
-      .values({
-        email: data.email,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        fullName: `${data.firstName} ${data.lastName}`,
-        phone: data.phone,
-        referralCode: userReferralCode,
-        referredBy: referredById,
-      })
-      .returning();
-
-    return { success: true, data: newUser[0] };
+    return { success: true, data: signUpData.user };
   } catch (error) {
-    console.error("Error creating user:", error);
+    console.error("Error creating user with Supabase:", error);
     return { success: false, error: "Failed to create user" };
   }
 }

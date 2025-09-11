@@ -17,6 +17,7 @@
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.50.2",
     "@tanstack/react-query": "^5.81.5",
+    "@upstash/redis": "^1.35.3",
     "@workspace/db": "workspace:*",
     "@workspace/lib": "workspace:*",
     "@workspace/ui": "workspace:*",

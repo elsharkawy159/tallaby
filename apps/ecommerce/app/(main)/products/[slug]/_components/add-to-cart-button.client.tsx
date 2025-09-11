@@ -5,7 +5,7 @@ import { Button } from "@workspace/ui/components/button";
 import { ShoppingCart } from "lucide-react";
 import { addToCart } from "@/actions/cart";
 import { trackAddToCart } from "@/actions/analytics";
-import { useCart } from "@/hooks/use-cart";
+import { useCartStore } from "@/stores/cart-store";
 import { toast } from "sonner";
 import { redirect } from "next/navigation";
 
@@ -25,7 +25,7 @@ export function AddToCartButton({
   className,
 }: AddToCartButtonProps) {
   const [isPending, startTransition] = useTransition();
-  const { addToCart: addToCartHook, isAdding } = useCart();
+  const { addToCart: addToCartHook, isAdding } = useCartStore();
 
   const handleAdd = () => {
     if (disabled) {
