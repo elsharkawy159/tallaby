@@ -2,8 +2,7 @@
 "use server";
 
 import { db } from "@workspace/db";
-import { notifications } from "@workspace/db";
-import { eq, and, desc, sql } from "drizzle-orm";
+import { notifications, eq, and, desc, sql } from "@workspace/db";
 import { getUser } from "./auth";
 
 export async function getNotifications(params?: {

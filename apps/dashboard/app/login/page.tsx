@@ -94,12 +94,12 @@ export default function AuthPage() {
   if (showResetForm) {
     return (
       <div className="min-h-screen flex items-center justify-center from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4">
-      <img
-        src="https://images.unsplash.com/photo-1496917756835-20cb06e75b4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1908&q=80"
-        alt="Background"
-        className="object-cover absolute top-0 left-0 w-full h-full z-[-1]"
-      />
-      <div className="absolute top-0 left-0 w-full h-full z-[-1] bg-gradient-to-b from-black/30 to-black from-70%" />
+        <img
+          src="https://images.unsplash.com/photo-1496917756835-20cb06e75b4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1908&q=80"
+          alt="Background"
+          className="object-cover absolute top-0 left-0 w-full h-full z-[-1]"
+        />
+        <div className="absolute top-0 left-0 w-full h-full z-[-1] bg-gradient-to-b from-black/30 to-black from-70%" />
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl font-bold text-center">

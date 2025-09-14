@@ -2,55 +2,24 @@
 
 import { useState } from "react";
 import { Button } from "@workspace/ui/components/button";
-import { Heart, Minus, Plus, ChevronRight } from "lucide-react";
+import { ChevronRight, Minus, Plus } from "lucide-react";
 import type { Product } from "../product-page.types";
-import { useCartStore } from "@/stores/cart-store";
-import { useWishlist } from "@/hooks/use-wishlist";
+import { useCart } from "@/providers/cart-provider";
+import { AddToCartButton, WishlistButton } from "@/components/product";
 import Link from "next/link";
 
 interface ProductActionsProps {
   product: Product;
-  onAddToCart?: (quantity: number) => void;
   onBuyNow?: (quantity: number) => void;
-  isInCart?: boolean;
 }
 
-export const ProductActions = ({
-  product,
-  onAddToCart,
-  onBuyNow,
-  isInCart: propIsInCart,
-}: ProductActionsProps) => {
-  const [quantity, setQuantity] = useState(1);
-  const [isWishlisted, setIsWishlisted] = useState(false);
-
-  // Hooks
-  const { addToCart, isInCart, isAdding } = useCartStore();
-  const { toggleWishlist, isAdding: isWishlistAdding } = useWishlist();
+export const ProductActions = ({ product, onBuyNow }: ProductActionsProps) => {
+  const { isInCart, getItemQuantity } = useCart();
+  const [quantity, setQuantity] = useState(getItemQuantity(product.id) || 1);
 
   const handleQuantityChange = (delta: number) => {
     setQuantity((prev) => Math.max(1, prev + delta));
   };
-
-  const handleWishlist = async () => {
-    const result = await toggleWishlist(product.id);
-    if (result?.success) {
-      setIsWishlisted(!isWishlisted);
-    }
-  };
-
-  const handleAddToCart = async () => {
-    const result = await addToCart({
-      productId: product.id,
-      quantity,
-    });
-
-    if (result.success && onAddToCart) {
-      onAddToCart(quantity);
-    }
-  };
-
-  const isInCartStatus = propIsInCart ?? isInCart(product.id);
 
   return (
     <div className="space-y-3 lg:space-y-4">
@@ -84,7 +53,7 @@ export const ProductActions = ({
 
       {/* Action Buttons */}
       <div className="space-y-2 lg:space-y-3">
-        {isInCartStatus ? (
+        {isInCart(product.id) ? (
           <Button
             asChild
             className="w-full h-10 lg:h-12 text-sm lg:text-lg font-semibold bg-primary hover:bg-primary/90"
@@ -94,13 +63,15 @@ export const ProductActions = ({
             </Link>
           </Button>
         ) : (
-          <Button
-            className="w-full h-10 lg:h-12 text-sm lg:text-lg font-semibold bg-primary hover:bg-primary/90"
-            onClick={handleAddToCart}
-            disabled={!product.quantity || isAdding}
-          >
-            {isAdding ? "Adding..." : "Add to Cart"}
-          </Button>
+          <AddToCartButton
+            productId={product.id}
+            quantity={quantity}
+            className="w-full h-10 lg:h-12 text-sm lg:text-lg font-semibold"
+            size="lg"
+            variant="default"
+            showIcon={true}
+            showText={true}
+          />
         )}
 
         <Button
@@ -112,23 +83,13 @@ export const ProductActions = ({
           Buy Now
         </Button>
 
-        <Button
-          variant="ghost"
+        <WishlistButton
+          productId={product.id}
           className="w-full h-10 lg:h-12 text-sm lg:text-lg font-semibold border-2 border-gray-300 hover:border-primary hover:text-primary"
-          onClick={handleWishlist}
-          disabled={isWishlistAdding}
-        >
-          <Heart
-            className={`h-4 w-4 lg:h-5 lg:w-5 mr-2 ${
-              isWishlisted ? "fill-current text-red-500" : ""
-            }`}
-          />
-          {isWishlistAdding
-            ? "Adding..."
-            : isWishlisted
-              ? "Wishlisted"
-              : "Add to Wishlist"}
-        </Button>
+          size="lg"
+          variant="ghost"
+          showText={true}
+        />
       </div>
 
       {/* Stock Status */}

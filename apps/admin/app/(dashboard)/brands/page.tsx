@@ -1,7 +1,10 @@
 "use client";
-import Link from "next/link";
+
+import { useState, useEffect } from "react";
+import { ColumnDef } from "@tanstack/react-table";
+import { toast } from "sonner";
+
 import { Button } from "@workspace/ui/components/button";
-import { Input } from "@workspace/ui/components/input";
 import { Badge } from "@workspace/ui/components/badge";
 import {
   Card,
@@ -10,26 +13,15 @@ import {
   CardTitle,
 } from "@workspace/ui/components/card";
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@workspace/ui/components/tabs";
-import {
   Avatar,
   AvatarFallback,
   AvatarImage,
 } from "@workspace/ui/components/avatar";
 import {
-  Plus,
-  Filter,
-  Download,
-  UploadCloud,
   CheckCircle,
   ShoppingBag,
   Star,
   Package,
-  Search,
   MoreHorizontal,
 } from "lucide-react";
 import {
@@ -40,137 +32,29 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu";
-import { DataTable } from "../_components/data-table/data-table";
 
-// Mock data for demonstration
-const brands = [
-  {
-    id: "brand_01",
-    name: "TechBrand",
-    slug: "techbrand",
-    logoUrl: "/api/placeholder/100/100",
-    description: "Leading manufacturer of high-quality electronics",
-    website: "https://techbrand.example.com",
-    isVerified: true,
-    isOfficial: true,
-    averageRating: 4.7,
-    reviewCount: 856,
-    productCount: 378,
-    createdAt: "2022-08-15T10:30:00Z",
-  },
-  {
-    id: "brand_02",
-    name: "AudioTech",
-    slug: "audiotech",
-    logoUrl: "/api/placeholder/100/100",
-    description: "Premium audio equipment and accessories",
-    website: "https://audiotech.example.com",
-    isVerified: true,
-    isOfficial: true,
-    averageRating: 4.6,
-    reviewCount: 724,
-    productCount: 215,
-    createdAt: "2022-09-10T14:45:00Z",
-  },
-  {
-    id: "brand_03",
-    name: "FitWear",
-    slug: "fitwear",
-    logoUrl: "/api/placeholder/100/100",
-    description: "Fitness apparel and accessories",
-    website: "https://fitwear.example.com",
-    isVerified: true,
-    isOfficial: false,
-    averageRating: 4.3,
-    reviewCount: 478,
-    productCount: 193,
-    createdAt: "2022-11-05T09:15:00Z",
-  },
-  {
-    id: "brand_04",
-    name: "HomeTech",
-    slug: "hometech",
-    logoUrl: "/api/placeholder/100/100",
-    description: "Smart home devices and solutions",
-    website: "https://hometech.example.com",
-    isVerified: true,
-    isOfficial: true,
-    averageRating: 4.5,
-    reviewCount: 612,
-    productCount: 167,
-    createdAt: "2023-01-12T11:30:00Z",
-  },
-  {
-    id: "brand_05",
-    name: "PhotoTech",
-    slug: "phototech",
-    logoUrl: "/api/placeholder/100/100",
-    description: "Photography equipment and accessories",
-    website: "https://phototech.example.com",
-    isVerified: true,
-    isOfficial: false,
-    averageRating: 4.8,
-    reviewCount: 532,
-    productCount: 128,
-    createdAt: "2023-02-08T16:20:00Z",
-  },
-  {
-    id: "brand_06",
-    name: "GameTech",
-    slug: "gametech",
-    logoUrl: "/api/placeholder/100/100",
-    description: "Gaming consoles, accessories, and software",
-    website: "https://gametech.example.com",
-    isVerified: true,
-    isOfficial: true,
-    averageRating: 4.7,
-    reviewCount: 925,
-    productCount: 243,
-    createdAt: "2023-03-15T13:40:00Z",
-  },
-  {
-    id: "brand_07",
-    name: "WearTech",
-    slug: "weartech",
-    logoUrl: "/api/placeholder/100/100",
-    description: "Wearable technology and smartwatches",
-    website: "https://weartech.example.com",
-    isVerified: false,
-    isOfficial: false,
-    averageRating: 4.2,
-    reviewCount: 312,
-    productCount: 87,
-    createdAt: "2023-04-23T10:15:00Z",
-  },
-  {
-    id: "brand_08",
-    name: "KitchenPro",
-    slug: "kitchenpro",
-    logoUrl: "/api/placeholder/100/100",
-    description: "Professional kitchen appliances and cookware",
-    website: "https://kitchenpro.example.com",
-    isVerified: true,
-    isOfficial: false,
-    averageRating: 4.4,
-    reviewCount: 418,
-    productCount: 156,
-    createdAt: "2023-05-18T14:50:00Z",
-  },
-];
+import { TableSection } from "@workspace/ui/components/table-section";
+import { BrandDialog } from "./brands.chunks";
+import {
+  getAllBrands,
+  deleteBrands,
+  updateBrandStatus,
+} from "@/actions/brands";
 
 interface Brand {
   id: string;
   name: string;
   slug: string;
-  logoUrl: string;
-  description: string;
-  website: string;
-  isVerified: boolean;
-  isOfficial: boolean;
-  averageRating: number;
-  reviewCount: number;
-  productCount: number;
-  createdAt: string;
+  logoUrl: string | null;
+  description: string | null;
+  website: string | null;
+  isVerified: boolean | null;
+  isOfficial: boolean | null;
+  averageRating: number | null;
+  reviewCount: number | null;
+  productCount: number | null;
+  createdAt: string | null;
+  updatedAt: string | null;
 }
 
 interface RowProps {
@@ -180,7 +64,100 @@ interface RowProps {
 }
 
 export default function BrandsPage() {
-  const columns = [
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    total: 0,
+    verified: 0,
+    official: 0,
+    avgRating: 0,
+  });
+
+  // Fetch brands data
+  useEffect(() => {
+    const fetchBrands = async () => {
+      try {
+        setLoading(true);
+        const result = await getAllBrands();
+
+        if (result.success && result.data) {
+          setBrands(result.data);
+
+          // Calculate stats
+          const total = result.data.length;
+          const verified = result.data.filter(
+            (b) => b.isVerified === true
+          ).length;
+          const official = result.data.filter(
+            (b) => b.isOfficial === true
+          ).length;
+          const avgRating =
+            result.data.reduce((sum, b) => sum + (b.averageRating || 0), 0) /
+            total;
+
+          setStats({ total, verified, official, avgRating });
+        } else {
+          toast.error(result.error || "Failed to fetch brands");
+        }
+      } catch (error) {
+        console.error("Error fetching brands:", error);
+        toast.error("Failed to fetch brands");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBrands();
+  }, []);
+
+  const handleDeleteSelected = async (ids: string[]) => {
+    try {
+      const result = await deleteBrands(ids);
+
+      if (result.success) {
+        toast.success(`${ids.length} brand(s) deleted successfully`);
+        // Refresh the brands list
+        const refreshResult = await getAllBrands();
+        if (refreshResult.success && refreshResult.data) {
+          setBrands(refreshResult.data);
+        }
+      } else {
+        toast.error(result.error || "Failed to delete brands");
+      }
+    } catch (error) {
+      console.error("Error deleting brands:", error);
+      toast.error("Failed to delete brands");
+    }
+  };
+
+  const handleStatusUpdate = async (
+    brandId: string,
+    field: "isVerified" | "isOfficial",
+    value: boolean
+  ) => {
+    try {
+      const result = await updateBrandStatus(brandId, { [field]: value });
+
+      if (result.success) {
+        toast.success(
+          `Brand ${field === "isVerified" ? "verification" : "official status"} updated`
+        );
+        // Update local state
+        setBrands((prev) =>
+          prev.map((brand) =>
+            brand.id === brandId ? { ...brand, [field]: value } : brand
+          )
+        );
+      } else {
+        toast.error(result.error || "Failed to update brand status");
+      }
+    } catch (error) {
+      console.error("Error updating brand status:", error);
+      toast.error("Failed to update brand status");
+    }
+  };
+
+  const columns: ColumnDef<Brand>[] = [
     {
       accessorKey: "name",
       header: "Brand Name",
@@ -189,22 +166,19 @@ export default function BrandsPage() {
         return (
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
-              <AvatarImage src={brand.logoUrl} />
-              <AvatarFallback>{brand.name.substring(0, 2)}</AvatarFallback>
+              <AvatarImage src={brand.logoUrl || ""} />
+              <AvatarFallback>
+                {brand.name.substring(0, 2).toUpperCase()}
+              </AvatarFallback>
             </Avatar>
             <div>
-              <Link
-                href={`/withAuth/brands/${brand.id}`}
-                className="font-medium hover:underline"
-              >
-                {brand.name}
-              </Link>
+              <div className="font-medium">{brand.name}</div>
               <div className="flex items-center gap-1 text-xs text-gray-500">
                 {brand.slug}
-                {brand.isVerified && (
+                {brand.isVerified === true && (
                   <CheckCircle className="h-3 w-3 text-blue-500" />
                 )}
-                {brand.isOfficial && (
+                {brand.isOfficial === true && (
                   <Badge
                     variant="outline"
                     className="text-xs h-4 bg-blue-50 text-blue-700 border-blue-200"
@@ -224,7 +198,7 @@ export default function BrandsPage() {
       cell: ({ row }: RowProps) => {
         return (
           <div className="max-w-[300px] truncate">
-            {row.original.description}
+            {row.original.description || "No description"}
           </div>
         );
       },
@@ -233,14 +207,17 @@ export default function BrandsPage() {
       accessorKey: "website",
       header: "Website",
       cell: ({ row }: RowProps) => {
+        const website = row.original.website;
+        if (!website) return <span className="text-gray-400">No website</span>;
+
         return (
           <a
-            href={row.original.website}
+            href={website}
             target="_blank"
             rel="noopener noreferrer"
             className="text-blue-600 hover:underline"
           >
-            {row.original.website.replace(/^https?:\/\//, "")}
+            {website.replace(/^https?:\/\//, "")}
           </a>
         );
       },
@@ -252,7 +229,7 @@ export default function BrandsPage() {
         return (
           <div className="flex items-center gap-1">
             <Package className="h-4 w-4 text-gray-500" />
-            <span>{row.original.productCount}</span>
+            <span>{row.original.productCount || 0}</span>
           </div>
         );
       },
@@ -261,11 +238,16 @@ export default function BrandsPage() {
       accessorKey: "averageRating",
       header: "Rating",
       cell: ({ row }: RowProps) => {
+        const rating = row.original.averageRating;
+        if (!rating) return <span className="text-gray-400">No rating</span>;
+
         return (
           <div className="flex items-center gap-1">
             <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-            <span>{row.original.averageRating.toFixed(1)}</span>
-            <span className="text-gray-500">({row.original.reviewCount})</span>
+            <span>{rating.toFixed(1)}</span>
+            <span className="text-gray-500">
+              ({row.original.reviewCount || 0})
+            </span>
           </div>
         );
       },
@@ -274,7 +256,9 @@ export default function BrandsPage() {
       accessorKey: "createdAt",
       header: "Created",
       cell: ({ row }: RowProps) => {
-        return new Date(row.original.createdAt).toLocaleDateString();
+        return row.original.createdAt
+          ? new Date(row.original.createdAt).toLocaleDateString()
+          : "N/A";
       },
     },
     {
@@ -284,6 +268,20 @@ export default function BrandsPage() {
 
         return (
           <div className="flex justify-end gap-2">
+            <BrandDialog
+              mode="edit"
+              brandId={brand.id}
+              brandData={{
+                name: brand.name,
+                slug: brand.slug,
+                logoUrl: brand.logoUrl || "",
+                description: brand.description || "",
+                website: brand.website || "",
+                isVerified: brand.isVerified || false,
+                isOfficial: brand.isOfficial || false,
+              }}
+            />
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-8 w-8 p-0">
@@ -294,43 +292,39 @@ export default function BrandsPage() {
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                 <DropdownMenuItem>
-                  <Link
-                    href={`/withAuth/brands/${brand.id}`}
-                    className="w-full"
-                  >
-                    View details
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Link
-                    href={`/withAuth/brands/${brand.id}/edit`}
-                    className="w-full"
-                  >
-                    Edit brand
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <Link
+                  <a
                     href={`/withAuth/products?brand=${brand.id}`}
                     className="w-full"
                   >
                     View products
-                  </Link>
+                  </a>
                 </DropdownMenuItem>
-                {!brand.isVerified ? (
-                  <DropdownMenuItem>Verify brand</DropdownMenuItem>
-                ) : (
-                  <DropdownMenuItem>Unverify brand</DropdownMenuItem>
-                )}
-                {!brand.isOfficial ? (
-                  <DropdownMenuItem>Mark as official</DropdownMenuItem>
-                ) : (
-                  <DropdownMenuItem>Remove official status</DropdownMenuItem>
-                )}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-red-600">
-                  Delete brand
+                <DropdownMenuItem
+                  onClick={() =>
+                    handleStatusUpdate(
+                      brand.id,
+                      "isVerified",
+                      !(brand.isVerified === true)
+                    )
+                  }
+                >
+                  {brand.isVerified === true
+                    ? "Unverify brand"
+                    : "Verify brand"}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() =>
+                    handleStatusUpdate(
+                      brand.id,
+                      "isOfficial",
+                      !(brand.isOfficial === true)
+                    )
+                  }
+                >
+                  {brand.isOfficial === true
+                    ? "Remove official status"
+                    : "Mark as official"}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -340,38 +334,49 @@ export default function BrandsPage() {
     },
   ];
 
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Brands</h1>
+            <p className="text-muted-foreground">
+              Manage product brands and manufacturers
+            </p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Card key={i}>
+              <CardHeader className="pb-2">
+                <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+              </CardHeader>
+              <CardContent>
+                <div className="h-8 bg-gray-200 rounded animate-pulse mb-2"></div>
+                <div className="h-3 bg-gray-200 rounded animate-pulse"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <div className="h-96 bg-gray-100 rounded-lg animate-pulse"></div>
+      </div>
+    );
+  }
+
   return (
-    <>
-      <div className="flex items-center justify-between mb-6">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Brands</h1>
           <p className="text-muted-foreground">
             Manage product brands and manufacturers
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Filter className="h-4 w-4 mr-2" />
-            Filter
-          </Button>
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
-          <Button variant="outline" size="sm">
-            <UploadCloud className="h-4 w-4 mr-2" />
-            Import
-          </Button>
-          <Link href="/withAuth/brands/create">
-            <Button size="sm">
-              <Plus className="h-4 w-4 mr-2" />
-              Add Brand
-            </Button>
-          </Link>
-        </div>
+        <BrandDialog mode="create" />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-4 mb-6">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center">
@@ -380,10 +385,11 @@ export default function BrandsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{brands.length}</div>
-            <p className="text-xs text-muted-foreground">+3 from last month</p>
+            <div className="text-2xl font-bold">{stats.total}</div>
+            <p className="text-xs text-muted-foreground">All brands</p>
           </CardContent>
         </Card>
+
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center">
@@ -392,151 +398,54 @@ export default function BrandsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {brands.filter((b) => b.isVerified).length}
-            </div>
+            <div className="text-2xl font-bold">{stats.verified}</div>
             <p className="text-xs text-muted-foreground">
-              {Math.round(
-                (brands.filter((b) => b.isVerified).length / brands.length) *
-                  100
-              )}
+              {stats.total > 0
+                ? Math.round((stats.verified / stats.total) * 100)
+                : 0}
               % of total
             </p>
           </CardContent>
         </Card>
+
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center">
               <Star className="h-4 w-4 mr-2 text-gray-500" />
-              Avg. Brand Rating
+              Official Brands
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {(
-                brands.reduce((sum, brand) => sum + brand.averageRating, 0) /
-                brands.length
-              ).toFixed(1)}
-            </div>
-            <p className="text-xs text-muted-foreground">Across all brands</p>
+            <div className="text-2xl font-bold">{stats.official}</div>
+            <p className="text-xs text-muted-foreground">Official partners</p>
           </CardContent>
         </Card>
+
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center">
               <Package className="h-4 w-4 mr-2 text-gray-500" />
-              Total Products
+              Avg Rating
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {brands.reduce((sum, brand) => sum + brand.productCount, 0)}
+              {stats.avgRating.toFixed(1)}
             </div>
             <p className="text-xs text-muted-foreground">Across all brands</p>
           </CardContent>
         </Card>
       </div>
 
-      <div className="bg-white rounded-lg border p-4 mb-6">
-        <div className="flex flex-col md:flex-row md:items-center gap-4">
-          <div className="flex-1">
-            <h2 className="text-lg font-medium">Search Brands</h2>
-            <p className="text-sm text-gray-500">
-              Find brands by name, website, or description
-            </p>
-          </div>
-          <div className="flex-1 flex items-center gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-              <Input
-                type="search"
-                placeholder="Search brands..."
-                className="pl-8"
-              />
-            </div>
-            <Button variant="outline">Search</Button>
-          </div>
-        </div>
-      </div>
-
-      <Tabs defaultValue="all-brands">
-        <TabsList>
-          <TabsTrigger value="all-brands">All Brands</TabsTrigger>
-          <TabsTrigger value="verified">Verified</TabsTrigger>
-          <TabsTrigger value="official">Official</TabsTrigger>
-          <TabsTrigger value="unverified">Unverified</TabsTrigger>
-        </TabsList>
-        <TabsContent value="all-brands" className="p-0 mt-4">
-          <DataTable
-            columns={columns}
-            data={brands}
-            searchableColumns={[
-              {
-                id: "name",
-                title: "Brand Name",
-              },
-              {
-                id: "website",
-                title: "Website",
-              },
-            ]}
-            filterableColumns={[
-              {
-                id: "isVerified",
-                title: "Verification",
-                options: [
-                  { label: "Verified", value: "true" },
-                  { label: "Unverified", value: "false" },
-                ],
-              },
-              {
-                id: "isOfficial",
-                title: "Status",
-                options: [
-                  { label: "Official", value: "true" },
-                  { label: "Unofficial", value: "false" },
-                ],
-              },
-            ]}
-          />
-        </TabsContent>
-        <TabsContent value="verified" className="p-0 mt-4">
-          <DataTable
-            columns={columns}
-            data={brands.filter((brand) => brand.isVerified)}
-            searchableColumns={[
-              {
-                id: "name",
-                title: "Brand Name",
-              },
-            ]}
-          />
-        </TabsContent>
-        <TabsContent value="official" className="p-0 mt-4">
-          <DataTable
-            columns={columns}
-            data={brands.filter((brand) => brand.isOfficial)}
-            searchableColumns={[
-              {
-                id: "name",
-                title: "Brand Name",
-              },
-            ]}
-          />
-        </TabsContent>
-        <TabsContent value="unverified" className="p-0 mt-4">
-          <DataTable
-            columns={columns}
-            data={brands.filter((brand) => !brand.isVerified)}
-            searchableColumns={[
-              {
-                id: "name",
-                title: "Brand Name",
-              },
-            ]}
-          />
-        </TabsContent>
-      </Tabs>
-    </>
+      {/* Brands Table */}
+      <TableSection
+        rows={brands}
+        columns={columns}
+        title="Brands"
+        onDeleteSelected={handleDeleteSelected}
+        searchColumnId="name"
+        buttons={<BrandDialog mode="create" />}
+      />
+    </div>
   );
 }

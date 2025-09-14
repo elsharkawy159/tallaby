@@ -23,13 +23,18 @@ const ProductsSorting: React.FC = () => {
   const { params, updateParams } = useUrlParams();
   const currentSort = params.sort || "popularity";
 
+  const handleSortChange = (newValue: string) => {
+    updateParams(
+      {
+        sort: newValue,
+        page: 1, // Reset to first page when sort changes
+      },
+      { scroll: false }
+    );
+  };
+
   return (
-    <Select
-      value={currentSort}
-      onValueChange={(newValue) => {
-        updateParams({ sort: newValue });
-      }}
-    >
+    <Select value={currentSort} onValueChange={handleSortChange}>
       <SelectTrigger className="w-[220px]">
         <SelectValue placeholder="Sort by" />
       </SelectTrigger>

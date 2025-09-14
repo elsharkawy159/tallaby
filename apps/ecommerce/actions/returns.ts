@@ -1,13 +1,15 @@
 "use server";
 
-import { db } from "@workspace/db";
-import { 
-  returns, 
-  returnItems, 
-  orders, 
+import {
+  returns,
+  returnItems,
+  orders,
   orderItems,
+  eq,
+  and,
+  desc, 
+  db
 } from "@workspace/db";
-import { eq, and, desc } from "drizzle-orm";
 import { getUser } from "./auth";
 import { createNotification } from "./notifications";
 
@@ -23,7 +25,7 @@ export async function getUserReturns(params?: {
     }
 
     const conditions = [eq(returns.userId, user.user.id)];
-    
+
     if (params?.status) {
       conditions.push(eq(returns.status, params.status));
     }
@@ -69,10 +71,7 @@ export async function getReturnDetails(returnId: string) {
     }
 
     const returnDetails = await db.query.returns.findFirst({
-      where: and(
-        eq(returns.id, returnId),
-        eq(returns.userId, user.user.id)
-      ),
+      where: and(eq(returns.id, returnId), eq(returns.userId, user.user.id)),
       with: {
         order: true,
         returnItems: {
@@ -104,11 +103,19 @@ export async function initiateReturn(data: {
   items: Array<{
     orderItemId: string;
     quantity: number;
-    reason: 'defective' | 'damaged' | 'wrong_item' | 'not_as_described' | 'better_price' | 'no_longer_needed' | 'unauthorized_purchase' | 'other';
+    reason:
+      | "defective"
+      | "damaged"
+      | "wrong_item"
+      | "not_as_described"
+      | "better_price"
+      | "no_longer_needed"
+      | "unauthorized_purchase"
+      | "other";
     condition: string;
     details?: string;
   }>;
-  returnType?: 'refund' | 'exchange';
+  returnType?: "refund" | "exchange";
   additionalDetails?: string;
 }) {
   try {
@@ -119,10 +126,7 @@ export async function initiateReturn(data: {
 
     // Verify order belongs to user and is eligible for return
     const order = await db.query.orders.findFirst({
-      where: and(
-        eq(orders.id, data.orderId),
-        eq(orders.userId, user.user.id)
-      ),
+      where: and(eq(orders.id, data.orderId), eq(orders.userId, user.user.id)),
       with: {
         orderItems: true,
       },
@@ -133,38 +137,51 @@ export async function initiateReturn(data: {
     }
 
     // Check if order is eligible (delivered within 30 days)
-    if (order.status !== 'delivered') {
-      return { success: false, error: "Order must be delivered to initiate return" };
+    if (order.status !== "delivered") {
+      return {
+        success: false,
+        error: "Order must be delivered to initiate return",
+      };
     }
 
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
+
     if (order.deliveredAt && new Date(order.deliveredAt) < thirtyDaysAgo) {
       return { success: false, error: "Return period has expired (30 days)" };
     }
 
     // Validate items
     for (const item of data.items) {
-      const orderItem = order.orderItems.find(oi => oi.id === item.orderItemId);
-      
+      const orderItem = order.orderItems.find(
+        (oi) => oi.id === item.orderItemId
+      );
+
       if (!orderItem) {
         return { success: false, error: "Invalid order item" };
       }
-      
+
       if (item.quantity > orderItem.quantity) {
-        return { success: false, error: `Cannot return more than ordered quantity for ${orderItem.productName}` };
+        return {
+          success: false,
+          error: `Cannot return more than ordered quantity for ${orderItem.productName}`,
+        };
       }
-      
+
       if (orderItem.isReturned) {
-        return { success: false, error: `Item ${orderItem.productName} has already been returned` };
+        return {
+          success: false,
+          error: `Item ${orderItem.productName} has already been returned`,
+        };
       }
     }
 
     // Calculate total return amount
     let totalAmount = 0;
     for (const item of data.items) {
-      const orderItem = order.orderItems.find(oi => oi.id === item.orderItemId);
+      const orderItem = order.orderItems.find(
+        (oi) => oi.id === item.orderItemId
+      );
       if (orderItem) {
         totalAmount += Number(orderItem.price) * item.quantity;
       }
@@ -180,9 +197,9 @@ export async function initiateReturn(data: {
         orderId: data.orderId,
         userId: user.user.id,
         rmaNumber,
-        status: 'requested',
+        status: "requested",
         returnReason: data.items[0]?.reason as any,
-        returnType: data.returnType || 'refund',
+        returnType: data.returnType || "refund",
         additionalDetails: data.additionalDetails,
         totalAmount: totalAmount.toString(),
         returnShippingPaid: false,
@@ -190,17 +207,22 @@ export async function initiateReturn(data: {
       .returning();
 
     // Create return items
-    const returnItemsData = data.items.map(item => ({
+    const returnItemsData = data.items.map((item) => ({
       returnId: newReturn?.id,
       orderItemId: item.orderItemId,
       quantity: item.quantity,
       reason: item.reason,
       condition: item.condition,
       details: item.details,
-      status: 'pending',
-      refundAmount: order.orderItems.find(oi => oi.id === item.orderItemId)?.price 
-        ? (Number(order.orderItems.find(oi => oi.id === item.orderItemId)?.price) * item.quantity).toString()
-        : '0',
+      status: "pending",
+      refundAmount: order.orderItems.find((oi) => oi.id === item.orderItemId)
+        ?.price
+        ? (
+            Number(
+              order.orderItems.find((oi) => oi.id === item.orderItemId)?.price
+            ) * item.quantity
+          ).toString()
+        : "0",
     }));
 
     await db.insert(returnItems).values(returnItemsData as any);
@@ -219,19 +241,19 @@ export async function initiateReturn(data: {
     // Create notification
     await createNotification({
       userId: user.user.id,
-      type: 'order_update',
-      title: 'Return Initiated',
+      type: "order_update",
+      title: "Return Initiated",
       message: `Your return request #${rmaNumber} has been submitted`,
       data: { returnId: newReturn?.id, rmaNumber },
     });
 
-    return { 
-      success: true, 
+    return {
+      success: true,
       data: {
         return: newReturn,
         rmaNumber,
       },
-      message: `Return initiated successfully. RMA: ${rmaNumber}`
+      message: `Return initiated successfully. RMA: ${rmaNumber}`,
     };
   } catch (error) {
     console.error("Error initiating return:", error);
@@ -247,17 +269,14 @@ export async function cancelReturn(returnId: string) {
     }
 
     const returnRecord = await db.query.returns.findFirst({
-      where: and(
-        eq(returns.id, returnId),
-        eq(returns.userId, user.user.id)
-      ),
+      where: and(eq(returns.id, returnId), eq(returns.userId, user.user.id)),
     });
 
     if (!returnRecord) {
       return { success: false, error: "Return not found" };
     }
 
-    if (!['requested', 'pending'].includes(returnRecord.status || '')) {
+    if (!["requested", "pending"].includes(returnRecord.status || "")) {
       return { success: false, error: "Cannot cancel return at this stage" };
     }
 
@@ -265,7 +284,7 @@ export async function cancelReturn(returnId: string) {
     await db
       .update(returns)
       .set({
-        status: 'cancelled',
+        status: "cancelled",
         updatedAt: new Date().toISOString(),
       })
       .where(eq(returns.id, returnId));
@@ -274,7 +293,7 @@ export async function cancelReturn(returnId: string) {
     await db
       .update(returnItems)
       .set({
-        status: 'cancelled',
+        status: "cancelled",
         updatedAt: new Date().toISOString(),
       })
       .where(eq(returnItems.returnId, returnId));
@@ -309,10 +328,7 @@ export async function getReturnLabel(returnId: string) {
     }
 
     const returnRecord = await db.query.returns.findFirst({
-      where: and(
-        eq(returns.id, returnId),
-        eq(returns.userId, user.user.id)
-      ),
+      where: and(eq(returns.id, returnId), eq(returns.userId, user.user.id)),
     });
 
     if (!returnRecord) {
@@ -323,12 +339,12 @@ export async function getReturnLabel(returnId: string) {
       return { success: false, error: "Return label not available yet" };
     }
 
-    return { 
-      success: true, 
+    return {
+      success: true,
       data: {
         labelUrl: returnRecord.returnShippingLabel,
         rmaNumber: returnRecord.rmaNumber,
-      }
+      },
     };
   } catch (error) {
     console.error("Error getting return label:", error);

@@ -14,7 +14,11 @@ import { isStepValid } from "./add-product-multi-step.lib";
 import { useAddProductForm } from "./add-product-multi-step.hooks";
 import { updateProduct } from "@/actions/products";
 import { createProduct } from "@/actions/products";
-import { BasicInformationStep, ListingStep, VariantsSeoStep } from "./add-product-steps";
+import {
+  BasicInformationStep,
+  ListingStep,
+  VariantsSeoStep,
+} from "./add-product-steps";
 import Link from "next/link";
 import { ChevronLeft, LoaderCircle } from "lucide-react";
 
@@ -27,7 +31,7 @@ export default function AddProductMultiStep({
 }: AddProductMultiStepProps) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
-console.log("brands", brands)
+  console.log("brands", brands);
   // Use custom hook for form management
   const { form, isFormDirty, setFormData, defaultValues } = useAddProductForm({
     initialData,
@@ -85,7 +89,6 @@ console.log("brands", brands)
   };
 
   const handleSubmit = (data: AddProductFormData) => {
-    console.log("handleSubmit", data);
     startTransition(async () => {
       try {
         let result;
@@ -94,7 +97,7 @@ console.log("brands", brands)
         } else {
           result = await createProduct(data as any);
         }
-
+        console.log("result", result);
         if (result.success) {
           toast.success(
             isEditMode
@@ -134,20 +137,25 @@ console.log("brands", brands)
   };
 
   const renderCurrentStep = () => {
-  
-      switch (currentStep) {
-        case 0:
-          return (
-            <BasicInformationStep categories={categories || []} brands={brands || []} />
-          );
-        case 1:
-          return <ListingStep />;
-        case 2:
-          return <VariantsSeoStep />;
-        default:
-          return (
-        <BasicInformationStep categories={categories || []} brands={brands || []} />
-      );
+    switch (currentStep) {
+      case 0:
+        return (
+          <BasicInformationStep
+            categories={categories || []}
+            brands={brands || []}
+          />
+        );
+      case 1:
+        return <ListingStep />;
+      case 2:
+        return <VariantsSeoStep />;
+      default:
+        return (
+          <BasicInformationStep
+            categories={categories || []}
+            brands={brands || []}
+          />
+        );
     }
   };
 

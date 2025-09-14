@@ -2,8 +2,7 @@
 // apps/ecommerce/actions/customer.ts
 "use server";
 
-import { db, users, userAddresses, paymentMethods, userDevices, notifications, orders } from "@workspace/db";
-import { eq, and, desc } from "drizzle-orm";
+import { db, users, userAddresses, paymentMethods, notifications, orders, eq, and, desc } from "@workspace/db";
 import { getUser } from "./auth";
 
 export async function getCustomerProfile() {

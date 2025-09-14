@@ -1,15 +1,23 @@
 // apps/ecommerce/actions/search.ts
 "use server";
 
-import { db } from "@workspace/db";
 import {
   products,
   brands,
   categories,
   sellers,
   searchLogs,
+  eq,
+  and,
+  or,
+  like,
+  sql,
+  desc,
+  asc,
+  gte,
+  inArray,
+  db
 } from "@workspace/db";
-import { eq, and, or, like, sql, desc, asc, gte, lte, inArray } from "drizzle-orm";
 import { getUser, getSessionId } from "./auth";
 
 interface SearchFilters {
@@ -25,7 +33,13 @@ interface SearchFilters {
   inStock?: boolean;
   freeShipping?: boolean;
   onSale?: boolean;
-  sortBy?: 'relevance' | 'price_asc' | 'price_desc' | 'rating' | 'newest' | 'bestselling';
+  sortBy?:
+    | "relevance"
+    | "price_asc"
+    | "price_desc"
+    | "rating"
+    | "newest"
+    | "bestselling";
   limit?: number;
   offset?: number;
 }
@@ -34,10 +48,10 @@ export async function searchProducts(filters: SearchFilters) {
   try {
     const user = await getUser();
     const sessionId = await getSessionId();
-    
+
     // Build search conditions
     const conditions = [eq(products.isActive, true)];
-    
+
     // Text search across multiple fields
     if (filters.query) {
       const searchPattern = `%${filters.query}%`;
@@ -50,56 +64,62 @@ export async function searchProducts(filters: SearchFilters) {
         ) as any
       );
     }
-    
+
     // Category filter
     if (filters.categories && filters.categories.length > 0) {
       conditions.push(inArray(products.categoryId, filters.categories));
     }
-    
+
     // Brand filter
     if (filters.brands && filters.brands.length > 0) {
       conditions.push(inArray(products.brandId, filters.brands));
     }
-    
+
     // Seller filter
     if (filters.sellers && filters.sellers.length > 0) {
       conditions.push(inArray(products.sellerId, filters.sellers));
     }
-    
+
     // Price range
     if (filters.minPrice !== undefined) {
-      conditions.push(sql`(${products.price}->>'current')::numeric >= ${filters.minPrice}`);
+      conditions.push(
+        sql`(${products.price}->>'current')::numeric >= ${filters.minPrice}`
+      );
     }
-    
+
     if (filters.maxPrice !== undefined) {
-      conditions.push(sql`(${products.price}->>'current')::numeric <= ${filters.maxPrice}`);
+      conditions.push(
+        sql`(${products.price}->>'current')::numeric <= ${filters.maxPrice}`
+      );
     }
-    
+
     // Rating filter
     if (filters.minRating !== undefined) {
       conditions.push(gte(products.averageRating, filters.minRating));
     }
-    
+
     // Condition filter
     if (filters.conditions && filters.conditions.length > 0) {
       conditions.push(inArray(products.condition, filters.conditions as any));
     }
-    
+
     // Fulfillment type filter
     if (filters.fulfillmentTypes && filters.fulfillmentTypes.length > 0) {
-      conditions.push(inArray(products.fulfillmentType, filters.fulfillmentTypes as any));
+      conditions.push(
+        inArray(products.fulfillmentType, filters.fulfillmentTypes as any)
+      );
     }
-    
+
     // Stock filter
     if (filters.inStock) {
       conditions.push(sql`${products.quantity} > 0`);
     }
-    
+
     // Free shipping filter (simplified - you might want to add shipping cost field)
     if (filters.freeShipping) {
       conditions.push(sql`${products.price}->>'freeShipping' = 'true'`);
     }
-    
+
     // On sale filter
     if (filters.onSale) {
       conditions.push(
@@ -113,27 +133,29 @@ export async function searchProducts(filters: SearchFilters) {
     // Determine ordering
     let orderBy = [];
     switch (filters.sortBy) {
-      case 'price_asc':
+      case "price_asc":
         orderBy.push(asc(sql`(${products.price}->>'current')::numeric`));
         break;
-      case 'price_desc':
+      case "price_desc":
         orderBy.push(desc(sql`(${products.price}->>'current')::numeric`));
         break;
-      case 'rating':
+      case "rating":
         orderBy.push(desc(products.averageRating), desc(products.reviewCount));
         break;
-      case 'newest':
+      case "newest":
         orderBy.push(desc(products.createdAt));
         break;
-      case 'bestselling':
+      case "bestselling":
         orderBy.push(desc(products.isMostSelling), desc(products.reviewCount));
         break;
-      case 'relevance':
+      case "relevance":
       default:
         // Relevance sorting - prioritize title matches, then rating
         if (filters.query) {
           orderBy.push(
-            desc(sql`CASE WHEN ${products.title} ILIKE ${`%${filters.query}%`} THEN 1 ELSE 0 END`),
+            desc(
+              sql`CASE WHEN ${products.title} ILIKE ${`%${filters.query}%`} THEN 1 ELSE 0 END`
+            ),
             desc(products.averageRating)
           );
         } else {
@@ -187,9 +209,11 @@ export async function searchProducts(filters: SearchFilters) {
       data: {
         products: searchResults,
         totalCount: Number(totalCount[0]?.count),
-        hasMore: (filters.offset || 0) + searchResults.length < Number(totalCount[0]?.count),
+        hasMore:
+          (filters.offset || 0) + searchResults.length <
+          Number(totalCount[0]?.count),
         aggregations,
-      }
+      },
     };
   } catch (error) {
     console.error("Error searching products:", error);
@@ -260,16 +284,15 @@ async function logSearch(data: {
   sessionId?: string;
 }) {
   try {
-    await db
-      .insert(searchLogs)
-      .values({
-        userId: data.userId,
-        sessionId: data.sessionId,
-        query: data.query,
-        filters: data.filters,
-        resultCount: data.resultCount,
-        userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : null,
-      });
+    await db.insert(searchLogs).values({
+      userId: data.userId,
+      sessionId: data.sessionId,
+      query: data.query,
+      filters: data.filters,
+      resultCount: data.resultCount,
+      userAgent:
+        typeof window !== "undefined" ? window.navigator.userAgent : null,
+    });
   } catch (error) {
     console.error("Error logging search:", error);
     // Don't throw - logging failure shouldn't break search
@@ -281,14 +304,12 @@ export async function logProductClick(productId: string, searchQuery?: string) {
     const user = await getUser();
     const sessionId = await getSessionId();
 
-    await db
-      .insert(searchLogs)
-      .values({
-        userId: user?.user.id,
-        sessionId,
-        query: searchQuery || '',
-        clickedProductId: productId,
-      });
+    await db.insert(searchLogs).values({
+      userId: user?.user.id,
+      sessionId,
+      query: searchQuery || "",
+      clickedProductId: productId,
+    });
   } catch (error) {
     console.error("Error logging product click:", error);
   }
@@ -301,7 +322,7 @@ export async function searchSuggestions(query: string) {
     }
 
     const searchPattern = `${query}%`;
-    
+
     // Get product title suggestions
     const productSuggestions = await db
       .select({
@@ -310,10 +331,7 @@ export async function searchSuggestions(query: string) {
       })
       .from(products)
       .where(
-        and(
-          like(products.title, searchPattern),
-          eq(products.isActive, true)
-        )
+        and(like(products.title, searchPattern), eq(products.isActive, true))
       )
       .limit(5);
 
@@ -410,10 +428,7 @@ export async function getRecentSearches() {
       })
       .from(searchLogs)
       .where(
-        and(
-          eq(searchLogs.userId, user.user.id),
-          sql`${searchLogs.query} != ''`
-        )
+        and(eq(searchLogs.userId, user.user.id), sql`${searchLogs.query} != ''`)
       )
       .orderBy(desc(searchLogs.createdAt))
       .limit(10);
@@ -432,9 +447,7 @@ export async function clearSearchHistory() {
       return { success: false, error: "Authentication required" };
     }
 
-    await db
-      .delete(searchLogs)
-      .where(eq(searchLogs.userId, user.user.id));
+    await db.delete(searchLogs).where(eq(searchLogs.userId, user.user.id));
 
     return { success: true, message: "Search history cleared" };
   } catch (error) {
@@ -446,7 +459,7 @@ export async function clearSearchHistory() {
 export async function globalSearch(query: string) {
   try {
     const searchPattern = `%${query}%`;
-    
+
     // Search products
     const productResults = await db.query.products.findMany({
       where: and(
@@ -477,7 +490,7 @@ export async function globalSearch(query: string) {
     // Search sellers
     const sellerResults = await db.query.sellers.findMany({
       where: and(
-        eq(sellers.status, 'approved'),
+        eq(sellers.status, "approved"),
         or(
           like(sellers.displayName, searchPattern),
           like(sellers.businessName, searchPattern)
@@ -500,7 +513,7 @@ export async function globalSearch(query: string) {
         brands: brandResults,
         categories: categoryResults,
         sellers: sellerResults,
-      }
+      },
     };
   } catch (error) {
     console.error("Error in global search:", error);

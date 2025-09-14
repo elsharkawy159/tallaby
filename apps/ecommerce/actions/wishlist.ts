@@ -1,8 +1,7 @@
 // apps/ecommerce/actions/wishlist.ts
 "use server";
 
-import { db, wishlists, wishlistItems, products } from "@workspace/db";
-import { eq, and, desc } from "drizzle-orm";
+import { db, wishlists, wishlistItems, products, eq, and, desc } from "@workspace/db";
 import { getUser } from "./auth";
 
 export async function getOrCreateWishlist() {

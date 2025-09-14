@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/supabase/server";
+import { db, users, eq, sellers } from "@workspace/db";
 import { redirect } from "next/navigation";
 
 export const getUser = async () => {
@@ -13,20 +14,63 @@ export const getUser = async () => {
   return data;
 };
 
-export const register = async (email: string, password: string) => {
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-  });
+// Check if user is eligible to access seller dashboard before authentication
+export const checkUserEligibility = async (email: string) => {
+  // First, find user by email in the users table
+  const userProfile = await db.query.users.findFirst({
+    where: eq(users.email, email),
+    select: {
+      id: true,
+      role: true,
+      email: true,
+    },
+  } as any);
 
-  if (error) {
-    throw new Error(error.message);
+  if (!userProfile) {
+    throw new Error("No account found with this email address");
   }
-  return data;
+
+  // Check if user has seller role
+  if (userProfile.role !== "seller") {
+    throw new Error("Access denied: Only sellers can access the dashboard");
+  }
+
+  // Check if seller profile exists
+  const sellerProfile = await db.query.sellers.findFirst({
+    where: eq(sellers.id, userProfile.id),
+    select: {
+      id: true,
+    },
+  } as any);
+
+  if (!sellerProfile) {
+    throw new Error(
+      "Seller profile not found. Please complete your seller registration."
+    );
+  }
+
+  switch (sellerProfile.status) {
+    case "pending":
+      throw new Error("Seller profile is pending. Please wait for approval.");
+    case "suspended":
+      throw new Error(
+        "Seller profile is suspended. Please contact support for assistance."
+      );
+    case "restricted":
+      throw new Error(
+        "Seller profile is restricted. Please contact support for more information."
+      );
+    // You can add more cases if needed
+  }
+
+  return { userProfile, sellerProfile };
 };
 
 export const login = async (email: string, password: string) => {
+  // Pre-authentication checks
+  await checkUserEligibility(email);
+
+  // Proceed with authentication
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
@@ -37,8 +81,12 @@ export const login = async (email: string, password: string) => {
     throw new Error(error.message);
   }
 
-  // TODO: Add role checking logic here or in middleware
-  // For now, just return the auth data
+  // Verify user exists in response
+  const user = data.user;
+  if (!user) {
+    throw new Error("Authentication failed: user not found.");
+  }
+
   return data;
 };
 

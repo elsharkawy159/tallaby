@@ -2,10 +2,8 @@
 "use server";
 
 import { db } from "@workspace/db";
-import { searchLogs, products, orders, orderItems } from "@workspace/db";
+import { searchLogs, products, orders, orderItems, eq, desc, sql } from "@workspace/db";
 import { getUser, getSessionId } from "./auth";
-import { desc, sql } from "drizzle-orm";
-import { eq } from "drizzle-orm";
 
 export async function trackProductView(productId: string, source?: string) {
   try {

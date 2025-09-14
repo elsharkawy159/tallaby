@@ -109,7 +109,7 @@ export function SignUpForm({
     startTransition(async () => {
       try {
         const result = await signUpUser(data);
-
+console.log("result", result)
         if (result.success) {
           toast.success("Account created successfully! Please check your email to verify your account.");
           form.reset();
@@ -117,7 +117,7 @@ export function SignUpForm({
 
           // If user is signed in automatically, refresh the page
           if (result.data?.id) {
-            window.location.reload();
+            // window.location.reload();
           }
         } else {
           toast.error(result.error);

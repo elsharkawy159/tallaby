@@ -1,8 +1,7 @@
 "use server";
 
 import { db } from "@workspace/db";
-import { carts, cartItems, userAddresses, paymentMethods } from "@workspace/db";
-import { eq, and, sql, gte, lte, desc } from "drizzle-orm";
+import { carts, cartItems, userAddresses, paymentMethods, eq, and, sql, gte, lte, desc } from "@workspace/db";
 import { getUser } from "./auth";
 import { validateCoupon } from "./coupons";
 

@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
-import { useUrlParams } from "@/hooks/use-url-params";
+import { useCallback, useMemo, useState, useEffect } from "react";
+import { useUrlParams, type SearchParams } from "@/hooks/use-url-params";
 import { Checkbox } from "@workspace/ui/components/checkbox";
 import { Slider } from "@workspace/ui/components/slider";
 import { Button } from "@workspace/ui/components/button";
@@ -12,220 +12,240 @@ import {
 } from "@workspace/ui/components/sheet";
 import { X, PlusIcon } from "lucide-react";
 
-export function ProductsFilter() {
-  const { params, setParam, deleteParam } = useUrlParams();
+interface FilterOptionsResponse {
+  success: boolean;
+  data: {
+    categories: Array<{
+      id: string;
+      name: string;
+      slug: string;
+      productCount: number;
+    }>;
+    brands: Array<{
+      id: string;
+      name: string;
+      slug: string;
+      productCount: number;
+    }>;
+    priceRange: {
+      min: number;
+      max: number;
+    };
+  };
+}
+
+interface ProductsFilterProps {
+  filterOptions?: FilterOptionsResponse;
+}
+
+export function ProductsFilter({ filterOptions }: ProductsFilterProps) {
+  const { params, updateParams } = useUrlParams();
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const [price, setPrice] = useState([
-    typeof (params as Record<string, string>)["price"] === "string" &&
-    !isNaN(Number((params as Record<string, string>)["price"]))
-      ? Number((params as Record<string, string>)["price"])
-      : 1000,
-  ]);
 
-  // Filter options
-  const genderOptions = [
-    { label: "Men", value: "men" },
-    { label: "Women", value: "women" },
-    { label: "Kids", value: "kids" },
-    { label: "Boys", value: "boys" },
-    { label: "Girls", value: "girls" },
-    { label: "Unisex", value: "unisex" },
-    { label: "Babies", value: "babies" },
-  ];
-  const sizeOptions = ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL"];
-  const collectionOptions = [
-    { label: "New Collection", value: "new" },
-    { label: "Trending", value: "trending" },
-    { label: "Offers", value: "offers" },
-  ];
-  const modelOptions = [
-    { label: "Long Sleeve", value: "long-sleeve" },
-    { label: "Short Sleeve", value: "short-sleeve" },
-    { label: "T-shirt", value: "tshirt" },
-    { label: "Pants", value: "pants" },
-    { label: "Skirts", value: "skirts" },
-  ];
-  const brandOptions = [
-    { label: "B1", value: "b1" },
-    { label: "B2", value: "b2" },
-    { label: "B3", value: "b3" },
-    { label: "B4", value: "b4" },
-  ];
+  // Initialize price range from filter options
+  const [price, setPrice] = useState<number[]>([0, 1000]);
 
-  const activeFilters = useMemo(() => {
-    return Object.entries(params).reduce(
-      (acc, [key, value]) => {
-        acc[key] = value?.toString().split(",");
-        return acc;
-      },
-      {} as Record<string, string[]>
-    );
-  }, [params]);
+  useEffect(() => {
+    if (filterOptions?.data?.priceRange) {
+      const currentMin = params.priceMin || filterOptions.data.priceRange.min;
+      const currentMax = params.priceMax || filterOptions.data.priceRange.max;
+      setPrice([currentMin, currentMax]);
+    }
+  }, [filterOptions, params.priceMin, params.priceMax]);
 
   const handleMultiFilter = useCallback(
-    (query: string, value: string, isChecked: boolean) => {
-      const currentValues =
-        (params as Record<string, string>)[query]?.toString().split(",") || [];
+    (
+      filterType: "categories" | "brands",
+      value: string,
+      isChecked: boolean
+    ) => {
+      const currentValues = params[filterType] || [];
       let newValues: string[];
 
-      if (value === "all") {
-        newValues = [];
-      } else if (isChecked) {
+      if (isChecked) {
         newValues = [...currentValues, value];
       } else {
-        newValues = currentValues.filter((val) => val !== value);
+        newValues = currentValues.filter((val: string) => val !== value);
       }
 
-      if (newValues.length) {
-        setParam(query, newValues.join(","), { scroll: false });
-      } else {
-        deleteParam(query, { scroll: false });
-      }
-      deleteParam("page", { scroll: false });
+      updateParams(
+        {
+          [filterType]: newValues,
+          page: 1, // Reset to first page when filters change
+        } as Partial<SearchParams>,
+        { scroll: false }
+      );
     },
-    [params, setParam, deleteParam]
+    [params, updateParams]
   );
 
   const isFilterActive = useCallback(
-    (query: string, value: string) => {
-      return (activeFilters[query] || []).includes(value);
+    (filterType: "categories" | "brands", value: string) => {
+      return (params[filterType] || []).includes(value);
     },
-    [activeFilters]
+    [params]
   );
 
   // Price filter handler
   const handlePriceChange = (val: number[]) => {
     setPrice(val);
-    setParam("price", val[0]?.toString() || "0", { scroll: false });
-    deleteParam("page", { scroll: false });
+    updateParams(
+      {
+        priceMin: val[0],
+        priceMax: val[1],
+        page: 1,
+      },
+      { scroll: false }
+    );
   };
 
+  const clearAllFilters = () => {
+    const minPrice = filterOptions?.data?.priceRange?.min || 0;
+    const maxPrice = filterOptions?.data?.priceRange?.max || 1000;
+
+    updateParams(
+      {
+        categories: [],
+        brands: [],
+        priceMin: minPrice,
+        priceMax: maxPrice,
+        page: 1,
+      },
+      { scroll: false }
+    );
+    setPrice([minPrice, maxPrice]);
+  };
+
+  const hasActiveFilters = useMemo(() => {
+    const defaultMin = filterOptions?.data?.priceRange?.min || 0;
+    const defaultMax = filterOptions?.data?.priceRange?.max || 1000;
+
+    return (
+      (params.categories?.length || 0) > 0 ||
+      (params.brands?.length || 0) > 0 ||
+      params.priceMin !== defaultMin ||
+      params.priceMax !== defaultMax
+    );
+  }, [params, filterOptions]);
+
   // Filter section renderer (for reuse)
-  const renderFilters = (isMobile = false) => (
-    <div className="flex flex-col gap-6">
-      {/* Gender */}
-      <div>
-        <h3 className="font-bold text-lg mb-2">Gender</h3>
-        <div className="flex flex-col gap-2">
-          {genderOptions.map((opt) => (
-            <label
-              key={opt.value}
-              className="flex items-center gap-2 cursor-pointer"
-            >
-              <Checkbox
-                checked={isFilterActive("gender", opt.value)}
-                onCheckedChange={(checked) =>
-                  handleMultiFilter("gender", opt.value, !!checked)
-                }
-                id={`gender-${opt.value}${isMobile ? "-mobile" : ""}`}
-              />
-              <span className="text-base">{opt.label}</span>
-            </label>
-          ))}
+  const renderFilters = (isMobile = false) => {
+    if (!filterOptions?.success) {
+      return (
+        <div className="flex flex-col gap-6">
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">Loading filters...</p>
+          </div>
         </div>
-      </div>
-      {/* Sizes */}
-      <div>
-        <h3 className="font-bold text-lg mb-2">Sizes</h3>
-        <div className="flex flex-wrap gap-2">
-          {sizeOptions.map((size) => (
+      );
+    }
+
+    return (
+      <div className="flex flex-col gap-6">
+        {/* Clear All Filters */}
+        {hasActiveFilters && (
+          <div className="pb-4 border-b">
             <Button
-              key={size}
-              variant={isFilterActive("size", size) ? "secondary" : "outline"}
+              variant="outline"
               size="sm"
-              className="min-w-[44px] px-0"
-              onClick={(e) => {
-                e.preventDefault();
-                handleMultiFilter("size", size, !isFilterActive("size", size));
-              }}
-              type="button"
+              onClick={clearAllFilters}
+              className="w-full"
             >
-              {size}
+              Clear All Filters
             </Button>
-          ))}
-        </div>
+          </div>
+        )}
+
+        {/* Categories */}
+        {filterOptions?.data?.categories &&
+          filterOptions.data.categories.length > 0 && (
+            <div>
+              <h3 className="font-bold text-lg mb-2">Categories</h3>
+              <div className="flex flex-col gap-2 max-h-48 overflow-y-auto">
+                {filterOptions.data.categories.map((category) => (
+                  <label
+                    key={category.id}
+                    className="flex items-center justify-between cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        checked={isFilterActive("categories", category.id)}
+                        onCheckedChange={(checked) =>
+                          handleMultiFilter(
+                            "categories",
+                            category.id,
+                            !!checked
+                          )
+                        }
+                        id={`category-${category.id}${isMobile ? "-mobile" : ""}`}
+                      />
+                      <span className="text-base">{category.name}</span>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      ({category.productCount})
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
+        {/* Brands */}
+        {filterOptions?.data?.brands &&
+          filterOptions.data.brands.length > 0 && (
+            <div>
+              <h3 className="font-bold text-lg mb-2">Brands</h3>
+              <div className="flex flex-col gap-2 max-h-48 overflow-y-auto">
+                {filterOptions.data.brands.map((brand) => (
+                  <label
+                    key={brand.id}
+                    className="flex items-center justify-between cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        checked={isFilterActive("brands", brand.id)}
+                        onCheckedChange={(checked) =>
+                          handleMultiFilter("brands", brand.id, !!checked)
+                        }
+                        id={`brand-${brand.id}${isMobile ? "-mobile" : ""}`}
+                      />
+                      <span className="text-base">{brand.name}</span>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      ({brand.productCount})
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
+        {/* Price */}
+        {filterOptions?.data?.priceRange && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-lg mb-2">Price Range</h3>
+              <span className="font-semibold text-base">
+                ${price[0]} - ${price[1]}
+              </span>
+            </div>
+            <Slider
+              min={filterOptions.data.priceRange.min}
+              max={filterOptions.data.priceRange.max}
+              value={price}
+              onValueChange={handlePriceChange}
+              className="w-full"
+              step={1}
+            />
+            <div className="flex justify-between text-sm text-muted-foreground">
+              <span>${filterOptions.data.priceRange.min}</span>
+              <span>${filterOptions.data.priceRange.max}</span>
+            </div>
+          </div>
+        )}
       </div>
-      {/* Price */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <h3 className="font-bold text-lg mb-2">Price</h3>
-          <span className="font-semibold text-base">
-            {price && price[0] !== undefined ? price[0] : 1000} EGP
-          </span>
-        </div>
-        <Slider
-          min={0}
-          max={1000}
-          value={price}
-          onValueChange={handlePriceChange}
-          className="w-full"
-        />
-      </div>
-      {/* Collection */}
-      <div>
-        <h3 className="font-bold text-lg mb-2">Collection</h3>
-        <div className="flex flex-col gap-2">
-          {collectionOptions.map((opt) => (
-            <label
-              key={opt.value}
-              className="flex items-center gap-2 cursor-pointer"
-            >
-              <Checkbox
-                checked={isFilterActive("collection", opt.value)}
-                onCheckedChange={(checked) =>
-                  handleMultiFilter("collection", opt.value, !!checked)
-                }
-                id={`collection-${opt.value}${isMobile ? "-mobile" : ""}`}
-              />
-              <span className="text-base">{opt.label}</span>
-            </label>
-          ))}
-        </div>
-      </div>
-      {/* Model */}
-      <div>
-        <h3 className="font-bold text-lg mb-2">Model</h3>
-        <div className="flex flex-col gap-2">
-          {modelOptions.map((opt) => (
-            <label
-              key={opt.value}
-              className="flex items-center gap-2 cursor-pointer"
-            >
-              <Checkbox
-                checked={isFilterActive("model", opt.value)}
-                onCheckedChange={(checked) =>
-                  handleMultiFilter("model", opt.value, !!checked)
-                }
-                id={`model-${opt.value}${isMobile ? "-mobile" : ""}`}
-              />
-              <span className="text-base">{opt.label}</span>
-            </label>
-          ))}
-        </div>
-      </div>
-      {/* Brands */}
-      <div>
-        <h3 className="font-bold text-lg mb-2">Brands</h3>
-        <div className="flex flex-col gap-2">
-          {brandOptions.map((opt) => (
-            <label
-              key={opt.value}
-              className="flex items-center gap-2 cursor-pointer"
-            >
-              <Checkbox
-                checked={isFilterActive("brand", opt.value)}
-                onCheckedChange={(checked) =>
-                  handleMultiFilter("brand", opt.value, !!checked)
-                }
-                id={`brand-${opt.value}${isMobile ? "-mobile" : ""}`}
-              />
-              <span className="text-base">{opt.label}</span>
-            </label>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <>
@@ -239,8 +259,23 @@ export function ProductsFilter() {
         >
           <PlusIcon className="size-5" />
           Filters
+          {hasActiveFilters && (
+            <span className="ml-1 px-1.5 py-0.5 text-xs bg-primary text-primary-foreground rounded-full">
+              {[
+                params.categories?.length || 0,
+                params.brands?.length || 0,
+              ].reduce((a, b) => a + b, 0) +
+                (params.priceMin !==
+                  (filterOptions?.data?.priceRange?.min || 0) ||
+                params.priceMax !==
+                  (filterOptions?.data?.priceRange?.max || 1000)
+                  ? 1
+                  : 0)}
+            </span>
+          )}
         </Button>
       </div>
+
       {/* Mobile filter sheet */}
       <Sheet open={mobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>
         <SheetContent
@@ -269,6 +304,7 @@ export function ProductsFilter() {
           </form>
         </SheetContent>
       </Sheet>
+
       {/* Desktop sidebar */}
       <aside className="hidden lg:block w-[285px] rounded-4xl p-6 bg-white border border-border">
         <h2 className="sr-only">Filters</h2>

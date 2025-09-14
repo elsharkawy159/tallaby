@@ -2,20 +2,12 @@ import { Star, Truck, RotateCcw, Calendar, CheckCircle } from "lucide-react";
 import { Separator } from "@workspace/ui/components/separator";
 import { ProductActions } from "./ProductActions";
 import type { Product } from "../product-page.types";
-import { getCartItems } from "@/actions/cart";
 
 interface ProductDetailsProps {
   product: Product;
 }
 
 export const ProductDetails = async ({ product }: ProductDetailsProps) => {
-  const cart = await getCartItems();
-  const isInCart = Boolean(
-    cart?.success &&
-      cart.data?.items?.some(
-        (it: any) => it.productId === product.id && !it.savedForLater
-      )
-  );
 
   return (
     <aside className="space-y-4 lg:space-y-6 w-full lg:max-w-96">
@@ -90,7 +82,7 @@ export const ProductDetails = async ({ product }: ProductDetailsProps) => {
 
       {/* Product Actions */}
       <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-6">
-        <ProductActions product={product} isInCart={isInCart} />
+        <ProductActions product={product} />
       </div>
 
       {/* Trust Badges */}

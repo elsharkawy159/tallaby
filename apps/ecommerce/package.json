@@ -23,7 +23,6 @@
     "@workspace/ui": "workspace:*",
     "bcryptjs": "^3.0.2",
     "clsx": "^2.1.1",
-    "drizzle-orm": "^0.44.2",
     "embla-carousel-autoplay": "^8.6.0",
     "embla-carousel-react": "^8.6.0",
     "leaflet": "^1.9.4",

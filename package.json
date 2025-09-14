@@ -21,7 +21,8 @@
   },
   "pnpm": {
     "overrides": {
-      "drizzle-orm": "0.44.2"
+      "drizzle-orm": "0.44.2",
+      "@upstash/redis>drizzle-orm": "0.44.2"
     }
   }
 }

@@ -1,8 +1,15 @@
 // apps/ecommerce/actions/seller.ts
 "use server";
 
-import { db, sellers, sellerDocuments, users, products } from "@workspace/db";
-import { eq, desc } from "drizzle-orm";
+import {
+  db,
+  sellers,
+  sellerDocuments,
+  users,
+  products,
+  eq,
+  desc,
+} from "@workspace/db";
 import { getUser } from "./auth";
 
 export async function registerAsSeller(data: {

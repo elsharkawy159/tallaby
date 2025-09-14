@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 export type SearchParams = {
   search?: string;
   categories?: string[];
+  brands?: string[];
   priceMin?: number;
   priceMax?: number;
   sort?: string;
@@ -50,6 +51,7 @@ export function useUrlParams() {
     search: searchParams.get("search") || "",
     categories:
       searchParams.get("categories")?.split(",").filter(Boolean) || [],
+    brands: searchParams.get("brands")?.split(",").filter(Boolean) || [],
     priceMin: Number(searchParams.get("priceMin")) || 0,
     priceMax: Number(searchParams.get("priceMax")) || 500,
     sort: searchParams.get("sort") || "popularity",
@@ -58,7 +60,7 @@ export function useUrlParams() {
   }));
 
   const updateParams = useCallback(
-    (newParams: Partial<SearchParams>) => {
+    (newParams: Partial<SearchParams>, options?: SetUrlParamsOptions) => {
       setParamsState((prev) => {
         const updated = { ...prev, ...newParams };
 
@@ -73,13 +75,20 @@ export function useUrlParams() {
           params.set("categories", updated.categories.join(","));
         else params.delete("categories");
 
-        if (updated.priceMin) params.set("priceMin", String(updated.priceMin));
+        if (updated.brands?.length)
+          params.set("brands", updated.brands.join(","));
+        else params.delete("brands");
+
+        if (updated.priceMin !== undefined && updated.priceMin !== 0)
+          params.set("priceMin", String(updated.priceMin));
         else params.delete("priceMin");
 
-        if (updated.priceMax) params.set("priceMax", String(updated.priceMax));
+        if (updated.priceMax !== undefined && updated.priceMax !== 500)
+          params.set("priceMax", String(updated.priceMax));
         else params.delete("priceMax");
 
-        if (updated.sort) params.set("sort", updated.sort);
+        if (updated.sort && updated.sort !== "popularity")
+          params.set("sort", updated.sort);
         else params.delete("sort");
 
         if (updated.page && updated.page > 1)
@@ -92,7 +101,7 @@ export function useUrlParams() {
 
         // Update URL without full page reload
         const newUrl = `${pathname}?${params.toString()}`;
-        router.push(newUrl, { scroll: false });
+        router.push(newUrl, { scroll: options?.scroll ?? false });
 
         return updated;
       });
@@ -106,6 +115,7 @@ export function useUrlParams() {
       search: searchParams.get("search") || "",
       categories:
         searchParams.get("categories")?.split(",").filter(Boolean) || [],
+      brands: searchParams.get("brands")?.split(",").filter(Boolean) || [],
       priceMin: Number(searchParams.get("priceMin")) || 0,
       priceMax: Number(searchParams.get("priceMax")) || 500,
       sort: searchParams.get("sort") || "popularity",

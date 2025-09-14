@@ -2,8 +2,7 @@
 "use server";
 
 import { db } from "@workspace/db";
-import { brands, products } from "@workspace/db";
-import { eq, and, desc, sql, like, asc, or } from "drizzle-orm";
+import { brands, products, eq, and, desc, sql, like, asc, or } from "@workspace/db";
 
 export async function getAllBrands(params?: {
   verified?: boolean;

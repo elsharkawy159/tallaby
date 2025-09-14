@@ -3,8 +3,7 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/supabase/server";
-import { db, sellers } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { db, sellers, eq } from "@workspace/db";
 import {
   sellerApplicationSchema,
   createSellerSchema,
@@ -210,7 +209,7 @@ export const getSellerApplicationStatus = async () => {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return { exists: false };
+      return { exists: false, user: null };
     }
 
     const seller = await db
@@ -223,13 +222,14 @@ export const getSellerApplicationStatus = async () => {
       .limit(1);
 
     if (seller.length === 0) {
-      return { exists: false };
+      return { exists: false, user: true };
     }
 
     const statusResult = {
       exists: true,
       status: seller[0]?.status,
       businessName: seller[0]?.businessName,
+      user: user,
     };
 
     return statusResult;

@@ -1,13 +1,10 @@
 "use server";
 
 import { createClient } from "@/supabase/server";
-import { db, users, sellers } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { db, users, sellers, eq } from "@workspace/db";
 import { cookies, headers } from "next/headers";
 import {
-  signInSchema,
   forgotPasswordSchema,
-  type SignInFormData,
   type ForgotPasswordFormData,
 } from "@/lib/validations/auth-schemas";
 

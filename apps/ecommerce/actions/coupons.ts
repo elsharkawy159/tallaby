@@ -1,8 +1,7 @@
 "use server"
 
 import { cartItems, carts, db } from "@workspace/db";
-import { coupons, couponUsage } from "@workspace/db";
-import { eq, and, sql, gte, lte, desc } from "drizzle-orm";
+import { coupons, couponUsage, eq, and, sql, gte, lte, desc } from "@workspace/db";
 import { getUser } from "./auth";
 
 export async function validateCoupon(code: string, cart?: any) {

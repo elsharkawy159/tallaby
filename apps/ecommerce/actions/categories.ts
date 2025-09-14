@@ -1,8 +1,7 @@
 "use server";
 
 import { db } from "@workspace/db";
-import { categories, products } from "@workspace/db";
-import { eq, and, desc, sql, isNull, asc } from "drizzle-orm";
+import { categories, products, eq, and, desc, sql, isNull, asc } from "@workspace/db";
 import { unstable_cache } from "next/cache";
 
 export const getAllCategories = unstable_cache(

@@ -19,7 +19,7 @@ import {
 } from "@workspace/ui/components/popover";
 import { Button } from "@workspace/ui/components/button";
 import { Separator } from "@workspace/ui/components/separator";
-import { Avatar, AvatarFallback } from "@workspace/ui/components/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@workspace/ui/components/avatar";
 
 import { useAuth } from "@/providers/auth-provider";
 
@@ -39,6 +39,7 @@ export function UserMenu({ variant = "desktop", className }: UserMenuProps) {
 
   if (!user) return null;
 
+  const avatarUrl = user?.identities?.[0]?.identity_data?.avatar_url;
   const userInitials = user.email?.slice(0, 2).toUpperCase() || "U";
   const userName = userWithSeller?.user?.full_name || user.email;
   const isSeller = !!userWithSeller?.seller;
@@ -64,7 +65,15 @@ export function UserMenu({ variant = "desktop", className }: UserMenuProps) {
           } ${className}`}
           title={`Welcome, ${userName}`}
         >
-          <User className="size-6" />
+          {avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt="User avatar"
+              className="size-6 rounded-full object-cover"
+            />
+          ) : (
+            <User className="size-6" />
+          )}
         </Button>
       </PopoverTrigger>
 
@@ -72,6 +81,7 @@ export function UserMenu({ variant = "desktop", className }: UserMenuProps) {
         {/* User Info Header */}
         <div className="flex items-center gap-3 p-4 border-b">
           <Avatar className="h-10 w-10">
+            <AvatarImage src={avatarUrl} alt="User avatar" />
             <AvatarFallback className="bg-primary text-primary-foreground font-medium">
               {userInitials}
             </AvatarFallback>

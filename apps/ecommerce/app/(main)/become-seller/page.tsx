@@ -47,29 +47,22 @@ export default async function BecomeSeller() {
 
   // Check if user already has a seller application
   const sellerStatus = await getSellerApplicationStatus();
-
   return (
     <div className="min-h-screen flex flex-col">
-      <DynamicBreadcrumb
+      {/* <DynamicBreadcrumb
         customLabels={{ "become-seller": "Become a Seller" }}
-      />
+      /> */}
       <main className="flex-1">
-        {/* Hero Section */}
         <HeroSection />
 
-        {/* Statistics Section */}
-        <StatsSection stats={stats} />
+        {/* <StatsSection stats={stats} /> */}
 
-        {/* Benefits Section */}
         {/* <BenefitsSection benefits={benefits} /> */}
 
-        {/* Pricing Plans Section */}
-        <PricingSection plans={plans} />
+        {/* <PricingSection plans={plans} /> */}
 
-        {/* Testimonials Section */}
-        <TestimonialsSection testimonials={testimonials} />
+        {/* <TestimonialsSection testimonials={testimonials} /> */}
 
-        {/* Application Form Section with Suspense */}
         <Suspense
           fallback={
             <div className="py-20 bg-gray-50">
@@ -95,7 +88,7 @@ export default async function BecomeSeller() {
           }
         >
           {sellerStatus.exists ? (
-            <section className="py-20 bg-gray-50">
+            <section className="py-20 bg-gray-50" id="become-seller-section">
               <div className="container mx-auto px-4">
                 <div className="max-w-2xl mx-auto text-center">
                   <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -131,7 +124,7 @@ export default async function BecomeSeller() {
               </div>
             </section>
           ) : (
-            <ApplicationFormSection />
+            <ApplicationFormSection  user={sellerStatus?.user}/>
           )}
         </Suspense>
       </main>

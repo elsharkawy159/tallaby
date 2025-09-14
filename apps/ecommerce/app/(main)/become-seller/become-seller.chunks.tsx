@@ -56,6 +56,7 @@ import {
   type SellerApplicationFormData,
 } from "./become-seller.dto";
 import { submitSellerApplication } from "./become-seller.server";
+import { useAuthDialog } from "@/hooks/use-auth-dialog";
 
 /**
  * Hero section component
@@ -84,14 +85,14 @@ export const HeroSection = () => {
             <div className="flex flex-col sm:flex-row gap-4">
               <Button
                 size="lg"
-                className="bg-accent text-black hover:bg-accent/90"
+                className="hover:bg-accent/90"
                 onClick={scrollToForm}
               >
-                Start Selling Today
+                <Link href="#become-seller-section">Start Selling Today</Link>
               </Button>
               <Button
                 size="lg"
-                variant="outline"
+                variant="secondary"
                 className="border-white text-white hover:bg-white hover:text-primary"
                 onClick={() => {
                   const benefitsElement =
@@ -294,9 +295,9 @@ export const TestimonialsSection = ({
 /**
  * Application form component
  */
-export const ApplicationFormSection = () => {
+export const ApplicationFormSection = ({ user }: any) => {
   const [isPending, startTransition] = useTransition();
-
+  const { open: openAuthDialog } = useAuthDialog();
   const form = useForm<SellerApplicationFormData>({
     resolver: zodResolver(sellerApplicationSchema),
     defaultValues: sellerApplicationDefaults,
@@ -304,7 +305,11 @@ export const ApplicationFormSection = () => {
   });
 
   const handleSubmit = (data: SellerApplicationFormData) => {
-    console.log("🚀 Form submission started with data:", data);
+    if (!user) {
+      toast.error("You are not logged in. Please login to continue.");
+      openAuthDialog("signin");
+      return;
+    }
 
     startTransition(async () => {
       try {
@@ -346,7 +351,7 @@ export const ApplicationFormSection = () => {
   };
 
   return (
-    <section id="application-form" className="py-20 bg-gray-50">
+    <section id="become-seller-section" className="py-20 bg-gray-50">
       <div className="container mx-auto px-4">
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-12">
@@ -358,7 +363,14 @@ export const ApplicationFormSection = () => {
             </p>
           </div>
 
-          <Card>
+          <Card className="relative">
+            {!user && (
+              <div className="absolute top-0 rounded-lg overflow-hidden left-0 w-full h-full backdrop-blur-xs flex items-center justify-center">
+                <Button onClick={() => openAuthDialog("signin")}>
+                  Sign in to continue
+                </Button>
+              </div>
+            )}
             <CardHeader>
               <CardTitle>Simplified Seller Application</CardTitle>
               <CardDescription>

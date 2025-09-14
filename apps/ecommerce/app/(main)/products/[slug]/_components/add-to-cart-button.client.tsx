@@ -1,12 +1,7 @@
 "use client";
 
-import { useTransition } from "react";
-import { Button } from "@workspace/ui/components/button";
-import { ShoppingCart } from "lucide-react";
-import { addToCart } from "@/actions/cart";
+import { AddToCartButton as ReusableAddToCartButton } from "@/components/product";
 import { trackAddToCart } from "@/actions/analytics";
-import { useCartStore } from "@/stores/cart-store";
-import { toast } from "sonner";
 import { redirect } from "next/navigation";
 
 interface AddToCartButtonProps {
@@ -24,39 +19,24 @@ export function AddToCartButton({
   disabled,
   className,
 }: AddToCartButtonProps) {
-  const [isPending, startTransition] = useTransition();
-  const { addToCart: addToCartHook, isAdding } = useCartStore();
+  const handleSuccess = async () => {
+    // Track analytics
+    await trackAddToCart({ productId, quantity, variantId, price: 0 });
 
-  const handleAdd = () => {
-    if (disabled) {
-      return;
-    }
-
-    startTransition(async () => {
-      try {
-        // Use the hook for better state management
-        const res = await addToCartHook({ productId, quantity, variantId });
-        await trackAddToCart({ productId, quantity, variantId, price: 0 });
-
-        if (res?.success) {
-          setTimeout(() => {
-            redirect("/cart");
-          }, 400);
-        }
-      } catch (error) {
-        toast.error("An error occurred while adding to cart");
-      }
-    });
+    // Redirect to cart after a short delay
+    setTimeout(() => {
+      redirect("/cart");
+    }, 400);
   };
 
   return (
-    <Button
+    <ReusableAddToCartButton
+      productId={productId}
+      quantity={quantity}
+      variantId={variantId}
+      disabled={disabled}
       className={className}
-      onClick={handleAdd}
-      disabled={disabled || isPending || isAdding}
-    >
-      <ShoppingCart className="h-4 w-4 lg:h-5 lg:w-5 mr-2" />
-      {isPending || isAdding ? "Adding..." : "Add to Cart"}
-    </Button>
+      onSuccess={handleSuccess}
+    />
   );
 }

@@ -4,7 +4,6 @@ import { ProductDetails } from "./_components/product-details";
 import { ProductTabs } from "./_components/product-tabs";
 import { SimilarProducts } from "./_components/similar-products";
 import { ProductHeroSkeleton } from "./_components/product-hero.skeleton";
-import { ProductDetailsSkeleton } from "./_components/product-details.skeleton";
 import { ProductTabsSkeleton } from "./_components/product-tabs.skeleton";
 import { SimilarProductsSkeleton } from "./_components/similar-products.skeleton";
 
@@ -86,7 +85,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               {/* Product images + hero info */}
               <ProductHero product={product as any} />
             </Suspense>
-            <Suspense fallback={<ProductDetailsSkeleton />}>
+            <Suspense fallback={null}>
               <ProductDetails product={product as any} />
             </Suspense>
           </div>

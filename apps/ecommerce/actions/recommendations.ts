@@ -9,13 +9,20 @@ import {
   wishlistItems,
   wishlists,
   orders,
+  ne,
+  inArray,
+  gte,
+  or,
+  isNotNull,
+  eq,
+  and,
+  desc,
+  sql,
 } from "@workspace/db";
-import { eq, and, desc, sql, inArray, ne, gte, or, isNotNull } from "drizzle-orm";
 import { getUser, getSessionId } from "./auth";
 
 export async function getRecommendedProducts(type: 'personalized' | 'trending' | 'similar', productId?: string) {
   try {
-    const user = await getUser();
     
     switch (type) {
       case 'personalized':

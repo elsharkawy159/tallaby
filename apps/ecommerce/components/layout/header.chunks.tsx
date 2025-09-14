@@ -32,7 +32,8 @@ import {
   getLogoText,
   getBecomeSellerUrl,
 } from "./header.lib";
-import { useCartStore } from "@/stores/cart-store";
+import { useCart } from "@/providers/cart-provider";
+import { useWishlist } from "@/providers/wishlist-provider";
 
 export const Logo = ({ className }: LogoProps) => {
   return (
@@ -72,7 +73,6 @@ export const BecomeSellerButton = ({ className }: { className?: string }) => {
 export const UserAuth = ({ variant = "desktop", className }: UserAuthProps) => {
   const { open: openAuthDialog } = useAuthDialog();
   const { user, isLoading } = useAuth();
-
   if (isLoading) {
     return (
       <div
@@ -83,12 +83,14 @@ export const UserAuth = ({ variant = "desktop", className }: UserAuthProps) => {
           className
         )}
       >
-        <User
-          className={cn(
-            "size-6 animate-pulse",
-            variant === "mobile" && "size-5"
-          )}
-        />
+        <Button variant="ghost" size="icon" className="text-white">
+          <User
+            className={cn(
+              "size-6 animate-pulse",
+              variant === "mobile" && "size-5"
+            )}
+          />
+        </Button>
         {variant === "mobile" && (
           <span className="text-xs mt-1">Loading...</span>
         )}
@@ -113,7 +115,9 @@ export const UserAuth = ({ variant = "desktop", className }: UserAuthProps) => {
   }
 
   return (
-    <button
+    <Button
+      variant="ghost"
+      size="icon"
       className={cn(
         "text-white hover:text-gray-200 hover:bg-transparent cursor-pointer transition-colors",
         variant === "mobile" &&
@@ -125,12 +129,12 @@ export const UserAuth = ({ variant = "desktop", className }: UserAuthProps) => {
     >
       <User className={cn("size-6", variant === "mobile" && "size-5")} />
       {variant === "mobile" && <span className="text-xs mt-1">Sign In</span>}
-    </button>
+    </Button>
   );
 };
 
 export const CartLink = ({ className }: { className?: string }) => {
-  const { itemCount } = useCartStore();
+  const { itemCount } = useCart();
   return (
     <Link
       href="/cart"
@@ -147,12 +151,18 @@ export const CartLink = ({ className }: { className?: string }) => {
 };
 
 export const WishlistLink = ({ className }: { className?: string }) => {
+  const { itemCount } = useWishlist();
   return (
     <Link
       href="/wishlist"
       className={cn("relative text-white hover:text-gray-200", className)}
     >
       <Heart className="size-6" />
+      {itemCount > 0 && (
+        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full size-4.5 flex items-center justify-center">
+          {itemCount}
+        </span>
+      )}
     </Link>
   );
 };

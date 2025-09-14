@@ -17,16 +17,17 @@ import {
   SignUpForm,
   ForgotPasswordForm,
 } from "./auth-dialog.chunks";
+import { OAuth } from "./o-auth";
 import type { AuthMode, AuthDialogProps } from "./auth-dialog.types";
+import { usePathname } from "next/navigation";
 
 export function AuthDialog({
   open,
   onOpenChange,
   defaultMode = "signin",
 }: AuthDialogProps) {
-  
   const [mode, setMode] = useState<AuthMode>(defaultMode);
-
+  const pathname = usePathname();
   const getDialogContent = () => {
     switch (mode) {
       case "signin":
@@ -76,36 +77,51 @@ export function AuthDialog({
           <ForgotPasswordForm onSuccess={handleSuccess} />
         )}
 
+        {/* OAuth Section - Only show for signin and signup */}
+        {mode !== "forgot-password" && (
+          <div className="space-y-4">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <Separator className="w-full" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
+                  Or sign in with
+                </span>
+              </div>
+            </div>
+
+            <OAuth next={pathname} />
+          </div>
+        )}
+
         <div className="space-y-4">
           {mode !== "forgot-password" && (
-            <>
-              <Separator />
-              <div className="text-center text-sm">
-                {mode === "signin" ? (
-                  <>
-                    Don't have an account?{" "}
-                    <Button
-                      variant="link"
-                      className="p-0 h-auto font-normal"
-                      onClick={() => setMode("signup")}
-                    >
-                      Create one here
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    Already have an account?{" "}
-                    <Button
-                      variant="link"
-                      className="p-0 h-auto font-normal"
-                      onClick={() => setMode("signin")}
-                    >
-                      Sign in here
-                    </Button>
-                  </>
-                )}
-              </div>
-            </>
+            <div className="text-center text-sm">
+              {mode === "signin" ? (
+                <>
+                  Don't have an account?{" "}
+                  <Button
+                    variant="link"
+                    className="p-0 h-auto font-normal"
+                    onClick={() => setMode("signup")}
+                  >
+                    Create one here
+                  </Button>
+                </>
+              ) : (
+                <>
+                  Already have an account?{" "}
+                  <Button
+                    variant="link"
+                    className="p-0 h-auto font-normal"
+                    onClick={() => setMode("signin")}
+                  >
+                    Sign in here
+                  </Button>
+                </>
+              )}
+            </div>
           )}
 
           {mode === "signin" && (

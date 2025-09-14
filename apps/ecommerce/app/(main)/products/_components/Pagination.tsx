@@ -10,50 +10,116 @@ export interface PaginationProps {
   totalPages: number;
 }
 
-const Pagination = ({ page, totalPages }: PaginationProps) => {
+const Pagination = ({ page, pageSize, total, totalPages }: PaginationProps) => {
   const { updateParams } = useUrlParams();
   const canGoPrevious = page > 1;
   const canGoNext = page < totalPages;
 
   const handlePrevious = () => {
     if (canGoPrevious) {
-      updateParams({ page: page - 1 });
+      updateParams({ page: page - 1 }, { scroll: false });
     }
   };
 
   const handleNext = () => {
     if (canGoNext) {
-      updateParams({ page: page + 1 });
+      updateParams({ page: page + 1 }, { scroll: false });
+    }
+  };
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalPages && newPage !== page) {
+      updateParams({ page: newPage }, { scroll: false });
     }
   };
 
   if (totalPages <= 1) return null;
 
-  return (
-    <div className="flex items-center justify-center space-x-2 mt-8">
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={handlePrevious}
-        disabled={!canGoPrevious}
-      >
-        <ChevronLeft className="h-4 w-4" />
-        Previous
-      </Button>
+  // Generate page numbers to show
+  const getPageNumbers = () => {
+    const delta = 2;
+    const range = [];
+    const rangeWithDots = [];
 
-      <div className="text-sm text-gray-600">
-        Page {page} of {totalPages}
+    for (
+      let i = Math.max(2, page - delta);
+      i <= Math.min(totalPages - 1, page + delta);
+      i++
+    ) {
+      range.push(i);
+    }
+
+    if (page - delta > 2) {
+      rangeWithDots.push(1, "...");
+    } else {
+      rangeWithDots.push(1);
+    }
+
+    rangeWithDots.push(...range);
+
+    if (page + delta < totalPages - 1) {
+      rangeWithDots.push("...", totalPages);
+    } else if (totalPages > 1) {
+      rangeWithDots.push(totalPages);
+    }
+
+    return rangeWithDots;
+  };
+
+  const startItem = (page - 1) * pageSize + 1;
+  const endItem = Math.min(page * pageSize, total);
+
+  return (
+    <div className="flex flex-col items-center space-y-4 mt-8">
+      {/* Results info */}
+      <div className="text-sm text-muted-foreground">
+        Showing {startItem}-{endItem} of {total} products
       </div>
 
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={handleNext}
-        disabled={!canGoNext}
-      >
-        Next
-        <ChevronRight className="h-4 w-4" />
-      </Button>
+      {/* Pagination controls */}
+      <div className="flex items-center space-x-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handlePrevious}
+          disabled={!canGoPrevious}
+          className="flex items-center gap-1"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          Previous
+        </Button>
+
+        {/* Page numbers */}
+        <div className="flex items-center space-x-1">
+          {getPageNumbers().map((pageNum, index) => (
+            <div key={index}>
+              {pageNum === "..." ? (
+                <span className="px-3 py-2 text-muted-foreground">...</span>
+              ) : (
+                <Button
+                  variant={pageNum === page ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handlePageChange(pageNum as number)}
+                  className="min-w-[40px]"
+                >
+                  {pageNum}
+                </Button>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleNext}
+          disabled={!canGoNext}
+          className="flex items-center gap-1"
+        >
+          Next
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
     </div>
   );
 };

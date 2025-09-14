@@ -1,123 +1,46 @@
 "use client";
 
-import { useMemo, useOptimistic, useTransition } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@workspace/ui/components/button";
 import { Separator } from "@workspace/ui/components/separator";
-import { Minus, Plus, X, ArrowLeft } from "lucide-react";
+import { Minus, Plus, ArrowLeft, Loader2, Trash2 } from "lucide-react";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
-import { removeFromCart, updateCartItem } from "@/actions/cart";
 import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
+import { useCart } from "@/providers/cart-provider";
 
-type CartResponse = {
-  success: boolean;
-  data?: {
-    cart: any;
-    items: any[];
-    subtotal: number;
-    itemCount: number;
-  } | null;
-  error?: string;
-};
-
-export default function CartClient({
-  initialData,
-}: {red
-  initialData: CartResponse;
-}) {
-  const [isPending, startTransition] = useTransition();
-
-  const [optimisticItems, setOptimisticItems] = useOptimistic(
-    initialData.data?.items ?? [],
-    (prev: any[], action: { type: string; id: string; quantity?: number }) => {
-      switch (action.type) {
-        case "update":
-          return prev.map((it) =>
-            it.id === action.id ? { ...it, quantity: action.quantity } : it
-          );
-        case "remove":
-          return prev.filter((it) => it.id !== action.id);
-        default:
-          return prev;
-      }
-    }
-  );
-
-  const totals = useMemo(() => {
-    const subtotal = optimisticItems.reduce(
-      (sum, it: any) => sum + Number(it.price) * it.quantity,
-      0
-    );
-    const itemCount = optimisticItems.reduce(
-      (sum, it: any) => sum + it.quantity,
-      0
-    );
-    return { subtotal, itemCount };
-  }, [optimisticItems]);
-
-  const handleDecrease = (item: any) => {
-    if (item.quantity <= 1) return;
-    const nextQty = Math.max(1, item.quantity - 1);
-    setOptimisticItems({ type: "update", id: item.id, quantity: nextQty });
-    startTransition(async () => {
-      const res = await updateCartItem(item.id, nextQty);
-      if (!res?.success) {
-        // revert on failure
-        setOptimisticItems({
-          type: "update",
-          id: item.id,
-          quantity: item.quantity,
-        });
-      }
-    });
-  };
-
-  const handleIncrease = (item: any) => {
-    const nextQty = item.quantity + 1;
-    setOptimisticItems({ type: "update", id: item.id, quantity: nextQty });
-    startTransition(async () => {
-      const res = await updateCartItem(item.id, nextQty);
-      if (!res?.success) {
-        setOptimisticItems({
-          type: "update",
-          id: item.id,
-          quantity: item.quantity,
-        });
-      }
-    });
-  };
-
-  const handleRemove = (item: any) => {
-    setOptimisticItems({ type: "remove", id: item.id });
-    startTransition(async () => {
-      const res = await removeFromCart(item.id);
-      if (!res?.success) {
-        // On failure, refetch on next navigation; for now no revert context
-      }
-    });
-  };
-
+export default function CartClient() {
+  const {
+    cartData,
+    cartItems,
+    itemCount,
+    subtotal,
+    updateQuantity,
+    removeFromCart,
+    isItemLoading,
+    isProductLoading,
+  } = useCart();
   return (
     <div className="min-h-screen flex flex-col">
-        <DynamicBreadcrumb />
+      <DynamicBreadcrumb />
       <main className="flex-1 container mx-auto py-1">
-
         <h1 className="text-3xl font-bold mb-8">
-          Shopping Cart ({totals.itemCount} items)
+          Shopping Cart ({itemCount} items)
         </h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
-            {optimisticItems.map((item: any) => {
+            {cartItems.map((item: any) => {
               const p = item.product;
               const unit = Number(item.price);
               const lineTotal = unit * item.quantity;
-              const image = p?.images?.[0] ? getPublicUrl(p?.images?.[0], "products") : "/png product.png";
+              const image = p?.images?.[0]
+                ? getPublicUrl(p?.images?.[0], "products")
+                : "/png product.png";
               return (
                 <div
                   key={item.id}
-                  className="flex flex-col sm:flex-row bg-white gap-4 p-6 shadow-sm rounded-lg"
+                  className="flex flex-col relative sm:flex-row bg-white gap-4 p-6 shadow-sm rounded-lg"
                 >
                   <Link
                     href={`/products/${p.slug}`}
@@ -131,7 +54,7 @@ export default function CartClient({
                       className="object-contain bg-white"
                     />
                   </Link>
-                  <div className="flex-1 space-y-3">
+                  <div className="flex-1 space-y-1">
                     <div className="flex justify-between items-start">
                       <div className="space-y-0.5">
                         <Link
@@ -140,7 +63,7 @@ export default function CartClient({
                         >
                           {p.title}
                         </Link>
-                        <div className="text-sm text-gray-600">
+                        <div className="text-xs text-gray-600">
                           {p.brand?.name ? (
                             <span>Brand: {p.brand.name}</span>
                           ) : null}
@@ -157,21 +80,28 @@ export default function CartClient({
                           ) : null}
                         </div>
                       </div>
-                      <button
-                        className="text-gray-400 hover:text-red-500 p-1"
-                        onClick={() => handleRemove(item)}
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="text-gray-400 absolute top-2 right-2 hover:text-red-500 p-1"
+                        onClick={() => removeFromCart(item.id)}
+                        disabled={isProductLoading(item.id)}
                       >
-                        <X className="h-5 w-5" />
-                      </button>
+                        {isProductLoading(item.id) ? (
+                          <Loader2 className="size-5 animate-spin" />
+                        ) : (
+                          <Trash2 className="size-5" />
+                        )}
+                      </Button>
                     </div>
 
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                       <div className="flex items-center space-x-2">
                         <span className="font-bold text-lg">
                           {unit.toFixed(2)}
-                          {initialData.data?.cart?.currency
-                            ? ` ${initialData.data.cart.currency}`
-                            : "$"}
+                          {cartData?.cart?.currency
+                            ? ` ${cartData.cart.currency}`
+                            : "EGP"}
                         </span>
                         {p.price?.list &&
                         p.price?.final &&
@@ -181,30 +111,43 @@ export default function CartClient({
                           </span>
                         ) : null}
                       </div>
-                      <div className="flex items-center space-x-3">
-                        <div className="flex items-center border rounded-md">
-                          <button
-                            className="p-2 hover:bg-gray-100"
-                            onClick={() => handleDecrease(item)}
-                            disabled={item.quantity <= 1 || isPending}
+                      <div className="flex items-center flex-col gap-4">
+                        <div className="flex items-center border rounded-md h-10">
+                          <Button
+                            className="p-2 hover:bg-gray-100 border-l-0 rounded-r-none rounded-l-md h-full"
+                            variant="outline"
+                            size="icon"
+                            onClick={() =>
+                              updateQuantity(item.id, item.quantity - 1)
+                            }
+                            disabled={
+                              item.quantity <= 1 || isItemLoading(item.id)
+                            }
                           >
                             <Minus className="h-4 w-4" />
-                          </button>
-                          <span className="px-4 py-2 min-w-[3rem] text-center">
+                          </Button>
+                          <span className="px-4 py-1 min-w-[3rem] text-center">
                             {item.quantity}
                           </span>
-                          <button
-                            className="p-2 hover:bg-gray-100"
-                            onClick={() => handleIncrease(item)}
-                            disabled={isPending}
+                          <Button
+                            className="p-2 hover:bg-gray-100 border-r-0 rounded-l-none rounded-r-md h-full"
+                            variant="outline"
+                            size="icon"
+                            onClick={() =>
+                              updateQuantity(item.id, item.quantity + 1)
+                            }
+                            disabled={
+                              item.quantity >= item.product.quantity ||
+                              isItemLoading(item.id)
+                            }
                           >
                             <Plus className="h-4 w-4" />
-                          </button>
+                          </Button>
                         </div>
                         <span className="font-medium">
                           {lineTotal.toFixed(2)}
-                          {initialData.data?.cart?.currency
-                            ? ` ${initialData.data.cart.currency}`
+                          {cartData?.cart?.currency
+                            ? ` ${cartData.cart.currency}`
                             : "$"}
                         </span>
                       </div>
@@ -227,28 +170,28 @@ export default function CartClient({
                   </tr>
                 </thead>
                 <tbody>
-                  {optimisticItems.map((item) => {
-                    const p = item.product
-                    const unit = p.price?.final ?? 0
-                    const lineTotal = unit * item.quantity
+                  {cartItems.map((item) => {
+                    const p = item.product;
+                    const unit = Number(item.price) ?? 0;
+                    const lineTotal = unit * item.quantity;
                     return (
                       <tr key={item.id} className="border-b last:border-b-0">
                         <td className="py-2 truncate max-w-30">{p.title}</td>
                         <td className="py-2 text-right">{item.quantity}</td>
                         <td className="py-2 text-right">
                           {unit.toFixed(2)}
-                          {initialData.data?.cart?.currency
-                            ? ` ${initialData.data.cart.currency}`
-                            : '$'}
+                          {cartData?.cart?.currency
+                            ? ` ${cartData.cart.currency}`
+                            : "$"}
                         </td>
                         <td className="py-2 text-right">
                           {lineTotal.toFixed(2)}
-                          {initialData.data?.cart?.currency
-                            ? ` ${initialData.data.cart.currency}`
-                            : '$'}
+                          {cartData?.cart?.currency
+                            ? ` ${cartData.cart.currency}`
+                            : "$"}
                         </td>
                       </tr>
-                    )
+                    );
                   })}
                 </tbody>
               </table>
@@ -256,19 +199,19 @@ export default function CartClient({
                 <div className="flex justify-between">
                   <span className="font-medium">Subtotal</span>
                   <span>
-                    {totals.subtotal.toFixed(2)}
-                    {initialData.data?.cart?.currency
-                      ? ` ${initialData.data.cart.currency}`
-                      : '$'}
+                    {subtotal.toFixed(2)}
+                    {cartData?.cart?.currency
+                      ? ` ${cartData.cart.currency}`
+                      : "$"}
                   </span>
                 </div>
                 <Separator />
                 <div className="flex justify-between font-bold text-lg">
                   <span>Total</span>
                   <span className="text-primary">
-                    {totals.subtotal.toFixed(2)}
-                    {initialData.data?.cart?.currency
-                      ? ` ${initialData.data.cart.currency}`
+                    {subtotal.toFixed(2)}
+                    {cartData?.cart?.currency
+                      ? ` ${cartData.cart.currency}`
                       : "$"}
                   </span>
                 </div>
@@ -278,7 +221,7 @@ export default function CartClient({
               <Button
                 className="w-full"
                 size="lg"
-                disabled={optimisticItems.length === 0 || isPending}
+                disabled={cartItems.length === 0}
               >
                 Proceed to Checkout
               </Button>
@@ -289,7 +232,9 @@ export default function CartClient({
                 Continue Shopping
               </Button>
             </Link>
-              <p className="text-center text-sm text-gray-600 mt-4">🔒 Secure checkout with SSL encryption</p>
+            <p className="text-center text-sm text-gray-600 mt-4">
+              🔒 Secure checkout with SSL encryption
+            </p>
           </div>
         </div>
       </main>
