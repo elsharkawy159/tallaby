@@ -116,6 +116,8 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <StructuredData />
+        {/* Google tag (gtag.js) */}
+
       </head>
       <body className={`${montserrat.variable} antialiased`}>
         <NextTopLoader
