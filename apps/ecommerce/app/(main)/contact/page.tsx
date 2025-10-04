@@ -3,6 +3,39 @@ import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { Textarea } from "@workspace/ui/components/textarea";
 import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Contact Us | Tallaby.com",
+  description:
+    "Get in touch with Tallaby.com customer support. We're here to help with orders, products, returns, and any questions. Multiple contact methods available.",
+  openGraph: {
+    title: "Contact Us | Tallaby.com",
+    description:
+      "Get in touch with Tallaby.com customer support. We're here to help with orders, products, returns, and any questions. Multiple contact methods available.",
+    url: "https://www.tallaby.com/contact",
+    siteName: "Tallaby.com",
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Contact Tallaby.com",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Contact Us | Tallaby.com",
+    description:
+      "Get in touch with Tallaby.com customer support. We're here to help with orders, products, returns, and any questions.",
+    images: ["/og-image.jpg"],
+    site: "@tallaby",
+  },
+  alternates: {
+    canonical: "https://www.tallaby.com/contact",
+  },
+};
 import {
   Select,
   SelectContent,

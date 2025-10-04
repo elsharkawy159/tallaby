@@ -23,7 +23,7 @@ export const CheckoutForm = ({
   isPending,
 }: CheckoutFormProps) => {
   return (
-    <div className="bg-white border rounded-lg p-6">
+    <div className="bg-white border rounded-lg p-4 sm:p-6">
       <h2 className="text-xl font-bold mb-6">Place Order</h2>
 
       <div className="space-y-6">

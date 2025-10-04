@@ -64,21 +64,21 @@ const HeroCarousel = () => {
         {banners.map((banner) => (
           <CarouselItem key={banner.id} className="p-0">
             <Link href={banner.href}>
-              <div className="relative h-[500px] w-full overflow-hidden">
+              <div className="relative h-[300px] sm:h-[400px] md:h-[500px] w-full overflow-hidden">
                 <Image
                   src={banner.image}
                   alt={banner.image}
                   fill
-                  sizes="100vw"
-                  className="object-cover object-top"
+                  sizes="(max-width: 640px) 100vw, (max-width: 768px) 100vw, 100vw"
+                  className="object-cover object-center md:object-top"
                 />
               </div>
             </Link>
           </CarouselItem>
         ))}
       </CarouselContent>
-      <CarouselPrevious className="left-0 group-hover:opacity-100 opacity-0 bg-transparent border-none h-full rounded-none hover:bg-black/5 px-10 duration-200 shadow-none transition-all" />
-      <CarouselNext className="right-0 group-hover:opacity-100 opacity-0 bg-transparent border-none h-full rounded-none hover:bg-black/5 px-10 duration-200 shadow-none transition-all" />
+      <CarouselPrevious className="left-2 md:left-4 group-hover:opacity-100 opacity-0 bg-transparent border-none h-full rounded-none hover:bg-black/5 px-6 md:px-10 duration-200 shadow-none transition-all" />
+      <CarouselNext className="right-2 md:right-4 group-hover:opacity-100 opacity-0 bg-transparent border-none h-full rounded-none hover:bg-black/5 px-6 md:px-10 duration-200 shadow-none transition-all" />
     </Carousel>
   );
 };

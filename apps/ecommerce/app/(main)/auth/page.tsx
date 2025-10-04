@@ -37,7 +37,7 @@ export default async function CustomerAuthPage() {
 }
 
 export const metadata = {
-  title: "Sign In | Multi-Vendor Commerce",
+  title: "Sign In | Tallaby.com",
   description:
-    "Sign in to your customer account or create a new one to start shopping with us.",
+    "Sign in to your Tallaby.com account or create a new one to start shopping with us. Secure authentication for your e-commerce experience.",
 };

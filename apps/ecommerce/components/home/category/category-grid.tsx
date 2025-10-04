@@ -36,7 +36,7 @@ export default async function CategoryGrid({
         )}
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
         {categories.map((category) => (
           <Link
             key={category.id}
@@ -44,7 +44,7 @@ export default async function CategoryGrid({
             className="group"
           >
             <Card className="h-full hover:shadow-lg transition-all duration-300 group-hover:scale-105">
-              <CardContent className="p-6 text-center">
+              <CardContent className="p-4 sm:p-6 text-center">
                 <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
                   {category.name?.charAt(0).toUpperCase()}
                 </div>

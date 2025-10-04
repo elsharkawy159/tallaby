@@ -3,6 +3,39 @@ import Link from "next/link";
 import { Button } from "@workspace/ui/components/button";
 import { Badge } from "@workspace/ui/components/badge";
 import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "About Us | Tallaby.com",
+  description:
+    "Learn about Tallaby.com's mission to connect customers with quality products from trusted vendors worldwide. Discover our story, values, and commitment to exceptional service.",
+  openGraph: {
+    title: "About Us | Tallaby.com",
+    description:
+      "Learn about Tallaby.com's mission to connect customers with quality products from trusted vendors worldwide. Discover our story, values, and commitment to exceptional service.",
+    url: "https://www.tallaby.com/about",
+    siteName: "Tallaby.com",
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "About Tallaby.com",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "About Us | Tallaby.com",
+    description:
+      "Learn about Tallaby.com's mission to connect customers with quality products from trusted vendors worldwide.",
+    images: ["/og-image.jpg"],
+    site: "@tallaby",
+  },
+  alternates: {
+    canonical: "https://www.tallaby.com/about",
+  },
+};
 
 const About = () => {
   const stats = [

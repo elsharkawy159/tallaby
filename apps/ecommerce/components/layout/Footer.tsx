@@ -1,7 +1,16 @@
-import { Facebook, Instagram, Twitter, Youtube, Mail, ArrowRight, MapPin, Phone } from "lucide-react"
-import Link from "next/link"
-import { Button } from "@workspace/ui/components/button"
-import { Input } from "@workspace/ui/components/input"
+import {
+  Facebook,
+  Instagram,
+  Twitter,
+  Youtube,
+  Mail,
+  ArrowRight,
+  MapPin,
+  Phone,
+} from "lucide-react";
+import Link from "next/link";
+import { Button } from "@workspace/ui/components/button";
+import { Input } from "@workspace/ui/components/input";
 
 const Footer = () => {
   return (
@@ -14,9 +23,8 @@ const Footer = () => {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(120,119,198,0.05),transparent_50%)] pointer-events-none" />
 
       <div className="relative z-10 container mx-auto px-4 py-16">
-
         {/* Main Footer Content */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 lg:gap-8 mb-12">
           {/* Brand Column */}
           <div className="lg:col-span-2">
             <div className="mb-6">
@@ -24,8 +32,9 @@ const Footer = () => {
                 Stylist
               </h3>
               <p className="text-gray-300 text-sm leading-relaxed mb-6 max-w-sm">
-                Your ultimate destination for fashion-forward styles. We curate the latest trends and timeless pieces to
-                help you express your unique style.
+                Your ultimate destination for fashion-forward styles. We curate
+                the latest trends and timeless pieces to help you express your
+                unique style.
               </p>
             </div>
 
@@ -106,7 +115,7 @@ const Footer = () => {
             </h4>
 
             {/* Social Media */}
-            <div className="flex gap-3 mb-6">
+            <div className="flex flex-wrap gap-3 mb-6">
               {[
                 { icon: Facebook, href: "#", label: "Facebook" },
                 { icon: Instagram, href: "#", label: "Instagram" },
@@ -147,7 +156,10 @@ const Footer = () => {
                 { href: "/cookies", label: "Cookie Policy" },
               ].map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="text-gray-400 hover:text-gray-200 transition-colors duration-200">
+                  <Link
+                    href={link.href}
+                    className="text-gray-400 hover:text-gray-200 transition-colors duration-200"
+                  >
                     {link.label}
                   </Link>
                 </li>
@@ -158,9 +170,11 @@ const Footer = () => {
 
         {/* Bottom Bar */}
         <div className="border-t border-gray-700 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-gray-400 text-sm">© 2024 Stylist.com, Inc. All rights reserved.</p>
-            <div className="flex items-center gap-6 text-xs text-gray-400">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p className="text-gray-400 text-sm text-center sm:text-left">
+              © 2024 Stylist.com, Inc. All rights reserved.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 text-xs text-gray-400">
               <span>Made with ❤️ for fashion lovers</span>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
@@ -171,7 +185,7 @@ const Footer = () => {
         </div>
       </div>
     </footer>
-  )
-}
+  );
+};
 
-export default Footer
+export default Footer;

@@ -7,6 +7,10 @@ import { CheckoutData } from "./checkout.data";
 import { CheckoutInteractions } from "./checkout.client";
 import { CheckoutSkeleton } from "./checkout.skeleton";
 import { ChevronLeft } from "lucide-react";
+import { generateNoIndexMetadata } from "@/lib/metadata";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = generateNoIndexMetadata();
 
 export default async function Checkout() {
   const result = await getCheckoutData();
@@ -41,15 +45,15 @@ export default async function Checkout() {
         </Button>
       </div>
 
-      <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
+      <main className="flex-1 container mx-auto px-4 py-4 sm:py-6 lg:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+          <div className="lg:col-span-2 order-2 lg:order-1">
             <Suspense fallback={<CheckoutSkeleton />}>
               <CheckoutData checkoutData={result.data as any} />
             </Suspense>
           </div>
 
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 order-1 lg:order-2">
             <CheckoutInteractions checkoutData={result.data as any} />
           </div>
         </div>

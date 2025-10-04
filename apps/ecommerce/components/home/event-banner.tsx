@@ -43,26 +43,26 @@ export default function EventBanner({
             : undefined
         }
       >
-        <div className="relative z-10 px-8 py-12 md:px-12 md:py-16">
+        <div className="relative z-10 px-6 py-8 sm:px-8 sm:py-12 md:px-12 md:py-16">
           <div className="max-w-2xl">
             {badgeText && (
-              <Badge variant={badgeVariant} className="mb-4">
+              <Badge variant={badgeVariant} className="mb-3 sm:mb-4">
                 {badgeText}
               </Badge>
             )}
 
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4">
               {title}
             </h2>
 
             {subtitle && (
-              <h3 className="text-xl md:text-2xl font-semibold mb-4 opacity-90">
+              <h3 className="text-lg sm:text-xl md:text-2xl font-semibold mb-3 sm:mb-4 opacity-90">
                 {subtitle}
               </h3>
             )}
 
             {description && (
-              <p className="text-lg mb-8 opacity-80 leading-relaxed">
+              <p className="text-base sm:text-lg mb-6 sm:mb-8 opacity-80 leading-relaxed">
                 {description}
               </p>
             )}

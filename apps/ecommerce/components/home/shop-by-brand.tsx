@@ -31,17 +31,19 @@ export default async function ShopByBrand({
 
   return (
     <section className={`lg:py-8 py-5 container mx-auto ${className}`}>
-      <div className="text-center mb-8">
-        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+      <div className="text-center mb-6 sm:mb-8">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">
           {title}
         </h2>
         {subtitle && (
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">{subtitle}</p>
+          <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto">
+            {subtitle}
+          </p>
         )}
       </div>
 
       {layout === "grid" ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
           {brands.map((brand) => (
             <Link
               key={brand.id}
@@ -49,7 +51,7 @@ export default async function ShopByBrand({
               className="group"
             >
               <Card className="h-full hover:shadow-lg transition-all duration-300 group-hover:scale-105">
-                <CardContent className="p-6 text-center">
+                <CardContent className="p-4 sm:p-6 text-center">
                   {brand.logoUrl ? (
                     <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                       <img

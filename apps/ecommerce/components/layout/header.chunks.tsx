@@ -29,7 +29,6 @@ import {
   navigationItems,
   bottomNavigationItems,
   getSearchPlaceholder,
-  getLogoText,
   getBecomeSellerUrl,
 } from "./header.lib";
 import { useCart } from "@/providers/cart-provider";
@@ -38,7 +37,9 @@ import { useWishlist } from "@/providers/wishlist-provider";
 export const Logo = ({ className }: LogoProps) => {
   return (
     <Link href="/" className={className}>
-      <span className="text-4xl font-bold text-white">{getLogoText()}</span>
+      <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-white">
+        Tallaby
+      </span>
     </Link>
   );
 };
@@ -100,17 +101,21 @@ export const UserAuth = ({ variant = "desktop", className }: UserAuthProps) => {
 
   if (user) {
     return (
-      <div
-        className={cn(
-          variant === "mobile" && "flex flex-col items-center",
-          className
-        )}
+      <Button
+      variant="ghost"
+      size="icon"
+      className={cn(
+        "text-white hover:text-gray-200 hover:bg-transparent cursor-pointer transition-colors",
+        variant === "mobile" &&
+          "flex flex-col items-center text-gray-600 hover:text-primary transition-colors",
+        className
+      )}
       >
         <UserMenu variant={variant} />
         {variant === "mobile" && (
-          <span className="text-xs mt-1 text-gray-600">Profile</span>
+          <span className="text-xs mt-1">Profile</span>
         )}
-      </div>
+      </Button>
     );
   }
 
@@ -214,17 +219,17 @@ export const DesktopNavigation = ({ className }: DesktopNavigationProps) => {
   return (
     <div
       className={cn(
-        "hidden md:flex items-center justify-between gap-8",
+        "hidden md:flex items-center justify-between gap-4 lg:gap-8",
         className
       )}
     >
       <Logo />
 
-      <div className="flex-1">
+      <div className="flex-1 max-w-md lg:max-w-lg">
         <SearchBar variant="desktop" />
       </div>
 
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-3 lg:gap-6">
         <UserAuth variant="desktop" />
         <CartLink />
         <WishlistLink />

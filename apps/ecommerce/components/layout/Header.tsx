@@ -27,7 +27,7 @@ const Header = ({ className }: HeaderProps) => {
         )}
       >
         {/* Main header */}
-        <div className="container mx-auto py-3.5">
+        <div className="container mx-auto px-4 py-3.5">
           {/* Mobile top section */}
           <div className="flex items-center md:hidden justify-between">
             <Logo />
@@ -46,9 +46,9 @@ const Header = ({ className }: HeaderProps) => {
           <DesktopNavigation className="md:mt-0 mt-4" />
         </div>
 
-        {/* Category Navigation */}
-        <div className="bg-secondary md:block hidden">
-          <div className="container mx-auto py-2">
+        {/* Category Navigation - Hidden on mobile, visible on desktop */}
+        <div className="bg-secondary hidden md:block">
+          <div className="container mx-auto px-4 py-2">
             <CategoryNav />
           </div>
         </div>

@@ -40,6 +40,5 @@ export const getSearchPlaceholder = (variant: "mobile" | "desktop"): string => {
     : "Search for products, brands, categories...";
 };
 
-export const getLogoText = (): string => "Bahja";
 
 export const getBecomeSellerUrl = (): string => "/become-seller";

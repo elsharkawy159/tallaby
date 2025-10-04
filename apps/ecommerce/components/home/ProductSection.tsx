@@ -42,23 +42,35 @@ const ProductSection = async ({ title, filters = {} }: ProductSectionProps) => {
           align: "start",
           dragFree: false,
         }}
-        className="flex flex-row items-center mb-8 gap-5"
+        className="md:flex flex-row items-center mb-8 gap-5"
       >
         {/* Left Text Block */}
-        <div className="w-[230px] shrink-0">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-            {title}
-          </h2>
-          <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+        <div className="md:w-[230px] w-full shrink-0">
+          <div className="flex items-center justify-between">
+            <h2 className="md:text-2xl text-xl font-bold text-gray-900 md:mb-2">
+              {title}
+            </h2>
+            <Button asChild className="p-0 gap-1 md:hidden flex" variant="link">
+              <Link href="/products">
+                View More
+                <ChevronRight className="size-4" />
+              </Link>
+            </Button>
+          </div>
+          <p className="md:text-lg text-xs text-gray-600 md:mb-6 mb-4 leading-relaxed">
             Trending Now: What Everyone's Talking About
           </p>
-          <Button asChild className="!px-8 gap-1" variant="secondary">
+          <Button
+            asChild
+            className="!px-8 gap-1 md:flex hidden"
+            variant="secondary"
+          >
             <Link href="/products">
               View More
-              <ChevronRight className="size-6" />
+              <ChevronRight className="size-5" />
             </Link>
           </Button>
-          <div className="flex gap-5 items-center mt-12 ml-8">
+          <div className="md:flex gap-5 items-center mt-12 ml-8 hidden">
             <CarouselPrevious className="relative left-0" />
             <CarouselNext className="relative right-0" />
           </div>

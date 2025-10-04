@@ -68,21 +68,21 @@ export const HeroSection = () => {
   };
 
   return (
-    <section className="bg-gradient-to-br from-primary to-primary/80 text-white py-20">
+    <section className="bg-gradient-to-br from-primary to-primary/80 text-white py-12 md:py-16 lg:py-20">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          <div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+          <div className="text-center lg:text-left">
             <Badge className="bg-accent text-black mb-4">Partner with Us</Badge>
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
               Turn Your Products Into
               <span className="block text-accent">Profit</span>
             </h1>
-            <p className="text-xl mb-8">
+            <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto lg:mx-0">
               Join thousands of successful sellers on our platform. Reach
               millions of customers, grow your business, and build your brand
               with our comprehensive selling tools.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <Button
                 size="lg"
                 className="hover:bg-accent/90"
@@ -104,13 +104,13 @@ export const HeroSection = () => {
               </Button>
             </div>
           </div>
-          <div className="relative">
+          <div className="relative order-first lg:order-last">
             <Image
               src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=600&h=400&fit=crop"
               alt="Successful seller"
               width={600}
               height={400}
-              className="rounded-lg shadow-2xl"
+              className="rounded-lg shadow-2xl w-full h-auto"
               priority
             />
           </div>

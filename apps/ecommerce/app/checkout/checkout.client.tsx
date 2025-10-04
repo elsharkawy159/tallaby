@@ -10,7 +10,7 @@ export const CheckoutInteractions = ({
   const { cart, summary } = checkoutData;
 
   return (
-    <div className="bg-white border rounded-lg p-6 sticky top-4">
+    <div className="bg-white border rounded-lg p-4 sm:p-6 lg:sticky lg:top-4">
       <h3 className="text-lg font-bold mb-4">Order Summary</h3>
       <div className="space-y-2 text-sm">
         <div className="flex justify-between">

@@ -42,11 +42,11 @@ export default async function DealOfTheDay({
 
   return (
     <section className={`lg:py-8 py-5 container mx-auto ${className}`}>
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8 gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
           <div className="flex items-center gap-2">
-            <Zap className="w-6 h-6 text-yellow-500" />
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
+            <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500" />
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">
               {title}
             </h2>
           </div>
@@ -56,7 +56,7 @@ export default async function DealOfTheDay({
         </div>
 
         {showCountdown && (
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
             <Clock className="w-4 h-4" />
             <span>Ends in: 23:45:12</span>
           </div>
@@ -64,7 +64,9 @@ export default async function DealOfTheDay({
       </div>
 
       {subtitle && (
-        <p className="text-lg text-gray-600 mb-8 max-w-2xl">{subtitle}</p>
+        <p className="text-base sm:text-lg text-gray-600 mb-6 sm:mb-8 max-w-2xl">
+          {subtitle}
+        </p>
       )}
 
       <Carousel

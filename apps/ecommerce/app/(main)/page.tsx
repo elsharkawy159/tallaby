@@ -8,10 +8,14 @@ import ShopByBrand from "@/components/home/shop-by-brand";
 import DealOfTheDay from "@/components/home/deal-of-the-day";
 import FeaturedCollection from "@/components/home/featured-collection";
 import Hero from "@/components/home/hero/hero";
+import { generateHomeMetadata } from "@/lib/metadata";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = generateHomeMetadata();
 
 const page = async () => {
   return (
-    <>
+    <div className="min-h-screen">
       <Hero />
 
       {/* <CategoryCarousel
@@ -46,13 +50,13 @@ const page = async () => {
         showProductCount={true}
       />
 
-      <DealOfTheDay
+      {/* <DealOfTheDay
         title="Deal of the Day"
         subtitle="Limited time offers you don't want to miss"
         limit={6}
         showCountdown={true}
         className="bg-gradient-to-r from-red-50 to-orange-50"
-      />
+      /> */}
 
       <BestSellersInCategory
         categorySlug="electronics"
@@ -110,7 +114,7 @@ const page = async () => {
       <FeaturesSection />
 
       <VendorRecruitment />
-    </>
+    </div>
   );
 };
 

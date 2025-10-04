@@ -3,6 +3,10 @@ import { ProfileSidebar, ProfileForm } from "./profile.chunks";
 import { getUserAddresses } from "./profile.server";
 import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import Link from "next/link";
+import { generateNoIndexMetadata } from "@/lib/metadata";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = generateNoIndexMetadata();
 
 async function ProfileData() {
   // Fetch addresses on server

@@ -11,6 +11,50 @@ import type { Product, ProductPageProps } from "./product-page.types";
 import { ProductHero } from "./_components/product-hero";
 import { notFound } from "next/navigation";
 import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
+import { generateProductMetadata } from "@/lib/metadata";
+import type { Metadata } from "next";
+import { ProductStructuredData } from "./_components/product-structured-data";
+
+export async function generateMetadata({
+  params,
+}: ProductPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const productResult = await getProductBySlug(slug);
+
+  if (!productResult.success || !productResult.data) {
+    return {
+      title: "Product Not Found | Tallaby.com",
+      description: "The requested product could not be found on Tallaby.com",
+    };
+  }
+
+  const raw = productResult.data as any;
+  const product = {
+    title: raw.title,
+    slug: raw.slug,
+    description: raw.description ?? "",
+    price: {
+      final: Number(
+        raw.price?.final ?? raw.price?.current ?? raw.price?.list ?? 0
+      ),
+      list: Number(
+        raw.price?.list ?? raw.price?.current ?? raw.price?.final ?? 0
+      ),
+    },
+    images: Array.isArray(raw.images) ? raw.images : [],
+    brand: {
+      name: raw.brand?.name ?? "",
+    },
+    category: {
+      name: raw.category?.name ?? "",
+      slug: raw.category?.slug ?? "",
+    },
+    averageRating: Number(raw.averageRating ?? 0),
+    reviewCount: Number(raw.reviewCount ?? 0),
+  };
+
+  return generateProductMetadata({ product });
+}
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
@@ -74,6 +118,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   return (
     <main className="min-h-screen">
+      <ProductStructuredData product={product} />
       <section className="bg-white">
         <DynamicBreadcrumb />
       </section>

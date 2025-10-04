@@ -61,7 +61,7 @@ export function UserMenu({ variant = "desktop", className }: UserMenuProps) {
           className={`${
             variant === "desktop"
               ? "text-white hover:text-gray-200"
-              : "text-gray-600 hover:text-primary"
+              : "text-gray-600 hover:text-primary p-0"
           } ${className}`}
           title={`Welcome, ${userName}`}
         >
@@ -69,10 +69,10 @@ export function UserMenu({ variant = "desktop", className }: UserMenuProps) {
             <img
               src={avatarUrl}
               alt="User avatar"
-              className="size-6 rounded-full object-cover"
+              className="md:size-6 size-5 rounded-full object-cover"
             />
           ) : (
-            <User className="size-6" />
+            <User className="md:size-6 size-5" />
           )}
         </Button>
       </PopoverTrigger>

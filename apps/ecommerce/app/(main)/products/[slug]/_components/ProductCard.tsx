@@ -13,8 +13,8 @@ const ProductCard = (product: ProductCardProps) => {
   const productId = product.id || "";
 
   return (
-    <Card className="group bg-white shadow-sm h-full border-0 p-0 relative w-[285px] overflow-hidden rounded-[8px_8px_0_8px]">
-      <CardContent className="p-2">
+    <Card className="group bg-white shadow-sm h-full border-0 p-0 relative w-full max-w-[285px] mx-auto overflow-hidden rounded-[8px_8px_0_8px]">
+      <CardContent className="p-2 sm:p-3 md:p-4">
         {/* Product Image */}
         <div className="relative">
           <ProductCardImage product={product} />
