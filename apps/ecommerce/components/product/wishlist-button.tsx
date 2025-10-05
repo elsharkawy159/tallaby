@@ -5,32 +5,33 @@ import { Heart, Loader2 } from "lucide-react";
 import { useWishlist } from "@/providers/wishlist-provider";
 import { toast } from "sonner";
 import type { WishlistButtonProps } from "./product-card.types";
+import { cn } from "@/lib/utils";
 
 // 🔑 Centralized size styles
 const sizeStyles = {
   sm: {
-    icon: "h-3 w-3",
-    loader: "h-3 w-3",
-    text: "text-xs",
-    gap: "ml-1",
+    icon: "h-3! w-3! md:h-4 md:w-4",
+    loader: "h-3! w-3! md:h-4 md:w-4",
+    text: "text-xs md:text-md",
+    gap: "ml-1 md:ml-2",
   },
   default: {
-    icon: "h-4 w-4",
-    loader: "h-4 w-4",
-    text: "text-sm",
-    gap: "ml-2",
+    icon: "h-4! w-4! md:h-5 md:w-5",
+    loader: "h-4! w-4! md:h-5 md:w-5",
+    text: "text-md md:text-base",
+    gap: "ml-2 md:ml-3",
   },
   lg: {
-    icon: "h-5 w-5",
-    loader: "h-5 w-5",
-    text: "text-base",
-    gap: "ml-3",
+    icon: "h-5! w-5! md:h-6 md:w-6",
+    loader: "h-5! w-5! md:h-6 md:w-6",
+    text: "text-base md:text-lg",
+    gap: "ml-3 md:ml-4",
   },
   xl: {
-    icon: "h-6 w-6",
-    loader: "h-6 w-6",
-    text: "text-lg",
-    gap: "ml-3",
+    icon: "h-6! w-6! md:h-7 md:w-7",
+    loader: "h-6! w-6! md:h-7 md:w-7",
+    text: "text-lg md:text-xl",
+    gap: "ml-3 md:ml-4",
   },
 } as const;
 

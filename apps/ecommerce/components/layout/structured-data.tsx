@@ -3,7 +3,7 @@ import {
   generateOrganizationStructuredData,
 } from "@/lib/structured-data";
 
-export function StructuredData() {
+export function Scripts() {
   const websiteData = generateWebsiteStructuredData();
   const organizationData = generateOrganizationStructuredData();
 

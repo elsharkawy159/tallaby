@@ -206,7 +206,7 @@ const Terms = () => {
                     please contact us at:
                   </p>
                   <div className="mt-3 text-gray-600">
-                    <p>Email: legal@stylist.com</p>
+                    <p>Email: legal@tallaby.com</p>
                     <p>Phone: +1 (555) 123-4567</p>
                     <p>
                       Address: 123 Fifth Avenue, Suite 100, New York, NY 10011

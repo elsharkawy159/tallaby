@@ -30,9 +30,10 @@ interface ProductFilters {
 interface ProductSectionProps {
   title: string;
   filters?: ProductFilters;
+  description?: string;
 }
 
-const ProductSection = async ({ title, filters = {} }: ProductSectionProps) => {
+const ProductSection = async ({ title,description, filters = {} }: ProductSectionProps) => {
   const products = await getProducts(filters);
 
   return (
@@ -57,9 +58,11 @@ const ProductSection = async ({ title, filters = {} }: ProductSectionProps) => {
               </Link>
             </Button>
           </div>
-          <p className="md:text-lg text-xs text-gray-600 md:mb-6 mb-4 leading-relaxed">
-            Trending Now: What Everyone's Talking About
-          </p>
+          {description && (
+            <p className="md:text-lg text-xs text-gray-600 md:mb-6 mb-1 leading-relaxed">
+              {description}
+            </p>
+          )}
           <Button
             asChild
             className="!px-8 gap-1 md:flex hidden"

@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import "@workspace/ui/globals.css";
+import { NextIntlClientProvider } from "next-intl";
 import "./globals.css";
 import { Providers } from "./providers";
 import NextTopLoader from "nextjs-toploader";
-import { StructuredData } from "@/components/layout/structured-data";
+import { Scripts } from "@/components/layout/structured-data";
+import { getMessages } from "next-intl/server";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -107,17 +109,16 @@ export const metadata: Metadata = {
   category: "ecommerce",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const messages = await getMessages();
   return (
     <html lang="en">
       <head>
-        <StructuredData />
-        {/* Google tag (gtag.js) */}
-
+        <Scripts />
       </head>
       <body className={`${montserrat.variable} antialiased`}>
         <NextTopLoader
@@ -128,7 +129,11 @@ export default function RootLayout({
           easing="ease"
           speed={200}
         />
-        <Providers>{children}</Providers>
+        <Providers>
+          <NextIntlClientProvider messages={messages}>
+            {children}
+          </NextIntlClientProvider>
+        </Providers>
       </body>
     </html>
   );

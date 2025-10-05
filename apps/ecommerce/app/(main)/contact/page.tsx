@@ -72,7 +72,7 @@ const Contact = () => {
       icon: Mail,
       title: "Email Support",
       description: "Send us a detailed message",
-      value: "support@stylist.com",
+      value: "support@tallaby.com",
       availability: "Response within 24 hours",
     },
     {

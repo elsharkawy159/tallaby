@@ -69,7 +69,7 @@ const ProductsPage = async ({
   return (
     <>
       <DynamicBreadcrumb />
-      <main className="container mx-auto px-4 py-4 sm:py-6">
+      <main className="container py-2.5  sm:py-6">
         <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
           {/* Filter Sidebar - Hidden on mobile, shown on desktop */}
           <div className="hidden lg:block">
@@ -79,7 +79,7 @@ const ProductsPage = async ({
           {/* Main Content Area */}
           <div className="flex-1 space-y-4 sm:space-y-6">
             {/* Mobile Filters and Sorting */}
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+            <div className="flex sm:flex-row gap-4 items-start sm:items-center justify-between">
               {/* Mobile filter button */}
               <div className="lg:hidden w-full sm:w-auto">
                 <ProductsFilterWrapper />

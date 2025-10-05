@@ -40,7 +40,7 @@ export const CategoryShowcaseClient = ({
   return (
     <section
       className={cn(
-        "py-6 px-16 rounded-t-[50px] bg-background container mx-auto",
+        "md:py-6 py-4 px-4 md:rounded-t-[50px] rounded-t-4xl bg-background container mx-auto",
         className
       )}
     >
@@ -63,18 +63,18 @@ export const CategoryShowcaseClient = ({
               className="group block"
             >
               <CarouselItem className="basis-auto">
-                <div className="w-32 text-center">
-                  <div className="relative overflow-hidden rounded-full size-[100px] mx-auto mb-2.5 bg-gradient-to-br from-primary/10 to-primary/20 shadow-sm border border-primary/20 group-hover:shadow-md transition-all duration-300">
+ <div className="md:w-[120px] w-18">
+ <div className="relative overflow-hidden rounded-full md:size-[100px] size-[60px] mx-auto mb-2.5 bg-gradient-to-br from-primary/10 to-primary/20 shadow-sm border border-primary/20 group-hover:shadow-md transition-all duration-300">
                     <div className="flex items-center justify-center h-full">
-                      <span className="text-2xl font-bold text-primary group-hover:scale-110 transition-transform duration-300">
+                      <span className="md:text-2xl text-base font-bold text-primary group-hover:scale-110 transition-transform duration-300">
                         {category.productCount}
                       </span>
                     </div>
                   </div>
-                  <h3 className="text-sm font-medium text-center group-hover:text-primary transition-colors">
+                  <h3 className="md:text-sm text-xs font-medium text-center group-hover:text-primary transition-colors">
                     {category.name}
                   </h3>
-                </div>
+ </div>
               </CarouselItem>
             </Link>
           ))}

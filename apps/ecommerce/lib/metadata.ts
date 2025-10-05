@@ -63,22 +63,6 @@ export function generateProductMetadata({
       "ecommerce",
       ...(discount > 0 ? [`${discount}% off`, "sale", "discount"] : []),
     ],
-    openGraph: {
-      type: "product",
-      title,
-      description,
-      url: productUrl,
-      siteName: "Tallaby.com",
-      images: [
-        {
-          url: imageUrl,
-          width: 800,
-          height: 600,
-          alt: product.title,
-        },
-      ],
-      locale: "en_US",
-    },
     twitter: {
       card: "summary_large_image",
       title,

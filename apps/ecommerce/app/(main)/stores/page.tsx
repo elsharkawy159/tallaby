@@ -17,7 +17,7 @@ const Stores = () => {
   const stores = [
     {
       id: "1",
-      name: "Stylist Manhattan",
+      name: "tallaby Manhattan",
       address: "123 Fifth Avenue, New York, NY 10011",
       phone: "+1 (555) 123-4567",
       hours: "Mon-Sat 10AM-9PM, Sun 11AM-7PM",
@@ -29,7 +29,7 @@ const Stores = () => {
     },
     {
       id: "2",
-      name: "Stylist Brooklyn",
+      name: "tallaby Brooklyn",
       address: "456 Atlantic Avenue, Brooklyn, NY 11217",
       phone: "+1 (555) 987-6543",
       hours: "Mon-Sat 10AM-8PM, Sun 12PM-6PM",
@@ -41,7 +41,7 @@ const Stores = () => {
     },
     {
       id: "3",
-      name: "Stylist SoHo",
+      name: "tallaby SoHo",
       address: "789 Broadway, New York, NY 10003",
       phone: "+1 (555) 456-7890",
       hours: "Mon-Sat 10AM-10PM, Sun 11AM-8PM",
@@ -185,7 +185,7 @@ const Stores = () => {
                 </div>
                 <h3 className="font-bold mb-2">Personal Shopping</h3>
                 <p className="text-sm text-gray-600">
-                  Expert stylists help you find the perfect outfit
+                  Expert tallabys help you find the perfect outfit
                 </p>
               </div>
 

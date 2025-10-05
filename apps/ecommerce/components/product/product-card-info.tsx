@@ -41,16 +41,16 @@ export const ProductCardInfo = ({
   const reviews = product.review_count ?? product.reviewCount ?? 0;
 
   return (
-    <div className={`space-y-2 mt-2.5 ${className}`}>
-      <div className="flex items-center gap-4.5 justify-between mb-2">
-        <h3 className="text-base font-medium line-clamp-2">{title}</h3>
-        <span className="text-lg font-semibold">${price}</span>
+    <div className={`space-y-2 md:block flex justify-between items-center md:mt-2.5 mt-1.5 ${className}`}>
+      <div className="flex md:flex-row flex-col md:items-center md:gap-4.5 gap-1 justify-between mb-2">
+        <h3 className="md:text-base text-sm font-medium md:line-clamp-2 line-clamp-1">{title}</h3>
+        <span className="md:text-lg text-sm font-semibold">${price}</span>
       </div>
 
       {/* Rating */}
-      <div className="flex text-sm items-center gap-1">
+      <div className="flex md:text-sm text-xs items-center gap-1">
         <span className="font-medium">{rating}</span>
-        <Star className="h-4 w-4 text-yellow-400 fill-current" />
+        <Star className="md:size-4 size-3 text-yellow-400 fill-current" />
         <span className="text-gray-500">({reviews})</span>
       </div>
     </div>

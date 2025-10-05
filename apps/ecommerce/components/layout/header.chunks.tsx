@@ -38,7 +38,7 @@ export const Logo = ({ className }: LogoProps) => {
   return (
     <Link href="/" className={className}>
       <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-white">
-        Tallaby
+        <span className="text-accent">t</span>allaby
       </span>
     </Link>
   );
@@ -225,7 +225,7 @@ export const DesktopNavigation = ({ className }: DesktopNavigationProps) => {
     >
       <Logo />
 
-      <div className="flex-1 max-w-md lg:max-w-lg">
+      <div className="flex-1">
         <SearchBar variant="desktop" />
       </div>
 
@@ -239,9 +239,12 @@ export const DesktopNavigation = ({ className }: DesktopNavigationProps) => {
   );
 };
 
+import { usePathname } from "next/navigation";
+
 export const BottomNavigation = ({ className }: BottomNavigationProps) => {
   const { open: openAuthDialog } = useAuthDialog();
   const { user, isLoading } = useAuth();
+  const pathname = usePathname();
 
   return (
     <div
@@ -254,14 +257,38 @@ export const BottomNavigation = ({ className }: BottomNavigationProps) => {
         <nav className="grid grid-cols-4 py-3">
           {bottomNavigationItems.map((item) => {
             const IconComponent = item.icon;
+            // Determine if this tab is active
+            const isActive =
+              item.href === "/"
+                ? pathname === "/"
+                : pathname.startsWith(item.href);
+
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex flex-col items-center text-gray-600 hover:text-primary"
+                className={cn(
+                  "flex flex-col items-center text-gray-600 hover:text-primary transition-colors",
+                  isActive && "text-primary font-semibold"
+                )}
+                aria-current={isActive ? "page" : undefined}
               >
-                {IconComponent && <IconComponent className="size-5" />}
-                <span className="text-xs mt-1">{item.label}</span>
+                {IconComponent && (
+                  <IconComponent
+                    className={cn(
+                      "size-5",
+                      isActive && "text-primary"
+                    )}
+                  />
+                )}
+                <span
+                  className={cn(
+                    "text-xs mt-1",
+                    isActive && "text-primary"
+                  )}
+                >
+                  {item.label}
+                </span>
               </Link>
             );
           })}

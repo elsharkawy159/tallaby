@@ -35,7 +35,7 @@ const ProductsSorting: React.FC = () => {
 
   return (
     <Select value={currentSort} onValueChange={handleSortChange}>
-      <SelectTrigger className="w-[220px]">
+      <SelectTrigger className="md:w-[220px]">
         <SelectValue placeholder="Sort by" />
       </SelectTrigger>
       <SelectContent>

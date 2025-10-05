@@ -1,0 +1,40 @@
+{
+  "metadata": {
+    "title": "Tallaby.com – Your Everything Store",
+    "description": "Shop millions of products at Tallaby.com — from fashion and electronics to home, beauty, and more. Fast delivery, great prices, and trusted sellers.",
+    "keywords": "tallaby, online shopping, ecommerce, amazon alternative, buy online, electronics, fashion, beauty, home essentials",
+    "siteName": "Tallaby.com",
+    "ogDescription": "Discover endless shopping on Tallaby.com – electronics, fashion, home, beauty, and more. Worldwide delivery, secure checkout, and trusted sellers.",
+    "twitterDescription": "Tallaby.com brings you Amazon-like shopping with millions of products, great prices, and secure delivery."
+  },
+  "pages": {
+    "home": {
+      "title": "Tallaby.com – Your Everything Store",
+      "description": "Shop millions of products at Tallaby.com — from fashion and electronics to home, beauty, and more. Fast delivery, great prices, and trusted sellers."
+    },
+    "products": {
+      "title": "All Products | Shop Online | Tallaby.com",
+      "description": "Browse thousands of products across all categories on Tallaby.com. Find electronics, fashion, home essentials, beauty products and more with fast shipping."
+    },
+    "about": {
+      "title": "About Us | Tallaby.com",
+      "description": "Learn about Tallaby.com's mission to connect customers with quality products from trusted vendors worldwide. Discover our story, values, and commitment to exceptional service."
+    },
+    "contact": {
+      "title": "Contact Us | Tallaby.com",
+      "description": "Get in touch with Tallaby.com customer support. We're here to help with orders, products, returns, and any questions. Multiple contact methods available."
+    },
+    "auth": {
+      "title": "Sign In | Tallaby.com",
+      "description": "Sign in to your Tallaby.com account or create a new one to start shopping with us. Secure authentication for your e-commerce experience."
+    }
+  },
+  "product": {
+    "buyDescription": "Buy {title} from {brand} on Tallaby.com. {category} with {rating}. Fast shipping and secure checkout.",
+    "noRating": "great quality"
+  },
+  "category": {
+    "shopDescription": "Shop {category} products on Tallaby.com. {count} available with fast shipping and great prices.",
+    "wideSelection": "Wide selection"
+  }
+}

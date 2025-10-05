@@ -54,10 +54,10 @@ export default function CartSheet({ className }: CartSheetProps) {
 
   return (
     <>
-      {pathname !== "/cart" && pathname !== "/" && (
+      {pathname == "/products" && (
         <div
           className={cn(
-            "fixed right-0 top-0 h-full w-[130px] bg-background border-l border-border shadow-lg z-50 flex flex-col",
+            "fixed right-0 top-0 h-full w-[130px] bg-background border-l border-border shadow-lg z-50 md:flex hidden flex-col",
             className
           )}
         >

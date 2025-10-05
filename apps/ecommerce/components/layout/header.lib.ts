@@ -1,4 +1,4 @@
-import { Home, Compass, ShoppingCart } from "lucide-react";
+import { Home, Compass, ShoppingCart, Store } from "lucide-react";
 import type { NavigationItem } from "./header.types";
 
 export const navigationItems: NavigationItem[] = [
@@ -23,9 +23,9 @@ export const bottomNavigationItems: NavigationItem[] = [
     icon: Home,
   },
   {
-    href: "/explore",
-    label: "Explore",
-    icon: Compass,
+    href: "/products",
+    label: "Shopping",
+    icon: Store,
   },
   {
     href: "/cart",

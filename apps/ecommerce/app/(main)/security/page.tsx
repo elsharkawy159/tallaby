@@ -265,7 +265,7 @@ const Security = () => {
                 <CardContent className="space-y-4">
                   <div>
                     <p className="font-medium">Email:</p>
-                    <p className="text-gray-600">security@stylist.com</p>
+                    <p className="text-gray-600">security@tallaby.com</p>
                   </div>
                   <div>
                     <p className="font-medium">Phone:</p>

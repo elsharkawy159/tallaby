@@ -23,7 +23,7 @@ export default function CartClient() {
   return (
     <div className="min-h-screen flex flex-col">
       <DynamicBreadcrumb />
-      <main className="flex-1 container mx-auto py-1">
+      <main className="flex-1 container mx-auto py-1 pb-16">
         <h1 className="text-3xl font-bold mb-8">
           Shopping Cart ({itemCount} items)
         </h1>

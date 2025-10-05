@@ -22,6 +22,7 @@ import { Separator } from "@workspace/ui/components/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@workspace/ui/components/avatar";
 
 import { useAuth } from "@/providers/auth-provider";
+import { cn } from "@/lib/utils";
 
 interface UserMenuProps {
   variant?: "desktop" | "mobile";
@@ -55,14 +56,13 @@ export function UserMenu({ variant = "desktop", className }: UserMenuProps) {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className={`${
+        <button
+          className={cn("cursor-pointer",
             variant === "desktop"
               ? "text-white hover:text-gray-200"
-              : "text-gray-600 hover:text-primary p-0"
-          } ${className}`}
+              : "text-gray-600 hover:text-primary",
+            className
+          )}
           title={`Welcome, ${userName}`}
         >
           {avatarUrl ? (
@@ -74,7 +74,7 @@ export function UserMenu({ variant = "desktop", className }: UserMenuProps) {
           ) : (
             <User className="md:size-6 size-5" />
           )}
-        </Button>
+        </button>
       </PopoverTrigger>
 
       <PopoverContent className="w-64 p-0" align="end" sideOffset={8}>

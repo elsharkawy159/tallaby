@@ -11,6 +11,7 @@ import {
 import Link from "next/link";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
+import { Logo } from "./header.chunks";
 
 const Footer = () => {
   return (
@@ -28,9 +29,9 @@ const Footer = () => {
           {/* Brand Column */}
           <div className="lg:col-span-2">
             <div className="mb-6">
-              <h3 className="text-2xl font-bold mb-4 bg-gradient-to-r from-accent to-accent/50 bg-clip-text text-transparent">
-                Stylist
-              </h3>
+              <div className="mb-4">
+                <Logo />
+              </div>
               <p className="text-gray-300 text-sm leading-relaxed mb-6 max-w-sm">
                 Your ultimate destination for fashion-forward styles. We curate
                 the latest trends and timeless pieces to help you express your
@@ -50,7 +51,7 @@ const Footer = () => {
               </div>
               <div className="flex items-center gap-3">
                 <Mail className="h-4 w-4 text-accent flex-shrink-0" />
-                <span>hello@stylist.com</span>
+                <span>hello@tallaby.com</span>
               </div>
             </div>
           </div>
@@ -172,7 +173,7 @@ const Footer = () => {
         <div className="border-t border-gray-700 pt-8">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-gray-400 text-sm text-center sm:text-left">
-              © 2024 Stylist.com, Inc. All rights reserved.
+              © 2024 tallaby.com, Inc. All rights reserved.
             </p>
             <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 text-xs text-gray-400">
               <span>Made with ❤️ for fashion lovers</span>

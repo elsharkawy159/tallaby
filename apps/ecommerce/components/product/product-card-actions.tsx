@@ -72,7 +72,7 @@ export const ProductCardActions = ({
   if (isInCartStatus) {
     return (
       <div
-        className={`flex bg-accent h-8 w-[146.23px] items-center pr-5 text-white text-base absolute bottom-0 right-0 font-bold py-2.5 rounded-none [clip-path:polygon(17%_0,100%_0,100%_100%,0_100%,20_20%)] pl-10 ${className}`}
+        className={`flex bg-accent h-8 md:w-[146.23px] w-full items-center md:pr-5 justify-center text-white text-base md:absolute bottom-0 right-0 font-bold py-2.5 md:rounded-none rounded md:[clip-path:polygon(17%_0,100%_0,100%_100%,0_100%,20_20%)] md:pl-10 ${className}`}
       >
         <QuantitySelector
           productId={productId}
@@ -87,7 +87,7 @@ export const ProductCardActions = ({
   return (
     <AddToCartButton
       productId={productId}
-      className={`absolute text-sm bottom-0 right-0 min-w-[146.23px] font-bold py-2.5 rounded-none [clip-path:polygon(17%_0,100%_0,100%_100%,0_100%,20_20%)] pl-10 ${className}`}
+      className={`md:absolute text-sm bottom-0 right-0 md:min-w-[146.23px] md:w-auto font-bold w-full py-2.5 md:rounded-none rounded md:[clip-path:polygon(17%_0,100%_0,100%_100%,0_100%,20_20%)] md:pl-10 ${className}`}
       size="sm"
       variant="default"
       showIcon={false}

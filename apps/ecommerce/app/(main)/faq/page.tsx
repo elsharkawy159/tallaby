@@ -300,7 +300,7 @@ const FAQ = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-gray-600 mb-4">
-                    support@stylist.com
+                    support@tallaby.com
                   </p>
                   <Link href="/contact">
                     <Button variant="outline" className="w-full">

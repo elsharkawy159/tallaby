@@ -26,8 +26,9 @@ const page = async () => {
 
       <ProductSection
         title="🔥 Offers"
+        description="What Everyone's Talking About"
         filters={{
-          categoryId: "1f65b57b-fe85-4690-887b-39a778a55b99",
+          // categoryId: "1f65b57b-fe85-4690-887b-39a778a55b99",
           sortBy: "popular",
         }}
       />

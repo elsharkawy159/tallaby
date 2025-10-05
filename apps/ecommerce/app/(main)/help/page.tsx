@@ -140,7 +140,7 @@ const Help = () => {
       icon: Mail,
       title: "Email Support",
       description: "Send us a detailed message",
-      availability: "support@stylist.com",
+      availability: "support@tallaby.com",
       action: "Send Email",
     },
   ];

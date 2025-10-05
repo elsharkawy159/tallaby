@@ -1,8 +1,7 @@
 "use server";
 
-import { db } from "@workspace/db";
+import { db, eq, and } from "@workspace/db";
 import { orders, orderItems, userAddresses } from "@workspace/db";
-import { eq, and } from "drizzle-orm";
 import { getUser } from "@/actions/auth";
 import type { OrderConfirmationData } from "./order-confirmation.types";
 
