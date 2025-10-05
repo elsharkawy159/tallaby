@@ -1,8 +1,17 @@
-    
 // apps/ecommerce/actions/customer.ts
 "use server";
 
-import { db, users, userAddresses, paymentMethods, notifications, orders, eq, and, desc } from "@workspace/db";
+import {
+  db,
+  users,
+  userAddresses,
+  paymentMethods,
+  notifications,
+  orders,
+  eq,
+  and,
+  desc,
+} from "@workspace/db";
 import { getUser } from "./auth";
 
 export async function getCustomerProfile() {
@@ -39,7 +48,7 @@ export async function getCustomerProfile() {
 }
 
 export async function addAddress(data: {
-  addressType?: 'shipping' | 'billing' | 'both';
+  addressType?: "shipping" | "billing" | "both";
   fullName: string;
   phone: string;
   company?: string;
@@ -71,7 +80,7 @@ export async function addAddress(data: {
       .values({
         ...data,
         userId: user.user.id,
-        addressType: data.addressType || 'both',
+        addressType: data.addressType || "both",
         isDefault: data.isDefault || false,
       })
       .returning();
@@ -83,7 +92,10 @@ export async function addAddress(data: {
   }
 }
 
-export async function updateAddress(addressId: string, data: Partial<typeof userAddresses.$inferInsert>) {
+export async function updateAddress(
+  addressId: string,
+  data: Partial<typeof userAddresses.$inferInsert>
+) {
   try {
     const user = await getUser();
     if (!user) {
@@ -104,10 +116,12 @@ export async function updateAddress(addressId: string, data: Partial<typeof user
         ...data,
         updatedAt: new Date().toISOString(),
       })
-      .where(and(
-        eq(userAddresses.id, addressId),
-        eq(userAddresses.userId, user.user.id)
-      ))
+      .where(
+        and(
+          eq(userAddresses.id, addressId),
+          eq(userAddresses.userId, user.user.id)
+        )
+      )
       .returning();
 
     if (!updated) {
@@ -130,15 +144,53 @@ export async function deleteAddress(addressId: string) {
 
     await db
       .delete(userAddresses)
-      .where(and(
-        eq(userAddresses.id, addressId),
-        eq(userAddresses.userId, user.user.id)
-      ));
+      .where(
+        and(
+          eq(userAddresses.id, addressId),
+          eq(userAddresses.userId, user.user.id)
+        )
+      );
 
     return { success: true, message: "Address deleted" };
   } catch (error) {
     console.error("Error deleting address:", error);
     return { success: false, error: "Failed to delete address" };
+  }
+}
+
+export async function setDefaultAddress(addressId: string) {
+  try {
+    const user = await getUser();
+    if (!user) {
+      return { success: false, error: "Authentication required" };
+    }
+
+    // First, unset all other default addresses
+    await db
+      .update(userAddresses)
+      .set({ isDefault: false })
+      .where(eq(userAddresses.userId, user.user.id));
+
+    // Then set the specified address as default
+    const [updated] = await db
+      .update(userAddresses)
+      .set({ isDefault: true })
+      .where(
+        and(
+          eq(userAddresses.id, addressId),
+          eq(userAddresses.userId, user.user.id)
+        )
+      )
+      .returning();
+
+    if (!updated) {
+      return { success: false, error: "Address not found" };
+    }
+
+    return { success: true, data: updated, message: "Default address updated" };
+  } catch (error) {
+    console.error("Error setting default address:", error);
+    return { success: false, error: "Failed to set default address" };
   }
 }
 
@@ -162,7 +214,7 @@ export async function getAddresses() {
 }
 
 export async function addPaymentMethod(data: {
-  type: 'card' | 'wallet' | 'bank';
+  type: "card" | "wallet" | "bank";
   provider?: string;
   paymentData?: any;
   nickname?: string;
@@ -235,10 +287,12 @@ export async function markNotificationRead(notificationId: string) {
         isRead: true,
         readAt: new Date().toISOString(),
       })
-      .where(and(
-        eq(notifications.id, notificationId),
-        eq(notifications.userId, user.user.id)
-      ));
+      .where(
+        and(
+          eq(notifications.id, notificationId),
+          eq(notifications.userId, user.user.id)
+        )
+      );
 
     return { success: true };
   } catch (error) {

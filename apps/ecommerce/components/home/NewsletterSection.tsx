@@ -5,7 +5,7 @@ import { Mail } from "lucide-react";
 const NewsletterSection = () => {
   return (
     <section className="py-20 bg-gradient-to-r from-green-400 via-blue-500 to-purple-600">
-      <div className="container mx-auto px-4">
+      <div className="container">
         <div className="max-w-4xl mx-auto text-center text-white">
           <div className="bg-white/10 backdrop-blur-sm w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-8">
             <Mail className="h-10 w-10 text-white" />

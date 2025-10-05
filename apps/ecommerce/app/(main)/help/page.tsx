@@ -151,7 +151,7 @@ const Help = () => {
       <main className="flex-1">
         {/* Hero Section */}
         <section className="bg-gradient-to-br from-primary to-primary/80 text-white py-16">
-          <div className="container mx-auto px-4 text-center">
+          <div className="container text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
               How Can We Help You?
             </h1>
@@ -178,7 +178,7 @@ const Help = () => {
 
         {/* Popular Topics */}
         <section className="py-16">
-          <div className="container mx-auto px-4">
+          <div className="container">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold mb-4">Popular Help Topics</h2>
               <p className="text-gray-600">
@@ -217,7 +217,7 @@ const Help = () => {
 
         {/* FAQ Section */}
         <section className="py-16 bg-gray-50">
-          <div className="container mx-auto px-4">
+          <div className="container">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold mb-4">
                 Frequently Asked Questions
@@ -256,7 +256,7 @@ const Help = () => {
 
         {/* Contact Support */}
         <section className="py-16">
-          <div className="container mx-auto px-4">
+          <div className="container">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold mb-4">Still Need Help?</h2>
               <p className="text-gray-600">
@@ -291,7 +291,7 @@ const Help = () => {
 
         {/* Additional Resources */}
         <section className="py-16 bg-gray-50">
-          <div className="container mx-auto px-4">
+          <div className="container">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold mb-4">Additional Resources</h2>
               <p className="text-gray-600">

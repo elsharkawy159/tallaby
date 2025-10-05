@@ -116,7 +116,7 @@ const Security = () => {
       <main className="flex-1">
         {/* Hero Section */}
         <section className="bg-gradient-to-br from-primary to-primary/80 text-white py-16">
-          <div className="container mx-auto px-4 text-center">
+          <div className="container text-center">
             <div className="w-20 h-20 bg-accent rounded-full flex items-center justify-center mx-auto mb-6">
               <Shield className="h-10 w-10 text-black" />
             </div>
@@ -135,7 +135,7 @@ const Security = () => {
 
         {/* Security Features */}
         <section className="py-16">
-          <div className="container mx-auto px-4">
+          <div className="container">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold mb-4">How We Protect You</h2>
               <p className="text-gray-600">
@@ -166,7 +166,7 @@ const Security = () => {
 
         {/* Security Tips */}
         <section className="py-16 bg-gray-50">
-          <div className="container mx-auto px-4">
+          <div className="container">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold mb-4">Protect Your Account</h2>
               <p className="text-gray-600">
@@ -219,7 +219,7 @@ const Security = () => {
 
         {/* Certifications */}
         <section className="py-16">
-          <div className="container mx-auto px-4">
+          <div className="container">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold mb-4">
                 Security Certifications
@@ -245,7 +245,7 @@ const Security = () => {
 
         {/* Report Security Issues */}
         <section className="py-16 bg-gray-50">
-          <div className="container mx-auto px-4">
+          <div className="container">
             <div className="max-w-3xl mx-auto text-center">
               <h2 className="text-3xl font-bold mb-4">
                 Report Security Issues
@@ -285,7 +285,7 @@ const Security = () => {
 
         {/* CTA Section */}
         <section className="py-16 bg-primary text-white">
-          <div className="container mx-auto px-4 text-center">
+          <div className="container text-center">
             <h2 className="text-3xl font-bold mb-4">Stay Secure</h2>
             <p className="text-xl mb-8 max-w-2xl mx-auto">
               Keep your account safe by following security best practices and

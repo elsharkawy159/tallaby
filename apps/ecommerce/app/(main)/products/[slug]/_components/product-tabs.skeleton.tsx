@@ -3,7 +3,7 @@ import { Skeleton } from "@workspace/ui/components/skeleton";
 export const ProductTabsSkeleton = () => {
   return (
     <section className="bg-white py-8">
-      <div className="container mx-auto px-4">
+      <div className="container">
         {/* Tab Navigation Skeleton */}
         <div className="flex border-b border-gray-200 mb-8">
           {Array.from({ length: 3 }).map((_, i) => (

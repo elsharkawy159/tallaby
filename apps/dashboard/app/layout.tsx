@@ -8,7 +8,6 @@ import { Toaster } from "@workspace/ui/components/sonner";
 import { getSiteData } from "@/actions/site-data";
 import { SiteDataProvider } from "@/providers/site-data";
 
-
 const montserrat = Montserrat({
   subsets: ["latin"],
   variable: "--font-montserrat",
@@ -18,6 +17,14 @@ const montserrat = Montserrat({
 export const metadata: Metadata = {
   title: "Vendor Dashboard",
   description: "Vendor Dashboard",
+  robots: {
+    index: false,
+    follow: false,
+    googleBot: {
+      index: false,
+      follow: false,
+    },
+  },
 };
 
 export default async function RootLayout({
@@ -33,18 +40,18 @@ export default async function RootLayout({
       <body className={`${montserrat.variable} antialiased`}>
         {/* <QueryClientProvider client={queryClient}> */}
         <SiteDataProvider promise={getSiteData()}>
-        <NextIntlClientProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="light"
-            enableSystem
-            disableTransitionOnChange
-          >
-            {children}
-            <Toaster position="top-center" />
-          </ThemeProvider>
+          <NextIntlClientProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="light"
+              enableSystem
+              disableTransitionOnChange
+            >
+              {children}
+              <Toaster position="top-center" />
+            </ThemeProvider>
           </NextIntlClientProvider>
-          </SiteDataProvider>
+        </SiteDataProvider>
         {/* </QueryClientProvider> */}
       </body>
     </html>

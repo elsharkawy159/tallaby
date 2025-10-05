@@ -9,7 +9,8 @@
   "include": [
     ".",
     "../../apps/dashboard/components/inputs/image-upload.tsx",
-    "../../apps/ecommerce/components/address"
+    "../../apps/ecommerce/components/address",
+    "../../apps/ecommerce/components/review-items.tsx"
   ],
   "exclude": ["node_modules", "dist"]
 }

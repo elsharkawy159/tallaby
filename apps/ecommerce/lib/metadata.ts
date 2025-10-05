@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
+import { BASE_URL } from "./constants";
 
-const baseUrl = "https://www.tallaby.com";
 
 interface ProductMetadataProps {
   product: {
@@ -49,7 +49,7 @@ export function generateProductMetadata({
       : 0;
 
   const imageUrl = product.images?.[0] || "/og-image.jpg";
-  const productUrl = `${baseUrl}/products/${product.slug}`;
+  const productUrl = `${BASE_URL}/products/${product.slug}`;
 
   return {
     title,
@@ -96,7 +96,7 @@ export function generateCategoryMetadata({
     category.description ||
     `Shop ${category.name} products on Tallaby.com. ${category.productCount ? `${category.productCount}+ products` : "Wide selection"} available with fast shipping and great prices.`;
 
-  const categoryUrl = `${baseUrl}/products?category=${category.slug}`;
+  const categoryUrl = `${BASE_URL}/products?category=${category.slug}`;
 
   return {
     title,
@@ -155,7 +155,7 @@ export function generateHomeMetadata(): Metadata {
     openGraph: {
       type: "website",
       locale: "en_US",
-      url: baseUrl,
+      url: BASE_URL,
       siteName: "Tallaby.com",
       title: "Tallaby.com – Your Everything Store",
       description:
@@ -178,7 +178,7 @@ export function generateHomeMetadata(): Metadata {
       images: ["/og-image.jpg"],
     },
     alternates: {
-      canonical: baseUrl,
+      canonical: BASE_URL,
     },
   };
 }

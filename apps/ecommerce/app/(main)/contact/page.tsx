@@ -121,7 +121,7 @@ const Contact = () => {
       <main className="flex-1">
         {/* Hero Section */}
         <section className="bg-gray-50 py-12">
-          <div className="container mx-auto px-4 text-center">
+          <div className="container text-center">
             <h1 className="text-4xl font-bold mb-4">Get in Touch</h1>
             <p className="text-gray-600 text-lg max-w-2xl mx-auto">
               We're here to help! Reach out to us through any of the channels
@@ -132,7 +132,7 @@ const Contact = () => {
 
         {/* Contact Methods */}
         <section className="py-16">
-          <div className="container mx-auto px-4">
+          <div className="container">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
               {contactMethods.map((method, index) => (
                 <Card
@@ -282,7 +282,7 @@ const Contact = () => {
 
         {/* FAQ Section */}
         <section className="py-16 bg-gray-50">
-          <div className="container mx-auto px-4 text-center">
+          <div className="container text-center">
             <h2 className="text-2xl font-bold mb-4">
               Frequently Asked Questions
             </h2>

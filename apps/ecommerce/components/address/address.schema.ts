@@ -26,13 +26,7 @@ export const addressSchema = z
       .min(5, "Address line 1 must be at least 5 characters")
       .max(200, "Address line 1 must be less than 200 characters"),
 
-    addressLine2: z
-      .string()
-      .optional()
-      .refine((val) => !val || val.length >= 2, {
-        message: "Address line 2 must be at least 2 characters",
-      }),
-
+    addressLine2: z.string().optional(),
     city: z
       .string()
       .min(1, "City is required")
@@ -51,8 +45,7 @@ export const addressSchema = z
       .min(3, "Postal code must be at least 3 characters")
       .max(20, "Postal code must be less than 20 characters"),
 
-    country: z
-      .string().default("Egypt"),
+    country: z.string().default("Egypt"),
 
     isDefault: z.boolean().default(false),
     isBusinessAddress: z.boolean().default(false),

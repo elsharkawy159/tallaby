@@ -10,6 +10,8 @@ import {
   getUserWithSellerProfile,
 } from "@/actions/auth";
 import { createClient } from "@/supabase/client";
+import { transformSupabaseUser } from "@/app/(main)/profile/profile.lib";
+import type { SupabaseUser } from "@/app/(main)/profile/profile.types";
 
 interface SellerProfile {
   id: string;
@@ -56,7 +58,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryKey: ["userWithSeller"],
     queryFn: async () => {
       const result = await getUserWithSellerProfile();
-      return result.user ? result : null;
+      if (result.user) {
+        // Transform Supabase user to our internal structure
+        const transformedUser = transformSupabaseUser(
+          result.user as SupabaseUser
+        );
+        return {
+          user: transformedUser,
+          seller: result.seller,
+          error: result.error,
+        };
+      }
+      return null;
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
     enabled: !!user, // Only run if we have a basic user

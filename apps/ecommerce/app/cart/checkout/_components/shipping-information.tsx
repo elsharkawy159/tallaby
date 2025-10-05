@@ -13,12 +13,7 @@ import { MapPin, Check } from "lucide-react";
 import { toast } from "sonner";
 
 import type { AddressData } from "@/components/address/address.schema";
-import {
-  getAddresses,
-  updateAddress,
-  deleteAddress,
-} from "@/actions/customer";
-import { CheckoutAddressSelector } from "@/components/address/address-management";
+import { AddressSelectorDialog } from "@/components/shared/address-dialog";
 
 interface ShippingInformationProps {
   addresses: AddressData[];
@@ -52,16 +47,6 @@ export const ShippingInformation = ({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Address Selector */}
-        <CheckoutAddressSelector
-          userId={userId}
-          selectedAddressId={selectedAddress?.id}
-          onAddressSelect={handleAddressSelect}
-          getUserAddresses={getAddresses}
-          deleteAddress={deleteAddress}
-          setDefaultAddress={updateAddress as any}
-        />
-
         {/* Selected Address Display */}
         {selectedAddress && (
           <div className="space-y-4">
@@ -69,10 +54,6 @@ export const ShippingInformation = ({
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <h4 className="font-semibold text-sm">Selected Address</h4>
-                <Badge variant="secondary" className="gap-1">
-                  <Check className="h-3 w-3" />
-                  Active
-                </Badge>
               </div>
 
               <div className="p-4 bg-muted/50 rounded-lg space-y-2">
@@ -117,11 +98,25 @@ export const ShippingInformation = ({
                     </div>
                   </div>
                 )}
-
               </div>
             </div>
           </div>
         )}
+
+        {/* Address Selector */}
+        <AddressSelectorDialog
+          onAddressSelect={handleAddressSelect}
+          trigger={
+            <div className="w-full p-4 border-2 border-dashed border-muted-foreground/25 rounded-lg hover:border-primary/50 transition-colors cursor-pointer">
+              <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                <MapPin className="h-5 w-5" />
+                <span className="font-medium">
+                  {selectedAddress ? "Change Address" : "Select Address"}
+                </span>
+              </div>
+            </div>
+          }
+        />
 
         {/* No Address Selected State */}
         {!selectedAddress && addresses.length > 0 && (

@@ -18,11 +18,6 @@ import {
 import { Badge } from "@workspace/ui/components/badge";
 import { Progress } from "@workspace/ui/components/progress";
 import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@workspace/ui/components/avatar";
-import {
   Form,
   FormControl,
   FormDescription,
@@ -102,6 +97,7 @@ import { Input } from "@workspace/ui/components/input";
 import { Switch } from "@workspace/ui/components/switch";
 import { Select, SelectItem } from "@workspace/ui/components/select";
 import { useAuth } from "@/providers/auth-provider";
+import { UserAvatar } from "@/components/shared/user-avatar";
 
 // Profile Sidebar Component
 interface ProfileSidebarProps {
@@ -119,29 +115,23 @@ export function ProfileSidebar({ addresses }: ProfileSidebarProps) {
     addresses
   );
 
+  // Check if user is verified (handle both Supabase and transformed user structures)
+  const isVerified =
+    user?.email_confirmed_at ||
+    user?.user_metadata?.email_verified ||
+    user?.isVerified;
+
   return (
     <div className="space-y-6">
       {/* Profile Card */}
       <Card>
-        <CardContent className="p-6">
+        <CardContent>
           <div className="flex items-center space-x-4 mb-4">
-            <Avatar className="h-16 w-16">
-              <AvatarImage
-                src={user?.avatar || DEFAULT_AVATAR_URL}
-                alt={formatUserName(user)}
-              />
-              <AvatarFallback className="text-lg">
-                {formatUserName(user)
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")
-                  .toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+            <UserAvatar user={user} size="xl" className="h-16 w-16" />
             <div className="flex-1">
               <div className="flex items-center space-x-2">
                 <h3 className="font-semibold">{formatUserName(user)}</h3>
-                {user?.is_verified && (
+                {isVerified && (
                   <span title="Verified">
                     {/* Blue star icon for verified */}
                     <svg
@@ -254,18 +244,64 @@ export function ProfileForm() {
   const [isPending, startTransition] = useTransition();
 
   const user = userWithSeller?.user;
+
+  // Extract user data with proper fallbacks for both Supabase and transformed user structures
+  const getUserData = () => {
+    if (!user)
+      return {
+        firstName: "",
+        lastName: "",
+        phone: "",
+        timezone: "UTC",
+        preferredLanguage: "en",
+        defaultCurrency: "EGP",
+        receiveMarketingEmails: true,
+      };
+
+    // Handle Supabase user structure
+    if (user.user_metadata) {
+      const metadata = user.user_metadata;
+      const firstName =
+        metadata.firstName ||
+        (metadata.full_name ? metadata.full_name.split(" ")[0] : "") ||
+        (metadata.name ? metadata.name.split(" ")[0] : "");
+
+      const lastName =
+        metadata.lastName ||
+        (metadata.full_name
+          ? metadata.full_name.split(" ").slice(1).join(" ")
+          : "") ||
+        (metadata.name ? metadata.name.split(" ").slice(1).join(" ") : "");
+
+      return {
+        firstName: firstName || "",
+        lastName: lastName || "",
+        phone: user.phone || metadata.phone || "",
+        timezone: user.timezone || "UTC",
+        preferredLanguage: user.preferred_language || "en",
+        defaultCurrency: user.default_currency || "EGP",
+        receiveMarketingEmails: user.receive_marketing_emails ?? true,
+      };
+    }
+
+    // Handle transformed user structure
+    return {
+      firstName: user.firstName || "",
+      lastName: user.lastName || "",
+      phone: user.phone || "",
+      timezone: user.timezone || "UTC",
+      preferredLanguage: user.preferredLanguage || "en",
+      defaultCurrency: user.defaultCurrency || "EGP",
+      receiveMarketingEmails: user.receiveMarketingEmails ?? true,
+    };
+  };
+
+  const userData = getUserData();
+
   // Setup form with react-hook-form (always call hooks at the top)
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(profileFormSchema),
-    defaultValues: {
-      firstName: user?.first_name || "",
-      lastName: user?.last_name || "",
-      phone: user?.phone || "",
-      timezone: user?.timezone || "UTC",
-      preferredLanguage: user?.preferred_language || "en",
-      defaultCurrency: user?.default_currency || "EGP",
-      receiveMarketingEmails: user?.receive_marketing_emails ?? true,
-    },
+    defaultValues: userData,
   });
 
   // Return loading state if no user data (after all hooks are called)
@@ -790,12 +826,32 @@ export function SecurityForm() {
   const { userWithSeller } = useAuth();
   const [isPending, startTransition] = useTransition();
 
+  const user = userWithSeller?.user;
+
+  // Extract security-related user data with proper fallbacks
+  const getSecurityData = () => {
+    if (!user)
+      return {
+        hasTwoFactorAuth: false,
+        twoFactorMethod: "",
+      };
+
+    // Handle both Supabase and transformed user structures
+    return {
+      hasTwoFactorAuth:
+        user.has_two_factor_auth || user.hasTwoFactorAuth || false,
+      twoFactorMethod: user.two_factor_method || user.twoFactorMethod || "",
+    };
+  };
+
+  const securityData = getSecurityData();
+
   const form = useForm<SecurityFormData>({
     resolver: zodResolver(securityFormSchema),
     defaultValues: {
       ...securityFormDefaults,
-      hasTwoFactorAuth: userWithSeller?.user?.has_two_factor_auth,
-      twoFactorMethod: userWithSeller?.user?.two_factor_method || "",
+      hasTwoFactorAuth: securityData.hasTwoFactorAuth,
+      twoFactorMethod: securityData.twoFactorMethod,
     },
   });
 

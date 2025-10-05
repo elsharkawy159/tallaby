@@ -1,6 +1,7 @@
 export * from "./badge";
 export * from "./button";
 export * from "./dropdown-menu";
+export * from "./field";
 export * from "./sonner";
 export * from "./tabs";
 export * from "./textarea";
@@ -19,7 +20,6 @@ export * from "./context-menu";
 export * from "./dialog";
 export * from "./drawer";
 export * from "./dropdown-menu";
-export * from "./form";
 export * from "./hover-card";
 export * from "./input-otp";
 export * from "./input";

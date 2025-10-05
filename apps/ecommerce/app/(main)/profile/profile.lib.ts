@@ -1,4 +1,10 @@
-import { User, UserAddress, ProfileTabType, UserRole } from "./profile.types";
+import {
+  User,
+  UserAddress,
+  ProfileTabType,
+  UserRole,
+  SupabaseUser,
+} from "./profile.types";
 import {
   User as UserIcon,
   Package,
@@ -111,17 +117,163 @@ export const twoFactorMethodOptions = [
   { value: "backup_codes", label: "Backup Codes" },
 ];
 
+// User data transformation utilities
+export function transformSupabaseUser(supabaseUser: SupabaseUser): User {
+  const metadata = supabaseUser.user_metadata;
+
+  // Extract name from various possible fields
+  const firstName =
+    metadata.firstName ||
+    (metadata.full_name ? metadata.full_name.split(" ")[0] : "") ||
+    (metadata.name ? metadata.name.split(" ")[0] : "");
+
+  const lastName =
+    metadata.lastName ||
+    (metadata.full_name
+      ? metadata.full_name.split(" ").slice(1).join(" ")
+      : "") ||
+    (metadata.name ? metadata.name.split(" ").slice(1).join(" ") : "");
+
+  const fullName =
+    metadata.fullName ||
+    metadata.full_name ||
+    metadata.name ||
+    `${firstName} ${lastName}`.trim();
+
+  // Get avatar with fallback priority
+  const avatar = getUserAvatar(supabaseUser);
+
+  return {
+    id: supabaseUser.id,
+    email: supabaseUser.email,
+    firstName: firstName || "",
+    lastName: lastName || "",
+    fullName: fullName || supabaseUser.email,
+    phone: supabaseUser.phone || null,
+    role: "customer" as UserRole, // Default role, can be updated from database
+    avatar,
+    isVerified: !!supabaseUser.email_confirmed_at || !!metadata.email_verified,
+    isSuspended: false, // Default value
+    lastLoginAt: supabaseUser.last_sign_in_at || null,
+    timezone: "UTC", // Default timezone
+    preferredLanguage: "en", // Default language
+    referralCode: null,
+    referredBy: null,
+    defaultCurrency: "EGP", // Default currency
+    receiveMarketingEmails: true, // Default preference
+    hasTwoFactorAuth: false, // Default value
+    twoFactorMethod: null,
+    createdAt: supabaseUser.created_at,
+    updatedAt: supabaseUser.updated_at,
+  };
+}
+
+export function getUserAvatar(user: SupabaseUser | any): string | null {
+  if (!user) return null;
+
+  // For Supabase user structure
+  if (user.user_metadata) {
+    // Priority order for avatar sources
+    const avatarSources = [
+      user.user_metadata.avatar_url,
+      user.user_metadata.picture,
+      user.avatar, // Direct avatar field if exists
+    ];
+
+    for (const avatar of avatarSources) {
+      if (avatar && typeof avatar === "string" && avatar.trim()) {
+        return avatar;
+      }
+    }
+  }
+
+  // For transformed user structure
+  if (user.avatar && typeof user.avatar === "string" && user.avatar.trim()) {
+    return user.avatar;
+  }
+
+  return null;
+}
+
+export function getUserInitials(user: SupabaseUser | any): string {
+  if (!user) return "U";
+
+  let firstName = "";
+  let lastName = "";
+
+  // For Supabase user structure
+  if (user.user_metadata) {
+    firstName =
+      user.user_metadata.firstName ||
+      (user.user_metadata.full_name
+        ? user.user_metadata.full_name.split(" ")[0]
+        : "") ||
+      (user.user_metadata.name ? user.user_metadata.name.split(" ")[0] : "");
+
+    lastName =
+      user.user_metadata.lastName ||
+      (user.user_metadata.full_name
+        ? user.user_metadata.full_name.split(" ").slice(1).join(" ")
+        : "") ||
+      (user.user_metadata.name
+        ? user.user_metadata.name.split(" ").slice(1).join(" ")
+        : "");
+  } else {
+    // For transformed user structure
+    firstName = user.firstName || "";
+    lastName = user.lastName || "";
+  }
+
+  // Generate initials
+  const firstInitial = firstName.charAt(0).toUpperCase();
+  const lastInitial = lastName.charAt(0).toUpperCase();
+
+  if (firstInitial && lastInitial) {
+    return firstInitial + lastInitial;
+  } else if (firstInitial) {
+    return firstInitial;
+  } else if (user.email) {
+    return user.email.charAt(0).toUpperCase();
+  }
+
+  return "U";
+}
+
 // Utility functions
 export function formatUserName(user: any): string {
-  if (user?.full_name && user.full_name.trim()) {
-    return user.full_name;
+  if (!user) return "";
+
+  // For Supabase user structure
+  if (user.user_metadata) {
+    const metadata = user.user_metadata;
+
+    if (metadata.fullName && metadata.fullName.trim()) {
+      return metadata.fullName;
+    }
+
+    if (metadata.full_name && metadata.full_name.trim()) {
+      return metadata.full_name;
+    }
+
+    if (metadata.name && metadata.name.trim()) {
+      return metadata.name;
+    }
+
+    if (metadata.firstName || metadata.lastName) {
+      return `${metadata.firstName || ""} ${metadata.lastName || ""}`.trim();
+    }
   }
 
-  if (user?.first_name || user?.last_name) {
-    return `${user.first_name || ""} ${user.last_name || ""}`.trim();
+  // For transformed user structure
+  if (user.fullName && user.fullName.trim()) {
+    return user.fullName;
   }
 
-  return user?.email || "";
+  if (user.firstName || user.lastName) {
+    return `${user.firstName || ""} ${user.lastName || ""}`.trim();
+  }
+
+  return user.email || "";
 }
 
 export function formatAddress(address: UserAddress): string {
@@ -297,6 +449,30 @@ export const PROFILE_LIMITS = {
 // Default user avatar URL
 export const DEFAULT_AVATAR_URL = "/api/avatar/default";
 
+// Avatar fallback component props
+export interface AvatarFallbackProps {
+  user: SupabaseUser | any;
+  className?: string;
+  size?: "sm" | "md" | "lg" | "xl";
+}
+
+// Get avatar with proper fallback handling
+export function getAvatarWithFallback(user: SupabaseUser | any): {
+  src: string | null;
+  fallback: string;
+  alt: string;
+} {
+  const avatar = getUserAvatar(user);
+  const initials = getUserInitials(user);
+  const name = formatUserName(user);
+
+  return {
+    src: avatar,
+    fallback: initials,
+    alt: name || "User Avatar",
+  };
+}
+
 // Profile completion calculation
 export function calculateProfileCompletion(
   user: any,
@@ -305,11 +481,42 @@ export function calculateProfileCompletion(
   percentage: number;
   missingFields: string[];
 } {
+  // Handle both Supabase user structure and transformed user structure
+  let firstName = "";
+  let lastName = "";
+  let phone = "";
+  let avatar = "";
+
+  if (user?.user_metadata) {
+    // Supabase user structure
+    const metadata = user.user_metadata;
+    firstName =
+      metadata.firstName ||
+      (metadata.full_name ? metadata.full_name.split(" ")[0] : "") ||
+      (metadata.name ? metadata.name.split(" ")[0] : "");
+
+    lastName =
+      metadata.lastName ||
+      (metadata.full_name
+        ? metadata.full_name.split(" ").slice(1).join(" ")
+        : "") ||
+      (metadata.name ? metadata.name.split(" ").slice(1).join(" ") : "");
+
+    phone = user?.phone || "";
+    avatar = getUserAvatar(user) || "";
+  } else {
+    // Transformed user structure
+    firstName = user?.firstName || "";
+    lastName = user?.lastName || "";
+    phone = user?.phone || "";
+    avatar = user?.avatar || "";
+  }
+
   const requiredFields = [
-    { field: "first_name", label: "First Name", value: user?.first_name },
-    { field: "last_name", label: "Last Name", value: user?.last_name },
-    { field: "phone", label: "Phone Number", value: user?.phone },
-    { field: "avatar", label: "Profile Picture", value: user?.avatar },
+    { field: "firstName", label: "First Name", value: firstName },
+    { field: "lastName", label: "Last Name", value: lastName },
+    { field: "phone", label: "Phone Number", value: phone },
+    { field: "avatar", label: "Profile Picture", value: avatar },
     { field: "address", label: "Address", value: addresses.length > 0 },
   ];
 

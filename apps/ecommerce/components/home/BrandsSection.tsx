@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 // import { supabase } from "@/integrations/supabase/client";
 
@@ -30,19 +29,55 @@ const BrandsSection = () => {
 
   // Fallback brands if none in database
   const fallbackBrands = [
-    { id: '1', name: 'Nike', logo_url: 'https://logos-world.net/wp-content/uploads/2020/04/Nike-Logo.png', description: 'Athletic footwear and apparel' },
-    { id: '2', name: 'Apple', logo_url: 'https://logoeps.com/wp-content/uploads/2013/03/apple-vector-logo.png', description: 'Technology and electronics' },
-    { id: '3', name: 'Samsung', logo_url: 'https://logos-world.net/wp-content/uploads/2020/04/Samsung-Logo.png', description: 'Electronics and technology' },
-    { id: '4', name: 'Adidas', logo_url: 'https://logoeps.com/wp-content/uploads/2014/05/adidas-vector-logo.png', description: 'Sports apparel and footwear' },
-    { id: '5', name: 'Sony', logo_url: 'https://logos-world.net/wp-content/uploads/2020/04/Sony-Logo.png', description: 'Electronics and entertainment' },
-    { id: '6', name: 'LG', logo_url: 'https://logos-world.net/wp-content/uploads/2020/04/LG-Logo.png', description: 'Home appliances and electronics' },
+    {
+      id: "1",
+      name: "Nike",
+      logo_url:
+        "https://logos-world.net/wp-content/uploads/2020/04/Nike-Logo.png",
+      description: "Athletic footwear and apparel",
+    },
+    {
+      id: "2",
+      name: "Apple",
+      logo_url:
+        "https://logoeps.com/wp-content/uploads/2013/03/apple-vector-logo.png",
+      description: "Technology and electronics",
+    },
+    {
+      id: "3",
+      name: "Samsung",
+      logo_url:
+        "https://logos-world.net/wp-content/uploads/2020/04/Samsung-Logo.png",
+      description: "Electronics and technology",
+    },
+    {
+      id: "4",
+      name: "Adidas",
+      logo_url:
+        "https://logoeps.com/wp-content/uploads/2014/05/adidas-vector-logo.png",
+      description: "Sports apparel and footwear",
+    },
+    {
+      id: "5",
+      name: "Sony",
+      logo_url:
+        "https://logos-world.net/wp-content/uploads/2020/04/Sony-Logo.png",
+      description: "Electronics and entertainment",
+    },
+    {
+      id: "6",
+      name: "LG",
+      logo_url:
+        "https://logos-world.net/wp-content/uploads/2020/04/LG-Logo.png",
+      description: "Home appliances and electronics",
+    },
   ];
 
   const displayBrands = brands.length > 0 ? brands : fallbackBrands;
 
   return (
     <section className="py-16 bg-gray-50">
-      <div className="container mx-auto px-4">
+      <div className="container">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
             Trusted Brands
@@ -67,7 +102,9 @@ const BrandsSection = () => {
                   />
                 ) : (
                   <div className="h-12 w-16 bg-gray-200 rounded mx-auto mb-2 flex items-center justify-center">
-                    <span className="text-xs font-medium text-gray-600">{brand.name}</span>
+                    <span className="text-xs font-medium text-gray-600">
+                      {brand.name}
+                    </span>
                   </div>
                 )}
                 <h3 className="font-medium text-gray-900 group-hover:text-primary transition-colors">

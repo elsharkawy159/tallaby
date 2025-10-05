@@ -10,6 +10,8 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { usePathname } from "next/navigation";
+import { useLocale } from "next-intl";
+import { formatPrice } from "@workspace/lib";
 import Link from "next/link";
 
 interface CartSheetProps {
@@ -29,20 +31,14 @@ export default function CartSheet({ className }: CartSheetProps) {
 
   const [isVisible, setIsVisible] = useState(false);
   const pathname = usePathname();
+  const locale = useLocale();
+
   // Show cart sheet when there are items
   useEffect(() => {
     setIsVisible(cartItems.length > 0);
   }, [cartItems.length]);
 
   if (!isVisible) return null;
-
-  const formatPrice = (price: string | number) => {
-    const numPrice = typeof price === "string" ? parseFloat(price) : price;
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "EGP",
-    }).format(numPrice);
-  };
 
   const handleQuantityChange = async (itemId: string, newQuantity: number) => {
     if (newQuantity <= 0) {
@@ -112,9 +108,17 @@ export default function CartSheet({ className }: CartSheetProps) {
                     >
                       {item.product.title}
                     </h4>
-                    <p className="text-xs text-muted-foreground">
-                      {formatPrice(item.price)}
-                    </p>
+                    <p
+                      className="text-xs text-muted-foreground"
+                      dangerouslySetInnerHTML={{
+                        __html: formatPrice(
+                          typeof item.price === "string"
+                            ? parseFloat(item.price)
+                            : item.price,
+                          locale
+                        ),
+                      }}
+                    />
                   </div>
 
                   {/* Quantity Controls */}
@@ -172,7 +176,12 @@ export default function CartSheet({ className }: CartSheetProps) {
           <div className="border-t border-border bg-muted/50 p-3 space-y-2">
             <div className="flex items-center flex-col justify-between text-sm">
               <span className="font-medium">Total</span>
-              <span className="font-bold">{formatPrice(subtotal)}</span>
+              <span
+                className="font-bold"
+                dangerouslySetInnerHTML={{
+                  __html: formatPrice(subtotal, locale),
+                }}
+              />
             </div>
             <Button size="sm" className="w-full text-xs h-8">
               <Link href="/cart">View Cart</Link>

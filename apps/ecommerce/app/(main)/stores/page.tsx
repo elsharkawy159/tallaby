@@ -63,7 +63,7 @@ const Stores = () => {
       <main className="flex-1">
         {/* Hero Section */}
         <section className="bg-gradient-to-br from-primary to-primary/80 text-white py-16">
-          <div className="container mx-auto px-4 text-center">
+          <div className="container text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
               Find Our Stores
             </h1>
@@ -91,7 +91,7 @@ const Stores = () => {
 
         {/* Store Listings */}
         <section className="py-16">
-          <div className="container mx-auto px-4">
+          <div className="container">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold mb-4">Our Locations</h2>
               <p className="text-gray-600">
@@ -170,7 +170,7 @@ const Stores = () => {
 
         {/* Services Section */}
         <section className="py-16 bg-gray-50">
-          <div className="container mx-auto px-4">
+          <div className="container">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold mb-4">In-Store Services</h2>
               <p className="text-gray-600">
@@ -224,7 +224,7 @@ const Stores = () => {
 
         {/* CTA Section */}
         <section className="py-16 bg-primary text-white">
-          <div className="container mx-auto px-4 text-center">
+          <div className="container text-center">
             <h2 className="text-3xl font-bold mb-4">Visit Us Today</h2>
             <p className="text-xl mb-8 max-w-2xl mx-auto">
               Experience our premium shopping environment and exceptional

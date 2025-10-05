@@ -4,6 +4,14 @@
 import { db, carts, cartItems, products, eq, and, desc } from "@workspace/db";
 import { getUser } from "./auth";
 
+type ProductPrice = {
+  base: number;
+  list: number;
+  final: number;
+  discountType: string;
+  discountValue: number;
+};
+
 async function ensureCart() {
   const user = await getUser();
   if (!user) return null;
@@ -33,13 +41,31 @@ export async function getCartItems() {
     orderBy: [desc(cartItems.createdAt)],
   });
 
-  const subtotal = items.reduce(
+  // Fix prices for items that have incorrect prices (0.00)
+  const itemsWithFixedPrices = items.map((item) => {
+    const productPrice = item.product?.price as ProductPrice | undefined;
+    if (Number(item.price) === 0 && productPrice?.final) {
+      return {
+        ...item,
+        price: Number(productPrice.final).toString(),
+      };
+    }
+    return item;
+  });
+
+  const subtotal = itemsWithFixedPrices.reduce(
     (sum, i) => sum + Number(i.price) * i.quantity,
     0
   );
-  const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
+  const itemCount = itemsWithFixedPrices.reduce(
+    (sum, i) => sum + i.quantity,
+    0
+  );
 
-  return { success: true, data: { cart, items, subtotal, itemCount } };
+  return {
+    success: true,
+    data: { cart, items: itemsWithFixedPrices, subtotal, itemCount },
+  };
 }
 
 export async function addToCart(productId: string, quantity = 1) {
@@ -76,7 +102,7 @@ export async function addToCart(productId: string, quantity = 1) {
           productId,
           sellerId: product.sellerId,
           quantity,
-          price: Number(product.price) || 0,
+          price: Number((product.price as ProductPrice)?.final) || 0,
         } as any)
         .returning();
 

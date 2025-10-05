@@ -1,9 +1,21 @@
 "use server";
 
 import { db } from "@workspace/db";
-import { carts, cartItems, userAddresses, paymentMethods, eq, and, sql, gte, lte, desc } from "@workspace/db";
+import {
+  carts,
+  cartItems,
+  userAddresses,
+  paymentMethods,
+  eq,
+  and,
+  sql,
+  gte,
+  lte,
+  desc,
+} from "@workspace/db";
 import { getUser } from "./auth";
 import { validateCoupon } from "./coupons";
+import { roundPrice } from "@workspace/lib/src/utils/formatPrice";
 
 export async function getCheckoutData() {
   try {
@@ -63,7 +75,7 @@ export async function getCheckoutData() {
           };
         }
         acc[sellerId].items.push(item);
-        acc[sellerId].subtotal += Number(item.price) * item.quantity;
+        acc[sellerId].subtotal += roundPrice(Number(item.price) * item.quantity);
         return acc;
       },
       {} as Record<string, any>
@@ -71,11 +83,11 @@ export async function getCheckoutData() {
 
     // Calculate totals
     const subtotal = cart.cartItems.reduce(
-      (sum, item) => sum + Number(item.price) * item.quantity,
+      (sum, item) => sum + roundPrice(Number(item.price) * item.quantity),
       0
     );
 
-    const tax = subtotal * 0.14; // 14% tax
+    const tax = 0;
     const shippingCost = Object.keys(itemsBySeller).length * 25; // Flat rate per seller
     const total = subtotal + tax + shippingCost;
 

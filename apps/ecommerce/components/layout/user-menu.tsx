@@ -10,6 +10,7 @@ import {
   Store,
   UserCircle,
   Package,
+  MapPin,
 } from "lucide-react";
 
 import {
@@ -19,10 +20,16 @@ import {
 } from "@workspace/ui/components/popover";
 import { Button } from "@workspace/ui/components/button";
 import { Separator } from "@workspace/ui/components/separator";
-import { Avatar, AvatarFallback, AvatarImage } from "@workspace/ui/components/avatar";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@workspace/ui/components/avatar";
 
 import { useAuth } from "@/providers/auth-provider";
 import { cn } from "@/lib/utils";
+import { AddressManagerDialog } from "@/components/shared/address-dialog";
+import type { AddressData } from "@/components/address/address.schema";
 
 interface UserMenuProps {
   variant?: "desktop" | "mobile";
@@ -57,7 +64,8 @@ export function UserMenu({ variant = "desktop", className }: UserMenuProps) {
     <Popover>
       <PopoverTrigger asChild>
         <button
-          className={cn("cursor-pointer",
+          className={cn(
+            "cursor-pointer",
             variant === "desktop"
               ? "text-white hover:text-gray-200"
               : "text-gray-600 hover:text-primary",
@@ -129,6 +137,18 @@ export function UserMenu({ variant = "desktop", className }: UserMenuProps) {
               <Heart className="size-4.5 text-gray-500" />
               Wishlist
             </Link>
+
+            <AddressManagerDialog
+              onSuccess={(address: AddressData) => {
+                console.log("Address saved:", address);
+              }}
+              trigger={
+                <div className="w-full justify-start h-9 px-3 gap-2.5 font-medium flex items-center hover:bg-gray-100 rounded-md cursor-pointer">
+                  <MapPin className="size-4.5 text-gray-500" />
+                  Manage Addresses
+                </div>
+              }
+            />
           </div>
 
           {/* Seller Dashboard - Only show if user is a seller */}

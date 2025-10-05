@@ -11,13 +11,16 @@ import {
   CardTitle,
 } from "@workspace/ui/components/card";
 import { Skeleton } from "@workspace/ui/components/skeleton";
-import { ProfileSidebar, AddressCard, AddressForm } from "../profile.chunks";
+import { ProfileSidebar } from "../profile.chunks";
 import { getUserAddresses } from "../profile.server";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, MapPin } from "lucide-react";
 import Link from "next/link";
 import type { UserAddress } from "../profile.types";
+import { AddressManagerDialog } from "@/components/shared/address-dialog";
+import type { AddressData } from "@/components/address/address.schema";
+import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 
 // Loading component for addresses
 function AddressesLoading() {
@@ -54,16 +57,24 @@ function AddressesLoading() {
 // Add Address Button Component
 function AddAddressButton({
   variant = "default",
+  onSuccess,
 }: {
   variant?: "default" | "outline";
+  onSuccess: () => void;
 }) {
   return (
-    <Button variant={variant} asChild>
-      <Link href="/profile/addresses/new">
-        <Plus className="h-4 w-4 mr-2" />
-        Add Address
-      </Link>
-    </Button>
+    <AddressManagerDialog
+      onSuccess={(address: AddressData) => {
+        console.log("Address added:", address);
+        onSuccess();
+      }}
+      trigger={
+        <Button variant={variant}>
+          <Plus className="h-4 w-4 mr-2" />
+          Add Address
+        </Button>
+      }
+    />
   );
 }
 
@@ -74,20 +85,20 @@ export default function AddressesPage() {
   const [loadingAddresses, setLoadingAddresses] = useState(true);
 
   // Fetch addresses when user is available
-  useEffect(() => {
-    async function fetchAddresses() {
-      if (userWithSeller?.user) {
-        try {
-          const userAddresses = await getUserAddresses();
-          setAddresses(userAddresses);
-        } catch (error) {
-          console.error("Error fetching addresses:", error);
-        } finally {
-          setLoadingAddresses(false);
-        }
+  const fetchAddresses = async () => {
+    if (userWithSeller?.user) {
+      try {
+        const userAddresses = await getUserAddresses();
+        setAddresses(userAddresses);
+      } catch (error) {
+        console.error("Error fetching addresses:", error);
+      } finally {
+        setLoadingAddresses(false);
       }
     }
+  };
 
+  useEffect(() => {
     fetchAddresses();
   }, [userWithSeller?.user]);
 
@@ -95,18 +106,8 @@ export default function AddressesPage() {
   if (isLoadingUserWithSeller || loadingAddresses) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <Toaster />
-        <main className="container mx-auto px-4 py-8">
-          <nav className="text-sm text-gray-600 mb-6">
-            <Link href="/" className="hover:text-primary">
-              Home
-            </Link>{" "}
-            /
-            <Link href="/profile" className="hover:text-primary">
-              My Account
-            </Link>{" "}
-            /<span className="text-primary font-medium"> Addresses</span>
-          </nav>
+        <DynamicBreadcrumb />
+        <main className="container py-8">
           <AddressesLoading />
         </main>
       </div>
@@ -119,20 +120,9 @@ export default function AddressesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <Toaster />
-      <main className="container mx-auto px-4 py-8">
-        {/* Breadcrumb */}
-        <nav className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-          <Link href="/" className="hover:text-primary">
-            Home
-          </Link>{" "}
-          /
-          <Link href="/profile" className="hover:text-primary">
-            My Account
-          </Link>{" "}
-          /<span className="text-primary font-medium"> Addresses</span>
-        </nav>
+    <div className="min-h-screen">
+      <DynamicBreadcrumb />
+      <main className="container pb-10">
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar */}
@@ -152,7 +142,7 @@ export default function AddressesPage() {
                       Manage your shipping and billing addresses
                     </CardDescription>
                   </div>
-                  <AddAddressButton />
+                  <AddAddressButton onSuccess={fetchAddresses} />
                 </div>
               </CardHeader>
             </Card>
@@ -161,21 +151,38 @@ export default function AddressesPage() {
             {addresses.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {addresses.map((address) => (
-                  <AddressCard
+                  <AddressManagerDialog
                     key={address.id}
-                    address={address}
-                    onEdit={(addr) => {
-                      // Handle edit - this would open a modal or navigate to edit page
-                      console.log("Edit address:", addr);
+                    onSuccess={(updatedAddress: AddressData) => {
+                      console.log("Address updated:", updatedAddress);
+                      fetchAddresses();
                     }}
-                    onDelete={(addressId) => {
-                      // Handle delete - this is already implemented in AddressCard
-                      console.log("Delete address:", addressId);
-                      // Refresh addresses after delete
-                      setAddresses(
-                        addresses.filter((addr) => addr.id !== addressId)
-                      );
-                    }}
+                    trigger={
+                      <Card className="cursor-pointer hover:shadow-md transition-shadow">
+                        <CardContent>
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <h4 className="font-semibold">
+                                {address.fullName}
+                              </h4>
+                              <MapPin className="h-4 w-4 text-muted-foreground" />
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              {address.phone}
+                            </p>
+                            <p className="text-sm">
+                              {address.addressLine1}, {address.city},{" "}
+                              {address.state}
+                            </p>
+                            {address.isDefault && (
+                              <span className="inline-block px-2 py-1 text-xs bg-primary text-primary-foreground rounded">
+                                Default
+                              </span>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    }
                   />
                 ))}
               </div>
@@ -194,7 +201,7 @@ export default function AddressesPage() {
                         Add your first delivery address to start shopping
                       </p>
                     </div>
-                    <AddAddressButton />
+                    <AddAddressButton onSuccess={fetchAddresses} />
                   </div>
                 </CardContent>
               </Card>
@@ -208,7 +215,10 @@ export default function AddressesPage() {
                     <p className="text-sm text-muted-foreground">
                       Need another address? You can add up to 10 addresses.
                     </p>
-                    <AddAddressButton variant="outline" />
+                    <AddAddressButton
+                      variant="outline"
+                      onSuccess={fetchAddresses}
+                    />
                   </div>
                 </CardContent>
               </Card>

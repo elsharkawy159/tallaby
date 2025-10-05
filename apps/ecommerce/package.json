@@ -42,6 +42,7 @@
     "zustand": "^5.0.2"
   },
   "devDependencies": {
+    "@types/leaflet": "^1.9.20",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

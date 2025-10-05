@@ -123,7 +123,7 @@ export const ProductTabs = ({ product }: ProductTabsProps) => {
 
   return (
     <section className="bg-white py-6 lg:py-8">
-      <div className="container mx-auto px-4">
+      <div className="container">
         {/* Tab Navigation */}
         <div className="flex border-b border-gray-200 mb-6 lg:mb-8 overflow-x-auto">
           {[

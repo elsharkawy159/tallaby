@@ -69,7 +69,7 @@ export const HeroSection = () => {
 
   return (
     <section className="bg-gradient-to-br from-primary to-primary/80 text-white py-12 md:py-16 lg:py-20">
-      <div className="container mx-auto px-4">
+      <div className="container">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           <div className="text-center lg:text-left">
             <Badge className="bg-accent text-black mb-4">Partner with Us</Badge>
@@ -126,7 +126,7 @@ export const HeroSection = () => {
 export const StatsSection = ({ stats }: StatsSectionProps) => {
   return (
     <section className="py-16 bg-gray-50">
-      <div className="container mx-auto px-4">
+      <div className="container">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {stats.map((stat, index) => (
             <div key={index} className="text-center">
@@ -149,7 +149,7 @@ export const StatsSection = ({ stats }: StatsSectionProps) => {
 export const BenefitsSection = ({ benefits }: BenefitsSectionProps) => {
   return (
     <section id="benefits-section" className="py-20">
-      <div className="container mx-auto px-4">
+      <div className="container">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Why Choose Our Platform?
@@ -182,7 +182,7 @@ export const BenefitsSection = ({ benefits }: BenefitsSectionProps) => {
 export const PricingSection = ({ plans }: PricingSectionProps) => {
   return (
     <section className="py-20 bg-gray-50">
-      <div className="container mx-auto px-4">
+      <div className="container">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Choose Your Plan
@@ -242,7 +242,7 @@ export const TestimonialsSection = ({
 }: TestimonialsSectionProps) => {
   return (
     <section className="py-20">
-      <div className="container mx-auto px-4">
+      <div className="container">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Success Stories
@@ -352,7 +352,7 @@ export const ApplicationFormSection = ({ user }: any) => {
 
   return (
     <section id="become-seller-section" className="py-20 bg-gray-50">
-      <div className="container mx-auto px-4">
+      <div className="container">
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">

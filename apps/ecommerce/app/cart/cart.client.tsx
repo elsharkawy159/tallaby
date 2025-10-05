@@ -8,6 +8,8 @@ import { Minus, Plus, ArrowLeft, Loader2, Trash2 } from "lucide-react";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import { useCart } from "@/providers/cart-provider";
+import { useLocale } from "next-intl";
+import { formatPrice } from "@workspace/lib";
 
 export default function CartClient() {
   const {
@@ -20,10 +22,12 @@ export default function CartClient() {
     isItemLoading,
     isProductLoading,
   } = useCart();
+  const locale = useLocale();
+
   return (
     <div className="min-h-screen flex flex-col">
       <DynamicBreadcrumb />
-      <main className="flex-1 container mx-auto py-1 pb-16">
+      <main className="flex-1 container pb-12">
         <h1 className="text-3xl font-bold mb-8">
           Shopping Cart ({itemCount} items)
         </h1>
@@ -97,19 +101,13 @@ export default function CartClient() {
 
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                       <div className="flex items-center space-x-2">
-                        <span className="font-bold text-lg">
-                          {unit.toFixed(2)}
-                          {cartData?.cart?.currency
-                            ? ` ${cartData.cart.currency}`
-                            : "EGP"}
-                        </span>
-                        {p.price?.list &&
-                        p.price?.final &&
-                        p.price.final < p.price.list ? (
-                          <span className="text-sm text-gray-500 line-through">
-                            {Number(p.price.list).toFixed(2)}
-                          </span>
-                        ) : null}
+                        <span
+                          className="font-bold text-lg"
+                          dangerouslySetInnerHTML={{
+                            __html: formatPrice(unit, locale),
+                          }}
+                        />
+                        {/* Price comparison logic can be added here if needed */}
                       </div>
                       <div className="flex items-center flex-col gap-4">
                         <div className="flex items-center border rounded-md h-10">
@@ -144,12 +142,12 @@ export default function CartClient() {
                             <Plus className="h-4 w-4" />
                           </Button>
                         </div>
-                        <span className="font-medium">
-                          {lineTotal.toFixed(2)}
-                          {cartData?.cart?.currency
-                            ? ` ${cartData.cart.currency}`
-                            : "$"}
-                        </span>
+                        <span
+                          className="font-medium"
+                          dangerouslySetInnerHTML={{
+                            __html: formatPrice(lineTotal, locale),
+                          }}
+                        />
                       </div>
                     </div>
                   </div>
@@ -178,18 +176,18 @@ export default function CartClient() {
                       <tr key={item.id} className="border-b last:border-b-0">
                         <td className="py-2 truncate max-w-30">{p.title}</td>
                         <td className="py-2 text-right">{item.quantity}</td>
-                        <td className="py-2 text-right">
-                          {unit.toFixed(2)}
-                          {cartData?.cart?.currency
-                            ? ` ${cartData.cart.currency}`
-                            : "$"}
-                        </td>
-                        <td className="py-2 text-right">
-                          {lineTotal.toFixed(2)}
-                          {cartData?.cart?.currency
-                            ? ` ${cartData.cart.currency}`
-                            : "$"}
-                        </td>
+                        <td
+                          className="py-2 text-right"
+                          dangerouslySetInnerHTML={{
+                            __html: formatPrice(unit, locale),
+                          }}
+                        />
+                        <td
+                          className="py-2 text-right"
+                          dangerouslySetInnerHTML={{
+                            __html: formatPrice(lineTotal, locale),
+                          }}
+                        />
                       </tr>
                     );
                   })}
@@ -198,26 +196,25 @@ export default function CartClient() {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="font-medium">Subtotal</span>
-                  <span>
-                    {subtotal.toFixed(2)}
-                    {cartData?.cart?.currency
-                      ? ` ${cartData.cart.currency}`
-                      : "$"}
-                  </span>
+                  <span
+                    dangerouslySetInnerHTML={{
+                      __html: formatPrice(subtotal, locale),
+                    }}
+                  />
                 </div>
                 <Separator />
                 <div className="flex justify-between font-bold text-lg">
                   <span>Total</span>
-                  <span className="text-primary">
-                    {subtotal.toFixed(2)}
-                    {cartData?.cart?.currency
-                      ? ` ${cartData.cart.currency}`
-                      : "$"}
-                  </span>
+                  <span
+                    className="text-primary"
+                    dangerouslySetInnerHTML={{
+                      __html: formatPrice(subtotal, locale),
+                    }}
+                  />
                 </div>
               </div>
             </div>
-            <Link href="/checkout" className="block">
+            <Link href="/cart/checkout" className="block">
               <Button
                 className="w-full"
                 size="lg"

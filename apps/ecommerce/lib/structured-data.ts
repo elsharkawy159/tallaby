@@ -1,3 +1,5 @@
+import { BASE_URL } from "./constants";
+
 interface Product {
   id: string;
   title: string;
@@ -34,9 +36,8 @@ interface BreadcrumbItem {
 }
 
 export function generateProductStructuredData(product: Product) {
-  const baseUrl = "https://www.tallaby.com";
-  const productUrl = `${baseUrl}/products/${product.slug}`;
-  const imageUrl = product.images?.[0] || `${baseUrl}/og-image.jpg`;
+  const productUrl = `${BASE_URL}/products/${product.slug}`;
+  const imageUrl = product.images?.[0] || `${BASE_URL}/og-image.jpg`;
 
   const offers = {
     "@type": "Offer",
@@ -89,8 +90,7 @@ export function generateProductStructuredData(product: Product) {
 }
 
 export function generateCategoryStructuredData(category: Category) {
-  const baseUrl = "https://www.tallaby.com";
-  const categoryUrl = `${baseUrl}/products?category=${category.slug}`;
+  const categoryUrl = `${BASE_URL}/products?category=${category.slug}`;
 
   return {
     "@context": "https://schema.org",
@@ -112,13 +112,13 @@ export function generateCategoryStructuredData(category: Category) {
           "@type": "ListItem",
           position: 1,
           name: "Home",
-          item: baseUrl,
+          item: BASE_URL,
         },
         {
           "@type": "ListItem",
           position: 2,
           name: "Products",
-          item: `${baseUrl}/products`,
+          item: `${BASE_URL}/products`,
         },
         {
           "@type": "ListItem",

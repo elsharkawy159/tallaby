@@ -102,7 +102,7 @@ const Returns = () => {
       <main className="flex-1">
         {/* Hero Section */}
         <section className="bg-gradient-to-br from-primary to-primary/80 text-white py-16">
-          <div className="container mx-auto px-4 text-center">
+          <div className="container text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
               Return Policy
             </h1>
@@ -118,7 +118,7 @@ const Returns = () => {
 
         {/* Return Process */}
         <section className="py-16">
-          <div className="container mx-auto px-4">
+          <div className="container">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold mb-4">How to Return an Item</h2>
               <p className="text-gray-600">
@@ -155,7 +155,7 @@ const Returns = () => {
 
         {/* Return Conditions */}
         <section className="py-16 bg-gray-50">
-          <div className="container mx-auto px-4">
+          <div className="container">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
               {/* Returnable Items */}
               <div>
@@ -215,7 +215,7 @@ const Returns = () => {
 
         {/* FAQ Section */}
         <section className="py-16">
-          <div className="container mx-auto px-4">
+          <div className="container">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold mb-4">
                 Frequently Asked Questions
@@ -282,7 +282,7 @@ const Returns = () => {
 
         {/* CTA Section */}
         <section className="py-16 bg-primary text-white">
-          <div className="container mx-auto px-4 text-center">
+          <div className="container text-center">
             <h2 className="text-3xl font-bold mb-4">
               Need Help with a Return?
             </h2>

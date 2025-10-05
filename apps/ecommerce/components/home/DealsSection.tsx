@@ -119,7 +119,7 @@ const DealsSection = () => {
 
   return (
     <section className="py-20 bg-gradient-to-br from-red-50 via-orange-50 to-pink-50">
-      <div className="container mx-auto px-4">
+      <div className="container">
         {/* Header */}
         <div className="text-center mb-16">
           <div className="flex items-center justify-center mb-4">

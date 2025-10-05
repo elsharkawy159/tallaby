@@ -1,5 +1,52 @@
 export type UserRole = "customer" | "seller" | "admin";
 
+// Supabase User type from the auth response
+export interface SupabaseUser {
+  id: string;
+  aud: string;
+  role: string;
+  email: string;
+  email_confirmed_at?: string | null;
+  phone?: string | null;
+  confirmation_sent_at?: string | null;
+  confirmed_at?: string | null;
+  last_sign_in_at?: string | null;
+  app_metadata: {
+    provider: string;
+    providers: string[];
+  };
+  user_metadata: {
+    avatar_url?: string;
+    email?: string;
+    email_verified?: boolean;
+    firstName?: string;
+    fullName?: string;
+    full_name?: string;
+    iss?: string;
+    lastName?: string;
+    name?: string;
+    phone_verified?: boolean;
+    picture?: string;
+    provider_id?: string;
+    sub?: string;
+  };
+  identities: Array<{
+    identity_id: string;
+    id: string;
+    user_id: string;
+    identity_data: Record<string, any>;
+    provider: string;
+    last_sign_in_at: string;
+    created_at: string;
+    updated_at: string;
+    email: string;
+  }>;
+  created_at: string;
+  updated_at: string;
+  is_anonymous: boolean;
+}
+
+// Our internal User type for the application
 export interface User {
   id: string;
   email: string;

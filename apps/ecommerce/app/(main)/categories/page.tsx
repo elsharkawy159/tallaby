@@ -168,7 +168,7 @@ const Categories = () => {
       <main className="flex-1">
         {/* Hero Section */}
         <section className="bg-gradient-to-br from-primary to-primary/80 text-white py-16">
-          <div className="container mx-auto px-4 text-center">
+          <div className="container text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
               Explore All Categories
             </h1>
@@ -184,7 +184,7 @@ const Categories = () => {
 
         {/* Main Categories Grid */}
         <section className="py-16">
-          <div className="container mx-auto px-4">
+          <div className="container">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold mb-4">Shop by Category</h2>
               <p className="text-gray-600 max-w-2xl mx-auto">
@@ -270,7 +270,7 @@ const Categories = () => {
 
         {/* Featured Brands */}
         <section className="py-16 bg-gray-50">
-          <div className="container mx-auto px-4">
+          <div className="container">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold mb-4">Featured Brands</h2>
               <p className="text-gray-600">Shop from your favorite brands</p>
@@ -290,7 +290,7 @@ const Categories = () => {
 
         {/* Quick Actions */}
         <section className="py-16">
-          <div className="container mx-auto px-4">
+          <div className="container">
             <div className="bg-primary text-white rounded-2xl p-8 md:p-12 text-center">
               <h2 className="text-3xl font-bold mb-4">
                 Can't Find What You're Looking For?

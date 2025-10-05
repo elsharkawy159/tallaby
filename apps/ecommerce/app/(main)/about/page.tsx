@@ -109,7 +109,7 @@ const About = () => {
       <main className="flex-1">
         {/* Hero Section */}
         <section className="bg-gradient-to-br from-primary to-primary/80 text-white py-20">
-          <div className="container mx-auto px-4 text-center">
+          <div className="container text-center">
             <Badge className="bg-accent text-black mb-4">Our Story</Badge>
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
               Connecting You to the World's
@@ -140,7 +140,7 @@ const About = () => {
 
         {/* Stats Section */}
         <section className="py-16 bg-gray-50">
-          <div className="container mx-auto px-4">
+          <div className="container">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               {stats.map((stat, index) => (
                 <div key={index} className="text-center">
@@ -159,7 +159,7 @@ const About = () => {
 
         {/* Our Story */}
         <section className="py-20">
-          <div className="container mx-auto px-4">
+          <div className="container">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div>
                 <h2 className="text-3xl font-bold mb-6">Our Journey</h2>
@@ -195,7 +195,7 @@ const About = () => {
 
         {/* Our Values */}
         <section className="py-20 bg-gray-50">
-          <div className="container mx-auto px-4">
+          <div className="container">
             <div className="text-center mb-16">
               <h2 className="text-3xl font-bold mb-4">Our Values</h2>
               <p className="text-gray-600 max-w-2xl mx-auto">
@@ -222,7 +222,7 @@ const About = () => {
 
         {/* Leadership Team */}
         <section className="py-20">
-          <div className="container mx-auto px-4">
+          <div className="container">
             <div className="text-center mb-16">
               <h2 className="text-3xl font-bold mb-4">Meet Our Leadership</h2>
               <p className="text-gray-600 max-w-2xl mx-auto">
@@ -249,7 +249,7 @@ const About = () => {
 
         {/* CTA Section */}
         <section className="py-20 bg-primary text-white">
-          <div className="container mx-auto px-4 text-center">
+          <div className="container text-center">
             <h2 className="text-3xl font-bold mb-4">
               Ready to Start Your Journey?
             </h2>

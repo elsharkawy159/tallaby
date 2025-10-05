@@ -66,7 +66,7 @@ export default async function BecomeSeller() {
         <Suspense
           fallback={
             <div className="py-20 bg-gray-50">
-              <div className="container mx-auto px-4">
+              <div className="container">
                 <div className="max-w-2xl mx-auto">
                   <div className="animate-pulse">
                     <div className="h-8 bg-gray-300 rounded w-1/2 mx-auto mb-4"></div>
@@ -89,7 +89,7 @@ export default async function BecomeSeller() {
         >
           {sellerStatus.exists ? (
             <section className="py-20 bg-gray-50" id="become-seller-section">
-              <div className="container mx-auto px-4">
+              <div className="container">
                 <div className="max-w-2xl mx-auto text-center">
                   <h2 className="text-3xl md:text-4xl font-bold mb-4">
                     Application Status
@@ -124,7 +124,7 @@ export default async function BecomeSeller() {
               </div>
             </section>
           ) : (
-            <ApplicationFormSection  user={sellerStatus?.user}/>
+            <ApplicationFormSection user={sellerStatus?.user} />
           )}
         </Suspense>
       </main>

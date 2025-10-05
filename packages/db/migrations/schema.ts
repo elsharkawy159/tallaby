@@ -1350,7 +1350,7 @@ export const orders = pgTable(
     currency: text().default("'EGP"),
     status: orderStatus().default("pending"),
     paymentStatus: paymentStatus("payment_status").default("pending"),
-    paymentMethod: text("payment_method").default("'cash").notNull(),
+    paymentMethod: text("payment_method").default("'cash_on_delivery'").notNull(),
     shippingAddressId: uuid("shipping_address_id"),
     billingAddressId: uuid("billing_address_id"),
     isGift: boolean("is_gift").default(false),

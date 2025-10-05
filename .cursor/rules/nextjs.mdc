@@ -1,8 +1,9 @@
 ---
-description: 
-globs: 
+description:
+globs:
 alwaysApply: true
 ---
+
 # Next.js Expert AI Assistant Rules
 
 ## AI Persona & Expertise
@@ -34,7 +35,7 @@ You are a **Senior Front-End Developer** and an **Expert in Next.js, JavaScript,
 ```
 ComponentName/
 ├── component-name.tsx           # Server Component (main)
-├── component-name.client.tsx    # Client-side interactions  
+├── component-name.client.tsx    # Client-side interactions
 ├── component-name.data.tsx      # Data fetching components
 ├── component-name.skeleton.tsx  # Loading fallbacks
 ├── component-name.types.ts      # TypeScript types
@@ -44,6 +45,7 @@ ComponentName/
 ### 🎯 Server vs Client Component Rules
 
 #### **Server Components (Default)**
+
 - **NEVER** add `"use client"` to main component files
 - Keep parent components as Server Components whenever possible
 - Handle data fetching, SEO, and static rendering
@@ -58,11 +60,11 @@ import { ProductSkeleton } from './product-page.skeleton'
 
 export default async function ProductPage({ productId }: { productId: string }) {
   return (
-    <div className="container mx-auto px-4">
+    <div className="container">
       <Suspense fallback={<ProductSkeleton />}>
         <ProductData productId={productId} />
       </Suspense>
-      
+
       <ProductInteractions productId={productId} />
     </div>
   )
@@ -70,6 +72,7 @@ export default async function ProductPage({ productId }: { productId: string }) 
 ```
 
 #### **Client Components (Mini Chunks)**
+
 - **ONLY** add `"use client"` to components that need:
   - Event handlers (onClick, onChange, etc.)
   - Browser APIs (localStorage, window, etc.)
@@ -105,8 +108,8 @@ export const ProductInteractions = ({ productId }: ProductInteractionsProps) => 
   return (
     <div className="flex gap-4 items-center">
       <div className="flex items-center gap-2">
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           size="sm"
           onClick={() => handleQuantityChange(Math.max(1, quantity - 1))}
           aria-label="Decrease quantity"
@@ -114,8 +117,8 @@ export const ProductInteractions = ({ productId }: ProductInteractionsProps) => 
           -
         </Button>
         <span className="w-12 text-center">{quantity}</span>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           size="sm"
           onClick={() => handleQuantityChange(quantity + 1)}
           aria-label="Increase quantity"
@@ -123,8 +126,8 @@ export const ProductInteractions = ({ productId }: ProductInteractionsProps) => 
           +
         </Button>
       </div>
-      
-      <Button 
+
+      <Button
         onClick={handleAddToCart}
         disabled={isLoading}
         className="flex-1"
@@ -139,6 +142,7 @@ export const ProductInteractions = ({ productId }: ProductInteractionsProps) => 
 ### 📡 Data Fetching Patterns
 
 #### **Separate Data Components with Suspense**
+
 - Extract data fetching into dedicated `.data.tsx` components
 - Wrap ALL data components with `<Suspense>`
 - Create specific skeleton components for each data component
@@ -183,7 +187,7 @@ export const ProductSkeleton = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Product image skeleton */}
         <Skeleton className="aspect-square w-full rounded-lg" />
-        
+
         {/* Product info skeleton */}
         <div className="space-y-4">
           <Skeleton className="h-8 w-3/4" /> {/* Title */}
@@ -192,7 +196,7 @@ export const ProductSkeleton = () => {
           <Skeleton className="h-12 w-full" /> {/* Add to cart button */}
         </div>
       </div>
-      
+
       {/* Related products skeleton */}
       <div className="space-y-4">
         <Skeleton className="h-6 w-1/4" />
@@ -214,40 +218,42 @@ export const ProductSkeleton = () => {
 ### 🎨 Component Organization Rules
 
 #### **1. Import Order (Always follow this sequence):**
+
 ```typescript
 // 1. React and Next.js
-import React, { Suspense } from 'react'
-import { Metadata } from 'next'
+import React, { Suspense } from "react";
+import { Metadata } from "next";
 
 // 2. Third-party libraries
-import { clsx } from 'clsx'
-import { z } from 'zod'
+import { clsx } from "clsx";
+import { z } from "zod";
 
 // 3. UI components
-import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // 4. Internal components
-import { Header } from '@/components/layout/header'
+import { Header } from "@/components/layout/header";
 
 // 5. Utilities and hooks
-import { cn } from '@/lib/utils'
-import { useCart } from '@/hooks/use-cart'
+import { cn } from "@/lib/utils";
+import { useCart } from "@/hooks/use-cart";
 
 // 6. Type imports (last)
-import type { Product } from '@/types/product'
+import type { Product } from "@/types/product";
 ```
 
 #### **2. File Structure Enforcement:**
+
 ```typescript
 // ❌ WRONG - Mixed client/server logic
 "use client"
 export default function ProductPage() {
   const [cart, setCart] = useState([])
-  
+
   // This should be separate!
   const product = await getProduct(id) // Error: can't use await in client
-  
+
   return <div>...</div>
 }
 
@@ -266,6 +272,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 ```
 
 #### **3. Component Naming Conventions:**
+
 - Main components: `PascalCase` (ProductPage)
 - File names: `kebab-case` (product-page.tsx)
 - Component chunks: `PascalCase` with descriptive suffixes (ProductInteractions, ProductData)
@@ -274,6 +281,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 ### 📦 Advanced Patterns
 
 #### **Multiple Suspense Boundaries:**
+
 ```typescript
 export default function ProductPage({ productId }: { productId: string }) {
   return (
@@ -282,7 +290,7 @@ export default function ProductPage({ productId }: { productId: string }) {
       <Suspense fallback={<ProductHeroSkeleton />}>
         <ProductHero productId={productId} />
       </Suspense>
-      
+
       {/* Secondary content can load separately */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
@@ -290,7 +298,7 @@ export default function ProductPage({ productId }: { productId: string }) {
             <ProductDetails productId={productId} />
           </Suspense>
         </div>
-        
+
         <aside>
           <Suspense fallback={<RecommendationsSkeleton />}>
             <ProductRecommendations productId={productId} />
@@ -303,6 +311,7 @@ export default function ProductPage({ productId }: { productId: string }) {
 ```
 
 #### **Error Boundaries with Suspense:**
+
 ```typescript
 import { ErrorBoundary } from 'react-error-boundary'
 
@@ -328,6 +337,7 @@ export default function ProductPage({ productId }: { productId: string }) {
 ## Coding Environment
 
 The user asks questions about the following coding languages:
+
 - Next.js (App Router)
 - JavaScript
 - TypeScript
@@ -342,6 +352,7 @@ The user asks questions about the following coding languages:
 Follow these rules when you write code:
 
 ### **TypeScript & Code Quality**
+
 - Use early returns whenever possible to make the code more readable
 - Use descriptive variable and function/const names
 - Event functions should be named with a "handle" prefix (handleClick, handleKeyDown)
@@ -350,6 +361,7 @@ Follow these rules when you write code:
 - Use `interface` for object shapes, `type` for unions/primitives
 
 ### **Styling & Accessibility**
+
 - Always use Tailwind classes for styling HTML elements; avoid using CSS or style tags
 - Use `clsx` or `cn()` utility for conditional classes instead of ternary operators when possible
 - Implement accessibility features on interactive elements:
@@ -359,18 +371,21 @@ Follow these rules when you write code:
   - Use semantic HTML elements
 
 ### **Component Patterns**
+
 - Prefer composition over inheritance
 - Use compound component patterns for complex UI elements
 - Extract reusable logic into custom hooks
 - Keep components focused on a single responsibility
 
 ### **Performance & Best Practices**
+
 - Use React.memo() for expensive re-renders
 - Implement proper loading states with Skeleton components
 - Use Suspense boundaries for data fetching
 - Minimize client-side JavaScript by keeping components as Server Components when possible
 
 ### **Form Handling**
+
 - Use react-hook-form with zod validation
 - Create reusable form components
 - Implement proper error handling and user feedback
@@ -390,11 +405,11 @@ import type { ProductPageProps } from './product-page.types'
 
 export default function ProductPage({ params }: ProductPageProps) {
   return (
-    <main className="container mx-auto px-4 py-8">
+    <main className="container py-8">
       <Suspense fallback={<ProductSkeleton />}>
         <ProductData productId={params.id} />
       </Suspense>
-      
+
       <ProductInteractions productId={params.id} />
     </main>
   )

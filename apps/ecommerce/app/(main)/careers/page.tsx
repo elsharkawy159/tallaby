@@ -174,7 +174,7 @@ const Careers = () => {
       <main className="flex-1">
         {/* Hero Section */}
         <section className="bg-gradient-to-br from-primary to-primary/80 text-white py-20">
-          <div className="container mx-auto px-4">
+          <div className="container">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div>
                 <Badge className="bg-accent text-black mb-4">
@@ -218,7 +218,7 @@ const Careers = () => {
 
         {/* Company Values */}
         <section className="py-16">
-          <div className="container mx-auto px-4">
+          <div className="container">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold mb-4">Our Values</h2>
               <p className="text-gray-600 max-w-2xl mx-auto">
@@ -243,7 +243,7 @@ const Careers = () => {
 
         {/* Benefits */}
         <section className="py-16 bg-gray-50">
-          <div className="container mx-auto px-4">
+          <div className="container">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold mb-4">Why Work With Us?</h2>
               <p className="text-gray-600 max-w-2xl mx-auto">
@@ -275,7 +275,7 @@ const Careers = () => {
 
         {/* Open Positions */}
         <section className="py-16">
-          <div className="container mx-auto px-4">
+          <div className="container">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold mb-4">Open Positions</h2>
               <p className="text-gray-600">
@@ -347,7 +347,7 @@ const Careers = () => {
 
         {/* Team Culture */}
         <section className="py-16 bg-gray-50">
-          <div className="container mx-auto px-4">
+          <div className="container">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div>
                 <h2 className="text-3xl font-bold mb-6">Our Culture</h2>
@@ -391,7 +391,7 @@ const Careers = () => {
 
         {/* CTA Section */}
         <section className="py-16 bg-primary text-white">
-          <div className="container mx-auto px-4 text-center">
+          <div className="container text-center">
             <h2 className="text-3xl font-bold mb-4">Ready to Join Our Team?</h2>
             <p className="text-xl mb-8 max-w-2xl mx-auto">
               Don't see a position that fits? We're always looking for talented

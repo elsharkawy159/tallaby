@@ -124,7 +124,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       </section>
 
       <section className="bg-white py-6 lg:py-10">
-        <div className="container mx-auto px-4">
+        <div className="container">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
             <Suspense fallback={<ProductHeroSkeleton />}>
               {/* Product images + hero info */}

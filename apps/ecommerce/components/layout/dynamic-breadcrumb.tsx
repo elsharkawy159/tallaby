@@ -134,7 +134,7 @@ export function DynamicBreadcrumb({
 
   return (
     <nav className={cn(className)}>
-      <div className="container mx-auto px-4 py-2.5 lg:py-5">
+      <div className="container py-2.5 lg:py-5">
         <Breadcrumb>
           <BreadcrumbList className="text-xs lg:text-sm">
             {/* Home item */}

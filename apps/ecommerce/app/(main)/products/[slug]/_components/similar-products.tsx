@@ -18,7 +18,7 @@ export const SimilarProducts = ({ products }: SimilarProductsProps) => {
 
   return (
     <section className="py-8 lg:py-12">
-      <div className="container mx-auto px-4">
+      <div className="container">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 lg:mb-8">
           <h2 className="text-xl lg:text-3xl font-bold text-gray-900">
             Similar Products

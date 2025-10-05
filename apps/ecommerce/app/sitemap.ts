@@ -1,55 +1,55 @@
+import { BASE_URL } from "@/lib/constants";
 import type { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://www.tallaby.com";
   const currentDate = new Date();
 
   // Static pages
   const staticPages = [
     {
-      url: baseUrl,
+      url: BASE_URL,
       lastModified: currentDate,
       changeFrequency: "daily" as const,
       priority: 1,
     },
     {
-      url: `${baseUrl}/products`,
+      url: `${BASE_URL}/products`,
       lastModified: currentDate,
       changeFrequency: "daily" as const,
       priority: 0.9,
     },
     {
-      url: `${baseUrl}/about`,
+      url: `${BASE_URL}/about`,
       lastModified: currentDate,
       changeFrequency: "monthly" as const,
       priority: 0.5,
     },
     {
-      url: `${baseUrl}/contact`,
+      url: `${BASE_URL}/contact`,
       lastModified: currentDate,
       changeFrequency: "monthly" as const,
       priority: 0.5,
     },
     {
-      url: `${baseUrl}/help`,
+      url: `${BASE_URL}/help`,
       lastModified: currentDate,
       changeFrequency: "weekly" as const,
       priority: 0.6,
     },
     {
-      url: `${baseUrl}/privacy`,
+      url: `${BASE_URL}/privacy`,
       lastModified: currentDate,
       changeFrequency: "monthly" as const,
       priority: 0.3,
     },
     {
-      url: `${baseUrl}/terms`,
+      url: `${BASE_URL}/terms`,
       lastModified: currentDate,
       changeFrequency: "monthly" as const,
       priority: 0.3,
     },
     {
-      url: `${baseUrl}/become-seller`,
+      url: `${BASE_URL}/become-seller`,
       lastModified: currentDate,
       changeFrequency: "weekly" as const,
       priority: 0.7,
@@ -71,7 +71,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ];
 
   const categoryPages = categories.map((category) => ({
-    url: `${baseUrl}/products?category=${category}`,
+    url: `${BASE_URL}/products?category=${category}`,
     lastModified: currentDate,
     changeFrequency: "daily" as const,
     priority: 0.8,
@@ -81,7 +81,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // and generate entries like this:
   // const products = await getProducts()
   // const productPages = products.map((product) => ({
-  //   url: `${baseUrl}/products/${product.slug}`,
+  //   url: `${BASE_URL}/products/${product.slug}`,
   //   lastModified: new Date(product.updatedAt),
   //   changeFrequency: 'weekly' as const,
   //   priority: 0.7,

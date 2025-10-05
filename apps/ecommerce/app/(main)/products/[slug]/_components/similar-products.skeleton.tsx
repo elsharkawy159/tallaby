@@ -3,7 +3,7 @@ import { Skeleton } from "@workspace/ui/components/skeleton";
 export const SimilarProductsSkeleton = () => {
   return (
     <section className="bg-white py-12">
-      <div className="container mx-auto px-4">
+      <div className="container">
         <div className="flex items-center justify-between mb-8">
           <Skeleton className="h-8 w-48" />
           <Skeleton className="h-9 w-28" />

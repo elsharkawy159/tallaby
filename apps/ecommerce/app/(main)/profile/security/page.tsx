@@ -81,7 +81,7 @@ export default function SecurityPage() {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Toaster />
-        <main className="container mx-auto px-4 py-8">
+        <main className="container py-8">
           <nav className="text-sm text-gray-600 mb-6">
             <Link href="/" className="hover:text-primary">
               Home
@@ -106,7 +106,7 @@ export default function SecurityPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Toaster />
-      <main className="container mx-auto px-4 py-8">
+      <main className="container py-8">
         {/* Breadcrumb */}
         <nav className="text-sm text-gray-600 dark:text-gray-400 mb-6">
           <Link href="/" className="hover:text-primary">
@@ -122,10 +122,7 @@ export default function SecurityPage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            <ProfileSidebar
-              addresses={addresses}
-              activeTab="security"
-            />
+            <ProfileSidebar addresses={addresses} activeTab="security" />
           </div>
 
           {/* Main Content */}

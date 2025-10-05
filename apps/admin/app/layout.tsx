@@ -19,6 +19,14 @@ export const metadata = {
   metadataBase: new URL(defaultUrl),
   title: "Admin Dashboard",
   description: "Admin Dashboard",
+  robots: {
+    index: false,
+    follow: false,
+    googleBot: {
+      index: false,
+      follow: false,
+    },
+  },
 };
 
 export default function RootLayout({

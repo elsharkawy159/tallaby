@@ -2,9 +2,8 @@
 
 import bcrypt from "bcryptjs";
 import { createClient } from "@/supabase/server";
-import { db } from "@workspace/db";
-import { users, userAddresses, wishlists, wishlistItems } from "@workspace/db";
-import { eq, and, desc } from "drizzle-orm";
+import { db, eq, desc, and } from "@workspace/db";
+import { users, userAddresses, wishlists } from "@workspace/db";
 import { revalidatePath } from "next/cache";
 import type {
   ProfileFormData,

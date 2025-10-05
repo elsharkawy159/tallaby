@@ -8,7 +8,7 @@ import { Input } from "@workspace/ui/components/input";
 import { Textarea } from "@workspace/ui/components/textarea";
 import { Switch } from "@workspace/ui/components/switch";
 import Link from "next/link";
-import { type CheckoutFormData } from "./checkout-form.schema";
+import { type CheckoutFormData } from "./checkout-form.schema.js";
 import { FormField } from "@workspace/ui/components/form";
 
 interface CheckoutFormProps {
@@ -24,77 +24,12 @@ export const CheckoutForm = ({
 }: CheckoutFormProps) => {
   return (
     <div className="bg-white border rounded-lg p-4 sm:p-6">
-      <h2 className="text-xl font-bold mb-6">Place Order</h2>
+      {/* <h2 className="text-xl font-bold mb-6">Place Order</h2> */}
 
       <div className="space-y-6">
-        {/* Payment Method Selection */}
-        <div className="space-y-3">
-          <Label className="text-sm font-medium">Payment Method</Label>
-          <FormField
-            control={form.control}
-            name="paymentMethod"
-            render={({ field }) => (
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    id="cash_on_delivery"
-                    value="cash_on_delivery"
-                    checked={field.value === "cash_on_delivery"}
-                    onChange={(e) => field.onChange(e.target.value)}
-                    className="text-primary"
-                  />
-                  <Label
-                    htmlFor="cash_on_delivery"
-                    className="text-sm cursor-pointer"
-                  >
-                    Cash on Delivery
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    id="credit_card"
-                    value="credit_card"
-                    checked={field.value === "credit_card"}
-                    onChange={(e) => field.onChange(e.target.value)}
-                    className="text-primary"
-                  />
-                  <Label
-                    htmlFor="credit_card"
-                    className="text-sm cursor-pointer"
-                  >
-                    Credit Card
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    id="bank_transfer"
-                    value="bank_transfer"
-                    checked={field.value === "bank_transfer"}
-                    onChange={(e) => field.onChange(e.target.value)}
-                    className="text-primary"
-                  />
-                  <Label
-                    htmlFor="bank_transfer"
-                    className="text-sm cursor-pointer"
-                  >
-                    Bank Transfer
-                  </Label>
-                </div>
-              </div>
-            )}
-          />
-          {form.formState.errors.paymentMethod && (
-            <p className="text-sm text-red-500">
-              {form.formState.errors.paymentMethod.message}
-            </p>
-          )}
-        </div>
 
         {/* Coupon Code */}
-        <div className="space-y-2">
+        {/* <div className="space-y-2">
           <Label htmlFor="couponCode" className="text-sm font-medium">
             Coupon Code (Optional)
           </Label>
@@ -115,11 +50,11 @@ export const CheckoutForm = ({
               {form.formState.errors.couponCode.message}
             </p>
           )}
-        </div>
+        </div> */}
 
         {/* Gift Options */}
         <div className="space-y-4">
-          <FormField
+          {/* <FormField
             control={form.control}
             name="isGift"
             render={({ field }) => (
@@ -134,7 +69,7 @@ export const CheckoutForm = ({
                 </Label>
               </div>
             )}
-          />
+          /> */}
 
           {form.watch("isGift") && (
             <div className="space-y-2">

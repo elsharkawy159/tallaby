@@ -3,7 +3,7 @@ import { Skeleton } from "@workspace/ui/components/skeleton";
 export const ProductHeroSkeleton = () => {
   return (
     <section className="bg-white py-8">
-      <div className="container mx-auto px-4">
+      <div className="container">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Product Images Skeleton */}
           <div className="relative">

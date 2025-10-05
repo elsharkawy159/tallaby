@@ -16,7 +16,7 @@ const montserrat = Montserrat({
 
 export const metadata: Metadata = {
   title: {
-    default: "Tallaby.com – Your Everything Store",
+    default: "Online Shopping Egypt - Your Everything Store",
     template: "%s | Tallaby.com",
   },
   description:

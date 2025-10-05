@@ -3,18 +3,18 @@ import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import { Button } from "@workspace/ui/components/button";
 import Link from "next/link";
 import { getCheckoutData } from "@/actions/checkout";
-import { CheckoutData } from "./checkout.data";
-import { CheckoutInteractions } from "./checkout.client";
-import { CheckoutSkeleton } from "./checkout.skeleton";
+import { CheckoutData } from "./_components/checkout.data";
+import { CheckoutSkeleton } from "./_components/checkout.skeleton";
 import { ChevronLeft } from "lucide-react";
 import { generateNoIndexMetadata } from "@/lib/metadata";
+import { ReviewItems } from "@/components/review-items";
 import type { Metadata } from "next";
+import { CheckoutInteractions } from "./_components/checkout.client";
 
 export const metadata: Metadata = generateNoIndexMetadata();
 
 export default async function Checkout() {
   const result = await getCheckoutData();
-
   if (!result.success || !result.data) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -35,17 +35,15 @@ export default async function Checkout() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <div className="flex justify-between container pt-5 mx-auto items-center">
-        <DynamicBreadcrumb />
-        <Button variant="link" asChild>
+      <DynamicBreadcrumb />
+      {/* <Button variant="link" asChild>
           <Link href="/cart" className="text-primary hover:underline">
             <ChevronLeft size={16} />
             Back to cart
           </Link>
-        </Button>
-      </div>
+        </Button> */}
 
-      <main className="flex-1 container mx-auto px-4 py-4 sm:py-6 lg:py-8">
+      <main className="flex-1 container pb-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           <div className="lg:col-span-2 order-2 lg:order-1">
             <Suspense fallback={<CheckoutSkeleton />}>
@@ -53,7 +51,25 @@ export default async function Checkout() {
             </Suspense>
           </div>
 
-          <div className="lg:col-span-1 order-1 lg:order-2">
+          <div className="lg:col-span-1 order-1 lg:order-2 space-y-6">
+            {/* Review Items */}
+            <ReviewItems
+              items={(result.data as any).cart.cartItems.map((item: any) => ({
+                id: item.id,
+                quantity: item.quantity,
+                price: item.price,
+                product: {
+                  id: item.product.id,
+                  title: item.product.title,
+                  images: item.product.images,
+                },
+              }))}
+              title="Review Items"
+              showCount={true}
+              showTotal={false}
+              
+            />
+
             <CheckoutInteractions checkoutData={result.data as any} />
           </div>
         </div>

@@ -22,7 +22,7 @@ export const generateSKU = (prefix: string = "PRD"): string => {
 // Format price for display
 export const formatPrice = (
   price: number,
-  currency: string = "USD"
+  currency: string = "EGP"
 ): string => {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
