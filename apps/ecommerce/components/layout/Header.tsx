@@ -6,13 +6,13 @@ import CategoryNav from "./CategoryNav";
 import { cn } from "@/lib/utils";
 import type { HeaderProps } from "./header.types";
 import {
-  Logo,
   SearchBar,
   BecomeSellerButton,
   MobileNavigation,
   DesktopNavigation,
   BottomNavigation,
 } from "./header.chunks";
+import { Logo } from "../logo";
 
 const Header = ({ className }: HeaderProps) => {
   const { isVisible } = useScrollingNavbar();

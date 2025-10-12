@@ -3,7 +3,6 @@ import { createClient } from "@/supabase/server";
 import { AuthPageClient } from "./auth-page-client";
 
 // Force this page to be dynamic since it uses cookies
-export const dynamic = "force-dynamic";
 
 async function getCurrentUser() {
   try {

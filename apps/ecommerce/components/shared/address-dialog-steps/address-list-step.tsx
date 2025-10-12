@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@workspace/ui/components/button";
 import { Card, CardContent } from "@workspace/ui/components/card";
 import { Badge } from "@workspace/ui/components/badge";
@@ -11,25 +9,16 @@ import {
   Trash2,
   MapPin,
   Building2,
-  Home,
   Star,
   Phone,
   Plus,
 } from "lucide-react";
 import { cn } from "@workspace/ui/lib/utils";
-import { toast } from "sonner";
 
 import type { AddressData } from "../../address/address.schema";
-import {
-  getAddresses,
-  addAddress,
-  updateAddress,
-  deleteAddress,
-  setDefaultAddress,
-} from "@/actions/customer";
+import { useAddress } from "@/providers/address-provider";
 
 interface AddressListStepProps {
-  mode: "create" | "edit" | "select";
   selectedAddress?: AddressData | null;
   onAddressSelect?: (address: AddressData) => void;
   onAddNewAddress: () => void;
@@ -38,163 +27,41 @@ interface AddressListStepProps {
 }
 
 export const AddressListStep = ({
-  mode,
   selectedAddress,
   onAddressSelect,
   onAddNewAddress,
   onEditAddress,
   onDeleteAddress,
 }: AddressListStepProps) => {
-  const queryClient = useQueryClient();
-
-  // React Query for fetching addresses
+  // Use the AddressProvider
   const {
-    data: addresses = [],
+    addresses,
     isLoading,
-    error,
-    refetch,
-  } = useQuery({
-    queryKey: ["addresses"],
-    queryFn: async () => {
-      const result = await getAddresses();
-
-      if (result.success) {
-        return result.data || [];
-      } else {
-        throw new Error(result.error || "Failed to load addresses");
-      }
-    },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    retry: 2,
-  });
-
-  // React Query mutation for deleting addresses
-  const deleteAddressMutation = useMutation({
-    mutationFn: async (addressId: string) => {
-      const result = await deleteAddress(addressId);
-
-      if (result.success) {
-        return result;
-      } else {
-        throw new Error(result.error || "Failed to delete address");
-      }
-    },
-    onSuccess: (result, addressId) => {
-      toast.success(result.message || "Address deleted successfully");
-
-      // Update the cache by removing the deleted address
-      queryClient.setQueryData(
-        ["addresses"],
-        (oldData: AddressData[] | undefined) => {
-          if (!oldData) return [];
-          return oldData.filter((addr) => addr.id !== addressId);
-        }
-      );
-
-      // Call the callback
-      onDeleteAddress(addressId);
-    },
-    onError: (error: Error) => {
-      console.error("Delete address error:", error);
-      toast.error(error.message || "Failed to delete address");
-    },
-  });
-
-  // React Query mutation for setting default address
-  const setDefaultAddressMutation = useMutation({
-    mutationFn: async (addressId: string) => {
-      const result = await setDefaultAddress(addressId);
-
-      if (result.success) {
-        return result;
-      } else {
-        throw new Error(result.error || "Failed to set default address");
-      }
-    },
-    onSuccess: (result) => {
-      toast.success(result.message || "Default address updated");
-
-      // Update the cache to reflect the new default address
-      queryClient.setQueryData(
-        ["addresses"],
-        (oldData: AddressData[] | undefined) => {
-          if (!oldData) return [];
-          return oldData.map((addr) => ({
-            ...addr,
-            isDefault: addr.id === result.data?.id,
-          }));
-        }
-      );
-    },
-    onError: (error: Error) => {
-      console.error("Set default address error:", error);
-      toast.error(error.message || "Failed to set default address");
-    },
-  });
+    isDeletingAddress,
+    isSettingDefault,
+    deleteAddress: deleteAddressAction,
+    setDefaultAddress: setDefaultAddressAction,
+    refreshAddresses,
+  } = useAddress();
 
   const handleDelete = async (addressId: string) => {
     if (!confirm("Are you sure you want to delete this address?")) {
       return;
     }
 
-    deleteAddressMutation.mutate(addressId);
+    const result = await deleteAddressAction(addressId);
+    if (result.success) {
+      onDeleteAddress(addressId);
+    }
   };
 
   const handleSetDefault = async (addressId: string) => {
-    setDefaultAddressMutation.mutate(addressId);
-  };
-
-  const getAddressTypeIcon = (type: string) => {
-    switch (type) {
-      case "shipping":
-        return <MapPin className="h-4 w-4" />;
-      case "billing":
-        return <Building2 className="h-4 w-4" />;
-      case "both":
-        return <Home className="h-4 w-4" />;
-      default:
-        return <MapPin className="h-4 w-4" />;
-    }
-  };
-
-  const getAddressTypeLabel = (type: string) => {
-    switch (type) {
-      case "shipping":
-        return "Shipping";
-      case "billing":
-        return "Billing";
-      case "both":
-        return "Both";
-      default:
-        return "Address";
-    }
+    await setDefaultAddressAction(addressId);
   };
 
   const getShortAddress = (address: AddressData) => {
     return `${address.city}, ${address.addressLine1}`;
   };
-
-  // Handle error state
-  if (error) {
-    return (
-      <div className="p-6">
-        <div className="flex flex-col items-center justify-center py-12">
-          <MapPin className="h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-2">
-            Failed to load addresses
-          </h3>
-          <p className="text-muted-foreground text-center mb-6">
-            {error.message ||
-              "Something went wrong while loading your addresses."}
-          </p>
-          <Button onClick={() => refetch()} variant="outline" className="gap-2">
-            <Plus className="h-4 w-4" />
-            Try Again
-          </Button>
-        </div>
-      </div>
-    );
-  }
 
   if (isLoading) {
     return <AddressListSkeleton />;
@@ -224,21 +91,20 @@ export const AddressListStep = ({
       {/* Address List */}
       <div className="space-y-3">
         {addresses.map((address: any) => {
-          const isSelected = selectedAddress?.id === address.id;
           const isDefault = address.isDefault;
-          const isDeletingThis =
-            deleteAddressMutation.isPending &&
-            deleteAddressMutation.variables === address.id;
+          const isDeletingThis = isDeletingAddress;
 
           return (
             <Card
               key={address.id}
               className={cn(
                 "transition-all duration-200 cursor-pointer p-0",
-                isSelected && "ring-2 ring-primary border-primary",
-                isDeletingThis && "opacity-50 pointer-events-none"
+                isDefault && "ring-2 ring-primary border-primary",
+                isDeletingThis && "opacity-50 pointer-events-none",
+                !isDefault && "hover:ring-2 hover:ring-primary/20",
+                isSettingDefault && "opacity-80 pointer-events-none"
               )}
-              onClick={() => onAddressSelect?.(address as AddressData)}
+              onClick={() => handleSetDefault(address.id!)}
             >
               <CardContent className="p-4">
                 <div className="flex items-start justify-between">
@@ -285,7 +151,7 @@ export const AddressListStep = ({
 
                   {/* Actions */}
                   <div className="flex items-center gap-2 ml-4">
-                    {!isDefault && (
+                    {/* {!isDefault && (
                       <Button
                         variant="outline"
                         size="sm"
@@ -299,7 +165,7 @@ export const AddressListStep = ({
                         <Star className="h-3! w-3! fill-yellow-500 text-yellow-500" />
                         Set as Default
                       </Button>
-                    )}
+                    )} */}
                     <Button
                       variant="ghost"
                       size="sm"

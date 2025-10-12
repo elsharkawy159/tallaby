@@ -102,8 +102,6 @@ export const metadata: Metadata = {
     canonical: "https://www.tallaby.com",
     languages: {
       "en-US": "https://www.tallaby.com",
-      "es-ES": "https://www.tallaby.com/es",
-      "fr-FR": "https://www.tallaby.com/fr",
     },
   },
   category: "ecommerce",

@@ -2,7 +2,15 @@
 
 import React from "react";
 import Link from "next/link";
-import { Search, ShoppingCart, Heart, User, Menu } from "lucide-react";
+import {
+  Search,
+  ShoppingCart,
+  Heart,
+  User,
+  Menu,
+  MapPin,
+  ChevronDown,
+} from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import {
@@ -33,16 +41,8 @@ import {
 } from "./header.lib";
 import { useCart } from "@/providers/cart-provider";
 import { useWishlist } from "@/providers/wishlist-provider";
-
-export const Logo = ({ className }: LogoProps) => {
-  return (
-    <Link href="/" className={className}>
-      <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-white">
-        <span className="text-accent">t</span>allaby
-      </span>
-    </Link>
-  );
-};
+import { useAddress } from "@/providers/address-provider";
+import { AddressSelectorDialog } from "@/components/shared/address-dialog";
 
 export const SearchBar = ({
   placeholder,
@@ -73,7 +73,8 @@ export const BecomeSellerButton = ({ className }: { className?: string }) => {
 
 export const UserAuth = ({ variant = "desktop", className }: UserAuthProps) => {
   const { open: openAuthDialog } = useAuthDialog();
-  const { user, isLoading } = useAuth();
+  const { user, seller, logout, isLoading, isSigningOut } = useAuth();
+  console.log("user", user);
   if (isLoading) {
     return (
       <div
@@ -102,19 +103,23 @@ export const UserAuth = ({ variant = "desktop", className }: UserAuthProps) => {
   if (user) {
     return (
       <Button
-      variant="ghost"
-      size="icon"
-      className={cn(
-        "text-white hover:text-gray-200 hover:bg-transparent cursor-pointer transition-colors",
-        variant === "mobile" &&
-          "flex flex-col items-center text-gray-600 hover:text-primary transition-colors",
-        className
-      )}
-      >
-        <UserMenu variant={variant} />
-        {variant === "mobile" && (
-          <span className="text-xs mt-1">Profile</span>
+        variant="ghost"
+        size="icon"
+        className={cn(
+          "text-white hover:text-gray-200 hover:bg-transparent cursor-pointer transition-colors",
+          variant === "mobile" &&
+            "flex flex-col items-center text-gray-600 hover:text-primary transition-colors",
+          className
         )}
+      >
+        <UserMenu
+          variant={variant}
+          user={user}
+          seller={seller}
+          logout={logout}
+          isSigningOut={isSigningOut}
+        />
+        {variant === "mobile" && <span className="text-xs mt-1">Profile</span>}
       </Button>
     );
   }
@@ -159,7 +164,7 @@ export const WishlistLink = ({ className }: { className?: string }) => {
   const { itemCount } = useWishlist();
   return (
     <Link
-      href="/wishlist"
+      href="/profile/wishlist"
       className={cn("relative text-white hover:text-gray-200", className)}
     >
       <Heart className="size-6" />
@@ -215,6 +220,88 @@ export const MobileNavigation = ({ className }: MobileNavigationProps) => {
   );
 };
 
+export const DeliveryLocationSelector = ({
+  className,
+}: {
+  className?: string;
+}) => {
+  const { user } = useAuth();
+  const { defaultAddress, addresses, isLoading } = useAddress();
+
+  // If not logged in, show guest message
+  if (!user) {
+    return null;
+  }
+
+  // If loading addresses
+  if (isLoading) {
+    return (
+      <div className={cn("flex items-center gap-2 text-white", className)}>
+        <MapPin className="h-5 w-5 flex-shrink-0 animate-pulse" />
+        <div className="flex flex-col items-start text-left">
+          <span className="text-xs font-normal">Loading...</span>
+          <span className="text-sm font-semibold">Please wait</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Use defaultAddress from provider or fallback to first address
+  const currentAddress = defaultAddress || addresses[0];
+
+  // If no address, prompt to add one
+  if (!currentAddress) {
+    return (
+      <AddressSelectorDialog
+        trigger={
+          <button
+            className={cn(
+              "flex items-center gap-2 text-white hover:text-gray-200 transition-colors cursor-pointer",
+              className
+            )}
+          >
+            <MapPin className="h-5 w-5 flex-shrink-0" />
+            <div className="flex flex-col items-start text-left">
+              <span className="text-xs font-normal">
+                Hello, {user.user_metadata?.full_name?.split(" ")[0] || "there"}
+              </span>
+              <span className="text-sm font-semibold flex items-center gap-1">
+                Add delivery address
+                <ChevronDown className="h-3 w-3" />
+              </span>
+            </div>
+          </button>
+        }
+      />
+    );
+  }
+
+  // Show delivery location with address
+  return (
+    <AddressSelectorDialog
+      trigger={
+        <button
+          className={cn(
+            "flex items-center gap-2 text-white hover:text-gray-200 transition-colors cursor-pointer",
+            className
+          )}
+        >
+          <MapPin className="h-5 w-5 flex-shrink-0" />
+          <div className="flex flex-col items-start text-left">
+            <span className="text-xs font-normal">
+              Deliver to {user.user_metadata?.full_name?.split(" ")[0] || "you"}
+            </span>
+            <span className="text-sm font-semibold flex items-center gap-1 truncate max-w-[150px]">
+              {currentAddress.city || currentAddress.state || "Your location"}
+              <ChevronDown className="h-3 w-3 flex-shrink-0" />
+            </span>
+          </div>
+        </button>
+      }
+    />
+  );
+};
+
 export const DesktopNavigation = ({ className }: DesktopNavigationProps) => {
   return (
     <div
@@ -224,6 +311,8 @@ export const DesktopNavigation = ({ className }: DesktopNavigationProps) => {
       )}
     >
       <Logo />
+
+      <DeliveryLocationSelector className="hidden lg:flex" />
 
       <div className="flex-1">
         <SearchBar variant="desktop" />
@@ -240,10 +329,11 @@ export const DesktopNavigation = ({ className }: DesktopNavigationProps) => {
 };
 
 import { usePathname } from "next/navigation";
+import { Logo } from "../logo";
 
 export const BottomNavigation = ({ className }: BottomNavigationProps) => {
   const { open: openAuthDialog } = useAuthDialog();
-  const { user, isLoading } = useAuth();
+  const { user, seller, logout, isLoading, isSigningOut } = useAuth();
   const pathname = usePathname();
 
   return (
@@ -275,17 +365,11 @@ export const BottomNavigation = ({ className }: BottomNavigationProps) => {
               >
                 {IconComponent && (
                   <IconComponent
-                    className={cn(
-                      "size-5",
-                      isActive && "text-primary"
-                    )}
+                    className={cn("size-5", isActive && "text-primary")}
                   />
                 )}
                 <span
-                  className={cn(
-                    "text-xs mt-1",
-                    isActive && "text-primary"
-                  )}
+                  className={cn("text-xs mt-1", isActive && "text-primary")}
                 >
                   {item.label}
                 </span>
@@ -300,7 +384,13 @@ export const BottomNavigation = ({ className }: BottomNavigationProps) => {
             </div>
           ) : user ? (
             <div className="flex flex-col items-center">
-              <UserMenu variant="mobile" />
+              <UserMenu
+                variant="mobile"
+                user={user}
+                seller={seller}
+                logout={logout}
+                isSigningOut={isSigningOut}
+              />
               <span className="text-xs mt-1 text-gray-600">Profile</span>
             </div>
           ) : (

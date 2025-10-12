@@ -70,12 +70,12 @@ export const timezoneOptions = [
 export const languageOptions = [
   { value: "en", label: "English" },
   { value: "ar", label: "العربية (Arabic)" },
-  { value: "es", label: "Español (Spanish)" },
-  { value: "fr", label: "Français (French)" },
-  { value: "de", label: "Deutsch (German)" },
-  { value: "zh", label: "中文 (Chinese)" },
-  { value: "ja", label: "日本語 (Japanese)" },
-  { value: "ru", label: "Русский (Russian)" },
+  // { value: "es", label: "Español (Spanish)" },
+  // { value: "fr", label: "Français (French)" },
+  // { value: "de", label: "Deutsch (German)" },
+  // { value: "zh", label: "中文 (Chinese)" },
+  // { value: "ja", label: "日本語 (Japanese)" },
+  // { value: "ru", label: "Русский (Russian)" },
 ];
 
 // Currency options
@@ -117,91 +117,76 @@ export const twoFactorMethodOptions = [
   { value: "backup_codes", label: "Backup Codes" },
 ];
 
-// User data transformation utilities
-export function transformSupabaseUser(supabaseUser: SupabaseUser): User {
-  const metadata = supabaseUser.user_metadata;
+export function getAvatarUrl(
+  avatarPath: string | null | undefined
+): string | null {
+  if (!avatarPath || typeof avatarPath !== "string" || !avatarPath.trim()) {
+    return null;
+  }
 
-  // Extract name from various possible fields
-  const firstName =
-    metadata.firstName ||
-    (metadata.full_name ? metadata.full_name.split(" ")[0] : "") ||
-    (metadata.name ? metadata.name.split(" ")[0] : "");
+  const trimmedPath = avatarPath.trim();
 
-  const lastName =
-    metadata.lastName ||
-    (metadata.full_name
-      ? metadata.full_name.split(" ").slice(1).join(" ")
-      : "") ||
-    (metadata.name ? metadata.name.split(" ").slice(1).join(" ") : "");
+  if (
+    trimmedPath.startsWith("https://lh3.googleusercontent.com") ||
+    trimmedPath.startsWith("https://platform-lookaside.fbsbx.com") ||
+    trimmedPath.startsWith("https://graph.facebook.com") ||
+    trimmedPath.startsWith("https://avatars.githubusercontent.com") ||
+    trimmedPath.startsWith("https://pbs.twimg.com") ||
+    trimmedPath.startsWith("http://") ||
+    trimmedPath.startsWith("https://")
+  ) {
+    return trimmedPath;
+  }
 
-  const fullName =
-    metadata.fullName ||
-    metadata.full_name ||
-    metadata.name ||
-    `${firstName} ${lastName}`.trim();
-
-  // Get avatar with fallback priority
-  const avatar = getUserAvatar(supabaseUser);
-
-  return {
-    id: supabaseUser.id,
-    email: supabaseUser.email,
-    firstName: firstName || "",
-    lastName: lastName || "",
-    fullName: fullName || supabaseUser.email,
-    phone: supabaseUser.phone || null,
-    role: "customer" as UserRole, // Default role, can be updated from database
-    avatar,
-    isVerified: !!supabaseUser.email_confirmed_at || !!metadata.email_verified,
-    isSuspended: false, // Default value
-    lastLoginAt: supabaseUser.last_sign_in_at || null,
-    timezone: "UTC", // Default timezone
-    preferredLanguage: "en", // Default language
-    referralCode: null,
-    referredBy: null,
-    defaultCurrency: "EGP", // Default currency
-    receiveMarketingEmails: true, // Default preference
-    hasTwoFactorAuth: false, // Default value
-    twoFactorMethod: null,
-    createdAt: supabaseUser.created_at,
-    updatedAt: supabaseUser.updated_at,
-  };
+  return getImageUrl(trimmedPath, "avatars");
 }
 
-export function getUserAvatar(user: SupabaseUser | any): string | null {
+function getImageUrl(url: string, bucket: string = "avatars"): string {
+  const projectId = process.env.NEXT_PUBLIC_SUPABASE_PROJECT_ID;
+  if (!projectId) {
+    console.warn("NEXT_PUBLIC_SUPABASE_PROJECT_ID is not defined");
+    return url;
+  }
+  return `https://${projectId}.supabase.co/storage/v1/object/public/${bucket}/${url}?format=WebP&quality=75`;
+}
+
+export function getUserAvatar(user: any): string | null {
   if (!user) return null;
 
-  // For Supabase user structure
+  let avatarPath: string | null = null;
+
   if (user.user_metadata) {
-    // Priority order for avatar sources
     const avatarSources = [
       user.user_metadata.avatar_url,
       user.user_metadata.picture,
-      user.avatar, // Direct avatar field if exists
     ];
 
     for (const avatar of avatarSources) {
       if (avatar && typeof avatar === "string" && avatar.trim()) {
-        return avatar;
+        avatarPath = avatar;
+        break;
       }
     }
   }
 
-  // For transformed user structure
-  if (user.avatar && typeof user.avatar === "string" && user.avatar.trim()) {
-    return user.avatar;
+  if (
+    !avatarPath &&
+    user.avatarUrl &&
+    typeof user.avatarUrl === "string" &&
+    user.avatarUrl.trim()
+  ) {
+    avatarPath = user.avatarUrl;
   }
 
-  return null;
+  return getAvatarUrl(avatarPath);
 }
 
-export function getUserInitials(user: SupabaseUser | any): string {
+export function getUserInitials(user: any): string {
   if (!user) return "U";
 
   let firstName = "";
   let lastName = "";
 
-  // For Supabase user structure
   if (user.user_metadata) {
     firstName =
       user.user_metadata.firstName ||
@@ -218,13 +203,11 @@ export function getUserInitials(user: SupabaseUser | any): string {
       (user.user_metadata.name
         ? user.user_metadata.name.split(" ").slice(1).join(" ")
         : "");
-  } else {
-    // For transformed user structure
+  } else if (user.firstName !== undefined || user.lastName !== undefined) {
     firstName = user.firstName || "";
     lastName = user.lastName || "";
   }
 
-  // Generate initials
   const firstInitial = firstName.charAt(0).toUpperCase();
   const lastInitial = lastName.charAt(0).toUpperCase();
 
@@ -239,11 +222,9 @@ export function getUserInitials(user: SupabaseUser | any): string {
   return "U";
 }
 
-// Utility functions
 export function formatUserName(user: any): string {
   if (!user) return "";
 
-  // For Supabase user structure
   if (user.user_metadata) {
     const metadata = user.user_metadata;
 
@@ -264,7 +245,6 @@ export function formatUserName(user: any): string {
     }
   }
 
-  // For transformed user structure
   if (user.fullName && user.fullName.trim()) {
     return user.fullName;
   }
@@ -324,7 +304,6 @@ export function getAddressTypeBadgeColor(
 }
 
 export function formatPhoneNumber(phone: string): string {
-  // Simple phone number formatting for display
   const cleaned = phone.replace(/\D/g, "");
 
   if (cleaned.length === 10) {
@@ -333,7 +312,7 @@ export function formatPhoneNumber(phone: string): string {
     return `+1 (${cleaned.slice(1, 4)}) ${cleaned.slice(4, 7)}-${cleaned.slice(7)}`;
   }
 
-  return phone; // Return original if not standard format
+  return phone;
 }
 
 export function validatePasswordStrength(password: string): {
@@ -446,18 +425,15 @@ export const PROFILE_LIMITS = {
   ALLOWED_FILE_TYPES: ["image/jpeg", "image/png", "image/webp"],
 } as const;
 
-// Default user avatar URL
 export const DEFAULT_AVATAR_URL = "/api/avatar/default";
 
-// Avatar fallback component props
 export interface AvatarFallbackProps {
-  user: SupabaseUser | any;
+  user: any;
   className?: string;
   size?: "sm" | "md" | "lg" | "xl";
 }
 
-// Get avatar with proper fallback handling
-export function getAvatarWithFallback(user: SupabaseUser | any): {
+export function getAvatarWithFallback(user: any): {
   src: string | null;
   fallback: string;
   alt: string;
@@ -473,7 +449,6 @@ export function getAvatarWithFallback(user: SupabaseUser | any): {
   };
 }
 
-// Profile completion calculation
 export function calculateProfileCompletion(
   user: any,
   addresses: UserAddress[]
@@ -481,53 +456,62 @@ export function calculateProfileCompletion(
   percentage: number;
   missingFields: string[];
 } {
-  // Handle both Supabase user structure and transformed user structure
-  let firstName = "";
-  let lastName = "";
-  let phone = "";
-  let avatar = "";
+  // Extract data from Supabase Auth user object
+  const metadata = user?.user_metadata || {};
 
-  if (user?.user_metadata) {
-    // Supabase user structure
-    const metadata = user.user_metadata;
-    firstName =
-      metadata.firstName ||
-      (metadata.full_name ? metadata.full_name.split(" ")[0] : "") ||
-      (metadata.name ? metadata.name.split(" ")[0] : "");
+  // Full name (check multiple OAuth formats)
+  const fullName =
+    metadata.fullName || metadata.full_name || metadata.name || "";
 
-    lastName =
-      metadata.lastName ||
-      (metadata.full_name
-        ? metadata.full_name.split(" ").slice(1).join(" ")
-        : "") ||
-      (metadata.name ? metadata.name.split(" ").slice(1).join(" ") : "");
+  // Phone (check both user_metadata and root level)
+  const phone = metadata.phone || user?.phone || "";
 
-    phone = user?.phone || "";
-    avatar = getUserAvatar(user) || "";
-  } else {
-    // Transformed user structure
-    firstName = user?.firstName || "";
-    lastName = user?.lastName || "";
-    phone = user?.phone || "";
-    avatar = user?.avatar || "";
-  }
+  // Avatar (check multiple OAuth formats)
+  const avatar = metadata.avatar_url || metadata.picture || "";
 
+  // Timezone
+  const timezone = metadata.timezone || "";
+
+  // Preferred Language
+  const preferredLanguage = metadata.preferredLanguage || "";
+
+  // Default Currency
+  const defaultCurrency = metadata.defaultCurrency || "";
+
+  // Define required fields for profile completion
   const requiredFields = [
-    { field: "firstName", label: "First Name", value: firstName },
-    { field: "lastName", label: "Last Name", value: lastName },
+    { field: "fullName", label: "Full Name", value: fullName },
     { field: "phone", label: "Phone Number", value: phone },
     { field: "avatar", label: "Profile Picture", value: avatar },
-    { field: "address", label: "Address", value: addresses.length > 0 },
+    { field: "timezone", label: "Timezone", value: timezone },
+    {
+      field: "preferredLanguage",
+      label: "Preferred Language",
+      value: preferredLanguage,
+    },
+    {
+      field: "defaultCurrency",
+      label: "Default Currency",
+      value: defaultCurrency,
+    },
+    {
+      field: "address",
+      label: "Delivery Address",
+      value: addresses.length > 0,
+    },
   ];
 
+  // Count completed fields
   const completedFields = requiredFields.filter(
     (field) => field.value && field.value !== ""
   );
 
+  // Get missing field labels
   const missingFields = requiredFields
     .filter((field) => !field.value || field.value === "")
     .map((field) => field.label);
 
+  // Calculate percentage
   const percentage = Math.round(
     (completedFields.length / requiredFields.length) * 100
   );

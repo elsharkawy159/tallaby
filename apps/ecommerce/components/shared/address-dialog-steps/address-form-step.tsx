@@ -3,7 +3,6 @@
 import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
 
 import { Button } from "@workspace/ui/components/button";
 import { Form } from "@workspace/ui/components/form";
@@ -25,10 +24,9 @@ import {
   addressDefaults,
   type AddressData,
 } from "../../address/address.schema";
-import { addAddress, updateAddress } from "@/actions/customer";
+import { useAddress } from "@/providers/address-provider";
 
 interface AddressFormStepProps {
-  mode: "create" | "edit" | "select";
   address?: AddressData | null;
   selectedLocation?: {
     latitude: number;
@@ -44,13 +42,15 @@ interface AddressFormStepProps {
 }
 
 export const AddressFormStep = ({
-  mode,
   address,
   selectedLocation,
   onSuccess,
   onCancel,
 }: AddressFormStepProps) => {
   const [isPending, startTransition] = useTransition();
+
+  // Use the AddressProvider
+  const { addAddress, updateAddress } = useAddress();
 
   // Setup form with react-hook-form
   const form = useForm<AddressData>({
@@ -75,39 +75,33 @@ export const AddressFormStep = ({
   const handleSubmit = (data: AddressData) => {
     startTransition(async () => {
       try {
-        const result =
-          mode === "create"
-            ? await addAddress(data)
-            : await updateAddress(data.id!, data);
+        const isEditing = !!data.id;
+        const result = isEditing
+          ? await updateAddress(data.id!, data)
+          : await addAddress(data);
 
         if (result.success) {
-          toast.success(
-            "Address " +
-              (mode === "create" ? "added" : "updated") +
-              " successfully"
-          );
           form.reset();
           onSuccess?.(result.data as AddressData);
         } else {
-          toast.error(
-            result.error || "Something went wrong. Please try again."
-          );
-
-          // Set server-side field errors
-          if (result.error) {
-            Object.entries(result.error as any).forEach(([field, messages]) => {
-              form.setError(field as keyof AddressData, {
-                type: "server",
-                message: Array.isArray(messages)
-                  ? (messages[0] as string)
-                  : String(messages),
+          // Provider already shows toast, but handle field errors if any
+          // Set server-side field errors if available
+          if (result && typeof result === "object" && "error" in result) {
+            const error = (result as any).error;
+            if (error && typeof error === "object") {
+              Object.entries(error).forEach(([field, messages]) => {
+                form.setError(field as keyof AddressData, {
+                  type: "server",
+                  message: Array.isArray(messages)
+                    ? (messages[0] as string)
+                    : String(messages),
+                });
               });
-            });
+            }
           }
         }
       } catch (error) {
         console.error("Form submission error:", error);
-        toast.error("Something went wrong. Please try again.");
       }
     });
   };
@@ -252,12 +246,12 @@ export const AddressFormStep = ({
                   className="flex-1 rounded"
                 >
                   {isPending
-                    ? mode === "create"
-                      ? "Creating Address..."
-                      : "Updating Address..."
-                    : mode === "create"
-                      ? "Save Address"
-                      : "Update Address"}
+                    ? address?.id
+                      ? "Updating Address..."
+                      : "Creating Address..."
+                    : address?.id
+                      ? "Update Address"
+                      : "Save Address"}
                 </Button>
               </div>
             </div>

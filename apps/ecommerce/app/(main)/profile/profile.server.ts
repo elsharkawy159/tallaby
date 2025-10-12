@@ -3,7 +3,7 @@
 import bcrypt from "bcryptjs";
 import { createClient } from "@/supabase/server";
 import { db, eq, desc, and } from "@workspace/db";
-import { users, userAddresses, wishlists } from "@workspace/db";
+import { userAddresses, wishlists } from "@workspace/db";
 import { revalidatePath } from "next/cache";
 import type {
   ProfileFormData,
@@ -32,6 +32,7 @@ export const updateUserProfile = async (
     // Get current user
     const {
       data: { user },
+      error: getUserError,
     } = await supabase.auth.getUser();
 
     if (!user) {
@@ -41,26 +42,29 @@ export const updateUserProfile = async (
       };
     }
 
-    // Update user in database
-    await db
-      .update(users)
-      .set({
-        firstName: data.firstName,
-        lastName: data.lastName,
-        fullName: `${data.firstName} ${data.lastName}`,
+    const { error: authUpdateError } = await supabase.auth.updateUser({
+      data: {
+        full_name: data.fullName,
         phone: data.phone || null,
         timezone: data.timezone,
         preferredLanguage: data.preferredLanguage,
         defaultCurrency: data.defaultCurrency,
         receiveMarketingEmails: data.receiveMarketingEmails,
-        updatedAt: new Date().toISOString(),
-      })
-      .where(eq(users.id, user.id));
+        // OAuth compatibility fields
+        name: data.fullName,
+      },
+    });
+
+    if (authUpdateError) {
+      console.error("Update user_metadata error:", authUpdateError);
+      return {
+        success: false,
+        message: "Failed to update profile in authentication provider.",
+      };
+    }
 
     // Revalidate profile pages
     revalidatePath("/profile");
-    revalidatePath("/profile/addresses");
-    revalidatePath("/profile/security");
 
     return {
       success: true,

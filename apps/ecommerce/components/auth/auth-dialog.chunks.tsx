@@ -97,8 +97,7 @@ export function SignUpForm({
   const form = useForm<SignUpFormData>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
-      firstName: "",
-      lastName: "",
+      fullName: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -132,26 +131,15 @@ console.log("result", result)
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
           <TextInput
             form={form}
-            name="firstName"
-            label="First Name"
+            name="fullName"
+            label="Full Name"
             type="text"
             placeholder="John"
             disabled={isPending}
             required
           />
-          <TextInput
-            form={form}
-            name="lastName"
-            label="Last Name"
-            type="text"
-            placeholder="Doe"
-            disabled={isPending}
-            required
-          />
-        </div>
 
         <TextInput
           form={form}

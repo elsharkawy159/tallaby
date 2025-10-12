@@ -112,9 +112,9 @@ const page = async () => {
         }}
       />
 
-      <FeaturesSection />
+      {/* <FeaturesSection />
 
-      <VendorRecruitment />
+      <VendorRecruitment /> */}
     </div>
   );
 };

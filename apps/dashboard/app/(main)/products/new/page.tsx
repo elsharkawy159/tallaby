@@ -3,7 +3,6 @@ import { getAllCategories } from "@/actions/categories";
 import { getAllBrands } from "@/actions/brands";
 
 // Force dynamic rendering since this page uses cookies for authentication
-export const dynamic = "force-dynamic";
 
 interface PageProps {
   searchParams: Promise<{ page?: string; id?: string }>;

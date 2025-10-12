@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@workspace/ui/components/button";
 import {
   Dialog,
@@ -9,25 +9,19 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@workspace/ui/components/dialog";
-import { ArrowLeft, ArrowRight, Plus, MapPin } from "lucide-react";
+import { Plus, MapPin } from "lucide-react";
 import { toast } from "sonner";
 
 import { AddressListStep } from "./address-dialog-steps/address-list-step";
 import { AddressFormStep } from "./address-dialog-steps/address-form-step";
 import type { AddressData } from "../address/address.schema";
 import { MapLocationStep } from "./address-dialog-steps/map-location-step";
-import {
-  getAddresses,
-  addAddress,
-  updateAddress,
-  deleteAddress,
-} from "@/actions/customer";
+import { useAddress } from "@/providers/address-provider";
 
 // Step types
 type DialogStep = "list" | "map" | "form";
 
 interface AddressDialogProps {
-  mode?: "create" | "edit" | "select";
   address?: AddressData;
   trigger?: React.ReactNode;
   onSuccess?: (address: AddressData) => void;
@@ -36,7 +30,6 @@ interface AddressDialogProps {
 }
 
 export const AddressDialog = ({
-  mode = "select",
   address,
   trigger,
   onSuccess,
@@ -45,7 +38,7 @@ export const AddressDialog = ({
 }: AddressDialogProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState<DialogStep>("list");
-  const [selectedAddress, setSelectedAddress] = useState<AddressData | null>(
+  const [editingAddress, setEditingAddress] = useState<AddressData | null>(
     null
   );
   const [selectedLocation, setSelectedLocation] = useState<{
@@ -58,12 +51,22 @@ export const AddressDialog = ({
     postalCode?: string;
   } | null>(null);
 
+  // Use the AddressProvider
+  const { selectedAddress, selectAddress } = useAddress();
+
+  // Set initial address if provided
+  useEffect(() => {
+    if (address) {
+      setEditingAddress(address);
+    }
+  }, [address]);
+
   // Reset state when dialog opens/closes
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
     if (!open) {
       setCurrentStep("list");
-      //   setSelectedAddress(null);
+      setEditingAddress(null);
       setSelectedLocation(null);
     }
   };
@@ -84,13 +87,9 @@ export const AddressDialog = ({
 
   // Address selection from list
   const handleAddressSelect = (address: AddressData) => {
-    if (mode === "select") {
-      setSelectedAddress(address);
-      setIsOpen(false);
-      toast.success("Address selected successfully");
-    } else {
-      setCurrentStep("form");
-    }
+    selectAddress(address);
+    onAddressSelect?.(address);
+    toast.success("Address selected");
   };
 
   // Location selection from map
@@ -111,24 +110,17 @@ export const AddressDialog = ({
   const handleFormSuccess = (addressData: AddressData) => {
     onSuccess?.(addressData);
     setIsOpen(false);
-    toast.success(
-      mode === "create"
-        ? "Address added successfully"
-        : mode === "edit"
-          ? "Address updated successfully"
-          : "Address saved successfully"
-    );
   };
 
   // Get step title
   const getStepTitle = () => {
     switch (currentStep) {
       case "list":
-        return mode === "select" ? "Select Address" : "Manage Addresses";
+        return "Manage Addresses";
       case "map":
         return "Select Location";
       case "form":
-        return mode === "edit" ? "Edit Address" : "Add New Address";
+        return editingAddress?.id ? "Edit Address" : "Add New Address";
       default:
         return "Address";
     }
@@ -138,7 +130,7 @@ export const AddressDialog = ({
   const defaultTrigger = (
     <Button variant="outline" className="gap-2">
       <MapPin className="h-4 w-4" />
-      {mode === "select" ? "Select Address" : "Manage Addresses"}
+      Manage Addresses
     </Button>
   );
 
@@ -158,12 +150,11 @@ export const AddressDialog = ({
         <div className="flex-1 overflow-y-auto">
           {currentStep === "list" && (
             <AddressListStep
-              mode={mode}
               selectedAddress={selectedAddress}
               onAddressSelect={handleAddressSelect}
               onAddNewAddress={() => setCurrentStep("map")}
               onEditAddress={(address) => {
-                setSelectedAddress(address);
+                setEditingAddress(address);
                 setCurrentStep("form");
               }}
               onDeleteAddress={(addressId) => {
@@ -178,10 +169,10 @@ export const AddressDialog = ({
               onLocationConfirm={handleLocationConfirm}
               handlePreviousStep={handlePreviousStep}
               initialLocation={
-                selectedAddress?.latitude && selectedAddress?.longitude
+                editingAddress?.latitude && editingAddress?.longitude
                   ? {
-                      latitude: selectedAddress.latitude,
-                      longitude: selectedAddress.longitude,
+                      latitude: editingAddress.latitude,
+                      longitude: editingAddress.longitude,
                     }
                   : undefined
               }
@@ -190,8 +181,7 @@ export const AddressDialog = ({
 
           {currentStep === "form" && (
             <AddressFormStep
-              mode={mode}
-              address={selectedAddress}
+              address={editingAddress}
               selectedLocation={selectedLocation}
               onSuccess={handleFormSuccess}
               onCancel={() => setCurrentStep("list")}
@@ -233,18 +223,14 @@ export const AddressSelectorDialog = ({
   onAddressSelect,
   trigger,
 }: Pick<AddressDialogProps, "onAddressSelect" | "trigger">) => (
-  <AddressDialog
-    mode="select"
-    onAddressSelect={onAddressSelect}
-    trigger={trigger}
-  />
+  <AddressDialog onAddressSelect={onAddressSelect} trigger={trigger} />
 );
 
 export const AddressManagerDialog = ({
   onSuccess,
   trigger,
 }: Pick<AddressDialogProps, "onSuccess" | "trigger">) => (
-  <AddressDialog mode="create" onSuccess={onSuccess} trigger={trigger} />
+  <AddressDialog onSuccess={onSuccess} trigger={trigger} />
 );
 
 export const EditAddressDialog = ({
@@ -252,10 +238,5 @@ export const EditAddressDialog = ({
   onSuccess,
   trigger,
 }: Pick<AddressDialogProps, "address" | "onSuccess" | "trigger">) => (
-  <AddressDialog
-    mode="edit"
-    address={address}
-    onSuccess={onSuccess}
-    trigger={trigger}
-  />
+  <AddressDialog address={address} onSuccess={onSuccess} trigger={trigger} />
 );

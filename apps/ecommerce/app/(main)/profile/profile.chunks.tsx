@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import React, { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -97,7 +97,9 @@ import { Input } from "@workspace/ui/components/input";
 import { Switch } from "@workspace/ui/components/switch";
 import { Select, SelectItem } from "@workspace/ui/components/select";
 import { useAuth } from "@/providers/auth-provider";
+import { useQueryClient } from "@tanstack/react-query";
 import { UserAvatar } from "@/components/shared/user-avatar";
+import { AvatarUploader } from "@/components/shared/avatar-uploader";
 
 // Profile Sidebar Component
 interface ProfileSidebarProps {
@@ -106,20 +108,16 @@ interface ProfileSidebarProps {
 }
 
 export function ProfileSidebar({ addresses }: ProfileSidebarProps) {
-  const { userWithSeller, logout, isSigningOut } = useAuth();
-  const user = userWithSeller?.user;
+  const { user, logout, isSigningOut } = useAuth();
   const pathname = usePathname();
-
+  console.log("user", user);
   const { percentage, missingFields } = calculateProfileCompletion(
     user,
     addresses
   );
 
-  // Check if user is verified (handle both Supabase and transformed user structures)
-  const isVerified =
-    user?.email_confirmed_at ||
-    user?.user_metadata?.email_verified ||
-    user?.isVerified;
+  // Check if user is verified (Supabase auth user structure)
+  const isVerified = user?.user_metadata?.email_verified ? true : false;
 
   return (
     <div className="space-y-6">
@@ -127,7 +125,7 @@ export function ProfileSidebar({ addresses }: ProfileSidebarProps) {
       <Card>
         <CardContent>
           <div className="flex items-center space-x-4 mb-4">
-            <UserAvatar user={user} size="xl" className="h-16 w-16" />
+            <AvatarUploader user={user} size="xl" className="h-16 w-16" />
             <div className="flex-1">
               <div className="flex items-center space-x-2">
                 <h3 className="font-semibold">{formatUserName(user)}</h3>
@@ -163,7 +161,7 @@ export function ProfileSidebar({ addresses }: ProfileSidebarProps) {
                   .map((field) => {
                     // Optionally, you can map field keys to more user-friendly labels here
                     switch (field) {
-                      case "firstName":
+                      case "fullName":
                         return "First Name";
                       case "lastName":
                         return "Last Name";
@@ -193,7 +191,7 @@ export function ProfileSidebar({ addresses }: ProfileSidebarProps) {
       </Card>
 
       {/* Navigation */}
-      <Card>
+      <Card className="py-2">
         <CardContent className="p-0">
           <nav className="space-y-1">
             {profileTabs.map((tab) => {
@@ -205,7 +203,7 @@ export function ProfileSidebar({ addresses }: ProfileSidebarProps) {
                 <Link
                   key={tab.id}
                   href={tab.href}
-                  className={`flex items-center space-x-3 px-4 py-3 text-sm transition-colors ${
+                  className={`flex items-center rounded-xl space-x-3 px-4 py-3 text-sm transition-colors ${
                     isActive
                       ? "bg-primary text-primary-foreground"
                       : "text-muted-foreground hover:text-foreground"
@@ -240,59 +238,56 @@ export function ProfileSidebar({ addresses }: ProfileSidebarProps) {
 interface ProfileFormProps {}
 
 export function ProfileForm() {
-  const { userWithSeller } = useAuth();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [isPending, startTransition] = useTransition();
 
-  const user = userWithSeller?.user;
+  console.log("user", user);
 
-  // Extract user data with proper fallbacks for both Supabase and transformed user structures
+  // Extract user data with proper fallbacks for Supabase auth user structure
   const getUserData = () => {
     if (!user)
       return {
-        firstName: "",
-        lastName: "",
+        fullName: "",
         phone: "",
-        timezone: "UTC",
+        timezone: "Africa/Cairo",
         preferredLanguage: "en",
         defaultCurrency: "EGP",
         receiveMarketingEmails: true,
       };
 
-    // Handle Supabase user structure
+    // Handle Supabase auth user structure (primary structure)
     if (user.user_metadata) {
       const metadata = user.user_metadata;
-      const firstName =
-        metadata.firstName ||
-        (metadata.full_name ? metadata.full_name.split(" ")[0] : "") ||
-        (metadata.name ? metadata.name.split(" ")[0] : "");
-
-      const lastName =
-        metadata.lastName ||
-        (metadata.full_name
-          ? metadata.full_name.split(" ").slice(1).join(" ")
+      // Support multiple OAuth provider formats
+      const fullName =
+        metadata.fullName ||
+        metadata.full_name ||
+        metadata.name ||
+        (metadata.firstName && metadata.lastName
+          ? `${metadata.firstName} ${metadata.lastName}`
           : "") ||
-        (metadata.name ? metadata.name.split(" ").slice(1).join(" ") : "");
+        "";
 
       return {
-        firstName: firstName || "",
-        lastName: lastName || "",
+        fullName,
         phone: user.phone || metadata.phone || "",
-        timezone: user.timezone || "UTC",
-        preferredLanguage: user.preferred_language || "en",
-        defaultCurrency: user.default_currency || "EGP",
-        receiveMarketingEmails: user.receive_marketing_emails ?? true,
+        timezone: metadata.timezone || "Africa/Cairo",
+        preferredLanguage: metadata.preferredLanguage || "en",
+        defaultCurrency: metadata.defaultCurrency || "EGP",
+        receiveMarketingEmails: metadata.receiveMarketingEmails ?? true,
       };
     }
 
-    // Handle transformed user structure
+    // Handle database user structure (fallback) - cast to any to avoid type errors
+    const dbUser = user as any;
     return {
-      firstName: user.firstName || "",
-      lastName: user.lastName || "",
-      phone: user.phone || "",
-      timezone: user.timezone || "UTC",
-      preferredLanguage: user.preferredLanguage || "en",
-      defaultCurrency: user.defaultCurrency || "EGP",
-      receiveMarketingEmails: user.receiveMarketingEmails ?? true,
+      fullName: dbUser.fullName || "",
+      phone: dbUser.phone || "",
+      timezone: dbUser.timezone || "Africa/Cairo",
+      preferredLanguage: dbUser.preferredLanguage || "en",
+      defaultCurrency: dbUser.defaultCurrency || "EGP",
+      receiveMarketingEmails: dbUser.receiveMarketingEmails ?? true,
     };
   };
 
@@ -304,8 +299,16 @@ export function ProfileForm() {
     defaultValues: userData,
   });
 
+  // Update form values when user data changes
+  React.useEffect(() => {
+    if (user) {
+      const newUserData = getUserData();
+      form.reset(newUserData);
+    }
+  }, [user, form]);
+
   // Return loading state if no user data (after all hooks are called)
-  if (!userWithSeller?.user) {
+  if (!user) {
     return (
       <Card>
         <CardHeader>
@@ -335,10 +338,19 @@ export function ProfileForm() {
         const result = await updateUserProfile(data);
 
         if (result.success) {
-          toast.success(result.message);
-          // Note: The auth provider should automatically refresh user data
+          toast.success(result.message || "Profile updated successfully");
+
+          // Invalidate user queries to refresh data
+          await queryClient.invalidateQueries({
+            queryKey: ["user"],
+            refetchType: "active",
+          });
+
+          // Update form with new data
+          const newUserData = getUserData();
+          form.reset(newUserData);
         } else {
-          toast.error(result.message);
+          toast.error(result.message || "Failed to update profile");
 
           // Set server-side field errors
           if (result.errors) {
@@ -371,21 +383,12 @@ export function ProfileForm() {
             onSubmit={form.handleSubmit(handleSubmit)}
             className="space-y-6"
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <TextInput
-                form={form}
-                label="First Name"
-                placeholder="Enter your first name"
-                name="firstName"
-              />
-
-              <TextInput
-                label="Last Name"
-                placeholder="Enter your last name"
-                name="lastName"
-                form={form}
-              />
-            </div>
+            <TextInput
+              form={form}
+              label="Full Name"
+              placeholder="Enter your full name"
+              name="fullName"
+            />
 
             <TextInput
               label="Phone Number"
@@ -393,8 +396,7 @@ export function ProfileForm() {
               name="phone"
               form={form}
             />
-            <div className="grid grid-cols-1 items-center md:grid-cols-3 gap-4">
-              <FormField
+              {/* <FormField
                 control={form.control}
                 name="timezone"
                 render={({ field }) => (
@@ -410,7 +412,7 @@ export function ProfileForm() {
                     <FormMessage />
                   </FormItem>
                 )}
-              />
+              /> */}
 
               <FormField
                 control={form.control}
@@ -430,7 +432,7 @@ export function ProfileForm() {
                 )}
               />
 
-              <FormField
+              {/* <FormField
                 control={form.control}
                 name="defaultCurrency"
                 render={({ field }) => (
@@ -446,8 +448,7 @@ export function ProfileForm() {
                     <FormMessage />
                   </FormItem>
                 )}
-              />
-            </div>
+              /> */}
 
             <FormField
               control={form.control}
@@ -823,10 +824,8 @@ export function AddressForm({
 // Security Form Component
 
 export function SecurityForm() {
-  const { userWithSeller } = useAuth();
+  const { user } = useAuth();
   const [isPending, startTransition] = useTransition();
-
-  const user = userWithSeller?.user;
 
   // Extract security-related user data with proper fallbacks
   const getSecurityData = () => {
@@ -836,11 +835,11 @@ export function SecurityForm() {
         twoFactorMethod: "",
       };
 
-    // Handle both Supabase and transformed user structures
+    // Handle database user structure (new structure) - cast to any to avoid type errors
+    const dbUser = user as any;
     return {
-      hasTwoFactorAuth:
-        user.has_two_factor_auth || user.hasTwoFactorAuth || false,
-      twoFactorMethod: user.two_factor_method || user.twoFactorMethod || "",
+      hasTwoFactorAuth: dbUser.hasTwoFactorAuth || false,
+      twoFactorMethod: dbUser.twoFactorMethod || "",
     };
   };
 

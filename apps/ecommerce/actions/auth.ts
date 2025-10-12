@@ -23,17 +23,23 @@ export async function getUserProfile() {
   try {
     const session = await getUser();
     if (!session?.user.id) {
-      return null;
+      return { error: "User not found" };
     }
 
+    // Get user data from database (this is our source of truth)
     const user = await db.query.users.findFirst({
       where: eq(users.id, session.user.id),
     });
 
+    if (!user) {
+      return { error: "User profile not found" };
+    }
+
+    // Return the user data directly from database
     return user;
   } catch (error) {
     console.error("Error fetching user:", error);
-    return null;
+    return { error: error };
   }
 }
 
@@ -164,7 +170,15 @@ export async function getUserWithSellerProfile() {
       where: eq(sellers.id, data.user.id),
     });
 
-    return { user: data.user, seller: seller ?? null, error: null };
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, data.user.id),
+    });
+
+    return {
+      user: { ...data.user, user: user },
+      seller: seller ?? null,
+      error: null,
+    };
   } catch (err) {
     console.error("getUserWithSellerProfile error:", err);
     return { user: null, seller: null, error: err };
@@ -173,9 +187,11 @@ export async function getUserWithSellerProfile() {
 
 export async function checkIfSeller() {
   try {
-    const user = await getUserProfile();
-    if (!user) return false;
+    const userResult = await getUserProfile();
+    if (!userResult || "error" in userResult) return false;
 
+    // Type assertion since we've already checked it's not an error
+    const user = userResult as any;
     if (user.role === "seller" || user.role === "admin") {
       const seller = await db.query.sellers.findFirst({
         where: eq(sellers.id, user.id),
@@ -215,9 +231,7 @@ export async function getSessionId() {
 
 export async function signUpUser(data: {
   email: string;
-  firstName: string;
-  lastName: string;
-  phone?: string;
+  fullName: string;
   referralCode?: string;
   password?: string; // Supabase requires a password for sign up
 }) {
@@ -231,11 +245,8 @@ export async function signUpUser(data: {
 
     // Prepare user metadata
     const userMetadata: Record<string, any> = {
-      firstName: data.firstName,
-      lastName: data.lastName,
-      fullName: `${data.firstName} ${data.lastName}`,
+      full_name: data.fullName,
     };
-    if (data.phone) userMetadata.phone = data.phone;
     if (data.referralCode) userMetadata.referralCode = data.referralCode;
 
     const { data: signUpData, error } = await supabase.auth.signUp({
@@ -258,10 +269,85 @@ export async function signUpUser(data: {
   }
 }
 
+export async function uploadAvatar(file: File) {
+  try {
+    const user = await getUser();
+    if (!user) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const supabase = await createClient();
+
+    // Generate unique filename
+    const fileExt = file.name.split(".").pop();
+    const fileName = `${user.user.id}-${Date.now()}.${fileExt}`;
+    const filePath = `avatars/${fileName}`;
+
+    // Upload file to Supabase Storage
+    const { data, error } = await supabase.storage
+      .from("avatars")
+      .upload(filePath, file, {
+        cacheControl: "3600",
+        upsert: false,
+      });
+
+    if (error) {
+      console.error("Error uploading file:", error);
+      return { success: false, error: "Failed to upload avatar" };
+    }
+
+    // Get public URL
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("avatars").getPublicUrl(filePath);
+
+    return {
+      success: true,
+      data: {
+        path: filePath,
+        url: publicUrl,
+      },
+      message: "Avatar uploaded successfully",
+    };
+  } catch (error) {
+    console.error("Error uploading avatar:", error);
+    return { success: false, error: "Failed to upload avatar" };
+  }
+}
+
+export async function deleteAvatar(filePath: string) {
+  try {
+    const user = await getUser();
+    if (!user) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const supabase = await createClient();
+
+    // Delete file from Supabase Storage
+    const { error } = await supabase.storage.from("avatars").remove([filePath]);
+
+    if (error) {
+      console.error("Error deleting file:", error);
+      return { success: false, error: "Failed to delete avatar" };
+    }
+
+    return {
+      success: true,
+      message: "Avatar deleted successfully",
+    };
+  } catch (error) {
+    console.error("Error deleting avatar:", error);
+    return { success: false, error: "Failed to delete avatar" };
+  }
+}
+
 export async function updateUserProfile(data: {
   firstName?: string;
   lastName?: string;
   phone?: string;
+  avatar_url?: string;
+  timezone?: string;
   preferredLanguage?: string;
   defaultCurrency?: string;
   receiveMarketingEmails?: boolean;
@@ -272,22 +358,55 @@ export async function updateUserProfile(data: {
       return { success: false, error: "Unauthorized" };
     }
 
-    const fullName =
-      data.firstName && data.lastName
-        ? `${data.firstName} ${data.lastName}`
-        : undefined;
+    const supabase = await createClient();
 
-    const updatedUser = await db
-      .update(users)
-      .set({
-        ...data,
-        ...(fullName && { fullName }),
-        updatedAt: new Date().toISOString(),
-      })
-      .where(eq(users.id, user.user.id))
-      .returning();
+    // Prepare data for Supabase auth metadata
+    const authMetadata: Record<string, any> = {};
 
-    return { success: true, data: updatedUser[0] };
+    // Add fields that can be stored in Supabase auth metadata
+    if (data.firstName !== undefined) authMetadata.firstName = data.firstName;
+    if (data.lastName !== undefined) authMetadata.lastName = data.lastName;
+    if (data.phone !== undefined) authMetadata.phone = data.phone;
+    if (data.avatar_url !== undefined)
+      authMetadata.avatar_url = data.avatar_url;
+
+    // Update fullName if firstName or lastName changed
+    if (data.firstName !== undefined || data.lastName !== undefined) {
+      const currentUser = user.user;
+      const firstName =
+        data.firstName !== undefined
+          ? data.firstName
+          : currentUser.user_metadata?.firstName || "";
+      const lastName =
+        data.lastName !== undefined
+          ? data.lastName
+          : currentUser.user_metadata?.lastName || "";
+      const fullName = `${firstName} ${lastName}`.trim();
+
+      if (fullName) {
+        authMetadata.full_name = fullName;
+      }
+    }
+
+    // Update Supabase auth metadata
+    const { data: updatedUser, error: authError } =
+      await supabase.auth.updateUser({
+        data: authMetadata,
+      });
+
+    if (authError) {
+      console.error("Error updating auth metadata:", authError);
+      return {
+        success: false,
+        error: "Failed to update profile",
+      };
+    }
+
+    return {
+      success: true,
+      data: updatedUser.user,
+      message: "Profile updated successfully",
+    };
   } catch (error) {
     console.error("Error updating profile:", error);
     return { success: false, error: "Failed to update profile" };

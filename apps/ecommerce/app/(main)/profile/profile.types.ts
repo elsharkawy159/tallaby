@@ -46,27 +46,45 @@ export interface SupabaseUser {
   is_anonymous: boolean;
 }
 
-// Our internal User type for the application
+export interface Seller {
+  id: string;
+  displayName: string;
+  slug: string;
+  description: string | null;
+  logoUrl: string | null;
+  bannerUrl: string | null;
+  returnPolicy: string | null;
+  shippingPolicy: string | null;
+  storeRating: number | null;
+  positiveRatingPercent: number | null;
+  totalRatings: number;
+  productCount: number;
+  isVerified: boolean;
+  joinDate: string | null;
+  status?: "pending" | "approved" | "suspended" | "restricted";
+}
+
+// Our internal User type for the application - matches database schema exactly
 export interface User {
   id: string;
   email: string;
-  firstName: string;
-  lastName: string;
+  firstName: string | null;
+  lastName: string | null;
   fullName: string;
-  phone?: string | null;
+  phone: string | null;
   role: UserRole;
-  avatar?: string | null;
+  avatarUrl: string | null;
   isVerified: boolean;
   isSuspended: boolean;
-  lastLoginAt?: string | null;
-  timezone?: string | null;
+  lastLoginAt: string | null;
+  timezone: string | null;
   preferredLanguage: string;
-  referralCode?: string | null;
-  referredBy?: string | null;
+  referralCode: string | null;
+  referredBy: string | null;
   defaultCurrency: string;
   receiveMarketingEmails: boolean;
   hasTwoFactorAuth: boolean;
-  twoFactorMethod?: string | null;
+  twoFactorMethod: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -128,8 +146,7 @@ export interface WishlistItem {
 
 // Form data types
 export interface ProfileFormData {
-  firstName: string;
-  lastName: string;
+  fullName: string;
   phone: string;
   timezone: string;
   preferredLanguage: string;

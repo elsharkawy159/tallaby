@@ -2,25 +2,17 @@ import { z } from "zod";
 
 // Profile form validation schema
 export const profileFormSchema = z.object({
-  firstName: z
+  fullName: z
     .string()
-    .min(1, "First name is required")
-    .min(2, "First name must be at least 2 characters")
-    .max(50, "First name must be less than 50 characters")
+    .min(1, "Full name is required")
+    .min(2, "Full name must be at least 2 characters")
+    .max(50, "Full name must be less than 50 characters")
     .regex(
       /^[a-zA-Z\s-']+$/,
-      "First name can only contain letters, spaces, hyphens, and apostrophes"
+      "Full name can only contain letters, spaces, hyphens, and apostrophes"
     ),
 
-  lastName: z
-    .string()
-    .min(1, "Last name is required")
-    .min(2, "Last name must be at least 2 characters")
-    .max(50, "Last name must be less than 50 characters")
-    .regex(
-      /^[a-zA-Z\s-']+$/,
-      "Last name can only contain letters, spaces, hyphens, and apostrophes"
-    ),
+
 
   phone: z
     .string()
@@ -183,8 +175,7 @@ export type WishlistFormData = z.infer<typeof wishlistFormSchema>;
 
 // Default values for forms
 export const profileFormDefaults: Partial<ProfileFormData> = {
-  firstName: "",
-  lastName: "",
+  fullName: "",
   phone: "",
   timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
   preferredLanguage: "en",

@@ -11,7 +11,7 @@ import {
 import Link from "next/link";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
-import { Logo } from "./header.chunks";
+import { Logo } from "../logo";
 
 const Footer = () => {
   return (

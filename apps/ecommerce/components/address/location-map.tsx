@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import L from "leaflet";
+import Leaflet from 'leaflet';
 import "leaflet/dist/leaflet.css";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
@@ -31,7 +31,7 @@ interface LocationMapProps {
   form?: any; // Form instance to directly update fields
 }
 
-L.Icon.Default.mergeOptions({
+Leaflet.Icon.Default.mergeOptions({
   iconRetinaUrl: "/leaflet/images/marker-icon-2x.png",
   iconUrl: "/leaflet/images/marker-icon.png",
   shadowUrl: "/leaflet/images/marker-shadow.png",
@@ -81,7 +81,7 @@ export const LocationMap = ({
           }
 
           // Add new marker
-          const marker = L.marker([lat, lng]).addTo(mapInstanceRef.current);
+          const marker = Leaflet.marker([lat, lng]).addTo(mapInstanceRef.current);
           markerRef.current = marker;
         }
 
@@ -118,14 +118,14 @@ export const LocationMap = ({
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
-    const map = L.map(mapRef.current).setView(
+    const map = Leaflet.map(mapRef.current).setView(
       initialLocation
         ? [initialLocation.latitude, initialLocation.longitude]
         : [EGYPT_CENTER.lat, EGYPT_CENTER.lng],
       10
     );
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
+    Leaflet.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
       map
     );
 
@@ -133,7 +133,7 @@ export const LocationMap = ({
 
     // Add initial marker if location provided
     if (initialLocation) {
-      const marker = L.marker([
+      const marker = Leaflet.marker([
         initialLocation.latitude,
         initialLocation.longitude,
       ]).addTo(map);
@@ -141,7 +141,7 @@ export const LocationMap = ({
     }
 
     // Handle click events to select location
-    map.on("click", async (e: L.LeafletMouseEvent) => {
+    map.on("click", async (e: Leaflet.LeafletMouseEvent) => {
       const { lat, lng } = e.latlng;
 
       // Remove old marker
@@ -150,7 +150,7 @@ export const LocationMap = ({
       }
 
       // Add new marker
-      const marker = L.marker([lat, lng]).addTo(map);
+      const marker = Leaflet.marker([lat, lng]).addTo(map);
       markerRef.current = marker;
 
       setSelectedCoordinates({ lat, lng });
@@ -209,7 +209,7 @@ export const LocationMap = ({
             markerRef.current.remove();
           }
 
-          const marker = L.marker([latitude, longitude]).addTo(
+          const marker = Leaflet.marker([latitude, longitude]).addTo(
             mapInstanceRef.current
           );
           markerRef.current = marker;

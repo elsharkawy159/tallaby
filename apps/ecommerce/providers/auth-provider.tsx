@@ -1,34 +1,36 @@
 "use client";
 
-import type { User } from "@supabase/supabase-js";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { createContext, type ReactNode, useContext } from "react";
-import {
-  getUser,
-  signOutAction,
-  getUserWithSellerProfile,
-} from "@/actions/auth";
+import { getUser, signOutAction } from "@/actions/auth";
+import { getSellerProfile } from "@/actions/seller";
 import { createClient } from "@/supabase/client";
-import { transformSupabaseUser } from "@/app/(main)/profile/profile.lib";
-import type { SupabaseUser } from "@/app/(main)/profile/profile.types";
+import type { User } from "@supabase/supabase-js";
 
-interface SellerProfile {
+interface SellerData {
   id: string;
-  [key: string]: any; // Add other seller fields as needed
-}
-
-interface UserWithSeller {
-  user: any;
-  seller: SellerProfile | null;
-  error: any;
+  displayName: string;
+  slug: string;
+  description: string | null;
+  logoUrl: string | null;
+  bannerUrl: string | null;
+  returnPolicy: string | null;
+  shippingPolicy: string | null;
+  storeRating: number | null;
+  positiveRatingPercent: number | null;
+  totalRatings: number;
+  productCount: number;
+  isVerified: boolean;
+  joinDate: string | null;
+  status?: "pending" | "approved" | "suspended" | "restricted";
 }
 
 interface AuthContextType {
   user: User | null;
-  userWithSeller: UserWithSeller | null;
+  seller: SellerData | null;
   isLoading: boolean;
-  isLoadingUserWithSeller: boolean;
+  isSellerLoading: boolean;
   logout: () => void;
   isSigningOut: boolean;
 }
@@ -40,39 +42,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const router = useRouter();
 
-  // Query for basic user data
+  // Query for user auth data - this returns the Supabase auth user data (faster)
   const { isLoading, data: user } = useQuery<User | null, Error>({
     queryKey: ["user"],
     queryFn: async () => {
-      const user = await getUser();
-      return user?.user ?? null;
+      const authData = await getUser();
+      // Return the user data directly from Supabase auth
+      return authData?.user ?? null;
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  // Query for user with seller profile data
-  const { isLoading: isLoadingUserWithSeller, data: userWithSeller } = useQuery<
-    UserWithSeller | null,
+  // Query for seller data if user is a seller
+  const { data: seller, isLoading: isSellerLoading } = useQuery<
+    SellerData | null,
     Error
   >({
-    queryKey: ["userWithSeller"],
-    queryFn: async () => {
-      const result = await getUserWithSellerProfile();
-      if (result.user) {
-        // Transform Supabase user to our internal structure
-        const transformedUser = transformSupabaseUser(
-          result.user as SupabaseUser
-        );
-        return {
-          user: transformedUser,
-          seller: result.seller,
-          error: result.error,
-        };
+    queryKey: ["seller", user?.id],
+    queryFn: async (): Promise<SellerData | null> => {
+      if (!user?.id) return null;
+
+      // Check if user is a seller from metadata
+      const isSeller = user.user_metadata?.is_seller === true;
+
+      if (!isSeller) return null;
+
+      // Fetch seller basic info (lightweight, no products)
+      const result = await getSellerProfile(user.id);
+
+      if (!result.success || !result.data) {
+        return null;
       }
-      return null;
+
+      return result.data as SellerData;
     },
+    enabled: !!user?.id, // Only run if user is logged in
     staleTime: 1000 * 60 * 5, // 5 minutes
-    enabled: !!user, // Only run if we have a basic user
   });
 
   // Logout mutation
@@ -87,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         refetchType: "active",
       });
       queryClient.invalidateQueries({
-        queryKey: ["userWithSeller"],
+        queryKey: ["seller"],
         refetchType: "active",
       });
       queryClient.clear();
@@ -100,9 +105,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const auth: AuthContextType = {
     user: user ?? null,
-    userWithSeller: userWithSeller ?? null,
+    seller: seller ?? null,
     isLoading,
-    isLoadingUserWithSeller,
+    isSellerLoading,
     logout,
     isSigningOut,
   };

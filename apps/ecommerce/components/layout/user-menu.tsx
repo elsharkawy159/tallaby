@@ -3,8 +3,6 @@
 import Link from "next/link";
 import {
   User,
-  Settings,
-  ShoppingBag,
   Heart,
   LogOut,
   Store,
@@ -30,27 +28,30 @@ import { useAuth } from "@/providers/auth-provider";
 import { cn } from "@/lib/utils";
 import { AddressManagerDialog } from "@/components/shared/address-dialog";
 import type { AddressData } from "@/components/address/address.schema";
+import {
+  getUserAvatar,
+  getUserInitials,
+  formatUserName,
+} from "@/app/(main)/profile/profile.lib";
+import { Seller, SupabaseUser } from "@/app/(main)/profile/profile.types";
 
 interface UserMenuProps {
   variant?: "desktop" | "mobile";
   className?: string;
+  user: SupabaseUser;
+  seller: Seller;
+  logout: () => void;
+  isSigningOut: boolean;
 }
 
-export function UserMenu({ variant = "desktop", className }: UserMenuProps) {
-  const {
-    user,
-    userWithSeller,
-    isLoadingUserWithSeller,
-    logout,
-    isSigningOut,
-  } = useAuth();
+export function UserMenu({ variant = "desktop",user,seller,logout,isSigningOut, className }: UserMenuProps) {
 
   if (!user) return null;
 
-  const avatarUrl = user?.identities?.[0]?.identity_data?.avatar_url;
-  const userInitials = user.email?.slice(0, 2).toUpperCase() || "U";
-  const userName = userWithSeller?.user?.full_name || user.email;
-  const isSeller = !!userWithSeller?.seller;
+  const avatarUrl = getUserAvatar(user) || undefined;
+  const userInitials = getUserInitials(user);
+  const userName = formatUserName(user) || user.email;
+  const isSeller = !!seller;
 
   const handleLogout = async () => {
     try {
@@ -123,7 +124,7 @@ export function UserMenu({ variant = "desktop", className }: UserMenuProps) {
             </Link>
 
             <Link
-              href="/orders"
+              href="/profile/orders"
               className="w-full justify-start h-9 px-3 gap-2.5 font-medium flex items-center hover:bg-gray-100 rounded-md"
             >
               <Package className="size-4.5 text-gray-500" />
@@ -131,7 +132,7 @@ export function UserMenu({ variant = "desktop", className }: UserMenuProps) {
             </Link>
 
             <Link
-              href="/wishlist"
+              href="/profile/wishlist"
               className="w-full justify-start h-9 px-3 gap-2.5 font-medium flex items-center hover:bg-gray-100 rounded-md"
             >
               <Heart className="size-4.5 text-gray-500" />
@@ -185,15 +186,6 @@ export function UserMenu({ variant = "desktop", className }: UserMenuProps) {
 
           {/* Settings & Logout */}
           <Separator className="my-2" />
-          <div className="space-y-1">
-            <Link
-              href="/settings"
-              className="w-full justify-start h-9 px-3 gap-2.5 font-medium flex items-center hover:bg-gray-100 rounded-md"
-            >
-              <Settings className="size-4.5 text-gray-500" />
-              Settings
-            </Link>
-
             <Button
               variant="ghost"
               className="w-full justify-start h-9 gap-2.5 font-medium flex items-center text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md"
@@ -203,7 +195,6 @@ export function UserMenu({ variant = "desktop", className }: UserMenuProps) {
               <LogOut className="size-4.5 text-red-500" />
               {isSigningOut ? "Signing out..." : "Sign Out"}
             </Button>
-          </div>
         </div>
       </PopoverContent>
     </Popover>

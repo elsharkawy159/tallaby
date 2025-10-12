@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import L from "leaflet";
+import Leaflet from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
@@ -9,7 +9,7 @@ import { ArrowLeft, Check, Navigation, Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 
 // Fix for Leaflet marker icons
-L.Icon.Default.mergeOptions({
+Leaflet.Icon.Default.mergeOptions({
   iconRetinaUrl: "/leaflet/images/marker-icon-2x.png",
   iconUrl: "/leaflet/images/marker-icon.png",
   shadowUrl: "/leaflet/images/marker-shadow.png",
@@ -75,7 +75,7 @@ export const MapLocationStep = ({
           }
 
           // Add new marker
-          const marker = L.marker([lat, lng]).addTo(mapInstanceRef.current);
+          const marker = Leaflet.marker([lat, lng]).addTo(mapInstanceRef.current);
           markerRef.current = marker;
         }
 
@@ -96,14 +96,14 @@ export const MapLocationStep = ({
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
-    const map = L.map(mapRef.current).setView(
+    const map = Leaflet.map(mapRef.current).setView(
       initialLocation
         ? [initialLocation.latitude, initialLocation.longitude]
         : [EGYPT_CENTER.lat, EGYPT_CENTER.lng],
       10
     );
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
+    Leaflet.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
       map
     );
 
@@ -111,7 +111,7 @@ export const MapLocationStep = ({
 
     // Add initial marker if location provided
     if (initialLocation) {
-      const marker = L.marker([
+      const marker = Leaflet.marker([
         initialLocation.latitude,
         initialLocation.longitude,
       ]).addTo(map);
@@ -123,7 +123,7 @@ export const MapLocationStep = ({
     }
 
     // Handle click events to select location
-    map.on("click", async (e: L.LeafletMouseEvent) => {
+    map.on("click", async (e: Leaflet.LeafletMouseEvent) => {
       const { lat, lng } = e.latlng;
 
       // Remove old marker
@@ -132,7 +132,7 @@ export const MapLocationStep = ({
       }
 
       // Add new marker
-      const marker = L.marker([lat, lng]).addTo(map);
+      const marker = Leaflet.marker([lat, lng]).addTo(map);
       markerRef.current = marker;
 
       setSelectedCoordinates({ lat, lng });
@@ -168,7 +168,7 @@ export const MapLocationStep = ({
             markerRef.current.remove();
           }
 
-          const marker = L.marker([latitude, longitude]).addTo(
+          const marker = Leaflet.marker([latitude, longitude]).addTo(
             mapInstanceRef.current
           );
           markerRef.current = marker;
@@ -283,7 +283,11 @@ export const MapLocationStep = ({
               <ArrowLeft className="h-4 w-4" />
               Back
             </Button>
-            <Button onClick={handleConfirmLocation} disabled={!selectedCoordinates} className="flex-1 rounded">
+            <Button
+              onClick={handleConfirmLocation}
+              disabled={!selectedCoordinates}
+              className="flex-1 rounded"
+            >
               Confirm
             </Button>
           </>
