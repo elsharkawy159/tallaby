@@ -15,12 +15,15 @@ export const createClient = async () => {
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) => {
-              cookieStore.set(name, value, options);
+              cookieStore.set(name, value, {
+                ...options,
+                domain: process.env.SUPABASE_COOKIE_DOMAIN || ".tallaby.com", // ✅ shared domain
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "lax",
+              });
             });
           } catch (error) {
-            // The `set` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing
-            // user sessions.
+            // Safe to ignore for Server Components
           }
         },
       },

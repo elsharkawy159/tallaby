@@ -1,4 +1,5 @@
 import { logout } from "@/actions/auth";
+import { useSiteData } from "@/providers/site-data";
 import {
   Avatar,
   AvatarFallback,
@@ -8,16 +9,17 @@ import { Button } from "@workspace/ui/components/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu";
-import { LogOut, Settings, User, CreditCard, Bell } from "lucide-react";
+import { LogOut, Settings, User, CreditCard } from "lucide-react";
 import Link from "next/link";
 
 export const UserNav = () => {
+  const { seller } = useSiteData();
+
   const handleLogout = async () => {
     try {
       await logout();
@@ -26,55 +28,53 @@ export const UserNav = () => {
     }
   };
 
+  // Get seller data safely with better fallbacks
+  const sellerData = seller?.success ? seller.data : null;
+  const businessName = sellerData?.businessName || "Business";
+  const displayName = sellerData?.displayName || businessName;
+  const logoUrl = sellerData?.logoUrl;
+  const avatarFallback = businessName.charAt(0).toUpperCase();
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild className="!p-0">
         <Button variant="ghost" className="relative size-10 rounded-full">
           <Avatar className="h-10 w-10">
-            <AvatarImage src={""} alt={"User avatar"} />
-            <AvatarFallback className="bg-blue-500 text-white">
-              {""}
+            <AvatarImage src={logoUrl || ""} alt={`${businessName} logo`} />
+            <AvatarFallback className="bg-primary text-white font-semibold">
+              {avatarFallback}
             </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="min-w-56" align="end" forceMount>
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{""}</p>
-            <p className="text-xs leading-none text-muted-foreground">{""}</p>
-            <p className="text-xs leading-none text-blue-600 font-medium capitalize">
-              {""} Account
-            </p>
-          </div>
-        </DropdownMenuLabel>
+      <DropdownMenuContent align="end" forceMount>
+        <DropdownMenuItem asChild>
+          <Link href="/settings" className="flex items-center">
+            <User className="mr-2 h-4 w-4" />
+            <span>Profile</span>
+          </Link>
+        </DropdownMenuItem>
+
+        <DropdownMenuItem asChild>
+          <Link href="/financial" className="flex items-center">
+            <CreditCard className="mr-2 h-4 w-4" />
+            <span>Billing & Payments</span>
+          </Link>
+        </DropdownMenuItem>
+
+        {/* <DropdownMenuItem asChild>
+          <Link href="/settings" className="flex items-center">
+            <Settings className="mr-2 h-4 w-4" />
+            <span>Settings</span>
+          </Link>
+        </DropdownMenuItem> */}
+
         <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuItem asChild>
-            <Link href="/settings/profile">
-              <User className="mr-2 h-4 w-4" />
-              <span>Profile</span>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link href="/financial">
-              <CreditCard className="mr-2 h-4 w-4" />
-              <span>Billing</span>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link href="/settings">
-              <Settings className="mr-2 h-4 w-4" />
-              <span>Settings</span>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Bell className="mr-2 h-4 w-4" />
-            <span>Notifications</span>
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout}>
+
+        <DropdownMenuItem
+          onClick={handleLogout}
+          className="text-red-600 focus:text-red-600"
+        >
           <LogOut className="mr-2 h-4 w-4" />
           <span>Log out</span>
         </DropdownMenuItem>

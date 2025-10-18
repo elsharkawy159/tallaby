@@ -15,17 +15,6 @@ export async function getSellerProfile() {
 
     const seller = await db.query.sellers.findFirst({
       where: eq(sellers.id, session.user.id),
-      with: {
-        user: {
-          columns: {
-            email: true,
-            firstName: true,
-            lastName: true,
-            phone: true,
-            avatar: true,
-          },
-        },
-      },
     });
 
     if (!seller) {

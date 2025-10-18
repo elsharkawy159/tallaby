@@ -34,7 +34,7 @@ export const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
   const t = useTranslations();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { seller } = useSiteData();
-  console.log("seller", seller.data);
+  console.log("seller", seller);
 
   const navigationItems = [
     { name: t("nav.dashboard"), icon: BarChart3, href: "/" },
@@ -129,7 +129,7 @@ const SidebarContent = ({
         <div className="flex flex-col items-center py-5 px-6 border-b border-primary-foreground/20">
           <div className="w-[120px] h-[120px] rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mb-4 shadow-md">
             <span className="text-white text-4xl font-bold capitalize">
-              {seller?.businessName?.[0]}{seller?.businessName?.[1]}
+              {seller?.businessName?.[0]}
             </span>
           </div>
           <h2 className="text-white font-semibold text-lg mb-1">

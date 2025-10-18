@@ -68,7 +68,7 @@ export const checkUserEligibility = async (email: string) => {
 
 export const login = async (email: string, password: string) => {
   // Pre-authentication checks
-  await checkUserEligibility(email);
+  // await checkUserEligibility(email);
 
   // Proceed with authentication
   const supabase = await createClient();

@@ -90,7 +90,8 @@ export const Navbar = ({ onMenuToggle }: NavbarProps) => {
             </div> */}
 
             {/* Notifications */}
-            <NotificationCenter />
+
+            {/* <NotificationCenter /> */}
 
             {/* Language Toggle */}
             {/* <DropdownMenu>
@@ -110,7 +111,8 @@ export const Navbar = ({ onMenuToggle }: NavbarProps) => {
             </DropdownMenu> */}
 
             {/* Theme Toggle */}
-            <Button
+            
+            {/* <Button
             variant="ghost"
             size="icon"
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
@@ -121,7 +123,7 @@ export const Navbar = ({ onMenuToggle }: NavbarProps) => {
               <Moon className="h-5 w-5" />
             )}
             <span className="sr-only">Toggle theme</span>
-          </Button>
+          </Button> */}
 
             {/* User Navigation */}
             <UserNav />

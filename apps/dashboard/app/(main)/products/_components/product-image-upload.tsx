@@ -137,16 +137,16 @@ export function ProductImageUpload({
     <div className="relative group">
       <div
         {...getRootProps()}
-        className="h-12 w-12 overflow-hidden rounded bg-gray-100 cursor-pointer hover:opacity-80 transition-opacity"
+        className="h-16 w-16 overflow-hidden rounded bg-gray-100 cursor-pointer hover:opacity-80 transition-opacity"
         title="Drag and drop to add more images"
       >
         <input {...getInputProps()} />
         <Image
           src={getPublicUrl(images[0], "products")}
           alt={productTitle}
-          width={48}
-          height={48}
-          className="h-12 w-12 object-cover"
+          width={100}
+          height={100}
+          className="h-16 w-16 object-cover"
         />
 
         {/* Upload overlay when dragging */}

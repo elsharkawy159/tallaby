@@ -27,18 +27,22 @@ export const metadata: Metadata = {
   },
 };
 
+// Force dynamic rendering for this layout
+export const dynamic = "force-dynamic";
+
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // const queryClient = new QueryClient();
   const locale = await getLocale();
 
   return (
     <html lang={locale} suppressHydrationWarning>
+      <head>
+        <meta name="robots" content="noindex, nofollow" />
+      </head>
       <body className={`${montserrat.variable} antialiased`}>
-        {/* <QueryClientProvider client={queryClient}> */}
         <SiteDataProvider promise={getSiteData()}>
           <NextIntlClientProvider>
             <ThemeProvider
@@ -52,7 +56,6 @@ export default async function RootLayout({
             </ThemeProvider>
           </NextIntlClientProvider>
         </SiteDataProvider>
-        {/* </QueryClientProvider> */}
       </body>
     </html>
   );

@@ -22,10 +22,23 @@ export function SiteDataProvider({
   children: React.ReactNode;
   promise: Promise<SiteData>;
 }) {
-  const siteData = use(promise);
-  return (
-    <SiteDataContext.Provider value={siteData}>
-      {children}
-    </SiteDataContext.Provider>
-  );
+  try {
+    const siteData = use(promise);
+    return (
+      <SiteDataContext.Provider value={siteData}>
+        {children}
+      </SiteDataContext.Provider>
+    );
+  } catch (error) {
+    // Handle build-time errors gracefully
+    console.warn("Site data loading failed:", error);
+    const fallbackData = {
+      seller: { success: false, error: "Failed to load seller data" },
+    };
+    return (
+      <SiteDataContext.Provider value={fallbackData}>
+        {children}
+      </SiteDataContext.Provider>
+    );
+  }
 }

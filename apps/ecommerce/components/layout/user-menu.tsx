@@ -33,19 +33,26 @@ import {
   getUserInitials,
   formatUserName,
 } from "@/app/(main)/profile/profile.lib";
-import { Seller, SupabaseUser } from "@/app/(main)/profile/profile.types";
+import { Seller } from "@/app/(main)/profile/profile.types";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 interface UserMenuProps {
   variant?: "desktop" | "mobile";
   className?: string;
-  user: SupabaseUser;
-  seller: Seller;
+  user: SupabaseUser | null;
+  seller: Seller | null;
   logout: () => void;
   isSigningOut: boolean;
 }
 
-export function UserMenu({ variant = "desktop",user,seller,logout,isSigningOut, className }: UserMenuProps) {
-
+export function UserMenu({
+  variant = "desktop",
+  user,
+  seller,
+  logout,
+  isSigningOut,
+  className,
+}: UserMenuProps) {
   if (!user) return null;
 
   const avatarUrl = getUserAvatar(user) || undefined;
@@ -171,7 +178,7 @@ export function UserMenu({ variant = "desktop",user,seller,logout,isSigningOut, 
                     href={
                       process.env.NODE_ENV === "development"
                         ? "http://localhost:3001"
-                        : "https://dashboard.yourdomain.com"
+                        : "https://seller.tallaby.com/"
                     }
                     target="_blank"
                     rel="noopener noreferrer"
@@ -186,15 +193,15 @@ export function UserMenu({ variant = "desktop",user,seller,logout,isSigningOut, 
 
           {/* Settings & Logout */}
           <Separator className="my-2" />
-            <Button
-              variant="ghost"
-              className="w-full justify-start h-9 gap-2.5 font-medium flex items-center text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md"
-              onClick={handleLogout}
-              disabled={isSigningOut}
-            >
-              <LogOut className="size-4.5 text-red-500" />
-              {isSigningOut ? "Signing out..." : "Sign Out"}
-            </Button>
+          <Button
+            variant="ghost"
+            className="w-full justify-start h-9 gap-2.5 font-medium flex items-center text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md"
+            onClick={handleLogout}
+            disabled={isSigningOut}
+          >
+            <LogOut className="size-4.5 text-red-500" />
+            {isSigningOut ? "Signing out..." : "Sign Out"}
+          </Button>
         </div>
       </PopoverContent>
     </Popover>
