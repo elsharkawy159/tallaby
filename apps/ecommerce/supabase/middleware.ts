@@ -6,14 +6,6 @@ export async function updateSession(request: NextRequest) {
     request,
   });
 
-  // If the env vars are not set, skip middleware check. You can remove this once you setup the project.
-  if (
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  ) {
-    return supabaseResponse;
-  }
-
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -30,7 +22,7 @@ export async function updateSession(request: NextRequest) {
           cookiesToSet.forEach(({ name, value, options }) => {
             supabaseResponse.cookies.set(name, value, {
               ...options,
-              domain: process.env.SUPABASE_COOKIE_DOMAIN || ".tallaby.com", // ✅
+              domain: process.env.SUPABASE_COOKIE_DOMAIN || "tallaby.com", // ✅
               secure: process.env.NODE_ENV === "production",
               sameSite: "lax",
             });

@@ -17,7 +17,7 @@ export const createClient = async () => {
             cookiesToSet.forEach(({ name, value, options }) => {
               cookieStore.set(name, value, {
                 ...options,
-                domain: process.env.SUPABASE_COOKIE_DOMAIN || ".tallaby.com", // ✅ shared domain
+                domain: process.env.SUPABASE_COOKIE_DOMAIN || "tallaby.com", // ✅ shared domain
                 secure: process.env.NODE_ENV === "production",
                 sameSite: "lax",
               });

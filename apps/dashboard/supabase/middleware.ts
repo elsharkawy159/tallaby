@@ -22,7 +22,7 @@ export async function updateSession(request: NextRequest) {
           cookiesToSet.forEach(({ name, value, options }) => {
             supabaseResponse.cookies.set(name, value, {
               ...options,
-              domain: process.env.SUPABASE_COOKIE_DOMAIN || ".tallaby.com", // ✅
+              domain: process.env.SUPABASE_COOKIE_DOMAIN || "tallaby.com", // ✅
               secure: process.env.NODE_ENV === "production",
               sameSite: "lax",
             });
@@ -31,6 +31,7 @@ export async function updateSession(request: NextRequest) {
       },
     }
   );
+  
   // Do not run code between createServerClient and
   // supabase.auth.getUser(). A simple mistake could make it very hard to debug
   // issues with users being randomly logged out.
@@ -40,7 +41,7 @@ export async function updateSession(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  console.log("useruseruser", user);
+
   if (
     !user &&
     // user?.user_metadata?.is_seller !== true &&
