@@ -67,9 +67,6 @@ export const checkUserEligibility = async (email: string) => {
 };
 
 export const login = async (email: string, password: string) => {
-  // Pre-authentication checks
-  // await checkUserEligibility(email);
-
   // Proceed with authentication
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithPassword({
@@ -85,6 +82,11 @@ export const login = async (email: string, password: string) => {
   const user = data.user;
   if (!user) {
     throw new Error("Authentication failed: user not found.");
+  }
+
+  // Check if user is a seller
+  if (!user.user_metadata || user.user_metadata.is_seller !== true) {
+    throw new Error("Access denied: Only sellers can access the dashboard.");
   }
 
   return data;
