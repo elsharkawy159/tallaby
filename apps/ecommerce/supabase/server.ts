@@ -3,6 +3,9 @@ import { cookies } from "next/headers";
 
 export const createClient = async () => {
   const cookieStore = await cookies();
+  const hostname = process.env.NEXT_PUBLIC_ROOT_DOMAIN;
+  const isDevelopment = process.env.NODE_ENV === "development";
+  const cookieDomain = isDevelopment ? "localhost" : hostname;
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -17,13 +20,14 @@ export const createClient = async () => {
             cookiesToSet.forEach(({ name, value, options }) => {
               cookieStore.set(name, value, {
                 ...options,
-                domain: process.env.SUPABASE_COOKIE_DOMAIN || "tallaby.com", // ✅ shared domain
-                secure: process.env.NODE_ENV === "production",
-                sameSite: "lax",
+                domain: cookieDomain,
+                secure: !isDevelopment,
+                sameSite: isDevelopment ? "strict" : "lax",
+                httpOnly: !isDevelopment,
               });
             });
           } catch (error) {
-            // Safe to ignore for Server Components
+            console.error("Error setting cookies:", error);
           }
         },
       },

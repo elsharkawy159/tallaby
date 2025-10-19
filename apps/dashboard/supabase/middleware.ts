@@ -1,10 +1,23 @@
 import { createServerClient } from "@supabase/ssr";
-import { NextResponse, type NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
+  let response = NextResponse.next({
     request,
   });
+
+  // Get hostname of request (e.g. demo.vercel.pub, demo.localhost:3000)
+  const hostname = request.headers.get("host")!;
+
+  // Handle localhost subdomains for development
+  const isDevelopment = process.env.NODE_ENV === "development";
+
+  // For localhost development, we'll use the hostname as is
+  // For production, we'll use the root domain
+  const cookieDomain = isDevelopment
+    ? "localhost"
+    : `.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`;
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -15,58 +28,40 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            request.cookies.set(name, value);
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          );
+          response = NextResponse.next({
+            request,
           });
-          supabaseResponse = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) => {
-            supabaseResponse.cookies.set(name, value, {
+
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, {
               ...options,
-              domain: process.env.SUPABASE_COOKIE_DOMAIN || "tallaby.com", // ✅
-              secure: process.env.NODE_ENV === "production",
-              sameSite: "lax",
-            });
-          });
+              domain: cookieDomain,
+              sameSite: isDevelopment ? "strict" : "lax",
+              secure: !isDevelopment,
+              httpOnly: !isDevelopment,
+            })
+          );
         },
       },
     }
   );
-  
-  // Do not run code between createServerClient and
-  // supabase.auth.getUser(). A simple mistake could make it very hard to debug
-  // issues with users being randomly logged out.
-
-  // IMPORTANT: DO NOT REMOVE auth.getUser()
-
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (
-    !user &&
-    // user?.user_metadata?.is_seller !== true &&
-    !request.nextUrl.pathname.startsWith("/login") &&
-    !request.nextUrl.pathname.startsWith("/auth") &&
-    !request.nextUrl.pathname.startsWith("/error")
-  ) {
-    // no user, potentially respond by redirecting the user to the login page
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    return NextResponse.redirect(url);
+  const url = request.nextUrl;
+  const path = url.pathname;
+
+  if (!user && !path.startsWith("/login")) {
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // IMPORTANT: You *must* return the supabaseResponse object as it is.
-  // If you're creating a new response object with NextResponse.next() make sure to:
-  // 1. Pass the request in it, like so:
-  //    const myNewResponse = NextResponse.next({ request })
-  // 2. Copy over the cookies, like so:
-  //    myNewResponse.cookies.setAll(supabaseResponse.cookies.getAll())
-  // 3. Change the myNewResponse object to fit your needs, but avoid changing
-  //    the cookies!
-  // 4. Finally:
-  //    return myNewResponse
-  // If this is not done, you may be causing the browser and server to go out
-  // of sync and terminate the user's session prematurely!
+  if (user && path.startsWith("/login")) {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
 
-  return supabaseResponse;
+  return response;
 }
