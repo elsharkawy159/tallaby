@@ -1,61 +1,39 @@
 "use client";
 
+import Image from "next/image";
 import { useTransition } from "react";
-import { Button } from "@workspace/ui/components/button";
+import { getShareUrl } from "@/lib/utils";
 import { createClient } from "@/supabase/client";
+import { Button } from "@workspace/ui/components/button";
 
 export function OAuth({ next }: { next?: string }) {
   const [isPending, startTransition] = useTransition();
+  const baseUrl = getShareUrl();
 
   const handleOAuthSignin = (provider: "google" | "twitter" | "facebook") => {
     startTransition(async () => {
+      // await loginWithOAuth(provider);
       const supabase = createClient();
+      const redirectUrl = `${baseUrl}/auth/callback?next=${next || "/"}`;
 
-      // Get the base URL - prefer env variable, fallback to window location
-      const baseUrl =
-        process.env.NEXT_PUBLIC_SITE_URL ||
-        (typeof window !== "undefined" ? window.location.origin : "");
-
-      const redirectUrl = `${baseUrl}/api/auth/callback`;
-      const nextPath = next || "/";
-
-      console.log("[OAuth] Initiating OAuth flow:", {
-        provider,
-        redirectUrl,
-        nextPath,
-      });
-
-      const { error } = await supabase.auth.signInWithOAuth({
+      supabase.auth.signInWithOAuth({
         provider: provider,
         options: {
           redirectTo: redirectUrl,
-          queryParams: {
-            next: nextPath,
-          },
         },
       });
-
-      if (error) {
-        console.error("[OAuth] Error initiating OAuth:", error);
-      }
     });
   };
 
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="grid grid-cols-3 gap-x-3">
       <Button
-        className="flex items-center justify-center py-2.5 min-h-12 border rounded-lg hover:bg-gray-50 duration-150 active:bg-gray-100 transition-colors"
+        className="flex items-center justify-center py-2.5 min-h-12 border rounded-lg hover:bg-gray-50 duration-150 active:bg-gray-100"
         onClick={() => handleOAuthSignin("google")}
         disabled={isPending}
         type="button"
-        variant="outline"
-      >
-        <svg
-          className="size-6"
-          viewBox="0 0 48 48"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
+        variant="outline">
+        <svg className="size-6" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
           <g clipPath="url(#clip0_17_40)">
             <path
               d="M47.532 24.5528C47.532 22.9214 47.3997 21.2811 47.1175 19.6761H24.48V28.9181H37.4434C36.9055 31.8988 35.177 34.5356 32.6461 36.2111V42.2078H40.3801C44.9217 38.0278 47.532 31.8547 47.532 24.5528Z"
@@ -81,42 +59,23 @@ export function OAuth({ next }: { next?: string }) {
           </defs>
         </svg>
       </Button>
-      {/* <Button
-        className="flex items-center justify-center py-2.5 min-h-12 border rounded-lg hover:bg-gray-50 duration-150 active:bg-gray-100 transition-colors"
+      <Button
+        className="flex items-center justify-center py-2.5 min-h-12 border rounded-lg hover:bg-gray-50 duration-150 active:bg-gray-100"
         type="button"
         onClick={() => handleOAuthSignin("twitter")}
-        disabled={true} //till configuration
-        // disabled={isPending}
-        variant="outline"
-      >
-        <svg
-          className="size-6"
-          aria-hidden="true"
-          fill="currentColor"
-          viewBox="0 0 20 20"
-        >
+        disabled={isPending}
+        variant="outline">
+        <svg className="size-6" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
           <path d="M11.4678 8.77491L17.2961 2H15.915L10.8543 7.88256L6.81232 2H2.15039L8.26263 10.8955L2.15039 18H3.53159L8.87581 11.7878L13.1444 18H17.8063L11.4675 8.77491H11.4678ZM9.57608 10.9738L8.95678 10.0881L4.02925 3.03974H6.15068L10.1273 8.72795L10.7466 9.61374L15.9156 17.0075H13.7942L9.57608 10.9742V10.9738Z" />
         </svg>
-      </Button> */}
+      </Button>
       <Button
-        className="flex items-center justify-center py-2.5 min-h-12 border rounded-lg hover:bg-gray-50 duration-150 active:bg-gray-100 transition-colors"
+        className="flex items-center justify-center py-2.5 min-h-12 border rounded-lg hover:bg-gray-50 duration-150 active:bg-gray-100"
         onClick={() => handleOAuthSignin("facebook")}
-        disabled={true} //till configuration
-        // disabled={isPending}
+        disabled={isPending}
         type="button"
-        variant="outline"
-      >
-        <svg
-          className="size-6"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"
-            fill="#1877F2"
-          />
-        </svg>
+        variant="outline">
+        <Image src="/icons/auth-facebook.png" width={24} height={24} className="size-6" alt="facebook" />
       </Button>
     </div>
   );

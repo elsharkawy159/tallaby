@@ -15,9 +15,7 @@ export async function updateSession(request: NextRequest) {
 
   // For localhost development, we'll use the hostname as is
   // For production, we'll use the root domain
-  const cookieDomain = isDevelopment
-    ? "localhost"
-    : `.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`;
+  const cookieDomain = isDevelopment ? "localhost" : `.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`;
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -28,9 +26,7 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          );
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
           response = NextResponse.next({
             request,
           });
@@ -42,11 +38,11 @@ export async function updateSession(request: NextRequest) {
               sameSite: isDevelopment ? "strict" : "lax",
               secure: !isDevelopment,
               httpOnly: !isDevelopment,
-            })
+            }),
           );
         },
       },
-    }
+    },
   );
   const {
     data: { user },

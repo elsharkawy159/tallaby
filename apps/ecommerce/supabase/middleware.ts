@@ -1,8 +1,9 @@
 import { createServerClient } from "@supabase/ssr";
-import { NextResponse, type NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
+  let response = NextResponse.next({
     request: {
       headers: request.headers,
     },
@@ -22,12 +23,12 @@ export async function updateSession(request: NextRequest) {
             value,
             ...options,
           });
-          supabaseResponse = NextResponse.next({
+          response = NextResponse.next({
             request: {
               headers: request.headers,
             },
           });
-          supabaseResponse.cookies.set({
+          response.cookies.set({
             name,
             value,
             ...options,
@@ -39,19 +40,19 @@ export async function updateSession(request: NextRequest) {
             value: "",
             ...options,
           });
-          supabaseResponse = NextResponse.next({
+          response = NextResponse.next({
             request: {
               headers: request.headers,
             },
           });
-          supabaseResponse.cookies.set({
+          response.cookies.set({
             name,
             value: "",
             ...options,
           });
         },
       },
-    }
+    },
   );
 
   const {
@@ -59,17 +60,14 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const url = request.nextUrl;
-  const pathname = url.pathname;
-  if (
-    pathname !== "/" &&
-    !user &&
-    !pathname.startsWith("/login") &&
-    !pathname.startsWith("/auth")
-  ) {
 
-    url.pathname = "/login";
-    return NextResponse.redirect(url);
+  if (!user && !url.pathname.startsWith("/auth")) {
+    return NextResponse.redirect(new URL("/auth", request.url));
   }
 
-  return supabaseResponse;
+  if (user && url.pathname === "/auth") {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+
+  return response;
 }

@@ -26,7 +26,6 @@ import {
   type SignInFormData,
   type ResetPasswordFormData,
 } from "@/lib/validations/vendor-schemas";
-import Image from "next/image";
 import { OAuth } from "@/components/auth/o-auth";
 
 export default function AuthPage() {
