@@ -85,7 +85,7 @@ export function ProductImageUpload({
               `${successfulUploads.length} image(s) uploaded successfully`
             );
             // Trigger a page refresh to show updated images
-            window.location.reload();
+            // window.location.reload();
           } else {
             toast.error("Failed to update product images");
           }

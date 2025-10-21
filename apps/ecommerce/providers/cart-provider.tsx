@@ -85,6 +85,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const result = await action(...args);
       if (result.success) {
         queryClient.invalidateQueries({ queryKey: ["cart"] });
+        
         // refreshCart();
         toast.success(successMsg);
         return { success: true };

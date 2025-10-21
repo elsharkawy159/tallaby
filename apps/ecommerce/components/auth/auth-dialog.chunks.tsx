@@ -19,16 +19,17 @@ import {
   type ForgotPasswordFormData,
 } from "@/lib/validations/auth-schemas";
 
-
-
 import type { AuthFormProps } from "./auth-dialog.types";
 import { forgotPasswordAction, signInAction, signUpUser } from "@/actions/auth";
+import { useQueryClient } from "@tanstack/react-query";
 
 // Sign In Form Component
 export function SignInForm({
   onSuccess,
 }: Omit<AuthFormProps, "isLoading" | "setIsLoading">) {
   const [isPending, startTransition] = useTransition();
+  const queryClient = useQueryClient();
+
   const form = useForm<SignInFormData>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
@@ -41,11 +42,10 @@ export function SignInForm({
     startTransition(async () => {
       try {
         const result = await signInAction(data);
+        queryClient.invalidateQueries({ queryKey: ["user"] });
 
         if (result.success) {
-          // toast.success(result.message);
           onSuccess();
-          window.location.reload();
         } else {
           toast.error(result.message);
         }
@@ -108,9 +108,11 @@ export function SignUpForm({
     startTransition(async () => {
       try {
         const result = await signUpUser(data);
-console.log("result", result)
+        console.log("result", result);
         if (result.success) {
-          toast.success("Account created successfully! Please check your email to verify your account.");
+          toast.success(
+            "Account created successfully! Please check your email to verify your account."
+          );
           form.reset();
           onSuccess();
 
@@ -131,15 +133,15 @@ console.log("result", result)
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-          <TextInput
-            form={form}
-            name="fullName"
-            label="Full Name"
-            type="text"
-            placeholder="John"
-            disabled={isPending}
-            required
-          />
+        <TextInput
+          form={form}
+          name="fullName"
+          label="Full Name"
+          type="text"
+          placeholder="John"
+          disabled={isPending}
+          required
+        />
 
         <TextInput
           form={form}
@@ -171,11 +173,7 @@ console.log("result", result)
           required
         />
 
-        <Button
-          type="submit"
-          className="w-full"
-          disabled={isPending}
-        >
+        <Button type="submit" className="w-full" disabled={isPending}>
           {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {isPending ? "Creating Account..." : "Create Account"}
         </Button>

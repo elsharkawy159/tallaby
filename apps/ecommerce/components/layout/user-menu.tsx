@@ -69,7 +69,7 @@ export function UserMenu({
   };
 
   return (
-    <Popover>
+    <Popover triggerMode="hover">
       <PopoverTrigger asChild>
         <button
           className={cn(

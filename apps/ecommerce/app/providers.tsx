@@ -4,7 +4,6 @@ import { ReactNode } from "react";
 import { AuthProvider } from "@/providers/auth-provider";
 import { CartProvider } from "@/providers/cart-provider";
 import { AddressProvider } from "@/providers/address-provider";
-import { Toaster } from "@workspace/ui/components/sonner";
 import { QueryProvider } from "@/providers/query-provider";
 import { WishlistProvider } from "@/providers/wishlist-provider";
 
@@ -18,10 +17,7 @@ export function Providers({ children }: ProvidersProps) {
       <AuthProvider>
         <CartProvider>
           <AddressProvider>
-            <WishlistProvider>
-              {children}
-              <Toaster />
-            </WishlistProvider>
+            <WishlistProvider>{children}</WishlistProvider>
           </AddressProvider>
         </CartProvider>
       </AuthProvider>

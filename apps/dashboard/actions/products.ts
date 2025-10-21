@@ -291,6 +291,7 @@ export async function bulkUploadProductsAction(formData: FormData) {
 
       // Parse numbers/booleans
       const quantity = Number(record.quantity ?? 0) || 0;
+      // TODO: Ignore the isActive and isFeatured columns in the Excel file
       const isActive =
         String(record.isActive ?? "").toLowerCase() === "true" ||
         String(record.isActive).toLowerCase() === "yes";
@@ -770,6 +771,8 @@ export async function updateProduct(
     if (!updatedProduct.length) {
       throw new Error("Product not found or unauthorized");
     }
+
+    revalidatePath("/products");
 
     return { success: true, data: updatedProduct[0] };
   } catch (error) {

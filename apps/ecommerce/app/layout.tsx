@@ -7,6 +7,7 @@ import { Providers } from "./providers";
 import NextTopLoader from "nextjs-toploader";
 import { Scripts } from "@/components/layout/structured-data";
 import { getMessages } from "next-intl/server";
+import { Toaster } from "@workspace/ui/components/sonner";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -125,6 +126,7 @@ export default async function RootLayout({
           <NextIntlClientProvider messages={messages}>
             {children}
           </NextIntlClientProvider>
+          <Toaster />
         </Providers>
       </body>
     </html>

@@ -7,6 +7,7 @@ import {
   forgotPasswordSchema,
   type ForgotPasswordFormData,
 } from "@/lib/validations/auth-schemas";
+import { revalidatePath } from "next/cache";
 
 export async function getUser() {
   try {
