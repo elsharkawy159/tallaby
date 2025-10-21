@@ -1,19 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Leaflet from "leaflet";
-import "leaflet/dist/leaflet.css";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { ArrowLeft, Check, Navigation, Plus, Search } from "lucide-react";
 import { toast } from "sonner";
-
-// Fix for Leaflet marker icons
-Leaflet.Icon.Default.mergeOptions({
-  iconRetinaUrl: "/leaflet/images/marker-icon-2x.png",
-  iconUrl: "/leaflet/images/marker-icon.png",
-  shadowUrl: "/leaflet/images/marker-shadow.png",
-});
 
 interface LocationData {
   latitude: number;
@@ -37,8 +28,8 @@ export const MapLocationStep = ({
   initialLocation,
 }: MapLocationStepProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<L.Map | null>(null);
-  const markerRef = useRef<L.Marker | null>(null);
+  const mapInstanceRef = useRef<any>(null);
+  const markerRef = useRef<any>(null);
   const [selectedCoordinates, setSelectedCoordinates] = useState<{
     lat: number;
     lng: number;
@@ -46,12 +37,13 @@ export const MapLocationStep = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
+  const [isMapLoaded, setIsMapLoaded] = useState(false);
 
   // Default to Cairo center
   const EGYPT_CENTER = { lat: 30.0444, lng: 31.2357 };
 
   const searchLocation = async (query: string) => {
-    if (!query.trim()) return;
+    if (!query.trim() || !isMapLoaded) return;
 
     setIsSearching(true);
     try {
@@ -74,8 +66,13 @@ export const MapLocationStep = ({
             markerRef.current.remove();
           }
 
+          // Dynamically import Leaflet
+          const Leaflet = await import("leaflet");
+
           // Add new marker
-          const marker = Leaflet.marker([lat, lng]).addTo(mapInstanceRef.current);
+          const marker = Leaflet.marker([lat, lng]).addTo(
+            mapInstanceRef.current
+          );
           markerRef.current = marker;
         }
 
@@ -96,48 +93,69 @@ export const MapLocationStep = ({
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
-    const map = Leaflet.map(mapRef.current).setView(
-      initialLocation
-        ? [initialLocation.latitude, initialLocation.longitude]
-        : [EGYPT_CENTER.lat, EGYPT_CENTER.lng],
-      10
-    );
+    const initializeMap = async () => {
+      try {
+        // Dynamically import Leaflet and CSS
+        const Leaflet = await import("leaflet");
+        await import("leaflet/dist/leaflet.css");
 
-    Leaflet.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
-      map
-    );
+        // Fix for Leaflet marker icons
+        Leaflet.Icon.Default.mergeOptions({
+          iconRetinaUrl: "/leaflet/images/marker-icon-2x.png",
+          iconUrl: "/leaflet/images/marker-icon.png",
+          shadowUrl: "/leaflet/images/marker-shadow.png",
+        });
 
-    mapInstanceRef.current = map;
+        const map = Leaflet.map(mapRef.current).setView(
+          initialLocation
+            ? [initialLocation.latitude, initialLocation.longitude]
+            : [EGYPT_CENTER.lat, EGYPT_CENTER.lng],
+          10
+        );
 
-    // Add initial marker if location provided
-    if (initialLocation) {
-      const marker = Leaflet.marker([
-        initialLocation.latitude,
-        initialLocation.longitude,
-      ]).addTo(map);
-      markerRef.current = marker;
-      setSelectedCoordinates({
-        lat: initialLocation.latitude,
-        lng: initialLocation.longitude,
-      });
-    }
+        Leaflet.tileLayer(
+          "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        ).addTo(map);
 
-    // Handle click events to select location
-    map.on("click", async (e: Leaflet.LeafletMouseEvent) => {
-      const { lat, lng } = e.latlng;
+        mapInstanceRef.current = map;
+        setIsMapLoaded(true);
 
-      // Remove old marker
-      if (markerRef.current) {
-        markerRef.current.remove();
+        // Add initial marker if location provided
+        if (initialLocation) {
+          const marker = Leaflet.marker([
+            initialLocation.latitude,
+            initialLocation.longitude,
+          ]).addTo(map);
+          markerRef.current = marker;
+          setSelectedCoordinates({
+            lat: initialLocation.latitude,
+            lng: initialLocation.longitude,
+          });
+        }
+
+        // Handle click events to select location
+        map.on("click", async (e: any) => {
+          const { lat, lng } = e.latlng;
+
+          // Remove old marker
+          if (markerRef.current) {
+            markerRef.current.remove();
+          }
+
+          // Add new marker
+          const marker = Leaflet.marker([lat, lng]).addTo(map);
+          markerRef.current = marker;
+
+          setSelectedCoordinates({ lat, lng });
+          toast.success("Location selected!");
+        });
+      } catch (error) {
+        console.error("Failed to initialize map:", error);
+        toast.error("Failed to load map");
       }
+    };
 
-      // Add new marker
-      const marker = Leaflet.marker([lat, lng]).addTo(map);
-      markerRef.current = marker;
-
-      setSelectedCoordinates({ lat, lng });
-      toast.success("Location selected!");
-    });
+    initializeMap();
 
     // Cleanup
     return () => {
@@ -149,8 +167,8 @@ export const MapLocationStep = ({
   }, [initialLocation]);
 
   // Get current location
-  const handleGetCurrentLocation = () => {
-    if (!navigator.geolocation) {
+  const handleGetCurrentLocation = async () => {
+    if (!navigator.geolocation || !isMapLoaded) {
       toast.error("Geolocation is not supported by your browser");
       return;
     }
@@ -167,6 +185,9 @@ export const MapLocationStep = ({
           if (markerRef.current) {
             markerRef.current.remove();
           }
+
+          // Dynamically import Leaflet
+          const Leaflet = await import("leaflet");
 
           const marker = Leaflet.marker([latitude, longitude]).addTo(
             mapInstanceRef.current

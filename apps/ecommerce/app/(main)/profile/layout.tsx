@@ -1,6 +1,5 @@
 import { Suspense } from "react";
-import { ProfileSidebar } from "./profile.chunks";
-import { getUserAddresses } from "./profile.server";
+import { ProfileSidebar } from "./_components/profile.chunks";
 import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import { generateNoIndexMetadata } from "@/lib/metadata";
 import type { Metadata } from "next";
@@ -8,20 +7,15 @@ import type { Metadata } from "next";
 export const metadata: Metadata = generateNoIndexMetadata();
 
 // Profile Layout Data Component (Server Component)
-async function ProfileLayoutData({ children }: { children: React.ReactNode }) {
-  // Fetch user addresses on the server
-  const addresses = await getUserAddresses();
-
+function ProfileLayoutData({ children }: { children: React.ReactNode }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-      {/* Sidebar */}
       <div className="lg:col-span-1">
         <div className="sticky top-4">
-          <ProfileSidebar addresses={addresses} activeTab="profile" />
+          <ProfileSidebar />
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="lg:col-span-3">{children}</div>
     </div>
   );

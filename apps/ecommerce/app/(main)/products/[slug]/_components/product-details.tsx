@@ -9,7 +9,7 @@ interface ProductDetailsProps {
 
 export const ProductDetails = async ({ product }: ProductDetailsProps) => {
   return (
-    <aside className="space-y-4 lg:space-y-6 w-full lg:max-w-96">
+    <aside className="space-y-4 w-full lg:col-span-3">
       {/* Shipping Info */}
       <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-6">
         <h3 className="text-base lg:text-lg font-bold text-gray-900 mb-3 lg:mb-4">

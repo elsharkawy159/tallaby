@@ -1,6 +1,6 @@
-import { ProfileForm } from "./profile.chunks";
 import { generateNoIndexMetadata } from "@/lib/metadata";
 import type { Metadata } from "next";
+import { ProfileForm } from "./_components/profile.chunks";
 
 export const metadata: Metadata = generateNoIndexMetadata();
 

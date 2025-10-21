@@ -32,8 +32,8 @@ import {
   getUserAvatar,
   getUserInitials,
   formatUserName,
-} from "@/app/(main)/profile/profile.lib";
-import { Seller } from "@/app/(main)/profile/profile.types";
+} from "@/app/(main)/profile/_components/profile.lib";
+import { Seller } from "@/app/(main)/profile/_components/profile.types";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 interface UserMenuProps {

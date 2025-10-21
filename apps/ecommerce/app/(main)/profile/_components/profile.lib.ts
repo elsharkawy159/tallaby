@@ -1,18 +1,5 @@
-import {
-  User,
-  UserAddress,
-  ProfileTabType,
-  UserRole,
-  SupabaseUser,
-} from "./profile.types";
-import {
-  User as UserIcon,
-  Package,
-  Heart,
-  MapPin,
-  Shield,
-  Settings,
-} from "lucide-react";
+import { UserAddress, ProfileTabType } from "./profile.types";
+import { User as UserIcon, Package, Heart, MapPin } from "lucide-react";
 
 // Profile navigation tabs
 export const profileTabs: ProfileTabType[] = [
@@ -39,12 +26,6 @@ export const profileTabs: ProfileTabType[] = [
     label: "Wishlist",
     icon: Heart,
     href: "/profile/wishlist",
-  },
-  {
-    id: "security",
-    label: "Security",
-    icon: Shield,
-    href: "/profile/security",
   },
 ];
 

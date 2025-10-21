@@ -40,7 +40,7 @@ export const ProductImages = ({ images, productName }: ProductImagesProps) => {
       </div>
 
       {/* Desktop Gallery */}
-      <div className="hidden lg:flex space-y-4 max-w-2xl w-full gap-2.5">
+      <div className="hidden lg:sticky lg:top-5 lg:flex space-y-4 max-w-2xl w-full gap-2.5">
         <div className="flex flex-col gap-1.5 w-14">
           {images.map((image, index) => (
             <button
@@ -91,7 +91,7 @@ export const ProductImages = ({ images, productName }: ProductImagesProps) => {
                 style={{
                   backgroundImage: `url(${activeImage ? getPublicUrl(activeImage, "products") : "/png product.png"})`,
                   backgroundPosition: `${zoomPosition.x}% ${zoomPosition.y}%`,
-                  backgroundSize: "400%",
+                  backgroundSize: "180%",
                 }}
               />
             </div>

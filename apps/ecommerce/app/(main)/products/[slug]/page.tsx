@@ -64,6 +64,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   if (!productResult.success || !productResult.data) {
     notFound();
   }
+  console.log("productResult", productResult);
   const raw = productResult.data as any;
   const product: Product = {
     id: raw.id,
@@ -127,14 +128,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
       <section className="bg-white py-6 lg:py-10">
         <div className="container">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
-            <Suspense fallback={<ProductHeroSkeleton />}>
+          <div className="grid grid-cols-1 lg:grid-cols-12 md:gap-8 gap-5">
               {/* Product images + hero info */}
               <ProductHero product={product as any} />
-            </Suspense>
-            <Suspense fallback={null}>
               <ProductDetails product={product as any} />
-            </Suspense>
           </div>
         </div>
       </section>

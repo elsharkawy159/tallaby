@@ -1,5 +1,3 @@
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
 import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import { Button } from "@workspace/ui/components/button";
 import {

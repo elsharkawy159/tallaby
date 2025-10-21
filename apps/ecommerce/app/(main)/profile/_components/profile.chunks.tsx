@@ -29,36 +29,17 @@ import {
 import { TextInput } from "@workspace/ui/components/inputs/text-input";
 import { SelectInput } from "@workspace/ui/components/inputs/select-input";
 
-import {
-  User,
-  Mail,
-  Phone,
-  Calendar,
-  Shield,
-  LogOut,
-  Edit,
-  Trash2,
-  Plus,
-  MapPin,
-  Building,
-  Home,
-  Star,
-  ExternalLink,
-} from "lucide-react";
+import { LogOut, Edit, Trash2, Building, Star } from "lucide-react";
 
 import {
   profileFormSchema,
   addressFormSchema,
   securityFormSchema,
-  wishlistFormSchema,
-  profileFormDefaults,
   addressFormDefaults,
   securityFormDefaults,
-  wishlistFormDefaults,
   type ProfileFormData,
   type AddressFormData,
   type SecurityFormData,
-  type WishlistFormData,
 } from "./profile.dto";
 
 import {
@@ -72,48 +53,34 @@ import {
 
 import {
   profileTabs,
-  timezoneOptions,
-  languageOptions,
-  currencyOptions,
   countryOptions,
   twoFactorMethodOptions,
   formatUserName,
-  formatAddress,
-  formatAddressShort,
-  getAddressTypeLabel,
-  getAddressTypeBadgeColor,
-  formatPhoneNumber,
   calculateProfileCompletion,
-  DEFAULT_AVATAR_URL,
+  languageOptions,
+  getAddressTypeBadgeColor,
+  getAddressTypeLabel,
+  formatPhoneNumber,
+  formatAddress,
 } from "./profile.lib";
 
-import type {
-  User as UserType,
-  UserAddress,
-  Wishlist,
-  ProfileTabType,
-} from "./profile.types";
+import type { UserAddress } from "./profile.types";
 import { Input } from "@workspace/ui/components/input";
 import { Switch } from "@workspace/ui/components/switch";
 import { Select, SelectItem } from "@workspace/ui/components/select";
 import { useAuth } from "@/providers/auth-provider";
 import { useQueryClient } from "@tanstack/react-query";
-import { UserAvatar } from "@/components/shared/user-avatar";
 import { AvatarUploader } from "@/components/shared/avatar-uploader";
+import { useAddress } from "@/providers/address-provider";
 
-// Profile Sidebar Component
-interface ProfileSidebarProps {
-  addresses: UserAddress[];
-  activeTab: ProfileTabType["id"];
-}
-
-export function ProfileSidebar({ addresses }: ProfileSidebarProps) {
+export function ProfileSidebar() {
   const { user, logout, isSigningOut } = useAuth();
+  const { addresses } = useAddress();
   const pathname = usePathname();
   console.log("user", user);
   const { percentage, missingFields } = calculateProfileCompletion(
     user,
-    addresses
+    addresses as UserAddress[]
   );
 
   // Check if user is verified (Supabase auth user structure)
@@ -396,7 +363,7 @@ export function ProfileForm() {
               name="phone"
               form={form}
             />
-              {/* <FormField
+            {/* <FormField
                 control={form.control}
                 name="timezone"
                 render={({ field }) => (
@@ -414,25 +381,25 @@ export function ProfileForm() {
                 )}
               /> */}
 
-              <FormField
-                control={form.control}
-                name="preferredLanguage"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Language</FormLabel>
-                    <FormControl>
-                      <SelectInput
-                        placeholder="Select your language"
-                        options={languageOptions}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <FormField
+              control={form.control}
+              name="preferredLanguage"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Language</FormLabel>
+                  <FormControl>
+                    <SelectInput
+                      placeholder="Select your language"
+                      options={languageOptions}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              {/* <FormField
+            {/* <FormField
                 control={form.control}
                 name="defaultCurrency"
                 render={({ field }) => (

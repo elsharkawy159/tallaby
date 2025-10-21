@@ -1,6 +1,6 @@
 import { Suspense } from "react";
-import { OrderConfirmationData } from "./order-confirmation.data";
-import { OrderConfirmationSkeleton } from "./order-confirmation.skeleton";
+import { OrderConfirmationData } from "./_components/order-confirmation.data";
+import { OrderConfirmationSkeleton } from "./_components/order-confirmation.skeleton";
 
 export default async function OrderConfirmationPage({
   params,

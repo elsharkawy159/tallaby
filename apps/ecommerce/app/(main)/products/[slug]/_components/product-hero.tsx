@@ -8,16 +8,15 @@ interface ProductHeroProps {
 }
 
 export const ProductHero = ({ product }: ProductHeroProps) => {
-  console.log("product", product);
   return (
     <>
       {/* Product Images */}
-      <div className="w-full sticky top-5 h-full">
+      <div className="w-full lg:col-span-4 lg:sticky lg:top-5 h-full">
         <ProductImages images={product.images} productName={product.title} />
       </div>
 
       {/* Product Info */}
-      <div className="space-y-4 lg:space-y-6 w-full">
+      <div className="space-y-4 lg:space-y-6 w-full lg:col-span-5">
         {/* Product Title and Rating */}
         <div>
           <h1 className="text-xl lg:text-2xl font-bold text-gray-900 mb-3">
@@ -78,7 +77,7 @@ export const ProductHero = ({ product }: ProductHeroProps) => {
             <h3 className="font-semibold text-gray-900 mb-3 text-sm sm:text-base">
               Key Features
             </h3>
-            <ul className="space-y-2">
+            <ul className="md:space-y-2 space-y-1">
               {product.bulletPoints.map((feature, index) => (
                 <li
                   key={index}

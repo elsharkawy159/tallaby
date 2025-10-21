@@ -11,8 +11,8 @@ import {
   formatUserName,
   getUserAvatar,
   getUserInitials,
-} from "@/app/(main)/profile/profile.lib";
-import type { SupabaseUser } from "@/app/(main)/profile/profile.types";
+} from "@/app/(main)/profile/_components/profile.lib";
+import type { SupabaseUser } from "@/app/(main)/profile/_components/profile.types";
 
 interface UserProfileDemoProps {
   user: SupabaseUser | any;

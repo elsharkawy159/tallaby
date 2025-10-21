@@ -170,9 +170,8 @@ export async function getProductBySlug(slug: string) {
           with: {
             user: {
               columns: {
-                firstName: true,
-                lastName: true,
-                // avatarUrl: true,
+                fullName: true,
+                avatarUrl: true,
               },
             },
             reviewComments: {

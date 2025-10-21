@@ -1,4 +1,4 @@
-import { OrderConfirmationSkeleton } from "./order-confirmation.skeleton";
+import { OrderConfirmationSkeleton } from "./_components/order-confirmation.skeleton";
 
 export default function OrderConfirmationLoading() {
   return (

@@ -1,8 +1,8 @@
 import { Suspense } from "react";
 import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import { Heart } from "lucide-react";
-import { WishlistData } from "./wishlist-data";
-import { WishlistSkeleton } from "./wishlist-skeleton";
+import { WishlistData } from "./_components/wishlist-data";
+import { WishlistSkeleton } from "./_components/wishlist-skeleton";
 
 const Wishlist = () => {
   return (

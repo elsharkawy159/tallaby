@@ -3,7 +3,7 @@
 import { Button } from "@workspace/ui/components/button";
 import { Heart } from "lucide-react";
 import Link from "next/link";
-import ProductCard from "../products/[slug]/_components/ProductCard";
+import ProductCard from "../../products/[slug]/_components/ProductCard";
 import { useWishlist } from "@/providers/wishlist-provider";
 import type { WishlistItem } from "@/types/wishlist";
 

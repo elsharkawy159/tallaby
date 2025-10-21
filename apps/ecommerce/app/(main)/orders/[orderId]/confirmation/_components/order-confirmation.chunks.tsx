@@ -1,4 +1,3 @@
-
 import {
   CheckCircle,
   Package,
@@ -161,9 +160,10 @@ export function OrderConfirmationContent({
                 <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100">
                   {item.product.images && item.product.images.length > 0 ? (
                     <Image
-                      src={
-                        getPublicUrl(item.product.images[0] || "", "products")
-                      }
+                      src={getPublicUrl(
+                        item.product.images[0] || "",
+                        "products"
+                      )}
                       alt={item.productName}
                       fill
                       className="object-cover"

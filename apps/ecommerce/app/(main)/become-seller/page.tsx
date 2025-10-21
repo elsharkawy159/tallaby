@@ -3,19 +3,15 @@ import { Metadata } from "next";
 
 import {
   HeroSection,
-  StatsSection,
-  PricingSection,
-  TestimonialsSection,
   ApplicationFormSection,
-} from "./become-seller.chunks";
+} from "./_components/become-seller.chunks";
 import {
   getBenefitsData,
   getStatsData,
   getTestimonialsData,
   getPricingPlansData,
-} from "./become-seller.lib";
-import { getSellerApplicationStatus } from "./become-seller.server";
-import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
+} from "./_components/become-seller.lib";
+import { getSellerApplicationStatus } from "./_components/become-seller.server";
 import Link from "next/link";
 
 // Metadata for SEO

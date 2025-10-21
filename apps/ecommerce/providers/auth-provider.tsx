@@ -38,7 +38,6 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const supabase = createClient();
   const queryClient = useQueryClient();
   const router = useRouter();
 

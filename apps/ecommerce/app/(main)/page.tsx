@@ -1,19 +1,27 @@
-import FeaturesSection from "@/components/home/FeaturesSection";
 import ProductSection from "@/components/home/ProductSection";
-import VendorRecruitment from "@/components/home/VendorRecruitment";
 import CategoryGrid from "@/components/home/category/category-grid";
 import BestSellersInCategory from "@/components/home/best-sellers-in-category";
 import EventBanner from "@/components/home/event-banner";
 import ShopByBrand from "@/components/home/shop-by-brand";
-import DealOfTheDay from "@/components/home/deal-of-the-day";
 import FeaturedCollection from "@/components/home/featured-collection";
 import Hero from "@/components/home/hero/hero";
-import { generateHomeMetadata } from "@/lib/metadata";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = generateHomeMetadata();
+export const metadata: Metadata = {
+  title: "Home | Multi-Vendor E-commerce",
+  description:
+    "Discover amazing products from top vendors. Shop electronics, fashion, home goods, and more with great deals and fast shipping.",
+  keywords:
+    "ecommerce, online shopping, multi-vendor, electronics, fashion, home goods",
+  openGraph: {
+    title: "Home | Multi-Vendor E-commerce",
+    description:
+      "Discover amazing products from top vendors. Shop electronics, fashion, home goods, and more with great deals and fast shipping.",
+    type: "website",
+  },
+};
 
-const page = async () => {
+const HomePage = () => {
   return (
     <div className="min-h-screen">
       <Hero />
@@ -119,4 +127,4 @@ const page = async () => {
   );
 };
 
-export default page;
+export default HomePage;

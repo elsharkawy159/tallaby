@@ -9,8 +9,8 @@ import {
   getUserAvatar,
   getUserInitials,
   getAvatarWithFallback,
-} from "@/app/(main)/profile/profile.lib";
-import type { SupabaseUser } from "@/app/(main)/profile/profile.types";
+} from "@/app/(main)/profile/_components/profile.lib";
+import type { SupabaseUser } from "@/app/(main)/profile/_components/profile.types";
 
 interface UserAvatarProps {
   user: SupabaseUser | any;

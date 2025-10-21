@@ -10,10 +10,10 @@ import {
   CardTitle,
 } from "@workspace/ui/components/card";
 import { Skeleton } from "@workspace/ui/components/skeleton";
-import { getUserAddresses } from "../profile.server";
+import { getUserAddresses } from "../_components/profile.server";
 import { useEffect, useState } from "react";
 import { Plus, MapPin } from "lucide-react";
-import type { UserAddress } from "../profile.types";
+import type { UserAddress } from "../_components/profile.types";
 import { AddressManagerDialog } from "@/components/shared/address-dialog";
 import type { AddressData } from "@/components/address/address.schema";
 
