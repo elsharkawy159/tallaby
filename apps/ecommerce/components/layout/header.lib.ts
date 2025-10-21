@@ -39,6 +39,3 @@ export const getSearchPlaceholder = (variant: "mobile" | "desktop"): string => {
     ? "Search products..."
     : "Search for products, brands, categories...";
 };
-
-
-export const getBecomeSellerUrl = (): string => "/become-seller";

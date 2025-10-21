@@ -3,7 +3,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
-export async function createClient() {
+export const createClient = async () => {
   const cookieStore = await cookies();
   const hostname = process.env.NEXT_PUBLIC_ROOT_DOMAIN;
   const isDevelopment = process.env.NODE_ENV === "development";
@@ -40,4 +40,4 @@ export async function createClient() {
       },
     }
   );
-}
+};

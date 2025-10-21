@@ -7,15 +7,10 @@ export async function updateSession(request: NextRequest) {
     request,
   });
 
-  // Get hostname of request (e.g. demo.vercel.pub, demo.localhost:3000)
-  const hostname = request.headers.get("host")!;
-
-  // Handle localhost subdomains for development
   const isDevelopment = process.env.NODE_ENV === "development";
-
-  // For localhost development, we'll use the hostname as is
-  // For production, we'll use the root domain
-  const cookieDomain = isDevelopment ? "localhost" : `.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`;
+  const cookieDomain = isDevelopment
+    ? "localhost"
+    : `.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`;
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -26,7 +21,9 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          );
           response = NextResponse.next({
             request,
           });
@@ -38,12 +35,13 @@ export async function updateSession(request: NextRequest) {
               sameSite: isDevelopment ? "strict" : "lax",
               secure: !isDevelopment,
               httpOnly: !isDevelopment,
-            }),
+            })
           );
         },
       },
-    },
+    }
   );
+
   const {
     data: { user },
   } = await supabase.auth.getUser();

@@ -3,41 +3,25 @@
 import { useTransition } from "react";
 import { Button } from "@workspace/ui/components/button";
 import { createClient } from "@/supabase/client";
+import { getShareUrl } from "@/lib/utils";
 
 export function OAuth({ next }: { next?: string }) {
   const [isPending, startTransition] = useTransition();
 
   const handleOAuthSignin = (provider: "google" | "twitter" | "facebook") => {
     startTransition(async () => {
+      // await loginWithOAuth(provider);
+      const baseUrl = getShareUrl();
+
       const supabase = createClient();
+      const redirectUrl = `${baseUrl}/api/auth/callback?next=${next || "/"}`;
 
-      // Get the base URL - prefer env variable, fallback to window location
-      const baseUrl =
-        process.env.NEXT_PUBLIC_SITE_URL ||
-        (typeof window !== "undefined" ? window.location.origin : "");
-
-      const redirectUrl = `${baseUrl}/api/auth/callback`;
-      const nextPath = next || "/";
-
-      console.log("[OAuth] Initiating OAuth flow:", {
-        provider,
-        redirectUrl,
-        nextPath,
-      });
-
-      const { error } = await supabase.auth.signInWithOAuth({
+      supabase.auth.signInWithOAuth({
         provider: provider,
         options: {
           redirectTo: redirectUrl,
-          queryParams: {
-            next: nextPath,
-          },
         },
       });
-
-      if (error) {
-        console.error("[OAuth] Error initiating OAuth:", error);
-      }
     });
   };
 

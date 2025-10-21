@@ -37,7 +37,6 @@ import {
   navigationItems,
   bottomNavigationItems,
   getSearchPlaceholder,
-  getBecomeSellerUrl,
 } from "./header.lib";
 import { useCart } from "@/providers/cart-provider";
 import { useWishlist } from "@/providers/wishlist-provider";
@@ -66,7 +65,7 @@ export const SearchBar = ({
 export const BecomeSellerButton = ({ className }: { className?: string }) => {
   return (
     <Button asChild className={cn("text-sm", className)} size="sm">
-      <Link href={getBecomeSellerUrl()}>Become a Partner</Link>
+      <Link href={"/become-seller"}>Become a Partner</Link>
     </Button>
   );
 };
@@ -289,7 +288,10 @@ export const DeliveryLocationSelector = ({
           <MapPin className="h-5 w-5 flex-shrink-0" />
           <div className="flex flex-col items-start text-left">
             <span className="text-xs font-normal">
-              Deliver to {user.user_metadata?.full_name?.split(" ")[0] || "you"}
+              Deliver to{" "}
+              {currentAddress.fullName.split(" ")[0] ||
+                user.user_metadata?.full_name?.split(" ")[0] ||
+                "you"}
             </span>
             <span className="text-sm font-semibold flex items-center gap-1 truncate max-w-[150px]">
               {currentAddress.city || currentAddress.state || "Your location"}

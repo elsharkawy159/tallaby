@@ -55,3 +55,11 @@ export const validateImage = (file: any) => {
     }
   });
 };
+
+export function getShareUrl(url?: string) {
+  // Return an empty string during server-side rendering
+  if (typeof window === "undefined") return "";
+
+  const baseUrl = `${window.location.protocol}//${window.location.host}`;
+  return `${baseUrl}${url ? `/${url}` : "/"}`;
+}
