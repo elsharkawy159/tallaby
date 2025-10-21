@@ -7,7 +7,10 @@ import { ProductHeroSkeleton } from "./_components/product-hero.skeleton";
 import { ProductTabsSkeleton } from "./_components/product-tabs.skeleton";
 import { SimilarProductsSkeleton } from "./_components/similar-products.skeleton";
 
-import type { Product, ProductPageProps } from "./product-page.types";
+import type {
+  Product,
+  ProductPageProps,
+} from "./_components/product-page.types";
 import { ProductHero } from "./_components/product-hero";
 import { notFound } from "next/navigation";
 import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
@@ -20,7 +23,6 @@ export async function generateMetadata({
 }: ProductPageProps): Promise<Metadata> {
   const { slug } = await params;
   const productResult = await getProductBySlug(slug);
-
   if (!productResult.success || !productResult.data) {
     return {
       title: "Product Not Found | Tallaby.com",

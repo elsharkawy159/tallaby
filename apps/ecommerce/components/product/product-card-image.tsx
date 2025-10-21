@@ -35,7 +35,7 @@ export const ProductCardImage = ({
           width={270}
           height={310}
           loading="lazy"
-          className="w-full aspect-[2.6/3] h-full object-cover bg-white"
+          className="w-full aspect-[2.6/3] h-full object-contain bg-white"
           sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
         />
       </Link>

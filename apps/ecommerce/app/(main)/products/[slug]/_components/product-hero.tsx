@@ -1,7 +1,7 @@
 import { Star } from "lucide-react";
 import { Badge } from "@workspace/ui/components/badge";
 import { ProductImages } from "./ProductImages";
-import type { Product } from "../product-page.types";
+import type { Product } from "./product-page.types";
 
 interface ProductHeroProps {
   product: Product;

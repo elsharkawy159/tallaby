@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@workspace/ui/components/button";
 import { ChevronRight, Minus, Plus } from "lucide-react";
-import type { Product } from "../product-page.types";
+import type { Product } from "./product-page.types";
 import { useCart } from "@/providers/cart-provider";
 import { AddToCartButton, WishlistButton } from "@/components/product";
 import Link from "next/link";

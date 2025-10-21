@@ -1,14 +1,13 @@
 import { Star, Truck, RotateCcw, Calendar, CheckCircle } from "lucide-react";
 import { Separator } from "@workspace/ui/components/separator";
 import { ProductActions } from "./ProductActions";
-import type { Product } from "../product-page.types";
+import type { Product } from "./product-page.types";
 
 interface ProductDetailsProps {
   product: Product;
 }
 
 export const ProductDetails = async ({ product }: ProductDetailsProps) => {
-
   return (
     <aside className="space-y-4 lg:space-y-6 w-full lg:max-w-96">
       {/* Shipping Info */}

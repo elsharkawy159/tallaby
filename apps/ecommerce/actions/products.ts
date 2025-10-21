@@ -172,7 +172,7 @@ export async function getProductBySlug(slug: string) {
               columns: {
                 firstName: true,
                 lastName: true,
-                avatar: true,
+                // avatarUrl: true,
               },
             },
             reviewComments: {

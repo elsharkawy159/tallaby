@@ -1,5 +1,5 @@
 import { generateProductStructuredData } from "@/lib/structured-data";
-import type { Product } from "../product-page.types";
+import type { Product } from "./product-page.types";
 
 interface ProductStructuredDataProps {
   product: Product;

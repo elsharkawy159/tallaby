@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
 import { Badge } from "@workspace/ui/components/badge";
-import type { Product, Review, FAQ } from "../product-page.types";
+import type { Product, Review, FAQ } from "./product-page.types";
 import Image from "next/image";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
 
