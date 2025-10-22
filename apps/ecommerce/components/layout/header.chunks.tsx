@@ -74,6 +74,7 @@ export const UserAuth = ({ variant = "desktop", className }: UserAuthProps) => {
   const { open: openAuthDialog } = useAuthDialog();
   const { user, seller, logout, isLoading, isSigningOut } = useAuth();
   console.log("user", user);
+  console.log("seller", seller);
   if (isLoading) {
     return (
       <div

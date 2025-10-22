@@ -75,7 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       return result.data as SellerData;
     },
-    enabled: !!user?.id, // Only run if user is logged in
+    enabled: !!user?.id && user.user_metadata?.is_seller === true, // Only run if user is logged in and is a seller
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 

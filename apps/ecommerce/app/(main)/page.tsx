@@ -6,6 +6,7 @@ import ShopByBrand from "@/components/home/shop-by-brand";
 import FeaturedCollection from "@/components/home/featured-collection";
 import Hero from "@/components/home/hero/hero";
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "Home | Multi-Vendor E-commerce",
@@ -52,12 +53,14 @@ const HomePage = () => {
         backgroundColor="bg-gradient-to-r from-primary to-primary/80"
       />
 
-      <CategoryGrid
-        title="Shop by Category"
-        subtitle="Discover products in your favorite categories"
-        limit={8}
-        showProductCount={true}
-      />
+      <Suspense fallback={<div>Loading...</div>}>
+        <CategoryGrid
+          title="Shop by Category"
+          subtitle="Discover products in your favorite categories"
+          limit={8}
+          showProductCount={true}
+        />
+      </Suspense>
 
       {/* <DealOfTheDay
         title="Deal of the Day"
@@ -93,13 +96,15 @@ const HomePage = () => {
         showViewMore={true}
       />
 
-      <ProductSection
-        title="Trending Now"
-        filters={{
-          sortBy: "popular",
-          limit: 10,
-        }}
-      />
+      <Suspense fallback={<div>Loading...</div>}>
+        <ProductSection
+          title="Trending Now"
+          filters={{
+            sortBy: "popular",
+            limit: 10,
+          }}
+        />
+      </Suspense>
 
       <EventBanner
         title="Back to School"
@@ -112,13 +117,15 @@ const HomePage = () => {
         backgroundColor="bg-gradient-to-r from-blue-500 to-indigo-600"
       />
 
-      <ProductSection
-        title="New Arrivals"
-        filters={{
-          sortBy: "newest",
-          limit: 10,
-        }}
-      />
+      <Suspense fallback={<div>Loading...</div>}>
+        <ProductSection
+          title="New Arrivals"
+          filters={{
+            sortBy: "newest",
+            limit: 10,
+          }}
+        />
+      </Suspense>
 
       {/* <FeaturesSection />
 

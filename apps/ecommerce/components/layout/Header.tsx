@@ -1,7 +1,5 @@
-"use client";
-
 import React from "react";
-import { useScrollingNavbar } from "@/hooks/useScrollingNavbar";
+// import { useScrollingNavbar } from "@/hooks/useScrollingNavbar";
 import { cn } from "@/lib/utils";
 import type { HeaderProps } from "./header.types";
 import {
@@ -16,13 +14,13 @@ import CategoryNav from "./CategoryNav";
 
 // Main Header Component - with scroll visibility logic
 const MainHeader = () => {
-  const { isVisible } = useScrollingNavbar();
+  // const { isVisible } = useScrollingNavbar();
 
   return (
     <div
       className={cn(
-        "bg-primary transition-transform duration-250 shadow-xs",
-        isVisible ? "transform translate-y-0" : "transform -translate-y-full"
+        "bg-primary shadow-xs",
+        // isVisible ? "transform translate-y-0" : "transform -translate-y-full"
       )}
     >
       <div className="container py-3.5">
