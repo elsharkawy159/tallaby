@@ -33,15 +33,19 @@ interface ProductSectionProps {
   description?: string;
 }
 
-const ProductSection = async ({ title,description, filters = {} }: ProductSectionProps) => {
+const ProductSection = async ({
+  title,
+  description,
+  filters = {},
+}: ProductSectionProps) => {
   const products = await getProducts(filters);
 
   return (
-    <section className="lg:py-8 py-5 container mx-auto">
+    <section className="lg:py-8 py-5 items-container mx-auto">
       <Carousel
         opts={{
           align: "start",
-          dragFree: false,
+          dragFree: true,
         }}
         className="md:flex flex-row items-center mb-8 gap-5"
       >
@@ -63,16 +67,7 @@ const ProductSection = async ({ title,description, filters = {} }: ProductSectio
               {description}
             </p>
           )}
-          <Button
-            asChild
-            className="!px-8 gap-1 md:flex hidden"
-            variant="secondary"
-          >
-            <Link href="/products">
-              View More
-              <ChevronRight className="size-5" />
-            </Link>
-          </Button>
+
           <div className="md:flex gap-5 items-center mt-12 ml-8 hidden">
             <CarouselPrevious className="relative left-0" />
             <CarouselNext className="relative right-0" />
@@ -82,7 +77,7 @@ const ProductSection = async ({ title,description, filters = {} }: ProductSectio
         {/* Carousel Section */}
         <CarouselContent className="p-1.5">
           {products?.data?.map((product) => (
-            <CarouselItem key={product.id} className="basis-auto">
+            <CarouselItem key={product.id} className="basis-auto md:pl-4 pl-3">
               <ProductCard
                 id={product.id}
                 title={product.title}

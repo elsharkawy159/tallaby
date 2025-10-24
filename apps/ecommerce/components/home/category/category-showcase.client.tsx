@@ -7,7 +7,7 @@ import {
   CarouselContent,
   CarouselItem,
 } from "@workspace/ui/components/carousel";
-import Autoplay from "embla-carousel-autoplay";
+// import Autoplay from "embla-carousel-autoplay";
 import Link from "next/link";
 import { CategoryShowcaseClientProps, CategoryWithRequiredFields } from "./category-showcase.types";
 
@@ -49,11 +49,11 @@ export const CategoryShowcaseClient = ({
           align: "start",
           dragFree: false,
         }}
-        plugins={[
-          Autoplay({
-            delay: 3000,
-          }),
-        ]}
+        // plugins={[
+        //   Autoplay({
+        //     delay: 3000,
+        //   }),
+        // ]}
       >
         <CarouselContent>
           {categoriesWithProducts.map((category) => (

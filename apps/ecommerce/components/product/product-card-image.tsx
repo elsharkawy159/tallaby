@@ -27,7 +27,7 @@ export const ProductCardImage = ({
   const productImage = resolvePrimaryImage(product.images);
 
   return (
-    <div className={`relative rounded-md overflow-hidden ${className}`}>
+    <div className={`relative rounded-md overflow-hidden p-2 ${className}`}>
       <Link href={`/products/${slug}`}>
         <Image
           src={productImage}

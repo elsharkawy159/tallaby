@@ -2,6 +2,7 @@ import { Star } from "lucide-react";
 import { formatPrice } from "@workspace/lib";
 import { useLocale } from "next-intl";
 import type { ProductCardProps } from "./product-card.types";
+import Link from "next/link";
 
 interface ProductCardInfoProps {
   product: ProductCardProps;
@@ -48,9 +49,11 @@ export const ProductCardInfo = ({
       className={`space-y-2 md:block flex justify-between items-center md:mt-2.5 mt-1.5 ${className}`}
     >
       <div className="flex md:flex-row flex-col md:items-center md:gap-4.5 gap-1 justify-between mb-2">
-        <h3 className="md:text-base text-sm font-medium md:line-clamp-2 line-clamp-1">
-          {title}
-        </h3>
+        <Link href={`/products/${product.slug}`}>
+          <h3 className="text-sm font-medium md:line-clamp-2 line-clamp-1">
+            {title}
+          </h3>
+        </Link>
         <span
           className="md:text-lg text-sm font-semibold"
           dangerouslySetInnerHTML={{ __html: formatPrice(price, locale) }}

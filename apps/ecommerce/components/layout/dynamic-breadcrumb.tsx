@@ -167,7 +167,7 @@ export function DynamicBreadcrumb({
                   {breadcrumb.isLast ? (
                     <BreadcrumbPage
                       className={cn(
-                        "text-primary font-medium truncate max-w-[200px] lg:max-w-none",
+                        "text-primary font-medium truncate max-w-[300px]",
                         pageClassName
                       )}
                     >
@@ -177,7 +177,7 @@ export function DynamicBreadcrumb({
                     <BreadcrumbLink
                       href={breadcrumb.href}
                       className={cn(
-                        "hover:text-primary transition-colors whitespace-nowrap",
+                        "hover:text-primary truncate max-w-[300px]transition-colors whitespace-nowrap",
                         linkClassName
                       )}
                     >

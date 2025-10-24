@@ -24,6 +24,7 @@ export function UploadExcelButton() {
   const router = useRouter();
 
   const [open, setOpen] = useState(false);
+  const [currentFile, setCurrentFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<{
     valid: ParsedBulkRow[];
     invalid: { row: number; message: string }[];
@@ -37,6 +38,7 @@ export function UploadExcelButton() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    setCurrentFile(file);
     const formData = new FormData();
     formData.append("file", file);
 
@@ -83,6 +85,41 @@ export function UploadExcelButton() {
       } catch (err) {
         console.error(err);
         toast.error("Something went wrong while inserting");
+      }
+    });
+  };
+
+  const handleDownloadCategorized = async () => {
+    if (!currentFile) return;
+
+    startTransition(async () => {
+      try {
+        const formData = new FormData();
+        formData.append("file", currentFile);
+
+        const response = await fetch("/api/download-categorized-excel", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to download categorized file");
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `categorized_products_${new Date().toISOString().split("T")[0]}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        toast.success("Categorized Excel file downloaded successfully");
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to download categorized file");
       }
     });
   };

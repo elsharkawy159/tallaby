@@ -2,12 +2,15 @@ import { Star } from "lucide-react";
 import { Badge } from "@workspace/ui/components/badge";
 import { ProductImages } from "./ProductImages";
 import type { Product } from "./product-page.types";
+import { formatPrice } from "@workspace/lib";
+import { useLocale } from "next-intl";
 
 interface ProductHeroProps {
   product: Product;
 }
 
 export const ProductHero = ({ product }: ProductHeroProps) => {
+  const locale = useLocale();
   return (
     <>
       {/* Product Images */}
@@ -53,12 +56,15 @@ export const ProductHero = ({ product }: ProductHeroProps) => {
 
           {/* Price */}
           <div className="flex items-center gap-3">
-            <span className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary">
-              ${product.price.base}
-            </span>
+            <span
+              className="lg:text-4xl md:text-2xl text-xl font-semibold"
+              dangerouslySetInnerHTML={{
+                __html: formatPrice(product.price.base ?? 0, locale, "lg"),
+              }}
+            />
             {product.price.discountType && (
-              <span className="text-lg sm:text-xl lg:text-2xl text-gray-500 line-through">
-                ${product.price.final}
+              <span className="text-gray-500 line-through">
+                {product.price.final}
               </span>
             )}
           </div>

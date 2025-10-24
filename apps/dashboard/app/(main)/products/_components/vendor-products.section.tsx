@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
@@ -16,6 +17,12 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@workspace/ui/components/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@workspace/ui/components/tooltip";
 import { UploadExcelButton } from "./upload-excel-button.client";
 import { ProductImageUpload } from "./product-image-upload";
 
@@ -46,6 +53,38 @@ const formatCurrency = (amount?: string | number | null) => {
   }).format(value);
 };
 
+const CopyableTitle = ({ title }: { title: string }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(title);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch (err) {
+      console.error("Failed to copy text: ", err);
+    }
+  };
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div
+            className="text-sm font-medium text-gray-900 truncate max-w-[240px] cursor-pointer hover:text-blue-600 transition-colors"
+            onClick={handleCopy}
+          >
+            {title}
+          </div>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{copied ? "Copied!" : "Copy"}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+};
+
 export function VendorProductsSection({
   products,
   total,
@@ -72,9 +111,7 @@ export function VendorProductsSection({
       header: "Title",
       cell: ({ row }) => (
         <div className="min-w-0">
-          <div className="text-sm font-medium text-gray-900 truncate max-w-[240px]">
-            {row.original.title}
-          </div>
+          <CopyableTitle title={row.original.title} />
           <div className="text-xs text-gray-500">
             SKU: {row.original.sku || "N/A"}
           </div>

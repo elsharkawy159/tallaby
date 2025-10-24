@@ -48,7 +48,7 @@ export const ProductImages = ({ images, productName }: ProductImagesProps) => {
               onClick={() => setSelectedImage(image)}
               onMouseEnter={() => setHoveredImage(image)}
               onMouseLeave={() => setHoveredImage(null)}
-              className={`aspect-square relative bg-gray-100 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
+              className={`aspect-square relative bg-white p-1 rounded overflow-hidden border transition-all duration-200 ${
                 activeImage === image
                   ? "border-primary"
                   : "border-transparent hover:border-gray-300"

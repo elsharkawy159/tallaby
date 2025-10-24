@@ -16,6 +16,77 @@ import slugify from "slugify";
 import * as XLSX from "xlsx";
 // tables imported above via @workspace/db default export; no need for direct table imports here
 
+// Generate random SKU function
+async function generateRandomSKU(): Promise<string> {
+  const prefix = "SKU";
+  const timestamp = Date.now().toString().slice(-6); // Last 6 digits of timestamp
+  const random = Math.random().toString(36).substring(2, 8).toUpperCase(); // Random 6 chars
+  const sku = `${prefix}-${timestamp}-${random}`;
+
+  // Check if SKU already exists in database
+  const existingProduct = await db.query.products.findFirst({
+    where: eq(products.sku, sku),
+  });
+
+  // If SKU exists, generate a new one recursively
+  if (existingProduct) {
+    return generateRandomSKU();
+  }
+
+  return sku;
+}
+
+async function findBestCategoryMatch(
+  productText: string
+): Promise<{ id: string; name: string } | null> {
+  if (!productText || productText.trim().length < 3) return null;
+
+  const normalizedText = productText.toLowerCase().trim();
+
+  // Get all categories from database
+  const allCategories = await db.query.categories.findMany({
+    where: (categories, { isNotNull }) => isNotNull(categories.name),
+  });
+
+  if (allCategories.length === 0) return null;
+
+  let bestMatch: { id: string; name: string } | null = null;
+  let highestScore = 0;
+
+  for (const category of allCategories) {
+    if (!category.name) continue;
+
+    const categoryName = category.name.toLowerCase();
+    let score = 0;
+
+    // Check if category name is included in product text
+    if (normalizedText.includes(categoryName)) {
+      score = categoryName.length; // Longer matches get higher scores
+    }
+
+    // Check if any words from category name are in product text
+    const categoryWords = categoryName
+      .split(/\s+/)
+      .filter((word) => word.length > 2);
+    for (const word of categoryWords) {
+      if (normalizedText.includes(word)) {
+        score += word.length;
+      }
+    }
+
+    if (score > highestScore) {
+      highestScore = score;
+      bestMatch = {
+        id: category.id,
+        name: category.name,
+      };
+    }
+  }
+
+  // Only return if we have a reasonable match (score > 3)
+  return highestScore > 3 ? bestMatch : null;
+}
+
 export async function getSellerProducts(params?: {
   isActive?: boolean;
   limit?: number;
@@ -236,10 +307,16 @@ export async function bulkUploadProductsAction(formData: FormData) {
     for (const b of allBrands)
       brandByName.set((b.name || "").toLowerCase().trim(), b.id);
 
-    const allCategories = await db.query.categories.findMany({});
+    // Get all categories for name resolution
+    const allCategories = await db.query.categories.findMany({
+      where: (categories, { isNotNull }) => isNotNull(categories.name),
+    });
     const categoryByName = new Map<string, string>();
     for (const c of allCategories)
       categoryByName.set((c.name || "").toLowerCase().trim(), c.id);
+
+    // Track used SKUs in this batch to avoid duplicates
+    const usedSKUs = new Set<string>();
 
     for (let i = 0; i < rows.length; i++) {
       const raw = rows[i]!;
@@ -260,24 +337,58 @@ export async function bulkUploadProductsAction(formData: FormData) {
 
       // Required fields
       const title = String(record.title || "").trim();
-      const sku = String(record.sku || "").trim();
+      let sku = String(record.sku || "").trim();
       const categoryName = String(record.category || "").trim();
 
-      if (!title || !sku || !categoryName) {
+      if (!title) {
         invalid.push({
           row: i + 2,
-          message: "Missing required fields: title, sku, category",
+          message: "Missing required field: title",
           raw,
         });
         continue;
       }
 
-      // Resolve category by name (case-insensitive)
-      const categoryId = categoryByName.get(categoryName.toLowerCase()) || null;
-      if (!categoryId) {
+      // Generate SKU if missing
+      if (!sku) {
+        sku = await generateRandomSKU();
+        record.sku = sku; // Update the record with generated SKU
+      }
+
+      // Check for duplicate SKU in this batch
+      if (usedSKUs.has(sku)) {
         invalid.push({
           row: i + 2,
-          message: `Category not found: ${categoryName}`,
+          message: `Duplicate SKU in batch: ${sku}`,
+          raw,
+        });
+        continue;
+      }
+      usedSKUs.add(sku);
+
+      // Resolve category by name (case-insensitive) or auto-categorize if missing
+      let categoryId = categoryByName.get(categoryName.toLowerCase()) || null;
+
+      // Auto-categorization: if category is missing or not found, automatically try to categorize
+      if (!categoryId) {
+        const productText = `${title} ${String(record.description || "").trim()}`;
+        const bestMatch = await findBestCategoryMatch(productText);
+
+        if (bestMatch) {
+          categoryId = bestMatch.id;
+          // Update the record to show the auto-assigned category
+          record.category = bestMatch.name;
+        }
+      }
+
+      if (!categoryId) {
+        const errorMessage = categoryName
+          ? `Category not found: ${categoryName} (auto-categorization attempted)`
+          : "Category missing and auto-categorization failed";
+
+        invalid.push({
+          row: i + 2,
+          message: errorMessage,
           raw,
         });
         continue;
@@ -749,7 +860,20 @@ export async function createProduct(data: {
 
 export async function updateProduct(
   productId: string,
-  data: Partial<typeof products.$inferInsert>
+  data: Partial<typeof products.$inferInsert> & {
+    variants?: Array<{
+      title: string;
+      sku: string;
+      price: number;
+      stock?: number;
+      imageUrl?: string;
+      option1?: string;
+      option2?: string;
+      option3?: string;
+      barCode?: string;
+      position?: number;
+    }>;
+  }
 ) {
   try {
     const session = await getUser();
@@ -757,10 +881,14 @@ export async function updateProduct(
       throw new Error("Unauthorized");
     }
 
+    // Extract variants from data
+    const { variants, ...productData } = data;
+
+    // Update the main product
     const updatedProduct = await db
       .update(products)
       .set({
-        ...data,
+        ...productData,
         updatedAt: new Date().toISOString(),
       })
       .where(
@@ -772,7 +900,35 @@ export async function updateProduct(
       throw new Error("Product not found or unauthorized");
     }
 
+    // Handle variants if provided
+    if (variants && Array.isArray(variants)) {
+      // First, delete existing variants
+      await db
+        .delete(productVariants)
+        .where(eq(productVariants.productId, productId));
+
+      // Then insert new variants if any
+      if (variants.length > 0) {
+        const variantValues = variants.map((v) => ({
+          productId: productId,
+          title: v.title,
+          price: v.price as any,
+          stock: v.stock ?? 0,
+          sku: v.sku,
+          imageUrl: v.imageUrl,
+          option1: v.option1,
+          option2: v.option2,
+          option3: v.option3,
+          barCode: v.barCode,
+          position: v.position,
+        }));
+
+        await db.insert(productVariants).values(variantValues);
+      }
+    }
+
     revalidatePath("/products");
+    revalidatePath(`/products/${productId}`);
 
     return { success: true, data: updatedProduct[0] };
   } catch (error) {
