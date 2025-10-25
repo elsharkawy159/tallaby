@@ -62,6 +62,13 @@ export const SearchBar = ({
 };
 
 export const BecomeSellerButton = ({ className }: { className?: string }) => {
+  const { user } = useAuth();
+
+  // Hide button if user is already a seller
+  if (user?.user_metadata?.is_seller === true) {
+    return null;
+  }
+
   return (
     <Button asChild className={cn("text-sm", className)} size="sm">
       <Link href={"/become-seller"}>Become a Partner</Link>
@@ -72,8 +79,7 @@ export const BecomeSellerButton = ({ className }: { className?: string }) => {
 export const UserAuth = ({ variant = "desktop", className }: UserAuthProps) => {
   const { open: openAuthDialog } = useAuthDialog();
   const { user, seller, logout, isLoading, isSigningOut } = useAuth();
-  console.log("user", user);
-  console.log("seller", seller);
+  
   if (isLoading) {
     return (
       <div
@@ -101,25 +107,13 @@ export const UserAuth = ({ variant = "desktop", className }: UserAuthProps) => {
 
   if (user) {
     return (
-      <Button
-        variant="ghost"
-        size="icon"
-        className={cn(
-          "text-white hover:text-gray-200 hover:bg-transparent cursor-pointer transition-colors",
-          variant === "mobile" &&
-            "flex flex-col items-center text-gray-600 hover:text-primary transition-colors",
-          className
-        )}
-      >
-        <UserMenu
-          variant={variant}
-          user={user}
-          seller={seller}
-          logout={logout}
-          isSigningOut={isSigningOut}
-        />
-        {variant === "mobile" && <span className="text-xs mt-1">Profile</span>}
-      </Button>
+      <UserMenu
+        variant={variant}
+        user={user}
+        seller={seller}
+        logout={logout}
+        isSigningOut={isSigningOut}
+      />
     );
   }
 
@@ -145,34 +139,38 @@ export const UserAuth = ({ variant = "desktop", className }: UserAuthProps) => {
 export const CartLink = ({ className }: { className?: string }) => {
   const { itemCount } = useCart();
   return (
-    <Link
-      href="/cart"
-      className={cn("relative text-white hover:text-gray-200", className)}
-    >
-      <ShoppingCart className="size-6" />
-      {itemCount > 0 && (
-        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full size-4.5 flex items-center justify-center">
-          {itemCount}
-        </span>
-      )}
-    </Link>
+    <Button asChild size="icon" variant="ghost">
+      <Link
+        href="/cart"
+        className={cn("relative text-white hover:text-gray-200", className)}
+      >
+        <ShoppingCart className="size-6" />
+        {itemCount > 0 && (
+          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full size-4.5 flex items-center justify-center">
+            {itemCount}
+          </span>
+        )}
+      </Link>
+    </Button>
   );
 };
 
 export const WishlistLink = ({ className }: { className?: string }) => {
   const { itemCount } = useWishlist();
   return (
-    <Link
-      href="/profile/wishlist"
-      className={cn("relative text-white hover:text-gray-200", className)}
-    >
-      <Heart className="size-6" />
-      {itemCount > 0 && (
-        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full size-4.5 flex items-center justify-center">
-          {itemCount}
-        </span>
-      )}
-    </Link>
+    <Button asChild size="icon" variant="ghost">
+      <Link
+        href="/profile/wishlist"
+        className={cn("relative text-white hover:text-gray-200", className)}
+      >
+        <Heart className="size-6" />
+        {itemCount > 0 && (
+          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full size-4.5 flex items-center justify-center">
+            {itemCount}
+          </span>
+        )}
+      </Link>
+    </Button>
   );
 };
 
@@ -308,7 +306,7 @@ export const DesktopNavigation = ({ className }: DesktopNavigationProps) => {
   return (
     <div
       className={cn(
-        "hidden md:flex items-center justify-between gap-4 lg:gap-8",
+        "hidden md:flex items-center justify-between gap-4 lg:gap-5",
         className
       )}
     >
@@ -316,17 +314,13 @@ export const DesktopNavigation = ({ className }: DesktopNavigationProps) => {
 
       <DeliveryLocationSelector className="hidden lg:flex" />
 
-      <div className="flex-1 flex items-center justify-center gap-3">
-        <SearchBar variant="desktop" />
-        <LanguageSwitcher />
-      </div>
+      <SearchBar variant="desktop" />
+      <LanguageSwitcher />
 
-      <div className="flex items-center gap-3 lg:gap-6">
-        <UserAuth variant="desktop" />
-        <CartLink />
-        <WishlistLink />
-        <BecomeSellerButton />
-      </div>
+      <UserAuth variant="desktop" />
+      <CartLink />
+      <WishlistLink />
+      <BecomeSellerButton />
     </div>
   );
 };

@@ -70,7 +70,7 @@ const Pagination = ({ page, pageSize, total, totalPages }: PaginationProps) => {
   const endItem = Math.min(page * pageSize, total);
 
   return (
-    <div className="flex flex-col items-center space-y-4 mt-8">
+    <div className="flex flex-col items-center space-y-4 my-10">
       {/* Results info */}
       <div className="text-sm text-muted-foreground">
         Showing {startItem}-{endItem} of {total} products
@@ -83,9 +83,9 @@ const Pagination = ({ page, pageSize, total, totalPages }: PaginationProps) => {
           size="sm"
           onClick={handlePrevious}
           disabled={!canGoPrevious}
-          className="flex items-center gap-1"
+          className="flex items-center gap-1 rounded-md"
         >
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
           Previous
         </Button>
 
@@ -100,7 +100,7 @@ const Pagination = ({ page, pageSize, total, totalPages }: PaginationProps) => {
                   variant={pageNum === page ? "default" : "outline"}
                   size="sm"
                   onClick={() => handlePageChange(pageNum as number)}
-                  className="min-w-[40px]"
+                  className="min-w-[40px] rounded-md"
                 >
                   {pageNum}
                 </Button>
@@ -114,10 +114,10 @@ const Pagination = ({ page, pageSize, total, totalPages }: PaginationProps) => {
           size="sm"
           onClick={handleNext}
           disabled={!canGoNext}
-          className="flex items-center gap-1"
+          className="flex items-center gap-1 rounded-md"
         >
           Next
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="h-4 w-4 rtl:rotate-180" />
         </Button>
       </div>
     </div>

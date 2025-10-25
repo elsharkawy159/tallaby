@@ -61,7 +61,9 @@ export const ProductCardInfo = ({
       </div>
 
       {/* Rating */}
-      <div className="flex md:text-sm text-xs items-center gap-1">
+      <div className="flex md:text-sm ltr:justify-end rtl:justify-start text-xs items-center gap-1"
+      dir="ltr"
+      >
         <span className="font-medium">{rating}</span>
         <Star className="md:size-4 size-3 text-yellow-400 fill-current" />
         <span className="text-gray-500">({reviews})</span>

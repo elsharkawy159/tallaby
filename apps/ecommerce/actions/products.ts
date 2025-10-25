@@ -22,8 +22,8 @@ import {
 } from "@workspace/db";
 
 interface ProductFilters {
-  categoryId?: string;
-  brandId?: string;
+  categoryName?: string;
+  brandName?: string;
   minPrice?: number;
   maxPrice?: number;
   minRating?: number;
@@ -45,12 +45,12 @@ export async function getProducts(filters: ProductFilters = {}) {
       try {
         const conditions = [eq(products.isActive, filters.isActive ?? true)];
 
-        if (filters.categoryId) {
-          conditions.push(eq(products.categoryId, filters.categoryId));
+        if (filters.categoryName) {
+          conditions.push(eq(categories.name, filters.categoryName));
         }
 
-        if (filters.brandId) {
-          conditions.push(eq(products.brandId, filters.brandId));
+        if (filters.brandName) {
+          conditions.push(eq(brands.name, filters.brandName));
         }
 
         if (filters.minPrice !== undefined) {
@@ -116,9 +116,10 @@ export async function getProducts(filters: ProductFilters = {}) {
           where: and(...conditions),
           with: {
             brand: true,
+            category: true,
           },
           orderBy,
-          limit: filters.limit || 20,
+          limit: filters.limit || 30,
           offset: filters.offset || 0,
         });
 
@@ -126,6 +127,8 @@ export async function getProducts(filters: ProductFilters = {}) {
         const totalCount = await db
           .select({ count: sql`count(*)` })
           .from(products)
+          .leftJoin(categories, eq(products.categoryId, categories.id))
+          .leftJoin(brands, eq(products.brandId, brands.id))
           .where(and(...conditions));
 
         return {
@@ -145,8 +148,8 @@ export async function getProducts(filters: ProductFilters = {}) {
     {
       tags: [
         "products",
-        filters.categoryId && `category-${filters.categoryId}`,
-        filters.brandId && `brand-${filters.brandId}`,
+        filters.categoryName && `category-${filters.categoryName}`,
+        filters.brandName && `brand-${filters.brandName}`,
       ].filter(Boolean) as string[],
       revalidate: 60,
     }

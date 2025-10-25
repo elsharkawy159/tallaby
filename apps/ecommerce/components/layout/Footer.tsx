@@ -60,7 +60,7 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold mb-6 text-white relative">
               Company
-              <div className="absolute -bottom-2 left-0 w-8 h-0.5 bg-gradient-to-r from-accent to-accent/50 rounded-full" />
+              <div className="absolute -bottom-2 start-0 w-8 h-0.5 bg-gradient-to-r from-accent to-accent/50 rounded-full" />
             </h4>
             <ul className="space-y-3 text-sm">
               {[
@@ -86,7 +86,7 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold mb-6 text-white relative">
               Support
-              <div className="absolute -bottom-2 left-0 w-8 h-0.5 bg-gradient-to-r from-accent to-accent/50 rounded-full" />
+              <div className="absolute -bottom-2 start-0 w-8 h-0.5 bg-gradient-to-r from-accent to-accent/50 rounded-full" />
             </h4>
             <ul className="space-y-3 text-sm">
               {[
@@ -112,7 +112,7 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold mb-6 text-white relative">
               Connect
-              <div className="absolute -bottom-2 left-0 w-8 h-0.5 bg-gradient-to-r from-accent to-accent/50 rounded-full" />
+              <div className="absolute -bottom-2 start-0 w-8 h-0.5 bg-gradient-to-r from-accent to-accent/50 rounded-full" />
             </h4>
 
             {/* Social Media */}

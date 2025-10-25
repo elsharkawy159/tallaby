@@ -150,13 +150,13 @@
 }
 
 @utility items-container {
-  padding-left: 1rem;
+  padding-inline-start: 1rem;
 
   @media (width >= 991px) {
-    padding-left: calc((100vw - 1200px) / 2 + 1rem);
+    padding-inline-start: calc((100vw - 1200px) / 2 + 1rem);
   }
   @media (width >= 1600px) {
-    padding-left: calc((100vw - 1500px) / 2 + 1rem);
+    padding-inline-start: calc((100vw - 1500px) / 2 + 1rem);
   }
 }
 

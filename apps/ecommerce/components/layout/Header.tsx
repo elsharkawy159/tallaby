@@ -7,6 +7,7 @@ import {
   MobileNavigation,
   DesktopNavigation,
   BottomNavigation,
+  BecomeSellerButton,
 } from "./header.chunks";
 import { Logo } from "../logo";
 import CategoryNav from "./CategoryNav";
@@ -19,17 +20,17 @@ const MainHeader = () => {
   return (
     <div
       className={cn(
-        "bg-primary shadow-xs",
+        "bg-primary shadow-xs"
         // isVisible ? "transform translate-y-0" : "transform -translate-y-full"
       )}
     >
       <div className="lg:px-16 md:px-10 px-4 py-3.5">
         {/* Mobile top section */}
         <div className="flex items-center md:hidden justify-between">
-            {/* <BecomeSellerButton /> */}
-            <LanguageSwitcher />
+          <BecomeSellerButton />
+          <LanguageSwitcher />
           <Logo />
-            <MobileNavigation />
+          <MobileNavigation />
         </div>
 
         {/* Mobile search bar */}

@@ -9,7 +9,10 @@ import {
 } from "@workspace/ui/components/carousel";
 // import Autoplay from "embla-carousel-autoplay";
 import Link from "next/link";
-import { CategoryShowcaseClientProps, CategoryWithRequiredFields } from "./category-showcase.types";
+import {
+  CategoryShowcaseClientProps,
+  CategoryWithRequiredFields,
+} from "./category-showcase.types";
 
 export const CategoryShowcaseClient = ({
   categories,
@@ -47,7 +50,7 @@ export const CategoryShowcaseClient = ({
       <Carousel
         opts={{
           align: "start",
-          dragFree: false,
+          dragFree: true,
         }}
         // plugins={[
         //   Autoplay({
@@ -63,8 +66,8 @@ export const CategoryShowcaseClient = ({
               className="group block"
             >
               <CarouselItem className="basis-auto">
- <div className="md:w-[120px] w-18">
- <div className="relative overflow-hidden rounded-full md:size-[100px] size-[60px] mx-auto mb-2.5 bg-gradient-to-br from-primary/10 to-primary/20 shadow-sm border border-primary/20 group-hover:shadow-md transition-all duration-300">
+                <div className="md:w-[120px] w-18">
+                  <div className="relative overflow-hidden rounded-full md:size-[100px] size-[60px] mx-auto mb-2.5 bg-gradient-to-br from-primary/10 to-primary/20 shadow-sm border border-primary/20 group-hover:shadow-md transition-all duration-300">
                     <div className="flex items-center justify-center h-full">
                       <span className="md:text-2xl text-base font-bold text-primary group-hover:scale-110 transition-transform duration-300">
                         {category.productCount}
@@ -74,7 +77,7 @@ export const CategoryShowcaseClient = ({
                   <h3 className="md:text-sm text-xs font-medium text-center group-hover:text-primary transition-colors">
                     {category.name}
                   </h3>
- </div>
+                </div>
               </CarouselItem>
             </Link>
           ))}

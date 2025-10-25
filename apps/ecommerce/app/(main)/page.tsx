@@ -33,14 +33,16 @@ const HomePage = () => {
         className="bg-gray-50"
       /> */}
 
-      <ProductSection
-        title="🔥 Offers"
-        description="What Everyone's Talking About"
-        filters={{
-          // categoryId: "1f65b57b-fe85-4690-887b-39a778a55b99",
-          sortBy: "popular",
-        }}
-      />
+      <Suspense fallback={<div>Loading...</div>}>
+        <ProductSection
+          title="🔥 Offers"
+          description="What Everyone's Talking About"
+          filters={{
+            // categoryId: "1f65b57b-fe85-4690-887b-39a778a55b99",
+            sortBy: "popular",
+          }}
+        />
+      </Suspense>
 
       <EventBanner
         title="Fashion Week Sale"

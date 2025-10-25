@@ -15,6 +15,7 @@ export const AddToCartButton = ({
   variant = "default",
   showIcon = true,
   showText = true,
+  stock = 1,
 }: AddToCartButtonProps) => {
   const { addToCart, isProductLoading } = useCart();
 
@@ -24,7 +25,7 @@ export const AddToCartButton = ({
     <Button
       className={className}
       onClick={() => addToCart({ productId, quantity, variant: variantId })}
-      disabled={disabled || isLoading}
+      disabled={disabled || isLoading || Number(stock) === 0}
       size={size}
       variant={variant}
     >

@@ -11,12 +11,12 @@ const ProductsList = async ({ searchParams }: ProductsListProps) => {
   // Parse search parameters
   const filters = {
     searchQuery: (searchParams.search as string) || undefined,
-    categoryId: Array.isArray(searchParams.categories)
+    categoryName: Array.isArray(searchParams.categories)
       ? searchParams.categories[0]
-      : searchParams.categories || undefined,
-    brandId: Array.isArray(searchParams.brands)
+      : (searchParams.categories as string) || undefined,
+    brandName: Array.isArray(searchParams.brands)
       ? searchParams.brands[0]
-      : searchParams.brands || undefined,
+      : (searchParams.brands as string) || undefined,
     minPrice: searchParams.priceMin ? Number(searchParams.priceMin) : undefined,
     maxPrice: searchParams.priceMax ? Number(searchParams.priceMax) : undefined,
     sortBy:
@@ -26,9 +26,9 @@ const ProductsList = async ({ searchParams }: ProductsListProps) => {
         | "rating"
         | "newest"
         | "popular") || "popular",
-    limit: searchParams.pageSize ? Number(searchParams.pageSize) : 20,
+    limit: searchParams.pageSize ? Number(searchParams.pageSize) : 40,
     offset: searchParams.page
-      ? (Number(searchParams.page) - 1) * (Number(searchParams.pageSize) || 20)
+      ? (Number(searchParams.page) - 1) * (Number(searchParams.pageSize) || 40)
       : 0,
   };
 
@@ -72,33 +72,12 @@ const ProductsList = async ({ searchParams }: ProductsListProps) => {
 
   const { data: products, totalCount } = result;
   const currentPage = Number(searchParams.page) || 1;
-  const pageSize = Number(searchParams.pageSize) || 20;
+  const pageSize = Number(searchParams.pageSize) || 40;
   const totalPages = Math.ceil((totalCount || 0) / pageSize);
-
-  // Handle multiple categories/brands filtering
-  let filteredProducts = products || [];
-
-  if (
-    Array.isArray(searchParams.categories) &&
-    searchParams.categories.length > 1
-  ) {
-    filteredProducts = filteredProducts.filter(
-      (product) =>
-        product.categoryId &&
-        searchParams.categories!.includes(product.categoryId)
-    );
-  }
-
-  if (Array.isArray(searchParams.brands) && searchParams.brands.length > 1) {
-    filteredProducts = filteredProducts.filter(
-      (product) =>
-        product.brandId && searchParams.brands!.includes(product.brandId)
-    );
-  }
 
   return (
     <section className="space-y-6 w-full">
-      {filteredProducts?.length === 0 ? (
+      {products?.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-muted-foreground">
             No products found matching your criteria.
@@ -107,7 +86,7 @@ const ProductsList = async ({ searchParams }: ProductsListProps) => {
       ) : (
         <>
           <div className="grid gap-3 lg:gap-5 2xl:gap-6 sm:grid-cols-2 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {filteredProducts?.map((product) => (
+            {products?.map((product) => (
               <ProductCard
                 key={product.id}
                 {...(product as ProductCardProps)}
@@ -117,8 +96,8 @@ const ProductsList = async ({ searchParams }: ProductsListProps) => {
           <Pagination
             page={currentPage}
             pageSize={pageSize}
-            total={filteredProducts.length}
-            totalPages={Math.ceil(filteredProducts.length / pageSize)}
+            total={totalCount || 0}
+            totalPages={totalPages}
           />
         </>
       )}

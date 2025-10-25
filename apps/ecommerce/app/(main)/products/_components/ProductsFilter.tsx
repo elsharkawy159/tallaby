@@ -11,14 +11,15 @@ import {
   SheetContent,
 } from "@workspace/ui/components/sheet";
 import { X, PlusIcon } from "lucide-react";
+import { ScrollArea } from "@workspace/ui/components";
 
 interface FilterOptionsResponse {
   success: boolean;
-  data: {
+  data?: {
     categories: Array<{
       id: string;
-      name: string;
-      slug: string;
+      name: string | null;
+      slug: string | null;
       productCount: number;
     }>;
     brands: Array<{
@@ -32,6 +33,7 @@ interface FilterOptionsResponse {
       max: number;
     };
   };
+  error?: string;
 }
 
 interface ProductsFilterProps {
@@ -161,32 +163,34 @@ export function ProductsFilter({ filterOptions }: ProductsFilterProps) {
           filterOptions.data.categories.length > 0 && (
             <div>
               <h3 className="font-bold text-lg mb-2">Categories</h3>
-              <div className="flex flex-col gap-2 max-h-48 overflow-y-auto">
-                {filterOptions.data.categories.map((category) => (
-                  <label
-                    key={category.id}
-                    className="flex items-center justify-between cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        checked={isFilterActive("categories", category.id)}
-                        onCheckedChange={(checked) =>
-                          handleMultiFilter(
-                            "categories",
-                            category.id,
-                            !!checked
-                          )
-                        }
-                        id={`category-${category.id}${isMobile ? "-mobile" : ""}`}
-                      />
-                      <span className="text-base">{category.name}</span>
-                    </div>
-                    <span className="text-sm text-muted-foreground">
-                      ({category.productCount})
-                    </span>
-                  </label>
-                ))}
-              </div>
+              <ScrollArea className="flex flex-col max-h-100 overflow-y-auto">
+                {filterOptions.data.categories
+                  .filter((category) => category.name) // Filter out categories with null names
+                  .map((category) => (
+                    <label
+                      key={category.name}
+                      className="flex items-center py-1 justify-between cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Checkbox
+                          checked={isFilterActive("categories", category.name!)}
+                          onCheckedChange={(checked) =>
+                            handleMultiFilter(
+                              "categories",
+                              category.name!,
+                              !!checked
+                            )
+                          }
+                          id={`category-${category.name}${isMobile ? "-mobile" : ""}`}
+                        />
+                        <span className="text-sm">{category.name}</span>
+                      </div>
+                      <span className="text-sm text-muted-foreground">
+                        ({category.productCount})
+                      </span>
+                    </label>
+                  ))}
+              </ScrollArea>
             </div>
           )}
 
@@ -195,28 +199,28 @@ export function ProductsFilter({ filterOptions }: ProductsFilterProps) {
           filterOptions.data.brands.length > 0 && (
             <div>
               <h3 className="font-bold text-lg mb-2">Brands</h3>
-              <div className="flex flex-col gap-2 max-h-48 overflow-y-auto">
+              <ScrollArea className="flex flex-col max-h-100 overflow-y-auto">
                 {filterOptions.data.brands.map((brand) => (
                   <label
-                    key={brand.id}
-                    className="flex items-center justify-between cursor-pointer"
+                    key={brand.name}
+                    className="flex items-center py-1 justify-between cursor-pointer"
                   >
                     <div className="flex items-center gap-2">
                       <Checkbox
-                        checked={isFilterActive("brands", brand.id)}
+                        checked={isFilterActive("brands", brand.name)}
                         onCheckedChange={(checked) =>
-                          handleMultiFilter("brands", brand.id, !!checked)
+                          handleMultiFilter("brands", brand.name, !!checked)
                         }
-                        id={`brand-${brand.id}${isMobile ? "-mobile" : ""}`}
+                        id={`brand-${brand.name}${isMobile ? "-mobile" : ""}`}
                       />
-                      <span className="text-base">{brand.name}</span>
+                      <span className="text-sm">{brand.name}</span>
                     </div>
                     <span className="text-sm text-muted-foreground">
                       ({brand.productCount})
                     </span>
                   </label>
                 ))}
-              </div>
+              </ScrollArea>
             </div>
           )}
 
@@ -306,7 +310,7 @@ export function ProductsFilter({ filterOptions }: ProductsFilterProps) {
       </Sheet>
 
       {/* Desktop sidebar */}
-      <aside className="hidden lg:block w-[285px] rounded-4xl p-6 bg-white border border-border">
+      <aside className="hidden lg:block w-[285px] rounded-lg p-5 bg-white border border-gray-200">
         <h2 className="sr-only">Filters</h2>
         {renderFilters(false)}
       </aside>

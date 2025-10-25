@@ -54,6 +54,7 @@ export const ProductCardActions = ({
               showIcon={true}
               showText={true}
               className="w-full"
+              stock={product.quantity || 0}
             />
             <WishlistButton
               productId={productId}
@@ -92,6 +93,7 @@ export const ProductCardActions = ({
       variant="default"
       showIcon={false}
       showText={true}
+      stock={product.quantity || 0}
     />
   );
 };

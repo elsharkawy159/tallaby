@@ -10,6 +10,7 @@ import {
 } from "@workspace/ui/components/carousel";
 import Link from "next/link";
 import { getProducts } from "@/actions/products";
+import { ProductCardProps } from "../product";
 
 interface ProductFilters {
   categoryId?: string;
@@ -40,6 +41,10 @@ const ProductSection = async ({
 }: ProductSectionProps) => {
   const products = await getProducts(filters);
 
+  if (!products?.data) {
+    return null;
+  }
+
   return (
     <section className="lg:py-8 py-5 items-container mx-auto">
       <Carousel
@@ -68,7 +73,7 @@ const ProductSection = async ({
             </p>
           )}
 
-          <div className="md:flex gap-5 items-center mt-12 ml-8 hidden">
+          <div className="md:flex gap-5 items-center mt-12 ms-8 hidden">
             <CarouselPrevious className="relative left-0" />
             <CarouselNext className="relative right-0" />
           </div>
@@ -76,29 +81,11 @@ const ProductSection = async ({
 
         {/* Carousel Section */}
         <CarouselContent className="p-1.5">
-          {products?.data?.map((product) => (
-            <CarouselItem key={product.id} className="basis-auto md:pl-4 pl-3">
+          {products.data.map((product) => (
+            <CarouselItem key={product.id} className="basis-auto md:ps-4 ps-3">
               <ProductCard
-                id={product.id}
-                title={product.title}
-                slug={product.slug}
-                images={
-                  product.images as Array<string | { url?: string } | unknown>
-                }
-                price={
-                  product.price as
-                    | number
-                    | {
-                        base?: number | null;
-                        list?: number | null;
-                        final?: number | null;
-                        discountType?: string | null;
-                        discountValue?: number | null;
-                      }
-                    | null
-                }
-                averageRating={product.averageRating ?? undefined}
-                reviewCount={product.reviewCount ?? undefined}
+                key={product.id}
+                {...(product as ProductCardProps)}
               />
             </CarouselItem>
           ))}

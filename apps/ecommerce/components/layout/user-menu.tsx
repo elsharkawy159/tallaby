@@ -35,6 +35,7 @@ import {
 } from "@/app/(main)/profile/_components/profile.lib";
 import { Seller } from "@/app/(main)/profile/_components/profile.types";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface UserMenuProps {
   variant?: "desktop" | "mobile";
@@ -59,19 +60,23 @@ export function UserMenu({
   const userInitials = getUserInitials(user);
   const userName = formatUserName(user) || user.email;
   const isSeller = !!seller;
+  const queryClient = useQueryClient();
 
   const handleLogout = async () => {
     try {
       logout();
+      queryClient.invalidateQueries({ queryKey: ["user"] });
     } catch (error) {
       console.error("Logout error:", error);
     }
   };
 
   return (
-    <Popover triggerMode="hover">
+    <Popover>
       <PopoverTrigger asChild>
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           className={cn(
             "cursor-pointer",
             variant === "desktop"
@@ -90,7 +95,7 @@ export function UserMenu({
           ) : (
             <User className="md:size-6 size-5" />
           )}
-        </button>
+        </Button>
       </PopoverTrigger>
 
       <PopoverContent className="w-64 p-0" align="end" sideOffset={8}>

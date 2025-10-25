@@ -19,8 +19,8 @@ interface FeaturedCollectionProps {
   badgeText?: string;
   badgeVariant?: "default" | "secondary" | "destructive" | "outline";
   filters?: {
-    categoryId?: string;
-    brandId?: string;
+    categoryName?: string;
+    brandName?: string;
     sortBy?: "price_asc" | "price_desc" | "rating" | "newest" | "popular";
     limit?: number;
     isFeatured?: boolean;
@@ -50,7 +50,7 @@ export default async function FeaturedCollection({
 
   const products = productsResult.success ? productsResult.data : [];
 
-  if (!products.length) {
+  if (!products || !products.length) {
     return null;
   }
 

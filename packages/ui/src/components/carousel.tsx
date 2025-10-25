@@ -140,6 +140,7 @@ function CarouselContent({ className, ...props }: React.ComponentProps<"div">) {
       ref={carouselRef}
       className="overflow-hidden"
       data-slot="carousel-content"
+      dir="ltr"
     >
       <div
         className={cn(
@@ -185,7 +186,7 @@ function CarouselPrevious({
       variant={variant}
       size={size}
       className={cn(
-        "absolute size-10 border-secondary rounded-full",
+        "absolute size-10 rtl:rotate-180 border-secondary rounded-full",
         orientation === "horizontal"
           ? "top-1/2 -left-12 -translate-y-1/2"
           : "-top-12 left-1/2 -translate-x-1/2 rotate-90",
@@ -216,7 +217,7 @@ function CarouselNext({
       variant={variant}
       size={size}
       className={cn(
-        "absolute size-10 border-secondary rounded-full",
+        "absolute rtl:rotate-180 size-10 border-secondary rounded-full",
         orientation === "horizontal"
           ? "top-1/2 -right-12 -translate-y-1/2"
           : "-bottom-12 left-1/2 -translate-x-1/2 rotate-90",

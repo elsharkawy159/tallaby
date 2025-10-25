@@ -37,14 +37,14 @@ export default async function BestSellersInCategory({
 
   // Get best sellers in this category
   const productsResult = await getProducts({
-    categoryId: category.id,
+    categoryName: category.name || undefined,
     sortBy: "popular",
     limit,
   });
 
   const products = productsResult.success ? productsResult.data : [];
 
-  if (!products.length) {
+  if (!products || !products.length) {
     return null;
   }
 

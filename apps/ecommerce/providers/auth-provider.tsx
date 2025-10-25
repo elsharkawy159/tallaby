@@ -86,14 +86,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: () => {
       // Clear all queries
-      queryClient.invalidateQueries({
-        queryKey: ["user"],
-        refetchType: "active",
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["seller"],
-        refetchType: "active",
-      });
+      queryClient.invalidateQueries({ queryKey: ["user"] });
+      queryClient.invalidateQueries({ queryKey: ["seller"] });
       queryClient.clear();
       router.refresh();
     },

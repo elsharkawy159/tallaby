@@ -22,6 +22,7 @@ export interface ProductCardProps {
         discountValue?: number | null;
       }
     | null;
+  quantity?: number | string;
 }
 
 export interface AddToCartButtonProps {
@@ -34,6 +35,7 @@ export interface AddToCartButtonProps {
   variant?: "default" | "outline" | "ghost";
   showIcon?: boolean;
   showText?: boolean;
+  stock: number | string;
 }
 
 export interface WishlistButtonProps {
