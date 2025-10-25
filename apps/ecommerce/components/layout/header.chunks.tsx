@@ -79,7 +79,7 @@ export const BecomeSellerButton = ({ className }: { className?: string }) => {
 export const UserAuth = ({ variant = "desktop", className }: UserAuthProps) => {
   const { open: openAuthDialog } = useAuthDialog();
   const { user, seller, logout, isLoading, isSigningOut } = useAuth();
-  
+
   if (isLoading) {
     return (
       <div
@@ -98,9 +98,7 @@ export const UserAuth = ({ variant = "desktop", className }: UserAuthProps) => {
             )}
           />
         </Button>
-        {variant === "mobile" && (
-          <span className="text-xs mt-1">Loading...</span>
-        )}
+        {variant === "mobile" && <span className="text-xs">Loading...</span>}
       </div>
     );
   }
@@ -131,7 +129,7 @@ export const UserAuth = ({ variant = "desktop", className }: UserAuthProps) => {
       title="Sign in to your account"
     >
       <User className={cn("size-6", variant === "mobile" && "size-5")} />
-      {variant === "mobile" && <span className="text-xs mt-1">Sign In</span>}
+      {variant === "mobile" && <span className="text-xs">Sign In</span>}
     </Button>
   );
 };
@@ -311,12 +309,9 @@ export const DesktopNavigation = ({ className }: DesktopNavigationProps) => {
       )}
     >
       <Logo />
-
       <DeliveryLocationSelector className="hidden lg:flex" />
-
-      <SearchBar variant="desktop" />
       <LanguageSwitcher />
-
+      <SearchBar variant="desktop" />
       <UserAuth variant="desktop" />
       <CartLink />
       <WishlistLink />
@@ -342,7 +337,7 @@ export const BottomNavigation = ({ className }: BottomNavigationProps) => {
       )}
     >
       <div className="container mx-auto">
-        <nav className="grid grid-cols-4 py-3">
+        <nav className="flex items-center justify-between py-4 px-4">
           {bottomNavigationItems.map((item) => {
             const IconComponent = item.icon;
             // Determine if this tab is active
@@ -352,54 +347,58 @@ export const BottomNavigation = ({ className }: BottomNavigationProps) => {
                 : pathname.startsWith(item.href);
 
             return (
-              <Link
-                key={item.href}
-                href={item.href}
+              <Button
+                asChild
+                variant="ghost"
+                size="icon"
                 className={cn(
                   "flex flex-col items-center text-gray-600 hover:text-primary transition-colors",
                   isActive && "text-primary font-semibold"
                 )}
                 aria-current={isActive ? "page" : undefined}
               >
-                {IconComponent && (
-                  <IconComponent
-                    className={cn("size-5", isActive && "text-primary")}
-                  />
-                )}
-                <span
-                  className={cn("text-xs mt-1", isActive && "text-primary")}
-                >
-                  {item.label}
-                </span>
-              </Link>
+                <Link key={item.href} href={item.href}>
+                  {IconComponent && (
+                    <IconComponent
+                      className={cn("size-5", isActive && "text-primary")}
+                    />
+                  )}
+                  <span className={cn("text-xs", isActive && "text-primary")}>
+                    {item.label}
+                  </span>
+                </Link>
+              </Button>
             );
           })}
 
           {isLoading ? (
-            <div className="flex flex-col items-center text-gray-400 opacity-50">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="flex flex-col items-center"
+            >
               <User className="size-5 animate-pulse" />
-              <span className="text-xs mt-1">Loading...</span>
-            </div>
+              <span className="text-xs mt-0">Loading...</span>
+            </Button>
           ) : user ? (
-            <div className="flex flex-col items-center">
-              <UserMenu
-                variant="mobile"
-                user={user}
-                seller={seller}
-                logout={logout}
-                isSigningOut={isSigningOut}
-              />
-              <span className="text-xs mt-1 text-gray-600">Profile</span>
-            </div>
+            <UserMenu
+              variant="mobile"
+              user={user}
+              seller={seller}
+              logout={logout}
+              isSigningOut={isSigningOut}
+            />
           ) : (
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => openAuthDialog("signin")}
               className="flex flex-col items-center text-gray-600 hover:text-primary transition-colors"
               title="Sign in to your account"
             >
               <User className="size-5" />
-              <span className="text-xs mt-1">Sign In</span>
-            </button>
+              <span className="text-xs">Sign In</span>
+            </Button>
           )}
         </nav>
       </div>

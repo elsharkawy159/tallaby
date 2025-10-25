@@ -5,6 +5,7 @@ import { WishlistButton } from "./wishlist-button";
 import { QuantitySelector } from "./quantity-selector";
 import { useCart } from "@/providers/cart-provider";
 import type { ProductCardProps } from "./product-card.types";
+import { cn } from "@/lib/utils";
 
 interface ProductCardActionsProps {
   product: ProductCardProps;
@@ -73,13 +74,13 @@ export const ProductCardActions = ({
   if (isInCartStatus) {
     return (
       <div
-        className={`flex bg-accent h-8 md:w-[146.23px] w-full items-center md:pr-5 justify-center text-white text-base md:absolute bottom-0 right-0 font-bold py-2.5 md:rounded-none rounded md:[clip-path:polygon(17%_0,100%_0,100%_100%,0_100%,20_20%)] md:pl-10 ${className}`}
+        className={`absolute right-2.5 md:bottom-19 bottom-16 rounded-lg bg-accent ${className}`}
       >
         <QuantitySelector
           productId={productId}
-          size="sm"
           showRemoveButton={true}
-          className="!border-0 !bg-transparent !text-white"
+          productStock={product.quantity || 0}
+          className="!border-0 !bg-transparent !text-white shadow"
         />
       </div>
     );
@@ -88,11 +89,14 @@ export const ProductCardActions = ({
   return (
     <AddToCartButton
       productId={productId}
-      className={`md:absolute text-sm bottom-0 right-0 md:min-w-[146.23px] md:w-auto font-bold w-full py-2.5 md:rounded-none rounded md:[clip-path:polygon(17%_0,100%_0,100%_100%,0_100%,20_20%)] md:pl-10 ${className}`}
+      className={cn(
+        `absolute right-2.5 md:bottom-19 bottom-16 rounded-lg shadow`,
+        className
+      )}
       size="sm"
       variant="default"
-      showIcon={false}
-      showText={true}
+      showIcon={true}
+      showText={false}
       stock={product.quantity || 0}
     />
   );

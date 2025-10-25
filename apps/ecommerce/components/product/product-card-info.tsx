@@ -46,9 +46,9 @@ export const ProductCardInfo = ({
 
   return (
     <div
-      className={`space-y-2 md:block flex justify-between items-center md:mt-2.5 mt-1.5 ${className}`}
+      className={`md:block flex justify-between items-center md:mt-2.5 mt-1.5 ${className}`}
     >
-      <div className="flex md:flex-row flex-col md:items-center md:gap-4.5 gap-1 justify-between mb-2">
+      <div className="flex md:flex-row flex-col md:items-center md:gap-4.5 gap-1 justify-between">
         <Link href={`/products/${product.slug}`}>
           <h3 className="text-sm font-medium md:line-clamp-2 line-clamp-1">
             {title}
@@ -58,15 +58,6 @@ export const ProductCardInfo = ({
           className="md:text-lg text-sm font-semibold"
           dangerouslySetInnerHTML={{ __html: formatPrice(price, locale) }}
         />
-      </div>
-
-      {/* Rating */}
-      <div className="flex md:text-sm ltr:justify-end rtl:justify-start text-xs items-center gap-1"
-      dir="ltr"
-      >
-        <span className="font-medium">{rating}</span>
-        <Star className="md:size-4 size-3 text-yellow-400 fill-current" />
-        <span className="text-gray-500">({reviews})</span>
       </div>
     </div>
   );

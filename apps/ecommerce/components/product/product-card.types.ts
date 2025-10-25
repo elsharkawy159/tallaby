@@ -54,4 +54,5 @@ export interface QuantitySelectorProps {
   size?: "sm" | "default" | "lg";
   showRemoveButton?: boolean;
   onQuantityChange?: (quantity: number) => void;
+  productStock?: number | string;
 }

@@ -4,6 +4,7 @@ import { Button } from "@workspace/ui/components/button";
 import { Minus, Plus, Trash, Loader2 } from "lucide-react";
 import { useCart } from "@/providers/cart-provider";
 import type { QuantitySelectorProps } from "./product-card.types";
+import { cn } from "@/lib/utils";
 
 const sizeStyles = {
   sm: {
@@ -16,7 +17,7 @@ const sizeStyles = {
     button: "h-8 w-8 text-sm",
     icon: "h-3.5 w-3.5",
     text: "px-4 min-w-[2.5rem] text-sm",
-    loader: "h-4 w-4",
+    loader: "size-3.5",
   },
   lg: {
     button: "h-10 w-10 text-base",
@@ -37,6 +38,7 @@ export const QuantitySelector = ({
   className,
   size = "default",
   showRemoveButton = true,
+  productStock,
 }: QuantitySelectorProps) => {
   const { updateQuantity, removeFromCart, isItemLoading, cartItems } =
     useCart();
@@ -63,15 +65,15 @@ export const QuantitySelector = ({
       <Button
         variant="ghost"
         size="sm"
-        className={`rounded-none border-r ${styles.button}`}
+        className={cn(`rounded-none hover:text-gray-50`, styles.button)}
         onClick={() => handleQuantityChange(cartItem?.id || "", quantity - 1)}
         disabled={isItemLoading(cartItem?.id || "")}
         aria-label="Decrease quantity"
       >
         {quantity === 1 && showRemoveButton ? (
-          <Trash className={styles.icon} />
+          <Trash className={cn(styles.icon, "size-4")} />
         ) : (
-          <Minus className={styles.icon} />
+          <Minus className={cn(styles.icon, "size-4")} />
         )}
       </Button>
 
@@ -86,12 +88,14 @@ export const QuantitySelector = ({
       <Button
         variant="ghost"
         size="sm"
-        className={`rounded-none border-l ${styles.button}`}
+        className={cn(`rounded-none hover:text-gray-50`, styles.button)}
         onClick={() => handleQuantityChange(cartItem?.id || "", quantity + 1)}
-        disabled={isItemLoading(cartItem?.id || "")}
+        disabled={
+          isItemLoading(cartItem?.id || "") || Number(productStock) == quantity
+        }
         aria-label="Increase quantity"
       >
-        <Plus className={styles.icon} />
+        <Plus className={cn(styles.icon, "size-4")} />
       </Button>
     </div>
   );

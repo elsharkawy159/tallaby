@@ -6,7 +6,6 @@ import {
   ProductCardImage,
   ProductCardInfo,
   ProductCardActions,
-  ProductReview,
 } from "@/components/product";
 import type { ProductCardProps } from "@/components/product";
 import { useLocale } from "next-intl";
@@ -16,7 +15,7 @@ const ProductCard = (product: ProductCardProps) => {
   const locale = useLocale();
 
   return (
-    <Card className="group bg-white shadow-sm h-full border-0 p-0 relative w-full md:max-w-[285px] max-w-43 mx-auto overflow-hidden rounded-[8px_8px_0_8px]"
+    <Card className="group bg-white shadow-sm h-fit border-0 p-0 relative w-full md:max-w-[285px] max-w-43 mx-auto overflow-hidden rounded-lg"
     dir={locale === "ar" ? "rtl" : "ltr"}
     >
       <CardContent className="p-2 md:p-2.5">
@@ -25,16 +24,16 @@ const ProductCard = (product: ProductCardProps) => {
           <ProductCardImage product={product} />
 
           {/* Wishlist Button */}
-          <div className="absolute top-1 right-1">
+        </div>
+          <div className="absolute top-2.5 right-2.5">
             <WishlistButton
               productId={productId}
               size="sm"
               variant="ghost"
               showText={false}
-              className="rounded-full bg-white/90 hover:bg-white shadow-md"
+              className="rounded-lg bg-white/90 hover:bg-white shadow"
             />
           </div>
-        </div>
 
         {/* Product Info */}
         <ProductCardInfo product={product} />

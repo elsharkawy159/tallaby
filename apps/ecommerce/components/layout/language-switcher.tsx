@@ -3,6 +3,8 @@
 import { Button } from "@workspace/ui/components";
 import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
+import { cn } from "@/lib/utils";
+import { Globe } from "lucide-react";
 
 export function LanguageSwitcher() {
   const router = useRouter();
@@ -20,23 +22,25 @@ export function LanguageSwitcher() {
   ];
 
   return (
-    <div className="flex items-center gap-1 rounded-md border border-white/20 bg-white/10 p-1">
+    <>
       {locales.map((l) => (
         <Button
           key={l.code}
           size="sm"
           variant={l.code === locale ? "default" : "ghost"}
           onClick={() => switchLocale(l.code)}
-          className={`md:h-7 h-6 md:px-3 px-1 text-xs font-medium transition-all duration-200 ${
+          className={cn(
+            "h-8 px-3 text-xs font-medium transition-all duration-200 bg-gray-50/15",
             l.code === locale
-              ? "bg-white text-black shadow-sm hover:bg-white cursor-default hidden md:flex"
+              ? "bg-white text-black shadow-sm hover:bg-white cursor-default hidden"
               : "text-white hover:bg-white/20 hover:text-white"
-          }`}
+          )}
           aria-label={`Switch to ${l.label}`}
         >
+          <Globe className="size-4" />
           {l.label}
         </Button>
       ))}
-    </div>
+    </>
   );
 }

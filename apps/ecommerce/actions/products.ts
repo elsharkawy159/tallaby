@@ -22,8 +22,8 @@ import {
 } from "@workspace/db";
 
 interface ProductFilters {
-  categoryName?: string;
-  brandName?: string;
+  categoryId?: string;
+  brandId?: string;
   minPrice?: number;
   maxPrice?: number;
   minRating?: number;
@@ -45,12 +45,12 @@ export async function getProducts(filters: ProductFilters = {}) {
       try {
         const conditions = [eq(products.isActive, filters.isActive ?? true)];
 
-        if (filters.categoryName) {
-          conditions.push(eq(categories.name, filters.categoryName));
+        if (filters.categoryId) {
+          conditions.push(eq(categories.id, filters.categoryId));
         }
 
-        if (filters.brandName) {
-          conditions.push(eq(brands.name, filters.brandName));
+        if (filters.brandId) {
+          conditions.push(eq(brands.id, filters.brandId));
         }
 
         if (filters.minPrice !== undefined) {
@@ -146,12 +146,8 @@ export async function getProducts(filters: ProductFilters = {}) {
     },
     [cacheKey],
     {
-      tags: [
-        "products",
-        filters.categoryName && `category-${filters.categoryName}`,
-        filters.brandName && `brand-${filters.brandName}`,
-      ].filter(Boolean) as string[],
-      revalidate: 60,
+      tags: ["products"],
+      revalidate: 86400,
     }
   )();
 }

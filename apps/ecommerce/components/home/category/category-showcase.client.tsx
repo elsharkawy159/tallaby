@@ -74,7 +74,7 @@ export const CategoryShowcaseClient = ({
                       </span>
                     </div>
                   </div>
-                  <h3 className="md:text-sm text-xs font-medium text-center group-hover:text-primary transition-colors">
+                  <h3 className="md:text-sm text-xs font-medium text-center group-hover:text-primary transition-colors line-clamp-2">
                     {category.name}
                   </h3>
                 </div>

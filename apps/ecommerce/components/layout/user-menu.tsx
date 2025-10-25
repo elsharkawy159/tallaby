@@ -78,7 +78,7 @@ export function UserMenu({
           variant="ghost"
           size="icon"
           className={cn(
-            "cursor-pointer",
+            "cursor-pointer flex flex-col  items-center",
             variant === "desktop"
               ? "text-white hover:text-gray-200"
               : "text-gray-600 hover:text-primary",
@@ -87,14 +87,17 @@ export function UserMenu({
           title={`Welcome, ${userName}`}
         >
           {avatarUrl ? (
-            <img
-              src={avatarUrl}
-              alt="User avatar"
-              className="md:size-6 size-5 rounded-full object-cover"
-            />
+            <>
+              <img
+                src={avatarUrl}
+                alt="User avatar"
+                className="md:size-6 size-5 rounded-full object-cover"
+              />
+            </>
           ) : (
             <User className="md:size-6 size-5" />
           )}
+          <span className="text-xs">Profile</span>
         </Button>
       </PopoverTrigger>
 

@@ -33,10 +33,10 @@ const MainHeader = () => {
           <MobileNavigation />
         </div>
 
-        {/* Mobile search bar */}
         <div className="md:mt-0 mt-4 md:hidden">
           <SearchBar variant="mobile" className="w-full" />
         </div>
+        {/* Mobile search bar */}
 
         {/* Desktop layout */}
         <DesktopNavigation className="md:mt-0 mt-4" />
@@ -59,7 +59,7 @@ const SubBar = () => {
 const Header = ({ className }: HeaderProps) => {
   return (
     <>
-      <header className={cn("sticky top-0 z-50", className)}>
+      <header className={cn("z-50", className)}>
         <MainHeader />
         {/* <SubBar /> */}
       </header>

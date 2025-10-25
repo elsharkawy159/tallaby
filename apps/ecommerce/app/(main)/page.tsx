@@ -38,7 +38,8 @@ const HomePage = () => {
           title="🔥 Offers"
           description="What Everyone's Talking About"
           filters={{
-            // categoryId: "1f65b57b-fe85-4690-887b-39a778a55b99",
+            // categoryId: "37f775d3-71a1-4ce8-a203-dbf97a69399c",
+            limit: 10,
             sortBy: "popular",
           }}
         />
@@ -55,14 +56,14 @@ const HomePage = () => {
         backgroundColor="bg-gradient-to-r from-primary to-primary/80"
       />
 
-      <Suspense fallback={<div>Loading...</div>}>
+      {/* <Suspense fallback={<div>Loading...</div>}>
         <CategoryGrid
           title="Shop by Category"
           subtitle="Discover products in your favorite categories"
           limit={8}
           showProductCount={true}
         />
-      </Suspense>
+      </Suspense> */}
 
       {/* <DealOfTheDay
         title="Deal of the Day"
@@ -72,13 +73,13 @@ const HomePage = () => {
         className="bg-gradient-to-r from-red-50 to-orange-50"
       /> */}
 
-      <BestSellersInCategory
+      {/* <BestSellersInCategory
         categorySlug="electronics"
         title="Best Sellers in Electronics"
         limit={8}
-      />
+      /> */}
 
-      <ShopByBrand
+      {/* <ShopByBrand
         title="Shop by Brand"
         subtitle="Discover products from your favorite brands"
         limit={12}
@@ -96,7 +97,7 @@ const HomePage = () => {
         badgeVariant="default"
         layout="carousel"
         showViewMore={true}
-      />
+      /> */}
 
       <Suspense fallback={<div>Loading...</div>}>
         <ProductSection
