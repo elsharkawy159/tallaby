@@ -4,13 +4,13 @@ import { cn } from "@/lib/utils";
 import type { HeaderProps } from "./header.types";
 import {
   SearchBar,
-  BecomeSellerButton,
   MobileNavigation,
   DesktopNavigation,
   BottomNavigation,
 } from "./header.chunks";
 import { Logo } from "../logo";
 import CategoryNav from "./CategoryNav";
+import { LanguageSwitcher } from "./language-switcher";
 
 // Main Header Component - with scroll visibility logic
 const MainHeader = () => {
@@ -23,14 +23,13 @@ const MainHeader = () => {
         // isVisible ? "transform translate-y-0" : "transform -translate-y-full"
       )}
     >
-      <div className="container py-3.5">
+      <div className="lg:px-16 md:px-10 px-4 py-3.5">
         {/* Mobile top section */}
         <div className="flex items-center md:hidden justify-between">
+            {/* <BecomeSellerButton /> */}
+            <LanguageSwitcher />
           <Logo />
-          <div className="flex items-center gap-3">
-            <BecomeSellerButton />
             <MobileNavigation />
-          </div>
         </div>
 
         {/* Mobile search bar */}

@@ -6,7 +6,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 import NextTopLoader from "nextjs-toploader";
 import { Scripts } from "@/components/layout/structured-data";
-import { getMessages } from "next-intl/server";
+import { getLocale, getMessages } from "next-intl/server";
 import { Toaster } from "@workspace/ui/components/sonner";
 
 const montserrat = Montserrat({
@@ -108,8 +108,9 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const messages = await getMessages();
+  const locale = await getLocale();
   return (
-    <html lang="en">
+    <html lang={locale} dir={locale === "ar" ? "rtl" : "ltr"}>
       <head>
         <Scripts />
       </head>

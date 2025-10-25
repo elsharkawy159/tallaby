@@ -26,7 +26,6 @@ import CategoryNav from "./CategoryNav";
 import { UserMenu } from "./user-menu";
 import { cn } from "@/lib/utils";
 import type {
-  LogoProps,
   SearchBarProps,
   MobileNavigationProps,
   DesktopNavigationProps,
@@ -51,7 +50,7 @@ export const SearchBar = ({
   const searchPlaceholder = placeholder || getSearchPlaceholder(variant);
 
   return (
-    <div className={cn("relative", className)}>
+    <div className={cn("relative flex-1", className)}>
       <Input
         type="text"
         placeholder={searchPlaceholder}
@@ -317,8 +316,9 @@ export const DesktopNavigation = ({ className }: DesktopNavigationProps) => {
 
       <DeliveryLocationSelector className="hidden lg:flex" />
 
-      <div className="flex-1">
+      <div className="flex-1 flex items-center justify-center gap-3">
         <SearchBar variant="desktop" />
+        <LanguageSwitcher />
       </div>
 
       <div className="flex items-center gap-3 lg:gap-6">
@@ -333,6 +333,7 @@ export const DesktopNavigation = ({ className }: DesktopNavigationProps) => {
 
 import { usePathname } from "next/navigation";
 import { Logo } from "../logo";
+import { LanguageSwitcher } from "./language-switcher";
 
 export const BottomNavigation = ({ className }: BottomNavigationProps) => {
   const { open: openAuthDialog } = useAuthDialog();
