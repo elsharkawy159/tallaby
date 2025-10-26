@@ -188,7 +188,7 @@ export function generateOrganizationStructuredData() {
       "@type": "ContactPoint",
       telephone: "+1-800-TALLABY",
       contactType: "customer service",
-      availableLanguage: ["English", "Spanish", "French"],
+      availableLanguage: ["English", "Arabic"],
     },
     sameAs: [
       "https://twitter.com/tallaby",

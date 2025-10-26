@@ -10,10 +10,10 @@ export default getRequestConfig(async ({ locale }) => {
   const cookieLocale = cookieStore.get("locale")?.value as Locale | undefined;
 
   // INFO: 2. Fallback to default
-  const resolvedLocale = cookieLocale || (locale as Locale) || "en";
+  const resolvedLocale = cookieLocale || (locale as Locale) || "ar";
 
   // Validate that it's one of our supported locales
-  const safeLocale = locales.includes(resolvedLocale as Locale) ? (resolvedLocale as Locale) : "en";
+  const safeLocale = locales.includes(resolvedLocale as Locale) ? (resolvedLocale as Locale) : "ar";
 
   return {
     locale: safeLocale,

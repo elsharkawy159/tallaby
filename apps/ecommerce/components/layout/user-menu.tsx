@@ -97,7 +97,7 @@ export function UserMenu({
           ) : (
             <User className="md:size-6 size-5" />
           )}
-          <span className="text-xs">Profile</span>
+          <span className="text-xs md:hidden">Profile</span>
         </Button>
       </PopoverTrigger>
 

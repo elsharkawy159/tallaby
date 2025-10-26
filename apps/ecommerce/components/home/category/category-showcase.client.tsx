@@ -13,11 +13,13 @@ import {
   CategoryShowcaseClientProps,
   CategoryWithRequiredFields,
 } from "./category-showcase.types";
+import { useLocale } from "next-intl";
 
 export const CategoryShowcaseClient = ({
   categories,
   className,
 }: CategoryShowcaseClientProps) => {
+  const locale = useLocale();
   // Memoize the filtering and transformation to avoid recalculating on every render
   const categoriesWithProducts = useMemo(() => {
     return categories
@@ -51,6 +53,7 @@ export const CategoryShowcaseClient = ({
         opts={{
           align: "start",
           dragFree: true,
+          direction: locale === "ar" ? "rtl" : "ltr",
         }}
         // plugins={[
         //   Autoplay({

@@ -10,8 +10,10 @@ import {
   CarouselPrevious,
 } from "@workspace/ui/components/carousel";
 import Autoplay from "embla-carousel-autoplay";
+import { useLocale } from "next-intl";
 
 const HeroCarousel = () => {
+  const locale = useLocale();
   const banners = [
     {
       id: 1,
@@ -58,6 +60,7 @@ const HeroCarousel = () => {
       opts={{
         align: "start",
         loop: true,
+        direction: locale === "ar" ? "rtl" : "ltr",
       }}
     >
       <CarouselContent>

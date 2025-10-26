@@ -349,6 +349,7 @@ export const BottomNavigation = ({ className }: BottomNavigationProps) => {
             return (
               <Button
                 asChild
+                key={item.href}
                 variant="ghost"
                 size="icon"
                 className={cn(

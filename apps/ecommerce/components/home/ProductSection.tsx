@@ -11,6 +11,7 @@ import {
 import Link from "next/link";
 import { getProducts } from "@/actions/products";
 import { ProductCardProps } from "../product";
+import { getLocale } from "next-intl/server";
 
 interface ProductFilters {
   categoryId?: string;
@@ -40,7 +41,7 @@ const ProductSection = async ({
   filters = {},
 }: ProductSectionProps) => {
   const products = await getProducts(filters);
-
+  const locale = await getLocale();
   if (!products?.data) {
     return null;
   }
@@ -51,6 +52,7 @@ const ProductSection = async ({
         opts={{
           align: "start",
           dragFree: true,
+          direction: locale === "ar" ? "rtl" : "ltr",
         }}
         className="md:flex flex-row items-center mb-8 gap-5"
       >
