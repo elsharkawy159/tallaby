@@ -45,7 +45,7 @@ export const CategoryShowcaseClient = ({
   return (
     <section
       className={cn(
-        "md:py-6 py-4 px-4 md:rounded-t-[50px] rounded-t-4xl bg-background container mx-auto",
+        "md:py-6 py-4 md:rounded-t-[50px] overflow-hidden rounded-t-4xl bg-background container px-0 mx-auto",
         className
       )}
     >

@@ -54,7 +54,7 @@ export const SearchBar = ({
       <Input
         type="text"
         placeholder={searchPlaceholder}
-        className="pl-11 rounded-full"
+        className="pl-11 rounded-md"
       />
       <Search className="size-5 absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500" />
     </div>
@@ -140,14 +140,18 @@ export const CartLink = ({ className }: { className?: string }) => {
     <Button asChild size="icon" variant="ghost">
       <Link
         href="/cart"
-        className={cn("relative text-white hover:text-gray-200", className)}
+        className={cn(
+          "relative flex flex-col items-center md:text-white text-gray-600 hover:text-gray-200",
+          className
+        )}
       >
-        <ShoppingCart className="size-6" />
+        <ShoppingCart className="md:size-6 size-5" />
         {itemCount > 0 && (
-          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full size-4.5 flex items-center justify-center">
+          <span className="absolute md:-top-1 -top-2 md:-right-1 -right-2 bg-red-500 text-white text-xs rounded-full size-5 flex items-center justify-center">
             {itemCount}
           </span>
         )}
+        <span className="text-xs md:hidden">Cart</span>
       </Link>
     </Button>
   );
@@ -185,7 +189,7 @@ export const MobileNavigation = ({ className }: MobileNavigationProps) => {
           <SheetTitle>Menu</SheetTitle>
         </SheetHeader>
         <div className="mt-6 px-4">
-          <nav className="space-y-4">
+          <nav className="space-y-2">
             <div className="space-y-2">
               <h3 className="font-semibold text-sm text-gray-500">
                 Categories
@@ -202,12 +206,13 @@ export const MobileNavigation = ({ className }: MobileNavigationProps) => {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="block py-2 text-gray-700 hover:text-primary"
+                  className="block text-gray-700 hover:text-primary"
                 >
                   {item.label}
                 </Link>
               ))}
             </div>
+            <LanguageSwitcher />
           </nav>
         </div>
       </SheetContent>
@@ -255,14 +260,19 @@ export const DeliveryLocationSelector = ({
               className
             )}
           >
-            <MapPin className="h-5 w-5 flex-shrink-0" />
+            <MapPin className="md:size-5 size-4 flex-shrink-0" />
             <div className="flex flex-col items-start text-left">
-              <span className="text-xs font-normal">
-                Hello, {user.user_metadata?.full_name?.split(" ")[0] || "there"}
-              </span>
-              <span className="text-sm font-semibold flex items-center gap-1">
+              <div className="text-xs font-normal">
+                Deliver to{" "}
+                <span className="capitalize">
+                  {user.user_metadata?.full_name?.split(" ")[0] ||
+                    user.email?.split("@")[0] ||
+                    "User"}
+                </span>
+              </div>
+              <span className="md:text-sm text-xs font-semibold flex items-center gap-1">
                 Add delivery address
-                <ChevronDown className="h-3 w-3" />
+                <ChevronDown className="size-3" />
               </span>
             </div>
           </button>
@@ -371,7 +381,7 @@ export const BottomNavigation = ({ className }: BottomNavigationProps) => {
               </Button>
             );
           })}
-
+          <CartLink />
           {isLoading ? (
             <Button
               variant="ghost"

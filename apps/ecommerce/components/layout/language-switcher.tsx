@@ -30,7 +30,7 @@ export function LanguageSwitcher() {
           variant={l.code === locale ? "default" : "ghost"}
           onClick={() => switchLocale(l.code)}
           className={cn(
-            "h-8 px-3 text-xs font-medium transition-all duration-200 bg-gray-50/15",
+            "h-8 px-3 text-xs rounded-md font-medium transition-all duration-200 bg-gray-50/15",
             l.code === locale
               ? "bg-white text-black shadow-sm hover:bg-white cursor-default hidden"
               : "text-white hover:bg-white/20 hover:text-white"

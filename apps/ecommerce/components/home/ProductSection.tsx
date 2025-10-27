@@ -62,7 +62,7 @@ const ProductSection = async ({
             <h2 className="md:text-2xl text-xl font-bold text-gray-900 md:mb-2">
               {title}
             </h2>
-            <Button asChild className="p-0 gap-1 md:hidden flex" variant="link">
+            <Button asChild className="p-0 gap-1 hidden" variant="link">
               <Link href="/products">
                 View More
                 <ChevronRight className="size-4" />
@@ -84,7 +84,7 @@ const ProductSection = async ({
         {/* Carousel Section */}
         <CarouselContent className="p-1.5">
           {products.data.map((product) => (
-            <CarouselItem key={product.id} className="basis-auto md:ps-4 ps-3">
+            <CarouselItem key={product.id} className="basis-auto md:ps-4 ps-2">
               <ProductCard
                 key={product.id}
                 {...(product as ProductCardProps)}
