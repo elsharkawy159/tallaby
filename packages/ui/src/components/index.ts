@@ -46,3 +46,4 @@ export * from "./collapsible";
 export * from "./inputs";
 export * from "./stepper";
 export * from "./category-popover";
+export * from "./spinner";

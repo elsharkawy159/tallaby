@@ -31,11 +31,6 @@ const HeroCarousel = () => {
       image: "/banner3.jpg",
     },
     {
-      id: 4,
-      href: "/products",
-      image: "/banner4.jpg",
-    },
-    {
       id: 5,
       href: "/products",
       image: "/banner5.jpg",

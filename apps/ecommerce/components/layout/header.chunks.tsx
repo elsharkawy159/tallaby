@@ -20,11 +20,15 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@workspace/ui/components/sheet";
+import { useQuery } from "@tanstack/react-query";
 import { useAuthDialog } from "@/hooks/use-auth-dialog";
 import { useAuth } from "@/providers/auth-provider";
+import { useDebounce } from "@/hooks/use-debounce";
+import { getProducts } from "@/actions/products";
+import { getPublicUrl } from "@workspace/ui/lib/utils";
 import CategoryNav from "./CategoryNav";
 import { UserMenu } from "./user-menu";
-import { cn } from "@/lib/utils";
+import { cn, resolvePrice, resolvePrimaryImage } from "@/lib/utils";
 import type {
   SearchBarProps,
   MobileNavigationProps,
@@ -47,16 +51,159 @@ export const SearchBar = ({
   className,
   variant = "desktop",
 }: SearchBarProps) => {
+  const [searchQuery, setSearchQuery] = React.useState("");
+  const [isOpen, setIsOpen] = React.useState(false);
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+  const searchRef = React.useRef<HTMLDivElement>(null);
+  const locale = useLocale();
+
+  // Fetch search results using useQuery
+  const { data: searchResultsData, isLoading: isSearching } = useQuery({
+    queryKey: ["search-products", debouncedSearchQuery],
+    queryFn: async () => {
+      if (!debouncedSearchQuery.trim() || debouncedSearchQuery.length < 2) {
+        return { success: true, data: [] };
+      }
+      return getProducts({
+        searchQuery: debouncedSearchQuery.trim(),
+        isActive: true,
+        limit: 5,
+      });
+    },
+    enabled: debouncedSearchQuery.length >= 1,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
+  // Extract search results
+  const searchResults = searchResultsData?.success
+    ? (searchResultsData.data || []).slice(0, 5)
+    : [];
+
+  // Close dropdown when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        searchRef.current &&
+        !searchRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Open dropdown when there are results
+  React.useEffect(() => {
+    if (searchResults.length > 0 && searchQuery) {
+      setIsOpen(true);
+    }
+  }, [searchResults.length, searchQuery]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const handleInputFocus = () => {
+    if (searchResults.length > 0) {
+      setIsOpen(true);
+    }
+  };
+
   const searchPlaceholder = placeholder || getSearchPlaceholder(variant);
 
   return (
-    <div className={cn("relative flex-1", className)}>
+    <div className={cn("relative flex-1", className)} ref={searchRef}>
       <Input
         type="text"
         placeholder={searchPlaceholder}
         className="pl-11 rounded-md"
+        value={searchQuery}
+        onChange={handleInputChange}
+        onFocus={handleInputFocus}
       />
-      <Search className="size-5 absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500" />
+      {isSearching ? (
+        <Spinner className="text-gray-500 size-5 absolute left-4 top-1/2 transform -translate-y-1/2" />
+      ) : (
+        <Search className="size-5 absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500" />
+      )}
+      {/* Search Results Dropdown */}
+      {isOpen && searchQuery && (
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-50 max-h-96 overflow-y-auto">
+          {isSearching ? (
+            <div className="p-4 text-center text-gray-500">Searching...</div>
+          ) : searchResults.length > 0 ? (
+            <ul className="divide-y divide-gray-200">
+              {searchResults.map((product) => {
+                const price = resolvePrice(product as ProductCardProps);
+
+                const productImage = resolvePrimaryImage(
+                  product.images as string[] | undefined
+                );
+
+                return (
+                  <li key={product.id}>
+                    <Link
+                      href={`/products/${product.slug}`}
+                      onClick={() => {
+                        setSearchQuery("");
+                        setIsOpen(false);
+                      }}
+                      className="block p-3 hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Image
+                          src={productImage}
+                          width={48}
+                          height={48}
+                          alt={product.title || "Product"}
+                          className="w-12 h-12 object-contain rounded"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">
+                            {product.title}
+                          </p>
+                          <p className="text-xs text-gray-500 truncate">
+                            {product.category?.name || "No category"}
+                          </p>
+                        </div>
+                        <span
+                          className="md:text-lg text-sm font-semibold"
+                          dangerouslySetInnerHTML={{
+                            __html: formatPrice(price, locale),
+                          }}
+                        />
+                      </div>
+                    </Link>
+                  </li>
+                );
+              })}
+              {searchResults.length >= 5 && (
+                <li>
+                  <Link
+                    // href={`/search?q=${encodeURIComponent(searchQuery)}`}
+                    href={`/products?searchQuery=${encodeURIComponent(searchQuery)}`}
+                    onClick={() => {
+                      setSearchQuery("");
+                      setIsOpen(false);
+                    }}
+                    className="block p-3 text-center text-sm font-medium text-primary hover:bg-gray-50"
+                  >
+                    View all results
+                  </Link>
+                </li>
+              )}
+            </ul>
+          ) : (
+            <div className="p-4 text-center text-gray-500 text-sm">
+              No products found
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
@@ -333,6 +480,11 @@ export const DesktopNavigation = ({ className }: DesktopNavigationProps) => {
 import { usePathname } from "next/navigation";
 import { Logo } from "../logo";
 import { LanguageSwitcher } from "./language-switcher";
+import Image from "next/image";
+import { useLocale } from "next-intl";
+import { formatPrice } from "@workspace/lib";
+import { ProductCardProps } from "../product";
+import { Spinner } from "@workspace/ui/components";
 
 export const BottomNavigation = ({ className }: BottomNavigationProps) => {
   const { open: openAuthDialog } = useAuthDialog();

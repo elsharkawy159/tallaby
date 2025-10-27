@@ -2,21 +2,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
 import type { ProductCardProps } from "./product-card.types";
+import { resolvePrimaryImage } from "@/lib/utils";
 
 interface ProductCardImageProps {
   product: ProductCardProps;
   className?: string;
 }
 
-const fallbackImage = "/png product.png";
 
-function resolvePrimaryImage(images?: ProductCardProps["images"]) {
-  if (!images || images.length === 0) return fallbackImage;
-  const first = images[0] as any;
-  const key = typeof first === "string" ? first : first?.url;
-  if (!key || typeof key !== "string") return fallbackImage;
-  return getPublicUrl(key, "products");
-}
 
 export const ProductCardImage = ({
   product,

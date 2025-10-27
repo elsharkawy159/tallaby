@@ -310,7 +310,7 @@ export function ProductsFilter({ filterOptions }: ProductsFilterProps) {
       </Sheet>
 
       {/* Desktop sidebar */}
-      <aside className="hidden lg:block w-[285px] rounded-lg p-5 top-21.5 sticky bg-white border border-gray-200">
+      <aside className="hidden lg:block w-76 h-screen overflow-y-auto p-5 top-0 sticky border-r border-r-gray-200">
         <h2 className="sr-only">Filters</h2>
         {renderFilters(false)}
       </aside>
