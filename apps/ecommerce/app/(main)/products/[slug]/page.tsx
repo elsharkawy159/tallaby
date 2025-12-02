@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { getProductBySlug } from "@/actions/products";
+import { getProductBySlug, getAllProductSlugs } from "@/actions/products";
 import { ProductDetails } from "./_components/product-details";
 import { ProductTabs } from "./_components/product-tabs";
 import { SimilarProducts } from "./_components/similar-products";
@@ -18,6 +18,22 @@ import { generateProductMetadata } from "@/lib/metadata";
 import type { Metadata } from "next";
 import { ProductStructuredData } from "./_components/product-structured-data";
 
+// ISR: Revalidate every 10 minutes
+export const revalidate = 600;
+
+// Generate static params for all product slugs
+export async function generateStaticParams() {
+  const slugsResult = await getAllProductSlugs();
+
+  if (!slugsResult.success || !slugsResult.data) {
+    return [];
+  }
+
+  return slugsResult.data.map((slug) => ({
+    slug,
+  }));
+}
+
 export async function generateMetadata({
   params,
 }: ProductPageProps): Promise<Metadata> {
@@ -30,32 +46,38 @@ export async function generateMetadata({
     };
   }
 
-  const raw = productResult.data as any;
-  const product = {
-    title: raw.title,
-    slug: raw.slug,
-    description: raw.description ?? "",
-    price: {
-      final: Number(
-        raw.price?.final ?? raw.price?.current ?? raw.price?.list ?? 0
-      ),
-      list: Number(
-        raw.price?.list ?? raw.price?.current ?? raw.price?.final ?? 0
-      ),
-    },
-    images: Array.isArray(raw.images) ? raw.images : [],
-    brand: {
-      name: raw.brand?.name ?? "",
-    },
-    category: {
-      name: raw.category?.name ?? "",
-      slug: raw.category?.slug ?? "",
-    },
-    averageRating: Number(raw.averageRating ?? 0),
-    reviewCount: Number(raw.reviewCount ?? 0),
-  };
+  const product = productResult.data;
+  const price = (product.price as any) || {};
+  // Category is not included in the query, so we use categoryId if needed
+  // For metadata, we'll use a fallback
+  const category = (product as any).category;
 
-  return generateProductMetadata({ product });
+  return generateProductMetadata({
+    product: {
+      title: product.title,
+      slug: product.slug,
+      description: product.description ?? "",
+      price: {
+        final: Number(price.final ?? price.current ?? price.list ?? 0),
+        list: Number(price.list ?? price.current ?? price.final ?? 0),
+      },
+      images: Array.isArray(product.images) ? (product.images as string[]) : [],
+      brand: {
+        name: product.brand?.name ?? "",
+      },
+      category: category
+        ? {
+            name: category.name ?? "",
+            slug: category.slug ?? "",
+          }
+        : {
+            name: "Products",
+            slug: "products",
+          },
+      averageRating: Number(product.averageRating ?? 0),
+      reviewCount: Number(product.reviewCount ?? 0),
+    },
+  });
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
@@ -64,60 +86,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
   if (!productResult.success || !productResult.data) {
     notFound();
   }
-  console.log("productResult", productResult);
-  const raw = productResult.data as any;
-  const product: Product = {
-    id: raw.id,
-    title: raw.title,
-    slug: raw.slug,
-    price: {
-      base: Number(
-        raw.price?.base ?? raw.price?.current ?? raw.price?.final ?? 0
-      ),
-      list: Number(
-        raw.price?.list ?? raw.price?.current ?? raw.price?.final ?? 0
-      ),
-      final: Number(
-        raw.price?.final ?? raw.price?.current ?? raw.price?.list ?? 0
-      ),
-      discountType: raw.price?.discountType,
-      discountValue: raw.price?.discountValue,
-    },
-    averageRating: Number(raw.averageRating ?? 0),
-    reviewCount: Number(raw.reviewCount ?? 0),
-    description: raw.description ?? "",
-    bulletPoints: Array.isArray(raw.bulletPoints) ? raw.bulletPoints : [],
-    images: Array.isArray(raw.images) ? (raw.images as string[]) : [],
-    isActive: Boolean(raw.isActive),
-    isBuyBox: Boolean(raw.isBuyBox ?? false),
-    isFeatured: Boolean(raw.isFeatured ?? false),
-    isBestSeller: Boolean(raw.isBestSeller ?? raw.isMostSelling ?? false),
-    isPlatformChoice: Boolean(raw.isPlatformChoice ?? false),
-    brand: {
-      id: raw.brand?.id ?? raw.brandId ?? "",
-      name: raw.brand?.name ?? "",
-      logoUrl: raw.brand?.logoUrl ?? undefined,
-    },
-    category: {
-      id: raw.category?.id ?? raw.categoryId ?? "",
-      name: raw.category?.name ?? "",
-      slug: raw.category?.slug ?? "",
-    },
-    seller: {
-      id: raw.seller?.id ?? raw.sellerId ?? "",
-      name: raw.seller?.displayName ?? raw.seller?.name ?? "",
-      slug: raw.seller?.slug ?? "",
-      reviewsCount: raw.seller?.reviewCount ?? undefined,
-      isVerified: raw.seller?.isVerified ?? undefined,
-      totalRatings: raw.seller?.totalRatings ?? undefined,
-      positiveRatingPercent: raw.seller?.positiveRatingPercent ?? undefined,
-    },
-    quantity: Boolean(Number(raw.quantity ?? 0) > 0),
-    stockCount: raw.quantity ? Number(raw.quantity) : undefined,
-    tags: Array.isArray(raw.tags) ? raw.tags : undefined,
-    createdAt: raw.createdAt ?? "",
-    updatedAt: raw.updatedAt ?? "",
-  };
+
+  const product = productResult.data;
 
   return (
     <main className="min-h-screen">
@@ -129,26 +99,24 @@ export default async function ProductPage({ params }: ProductPageProps) {
       <section className="bg-white py-6 lg:py-10">
         <div className="container">
           <div className="grid grid-cols-1 lg:grid-cols-12 md:gap-8 gap-5">
-              {/* Product images + hero info */}
-              <ProductHero product={product as any} />
-              <ProductDetails product={product as any} />
+            {/* Product images + hero info */}
+            <ProductHero product={product} />
+            <ProductDetails product={product} />
           </div>
         </div>
       </section>
 
       <section>
-        <Suspense fallback={<ProductTabsSkeleton />}>
-          <ProductTabs product={product as any} />
-        </Suspense>
+        {/* <Suspense fallback={<ProductTabsSkeleton />}> */}
+        <ProductTabs product={product} />
+        {/* </Suspense> */}
       </section>
 
-      {Array.isArray((productResult.data as any)?.relatedProducts) &&
-        (productResult.data as any).relatedProducts.length > 0 && (
+      {Array.isArray(product.relatedProducts) &&
+        product.relatedProducts.length > 0 && (
           <section>
             <Suspense fallback={<SimilarProductsSkeleton />}>
-              <SimilarProducts
-                products={(productResult.data as any).relatedProducts as any}
-              />
+              <SimilarProducts products={product.relatedProducts} />
             </Suspense>
           </section>
         )}

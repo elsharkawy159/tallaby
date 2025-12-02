@@ -31,6 +31,7 @@ export const SimilarProducts = ({ products }: SimilarProductsProps) => {
           opts={{
             align: "start",
             loop: true,
+            dragFree: true,
           }}
           className="relative"
         >

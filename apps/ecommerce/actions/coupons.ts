@@ -1,10 +1,21 @@
-"use server"
+"use server";
 
+import { unstable_cache } from "next/cache";
 import { cartItems, carts, db } from "@workspace/db";
-import { coupons, couponUsage, eq, and, sql, gte, lte, desc } from "@workspace/db";
+import {
+  coupons,
+  couponUsage,
+  eq,
+  and,
+  sql,
+  gte,
+  lte,
+  desc,
+} from "@workspace/db";
 import { getUser } from "./auth";
 
 export async function validateCoupon(code: string, cart?: any) {
+  // NOT CACHED: Real-time data - checks usage limits and cart totals that change frequently
   try {
     const user = await getUser();
     const now = new Date().toISOString();
@@ -24,7 +35,11 @@ export async function validateCoupon(code: string, cart?: any) {
     }
 
     // Check usage limit
-    if (coupon.usageLimit && coupon.usageCount && coupon.usageCount >= coupon.usageLimit) {
+    if (
+      coupon.usageLimit &&
+      coupon.usageCount &&
+      coupon.usageCount >= coupon.usageLimit
+    ) {
       return { success: false, error: "Coupon usage limit reached" };
     }
 
@@ -99,78 +114,102 @@ export async function validateCoupon(code: string, cart?: any) {
 }
 
 export async function getAvailableCoupons() {
-  try {
-    const user = await getUser();
-    const now = new Date().toISOString();
+  // CACHED: Semi-dynamic public data - available coupons change infrequently
+  // Note: User-specific filtering happens after cache retrieval
+  const user = await getUser();
+  const cacheKey = `available-coupons${user?.user.id || ""}`;
 
-    const conditions = [
-      eq(coupons.isActive, true),
-      lte(coupons.startsAt, now),
-      gte(coupons.expiresAt, now),
-    ];
+  return unstable_cache(
+    async () => {
+      try {
+        const now = new Date().toISOString();
 
-    // If no seller ID (platform-wide coupons)
-    conditions.push(sql`${coupons.sellerId} IS NULL`);
+        const conditions = [
+          eq(coupons.isActive, true),
+          lte(coupons.startsAt, now),
+          gte(coupons.expiresAt, now),
+        ];
 
-    const availableCoupons = await db.query.coupons.findMany({
-      where: and(...conditions),
-      orderBy: [desc(coupons.discountValue)],
-    });
+        // If no seller ID (platform-wide coupons)
+        conditions.push(sql`${coupons.sellerId} IS NULL`);
 
-    // Filter out coupons user has already maxed out
-    if (user) {
-      const filteredCoupons = [];
-      for (const coupon of availableCoupons) {
-        if (coupon.perUserLimit) {
-          const usage = await db
-            .select({ count: sql<number>`count(*)` })
-            .from(couponUsage)
-            .where(
-              and(
-                eq(couponUsage.couponId, coupon.id),
-                eq(couponUsage.userId, user.user.id)
-              )
-            );
+        const availableCoupons = await db.query.coupons.findMany({
+          where: and(...conditions),
+          orderBy: [desc(coupons.discountValue)],
+        });
 
-          if (usage[0]?.count && usage[0].count < coupon.perUserLimit) {
-            filteredCoupons.push(coupon);
+        // Filter out coupons user has already maxed out
+        if (user) {
+          const filteredCoupons = [];
+          for (const coupon of availableCoupons) {
+            if (coupon.perUserLimit) {
+              const usage = await db
+                .select({ count: sql<number>`count(*)` })
+                .from(couponUsage)
+                .where(
+                  and(
+                    eq(couponUsage.couponId, coupon.id),
+                    eq(couponUsage.userId, user.user.id)
+                  )
+                );
+
+              if (usage[0]?.count && usage[0].count < coupon.perUserLimit) {
+                filteredCoupons.push(coupon);
+              }
+            } else {
+              filteredCoupons.push(coupon);
+            }
           }
-        } else {
-          filteredCoupons.push(coupon);
+          return { success: true, data: filteredCoupons };
         }
-      }
-      return { success: true, data: filteredCoupons };
-    }
 
-    return { success: true, data: availableCoupons };
-  } catch (error) {
-    console.error("Error fetching coupons:", error);
-    return { success: false, error: "Failed to fetch coupons" };
-  }
+        return { success: true, data: availableCoupons };
+      } catch (error) {
+        console.error("Error fetching coupons:", error);
+        return { success: false, error: "Failed to fetch coupons" };
+      }
+    },
+    [cacheKey],
+    {
+      tags: ["coupons", "available-coupons"],
+      revalidate: 1800, // 30 minutes - available coupons change infrequently
+    }
+  )();
 }
 
 export async function getSellerCoupons(sellerId: string) {
-  try {
-    const now = new Date().toISOString();
+  // CACHED: Semi-dynamic public data - seller coupons change infrequently
+  return unstable_cache(
+    async () => {
+      try {
+        const now = new Date().toISOString();
 
-    const sellerCoupons = await db.query.coupons.findMany({
-      where: and(
-        eq(coupons.sellerId, sellerId),
-        eq(coupons.isActive, true),
-        lte(coupons.startsAt, now),
-        gte(coupons.expiresAt, now)
-      ),
-      orderBy: [desc(coupons.discountValue)],
-    });
+        const sellerCoupons = await db.query.coupons.findMany({
+          where: and(
+            eq(coupons.sellerId, sellerId),
+            eq(coupons.isActive, true),
+            lte(coupons.startsAt, now),
+            gte(coupons.expiresAt, now)
+          ),
+          orderBy: [desc(coupons.discountValue)],
+        });
 
-    return { success: true, data: sellerCoupons };
-  } catch (error) {
-    console.error("Error fetching seller coupons:", error);
-    return { success: false, error: "Failed to fetch coupons" };
-  }
+        return { success: true, data: sellerCoupons };
+      } catch (error) {
+        console.error("Error fetching seller coupons:", error);
+        return { success: false, error: "Failed to fetch coupons" };
+      }
+    },
+    [`seller-coupons-${sellerId}`],
+    {
+      tags: ["coupons", `seller-${sellerId}`],
+      revalidate: 1800, // 30 minutes - seller coupons change infrequently
+    }
+  )();
 }
 
 export async function applyCouponToCart(cartId: string, couponCode: string) {
+  // NOT CACHED: Mutation - applies coupon to user's cart
   try {
     const user = await getUser();
     if (!user) {

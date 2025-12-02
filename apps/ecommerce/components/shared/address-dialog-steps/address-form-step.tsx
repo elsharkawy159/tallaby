@@ -6,12 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Button } from "@workspace/ui/components/button";
 import { Form } from "@workspace/ui/components/form";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/card";
+import { Card, CardContent } from "@workspace/ui/components/card";
 import { Separator } from "@workspace/ui/components/separator";
 
 // Import our reusable inputs
@@ -241,8 +236,9 @@ export const AddressFormStep = ({
                 )}
 
                 <Button
-                  type="submit"
+                  type="button"
                   disabled={isPending}
+                  onClick={() => handleSubmit(form.getValues())}
                   className="flex-1 rounded"
                 >
                   {isPending

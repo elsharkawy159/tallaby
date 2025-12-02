@@ -3,7 +3,7 @@ import { Montserrat } from "next/font/google";
 import "@workspace/ui/globals.css";
 import { getLocale } from "next-intl/server";
 import { NextIntlClientProvider } from "next-intl";
-import { ThemeProvider } from "next-themes";
+// import { ThemeProvider } from "next-themes";
 import { Toaster } from "@workspace/ui/components/sonner";
 import { getSiteData } from "@/actions/site-data";
 import { SiteDataProvider } from "@/providers/site-data";
@@ -45,15 +45,14 @@ export default async function RootLayout({
       <body className={`${montserrat.variable} antialiased`}>
         <SiteDataProvider promise={getSiteData()}>
           <NextIntlClientProvider>
-            <ThemeProvider
+            {/* <ThemeProvider
               attribute="class"
               defaultTheme="light"
-              enableSystem
               disableTransitionOnChange
-            >
+            > */}
               {children}
               <Toaster position="top-center" />
-            </ThemeProvider>
+            {/* </ThemeProvider> */}
           </NextIntlClientProvider>
         </SiteDataProvider>
       </body>

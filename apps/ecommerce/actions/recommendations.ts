@@ -1,10 +1,10 @@
-
 "use server";
 
+import { unstable_cache } from "next/cache";
 import { db } from "@workspace/db";
-import { 
-  products, 
-  orderItems, 
+import {
+  products,
+  orderItems,
   searchLogs,
   wishlistItems,
   wishlists,
@@ -21,17 +21,24 @@ import {
 } from "@workspace/db";
 import { getUser, getSessionId } from "./auth";
 
-export async function getRecommendedProducts(type: 'personalized' | 'trending' | 'similar', productId?: string) {
+export async function getRecommendedProducts(
+  type: "personalized" | "trending" | "similar",
+  productId?: string
+) {
+  // NOT CACHED: User-specific private data (personalized) or query-dependent (similar)
+  // Only trending could be cached, but it's handled separately
   try {
-    
     switch (type) {
-      case 'personalized':
+      case "personalized":
         return getPersonalizedRecommendations();
-      case 'trending':
+      case "trending":
         return getTrendingProducts();
-      case 'similar':
+      case "similar":
         if (!productId) {
-          return { success: false, error: "Product ID required for similar products" };
+          return {
+            success: false,
+            error: "Product ID required for similar products",
+          };
         }
         return getSimilarProducts(productId);
       default:
@@ -44,9 +51,10 @@ export async function getRecommendedProducts(type: 'personalized' | 'trending' |
 }
 
 async function getPersonalizedRecommendations() {
+  // NOT CACHED: User-specific private data - based on user's purchase history and wishlist
   try {
     const user = await getUser();
-    
+
     if (!user) {
       // For anonymous users, show popular products
       return getTrendingProducts();
@@ -84,38 +92,48 @@ async function getPersonalizedRecommendations() {
         productId: searchLogs.clickedProductId,
       })
       .from(searchLogs)
-      .where(and(
-        eq(searchLogs.userId, user.user.id),
-        isNotNull(searchLogs.clickedProductId)
-      ))
+      .where(
+        and(
+          eq(searchLogs.userId, user.user.id),
+          isNotNull(searchLogs.clickedProductId)
+        )
+      )
       .orderBy(desc(searchLogs.createdAt))
       .limit(10);
 
     // Collect all interacted product IDs
     const interactedProductIds = [
-      ...purchasedProducts.map(p => p.productId),
-      ...wishlistProducts.map(p => p.productId),
-      ...recentlyViewed.map(p => p.productId).filter(Boolean),
+      ...purchasedProducts.map((p) => p.productId),
+      ...wishlistProducts.map((p) => p.productId),
+      ...recentlyViewed.map((p) => p.productId).filter(Boolean),
     ];
 
     // Collect categories and brands
-    const preferredCategories = [...new Set([
-      ...purchasedProducts.map(p => p.categoryId),
-      ...wishlistProducts.map(p => p.categoryId),
-    ].filter(Boolean))];
-
-    const preferredBrands = [...new Set([
-      ...purchasedProducts.map(p => p.brandId),
-      ...wishlistProducts.map(p => p.brandId),
-    ].filter(Boolean))];
-
-    // Build recommendations based on preferences
-    const conditions = [
-      eq(products.isActive, true),
+    const preferredCategories = [
+      ...new Set(
+        [
+          ...purchasedProducts.map((p) => p.categoryId),
+          ...wishlistProducts.map((p) => p.categoryId),
+        ].filter(Boolean)
+      ),
     ];
 
+    const preferredBrands = [
+      ...new Set(
+        [
+          ...purchasedProducts.map((p) => p.brandId),
+          ...wishlistProducts.map((p) => p.brandId),
+        ].filter(Boolean)
+      ),
+    ];
+
+    // Build recommendations based on preferences
+    const conditions = [eq(products.isActive, true)];
+
     if (interactedProductIds.length > 0) {
-      conditions.push(sql`${products.id} NOT IN (${sql.join(interactedProductIds.filter(Boolean) as string[], sql`, `)})`);
+      conditions.push(
+        sql`${products.id} NOT IN (${sql.join(interactedProductIds.filter(Boolean) as string[], sql`, `)})`
+      );
     }
 
     // Get products from preferred categories and brands
@@ -147,7 +165,7 @@ async function getPersonalizedRecommendations() {
 
     // Remove duplicates
     const uniqueRecommendations = Array.from(
-      new Map(recommendations.map(p => [p.id, p])).values()
+      new Map(recommendations.map((p) => [p.id, p])).values()
     ).slice(0, 20);
 
     return { success: true, data: uniqueRecommendations };
@@ -158,58 +176,69 @@ async function getPersonalizedRecommendations() {
 }
 
 async function getTrendingProducts() {
-  try {
-    // Get products with most orders in last 7 days
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  // CACHED: Semi-dynamic public data - trending products change hourly
+  return unstable_cache(
+    async () => {
+      try {
+        // Get products with most orders in last 7 days
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-    const trending = await db
-      .select({
-        productId: orderItems.productId,
-        orderCount: sql<number>`count(distinct ${orderItems.orderId})`,
-        totalQuantity: sql<number>`sum(${orderItems.quantity})`,
-      })
-      .from(orderItems)
-      .where(gte(orderItems.createdAt, sevenDaysAgo.toISOString()))
-      .groupBy(orderItems.productId)
-      .orderBy(desc(sql`count(distinct ${orderItems.orderId})`))
-      .limit(20);
+        const trending = await db
+          .select({
+            productId: orderItems.productId,
+            orderCount: sql<number>`count(distinct ${orderItems.orderId})`,
+            totalQuantity: sql<number>`sum(${orderItems.quantity})`,
+          })
+          .from(orderItems)
+          .where(gte(orderItems.createdAt, sevenDaysAgo.toISOString()))
+          .groupBy(orderItems.productId)
+          .orderBy(desc(sql`count(distinct ${orderItems.orderId})`))
+          .limit(20);
 
-    const productIds = trending.map(t => t.productId);
-    
-    if (productIds.length === 0) {
-      // Fallback to best rated products
-      const bestRated = await db.query.products.findMany({
-        where: eq(products.isActive, true),
-        orderBy: [desc(products.averageRating), desc(products.reviewCount)],
-        limit: 20,
-      });
-      return { success: true, data: bestRated };
+        const productIds = trending.map((t) => t.productId);
+
+        if (productIds.length === 0) {
+          // Fallback to best rated products
+          const bestRated = await db.query.products.findMany({
+            where: eq(products.isActive, true),
+            orderBy: [desc(products.averageRating), desc(products.reviewCount)],
+            limit: 20,
+          });
+          return { success: true, data: bestRated };
+        }
+
+        const trendingProducts = await db.query.products.findMany({
+          where: and(
+            inArray(products.id, productIds),
+            eq(products.isActive, true)
+          ),
+          with: {
+            brand: true,
+          },
+        });
+
+        // Sort by trending order
+        const sortedProducts = productIds
+          .map((id) => trendingProducts.find((p) => p.id === id))
+          .filter(Boolean);
+
+        return { success: true, data: sortedProducts };
+      } catch (error) {
+        console.error("Error getting trending products:", error);
+        return { success: false, error: "Failed to get trending products" };
+      }
+    },
+    ["trending-products"],
+    {
+      tags: ["recommendations", "trending-products"],
+      revalidate: 3600, // 1 hour - trending products update hourly
     }
-
-    const trendingProducts = await db.query.products.findMany({
-      where: and(
-        inArray(products.id, productIds),
-        eq(products.isActive, true)
-      ),
-      with: {
-        brand: true,
-      },
-    });
-
-    // Sort by trending order
-    const sortedProducts = productIds
-      .map(id => trendingProducts.find(p => p.id === id))
-      .filter(Boolean);
-
-    return { success: true, data: sortedProducts };
-  } catch (error) {
-    console.error("Error getting trending products:", error);
-    return { success: false, error: "Failed to get trending products" };
-  }
+  )();
 }
 
 async function getSimilarProducts(productId: string) {
+  // NOT CACHED: Query-dependent - varies by productId and includes real-time pricing
   try {
     // Get the product details
     const product = await db.query.products.findFirst({
@@ -246,47 +275,83 @@ async function getSimilarProducts(productId: string) {
 }
 
 export async function getFrequentlyBoughtTogether(productId: string) {
-  try {
-    // Find products that are often bought together
-    const boughtTogether = await db
-      .select({
-        productId: orderItems.productId,
-        frequency: sql<number>`count(*)`,
-      })
-      .from(orderItems)
-      .innerJoin(
-        orderItems as any,
-        and(
-          eq(orderItems.orderId, orderItems.orderId),
-          eq(orderItems.productId, productId),
-          ne(orderItems.productId, productId)
-        )
-      )
-      .groupBy(orderItems.productId)
-      .orderBy(desc(sql`count(*)`))
-      .limit(4);
+  // CACHED: Semi-dynamic public data - frequently bought together changes infrequently
+  return unstable_cache(
+    async () => {
+      try {
+        // Find products that are often bought together
+        const boughtTogether = await db
+          .select({
+            productId: orderItems.productId,
+            frequency: sql<number>`count(*)`,
+          })
+          .from(orderItems)
+          .innerJoin(
+            orderItems as any,
+            and(
+              eq(orderItems.orderId, orderItems.orderId),
+              eq(orderItems.productId, productId),
+              ne(orderItems.productId, productId)
+            )
+          )
+          .groupBy(orderItems.productId)
+          .orderBy(desc(sql`count(*)`))
+          .limit(4);
 
-    if (boughtTogether.length === 0) {
-      // Fallback to products from same category
-      return getSimilarProducts(productId);
+        if (boughtTogether.length === 0) {
+          // Fallback to products from same category
+          const product = await db.query.products.findFirst({
+            where: eq(products.id, productId),
+          });
+
+          if (!product) {
+            return { success: false, error: "Product not found" };
+          }
+
+          const priceMin = Number((product.price as any)?.current) * 0.7;
+          const priceMax = Number((product.price as any)?.current) * 1.3;
+
+          const similar = await db.query.products.findMany({
+            where: and(
+              eq(products.isActive, true),
+              ne(products.id, productId),
+              or(
+                eq(products.categoryId, product.categoryId),
+                eq(products.brandId, product.brandId as any)
+              ),
+              sql`(${products.price}->>'current')::numeric BETWEEN ${priceMin} AND ${priceMax}`
+            ),
+            orderBy: [desc(products.averageRating)],
+            limit: 4,
+          });
+
+          return { success: true, data: similar };
+        }
+
+        const productIds = boughtTogether.map((item) => item.productId);
+        const frequentProducts = await db.query.products.findMany({
+          where: and(
+            inArray(products.id, productIds),
+            eq(products.isActive, true)
+          ),
+        });
+
+        return { success: true, data: frequentProducts };
+      } catch (error) {
+        console.error("Error getting frequently bought together:", error);
+        return { success: false, error: "Failed to get products" };
+      }
+    },
+    [`frequently-bought-${productId}`],
+    {
+      tags: ["recommendations", `product-${productId}`],
+      revalidate: 3600, // 1 hour - frequently bought together changes infrequently
     }
-
-    const productIds = boughtTogether.map(item => item.productId);
-    const frequentProducts = await db.query.products.findMany({
-      where: and(
-        inArray(products.id, productIds),
-        eq(products.isActive, true)
-      ),
-    });
-
-    return { success: true, data: frequentProducts };
-  } catch (error) {
-    console.error("Error getting frequently bought together:", error);
-    return { success: false, error: "Failed to get products" };
-  }
+  )();
 }
 
 export async function getRecentlyViewed() {
+  // NOT CACHED: User-specific private data - each user has different recently viewed products
   try {
     const user = await getUser();
     const sessionId = await getSessionId();
@@ -308,15 +373,14 @@ export async function getRecentlyViewed() {
         viewedAt: searchLogs.createdAt,
       })
       .from(searchLogs)
-      .where(and(
-        or(...conditions),
-        isNotNull(searchLogs.clickedProductId)
-      ))
+      .where(and(or(...conditions), isNotNull(searchLogs.clickedProductId)))
       .orderBy(desc(searchLogs.createdAt))
       .limit(10);
 
-    const productIds = [...new Set(recentlyViewed.map(v => v.productId).filter(Boolean))];
-    
+    const productIds = [
+      ...new Set(recentlyViewed.map((v) => v.productId).filter(Boolean)),
+    ];
+
     if (productIds.length === 0) {
       return { success: true, data: [] };
     }
@@ -333,7 +397,7 @@ export async function getRecentlyViewed() {
 
     // Sort by viewing order
     const sortedProducts = productIds
-      .map(id => viewedProducts.find(p => p.id === id))
+      .map((id) => viewedProducts.find((p) => p.id === id))
       .filter(Boolean);
 
     return { success: true, data: sortedProducts };

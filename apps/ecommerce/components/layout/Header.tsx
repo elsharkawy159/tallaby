@@ -4,11 +4,12 @@ import { cn } from "@/lib/utils";
 import type { HeaderProps } from "./header.types";
 import {
   SearchBar,
-  MobileNavigation,
-  DesktopNavigation,
   BottomNavigation,
   BecomeSellerButton,
   DeliveryLocationSelector,
+  UserAuth,
+  CartLink,
+  WishlistLink,
 } from "./header.chunks";
 import { Logo } from "../logo";
 import CategoryNav from "./CategoryNav";
@@ -25,7 +26,7 @@ const MainHeader = () => {
         // isVisible ? "transform translate-y-0" : "transform -translate-y-full"
       )}
     >
-      <div className="lg:px-16 md:px-10 px-4 py-2.5">
+      <div className="py-2.5 container">
         {/* Mobile top section */}
         <div className="flex items-center md:hidden justify-between">
           <Logo />
@@ -43,7 +44,26 @@ const MainHeader = () => {
         {/* Mobile search bar */}
 
         {/* Desktop layout */}
-        <DesktopNavigation className="md:mt-0 mt-4" />
+        <div
+          className={cn(
+            "hidden md:flex items-center justify-between gap-4 lg:gap-5 md:mt-0 mt-4"
+          )}
+        >
+          <div className="flex items-center gap-4">
+            <Logo />
+            <DeliveryLocationSelector className="hidden lg:flex" />
+            <LanguageSwitcher />
+          </div>
+
+          <SearchBar variant="desktop" />
+
+          <div className="flex items-center gap-4">
+            <UserAuth variant="desktop" />
+            <CartLink />
+            <WishlistLink />
+            <BecomeSellerButton />
+          </div>
+        </div>
       </div>
     </div>
   );

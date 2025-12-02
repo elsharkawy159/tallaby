@@ -59,12 +59,16 @@ export const ProductHero = ({ product }: ProductHeroProps) => {
             <span
               className="lg:text-4xl md:text-2xl text-xl font-semibold"
               dangerouslySetInnerHTML={{
-                __html: formatPrice(product.price.base ?? 0, locale, "lg"),
+                __html: formatPrice(
+                  Number((product.price as any)?.final ?? (product.price as any)?.current ?? (product.price as any)?.list ?? 0),
+                  locale,
+                  "lg"
+                ),
               }}
             />
-            {product.price.discountType && (
+            {(product.price as any)?.list && Number((product.price as any).list) > Number((product.price as any)?.final ?? 0) && (
               <span className="text-gray-500 line-through">
-                {product.price.final}
+                {formatPrice(Number((product.price as any).list), locale, "lg")}
               </span>
             )}
           </div>
@@ -78,13 +82,13 @@ export const ProductHero = ({ product }: ProductHeroProps) => {
         </div>
 
         {/* Key Features */}
-        {product.bulletPoints && product.bulletPoints.length > 0 && (
+        {Array.isArray(product.bulletPoints) && product.bulletPoints.length > 0 && (
           <div>
             <h3 className="font-semibold text-gray-900 mb-3 text-sm sm:text-base">
               Key Features
             </h3>
             <ul className="md:space-y-2 space-y-1">
-              {product.bulletPoints.map((feature, index) => (
+              {(product.bulletPoints as string[]).map((feature, index) => (
                 <li
                   key={index}
                   className="flex items-start gap-2 text-sm sm:text-base text-gray-700"

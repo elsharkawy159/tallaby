@@ -25,14 +25,12 @@ import { useAuthDialog } from "@/hooks/use-auth-dialog";
 import { useAuth } from "@/providers/auth-provider";
 import { useDebounce } from "@/hooks/use-debounce";
 import { getProducts } from "@/actions/products";
-import { getPublicUrl } from "@workspace/ui/lib/utils";
 import CategoryNav from "./CategoryNav";
 import { UserMenu } from "./user-menu";
 import { cn, resolvePrice, resolvePrimaryImage } from "@/lib/utils";
 import type {
   SearchBarProps,
   MobileNavigationProps,
-  DesktopNavigationProps,
   UserAuthProps,
   BottomNavigationProps,
 } from "./header.types";
@@ -116,11 +114,11 @@ export const SearchBar = ({
   const searchPlaceholder = placeholder || getSearchPlaceholder(variant);
 
   return (
-    <div className={cn("relative flex-1", className)} ref={searchRef}>
+    <div className={cn("relative flex-1 max-w-2xl", className)} ref={searchRef}>
       <Input
         type="text"
         placeholder={searchPlaceholder}
-        className="pl-11 rounded-md"
+        className="pl-11 rounded-full"
         value={searchQuery}
         onChange={handleInputChange}
         onFocus={handleInputFocus}
@@ -454,26 +452,6 @@ export const DeliveryLocationSelector = ({
         </button>
       }
     />
-  );
-};
-
-export const DesktopNavigation = ({ className }: DesktopNavigationProps) => {
-  return (
-    <div
-      className={cn(
-        "hidden md:flex items-center justify-between gap-4 lg:gap-5",
-        className
-      )}
-    >
-      <Logo />
-      <DeliveryLocationSelector className="hidden lg:flex" />
-      <LanguageSwitcher />
-      <SearchBar variant="desktop" />
-      <UserAuth variant="desktop" />
-      <CartLink />
-      <WishlistLink />
-      <BecomeSellerButton />
-    </div>
   );
 };
 

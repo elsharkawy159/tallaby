@@ -76,7 +76,11 @@ export function generateProductStructuredData(product: Product) {
       "@type": "Brand",
       name: product.brand.name,
     },
-    category: product.category.name,
+    category: product.category ? {
+      "@type": "Thing",
+      name: product.category.name,
+      url: `${BASE_URL}/products?category=${product.category.slug}`,
+    } : undefined,
     offers,
     ...(aggregateRating && { aggregateRating }),
     ...(product.stockCount && {

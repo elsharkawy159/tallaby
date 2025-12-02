@@ -125,8 +125,8 @@ export function OrderConfirmationContent({
                 <span className="text-sm font-medium text-gray-600">
                   Payment Method:
                 </span>
-                <span className="text-sm text-gray-900">
-                  {order.paymentMethod}
+                <span className="text-sm text-gray-900 capitalize">
+                  {order.paymentMethod.replace(/_/g, " ")}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -205,36 +205,35 @@ export function OrderConfirmationContent({
       </Card>
 
       {/* Shipping & Billing Information */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Shipping Address */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Truck className="w-5 h-5 text-blue-600" />
-              <span>Shipping Address</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <p className="font-medium text-gray-900">
-              {shippingAddress.fullName}
-            </p>
-            <p className="text-gray-600">{shippingAddress.addressLine1}</p>
-            {shippingAddress.addressLine2 && (
-              <p className="text-gray-600">{shippingAddress.addressLine2}</p>
-            )}
-            <p className="text-gray-600">
-              {shippingAddress.city}, {shippingAddress.state}{" "}
-              {shippingAddress.postalCode}
-            </p>
-            <p className="text-gray-600">{shippingAddress.country}</p>
-            {shippingAddress.phone && (
-              <p className="text-gray-600">Phone: {shippingAddress.phone}</p>
-            )}
-          </CardContent>
-        </Card>
+      {/* Shipping Address */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <Truck className="w-5 h-5 text-blue-600" />
+            <span>Shipping Address</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <p className="font-medium text-gray-900">
+            {shippingAddress.fullName}
+          </p>
+          <p className="text-gray-600">{shippingAddress.addressLine1}</p>
+          {shippingAddress.addressLine2 && (
+            <p className="text-gray-600">{shippingAddress.addressLine2}</p>
+          )}
+          <p className="text-gray-600">
+            {shippingAddress.city}, {shippingAddress.state}{" "}
+            {shippingAddress.postalCode}
+          </p>
+          <p className="text-gray-600">{shippingAddress.country}</p>
+          {shippingAddress.phone && (
+            <p className="text-gray-600">Phone: {shippingAddress.phone}</p>
+          )}
+        </CardContent>
+      </Card>
 
-        {/* Billing Address */}
-        {billingAddress && (
+      {/* Billing Address */}
+      {/* {billingAddress && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
@@ -257,8 +256,7 @@ export function OrderConfirmationContent({
               <p className="text-gray-600">{billingAddress.country}</p>
             </CardContent>
           </Card>
-        )}
-      </div>
+        )} */}
 
       {/* Gift Message */}
       {order.isGift && order.giftMessage && (
@@ -288,7 +286,7 @@ export function OrderConfirmationContent({
       )}
 
       {/* Delivery Information */}
-      <Card className="border-indigo-200 bg-indigo-50/50">
+      {/* <Card className="border-indigo-200 bg-indigo-50/50">
         <CardHeader>
           <CardTitle className="flex items-center space-x-2 text-indigo-800">
             <Clock className="w-5 h-5" />
@@ -327,7 +325,7 @@ export function OrderConfirmationContent({
             </div>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Next Steps */}
       <Card className="border-blue-200 bg-blue-50/50">
@@ -381,7 +379,7 @@ export function OrderConfirmationContent({
       </Card>
 
       {/* Security & Support */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="border-green-200 bg-green-50/50">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2 text-green-800">
@@ -412,7 +410,7 @@ export function OrderConfirmationContent({
             </p>
           </CardContent>
         </Card>
-      </div>
+      </div> */}
 
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
@@ -440,16 +438,30 @@ export function OrderConfirmationContent({
 
       {/* Support Information */}
       <div className="text-center py-8 border-t">
-        <p className="text-sm text-gray-600 mb-4">Need help with your order?</p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button asChild variant="ghost" size="sm">
-            <Link href="/help">Help Center</Link>
-          </Button>
-          <Button asChild variant="ghost" size="sm">
-            <Link href="/contact">Contact Support</Link>
-          </Button>
-          <Button asChild variant="ghost" size="sm">
-            <Link href="/returns">Return Policy</Link>
+        <p className="text-sm text-gray-600 mb-3">Need help with your order?</p>
+        <div className="flex justify-center">
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <Link
+              href="https://wa.me/15551234567"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Chat with us on WhatsApp"
+            >
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 32 32"
+                fill="currentColor"
+                className="w-8 h-8 text-green-600"
+              >
+                <path d="M16 2C8.28 2 2 8.28 2 16c0 2.63.68 5.21 1.97 7.47L2 30l6.77-1.76A13.87 13.87 0 0 0 16 30c7.72 0 14-6.28 14-14S23.72 2 16 2zm0 25.77c-2.35 0-4.66-.65-6.65-1.88l-.48-.29-4.03 1.05 1.08-3.93-.31-.51A11.8 11.8 0 0 1 4.21 16c0-6.51 5.29-11.79 11.79-11.79 6.51 0 11.79 5.28 11.79 11.79S22.51 27.77 16 27.77zm6.41-8.76c-.35-.18-2.04-1.01-2.35-1.13-.31-.12-.53-.18-.75.18-.22.35-.86 1.13-1.05 1.36-.19.22-.39.26-.74.09-.35-.18-1.48-.54-2.83-1.72-1.05-.94-1.76-2.1-1.97-2.45-.21-.35-.02-.53.16-.7.16-.16.35-.39.52-.58.18-.18.24-.31.35-.53.12-.22.06-.41-.03-.59-.09-.18-.75-1.81-1.03-2.49-.27-.65-.55-.56-.74-.57l-.63-.01c-.22 0-.58.08-.88.39-.3.3-1.15 1.12-1.15 2.72 0 1.59 1.17 3.14 1.33 3.36.16.22 2.3 3.52 5.57 4.79.78.34 1.39.55 1.87.7.79.25 1.5.22 2.07.14.63-.09 2.04-.83 2.33-1.63.29-.8.29-1.48.2-1.62-.09-.13-.32-.21-.67-.38z" />
+              </svg>
+              Chat with us
+            </Link>
           </Button>
         </div>
       </div>

@@ -1,6 +1,7 @@
 // apps/ecommerce/actions/seller.ts
 "use server";
 
+import { unstable_cache } from "next/cache";
 import {
   db,
   sellers,
@@ -12,6 +13,7 @@ import {
 } from "@workspace/db";
 import { getUser } from "./auth";
 
+// NOT CACHED: Mutation - creates new seller
 export async function registerAsSeller(data: {
   businessName: string;
   displayName: string;
@@ -116,6 +118,7 @@ export async function registerAsSeller(data: {
   }
 }
 
+// NOT CACHED: Mutation - uploads document
 export async function uploadSellerDocument(data: {
   documentType:
     | "business_license"
@@ -160,74 +163,94 @@ export async function uploadSellerDocument(data: {
 }
 
 export async function getSellerProfile(sellerId: string) {
-  try {
-    const seller = await db.query.sellers.findFirst({
-      where: eq(sellers.id, sellerId),
-      columns: {
-        id: true,
-        displayName: true,
-        slug: true,
-        description: true,
-        logoUrl: true,
-        bannerUrl: true,
-        returnPolicy: true,
-        shippingPolicy: true,
-        storeRating: true,
-        positiveRatingPercent: true,
-        totalRatings: true,
-        productCount: true,
-        isVerified: true,
-        joinDate: true,
-      },
-      with: {
-        products: {
-          where: eq(products.isActive, true),
-          limit: 12,
-          orderBy: [desc(products.averageRating)],
-        },
-      },
-    });
+  // CACHED: Semi-dynamic public data - seller profiles change infrequently
+  return unstable_cache(
+    async () => {
+      try {
+        const seller = await db.query.sellers.findFirst({
+          where: eq(sellers.id, sellerId),
+          columns: {
+            id: true,
+            displayName: true,
+            slug: true,
+            description: true,
+            logoUrl: true,
+            bannerUrl: true,
+            returnPolicy: true,
+            shippingPolicy: true,
+            storeRating: true,
+            positiveRatingPercent: true,
+            totalRatings: true,
+            productCount: true,
+            isVerified: true,
+            joinDate: true,
+          },
+          with: {
+            products: {
+              where: eq(products.isActive, true),
+              limit: 12,
+              orderBy: [desc(products.averageRating)],
+            },
+          },
+        });
 
-    if (!seller) {
-      return { success: false, error: "Seller not found" };
+        if (!seller) {
+          return { success: false, error: "Seller not found" };
+        }
+
+        return { success: true, data: seller };
+      } catch (error) {
+        console.error("Error fetching seller profile:", error);
+        return { success: false, error: "Failed to fetch seller profile" };
+      }
+    },
+    [`seller-profile-${sellerId}`],
+    {
+      tags: ["sellers", `seller-${sellerId}`],
+      revalidate: 3600, // 1 hour - seller profiles change infrequently
     }
-
-    return { success: true, data: seller };
-  } catch (error) {
-    console.error("Error fetching seller profile:", error);
-    return { success: false, error: "Failed to fetch seller profile" };
-  }
+  )();
 }
 
 export async function getSellerBySlug(slug: string) {
-  try {
-    const seller = await db.query.sellers.findFirst({
-      where: eq(sellers.slug, slug),
-      columns: {
-        id: true,
-        displayName: true,
-        slug: true,
-        description: true,
-        logoUrl: true,
-        bannerUrl: true,
-        returnPolicy: true,
-        shippingPolicy: true,
-        storeRating: true,
-        positiveRatingPercent: true,
-        totalRatings: true,
-        productCount: true,
-        isVerified: true,
-        joinDate: true,
-      },
-    });
+  // CACHED: Semi-dynamic public data - seller profiles change infrequently
+  return unstable_cache(
+    async () => {
+      try {
+        const seller = await db.query.sellers.findFirst({
+          where: eq(sellers.slug, slug),
+          columns: {
+            id: true,
+            displayName: true,
+            slug: true,
+            description: true,
+            logoUrl: true,
+            bannerUrl: true,
+            returnPolicy: true,
+            shippingPolicy: true,
+            storeRating: true,
+            positiveRatingPercent: true,
+            totalRatings: true,
+            productCount: true,
+            isVerified: true,
+            joinDate: true,
+          },
+        });
 
-    if (!seller) {
-      return { success: false, error: "Seller not found" };
+        if (!seller) {
+          return { success: false, error: "Seller not found" };
+        }
+
+        return { success: true, data: seller };
+      } catch (error) {
+        console.error("Error fetching seller:", error);
+        return { success: false, error: "Failed to fetch seller" };
+      }
+    },
+    [`seller-slug-${slug}`],
+    {
+      tags: ["sellers", `seller-${slug}`],
+      revalidate: 3600, // 1 hour - seller profiles change infrequently
     }
-
-    return { success: true, data: seller };
-  } catch (error) {
-    console.error("Error fetching seller:", error);
-    return { success: false, error: "Failed to fetch seller" };
-  }
+  )();
 }

@@ -20,6 +20,8 @@ import {
   asc,
   isNotNull,
 } from "@workspace/db";
+import { getUser } from "./auth";
+import { revalidatePath } from "next/cache";
 
 interface ProductFilters {
   categoryId?: string;
@@ -38,6 +40,8 @@ interface ProductFilters {
 }
 
 export async function getProducts(filters: ProductFilters = {}) {
+  // CACHED: Semi-dynamic public data - product listings change infrequently
+  // Note: Pricing/stock are real-time but product listings are cacheable
   const cacheKey = `products-${JSON.stringify(filters)}`;
 
   return unstable_cache(
@@ -147,12 +151,14 @@ export async function getProducts(filters: ProductFilters = {}) {
     [cacheKey],
     {
       tags: ["products"],
-      revalidate: 86400,
+      revalidate: 1800, // 30 minutes - product listings change less frequently than daily
     }
   )();
 }
 
 export async function getProductBySlug(slug: string) {
+  // CACHED: Semi-dynamic public data - product details change infrequently
+  // Note: Pricing/stock are real-time but product metadata is cacheable
   return unstable_cache(
     async () => {
       try {
@@ -232,32 +238,24 @@ export async function getProductBySlug(slug: string) {
     [`product-${slug}`],
     {
       tags: ["products", `product-${slug}`],
-      revalidate: 300,
+      revalidate: 600, // 10 minutes - product details change less frequently
     }
   )();
 }
 
 export async function getProductVariants(productId: string) {
-  return unstable_cache(
-    async () => {
-      try {
-        const variants = await db.query.productVariants.findMany({
-          where: eq(productVariants.productId, productId),
-          orderBy: [asc(productVariants.position)],
-        });
+  // NOT CACHED: Real-time data - inventory and pricing change frequently
+  try {
+    const variants = await db.query.productVariants.findMany({
+      where: eq(productVariants.productId, productId),
+      orderBy: [asc(productVariants.position)],
+    });
 
-        return { success: true, data: variants };
-      } catch (error) {
-        console.error("Error fetching variants:", error);
-        return { success: false, error: "Failed to fetch variants" };
-      }
-    },
-    [`product-variants-${productId}`],
-    {
-      tags: ["product-variants", `product-${productId}`],
-      revalidate: 300,
-    }
-  )();
+    return { success: true, data: variants };
+  } catch (error) {
+    console.error("Error fetching variants:", error);
+    return { success: false, error: "Failed to fetch variants" };
+  }
 }
 
 export async function getFeaturedProducts() {
@@ -363,34 +361,26 @@ export async function getNewArrivals() {
 }
 
 export async function getDeals() {
-  return unstable_cache(
-    async () => {
-      try {
-        const deals = await db.query.products.findMany({
-          where: and(
-            eq(products.isActive, true),
-            sql`${products.price}->>'discount' IS NOT NULL`,
-            sql`(${products.price}->>'discount')::numeric > 0`
-          ),
-          with: {
-            brand: true,
-          },
-          limit: 12,
-          orderBy: [desc(sql`(${products.price}->>'discount')::numeric`)],
-        });
+  // NOT CACHED: Real-time data - pricing and discounts change frequently
+  try {
+    const deals = await db.query.products.findMany({
+      where: and(
+        eq(products.isActive, true),
+        sql`${products.price}->>'discount' IS NOT NULL`,
+        sql`(${products.price}->>'discount')::numeric > 0`
+      ),
+      with: {
+        brand: true,
+      },
+      limit: 12,
+      orderBy: [desc(sql`(${products.price}->>'discount')::numeric`)],
+    });
 
-        return { success: true, data: deals };
-      } catch (error) {
-        console.error("Error fetching deals:", error);
-        return { success: false, error: "Failed to fetch deals" };
-      }
-    },
-    ["deals"],
-    {
-      tags: ["products", "deals"],
-      revalidate: 120,
-    }
-  )();
+    return { success: true, data: deals };
+  } catch (error) {
+    console.error("Error fetching deals:", error);
+    return { success: false, error: "Failed to fetch deals" };
+  }
 }
 
 export async function getProductsByCategory(categoryId: string, limit: number) {
@@ -494,6 +484,35 @@ export async function getProductsBySeller(sellerId: string, limit: number) {
   )();
 }
 
+export async function getAllProductSlugs() {
+  // CACHED: Static data for ISR - product slugs change infrequently
+  return unstable_cache(
+    async () => {
+      try {
+        const productSlugs = await db
+          .select({
+            slug: products.slug,
+          })
+          .from(products)
+          .where(eq(products.isActive, true));
+
+        return {
+          success: true,
+          data: productSlugs.map((product) => product.slug),
+        };
+      } catch (error) {
+        console.error("Error fetching product slugs:", error);
+        return { success: false, error: "Failed to fetch product slugs" };
+      }
+    },
+    ["all-product-slugs"],
+    {
+      tags: ["products", "product-slugs"],
+      revalidate: 3600, // 1 hour - slugs change infrequently
+    }
+  )();
+}
+
 export async function getFilterOptions() {
   return unstable_cache(
     async () => {
@@ -566,4 +585,70 @@ export async function getFilterOptions() {
       revalidate: 600,
     }
   )();
+}
+
+// NOT CACHED: Mutation - creates new product question
+export async function submitProductQuestion(
+  productId: string,
+  question: string
+) {
+  try {
+    const user = await getUser();
+    if (!user) {
+      return { success: false, error: "Please sign in to ask a question" };
+    }
+
+    // Validate question
+    const trimmedQuestion = question.trim();
+    if (!trimmedQuestion || trimmedQuestion.length < 10) {
+      return {
+        success: false,
+        error: "Question must be at least 10 characters long",
+      };
+    }
+
+    if (trimmedQuestion.length > 500) {
+      return {
+        success: false,
+        error: "Question must be less than 500 characters",
+      };
+    }
+
+    // Verify product exists and is active
+    const product = await db.query.products.findFirst({
+      where: and(eq(products.id, productId), eq(products.isActive, true)),
+      columns: { id: true, slug: true },
+    });
+
+    if (!product) {
+      return { success: false, error: "Product not found" };
+    }
+
+    // Insert question with pending status (needs moderation)
+    const [newQuestion] = await db
+      .insert(productQuestions)
+      .values({
+        productId,
+        userId: user.user.id,
+        question: trimmedQuestion,
+        isAnonymous: false,
+        status: "pending",
+      } as any)
+      .returning();
+
+    // Revalidate the product page cache
+    revalidatePath(`/products/${product.slug}`);
+
+    return {
+      success: true,
+      message: "Your question has been submitted and is pending approval",
+      data: newQuestion,
+    };
+  } catch (error) {
+    console.error("Error submitting product question:", error);
+    return {
+      success: false,
+      error: "Failed to submit question. Please try again later.",
+    };
+  }
 }

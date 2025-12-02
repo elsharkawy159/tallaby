@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { usePathname } from "next/navigation";
 import { HomeIcon } from "lucide-react";
 import {
@@ -162,7 +163,7 @@ export function DynamicBreadcrumb({
 
             {/* Dynamic breadcrumb items */}
             {displayBreadcrumbs.map((breadcrumb, index) => (
-              <div key={breadcrumb.href} className="flex items-center">
+              <React.Fragment key={breadcrumb.href}>
                 <BreadcrumbItem className={itemClassName}>
                   {breadcrumb.isLast ? (
                     <BreadcrumbPage
@@ -177,7 +178,7 @@ export function DynamicBreadcrumb({
                     <BreadcrumbLink
                       href={breadcrumb.href}
                       className={cn(
-                        "hover:text-primary truncate max-w-[300px]transition-colors whitespace-nowrap",
+                        "hover:text-primary truncate max-w-[300px] transition-colors whitespace-nowrap",
                         linkClassName
                       )}
                     >
@@ -189,7 +190,7 @@ export function DynamicBreadcrumb({
                 {!breadcrumb.isLast && (
                   <BreadcrumbSeparator>{separator}</BreadcrumbSeparator>
                 )}
-              </div>
+              </React.Fragment>
             ))}
           </BreadcrumbList>
         </Breadcrumb>

@@ -1,6 +1,7 @@
 // apps/ecommerce/actions/search.ts
 "use server";
 
+import { unstable_cache } from "next/cache";
 import {
   products,
   brands,
@@ -16,7 +17,7 @@ import {
   asc,
   gte,
   inArray,
-  db
+  db,
 } from "@workspace/db";
 import { getUser, getSessionId } from "./auth";
 
@@ -45,6 +46,8 @@ interface SearchFilters {
 }
 
 export async function searchProducts(filters: SearchFilters) {
+  // NOT CACHED: Query-dependent and includes real-time pricing/stock filters
+  // Search results vary too much by query and filters to cache effectively
   try {
     const user = await getUser();
     const sessionId = await getSessionId();
@@ -316,105 +319,132 @@ export async function logProductClick(productId: string, searchQuery?: string) {
 }
 
 export async function searchSuggestions(query: string) {
-  try {
-    if (!query || query.length < 2) {
-      return { success: true, data: [] };
-    }
-
-    const searchPattern = `${query}%`;
-
-    // Get product title suggestions
-    const productSuggestions = await db
-      .select({
-        suggestion: products.title,
-        type: sql<string>`'product'`,
-      })
-      .from(products)
-      .where(
-        and(like(products.title, searchPattern), eq(products.isActive, true))
-      )
-      .limit(5);
-
-    // Get brand suggestions
-    const brandSuggestions = await db
-      .select({
-        suggestion: brands.name,
-        type: sql<string>`'brand'`,
-      })
-      .from(brands)
-      .where(like(brands.name, searchPattern))
-      .limit(3);
-
-    // Get category suggestions
-    const categorySuggestions = await db
-      .select({
-        suggestion: categories.name,
-        type: sql<string>`'category'`,
-      })
-      .from(categories)
-      .where(like(categories.name, searchPattern))
-      .limit(3);
-
-    // Get recent searches (if user is logged in)
-    const user = await getUser();
-    let recentSearches: any[] = [];
-    if (user) {
-      recentSearches = await db
-        .selectDistinct({
-          suggestion: searchLogs.query,
-          type: sql<string>`'recent'`,
-        })
-        .from(searchLogs)
-        .where(
-          and(
-            eq(searchLogs.userId, user.user.id),
-            like(searchLogs.query, searchPattern)
-          )
-        )
-        .orderBy(desc(searchLogs.createdAt))
-        .limit(3);
-    }
-
-    const allSuggestions = [
-      ...productSuggestions,
-      ...brandSuggestions,
-      ...categorySuggestions,
-      ...recentSearches,
-    ];
-
-    return { success: true, data: allSuggestions };
-  } catch (error) {
-    console.error("Error getting suggestions:", error);
-    return { success: false, error: "Failed to get suggestions" };
+  // CACHED: Semi-dynamic public data - search suggestions change infrequently
+  // Note: Recent searches are user-specific but cached separately per user
+  if (!query || query.length < 2) {
+    return { success: true, data: [] };
   }
+
+  const user = await getUser();
+  const cacheKey = `search-suggestions-${query.toLowerCase()}${user?.user.id || "anon"}`;
+
+  return unstable_cache(
+    async () => {
+      try {
+        const searchPattern = `${query}%`;
+
+        // Get product title suggestions
+        const productSuggestions = await db
+          .select({
+            suggestion: products.title,
+            type: sql<string>`'product'`,
+          })
+          .from(products)
+          .where(
+            and(
+              like(products.title, searchPattern),
+              eq(products.isActive, true)
+            )
+          )
+          .limit(5);
+
+        // Get brand suggestions
+        const brandSuggestions = await db
+          .select({
+            suggestion: brands.name,
+            type: sql<string>`'brand'`,
+          })
+          .from(brands)
+          .where(like(brands.name, searchPattern))
+          .limit(3);
+
+        // Get category suggestions
+        const categorySuggestions = await db
+          .select({
+            suggestion: categories.name,
+            type: sql<string>`'category'`,
+          })
+          .from(categories)
+          .where(like(categories.name, searchPattern))
+          .limit(3);
+
+        // Get recent searches (if user is logged in)
+        let recentSearches: any[] = [];
+        if (user) {
+          recentSearches = await db
+            .selectDistinct({
+              suggestion: searchLogs.query,
+              type: sql<string>`'recent'`,
+            })
+            .from(searchLogs)
+            .where(
+              and(
+                eq(searchLogs.userId, user.user.id),
+                like(searchLogs.query, searchPattern)
+              )
+            )
+            .orderBy(desc(searchLogs.createdAt))
+            .limit(3);
+        }
+
+        const allSuggestions = [
+          ...productSuggestions,
+          ...brandSuggestions,
+          ...categorySuggestions,
+          ...recentSearches,
+        ];
+
+        return { success: true, data: allSuggestions };
+      } catch (error) {
+        console.error("Error getting suggestions:", error);
+        return { success: false, error: "Failed to get suggestions" };
+      }
+    },
+    [cacheKey],
+    {
+      tags: ["search-suggestions"],
+      revalidate: 300, // 5 minutes - suggestions change infrequently
+    }
+  )();
 }
 
 export async function getTrendingSearches() {
-  try {
-    const trending = await db
-      .select({
-        query: searchLogs.query,
-        count: sql<number>`count(*)`,
-      })
-      .from(searchLogs)
-      .where(
-        and(
-          sql`${searchLogs.createdAt} > NOW() - INTERVAL '7 days'`,
-          sql`${searchLogs.query} != ''`
-        )
-      )
-      .groupBy(searchLogs.query)
-      .orderBy(desc(sql`count(*)`))
-      .limit(10);
+  // CACHED: Semi-dynamic public data - trending searches change hourly
+  return unstable_cache(
+    async () => {
+      try {
+        const trending = await db
+          .select({
+            query: searchLogs.query,
+            count: sql<number>`count(*)`,
+          })
+          .from(searchLogs)
+          .where(
+            and(
+              sql`${searchLogs.createdAt} > NOW() - INTERVAL '7 days'`,
+              sql`${searchLogs.query} != ''`
+            )
+          )
+          .groupBy(searchLogs.query)
+          .orderBy(desc(sql`count(*)`))
+          .limit(10);
 
-    return { success: true, data: trending };
-  } catch (error) {
-    console.error("Error getting trending searches:", error);
-    return { success: false, error: "Failed to get trending searches" };
-  }
+        return { success: true, data: trending };
+      } catch (error) {
+        console.error("Error getting trending searches:", error);
+        return { success: false, error: "Failed to get trending searches" };
+      }
+    },
+    ["trending-searches"],
+    {
+      tags: ["search", "trending-searches"],
+      revalidate: 3600, // 1 hour - trending searches update hourly
+    }
+  )();
 }
 
 export async function getRecentSearches() {
+  // NOT CACHED: User-specific private data - each user has different recent searches
   try {
     const user = await getUser();
     if (!user) {
@@ -441,6 +471,7 @@ export async function getRecentSearches() {
 }
 
 export async function clearSearchHistory() {
+  // NOT CACHED: Mutation - deletes user's search history
   try {
     const user = await getUser();
     if (!user) {
@@ -457,66 +488,88 @@ export async function clearSearchHistory() {
 }
 
 export async function globalSearch(query: string) {
-  try {
-    const searchPattern = `%${query}%`;
-
-    // Search products
-    const productResults = await db.query.products.findMany({
-      where: and(
-        eq(products.isActive, true),
-        or(
-          like(products.title, searchPattern),
-          like(products.description, searchPattern)
-        )
-      ),
-      limit: 5,
-      with: {
-        brand: true,
-      },
-    });
-
-    // Search brands
-    const brandResults = await db.query.brands.findMany({
-      where: like(brands.name, searchPattern),
-      limit: 3,
-    });
-
-    // Search categories
-    const categoryResults = await db.query.categories.findMany({
-      where: like(categories.name, searchPattern),
-      limit: 3,
-    });
-
-    // Search sellers
-    const sellerResults = await db.query.sellers.findMany({
-      where: and(
-        eq(sellers.status, "approved"),
-        or(
-          like(sellers.displayName, searchPattern),
-          like(sellers.businessName, searchPattern)
-        )
-      ),
-      limit: 3,
-      columns: {
-        id: true,
-        displayName: true,
-        slug: true,
-        logoUrl: true,
-        storeRating: true,
-      },
-    });
-
+  // CACHED: Semi-dynamic public data - global search results change infrequently
+  if (!query || query.length < 2) {
     return {
       success: true,
       data: {
-        products: productResults,
-        brands: brandResults,
-        categories: categoryResults,
-        sellers: sellerResults,
+        products: [],
+        brands: [],
+        categories: [],
+        sellers: [],
       },
     };
-  } catch (error) {
-    console.error("Error in global search:", error);
-    return { success: false, error: "Failed to search" };
   }
+
+  return unstable_cache(
+    async () => {
+      try {
+        const searchPattern = `%${query}%`;
+
+        // Search products
+        const productResults = await db.query.products.findMany({
+          where: and(
+            eq(products.isActive, true),
+            or(
+              like(products.title, searchPattern),
+              like(products.description, searchPattern)
+            )
+          ),
+          limit: 5,
+          with: {
+            brand: true,
+          },
+        });
+
+        // Search brands
+        const brandResults = await db.query.brands.findMany({
+          where: like(brands.name, searchPattern),
+          limit: 3,
+        });
+
+        // Search categories
+        const categoryResults = await db.query.categories.findMany({
+          where: like(categories.name, searchPattern),
+          limit: 3,
+        });
+
+        // Search sellers
+        const sellerResults = await db.query.sellers.findMany({
+          where: and(
+            eq(sellers.status, "approved"),
+            or(
+              like(sellers.displayName, searchPattern),
+              like(sellers.businessName, searchPattern)
+            )
+          ),
+          limit: 3,
+          columns: {
+            id: true,
+            displayName: true,
+            slug: true,
+            logoUrl: true,
+            storeRating: true,
+          },
+        });
+
+        return {
+          success: true,
+          data: {
+            products: productResults,
+            brands: brandResults,
+            categories: categoryResults,
+            sellers: sellerResults,
+          },
+        };
+      } catch (error) {
+        console.error("Error in global search:", error);
+        return { success: false, error: "Failed to search" };
+      }
+    },
+    [`global-search-${query.toLowerCase()}`],
+    {
+      tags: ["search", "global-search"],
+      revalidate: 600, // 10 minutes - global search results change infrequently
+    }
+  )();
 }

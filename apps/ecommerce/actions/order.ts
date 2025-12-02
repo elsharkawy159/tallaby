@@ -72,17 +72,17 @@ export async function createOrder(data: {
     // Calculate totals
     let subtotal = 0;
     let tax = 0;
-    let shippingCost = 0;
+    let shippingCost = 25;
 
     const orderItemsData = cart.cartItems.map((item) => {
       const itemSubtotal = Number(item.price) * item.quantity;
-      const itemTax = itemSubtotal * 0.14; // 14% tax
-      const itemShipping = 25; // Flat rate per item for now
-      const itemTotal = itemSubtotal + itemTax + itemShipping;
+      // const itemTax = itemSubtotal * 0.14; // 14% tax
+      // const itemShipping = 25; // Flat rate per item for now
+      // const itemTotal = itemSubtotal;
 
       subtotal += itemSubtotal;
-      tax += itemTax;
-      shippingCost += itemShipping;
+      // tax += itemTax;
+      // shippingCost += itemShipping;
 
       return {
         productId: item.productId,
@@ -94,13 +94,13 @@ export async function createOrder(data: {
         quantity: item.quantity,
         price: item.price,
         subtotal: itemSubtotal.toString(),
-        tax: itemTax.toString(),
-        shippingCost: itemShipping.toString(),
-        total: itemTotal.toString(),
+        tax: tax.toString(),
+        shippingCost: shippingCost.toString(),
+        total: itemSubtotal.toString(),
         discountAmount: "0",
-        commissionRate: 0.15, // 15% commission
-        commissionAmount: (itemSubtotal * 0.15).toString(),
-        sellerEarning: (itemSubtotal * 0.85).toString(),
+        commissionRate: 0.1, // 10% commission
+        commissionAmount: (itemSubtotal * 0.1).toString(),
+        sellerEarning: (itemSubtotal * 0.9).toString(),
         currency: cart.currency || "EGP",
         condition: item.product.condition,
         fulfillmentType: item.product.fulfillmentType,
@@ -618,7 +618,7 @@ export async function reorderItems(orderId: string) {
         productId: item.productId,
         quantity: item.quantity,
         variantId: item.variantId || undefined,
-      });
+      } as any);
 
       if (result.success) {
         addedCount++;
