@@ -62,9 +62,10 @@ export async function addAddress(data: {
   deliveryInstructions?: string;
 }) {
   try {
-    const user = await getUser();
-    if (!user) {
-      return { success: false, error: "Authentication required" };
+    const { getCurrentUserId } = await import("@/lib/get-current-user-id");
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      return { success: false, error: "Unable to get user ID" };
     }
 
     // If setting as default, unset other defaults
@@ -72,14 +73,14 @@ export async function addAddress(data: {
       await db
         .update(userAddresses)
         .set({ isDefault: false })
-        .where(eq(userAddresses.userId, user.user.id));
+        .where(eq(userAddresses.userId, userId));
     }
 
     const [newAddress] = await db
       .insert(userAddresses)
       .values({
         ...data,
-        userId: user.user.id,
+        userId,
         addressType: data.addressType || "both",
         isDefault: data.isDefault || false,
       })

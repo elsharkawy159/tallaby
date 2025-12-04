@@ -13,20 +13,20 @@ import {
   lte,
   desc,
 } from "@workspace/db";
-import { getUser } from "./auth";
+import { getCurrentUserId } from "@/lib/get-current-user-id";
 import { validateCoupon } from "./coupons";
 import { roundPrice } from "@workspace/lib/src/utils/formatPrice";
 
 export async function getCheckoutData() {
   try {
-    const user = await getUser();
-    if (!user) {
-      return { success: false, error: "Authentication required" };
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      return { success: false, error: "Unable to get user ID" };
     }
 
     // Get active cart
     const cart = await db.query.carts.findFirst({
-      where: and(eq(carts.userId, user.user.id), eq(carts.status, "active")),
+      where: and(eq(carts.userId, userId), eq(carts.status, "active")),
       with: {
         cartItems: {
           where: eq(cartItems.savedForLater, false),
@@ -53,13 +53,13 @@ export async function getCheckoutData() {
 
     // Get user addresses
     const addresses = await db.query.userAddresses.findMany({
-      where: eq(userAddresses.userId, user.user.id),
+      where: eq(userAddresses.userId, userId),
       orderBy: [desc(userAddresses.isDefault)],
     });
 
-    // Get payment methods
+    // Get payment methods (guests typically won't have saved payment methods)
     const paymentMethodsList = await db.query.paymentMethods.findMany({
-      where: eq(paymentMethods.userId, user.user.id),
+      where: eq(paymentMethods.userId, userId),
       orderBy: [desc(paymentMethods.isDefault)],
     });
 
@@ -98,7 +98,6 @@ export async function getCheckoutData() {
         addresses,
         paymentMethods: paymentMethodsList,
         itemsBySeller,
-        user: user.user,
         summary: {
           subtotal,
           tax,
@@ -124,16 +123,16 @@ export async function validateCheckout(data: {
   couponCode?: string;
 }) {
   try {
-    const user = await getUser();
-    if (!user) {
-      return { success: false, error: "Authentication required" };
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      return { success: false, error: "Unable to get user ID" };
     }
 
     // Validate cart
     const cart = await db.query.carts.findFirst({
       where: and(
         eq(carts.id, data.cartId),
-        eq(carts.userId, user.user.id),
+        eq(carts.userId, userId),
         eq(carts.status, "active")
       ),
       with: {
@@ -154,7 +153,7 @@ export async function validateCheckout(data: {
     const address = await db.query.userAddresses.findFirst({
       where: and(
         eq(userAddresses.id, data.shippingAddressId),
-        eq(userAddresses.userId, user.user.id)
+        eq(userAddresses.userId, userId)
       ),
     });
 
@@ -167,7 +166,7 @@ export async function validateCheckout(data: {
       const paymentMethod = await db.query.paymentMethods.findFirst({
         where: and(
           eq(paymentMethods.id, data.paymentMethodId),
-          eq(paymentMethods.userId, user.user.id)
+          eq(paymentMethods.userId, userId)
         ),
       });
 
@@ -225,16 +224,16 @@ export async function calculateShipping(data: {
   cartId: string;
 }) {
   try {
-    const user = await getUser();
-    if (!user) {
-      return { success: false, error: "Authentication required" };
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      return { success: false, error: "Unable to get user ID" };
     }
 
     // Get address
     const address = await db.query.userAddresses.findFirst({
       where: and(
         eq(userAddresses.id, data.addressId),
-        eq(userAddresses.userId, user.user.id)
+        eq(userAddresses.userId, userId)
       ),
     });
 
@@ -244,7 +243,7 @@ export async function calculateShipping(data: {
 
     // Get cart items grouped by seller
     const cart = await db.query.carts.findFirst({
-      where: and(eq(carts.id, data.cartId), eq(carts.userId, user.user.id)),
+      where: and(eq(carts.id, data.cartId), eq(carts.userId, userId)),
       with: {
         cartItems: {
           where: eq(cartItems.savedForLater, false),

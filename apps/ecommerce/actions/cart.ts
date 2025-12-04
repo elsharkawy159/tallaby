@@ -2,7 +2,7 @@
 "use server";
 
 import { db, carts, cartItems, products, eq, and, desc } from "@workspace/db";
-import { getUser } from "./auth";
+import { getCurrentUserId } from "@/lib/get-current-user-id";
 
 type ProductPrice = {
   base: number;
@@ -13,18 +13,19 @@ type ProductPrice = {
 };
 
 async function ensureCart() {
-  const user = await getUser();
-  if (!user) return null;
+  const userId = await getCurrentUserId();
+  if (!userId) return null;
 
   // Try to find cart, or insert if none
+  // Prevent multiple active carts per user
   let cart = await db.query.carts.findFirst({
-    where: and(eq(carts.userId, user.user.id), eq(carts.status, "active")),
+    where: and(eq(carts.userId, userId), eq(carts.status, "active")),
   });
 
   if (!cart) {
     [cart] = await db
       .insert(carts)
-      .values({ userId: user.user.id, status: "active", currency: "EGP" })
+      .values({ userId, status: "active", currency: "EGP" })
       .returning();
   }
 

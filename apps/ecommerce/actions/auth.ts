@@ -86,6 +86,16 @@ export async function signInAction({
   if (error) {
     return { success: false, message: error.message };
   }
+
+  // Merge guest account data if guest was using the app
+  try {
+    const { mergeGuestAccount } = await import("./merge-guest-account");
+    await mergeGuestAccount();
+  } catch (mergeError) {
+    // Log but don't fail sign in if merge fails
+    console.error("Failed to merge guest account:", mergeError);
+  }
+
   return { success: true, message: "Signed in successfully" };
 }
 

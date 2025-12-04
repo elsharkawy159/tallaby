@@ -20,7 +20,7 @@ import {
   desc,
   sql,
 } from "@workspace/db";
-import { getUser } from "./auth";
+import { getCurrentUserId } from "@/lib/get-current-user-id";
 import { customAlphabet } from "nanoid";
 
 export async function createOrder(data: {
@@ -35,14 +35,14 @@ export async function createOrder(data: {
   variantId?: string;
 }) {
   try {
-    const user = await getUser();
-    if (!user) {
-      return { success: false, error: "Authentication required" };
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      return { success: false, error: "Unable to get user ID" };
     }
 
     // Get cart items
     const cart = await db.query.carts.findFirst({
-      where: and(eq(carts.id, data.cartId), eq(carts.userId, user.user.id)),
+      where: and(eq(carts.id, data.cartId), eq(carts.userId, userId)),
       with: {
         cartItems: {
           where: eq(cartItems.savedForLater, false),
@@ -61,7 +61,7 @@ export async function createOrder(data: {
     const shippingAddress = await db.query.userAddresses.findFirst({
       where: and(
         eq(userAddresses.id, data.shippingAddressId),
-        eq(userAddresses.userId, user.user.id)
+        eq(userAddresses.userId, userId)
       ),
     });
 
@@ -173,7 +173,7 @@ export async function createOrder(data: {
       .insert(orders)
       .values({
         orderNumber,
-        userId: user.user.id,
+        userId,
         cartId: data.cartId,
         subtotal: subtotal.toString(),
         shippingCost: shippingCost.toString(),
@@ -208,7 +208,7 @@ export async function createOrder(data: {
     if (appliedCoupon) {
       await db.insert(couponUsage).values({
         couponId: appliedCoupon.id,
-        userId: user.user.id,
+        userId,
         orderId: newOrder?.id as string,
         discountAmount: discountAmount.toString(),
       });
