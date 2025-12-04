@@ -17,7 +17,6 @@ import {
   CardTitle,
 } from "@workspace/ui/components/card";
 import { Badge } from "@workspace/ui/components/badge";
-import { Separator } from "@workspace/ui/components/separator";
 import Image from "next/image";
 import Link from "next/link";
 import type { OrderConfirmationData } from "./order-confirmation.types";
@@ -26,8 +25,6 @@ import {
   formatDate,
   getOrderStatusStyle,
   getPaymentStatusStyle,
-  getEstimatedDeliveryDate,
-  isOrderEligibleForReturn,
 } from "./order-confirmation.lib";
 import { Button } from "@workspace/ui/components/button";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
@@ -39,7 +36,7 @@ interface OrderConfirmationContentProps {
 export function OrderConfirmationContent({
   data,
 }: OrderConfirmationContentProps) {
-  const { order, orderItems, shippingAddress, billingAddress, summary } = data;
+  const { order, orderItems, shippingAddress, summary } = data;
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
@@ -344,7 +341,7 @@ export function OrderConfirmationContent({
               <div>
                 <p className="font-medium text-blue-900">Order Processing</p>
                 <p className="text-sm text-blue-700">
-                  We'll prepare your order for shipment within 1-2 business
+                  We'll prepare your order for shipment
                   days.
                 </p>
               </div>

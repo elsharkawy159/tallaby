@@ -2,8 +2,8 @@
 
 import { db, eq, and } from "@workspace/db";
 import { orders, orderItems, userAddresses } from "@workspace/db";
-import { getUser } from "@/actions/auth";
 import type { OrderConfirmationData } from "./order-confirmation.types";
+import { getCurrentUserId } from "@/lib/get-current-user-id";
 
 export async function getOrderConfirmationData(orderId: string): Promise<{
   success: boolean;
@@ -11,14 +11,14 @@ export async function getOrderConfirmationData(orderId: string): Promise<{
   error?: string;
 }> {
   try {
-    const user = await getUser();
-    if (!user) {
+    const userId = await getCurrentUserId();
+    if (!userId) {
       return { success: false, error: "Authentication required" };
     }
 
     // Fetch order with all related data
     const order = await db.query.orders.findFirst({
-      where: and(eq(orders.id, orderId), eq(orders.userId, user.user.id)),
+      where: and(eq(orders.id, orderId), eq(orders.userId, userId)),
       with: {
         orderItems: {
           with: {

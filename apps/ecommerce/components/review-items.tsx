@@ -167,10 +167,14 @@ export function ReviewItems({
                       __html: formatPrice(lineTotal, locale),
                     }}
                   />
+
                   {layout !== "compact" && item.quantity > 1 && (
-                    <p className="text-xs text-muted-foreground">
-                      {formatPrice(price, locale, false)} each
-                    </p>
+                    <div
+                      className="text-xs text-muted-foreground"
+                      dangerouslySetInnerHTML={{
+                        __html: formatPrice(price, locale),
+                      }}
+                    />
                   )}
                 </div>
               </div>

@@ -1,13 +1,22 @@
 /**
  * Account Merge Logic
- * 
+ *
  * When a guest user logs in, merge their guest account data
  * (cart, orders, addresses) into their authenticated account.
  */
 
 "use server";
 
-import { db, users, carts, cartItems, orders, userAddresses, eq, and } from "@workspace/db";
+import {
+  db,
+  users,
+  carts,
+  cartItems,
+  orders,
+  userAddresses,
+  eq,
+  and,
+} from "@workspace/db";
 import { getUser } from "./auth";
 import { getGuestUID, clearGuestUID } from "@/lib/guest-user";
 
@@ -36,7 +45,10 @@ export async function mergeGuestAccount(): Promise<{
     const guestUID = await getGuestUID();
     if (!guestUID) {
       // No guest account to merge
-      return { success: true, merged: { cartItems: 0, orders: 0, addresses: 0 } };
+      return {
+        success: true,
+        merged: { cartItems: 0, orders: 0, addresses: 0 },
+      };
     }
 
     // Find guest user by email pattern
@@ -48,7 +60,10 @@ export async function mergeGuestAccount(): Promise<{
     if (!guestUser) {
       // Guest user doesn't exist, clear cookie and return
       await clearGuestUID();
-      return { success: true, merged: { cartItems: 0, orders: 0, addresses: 0 } };
+      return {
+        success: true,
+        merged: { cartItems: 0, orders: 0, addresses: 0 },
+      };
     }
 
     const guestUserId = guestUser.id;
@@ -67,7 +82,10 @@ export async function mergeGuestAccount(): Promise<{
     if (guestCart && guestCart.cartItems.length > 0) {
       // Get or create authenticated user's cart
       let authCart = await db.query.carts.findFirst({
-        where: and(eq(carts.userId, authenticatedUserId), eq(carts.status, "active")),
+        where: and(
+          eq(carts.userId, authenticatedUserId),
+          eq(carts.status, "active")
+        ),
       });
 
       if (!authCart) {
@@ -171,8 +189,10 @@ export async function mergeGuestAccount(): Promise<{
     console.error("Error merging guest account:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to merge guest account",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to merge guest account",
     };
   }
 }
-

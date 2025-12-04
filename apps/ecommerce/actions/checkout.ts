@@ -75,7 +75,9 @@ export async function getCheckoutData() {
           };
         }
         acc[sellerId].items.push(item);
-        acc[sellerId].subtotal += roundPrice(Number(item.price) * item.quantity);
+        acc[sellerId].subtotal += roundPrice(
+          Number(item.price) * item.quantity
+        );
         return acc;
       },
       {} as Record<string, any>

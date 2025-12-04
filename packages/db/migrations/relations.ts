@@ -31,8 +31,6 @@ export const usersRelations = relations(users, ({one, many}) => ({
 	userAddresses: many(userAddresses),
 	userDevices: many(userDevices),
 	wishlists: many(wishlists),
-	productAnswers: many(productAnswers),
-	orders: many(orders),
 	user: one(users, {
 		fields: [users.referredBy],
 		references: [users.id],
@@ -41,6 +39,8 @@ export const usersRelations = relations(users, ({one, many}) => ({
 	users: many(users, {
 		relationName: "users_referredBy_users_id"
 	}),
+	productAnswers: many(productAnswers),
+	orders: many(orders),
 }));
 
 export const shipmentsRelations = relations(shipments, ({one, many}) => ({

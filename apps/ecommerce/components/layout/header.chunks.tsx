@@ -114,7 +114,7 @@ export const SearchBar = ({
   const searchPlaceholder = placeholder || getSearchPlaceholder(variant);
 
   return (
-    <div className={cn("relative flex-1 max-w-2xl", className)} ref={searchRef}>
+    <div className={cn("relative flex-1 max-w-3xl", className)} ref={searchRef}>
       <Input
         type="text"
         placeholder={searchPlaceholder}

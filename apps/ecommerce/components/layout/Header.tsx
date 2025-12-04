@@ -22,7 +22,7 @@ const MainHeader = () => {
   return (
     <div
       className={cn(
-        "bg-primary shadow-xs"
+        "bg-primary shadow-xs fixed w-full z-50"
         // isVisible ? "transform translate-y-0" : "transform -translate-y-full"
       )}
     >

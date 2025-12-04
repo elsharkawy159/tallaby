@@ -13,6 +13,7 @@ import {
   desc,
 } from "@workspace/db";
 import { getUser } from "./auth";
+import { getCurrentUserId } from "@/lib/get-current-user-id";
 
 export async function getCustomerProfile() {
   try {
@@ -62,7 +63,6 @@ export async function addAddress(data: {
   deliveryInstructions?: string;
 }) {
   try {
-    const { getCurrentUserId } = await import("@/lib/get-current-user-id");
     const userId = await getCurrentUserId();
     if (!userId) {
       return { success: false, error: "Unable to get user ID" };
@@ -98,9 +98,9 @@ export async function updateAddress(
   data: Partial<typeof userAddresses.$inferInsert>
 ) {
   try {
-    const user = await getUser();
-    if (!user) {
-      return { success: false, error: "Authentication required" };
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      return { success: false, error: "Unable to get user ID" };
     }
 
     // If setting as default, unset other defaults
@@ -108,7 +108,7 @@ export async function updateAddress(
       await db
         .update(userAddresses)
         .set({ isDefault: false })
-        .where(eq(userAddresses.userId, user.user.id));
+        .where(eq(userAddresses.userId, userId));
     }
 
     const [updated] = await db
@@ -120,7 +120,7 @@ export async function updateAddress(
       .where(
         and(
           eq(userAddresses.id, addressId),
-          eq(userAddresses.userId, user.user.id)
+          eq(userAddresses.userId, userId)
         )
       )
       .returning();
@@ -161,16 +161,16 @@ export async function deleteAddress(addressId: string) {
 
 export async function setDefaultAddress(addressId: string) {
   try {
-    const user = await getUser();
-    if (!user) {
-      return { success: false, error: "Authentication required" };
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      return { success: false, error: "Unable to get user ID" };
     }
 
     // First, unset all other default addresses
     await db
       .update(userAddresses)
       .set({ isDefault: false })
-      .where(eq(userAddresses.userId, user.user.id));
+      .where(eq(userAddresses.userId, userId));
 
     // Then set the specified address as default
     const [updated] = await db
@@ -179,7 +179,7 @@ export async function setDefaultAddress(addressId: string) {
       .where(
         and(
           eq(userAddresses.id, addressId),
-          eq(userAddresses.userId, user.user.id)
+          eq(userAddresses.userId, userId)
         )
       )
       .returning();
@@ -197,13 +197,13 @@ export async function setDefaultAddress(addressId: string) {
 
 export async function getAddresses() {
   try {
-    const user = await getUser();
-    if (!user) {
-      return { success: false, error: "Authentication required" };
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      return { success: false, error: "Unable to get user ID" };
     }
 
     const addresses = await db.query.userAddresses.findMany({
-      where: eq(userAddresses.userId, user.user.id),
+      where: eq(userAddresses.userId, userId),
       orderBy: [desc(userAddresses.isDefault), desc(userAddresses.createdAt)],
     });
 

@@ -1,11 +1,11 @@
 "use client";
 
 import { ReactNode } from "react";
+import { QueryProvider } from "@/providers/query-provider";
 import { AuthProvider } from "@/providers/auth-provider";
 import { CartProvider } from "@/providers/cart-provider";
-import { AddressProvider } from "@/providers/address-provider";
-import { QueryProvider } from "@/providers/query-provider";
 import { WishlistProvider } from "@/providers/wishlist-provider";
+import { AddressProvider } from "@/providers/address-provider";
 
 interface ProvidersProps {
   children: ReactNode;
@@ -14,13 +14,15 @@ interface ProvidersProps {
 export function Providers({ children }: ProvidersProps) {
   return (
     <QueryProvider>
-      <AuthProvider>
-        <CartProvider>
-          <AddressProvider>
-            <WishlistProvider>{children}</WishlistProvider>
-          </AddressProvider>
-        </CartProvider>
-      </AuthProvider>
+      <AddressProvider>
+        <WishlistProvider>
+          <CartProvider>
+            <AuthProvider>
+              {children}
+              </AuthProvider>
+          </CartProvider>
+        </WishlistProvider>
+      </AddressProvider>
     </QueryProvider>
   );
 }

@@ -99,15 +99,10 @@ export async function getOrCreateGuestUser(): Promise<string | null> {
         .insert(users)
         .values({
           id: userId,
-          email: guestEmail,
-          firstName: "Guest",
-          lastName: "User",
           fullName: "Guest User",
+          email: guestEmail,
           isGuest: true,
-          isVerified: false,
-          role: "customer",
-          receiveMarketingEmails: false,
-        } as any)
+        })
         .returning();
 
       if (!createdUser) {

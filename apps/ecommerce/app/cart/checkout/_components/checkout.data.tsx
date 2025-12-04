@@ -1,5 +1,5 @@
 "use client";
-import { useTransition } from "react";
+import { useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { CheckoutForm } from "./checkout-form";
 import {
@@ -33,6 +33,7 @@ import { createOrder } from "@/actions/order";
 import { toast } from "sonner";
 import type { AddressData } from "@/components/address/address.schema";
 import { ShippingInformation } from "./shipping-information";
+import { useAddress } from "@/providers/address-provider";
 
 const paymentMethods = [
   {
@@ -46,30 +47,54 @@ const paymentMethods = [
     id: "wallet",
     value: "wallet",
     title: "Wallet",
-    description: "Vodafone, Etisalat, We, Orange",
-    enabled: false,
+    description: "Vodafone Cash",
+    enabled: true,
   },
   {
     id: "bank_transfer",
     value: "bank_transfer",
     title: "Bank Transfer",
     description: "Instapay",
-    enabled: false,
+    enabled: true,
   },
 ];
 
 export const CheckoutData = ({ checkoutData }: { checkoutData: any }) => {
-  const { cart, addresses, user } = checkoutData;
-  const defaultAddress = addresses?.[0];
+  const { cart, user } = checkoutData;
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+
+  // Use address hook for real-time updates
+  const {
+    addresses,
+    defaultAddress,
+    selectedAddress,
+    isLoading: isLoadingAddresses,
+  } = useAddress();
+
+  // Determine which address to use: selectedAddress > defaultAddress > first address
+  const activeAddress =
+    selectedAddress || defaultAddress || addresses[0] || null;
+
   const form = useForm<CheckoutFormData>({
     resolver: zodResolver(checkoutFormSchema),
     defaultValues: {
       ...checkoutFormDefaults,
-      shippingAddressId: defaultAddress?.id || "",
+      shippingAddressId: activeAddress?.id || "",
     },
   });
+
+  // Sync form with address changes from hook
+  // Update form when selectedAddress, defaultAddress, or addresses change
+  useEffect(() => {
+    if (activeAddress?.id) {
+      const currentAddressId = form.getValues("shippingAddressId");
+      // Only update if different to avoid unnecessary re-renders
+      if (currentAddressId !== activeAddress.id) {
+        form.setValue("shippingAddressId", activeAddress.id);
+      }
+    }
+  }, [selectedAddress?.id, defaultAddress?.id, addresses, form, activeAddress]);
 
   const handleSubmit = (data: CheckoutFormData) => {
     startTransition(async () => {
@@ -100,6 +125,8 @@ export const CheckoutData = ({ checkoutData }: { checkoutData: any }) => {
   };
 
   const handleAddressSelect = (address: AddressData) => {
+    // The hook's selectAddress is already called by AddressSelectorDialog
+    // Just update the form to match
     form.setValue("shippingAddressId", address.id || "");
   };
 
@@ -111,9 +138,10 @@ export const CheckoutData = ({ checkoutData }: { checkoutData: any }) => {
           addresses={addresses || []}
           userId={user?.id || ""}
           selectedAddressId={
-            form.watch("shippingAddressId") || defaultAddress?.id
+            form.watch("shippingAddressId") || activeAddress?.id
           }
           onAddressSelect={handleAddressSelect}
+          isLoading={isLoadingAddresses}
         />
 
         {/* Payment Method */}
@@ -150,8 +178,11 @@ export const CheckoutData = ({ checkoutData }: { checkoutData: any }) => {
                               }
                             `}
                           >
-                            <Field orientation="horizontal" className="flex items-start gap-2">
-                            <RadioGroupItem
+                            <Field
+                              orientation="horizontal"
+                              className="flex items-start gap-2"
+                            >
+                              <RadioGroupItem
                                 value={method.value}
                                 id={method.id}
                                 disabled={!method.enabled}
@@ -169,7 +200,6 @@ export const CheckoutData = ({ checkoutData }: { checkoutData: any }) => {
                                   {method.description}
                                 </FieldDescription>
                               </FieldContent>
-               
                             </Field>
                           </FieldLabel>
                         ))}

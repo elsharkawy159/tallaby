@@ -13,23 +13,56 @@ type ProductPrice = {
 };
 
 async function ensureCart() {
-  const userId = await getCurrentUserId();
-  if (!userId) return null;
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      console.error(
+        "ensureCart: Failed to get current user ID (authenticated or guest)"
+      );
+      return null;
+    }
 
-  // Try to find cart, or insert if none
-  // Prevent multiple active carts per user
-  let cart = await db.query.carts.findFirst({
-    where: and(eq(carts.userId, userId), eq(carts.status, "active")),
-  });
+    // Try to find cart, or insert if none
+    // Prevent multiple active carts per user
+    let cart = await db.query.carts.findFirst({
+      where: and(eq(carts.userId, userId), eq(carts.status, "active")),
+    });
 
-  if (!cart) {
-    [cart] = await db
-      .insert(carts)
-      .values({ userId, status: "active", currency: "EGP" })
-      .returning();
+    if (!cart) {
+      try {
+        const [newCart] = await db
+          .insert(carts)
+          .values({ userId, status: "active", currency: "EGP" })
+          .returning();
+
+        if (!newCart) {
+          console.error(
+            "ensureCart: Failed to create new cart for user",
+            userId
+          );
+          return null;
+        }
+
+        cart = newCart;
+      } catch (insertError) {
+        console.error("ensureCart: Error inserting cart:", insertError);
+        // If insert failed, try to get cart again (race condition)
+        cart = await db.query.carts.findFirst({
+          where: and(eq(carts.userId, userId), eq(carts.status, "active")),
+        });
+
+        if (!cart) {
+          console.error("ensureCart: Cart still not found after insert retry");
+          return null;
+        }
+      }
+    }
+
+    return cart;
+  } catch (error) {
+    console.error("ensureCart: Unexpected error:", error);
+    return null;
   }
-
-  return cart;
 }
 
 export async function getCartItems() {
@@ -71,7 +104,22 @@ export async function getCartItems() {
 
 export async function addToCart(productId: string, quantity = 1) {
   const cart = await ensureCart();
-  if (!cart) return { success: false, error: "No cart found" };
+  if (!cart) {
+    // Try to get more details about why cart creation failed
+    const userId = await getCurrentUserId();
+    console.log("userId", userId);
+    if (!userId) {
+      return {
+        success: false,
+        error:
+          "Unable to create or retrieve user. Please ensure you're logged in or refresh the page.",
+      };
+    }
+    return {
+      success: false,
+      error: "No cart found. Please try again or refresh the page.",
+    };
+  }
 
   const product = await db.query.products.findFirst({
     where: and(eq(products.id, productId), eq(products.isActive, true)),

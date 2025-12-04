@@ -653,16 +653,14 @@ export const shippingAddresses = pgTable(
   "shipping_addresses",
   {
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
-    id: bigint({ mode: "number" })
-      .primaryKey()
-      .generatedAlwaysAsIdentity({
-        name: "shipping_addresses_id_seq",
-        startWith: 1,
-        increment: 1,
-        minValue: 1,
-        maxValue: 9223372036854775807,
-        cache: 1,
-      }),
+    id: bigint({ mode: "number" }).primaryKey().generatedAlwaysAsIdentity({
+      name: "shipping_addresses_id_seq",
+      startWith: 1,
+      increment: 1,
+      minValue: 1,
+      maxValue: 9223372036854775807,
+      cache: 1,
+    }),
     userId: uuid("user_id").notNull(),
     firstName: text("first_name").notNull(),
     lastName: text("last_name").notNull(),

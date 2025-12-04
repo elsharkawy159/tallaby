@@ -11,11 +11,13 @@ Guests are represented as temporary users in the `users` table with `isGuest = t
 ### Core Components
 
 1. **Guest User Management** (`lib/guest-user.ts`)
+
    - Cookie-based temporary UID generation
    - Automatic guest user creation in database
    - 30-day cookie expiration
 
 2. **Current User ID Utility** (`lib/get-current-user-id.ts`)
+
    - Unified function to get authenticated or guest user ID
    - Used across all cart, checkout, and order actions
 
@@ -69,6 +71,7 @@ pnpm db:migrate
 ```
 
 This will create a migration file that adds:
+
 ```sql
 ALTER TABLE "users" ADD COLUMN "is_guest" boolean DEFAULT false;
 ```
@@ -99,10 +102,12 @@ ALTER TABLE "users" ADD COLUMN "is_guest" boolean DEFAULT false;
 When a guest logs in:
 
 1. **Cart Merge**: Merges items from guest cart to authenticated cart
+
    - Combines quantities if same product exists
    - Adds new items if product doesn't exist
 
 2. **Data Reassignment**:
+
    - Orders: `userId` updated to authenticated user
    - Addresses: `userId` updated to authenticated user
 
@@ -131,7 +136,7 @@ If using Supabase RLS, consider:
 -- Allow users to access their own data (authenticated or guest)
 CREATE POLICY "Users access own data"
 ON carts FOR ALL
-USING (user_id = auth.uid() OR 
+USING (user_id = auth.uid() OR
        EXISTS (SELECT 1 FROM users WHERE id = carts.user_id AND is_guest = true));
 ```
 
@@ -160,28 +165,28 @@ USING (user_id = auth.uid() OR
 
 ```typescript
 // Automatically creates guest user if needed
-await addToCart(productId, quantity)
+await addToCart(productId, quantity);
 ```
 
 ### Guest Checks Out
 
 ```typescript
 // Create address for guest
-await addAddress({...addressData})
+await addAddress({ ...addressData });
 
 // Create order (uses guest userId)
 await createOrder({
   cartId,
   shippingAddressId,
-  paymentMethod: 'cash',
-})
+  paymentMethod: "cash",
+});
 ```
 
 ### Guest Logs In
 
 ```typescript
 // Automatically merges guest data
-await signInAction({ email, password })
+await signInAction({ email, password });
 // Cart items, orders, addresses merged automatically
 ```
 
@@ -212,4 +217,3 @@ await signInAction({ email, password })
 - All data uses standard schema (no guest-specific fields)
 - Account merge is automatic on login
 - Guest users are deleted after successful merge
-

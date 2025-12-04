@@ -61,7 +61,19 @@ export const AddressDialog = ({
     }
   }, [address]);
 
-  // Reset state when dialog opens/closes
+  // Reset to list step when dialog opens
+  useEffect(() => {
+    if (isOpen) {
+      setCurrentStep("list");
+      // Only reset editing address if no address prop is provided
+      if (!address) {
+        setEditingAddress(null);
+      }
+      setSelectedLocation(null);
+    }
+  }, [isOpen, address]);
+
+  // Reset state when dialog closes
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
     if (!open) {
@@ -109,6 +121,10 @@ export const AddressDialog = ({
   // Form submission
   const handleFormSuccess = (addressData: AddressData) => {
     onSuccess?.(addressData);
+    // Reset state before closing
+    setCurrentStep("list");
+    setEditingAddress(null);
+    setSelectedLocation(null);
     setIsOpen(false);
   };
 
