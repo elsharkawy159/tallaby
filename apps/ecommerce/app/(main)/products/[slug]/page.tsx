@@ -22,17 +22,17 @@ import { ProductStructuredData } from "./_components/product-structured-data";
 export const revalidate = 600;
 
 // Generate static params for all product slugs
-export async function generateStaticParams() {
-  const slugsResult = await getAllProductSlugs();
+// export async function generateStaticParams() {
+//   const slugsResult = await getAllProductSlugs();
 
-  if (!slugsResult.success || !slugsResult.data) {
-    return [];
-  }
+//   if (!slugsResult.success || !slugsResult.data) {
+//     return [];
+//   }
 
-  return slugsResult.data.map((slug) => ({
-    slug,
-  }));
-}
+//   return slugsResult.data.map((slug) => ({
+//     slug,
+//   }));
+// }
 
 export async function generateMetadata({
   params,
