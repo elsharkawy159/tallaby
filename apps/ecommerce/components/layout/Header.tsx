@@ -22,7 +22,7 @@ const MainHeader = () => {
   return (
     <div
       className={cn(
-        "bg-primary shadow-xs fixed w-full z-50"
+        "bg-primary shadow-xs h-full w-full"
         // isVisible ? "transform translate-y-0" : "transform -translate-y-full"
       )}
     >
@@ -83,7 +83,7 @@ const SubBar = () => {
 const Header = ({ className }: HeaderProps) => {
   return (
     <>
-      <header className={cn("z-50", className)}>
+      <header className={cn("sticky top-0 z-50", className)}>
         <MainHeader />
         {/* <SubBar /> */}
       </header>
