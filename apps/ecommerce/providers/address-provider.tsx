@@ -64,8 +64,10 @@ export function AddressProvider({ children }: { children: ReactNode }) {
       }
       throw new Error(result.error || "Failed to load addresses");
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 0, // Always consider data stale - no caching
+    gcTime: 0, // Don't cache in memory - always fetch fresh data
+    refetchOnMount: true, // Refetch when component mounts
+    refetchOnWindowFocus: true, // Refetch when window gains focus
   });
 
   // Find default address

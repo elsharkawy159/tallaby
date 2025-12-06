@@ -21,20 +21,22 @@ import Image from "next/image";
 import Link from "next/link";
 import type { OrderConfirmationData } from "./order-confirmation.types";
 import {
-  formatCurrency,
   formatDate,
   getOrderStatusStyle,
   getPaymentStatusStyle,
 } from "./order-confirmation.lib";
 import { Button } from "@workspace/ui/components/button";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
+import { formatPrice } from "@workspace/lib";
 
 interface OrderConfirmationContentProps {
   data: OrderConfirmationData;
+  locale: string;
 }
 
 export function OrderConfirmationContent({
   data,
+  locale,
 }: OrderConfirmationContentProps) {
   const { order, orderItems, shippingAddress, summary } = data;
 
@@ -114,9 +116,12 @@ export function OrderConfirmationContent({
                 <span className="text-sm font-medium text-gray-600">
                   Total Amount:
                 </span>
-                <span className="text-lg font-bold text-gray-900">
-                  {formatCurrency(Number(order.totalAmount), order.currency)}
-                </span>
+                <span
+                  className="text-lg font-bold text-gray-900"
+                  dangerouslySetInnerHTML={{
+                    __html: formatPrice(Number(order.totalAmount), locale),
+                  }}
+                />
               </div>
               <div className="flex justify-between">
                 <span className="text-sm font-medium text-gray-600">
@@ -187,13 +192,19 @@ export function OrderConfirmationContent({
                 </div>
 
                 <div className="text-right space-y-1">
-                  <p className="text-sm font-medium text-gray-900">
-                    {formatCurrency(Number(item.price), order.currency)}
-                  </p>
+                  <p
+                    className="text-sm font-medium text-gray-900"
+                    dangerouslySetInnerHTML={{
+                      __html: formatPrice(Number(item.price), locale),
+                    }}
+                  />
                   <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
-                  <p className="text-sm font-semibold text-gray-900">
-                    {formatCurrency(Number(item.subtotal), order.currency)}
-                  </p>
+                  <p
+                    className="text-sm font-semibold text-gray-900"
+                    dangerouslySetInnerHTML={{
+                      __html: formatPrice(Number(item.subtotal), locale),
+                    }}
+                  />
                 </div>
               </div>
             ))}
@@ -341,8 +352,7 @@ export function OrderConfirmationContent({
               <div>
                 <p className="font-medium text-blue-900">Order Processing</p>
                 <p className="text-sm text-blue-700">
-                  We'll prepare your order for shipment
-                  days.
+                  We'll prepare your order for shipment days.
                 </p>
               </div>
             </div>

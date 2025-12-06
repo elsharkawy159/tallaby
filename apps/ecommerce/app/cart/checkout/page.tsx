@@ -13,6 +13,11 @@ import { CheckoutInteractions } from "./_components/checkout.client";
 
 export const metadata: Metadata = generateNoIndexMetadata();
 
+// Force dynamic rendering - no caching for checkout
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
 export default async function Checkout() {
   const result = await getCheckoutData();
   if (!result.success || !result.data) {
@@ -67,7 +72,6 @@ export default async function Checkout() {
               title="Review Items"
               showCount={true}
               showTotal={false}
-              
             />
 
             <CheckoutInteractions checkoutData={result.data as any} />

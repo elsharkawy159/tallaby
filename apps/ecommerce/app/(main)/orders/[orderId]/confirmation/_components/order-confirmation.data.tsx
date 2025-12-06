@@ -1,5 +1,6 @@
 import { getOrderConfirmationData } from "./order-confirmation.server";
 import { OrderConfirmationContent } from "./order-confirmation.chunks";
+import { getLocale } from "next-intl/server";
 
 interface OrderConfirmationDataProps {
   orderId: string;
@@ -9,6 +10,7 @@ export async function OrderConfirmationData({
   orderId,
 }: OrderConfirmationDataProps) {
   const result = await getOrderConfirmationData(orderId);
+  const locale = await getLocale();
 
   if (!result.success || !result.data) {
     return (
@@ -32,5 +34,5 @@ export async function OrderConfirmationData({
     );
   }
 
-  return <OrderConfirmationContent data={result.data} />;
+  return <OrderConfirmationContent data={result.data} locale={locale} />;
 }

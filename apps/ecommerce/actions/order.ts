@@ -22,6 +22,8 @@ import {
 } from "@workspace/db";
 import { getCurrentUserId } from "@/lib/get-current-user-id";
 import { customAlphabet } from "nanoid";
+import { revalidatePath } from "next/cache";
+import { getUser } from "./auth";
 
 export async function createOrder(data: {
   cartId: string;
@@ -253,6 +255,10 @@ export async function createOrder(data: {
       })
       .where(eq(carts.id, data.cartId));
 
+    // Revalidate cart page to reflect cleared cart
+    revalidatePath("/cart");
+    revalidatePath("/cart/checkout");
+
     return {
       success: true,
       data: {
@@ -272,12 +278,12 @@ export async function getOrders(params?: {
   offset?: number;
 }) {
   try {
-    const user = await getUser();
-    if (!user) {
+    const userId = await getCurrentUserId();
+    if (!userId) {
       return { success: false, error: "Authentication required" };
     }
 
-    const conditions = [eq(orders.userId, user.user.id)];
+    const conditions = [eq(orders.userId, userId)];
 
     if (params?.status) {
       conditions.push(eq(orders.status, params.status as any));

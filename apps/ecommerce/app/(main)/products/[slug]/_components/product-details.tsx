@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components";
+import Link from "next/link";
 
 interface ProductDetailsProps {
   product: Product;
@@ -27,16 +28,19 @@ export const ProductDetails = async ({ product }: ProductDetailsProps) => {
         {/* Seller Info */}
         <CardContent>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 lg:w-12 lg:h-12 bg-gray-200 rounded-full flex items-center justify-center">
+            <Link href={`/sellers/${product.seller?.slug}`} className="w-10 h-10 lg:w-12 lg:h-12 bg-gray-200 rounded-full flex items-center justify-center">
               <span className="text-base lg:text-lg font-semibold text-gray-600">
-                {product.seller.name?.charAt(0)?.toUpperCase?.()}
+                {product.seller?.displayName?.charAt(0)?.toUpperCase?.()}
               </span>
-            </div>
+            </Link>
             <div>
               <p className="font-semibold text-gray-900 text-sm lg:text-base">
-                {product.seller?.displayName ?? ""}
+                <Link href={`/sellers/${product.seller?.slug}`} className="text-base lg:text-lg font-semibold text-gray-600">
+                  {product.seller?.displayName ?? ""}
+                </Link>
               </p>
-              {product.seller?.totalRatings && product.seller?.positiveRatingPercent && (
+              {product.seller?.totalRatings &&
+              product.seller?.positiveRatingPercent ? (
                 <div className="flex items-center gap-1">
                   <Star className="h-3 w-3 lg:h-4 lg:w-4 text-yellow-400 fill-current" />
                   <span className="text-xs lg:text-sm text-gray-600">
@@ -44,7 +48,7 @@ export const ProductDetails = async ({ product }: ProductDetailsProps) => {
                     {product.seller.positiveRatingPercent}% positive)
                   </span>
                 </div>
-              )}
+              ) : null}
             </div>
           </div>
         </CardContent>
@@ -92,7 +96,7 @@ export const ProductDetails = async ({ product }: ProductDetailsProps) => {
       </Card>
 
       {/* Product Actions */}
-        <ProductActions product={product} />
+      <ProductActions product={product} />
 
       {/* Trust Badges */}
       {/* <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-6">

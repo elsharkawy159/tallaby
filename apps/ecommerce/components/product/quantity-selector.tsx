@@ -91,7 +91,8 @@ export const QuantitySelector = ({
         className={cn(`rounded-none hover:text-gray-50`, styles.button)}
         onClick={() => handleQuantityChange(cartItem?.id || "", quantity + 1)}
         disabled={
-          isItemLoading(cartItem?.id || "") || Number(productStock) == quantity
+          isItemLoading(cartItem?.id || "") ||
+          (productStock !== undefined && quantity >= Number(productStock))
         }
         aria-label="Increase quantity"
       >

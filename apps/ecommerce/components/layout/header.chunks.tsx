@@ -21,6 +21,7 @@ import {
   SheetTrigger,
 } from "@workspace/ui/components/sheet";
 import { useQuery } from "@tanstack/react-query";
+import { useLocale } from "next-intl";
 import { useAuthDialog } from "@/hooks/use-auth-dialog";
 import { useAuth } from "@/providers/auth-provider";
 import { useDebounce } from "@/hooks/use-debounce";
@@ -28,6 +29,10 @@ import { getProducts } from "@/actions/products";
 import CategoryNav from "./CategoryNav";
 import { UserMenu } from "./user-menu";
 import { cn, resolvePrice, resolvePrimaryImage } from "@/lib/utils";
+import { formatPrice } from "@workspace/lib";
+import Image from "next/image";
+import { Spinner } from "@workspace/ui/components";
+import { ProductCardProps } from "@/components/product";
 import type {
   SearchBarProps,
   MobileNavigationProps,
@@ -44,6 +49,26 @@ import { useWishlist } from "@/providers/wishlist-provider";
 import { useAddress } from "@/providers/address-provider";
 import { AddressSelectorDialog } from "@/components/shared/address-dialog";
 
+// Helper function to highlight matching text
+const highlightText = (text: string, query: string): string => {
+  if (!query || !text) return text;
+
+  const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const regex = new RegExp(`(${escapedQuery})`, "gi");
+  const parts = text.split(regex);
+
+  return parts
+    .map((part) => {
+      // Check if this part matches the query (case-insensitive)
+      const regexTest = new RegExp(`^${escapedQuery}$`, "i");
+      if (regexTest.test(part)) {
+        return `<mark class="bg-yellow-200 font-semibold">${part}</mark>`;
+      }
+      return part;
+    })
+    .join("");
+};
+
 export const SearchBar = ({
   placeholder,
   className,
@@ -59,7 +84,7 @@ export const SearchBar = ({
   const { data: searchResultsData, isLoading: isSearching } = useQuery({
     queryKey: ["search-products", debouncedSearchQuery],
     queryFn: async () => {
-      if (!debouncedSearchQuery.trim() || debouncedSearchQuery.length < 2) {
+      if (!debouncedSearchQuery.trim() || debouncedSearchQuery.length < 1) {
         return { success: true, data: [] };
       }
       return getProducts({
@@ -130,7 +155,7 @@ export const SearchBar = ({
       )}
       {/* Search Results Dropdown */}
       {isOpen && searchQuery && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-50 max-h-96 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-50 max-h-106 overflow-y-auto">
           {isSearching ? (
             <div className="p-4 text-center text-gray-500">Searching...</div>
           ) : searchResults.length > 0 ? (
@@ -161,9 +186,15 @@ export const SearchBar = ({
                           className="w-12 h-12 object-contain rounded"
                         />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">
-                            {product.title}
-                          </p>
+                          <p
+                            className="text-sm font-medium text-gray-900 truncate"
+                            dangerouslySetInnerHTML={{
+                              __html: highlightText(
+                                product.title || "",
+                                searchQuery
+                              ),
+                            }}
+                          />
                           <p className="text-xs text-gray-500 truncate">
                             {product.category?.name || "No category"}
                           </p>
@@ -374,9 +405,9 @@ export const DeliveryLocationSelector = ({
   const { defaultAddress, addresses, isLoading } = useAddress();
 
   // If not logged in, show guest message
-  if (!user) {
-    return null;
-  }
+  // if (!addresses.length) {
+  //   return null;
+  // }
 
   // If loading addresses
   if (isLoading) {
@@ -410,9 +441,9 @@ export const DeliveryLocationSelector = ({
               <div className="text-xs font-normal">
                 Deliver to{" "}
                 <span className="capitalize">
-                  {user.user_metadata?.full_name?.split(" ")[0] ||
-                    user.email?.split("@")[0] ||
-                    "User"}
+                  {user?.user_metadata?.full_name?.split(" ")[0] ||
+                    user?.email?.split("@")[0] ||
+                    "Guest"}
                 </span>
               </div>
               <span className="md:text-sm text-xs font-semibold flex items-center gap-1">
@@ -441,7 +472,7 @@ export const DeliveryLocationSelector = ({
             <span className="text-xs font-normal">
               Deliver to{" "}
               {currentAddress.fullName.split(" ")[0] ||
-                user.user_metadata?.full_name?.split(" ")[0] ||
+                user?.user_metadata?.full_name?.split(" ")[0] ||
                 "you"}
             </span>
             <span className="text-sm font-semibold flex items-center gap-1 truncate max-w-[150px]">
@@ -458,11 +489,6 @@ export const DeliveryLocationSelector = ({
 import { usePathname } from "next/navigation";
 import { Logo } from "../logo";
 import { LanguageSwitcher } from "./language-switcher";
-import Image from "next/image";
-import { useLocale } from "next-intl";
-import { formatPrice } from "@workspace/lib";
-import { ProductCardProps } from "../product";
-import { Spinner } from "@workspace/ui/components";
 
 export const BottomNavigation = ({ className }: BottomNavigationProps) => {
   const { open: openAuthDialog } = useAuthDialog();

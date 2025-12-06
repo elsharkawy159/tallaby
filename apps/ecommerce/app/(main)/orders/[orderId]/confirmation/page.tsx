@@ -2,6 +2,11 @@ import { Suspense } from "react";
 import { OrderConfirmationData } from "./_components/order-confirmation.data";
 import { OrderConfirmationSkeleton } from "./_components/order-confirmation.skeleton";
 
+// Force dynamic rendering - no caching for order confirmation
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
 export default async function OrderConfirmationPage({
   params,
 }: {

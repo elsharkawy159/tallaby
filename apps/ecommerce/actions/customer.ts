@@ -14,6 +14,7 @@ import {
 } from "@workspace/db";
 import { getUser } from "./auth";
 import { getCurrentUserId } from "@/lib/get-current-user-id";
+import { revalidatePath } from "next/cache";
 
 export async function getCustomerProfile() {
   try {
@@ -86,6 +87,11 @@ export async function addAddress(data: {
       })
       .returning();
 
+    // Revalidate relevant paths to refresh cached data
+    revalidatePath("/cart/checkout");
+    revalidatePath("/profile");
+    revalidatePath("/profile/addresses");
+
     return { success: true, data: newAddress };
   } catch (error) {
     console.error("Error adding address:", error);
@@ -118,16 +124,18 @@ export async function updateAddress(
         updatedAt: new Date().toISOString(),
       })
       .where(
-        and(
-          eq(userAddresses.id, addressId),
-          eq(userAddresses.userId, userId)
-        )
+        and(eq(userAddresses.id, addressId), eq(userAddresses.userId, userId))
       )
       .returning();
 
     if (!updated) {
       return { success: false, error: "Address not found" };
     }
+
+    // Revalidate relevant paths to refresh cached data
+    revalidatePath("/cart/checkout");
+    revalidatePath("/profile");
+    revalidatePath("/profile/addresses");
 
     return { success: true, data: updated };
   } catch (error) {
@@ -151,6 +159,11 @@ export async function deleteAddress(addressId: string) {
           eq(userAddresses.userId, user.user.id)
         )
       );
+
+    // Revalidate relevant paths to refresh cached data
+    revalidatePath("/cart/checkout");
+    revalidatePath("/profile");
+    revalidatePath("/profile/addresses");
 
     return { success: true, message: "Address deleted" };
   } catch (error) {
@@ -177,16 +190,18 @@ export async function setDefaultAddress(addressId: string) {
       .update(userAddresses)
       .set({ isDefault: true })
       .where(
-        and(
-          eq(userAddresses.id, addressId),
-          eq(userAddresses.userId, userId)
-        )
+        and(eq(userAddresses.id, addressId), eq(userAddresses.userId, userId))
       )
       .returning();
 
     if (!updated) {
       return { success: false, error: "Address not found" };
     }
+
+    // Revalidate relevant paths to refresh cached data
+    revalidatePath("/cart/checkout");
+    revalidatePath("/profile");
+    revalidatePath("/profile/addresses");
 
     return { success: true, data: updated, message: "Default address updated" };
   } catch (error) {

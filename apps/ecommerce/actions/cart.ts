@@ -3,6 +3,7 @@
 
 import { db, carts, cartItems, products, eq, and, desc } from "@workspace/db";
 import { getCurrentUserId } from "@/lib/get-current-user-id";
+import { revalidatePath } from "next/cache";
 
 type ProductPrice = {
   base: number;
@@ -155,6 +156,10 @@ export async function addToCart(productId: string, quantity = 1) {
         } as any)
         .returning();
 
+  // Revalidate cart page to reflect changes
+  revalidatePath("/cart");
+  revalidatePath("/cart/checkout");
+
   return {
     success: true,
     data: result[0],
@@ -182,6 +187,10 @@ export async function updateCartItem(itemId: string, quantity: number) {
     .where(eq(cartItems.id, itemId))
     .returning();
 
+  // Revalidate cart page to reflect changes
+  revalidatePath("/cart");
+  revalidatePath("/cart/checkout");
+
   return { success: true, data: updated };
 }
 
@@ -190,6 +199,9 @@ export async function removeFromCart(itemId: string) {
   if (!cart) return { success: false, error: "No cart found" };
 
   await db.delete(cartItems).where(eq(cartItems.id, itemId));
+  // Revalidate cart page to reflect changes
+  revalidatePath("/cart");
+  revalidatePath("/cart/checkout");
   return { success: true, message: "Item removed" };
 }
 
@@ -198,5 +210,8 @@ export async function clearCart() {
   if (!cart) return { success: false, error: "No cart found" };
 
   await db.delete(cartItems).where(eq(cartItems.cartId, cart.id));
+  // Revalidate cart page to reflect changes
+  revalidatePath("/cart");
+  revalidatePath("/cart/checkout");
   return { success: true, message: "Cart cleared" };
 }

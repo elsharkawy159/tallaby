@@ -17,9 +17,7 @@ export function Providers({ children }: ProvidersProps) {
       <AddressProvider>
         <WishlistProvider>
           <CartProvider>
-            <AuthProvider>
-              {children}
-              </AuthProvider>
+            <AuthProvider>{children}</AuthProvider>
           </CartProvider>
         </WishlistProvider>
       </AddressProvider>

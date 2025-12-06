@@ -33,8 +33,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const result = await getCartItems();
       return result.success ? result.data : null;
     },
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
+    staleTime: 0, // Always consider data stale - no caching
+    gcTime: 0, // Don't cache in memory - always fetch fresh data
+    refetchOnMount: true, // Refetch when component mounts
+    refetchOnWindowFocus: true, // Refetch when window gains focus
   });
 
   const cartItems = cartData?.items ?? [];
@@ -84,9 +86,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     try {
       const result = await action(...args);
       if (result.success) {
-        queryClient.invalidateQueries({ queryKey: ["cart"] });
-        
-        // refreshCart();
+        // Invalidate and immediately refetch to ensure fresh data
+        await queryClient.invalidateQueries({ queryKey: ["cart"] });
+        await refreshCart();
         toast.success(successMsg);
         return { success: true };
       }

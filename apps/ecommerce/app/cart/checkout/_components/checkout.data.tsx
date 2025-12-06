@@ -34,6 +34,7 @@ import { toast } from "sonner";
 import type { AddressData } from "@/components/address/address.schema";
 import { ShippingInformation } from "./shipping-information";
 import { useAddress } from "@/providers/address-provider";
+import { useCart } from "@/providers/cart-provider";
 
 const paymentMethods = [
   {
@@ -71,6 +72,9 @@ export const CheckoutData = ({ checkoutData }: { checkoutData: any }) => {
     selectedAddress,
     isLoading: isLoadingAddresses,
   } = useAddress();
+
+  // Use cart hook to refresh cart after order placement
+  const { refreshCart } = useCart();
 
   // Determine which address to use: selectedAddress > defaultAddress > first address
   const activeAddress =
@@ -111,6 +115,8 @@ export const CheckoutData = ({ checkoutData }: { checkoutData: any }) => {
         });
 
         if (result.success) {
+          // Refresh cart to clear it after order placement
+          await refreshCart();
           toast.success("Order placed successfully!");
           // Redirect to order confirmation page
           router.push(`/orders/${result.data?.order?.id}/confirmation`);
@@ -127,7 +133,9 @@ export const CheckoutData = ({ checkoutData }: { checkoutData: any }) => {
   const handleAddressSelect = (address: AddressData) => {
     // The hook's selectAddress is already called by AddressSelectorDialog
     // Just update the form to match
-    form.setValue("shippingAddressId", address.id || "");
+    if (address?.id) {
+      form.setValue("shippingAddressId", address.id);
+    }
   };
 
   return (

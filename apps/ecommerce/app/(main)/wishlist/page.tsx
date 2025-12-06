@@ -4,6 +4,11 @@ import { Heart } from "lucide-react";
 import { WishlistData } from "./_components/wishlist-data";
 import { WishlistSkeleton } from "./_components/wishlist-skeleton";
 
+// Force dynamic rendering - no caching for wishlist
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
 const Wishlist = () => {
   return (
     <div className="min-h-screen flex flex-col">
