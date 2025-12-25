@@ -48,6 +48,7 @@ import { useCart } from "@/providers/cart-provider";
 import { useWishlist } from "@/providers/wishlist-provider";
 import { useAddress } from "@/providers/address-provider";
 import { AddressSelectorDialog } from "@/components/shared/address-dialog";
+import { CartSheet } from "@/components/layout/cart-sheet";
 
 // Helper function to highlight matching text
 const highlightText = (text: string, query: string): string => {
@@ -310,12 +311,16 @@ export const UserAuth = ({ variant = "desktop", className }: UserAuthProps) => {
   );
 };
 
-export const CartLink = ({ className }: { className?: string }) => {
+export const Cart = ({ className }: { className?: string }) => {
   const { itemCount } = useCart();
+  const [isCartSheetOpen, setIsCartSheetOpen] = React.useState(false);
+
   return (
-    <Button asChild size="icon" variant="ghost">
-      <Link
-        href="/cart"
+    <>
+      <Button
+        size="icon"
+        variant="ghost"
+        onClick={() => setIsCartSheetOpen(true)}
         className={cn(
           "relative flex flex-col items-center md:text-white text-gray-600 hover:text-gray-200",
           className
@@ -328,8 +333,9 @@ export const CartLink = ({ className }: { className?: string }) => {
           </span>
         )}
         <span className="text-xs md:hidden">Cart</span>
-      </Link>
-    </Button>
+      </Button>
+      <CartSheet open={isCartSheetOpen} onOpenChange={setIsCartSheetOpen} />
+    </>
   );
 };
 
@@ -537,7 +543,7 @@ export const BottomNavigation = ({ className }: BottomNavigationProps) => {
               </Button>
             );
           })}
-          <CartLink />
+          <Cart />
           {isLoading ? (
             <Button
               variant="ghost"

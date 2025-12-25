@@ -8,7 +8,7 @@ import {
   BecomeSellerButton,
   DeliveryLocationSelector,
   UserAuth,
-  CartLink,
+  Cart,
   WishlistLink,
 } from "./header.chunks";
 import { Logo } from "../logo";
@@ -59,7 +59,7 @@ const MainHeader = () => {
 
           <div className="flex items-center gap-4">
             <UserAuth variant="desktop" />
-            <CartLink />
+            <Cart />
             <WishlistLink />
             <BecomeSellerButton />
           </div>

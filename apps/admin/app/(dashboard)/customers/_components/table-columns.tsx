@@ -7,6 +7,7 @@ import {
   Check,
   X,
   AlertTriangle,
+  CheckCircle2,
 } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
 import { Checkbox } from "@workspace/ui/components/checkbox";
@@ -20,26 +21,24 @@ import {
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu";
 import Link from "next/link";
-import { Avatar, AvatarFallback } from "@workspace/ui/components/avatar";
+import {
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+} from "@workspace/ui/components/avatar";
 import { cn } from "@workspace/ui/lib/utils";
 import { DataTableColumnHeader } from "@/app/(dashboard)/_components/data-table/data-table-column-header";
+import { Eye } from "lucide-react";
+import type { Customer } from "../customers.types";
+import { getCustomerFullName, getCustomerInitials } from "../customers.lib";
 
-interface Customer {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  role: string;
-  isVerified: boolean;
-  isSuspended: boolean;
-  totalOrders: number;
-  totalSpent: number;
-  lastOrderDate: string | null;
-  createdAt: string;
+interface GetCustomersColumnsProps {
+  onQuickView?: (customer: Customer) => void;
 }
 
-export function getCustomersColumns(): ColumnDef<Customer>[] {
+export function getCustomersColumns({
+  onQuickView,
+}: GetCustomersColumnsProps = {}): ColumnDef<Customer>[] {
   return [
     {
       id: "select",
@@ -69,42 +68,41 @@ export function getCustomersColumns(): ColumnDef<Customer>[] {
         <DataTableColumnHeader column={column} title="Name" />
       ),
       cell: ({ row }) => {
-        const firstName = row?.getValue("firstName") as string;
-        const lastName = row?.getValue("lastName") as string;
-        const fullName = `${firstName} ${lastName}`;
-        const initials = `${firstName?.[0]}${lastName?.[0]}`;
+        const customer = row.original;
+        const fullName = getCustomerFullName(customer);
+        const initials = getCustomerInitials(customer);
 
         // Status indicators
-        const isVerified = row.original.isVerified;
-        const isSuspended = row.original.isSuspended;
-
-        let statusIcon = null;
-        if (isSuspended) {
-          statusIcon = <AlertTriangle className="h-4 w-4 text-red-500 ml-1" />;
-        } else if (!isVerified) {
-          statusIcon = (
-            <AlertTriangle className="h-4 w-4 text-amber-500 ml-1" />
-          );
-        }
+        const isVerified = customer.isVerified;
+        const isSuspended = customer.isSuspended;
 
         return (
-          <div className="flex items-center gap-3">
+          <div
+            className="flex items-center gap-3 cursor-pointer group"
+            onClick={() => onQuickView?.(customer)}
+          >
             <Avatar className="h-9 w-9">
+              {customer.avatarUrl && (
+                <AvatarImage src={customer.avatarUrl} alt={fullName} />
+              )}
               <AvatarFallback className="bg-primary text-primary-foreground">
                 {initials}
               </AvatarFallback>
             </Avatar>
             <div className="flex flex-col">
-              <div className="flex items-center">
-                <Link
-                  href={`/customers/${row.original.id}`}
-                  className="font-medium hover:underline"
-                >
-                  {fullName}
-                </Link>
-                {statusIcon}
+              <div className="flex items-center gap-2">
+                  <div className="font-medium group-hover:underline text-left flex items-center gap-2">
+                    {fullName}
+
+                    {customer.isSuspended && (
+                    <AlertTriangle className="h-5 w-5 text-red-500" />
+                  )}
+                  {customer.isVerified && !customer.isSuspended && (
+                    <CheckCircle2 className="h-5 w-5 text-green-500" />
+                  )}
+                  </div>
               </div>
-              <div className="text-xs text-gray-500">{row.original.email}</div>
+              <div className="text-xs text-gray-500">{customer.email}</div>
             </div>
           </div>
         );
@@ -116,7 +114,8 @@ export function getCustomersColumns(): ColumnDef<Customer>[] {
         <DataTableColumnHeader column={column} title="Phone" />
       ),
       cell: ({ row }) => {
-        return <div>{row.getValue("phone")}</div>;
+        const phone = row.getValue("phone") as string | null;
+        return <div>{phone || "—"}</div>;
       },
     },
     {
@@ -167,7 +166,7 @@ export function getCustomersColumns(): ColumnDef<Customer>[] {
         <DataTableColumnHeader column={column} title="Orders" />
       ),
       cell: ({ row }) => {
-        const orders = parseInt(row.getValue("totalOrders"));
+        const orders = Number(row.getValue("totalOrders")) || 0;
         return (
           <div className="flex items-center justify-center">
             <ShoppingCart className="h-4 w-4 mr-1 text-gray-500" />
@@ -182,7 +181,7 @@ export function getCustomersColumns(): ColumnDef<Customer>[] {
         <DataTableColumnHeader column={column} title="Total Spent" />
       ),
       cell: ({ row }) => {
-        const amount = parseFloat(row.getValue("totalSpent"));
+        const amount = Number(row.getValue("totalSpent")) || 0;
         const formatted = new Intl.NumberFormat("en-US", {
           style: "currency",
           currency: "USD",
@@ -245,7 +244,13 @@ export function getCustomersColumns(): ColumnDef<Customer>[] {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem>
+              {onQuickView && (
+                <DropdownMenuItem onClick={() => onQuickView(customer)}>
+                  <Eye className="mr-2 h-4 w-4" />
+                  Quick view
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem asChild>
                 <Link href={`/customers/${customer.id}`} className="w-full">
                   View profile
                 </Link>

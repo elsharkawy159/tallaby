@@ -1,12 +1,13 @@
 import ProductSection from "@/components/home/ProductSection";
-import CategoryGrid from "@/components/home/category/category-grid";
-import BestSellersInCategory from "@/components/home/best-sellers-in-category";
-import EventBanner from "@/components/home/event-banner";
-import ShopByBrand from "@/components/home/shop-by-brand";
-import FeaturedCollection from "@/components/home/featured-collection";
+// import CategoryGrid from "@/components/home/category/category-grid";
+// import BestSellersInCategory from "@/components/home/best-sellers-in-category";
+// import EventBanner from "@/components/home/event-banner";
+// import ShopByBrand from "@/components/home/shop-by-brand";
+// import FeaturedCollection from "@/components/home/featured-collection";
 import Hero from "@/components/home/hero/hero";
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { ProductsGrid } from "@/components/home";
 
 export const metadata: Metadata = {
   title: "Home | Multi-Vendor E-commerce",
@@ -27,13 +28,22 @@ const HomePage = () => {
     <div className="min-h-screen">
       <Hero />
 
+
+      <ProductsGrid
+        title="Featured Products"
+        filters={{
+          sortBy: "newest",
+          limit: 10,
+        }}
+      />
+
+
       {/* <CategoryCarousel
         title="Browse Categories"
         limit={8}
         className="bg-gray-50"
       /> */}
 
-      <Suspense fallback={<div>Loading...</div>}>
         <ProductSection
           title="🔥 Offers"
           description="What Everyone's Talking About"
@@ -43,9 +53,8 @@ const HomePage = () => {
             sortBy: "popular",
           }}
         />
-      </Suspense>
 
-      <EventBanner
+      {/* <EventBanner
         title="Fashion Week Sale"
         subtitle="Up to 50% off"
         description="Discover the latest trends in fashion with incredible discounts on clothing, accessories, and more."
@@ -54,7 +63,7 @@ const HomePage = () => {
         ctaText="Shop Fashion"
         ctaLink="/products?category=fashion"
         backgroundColor="bg-gradient-to-r from-primary to-primary/80"
-      />
+      /> */}
 
       {/* <Suspense fallback={<div>Loading...</div>}>
         <CategoryGrid
@@ -99,7 +108,7 @@ const HomePage = () => {
         showViewMore={true}
       /> */}
 
-      <Suspense fallback={<div>Loading...</div>}>
+      {/* <Suspense fallback={<div>Loading...</div>}>
         <ProductSection
           title="Trending Now"
           filters={{
@@ -107,9 +116,9 @@ const HomePage = () => {
             limit: 10,
           }}
         />
-      </Suspense>
+      </Suspense> */}
 
-      <EventBanner
+      {/* <EventBanner
         title="Back to School"
         subtitle="Everything you need"
         description="Get ready for the new school year with our comprehensive back-to-school collection."
@@ -118,9 +127,9 @@ const HomePage = () => {
         ctaText="Shop Now"
         ctaLink="/products?category=back-to-school"
         backgroundColor="bg-gradient-to-r from-blue-500 to-indigo-600"
-      />
+      /> */}
 
-      <Suspense fallback={<div>Loading...</div>}>
+      {/* <Suspense fallback={<div>Loading...</div>}>
         <ProductSection
           title="New Arrivals"
           filters={{
@@ -128,11 +137,13 @@ const HomePage = () => {
             limit: 10,
           }}
         />
-      </Suspense>
+      </Suspense> */}
 
       {/* <FeaturesSection />
 
       <VendorRecruitment /> */}
+
+
     </div>
   );
 };

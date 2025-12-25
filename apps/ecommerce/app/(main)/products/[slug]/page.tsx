@@ -89,34 +89,39 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   const product = productResult.data;
 
+  // Type assertion needed because category might not be included in query
+  const productWithCategory: Product = {
+    ...product,
+    category: (product as any).category || null,
+  };
+
   return (
     <main className="min-h-screen">
-      <ProductStructuredData product={product} />
+      <ProductStructuredData product={productWithCategory} />
       <section className="bg-white">
         <DynamicBreadcrumb />
       </section>
 
-      <section className="bg-white py-6 lg:py-10">
+      <section className="bg-white py-5 pb-10">
         <div className="container">
-          <div className="grid grid-cols-1 lg:grid-cols-12 md:gap-8 gap-5">
-            {/* Product images + hero info */}
-            <ProductHero product={product} />
-            <ProductDetails product={product} />
+          <div className="grid grid-cols-1 lg:grid-cols-2 md:gap-8 gap-5">
+            {/* Product images on left */}
+            <ProductHero product={productWithCategory} />
+            {/* Product details on right */}
+            <ProductDetails product={productWithCategory} />
           </div>
         </div>
       </section>
 
       <section>
-        {/* <Suspense fallback={<ProductTabsSkeleton />}> */}
-        <ProductTabs product={product} />
-        {/* </Suspense> */}
+          <ProductTabs product={productWithCategory} />
       </section>
 
-      {Array.isArray(product.relatedProducts) &&
-        product.relatedProducts.length > 0 && (
+      {Array.isArray(productWithCategory.relatedProducts) &&
+        productWithCategory.relatedProducts.length > 0 && (
           <section>
             <Suspense fallback={<SimilarProductsSkeleton />}>
-              <SimilarProducts products={product.relatedProducts} />
+              <SimilarProducts products={productWithCategory.relatedProducts} />
             </Suspense>
           </section>
         )}

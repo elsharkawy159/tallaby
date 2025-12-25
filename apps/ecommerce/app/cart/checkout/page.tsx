@@ -51,9 +51,7 @@ export default async function Checkout() {
       <main className="flex-1 container pb-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           <div className="lg:col-span-2 order-2 lg:order-1">
-            <Suspense fallback={<CheckoutSkeleton />}>
               <CheckoutData checkoutData={result.data as any} />
-            </Suspense>
           </div>
 
           <div className="lg:col-span-1 order-1 lg:order-2 space-y-6">

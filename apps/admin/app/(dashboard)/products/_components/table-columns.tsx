@@ -1,7 +1,7 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, Star } from "lucide-react";
+import { MoreHorizontal, Star, CheckCircle2 } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
 import { Checkbox } from "@workspace/ui/components/checkbox";
 import { Badge } from "@workspace/ui/components/badge";
@@ -20,17 +20,33 @@ interface Product {
   id: string;
   title: string;
   slug: string;
-  basePrice: number;
-  averageRating: number;
-  reviewCount: number;
-  brand: string;
-  mainCategory: string;
-  status: "active" | "inactive";
-  inventory: number;
+  description: string | null;
+  sku: string;
+  isActive: boolean;
+  averageRating: number | null;
+  reviewCount: number | null;
+  quantity: string | number;
+  price: any;
   createdAt: string;
+  updatedAt: string;
+  brand: {
+    id: string;
+    name: string;
+  } | null;
+  category: {
+    id: string;
+    name: string;
+  } | null;
+  seller: {
+    id: string;
+    businessName: string | null;
+    displayName: string | null;
+  } | null;
 }
 
-export function getProductsColumns(): ColumnDef<Product>[] {
+export function getProductsColumns(
+  onApprove?: (productId: string) => void
+): ColumnDef<Product>[] {
   return [
     {
       id: "select",
@@ -60,7 +76,9 @@ export function getProductsColumns(): ColumnDef<Product>[] {
       enableSorting: false,
       enableHiding: true,
       cell: ({ row }) => (
-        <div className="text-xs text-gray-500">{row.getValue("id")}</div>
+        <div className="text-xs text-gray-500 max-w-10 truncate">
+          {row.getValue("id")}
+        </div>
       ),
     },
     {
@@ -73,22 +91,37 @@ export function getProductsColumns(): ColumnDef<Product>[] {
           <div className="flex flex-col">
             <Link
               href={`/products/${row.original.id}`}
-              className="font-medium hover:underline"
+              className="font-medium hover:underline max-w-50 truncate"
+              title={row.original.title}
             >
               {row.getValue("title")}
             </Link>
-            <div className="text-xs text-gray-500">{row.original.slug}</div>
+            <div
+              className="text-xs text-gray-500 max-w-50 truncate"
+              title={row.original.slug}
+            >
+              {row.original.slug}
+            </div>
           </div>
         );
       },
     },
     {
-      accessorKey: "basePrice",
+      accessorKey: "price",
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Price" />
       ),
       cell: ({ row }) => {
-        const amount = parseFloat(row.getValue("basePrice"));
+        const price = row.getValue("price") as any;
+        let amount = 0;
+
+        if (typeof price === "object" && price !== null) {
+          // Handle JSONB price object
+          amount = parseFloat(price.base || price.amount || price.value || "0");
+        } else if (typeof price === "string" || typeof price === "number") {
+          amount = parseFloat(String(price));
+        }
+
         const formatted = new Intl.NumberFormat("en-US", {
           style: "currency",
           currency: "USD",
@@ -102,12 +135,32 @@ export function getProductsColumns(): ColumnDef<Product>[] {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Brand" />
       ),
+      cell: ({ row }) => {
+        const brand = row.original.brand;
+        return <div>{brand?.name || "—"}</div>;
+      },
+      filterFn: (row, id, value) => {
+        const brand = row.original.brand;
+        return brand?.name === value;
+      },
     },
     {
-      accessorKey: "mainCategory",
+      accessorKey: "category",
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Category" />
       ),
+      cell: ({ row }) => {
+        const category = row.original.category;
+        return (
+          <div className="max-w-40 truncate" title={category?.name || "—"}>
+            {category?.name || "—"}
+          </div>
+        );
+      },
+      filterFn: (row, id, value) => {
+        const category = row.original.category;
+        return category?.name === value;
+      },
     },
     {
       accessorKey: "averageRating",
@@ -115,25 +168,31 @@ export function getProductsColumns(): ColumnDef<Product>[] {
         <DataTableColumnHeader column={column} title="Rating" />
       ),
       cell: ({ row }) => {
-        const rating = parseFloat(row.getValue("averageRating"));
+        const rating = row.original.averageRating;
+        const reviewCount = row.original.reviewCount || 0;
+
+        if (!rating) {
+          return <div className="text-gray-400 text-sm">-</div>;
+        }
+
         return (
           <div className="flex items-center">
-            <Star className="h-4 w-4 mr-1 text-yellow-500" />
+            <Star className="h-4 w-4 mr-1 text-yellow-500 fill-yellow-500" />
             <span>{rating.toFixed(1)}</span>
-            <span className="text-gray-500 text-xs ml-1">
-              ({row.original.reviewCount})
-            </span>
+            <span className="text-gray-500 text-xs ml-1">({reviewCount})</span>
           </div>
         );
       },
     },
     {
-      accessorKey: "inventory",
+      accessorKey: "quantity",
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Inventory" />
       ),
       cell: ({ row }) => {
-        const inventory = parseInt(row.getValue("inventory"));
+        const quantity = row.original.quantity;
+        const inventory =
+          typeof quantity === "string" ? parseFloat(quantity) : quantity;
 
         let color = "text-green-600";
         if (inventory === 0) {
@@ -146,20 +205,22 @@ export function getProductsColumns(): ColumnDef<Product>[] {
       },
     },
     {
-      accessorKey: "status",
+      accessorKey: "isActive",
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Status" />
       ),
       cell: ({ row }) => {
-        const status = row.getValue("status") as string;
+        const isActive = row.original.isActive;
 
         return (
-          <Badge
-            className={status === "active" ? "bg-green-700" : "bg-red-600"}
-          >
-            {status === "active" ? "Active" : "Inactive"}
+          <Badge className={isActive ? "bg-green-700" : "bg-red-600"}>
+            {isActive ? "Active" : "Inactive"}
           </Badge>
         );
+      },
+      filterFn: (row, id, value) => {
+        const isActive = row.original.isActive;
+        return String(isActive) === value;
       },
     },
     {
@@ -180,36 +241,53 @@ export function getProductsColumns(): ColumnDef<Product>[] {
       id: "actions",
       cell: ({ row }) => {
         const product = row.original;
+        const isActive = product.isActive;
 
         return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
+          <div className="flex items-center gap-2">
+            {!isActive && onApprove && (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => onApprove(product.id)}
+                className="gap-1 bg-green-600 hover:bg-green-700"
+              >
+                <CheckCircle2 className="h-3 w-3" />
+                Approve
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem>
-                <Link href={`/products/${product.id}`} className="w-full">
-                  View details
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Link href={`/products/${product.id}/edit`} className="w-full">
-                  Edit product
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>View variants</DropdownMenuItem>
-              <DropdownMenuItem>Manage inventory</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-600">
-                Delete product
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            )}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <span className="sr-only">Open menu</span>
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuItem asChild>
+                  <Link href={`/products/${product.id}`} className="w-full">
+                    View details
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link
+                    href={`/products/${product.id}/edit`}
+                    className="w-full"
+                  >
+                    Edit product
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>View variants</DropdownMenuItem>
+                <DropdownMenuItem>Manage inventory</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="text-red-600">
+                  Delete product
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         );
       },
     },

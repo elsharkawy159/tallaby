@@ -3,28 +3,38 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/providers/auth-provider";
 import { getOrders } from "@/actions/order";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/card";
 import { Button } from "@workspace/ui/components/button";
-import { Badge } from "@workspace/ui/components/badge";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import {
-  Package,
-  TruckIcon,
-  CheckCircle,
-  XCircle,
-  Clock,
-  Eye,
-  ShoppingBag,
-} from "lucide-react";
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@workspace/ui/components/accordion";
+import { CheckCircle, ShoppingBag, MoreVertical } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
+import { getPublicUrl } from "@workspace/ui/lib/utils";
+import { formatPrice } from "@workspace/lib";
+import { useLocale } from "next-intl";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@workspace/ui/components/dropdown-menu";
+
 // Format date utility
 const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+};
+
+const formatFullDate = (dateString: string) => {
   const date = new Date(dateString);
   return date.toLocaleDateString("en-US", {
     year: "numeric",
@@ -41,76 +51,52 @@ interface Order {
   totalAmount: string;
   currency: string;
   createdAt: string;
+  deliveredAt?: string | null;
   orderItems: Array<{
     id: string;
     productName: string;
     quantity: number;
     price: string;
+    deliveredAt?: string | null;
     product: {
       title: string;
       slug: string;
       images: string[] | null;
+      description: string | null;
     };
   }>;
 }
 
-const statusConfig = {
-  pending: {
-    label: "Pending",
-    icon: Clock,
-    color:
-      "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
-  },
-  confirmed: {
-    label: "Confirmed",
-    icon: CheckCircle,
-    color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-  },
-  processing: {
-    label: "Processing",
-    icon: Package,
-    color:
-      "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
-  },
-  shipped: {
-    label: "Shipped",
-    icon: TruckIcon,
-    color:
-      "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200",
-  },
-  delivered: {
-    label: "Delivered",
-    icon: CheckCircle,
-    color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-  },
-  cancelled: {
-    label: "Cancelled",
-    icon: XCircle,
-    color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-  },
-};
-
 function OrdersLoading() {
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-6 w-48" />
-          <Skeleton className="h-4 w-64" />
-        </CardHeader>
-      </Card>
-      {Array.from({ length: 3 }).map((_, i) => (
-        <Skeleton key={i} className="h-48 w-full" />
-      ))}
+    <div className="bg-white dark:bg-gray-900">
+      <div className="py-16 sm:py-24">
+        <div className="mx-auto max-w-7xl sm:px-2 lg:px-8">
+          <div className="mx-auto max-w-2xl px-4 lg:max-w-4xl lg:px-0">
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="mt-2 h-4 w-96" />
+          </div>
+        </div>
+
+        <div className="mt-16">
+          <div className="mx-auto max-w-7xl sm:px-2 lg:px-8">
+            <div className="mx-auto max-w-2xl space-y-8 sm:px-4 lg:max-w-4xl lg:px-0">
+              {Array.from({ length: 2 }).map((_, i) => (
+                <Skeleton key={i} className="h-64 w-full rounded-lg" />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
 
 export default function OrdersPage() {
   const { user } = useAuth();
+  const locale = useLocale();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedStatus, setSelectedStatus] = useState<string>("all");
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -118,9 +104,7 @@ export default function OrdersPage() {
 
       setIsLoading(true);
       try {
-        const result = await getOrders({
-          status: selectedStatus === "all" ? undefined : selectedStatus,
-        });
+        const result = await getOrders();
 
         if (result.success && result.data) {
           setOrders(result.data as Order[]);
@@ -133,186 +117,241 @@ export default function OrdersPage() {
     };
 
     fetchOrders();
-  }, [user, selectedStatus]);
+  }, [user]);
 
   if (isLoading) {
     return <OrdersLoading />;
   }
 
-  const getStatusIcon = (status: string) => {
-    const config =
-      statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
-    const Icon = config.icon;
-    return <Icon className="h-4 w-4" />;
-  };
-
-  const getStatusColor = (status: string) => {
-    const config =
-      statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
-    return config.color;
-  };
-
-  const getStatusLabel = (status: string) => {
-    const config = statusConfig[status as keyof typeof statusConfig] || {
-      label: status,
-    };
-    return config.label;
+  const getDeliveryDate = (order: Order, orderItem: Order["orderItems"][0]) => {
+    return orderItem.deliveredAt || order.deliveredAt || null;
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <Card>
-        <CardHeader>
-          <CardTitle>My Orders</CardTitle>
-          <CardDescription>Track and manage your orders</CardDescription>
-        </CardHeader>
-      </Card>
+    <div>
+      <h2 className="sr-only">Recent orders</h2>
+      <div>
+        <div className="space-y-4 sm:px-4 lg:px-0">
+          {orders.length > 0 ? (
+            <Accordion
+              type="single"
+              collapsible
+              defaultValue={orders[0]?.id}
+              className="space-y-4"
+            >
+              {orders.map((order) => (
+                <AccordionItem
+                  key={order.id}
+                  value={order.id}
+                  className="border-t border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg sm:border"
+                >
+                  <h3 className="sr-only">
+                    Order placed on{" "}
+                    <time dateTime={order.createdAt}>
+                      {formatDate(order.createdAt)}
+                    </time>
+                  </h3>
 
-      {/* Filter Tabs */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex flex-wrap gap-2">
-            {[
-              { value: "all", label: "All Orders" },
-              { value: "pending", label: "Pending" },
-              { value: "processing", label: "Processing" },
-              { value: "shipped", label: "Shipped" },
-              { value: "delivered", label: "Delivered" },
-              { value: "cancelled", label: "Cancelled" },
-            ].map((filter) => (
-              <Button
-                key={filter.value}
-                variant={
-                  selectedStatus === filter.value ? "default" : "outline"
-                }
-                size="sm"
-                onClick={() => setSelectedStatus(filter.value)}
-              >
-                {filter.label}
-              </Button>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+                  {/* Order Header - Accordion Trigger */}
+                  <AccordionTrigger className="hover:no-underline bg-transparent hover:bg-transparent px-0 py-0 [&>svg]:ml-auto items-center pr-6">
+                    <div className="flex items-center w-full p-4 sm:grid sm:grid-cols-4 sm:gap-x-6 sm:p-6">
+                      <dl className="grid flex-1 grid-cols-2 gap-x-6 text-sm sm:col-span-3 sm:grid-cols-3 lg:col-span-2">
+                        <div>
+                          <dt className="font-medium text-gray-900 dark:text-gray-100">
+                            Order number
+                          </dt>
+                          <dd className="mt-1 text-gray-500 dark:text-gray-400">
+                            {order.orderNumber}
+                          </dd>
+                        </div>
+                        <div className="hidden sm:block">
+                          <dt className="font-medium text-gray-900 dark:text-gray-100">
+                            Date placed
+                          </dt>
+                          <dd className="mt-1 text-gray-500 dark:text-gray-400">
+                            <time dateTime={order.createdAt}>
+                              {formatDate(order.createdAt)}
+                            </time>
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="font-medium text-gray-900 dark:text-gray-100">
+                            Total amount
+                          </dt>
+                          <dd
+                            className="mt-1 font-medium text-gray-900 dark:text-gray-100"
+                            dangerouslySetInnerHTML={{
+                              __html: formatPrice(
+                                Number(order.totalAmount),
+                                locale || "en-US"
+                              ),
+                            }}
+                          />
+                        </div>
+                      </dl>
 
-      {/* Orders List */}
-      {orders.length > 0 ? (
-        <div className="space-y-4">
-          {orders.map((order) => (
-            <Card key={order.id}>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold">
-                        Order #{order.orderNumber}
-                      </h3>
-                      <Badge
-                        variant="secondary"
-                        className={getStatusColor(order.status)}
-                      >
-                        {getStatusIcon(order.status)}
-                        <span className="ml-1">
-                          {getStatusLabel(order.status)}
-                        </span>
-                      </Badge>
+                      {/* Mobile Menu */}
+                      <div className="flex justify-end lg:hidden">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="relative flex items-center text-gray-400 hover:text-gray-500"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <span className="absolute -inset-2" />
+                              <span className="sr-only">
+                                Options for order {order.orderNumber}
+                              </span>
+                              <MoreVertical className="h-6 w-6" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem asChild>
+                              <Link href={`/orders/${order.id}/confirmation`}>
+                                View
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                              <Link href={`/orders/${order.id}/confirmation`}>
+                                Invoice
+                              </Link>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+
+                      {/* Desktop Buttons */}
+                      <div className="hidden lg:col-span-2 lg:flex lg:items-center lg:justify-end lg:space-x-4">
+                        <Button
+                          size="sm"
+                          asChild
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Link href={`/orders/${order.id}/confirmation`}>
+                            View Order
+                            <span className="sr-only">{order.orderNumber}</span>
+                          </Link>
+                        </Button>
+                      </div>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      Placed on {formatDate(order.createdAt)}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-lg font-semibold">
-                      {order.currency} {Number(order.totalAmount).toFixed(2)}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {order.orderItems.length} item(s)
-                    </p>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {/* Order Items */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {order.orderItems.slice(0, 3).map((item) => (
-                      <div
-                        key={item.id}
-                        className="flex items-center gap-3 p-3 rounded-lg border"
-                      >
-                        <div className="h-16 w-16 flex-shrink-0 rounded bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                          {item.product?.images?.[0] ? (
-                            <img
-                              src={item.product.images[0]}
-                              alt={item.productName}
-                              className="h-full w-full object-cover rounded"
-                            />
-                          ) : (
-                            <Package className="h-8 w-8 text-gray-400" />
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">
-                            {item.productName}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            Qty: {item.quantity}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                    {order.orderItems.length > 3 && (
-                      <div className="flex items-center justify-center p-3 rounded-lg border bg-muted">
-                        <p className="text-sm text-muted-foreground">
-                          +{order.orderItems.length - 3} more
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                  </AccordionTrigger>
 
-                  {/* Actions */}
-                  <div className="flex gap-2 justify-end">
-                    <Button variant="outline" size="sm" asChild>
-                      <Link href={`/profile/orders/${order.id}`}>
-                        <Eye className="h-4 w-4 mr-2" />
-                        View Details
-                      </Link>
-                    </Button>
-                    {order.status === "delivered" && (
-                      <Button variant="outline" size="sm">
-                        Buy Again
-                      </Button>
-                    )}
-                  </div>
+                  {/* Products - Accordion Content */}
+                  <AccordionContent>
+                    <h4 className="sr-only">Items</h4>
+                    <ul
+                      role="list"
+                      className="divide-y divide-gray-200 dark:divide-gray-700"
+                    >
+                      {order.orderItems.map((item) => {
+                        const deliveryDate = getDeliveryDate(order, item);
+                        return (
+                          <li key={item.id} className="p-4 px-5!">
+                            <div className="flex items-center sm:items-start">
+                              <div className="h-10 w-10 shrink-0 overflow-hidden sm:h-16 sm:w-16">
+                                {item.product?.images?.[0] ? (
+                                  <Image
+                                    src={getPublicUrl(
+                                      item.product.images[0],
+                                      "products"
+                                    )}
+                                    width={100}
+                                    height={100}
+                                    alt={item.productName}
+                                    className="h-full w-full object-contain"
+                                  />
+                                ) : (
+                                  <div className="h-full w-full flex items-center justify-center">
+                                    <ShoppingBag className="h-8 w-8 text-gray-400" />
+                                  </div>
+                                )}
+                              </div>
+                              <div className="ml-6 flex-1 text-sm">
+                                <div className="font-medium text-gray-900 dark:text-gray-100 sm:flex text-sm sm:justify-between">
+                                  <h5>{item.productName}</h5>
+                                  <p
+                                    className="mt-2 sm:mt-0"
+                                    dangerouslySetInnerHTML={{
+                                      __html: formatPrice(
+                                        Number(item.price),
+                                        locale || "en-US"
+                                      ),
+                                    }}
+                                  />
+                                </div>
+                                {item.product.description && (
+                                  <p className="mt-1 hidden text-gray-500 dark:text-gray-400 sm:block text-xs line-clamp-1!">
+                                    {item.product.description?.slice(0, 100)}...
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="mt-6 sm:flex sm:justify-between">
+                              {deliveryDate && (
+                                <div className="flex items-center">
+                                  <CheckCircle className="h-5 w-5 text-green-500" />
+                                  <p className="ml-2 text-sm font-medium text-gray-500 dark:text-gray-400">
+                                    Delivered on{" "}
+                                    <time dateTime={deliveryDate}>
+                                      {formatFullDate(deliveryDate)}
+                                    </time>
+                                  </p>
+                                </div>
+                              )}
+
+                              <div className="mt-6 flex items-center divide-x divide-gray-200 dark:divide-gray-700 border-t border-gray-200 dark:border-gray-700 pt-4 text-sm font-medium sm:mt-0 sm:border-none sm:pt-0">
+                                <div className="flex flex-1 justify-center pr-4">
+                                  <Link
+                                    href={`/products/${item.product.slug}`}
+                                    className="whitespace-nowrap text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300"
+                                  >
+                                    View product
+                                  </Link>
+                                </div>
+                                <div className="flex flex-1 justify-center pl-4">
+                                  <Link
+                                    href={`/products/${item.product.slug}`}
+                                    className="whitespace-nowrap text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300"
+                                  >
+                                    Buy again
+                                  </Link>
+                                </div>
+                              </div>
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          ) : (
+            <div className="border-t border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg sm:border p-12">
+              <div className="flex flex-col items-center justify-center text-center">
+                <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <ShoppingBag className="h-8 w-8 text-gray-400" />
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <div className="text-center space-y-4">
-              <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto">
-                <ShoppingBag className="h-8 w-8 text-gray-400" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold">No orders yet</h3>
-                <p className="text-muted-foreground">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                  No orders yet
+                </h3>
+                <p className="text-gray-500 dark:text-gray-400 mb-6">
                   Start shopping to see your orders here
                 </p>
+                <Button asChild>
+                  <Link href="/products">
+                    <ShoppingBag className="h-4 w-4 mr-2" />
+                    Start Shopping
+                  </Link>
+                </Button>
               </div>
-              <Button asChild>
-                <Link href="/products">
-                  <ShoppingBag className="h-4 w-4 mr-2" />
-                  Start Shopping
-                </Link>
-              </Button>
             </div>
-          </CardContent>
-        </Card>
-      )}
+          )}
+        </div>
+      </div>
     </div>
   );
 }

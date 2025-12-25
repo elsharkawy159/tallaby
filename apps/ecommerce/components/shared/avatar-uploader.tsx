@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useTransition } from "react";
-import { Camera, Loader2 } from "lucide-react";
+import { Camera, Loader2, Pen } from "lucide-react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -92,17 +92,23 @@ export function AvatarUploader({
 
   return (
     <div className={cn("relative group cursor-pointer", className)}>
-      <div onClick={handleAvatarClick}>
+      <div onClick={handleAvatarClick} className="relative">
         <UserAvatar user={user} size={size} />
         {showEditIcon && (
           <div className="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
-            {isPending ? (
-              <Loader2 className="h-6 w-6 text-white animate-spin" />
-            ) : (
-              <Camera className="h-6 w-6 text-white" />
-            )}
+            <Camera className="h-6 w-6 text-white" />
           </div>
         )}
+        {/* Small pen icon in bottom right to indicate editability */}
+        <div className="absolute -bottom-0.5 -right-0.5 z-20 pointer-events-none">
+          <span className="flex size-5.5 items-center justify-center bg-primary rounded-full shadow-sm">
+            {isPending ? (
+              <Loader2 className="size-2.5 text-white animate-spin" />
+            ) : (
+              <Pen className=" size-2.5 text-white" />
+            )}
+          </span>
+        </div>
       </div>
 
       <input

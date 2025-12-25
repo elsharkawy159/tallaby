@@ -40,14 +40,14 @@ export const ProductImages = ({ images, productName }: ProductImagesProps) => {
       </div>
 
       {/* Desktop Gallery */}
-      <div className="hidden lg:sticky lg:top-5 lg:flex space-y-4 max-w-2xl w-full gap-2.5">
+      <div className="hidden lg:sticky lg:top-5 lg:flex space-y-4 w-full gap-2.5">
         <div className="flex flex-col gap-1.5 w-14">
           {images.map((image, index) => (
             <button
               key={index}
               onClick={() => setSelectedImage(image)}
-              onMouseEnter={() => setHoveredImage(image)}
-              onMouseLeave={() => setHoveredImage(null)}
+              onMouseEnter={() => setSelectedImage(image)}
+              // onMouseLeave={() => setHoveredImage(null)}
               className={`aspect-square relative bg-white p-1 rounded overflow-hidden border transition-all duration-200 ${
                 activeImage === image
                   ? "border-primary"
@@ -79,19 +79,20 @@ export const ProductImages = ({ images, productName }: ProductImagesProps) => {
               className="w-full h-full object-contain bg-white"
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"
-              priority
+              priority={selectedImage == images[0]}
+              fetchPriority={selectedImage == images[0] ? "high" : "low"}
             />
           </div>
 
           {/* Magnified view - only on larger screens */}
           {showZoom && (
-            <div className="absolute left-full top-0 ml-2 w-80 h-80 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden pointer-events-none z-10 hidden xl:block">
+            <div className="absolute left-full top-0 ml-2 w-[30vw] h-auto aspect-square bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden pointer-events-none z-10 hidden xl:block">
               <div
                 className="w-full h-full bg-cover bg-no-repeat"
                 style={{
                   backgroundImage: `url(${activeImage ? getPublicUrl(activeImage, "products") : "/png product.png"})`,
                   backgroundPosition: `${zoomPosition.x}% ${zoomPosition.y}%`,
-                  backgroundSize: "180%",
+                  backgroundSize: "300%",
                 }}
               />
             </div>

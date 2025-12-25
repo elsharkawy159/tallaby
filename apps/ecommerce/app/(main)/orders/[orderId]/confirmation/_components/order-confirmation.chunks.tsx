@@ -422,16 +422,9 @@ export function OrderConfirmationContent({
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
         <Button asChild variant="default" size="lg">
-          <Link href="/profile">
+          <Link href="/profile/orders">
             <Package className="w-4 h-4 mr-2" />
             View All Orders
-          </Link>
-        </Button>
-
-        <Button asChild variant="outline" size="lg">
-          <Link href={`/orders/${order.id}/track`}>
-            <Truck className="w-4 h-4 mr-2" />
-            Track Order
           </Link>
         </Button>
 

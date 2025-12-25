@@ -1,44 +1,40 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useCart } from "@/providers/cart-provider";
-import { Button } from "@workspace/ui/components/button";
-import { Badge } from "@workspace/ui/components/badge";
-import { ScrollArea } from "@workspace/ui/components/scroll-area";
-import { Trash2, ShoppingCart, Plus, Minus, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import Link from "next/link";
 import Image from "next/image";
+import { Button } from "@workspace/ui/components/button";
+import { Separator } from "@workspace/ui/components/separator";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetFooter,
+} from "@workspace/ui/components/sheet";
+import { ScrollArea } from "@workspace/ui/components/scroll-area";
+import { Minus, Plus, Trash2, Loader2, ShoppingBag } from "lucide-react";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
-import { usePathname } from "next/navigation";
+import { useCart } from "@/providers/cart-provider";
 import { useLocale } from "next-intl";
 import { formatPrice } from "@workspace/lib";
-import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 interface CartSheetProps {
-  className?: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-export default function CartSheet({ className }: CartSheetProps) {
+export function CartSheet({ open, onOpenChange }: CartSheetProps) {
   const {
-    cartData,
+    cartItems,
     itemCount,
     subtotal,
-    cartItems,
     updateQuantity,
     removeFromCart,
     isItemLoading,
+    isProductLoading,
   } = useCart();
-
-  const [isVisible, setIsVisible] = useState(false);
-  const pathname = usePathname();
   const locale = useLocale();
-
-  // Show cart sheet when there are items
-  useEffect(() => {
-    setIsVisible(cartItems.length > 0);
-  }, [cartItems.length]);
-
-  if (!isVisible) return null;
 
   const handleQuantityChange = async (itemId: string, newQuantity: number) => {
     if (newQuantity <= 0) {
@@ -49,146 +45,188 @@ export default function CartSheet({ className }: CartSheetProps) {
   };
 
   return (
-    <>
-      {pathname == "/products" && (
-        <div
-          className={cn(
-            "fixed right-0 top-0 h-full w-[130px] bg-background border-l border-border shadow-lg z-50 md:flex hidden flex-col",
-            className
-          )}
-        >
-          {/* Header */}
-          <div className="p-3 border-b border-border bg-muted/50">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1">
-                <ShoppingCart className="h-4 w-4" />
-                <span className="text-xs font-medium">Cart</span>
-              </div>
-              <Badge variant="secondary" className="text-xs h-5 px-1">
-                {itemCount}
-              </Badge>
-            </div>
-          </div>
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="right" className="flex flex-col w-full sm:max-w-lg">
+        <SheetHeader>
+          <SheetTitle className="flex items-center gap-2">
+            <ShoppingBag className="size-5" />
+            Shopping Cart ({itemCount} {itemCount === 1 ? "item" : "items"})
+          </SheetTitle>
+        </SheetHeader>
 
-          {/* Cart Items */}
-          <ScrollArea className="flex-1 h-96">
-            <div className="p-2 space-y-2">
-              {cartItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="bg-card border border-border rounded-lg p-2 space-y-2"
-                >
-                  {/* Product Image */}
-                  <div className="aspect-square bg-muted rounded-md overflow-hidden">
-                    {item.product.images && item.product.images[0] ? (
-                      <Image
-                        src={getPublicUrl(item.product.images[0], "products")}
-                        alt={item.product.title}
-                        width={120}
-                        height={120}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
-                        No Image
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Product Info */}
-                  <div className="space-y-1">
-                    <h4
-                      className="text-xs font-medium leading-tight overflow-hidden"
-                      style={{
-                        display: "-webkit-box",
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: "vertical",
-                      }}
-                      title={item.product.title}
-                    >
-                      {item.product.title}
-                    </h4>
-                    <p
-                      className="text-xs text-muted-foreground"
-                      dangerouslySetInnerHTML={{
-                        __html: formatPrice(
-                          typeof item.price === "string"
-                            ? parseFloat(item.price)
-                            : item.price,
-                          locale
-                        ),
-                      }}
-                    />
-                  </div>
-
-                  {/* Quantity Controls */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1">
-                      {item.quantity === 1 ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 w-6 p-0 text-destructive hover:text-destructive"
-                          onClick={() => removeFromCart(item.id)}
-                          disabled={isItemLoading(item.id)}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      ) : (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-6 w-6 p-0"
-                          onClick={() =>
-                            handleQuantityChange(item.id, item.quantity - 1)
-                          }
-                          disabled={isItemLoading(item.id)}
-                        >
-                          <Minus className="h-3 w-3" />
-                        </Button>
-                      )}
-                      <span className="text-xs font-medium min-w-[20px] text-center">
-                        {isItemLoading(item.id) ? (
-                          <Loader2 className="size-3 animate-spin mx-auto" />
-                        ) : (
-                          item.quantity
-                        )}
-                      </span>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-6 w-6 p-0"
-                        onClick={() =>
-                          handleQuantityChange(item.id, item.quantity + 1)
-                        }
-                        disabled={isItemLoading(item.id)}
-                      >
-                        <Plus className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </ScrollArea>
-
-          {/* Footer */}
-          <div className="border-t border-border bg-muted/50 p-3 space-y-2">
-            <div className="flex items-center flex-col justify-between text-sm">
-              <span className="font-medium">Total</span>
-              <span
-                className="font-bold"
-                dangerouslySetInnerHTML={{
-                  __html: formatPrice(subtotal, locale),
-                }}
-              />
-            </div>
-            <Button size="sm" className="w-full text-xs h-8">
-              <Link href="/cart">View Cart</Link>
+        {cartItems.length === 0 ? (
+          <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
+            <ShoppingBag className="size-16 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Your cart is empty</h3>
+            <p className="text-sm text-muted-foreground mb-6">
+              Start adding items to your cart
+            </p>
+            <Button asChild>
+              <Link href="/products" onClick={() => onOpenChange(false)}>
+                Continue Shopping
+              </Link>
             </Button>
           </div>
-        </div>
-      )}
-    </>
+        ) : (
+          <>
+            <ScrollArea className="flex-1 -mx-4 px-4 max-h-[calc(100vh-230px)]">
+              <div className="py-0">
+                {cartItems.map((item, index) => {
+                  const product = item.product;
+                  const unitPrice = Number(item.price);
+                  const lineTotal = unitPrice * item.quantity;
+                  const image = product?.images?.[0]
+                    ? getPublicUrl(product.images[0], "products")
+                    : "/png product.png";
+
+                  return (
+                    <div
+                      key={item.id}
+                      className={cn("flex gap-4 p-4 border-b items-center", index === cartItems.length - 1 && "border-b-0")}
+                    >
+                      <Link
+                        href={`/products/${product.slug}`}
+                        onClick={() => onOpenChange(false)}
+                      >
+                        <Image
+                          src={image}
+                          alt={product.title}
+                          width={100}
+                          height={100}
+                          className="object-contain h-20 w-20"
+                        />
+                      </Link>
+
+                      <div className="flex-1 min-w-0 space-y-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <Link
+                            href={`/products/${product.slug}`}
+                            onClick={() => onOpenChange(false)}
+                            className="flex-1 min-w-0"
+                          >
+                            <h4 className="font-medium text-sm leading-tight line-clamp-2 hover:text-primary transition-colors">
+                              {product.title}
+                            </h4>
+                            {product.brand?.name && (
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {product.brand.name}
+                              </p>
+                            )}
+                          </Link>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive flex-shrink-0"
+                            onClick={() => removeFromCart(item.id)}
+                            disabled={isProductLoading(item.id)}
+                          >
+                            {isProductLoading(item.id) ? (
+                              <Loader2 className="size-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="size-4" />
+                            )}
+                          </Button>
+                        </div>
+
+                        <div className="flex items-center justify-between gap-4">
+                          <div className="flex items-center border rounded-md">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 rounded-r-none"
+                              onClick={() =>
+                                handleQuantityChange(item.id, item.quantity - 1)
+                              }
+                              disabled={
+                                item.quantity <= 1 || isItemLoading(item.id)
+                              }
+                            >
+                              <Minus className="size-3" />
+                            </Button>
+                            <span className="px-3 py-1 min-w-[2.5rem] text-center text-sm font-medium">
+                              {item.quantity}
+                            </span>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 rounded-l-none"
+                              onClick={() =>
+                                handleQuantityChange(item.id, item.quantity + 1)
+                              }
+                              disabled={
+                                item.quantity >= Number.MAX_SAFE_INTEGER ||
+                                isItemLoading(item.id)
+                              }
+                            >
+                              <Plus className="size-3" />
+                            </Button>
+                          </div>
+
+                          <div className="text-right">
+                            <p
+                              className="text-sm font-semibold"
+                              dangerouslySetInnerHTML={{
+                                __html: formatPrice(lineTotal, locale),
+                              }}
+                            />
+                            {item.quantity > 1 && (
+                              <p
+                                className="text-xs text-muted-foreground"
+                                dangerouslySetInnerHTML={{
+                                  __html: formatPrice(unitPrice, locale),
+                                }}
+                              />
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </ScrollArea>
+
+            <SheetFooter className="flex-col gap-4 sm:flex-row sm:justify-between border-t pt-4 mt-4">
+              <div className="w-full space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Subtotal</span>
+                  <span
+                    className="font-semibold"
+                    dangerouslySetInnerHTML={{
+                      __html: formatPrice(subtotal, locale),
+                    }}
+                  />
+                </div>
+                <Separator />
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold">Total</span>
+                  <span
+                    className="text-lg font-bold text-primary"
+                    dangerouslySetInnerHTML={{
+                      __html: formatPrice(subtotal, locale),
+                    }}
+                  />
+                </div>
+              </div>
+              <div className="w-full space-y-2">
+                <Button asChild className="w-full" size="lg">
+                  <Link
+                    href="/cart/checkout"
+                    onClick={() => onOpenChange(false)}
+                  >
+                    Proceed to Checkout
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="w-full">
+                  <Link href="/cart" onClick={() => onOpenChange(false)}>
+                    View Cart
+                  </Link>
+                </Button>
+              </div>
+            </SheetFooter>
+          </>
+        )}
+      </SheetContent>
+    </Sheet>
   );
 }

@@ -15,7 +15,7 @@ const ProductCard = (product: ProductCardProps) => {
   const locale = useLocale();
 
   return (
-    <Card className="group bg-white shadow-sm h-fit border-0 p-0 relative w-full md:max-w-[285px] max-w-43 mx-auto overflow-hidden rounded-lg"
+    <Card className="group bg-white shadow-sm border-0 p-0 relative w-full h-full overflow-hidden rounded-lg"
     dir={locale === "ar" ? "rtl" : "ltr"}
     >
       <CardContent className="p-2 md:p-2.5">

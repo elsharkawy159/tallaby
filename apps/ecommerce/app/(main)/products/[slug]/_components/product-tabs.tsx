@@ -11,7 +11,6 @@ import {
   Loader2,
 } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
-import { Badge } from "@workspace/ui/components/badge";
 import type { Product, Review, ProductQuestion } from "./product-page.types";
 import Image from "next/image";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
@@ -28,7 +27,6 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@workspace/ui/components/form";
 import { toast } from "sonner";
@@ -49,7 +47,6 @@ interface ProductTabsProps {
 }
 
 export const ProductTabs = ({ product }: ProductTabsProps) => {
-  const [activeTab, setActiveTab] = useState("reviews");
   const [expandedQuestions, setExpandedQuestions] = useState<Set<string>>(
     new Set()
   );
@@ -66,7 +63,7 @@ export const ProductTabs = ({ product }: ProductTabsProps) => {
     },
   });
 
-  // Determine which tabs should be visible based on available data
+  // Determine which sections have content
   const hasReviews =
     Array.isArray(product.reviews) && product.reviews.length > 0;
   const hasQuestions =
@@ -186,237 +183,48 @@ export const ProductTabs = ({ product }: ProductTabsProps) => {
 
   return (
     <section className="bg-white py-6 lg:py-8">
-      <div className="container">
-        {/* Tab Navigation */}
-        <div className="flex justify-center border-b border-gray-200 mb-6 lg:mb-8 overflow-x-auto">
-          {[
-            {
-              id: "reviews",
-              label: "Reviews",
-              icon: MessageCircle,
-            },
-            {
-              id: "faq",
-              label: "FAQ",
-              icon: HelpCircle,
-            },
-            {
-              id: "gallery",
-              label: "Gallery",
-              icon: ImageIcon,
-            },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-1 lg:gap-2 px-3 lg:px-6 py-2 lg:py-3 font-medium transition-colors text-sm lg:text-base whitespace-nowrap ${
-                  activeTab === tab.id
-                    ? "text-primary border-b-2 border-primary"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                <Icon className="h-4 w-4 lg:h-5 lg:w-5" />
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
+      <div className="container space-y-12 lg:space-y-16">
+        {/* FAQ Section */}
+        <div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+            <div className="space-y-4 lg:space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <h3 className="text-lg lg:text-xl font-bold text-gray-900">
+                  Frequently Asked Questions
+                </h3>
+                <Button variant="outline" size="sm" className="w-fit">
+                  View More
+                </Button>
+              </div>
 
-        {/* Tab Content */}
-        <div className="min-h-[400px]">
-          {/* Reviews Tab */}
-          {activeTab === "reviews" && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-              {/* Reviews List */}
-              <div className="lg:col-span-2 space-y-4 lg:space-y-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <h3 className="text-lg lg:text-xl font-bold text-gray-900">
-                    Customer Reviews
-                  </h3>
-                  {/* <Button variant="outline" size="sm" className="w-fit">
-                    Write a Review
-                  </Button> */}
-                </div>
-
-                {hasReviews ? (
-                  product.reviews!.map((review: Review) => (
-                    <div
-                      key={review.id}
-                      className="border border-gray-200 rounded-lg p-4 lg:p-6"
-                    >
-                      <div className="flex items-start gap-3 lg:gap-4 mb-3 lg:mb-4">
-                        <div className="w-10 h-10 lg:w-12 lg:h-12 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
-                          {review.user?.avatarUrl ? (
-                            <Image
-                              src={getPublicUrl(
-                                review.user.avatarUrl,
-                                "avatars"
-                              )}
-                              alt={review.user.fullName || "User"}
-                              width={48}
-                              height={48}
-                              className="w-full h-full object-cover"
-                            />
+              <div className="space-y-3 lg:space-y-4">
+                {hasQuestions ? (
+                  product.productQuestions!.map((question: ProductQuestion) => {
+                    const bestAnswer = question.productAnswers?.[0];
+                    return (
+                      <div
+                        key={question.id}
+                        className="border border-gray-200 rounded-lg"
+                      >
+                        <button
+                          onClick={() => toggleQuestion(question.id)}
+                          className="w-full px-4 lg:px-6 py-3 lg:py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
+                        >
+                          <span className="font-medium text-gray-900 text-sm lg:text-base">
+                            {question.question}
+                          </span>
+                          {expandedQuestions.has(question.id) ? (
+                            <ChevronUp className="h-4 w-4 lg:h-5 lg:w-5 text-gray-500" />
                           ) : (
-                            <span className="text-base lg:text-lg font-semibold text-gray-600">
-                              {review.user?.fullName
-                                ?.charAt(0)
-                                ?.toUpperCase() || "U"}
-                            </span>
+                            <ChevronDown className="h-4 w-4 lg:h-5 lg:w-5 text-gray-500" />
                           )}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-2">
-                            <span className="font-semibold text-gray-900 text-sm lg:text-base">
-                              {review.user?.fullName || "Anonymous"}
-                            </span>
-                            <span className="text-xs lg:text-sm text-gray-500">
-                              {formatDate(review.createdAt)}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1 mb-2">
-                            {renderStars(review.rating)}
-                          </div>
-                        </div>
-                      </div>
-                      {review.comment && (
-                        <p className="text-gray-700 mb-3 lg:mb-4 text-sm lg:text-base">
-                          {review.comment}
-                        </p>
-                      )}
-                      {review.title && (
-                        <h4 className="font-semibold text-gray-900 mb-2 text-sm lg:text-base">
-                          {review.title}
-                        </h4>
-                      )}
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                        {Array.isArray(review.images) &&
-                          review.images.length > 0 && (
-                            <div className="flex gap-2">
-                              {(review.images as string[])
-                                .slice(0, 3)
-                                .map((image, i) => (
-                                  <div
-                                    key={i}
-                                    className="w-6 h-6 lg:w-8 lg:h-8 rounded-lg border border-gray-200 overflow-hidden"
-                                  >
-                                    <Image
-                                      src={getPublicUrl(image, "products")}
-                                      alt={`Review image ${i + 1}`}
-                                      width={32}
-                                      height={32}
-                                      className="w-full h-full object-cover"
-                                    />
-                                  </div>
-                                ))}
-                            </div>
-                          )}
-                        <Button variant="ghost" size="sm" className="w-fit">
-                          Helpful ({review.helpfulCount || 0})
-                        </Button>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <MessageCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                    <p className="text-sm lg:text-base">
-                      No reviews yet. Be the first to review this product!
-                    </p>
-                  </div>
-                )}
-
-                {/* <div className="text-center">
-                  <Button variant="outline">View More Reviews</Button>
-                </div> */}
-              </div>
-
-              {/* Rating Summary */}
-              <div className="space-y-4 lg:space-y-6">
-                <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
-                  <div className="text-center mb-3 lg:mb-4">
-                    <div className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
-                      {product.averageRating}
-                    </div>
-                    <div className="flex justify-center mb-2">
-                      {renderStars(Math.round(product.averageRating ?? 0))}
-                    </div>
-                    <p className="text-xs lg:text-sm text-gray-600">
-                      Based on {product.reviewCount} ratings
-                    </p>
-                  </div>
-
-                  <div className="space-y-2 lg:space-y-3">
-                    {renderRatingBar(5, ratingDistribution[5])}
-                    {renderRatingBar(4, ratingDistribution[4])}
-                    {renderRatingBar(3, ratingDistribution[3])}
-                    {renderRatingBar(2, ratingDistribution[2])}
-                    {renderRatingBar(1, ratingDistribution[1])}
-                  </div>
-                </div>
-
-                <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
-                  <h4 className="font-semibold text-gray-900 mb-3 lg:mb-4 text-sm lg:text-base">
-                    Leave a Review
-                  </h4>
-                  <p className="text-xs lg:text-sm text-gray-600 mb-3 lg:mb-4">
-                    You can only review products you've purchased. Share your
-                    experience with the product, the vendor, and the delivery.
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    Note: Reviews can be submitted after your order is marked as
-                    delivered.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* FAQ Tab */}
-          {activeTab === "faq" && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-              <div className="space-y-4 lg:space-y-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <h3 className="text-lg lg:text-xl font-bold text-gray-900">
-                    Frequently Asked Questions
-                  </h3>
-                  <Button variant="outline" size="sm" className="w-fit">
-                    View More
-                  </Button>
-                </div>
-
-                <div className="space-y-3 lg:space-y-4">
-                  {hasQuestions ? (
-                    product.productQuestions!.map(
-                      (question: ProductQuestion) => {
-                        const bestAnswer = question.productAnswers?.[0];
-                        return (
-                          <div
-                            key={question.id}
-                            className="border border-gray-200 rounded-lg"
-                          >
-                            <button
-                              onClick={() => toggleQuestion(question.id)}
-                              className="w-full px-4 lg:px-6 py-3 lg:py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
-                            >
-                              <span className="font-medium text-gray-900 text-sm lg:text-base">
-                                {question.question}
-                              </span>
-                              {expandedQuestions.has(question.id) ? (
-                                <ChevronUp className="h-4 w-4 lg:h-5 lg:w-5 text-gray-500" />
-                              ) : (
-                                <ChevronDown className="h-4 w-4 lg:h-5 lg:w-5 text-gray-500" />
-                              )}
-                            </button>
-                            {expandedQuestions.has(question.id) &&
-                              bestAnswer && (
-                                <div className="px-4 lg:px-6 pb-3 lg:pb-4">
-                                  <p className="text-gray-700 text-sm lg:text-base">
-                                    {bestAnswer.answer}
-                                  </p>
-                                  {/* {bestAnswer.isVerified && (
+                        </button>
+                        {expandedQuestions.has(question.id) && bestAnswer && (
+                          <div className="px-4 lg:px-6 pb-3 lg:pb-4">
+                            <p className="text-gray-700 text-sm lg:text-base">
+                              {bestAnswer.answer}
+                            </p>
+                            {/* {bestAnswer.isVerified && (
                                     <Badge
                                       variant="secondary"
                                       className="mt-2 text-xs"
@@ -424,121 +232,261 @@ export const ProductTabs = ({ product }: ProductTabsProps) => {
                                       Verified Answer
                                     </Badge>
                                   )} */}
-                                </div>
-                              )}
                           </div>
-                        );
-                      }
-                    )
-                  ) : (
-                    <div className="text-center py-8 text-gray-500">
-                      <HelpCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                      <p className="text-sm lg:text-base">
-                        No questions yet. Ask a question below!
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-4 lg:space-y-6">
-                <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
-                  <h4 className="font-semibold text-gray-900 mb-3 lg:mb-4 text-sm lg:text-base">
-                    Have a Question?
-                  </h4>
-                  {!user ? (
-                    <div className="space-y-3 lg:space-y-4">
-                      <p className="text-sm lg:text-base text-gray-600">
-                        Please sign in to ask a question about this product.
-                      </p>
-                      <Button
-                        onClick={() => openAuthDialog("signin")}
-                        className="w-full"
-                      >
-                        Sign In to Ask a Question
-                      </Button>
-                    </div>
-                  ) : (
-                    <Form {...form}>
-                      <form
-                        onSubmit={form.handleSubmit(handleSubmitQuestion)}
-                        className="space-y-3 lg:space-y-4"
-                      >
-                        <FormField
-                          control={form.control}
-                          name="question"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Input
-                                  type="text"
-                                  placeholder="Type your question here..."
-                                  disabled={isPending}
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <Button
-                          type="submit"
-                          className="w-full"
-                          disabled={isPending}
-                        >
-                          {isPending && (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          )}
-                          {isPending ? "Submitting..." : "Send Question"}
-                        </Button>
-                      </form>
-                    </Form>
-                  )}
-                </div>
+                        )}
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <HelpCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                    <p className="text-sm lg:text-base">
+                      No questions yet. Ask a question below!
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
-          )}
 
-          {/* Gallery Tab */}
-          {activeTab === "gallery" && (
             <div className="space-y-4 lg:space-y-6">
+              <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+                <h4 className="font-semibold text-gray-900 mb-3 lg:mb-4 text-sm lg:text-base">
+                  Have a Question?
+                </h4>
+                {!user ? (
+                  <div className="space-y-3 lg:space-y-4">
+                    <p className="text-sm lg:text-base text-gray-600">
+                      Please sign in to ask a question about this product.
+                    </p>
+                    <Button
+                      onClick={() => openAuthDialog("signin")}
+                      className="w-full"
+                    >
+                      Sign In to Ask a Question
+                    </Button>
+                  </div>
+                ) : (
+                  <Form {...form}>
+                    <form
+                      onSubmit={form.handleSubmit(handleSubmitQuestion)}
+                      className="space-y-3 lg:space-y-4"
+                    >
+                      <FormField
+                        control={form.control}
+                        name="question"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input
+                                type="text"
+                                placeholder="Type your question here..."
+                                disabled={isPending}
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <Button
+                        type="submit"
+                        className="w-full"
+                        disabled={isPending}
+                      >
+                        {isPending && (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        )}
+                        {isPending ? "Submitting..." : "Send Question"}
+                      </Button>
+                    </form>
+                  </Form>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Reviews Section */}
+        <div className="border-t border-gray-200 pt-8 lg:pt-12">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+            {/* Reviews List */}
+            <div className="lg:col-span-2 space-y-4 lg:space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <h3 className="text-lg lg:text-xl font-bold text-gray-900">
-                  Product Gallery
+                  Customer Reviews
                 </h3>
                 {/* <Button variant="outline" size="sm" className="w-fit">
-                  View More
-                </Button> */}
+                    Write a Review
+                  </Button> */}
               </div>
 
-              {hasImages ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 lg:gap-4">
-                  {(product.images as string[]).map((image, index) => (
-                    <div
-                      key={index}
-                      className="aspect-square bg-gray-200 rounded-lg border border-gray-200 hover:border-primary transition-colors cursor-pointer overflow-hidden"
-                    >
-                      <Image
-                        src={getPublicUrl(image, "products")}
-                        alt={`${product.title} - Image ${index + 1}`}
-                        width={150}
-                        height={150}
-                        className="w-full h-full object-contain bg-white"
-                      />
+              {hasReviews ? (
+                product.reviews!.map((review: Review) => (
+                  <div
+                    key={review.id}
+                    className="border border-gray-200 rounded-lg p-4 lg:p-6"
+                  >
+                    <div className="flex items-start gap-3 lg:gap-4 mb-3 lg:mb-4">
+                      <div className="w-10 h-10 lg:w-12 lg:h-12 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
+                        {review.user?.avatarUrl ? (
+                          <Image
+                            src={getPublicUrl(review.user.avatarUrl, "avatars")}
+                            alt={review.user.fullName || "User"}
+                            width={48}
+                            height={48}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-base lg:text-lg font-semibold text-gray-600">
+                            {review.user?.fullName?.charAt(0)?.toUpperCase() ||
+                              "U"}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-2">
+                          <span className="font-semibold text-gray-900 text-sm lg:text-base">
+                            {review.user?.fullName || "Anonymous"}
+                          </span>
+                          <span className="text-xs lg:text-sm text-gray-500">
+                            {formatDate(review.createdAt)}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1 mb-2">
+                          {renderStars(review.rating)}
+                        </div>
+                      </div>
                     </div>
-                  ))}
-                </div>
+                    {review.comment && (
+                      <p className="text-gray-700 mb-3 lg:mb-4 text-sm lg:text-base">
+                        {review.comment}
+                      </p>
+                    )}
+                    {review.title && (
+                      <h4 className="font-semibold text-gray-900 mb-2 text-sm lg:text-base">
+                        {review.title}
+                      </h4>
+                    )}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      {Array.isArray(review.images) &&
+                        review.images.length > 0 && (
+                          <div className="flex gap-2">
+                            {(review.images as string[])
+                              .slice(0, 3)
+                              .map((image, i) => (
+                                <div
+                                  key={i}
+                                  className="w-6 h-6 lg:w-8 lg:h-8 rounded-lg border border-gray-200 overflow-hidden"
+                                >
+                                  <Image
+                                    src={getPublicUrl(image, "products")}
+                                    alt={`Review image ${i + 1}`}
+                                    width={32}
+                                    height={32}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                              ))}
+                          </div>
+                        )}
+                      <Button variant="ghost" size="sm" className="w-fit">
+                        Helpful ({review.helpfulCount || 0})
+                      </Button>
+                    </div>
+                  </div>
+                ))
               ) : (
                 <div className="text-center py-8 text-gray-500">
-                  <ImageIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                  <MessageCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                   <p className="text-sm lg:text-base">
-                    No additional images available.
+                    No reviews yet. Be the first to review this product!
                   </p>
                 </div>
               )}
+
+              {/* <div className="text-center">
+                  <Button variant="outline">View More Reviews</Button>
+                </div> */}
             </div>
-          )}
+
+            {/* Rating Summary */}
+            <div className="space-y-4 lg:space-y-6">
+              <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+                <div className="text-center mb-3 lg:mb-4">
+                  <div className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
+                    {product.averageRating}
+                  </div>
+                  <div className="flex justify-center mb-2">
+                    {renderStars(Math.round(product.averageRating ?? 0))}
+                  </div>
+                  <p className="text-xs lg:text-sm text-gray-600">
+                    Based on {product.reviewCount} ratings
+                  </p>
+                </div>
+
+                <div className="space-y-2 lg:space-y-3">
+                  {renderRatingBar(5, ratingDistribution[5])}
+                  {renderRatingBar(4, ratingDistribution[4])}
+                  {renderRatingBar(3, ratingDistribution[3])}
+                  {renderRatingBar(2, ratingDistribution[2])}
+                  {renderRatingBar(1, ratingDistribution[1])}
+                </div>
+              </div>
+
+              <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
+                <h4 className="font-semibold text-gray-900 mb-3 lg:mb-4 text-sm lg:text-base">
+                  Leave a Review
+                </h4>
+                <p className="text-xs lg:text-sm text-gray-600 mb-3 lg:mb-4">
+                  You can only review products you've purchased. Share your
+                  experience with the product, the vendor, and the delivery.
+                </p>
+                <p className="text-xs text-gray-500">
+                  Note: Reviews can be submitted after your order is marked as
+                  delivered.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
+
+        {/* Gallery Section */}
+        {/* <div className="border-t border-gray-200 pt-8 lg:pt-12">
+          <div className="space-y-4 lg:space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <h3 className="text-lg lg:text-xl font-bold text-gray-900">
+                Product Gallery
+              </h3>
+
+            </div>
+
+            {hasImages ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 lg:gap-4">
+                {(product.images as string[]).map((image, index) => (
+                  <div
+                    key={index}
+                    className="aspect-square bg-gray-200 rounded-lg border border-gray-200 hover:border-primary transition-colors cursor-pointer overflow-hidden"
+                  >
+                    <Image
+                      src={getPublicUrl(image, "products")}
+                      alt={`${product.title} - Image ${index + 1}`}
+                      width={150}
+                      height={150}
+                      className="w-full h-full object-contain bg-white"
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <ImageIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                <p className="text-sm lg:text-base">
+                  No additional images available.
+                </p>
+              </div>
+            )}
+          </div>
+        </div> */}
       </div>
     </section>
   );

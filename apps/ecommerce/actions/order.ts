@@ -299,6 +299,7 @@ export async function getOrders(params?: {
                 title: true,
                 slug: true,
                 images: true,
+                description: true,
               },
             },
           },

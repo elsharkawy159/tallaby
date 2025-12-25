@@ -84,7 +84,7 @@ const ProductSection = async ({
         {/* Carousel Section */}
         <CarouselContent className="p-1.5">
           {products.data.map((product) => (
-            <CarouselItem key={product.id} className="basis-auto md:ps-4 ps-2">
+            <CarouselItem key={product.id} className="basis-auto md:ps-4 ps-2 md:max-w-[285px] max-w-43">
               <ProductCard
                 key={product.id}
                 {...(product as ProductCardProps)}

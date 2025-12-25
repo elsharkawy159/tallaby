@@ -21,7 +21,7 @@ export const SimilarProducts = ({ products }: SimilarProductsProps) => {
       <div className="container">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 lg:mb-8">
           <h2 className="text-xl lg:text-3xl font-bold text-gray-900">
-            Similar Products
+            Customers also purchased
           </h2>
           <Button variant="outline" className="w-fit">
             <Link href="/products"> View More</Link>

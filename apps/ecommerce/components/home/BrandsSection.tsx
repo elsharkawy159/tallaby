@@ -1,4 +1,6 @@
-import { useEffect, useState } from "react";
+"use client";
+
+import { useState } from "react";
 // import { supabase } from "@/integrations/supabase/client";
 
 interface Brand {
@@ -9,7 +11,14 @@ interface Brand {
 }
 
 const BrandsSection = () => {
-  const [brands, setBrands] = useState<Brand[]>([]);
+  const [brands, setBrands] = useState<Brand[]>([
+    {
+      id: "1",
+      name: "Nike",
+      logo_url: "https://logos-world.net/wp-content/uploads/2020/04/Nike-Logo.png",
+      description: "Athletic footwear and apparel",
+    },
+  ]);
 
   // useEffect(() => {
   //   const fetchBrands = async () => {

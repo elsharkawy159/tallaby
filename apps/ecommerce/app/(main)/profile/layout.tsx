@@ -83,11 +83,7 @@ export default function ProfileLayout({
 
       {/* Main Content */}
       <main className="container pb-8">
-        <Suspense
-          fallback={<ProfileLayoutSkeleton>{children}</ProfileLayoutSkeleton>}
-        >
-          <ProfileLayoutData>{children}</ProfileLayoutData>
-        </Suspense>
+        <ProfileLayoutData>{children}</ProfileLayoutData>
       </main>
     </div>
   );

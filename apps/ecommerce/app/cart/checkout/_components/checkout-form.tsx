@@ -123,34 +123,6 @@ export const CheckoutForm = ({
           )}
         </div>
 
-        {/* Terms and Conditions */}
-        <FormField
-          control={form.control}
-          name="acceptTerms"
-          render={({ field }) => (
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="terms"
-                checked={field.value}
-                onCheckedChange={field.onChange}
-                ref={field.ref}
-              />
-              <Label htmlFor="terms" className="text-sm">
-                I agree to the{" "}
-                <Link href="/terms" className="text-primary hover:underline">
-                  Terms and Conditions
-                </Link>
-              </Label>
-            </div>
-          )}
-        />
-
-        {form.formState.errors.acceptTerms && (
-          <p className="text-sm text-red-500">
-            {form.formState.errors.acceptTerms.message}
-          </p>
-        )}
-
         <Button
           type="submit"
           size="lg"

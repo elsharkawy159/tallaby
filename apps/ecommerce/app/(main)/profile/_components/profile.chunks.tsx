@@ -72,6 +72,7 @@ import { useAuth } from "@/providers/auth-provider";
 import { useQueryClient } from "@tanstack/react-query";
 import { AvatarUploader } from "@/components/shared/avatar-uploader";
 import { useAddress } from "@/providers/address-provider";
+import { cn } from "@/lib/utils";
 
 export function ProfileSidebar() {
   const { user, logout, isSigningOut } = useAuth();
@@ -95,22 +96,25 @@ export function ProfileSidebar() {
             <AvatarUploader user={user} size="xl" className="h-16 w-16" />
             <div className="flex-1">
               <div className="flex items-center space-x-2">
-                <h3 className="font-semibold">{formatUserName(user)}</h3>
-                {isVerified && (
-                  <span title="Verified">
-                    {/* Blue star icon for verified */}
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4 text-blue-500"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M10 2.5l2.39 4.84 5.34.78-3.87 3.77.91 5.32L10 14.27l-4.77 2.51.91-5.32-3.87-3.77 5.34-.78L10 2.5z" />
-                    </svg>
-                  </span>
-                )}
+                <h3 className="font-semibold text-sm flex items-center gap-1">
+                  {formatUserName(user)}
+
+                  {isVerified && (
+                    <span title="Verified">
+                      {/* Blue star icon for verified */}
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 text-blue-500"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path d="M10 2.5l2.39 4.84 5.34.78-3.87 3.77.91 5.32L10 14.27l-4.77 2.51.91-5.32-3.87-3.77 5.34-.78L10 2.5z" />
+                      </svg>
+                    </span>
+                  )}
+                </h3>
               </div>
-              <p className="text-sm text-muted-foreground">{user?.email}</p>
+              <p className="text-xs text-muted-foreground">{user?.email}</p>
             </div>
           </div>
 
@@ -123,7 +127,7 @@ export function ProfileSidebar() {
             <Progress value={percentage} className="h-2" />
             {missingFields.length > 0 ? (
               <p className="text-xs text-muted-foreground">
-                To complete your profile:{" "}
+                To complete your profile, please fill in the following fields:{" "}
                 {missingFields
                   .map((field) => {
                     // Optionally, you can map field keys to more user-friendly labels here
@@ -158,8 +162,8 @@ export function ProfileSidebar() {
       </Card>
 
       {/* Navigation */}
-      <Card className="py-2">
-        <CardContent className="p-0">
+      <Card className="overflow-hidden py-1">
+        <CardContent className="p-2">
           <nav className="space-y-1">
             {profileTabs.map((tab) => {
               const isActive =
@@ -170,30 +174,61 @@ export function ProfileSidebar() {
                 <Link
                   key={tab.id}
                   href={tab.href}
-                  className={`flex items-center rounded-xl space-x-3 px-4 py-3 text-sm transition-colors ${
+                  className={cn(
+                    "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ease-in-out",
+                    "hover:translate-x-0.5",
                     isActive
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
+                      ? "bg-gradient-to-r from-primary/10 to-primary/5 text-primary shadow-sm"
+                      : "text-muted-foreground hover:text-accent-foreground"
+                  )}
                 >
-                  <tab.icon className="h-4 w-4" />
-                  <span>{tab.label}</span>
+                  {/* Active indicator bar */}
+                  {isActive && (
+                    <span className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-primary" />
+                  )}
+
+                  {/* Icon with subtle animation */}
+                  <tab.icon
+                    className={cn(
+                      "h-4 w-4 shrink-0 transition-all duration-200",
+                      isActive
+                        ? "text-primary scale-110"
+                        : "text-muted-foreground group-hover:text-foreground group-hover:scale-105"
+                    )}
+                  />
+
+                  {/* Label */}
+                  <span className="flex-1">{tab.label}</span>
+
+                  {/* Active indicator dot */}
+                  {isActive && (
+                    <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                  )}
                 </Link>
               );
             })}
 
+            {/* Divider */}
+            <div className="my-2 h-px bg-border" />
+
             {/* Sign Out */}
-            <div className="border-t">
-              <Button
-                variant="ghost"
-                className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50 px-4 py-3"
-                onClick={() => logout()}
-                disabled={isSigningOut}
-              >
-                <LogOut className="h-4 w-4 mr-3" />
-                {isSigningOut ? "Signing out..." : "Sign Out"}
-              </Button>
-            </div>
+            <Button
+              variant="ghost"
+              className={cn(
+                "group relative w-full justify-start gap-3 rounded-lg px-3 py-2.5 text-sm font-medium",
+                "text-red-600 transition-all duration-200 ease-in-out",
+                "hover:translate-x-0.5 hover:bg-red-50 hover:text-red-700",
+                "dark:text-red-400 dark:hover:bg-red-950/50 dark:hover:text-red-300",
+                "disabled:opacity-50 disabled:cursor-not-allowed"
+              )}
+              onClick={() => logout()}
+              disabled={isSigningOut}
+            >
+              <LogOut
+                className={cn("h-4 w-4 shrink-0 transition-all duration-200")}
+              />
+              <span>{isSigningOut ? "Signing out..." : "Sign Out"}</span>
+            </Button>
           </nav>
         </CardContent>
       </Card>
