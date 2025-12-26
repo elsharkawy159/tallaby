@@ -26,9 +26,9 @@ export function OAuth({ next }: { next?: string }) {
   };
 
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="w-full">
       <Button
-        className="flex items-center justify-center py-2.5 min-h-12 border rounded-lg hover:bg-gray-50 duration-150 active:bg-gray-100 transition-colors"
+        className="flex items-center justify-center py-2.5 min-h-12 border rounded-lg hover:bg-gray-50 duration-150 active:bg-gray-100 transition-colors w-full"
         onClick={() => handleOAuthSignin("google")}
         disabled={isPending}
         type="button"
@@ -82,7 +82,7 @@ export function OAuth({ next }: { next?: string }) {
           <path d="M11.4678 8.77491L17.2961 2H15.915L10.8543 7.88256L6.81232 2H2.15039L8.26263 10.8955L2.15039 18H3.53159L8.87581 11.7878L13.1444 18H17.8063L11.4675 8.77491H11.4678ZM9.57608 10.9738L8.95678 10.0881L4.02925 3.03974H6.15068L10.1273 8.72795L10.7466 9.61374L15.9156 17.0075H13.7942L9.57608 10.9742V10.9738Z" />
         </svg>
       </Button> */}
-      <Button
+      {/* <Button
         className="flex items-center justify-center py-2.5 min-h-12 border rounded-lg hover:bg-gray-50 duration-150 active:bg-gray-100 transition-colors"
         onClick={() => handleOAuthSignin("facebook")}
         disabled={true} //till configuration
@@ -101,7 +101,7 @@ export function OAuth({ next }: { next?: string }) {
             fill="#1877F2"
           />
         </svg>
-      </Button>
+      </Button> */}
     </div>
   );
 }
