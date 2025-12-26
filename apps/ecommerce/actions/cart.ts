@@ -3,8 +3,7 @@
 
 import { db, carts, cartItems, products, eq, and, desc } from "@workspace/db";
 import { getCurrentUserId } from "@/lib/get-current-user-id";
-import { revalidatePath, revalidateTag } from "next/cache";
-import { cache } from "react";
+
 type ProductPrice = {
   base: number;
   list: number;
@@ -66,7 +65,7 @@ async function ensureCart() {
   }
 }
 
-export const getCartItems = cache(async () => {
+export const getCartItems = async () => {
   const cart = await ensureCart();
   if (!cart) return { success: false, error: "No cart found" };
 
@@ -101,7 +100,7 @@ export const getCartItems = cache(async () => {
     success: true,
     data: { cart, items: itemsWithFixedPrices, subtotal, itemCount },
   };
-}, ["cart"]);
+};
 
 export async function addToCart(productId: string, quantity = 1) {
   const cart = await ensureCart();
@@ -156,10 +155,6 @@ export async function addToCart(productId: string, quantity = 1) {
         } as any)
         .returning();
 
-  // Revalidate cart page to reflect changes
-  revalidatePath("/cart");
-  revalidatePath("/cart/checkout");
-  revalidateTag("cart", "cart-items");
   return {
     success: true,
     data: result[0],
@@ -187,10 +182,6 @@ export async function updateCartItem(itemId: string, quantity: number) {
     .where(eq(cartItems.id, itemId))
     .returning();
 
-  // Revalidate cart page to reflect changes
-  revalidatePath("/cart");
-  revalidatePath("/cart/checkout");
-  revalidatePath("/");
   return { success: true, data: updated };
 }
 
@@ -199,10 +190,7 @@ export async function removeFromCart(itemId: string) {
   if (!cart) return { success: false, error: "No cart found" };
 
   await db.delete(cartItems).where(eq(cartItems.id, itemId));
-  // Revalidate cart page to reflect changes
-  revalidatePath("/cart");
-  revalidatePath("/cart/checkout");
-  revalidatePath("/");
+
   return { success: true, message: "Item removed" };
 }
 
@@ -211,9 +199,6 @@ export async function clearCart() {
   if (!cart) return { success: false, error: "No cart found" };
 
   await db.delete(cartItems).where(eq(cartItems.cartId, cart.id));
-  // Revalidate cart page to reflect changes
-  revalidatePath("/cart");
-  revalidatePath("/cart/checkout");
-  revalidatePath("/");
+
   return { success: true, message: "Cart cleared" };
 }

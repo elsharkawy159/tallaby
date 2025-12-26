@@ -5,7 +5,10 @@ import { Minus, Plus, Trash, Loader2 } from "lucide-react";
 import type { QuantitySelectorProps } from "./product-card.types";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
-import { updateCartItem, removeFromCart as removeFromCartAction } from "@/actions/cart";
+import {
+  updateCartItem,
+  removeFromCart as removeFromCartAction,
+} from "@/actions/cart";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
@@ -19,8 +22,8 @@ const sizeStyles = {
   default: {
     button: "h-8 w-8 text-sm",
     icon: "h-3.5 w-3.5",
-    text: "px-4 min-w-[2.5rem] text-sm",
-    loader: "size-3.5",
+    text: "px-4 min-w-[2.8rem] text-sm",
+    loader: "size-3",
   },
   lg: {
     button: "h-10 w-10 text-base",
@@ -79,7 +82,7 @@ export const QuantitySelector = ({
           router.refresh();
           toast.success("Cart updated");
         } else {
-          toast.error(result.error || "Failed to update cart");
+          // toast.error(result.error || "Failed to update cart");
         }
       }
     } catch (error) {
@@ -96,7 +99,7 @@ export const QuantitySelector = ({
       <Button
         variant="ghost"
         size="sm"
-        className={cn(`rounded-none hover:text-gray-50`, styles.button)}
+        className={cn(`rounded-none `, styles.button)}
         onClick={() => handleQuantityChange(quantity - 1)}
         disabled={isLoading}
         aria-label="Decrease quantity"
@@ -119,7 +122,7 @@ export const QuantitySelector = ({
       <Button
         variant="ghost"
         size="sm"
-        className={cn(`rounded-none hover:text-gray-50`, styles.button)}
+        className={cn(`rounded-none `, styles.button)}
         onClick={() => handleQuantityChange(quantity + 1)}
         disabled={
           isLoading ||
