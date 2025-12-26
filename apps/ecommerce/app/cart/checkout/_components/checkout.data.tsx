@@ -1,5 +1,5 @@
 "use client";
-import { useTransition, useEffect } from "react";
+import { useTransition, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckoutForm } from "./checkout-form";
 import {
@@ -33,8 +33,6 @@ import { createOrder } from "@/actions/order";
 import { toast } from "sonner";
 import type { AddressData } from "@/components/address/address.schema";
 import { ShippingInformation } from "./shipping-information";
-import { useAddress } from "@/providers/address-provider";
-import { useCart } from "@/providers/cart-provider";
 
 const paymentMethods = [
   {
@@ -60,21 +58,23 @@ const paymentMethods = [
   },
 ];
 
-export const CheckoutData = ({ checkoutData }: { checkoutData: any }) => {
+export const CheckoutData = ({
+  checkoutData,
+  addresses: initialAddresses = [],
+  defaultAddress: initialDefaultAddress = null,
+}: {
+  checkoutData: any;
+  addresses?: any[];
+  defaultAddress?: any;
+}) => {
   const { cart, user } = checkoutData;
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+  const [selectedAddress, setSelectedAddress] = useState<any>(null);
 
-  // Use address hook for real-time updates
-  const {
-    addresses,
-    defaultAddress,
-    selectedAddress,
-    isLoading: isLoadingAddresses,
-  } = useAddress();
-
-  // Use cart hook to refresh cart after order placement
-  const { refreshCart } = useCart();
+  const addresses = initialAddresses;
+  const defaultAddress = initialDefaultAddress;
+  const isLoadingAddresses = false;
 
   // Determine which address to use: selectedAddress > defaultAddress > first address
   const activeAddress =
@@ -115,8 +115,6 @@ export const CheckoutData = ({ checkoutData }: { checkoutData: any }) => {
         });
 
         if (result.success) {
-          // Refresh cart to clear it after order placement
-          await refreshCart();
           toast.success("Order placed successfully!");
           // Redirect to order confirmation page
           router.push(`/orders/${result.data?.order?.id}/confirmation`);
@@ -131,8 +129,7 @@ export const CheckoutData = ({ checkoutData }: { checkoutData: any }) => {
   };
 
   const handleAddressSelect = (address: AddressData) => {
-    // The hook's selectAddress is already called by AddressSelectorDialog
-    // Just update the form to match
+    setSelectedAddress(address);
     if (address?.id) {
       form.setValue("shippingAddressId", address.id);
     }

@@ -2,9 +2,12 @@
 
 import { Button } from "@workspace/ui/components/button";
 import { Minus, Plus, Trash, Loader2 } from "lucide-react";
-import { useCart } from "@/providers/cart-provider";
 import type { QuantitySelectorProps } from "./product-card.types";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { updateCartItem, removeFromCart as removeFromCartAction } from "@/actions/cart";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const sizeStyles = {
   sm: {
@@ -33,28 +36,56 @@ const sizeStyles = {
   },
 } as const;
 
+interface QuantitySelectorWithCartProps extends QuantitySelectorProps {
+  cartItemId?: string;
+  initialQuantity?: number;
+}
+
 export const QuantitySelector = ({
   productId,
   className,
   size = "default",
   showRemoveButton = true,
   productStock,
-}: QuantitySelectorProps) => {
-  const { updateQuantity, removeFromCart, isItemLoading, cartItems } =
-    useCart();
+  cartItemId,
+  initialQuantity = 0,
+}: QuantitySelectorWithCartProps) => {
+  const [quantity, setQuantity] = useState(initialQuantity);
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
-  const cartItem = cartItems.find((item) => item.productId === productId);
-  const quantity = cartItem?.quantity || 0;
-
-  if (quantity === 0) return null;
+  if (quantity === 0 && initialQuantity === 0) return null;
 
   const styles = sizeStyles[size] || sizeStyles.default;
 
-  const handleQuantityChange = async (itemId: string, newQuantity: number) => {
-    if (newQuantity <= 0) {
-      await removeFromCart(itemId);
-    } else {
-      await updateQuantity(itemId, newQuantity);
+  const handleQuantityChange = async (newQuantity: number) => {
+    if (!cartItemId) return;
+
+    setIsLoading(true);
+    try {
+      if (newQuantity <= 0) {
+        const result = await removeFromCartAction(cartItemId);
+        if (result.success) {
+          setQuantity(0);
+          router.refresh();
+          toast.success("Item removed");
+        } else {
+          toast.error(result.error || "Failed to remove item");
+        }
+      } else {
+        const result = await updateCartItem(cartItemId, newQuantity);
+        if (result.success) {
+          setQuantity(newQuantity);
+          router.refresh();
+          toast.success("Cart updated");
+        } else {
+          toast.error(result.error || "Failed to update cart");
+        }
+      }
+    } catch (error) {
+      toast.error("An error occurred");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -66,8 +97,8 @@ export const QuantitySelector = ({
         variant="ghost"
         size="sm"
         className={cn(`rounded-none hover:text-gray-50`, styles.button)}
-        onClick={() => handleQuantityChange(cartItem?.id || "", quantity - 1)}
-        disabled={isItemLoading(cartItem?.id || "")}
+        onClick={() => handleQuantityChange(quantity - 1)}
+        disabled={isLoading}
         aria-label="Decrease quantity"
       >
         {quantity === 1 && showRemoveButton ? (
@@ -78,7 +109,7 @@ export const QuantitySelector = ({
       </Button>
 
       <span className={`text-center font-medium ${styles.text}`}>
-        {isItemLoading(cartItem?.id || "") ? (
+        {isLoading ? (
           <Loader2 className={`${styles.loader} animate-spin mx-auto`} />
         ) : (
           quantity
@@ -89,9 +120,9 @@ export const QuantitySelector = ({
         variant="ghost"
         size="sm"
         className={cn(`rounded-none hover:text-gray-50`, styles.button)}
-        onClick={() => handleQuantityChange(cartItem?.id || "", quantity + 1)}
+        onClick={() => handleQuantityChange(quantity + 1)}
         disabled={
-          isItemLoading(cartItem?.id || "") ||
+          isLoading ||
           (productStock !== undefined && quantity >= Number(productStock))
         }
         aria-label="Increase quantity"

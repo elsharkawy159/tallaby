@@ -3,7 +3,6 @@
 import { AddToCartButton } from "./add-to-cart-button";
 import { WishlistButton } from "./wishlist-button";
 import { QuantitySelector } from "./quantity-selector";
-import { useCart } from "@/providers/cart-provider";
 import type { ProductCardProps } from "./product-card.types";
 import { cn } from "@/lib/utils";
 
@@ -11,16 +10,20 @@ interface ProductCardActionsProps {
   product: ProductCardProps;
   className?: string;
   variant?: "card" | "page";
+  isInCart?: boolean;
+  isInWishlist?: boolean;
+  wishlistItemId?: string;
 }
 
 export const ProductCardActions = ({
   product,
   className,
   variant = "card",
+  isInCart: isInCartStatus = false,
+  isInWishlist = false,
+  wishlistItemId,
 }: ProductCardActionsProps) => {
-  const { isInCart } = useCart();
   const productId = product.id || "";
-  const isInCartStatus = isInCart(productId);
 
   if (variant === "page") {
     // For product page - show quantity selector if in cart, otherwise add to cart button
@@ -36,6 +39,8 @@ export const ProductCardActions = ({
                 productId={productId}
                 size="lg"
                 showRemoveButton={true}
+                cartItemId={undefined}
+                initialQuantity={0}
               />
             </div>
             <WishlistButton
@@ -44,6 +49,8 @@ export const ProductCardActions = ({
               variant="outline"
               showText={true}
               className="w-full"
+              isInWishlist={isInWishlist}
+              wishlistItemId={wishlistItemId}
             />
           </div>
         ) : (
@@ -63,6 +70,8 @@ export const ProductCardActions = ({
               variant="outline"
               showText={true}
               className="w-full"
+              isInWishlist={isInWishlist}
+              wishlistItemId={wishlistItemId}
             />
           </div>
         )}

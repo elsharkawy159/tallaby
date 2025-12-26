@@ -16,13 +16,14 @@ import { AddressListStep } from "./address-dialog-steps/address-list-step";
 import { AddressFormStep } from "./address-dialog-steps/address-form-step";
 import type { AddressData } from "../address/address.schema";
 import { MapLocationStep } from "./address-dialog-steps/map-location-step";
-import { useAddress } from "@/providers/address-provider";
 
 // Step types
 type DialogStep = "list" | "map" | "form";
 
 interface AddressDialogProps {
   address?: AddressData;
+  addresses?: AddressData[];
+  defaultAddress?: AddressData | null;
   trigger?: React.ReactNode;
   onSuccess?: (address: AddressData) => void;
   onAddressSelect?: (address: AddressData) => void;
@@ -31,6 +32,8 @@ interface AddressDialogProps {
 
 export const AddressDialog = ({
   address,
+  addresses: initialAddresses = [],
+  defaultAddress: initialDefaultAddress = null,
   trigger,
   onSuccess,
   onAddressSelect,
@@ -51,8 +54,14 @@ export const AddressDialog = ({
     postalCode?: string;
   } | null>(null);
 
-  // Use the AddressProvider
-  const { selectedAddress, selectAddress } = useAddress();
+  // Address selection state (no longer using provider)
+  const [selectedAddress, setSelectedAddress] = useState<AddressData | null>(
+    null
+  );
+
+  const selectAddress = (address: AddressData | null) => {
+    setSelectedAddress(address);
+  };
 
   // Set initial address if provided
   useEffect(() => {

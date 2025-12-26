@@ -68,17 +68,20 @@ import type { UserAddress } from "./profile.types";
 import { Input } from "@workspace/ui/components/input";
 import { Switch } from "@workspace/ui/components/switch";
 import { Select, SelectItem } from "@workspace/ui/components/select";
-import { useAuth } from "@/providers/auth-provider";
 import { useQueryClient } from "@tanstack/react-query";
 import { AvatarUploader } from "@/components/shared/avatar-uploader";
-import { useAddress } from "@/providers/address-provider";
 import { cn } from "@/lib/utils";
+import type { User } from "@supabase/supabase-js";
+import { signOutAction } from "@/actions/auth";
 
-export function ProfileSidebar() {
-  const { user, logout, isSigningOut } = useAuth();
-  const { addresses } = useAddress();
+export function ProfileSidebar({
+  user,
+  addresses,
+}: {
+  user: User | null;
+  addresses: any[];
+}) {
   const pathname = usePathname();
-  console.log("user", user);
   const { percentage, missingFields } = calculateProfileCompletion(
     user,
     addresses as UserAddress[]
@@ -212,23 +215,24 @@ export function ProfileSidebar() {
             <div className="my-2 h-px bg-border" />
 
             {/* Sign Out */}
-            <Button
-              variant="ghost"
-              className={cn(
-                "group relative w-full justify-start gap-3 rounded-lg px-3 py-2.5 text-sm font-medium",
-                "text-red-600 transition-all duration-200 ease-in-out",
-                "hover:translate-x-0.5 hover:bg-red-50 hover:text-red-700",
-                "dark:text-red-400 dark:hover:bg-red-950/50 dark:hover:text-red-300",
-                "disabled:opacity-50 disabled:cursor-not-allowed"
-              )}
-              onClick={() => logout()}
-              disabled={isSigningOut}
-            >
-              <LogOut
-                className={cn("h-4 w-4 shrink-0 transition-all duration-200")}
-              />
-              <span>{isSigningOut ? "Signing out..." : "Sign Out"}</span>
-            </Button>
+            <form action={signOutAction}>
+              <Button
+                type="submit"
+                variant="ghost"
+                className={cn(
+                  "group relative w-full justify-start gap-3 rounded-lg px-3 py-2.5 text-sm font-medium",
+                  "text-red-600 transition-all duration-200 ease-in-out",
+                  "hover:translate-x-0.5 hover:bg-red-50 hover:text-red-700",
+                  "dark:text-red-400 dark:hover:bg-red-950/50 dark:hover:text-red-300",
+                  "disabled:opacity-50 disabled:cursor-not-allowed"
+                )}
+              >
+                <LogOut
+                  className={cn("h-4 w-4 shrink-0 transition-all duration-200")}
+                />
+                <span>Sign Out</span>
+              </Button>
+            </form>
           </nav>
         </CardContent>
       </Card>
@@ -239,8 +243,7 @@ export function ProfileSidebar() {
 // Profile Form Component
 interface ProfileFormProps {}
 
-export function ProfileForm() {
-  const { user } = useAuth();
+export function ProfileForm({ user }: { user: User | null }) {
   const queryClient = useQueryClient();
   const [isPending, startTransition] = useTransition();
 
@@ -825,8 +828,7 @@ export function AddressForm({
 
 // Security Form Component
 
-export function SecurityForm() {
-  const { user } = useAuth();
+export function SecurityForm({ user }: { user: User | null }) {
   const [isPending, startTransition] = useTransition();
 
   // Extract security-related user data with proper fallbacks

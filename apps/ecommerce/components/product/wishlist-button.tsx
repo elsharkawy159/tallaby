@@ -2,10 +2,16 @@
 
 import { Button } from "@workspace/ui/components/button";
 import { Heart, Loader2 } from "lucide-react";
-import { useWishlist } from "@/providers/wishlist-provider";
 import { toast } from "sonner";
 import type { WishlistButtonProps } from "./product-card.types";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+import {
+  addToWishlist as addToWishlistAction,
+  removeFromWishlist as removeFromWishlistAction,
+  getWishlistItems,
+} from "@/actions/wishlist";
+import { useRouter } from "next/navigation";
 
 // 🔑 Centralized size styles
 const sizeStyles = {
@@ -39,37 +45,48 @@ export const WishlistButton = ({
   variant = "ghost",
   showText = true,
   onSuccess,
-}: WishlistButtonProps) => {
-  const {
-    addToWishlist,
-    removeFromWishlist,
-    isInWishlist,
-    isProductLoading,
-    wishlistItems,
-  } = useWishlist();
-
-  const isWishlisted = isInWishlist(productId);
-  const wishlistItem = wishlistItems.find(
-    (item) => item.productId === productId
-  );
+  isInWishlist: initialIsInWishlist = false,
+  wishlistItemId,
+}: WishlistButtonProps & {
+  isInWishlist?: boolean;
+  wishlistItemId?: string;
+}) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [isWishlisted, setIsWishlisted] = useState(initialIsInWishlist);
+  const router = useRouter();
 
   const toggleWishlist = async () => {
-    if (disabled || !productId) return;
+    if (disabled || !productId || isLoading) return;
 
+    setIsLoading(true);
     try {
-      if (isWishlisted && wishlistItem) {
-        await removeFromWishlist(wishlistItem.id);
+      if (isWishlisted && wishlistItemId) {
+        const result = await removeFromWishlistAction(wishlistItemId);
+        if (result.success) {
+          setIsWishlisted(false);
+          router.refresh();
+          toast.success("Removed from wishlist");
+        } else {
+          toast.error(result.error || "Failed to remove from wishlist");
+        }
       } else {
-        await addToWishlist({ productId });
+        const result = await addToWishlistAction({ productId });
+        if (result.success) {
+          setIsWishlisted(true);
+          router.refresh();
+          toast.success("Added to wishlist");
+        } else {
+          toast.error(result.error || "Failed to add to wishlist");
+        }
       }
       onSuccess?.();
     } catch (error) {
       console.error("Wishlist toggle error:", error);
       toast.error("An error occurred with wishlist");
+    } finally {
+      setIsLoading(false);
     }
   };
-
-  const isLoading = isProductLoading(productId);
   const styles = sizeStyles[size] || sizeStyles.default;
 
   return (

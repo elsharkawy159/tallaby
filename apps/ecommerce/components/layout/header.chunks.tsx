@@ -6,7 +6,7 @@ import {
   Search,
   ShoppingCart,
   Heart,
-  User,
+  User as UserIcon,
   Menu,
   MapPin,
   ChevronDown,
@@ -23,7 +23,8 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { useLocale } from "next-intl";
 import { useAuthDialog } from "@/hooks/use-auth-dialog";
-import { useAuth } from "@/providers/auth-provider";
+import type { User } from "@supabase/supabase-js";
+import { signOutAction } from "@/actions/auth";
 import { useDebounce } from "@/hooks/use-debounce";
 import { getProducts } from "@/actions/products";
 import CategoryNav from "./CategoryNav";
@@ -44,9 +45,6 @@ import {
   bottomNavigationItems,
   getSearchPlaceholder,
 } from "./header.lib";
-import { useCart } from "@/providers/cart-provider";
-import { useWishlist } from "@/providers/wishlist-provider";
-import { useAddress } from "@/providers/address-provider";
 import { AddressSelectorDialog } from "@/components/shared/address-dialog";
 import { CartSheet } from "@/components/layout/cart-sheet";
 
@@ -238,9 +236,13 @@ export const SearchBar = ({
   );
 };
 
-export const BecomeSellerButton = ({ className }: { className?: string }) => {
-  const { user } = useAuth();
-
+export const BecomeSellerButton = ({
+  className,
+  user,
+}: {
+  className?: string;
+  user: User | null;
+}) => {
   // Hide button if user is already a seller
   if (user?.user_metadata?.is_seller === true) {
     return null;
@@ -253,32 +255,16 @@ export const BecomeSellerButton = ({ className }: { className?: string }) => {
   );
 };
 
-export const UserAuth = ({ variant = "desktop", className }: UserAuthProps) => {
+export const UserAuth = ({
+  variant = "desktop",
+  className,
+  user,
+  seller,
+}: UserAuthProps & {
+  user: User | null;
+  seller: any;
+}) => {
   const { open: openAuthDialog } = useAuthDialog();
-  const { user, seller, logout, isLoading, isSigningOut } = useAuth();
-
-  if (isLoading) {
-    return (
-      <div
-        className={cn(
-          "text-white opacity-50",
-          variant === "mobile" &&
-            "flex flex-col items-center text-gray-400 opacity-50",
-          className
-        )}
-      >
-        <Button variant="ghost" size="icon" className="text-white">
-          <User
-            className={cn(
-              "size-6 animate-pulse",
-              variant === "mobile" && "size-5"
-            )}
-          />
-        </Button>
-        {variant === "mobile" && <span className="text-xs">Loading...</span>}
-      </div>
-    );
-  }
 
   if (user) {
     return (
@@ -286,8 +272,8 @@ export const UserAuth = ({ variant = "desktop", className }: UserAuthProps) => {
         variant={variant}
         user={user}
         seller={seller}
-        logout={logout}
-        isSigningOut={isSigningOut}
+        logout={signOutAction}
+        isSigningOut={false}
       />
     );
   }
@@ -305,14 +291,21 @@ export const UserAuth = ({ variant = "desktop", className }: UserAuthProps) => {
       onClick={() => openAuthDialog("signin")}
       title="Sign in to your account"
     >
-      <User className={cn("size-6", variant === "mobile" && "size-5")} />
+      <UserIcon className={cn("size-6", variant === "mobile" && "size-5")} />
       {variant === "mobile" && <span className="text-xs">Sign In</span>}
     </Button>
   );
 };
 
-export const Cart = ({ className }: { className?: string }) => {
-  const { itemCount } = useCart();
+export const Cart = ({
+  className,
+  itemCount,
+  cartData,
+}: {
+  className?: string;
+  itemCount: number;
+  cartData: any;
+}) => {
   const [isCartSheetOpen, setIsCartSheetOpen] = React.useState(false);
 
   return (
@@ -334,13 +327,24 @@ export const Cart = ({ className }: { className?: string }) => {
         )}
         <span className="text-xs md:hidden">Cart</span>
       </Button>
-      <CartSheet open={isCartSheetOpen} onOpenChange={setIsCartSheetOpen} />
+      <CartSheet
+        open={isCartSheetOpen}
+        onOpenChange={setIsCartSheetOpen}
+        cartItems={cartData?.items ?? []}
+        itemCount={cartData?.itemCount ?? 0}
+        subtotal={cartData?.subtotal ?? 0}
+      />
     </>
   );
 };
 
-export const WishlistLink = ({ className }: { className?: string }) => {
-  const { itemCount } = useWishlist();
+export const WishlistLink = ({
+  className,
+  itemCount,
+}: {
+  className?: string;
+  itemCount: number;
+}) => {
   return (
     <Button asChild size="icon" variant="ghost">
       <Link
@@ -404,12 +408,17 @@ export const MobileNavigation = ({ className }: MobileNavigationProps) => {
 
 export const DeliveryLocationSelector = ({
   className,
+  user,
+  defaultAddress,
+  addresses,
+  isLoading,
 }: {
   className?: string;
+  user: User | null;
+  defaultAddress: any;
+  addresses: any[];
+  isLoading: boolean;
 }) => {
-  const { user } = useAuth();
-  const { defaultAddress, addresses, isLoading } = useAddress();
-
   // If not logged in, show guest message
   // if (!addresses.length) {
   //   return null;
@@ -496,9 +505,19 @@ import { usePathname } from "next/navigation";
 import { Logo } from "../logo";
 import { LanguageSwitcher } from "./language-switcher";
 
-export const BottomNavigation = ({ className }: BottomNavigationProps) => {
+export const BottomNavigation = ({
+  className,
+  user,
+  seller,
+  cartItemCount,
+  wishlistItemCount,
+}: BottomNavigationProps & {
+  user: User | null;
+  seller: any;
+  cartItemCount: number;
+  wishlistItemCount: number;
+}) => {
   const { open: openAuthDialog } = useAuthDialog();
-  const { user, seller, logout, isLoading, isSigningOut } = useAuth();
   const pathname = usePathname();
 
   return (
@@ -543,23 +562,14 @@ export const BottomNavigation = ({ className }: BottomNavigationProps) => {
               </Button>
             );
           })}
-          <Cart />
-          {isLoading ? (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="flex flex-col items-center"
-            >
-              <User className="size-5 animate-pulse" />
-              <span className="text-xs mt-0">Loading...</span>
-            </Button>
-          ) : user ? (
+          <Cart itemCount={cartItemCount} cartData={null} />
+          {user ? (
             <UserMenu
               variant="mobile"
               user={user}
               seller={seller}
-              logout={logout}
-              isSigningOut={isSigningOut}
+              logout={signOutAction}
+              isSigningOut={false}
             />
           ) : (
             <Button
@@ -569,7 +579,7 @@ export const BottomNavigation = ({ className }: BottomNavigationProps) => {
               className="flex flex-col items-center text-gray-600 hover:text-primary transition-colors"
               title="Sign in to your account"
             >
-              <User className="size-5" />
+              <UserIcon className="size-5" />
               <span className="text-xs">Sign In</span>
             </Button>
           )}

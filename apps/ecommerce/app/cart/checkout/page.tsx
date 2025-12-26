@@ -10,6 +10,7 @@ import { generateNoIndexMetadata } from "@/lib/metadata";
 import { ReviewItems } from "@/components/review-items";
 import type { Metadata } from "next";
 import { CheckoutInteractions } from "./_components/checkout.client";
+import { getAddresses } from "@/actions/customer";
 
 export const metadata: Metadata = generateNoIndexMetadata();
 
@@ -20,6 +21,10 @@ export const fetchCache = "force-no-store";
 
 export default async function Checkout() {
   const result = await getCheckoutData();
+  const addressesResult = await getAddresses();
+  const addresses = addressesResult.success ? (addressesResult.data ?? []) : [];
+  const defaultAddress = addresses.find((addr: any) => addr.isDefault) ?? null;
+
   if (!result.success || !result.data) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -51,7 +56,11 @@ export default async function Checkout() {
       <main className="flex-1 container pb-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           <div className="lg:col-span-2 order-2 lg:order-1">
-              <CheckoutData checkoutData={result.data as any} />
+            <CheckoutData
+              checkoutData={result.data as any}
+              addresses={addresses}
+              defaultAddress={defaultAddress}
+            />
           </div>
 
           <div className="lg:col-span-1 order-1 lg:order-2 space-y-6">

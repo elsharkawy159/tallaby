@@ -11,10 +11,26 @@ import Link from "next/link";
 
 interface SimilarProductsProps {
   products?: any[];
+  cartItems?: any[];
+  wishlistItems?: any[];
 }
 
-export const SimilarProducts = ({ products }: SimilarProductsProps) => {
+export const SimilarProducts = ({
+  products,
+  cartItems = [],
+  wishlistItems = [],
+}: SimilarProductsProps) => {
   if (!products || products.length === 0) return null;
+
+  // Create maps for quick lookup
+  const cartProductIds = new Set(
+    cartItems
+      .filter((item: any) => !item.savedForLater)
+      .map((item: any) => item.productId)
+  );
+  const wishlistMap = new Map(
+    wishlistItems.map((item: any) => [item.productId, item.id])
+  );
 
   return (
     <section className="py-8 lg:py-12">
@@ -38,7 +54,12 @@ export const SimilarProducts = ({ products }: SimilarProductsProps) => {
           <CarouselContent className="">
             {products.map((product) => (
               <CarouselItem key={product.id} className="basis-auto">
-                <ProductCard {...product} />
+                <ProductCard
+                  {...product}
+                  isInCart={cartProductIds.has(product.id)}
+                  isInWishlist={wishlistMap.has(product.id)}
+                  wishlistItemId={wishlistMap.get(product.id)}
+                />
               </CarouselItem>
             ))}
           </CarouselContent>

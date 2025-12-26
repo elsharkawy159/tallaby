@@ -8,6 +8,7 @@ import {
   type ForgotPasswordFormData,
 } from "@/lib/validations/auth-schemas";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 export async function getUser() {
   try {
@@ -166,6 +167,7 @@ export async function resetPasswordAction(input: { password: string }) {
 export async function signOutAction() {
   const supabase = await createClient();
   await supabase.auth.signOut();
+  redirect("/login");
 }
 
 // Get Supabase user and matched seller profile

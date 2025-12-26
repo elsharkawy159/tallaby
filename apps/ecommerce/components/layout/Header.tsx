@@ -14,9 +14,31 @@ import {
 import { Logo } from "../logo";
 import CategoryNav from "./CategoryNav";
 import { LanguageSwitcher } from "./language-switcher";
+import { createClient } from "@/supabase/server";
+import { getSellerProfile } from "@/actions/seller";
+import { getCartItems } from "@/actions/cart";
+import { getWishlistItems } from "@/actions/wishlist";
+import { getAddresses } from "@/actions/customer";
+import type { User } from "@supabase/supabase-js";
 
 // Main Header Component - with scroll visibility logic
-const MainHeader = () => {
+const MainHeader = ({
+  user,
+  seller,
+  cartItemCount,
+  wishlistItemCount,
+  defaultAddress,
+  addresses,
+  cartResult,
+}: {
+  user: User | null;
+  seller: any;
+  cartItemCount: number;
+  wishlistItemCount: number;
+  defaultAddress: any;
+  addresses: any[];
+  cartResult: any;
+}) => {
   // const { isVisible } = useScrollingNavbar();
 
   return (
@@ -30,11 +52,16 @@ const MainHeader = () => {
         {/* Mobile top section */}
         <div className="flex items-center md:hidden justify-between">
           <Logo />
-          <BecomeSellerButton />
+          <BecomeSellerButton user={user} />
           {/* <MobileNavigation /> */}
           <div className="flex items-center gap-4">
             <LanguageSwitcher />
-            <DeliveryLocationSelector />
+            <DeliveryLocationSelector
+              user={user}
+              defaultAddress={defaultAddress}
+              addresses={addresses}
+              isLoading={false}
+            />
           </div>
         </div>
 
@@ -51,17 +78,26 @@ const MainHeader = () => {
         >
           <div className="flex items-center gap-4">
             <Logo />
-            <DeliveryLocationSelector className="hidden lg:flex" />
+            <DeliveryLocationSelector
+              className="hidden lg:flex"
+              user={user}
+              defaultAddress={defaultAddress}
+              addresses={addresses}
+              isLoading={false}
+            />
             <LanguageSwitcher />
           </div>
 
           <SearchBar variant="desktop" />
 
           <div className="flex items-center gap-4">
-            <UserAuth variant="desktop" />
-            <Cart />
-            <WishlistLink />
-            <BecomeSellerButton />
+            <UserAuth variant="desktop" user={user} seller={seller} />
+            <Cart
+              itemCount={cartItemCount}
+              cartData={cartResult.success ? cartResult.data : null}
+            />
+            <WishlistLink itemCount={wishlistItemCount} />
+            <BecomeSellerButton user={user} />
           </div>
         </div>
       </div>
@@ -80,16 +116,57 @@ const SubBar = () => {
   );
 };
 
-const Header = ({ className }: HeaderProps) => {
+const Header = async ({ className }: HeaderProps) => {
+  const supabase = await createClient();
+  const { data: authData } = await supabase.auth.getUser();
+  const user = authData?.user ?? null;
+
+  let seller = null;
+  if (user?.user_metadata?.is_seller === true) {
+    const sellerResult = await getSellerProfile(user.id);
+    if (sellerResult.success && sellerResult.data) {
+      seller = sellerResult.data;
+    }
+  }
+
+  // Fetch cart and wishlist data server-side
+  const cartResult = await getCartItems();
+  const cartItemCount = cartResult.success
+    ? (cartResult.data?.itemCount ?? 0)
+    : 0;
+
+  const wishlistResult = await getWishlistItems();
+  const wishlistItemCount = wishlistResult.success
+    ? (wishlistResult.data?.length ?? 0)
+    : 0;
+
+  // Fetch addresses server-side
+  const addressesResult = await getAddresses();
+  const addresses = addressesResult.success ? (addressesResult.data ?? []) : [];
+  const defaultAddress = addresses.find((addr: any) => addr.isDefault) ?? null;
+
   return (
     <>
       <header className={cn("sticky top-0 z-50", className)}>
-        <MainHeader />
+        <MainHeader
+          user={user}
+          seller={seller}
+          cartItemCount={cartItemCount}
+          wishlistItemCount={wishlistItemCount}
+          defaultAddress={defaultAddress}
+          addresses={addresses}
+          cartResult={cartResult}
+        />
         {/* <SubBar /> */}
       </header>
 
       {/* Mobile bottom navigation */}
-      <BottomNavigation />
+      <BottomNavigation
+        user={user}
+        seller={seller}
+        cartItemCount={cartItemCount}
+        wishlistItemCount={wishlistItemCount}
+      />
     </>
   );
 };

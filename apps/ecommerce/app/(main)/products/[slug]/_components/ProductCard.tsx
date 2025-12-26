@@ -10,7 +10,18 @@ import {
 import type { ProductCardProps } from "@/components/product";
 import { useLocale } from "next-intl";
 
-const ProductCard = (product: ProductCardProps) => {
+interface ProductCardWithStatusProps extends ProductCardProps {
+  isInCart?: boolean;
+  isInWishlist?: boolean;
+  wishlistItemId?: string;
+}
+
+const ProductCard = ({
+  isInCart = false,
+  isInWishlist = false,
+  wishlistItemId,
+  ...product
+}: ProductCardWithStatusProps) => {
   const productId = product.id || "";
   const locale = useLocale();
 
@@ -32,6 +43,8 @@ const ProductCard = (product: ProductCardProps) => {
               variant="ghost"
               showText={false}
               className="rounded-lg bg-white/90 hover:bg-white shadow"
+              isInWishlist={isInWishlist}
+              wishlistItemId={wishlistItemId}
             />
           </div>
 
@@ -39,7 +52,13 @@ const ProductCard = (product: ProductCardProps) => {
         <ProductCardInfo product={product} />
         {/* <ProductReview product={product} /> */}
         {/* Product Actions */}
-        <ProductCardActions product={product} variant="card" />
+        <ProductCardActions
+          product={product}
+          variant="card"
+          isInCart={isInCart}
+          isInWishlist={isInWishlist}
+          wishlistItemId={wishlistItemId}
+        />
       </CardContent>
     </Card>
   );
