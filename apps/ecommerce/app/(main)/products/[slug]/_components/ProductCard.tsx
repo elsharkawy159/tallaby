@@ -12,12 +12,16 @@ import { useLocale } from "next-intl";
 
 interface ProductCardWithStatusProps extends ProductCardProps {
   isInCart?: boolean;
+  cartItemId?: string;
+  cartItemQuantity?: number;
   isInWishlist?: boolean;
   wishlistItemId?: string;
 }
 
 const ProductCard = ({
   isInCart = false,
+  cartItemId,
+  cartItemQuantity = 0,
   isInWishlist = false,
   wishlistItemId,
   ...product
@@ -26,8 +30,9 @@ const ProductCard = ({
   const locale = useLocale();
 
   return (
-    <Card className="group bg-white shadow-sm border-0 p-0 relative w-full h-full overflow-hidden rounded-lg"
-    dir={locale === "ar" ? "rtl" : "ltr"}
+    <Card
+      className="group bg-white shadow-sm border-0 p-0 relative w-full h-full overflow-hidden rounded-lg"
+      dir={locale === "ar" ? "rtl" : "ltr"}
     >
       <CardContent className="p-2 md:p-2.5">
         {/* Product Image */}
@@ -36,17 +41,17 @@ const ProductCard = ({
 
           {/* Wishlist Button */}
         </div>
-          <div className="absolute top-2.5 right-2.5">
-            <WishlistButton
-              productId={productId}
-              size="sm"
-              variant="ghost"
-              showText={false}
-              className="rounded-lg bg-white/90 hover:bg-white shadow"
-              isInWishlist={isInWishlist}
-              wishlistItemId={wishlistItemId}
-            />
-          </div>
+        <div className="absolute top-2.5 right-2.5">
+          <WishlistButton
+            productId={productId}
+            size="sm"
+            variant="ghost"
+            showText={false}
+            className="rounded-lg bg-white/90 hover:bg-white shadow"
+            isInWishlist={isInWishlist}
+            wishlistItemId={wishlistItemId}
+          />
+        </div>
 
         {/* Product Info */}
         <ProductCardInfo product={product} />
@@ -56,6 +61,8 @@ const ProductCard = ({
           product={product}
           variant="card"
           isInCart={isInCart}
+          cartItemId={cartItemId}
+          cartItemQuantity={cartItemQuantity}
           isInWishlist={isInWishlist}
           wishlistItemId={wishlistItemId}
         />

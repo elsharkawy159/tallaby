@@ -1,74 +1,42 @@
-import React from "react";
-// import { useScrollingNavbar } from "@/hooks/useScrollingNavbar";
 import { cn } from "@/lib/utils";
 import type { HeaderProps } from "./header.types";
-import {
-  SearchBar,
-  BottomNavigation,
-  BecomeSellerButton,
-  DeliveryLocationSelector,
-  UserAuth,
-  Cart,
-  WishlistLink,
-} from "./header.chunks";
+import { BottomNavigation } from "./bottom-navigation";
 import { Logo } from "../logo";
-import CategoryNav from "./CategoryNav";
 import { LanguageSwitcher } from "./language-switcher";
+import { SearchBar } from "./search-bar";
+import { AuthLink } from "./auth-link";
+import { CartCount } from "./cart-count";
+import { WishlistCount } from "./wishlist-count";
+// import { DeliveryLocation } from "./delivery-location";
+import { BecomeSellerButton } from "./header.chunks";
 import { createClient } from "@/supabase/server";
-import { getSellerProfile } from "@/actions/seller";
-import { getCartItems } from "@/actions/cart";
-import { getWishlistItems } from "@/actions/wishlist";
-import { getAddresses } from "@/actions/customer";
-import type { User } from "@supabase/supabase-js";
+import { Suspense } from "react";
+import { Button, Spinner } from "@workspace/ui/components";
+import { Heart, ShoppingCart } from "lucide-react";
+import Link from "next/link";
 
-// Main Header Component - with scroll visibility logic
-const MainHeader = ({
-  user,
-  seller,
-  cartItemCount,
-  wishlistItemCount,
-  defaultAddress,
-  addresses,
-  cartResult,
-}: {
-  user: User | null;
-  seller: any;
-  cartItemCount: number;
-  wishlistItemCount: number;
-  defaultAddress: any;
-  addresses: any[];
-  cartResult: any;
-}) => {
-  // const { isVisible } = useScrollingNavbar();
+// Main Header Component
+const MainHeader = async () => {
+  const supabase = await createClient();
+  const { data: authData } = await supabase.auth.getUser();
+  const user = authData?.user ?? null;
 
   return (
-    <div
-      className={cn(
-        "bg-primary shadow-xs h-full w-full"
-        // isVisible ? "transform translate-y-0" : "transform -translate-y-full"
-      )}
-    >
+    <div className={cn("bg-primary shadow-xs h-full w-full")}>
       <div className="py-2.5 container">
         {/* Mobile top section */}
         <div className="flex items-center md:hidden justify-between">
           <Logo />
           <BecomeSellerButton user={user} />
-          {/* <MobileNavigation /> */}
           <div className="flex items-center gap-4">
             <LanguageSwitcher />
-            <DeliveryLocationSelector
-              user={user}
-              defaultAddress={defaultAddress}
-              addresses={addresses}
-              isLoading={false}
-            />
+            {/* <DeliveryLocation user={user} /> */}
           </div>
         </div>
 
         <div className="md:mt-0 mt-3 md:hidden">
           <SearchBar variant="mobile" className="w-full" />
         </div>
-        {/* Mobile search bar */}
 
         {/* Desktop layout */}
         <div
@@ -78,25 +46,44 @@ const MainHeader = ({
         >
           <div className="flex items-center gap-4">
             <Logo />
-            <DeliveryLocationSelector
-              className="hidden lg:flex"
-              user={user}
-              defaultAddress={defaultAddress}
-              addresses={addresses}
-              isLoading={false}
-            />
+            {/* <DeliveryLocation className="hidden lg:flex" user={user} /> */}
             <LanguageSwitcher />
           </div>
 
           <SearchBar variant="desktop" />
 
           <div className="flex items-center gap-4">
-            <UserAuth variant="desktop" user={user} seller={seller} />
-            <Cart
-              itemCount={cartItemCount}
-              cartData={cartResult.success ? cartResult.data : null}
-            />
-            <WishlistLink itemCount={wishlistItemCount} />
+            <AuthLink variant="desktop" />
+
+            {/* Cart */}
+            <Button
+              asChild
+              size="icon"
+              variant="ghost"
+              className={cn(
+                "relative flex flex-col items-center md:text-white text-gray-600 hover:text-gray-200"
+              )}
+            >
+              <Link href="/cart">
+                <ShoppingCart className={cn("md:size-6 size-5")} />
+                <Suspense>
+                  <CartCount />
+                </Suspense>
+              </Link>
+            </Button>
+
+            {/* Wishlist */}
+            <Button asChild size="icon" variant="ghost">
+              <Link
+                href="/profile/wishlist"
+                className={cn("relative text-white hover:text-gray-200")}
+              >
+                <Heart className="size-6" />
+                <Suspense>
+                  <WishlistCount />
+                </Suspense>
+              </Link>
+            </Button>
             <BecomeSellerButton user={user} />
           </div>
         </div>
@@ -105,68 +92,15 @@ const MainHeader = ({
   );
 };
 
-// SubBar Component - always visible category navigation
-const SubBar = () => {
-  return (
-    <div className="bg-secondary hidden md:block">
-      <div className="container py-2">
-        <CategoryNav />
-      </div>
-    </div>
-  );
-};
-
 const Header = async ({ className }: HeaderProps) => {
-  const supabase = await createClient();
-  const { data: authData } = await supabase.auth.getUser();
-  const user = authData?.user ?? null;
-
-  let seller = null;
-  if (user?.user_metadata?.is_seller === true) {
-    const sellerResult = await getSellerProfile(user.id);
-    if (sellerResult.success && sellerResult.data) {
-      seller = sellerResult.data;
-    }
-  }
-
-  // Fetch cart and wishlist data server-side
-  const cartResult = await getCartItems();
-  const cartItemCount = cartResult.success
-    ? (cartResult.data?.itemCount ?? 0)
-    : 0;
-
-  const wishlistResult = await getWishlistItems();
-  const wishlistItemCount = wishlistResult.success
-    ? (wishlistResult.data?.length ?? 0)
-    : 0;
-
-  // Fetch addresses server-side
-  const addressesResult = await getAddresses();
-  const addresses = addressesResult.success ? (addressesResult.data ?? []) : [];
-  const defaultAddress = addresses.find((addr: any) => addr.isDefault) ?? null;
-
   return (
     <>
       <header className={cn("sticky top-0 z-50", className)}>
-        <MainHeader
-          user={user}
-          seller={seller}
-          cartItemCount={cartItemCount}
-          wishlistItemCount={wishlistItemCount}
-          defaultAddress={defaultAddress}
-          addresses={addresses}
-          cartResult={cartResult}
-        />
-        {/* <SubBar /> */}
+        <MainHeader />
       </header>
 
       {/* Mobile bottom navigation */}
-      <BottomNavigation
-        user={user}
-        seller={seller}
-        cartItemCount={cartItemCount}
-        wishlistItemCount={wishlistItemCount}
-      />
+      <BottomNavigation />
     </>
   );
 };

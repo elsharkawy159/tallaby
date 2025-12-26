@@ -23,13 +23,13 @@ export const SimilarProducts = ({
   if (!products || products.length === 0) return null;
 
   // Create maps for quick lookup
-  const cartProductIds = new Set(
+  const cartItemsMap = new Map(
     cartItems
       .filter((item: any) => !item.savedForLater)
-      .map((item: any) => item.productId)
+      .map((item: any) => [item.productId, item])
   );
   const wishlistMap = new Map(
-    wishlistItems.map((item: any) => [item.productId, item.id])
+    wishlistItems.map((item: any) => [item.productId, item])
   );
 
   return (
@@ -52,16 +52,23 @@ export const SimilarProducts = ({
           className="relative"
         >
           <CarouselContent className="">
-            {products.map((product) => (
-              <CarouselItem key={product.id} className="basis-auto">
-                <ProductCard
-                  {...product}
-                  isInCart={cartProductIds.has(product.id)}
-                  isInWishlist={wishlistMap.has(product.id)}
-                  wishlistItemId={wishlistMap.get(product.id)}
-                />
-              </CarouselItem>
-            ))}
+            {products.map((product) => {
+              const cartItem = cartItemsMap.get(product.id);
+              const wishlistItem = wishlistMap.get(product.id);
+
+              return (
+                <CarouselItem key={product.id} className="basis-auto">
+                  <ProductCard
+                    {...product}
+                    isInCart={!!cartItem}
+                    cartItemId={cartItem?.id}
+                    cartItemQuantity={cartItem?.quantity || 0}
+                    isInWishlist={!!wishlistItem}
+                    wishlistItemId={wishlistItem?.id}
+                  />
+                </CarouselItem>
+              );
+            })}
           </CarouselContent>
           <CarouselPrevious className="absolute -left-4 top-1/2 -translate-y-1/2 z-10" />
           <CarouselNext className="absolute -right-4 top-1/2 -translate-y-1/2 z-10" />

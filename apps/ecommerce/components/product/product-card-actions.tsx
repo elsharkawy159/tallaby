@@ -11,6 +11,8 @@ interface ProductCardActionsProps {
   className?: string;
   variant?: "card" | "page";
   isInCart?: boolean;
+  cartItemId?: string;
+  cartItemQuantity?: number;
   isInWishlist?: boolean;
   wishlistItemId?: string;
 }
@@ -20,6 +22,8 @@ export const ProductCardActions = ({
   className,
   variant = "card",
   isInCart: isInCartStatus = false,
+  cartItemId,
+  cartItemQuantity = 0,
   isInWishlist = false,
   wishlistItemId,
 }: ProductCardActionsProps) => {
@@ -39,8 +43,9 @@ export const ProductCardActions = ({
                 productId={productId}
                 size="lg"
                 showRemoveButton={true}
-                cartItemId={undefined}
-                initialQuantity={0}
+                cartItemId={cartItemId}
+                initialQuantity={cartItemQuantity}
+                productStock={product.quantity || 0}
               />
             </div>
             <WishlistButton
@@ -89,6 +94,8 @@ export const ProductCardActions = ({
           productId={productId}
           showRemoveButton={true}
           productStock={product.quantity || 0}
+          cartItemId={cartItemId}
+          initialQuantity={cartItemQuantity}
           className="!border-0 !bg-transparent !text-white shadow"
         />
       </div>

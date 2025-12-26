@@ -3,6 +3,8 @@ import { Button } from "@workspace/ui/components/button";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { getProducts } from "@/actions/products";
+import { getCartItems } from "@/actions/cart";
+import { getWishlistItems } from "@/actions/wishlist";
 import { ProductCardProps } from "../product";
 
 interface ProductFilters {
@@ -37,6 +39,27 @@ const ProductsGrid = async ({
     return null;
   }
 
+  // Fetch cart and wishlist items
+  const cartResult = await getCartItems();
+  const cartData = cartResult.success ? cartResult.data : null;
+  const cartItems = cartData?.items ?? [];
+
+  const wishlistResult = await getWishlistItems();
+  const wishlistItems = wishlistResult.success
+    ? (wishlistResult.data ?? [])
+    : [];
+
+  // Create maps for quick lookup
+  const cartItemsMap = new Map(
+    cartItems
+      .filter((item: any) => !item.savedForLater)
+      .map((item: any) => [item.productId, item])
+  );
+
+  const wishlistMap = new Map(
+    wishlistItems.map((item: any) => [item.productId, item])
+  );
+
   return (
     <section className="lg:py-8 py-5 container">
       {/* Header Section */}
@@ -61,9 +84,22 @@ const ProductsGrid = async ({
 
       {/* Products Grid */}
       <div className="grid gap-4 grid-cols-2 md:grid-cols-3 h-fu lg:grid-cols-4 xl:grid-cols-5">
-        {products.data.map((product) => (
-          <ProductCard key={product.id} {...(product as ProductCardProps)} />
-        ))}
+        {products.data.map((product) => {
+          const cartItem = cartItemsMap.get(product.id);
+          const wishlistItem = wishlistMap.get(product.id);
+
+          return (
+            <ProductCard
+              key={product.id}
+              {...(product as ProductCardProps)}
+              isInCart={!!cartItem}
+              cartItemId={cartItem?.id}
+              cartItemQuantity={cartItem?.quantity || 0}
+              isInWishlist={!!wishlistItem}
+              wishlistItemId={wishlistItem?.id}
+            />
+          );
+        })}
       </div>
     </section>
   );

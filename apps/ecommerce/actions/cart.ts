@@ -3,8 +3,8 @@
 
 import { db, carts, cartItems, products, eq, and, desc } from "@workspace/db";
 import { getCurrentUserId } from "@/lib/get-current-user-id";
-import { revalidatePath } from "next/cache";
-
+import { revalidatePath, revalidateTag } from "next/cache";
+import { cache } from "react";
 type ProductPrice = {
   base: number;
   list: number;
@@ -66,7 +66,7 @@ async function ensureCart() {
   }
 }
 
-export async function getCartItems() {
+export const getCartItems = cache(async () => {
   const cart = await ensureCart();
   if (!cart) return { success: false, error: "No cart found" };
 
@@ -101,7 +101,7 @@ export async function getCartItems() {
     success: true,
     data: { cart, items: itemsWithFixedPrices, subtotal, itemCount },
   };
-}
+}, ["cart"]);
 
 export async function addToCart(productId: string, quantity = 1) {
   const cart = await ensureCart();
@@ -159,7 +159,7 @@ export async function addToCart(productId: string, quantity = 1) {
   // Revalidate cart page to reflect changes
   revalidatePath("/cart");
   revalidatePath("/cart/checkout");
-
+  revalidateTag("cart", "cart-items");
   return {
     success: true,
     data: result[0],
@@ -190,7 +190,7 @@ export async function updateCartItem(itemId: string, quantity: number) {
   // Revalidate cart page to reflect changes
   revalidatePath("/cart");
   revalidatePath("/cart/checkout");
-
+  revalidatePath("/");
   return { success: true, data: updated };
 }
 
@@ -202,6 +202,7 @@ export async function removeFromCart(itemId: string) {
   // Revalidate cart page to reflect changes
   revalidatePath("/cart");
   revalidatePath("/cart/checkout");
+  revalidatePath("/");
   return { success: true, message: "Item removed" };
 }
 
@@ -213,5 +214,6 @@ export async function clearCart() {
   // Revalidate cart page to reflect changes
   revalidatePath("/cart");
   revalidatePath("/cart/checkout");
+  revalidatePath("/");
   return { success: true, message: "Cart cleared" };
 }
