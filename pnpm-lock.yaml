@@ -218,9 +218,6 @@ importers:
       '@babel/runtime-corejs3':
         specifier: ^7.28.3
         version: 7.28.3
-      '@eslint/eslintrc':
-        specifier: ^3
-        version: 3.2.0
       '@tailwindcss/postcss':
         specifier: ^4.1.11
         version: 4.1.11
