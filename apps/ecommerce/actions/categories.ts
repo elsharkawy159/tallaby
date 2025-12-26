@@ -123,7 +123,7 @@ export const getTopCategories = unstable_cache(
     }
   },
   ["top-categories"],
-  { revalidate: 60 * 60 * 24 }
+  { revalidate: 60 * 60 * 24 } // 1 day
 );
 
 export const getCategoriesWithProducts = unstable_cache(
@@ -167,7 +167,7 @@ export const getCategoriesWithProducts = unstable_cache(
     }
   },
   ["categories-with-products"],
-  { revalidate: 60 * 60 * 24 }
+  { revalidate: 60 * 60 * 24 } // 1 day
 );
 
 const buildCategoryTree = unstable_cache(
@@ -195,7 +195,7 @@ const buildCategoryTree = unstable_cache(
     return tree;
   },
   ["build-category-tree"],
-  { revalidate: 60 * 60 * 24 }
+  { revalidate: 60 * 60 * 24 } // 1 day
 );
 
 const getCategoryBreadcrumb = unstable_cache(
@@ -219,5 +219,5 @@ const getCategoryBreadcrumb = unstable_cache(
     return breadcrumb;
   },
   ["get-category-breadcrumb"],
-  { revalidate: 60 * 60 * 24 }
+  { revalidate: 60 * 60 * 24 } // 1 day
 );

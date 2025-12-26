@@ -6,7 +6,6 @@ import ProductSection from "@/components/home/ProductSection";
 // import FeaturedCollection from "@/components/home/featured-collection";
 import Hero from "@/components/home/hero/hero";
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import { ProductsGrid } from "@/components/home";
 
 export const metadata: Metadata = {
