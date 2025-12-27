@@ -320,3 +320,12 @@ export const AddressManagerDialog = ({
 }: Pick<AddressDialogProps, "onSuccess" | "trigger">) => (
   <AddressDialog onSuccess={onSuccess} trigger={trigger} />
 );
+
+// Simple wrapper for editing an existing address
+export const EditAddressDialog = ({
+  address,
+  onSuccess,
+  trigger,
+}: Pick<AddressDialogProps, "address" | "onSuccess" | "trigger">) => (
+  <AddressDialog address={address} onSuccess={onSuccess} trigger={trigger} />
+);
