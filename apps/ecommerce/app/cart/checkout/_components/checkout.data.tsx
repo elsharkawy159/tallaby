@@ -150,10 +150,12 @@ export const CheckoutData = ({
         />
 
         {/* Payment Method */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl font-bold">Payment</CardTitle>
-          </CardHeader>
+        <Card className="rounded-2xl border border-gray-200 overflow-hidden pt-0">
+          <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-5 border-b border-gray-200">
+            <CardTitle className="text-xl font-bold text-gray-900">
+              Payment Method
+            </CardTitle>
+          </div>
           <CardContent>
             <FormField
               control={form.control}
@@ -172,13 +174,13 @@ export const CheckoutData = ({
                             key={method.id}
                             htmlFor={method.id}
                             className={`
-                              rounded-lg border transition-all duration-100
+                              rounded-xl border-2 p-4 transition-all duration-200
                               ${
                                 method.enabled
                                   ? `cursor-pointer ${
                                       field.value === method.value
-                                        ? "ring-1 ring-primary bg-primary/5 border-primary"
-                                        : "border-gray-200 hover:border-gray-300"
+                                        ? "ring-2 ring-primary bg-primary/5 border-primary shadow-sm"
+                                        : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
                                     }`
                                   : "cursor-not-allowed opacity-50 border-gray-200 bg-gray-50"
                               }

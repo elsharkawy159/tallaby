@@ -92,7 +92,7 @@ export function LoginFormClient({ redirectTo }: LoginFormClientProps) {
           <div className="text-sm/6">
             <Link
               href="/forgot-password"
-              className="font-semibold text-indigo-600 hover:text-indigo-500"
+              className="font-semibold text-primary"
             >
               Forgot password?
             </Link>
@@ -100,11 +100,7 @@ export function LoginFormClient({ redirectTo }: LoginFormClientProps) {
         </div>
 
         <div>
-          <Button
-            type="submit"
-            disabled={isPending}
-            className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-          >
+          <Button type="submit" className="w-full" disabled={isPending}>
             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Sign in
           </Button>

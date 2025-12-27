@@ -81,14 +81,14 @@ export const ShippingInformation = ({
   // Show loading state
   if (isLoading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl font-bold">
+      <Card className="rounded-2xl border border-gray-200 overflow-hidden pt-0!">
+        <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-5 border-b border-gray-200">
+          <CardTitle className="flex items-center gap-2 text-xl font-bold text-gray-900">
             <MapPin className="h-5 w-5" />
             Shipping Information
           </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+        </div>
+        <CardContent className="p-6">
           <div className="text-center py-8 text-muted-foreground">
             <MapPin className="h-8 w-8 mx-auto mb-2 opacity-50 animate-pulse" />
             <p className="text-sm">Loading addresses...</p>
@@ -99,14 +99,14 @@ export const ShippingInformation = ({
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-xl font-bold">
+    <Card className="rounded-2xl border border-gray-200 overflow-hidden mb-6 p-0 gap-0">
+      <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-5 border-b border-gray-200">
+        <CardTitle className="flex items-center gap-2 text-xl font-bold text-gray-900">
           <MapPin className="h-5 w-5" />
           Shipping Information
         </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+      </div>
+      <CardContent className="p-6 space-y-4">
         {/* Selected Address Display */}
         {selectedAddress ? (
           <div className="space-y-4">
@@ -114,16 +114,16 @@ export const ShippingInformation = ({
               Selected Address
             </h4>
 
-            <div className="p-4 bg-muted/50 rounded-lg space-y-2">
-              <div className="font-semibold text-foreground">
+            <div className="p-5 bg-gray-50 rounded-xl border border-gray-200 space-y-3">
+              <div className="font-semibold text-gray-900 text-base">
                 {selectedAddress.fullName}
               </div>
 
-              <div className="text-sm text-muted-foreground">
+              <div className="text-sm text-gray-600">
                 {selectedAddress.phone}
               </div>
 
-              <div className="text-sm text-foreground space-y-1">
+              <div className="text-sm text-gray-700 space-y-1">
                 {formatAddressLines(selectedAddress).map((line, index) => (
                   <div key={index}>{line}</div>
                 ))}
@@ -131,11 +131,11 @@ export const ShippingInformation = ({
 
               {/* Delivery Instructions */}
               {selectedAddress.deliveryInstructions && (
-                <div className="mt-3 p-2 bg-background rounded border-l-2 border-green-500">
-                  <div className="text-xs font-medium text-muted-foreground mb-1">
+                <div className="mt-4 p-3 bg-white rounded-lg border-l-4 border-green-500">
+                  <div className="text-xs font-medium text-gray-500 mb-1 uppercase tracking-wide">
                     Delivery Instructions:
                   </div>
-                  <div className="text-sm text-foreground">
+                  <div className="text-sm text-gray-900">
                     {selectedAddress.deliveryInstructions}
                   </div>
                 </div>
@@ -168,7 +168,7 @@ export const ShippingInformation = ({
           trigger={
             <Button
               variant="outline"
-              className="w-full border-2 border-dashed border-muted-foreground/25 hover:border-primary/50 transition-colors"
+              className="w-full h-11 border-2 hover:bg-gray-50 transition-colors"
             >
               <MapPin className="h-4 w-4 mr-2" />
               Change Address

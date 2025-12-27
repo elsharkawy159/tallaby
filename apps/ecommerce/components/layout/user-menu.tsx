@@ -183,7 +183,7 @@ export function UserMenu({
                     href={
                       process.env.NODE_ENV === "development"
                         ? "http://localhost:3001"
-                        : "https://seller.tallaby.com/"
+                        : "https://dashboard.tallaby.com/"
                     }
                     target="_blank"
                     rel="noopener noreferrer"

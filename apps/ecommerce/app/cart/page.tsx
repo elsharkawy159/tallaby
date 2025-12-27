@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { Button } from "@workspace/ui/components/button";
 import { Separator } from "@workspace/ui/components/separator";
-import { Minus, Plus, ArrowLeft, Loader2, Trash2 } from "lucide-react";
+import { ArrowLeft, Shield } from "lucide-react";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import { formatPrice } from "@workspace/lib";
@@ -11,6 +11,7 @@ import { getCartItems } from "@/actions/cart";
 import Link from "next/link";
 import { getLocale } from "next-intl/server";
 import { QuantitySelector } from "@/components/product/quantity-selector";
+import { ScrollArea, ScrollBar } from "@workspace/ui/components";
 
 export const metadata: Metadata = generateNoIndexMetadata();
 
@@ -20,15 +21,23 @@ export default async function Cart() {
   const cartData = cartResult.success ? cartResult.data : null;
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-gray-50 to-white">
       <DynamicBreadcrumb />
-      <main className="flex-1 container pb-12">
-        <h1 className="text-3xl font-bold mb-8">
-          Shopping Cart ({cartData?.itemCount} items)
-        </h1>
+      <main className="flex-1 container py-8 pb-16">
+        {/* Header Section */}
+        <div className="mb-10">
+          <h1 className="text-3xl font-bold tracking-tight mb-2">
+            Shopping Cart
+          </h1>
+          <p className="text-muted-foreground text-lg">
+            {cartData?.itemCount || 0}{" "}
+            {cartData?.itemCount === 1 ? "item" : "items"} in your cart
+          </p>
+        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-8 lg:gap-12">
+          {/* Cart Items Section */}
+          <div className="space-y-4">
             {cartData?.items.map((item: any) => {
               const p = item.product;
               const unit = Number(item.price);
@@ -39,85 +48,93 @@ export default async function Cart() {
               return (
                 <div
                   key={item.id}
-                  className="flex flex-col relative sm:flex-row bg-white gap-4 p-6 shadow-sm rounded-lg"
+                  className="group relative bg-white rounded-2xl border border-gray-200 overflow-hidden transition-all duration-300 hover:border-gray-300"
                 >
-                  <Link
-                    href={`/products/${p.slug}`}
-                    className="w-full sm:w-32 h-32 bg-gray-100 rounded-lg overflow-hidden relative"
-                  >
-                    <Image
-                      src={image}
-                      alt={p.title}
-                      fill
-                      sizes="50vw"
-                      className="object-contain bg-white"
-                    />
-                  </Link>
-                  <div className="flex-1 space-y-1">
-                    <div className="flex justify-between items-start">
-                      <div className="space-y-0.5">
+                  <div className="flex flex-col sm:flex-row gap-6 p-6 sm:p-8">
+                    {/* Product Image */}
+                    <Link
+                      href={`/products/${p.slug}`}
+                      className="relative w-full sm:w-40 h-40 sm:h-40 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl overflow-hidden flex-shrink-0 transition-transform duration-300 group-hover:scale-105"
+                    >
+                      <Image
+                        src={image}
+                        alt={p.title}
+                        fill
+                        sizes="(max-width: 640px) 100vw, 160px"
+                        className="object-contain p-4"
+                        priority
+                      />
+                    </Link>
+
+                    {/* Product Details */}
+                    <div className="flex-1 flex flex-col gap-4 min-w-0">
+                      {/* Title and Meta */}
+                      <div className="space-y-2">
                         <Link
                           href={`/products/${p.slug}`}
-                          className="font-medium text-lg"
+                          className="block group/link"
                         >
-                          {p.title}
+                          <h3 className="text-xl font-semibold text-gray-900 leading-tight transition-colors group-hover/link:text-primary line-clamp-2">
+                            {p.title}
+                          </h3>
                         </Link>
-                        <div className="text-xs text-gray-600">
-                          {p.brand?.name ? (
-                            <span>Brand: {p.brand.name}</span>
-                          ) : null}
-                          {p.seller?.displayName ? (
-                            <>
-                              {p.brand?.name ? (
-                                <span className="mx-1">·</span>
-                              ) : null}
-                              <span>Seller: {p.seller.displayName}</span>
-                            </>
-                          ) : null}
-                          {p.sku ? (
-                            <span className="ml-1"> · SKU: {p.sku}</span>
-                          ) : null}
+
+                        {/* Meta Information */}
+                        <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                          {p.brand?.name && (
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-gray-100 text-gray-700 font-medium">
+                              {p.brand.name}
+                            </span>
+                          )}
+                          {p.seller?.displayName && (
+                            <span className="text-gray-600">
+                              by {p.seller.displayName}
+                            </span>
+                          )}
+                          {p.sku && (
+                            <span className="text-gray-500">SKU: {p.sku}</span>
+                          )}
                         </div>
                       </div>
-                      {/* <Button
-                    size="icon"
-                    variant="ghost"
-                    className="text-gray-400 absolute top-2 right-2 hover:text-red-500 p-1"
-                    onClick={() => removeFromCart(item.id)}
-                    disabled={isProductLoading(item.id)}
-                  >
-                    {isProductLoading(item.id) ? (
-                      <Loader2 className="size-5 animate-spin" />
-                    ) : (
-                      <Trash2 className="size-5" />
-                    )}
-                  </Button> */}
-                    </div>
 
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                      <div className="flex items-center space-x-2">
-                        <span
-                          className="font-bold text-lg"
-                          dangerouslySetInnerHTML={{
-                            __html: formatPrice(unit, locale),
-                          }}
-                        />
-                        {/* Price comparison logic can be added here if needed */}
-                      </div>
-                      <div className="flex items-center flex-col gap-4">
-                        <QuantitySelector
-                          productId={p.id}
-                          showRemoveButton={true}
-                          cartItemId={item.id}
-                          initialQuantity={item.quantity}
-                          productStock={p.quantity}
-                        />
-                        <span
-                          className="font-medium"
-                          dangerouslySetInnerHTML={{
-                            __html: formatPrice(lineTotal, locale),
-                          }}
-                        />
+                      {/* Price and Quantity Controls */}
+                      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mt-auto pt-4 border-t border-gray-100">
+                        {/* Unit Price */}
+                        <div className="flex items-baseline gap-2">
+                          <span
+                            className="text-2xl font-bold text-gray-900"
+                            dangerouslySetInnerHTML={{
+                              __html: formatPrice(unit, locale),
+                            }}
+                          />
+                          <span className="text-sm text-muted-foreground">
+                            per item
+                          </span>
+                        </div>
+
+                        {/* Quantity and Line Total */}
+                        <div className="flex items-center gap-6">
+                          <div className="flex flex-col items-end gap-2">
+                            <QuantitySelector
+                              productId={p.id}
+                              showRemoveButton={true}
+                              cartItemId={item.id}
+                              initialQuantity={item.quantity}
+                              productStock={p.quantity}
+                            />
+                            <div className="text-right">
+                              <span className="text-xs text-muted-foreground uppercase tracking-wide">
+                                Line Total
+                              </span>
+                              <div
+                                className="text-xl font-bold text-gray-900 mt-0.5"
+                                dangerouslySetInnerHTML={{
+                                  __html: formatPrice(lineTotal, locale),
+                                }}
+                              />
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -125,83 +142,114 @@ export default async function Cart() {
               );
             })}
           </div>
-          <div className="space-y-6">
-            <div className="bg-white p-6 rounded-lg shadow-sm">
-              <h2 className="text-2xl font-bold mb-4">Order Summary</h2>
-              <table className="w-full text-sm mb-4">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-2">Item</th>
-                    <th className="text-right py-2">Qty</th>
-                    <th className="text-right py-2">Unit</th>
-                    <th className="text-right py-2">Total</th>
-                  </tr>
-                </thead>
-                <tbody>
+
+          {/* Order Summary Sidebar */}
+          <div className="lg:sticky lg:top-8 h-fit">
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+              {/* Summary Header */}
+              <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-5 border-b border-gray-200">
+                <h2 className="text-xl font-bold text-gray-900">
+                  Order Summary
+                </h2>
+              </div>
+
+              {/* Items Breakdown */}
+              <div className="p-5 pt-3">
+                <div className="space-y-0 mb-3">
+
                   {cartData?.items.map((item: any) => {
                     const p = item.product;
                     const unit = Number(item.price) ?? 0;
                     const lineTotal = unit * item.quantity;
                     return (
-                      <tr key={item.id} className="border-b last:border-b-0">
-                        <td className="py-2 truncate max-w-30">{p.title}</td>
-                        <td className="py-2 text-right">{item.quantity}</td>
-                        <td
-                          className="py-2 text-right"
-                          dangerouslySetInnerHTML={{
-                            __html: formatPrice(unit, locale),
-                          }}
-                        />
-                        <td
-                          className="py-2 text-right"
+                      <div
+                        key={item.id}
+                        className="flex items-start justify-between gap-4 py-3 border-b border-gray-100 last:border-0"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">
+                            {p.title}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            Qty: {item.quantity}
+                            {" × "}
+                            <span
+                              dangerouslySetInnerHTML={{
+                                __html: formatPrice(unit, locale),
+                              }}
+                            />
+                          </p>
+                        </div>
+                        <div
+                          className="text-sm font-semibold text-gray-900 whitespace-nowrap"
                           dangerouslySetInnerHTML={{
                             __html: formatPrice(lineTotal, locale),
                           }}
                         />
-                      </tr>
+                      </div>
                     );
                   })}
-                </tbody>
-              </table>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="font-medium">Subtotal</span>
-                  <span
-                    dangerouslySetInnerHTML={{
-                      __html: formatPrice(cartData?.subtotal ?? 0, locale),
-                    }}
-                  />
                 </div>
-                <Separator />
-                <div className="flex justify-between font-bold text-lg">
-                  <span>Total</span>
-                  <span
-                    className="text-primary"
-                    dangerouslySetInnerHTML={{
-                      __html: formatPrice(cartData?.subtotal ?? 0, locale),
-                    }}
-                  />
+
+                {/* Totals */}
+                <div className="space-y-4 pt-4 border-t-2 border-gray-200">
+                  <div className="flex items-center justify-between text-base">
+                    <span className="font-medium text-gray-700">Subtotal</span>
+                    <span
+                      className="font-semibold text-gray-900"
+                      dangerouslySetInnerHTML={{
+                        __html: formatPrice(cartData?.subtotal ?? 0, locale),
+                      }}
+                    />
+                  </div>
+
+                  <Separator className="bg-gray-200" />
+
+                  <div className="flex items-center justify-between pt-2">
+                    <span className="text-xl font-bold text-gray-900">
+                      Total
+                    </span>
+                    <span
+                      className="text-2xl font-bold text-primary"
+                      dangerouslySetInnerHTML={{
+                        __html: formatPrice(cartData?.subtotal ?? 0, locale),
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
+
+              {/* Checkout Button */}
+              <div className="px-6 pb-6 space-y-4">
+                <Link href="/cart/checkout" className="block">
+                  <Button
+                    className="w-full h-12 text-base font-semibold transition-all duration-200"
+                    size="lg"
+                    disabled={
+                      !cartData?.items.length || cartData.items.length === 0
+                    }
+                  >
+                    Proceed to Checkout
+                  </Button>
+                </Link>
+
+                <Link href="/products">
+                  <Button
+                    variant="outline"
+                    className="w-full h-11 border-2 hover:bg-gray-50 transition-colors"
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Continue Shopping
+                  </Button>
+                </Link>
+
+                {/* Security Badge */}
+                {/* <div className="flex items-center justify-center gap-2 pt-2 text-sm text-muted-foreground">
+                  <Shield className="h-4 w-4" />
+                  <span>Secure checkout with SSL encryption</span>
+                </div> */}
+              </div>
             </div>
-            <Link href="/cart/checkout" className="block">
-              <Button
-                className="w-full"
-                size="lg"
-                disabled={cartData?.items.length === 0}
-              >
-                Proceed to Checkout
-              </Button>
-            </Link>
-            <Link href="/products">
-              <Button variant="outline" className="w-full">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Continue Shopping
-              </Button>
-            </Link>
-            <p className="text-center text-sm text-gray-600 mt-4">
-              🔒 Secure checkout with SSL encryption
-            </p>
           </div>
         </div>
       </main>
