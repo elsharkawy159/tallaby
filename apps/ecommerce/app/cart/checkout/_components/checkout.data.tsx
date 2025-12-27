@@ -165,13 +165,14 @@ export const CheckoutData = ({
                       <RadioGroup
                         value={field.value}
                         onValueChange={field.onChange}
+                        className="grid grid-cols-1 lg:grid-cols-3 gap-4"
                       >
                         {paymentMethods.map((method) => (
                           <FieldLabel
                             key={method.id}
                             htmlFor={method.id}
                             className={`
-                              p-4 rounded-lg border transition-all duration-100
+                              rounded-lg border transition-all duration-100
                               ${
                                 method.enabled
                                   ? `cursor-pointer ${
@@ -201,7 +202,7 @@ export const CheckoutData = ({
                                     </span>
                                   )}
                                 </FieldTitle>
-                                <FieldDescription>
+                                <FieldDescription className="text-xs">
                                   {method.description}
                                 </FieldDescription>
                               </FieldContent>

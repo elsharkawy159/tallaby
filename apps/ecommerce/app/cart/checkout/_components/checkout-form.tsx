@@ -6,10 +6,9 @@ import { Checkbox } from "@workspace/ui/components/checkbox";
 import { Label } from "@workspace/ui/components/label";
 import { Input } from "@workspace/ui/components/input";
 import { Textarea } from "@workspace/ui/components/textarea";
-import { Switch } from "@workspace/ui/components/switch";
-import Link from "next/link";
 import { type CheckoutFormData } from "./checkout-form.schema.js";
 import { FormField } from "@workspace/ui/components/form";
+import { Card, CardContent } from "@workspace/ui/components/card";
 
 interface CheckoutFormProps {
   checkoutData: any;
@@ -23,10 +22,9 @@ export const CheckoutForm = ({
   isPending,
 }: CheckoutFormProps) => {
   return (
-    <div className="bg-white border rounded-lg p-4 sm:p-6">
-      {/* <h2 className="text-xl font-bold mb-6">Place Order</h2> */}
-
-      <div className="space-y-6">
+    <Card>
+      <CardContent className="space-y-4">
+        {/* <h2 className="text-xl font-bold mb-6">Place Order</h2> */}
 
         {/* Coupon Code */}
         {/* <div className="space-y-2">
@@ -53,8 +51,7 @@ export const CheckoutForm = ({
         </div> */}
 
         {/* Gift Options */}
-        <div className="space-y-4">
-          {/* <FormField
+        {/* <FormField
             control={form.control}
             name="isGift"
             render={({ field }) => (
@@ -71,32 +68,31 @@ export const CheckoutForm = ({
             )}
           /> */}
 
-          {form.watch("isGift") && (
-            <div className="space-y-2">
-              <Label htmlFor="giftMessage" className="text-sm font-medium">
-                Gift Message (Optional)
-              </Label>
-              <FormField
-                control={form.control}
-                name="giftMessage"
-                render={({ field }) => (
-                  <Textarea
-                    {...field}
-                    id="giftMessage"
-                    placeholder="Enter your gift message..."
-                    rows={3}
-                    className="w-full"
-                  />
-                )}
-              />
-              {form.formState.errors.giftMessage && (
-                <p className="text-sm text-red-500">
-                  {form.formState.errors.giftMessage.message}
-                </p>
+        {/* {form.watch("isGift") && (
+          <div className="space-y-2">
+            <Label htmlFor="giftMessage" className="text-sm font-medium">
+              Gift Message (Optional)
+            </Label>
+            <FormField
+              control={form.control}
+              name="giftMessage"
+              render={({ field }) => (
+                <Textarea
+                  {...field}
+                  id="giftMessage"
+                  placeholder="Enter your gift message..."
+                  rows={3}
+                  className="w-full"
+                />
               )}
-            </div>
-          )}
-        </div>
+            />
+            {form.formState.errors.giftMessage && (
+              <p className="text-sm text-red-500">
+                {form.formState.errors.giftMessage.message}
+              </p>
+            )}
+          </div>
+        )} */}
 
         {/* Order Notes */}
         <div className="space-y-2">
@@ -104,7 +100,7 @@ export const CheckoutForm = ({
             Order Notes (Optional)
           </Label>
           <FormField
-            control={form.control}
+            control={form.control as any}
             name="notes"
             render={({ field }) => (
               <Textarea
@@ -112,7 +108,7 @@ export const CheckoutForm = ({
                 id="notes"
                 placeholder="Any special instructions for your order..."
                 rows={3}
-                className="w-full"
+                className="w-full max-h-40"
               />
             )}
           />
@@ -126,12 +122,12 @@ export const CheckoutForm = ({
         <Button
           type="submit"
           size="lg"
-          className="bg-green-600 hover:bg-green-700 w-full"
+          className="w-full"
           disabled={isPending || !form.formState.isValid}
         >
           {isPending ? "Placing Order..." : "Place Order"}
         </Button>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };

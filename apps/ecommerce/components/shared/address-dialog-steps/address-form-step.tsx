@@ -3,13 +3,13 @@
 import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
 
 import { Button } from "@workspace/ui/components/button";
 import { Form } from "@workspace/ui/components/form";
 import { Card, CardContent } from "@workspace/ui/components/card";
 import { Separator } from "@workspace/ui/components/separator";
 
-// Import our reusable inputs
 import { TextInput } from "@workspace/ui/components/inputs/text-input";
 import { TextareaInput } from "@workspace/ui/components/inputs/textarea-input";
 import { SwitchInput } from "@workspace/ui/components/inputs/switch-input";
@@ -19,7 +19,7 @@ import {
   addressDefaults,
   type AddressData,
 } from "../../address/address.schema";
-import { useAddress } from "@/providers/address-provider";
+import { addAddress, updateAddress } from "@/actions/customer";
 
 interface AddressFormStepProps {
   address?: AddressData | null;
@@ -44,10 +44,6 @@ export const AddressFormStep = ({
 }: AddressFormStepProps) => {
   const [isPending, startTransition] = useTransition();
 
-  // Use the AddressProvider
-  const { addAddress, updateAddress } = useAddress();
-
-  // Setup form with react-hook-form
   const form = useForm<AddressData>({
     resolver: zodResolver(addressSchema) as any,
     defaultValues: {
@@ -66,7 +62,6 @@ export const AddressFormStep = ({
     },
   });
 
-  // Handle form submission with useTransition
   const handleSubmit = (data: AddressData) => {
     startTransition(async () => {
       try {
@@ -79,7 +74,8 @@ export const AddressFormStep = ({
           form.reset();
           onSuccess?.(result.data as AddressData);
         } else {
-          // Provider already shows toast, but handle field errors if any
+          toast.error(result.error || "Failed to save address");
+
           // Set server-side field errors if available
           if (result && typeof result === "object" && "error" in result) {
             const error = (result as any).error;
@@ -97,21 +93,22 @@ export const AddressFormStep = ({
         }
       } catch (error) {
         console.error("Form submission error:", error);
+        toast.error("Something went wrong. Please try again.");
       }
     });
   };
 
   return (
     <Card className="pb-0 pt-5">
-      {/* <CardHeader></CardHeader> */}
-
       <CardContent className="px-0">
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(handleSubmit as any)}
+            onSubmit={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
             className="space-y-4"
           >
-            {/* Personal Information */}
             <div className="space-y-3 px-6">
               <h3 className="font-semibold text-sm">Personal Information</h3>
 
@@ -137,7 +134,6 @@ export const AddressFormStep = ({
 
             <Separator />
 
-            {/* Address Information */}
             <div className="space-y-3 px-6">
               <h3 className="font-semibold text-sm">Address Information</h3>
 
@@ -187,7 +183,6 @@ export const AddressFormStep = ({
 
             <Separator />
 
-            {/* Business Address Toggle */}
             <div className="space-y-3 px-6">
               <SwitchInput
                 name="isBusinessAddress"
@@ -209,7 +204,6 @@ export const AddressFormStep = ({
 
             <Separator />
 
-            {/* Delivery Instructions */}
             <div className="space-y-3 px-6">
               <TextareaInput
                 form={form as any}
@@ -220,7 +214,6 @@ export const AddressFormStep = ({
               />
             </div>
 
-            {/* Form Actions */}
             <div className="px-6 py-3 border-t bg-white">
               <div className="gap-3 flex">
                 {onCancel && (
@@ -229,7 +222,7 @@ export const AddressFormStep = ({
                     variant="outline"
                     onClick={onCancel}
                     disabled={isPending}
-                    className="flex-1 rounded"
+                    className="flex-1"
                   >
                     Cancel
                   </Button>
@@ -237,14 +230,16 @@ export const AddressFormStep = ({
 
                 <Button
                   type="button"
+                  onClick={() => {
+                    form.handleSubmit(handleSubmit as any)();
+                  }}
                   disabled={isPending}
-                  onClick={() => handleSubmit(form.getValues())}
-                  className="flex-1 rounded"
+                  className="flex-1"
                 >
                   {isPending
                     ? address?.id
-                      ? "Updating Address..."
-                      : "Creating Address..."
+                      ? "Updating..."
+                      : "Creating..."
                     : address?.id
                       ? "Update Address"
                       : "Save Address"}

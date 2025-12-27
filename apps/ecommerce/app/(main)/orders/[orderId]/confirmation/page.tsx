@@ -15,12 +15,10 @@ export default async function OrderConfirmationPage({
   const { orderId } = await params;
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
-      <div className="container py-8">
-        <Suspense fallback={<OrderConfirmationSkeleton />}>
-          <OrderConfirmationData orderId={orderId} />
-        </Suspense>
-      </div>
-    </main>
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 container py-8">
+      <Suspense fallback={<OrderConfirmationSkeleton />}>
+        <OrderConfirmationData orderId={orderId} />
+      </Suspense>
+    </div>
   );
 }

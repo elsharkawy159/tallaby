@@ -25,6 +25,15 @@ import { customAlphabet } from "nanoid";
 import { revalidatePath } from "next/cache";
 import { getUser } from "./auth";
 
+/**
+ * Formats a number to a string with 2 decimal places for database storage.
+ * This should only be used when storing values in the database (which uses numeric(10,2)).
+ * Calculations should use numbers directly to maintain precision.
+ */
+function formatDecimal(value: number): string {
+  return value.toFixed(2);
+}
+
 export async function createOrder(data: {
   cartId: string;
   shippingAddressId: string;
@@ -86,6 +95,9 @@ export async function createOrder(data: {
       // tax += itemTax;
       // shippingCost += itemShipping;
 
+      const itemCommission = itemSubtotal * 0.1; // 10% commission
+      const itemSellerEarning = itemSubtotal * 0.9;
+
       return {
         productId: item.productId,
         variantId: (item.variant as any)?.id || null,
@@ -95,14 +107,14 @@ export async function createOrder(data: {
         variantName: (item.variant as any)?.title || null,
         quantity: item.quantity,
         price: item.price,
-        subtotal: itemSubtotal.toString(),
-        tax: tax.toString(),
-        shippingCost: shippingCost.toString(),
-        total: itemSubtotal.toString(),
-        discountAmount: "0",
+        subtotal: formatDecimal(itemSubtotal),
+        tax: formatDecimal(tax),
+        shippingCost: formatDecimal(shippingCost),
+        total: formatDecimal(itemSubtotal),
+        discountAmount: "0.00",
         commissionRate: 0.1, // 10% commission
-        commissionAmount: (itemSubtotal * 0.1).toString(),
-        sellerEarning: (itemSubtotal * 0.9).toString(),
+        commissionAmount: formatDecimal(itemCommission),
+        sellerEarning: formatDecimal(itemSellerEarning),
         currency: cart.currency || "EGP",
         condition: item.product.condition,
         fulfillmentType: item.product.fulfillmentType,
@@ -177,11 +189,11 @@ export async function createOrder(data: {
         orderNumber,
         userId,
         cartId: data.cartId,
-        subtotal: subtotal.toString(),
-        shippingCost: shippingCost.toString(),
-        tax: tax.toString(),
-        discountAmount: discountAmount.toString(),
-        totalAmount: totalAmount.toString(),
+        subtotal: formatDecimal(subtotal),
+        shippingCost: formatDecimal(shippingCost),
+        tax: formatDecimal(tax),
+        discountAmount: formatDecimal(discountAmount),
+        totalAmount: formatDecimal(totalAmount),
         currency: cart.currency || "EGP",
         status: "pending",
         paymentStatus: "pending",
@@ -212,7 +224,7 @@ export async function createOrder(data: {
         couponId: appliedCoupon.id,
         userId,
         orderId: newOrder?.id as string,
-        discountAmount: discountAmount.toString(),
+        discountAmount: formatDecimal(discountAmount),
       });
 
       // Update coupon usage count
@@ -522,7 +534,7 @@ export async function initiateReturn(data: {
         returnReason: data.items[0]?.reason as any, // Use first item's reason as primary
         returnType: data.returnType || "refund",
         additionalDetails: data.additionalDetails,
-        totalAmount: totalAmount.toString(),
+        totalAmount: formatDecimal(totalAmount),
       })
       .returning();
 

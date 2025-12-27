@@ -15,7 +15,6 @@ import {
 } from "@workspace/db";
 import { getCurrentUserId } from "@/lib/get-current-user-id";
 import { validateCoupon } from "./coupons";
-import { roundPrice } from "@workspace/lib/src/utils/formatPrice";
 
 export async function getCheckoutData() {
   try {
@@ -75,17 +74,15 @@ export async function getCheckoutData() {
           };
         }
         acc[sellerId].items.push(item);
-        acc[sellerId].subtotal += roundPrice(
-          Number(item.price) * item.quantity
-        );
+        acc[sellerId].subtotal += Number(item.price) * item.quantity;
         return acc;
       },
       {} as Record<string, any>
     );
 
-    // Calculate totals
+    // Calculate totals without rounding to maintain precision
     const subtotal = cart.cartItems.reduce(
-      (sum, item) => sum + roundPrice(Number(item.price) * item.quantity),
+      (sum, item) => sum + Number(item.price) * item.quantity,
       0
     );
 

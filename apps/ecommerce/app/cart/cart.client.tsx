@@ -9,8 +9,11 @@ import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import { useLocale } from "next-intl";
 import { formatPrice } from "@workspace/lib";
-import { useState, useTransition } from "react";
-import { updateCartItem, removeFromCart as removeFromCartAction } from "@/actions/cart";
+import { useState } from "react";
+import {
+  updateCartItem,
+  removeFromCart as removeFromCartAction,
+} from "@/actions/cart";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
@@ -21,7 +24,6 @@ interface CartClientProps {
 export default function CartClient({ initialCartData }: CartClientProps) {
   const [cartData, setCartData] = useState(initialCartData);
   const [loadingItems, setLoadingItems] = useState<Set<string>>(new Set());
-  const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const locale = useLocale();
 

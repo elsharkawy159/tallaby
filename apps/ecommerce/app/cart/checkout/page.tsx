@@ -14,11 +14,6 @@ import { getAddresses } from "@/actions/customer";
 
 export const metadata: Metadata = generateNoIndexMetadata();
 
-// Force dynamic rendering - no caching for checkout
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-export const fetchCache = "force-no-store";
-
 export default async function Checkout() {
   const result = await getCheckoutData();
   const addressesResult = await getAddresses();
@@ -53,8 +48,7 @@ export default async function Checkout() {
           </Link>
         </Button> */}
 
-      <main className="flex-1 container pb-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+        <div className="grid container grid-cols-1 pb-10 lg:grid-cols-3 gap-6 lg:gap-8">
           <div className="lg:col-span-2 order-2 lg:order-1">
             <CheckoutData
               checkoutData={result.data as any}
@@ -84,7 +78,6 @@ export default async function Checkout() {
             <CheckoutInteractions checkoutData={result.data as any} />
           </div>
         </div>
-      </main>
     </div>
   );
 }

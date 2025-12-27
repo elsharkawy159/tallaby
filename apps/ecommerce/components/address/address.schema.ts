@@ -10,13 +10,26 @@ export const addressSchema = z
     fullName: z
       .string()
       .min(1, "Full name is required")
-      .min(2, "Full name must be at least 2 characters")
-      .max(100, "Full name must be less than 100 characters"),
+      .min(4, "Full name must be at least 4 characters")
+      .max(100, "Full name must be less than 100 characters")
+      .refine(
+        (val) => {
+          // Count only letters (a-z, A-Z, and Arabic/Unicode letters)
+          const letterCount = (val.match(/[\p{L}]/gu) || []).length;
+          return letterCount >= 4;
+        },
+        {
+          message: "Full name must contain at least 4 letters",
+        }
+      ),
 
     phone: z
       .string()
       .min(1, "Phone number is required")
-      .regex(/^\+?[\d\s-()]+$/, "Please enter a valid phone number"),
+      .regex(
+        /^(?:\+20|20|0)?1[0125][0-9]{8}$/,
+        "Please enter a valid Egyptian mobile number"
+      ),
 
     company: z.string().optional(),
 
