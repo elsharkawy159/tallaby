@@ -4,6 +4,7 @@ import { db } from "@workspace/db";
 import { products, brands, categories, sellers } from "@workspace/db";
 import { eq, and, desc, sql, gte, lte, like, or } from "drizzle-orm";
 import { getAdminUser } from "./auth";
+import { revalidatePath } from "next/cache";
 
 export async function getAllProducts(params?: {
   status?: "active" | "inactive";
@@ -112,6 +113,116 @@ export async function getProductById(productId: string) {
     return { success: true, data: product };
   } catch (error) {
     console.error("Error fetching product:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+export async function updateProduct(
+  productId: string,
+  data: {
+    title?: string;
+    slug?: string;
+    description?: string;
+    bulletPoints?: string[];
+    brandId?: string;
+    categoryId?: string;
+    basePrice?: number;
+    listPrice?: number;
+    isActive?: boolean;
+    isPlatformChoice?: boolean;
+    isMostSelling?: boolean;
+    taxClass?: string;
+    metaTitle?: string;
+    metaDescription?: string;
+    metaKeywords?: string;
+    searchKeywords?: string;
+  }
+) {
+  try {
+    await getAdminUser(); // Verify admin access
+
+    // Check if product exists
+    const existingProduct = await db.query.products.findFirst({
+      where: eq(products.id, productId),
+    });
+
+    if (!existingProduct) {
+      return { success: false, error: "Product not found" };
+    }
+
+    // Build update object
+    const updateData: Record<string, unknown> = {
+      updatedAt: new Date().toISOString(),
+    };
+
+    if (data.title !== undefined) updateData.title = data.title;
+    if (data.slug !== undefined) updateData.slug = data.slug;
+    if (data.description !== undefined)
+      updateData.description = data.description || null;
+    if (data.bulletPoints !== undefined)
+      updateData.bulletPoints = data.bulletPoints || null;
+    if (data.brandId !== undefined) updateData.brandId = data.brandId || null;
+    if (data.categoryId !== undefined) updateData.categoryId = data.categoryId;
+    if (data.isActive !== undefined) updateData.isActive = data.isActive;
+    if (data.isPlatformChoice !== undefined)
+      updateData.isPlatformChoice = data.isPlatformChoice;
+    if (data.isMostSelling !== undefined)
+      updateData.isMostSelling = data.isMostSelling;
+    if (data.taxClass !== undefined) updateData.taxClass = data.taxClass;
+
+    // Handle price JSONB
+    if (data.basePrice !== undefined || data.listPrice !== undefined) {
+      const currentPrice =
+        (existingProduct.price as { base?: number; list?: number } | null) ||
+        {};
+      updateData.price = {
+        base: data.basePrice ?? currentPrice.base ?? 0,
+        list: data.listPrice ?? currentPrice.list ?? null,
+      };
+    }
+
+    // Handle SEO JSONB
+    if (
+      data.metaTitle !== undefined ||
+      data.metaDescription !== undefined ||
+      data.metaKeywords !== undefined ||
+      data.searchKeywords !== undefined
+    ) {
+      const currentSeo =
+        (existingProduct.seo as {
+          title?: string;
+          description?: string;
+          keywords?: string;
+          searchKeywords?: string;
+        } | null) || {};
+      updateData.seo = {
+        title: data.metaTitle ?? currentSeo.title ?? null,
+        description: data.metaDescription ?? currentSeo.description ?? null,
+        keywords: data.metaKeywords ?? currentSeo.keywords ?? null,
+        searchKeywords:
+          data.searchKeywords ?? currentSeo.searchKeywords ?? null,
+      };
+    }
+
+    const updatedProduct = await db
+      .update(products)
+      .set(updateData)
+      .where(eq(products.id, productId))
+      .returning();
+
+    if (!updatedProduct.length) {
+      throw new Error("Product not found");
+    }
+
+    revalidatePath("/withAuth/products");
+    revalidatePath(`/withAuth/products/${productId}`);
+
+    return { success: true, data: updatedProduct[0] };
+  } catch (error) {
+    console.error("Error updating product:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",

@@ -34,6 +34,7 @@ export const productSchema = z.object({
   metaKeywords: z.string().max(255).optional(),
   searchKeywords: z.string().max(500).optional(),
   additionalCategories: z.array(z.string().uuid()).optional(),
+  locale: z.enum(["en", "ar"]).default("en"),
 });
 
 // Product variant validation schema
@@ -67,6 +68,7 @@ export const productVariantSchema = z.object({
     })
     .optional(),
   isActive: z.boolean().default(true),
+  locale: z.enum(["en", "ar"]).default("en"),
 });
 
 // Product listing validation schema
@@ -111,4 +113,5 @@ export const productListingSchema = z.object({
   isBuyBox: z.boolean().default(false),
   isActive: z.boolean().default(true),
   notes: z.string().max(1000).optional(),
+  locale: z.enum(["en", "ar"]).default("en"),
 });

@@ -1,9 +1,9 @@
 "use client";
 
-import { useTransition } from "react";
+import { useTransition, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@workspace/ui/components/button";
@@ -21,37 +21,60 @@ import {
 
 import type { AuthFormProps } from "./auth-dialog.types";
 import { forgotPasswordAction, signInAction, signUpUser } from "@/actions/auth";
-import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 
 // Sign In Form Component
 export function SignInForm({
+  redirectTo,
   onSuccess,
-}: Omit<AuthFormProps, "isLoading" | "setIsLoading">) {
+  initialValues,
+}: {
+  redirectTo?: string;
+  onSuccess?: () => void;
+  initialValues?: { email?: string; password?: string };
+}) {
   const [isPending, startTransition] = useTransition();
-  const queryClient = useQueryClient();
-
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const router = useRouter();
   const form = useForm<SignInFormData>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: initialValues?.email || "",
+      password: initialValues?.password || "",
     },
   });
 
+  // Update form values when initialValues change
+  useEffect(() => {
+    if (initialValues?.email || initialValues?.password) {
+      form.reset({
+        email: initialValues.email || "",
+        password: initialValues.password || "",
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialValues?.email, initialValues?.password]);
+
   const handleSubmit = (data: SignInFormData) => {
+    setErrorMessage(null);
     startTransition(async () => {
       try {
         const result = await signInAction(data);
-        queryClient.invalidateQueries({ queryKey: ["user"] });
 
         if (result.success) {
-          onSuccess();
+          if (onSuccess) {
+            onSuccess();
+          } else {
+            router.push(redirectTo || "/");
+          }
         } else {
-          toast.error(result.message);
+          setErrorMessage(
+            result.message || "Sign in failed. Please try again."
+          );
         }
       } catch (error) {
         console.error("Sign in error:", error);
-        toast.error("Something went wrong. Please try again.");
+        setErrorMessage("Something went wrong. Please try again.");
       }
     });
   };
@@ -83,6 +106,13 @@ export function SignInForm({
           {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {isPending ? "Signing In..." : "Sign In"}
         </Button>
+
+        {errorMessage && (
+          <div className="flex items-start gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+            <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+            <p>{errorMessage}</p>
+          </div>
+        )}
       </form>
     </Form>
   );
@@ -91,7 +121,9 @@ export function SignInForm({
 // Sign Up Form Component
 export function SignUpForm({
   onSuccess,
-}: Omit<AuthFormProps, "isLoading" | "setIsLoading">) {
+}: {
+  onSuccess?: (credentials?: { email: string; password: string }) => void;
+}) {
   const [isPending, startTransition] = useTransition();
 
   const form = useForm<SignUpFormData>({
@@ -108,13 +140,17 @@ export function SignUpForm({
     startTransition(async () => {
       try {
         const result = await signUpUser(data);
-        console.log("result", result);
         if (result.success) {
           toast.success(
             "Account created successfully! Please check your email to verify your account."
           );
+          // Store credentials before resetting
+          const credentials = {
+            email: data.email,
+            password: data.password,
+          };
           form.reset();
-          onSuccess();
+          onSuccess?.(credentials);
 
           // If user is signed in automatically, refresh the page
           if (result.data?.id) {

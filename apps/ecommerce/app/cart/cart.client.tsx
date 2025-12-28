@@ -7,22 +7,74 @@ import { Separator } from "@workspace/ui/components/separator";
 import { Minus, Plus, ArrowLeft, Loader2, Trash2 } from "lucide-react";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
-import { useCart } from "@/providers/cart-provider";
 import { useLocale } from "next-intl";
 import { formatPrice } from "@workspace/lib";
+import { useState } from "react";
+import {
+  updateCartItem,
+  removeFromCart as removeFromCartAction,
+} from "@/actions/cart";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
-export default function CartClient() {
-  const {
-    cartData,
-    cartItems,
-    itemCount,
-    subtotal,
-    updateQuantity,
-    removeFromCart,
-    isItemLoading,
-    isProductLoading,
-  } = useCart();
+interface CartClientProps {
+  initialCartData: any;
+}
+
+export default function CartClient({ initialCartData }: CartClientProps) {
+  const [cartData, setCartData] = useState(initialCartData);
+  const [loadingItems, setLoadingItems] = useState<Set<string>>(new Set());
+  const router = useRouter();
   const locale = useLocale();
+
+  const cartItems = cartData?.items ?? [];
+  const itemCount = cartData?.itemCount ?? 0;
+  const subtotal = cartData?.subtotal ?? 0;
+
+  const updateQuantity = async (itemId: string, quantity: number) => {
+    setLoadingItems((prev) => new Set(prev).add(itemId));
+    try {
+      const result = await updateCartItem(itemId, quantity);
+      if (result.success) {
+        router.refresh();
+        toast.success("Cart updated");
+      } else {
+        toast.error(result.error || "Failed to update cart");
+      }
+    } catch (error) {
+      toast.error("Failed to update cart");
+    } finally {
+      setLoadingItems((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(itemId);
+        return newSet;
+      });
+    }
+  };
+
+  const removeFromCart = async (itemId: string) => {
+    setLoadingItems((prev) => new Set(prev).add(itemId));
+    try {
+      const result = await removeFromCartAction(itemId);
+      if (result.success) {
+        router.refresh();
+        toast.success("Item removed");
+      } else {
+        toast.error(result.error || "Failed to remove item");
+      }
+    } catch (error) {
+      toast.error("Failed to remove item");
+    } finally {
+      setLoadingItems((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(itemId);
+        return newSet;
+      });
+    }
+  };
+
+  const isItemLoading = (itemId: string) => loadingItems.has(itemId);
+  const isProductLoading = (itemId: string) => loadingItems.has(itemId);
 
   return (
     <div className="min-h-screen flex flex-col">

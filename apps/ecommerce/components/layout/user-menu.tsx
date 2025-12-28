@@ -24,7 +24,6 @@ import {
   AvatarImage,
 } from "@workspace/ui/components/avatar";
 
-import { useAuth } from "@/providers/auth-provider";
 import { cn } from "@/lib/utils";
 import { AddressManagerDialog } from "@/components/shared/address-dialog";
 import type { AddressData } from "@/components/address/address.schema";
@@ -35,14 +34,14 @@ import {
 } from "@/app/(main)/profile/_components/profile.lib";
 import { Seller } from "@/app/(main)/profile/_components/profile.types";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
-import { useQueryClient } from "@tanstack/react-query";
+import { signOutAction } from "@/actions/auth";
 
 interface UserMenuProps {
   variant?: "desktop" | "mobile";
   className?: string;
   user: SupabaseUser | null;
   seller: Seller | null;
-  logout: () => void;
+  logout: () => Promise<void>;
   isSigningOut: boolean;
 }
 
@@ -60,12 +59,10 @@ export function UserMenu({
   const userInitials = getUserInitials(user);
   const userName = formatUserName(user) || user.email;
   const isSeller = !!seller;
-  const queryClient = useQueryClient();
 
   const handleLogout = async () => {
     try {
-      logout();
-      queryClient.invalidateQueries({ queryKey: ["user"] });
+      await logout();
     } catch (error) {
       console.error("Logout error:", error);
     }
@@ -186,7 +183,7 @@ export function UserMenu({
                     href={
                       process.env.NODE_ENV === "development"
                         ? "http://localhost:3001"
-                        : "https://seller.tallaby.com/"
+                        : "https://dashboard.tallaby.com/"
                     }
                     target="_blank"
                     rel="noopener noreferrer"

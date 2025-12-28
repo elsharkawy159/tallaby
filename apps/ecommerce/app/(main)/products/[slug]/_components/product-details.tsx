@@ -26,9 +26,15 @@ import Link from "next/link";
 
 interface ProductDetailsProps {
   product: Product;
+  isInCart?: boolean;
+  cartItemQuantity?: number;
 }
 
-export const ProductDetails = ({ product }: ProductDetailsProps) => {
+export const ProductDetails = ({
+  product,
+  isInCart,
+  cartItemQuantity,
+}: ProductDetailsProps) => {
   const locale = useLocale();
   const [selectedColor, setSelectedColor] = useState(
     (product as any).colors?.[0]?.name || ""
@@ -164,6 +170,8 @@ export const ProductDetails = ({ product }: ProductDetailsProps) => {
           <ProductActions
             product={product}
             className="flex gap-4 items-center"
+            isInCart={isInCart}
+            cartItemQuantity={cartItemQuantity}
           />
         </div>
 

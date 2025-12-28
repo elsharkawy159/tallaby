@@ -1,5 +1,3 @@
-//@ts-ignore
-//@ts-nocheck
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -35,111 +33,212 @@ import {
   BarChart3,
   ImageIcon,
 } from "lucide-react";
-// import { ProductInventoryTable } from "@/components/product-inventory-table";
-// import { ProductReviewsTable } from "@/components/product-reviews-table";
 import { ProductVariantsTable } from "../_components/product-variants-table";
 import { ProductImagesGallery } from "../_components/product-images-gallery";
 import { ProductReviewsTable } from "../_components/product-reviews-table";
 import { ProductInventoryTable } from "../_components/product-inventory-table";
+import { getProductById } from "@/actions/products";
 
-export default async function ProductDetailsPage() {
-  //   {
-  //   params,
-  // }: {
-  //   params: { productId: string };
-  // }
-  // const { productId } = await params;
-  // const product = await getProductById(productId);
-  const product = {
-    id: 1,
-    title: "Smartphone X Pro",
-    slug: "smartphone-x-pro",
-    description:
-      "The ultimate smartphone with cutting-edge features. The X Pro comes with a stunning 6.7-inch Super Retina display, A16 Pro chip, an amazing camera system for incredible photos, and all-day battery life.",
-    bulletPoints: [
-      "6.7-inch Super Retina XDR display",
-      "A16 Pro chip for lightning-fast performance",
-      "Pro camera system with 48MP main camera",
-      "Up to 29 hours of video playback",
-      "Water and dust resistant (IP68)",
-      "5G capable for ultra-fast downloads and streaming",
-    ],
-    basePrice: 999.99,
-    listPrice: 1099.99,
-    averageRating: 4.7,
-    reviewCount: 256,
-    brand: {
-      id: "brand_01",
-      name: "TechBrand",
-      slug: "techbrand",
-    },
-    mainCategory: {
-      id: "cat_01",
-      name: "Electronics",
-      slug: "electronics",
-    },
-    categories: [
-      {
-        id: "cat_01",
-        name: "Electronics",
-        slug: "electronics",
-      },
-      {
-        id: "cat_08",
-        name: "Smartphones",
-        slug: "smartphones",
-      },
-    ],
-    status: "active",
-    isAdult: false,
-    isPlatformChoice: true,
-    isBestSeller: true,
-    metaTitle: "Smartphone X Pro - Ultimate Performance | TechBrand",
-    metaDescription:
-      "Discover the Smartphone X Pro with 6.7-inch display, A16 Pro chip, pro camera system, and all-day battery life. Buy now with free shipping.",
-    inventorySummary: {
-      totalVariants: 8,
-      totalQuantity: 125,
-      lowStock: 2,
-      outOfStock: 1,
-    },
-    salesSummary: {
-      totalSales: 1247,
-      revenue: 1246875.53,
-      lastMonthSales: 142,
-      lastMonthRevenue: 141998.58,
-    },
-    createdAt: "2023-10-15T10:30:00Z",
-    updatedAt: "2023-10-20T14:25:00Z",
-    recentViews: 1423,
-    conversionRate: 3.2,
+interface ProductPageProps {
+  params: Promise<{ productId: string }>;
+}
+
+interface TransformedProduct {
+  id: string;
+  title: string;
+  slug: string;
+  description: string | null;
+  bulletPoints: string[];
+  basePrice: number;
+  listPrice: number | null;
+  averageRating: number;
+  reviewCount: number;
+  brand: {
+    id: string;
+    name: string;
+    slug: string;
+  } | null;
+  mainCategory: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+  categories: Array<{
+    id: string;
+    name: string;
+    slug: string;
+  }>;
+  status: "active" | "inactive";
+  isPlatformChoice: boolean;
+  isBestSeller: boolean;
+  metaTitle: string | null;
+  metaDescription: string | null;
+  inventorySummary: {
+    totalVariants: number;
+    totalQuantity: number;
+    lowStock: number;
+    outOfStock: number;
+  };
+  salesSummary: {
+    totalSales: number;
+    revenue: number;
+    lastMonthSales: number;
+    lastMonthRevenue: number;
+  };
+  createdAt: string;
+  updatedAt: string;
+  recentViews: number;
+  conversionRate: number;
+}
+
+type ProductWithRelations = NonNullable<
+  Awaited<ReturnType<typeof getProductById>>["data"]
+>;
+
+function transformProductData(
+  product: ProductWithRelations
+): TransformedProduct {
+  // Parse price from JSONB
+  type PriceData =
+    | { base?: number | string; list?: number | string }
+    | number
+    | null
+    | undefined;
+  const priceData = product.price as PriceData;
+  const basePrice =
+    typeof priceData === "object" && priceData?.base
+      ? parseFloat(String(priceData.base))
+      : typeof priceData === "number"
+        ? priceData
+        : 0;
+
+  const listPrice =
+    typeof priceData === "object" && priceData?.list
+      ? parseFloat(String(priceData.list))
+      : null;
+
+  // Parse SEO from JSONB
+  type SeoData = { title?: string; description?: string } | null | undefined;
+  const seoData = product.seo as SeoData;
+  const metaTitle =
+    typeof seoData === "object" && seoData ? seoData.title || null : null;
+  const metaDescription =
+    typeof seoData === "object" && seoData ? seoData.description || null : null;
+
+  // Parse bulletPoints from JSONB
+  const bulletPoints = Array.isArray(product.bulletPoints)
+    ? (product.bulletPoints as string[])
+    : [];
+
+  // Compute inventory summary from variants
+  const variants = product.productVariants || [];
+  const totalVariants = variants.length;
+  type Variant = { stock?: number | string | null };
+  const totalQuantity = variants.reduce((sum: number, variant: Variant) => {
+    return sum + (variant.stock ? parseInt(String(variant.stock), 10) : 0);
+  }, 0);
+  const lowStock = variants.filter((variant: Variant) => {
+    const stock = variant.stock ? parseInt(String(variant.stock), 10) : 0;
+    return stock > 0 && stock < 10;
+  }).length;
+  const outOfStock = variants.filter((variant: Variant) => {
+    const stock = variant.stock ? parseInt(String(variant.stock), 10) : 0;
+    return stock === 0;
+  }).length;
+
+  // Default sales summary (can be enhanced later with actual order data)
+  const salesSummary = {
+    totalSales: 0,
+    revenue: 0,
+    lastMonthSales: 0,
+    lastMonthRevenue: 0,
   };
 
-  if (!product) {
+  // Handle brand (nullable)
+  const brand = product.brand
+    ? {
+        id: product.brand.id,
+        name: product.brand.name || "Unknown",
+        slug: product.brand.slug || "",
+      }
+    : null;
+
+  // Handle category
+  const mainCategory = product.category
+    ? {
+        id: product.category.id,
+        name: product.category.name || "Unknown",
+        slug: product.category.slug || "",
+      }
+    : {
+        id: "",
+        name: "Uncategorized",
+        slug: "",
+      };
+
+  // Categories array (using main category for now)
+  const categories = product.category
+    ? [
+        {
+          id: product.category.id,
+          name: product.category.name || "Unknown",
+          slug: product.category.slug || "",
+        },
+      ]
+    : [];
+
+  return {
+    id: product.id,
+    title: product.title,
+    slug: product.slug,
+    description: product.description || null,
+    bulletPoints,
+    basePrice,
+    listPrice,
+    averageRating: product.averageRating
+      ? parseFloat(String(product.averageRating))
+      : 0,
+    reviewCount: product.reviewCount || 0,
+    brand,
+    mainCategory,
+    categories,
+    status: product.isActive ? "active" : "inactive",
+    isPlatformChoice: product.isPlatformChoice || false,
+    isBestSeller: product.isMostSelling || false,
+    metaTitle,
+    metaDescription,
+    inventorySummary: {
+      totalVariants,
+      totalQuantity,
+      lowStock,
+      outOfStock,
+    },
+    salesSummary,
+    createdAt: product.createdAt || new Date().toISOString(),
+    updatedAt: product.updatedAt || new Date().toISOString(),
+    recentViews: 0, // Can be computed from analytics later
+    conversionRate: 0, // Can be computed from analytics later
+  };
+}
+
+export default async function ProductDetailsPage({ params }: ProductPageProps) {
+  const { productId } = await params;
+
+  const result = await getProductById(productId);
+
+  if (!result.success || !result.data) {
     notFound();
+  }
+
+  const product = transformProductData(result.data);
+
+  // Guard clause for brand (if it's required in the UI)
+  if (!product.brand) {
+    // Still show the page, but handle brand display gracefully
   }
 
   return (
     <>
-      <Breadcrumb className="mb-6">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/withAuth/dashboard">
-              <HomeIcon className="h-4 w-4 mr-2" />
-              Dashboard
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/withAuth/products">Products</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink>{product.title}</BreadcrumbLink>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{product.title}</h1>
@@ -168,16 +267,21 @@ export default async function ProductDetailsPage() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Link href={`/withAuth/products/${product.id}/edit`}>
+          <Link href={`/products/${product.id}/edit`}>
             <Button variant="outline">
               <PencilIcon className="h-4 w-4 mr-2" />
               Edit
             </Button>
           </Link>
-          <Button>
-            <Eye className="h-4 w-4 mr-2" />
-            View on Site
-          </Button>
+          <Link
+            href={`https://www.tallaby.com/products/${product.slug}`}
+            target="_blank"
+          >
+            <Button>
+              <Eye className="h-4 w-4 mr-2" />
+              View on Site
+            </Button>
+          </Link>
         </div>
       </div>
 
@@ -277,14 +381,16 @@ export default async function ProductDetailsPage() {
                   <h3 className="text-sm font-medium mb-2">Slug</h3>
                   <p className="text-sm text-gray-500">{product.slug}</p>
                 </div>
-                <div>
-                  <h3 className="text-sm font-medium mb-2">Brand</h3>
-                  <Link href={`/withAuth/brands/${product.brand.id}`}>
-                    <p className="text-sm text-blue-600 hover:underline">
-                      {product.brand.name}
-                    </p>
-                  </Link>
-                </div>
+                {product.brand && (
+                  <div>
+                    <h3 className="text-sm font-medium mb-2">Brand</h3>
+                    <Link href={`/withAuth/brands/${product.brand.id}`}>
+                      <p className="text-sm text-blue-600 hover:underline">
+                        {product.brand.name}
+                      </p>
+                    </Link>
+                  </div>
+                )}
                 <div>
                   <h3 className="text-sm font-medium mb-2">Main Category</h3>
                   <Link
@@ -323,39 +429,45 @@ export default async function ProductDetailsPage() {
                 </div>
               </div>
 
-              <div>
-                <h3 className="text-sm font-medium mb-2">Description</h3>
-                <p className="text-sm text-gray-500">{product.description}</p>
-              </div>
-
-              <div>
-                <h3 className="text-sm font-medium mb-2">Features</h3>
-                <ul className="list-disc text-sm text-gray-500 pl-5 space-y-1">
-                  {product.bulletPoints.map((point, index) => (
-                    <li key={index}>{point}</li>
-                  ))}
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="text-sm font-medium mb-2">Categories</h3>
-                <div className="flex flex-wrap gap-2">
-                  {product.categories.map((category) => (
-                    <Link
-                      href={`/withAuth/categories/${category.id}`}
-                      key={category.id}
-                    >
-                      <Badge
-                        variant="outline"
-                        className="cursor-pointer hover:bg-gray-100"
-                      >
-                        <TagIcon className="h-3 w-3 mr-1" />
-                        {category.name}
-                      </Badge>
-                    </Link>
-                  ))}
+              {product.description && (
+                <div>
+                  <h3 className="text-sm font-medium mb-2">Description</h3>
+                  <p className="text-sm text-gray-500">{product.description}</p>
                 </div>
-              </div>
+              )}
+
+              {product.bulletPoints.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-medium mb-2">Features</h3>
+                  <ul className="list-disc text-sm text-gray-500 pl-5 space-y-1">
+                    {product.bulletPoints.map((point, index) => (
+                      <li key={index}>{point}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {product.categories.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-medium mb-2">Categories</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {product.categories.map((category) => (
+                      <Link
+                        href={`/withAuth/categories/${category.id}`}
+                        key={category.id}
+                      >
+                        <Badge
+                          variant="outline"
+                          className="cursor-pointer hover:bg-gray-100"
+                        >
+                          <TagIcon className="h-3 w-3 mr-1" />
+                          {category.name}
+                        </Badge>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -369,12 +481,14 @@ export default async function ProductDetailsPage() {
             <CardContent className="space-y-4">
               <div>
                 <h3 className="text-sm font-medium mb-2">Meta Title</h3>
-                <p className="text-sm text-gray-500">{product.metaTitle}</p>
+                <p className="text-sm text-gray-500">
+                  {product.metaTitle || "Not set"}
+                </p>
               </div>
               <div>
                 <h3 className="text-sm font-medium mb-2">Meta Description</h3>
                 <p className="text-sm text-gray-500">
-                  {product.metaDescription}
+                  {product.metaDescription || "Not set"}
                 </p>
               </div>
             </CardContent>

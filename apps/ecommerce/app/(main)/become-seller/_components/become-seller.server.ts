@@ -108,6 +108,7 @@ export const submitSellerApplication = async (
     // 6. Revalidate relevant paths
     revalidatePath("/dashboard");
     revalidatePath("/become-seller");
+    revalidatePath("/onboarding");
 
     // 7. Return success response
     const successResponse = {

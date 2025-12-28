@@ -2,8 +2,10 @@
 "use server";
 
 import { db, carts, cartItems, products, eq, and, desc } from "@workspace/db";
-import { getCurrentUserId } from "@/lib/get-current-user-id";
-import { revalidatePath } from "next/cache";
+import {
+  getCurrentUserId,
+  getOrCreateCurrentUserId,
+} from "@/lib/get-current-user-id";
 
 type ProductPrice = {
   base: number;
@@ -13,12 +15,38 @@ type ProductPrice = {
   discountValue: number;
 };
 
-async function ensureCart() {
+/**
+ * Get existing cart for current user (does not create user or cart)
+ * Returns null if no cart exists
+ */
+async function getCart() {
   try {
     const userId = await getCurrentUserId();
     if (!userId) {
+      return null;
+    }
+
+    const cart = await db.query.carts.findFirst({
+      where: and(eq(carts.userId, userId), eq(carts.status, "active")),
+    });
+
+    return cart || null;
+  } catch (error) {
+    console.error("getCart: Unexpected error:", error);
+    return null;
+  }
+}
+
+/**
+ * Ensure cart exists for current user (creates user and cart if needed)
+ * Use this when user interaction requires a cart (e.g., adding items)
+ */
+async function ensureCart() {
+  try {
+    const userId = await getOrCreateCurrentUserId();
+    if (!userId) {
       console.error(
-        "ensureCart: Failed to get current user ID (authenticated or guest)"
+        "ensureCart: Failed to get or create current user ID (authenticated or guest)"
       );
       return null;
     }
@@ -66,9 +94,14 @@ async function ensureCart() {
   }
 }
 
-export async function getCartItems() {
-  const cart = await ensureCart();
-  if (!cart) return { success: false, error: "No cart found" };
+export const getCartItems = async () => {
+  // Use getCart() instead of ensureCart() to avoid creating users on page load
+  const cart = await getCart();
+  if (!cart)
+    return {
+      success: true,
+      data: { cart: null, items: [], subtotal: 0, itemCount: 0 },
+    };
 
   const items = await db.query.cartItems.findMany({
     where: eq(cartItems.cartId, cart.id),
@@ -101,7 +134,7 @@ export async function getCartItems() {
     success: true,
     data: { cart, items: itemsWithFixedPrices, subtotal, itemCount },
   };
-}
+};
 
 export async function addToCart(productId: string, quantity = 1) {
   const cart = await ensureCart();
@@ -156,10 +189,6 @@ export async function addToCart(productId: string, quantity = 1) {
         } as any)
         .returning();
 
-  // Revalidate cart page to reflect changes
-  revalidatePath("/cart");
-  revalidatePath("/cart/checkout");
-
   return {
     success: true,
     data: result[0],
@@ -187,10 +216,6 @@ export async function updateCartItem(itemId: string, quantity: number) {
     .where(eq(cartItems.id, itemId))
     .returning();
 
-  // Revalidate cart page to reflect changes
-  revalidatePath("/cart");
-  revalidatePath("/cart/checkout");
-
   return { success: true, data: updated };
 }
 
@@ -199,9 +224,7 @@ export async function removeFromCart(itemId: string) {
   if (!cart) return { success: false, error: "No cart found" };
 
   await db.delete(cartItems).where(eq(cartItems.id, itemId));
-  // Revalidate cart page to reflect changes
-  revalidatePath("/cart");
-  revalidatePath("/cart/checkout");
+
   return { success: true, message: "Item removed" };
 }
 
@@ -210,8 +233,6 @@ export async function clearCart() {
   if (!cart) return { success: false, error: "No cart found" };
 
   await db.delete(cartItems).where(eq(cartItems.cartId, cart.id));
-  // Revalidate cart page to reflect changes
-  revalidatePath("/cart");
-  revalidatePath("/cart/checkout");
+
   return { success: true, message: "Cart cleared" };
 }

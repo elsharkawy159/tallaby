@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Button } from "@workspace/ui/components/button";
 import { ChevronRight } from "lucide-react";
 import type { Product } from "./product-page.types";
-import { useCart } from "@/providers/cart-provider";
 import { AddToCartButton } from "@/components/product";
 import { ProductQuantitySelector } from "./product-quantity-selector";
 import Link from "next/link";
@@ -14,11 +13,18 @@ interface ProductActionsProps {
   product: Product;
   onBuyNow?: (quantity: number) => void;
   className?: string;
+  isInCart?: boolean;
+  cartItemQuantity?: number;
 }
 
-export const ProductActions = ({ product, onBuyNow, className }: ProductActionsProps) => {
-  const { isInCart, getItemQuantity } = useCart();
-  const [quantity, setQuantity] = useState(getItemQuantity(product.id) || 1);
+export const ProductActions = ({
+  product,
+  onBuyNow,
+  className,
+  isInCart: isInCartStatus = false,
+  cartItemQuantity = 0,
+}: ProductActionsProps) => {
+  const [quantity, setQuantity] = useState(cartItemQuantity || 1);
   const stockCount = product.quantity ? Number(product.quantity) : 0;
   const hasStock = product.isActive && stockCount > 0;
 
@@ -50,7 +56,7 @@ export const ProductActions = ({ product, onBuyNow, className }: ProductActionsP
 
       {/* Action Buttons */}
       <div className="flex-1">
-        {isInCart(product.id) ? (
+        {isInCartStatus ? (
           <Button asChild className="w-full h-12 text-base" size="lg">
             <Link href="/cart">
               Go To Cart <ChevronRight className="h-4 w-4 ml-2" />

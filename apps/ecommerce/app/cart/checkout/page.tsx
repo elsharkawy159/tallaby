@@ -10,54 +10,61 @@ import { generateNoIndexMetadata } from "@/lib/metadata";
 import { ReviewItems } from "@/components/review-items";
 import type { Metadata } from "next";
 import { CheckoutInteractions } from "./_components/checkout.client";
+import { getAddresses } from "@/actions/customer";
 
 export const metadata: Metadata = generateNoIndexMetadata();
 
-// Force dynamic rendering - no caching for checkout
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-export const fetchCache = "force-no-store";
-
 export default async function Checkout() {
   const result = await getCheckoutData();
+  const addressesResult = await getAddresses();
+  const addresses = addressesResult.success ? (addressesResult.data ?? []) : [];
+  const defaultAddress = addresses.find((addr: any) => addr.isDefault) ?? null;
+
   if (!result.success || !result.data) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-white">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-2">Checkout unavailable</h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 mb-6">
             {result.error || "Please sign in and add items to your cart."}
           </p>
-          <div className="mt-6">
-            <Button asChild>
-              <Link href="/products">Continue Shopping</Link>
-            </Button>
-          </div>
+          <Button asChild>
+            <Link href="/products">Continue Shopping</Link>
+          </Button>
         </div>
       </div>
     );
   }
 
-  return (
-    <div className="min-h-screen flex flex-col">
-      <DynamicBreadcrumb />
-      {/* <Button variant="link" asChild>
-          <Link href="/cart" className="text-primary hover:underline">
-            <ChevronLeft size={16} />
-            Back to cart
-          </Link>
-        </Button> */}
+  const checkoutData = result.data as any;
 
-      <main className="flex-1 container pb-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-          <div className="lg:col-span-2 order-2 lg:order-1">
-              <CheckoutData checkoutData={result.data as any} />
+  return (
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-gray-50 to-white">
+      <DynamicBreadcrumb />
+      <main className="flex-1 container py-8 pb-16">
+        {/* Header Section */}
+        <div className="mb-10">
+          <h1 className="text-3xl font-bold tracking-tight mb-2">Checkout</h1>
+          <p className="text-muted-foreground text-lg">
+            Complete your order details
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-8 lg:gap-12">
+          {/* Checkout Form Section */}
+          <div className="order-2 lg:order-1">
+            <CheckoutData
+              checkoutData={checkoutData}
+              addresses={addresses}
+              defaultAddress={defaultAddress}
+            />
           </div>
 
-          <div className="lg:col-span-1 order-1 lg:order-2 space-y-6">
+          {/* Order Summary Sidebar */}
+          <div className="lg:sticky lg:top-8 h-fit order-1 lg:order-2 space-y-6">
             {/* Review Items */}
             <ReviewItems
-              items={(result.data as any).cart.cartItems.map((item: any) => ({
+              items={checkoutData.cart.cartItems.map((item: any) => ({
                 id: item.id,
                 quantity: item.quantity,
                 price: item.price,
@@ -72,7 +79,7 @@ export default async function Checkout() {
               showTotal={false}
             />
 
-            <CheckoutInteractions checkoutData={result.data as any} />
+            <CheckoutInteractions checkoutData={checkoutData} />
           </div>
         </div>
       </main>

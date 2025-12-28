@@ -49,7 +49,7 @@ export async function updateSession(request: NextRequest) {
           });
         },
       },
-    },
+    }
   );
   // Do not run code between createServerClient and
   // supabase.auth.getUser(). A simple mistake could make it very hard to debug
@@ -61,6 +61,14 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Redirect authenticated users away from login page
+  if (user && request.nextUrl.pathname === "/auth") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/";
+    return NextResponse.redirect(url);
+  }
+
+  // Redirect unauthenticated users away from protected routes
   if (
     !user &&
     request.nextUrl.pathname.startsWith("/profile") &&

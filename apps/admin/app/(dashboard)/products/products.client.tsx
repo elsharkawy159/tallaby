@@ -40,11 +40,9 @@ interface Product {
 export function ProductsClient() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const loadProducts = useCallback(async () => {
     try {
-      setIsRefreshing(true);
       const result = await getAllProducts({
         limit: 1000, // Get all products for now
       });
@@ -70,7 +68,6 @@ export function ProductsClient() {
       console.error("Error fetching products:", error);
       toast.error("Failed to load products");
     } finally {
-      setIsRefreshing(false);
       setIsLoading(false);
     }
   }, []);
@@ -78,10 +75,6 @@ export function ProductsClient() {
   useEffect(() => {
     loadProducts();
   }, [loadProducts]);
-
-  const handleRefresh = () => {
-    loadProducts();
-  };
 
   const handleApproveProduct = async (productId: string) => {
     try {
@@ -145,29 +138,6 @@ export function ProductsClient() {
 
   return (
     <div className="h-screen">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Products</h1>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            className="gap-2"
-          >
-            <RefreshCw
-              className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
-            />
-            Refresh
-          </Button>
-          <Link href="/products/create">
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Product
-            </Button>
-          </Link>
-        </div>
-      </div>
-
       <DataTable
         columns={columns}
         data={products}

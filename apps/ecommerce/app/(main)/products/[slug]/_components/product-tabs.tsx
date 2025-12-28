@@ -15,7 +15,7 @@ import type { Product, Review, ProductQuestion } from "./product-page.types";
 import Image from "next/image";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { Input } from "@workspace/ui/components";
-import { useAuth } from "@/providers/auth-provider";
+import type { User } from "@supabase/supabase-js";
 import { submitProductQuestion } from "@/actions/products";
 import { useRouter } from "next/navigation";
 import { useAuthDialog } from "@/hooks/use-auth-dialog";
@@ -44,14 +44,14 @@ type QuestionFormData = z.infer<typeof questionFormSchema>;
 
 interface ProductTabsProps {
   product: Product;
+  user: User | null;
 }
 
-export const ProductTabs = ({ product }: ProductTabsProps) => {
+export const ProductTabs = ({ product, user }: ProductTabsProps) => {
   const [expandedQuestions, setExpandedQuestions] = useState<Set<string>>(
     new Set()
   );
   const [isPending, startTransition] = useTransition();
-  const { user } = useAuth();
   const { open: openAuthDialog } = useAuthDialog();
   const router = useRouter();
 

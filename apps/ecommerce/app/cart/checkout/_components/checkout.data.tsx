@@ -1,5 +1,5 @@
 "use client";
-import { useTransition, useEffect } from "react";
+import { useTransition, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckoutForm } from "./checkout-form";
 import {
@@ -33,8 +33,6 @@ import { createOrder } from "@/actions/order";
 import { toast } from "sonner";
 import type { AddressData } from "@/components/address/address.schema";
 import { ShippingInformation } from "./shipping-information";
-import { useAddress } from "@/providers/address-provider";
-import { useCart } from "@/providers/cart-provider";
 
 const paymentMethods = [
   {
@@ -60,21 +58,23 @@ const paymentMethods = [
   },
 ];
 
-export const CheckoutData = ({ checkoutData }: { checkoutData: any }) => {
+export const CheckoutData = ({
+  checkoutData,
+  addresses: initialAddresses = [],
+  defaultAddress: initialDefaultAddress = null,
+}: {
+  checkoutData: any;
+  addresses?: any[];
+  defaultAddress?: any;
+}) => {
   const { cart, user } = checkoutData;
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+  const [selectedAddress, setSelectedAddress] = useState<any>(null);
 
-  // Use address hook for real-time updates
-  const {
-    addresses,
-    defaultAddress,
-    selectedAddress,
-    isLoading: isLoadingAddresses,
-  } = useAddress();
-
-  // Use cart hook to refresh cart after order placement
-  const { refreshCart } = useCart();
+  const addresses = initialAddresses;
+  const defaultAddress = initialDefaultAddress;
+  const isLoadingAddresses = false;
 
   // Determine which address to use: selectedAddress > defaultAddress > first address
   const activeAddress =
@@ -115,8 +115,6 @@ export const CheckoutData = ({ checkoutData }: { checkoutData: any }) => {
         });
 
         if (result.success) {
-          // Refresh cart to clear it after order placement
-          await refreshCart();
           toast.success("Order placed successfully!");
           // Redirect to order confirmation page
           router.push(`/orders/${result.data?.order?.id}/confirmation`);
@@ -131,8 +129,7 @@ export const CheckoutData = ({ checkoutData }: { checkoutData: any }) => {
   };
 
   const handleAddressSelect = (address: AddressData) => {
-    // The hook's selectAddress is already called by AddressSelectorDialog
-    // Just update the form to match
+    setSelectedAddress(address);
     if (address?.id) {
       form.setValue("shippingAddressId", address.id);
     }
@@ -153,10 +150,12 @@ export const CheckoutData = ({ checkoutData }: { checkoutData: any }) => {
         />
 
         {/* Payment Method */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl font-bold">Payment</CardTitle>
-          </CardHeader>
+        <Card className="rounded-2xl border border-gray-200 overflow-hidden pt-0">
+          <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-5 border-b border-gray-200">
+            <CardTitle className="text-xl font-bold text-gray-900">
+              Payment Method
+            </CardTitle>
+          </div>
           <CardContent>
             <FormField
               control={form.control}
@@ -168,19 +167,20 @@ export const CheckoutData = ({ checkoutData }: { checkoutData: any }) => {
                       <RadioGroup
                         value={field.value}
                         onValueChange={field.onChange}
+                        className="grid grid-cols-1 lg:grid-cols-3 gap-4"
                       >
                         {paymentMethods.map((method) => (
                           <FieldLabel
                             key={method.id}
                             htmlFor={method.id}
                             className={`
-                              p-4 rounded-lg border transition-all duration-100
+                              rounded-xl border-2 p-4 transition-all duration-200
                               ${
                                 method.enabled
                                   ? `cursor-pointer ${
                                       field.value === method.value
-                                        ? "ring-1 ring-primary bg-primary/5 border-primary"
-                                        : "border-gray-200 hover:border-gray-300"
+                                        ? "ring-2 ring-primary bg-primary/5 border-primary shadow-sm"
+                                        : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
                                     }`
                                   : "cursor-not-allowed opacity-50 border-gray-200 bg-gray-50"
                               }
@@ -204,7 +204,7 @@ export const CheckoutData = ({ checkoutData }: { checkoutData: any }) => {
                                     </span>
                                   )}
                                 </FieldTitle>
-                                <FieldDescription>
+                                <FieldDescription className="text-xs">
                                   {method.description}
                                 </FieldDescription>
                               </FieldContent>

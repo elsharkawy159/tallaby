@@ -74,11 +74,11 @@ export function generateProductStructuredData(product: Product) {
     url: productUrl,
     brand: {
       "@type": "Brand",
-      name: product.brand.name,
+      name: product?.brand?.name ?? "",
     },
     category: product.category ? {
       "@type": "Thing",
-      name: product.category.name,
+      name: product?.category?.name ?? "",
       url: `${BASE_URL}/products?category=${product.category.slug}`,
     } : undefined,
     offers,

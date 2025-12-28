@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { getPublicUrl } from "@workspace/ui/lib/utils";
 import type { ProductCardProps } from "./product-card.types";
 import { resolvePrimaryImage } from "@/lib/utils";
 

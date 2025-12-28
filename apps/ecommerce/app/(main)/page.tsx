@@ -43,7 +43,7 @@ const HomePage = () => {
         className="bg-gray-50"
       /> */}
 
-        <ProductSection
+        {/* <ProductSection
           title="🔥 Offers"
           description="What Everyone's Talking About"
           filters={{
@@ -51,7 +51,7 @@ const HomePage = () => {
             limit: 10,
             sortBy: "popular",
           }}
-        />
+        /> */}
 
       {/* <EventBanner
         title="Fashion Week Sale"

@@ -17,6 +17,9 @@ import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import { generateProductMetadata } from "@/lib/metadata";
 import type { Metadata } from "next";
 import { ProductStructuredData } from "./_components/product-structured-data";
+import { createClient } from "@/supabase/server";
+import { getCartItems } from "@/actions/cart";
+import { getWishlistItems } from "@/actions/wishlist";
 
 // ISR: Revalidate every 10 minutes
 export const revalidate = 600;
@@ -95,6 +98,26 @@ export default async function ProductPage({ params }: ProductPageProps) {
     category: (product as any).category || null,
   };
 
+  // Fetch user for ProductTabs
+  const supabase = await createClient();
+  const { data: authData } = await supabase.auth.getUser();
+  const user = authData?.user ?? null;
+
+  // Fetch cart and wishlist data server-side
+  const cartResult = await getCartItems();
+  const cartData = cartResult.success ? cartResult.data : null;
+  const cartItems = cartData?.items ?? [];
+  const isInCart = cartItems.some(
+    (item: any) => item.productId === productWithCategory.id && !item.savedForLater
+  );
+
+  const wishlistResult = await getWishlistItems();
+  const wishlistItems = wishlistResult.success ? (wishlistResult.data ?? []) : [];
+  const wishlistItem = wishlistItems.find(
+    (item: any) => item.productId === productWithCategory.id
+  );
+  const isInWishlist = !!wishlistItem;
+
   return (
     <main className="min-h-screen">
       <ProductStructuredData product={productWithCategory} />
@@ -108,20 +131,33 @@ export default async function ProductPage({ params }: ProductPageProps) {
             {/* Product images on left */}
             <ProductHero product={productWithCategory} />
             {/* Product details on right */}
-            <ProductDetails product={productWithCategory} />
+            <ProductDetails
+              product={productWithCategory}
+              isInCart={isInCart}
+              cartItemQuantity={
+                cartItems.find(
+                  (item: any) =>
+                    item.productId === productWithCategory.id && !item.savedForLater
+                )?.quantity || 0
+              }
+            />
           </div>
         </div>
       </section>
 
       <section>
-          <ProductTabs product={productWithCategory} />
+          <ProductTabs product={productWithCategory} user={user} />
       </section>
 
       {Array.isArray(productWithCategory.relatedProducts) &&
         productWithCategory.relatedProducts.length > 0 && (
           <section>
             <Suspense fallback={<SimilarProductsSkeleton />}>
-              <SimilarProducts products={productWithCategory.relatedProducts} />
+              <SimilarProducts
+                products={productWithCategory.relatedProducts}
+                cartItems={cartItems}
+                wishlistItems={wishlistItems}
+              />
             </Suspense>
           </section>
         )}

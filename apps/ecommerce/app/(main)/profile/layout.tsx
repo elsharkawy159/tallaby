@@ -3,16 +3,27 @@ import { ProfileSidebar } from "./_components/profile.chunks";
 import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import { generateNoIndexMetadata } from "@/lib/metadata";
 import type { Metadata } from "next";
+import { createClient } from "@/supabase/server";
+import { getAddresses } from "@/actions/customer";
+import { signOutAction } from "@/actions/auth";
 
 export const metadata: Metadata = generateNoIndexMetadata();
 
 // Profile Layout Data Component (Server Component)
-function ProfileLayoutData({ children }: { children: React.ReactNode }) {
+async function ProfileLayoutData({ children }: { children: React.ReactNode }) {
+  const supabase = await createClient();
+  const { data: authData } = await supabase.auth.getUser();
+  const user = authData?.user ?? null;
+
+  // Fetch addresses server-side
+  const addressesResult = await getAddresses();
+  const addresses = addressesResult.success ? (addressesResult.data ?? []) : [];
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
       <div className="lg:col-span-1">
         <div className="sticky top-4">
-          <ProfileSidebar />
+          <ProfileSidebar user={user} addresses={addresses} />
         </div>
       </div>
 

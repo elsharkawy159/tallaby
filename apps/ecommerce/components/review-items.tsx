@@ -74,12 +74,17 @@ export function ReviewItems({
   }
 
   return (
-    <Card className={cn(className, "gap-0 pb-3")}>
-      <CardHeader className={cn("pb-4", layout === "compact" && "pb-2")}>
+    <Card
+      className={cn(
+        className,
+        "rounded-2xl border border-gray-200 overflow-hidden pt-0!"
+      )}
+    >
+      <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-5 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <CardTitle
             className={cn(
-              "text-xl font-bold",
+              "text-xl font-bold text-gray-900",
               layout === "compact" && "text-lg"
             )}
           >
@@ -91,15 +96,10 @@ export function ReviewItems({
             </Badge>
           )}
         </div>
-      </CardHeader>
-      <CardContent className={cn("space-y-0", layout === "compact" && "pt-0")}>
+      </div>
+      <CardContent className={cn("p-4 py-0", layout === "compact" && "pt-0")}>
         {/* Items List */}
-        <div
-          className={cn(
-            "divide-y",
-            layout === "compact" && "space-y-2 divide-y-0"
-          )}
-        >
+        <div className={cn("space-y-0", layout === "compact" && "space-y-2")}>
           {items.map((item, index) => {
             const img = item.product.images?.[0]
               ? getPublicUrl(item.product.images[0] as string, "products")
@@ -114,69 +114,70 @@ export function ReviewItems({
               <div
                 key={item.id}
                 className={cn(
-                  "flex items-center gap-3 py-1.5",
-                  layout === "compact" && "py-2",
+                  "flex items-start justify-between gap-4 py-3 border-b border-gray-100 last:border-0",
+                  layout === "compact" && "border-0 py-2",
                   itemClassName
                 )}
               >
-                {/* Product Image */}
-                <div
-                  className={cn(
-                    "relative bg-gray-100 rounded flex-shrink-0",
-                    imageSizeClasses[imageSize],
-                    layout === "compact" && "w-12 h-12"
-                  )}
-                >
-                  <Image
-                    src={img}
-                    alt={item.product.title}
-                    fill
-                    className="object-contain bg-white rounded"
-                    sizes="(max-width: 768px) 56px, 56px"
-                  />
-                </div>
+                <div className="flex items-start gap-3 flex-1 min-w-0">
+                  {/* Product Image */}
+                  <div
+                    className={cn(
+                      "relative bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg flex-shrink-0 overflow-hidden",
+                      imageSizeClasses[imageSize],
+                      layout === "compact" && "w-12 h-12"
+                    )}
+                  >
+                    <Image
+                      src={img}
+                      alt={item.product.title}
+                      fill
+                      className="object-contain p-1.5"
+                      sizes="(max-width: 768px) 56px, 56px"
+                    />
+                  </div>
 
-                {/* Product Details */}
-                <div className="flex-1 min-w-0">
-                  <h3
-                    className={cn(
-                      "font-medium text-sm leading-tight line-clamp-2",
-                      layout === "compact" && "text-xs"
-                    )}
-                  >
-                    {item.product.title}
-                  </h3>
-                  <p
-                    className={cn(
-                      "text-xs text-muted-foreground mt-1",
-                      layout === "compact" && "text-xs"
-                    )}
-                  >
-                    Qty: {item.quantity}
-                  </p>
+                  {/* Product Details */}
+                  <div className="flex-1 min-w-0">
+                    <h3
+                      className={cn(
+                        "font-medium text-sm text-gray-900 leading-tight line-clamp-2",
+                        layout === "compact" && "text-xs"
+                      )}
+                    >
+                      {item.product.title}
+                    </h3>
+                    <p
+                      className={cn(
+                        "text-xs text-muted-foreground mt-0.5",
+                        layout === "compact" && "text-xs"
+                      )}
+                    >
+                      Qty: {item.quantity}
+                      {layout !== "compact" && item.quantity > 1 && (
+                        <>
+                          {" × "}
+                          <span
+                            dangerouslySetInnerHTML={{
+                              __html: formatPrice(price, locale),
+                            }}
+                          />
+                        </>
+                      )}
+                    </p>
+                  </div>
                 </div>
 
                 {/* Price */}
-                <div className="text-right flex-shrink-0">
-                  <div
-                    className={cn(
-                      "font-semibold text-sm",
-                      layout === "compact" && "text-xs"
-                    )}
-                    dangerouslySetInnerHTML={{
-                      __html: formatPrice(lineTotal, locale),
-                    }}
-                  />
-
-                  {layout !== "compact" && item.quantity > 1 && (
-                    <div
-                      className="text-xs text-muted-foreground"
-                      dangerouslySetInnerHTML={{
-                        __html: formatPrice(price, locale),
-                      }}
-                    />
+                <div
+                  className={cn(
+                    "text-right flex-shrink-0 font-semibold text-sm text-gray-900 whitespace-nowrap",
+                    layout === "compact" && "text-xs"
                   )}
-                </div>
+                  dangerouslySetInnerHTML={{
+                    __html: formatPrice(lineTotal, locale),
+                  }}
+                />
               </div>
             );
           })}
@@ -185,10 +186,10 @@ export function ReviewItems({
         {/* Total Summary */}
         {showTotal && (
           <>
-            <Separator className="my-4" />
+            <Separator className="my-4 bg-gray-200" />
             <div className="flex justify-between items-center">
               <div>
-                <p className="font-medium text-base">
+                <p className="font-medium text-base text-gray-900">
                   Total ({itemCount} {itemCount === 1 ? "item" : "items"})
                 </p>
                 <p className="text-sm text-muted-foreground">
@@ -196,7 +197,7 @@ export function ReviewItems({
                 </p>
               </div>
               <div
-                className="font-bold text-lg text-primary"
+                className="font-bold text-xl text-primary"
                 dangerouslySetInnerHTML={{
                   __html: formatPrice(totalAmount, locale),
                 }}

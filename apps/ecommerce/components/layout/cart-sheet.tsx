@@ -14,27 +14,83 @@ import {
 import { ScrollArea } from "@workspace/ui/components/scroll-area";
 import { Minus, Plus, Trash2, Loader2, ShoppingBag } from "lucide-react";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
-import { useCart } from "@/providers/cart-provider";
 import { useLocale } from "next-intl";
 import { formatPrice } from "@workspace/lib";
 import { cn } from "@/lib/utils";
+import React, { useState, useTransition } from "react";
+import {
+  updateCartItem,
+  removeFromCart as removeFromCartAction,
+} from "@/actions/cart";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface CartSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  cartItems: any[];
+  itemCount: number;
+  subtotal: number;
 }
 
-export function CartSheet({ open, onOpenChange }: CartSheetProps) {
-  const {
-    cartItems,
-    itemCount,
-    subtotal,
-    updateQuantity,
-    removeFromCart,
-    isItemLoading,
-    isProductLoading,
-  } = useCart();
+export function CartSheet({
+  open,
+  onOpenChange,
+  cartItems: initialCartItems,
+  itemCount: initialItemCount,
+  subtotal: initialSubtotal,
+}: CartSheetProps) {
+  const [cartItems, setCartItems] = useState(initialCartItems);
+  const [itemCount, setItemCount] = useState(initialItemCount);
+  const [subtotal, setSubtotal] = useState(initialSubtotal);
+  const [loadingItems, setLoadingItems] = useState<Set<string>>(new Set());
+  const router = useRouter();
   const locale = useLocale();
+
+  const updateQuantity = async (itemId: string, quantity: number) => {
+    setLoadingItems((prev) => new Set(prev).add(itemId));
+    try {
+      const result = await updateCartItem(itemId, quantity);
+      if (result.success) {
+        router.refresh();
+        toast.success("Cart updated");
+      } else {
+        toast.error(result.error || "Failed to update cart");
+      }
+    } catch (error) {
+      toast.error("Failed to update cart");
+    } finally {
+      setLoadingItems((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(itemId);
+        return newSet;
+      });
+    }
+  };
+
+  const removeFromCart = async (itemId: string) => {
+    setLoadingItems((prev) => new Set(prev).add(itemId));
+    try {
+      const result = await removeFromCartAction(itemId);
+      if (result.success) {
+        router.refresh();
+        toast.success("Item removed");
+      } else {
+        toast.error(result.error || "Failed to remove item");
+      }
+    } catch (error) {
+      toast.error("Failed to remove item");
+    } finally {
+      setLoadingItems((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(itemId);
+        return newSet;
+      });
+    }
+  };
+
+  const isItemLoading = (itemId: string) => loadingItems.has(itemId);
+  const isProductLoading = (itemId: string) => loadingItems.has(itemId);
 
   const handleQuantityChange = async (itemId: string, newQuantity: number) => {
     if (newQuantity <= 0) {
@@ -71,7 +127,7 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
           <>
             <ScrollArea className="flex-1 -mx-4 px-4 max-h-[calc(100vh-230px)]">
               <div className="py-0">
-                {cartItems.map((item, index) => {
+                {cartItems.map((item: any, index: number) => {
                   const product = item.product;
                   const unitPrice = Number(item.price);
                   const lineTotal = unitPrice * item.quantity;
@@ -82,7 +138,10 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
                   return (
                     <div
                       key={item.id}
-                      className={cn("flex gap-4 p-4 border-b items-center", index === cartItems.length - 1 && "border-b-0")}
+                      className={cn(
+                        "flex gap-4 p-4 border-b items-center",
+                        index === cartItems.length - 1 && "border-b-0"
+                      )}
                     >
                       <Link
                         href={`/products/${product.slug}`}

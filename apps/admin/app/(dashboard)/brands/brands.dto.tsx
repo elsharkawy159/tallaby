@@ -19,7 +19,7 @@ export const brandSchema = z.object({
     )
     .trim(),
 
-  logoUrl: z
+  logo_url: z
     .string()
     .url("Please enter a valid URL")
     .optional()
@@ -40,6 +40,8 @@ export const brandSchema = z.object({
   isVerified: z.boolean().default(false),
 
   isOfficial: z.boolean().default(false),
+
+  locale: z.enum(["en", "ar"]).optional(),
 });
 
 export type BrandFormData = z.infer<typeof brandSchema>;
@@ -47,19 +49,10 @@ export type BrandFormData = z.infer<typeof brandSchema>;
 export const brandDefaults: Partial<BrandFormData> = {
   name: "",
   slug: "",
-  logoUrl: "",
+  logo_url: "",
   description: "",
   website: "",
   isVerified: false,
   isOfficial: false,
-};
-
-// Helper function to generate slug from name
-export const generateSlug = (name: string): string => {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "") // Remove special characters
-    .replace(/\s+/g, "-") // Replace spaces with hyphens
-    .replace(/-+/g, "-") // Replace multiple hyphens with single hyphen
-    .trim();
+  locale: "en",
 };

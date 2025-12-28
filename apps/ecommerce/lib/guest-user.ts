@@ -66,10 +66,39 @@ export async function generateAndSetGuestUID(): Promise<string> {
 }
 
 /**
- * Get or create a guest user based on cookie UID
- * Returns the userId (UUID) of the guest user
+ * Get existing guest user based on cookie UID
+ * Returns the userId (UUID) of the guest user if it exists, null otherwise
+ * Does NOT create a new user - use createGuestUser() for that
  */
-export async function getOrCreateGuestUser(): Promise<string | null> {
+export async function getGuestUser(): Promise<string | null> {
+  try {
+    const guestUID = await getGuestUID();
+
+    if (!guestUID) {
+      return null;
+    }
+
+    // Check if user already exists for this UID
+    // We'll use a special email format: guest_<uid>@temp.local
+    const guestEmail = `guest_${guestUID}@temp.local`;
+
+    const guestUser = await db.query.users.findFirst({
+      where: eq(users.email, guestEmail),
+    });
+
+    return guestUser?.id || null;
+  } catch (error) {
+    console.error("Error getting guest user:", error);
+    return null;
+  }
+}
+
+/**
+ * Create a guest user based on cookie UID
+ * Generates and sets a new guest UID if one doesn't exist
+ * Returns the userId (UUID) of the created guest user
+ */
+export async function createGuestUser(): Promise<string | null> {
   try {
     let guestUID = await getGuestUID();
 
@@ -79,16 +108,15 @@ export async function getOrCreateGuestUser(): Promise<string | null> {
     }
 
     // Check if user already exists for this UID
-    // We'll use a special email format: guest_<uid>@temp.local
     const guestEmail = `guest_${guestUID}@temp.local`;
 
     let guestUser = await db.query.users.findFirst({
       where: eq(users.email, guestEmail),
     });
 
-    // Create guest user if it doesn't exist
+    // Only create if it doesn't exist
     if (!guestUser) {
-      // Generate a UUID for the user ID (use crypto.randomUUID for better uniqueness)
+      // Generate a UUID for the user ID
       const userId =
         typeof crypto !== "undefined" && crypto.randomUUID
           ? crypto.randomUUID()
@@ -115,14 +143,28 @@ export async function getOrCreateGuestUser(): Promise<string | null> {
 
     return guestUser.id;
   } catch (error) {
-    console.error("Error getting/creating guest user:", error);
+    console.error("Error creating guest user:", error);
     return null;
   }
 }
 
 /**
+ * Get or create a guest user based on cookie UID
+ * @deprecated Use getGuestUser() or createGuestUser() explicitly instead
+ * Returns the userId (UUID) of the guest user
+ */
+export async function getOrCreateGuestUser(): Promise<string | null> {
+  const existing = await getGuestUser();
+  if (existing) {
+    return existing;
+  }
+  return await createGuestUser();
+}
+
+/**
  * Get guest user ID if user is a guest (not authenticated)
  * Returns null if user is authenticated or if guest user doesn't exist
+ * Does NOT create a new user - use createGuestUser() when user interaction occurs
  */
 export async function getGuestUserId(): Promise<string | null> {
   try {
@@ -135,8 +177,8 @@ export async function getGuestUserId(): Promise<string | null> {
       return null;
     }
 
-    // User is not authenticated, get/create guest user
-    return await getOrCreateGuestUser();
+    // User is not authenticated, get existing guest user (don't create)
+    return await getGuestUser();
   } catch (error) {
     console.error("Error getting guest user ID:", error);
     return null;

@@ -2,8 +2,11 @@
 
 import { Button } from "@workspace/ui/components/button";
 import { ShoppingCart, Loader2 } from "lucide-react";
-import { useCart } from "@/providers/cart-provider";
 import type { AddToCartButtonProps } from "./product-card.types";
+import { useState, useTransition } from "react";
+import { addToCart as addToCartAction } from "@/actions/cart";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export const AddToCartButton = ({
   productId,
@@ -17,14 +20,32 @@ export const AddToCartButton = ({
   showText = true,
   stock = 1,
 }: AddToCartButtonProps) => {
-  const { addToCart, isProductLoading } = useCart();
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
-  const isLoading = isProductLoading(productId);
-
+  const handleAddToCart = async () => {
+    setIsLoading(true);
+    try {
+      const result = await addToCartAction(productId, quantity);
+      if (result.success) {
+        router.refresh();
+        toast.success("Item added to cart");
+      } else {
+        toast.error(result.error || "Failed to add item");
+      }
+    } catch (error) {
+      toast.error("Failed to add item");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const isOutOfStock = Number(stock) <= 0;
+  if (isOutOfStock) return null;
+  
   return (
     <Button
       className={className}
-      onClick={() => addToCart({ productId, quantity, variant: variantId })}
+      onClick={handleAddToCart}
       disabled={disabled || isLoading || Number(stock) === 0}
       size={size}
       variant={variant}
