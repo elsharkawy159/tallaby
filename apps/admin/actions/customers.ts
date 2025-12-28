@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@workspace/db";
-import { users, orders } from "@workspace/db";
+import { users, orders, userAddresses } from "@workspace/db";
 import { eq, and, desc, sql, gte, lte, like, or } from "drizzle-orm";
 import { getAdminUser } from "./auth";
 
@@ -48,23 +48,33 @@ export async function getAllCustomers(params?: {
       offset: params?.offset || 0,
     });
 
-    // Get order statistics for each customer
+    // Get order statistics and addresses for each customer
     const customersWithStats = await Promise.all(
       customersList.map(async (customer) => {
-        const orderStats = await db
-          .select({
-            totalOrders: sql<number>`count(*)`,
-            totalSpent: sql<number>`sum(${orders.totalAmount})`,
-            lastOrderDate: sql<string>`max(${orders.createdAt})`,
-          })
-          .from(orders)
-          .where(eq(orders.userId, customer.id));
+        const [orderStats, addresses] = await Promise.all([
+          db
+            .select({
+              totalOrders: sql<number>`count(*)`,
+              totalSpent: sql<number>`sum(${orders.totalAmount})`,
+              lastOrderDate: sql<string>`max(${orders.createdAt})`,
+            })
+            .from(orders)
+            .where(eq(orders.userId, customer.id)),
+          db.query.userAddresses.findMany({
+            where: eq(userAddresses.userId, customer.id),
+            orderBy: [
+              desc(userAddresses.isDefault),
+              desc(userAddresses.createdAt),
+            ],
+          }),
+        ]);
 
         return {
           ...customer,
           totalOrders: orderStats[0]?.totalOrders || 0,
           totalSpent: orderStats[0]?.totalSpent || 0,
           lastOrderDate: orderStats[0]?.lastOrderDate || null,
+          addresses: addresses || [],
         };
       })
     );
@@ -100,11 +110,16 @@ export async function getCustomerById(customerId: string) {
       throw new Error("Customer not found");
     }
 
+    // Get customer's addresses
+    const addresses = await db.query.userAddresses.findMany({
+      where: eq(userAddresses.userId, customerId),
+      orderBy: [desc(userAddresses.isDefault), desc(userAddresses.createdAt)],
+    });
+
     // Get customer's orders
     const customerOrders = await db.query.orders.findMany({
       where: eq(orders.userId, customerId),
       orderBy: [desc(orders.createdAt)],
-      limit: 10,
     });
 
     // Get order statistics
@@ -121,6 +136,7 @@ export async function getCustomerById(customerId: string) {
       success: true,
       data: {
         ...customer,
+        addresses: addresses || [],
         orders: customerOrders,
         stats: orderStats[0],
       },

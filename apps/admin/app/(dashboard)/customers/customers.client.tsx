@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@workspace/ui/components/button";
 import {
   Card,
   CardContent,
@@ -14,14 +13,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@workspace/ui/components/tabs";
-import {
-  DownloadIcon,
-  FilterIcon,
-  PlusIcon,
-  Users,
-  RefreshCw,
-} from "lucide-react";
-import Link from "next/link";
+import { Users } from "lucide-react";
 import { getCustomersColumns } from "./_components/table-columns";
 import { DataTable } from "../_components/data-table/data-table";
 import type { Customer, CustomerStats } from "./customers.types";
@@ -67,8 +59,8 @@ export function CustomersContent({ customers, stats }: CustomersContentProps) {
   return (
     <>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Customers</h1>
-        <div className="flex gap-2">
+        {/* <h1 className="text-3xl font-bold tracking-tight">Customers</h1> */}
+        {/* <div className="flex gap-2">
           <Button variant="outline" size="sm">
             <FilterIcon className="h-4 w-4 mr-2" />
             Filter
@@ -83,7 +75,7 @@ export function CustomersContent({ customers, stats }: CustomersContentProps) {
               Add Customer
             </Button>
           </Link>
-        </div>
+        </div> */}
       </div>
 
       {/* Stats Cards */}

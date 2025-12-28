@@ -20,26 +20,26 @@ const HeroCarousel = () => {
       href: "/products",
       image: "/banner.jpg",
     },
-    {
-      id: 2,
-      href: "/products",
-      image: "/banner2.jpg",
-    },
-    {
-      id: 3,
-      href: "/products",
-      image: "/banner3.jpg",
-    },
-    {
-      id: 5,
-      href: "/products",
-      image: "/banner5.jpg",
-    },
-    {
-      id: 6,
-      href: "/products",
-      image: "/banner6.jpg",
-    },
+    // {
+    //   id: 2,
+    //   href: "/products",
+    //   image: "/banner2.jpg",
+    // },
+    // {
+    //   id: 3,
+    //   href: "/products",
+    //   image: "/banner3.jpg",
+    // },
+    // {
+    //   id: 5,
+    //   href: "/products",
+    //   image: "/banner5.jpg",
+    // },
+    // {
+    //   id: 6,
+    //   href: "/products",
+    //   image: "/banner6.jpg",
+    // },
   ];
 
   return (
@@ -67,8 +67,9 @@ const HeroCarousel = () => {
                   src={banner.image}
                   alt={banner.image}
                   fill
-                  sizes="(max-width: 640px) 100vw, (max-width: 768px) 100vw, 100vw"
                   className="object-cover object-center md:object-top"
+                  fetchPriority="high"
+                  loading="eager"
                 />
               </div>
             </Link>

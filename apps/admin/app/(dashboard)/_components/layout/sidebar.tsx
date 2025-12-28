@@ -11,12 +11,7 @@ import {
   Users,
   Package,
   Tag,
-  BarChart3,
-  Settings,
   Store,
-  CreditCard,
-  Gift,
-  Truck,
   ChevronLeft,
   ChevronRight,
   Home,
@@ -34,6 +29,11 @@ const sidebarLinks: SidebarLink[] = [
     title: "Dashboard",
     href: "/",
     icon: Home,
+  },
+  {
+    title: "Customers",
+    href: "/customers",
+    icon: Users,
   },
   // {
   //   title: "Orders",
@@ -61,71 +61,60 @@ const sidebarLinks: SidebarLink[] = [
     title: "Products",
     href: "/products",
     icon: Package,
-    submenu: [
-      {
-        title: "All Products",
-        href: "/products",
-        icon: Package,
-      },
-      {
-        title: "Categories",
-        href: "/categories",
-        icon: Tag,
-      },
-      {
-        title: "Brands",
-        href: "/brands",
-        icon: Store,
-      },
-    ],
   },
   {
-    title: "Customers",
-    href: "/customers",
-    icon: Users,
+    title: "Categories",
+    href: "/categories",
+    icon: Tag,
   },
+  {
+    title: "Brands",
+    href: "/brands",
+    icon: Store,
+  },
+
   {
     title: "Sellers",
     href: "/sellers",
     icon: Store,
   },
-  {
-    title: "Shipping",
-    href: "/shipping",
-    icon: Truck,
-  },
-  {
-    title: "Payments",
-    href: "/payments",
-    icon: CreditCard,
-  },
-  {
-    title: "Promotions",
-    href: "/promotions",
-    icon: Gift,
-    submenu: [
-      {
-        title: "Coupons",
-        href: "/promotions/coupons",
-        icon: Gift,
-      },
-      // {
-      //   title: "Deals",
-      //   href: "/promotions/deals",
-      //   icon: Tag,
-      // },
-    ],
-  },
-  {
-    title: "Analytics",
-    href: "/analytics",
-    icon: BarChart3,
-  },
-  {
-    title: "Settings",
-    href: "/settings",
-    icon: Settings,
-  },
+  // {
+  //   title: "Shipping",
+  //   href: "/shipping",
+  //   icon: Truck,
+  // },
+  // {
+  //   title: "Payments",
+  //   href: "/payments",
+  //   icon: CreditCard,
+  // },
+  // {
+  //   title: "Promotions",
+  //   href: "/promotions",
+  //   icon: Gift,
+  //   submenu: [
+  //     {
+  //       title: "Coupons",
+  //       href: "/promotions/coupons",
+  //       icon: Gift,
+  //     },
+  //     // {
+  //     //   title: "Deals",
+  //     //   href: "/promotions/deals",
+  //     //   icon: Tag,
+  //     // },
+  //   ],
+  // },
+  // {
+  //   title: "Analytics",
+  //   href: "/analytics",
+  //   icon: BarChart3,
+  // },
+  // {
+  //   title: "Settings",
+  //   href: "/settings",
+  //   icon: Settings,
+  // },
 ];
 
 export default function Sidebar() {

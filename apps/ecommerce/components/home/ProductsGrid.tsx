@@ -83,7 +83,7 @@ const ProductsGrid = async ({
       </div>
 
       {/* Products Grid */}
-      <div className="grid gap-4 grid-cols-2 md:grid-cols-3 h-fu lg:grid-cols-4 xl:grid-cols-5">
+      <div className="grid md:gap-4 gap-2 grid-cols-2 md:grid-cols-3 h-full lg:grid-cols-4 xl:grid-cols-5">
         {products.data.map((product) => {
           const cartItem = cartItemsMap.get(product.id);
           const wishlistItem = wishlistMap.get(product.id);

@@ -39,7 +39,9 @@ export const AddToCartButton = ({
       setIsLoading(false);
     }
   };
-
+  const isOutOfStock = Number(stock) <= 0;
+  if (isOutOfStock) return null;
+  
   return (
     <Button
       className={className}

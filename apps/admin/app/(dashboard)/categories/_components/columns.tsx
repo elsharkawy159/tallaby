@@ -32,22 +32,8 @@ import {
   AvatarImage,
 } from "@workspace/ui/components/avatar";
 import { DataTableColumnHeader } from "@/app/(dashboard)/_components/data-table/data-table-column-header";
-
-interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  parentId: string | null;
-  description?: string;
-  imageUrl?: string;
-  level: number;
-  displayOrder: number;
-  isActive: boolean;
-  showInMenu: boolean;
-  showInHomeSlider?: boolean;
-  productCount: number;
-  createdAt: string;
-}
+import { getPublicUrl } from "@/lib/utils";
+import type { Category } from "../categories.types";
 
 export function getCategoriesColumns(): ColumnDef<Category>[] {
   return [
@@ -84,7 +70,10 @@ export function getCategoriesColumns(): ColumnDef<Category>[] {
           <div className="flex items-center gap-3">
             {category.imageUrl ? (
               <Avatar className="h-9 w-9">
-                <AvatarImage src={category.imageUrl} alt={category.name} />
+                <AvatarImage
+                  src={getPublicUrl(category.imageUrl, "categories")}
+                  alt={category.name || "Category"}
+                />
                 <AvatarFallback className="bg-primary text-primary-foreground">
                   <FolderTree className="h-4 w-4" />
                 </AvatarFallback>
@@ -99,7 +88,7 @@ export function getCategoriesColumns(): ColumnDef<Category>[] {
                 href={`/withAuth/categories/${category.id}`}
                 className="font-medium hover:underline flex items-center"
               >
-                {category.name}
+                {category.name || "Unnamed Category"}
                 {category.level === 1 && (
                   <Badge
                     variant="outline"
@@ -109,7 +98,9 @@ export function getCategoriesColumns(): ColumnDef<Category>[] {
                   </Badge>
                 )}
               </Link>
-              <div className="text-xs text-gray-500">{category.slug}</div>
+              <div className="text-xs text-gray-500">
+                {category.slug || "—"}
+              </div>
             </div>
           </div>
         );
@@ -121,12 +112,14 @@ export function getCategoriesColumns(): ColumnDef<Category>[] {
         <DataTableColumnHeader column={column} title="Level" />
       ),
       cell: ({ row }) => {
-        const level = parseInt(row.getValue("level"));
+        const level = row.getValue("level");
+        const levelNum = level ? parseInt(String(level)) : 0;
         const levelLabels = ["", "Main", "Sub", "Deep", "Leaf"];
 
         return (
           <Badge variant="outline">
-            Level {level} {levelLabels[level] ? `(${levelLabels[level]})` : ""}
+            Level {levelNum}{" "}
+            {levelLabels[levelNum] ? `(${levelLabels[levelNum]})` : ""}
           </Badge>
         );
       },
@@ -175,55 +168,10 @@ export function getCategoriesColumns(): ColumnDef<Category>[] {
         <DataTableColumnHeader column={column} title="Products" />
       ),
       cell: ({ row }) => {
-        const count = parseInt(row.getValue("productCount"));
+        const count = row.getValue("productCount");
+        const countNum = count ? Number(count) : 0;
 
-        return <div className="text-center font-medium">{count}</div>;
-      },
-    },
-    {
-      accessorKey: "showInMenu",
-      header: "Menu",
-      cell: ({ row }) => {
-        const showInMenu = row.getValue("showInMenu");
-
-        return (
-          <div className="text-center">
-            {showInMenu ? (
-              <Menu className="h-4 w-4 text-green-500 mx-auto" />
-            ) : (
-              <EyeOff className="h-4 w-4 text-gray-300 mx-auto" />
-            )}
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: "isActive",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Status" />
-      ),
-      cell: ({ row }) => {
-        const isActive = row.getValue("isActive");
-
-        return (
-          <Badge
-            variant={isActive ? "default" : "secondary"}
-            className="mx-auto flex w-24 justify-center"
-          >
-            {isActive ? "Active" : "Inactive"}
-          </Badge>
-        );
-      },
-    },
-    {
-      accessorKey: "displayOrder",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Order" />
-      ),
-      cell: ({ row }) => {
-        return (
-          <div className="text-center">{row.getValue("displayOrder")}</div>
-        );
+        return <div className="text-center font-medium">{countNum}</div>;
       },
     },
     {

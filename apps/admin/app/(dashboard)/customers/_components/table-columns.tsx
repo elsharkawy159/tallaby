@@ -30,7 +30,11 @@ import { cn } from "@workspace/ui/lib/utils";
 import { DataTableColumnHeader } from "@/app/(dashboard)/_components/data-table/data-table-column-header";
 import { Eye } from "lucide-react";
 import type { Customer } from "../customers.types";
-import { getCustomerFullName, getCustomerInitials } from "../customers.lib";
+import {
+  getCustomerInitials,
+  getCustomerDisplayName,
+  getCustomerDisplayPhone,
+} from "../customers.lib";
 
 interface GetCustomersColumnsProps {
   onQuickView?: (customer: Customer) => void;
@@ -69,12 +73,8 @@ export function getCustomersColumns({
       ),
       cell: ({ row }) => {
         const customer = row.original;
-        const fullName = getCustomerFullName(customer);
+        const displayName = getCustomerDisplayName(customer);
         const initials = getCustomerInitials(customer);
-
-        // Status indicators
-        const isVerified = customer.isVerified;
-        const isSuspended = customer.isSuspended;
 
         return (
           <div
@@ -83,7 +83,7 @@ export function getCustomersColumns({
           >
             <Avatar className="h-9 w-9">
               {customer.avatarUrl && (
-                <AvatarImage src={customer.avatarUrl} alt={fullName} />
+                <AvatarImage src={customer.avatarUrl} alt={displayName} />
               )}
               <AvatarFallback className="bg-primary text-primary-foreground">
                 {initials}
@@ -91,16 +91,16 @@ export function getCustomersColumns({
             </Avatar>
             <div className="flex flex-col">
               <div className="flex items-center gap-2">
-                  <div className="font-medium group-hover:underline text-left flex items-center gap-2">
-                    {fullName}
+                <div className="font-medium group-hover:underline text-left flex items-center gap-2">
+                  {displayName}
 
-                    {customer.isSuspended && (
+                  {customer.isSuspended && (
                     <AlertTriangle className="h-5 w-5 text-red-500" />
                   )}
                   {customer.isVerified && !customer.isSuspended && (
                     <CheckCircle2 className="h-5 w-5 text-green-500" />
                   )}
-                  </div>
+                </div>
               </div>
               <div className="text-xs text-gray-500">{customer.email}</div>
             </div>
@@ -114,7 +114,8 @@ export function getCustomersColumns({
         <DataTableColumnHeader column={column} title="Phone" />
       ),
       cell: ({ row }) => {
-        const phone = row.getValue("phone") as string | null;
+        const customer = row.original;
+        const phone = getCustomerDisplayPhone(customer);
         return <div>{phone || "—"}</div>;
       },
     },
@@ -216,15 +217,22 @@ export function getCustomersColumns({
       },
     },
     {
-      accessorKey: "createdAt",
+      accessorKey: "lastLoginAt",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Joined" />
+        <DataTableColumnHeader column={column} title="Last Login" />
       ),
       cell: ({ row }) => {
-        const date = new Date(row.getValue("createdAt"));
+        const customer = row.original;
+        const date = customer.lastLoginAt;
+
+        if (!date) {
+          return <div className="text-gray-400">Never</div>;
+        }
+
         const formatted = new Intl.DateTimeFormat("en-US", {
           dateStyle: "medium",
-        }).format(date);
+          timeStyle: "short",
+        }).format(new Date(date));
 
         return <div>{formatted}</div>;
       },
@@ -253,23 +261,6 @@ export function getCustomersColumns({
               <DropdownMenuItem asChild>
                 <Link href={`/customers/${customer.id}`} className="w-full">
                   View profile
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Link
-                  href={`/customers/${customer.id}/edit`}
-                  className="w-full"
-                >
-                  Edit customer
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <Link
-                  href={`/customers/${customer.id}/orders`}
-                  className="w-full"
-                >
-                  View orders
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem>Send email</DropdownMenuItem>

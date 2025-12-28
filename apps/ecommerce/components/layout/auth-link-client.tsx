@@ -19,9 +19,9 @@ export function AuthLinkClient({
 
   // Don't add redirect if already on login page
   const loginUrl =
-    pathname === "/login"
-      ? "/login"
-      : `/login?redirect=${encodeURIComponent(pathname)}`;
+    pathname === "/auth"
+      ? "/auth"
+      : `/auth?redirect=${encodeURIComponent(pathname)}`;
 
   return (
     <Button

@@ -25,6 +25,8 @@ import {
   User,
   Globe,
   Clock,
+  MapPin,
+  ExternalLink,
 } from "lucide-react";
 import type { Customer } from "../customers.types";
 import {
@@ -32,6 +34,8 @@ import {
   formatDateShort,
   getCustomerInitials,
   getCustomerFullName,
+  getCustomerDisplayName,
+  getCustomerDisplayPhone,
   getRoleBadgeVariant,
 } from "../customers.lib";
 import Link from "next/link";
@@ -78,7 +82,7 @@ export function CustomerQuickViewDialog({
               <div className="flex-1 space-y-2">
                 <div className="flex items-center gap-2">
                   <h3 className="text-2xl font-semibold">
-                    {getCustomerFullName(customer)}
+                    {getCustomerDisplayName(customer)}
                   </h3>
                   {customer.isSuspended && (
                     <AlertTriangle className="h-5 w-5 text-red-500" />
@@ -123,18 +127,21 @@ export function CustomerQuickViewDialog({
                     {customer.email}
                   </a>
                 </div>
-                {customer.phone && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">Phone:</span>
-                    <a
-                      href={`tel:${customer.phone}`}
-                      className="hover:underline"
-                    >
-                      {customer.phone}
-                    </a>
-                  </div>
-                )}
+                {(() => {
+                  const displayPhone = getCustomerDisplayPhone(customer);
+                  return displayPhone ? (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Phone className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">Phone:</span>
+                      <a
+                        href={`tel:${displayPhone}`}
+                        className="hover:underline"
+                      >
+                        {displayPhone}
+                      </a>
+                    </div>
+                  ) : null;
+                })()}
                 <div className="flex items-center gap-2 text-sm">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span className="text-muted-foreground">Joined:</span>
@@ -209,17 +216,82 @@ export function CustomerQuickViewDialog({
               )}
             </div>
 
+            {/* Addresses */}
+            {customer.addresses && customer.addresses.length > 0 && (
+              <>
+                <Separator />
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-sm">Addresses</h4>
+                  <div className="space-y-3">
+                    {customer.addresses.map((address) => {
+                      const googleMapsUrl =
+                        address.latitude && address.longitude
+                          ? `https://www.google.com/maps?q=${address.latitude},${address.longitude}`
+                          : null;
+
+                      return (
+                        <div
+                          key={address.id}
+                          className="p-3 border rounded-lg space-y-2"
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1 space-y-1">
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium">
+                                  {address.fullName}
+                                </span>
+                                {address.isDefault && (
+                                  <Badge variant="outline" className="text-xs">
+                                    Default
+                                  </Badge>
+                                )}
+                                <Badge
+                                  variant="secondary"
+                                  className="text-xs capitalize"
+                                >
+                                  {address.addressType}
+                                </Badge>
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                <div>{address.phone}</div>
+                                <div>
+                                  {address.addressLine1}
+                                  {address.addressLine2 &&
+                                    `, ${address.addressLine2}`}
+                                </div>
+                                <div>
+                                  {address.city}, {address.state}{" "}
+                                  {address.postalCode}
+                                </div>
+                                <div>{address.country}</div>
+                              </div>
+                            </div>
+                            {googleMapsUrl && (
+                              <a
+                                href={googleMapsUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1 text-sm text-primary hover:underline"
+                              >
+                                <MapPin className="h-4 w-4" />
+                                <span>View on Map</span>
+                                <ExternalLink className="h-3 w-3" />
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
+            )}
+
             {/* Actions */}
             <Separator />
             <div className="flex gap-2">
               <Link href={`/customers/${customer.id}`}>
                 <Button variant="outline">View Full Profile</Button>
-              </Link>
-              <Link href={`/customers/${customer.id}/orders`}>
-                <Button variant="outline">View Orders</Button>
-              </Link>
-              <Link href={`/customers/${customer.id}/edit`}>
-                <Button variant="outline">Edit Customer</Button>
               </Link>
             </div>
           </div>

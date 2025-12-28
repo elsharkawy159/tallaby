@@ -35,7 +35,7 @@ export const ProductCardInfo = ({
     >
       <div className="flex md:flex-row flex-col md:items-center md:gap-4.5 gap-1 justify-between">
         <Link href={`/products/${product.slug}`}>
-          <h3 className="text-sm font-medium md:line-clamp-2 line-clamp-1">
+          <h3 className="md:text-sm text-xs font-medium md:line-clamp-2 line-clamp-1">
             {title}
           </h3>
         </Link>

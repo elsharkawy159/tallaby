@@ -1,3 +1,26 @@
+export interface CustomerAddress {
+  id: string;
+  userId: string;
+  addressType: "shipping" | "billing" | "both";
+  fullName: string;
+  phone: string;
+  company: string | null;
+  addressLine1: string;
+  addressLine2: string | null;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+  isDefault: boolean;
+  isBusinessAddress: boolean;
+  deliveryInstructions: string | null;
+  accessCode: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Customer {
   id: string;
   firstName: string | null;
@@ -24,6 +47,7 @@ export interface Customer {
   totalOrders: number;
   totalSpent: number;
   lastOrderDate: string | null;
+  addresses?: CustomerAddress[];
 }
 
 export interface CustomerWithDetails extends Customer {
@@ -39,6 +63,7 @@ export interface CustomerWithDetails extends Customer {
     totalSpent: number;
     averageOrderValue: number;
   };
+  addresses?: CustomerAddress[];
 }
 
 export interface CustomerStats {

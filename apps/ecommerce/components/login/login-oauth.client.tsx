@@ -4,7 +4,6 @@ import { useTransition } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@workspace/ui/components/button";
 import { createClient } from "@/supabase/client";
-import { getShareUrl } from "@/lib/utils";
 
 export function LoginOAuth() {
   const [isPending, startTransition] = useTransition();
@@ -13,16 +12,27 @@ export function LoginOAuth() {
 
   const handleOAuthSignin = (provider: "google" | "github") => {
     startTransition(async () => {
-      const baseUrl = getShareUrl();
+      // Use window.location.origin directly since this is a client component
+      const baseUrl =
+        typeof window !== "undefined" ? window.location.origin : "";
+      if (!baseUrl) {
+        console.error("Unable to determine base URL for OAuth redirect");
+        return;
+      }
+
       const supabase = createClient();
       const redirectUrl = `${baseUrl}/api/auth/callback?next=${encodeURIComponent(redirectTo)}`;
 
-      supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: provider,
         options: {
           redirectTo: redirectUrl,
         },
       });
+
+      if (error) {
+        console.error("OAuth sign in error:", error);
+      }
     });
   };
 

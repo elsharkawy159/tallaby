@@ -13,7 +13,10 @@ import {
   desc,
 } from "@workspace/db";
 import { getUser } from "./auth";
-import { getCurrentUserId } from "@/lib/get-current-user-id";
+import {
+  getCurrentUserId,
+  getOrCreateCurrentUserId,
+} from "@/lib/get-current-user-id";
 import { revalidatePath } from "next/cache";
 
 export async function getCustomerProfile() {
@@ -64,9 +67,10 @@ export async function addAddress(data: {
   deliveryInstructions?: string;
 }) {
   try {
-    const userId = await getCurrentUserId();
+    // Create guest user if needed when adding an address
+    const userId = await getOrCreateCurrentUserId();
     if (!userId) {
-      return { success: false, error: "Unable to get user ID" };
+      return { success: false, error: "Unable to get or create user ID" };
     }
 
     // If setting as default, unset other defaults

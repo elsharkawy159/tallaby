@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -23,42 +24,35 @@ import { Trash } from "lucide-react";
 import { productSchema } from "../../_lib/validations/product-schema";
 import { FormWrapper } from "@/components/forms/form-wrapper";
 import { FormInputField } from "@/components/forms/form-field";
+import { updateProduct } from "@/actions/products";
+import { toast } from "sonner";
 import type { z } from "zod";
-
-// Mock data for brands and categories
-const brands = [
-  { label: "TechBrand", value: "brand_01" },
-  { label: "AudioTech", value: "brand_02" },
-  { label: "FitWear", value: "brand_03" },
-  { label: "HomeTech", value: "brand_04" },
-  { label: "PhotoTech", value: "brand_05" },
-  { label: "GameTech", value: "brand_06" },
-  { label: "WearTech", value: "brand_07" },
-];
-
-const categories = [
-  { label: "Electronics", value: "cat_01" },
-  { label: "Wearables", value: "cat_02" },
-  { label: "Smart Home", value: "cat_03" },
-  { label: "Photography", value: "cat_04" },
-  { label: "Gaming", value: "cat_05" },
-  { label: "Audio", value: "cat_06" },
-  { label: "Computers", value: "cat_07" },
-];
 
 type ProductFormData = z.infer<typeof productSchema>;
 
 interface ProductFormProps {
   initialData?: Partial<ProductFormData>;
   isEditing?: boolean;
+  productId?: string;
+  brands?: Array<{ label: string; value: string }>;
+  categories?: Array<{ label: string; value: string }>;
 }
+
+const defaultBrands: Array<{ label: string; value: string }> = [];
+const defaultCategories: Array<{ label: string; value: string }> = [];
 
 export function ProductForm({
   initialData,
   isEditing = false,
+  productId,
+  brands = defaultBrands,
+  categories = defaultCategories,
 }: ProductFormProps) {
+  const router = useRouter();
   const [bulletPoints, setBulletPoints] = useState<string[]>(
-    initialData?.bulletPoints || [""]
+    initialData?.bulletPoints && initialData.bulletPoints.length > 0
+      ? initialData.bulletPoints
+      : [""]
   );
 
   const form = useForm({
@@ -80,10 +74,18 @@ export function ProductForm({
       metaDescription: "",
       metaKeywords: "",
       searchKeywords: "",
+      locale: "en",
     },
   });
 
   const { control } = form;
+
+  // Update bulletPoints when initialData changes
+  useEffect(() => {
+    if (initialData?.bulletPoints && initialData.bulletPoints.length > 0) {
+      setBulletPoints(initialData.bulletPoints);
+    }
+  }, [initialData]);
 
   const addBulletPoint = () => {
     setBulletPoints([...bulletPoints, ""]);
@@ -102,16 +104,49 @@ export function ProductForm({
   };
 
   const onSubmit = async (data: Record<string, unknown>) => {
+    if (!isEditing || !productId) {
+      console.error("Product ID is required for editing");
+      return;
+    }
+
     // Include the bullet points
     const formData = {
       ...data,
       bulletPoints: bulletPoints.filter((bp) => bp.trim() !== ""),
-    };
+    } as ProductFormData;
 
-    console.log("Form submitted:", formData);
+    try {
+      const result = await updateProduct(productId, {
+        title: formData.title,
+        slug: formData.slug,
+        description: formData.description,
+        bulletPoints: formData.bulletPoints,
+        brandId: formData.brandId || undefined,
+        categoryId: formData.categoryId,
+        basePrice: formData.basePrice,
+        listPrice: formData.listPrice,
+        isActive: formData.isActive,
+        isPlatformChoice: formData.isPlatformChoice,
+        isMostSelling: formData.isBestSeller,
+        taxClass: formData.taxClass,
+        metaTitle: formData.metaTitle,
+        metaDescription: formData.metaDescription,
+        metaKeywords: formData.metaKeywords,
+        searchKeywords: formData.searchKeywords,
+      });
 
-    // Here you would typically submit the data to your API
-    // await createProduct(formData) or await updateProduct(id, formData)
+      if (result.success) {
+        toast.success("Product updated successfully");
+        router.push(`/withAuth/products/${productId}`);
+        router.refresh();
+      } else {
+        toast.error(result.error || "Failed to update product");
+      }
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update product"
+      );
+    }
   };
 
   // Auto-generate slug from title

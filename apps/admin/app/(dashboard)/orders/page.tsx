@@ -3,6 +3,8 @@ import { OrdersClientWrapper } from "./orders.client";
 import { OrdersDataWrapper } from "./orders.data";
 import { OrdersSkeleton } from "./orders.skeleton";
 
+export const dynamic = 'force-dynamic';
+
 interface OrdersPageProps {
   searchParams?: Promise<{
     status?: string;

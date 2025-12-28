@@ -7,6 +7,7 @@ import { getAdminUser } from "./auth";
 import { revalidatePath } from "next/cache";
 
 export async function getAllBrands(params?: {
+  locale?: "en" | "ar";
   verified?: boolean;
   official?: boolean;
   sortBy?: "name" | "products" | "rating";
@@ -18,6 +19,11 @@ export async function getAllBrands(params?: {
     await getAdminUser(); // Verify admin access
 
     const conditions = [];
+
+    // Note: locale filtering is commented out until schema is updated
+    // if (params?.locale) {
+    //   conditions.push(eq(brands.locale, params.locale));
+    // }
 
     if (params?.verified !== undefined) {
       conditions.push(eq(brands.isVerified, params.verified));
@@ -35,6 +41,9 @@ export async function getAllBrands(params?: {
           like(brands.website, `%${params.search}%`)
         )
       );
+      // Note: nameAr and descriptionAr search commented out until schema is updated
+      // like(brands.nameAr, `%${params.search}%`),
+      // like(brands.descriptionAr, `%${params.search}%`),
     }
 
     let orderBy = [];
@@ -109,12 +118,16 @@ export async function getBrandById(brandId: string) {
 
 export async function createBrand(data: {
   name: string;
+  nameAr?: string;
   slug: string;
+  slugAr?: string;
   logoUrl?: string;
   description?: string;
+  descriptionAr?: string;
   website?: string;
   isVerified?: boolean;
   isOfficial?: boolean;
+  locale?: "en" | "ar";
 }) {
   try {
     await getAdminUser(); // Verify admin access
@@ -143,6 +156,11 @@ export async function createBrand(data: {
         isOfficial: data.isOfficial || false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        // Note: locale, nameAr, slugAr, descriptionAr fields commented out until schema is updated
+        // nameAr: data.nameAr || null,
+        // slugAr: data.slugAr || null,
+        // descriptionAr: data.descriptionAr || null,
+        // locale: data.locale || 'en',
       })
       .returning();
 
@@ -162,12 +180,16 @@ export async function updateBrand(
   brandId: string,
   data: {
     name?: string;
+    nameAr?: string;
     slug?: string;
+    slugAr?: string;
     logoUrl?: string;
     description?: string;
+    descriptionAr?: string;
     website?: string;
     isVerified?: boolean;
     isOfficial?: boolean;
+    locale?: "en" | "ar";
   }
 ) {
   try {
@@ -188,7 +210,7 @@ export async function updateBrand(
         where: eq(brands.slug, data.slug),
       });
 
-      if (slugExists) {
+      if (slugExists && slugExists.id !== brandId) {
         return {
           success: false,
           error: "Brand with this slug already exists",
@@ -196,10 +218,13 @@ export async function updateBrand(
       }
     }
 
+    // Filter out fields that don't exist in schema yet
+    const { locale, nameAr, slugAr, descriptionAr, ...updateData } = data;
+
     const updatedBrand = await db
       .update(brands)
       .set({
-        ...data,
+        ...updateData,
         updatedAt: new Date().toISOString(),
       })
       .where(eq(brands.id, brandId))

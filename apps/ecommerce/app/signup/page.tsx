@@ -1,31 +1,21 @@
 import Image from "next/image";
-import Link from "next/link";
 import { Suspense } from "react";
-import { LoginFormWrapper } from "@/components/login/login-form-wrapper";
+import { SignupFormWrapper } from "@/components/signup/signup-form-wrapper";
 import { Logo } from "@/components/logo";
 
-interface LoginPageProps {
-  searchParams: { redirect?: string };
-}
-
-export default function LoginPage({ searchParams }: LoginPageProps) {
-  const redirectTo = searchParams.redirect || undefined;
-
+export default function SignupPage() {
   return (
     <div className="flex min-h-screen">
       <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
         <div className="mx-auto w-full max-w-sm lg:w-96">
           <div>
             <div className="mb-8">
-            <Logo  className="*:text-primary" />
+              <Logo className="*:text-primary" />
             </div>
-            <h2 className="mt-8 text-2xl/9 font-bold tracking-tight text-gray-900">
-              Sign in to your account
-            </h2>
           </div>
           <div className="mt-10">
             <Suspense fallback={<div>Loading...</div>}>
-              <LoginFormWrapper redirectTo={redirectTo} />
+              <SignupFormWrapper />
             </Suspense>
           </div>
         </div>

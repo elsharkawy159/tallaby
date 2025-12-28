@@ -28,7 +28,7 @@ export function OAuth({ next }: { next?: string }) {
   return (
     <div className="w-full">
       <Button
-        className="flex items-center justify-center py-2.5 min-h-12 border rounded-lg hover:bg-gray-50 duration-150 active:bg-gray-100 transition-colors w-full"
+        className="flex items-center justify-center py-2.5 min-h-12 border rounded-lg bg-white hover:bg-gray-50 duration-150 active:bg-gray-100 transition-colors w-full"
         onClick={() => handleOAuthSignin("google")}
         disabled={isPending}
         type="button"
