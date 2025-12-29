@@ -47,7 +47,7 @@ const MainHeader = async () => {
           <div className="flex items-center gap-4">
             <Logo />
             {/* <DeliveryLocation className="hidden lg:flex" user={user} /> */}
-            <LanguageSwitcher />
+            {/* <LanguageSwitcher /> */}
           </div>
 
           <SearchBar variant="desktop" />

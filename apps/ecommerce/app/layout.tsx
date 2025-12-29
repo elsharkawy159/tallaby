@@ -56,14 +56,6 @@ export const metadata: Metadata = {
     title: "Tallaby.com – Your Everything Store",
     description:
       "Discover endless shopping on Tallaby.com – electronics, fashion, home, beauty, and more. Worldwide delivery, secure checkout, and trusted sellers.",
-    images: [
-      {
-        url: "/og-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: "Tallaby.com – Your Everything Store",
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
@@ -72,27 +64,13 @@ export const metadata: Metadata = {
     title: "Tallaby.com – Your Everything Store",
     description:
       "Tallaby.com brings you Amazon-like shopping with millions of products, great prices, and secure delivery.",
-    images: ["/og-image.jpg"],
   },
   icons: {
     icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
-    ],
-    apple: [
-      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
-    ],
-    other: [
-      { rel: "mask-icon", url: "/safari-pinned-tab.svg", color: "#0f172a" },
+      { url: "/favicon.png", sizes: "any" },
     ],
   },
-  manifest: "/site.webmanifest",
-  verification: {
-    google: "your-google-verification-code",
-    yandex: "your-yandex-verification-code",
-    yahoo: "your-yahoo-verification-code",
-  },
+  manifest: "/manifest.ts",
   alternates: {
     canonical: "https://www.tallaby.com",
     languages: {
