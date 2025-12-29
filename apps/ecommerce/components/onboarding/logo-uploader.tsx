@@ -55,20 +55,10 @@ export function LogoUploader({
       const previewUrl = URL.createObjectURL(file);
       setPreview(previewUrl);
 
-      // Get user for unique filename
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        toast.error("You must be logged in to upload a logo");
-        setPreview(value || null);
-        return;
-      }
 
       // Generate unique filename
       const fileExt = file.name.split(".").pop();
-      const fileName = `logo-${user.id}-${Date.now()}.${fileExt}`;
+      const fileName = `logo-${Date.now()}.${fileExt}`;
       const filePath = `logos/${fileName}`;
 
       // Upload file to Supabase Storage

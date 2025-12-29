@@ -185,7 +185,7 @@ export function OnboardingFormClient({ user }: OnboardingFormClientProps) {
     switch (currentStep) {
       case 0: {
         return (
-          <div className="space-y-6">
+          <div className="md:space-y-6 space-y-4">
             <FormField
               control={form.control}
               name="logoUrl"
@@ -233,7 +233,6 @@ export function OnboardingFormClient({ user }: OnboardingFormClientProps) {
                   label: opt.label,
                 }))}
                 required
-                className="h-1"
               />
             </div>
 
@@ -374,7 +373,7 @@ export function OnboardingFormClient({ user }: OnboardingFormClientProps) {
             <form
               id="onboarding-form"
               onSubmit={form.handleSubmit(handleSubmit)}
-              className="space-y-6"
+              className="md:space-y-6 space-y-4"
             >
               {renderCurrentStepContent()}
             </form>
