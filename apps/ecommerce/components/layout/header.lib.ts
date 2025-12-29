@@ -27,11 +27,11 @@ export const bottomNavigationItems: NavigationItem[] = [
     label: "Shopping",
     icon: Store,
   },
-  // {
-  //   href: "/cart",
-  //   label: "Cart",
-  //   icon: ShoppingCart,
-  // },
+  {
+    href: "/cart",
+    label: "Cart",
+    icon: ShoppingCart,
+  },
 ];
 
 export const getSearchPlaceholder = (variant: "mobile" | "desktop"): string => {

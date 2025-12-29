@@ -60,6 +60,7 @@ const ProductsGrid = async ({
     wishlistItems.map((item: any) => [item.productId, item])
   );
 
+  console.log(products.data);
   return (
     <section className="lg:py-8 py-5 container">
       {/* Header Section */}
@@ -68,7 +69,7 @@ const ProductsGrid = async ({
           <h2 className="md:text-2xl text-xl font-bold text-gray-900">
             {title}
           </h2>
-          <Button asChild className="p-0 gap-1 hidden" variant="link">
+          <Button asChild className="p-0 gap-1" variant="link">
             <Link href="/products">
               View More
               <ChevronRight className="size-4" />

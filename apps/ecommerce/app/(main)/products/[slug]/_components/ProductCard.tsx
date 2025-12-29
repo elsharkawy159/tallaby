@@ -65,6 +65,7 @@ const ProductCard = ({
           cartItemQuantity={cartItemQuantity}
           isInWishlist={isInWishlist}
           wishlistItemId={wishlistItemId}
+
         />
       </CardContent>
     </Card>
@@ -72,3 +73,56 @@ const ProductCard = ({
 };
 
 export default ProductCard;
+
+
+// Product Card Props
+// {
+//   "id": "980a6373-cff7-4725-a518-55d7f828238f",
+//   "title": "Plant Food Organic",
+//   "slug": "plant-food-organic-ga-2024-049",
+//   "description": "Organic plant food for vegetables, flowers, and herbs",
+//   "bulletPoints": null,
+//   "brandId": null,
+//   "categoryId": "93540827-f5ac-4ff8-aa41-b61950a72ff2",
+//   "averageRating": null,
+//   "reviewCount": 0,
+//   "totalQuestions": 0,
+//   "isActive": true,
+//   "isPlatformChoice": false,
+//   "isMostSelling": false,
+//   "taxClass": "standard",
+//   "createdAt": "2025-12-26 13:37:05.13242+00",
+//   "updatedAt": "2025-12-26 13:38:32.423+00",
+//   "images": [
+//       "2025-12-26/1766756309464-images.jpg"
+//   ],
+//   "sellerId": "281d1222-19a0-4354-8d68-000d2a187f12",
+//   "sku": "GA-2024-049",
+//   "condition": "new",
+//   "conditionDescription": null,
+//   "quantity": "2",
+//   "fulfillmentType": "seller_fulfilled",
+//   "handlingTime": "1",
+//   "maxOrderQuantity": null,
+//   "isFeatured": false,
+//   "dimensions": null,
+//   "price": {
+//       "base": 19,
+//       "list": 25.27,
+//       "final": 19.46,
+//       "discountType": "percent",
+//       "discountValue": 23
+//   },
+//   "seo": null,
+//   "brand": null,
+//   "category": {
+//       "id": "93540827-f5ac-4ff8-aa41-b61950a72ff2",
+//       "name": "Electronics",
+//       "slug": "electronics",
+//       "level": 0,
+//       "parentId": null,
+//       "shopifyId": "gid://shopify/TaxonomyCategory/el",
+//       "updatedAt": null,
+//       "createdAt": "2025-08-09T00:33:53.746748+00:00"
+//   }
+// }

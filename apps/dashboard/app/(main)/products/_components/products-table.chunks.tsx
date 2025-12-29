@@ -71,7 +71,7 @@ export const ProductActionsCell = ({
       </Button>
     </form>
     <Button asChild size="icon" variant="ghost" aria-label="Edit">
-      <Link href={`/products/new?page=edit&id=${id}`}>
+      <Link href={`/products/${id}`}>
         <Edit className="w-4 h-4" />
       </Link>
     </Button>

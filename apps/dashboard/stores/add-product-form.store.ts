@@ -3,7 +3,7 @@ import { persist } from "zustand/middleware";
 import {
   defaultValues,
   type AddProductFormData,
-} from "@/app/(main)/products/new/add-product.schema";
+} from "@/app/(main)/products/add/add-product.schema";
 
 interface AddProductFormState {
   // Form data

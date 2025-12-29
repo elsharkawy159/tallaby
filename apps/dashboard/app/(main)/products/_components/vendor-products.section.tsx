@@ -249,7 +249,7 @@ export function VendorProductsSection({
         <div className="ml-auto flex items-center gap-2">
           <UploadExcelButton />
           <Button asChild variant="outline">
-            <Link href="/products/new">
+            <Link href="/products/add">
               <PlusIcon
                 className="-ms-1 opacity-60"
                 size={16}

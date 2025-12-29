@@ -1,47 +1,56 @@
-import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 import { Logo } from "@/components/logo";
-import { OnboardingFormWrapper } from "@/components/onboarding/onboarding-form-wrapper";
+import { Separator } from "@workspace/ui/components";
+import { OAuth } from "@/components/auth/o-auth";
+import { OnboardingFormClient } from "@/components/onboarding/onboarding-form.client";
+import { createClient } from "@/supabase/server";
 
-export default function OnboardingPage() {
+export default async function OnboardingPage() {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   return (
-    <div className="flex min-h-screen">
-      <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
-        <div className="mx-auto w-full max-w-sm lg:w-96">
-          <div>
-            <div className="mb-8">
-              <Logo className="*:text-primary" />
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="mx-auto w-full max-w-2xl">
+        <Logo className="*:text-primary flex justify-center" />
+        <h2 className="mt-4 text-2xl/9 font-bold tracking-tight text-gray-900 text-center">
+          Become a Seller
+        </h2>
+        <p className="mt-1 text-sm text-gray-600 text-center">
+          Create your vendor account and start selling on our platform.{" "}
+          {!user && (
+            <Link
+              href="/auth?redirect=/onboarding"
+              className="font-semibold text-primary hover:text-primary/80"
+            >
+              Already have an account? Sign in
+            </Link>
+          )}
+        </p>
+        <div className="mt-8">
+          <Suspense fallback={<div>Loading...</div>}>
+            <OnboardingFormClient user={user} />
+          </Suspense>
+
+          {!user && (
+            <div className="space-y-4 mt-5">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <Separator className="w-full" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">
+                    Or sign in with
+                  </span>
+                </div>
+              </div>
+              <OAuth next={"/onboarding"} />
             </div>
-            <h2 className="mt-8 text-2xl/9 font-bold tracking-tight text-gray-900">
-              Become a Seller
-            </h2>
-            <p className="mt-2 text-sm text-gray-600">
-              Create your vendor account and start selling on our platform.{" "}
-              <Link
-                href="/login"
-                className="font-semibold text-primary hover:text-primary/80"
-              >
-                Already have an account? Sign in
-              </Link>
-            </p>
-          </div>
-          <div className="mt-10">
-            <Suspense fallback={<div>Loading...</div>}>
-              <OnboardingFormWrapper />
-            </Suspense>
-          </div>
-        </div>
-      </div>
-      <div className="relative hidden w-0 flex-1 lg:block">
-        <div className="absolute inset-0 m-6">
-          <Image
-            alt=""
-            src="/auth-bg.jpg"
-            fill
-            className="rounded-2xl object-cover"
-            priority
-          />
+          )}
         </div>
       </div>
     </div>

@@ -37,7 +37,7 @@ export function AuthLinkClient({
       title="Sign in to your account"
     >
       <Link href={loginUrl}>
-        <UserIcon className={cn("size-6", variant === "mobile" && "size-5")} />
+        <UserIcon className={"md:size-6 size-4.5"} />
         {variant === "mobile" && <span className="text-xs">Sign In</span>}
       </Link>
     </Button>

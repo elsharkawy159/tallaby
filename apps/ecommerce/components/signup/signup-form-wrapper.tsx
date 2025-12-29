@@ -28,7 +28,7 @@ export function SignupFormWrapper() {
       className="w-full"
       onValueChange={(value) => setMode(value as AuthMode)}
     >
-      <TabsList className="grid w-full grid-cols-2 mb-5">
+      <TabsList className="grid w-full grid-cols-2 mb-5 bg-white">
         <TabsTrigger value="signin">Sign In</TabsTrigger>
         <TabsTrigger value="signup">Create Account</TabsTrigger>
       </TabsList>
@@ -63,7 +63,6 @@ export function SignupFormWrapper() {
             </span>
           </div>
         </div>
-
         <OAuth next={redirectTo} />
       </div>
     </Tabs>
