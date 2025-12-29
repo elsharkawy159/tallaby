@@ -68,7 +68,7 @@ export const submitSellerApplication = async (
       counter++;
     }
 
-    // 5. Create seller profile - SIMPLIFIED
+    // 5. Create seller profile
     const displayName = createDisplayName(validatedData.businessName);
 
     const sellerData: CreateSellerData = {
@@ -77,20 +77,25 @@ export const submitSellerApplication = async (
       displayName,
       slug: uniqueSlug,
       businessType: validatedData.businessType,
+      description: validatedData.description?.trim() || undefined,
+      logoUrl: validatedData.logoUrl?.trim() || undefined,
       legalAddress: {
-        street: validatedData.addressLine1,
-        city: validatedData.city,
-        state: validatedData.state,
-        postalCode: validatedData.postalCode,
-        country: validatedData.country,
+        street: validatedData.legalAddress.street,
+        city: validatedData.legalAddress.city,
+        state: validatedData.legalAddress.state,
+        postalCode: validatedData.legalAddress.postalCode || "",
+        country: validatedData.legalAddress.country,
       },
       supportEmail: validatedData.supportEmail,
+      supportPhone: validatedData.supportPhone?.trim() || undefined,
+      // registrationNumber: validatedData.registrationNumber?.trim() || undefined,
+      // taxId: validatedData.taxId?.trim() || undefined,
     };
 
     // Validate seller data before insertion
     const validatedSellerData = createSellerSchema.parse(sellerData);
 
-    // Insert seller record - SIMPLIFIED
+    // Insert seller record
     const newSeller = await db
       .insert(sellers)
       .values({
@@ -99,22 +104,27 @@ export const submitSellerApplication = async (
         displayName: validatedSellerData.displayName,
         slug: validatedSellerData.slug,
         businessType: validatedSellerData.businessType,
+        description: validatedSellerData.description,
+        logoUrl: validatedSellerData.logoUrl,
         legalAddress: validatedSellerData.legalAddress,
         supportEmail: validatedSellerData.supportEmail,
+        supportPhone: validatedSellerData.supportPhone,
+        status: "approved", //Auto Approve vendors for now
+
+        // registrationNumber: validatedSellerData.registrationNumber,
+        // taxId: validatedSellerData.taxId,
         // All other fields will use defaults or null
       })
       .returning({ id: sellers.id });
 
     // 6. Revalidate relevant paths
     revalidatePath("/dashboard");
-    revalidatePath("/become-seller");
     revalidatePath("/onboarding");
 
     // 7. Return success response
     const successResponse = {
       success: true,
-      message:
-        "🎉 Seller account created successfully! Pending approval from admin.",
+      message: "🎉 Seller account created successfully.",
       data: {
         sellerId: newSeller[0]?.id || user.id,
       },
@@ -125,7 +135,9 @@ export const submitSellerApplication = async (
     // Handle Zod validation errors
     if (error instanceof z.ZodError) {
       const fieldErrors: Record<string, string[]> = {};
-      error.errors.forEach((err) => {
+
+      const zodIssues = error.issues || [];
+      zodIssues.forEach((err: z.ZodIssue) => {
         const field = err.path.join(".");
         if (!fieldErrors[field]) fieldErrors[field] = [];
         fieldErrors[field].push(err.message);

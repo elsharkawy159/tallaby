@@ -15,6 +15,7 @@ import {
   Gift,
   ChevronLeft,
   ChevronRight,
+  UserIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -24,6 +25,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { ScrollArea, ScrollBar } from "@workspace/ui/components/scroll-area";
 import { useSiteData } from "@/providers/site-data";
+import { Avatar, AvatarFallback, AvatarImage } from "@workspace/ui/components";
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -127,12 +129,13 @@ const SidebarContent = ({
       {/* Profile Section */}
       {!isCollapsed && (
         <div className="flex flex-col items-center py-5 px-6 border-b border-primary-foreground/20">
-          <div className="w-[120px] h-[120px] rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mb-4 shadow-md">
-            <span className="text-white text-4xl font-bold capitalize">
-              {seller?.businessName?.[0]}
-            </span>
-          </div>
-          <h2 className="text-white font-semibold text-lg mb-1">
+          <Avatar className="size-30">
+            <AvatarImage src={seller?.logoUrl || ""} alt={`${seller?.businessName} logo`} />
+            <AvatarFallback className="bg-primary text-white font-semibold">
+              {seller?.businessName ? seller?.businessName?.[0] : <UserIcon className="h-10 w-10" />}
+            </AvatarFallback>
+          </Avatar>
+          <h2 className="text-white font-semibold text-lg mb-1 mt-4">
             {seller?.businessName}
           </h2>
           <p className="text-primary-foreground/80 text-sm text-center">
@@ -155,7 +158,7 @@ const SidebarContent = ({
       {isCollapsed && (
         <div className="flex flex-col items-center py-4 px-2 border-b border-primary-foreground/20">
           <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-            <span className="text-white text-sm font-bold">JD</span>
+            <span className="text-white text-sm font-bold">{seller?.businessName ? seller?.businessName?.[0] : <UserIcon className="h-4 w-4" />}</span>
           </div>
         </div>
       )}

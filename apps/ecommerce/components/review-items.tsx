@@ -80,11 +80,11 @@ export function ReviewItems({
         "rounded-2xl border border-gray-200 overflow-hidden pt-0!"
       )}
     >
-      <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-5 border-b border-gray-200">
+      <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-4 md:px-6 py-3 md:py-5 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <CardTitle
             className={cn(
-              "text-xl font-bold text-gray-900",
+              "flex items-center gap-2 text-sm md:text-xl font-bold text-gray-900",
               layout === "compact" && "text-lg"
             )}
           >

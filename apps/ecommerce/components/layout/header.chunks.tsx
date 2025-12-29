@@ -10,14 +10,19 @@ export const BecomeSellerButton = ({
   className?: string;
   user: User | null;
 }) => {
-  // Hide button if user is already a seller
-  if (user?.user_metadata?.is_seller === true) {
-    return null;
-  }
 
   return (
     <Button asChild className={cn("text-sm", className)} size="sm">
-      <Link href={"/become-seller"}>Become a Partner</Link>
+      <Link
+        href={
+          user?.user_metadata?.is_seller
+            ? "https://dashboard.tallaby.com/"
+            : "/onboarding"
+        }
+        target={user?.user_metadata?.is_seller ? "_blank" : "_self"}
+      >
+        {user?.user_metadata?.is_seller ? "View Dashboard" : "Start Selling"}
+      </Link>
     </Button>
   );
 };

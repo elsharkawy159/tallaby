@@ -35,7 +35,7 @@ export const BottomNavClient = ({ items }: BottomNavClientProps) => {
             <Link href={item.href}>
               {IconComponent && (
                 <IconComponent
-                  className={cn("size-5", isActive && "text-primary")}
+                  className={cn("size-4.5", isActive && "text-primary")}
                 />
               )}
               <span className={cn("text-xs", isActive && "text-primary")}>

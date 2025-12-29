@@ -22,7 +22,7 @@ export const Navbar = ({ onMenuToggle }: NavbarProps) => {
     case "/products":
       pageTitle = "My Products";
       break;
-    case "/products/new":
+    case "/products/add":
       pageTitle = "Add New Product";
       break;
     case "/orders":

@@ -29,6 +29,20 @@ export const ProductCardActions = ({
 }: ProductCardActionsProps) => {
   const productId = product.id || "";
 
+  // Safely convert maxOrderQuantity - preserve null/undefined to mean "no limit"
+  const maxOrderQty =
+    product.maxOrderQuantity != null
+      ? typeof product.maxOrderQuantity === "string"
+        ? Number(product.maxOrderQuantity)
+        : product.maxOrderQuantity
+      : null;
+
+  // Validate: if conversion resulted in NaN or <= 0, treat as no limit (null)
+  const safeMaxOrderQty =
+    maxOrderQty != null && !isNaN(maxOrderQty) && maxOrderQty > 0
+      ? maxOrderQty
+      : null;
+
   if (variant === "page") {
     // For product page - show quantity selector if in cart, otherwise add to cart button
     return (
@@ -40,12 +54,12 @@ export const ProductCardActions = ({
                 Quantity
               </h3>
               <QuantitySelector
-                productId={productId}
                 size="lg"
                 showRemoveButton={true}
                 cartItemId={cartItemId}
                 initialQuantity={cartItemQuantity}
                 productStock={product.quantity || 0}
+                maxOrderQuantity={safeMaxOrderQty}
               />
             </div>
             <WishlistButton
@@ -85,17 +99,17 @@ export const ProductCardActions = ({
   }
 
   // For product card - show compact version
-  if (isInCartStatus) {
+  if (isInCartStatus || cartItemQuantity > 0) {
     return (
       <div
         className={`absolute right-2.5 md:bottom-19 bottom-16 rounded-lg bg-accent ${className}`}
       >
         <QuantitySelector
-          productId={productId}
           showRemoveButton={true}
           productStock={product.quantity || 0}
           cartItemId={cartItemId}
           initialQuantity={cartItemQuantity}
+          maxOrderQuantity={safeMaxOrderQty}
           className="!border-0 !bg-transparent !text-white shadow"
         />
       </div>

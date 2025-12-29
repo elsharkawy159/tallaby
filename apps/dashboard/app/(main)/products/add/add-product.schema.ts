@@ -9,7 +9,7 @@ export const addProductFormSchema = z.object({
   bulletPoints: z.array(z.string()).optional(),
 
   categoryId: z.string().min(1, "Main category is required"),
-  brandId: z.string().min(1, "Brand is required"),
+  brandId: z.string().optional(),
 
   sku: z.string().min(1, "SKU is required"),
   quantity: z.number().int().min(0).default(0),
@@ -97,7 +97,7 @@ export const defaultValues: Partial<AddProductFormData> = {
   slug: "",
   description: "",
   bulletPoints: [],
-  brandId: "",
+  brandId: undefined,
   categoryId: "",
   sku: "",
   quantity: 0,
@@ -194,8 +194,6 @@ export const conditionOptions = [
 export const fulfillmentOptions = [
   { value: "platform_fulfilled", label: "Platform Fulfilled" },
   { value: "seller_fulfilled", label: "Seller Fulfilled" },
-  // { value: "fba", label: "FBA (Fulfillment by Amazon)" },
-  // { value: "digital", label: "Digital Download" },
 ];
 
 export const taxClassOptions = [

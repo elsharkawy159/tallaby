@@ -23,6 +23,7 @@ export interface ProductCardProps {
       }
     | null;
   quantity?: number | string;
+  maxOrderQuantity?: number | string;
 }
 
 export interface AddToCartButtonProps {
@@ -49,10 +50,12 @@ export interface WishlistButtonProps {
 }
 
 export interface QuantitySelectorProps {
-  productId: string;
   className?: string;
-  size?: "sm" | "default" | "lg";
+  size?: "sm" | "default" | "lg" | "xl";
   showRemoveButton?: boolean;
   onQuantityChange?: (quantity: number) => void;
   productStock?: number | string;
+  maxOrderQuantity?: number | string | null;
+  cartItemId?: string;
+  initialQuantity?: number;
 }

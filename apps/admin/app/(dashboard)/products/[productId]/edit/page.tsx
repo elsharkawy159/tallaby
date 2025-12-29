@@ -1,12 +1,5 @@
 import { notFound } from "next/navigation";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from "@workspace/ui/components/breadcrumb";
-import { HomeIcon } from "lucide-react";
+
 import { getProductById } from "@/actions/products";
 import { getAllBrands } from "@/actions/brands";
 import { getAllCategories } from "@/actions/categories";
@@ -88,7 +81,7 @@ function transformProductToFormData(
   };
 }
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default async function EditProductPage({
   params,

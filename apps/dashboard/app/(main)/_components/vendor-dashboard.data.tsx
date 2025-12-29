@@ -91,7 +91,7 @@ export async function VendorDashboardData() {
     {
       title: "Add Product",
       description: "List a new item",
-      href: "/products/new",
+      href: "/products/add",
       icon: PlusCircle,
     },
     {

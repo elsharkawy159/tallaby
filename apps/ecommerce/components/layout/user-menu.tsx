@@ -88,11 +88,11 @@ export function UserMenu({
               <img
                 src={avatarUrl}
                 alt="User avatar"
-                className="md:size-6 size-5 rounded-full object-cover"
+                className="md:size-6 size-4.5 rounded-full object-cover"
               />
             </>
           ) : (
-            <User className="md:size-6 size-5" />
+            <User className="md:size-6 size-4.5" />
           )}
           <span className="text-xs md:hidden">Profile</span>
         </Button>

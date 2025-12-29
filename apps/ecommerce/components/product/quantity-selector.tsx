@@ -39,20 +39,15 @@ const sizeStyles = {
   },
 } as const;
 
-interface QuantitySelectorWithCartProps extends QuantitySelectorProps {
-  cartItemId?: string;
-  initialQuantity?: number;
-}
-
 export const QuantitySelector = ({
-  productId,
   className,
   size = "default",
   showRemoveButton = true,
   productStock,
   cartItemId,
   initialQuantity = 0,
-}: QuantitySelectorWithCartProps) => {
+  maxOrderQuantity,
+}: QuantitySelectorProps) => {
   const [quantity, setQuantity] = useState(initialQuantity);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -60,6 +55,21 @@ export const QuantitySelector = ({
   if (quantity === 0 && initialQuantity === 0) return null;
 
   const styles = sizeStyles[size] || sizeStyles.default;
+
+  // Safely convert maxOrderQuantity to number
+  // null/undefined means no limit, so we return undefined
+  const maxOrderQty =
+    maxOrderQuantity != null
+      ? typeof maxOrderQuantity === "string"
+        ? Number(maxOrderQuantity)
+        : maxOrderQuantity
+      : undefined;
+
+  // Validate the converted value - if it's NaN or <= 0, treat as no limit
+  const effectiveMaxOrderQty =
+    maxOrderQty != null && !isNaN(maxOrderQty) && maxOrderQty > 0
+      ? maxOrderQty
+      : undefined;
 
   const handleQuantityChange = async (newQuantity: number) => {
     if (!cartItemId) return;
@@ -126,7 +136,9 @@ export const QuantitySelector = ({
         onClick={() => handleQuantityChange(quantity + 1)}
         disabled={
           isLoading ||
-          (productStock !== undefined && quantity >= Number(productStock))
+          (productStock !== undefined && quantity >= Number(productStock)) ||
+          (effectiveMaxOrderQty !== undefined &&
+            quantity >= effectiveMaxOrderQty)
         }
         aria-label="Increase quantity"
       >

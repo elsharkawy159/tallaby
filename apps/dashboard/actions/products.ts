@@ -8,7 +8,7 @@ import {
   db,
 } from "@workspace/db";
 import { eq, and, desc, asc, sql, inArray } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { getUser } from "./auth";
 import slugify from "slugify";
 
@@ -716,6 +716,7 @@ export async function bulkInsertProductsAction(records: ParsedBulkRow[]) {
     }
 
     revalidatePath("/products");
+    revalidateTag("products");
     return { success: true, ...results };
   } catch (error) {
     console.error("bulkInsertProductsAction error:", error);
@@ -847,6 +848,8 @@ export async function createProduct(data: {
 
       await db.insert(productVariants).values(variantValues);
     }
+
+    revalidateTag("products");
 
     return { success: true, data: createdProduct };
   } catch (error) {
