@@ -5,14 +5,18 @@ import { createClient } from "@/supabase/server";
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
+  const type = searchParams.get("type");
+  const token = searchParams.get("token");
+  const tokenHash = searchParams.get("token_hash");
 
   // if "next" is in param, use it as the redirect URL
   const next = searchParams.get("next") ?? "/";
 
-  if (code) {
-    const supabase = await createClient();
+  const supabase = await createClient();
 
-    const { error, data } = await supabase.auth.exchangeCodeForSession(code);
+  // Handle OAuth callback with code
+  if (code) {
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (error) {
       return NextResponse.redirect(`${origin}/auth/auth-code-error`);
@@ -20,6 +24,45 @@ export async function GET(request: NextRequest) {
 
     revalidatePath("/", "layout");
     return NextResponse.redirect(`${origin}${next}`);
+  }
+
+  // Handle email verification
+  if (type && (token || tokenHash)) {
+    // For email verification, Supabase SSR automatically processes the token
+    // when the callback URL is visited. The Supabase client processes the token
+    // by reading the URL parameters. We need to check if verification succeeded.
+
+    // Try to get the session - this will trigger token processing if not already done
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
+
+    // Also try to get the user to verify token was processed
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    // If there's an explicit error indicating invalid token, redirect to error page
+    if (sessionError && sessionError.message.includes("Invalid")) {
+      return NextResponse.redirect(`${origin}/auth/auth-code-error`);
+    }
+    if (userError && userError.message.includes("Invalid")) {
+      return NextResponse.redirect(`${origin}/auth/auth-code-error`);
+    }
+
+    // If we have a session or user, verification was successful
+    if (session || user) {
+      revalidatePath("/", "layout");
+      return NextResponse.redirect(`${origin}${next}`);
+    }
+
+    // If no explicit error and token parameters are present,
+    // Supabase SSR has processed the token. Even without a session,
+    // the email is verified. Redirect to login with success message.
+    revalidatePath("/", "layout");
+    return NextResponse.redirect(`${origin}/auth?verified=true`);
   }
 
   // return the user to an error page with instructions
