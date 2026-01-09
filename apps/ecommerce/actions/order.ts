@@ -11,6 +11,7 @@ import {
   carts,
   cartItems,
   products,
+  productVariants,
   returns,
   returnItems,
   reviews,
@@ -24,6 +25,7 @@ import { getCurrentUserId } from "@/lib/get-current-user-id";
 import { customAlphabet } from "nanoid";
 import { revalidatePath } from "next/cache";
 import { getUser } from "./auth";
+import { formatVariantTitle } from "@/lib/variant-utils";
 
 /**
  * Formats a number to a string with 2 decimal places for database storage.
@@ -98,13 +100,16 @@ export async function createOrder(data: {
       const itemCommission = itemSubtotal * 0.1; // 10% commission
       const itemSellerEarning = itemSubtotal * 0.9;
 
+      const variant = item.variant as any;
+      const variantTitle = variant ? formatVariantTitle(variant) : null;
+
       return {
         productId: item.productId,
-        variantId: (item.variant as any)?.id || null,
+        variantId: variant?.id || null,
         sellerId: item.sellerId,
-        sku: item.product.sku,
+        sku: variant?.sku || item.product.sku,
         productName: item.product.title,
-        variantName: (item.variant as any)?.title || null,
+        variantName: variantTitle,
         quantity: item.quantity,
         price: item.price,
         subtotal: formatDecimal(itemSubtotal),
@@ -238,14 +243,27 @@ export async function createOrder(data: {
         .where(eq(coupons.id, appliedCoupon.id));
     }
 
-    // Update product quantities
+    // Update product quantities and variant stock
     for (const item of cart.cartItems) {
-      await db
-        .update(products)
-        .set({
-          quantity: sql`${products.quantity} - ${item.quantity}`,
-        })
-        .where(eq(products.id, item.productId));
+      const variant = item.variant as any;
+
+      // Update variant stock if item has a variant
+      if (variant?.id) {
+        await db
+          .update(productVariants)
+          .set({
+            stock: sql`${productVariants.stock} - ${item.quantity}`,
+          })
+          .where(eq(productVariants.id, variant.id));
+      } else {
+        // Update product stock if no variant
+        await db
+          .update(products)
+          .set({
+            quantity: sql`${products.quantity} - ${item.quantity}`,
+          })
+          .where(eq(products.id, item.productId));
+      }
     }
 
     // Clear cart
@@ -443,18 +461,29 @@ export async function cancelOrder(orderId: string, reason?: string) {
       })
       .where(eq(orderItems.orderId, orderId));
 
-    // Restore product quantities
+    // Restore product quantities and variant stock
     const items = await db.query.orderItems.findMany({
       where: eq(orderItems.orderId, orderId),
     });
 
     for (const item of items) {
-      await db
-        .update(products)
-        .set({
-          quantity: sql`${products.quantity} + ${item.quantity}`,
-        })
-        .where(eq(products.id, item.productId));
+      // Restore variant stock if item has a variant
+      if (item.variantId) {
+        await db
+          .update(productVariants)
+          .set({
+            stock: sql`${productVariants.stock} + ${item.quantity}`,
+          })
+          .where(eq(productVariants.id, item.variantId));
+      } else {
+        // Restore product stock if no variant
+        await db
+          .update(products)
+          .set({
+            quantity: sql`${products.quantity} + ${item.quantity}`,
+          })
+          .where(eq(products.id, item.productId));
+      }
     }
 
     return { success: true, data: updatedOrder };

@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (error) {
-      return NextResponse.redirect(`${origin}/auth/auth-code-error`);
+      return NextResponse.redirect(`${origin}/auth`);
     }
 
     revalidatePath("/", "layout");
@@ -44,12 +44,12 @@ export async function GET(request: NextRequest) {
       error: userError,
     } = await supabase.auth.getUser();
 
-    // If there's an explicit error indicating invalid token, redirect to error page
+    // If there's an explicit error indicating invalid token, redirect to auth page
     if (sessionError && sessionError.message.includes("Invalid")) {
-      return NextResponse.redirect(`${origin}/auth/auth-code-error`);
+      return NextResponse.redirect(`${origin}/auth`);
     }
     if (userError && userError.message.includes("Invalid")) {
-      return NextResponse.redirect(`${origin}/auth/auth-code-error`);
+      return NextResponse.redirect(`${origin}/auth`);
     }
 
     // If we have a session or user, verification was successful
@@ -60,11 +60,11 @@ export async function GET(request: NextRequest) {
 
     // If no explicit error and token parameters are present,
     // Supabase SSR has processed the token. Even without a session,
-    // the email is verified. Redirect to login with success message.
+    // the email is verified. Redirect to auth with success message.
     revalidatePath("/", "layout");
     return NextResponse.redirect(`${origin}/auth?verified=true`);
   }
 
-  // return the user to an error page with instructions
-  return NextResponse.redirect(`${origin}/auth/auth-code-error`);
+  // If no code or token parameters, redirect to auth page
+  return NextResponse.redirect(`${origin}/auth`);
 }

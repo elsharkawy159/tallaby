@@ -1,3 +1,16 @@
 .leaflet-bottom {
-    display: none !important;
+  display: none !important;
+}
+
+@keyframes progress-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(300%);
+  }
+}
+
+.progress-shimmer {
+  animation: progress-shimmer 2s ease-in-out infinite;
 }

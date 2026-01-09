@@ -23,6 +23,9 @@ import {
 import { Button } from "@workspace/ui/components/button";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { formatPrice } from "@workspace/lib";
+import { OrderStatusTracker } from "./order-status-tracker";
+import { OrderItemRow } from "./order-item-row";
+import { cn } from "@/lib/utils";
 
 interface OrderConfirmationContentProps {
   data: OrderConfirmationData;
@@ -36,23 +39,38 @@ export function OrderConfirmationContent({
   const { order, orderItems, shippingAddress, summary } = data;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-4 md:space-y-8">
+    <div className="space-y-4 md:space-y-8 px-4 max-w-6xl mx-auto">
       {/* Success Header */}
       <div className="text-center space-y-3 md:space-y-4">
         <div className="flex justify-center">
           <div className="relative">
-            <div className="w-16 h-16 md:w-20 md:h-20 bg-green-100 rounded-full flex items-center justify-center">
-              <CheckCircle className="w-8 h-8 md:w-12 md:h-12 text-green-600" />
-            </div>
-            <div className="absolute -top-2 -right-2 w-6 h-6 md:w-8 md:h-8 bg-green-500 rounded-full flex items-center justify-center">
-              <span className="text-white text-xs md:text-sm font-bold">✓</span>
+            <div
+              className={cn(
+                "w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center",
+                order.status === "pending"
+                  ? "bg-green-100"
+                  : getOrderStatusStyle(order.status).bg
+              )}
+            >
+              <CheckCircle
+                className={cn(
+                  "w-8 h-8 md:w-12 md:h-12",
+                  order.status === "pending"
+                    ? "text-green-500"
+                    : getOrderStatusStyle(order.status).text
+                )}
+              />
             </div>
           </div>
         </div>
 
         <div className="space-y-2">
           <h1 className="text-xl md:text-3xl font-bold text-gray-900">
-            Order Confirmed!
+            {order.status === "pending"
+              ? "Order Placed!"
+              : `${order.status
+                  .replace(/_/g, " ")
+                  .replace(/\b\w/g, (c) => c.toUpperCase())}`}
           </h1>
           <p className="text-xs md:text-lg text-gray-600">
             Thank you for your purchase. Your order has been successfully
@@ -67,12 +85,12 @@ export function OrderConfirmationContent({
 
       {/* Order Summary Card */}
 
-        <Card className="rounded-xl md:rounded-2xl border overflow-hidden pt-0 border-green-200 bg-green-50/50">
-              <div className="bg-green-50/50 px-4 md:px-6 py-3 md:py-5 border-b border-green-200">
-                <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-gray-900">
-                  Order Summary
-                </CardTitle>
-              </div>
+      <Card className="rounded-xl md:rounded-2xl border overflow-hidden pt-0 border-green-200 bg-green-50/50">
+        <div className="bg-green-50/50 px-4 md:px-6 py-3 md:py-5 border-b border-green-200">
+          <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-gray-900">
+            Order Summary
+          </CardTitle>
+        </div>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
             <div className="space-y-2 md:space-y-3">
@@ -130,68 +148,29 @@ export function OrderConfirmationContent({
         </CardContent>
       </Card>
 
+      {/* Order Status Tracking */}
+      <OrderStatusTracker
+        status={order.status}
+        paymentMethod={order.paymentMethod}
+      />
+
       {/* Order Items */}
       <Card className="rounded-xl md:rounded-2xl border overflow-hidden pt-0 bg-white">
         <div className="bg-linear-to-r from-gray-50 to-gray-100 px-4 md:px-6 py-3 md:py-5 border-b border-gray-200">
           <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-gray-900">
             <Package className="h-4 w-4 md:h-5 md:w-5" /> Order Items
           </CardTitle>
-        </div>  
+        </div>
         <CardContent>
           <div className="space-y-3 md:space-y-4">
             {orderItems.map((item) => (
-              <div
+              <OrderItemRow
                 key={item.id}
-                className="flex items-center space-x-2 md:space-x-4 p-3 md:p-4 border rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <div className="relative w-12 h-12 md:w-16 md:h-16 rounded-lg overflow-hidden bg-gray-100 shrink-0">
-                  {item.product.images && item.product.images.length > 0 ? (
-                    <Image
-                      src={getPublicUrl(
-                        item.product.images[0] || "",
-                        "products"
-                      )}
-                      alt={item.productName}
-                      fill
-                      className="object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400">
-                      <Package className="w-6 h-6 md:w-8 md:h-8" />
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex-1 space-y-1 min-w-0">
-                  <h3 className="text-xs md:text-sm font-medium text-gray-900 line-clamp-2">
-                    {item.productName}
-                  </h3>
-                  {item.variantName && (
-                    <p className="text-xs text-gray-600">
-                      Variant: {item.variantName}
-                    </p>
-                  )}
-                  <p className="text-xs text-gray-500">
-                    Sold by {item.seller.displayName}
-                  </p>
-                </div>
-
-                <div className="text-right space-y-1 shrink-0">
-                  <p
-                    className="text-xs md:text-sm font-medium text-gray-900"
-                    dangerouslySetInnerHTML={{
-                      __html: formatPrice(Number(item.price), locale),
-                    }}
-                  />
-                  <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
-                  <p
-                    className="text-xs md:text-sm font-semibold text-gray-900"
-                    dangerouslySetInnerHTML={{
-                      __html: formatPrice(Number(item.subtotal), locale),
-                    }}
-                  />
-                </div>
-              </div>
+                item={item}
+                orderId={order.id}
+                orderStatus={order.status}
+                locale={locale}
+              />
             ))}
 
             {/* Invoice Breakdown */}

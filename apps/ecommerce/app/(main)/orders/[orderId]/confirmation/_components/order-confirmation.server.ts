@@ -1,7 +1,7 @@
 "use server";
 
 import { db, eq, and } from "@workspace/db";
-import { orders, orderItems, userAddresses } from "@workspace/db";
+import { orders, orderItems, userAddresses, reviews } from "@workspace/db";
 import type { OrderConfirmationData } from "./order-confirmation.types";
 import { getCurrentUserId } from "@/lib/get-current-user-id";
 
@@ -33,6 +33,11 @@ export async function getOrderConfirmationData(orderId: string): Promise<{
               columns: {
                 displayName: true,
                 slug: true,
+              },
+            },
+            productVariant: {
+              columns: {
+                imageUrl: true,
               },
             },
           },
@@ -74,10 +79,21 @@ export async function getOrderConfirmationData(orderId: string): Promise<{
         giftMessage: order.giftMessage || "",
         notes: order.notes || "",
       },
-      orderItems: order.orderItems.map(
-        (item) =>
-          ({
+      orderItems: await Promise.all(
+        order.orderItems.map(async (item) => {
+          // Check if review exists for this order item
+          const existingReview = await db.query.reviews.findFirst({
+            where: and(
+              eq(reviews.orderItemId, item.id),
+              eq(reviews.userId, userId)
+            ),
+            columns: { id: true },
+          });
+
+          return {
             id: item.id,
+            productId: item.productId,
+            sellerId: item.sellerId,
             productName: item.productName,
             variantName: item.variantName,
             quantity: item.quantity,
@@ -88,11 +104,18 @@ export async function getOrderConfirmationData(orderId: string): Promise<{
               slug: item.product.slug,
               images: item.product.images || [],
             },
+            variant: item.productVariant
+              ? {
+                  imageUrl: item.productVariant.imageUrl || null,
+                }
+              : null,
             seller: {
               displayName: item.seller.displayName,
               slug: item.seller.slug,
             },
-          }) as any
+            hasReview: !!existingReview,
+          } as any;
+        })
       ),
       shippingAddress: {
         fullName: order.userAddress_shippingAddressId?.fullName || "",
@@ -106,7 +129,7 @@ export async function getOrderConfirmationData(orderId: string): Promise<{
       },
       billingAddress: order.userAddress_billingAddressId
         ? {
-            fullName: order.userAddress_billingAddressId.fullName || "" ,
+            fullName: order.userAddress_billingAddressId.fullName || "",
             addressLine1: order.userAddress_billingAddressId.addressLine1 || "",
             addressLine2: order.userAddress_billingAddressId.addressLine2 || "",
             city: order.userAddress_billingAddressId.city || "",

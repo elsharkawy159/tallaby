@@ -145,12 +145,16 @@ export async function updateOrderStatus(
   orderId: string,
   status:
     | "pending"
+    | "payment_processing"
     | "confirmed"
     | "shipping_soon"
     | "shipped"
     | "out_for_delivery"
     | "delivered"
     | "cancelled"
+    | "refund_requested"
+    | "refunded"
+    | "returned"
 ) {
   try {
     await getAdminUser(); // Verify admin access
@@ -165,6 +169,9 @@ export async function updateOrderStatus(
           : {}),
         ...(status === "delivered"
           ? { deliveredAt: new Date().toISOString() }
+          : {}),
+        ...(status === "shipped"
+          ? { shippedAt: new Date().toISOString() }
           : {}),
       })
       .where(eq(orders.id, orderId))
@@ -188,6 +195,7 @@ export async function updateOrderPaymentStatus(
   orderId: string,
   paymentStatus:
     | "pending"
+    | "authorized"
     | "paid"
     | "failed"
     | "refunded"

@@ -11,6 +11,8 @@ import { getCartItems } from "@/actions/cart";
 import Link from "next/link";
 import { getLocale } from "next-intl/server";
 import { QuantitySelector } from "@/components/product/quantity-selector";
+import { formatVariantTitle } from "@/lib/variant-utils";
+import { CartItemRemoveButton } from "./_components/cart-item-remove-button";
 
 export const metadata: Metadata = generateNoIndexMetadata();
 
@@ -44,11 +46,16 @@ export default async function Cart() {
               const image = p?.images?.[0]
                 ? getPublicUrl(p?.images?.[0], "products")
                 : "/png product.png";
+              const variant = item.variant as any;
+              const variantTitle = variant ? formatVariantTitle(variant) : null;
               return (
                 <div
                   key={item.id}
-                  className="group relative bg-white rounded-xl md:rounded-2xl border border-gray-200 overflow-hidden transition-all duration-300 hover:border-gray-300"
+                  className="group relative bg-white rounded-xl md:rounded-2xl border border-gray-200 transition-all duration-300 hover:border-gray-300"
                 >
+                  <div className="absolute -top-1 -right-1 z-10">
+                    <CartItemRemoveButton cartItemId={item.id} />
+                  </div>
                   <div className="flex flex-col sm:flex-row gap-3 md:gap-6 p-3 md:p-6 lg:p-8">
                     {/* Product Image */}
                     <Link
@@ -56,7 +63,11 @@ export default async function Cart() {
                       className="relative w-full sm:w-24 md:w-38 h-24 md:h-38 bg-gradient-to-br overflow-hidden shrink-0 transition-transform duration-300 group-hover:scale-105"
                     >
                       <Image
-                        src={image}
+                        src={
+                          variant?.imageUrl
+                            ? getPublicUrl(variant.imageUrl, "products")
+                            : image
+                        }
                         alt={p.title}
                         fill
                         sizes="(max-width: 640px) 96px, (max-width: 768px) 96px, 160px"
@@ -68,70 +79,77 @@ export default async function Cart() {
                     {/* Product Details */}
                     <div className="flex-1 flex flex-col gap-2 md:gap-4 min-w-0">
                       {/* Title and Meta */}
-             <div className="flex items-center justify-between lg:gap-10 gap-4">
-             <div className="space-y-1 md:space-y-2">
-                        <Link
-                          href={`/products/${p.slug}`}
-                          className="block group/link"
-                        >
-                          <h3 className="text-sm md:text-lg font-semibold text-gray-900 leading-tight transition-colors group-hover/link:text-primary line-clamp-2">
-                            {p.title}
-                          </h3>
-                        </Link>
+                      <div className="flex items-center justify-between lg:gap-10 gap-4">
+                        <div className="space-y-1 md:space-y-2">
+                          <Link
+                            href={`/products/${p.slug}`}
+                            className="block group/link"
+                          >
+                            <h3 className="text-sm md:text-lg font-semibold text-gray-900 leading-tight transition-colors group-hover/link:text-primary line-clamp-2">
+                              {p.title}
+                            </h3>
+                            {variantTitle && (
+                              <p className="text-xs md:text-sm text-muted-foreground mt-1">
+                                {variantTitle}
+                              </p>
+                            )}
+                          </Link>
 
-                        {/* Meta Information */}
-                        <div className="flex flex-wrap items-center gap-2 md:gap-3 text-xs md:text-sm text-muted-foreground">
-                          {p.brand?.name && (
-                            <span className="inline-flex items-center px-2 md:px-2.5 py-0.5 md:py-1 rounded-md bg-gray-100 text-gray-700 font-medium text-xs">
-                              {p.brand.name}
-                            </span>
-                          )}
-                          {p.seller?.displayName && (
-                            <span className="text-gray-600">
-                              by {p.seller.displayName}
-                            </span>
-                          )}
-                          {p.sku && (
+                          {/* Meta Information */}
+                          <div className="flex flex-wrap items-center gap-2 md:gap-3 text-xs md:text-sm text-muted-foreground">
+                            {p.brand?.name && (
+                              <span className="inline-flex items-center px-2 md:px-2.5 py-0.5 md:py-1 rounded-md bg-gray-100 text-gray-700 font-medium text-xs">
+                                {p.brand.name}
+                              </span>
+                            )}
+                            {p.seller?.displayName && (
+                              <span className="text-gray-600">
+                                by {p.seller.displayName}
+                              </span>
+                            )}
+                            {/* {variant?.sku ? (
+                            <span className="text-gray-500">SKU: {variant.sku}</span>
+                          ) : p.sku ? (
                             <span className="text-gray-500">SKU: {p.sku}</span>
-                          )}
+                          ) : null} */}
+                          </div>
                         </div>
+                        <QuantitySelector
+                          showRemoveButton={true}
+                          cartItemId={item.id}
+                          initialQuantity={item.quantity}
+                          productStock={
+                            variant ? (variant.stock ?? p.quantity) : p.quantity
+                          }
+                        />
                       </div>
-                      <QuantitySelector
-                              showRemoveButton={true}
-                              cartItemId={item.id}
-                              initialQuantity={item.quantity}
-                              productStock={p.quantity}
-                            />
-             </div>
 
                       {/* Price and Quantity Controls */}
                       <div className="flex flex-row items-end justify-between gap-3 md:gap-6 mt-auto pt-0.5 md:pt-4 border-t border-gray-100">
                         {/* Unit Price */}
                         <div className="gap-1 md:gap-2">
-                        <span className="text-xs block text-muted-foreground uppercase tracking-wide">
-                                Per Item
-                              </span>
+                          <span className="text-xs block text-muted-foreground uppercase tracking-wide">
+                            Per Item
+                          </span>
                           <span
                             className="text-base md:text-xl font-bold text-gray-900"
                             dangerouslySetInnerHTML={{
                               __html: formatPrice(unit, locale),
                             }}
                           />
-       
                         </div>
-              
 
-                            <div className="text-right">
-                              <span className="text-xs text-muted-foreground uppercase tracking-wide">
-                                Line Total
-                              </span>
-                              <div
-                                className="text-base md:text-xl font-bold text-gray-900"
-                                dangerouslySetInnerHTML={{
-                                  __html: formatPrice(lineTotal, locale),
-                                }}
-                              />
-                            </div>
+                        <div className="text-right">
+                          <span className="text-xs text-muted-foreground uppercase tracking-wide">
+                            Line Total
+                          </span>
+                          <div
+                            className="text-base md:text-xl font-bold text-gray-900"
+                            dangerouslySetInnerHTML={{
+                              __html: formatPrice(lineTotal, locale),
+                            }}
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -157,6 +175,10 @@ export default async function Cart() {
                     const p = item.product;
                     const unit = Number(item.price) ?? 0;
                     const lineTotal = unit * item.quantity;
+                    const variant = item.variant as any;
+                    const variantTitle = variant
+                      ? formatVariantTitle(variant)
+                      : null;
                     return (
                       <div
                         key={item.id}
@@ -166,6 +188,11 @@ export default async function Cart() {
                           <p className="text-xs md:text-sm font-medium text-gray-900 truncate">
                             {p.title}
                           </p>
+                          {variantTitle && (
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              {variantTitle}
+                            </p>
+                          )}
                           <p className="text-xs text-muted-foreground mt-0.5">
                             Qty: {item.quantity}
                             {" × "}

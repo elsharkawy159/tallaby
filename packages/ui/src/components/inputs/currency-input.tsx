@@ -88,7 +88,7 @@ export const CurrencyInput = React.forwardRef<
           render={({ field }) => (
             <div className="relative">
               <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
-                <span className="text-sm font-medium">{currencySymbol}</span>
+                <span className="text-xs font-medium">{currencySymbol}</span>
               </div>
 
               <Input

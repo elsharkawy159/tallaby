@@ -157,12 +157,12 @@ export function OrdersClient({ initialOrders }: OrdersClientProps) {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem asChild>
-                              <Link href={`/orders/${order.id}/confirmation`}>
+                              <Link href={`/orders/${order.id}`}>
                                 View
                               </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>
-                              <Link href={`/orders/${order.id}/confirmation`}>
+                              <Link href={`/orders/${order.id}`}>
                                 Invoice
                               </Link>
                             </DropdownMenuItem>
@@ -177,7 +177,7 @@ export function OrdersClient({ initialOrders }: OrdersClientProps) {
                           asChild
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <Link href={`/orders/${order.id}/confirmation`}>
+                          <Link href={`/orders/${order.id}`}>
                             View Order
                             <span className="sr-only">{order.orderNumber}</span>
                           </Link>

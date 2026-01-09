@@ -14,7 +14,7 @@ export async function OrderConfirmationData({
 
   if (!result.success || !result.data) {
     return (
-      <div className="max-w-4xl mx-auto text-center py-8 md:py-16">
+      <div className="text-center py-8 md:py-16 max-w-4xl mx-auto">
         <div className="space-y-3 md:space-y-4">
           <div className="text-4xl md:text-6xl">❌</div>
           <h1 className="text-xl md:text-2xl font-bold text-gray-900">

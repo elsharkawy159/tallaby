@@ -7,6 +7,7 @@ import {
   products,
   productVariants,
   reviews,
+  reviewComments,
   productQuestions,
   categories,
   brands,
@@ -187,6 +188,7 @@ export async function getProductBySlug(slug: string) {
                     avatarUrl: true,
                   },
                 },
+                reviewVotes: true,
                 reviewComments: {
                   where: isNotNull(reviews.sellerId),
                   limit: 1,

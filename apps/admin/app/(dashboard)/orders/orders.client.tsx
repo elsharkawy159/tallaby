@@ -136,36 +136,53 @@ export const OrdersClientWrapper = ({ filters }: OrdersClientWrapperProps) => {
 
   const handleOrderAction = async (orderId: string, action: string) => {
     try {
-      let result;
-      switch (action) {
-        case "confirm":
-          result = await updateOrderStatus(orderId, "confirmed");
-          break;
-        case "ship":
-          result = await updateOrderStatus(orderId, "shipped");
-          break;
-        case "deliver":
-          result = await updateOrderStatus(orderId, "delivered");
-          break;
-        case "cancel":
-          result = await updateOrderStatus(orderId, "cancelled");
-          break;
-        default:
-          return;
-      }
+      // Check if action is a status (not a legacy action like "confirm", "ship", etc.)
+      const statusMap: Record<string, string> = {
+        confirm: "confirmed",
+        ship: "shipped",
+        deliver: "delivered",
+        cancel: "cancelled",
+      };
+
+      const status = statusMap[action] || action;
+
+      const result = await updateOrderStatus(orderId, status as any);
 
       if (result.success) {
-        toast.success(`Order ${action}ed successfully`);
+        toast.success(`Order status updated to ${status.replace(/_/g, " ")}`);
         loadOrders(); // Refresh the list
       } else {
-        toast.error(result.error || `Failed to ${action} order`);
+        toast.error(result.error || `Failed to update order status`);
       }
     } catch (error) {
-      toast.error(`Failed to ${action} order`);
+      toast.error(`Failed to update order status`);
     }
   };
 
-  const columns = getOrdersColumns(handleOrderAction);
+  const handlePaymentStatusChange = async (
+    orderId: string,
+    paymentStatus: string
+  ) => {
+    try {
+      const result = await updateOrderPaymentStatus(
+        orderId,
+        paymentStatus as any
+      );
+
+      if (result.success) {
+        toast.success(
+          `Payment status updated to ${paymentStatus.replace(/_/g, " ")}`
+        );
+        loadOrders(); // Refresh the list
+      } else {
+        toast.error(result.error || `Failed to update payment status`);
+      }
+    } catch (error) {
+      toast.error(`Failed to update payment status`);
+    }
+  };
+
+  const columns = getOrdersColumns(handleOrderAction, handlePaymentStatusChange);
 
   const getFilteredOrders = () => {
     switch (activeTab) {

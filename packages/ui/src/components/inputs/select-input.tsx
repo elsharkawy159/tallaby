@@ -67,7 +67,7 @@ export const SelectInput = React.forwardRef<HTMLDivElement, SelectInputProps>(
               disabled={disabled}
             >
               <SelectTrigger
-                className={cn(
+                className={cn("w-full h-11.5! mb-0",
                   fieldError && "border-red-500 focus:border-red-500"
                 )}
               >

@@ -1,5 +1,6 @@
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { Navbar } from "@/components/layout/Navbar";
+import { MainContentWrapper } from "@/components/layout/main-content-wrapper";
 
 export default function DashboardLayout({
   children,
@@ -11,11 +12,11 @@ export default function DashboardLayout({
       <Sidebar />
 
       {/* Main Content Area */}
-      <main className="flex-1 transition-all duration-300 ease-in-out lg:ml-20 xl:ml-72">
+      <MainContentWrapper>
         <Navbar />
 
         <div className="pt-[73px]">{children}</div>
-      </main>
+      </MainContentWrapper>
     </div>
   );
 }

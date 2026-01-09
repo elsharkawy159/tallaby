@@ -174,8 +174,8 @@ export const ShippingInformation = ({
               variant="outline"
               className="w-full h-9 md:h-11 text-xs md:text-sm border-2 hover:bg-gray-50 transition-colors"
             >
-              <MapPin className="h-3 w-3 md:h-4 md:w-4 mr-2" />
-              Change Address
+              <MapPin className="h-3 w-3 md:h-4 md:w-4" />
+              Manage Addresses
             </Button>
           }
         />

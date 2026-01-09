@@ -716,7 +716,7 @@ export async function bulkInsertProductsAction(records: ParsedBulkRow[]) {
     }
 
     revalidatePath("/products");
-    revalidateTag("products");
+    revalidateTag("products", "layout");
     return { success: true, ...results };
   } catch (error) {
     console.error("bulkInsertProductsAction error:", error);
@@ -778,7 +778,7 @@ export async function createProduct(data: {
   title: string;
   slug: string;
   description?: string;
-  sku: string;
+  sku?: string;
   brandId?: string;
   categoryId: string;
   price: any;
@@ -816,10 +816,14 @@ export async function createProduct(data: {
       throw new Error("Unauthorized");
     }
 
+    // Generate SKU if not provided
+    const sku = data.sku?.trim() || (await generateRandomSKU());
+
     const newProduct = await db
       .insert(products)
       .values({
         ...data,
+        sku,
         sellerId: session.user.id,
       } as any)
       .returning();
@@ -849,14 +853,34 @@ export async function createProduct(data: {
       await db.insert(productVariants).values(variantValues);
     }
 
-    revalidateTag("products");
+    revalidateTag("products", "layout");
 
     return { success: true, data: createdProduct };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error creating product:", error);
+
+    // Handle duplicate slug error
+    if (
+      error?.code === "23505" &&
+      error?.constraint_name === "products_slug_unique"
+    ) {
+      return {
+        success: false,
+        error: `A product with the slug "${data.slug}" already exists. Please use a different slug.`,
+      };
+    }
+
+    // Handle duplicate SKU error
+    if (error?.code === "23505" && error?.constraint_name?.includes("sku")) {
+      return {
+        success: false,
+        error: `A product with the SKU "${data.sku || "generated"}" already exists. Please use a different SKU.`,
+      };
+    }
+
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
+      error: error instanceof Error ? error.message : "Unknown error occurred",
     };
   }
 }
