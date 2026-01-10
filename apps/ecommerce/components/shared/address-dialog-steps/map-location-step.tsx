@@ -90,6 +90,7 @@ export const MapLocationStep = ({
   };
 
   // Initialize Leaflet map
+
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
