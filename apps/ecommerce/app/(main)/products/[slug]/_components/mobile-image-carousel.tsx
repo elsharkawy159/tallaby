@@ -59,8 +59,8 @@ export const MobileImageCarousel = ({
         {/* Navigation arrows - only show if more than 1 image */}
         {images.length > 1 && (
           <>
-            <CarouselPrevious className="left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white shadow-md z-10 border-0" />
-            <CarouselNext className="right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white shadow-md z-10 border-0" />
+            <CarouselPrevious className="left-2 top-1/2 -translate-y-1/2 bg-white/90 opacity-0 group-hover:opacity-100 hover:bg-white shadow-md z-10 border-0" />
+            <CarouselNext className="right-2 top-1/2 -translate-y-1/2 bg-white/90 opacity-0 group-hover:opacity-100 hover:bg-white shadow-md z-10 border-0" />
           </>
         )}
 
