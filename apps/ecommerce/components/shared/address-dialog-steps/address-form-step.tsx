@@ -30,6 +30,9 @@ interface AddressFormStepProps {
     city?: string;
     state?: string;
     country?: string;
+    area?: string;
+    street?: string;
+    building?: string;
     postalCode?: string;
   } | null;
   onSuccess?: (address: AddressData) => void;
@@ -53,7 +56,17 @@ export const AddressFormStep = ({
       ...(selectedLocation && {
         latitude: selectedLocation.latitude,
         longitude: selectedLocation.longitude,
-        addressLine1: selectedLocation.address || address?.addressLine1 || "",
+        addressLine1:
+          selectedLocation.address ||
+          [
+            selectedLocation.building,
+            selectedLocation.street,
+            selectedLocation.area,
+          ]
+            .filter(Boolean)
+            .join(", ") ||
+          address?.addressLine1 ||
+          "",
         city: selectedLocation.city || address?.city || "",
         state: selectedLocation.state || address?.state || "",
         country: selectedLocation.country || address?.country || "Egypt",
