@@ -17,6 +17,7 @@ import {
   pgPolicy,
   bigint,
   date,
+  pgView,
   pgEnum,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
@@ -273,6 +274,8 @@ export const categories = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
       .defaultNow()
       .notNull(),
+    imageUrl: text("image_url"),
+    locale: text().default("en"),
   },
   (table) => [
     foreignKey({
@@ -414,6 +417,36 @@ export const paymentMethods = pgTable(
   ]
 );
 
+export const productVariants = pgTable(
+  "product_variants",
+  {
+    id: uuid().defaultRandom().primaryKey().notNull(),
+    productId: uuid("product_id"),
+    title: varchar(),
+    price: numeric(),
+    stock: integer().default(0),
+    sku: varchar(),
+    imageUrl: varchar("image_url"),
+    position: integer().default(1),
+    option1: varchar(),
+    option2: varchar(),
+    option3: varchar(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { mode: "string" }).defaultNow(),
+    barCode: varchar("bar_code"),
+    locale: text().default("en"),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.productId],
+      foreignColumns: [products.id],
+      name: "product_variants_product_id_fkey",
+    }).onDelete("cascade"),
+  ]
+);
+
 export const refunds = pgTable(
   "refunds",
   {
@@ -463,35 +496,6 @@ export const refunds = pgTable(
   ]
 );
 
-export const productVariants = pgTable(
-  "product_variants",
-  {
-    id: uuid().defaultRandom().primaryKey().notNull(),
-    productId: uuid("product_id"),
-    title: varchar(),
-    price: numeric(),
-    stock: integer().default(0),
-    sku: varchar(),
-    imageUrl: varchar("image_url"),
-    position: integer().default(1),
-    option1: varchar(),
-    option2: varchar(),
-    option3: varchar(),
-    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
-      .defaultNow()
-      .notNull(),
-    updatedAt: timestamp("updated_at", { mode: "string" }).defaultNow(),
-    barCode: varchar("bar_code"),
-  },
-  (table) => [
-    foreignKey({
-      columns: [table.productId],
-      foreignColumns: [products.id],
-      name: "product_variants_product_id_fkey",
-    }).onDelete("cascade"),
-  ]
-);
-
 export const sellers = pgTable(
   "sellers",
   {
@@ -514,7 +518,9 @@ export const sellers = pgTable(
     approvedCategories: jsonb("approved_categories"),
     supportEmail: text("support_email").notNull(),
     supportPhone: text("support_phone"),
-    commissionRate: real("commission_rate").default(15).notNull(),
+    commissionRate: real("commission_rate")
+      .default(sql`'10'`)
+      .notNull(),
     feeStructure: jsonb("fee_structure"),
     taxInformation: jsonb("tax_information"),
     paymentDetails: jsonb("payment_details"),
@@ -624,6 +630,7 @@ export const productQuestions = pgTable(
       withTimezone: true,
       mode: "string",
     }).defaultNow(),
+    locale: text(),
   },
   (table) => [
     index("question_product_id_idx").using(
@@ -653,14 +660,16 @@ export const shippingAddresses = pgTable(
   "shipping_addresses",
   {
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
-    id: bigint({ mode: "number" }).primaryKey().generatedAlwaysAsIdentity({
-      name: "shipping_addresses_id_seq",
-      startWith: 1,
-      increment: 1,
-      minValue: 1,
-      maxValue: 9223372036854775807,
-      cache: 1,
-    }),
+    id: bigint({ mode: "number" })
+      .primaryKey()
+      .generatedAlwaysAsIdentity({
+        name: "shipping_addresses_id_seq",
+        startWith: 1,
+        increment: 1,
+        minValue: 1,
+        maxValue: 9223372036854775807,
+        cache: 1,
+      }),
     userId: uuid("user_id").notNull(),
     firstName: text("first_name").notNull(),
     lastName: text("last_name").notNull(),
@@ -757,42 +766,6 @@ export const couponUsage = pgTable(
   ]
 );
 
-export const brands = pgTable(
-  "brands",
-  {
-    id: uuid().defaultRandom().primaryKey().notNull(),
-    name: text().notNull(),
-    slug: text().notNull(),
-    logoUrl: text("logo_url"),
-    description: text(),
-    website: text(),
-    isVerified: boolean("is_verified").default(false),
-    isOfficial: boolean("is_official").default(false),
-    averageRating: real("average_rating"),
-    reviewCount: integer("review_count").default(0),
-    productCount: integer("product_count").default(0),
-    createdAt: timestamp("created_at", {
-      withTimezone: true,
-      mode: "string",
-    }).defaultNow(),
-    updatedAt: timestamp("updated_at", {
-      withTimezone: true,
-      mode: "string",
-    }).defaultNow(),
-  },
-  (table) => [
-    index("brand_name_idx").using(
-      "btree",
-      table.name.asc().nullsLast().op("text_ops")
-    ),
-    uniqueIndex("brand_slug_idx").using(
-      "btree",
-      table.slug.asc().nullsLast().op("text_ops")
-    ),
-    unique("brands_slug_unique").on(table.slug),
-  ]
-);
-
 export const cartItems = pgTable(
   "cart_items",
   {
@@ -839,8 +812,10 @@ export const cartItems = pgTable(
     foreignKey({
       columns: [table.sellerId],
       foreignColumns: [sellers.id],
-      name: "cart_items_seller_id_sellers_id_fk",
-    }),
+      name: "cart_items_seller_id_fkey",
+    })
+      .onUpdate("cascade")
+      .onDelete("cascade"),
   ]
 );
 
@@ -1571,8 +1546,10 @@ export const orderItems = pgTable(
     foreignKey({
       columns: [table.orderId],
       foreignColumns: [orders.id],
-      name: "order_items_order_id_orders_id_fk",
-    }).onDelete("cascade"),
+      name: "order_items_order_id_fkey",
+    })
+      .onUpdate("cascade")
+      .onDelete("cascade"),
     foreignKey({
       columns: [table.productId],
       foreignColumns: [products.id],
@@ -1581,8 +1558,10 @@ export const orderItems = pgTable(
     foreignKey({
       columns: [table.sellerId],
       foreignColumns: [sellers.id],
-      name: "order_items_seller_id_sellers_id_fk",
-    }),
+      name: "order_items_seller_id_fkey",
+    })
+      .onUpdate("cascade")
+      .onDelete("cascade"),
     foreignKey({
       columns: [table.variantId],
       foreignColumns: [productVariants.id],
@@ -1591,49 +1570,118 @@ export const orderItems = pgTable(
   ]
 );
 
-export const productAnswers = pgTable(
-  "product_answers",
+export const brands = pgTable(
+  "brands",
   {
     id: uuid().defaultRandom().primaryKey().notNull(),
-    questionId: uuid("question_id").notNull(),
-    userId: uuid("user_id").notNull(),
-    sellerId: uuid("seller_id"),
-    answer: text().notNull(),
-    isAnonymous: boolean("is_anonymous").default(false),
+    name: text().notNull(),
+    slug: text().notNull(),
+    logoUrl: text("logo_url"),
+    description: text(),
+    website: text(),
     isVerified: boolean("is_verified").default(false),
-    voteCount: integer("vote_count").default(0),
-    status: text().default("pending"),
+    isOfficial: boolean("is_official").default(false),
+    averageRating: real("average_rating"),
+    reviewCount: integer("review_count").default(0),
+    productCount: integer("product_count").default(0),
     createdAt: timestamp("created_at", {
       withTimezone: true,
       mode: "string",
     }).defaultNow(),
+    updatedAt: timestamp("updated_at", {
+      withTimezone: true,
+      mode: "string",
+    }).defaultNow(),
+    locale: text().default("en"),
   },
   (table) => [
-    index("answer_question_id_idx").using(
+    index("brand_name_idx").using(
       "btree",
-      table.questionId.asc().nullsLast().op("uuid_ops")
+      table.name.asc().nullsLast().op("text_ops")
     ),
-    index("answer_user_id_idx").using(
+    uniqueIndex("brand_slug_idx").using(
       "btree",
-      table.userId.asc().nullsLast().op("uuid_ops")
+      table.slug.asc().nullsLast().op("text_ops")
+    ),
+    unique("brands_slug_unique").on(table.slug),
+  ]
+);
+
+export const users = pgTable(
+  "users",
+  {
+    id: uuid().primaryKey().notNull(),
+    email: text(),
+    fullName: text("full_name"),
+    phone: text(),
+    role: userRole().default("customer"),
+    avatarUrl: text("avatar_url"),
+    isVerified: boolean("is_verified").default(false),
+    isSuspended: boolean("is_suspended").default(false),
+    lastLoginAt: timestamp("last_login_at", {
+      withTimezone: true,
+      mode: "string",
+    }),
+    timezone: text(),
+    preferredLanguage: text("preferred_language").default("en"),
+    referralCode: text("referral_code"),
+    referredBy: uuid("referred_by"),
+    defaultCurrency: text("default_currency").default("EGP"),
+    receiveMarketingEmails: boolean("receive_marketing_emails").default(true),
+    hasTwoFactorAuth: boolean("has_two_factor_auth").default(false),
+    twoFactorMethod: text("two_factor_method"),
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+      mode: "string",
+    }).defaultNow(),
+    updatedAt: timestamp("updated_at", {
+      withTimezone: true,
+      mode: "string",
+    }).defaultNow(),
+    isGuest: boolean("is_guest").default(false).notNull(),
+  },
+  (table) => [
+    index("user_email_idx").using(
+      "btree",
+      table.email.asc().nullsLast().op("text_ops")
+    ),
+    index("user_name_idx").using(
+      "btree",
+      table.fullName.asc().nullsLast().op("text_ops")
     ),
     foreignKey({
-      columns: [table.questionId],
-      foreignColumns: [productQuestions.id],
-      name: "product_answers_question_id_product_questions_id_fk",
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [table.sellerId],
-      foreignColumns: [sellers.id],
-      name: "product_answers_seller_id_fkey",
-    }).onUpdate("cascade"),
-    foreignKey({
-      columns: [table.userId],
-      foreignColumns: [users.id],
-      name: "product_answers_user_id_fkey",
-    })
-      .onUpdate("cascade")
-      .onDelete("cascade"),
+      columns: [table.referredBy],
+      foreignColumns: [table.id],
+      name: "users_referred_by_users_id_fk",
+    }),
+    unique("users_email_unique").on(table.email),
+    unique("users_referral_code_unique").on(table.referralCode),
+    pgPolicy("Public users are viewable by everyone.", {
+      as: "permissive",
+      for: "select",
+      to: ["public"],
+      using: sql`true`,
+    }),
+    pgPolicy("Users can insert their own profile.", {
+      as: "permissive",
+      for: "insert",
+      to: ["public"],
+    }),
+    pgPolicy("Users can update own profile.", {
+      as: "permissive",
+      for: "update",
+      to: ["public"],
+    }),
+    pgPolicy("Users can read their own profile", {
+      as: "permissive",
+      for: "select",
+      to: ["authenticated"],
+    }),
+    pgPolicy("Enable read access for all users", {
+      as: "permissive",
+      for: "select",
+      to: ["public"],
+    }),
   ]
 );
 
@@ -1650,7 +1698,7 @@ export const products = pgTable(
     averageRating: real("average_rating"),
     reviewCount: integer("review_count").default(0),
     totalQuestions: integer("total_questions").default(0),
-    isActive: boolean("is_active").default(false),
+    isActive: boolean("is_active").default(true),
     isPlatformChoice: boolean("is_platform_choice").default(false),
     isMostSelling: boolean("is_most_selling").default(false),
     taxClass: text("tax_class").default("standard"),
@@ -1664,7 +1712,7 @@ export const products = pgTable(
     }).defaultNow(),
     images: jsonb(),
     sellerId: uuid("seller_id").notNull(),
-    sku: text().notNull(),
+    sku: text(),
     condition: itemCondition().default("new"),
     conditionDescription: text("condition_description"),
     quantity: numeric().notNull(),
@@ -1676,6 +1724,7 @@ export const products = pgTable(
     dimensions: jsonb(),
     price: jsonb(),
     seo: jsonb(),
+    locale: text().default("en"),
   },
   (table) => [
     index("product_brand_id_idx").using(
@@ -1728,21 +1777,68 @@ export const products = pgTable(
       for: "insert",
       to: ["authenticated"],
     }),
-    pgPolicy("Allow authenticated read access", {
-      as: "permissive",
-      for: "select",
-      to: ["authenticated"],
-    }),
     pgPolicy("Public full access", {
       as: "permissive",
       for: "all",
       to: ["public"],
     }),
-    pgPolicy("Allow anyone to insert products", {
+    pgPolicy("Enable read access for all users", {
+      as: "permissive",
+      for: "select",
+      to: ["public"],
+    }),
+    pgPolicy("Enable insert for authenticated users only", {
       as: "permissive",
       for: "insert",
-      to: ["anon", "authenticated"],
+      to: ["authenticated"],
     }),
+  ]
+);
+
+export const productAnswers = pgTable(
+  "product_answers",
+  {
+    id: uuid().defaultRandom().primaryKey().notNull(),
+    questionId: uuid("question_id").notNull(),
+    userId: uuid("user_id").notNull(),
+    sellerId: uuid("seller_id"),
+    answer: text().notNull(),
+    isAnonymous: boolean("is_anonymous").default(false),
+    isVerified: boolean("is_verified").default(false),
+    voteCount: integer("vote_count").default(0),
+    status: text().default("pending"),
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+      mode: "string",
+    }).defaultNow(),
+    locale: text().default("en"),
+  },
+  (table) => [
+    index("answer_question_id_idx").using(
+      "btree",
+      table.questionId.asc().nullsLast().op("uuid_ops")
+    ),
+    index("answer_user_id_idx").using(
+      "btree",
+      table.userId.asc().nullsLast().op("uuid_ops")
+    ),
+    foreignKey({
+      columns: [table.questionId],
+      foreignColumns: [productQuestions.id],
+      name: "product_answers_question_id_product_questions_id_fk",
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [table.sellerId],
+      foreignColumns: [sellers.id],
+      name: "product_answers_seller_id_fkey",
+    }).onUpdate("cascade"),
+    foreignKey({
+      columns: [table.userId],
+      foreignColumns: [users.id],
+      name: "product_answers_user_id_fkey",
+    })
+      .onUpdate("cascade")
+      .onDelete("cascade"),
   ]
 );
 
@@ -1853,82 +1949,47 @@ export const orders = pgTable(
   ]
 );
 
-export const users = pgTable(
-  "users",
+export const userRewards = pgTable(
+  "user_rewards",
   {
-    id: uuid().primaryKey().notNull(),
-    email: text().notNull(),
-    firstName: text("first_name"),
-    lastName: text("last_name"),
-    fullName: text("full_name"),
-    phone: text(),
-    role: userRole().default("customer"),
-    avatarUrl: text("avatar_url"),
-    isVerified: boolean("is_verified").default(false),
-    isSuspended: boolean("is_suspended").default(false),
-    isGuest: boolean("is_guest").default(false),
-    lastLoginAt: timestamp("last_login_at", {
-      withTimezone: true,
-      mode: "string",
-    }),
-    timezone: text(),
-    preferredLanguage: text("preferred_language").default("en"),
-    referralCode: text("referral_code"),
-    referredBy: uuid("referred_by"),
-    defaultCurrency: text("default_currency").default("EGP"),
-    receiveMarketingEmails: boolean("receive_marketing_emails").default(true),
-    hasTwoFactorAuth: boolean("has_two_factor_auth").default(false),
-    twoFactorMethod: text("two_factor_method"),
-    createdAt: timestamp("created_at", {
-      withTimezone: true,
-      mode: "string",
-    }).defaultNow(),
-    updatedAt: timestamp("updated_at", {
-      withTimezone: true,
-      mode: "string",
-    }).defaultNow(),
+    id: uuid().defaultRandom().primaryKey().notNull(),
+    userId: uuid("user_id"),
+    action: text().notNull(),
+    points: integer().notNull(),
+    referenceId: uuid("reference_id"),
+    referenceTable: text("reference_table"),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [
-    index("user_email_idx").using(
+    uniqueIndex("uniq_referral_reward").using(
       "btree",
-      table.email.asc().nullsLast().op("text_ops")
-    ),
-    index("user_name_idx").using(
-      "btree",
-      table.fullName.asc().nullsLast().op("text_ops")
+      table.userId.asc().nullsLast().op("text_ops"),
+      table.action.asc().nullsLast().op("text_ops"),
+      table.referenceId.asc().nullsLast().op("text_ops")
     ),
     foreignKey({
-      columns: [table.referredBy],
-      foreignColumns: [table.id],
-      name: "users_referred_by_users_id_fk",
-    }),
-    unique("users_email_unique").on(table.email),
-    unique("users_referral_code_unique").on(table.referralCode),
-    pgPolicy("Public users are viewable by everyone.", {
-      as: "permissive",
-      for: "select",
-      to: ["public"],
-      using: sql`true`,
-    }),
-    pgPolicy("Users can insert their own profile.", {
-      as: "permissive",
-      for: "insert",
-      to: ["public"],
-    }),
-    pgPolicy("Users can update own profile.", {
-      as: "permissive",
-      for: "update",
-      to: ["public"],
-    }),
-    pgPolicy("Users can read their own profile", {
-      as: "permissive",
-      for: "select",
-      to: ["authenticated"],
-    }),
-    pgPolicy("Enable read access for all users", {
-      as: "permissive",
-      for: "select",
-      to: ["public"],
-    }),
+      columns: [table.userId],
+      foreignColumns: [users.id],
+      name: "user_rewards_user_id_fkey",
+    })
+      .onUpdate("cascade")
+      .onDelete("cascade"),
   ]
+);
+
+export const rewardActions = pgTable("reward_actions", {
+  id: text().default("reward_actions").primaryKey().notNull(),
+  description: text().notNull(),
+  points: integer().notNull(),
+  isActive: boolean("is_active").default(true),
+  action: text(),
+});
+export const userPoints = pgView("user_points", {
+  userId: uuid("user_id"),
+  // You can use { mode: "bigint" } if numbers are exceeding js number limitations
+  totalPoints: bigint("total_points", { mode: "number" }),
+}).as(
+  sql`SELECT user_id, sum(points) AS total_points FROM user_rewards GROUP BY user_id`
 );

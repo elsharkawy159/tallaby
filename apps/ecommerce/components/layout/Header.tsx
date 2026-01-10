@@ -7,6 +7,7 @@ import { SearchBar } from "./search-bar";
 import { AuthLink } from "./auth-link";
 import { CartCount } from "./cart-count";
 import { WishlistCount } from "./wishlist-count";
+import { NotificationButton } from "./notification-button";
 // import { DeliveryLocation } from "./delivery-location";
 import { BecomeSellerButton } from "./header.chunks";
 import { createClient } from "@/supabase/server";
@@ -54,6 +55,9 @@ const MainHeader = async () => {
 
           <div className="flex items-center gap-4">
             <AuthLink variant="desktop" />
+
+            {/* Notifications */}
+            {user && <NotificationButton />}
 
             {/* Cart */}
             <Button

@@ -260,7 +260,7 @@ export function UserPointsCard({
   const points = totalPoints ?? 0;
 
   return (
-    <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5">
+    <Card className="border-2 border-primary/20 bg-linear-to-br from-primary/5 via-primary/10 to-primary/5">
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">

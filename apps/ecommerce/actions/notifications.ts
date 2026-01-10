@@ -1,10 +1,12 @@
-
 "use server";
 
-import { db } from "@workspace/db";
-import { notifications, eq, and, desc, sql } from "@workspace/db";
+import { db, notifications, eq, and, desc, sql } from "@workspace/db";
 import { getUser } from "./auth";
 
+/**
+ * Fetch user notifications with optional filtering
+ * Returns notifications ordered by newest first, with unread count
+ */
 export async function getNotifications(params?: {
   type?: string;
   unreadOnly?: boolean;
@@ -13,42 +15,45 @@ export async function getNotifications(params?: {
 }) {
   try {
     const user = await getUser();
-    if (!user) {
+    if (!user?.user?.id) {
       return { success: false, error: "Authentication required" };
     }
 
-    const conditions = [eq(notifications.userId, user.user.id)];
-    
+    const userId = user.user.id;
+    const conditions = [eq(notifications.userId, userId)];
+
     if (params?.type) {
       conditions.push(eq(notifications.type, params.type as any));
     }
-    
+
     if (params?.unreadOnly) {
       conditions.push(eq(notifications.isRead, false));
     }
 
+    // Fetch notifications ordered by newest first
     const userNotifications = await db.query.notifications.findMany({
       where: and(...conditions),
       orderBy: [desc(notifications.createdAt)],
-      limit: params?.limit || 20,
-      offset: params?.offset || 0,
+      limit: params?.limit ?? 20,
+      offset: params?.offset ?? 0,
     });
 
-    // Get unread count
-    const unreadCount = await db
+    // Get unread count efficiently
+    const unreadCountResult = await db
       .select({ count: sql<number>`count(*)` })
       .from(notifications)
-      .where(and(
-        eq(notifications.userId, user.user.id),
-        eq(notifications.isRead, false)
-      ));
+      .where(
+        and(eq(notifications.userId, userId), eq(notifications.isRead, false))
+      );
 
-    return { 
-      success: true, 
+    const unreadCount = Number(unreadCountResult[0]?.count ?? 0);
+
+    return {
+      success: true,
       data: {
         notifications: userNotifications,
-        unreadCount: unreadCount[0]?.count || 0,
-      }
+        unreadCount,
+      },
     };
   } catch (error) {
     console.error("Error fetching notifications:", error);
@@ -56,10 +61,44 @@ export async function getNotifications(params?: {
   }
 }
 
+/**
+ * Get only the unread notification count for badge display
+ * More efficient than fetching all notifications when only count is needed
+ */
+export async function getUnreadNotificationCount() {
+  try {
+    const user = await getUser();
+    if (!user?.user?.id) {
+      return { success: true, data: { count: 0 } };
+    }
+
+    const unreadCountResult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(notifications)
+      .where(
+        and(
+          eq(notifications.userId, user.user.id),
+          eq(notifications.isRead, false)
+        )
+      );
+
+    const count = Number(unreadCountResult[0]?.count ?? 0);
+
+    return { success: true, data: { count } };
+  } catch (error) {
+    console.error("Error fetching unread count:", error);
+    return { success: true, data: { count: 0 } }; // Fail gracefully
+  }
+}
+
+/**
+ * Mark a single notification as read
+ * Updates isRead flag and sets readAt timestamp
+ */
 export async function markNotificationRead(notificationId: string) {
   try {
     const user = await getUser();
-    if (!user) {
+    if (!user?.user?.id) {
       return { success: false, error: "Authentication required" };
     }
 
@@ -69,10 +108,12 @@ export async function markNotificationRead(notificationId: string) {
         isRead: true,
         readAt: new Date().toISOString(),
       })
-      .where(and(
-        eq(notifications.id, notificationId),
-        eq(notifications.userId, user.user.id)
-      ));
+      .where(
+        and(
+          eq(notifications.id, notificationId),
+          eq(notifications.userId, user.user.id)
+        )
+      );
 
     return { success: true };
   } catch (error) {
@@ -81,10 +122,14 @@ export async function markNotificationRead(notificationId: string) {
   }
 }
 
+/**
+ * Mark all user notifications as read
+ * Useful for "Mark all as read" button in dropdown
+ */
 export async function markAllNotificationsRead() {
   try {
     const user = await getUser();
-    if (!user) {
+    if (!user?.user?.id) {
       return { success: false, error: "Authentication required" };
     }
 
@@ -94,10 +139,12 @@ export async function markAllNotificationsRead() {
         isRead: true,
         readAt: new Date().toISOString(),
       })
-      .where(and(
-        eq(notifications.userId, user.user.id),
-        eq(notifications.isRead, false)
-      ));
+      .where(
+        and(
+          eq(notifications.userId, user.user.id),
+          eq(notifications.isRead, false)
+        )
+      );
 
     return { success: true, message: "All notifications marked as read" };
   } catch (error) {
@@ -106,19 +153,24 @@ export async function markAllNotificationsRead() {
   }
 }
 
+/**
+ * Delete a notification (optional feature)
+ */
 export async function deleteNotification(notificationId: string) {
   try {
     const user = await getUser();
-    if (!user) {
+    if (!user?.user?.id) {
       return { success: false, error: "Authentication required" };
     }
 
     await db
       .delete(notifications)
-      .where(and(
-        eq(notifications.id, notificationId),
-        eq(notifications.userId, user.user.id)
-      ));
+      .where(
+        and(
+          eq(notifications.id, notificationId),
+          eq(notifications.userId, user.user.id)
+        )
+      );
 
     return { success: true, message: "Notification deleted" };
   } catch (error) {
@@ -129,7 +181,12 @@ export async function deleteNotification(notificationId: string) {
 
 export async function createNotification(data: {
   userId: string;
-  type: 'order_update' | 'shipment_update' | 'price_drop' | 'review_response' | 'marketing';
+  type:
+    | "order_update"
+    | "shipment_update"
+    | "price_drop"
+    | "review_response"
+    | "marketing";
   title: string;
   message: string;
   data?: any;
@@ -164,8 +221,8 @@ export async function subscribeToProductAlerts(productId: string) {
     // For now, we'll just return success
     // You might want to create a product_alerts table
 
-    return { 
-      success: true, 
+    return {
+      success: true,
       message: "Subscribed to product alerts",
     };
   } catch (error) {
