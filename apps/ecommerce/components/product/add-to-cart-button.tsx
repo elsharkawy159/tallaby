@@ -26,7 +26,7 @@ export const AddToCartButton = ({
   const handleAddToCart = async () => {
     setIsLoading(true);
     try {
-      const result = await addToCartAction(productId, quantity);
+      const result = await addToCartAction(productId, quantity, variantId);
       if (result.success) {
         router.refresh();
         toast.success("Item added to cart");
@@ -41,7 +41,7 @@ export const AddToCartButton = ({
   };
   const isOutOfStock = Number(stock) <= 0;
   if (isOutOfStock) return null;
-  
+
   return (
     <Button
       className={className}

@@ -29,7 +29,16 @@ import {
 import { TextInput } from "@workspace/ui/components/inputs/text-input";
 import { SelectInput } from "@workspace/ui/components/inputs/select-input";
 
-import { LogOut, Edit, Trash2, Building, Star } from "lucide-react";
+import {
+  LogOut,
+  Edit,
+  Trash2,
+  Building,
+  Star,
+  Copy,
+  Check,
+  Award,
+} from "lucide-react";
 
 import {
   profileFormSchema,
@@ -49,6 +58,8 @@ import {
   deleteAddress,
   //   updatePassword,
   createWishlist,
+  generateUserReferralCode,
+  applyReferralCode,
 } from "./profile.server";
 
 import {
@@ -240,10 +251,52 @@ export function ProfileSidebar({
   );
 }
 
+// User Points Card Component
+export function UserPointsCard({
+  totalPoints,
+}: {
+  totalPoints: number | null;
+}) {
+  const points = totalPoints ?? 0;
+
+  return (
+    <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5">
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="rounded-full bg-primary/10 p-4">
+              <Award className="h-8 w-8 text-primary" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-muted-foreground">
+                Total Points
+              </h3>
+              <p className="text-4xl font-bold text-primary">
+                {points.toLocaleString()}
+              </p>
+            </div>
+          </div>
+          <div className="text-right">
+            {/* <p className="text-sm text-muted-foreground">
+              Earn points with every purchase and activity
+            </p> */}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 // Profile Form Component
 interface ProfileFormProps {}
 
-export function ProfileForm({ user }: { user: User | null }) {
+export function ProfileForm({
+  user,
+  referredBy,
+}: {
+  user: User | null;
+  referredBy?: string | null;
+}) {
   const queryClient = useQueryClient();
   const [isPending, startTransition] = useTransition();
 
@@ -375,118 +428,345 @@ export function ProfileForm({ user }: { user: User | null }) {
   };
 
   return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Personal Information</CardTitle>
+          <CardDescription>
+            Update your personal details and preferences
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(handleSubmit)}
+              className="space-y-6"
+            >
+              <TextInput
+                form={form}
+                label="Full Name"
+                placeholder="Enter your full name"
+                name="fullName"
+              />
+
+              <TextInput
+                label="Phone Number"
+                placeholder="Enter your phone number"
+                name="phone"
+                form={form}
+              />
+              {/* <FormField
+                  control={form.control}
+                  name="timezone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Timezone</FormLabel>
+                      <FormControl>
+                        <SelectInput
+                          placeholder="Select your timezone"
+                          options={timezoneOptions}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                /> */}
+
+              <FormField
+                control={form.control}
+                name="preferredLanguage"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Language</FormLabel>
+                    <FormControl>
+                      <SelectInput
+                        placeholder="Select your language"
+                        options={languageOptions}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* <FormField
+                  control={form.control}
+                  name="defaultCurrency"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Default Currency</FormLabel>
+                      <FormControl>
+                        <SelectInput
+                          placeholder="Select your currency"
+                          options={currencyOptions}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                /> */}
+
+              <FormField
+                control={form.control}
+                name="receiveMarketingEmails"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base">
+                        Marketing Emails
+                      </FormLabel>
+                      <FormDescription>
+                        Receive emails about new products and special offers
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <Button
+                type="submit"
+                disabled={isPending}
+                className="w-full md:w-auto"
+              >
+                {isPending ? "Updating..." : "Update Profile"}
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+
+      {/* Referral Section */}
+      <ReferralSection user={user} referredBy={referredBy} />
+    </div>
+  );
+}
+
+// Referral Section Component
+export function ReferralSection({
+  user,
+  referredBy,
+}: {
+  user: User | null;
+  referredBy?: string | null;
+}) {
+  const queryClient = useQueryClient();
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isApplying, startApplyTransition] = useTransition();
+  const [showInput, setShowInput] = useState(false);
+  const [referralCode, setReferralCode] = useState("");
+  const [copied, setCopied] = useState(false);
+
+  const currentReferralCode = user?.user_metadata?.referral_code || null;
+  const hasReferralCode = !!currentReferralCode;
+  const hasAppliedCode = !!referredBy;
+
+  const handleGenerateReferralCode = async () => {
+    setIsGenerating(true);
+    try {
+      const result = await generateUserReferralCode();
+
+      if (result.success) {
+        toast.success(
+          result.message || "Referral code generated successfully!"
+        );
+        if (result.data?.referralCode) {
+          setReferralCode(result.data.referralCode);
+        }
+
+        // Invalidate user queries to refresh data
+        await queryClient.invalidateQueries({
+          queryKey: ["user"],
+          refetchType: "active",
+        });
+
+        // Refresh the page to get updated user data
+        window.location.reload();
+      } else {
+        toast.error(result.message || "Failed to generate referral code");
+      }
+    } catch (error) {
+      console.error("Generate referral code error:", error);
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleApplyReferralCode = (code: string) => {
+    if (!code.trim()) {
+      toast.error("Please enter a referral code");
+      return;
+    }
+
+    startApplyTransition(async () => {
+      try {
+        const result = await applyReferralCode(code);
+
+        if (result.success) {
+          toast.success(
+            result.message || "Referral code applied successfully!"
+          );
+          setShowInput(false);
+          setReferralCode("");
+
+          // Invalidate user queries to refresh data
+          await queryClient.invalidateQueries({
+            queryKey: ["user"],
+            refetchType: "active",
+          });
+
+          // Refresh the page to get updated user data
+          window.location.reload();
+        } else {
+          toast.error(result.message || "Failed to apply referral code");
+        }
+      } catch (error) {
+        console.error("Apply referral code error:", error);
+        toast.error("Something went wrong. Please try again.");
+      }
+    });
+  };
+
+  const handleCopyCode = async (code: string) => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      toast.success("Referral code copied to clipboard!");
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      toast.error("Failed to copy code");
+    }
+  };
+
+  return (
     <Card>
       <CardHeader>
-        <CardTitle>Personal Information</CardTitle>
+        <CardTitle>Referral Program</CardTitle>
         <CardDescription>
-          Update your personal details and preferences
+          Refer friends and get rewarded! Share your code or enter a friend's
+          code.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-6"
-          >
-            <TextInput
-              form={form}
-              label="Full Name"
-              placeholder="Enter your full name"
-              name="fullName"
-            />
+        <div className="flex flex-col md:flex-row gap-4">
+          {/* Refer a Friend Box */}
+          <div className="flex-1 rounded-xl border p-4 space-y-3">
+            <div>
+              <h4 className="font-medium mb-1">Refer a friend</h4>
+              <p className="text-sm text-muted-foreground">
+                Generate your referral code to share with friends
+              </p>
+            </div>
 
-            <TextInput
-              label="Phone Number"
-              placeholder="Enter your phone number"
-              name="phone"
-              form={form}
-            />
-            {/* <FormField
-                control={form.control}
-                name="timezone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Timezone</FormLabel>
-                    <FormControl>
-                      <SelectInput
-                        placeholder="Select your timezone"
-                        options={timezoneOptions}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              /> */}
+            {!hasReferralCode ? (
+              <Button
+                onClick={handleGenerateReferralCode}
+                disabled={isGenerating}
+                variant="default"
+                className="w-full"
+              >
+                {isGenerating ? "Generating..." : "Generate Code"}
+              </Button>
+            ) : (
+              currentReferralCode && (
+                <div className="flex items-center gap-2 p-3 py-1 bg-muted rounded-lg">
+                  <code className="flex-1 font-mono text-sm font-semibold">
+                    {currentReferralCode}
+                  </code>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleCopyCode(currentReferralCode)}
+                    className="shrink-0"
+                  >
+                    {copied ? (
+                      <Check className="h-3 w-3" />
+                    ) : (
+                      <Copy className="h-3 w-3" />
+                    )}
+                  </Button>
+                </div>
+              )
+            )}
+          </div>
 
-            <FormField
-              control={form.control}
-              name="preferredLanguage"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Language</FormLabel>
-                  <FormControl>
-                    <SelectInput
-                      placeholder="Select your language"
-                      options={languageOptions}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          {/* Got a Referral Code Box */}
+          <div className="flex-1 rounded-xl border p-4 space-y-3">
+            <div>
+              <h4 className="font-medium mb-1">Got a referral code?</h4>
+              <p className="text-sm text-muted-foreground">
+                Enter a friend's referral code to apply it
+              </p>
+            </div>
 
-            {/* <FormField
-                control={form.control}
-                name="defaultCurrency"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Default Currency</FormLabel>
-                    <FormControl>
-                      <SelectInput
-                        placeholder="Select your currency"
-                        options={currencyOptions}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              /> */}
-
-            <FormField
-              control={form.control}
-              name="receiveMarketingEmails"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                  <div className="space-y-0.5">
-                    <FormLabel className="text-base">
-                      Marketing Emails
-                    </FormLabel>
-                    <FormDescription>
-                      Receive emails about new products and special offers
-                    </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <Button
-              type="submit"
-              disabled={isPending}
-              className="w-full md:w-auto"
-            >
-              {isPending ? "Updating..." : "Update Profile"}
-            </Button>
-          </form>
-        </Form>
+            {hasAppliedCode ? (
+              <p className="text-sm text-muted-foreground">
+                You have already applied a referral code.
+              </p>
+            ) : !showInput ? (
+              <Button
+                onClick={() => setShowInput(true)}
+                variant="default"
+                disabled={isApplying}
+                className="w-full"
+              >
+                Enter Code
+              </Button>
+            ) : (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const formData = new FormData(e.currentTarget);
+                  const code = formData.get("referralCode") as string;
+                  handleApplyReferralCode(code);
+                }}
+                className="space-y-2"
+              >
+                <Input
+                  name="referralCode"
+                  placeholder="Enter referral code"
+                  className="w-full"
+                  maxLength={20}
+                  disabled={isApplying}
+                  value={referralCode}
+                  onChange={(e) =>
+                    setReferralCode(e.target.value.toUpperCase())
+                  }
+                />
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setShowInput(false);
+                      setReferralCode("");
+                    }}
+                    className="flex-1"
+                    disabled={isApplying}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={isApplying || !referralCode.trim()}
+                    className="flex-1"
+                  >
+                    {isApplying ? "Applying..." : "Apply"}
+                  </Button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

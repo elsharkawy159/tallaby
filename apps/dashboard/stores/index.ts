@@ -1,5 +1,6 @@
 // Export all Zustand stores
 export { useAddProductFormStore } from "./add-product-form.store";
+export { useSidebarStore } from "./sidebar.store";
 
 // Future stores can be added here:
 // export { useUserStore } from './user.store'

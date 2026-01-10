@@ -29,6 +29,8 @@ export interface SupabaseUser {
     picture?: string;
     provider_id?: string;
     sub?: string;
+    referral_code?: string;
+    referred_by?: string;
   };
   identities: Array<{
     identity_id: string;

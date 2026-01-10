@@ -2,7 +2,14 @@
 
 import React, { useCallback, useState, useEffect } from "react";
 import Image from "next/image";
-import { X, LoaderCircle, Upload, ImageIcon, CheckCircle2 } from "lucide-react";
+import {
+  X,
+  LoaderCircle,
+  Upload,
+  ImageIcon,
+  CheckCircle2,
+  Trash,
+} from "lucide-react";
 import { useDropzone } from "react-dropzone";
 import {
   DragDropContext,
@@ -243,18 +250,16 @@ export function ImageUpload({
   );
 
   return (
-    <div className="space-y-6 flex gap-4 items-start">
-
-
-      {/* Image Gallery */}
+    <div className="flex lg:flex-row flex-col justify-between gap-4">
+      {/* Image Preview */}
       {filesToUpload.length > 0 && (
-        <div className="flex gap-6">
+        <div className="flex gap-6 flex-1">
           {/* Thumbnail Grid */}
           <div className="lg:col-span-1">
-            <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                <ImageIcon className="h-4 w-4" />
-                Image Gallery
+            <div className="space-y-2">
+              <h3 className="text-xs font-semibold text-gray-700 flex justify-between items-center gap-2">
+                <ImageIcon className="size-4" />
+
                 <span className="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
                   {filesToUpload.length}/{maxImages}
                 </span>
@@ -287,7 +292,7 @@ export function ImageUpload({
                               ref={provided.innerRef}
                               {...provided.draggableProps}
                               {...provided.dragHandleProps}
-                              className={`relative rounded-lg border transition-all duration-200 ${
+                              className={`relative rounded-lg border min-w-28 transition-all duration-200 ${
                                 snapshot.isDragging
                                   ? "bg-blue-50 border-blue-200 shadow-lg scale-105 rotate-2"
                                   : "bg-white border-gray-200 hover:border-gray-300 hover:shadow-md"
@@ -314,7 +319,7 @@ export function ImageUpload({
           {/* Preview Area */}
           <div className="lg:col-span-2">
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+              {/* <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-green-500" />
                 Preview
                 {filesToUpload[0]?.isUploaded && (
@@ -322,7 +327,7 @@ export function ImageUpload({
                     Ready
                   </span>
                 )}
-              </h3>
+              </h3> */}
 
               <div className="relative w-full h-[400px] bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 overflow-hidden shadow-sm">
                 {filesToUpload.length > 0 ? (
@@ -355,11 +360,11 @@ export function ImageUpload({
         </div>
       )}
 
-            {/* Upload Zone */}
-            <div className="relative flex-1 mt-11">
+      {/* Upload */}
+      <div className="relative flex-1">
         <label
           {...getRootProps()}
-          className={`group relative flex min-h-[200px] w-full flex-col items-center justify-center rounded-xl border-2 border-dashed transition-all duration-200 ease-in-out ${
+          className={`group bg-white relative flex w-full flex-col items-center justify-center rounded-xl border-2 border-dashed transition-all duration-200 ease-in-out ${
             isMaxReached
               ? "cursor-not-allowed border-gray-200 bg-gray-50/50 opacity-60"
               : isDragActive
@@ -464,15 +469,12 @@ const FilePreview = React.memo(
 
     return (
       <div className="relative group">
-        <AspectRatio
-          ratio={4 / 3}
-          className="relative overflow-hidden rounded-lg"
-        >
+        <AspectRatio ratio={4 / 3} className="relative">
           {imageSrc ? (
             <Image
               src={imageSrc}
               fill
-              className="object-cover transition-transform duration-200 group-hover:scale-105"
+              className="object-cover transition-transform duration-300 hover:scale-105 hover:rotate-2 rounded-lg"
               alt={`Image ${idx + 1}`}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
@@ -487,15 +489,14 @@ const FilePreview = React.memo(
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center rounded-lg">
               <div className="text-center text-white">
                 <LoaderCircle className="w-6 h-6 animate-spin mx-auto mb-2" />
-                <span className="text-sm font-medium">Uploading...</span>
               </div>
             </div>
           )}
 
           {/* Primary image indicator */}
           {isPrimary && isUploaded && (
-            <div className="absolute top-2 left-2 bg-primary text-white text-xs px-2 py-1 rounded-full font-semibold shadow-sm">
-              Cover
+            <div className="absolute top-2 left-2 bg-primary ring-1 text-white text-[10px] px-1 py-0.5 rounded-full font-semibold shadow-sm">
+              Main
             </div>
           )}
 
@@ -511,34 +512,11 @@ const FilePreview = React.memo(
                 removeFile(sourceToRemove);
               }
             }}
-            className="absolute top-2 right-2 hover:text-white size-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-lg hover:scale-110"
+            className="absolute -top-1.5 -right-1.5 hover:text-white w-5.5 h-5.5 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center lg:opacity-80 group-hover:opacity-100 transition-all duration-300 shadow-lg hover:scale-105"
             aria-label="Remove image"
           >
-            <X size={12} />
+            <X className="size-3.5" />
           </Button>
-
-          {/* Upload status indicator */}
-          <div className="absolute bottom-2 right-2">
-            {isUploaded && (
-              <div className="flex items-center gap-1 bg-green-500 text-white text-xs px-2 py-1 rounded-full shadow-sm">
-                <CheckCircle2 size={10} />
-                <span className="font-medium">Done</span>
-              </div>
-            )}
-            {isUploading && (
-              <div className="flex items-center gap-1 bg-blue-500 text-white text-xs px-2 py-1 rounded-full shadow-sm">
-                <LoaderCircle size={10} className="animate-spin" />
-                <span className="font-medium">Uploading</span>
-              </div>
-            )}
-          </div>
-
-          {/* Drag handle indicator */}
-          <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-            <div className="w-6 h-6 bg-black/20 backdrop-blur-sm rounded flex items-center justify-center">
-              <div className="w-3 h-3 bg-white rounded-sm"></div>
-            </div>
-          </div>
         </AspectRatio>
       </div>
     );

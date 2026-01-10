@@ -1,5 +1,3 @@
-
-
 export interface OrderConfirmationData {
   order: {
     id: string;
@@ -16,6 +14,8 @@ export interface OrderConfirmationData {
   };
   orderItems: Array<{
     id: string;
+    productId: string;
+    sellerId: string;
     productName: string;
     variantName?: string;
     quantity: number;
@@ -26,10 +26,14 @@ export interface OrderConfirmationData {
       slug: string;
       images: string[];
     };
+    variant: {
+      imageUrl: string | null;
+    } | null;
     seller: {
       displayName: string;
       slug: string;
     };
+    hasReview: boolean;
   }>;
   shippingAddress: {
     fullName: string;

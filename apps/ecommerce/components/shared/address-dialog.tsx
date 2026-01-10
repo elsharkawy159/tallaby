@@ -53,6 +53,9 @@ export const AddressDialog = ({
     city?: string;
     state?: string;
     country?: string;
+    area?: string;
+    street?: string;
+    building?: string;
     postalCode?: string;
   } | null>(null);
   const [addresses, setAddresses] = useState<AddressData[]>([]);
@@ -128,6 +131,9 @@ export const AddressDialog = ({
     city?: string;
     state?: string;
     country?: string;
+    area?: string;
+    street?: string;
+    building?: string;
     postalCode?: string;
   }) => {
     setSelectedLocation(location);

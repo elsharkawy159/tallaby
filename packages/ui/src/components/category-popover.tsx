@@ -183,7 +183,7 @@ function CategoryPopover({
           variant="outline"
           disabled={disabled}
           className={cn(
-            "justify-between gap-2 truncate rounded-lg bg-white h-11.5 hover:bg-gray-50 transition-colors text-gray-800 font-medium",
+            "justify-between gap-2 pl-3 w-full truncate rounded-lg bg-white h-11.5 hover:bg-gray-50 transition-colors text-gray-800 font-medium",
             !selectedLabel && "text-muted-foreground",
             triggerClassName,
             className

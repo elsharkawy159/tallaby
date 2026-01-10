@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 
 interface ProductActionsProps {
   product: Product;
+  selectedVariantId?: string | null;
   onBuyNow?: (quantity: number) => void;
   className?: string;
   isInCart?: boolean;
@@ -19,6 +20,7 @@ interface ProductActionsProps {
 
 export const ProductActions = ({
   product,
+  selectedVariantId,
   onBuyNow,
   className,
   isInCart: isInCartStatus = false,
@@ -66,6 +68,7 @@ export const ProductActions = ({
           <AddToCartButton
             productId={product.id}
             quantity={quantity}
+            variantId={selectedVariantId ?? undefined}
             className="w-full h-12 text-base"
             size="lg"
             variant="default"

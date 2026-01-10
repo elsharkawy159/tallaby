@@ -1,6 +1,8 @@
 "use client";
 import { Menu, Sun, Moon } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
+import { cn } from "@/lib/utils";
+import { useSidebarStore } from "@/stores";
 
 import { NotificationCenter } from "../dashboard/NotificationCenter";
 import { UserNav } from "./user-nav";
@@ -12,6 +14,7 @@ interface NavbarProps {
 }
 
 export const Navbar = ({ onMenuToggle }: NavbarProps) => {
+  const { isCollapsed } = useSidebarStore();
   const pathname = usePathname();
   const { setTheme, theme } = useTheme();
   let pageTitle = "";
@@ -57,7 +60,12 @@ export const Navbar = ({ onMenuToggle }: NavbarProps) => {
       break;
   }
   return (
-    <nav className="fixed top-0 right-0 left-72 bg-white dark:bg-gray-800 border-b border-l border-gray-200 dark:border-gray-700 z-30">
+    <nav
+      className={cn(
+        "fixed top-0 right-0 bg-white dark:bg-gray-800 border-b border-l border-gray-200 dark:border-gray-700 z-30 transition-all duration-300",
+        isCollapsed ? "left-20" : "left-72"
+      )}
+    >
       <div className="px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -111,7 +119,7 @@ export const Navbar = ({ onMenuToggle }: NavbarProps) => {
             </DropdownMenu> */}
 
             {/* Theme Toggle */}
-            
+
             {/* <Button
             variant="ghost"
             size="icon"

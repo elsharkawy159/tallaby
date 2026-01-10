@@ -1,227 +1,125 @@
+import type { CategoryOption } from "./add-product.schema";
+
+interface FlattenedCategory {
+  id: string;
+  name: string;
+  slug: string;
+  level: number;
+  parentId?: string;
+}
+
+// Category with nested structure (as returned from getAllCategories)
+interface NestedCategory extends CategoryOption {
+  categories?: NestedCategory[];
+}
+
 /**
- * Utility functions for the add product form
+ * Flattens nested category structure into a flat array
  */
+export function flattenCategories(
+  categories: (CategoryOption | NestedCategory)[],
+  parentPath: string[] = []
+): FlattenedCategory[] {
+  const result: FlattenedCategory[] = [];
 
-// Generate a URL-friendly slug from a title
-export const generateSlug = (title: string): string => {
-  return title
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, "") // Remove special characters
-    .replace(/[\s_-]+/g, "-") // Replace spaces and underscores with hyphens
-    .replace(/^-+|-+$/g, ""); // Remove leading/trailing hyphens
-};
+  for (const category of categories) {
+    result.push({
+      id: category.id,
+      name: category.name,
+      slug: category.slug || "",
+      level: category.level,
+      parentId: category.parentId,
+    });
 
-// Generate a unique SKU with prefix
-export const generateSKU = (prefix: string = "PRD"): string => {
-  const timestamp = Date.now().toString().slice(-6);
-  const random = Math.random().toString(36).substring(2, 6).toUpperCase();
-  return `${prefix}-${timestamp}-${random}`;
-};
-
-// Format price for display
-export const formatPrice = (
-  price: number,
-  currency: string = "EGP"
-): string => {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-  }).format(price);
-};
-
-// Validate image file
-export const validateImageFile = (
-  file: File
-): { valid: boolean; error?: string } => {
-  const maxSize = 10 * 1024 * 1024; // 10MB
-  const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-
-  if (!allowedTypes.includes(file.type)) {
-    return {
-      valid: false,
-      error: "Invalid file type. Please upload JPEG, PNG, or WebP images.",
-    };
-  }
-
-  if (file.size > maxSize) {
-    return {
-      valid: false,
-      error: "File size too large. Please upload images smaller than 10MB.",
-    };
-  }
-
-  return { valid: true };
-};
-
-// Calculate discount percentage
-export const calculateDiscountPercentage = (
-  originalPrice: number,
-  salePrice: number
-): number => {
-  if (originalPrice <= 0 || salePrice <= 0 || salePrice >= originalPrice) {
-    return 0;
-  }
-  return Math.round(((originalPrice - salePrice) / originalPrice) * 100);
-};
-
-// Validate price relationships
-export const validatePrices = (
-  basePrice: number,
-  listPrice?: number,
-  salePrice?: number
-): { valid: boolean; errors: string[] } => {
-  const errors: string[] = [];
-
-  if (basePrice <= 0) {
-    errors.push("Base price must be greater than 0");
-  }
-
-  if (listPrice && listPrice < basePrice) {
-    errors.push("List price must be greater than or equal to base price");
-  }
-
-  if (salePrice && salePrice >= basePrice) {
-    errors.push("Sale price must be less than base price");
-  }
-
-  if (salePrice && salePrice <= 0) {
-    errors.push("Sale price must be greater than 0");
-  }
-
-  return {
-    valid: errors.length === 0,
-    errors,
-  };
-};
-
-// Generate product meta title from product data
-export const generateMetaTitle = (
-  title: string,
-  brandName?: string
-): string => {
-  const maxLength = 60;
-  let metaTitle = title;
-
-  if (brandName) {
-    metaTitle = `${brandName} ${title}`;
-  }
-
-  if (metaTitle.length > maxLength) {
-    metaTitle = metaTitle.substring(0, maxLength - 3) + "...";
-  }
-
-  return metaTitle;
-};
-
-// Generate product meta description
-export const generateMetaDescription = (
-  title: string,
-  description?: string,
-  brandName?: string
-): string => {
-  const maxLength = 160;
-  let metaDescription = "";
-
-  if (description) {
-    metaDescription = description;
-  } else {
-    metaDescription = `Buy ${title}`;
-    if (brandName) {
-      metaDescription += ` from ${brandName}`;
+    // Recursively flatten children if they exist
+    const nestedCategory = category as NestedCategory;
+    if (nestedCategory.categories && Array.isArray(nestedCategory.categories)) {
+      result.push(
+        ...flattenCategories(nestedCategory.categories, [
+          ...parentPath,
+          category.name,
+        ])
+      );
     }
-    metaDescription += ". High quality products with fast shipping.";
   }
 
-  if (metaDescription.length > maxLength) {
-    metaDescription = metaDescription.substring(0, maxLength - 3) + "...";
+  return result;
+}
+
+/**
+ * Scores a category based on how well it matches the product name
+ */
+function scoreCategoryMatch(categoryName: string, productName: string): number {
+  const normalizedCategory = categoryName.toLowerCase().trim();
+  const normalizedProduct = productName.toLowerCase().trim();
+
+  if (!normalizedProduct || normalizedProduct.length < 2) return 0;
+
+  let score = 0;
+
+  // Exact match gets highest score
+  if (normalizedProduct.includes(normalizedCategory)) {
+    score += normalizedCategory.length * 10;
   }
 
-  return metaDescription;
-};
+  // Check if category name is included in product text
+  if (normalizedCategory.includes(normalizedProduct)) {
+    score += normalizedProduct.length * 5;
+  }
 
-// Extract keywords from text
-export const extractKeywords = (text: string): string[] => {
-  const commonWords = [
-    "the",
-    "a",
-    "an",
-    "and",
-    "or",
-    "but",
-    "in",
-    "on",
-    "at",
-    "to",
-    "for",
-    "of",
-    "with",
-    "by",
-    "is",
-    "are",
-    "was",
-    "were",
-    "be",
-    "been",
-    "have",
-    "has",
-    "had",
-    "do",
-    "does",
-    "did",
-    "will",
-    "would",
-    "could",
-    "should",
-  ];
-
-  return text
-    .toLowerCase()
-    .replace(/[^\w\s]/g, "")
+  // Check word-by-word matching
+  const productWords = normalizedProduct
     .split(/\s+/)
-    .filter((word) => word.length > 2 && !commonWords.includes(word))
-    .slice(0, 10); // Limit to 10 keywords
-};
+    .filter((w) => w.length > 2);
+  const categoryWords = normalizedCategory
+    .split(/\s+/)
+    .filter((w) => w.length > 2);
 
-// Format file size for display
-export const formatFileSize = (bytes: number): string => {
-  if (bytes === 0) return "0 Bytes";
-
-  const k = 1024;
-  const sizes = ["Bytes", "KB", "MB", "GB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-};
-
-// Debounce function for search/validation
-export const debounce = <T extends (...args: any[]) => any>(
-  func: T,
-  wait: number
-): ((...args: Parameters<T>) => void) => {
-  let timeout: NodeJS.Timeout;
-
-  return (...args: Parameters<T>) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), wait);
-  };
-};
-
-// Check if string is valid URL
-export const isValidUrl = (string: string): boolean => {
-  try {
-    new URL(string);
-    return true;
-  } catch (_) {
-    return false;
+  for (const productWord of productWords) {
+    for (const categoryWord of categoryWords) {
+      if (
+        categoryWord.includes(productWord) ||
+        productWord.includes(categoryWord)
+      ) {
+        score += Math.min(productWord.length, categoryWord.length);
+      }
+    }
   }
-};
 
-// Sanitize HTML content
-export const sanitizeHtml = (html: string): string => {
-  return html
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
-    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "")
-    .replace(/javascript:/gi, "")
-    .replace(/on\w+\s*=/gi, "");
-};
+  return score;
+}
+
+/**
+ * Searches categories based on product name and returns matching categories sorted by relevance
+ */
+export function searchCategoriesByProductName(
+  categories: (CategoryOption | NestedCategory)[],
+  productName: string,
+  maxResults: number = 8
+): CategoryOption[] {
+  if (!productName || productName.trim().length < 2) {
+    return [];
+  }
+
+  const flattened = flattenCategories(categories);
+  const scored = flattened
+    .map((category) => ({
+      ...category,
+      score: scoreCategoryMatch(category.name, productName),
+    }))
+    .filter((item) => item.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, maxResults);
+
+  // Convert back to CategoryOption format
+  return scored.map(
+    ({ score, ...category }) =>
+      ({
+        id: category.id,
+        name: category.name,
+        slug: category.slug,
+        level: category.level,
+        parentId: category.parentId,
+      }) as CategoryOption
+  );
+}

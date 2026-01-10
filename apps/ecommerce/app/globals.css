@@ -1,3 +1,74 @@
 .leaflet-bottom {
-    display: none !important;
+  display: none !important;
+}
+
+@keyframes progress-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(300%);
+  }
+}
+
+.progress-shimmer {
+  animation: progress-shimmer 2s ease-in-out infinite;
+}
+
+/* Pulsing location dot marker styles */
+.location-pulse-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+.location-pulse-container {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.location-pulse-dot {
+  width: 12px;
+  height: 12px;
+  background-color: #3b82f6;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  position: relative;
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.location-pulse-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 20px;
+  border: 2px solid #3b82f6;
+  border-radius: 50%;
+  opacity: 0.6;
+  animation: location-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.location-pulse-ring-delay-1 {
+  animation-delay: 0.67s;
+}
+
+.location-pulse-ring-delay-2 {
+  animation-delay: 1.33s;
+}
+
+@keyframes location-pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2.5);
+    opacity: 0;
+  }
 }

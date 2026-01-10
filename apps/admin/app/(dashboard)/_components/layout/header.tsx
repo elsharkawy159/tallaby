@@ -1,83 +1,82 @@
-"use client";
 
-import { useState } from "react";
+// import { useState } from "react";
 import {
   Bell,
   Moon,
   Sun,
   Search,
 } from "lucide-react";
-import { useTheme } from "next-themes";
-import { Button } from "@workspace/ui/components/button";
+// import { useTheme } from "next-themes";
+// import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@workspace/ui/components/dialog";
-import { Badge } from "@workspace/ui/components/badge";
+// import {
+//   Dialog,
+//   DialogContent,
+//   DialogDescription,
+//   DialogHeader,
+//   DialogTitle,
+//   DialogTrigger,
+// } from "@workspace/ui/components/dialog";
+// import { Badge } from "@workspace/ui/components/badge";
 import { UserNav } from "./user-nav";
 // import { signOutAction } from "@/app/actions";
 
 export default function Header() {
-  const { setTheme, theme } = useTheme();
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      title: "New Order #1234",
-      message: "A new order has been placed",
-      time: "5 minutes ago",
-      read: false,
-    },
-    {
-      id: 2,
-      title: "Low Stock Alert",
-      message: "Product 'Smartphone X' is running low on stock",
-      time: "1 hour ago",
-      read: false,
-    },
-    {
-      id: 3,
-      title: "New Review",
-      message: "A customer left a 5-star review",
-      time: "3 hours ago",
-      read: true,
-    },
-  ]);
+  // const { setTheme, theme } = useTheme();
+  // const [showNotifications, setShowNotifications] = useState(false);
+  // const [notifications, setNotifications] = useState([
+  //   {
+  //     id: 1,
+  //     title: "New Order #1234",
+  //     message: "A new order has been placed",
+  //     time: "5 minutes ago",
+  //     read: false,
+  //   },
+  //   {
+  //     id: 2,
+  //     title: "Low Stock Alert",
+  //     message: "Product 'Smartphone X' is running low on stock",
+  //     time: "1 hour ago",
+  //     read: false,
+  //   },
+  //   {
+  //     id: 3,
+  //     title: "New Review",
+  //     message: "A customer left a 5-star review",
+  //     time: "3 hours ago",
+  //     read: true,
+  //   },
+  // ]);
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  // const unreadCount = notifications.filter((n) => !n.read).length;
 
-  const markAsRead = (id: number) => {
-    setNotifications(
-      notifications.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
-  };
+  // const markAsRead = (id: number) => {
+  //   setNotifications(
+  //     notifications.map((n) => (n.id === id ? { ...n, read: true } : n))
+  //   );
+  // };
 
-  const markAllAsRead = () => {
-    setNotifications(notifications.map((n) => ({ ...n, read: true })));
-  };
+  // const markAllAsRead = () => {
+  //   setNotifications(notifications.map((n) => ({ ...n, read: true })));
+  // };
 
   return (
     <header className="border-b border-border bg-background">
       <div className="flex h-16 items-center px-4 gap-4">
         <div className="flex-1 flex items-center">
           <form className="ml-auto hidden md:flex w-full max-w-sm items-center">
-            <div className="relative flex-1">
+            {/* <div className="relative flex-1">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
               <Input
                 type="search"
                 placeholder="Search..."
                 className="pl-8 bg-gray-100 dark:bg-gray-800 border-0"
               />
-            </div>
+            </div> */}
           </form>
         </div>
         <div className="flex items-center gap-2">
-          <Button
+          {/* <Button
             variant="ghost"
             size="icon"
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
@@ -88,9 +87,9 @@ export default function Header() {
               <Moon className="h-5 w-5" />
             )}
             <span className="sr-only">Toggle theme</span>
-          </Button>
+          </Button> */}
 
-          <Dialog open={showNotifications} onOpenChange={setShowNotifications}>
+          {/* <Dialog open={showNotifications} onOpenChange={setShowNotifications}>
             <DialogTrigger asChild>
               <Button variant="ghost" size="icon" className="relative">
                 <Bell className="h-5 w-5" />
@@ -164,7 +163,7 @@ export default function Header() {
                 )}
               </div>
             </DialogContent>
-          </Dialog>
+          </Dialog> */}
 
           <UserNav />
         </div>

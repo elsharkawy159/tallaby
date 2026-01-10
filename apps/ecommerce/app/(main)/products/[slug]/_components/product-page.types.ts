@@ -3,10 +3,13 @@ import type {
   brands,
   categories,
   reviews,
+  reviewVotes,
+  reviewComments,
   productQuestions,
   productAnswers,
   users,
   sellers,
+  productVariants,
 } from "@workspace/db";
 
 export interface ProductPageProps {
@@ -26,10 +29,16 @@ export type Product = typeof products.$inferSelect & {
     | "positiveRatingPercent"
     | "totalRatings"
   > | null;
+  productVariants?: Array<typeof productVariants.$inferSelect>;
   reviews?: Array<
     typeof reviews.$inferSelect & {
       user: Pick<typeof users.$inferSelect, "fullName" | "avatarUrl"> | null;
-      reviewComments?: Array<unknown>;
+      reviewVotes?: Array<typeof reviewVotes.$inferSelect>;
+      reviewComments?: Array<
+        typeof reviewComments.$inferSelect & {
+          user: Pick<typeof users.$inferSelect, "fullName" | "avatarUrl"> | null;
+        }
+      >;
     }
   >;
   productQuestions?: Array<
@@ -42,6 +51,12 @@ export type Product = typeof products.$inferSelect & {
 
 export type Review = typeof reviews.$inferSelect & {
   user: Pick<typeof users.$inferSelect, "fullName" | "avatarUrl"> | null;
+  reviewVotes?: Array<typeof reviewVotes.$inferSelect>;
+  reviewComments?: Array<
+    typeof reviewComments.$inferSelect & {
+      user: Pick<typeof users.$inferSelect, "fullName" | "avatarUrl"> | null;
+    }
+  >;
 };
 
 export type ProductQuestion = typeof productQuestions.$inferSelect & {

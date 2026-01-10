@@ -3,7 +3,7 @@
 import bcrypt from "bcryptjs";
 import { createClient } from "@/supabase/server";
 import { db, eq, desc, and } from "@workspace/db";
-import { userAddresses, wishlists } from "@workspace/db";
+import { userAddresses, wishlists, users } from "@workspace/db";
 import { revalidatePath } from "next/cache";
 import type {
   ProfileFormData,
@@ -448,6 +448,277 @@ export const createWishlist = async (name: string): Promise<ActionResult> => {
     return {
       success: false,
       message: "Failed to create wishlist. Please try again.",
+    };
+  }
+};
+
+/**
+ * Generate a unique referral code using timestamp and random characters
+ * Format: 4 chars (timestamp base36) + 4 chars (random) = 8 chars total
+ */
+function generateReferralCode(): string {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+  // Get current timestamp and convert to base36 (compact representation)
+  const timestamp = Date.now();
+  const timestampBase36 = timestamp.toString(36).toUpperCase();
+
+  // Take the last 4 characters from timestamp (most unique part)
+  const timestampPart = timestampBase36.slice(-4).padStart(4, "0");
+
+  // Generate 4 random characters
+  let randomPart = "";
+  for (let i = 0; i < 4; i++) {
+    randomPart += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+
+  // Combine: timestamp part + random part
+  return timestampPart + randomPart;
+}
+
+/* Generate and store referral code in user_metadata */
+export const generateUserReferralCode = async (): Promise<ActionResult> => {
+  try {
+    const supabase = await createClient();
+
+    // Get current user
+    const {
+      data: { user },
+      error: getUserError,
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return {
+        success: false,
+        message: "Not authenticated",
+      };
+    }
+
+    // Check if user already has a referral code in user_metadata
+    if (user.user_metadata?.referral_code) {
+      return {
+        success: true,
+        message: "Referral code already exists",
+        data: { referralCode: user.user_metadata.referral_code },
+      };
+    }
+
+    // Generate a unique referral code
+    let referralCode: string;
+    let isUnique = false;
+    let attempts = 0;
+    const maxAttempts = 10;
+
+    while (!isUnique && attempts < maxAttempts) {
+      referralCode = generateReferralCode();
+
+      // Check if code exists in database
+      const existingUser = await db
+        .select()
+        .from(users)
+        .where(eq(users.referralCode, referralCode))
+        .limit(1);
+
+      if (existingUser.length === 0) {
+        isUnique = true;
+      } else {
+        attempts++;
+      }
+    }
+
+    if (!isUnique) {
+      return {
+        success: false,
+        message: "Failed to generate unique referral code. Please try again.",
+      };
+    }
+
+    // Update user_metadata with referral code
+    const { error: authUpdateError } = await supabase.auth.updateUser({
+      data: {
+        referral_code: referralCode!,
+      },
+    });
+
+    if (authUpdateError) {
+      console.error("Update user_metadata error:", authUpdateError);
+      return {
+        success: false,
+        message: "Failed to save referral code",
+      };
+    }
+
+    // Revalidate profile pages
+    revalidatePath("/profile");
+
+    return {
+      success: true,
+      message: "Referral code generated successfully!",
+      data: { referralCode: referralCode! },
+    };
+  } catch (error) {
+    console.error("Generate referral code error:", error);
+    return {
+      success: false,
+      message: "Failed to generate referral code. Please try again.",
+    };
+  }
+};
+
+/* Get user's total points from database */
+export const getUserPoints = async (): Promise<number | null> => {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return null;
+    }
+
+    const { data, error } = await supabase
+      .from("user_points")
+      .select("total_points")
+      .eq("user_id", user.id)
+      .single();
+
+    if (error || !data) {
+      // If no record exists, return 0 instead of null
+      return 0;
+    }
+
+    return data.total_points ?? 0;
+  } catch (error) {
+    console.error("Get user points error:", error);
+    return 0;
+  }
+};
+
+/* Get user's referredBy status from database */
+export const getUserReferredBy = async (): Promise<string | null> => {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return null;
+    }
+
+    const userRecord = await db
+      .select({ referredBy: users.referredBy })
+      .from(users)
+      .where(eq(users.id, user.id))
+      .limit(1);
+
+    return userRecord.length > 0 && userRecord[0]?.referredBy
+      ? userRecord[0].referredBy
+      : null;
+  } catch (error) {
+    console.error("Get user referredBy error:", error);
+    return null;
+  }
+};
+
+/* Apply referral code (referred_by will be updated in users table via trigger/function) */
+export const applyReferralCode = async (
+  referralCode: string
+): Promise<ActionResult> => {
+  try {
+    const supabase = await createClient();
+
+    // Get current user
+    const {
+      data: { user },
+      error: getUserError,
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return {
+        success: false,
+        message: "Not authenticated",
+      };
+    }
+
+    // Check if user already has a referredBy value in database
+    const userRecord = await db
+      .select({ referredBy: users.referredBy })
+      .from(users)
+      .where(eq(users.id, user.id))
+      .limit(1);
+
+    if (userRecord.length > 0 && userRecord[0]?.referredBy) {
+      return {
+        success: false,
+        message: "You have already used a referral code",
+      };
+    }
+
+    // Normalize the referral code (uppercase, trim)
+    const normalizedCode = referralCode.toUpperCase().trim();
+
+    if (!normalizedCode) {
+      return {
+        success: false,
+        message: "Please enter a valid referral code",
+      };
+    }
+
+    // Find user with this referral code in database
+    const referringUser = await db
+      .select()
+      .from(users)
+      .where(eq(users.referralCode, normalizedCode))
+      .limit(1);
+
+    if (referringUser.length === 0 || !referringUser[0]) {
+      return {
+        success: false,
+        message: "Invalid referral code",
+      };
+    }
+
+    const referrerId = referringUser[0].id;
+
+    // Can't refer yourself
+    if (referrerId === user.id) {
+      return {
+        success: false,
+        message: "You cannot use your own referral code",
+      };
+    }
+
+    // Update referred_by in users table
+    try {
+      await db
+        .update(users)
+        .set({
+          referredBy: referrerId,
+          updatedAt: new Date().toISOString(),
+        })
+        .where(eq(users.id, user.id));
+    } catch (dbError) {
+      console.error("Database update error:", dbError);
+      return {
+        success: false,
+        message: "Failed to apply referral code. Please try again.",
+      };
+    }
+
+    // Revalidate profile pages
+    revalidatePath("/profile");
+
+    return {
+      success: true,
+      message: "Referral code applied successfully!",
+    };
+  } catch (error) {
+    console.error("Apply referral code error:", error);
+    return {
+      success: false,
+      message: "Failed to apply referral code. Please try again.",
     };
   }
 };

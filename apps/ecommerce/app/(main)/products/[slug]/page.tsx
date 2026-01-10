@@ -1,9 +1,7 @@
 import { Suspense } from "react";
 import { getProductBySlug, getAllProductSlugs } from "@/actions/products";
-import { ProductDetails } from "./_components/product-details";
 import { ProductTabs } from "./_components/product-tabs";
 import { SimilarProducts } from "./_components/similar-products";
-import { ProductHeroSkeleton } from "./_components/product-hero.skeleton";
 import { ProductTabsSkeleton } from "./_components/product-tabs.skeleton";
 import { SimilarProductsSkeleton } from "./_components/similar-products.skeleton";
 
@@ -11,7 +9,7 @@ import type {
   Product,
   ProductPageProps,
 } from "./_components/product-page.types";
-import { ProductHero } from "./_components/product-hero";
+import { ProductDisplay } from "./_components/product-display.client";
 import { notFound } from "next/navigation";
 import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import { generateProductMetadata } from "@/lib/metadata";
@@ -107,12 +105,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const cartResult = await getCartItems();
   const cartData = cartResult.success ? cartResult.data : null;
   const cartItems = cartData?.items ?? [];
-  const isInCart = cartItems.some(
-    (item: any) => item.productId === productWithCategory.id && !item.savedForLater
-  );
 
   const wishlistResult = await getWishlistItems();
-  const wishlistItems = wishlistResult.success ? (wishlistResult.data ?? []) : [];
+  const wishlistItems = wishlistResult.success
+    ? (wishlistResult.data ?? [])
+    : [];
   const wishlistItem = wishlistItems.find(
     (item: any) => item.productId === productWithCategory.id
   );
@@ -127,26 +124,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
       <section className="bg-white py-5 pb-10">
         <div className="container">
-          <div className="grid grid-cols-1 lg:grid-cols-2 md:gap-8 gap-5">
-            {/* Product images on left */}
-            <ProductHero product={productWithCategory} />
-            {/* Product details on right */}
-            <ProductDetails
-              product={productWithCategory}
-              isInCart={isInCart}
-              cartItemQuantity={
-                cartItems.find(
-                  (item: any) =>
-                    item.productId === productWithCategory.id && !item.savedForLater
-                )?.quantity || 0
-              }
-            />
-          </div>
+          <ProductDisplay product={productWithCategory} cartItems={cartItems} />
         </div>
       </section>
 
       <section>
-          <ProductTabs product={productWithCategory} user={user} />
+        <ProductTabs product={productWithCategory} user={user} />
       </section>
 
       {Array.isArray(productWithCategory.relatedProducts) &&

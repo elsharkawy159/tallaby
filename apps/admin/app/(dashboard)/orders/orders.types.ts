@@ -10,18 +10,24 @@ export interface Order {
   totalAmount: number;
   status:
     | "pending"
+    | "payment_processing"
     | "confirmed"
     | "shipping_soon"
     | "shipped"
     | "out_for_delivery"
     | "delivered"
-    | "cancelled";
+    | "cancelled"
+    | "refund_requested"
+    | "refunded"
+    | "returned";
   paymentStatus:
     | "pending"
+    | "authorized"
     | "paid"
     | "failed"
     | "refunded"
     | "partially_refunded";
+  paymentMethod?: string;
   orderItems: Array<{
     id: string;
     productName: string;

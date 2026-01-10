@@ -15,7 +15,7 @@ export type CheckoutFormData = z.infer<typeof checkoutFormSchema>;
 export const checkoutFormDefaults: Partial<CheckoutFormData> = {
   shippingAddressId: "",
   billingAddressId: "",
-  paymentMethod: "cash_on_delivery", // Default to cash on delivery
+  paymentMethod: "", // Default to cash on delivery
   couponCode: "",
   notes: "",
   isGift: false,

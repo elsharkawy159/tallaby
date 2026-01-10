@@ -131,7 +131,7 @@ export const CheckoutData = ({
         if (result.success) {
           toast.success("Order placed successfully!");
           // Redirect to order confirmation page
-          router.push(`/orders/${result.data?.order?.id}/confirmation`);
+          router.push(`/orders/${result.data?.order?.id}`);
         } else {
           toast.error(result.error || "Failed to place order");
         }

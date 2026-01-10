@@ -15,7 +15,7 @@ import { ProductActions } from "./ProductActions";
 import type { Product } from "./product-page.types";
 import { formatPrice } from "@workspace/lib";
 import { useLocale } from "next-intl";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Accordion,
   AccordionContent,
@@ -23,35 +23,79 @@ import {
   AccordionTrigger,
 } from "@workspace/ui/components";
 import Link from "next/link";
+import Image from "next/image";
+import { getPublicUrl } from "@workspace/ui/lib/utils";
 
 interface ProductDetailsProps {
   product: Product;
   isInCart?: boolean;
   cartItemQuantity?: number;
+  selectedVariantId?: string | null;
+  onVariantChange?: (variantId: string | null) => void;
 }
 
 export const ProductDetails = ({
   product,
   isInCart,
   cartItemQuantity,
+  selectedVariantId: externalSelectedVariantId,
+  onVariantChange,
 }: ProductDetailsProps) => {
   const locale = useLocale();
-  const [selectedColor, setSelectedColor] = useState(
-    (product as any).colors?.[0]?.name || ""
-  );
-  const [selectedSize, setSelectedSize] = useState(
-    (product as any).sizes?.[0] || ""
+
+  // Use internal state if props are not provided (backwards compatibility)
+  const [internalSelectedVariantId, setInternalSelectedVariantId] = useState<
+    string | null
+  >(
+    product.productVariants && product.productVariants.length > 0
+      ? (product.productVariants[0]?.id ?? null)
+      : null
   );
 
-  const price = Number(
-    (product.price as any)?.final ??
-      (product.price as any)?.current ??
-      (product.price as any)?.list ??
-      0
-  );
-  const listPrice = (product.price as any)?.list
-    ? Number((product.price as any).list)
-    : null;
+  const selectedVariantId =
+    externalSelectedVariantId ?? internalSelectedVariantId;
+  const setSelectedVariantId = onVariantChange ?? setInternalSelectedVariantId;
+
+  const selectedVariant = useMemo(() => {
+    if (!selectedVariantId || !product.productVariants) return null;
+    return (
+      product.productVariants.find((v) => v.id === selectedVariantId) ?? null
+    );
+  }, [selectedVariantId, product.productVariants]);
+
+  // Calculate price and stock based on selected variant or base product
+  const { price, listPrice, stock } = useMemo(() => {
+    if (selectedVariant) {
+      const variantPrice = Number(selectedVariant.price ?? 0);
+      const variantStock = Number(selectedVariant.stock ?? 0);
+      return {
+        price: variantPrice,
+        listPrice: null,
+        stock: variantStock,
+      };
+    }
+
+    const basePrice = Number(
+      (product.price as any)?.final ??
+        (product.price as any)?.current ??
+        (product.price as any)?.list ??
+        0
+    );
+    const baseListPrice = (product.price as any)?.list
+      ? Number((product.price as any).list)
+      : null;
+    const baseStock = product.quantity ? Number(product.quantity) : 0;
+
+    return {
+      price: basePrice,
+      listPrice: baseListPrice,
+      stock: baseStock,
+    };
+  }, [selectedVariant, product]);
+
+  const hasVariants =
+    product.productVariants && product.productVariants.length > 0;
+  const hasStock = product.isActive && stock > 0;
 
   return (
     <div className="space-y-6 w-full">
@@ -99,15 +143,101 @@ export const ProductDetails = ({
             </Link>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full" />
+            <div
+              className={`w-2 h-2 rounded-full ${
+                hasStock ? "bg-green-500" : "bg-red-500"
+              }`}
+            />
             <span className="text-sm font-medium text-gray-900">
-              {product.isActive ? "In stock" : "Out of stock"}
+              {hasStock ? `In stock (${stock} available)` : "Out of stock"}
             </span>
           </div>
         </div>
 
-        {/* Color Selection */}
-        {Array.isArray((product as any).colors) &&
+        {/* Variant Selection */}
+        {hasVariants && (
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-900 mb-3">
+              Select Variant
+            </label>
+            <div className="grid lg:grid-cols-2 grid-cols-1 gap-2">
+              {product.productVariants?.map((variant) => {
+                const isSelected = selectedVariantId === variant.id;
+                const variantStock = Number(variant.stock ?? 0);
+                const isAvailable = variantStock > 0;
+                // Build variant description from options
+                const optionParts: string[] = [];
+                if (variant.option1) optionParts.push(variant.option1);
+                if (variant.option2) optionParts.push(variant.option2);
+                if (variant.option3) optionParts.push(variant.option3);
+                const variantDescription = optionParts.join(" • ");
+
+                return (
+                  <button
+                    key={variant.id}
+                    onClick={() => setSelectedVariantId(variant.id)}
+                    disabled={!isAvailable}
+                    className={`p-2.5 border-2 cursor-pointer rounded-lg text-left transition-all ${
+                      isSelected
+                        ? "border-primary bg-primary/10"
+                        : isAvailable
+                          ? "border-gray-300 hover:border-gray-400 bg-white"
+                          : "border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed opacity-60"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 justify-between">
+                      {variant.imageUrl && (
+                        <Image
+                          src={getPublicUrl(variant.imageUrl, "products")}
+                          alt={`${variant.title} image`}
+                          width={100}
+                          height={100}
+                          className="w-10"
+                        />
+                      )}
+                      <div className="flex-1">
+                        <p
+                          className={`text-sm font-medium ${
+                            isSelected ? "text-gray-900" : "text-gray-700"
+                          }`}
+                        >
+                          {variant.title}
+                        </p>
+                      </div>
+                      <div className="text-right ml-4">
+                        <p
+                          className={`text-sm font-semibold ${
+                            isSelected ? "text-gray-900" : "text-gray-700"
+                          }`}
+                          dangerouslySetInnerHTML={{
+                            __html: formatPrice(
+                              Number(variant.price ?? 0),
+                              locale,
+                              "sm"
+                            ),
+                          }}
+                        />
+                        <p
+                          className={`text-xs mt-1 ${
+                            isAvailable ? "text-green-600" : "text-red-500"
+                          }`}
+                        >
+                          {isAvailable
+                            ? `${variantStock} in stock`
+                            : "Out of stock"}
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Legacy Color Selection (fallback) */}
+        {!hasVariants &&
+          Array.isArray((product as any).colors) &&
           (product as any).colors.length > 0 && (
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-900 mb-3">
@@ -117,12 +247,7 @@ export const ProductDetails = ({
                 {(product as any).colors.map((color: any) => (
                   <button
                     key={color.name}
-                    onClick={() => setSelectedColor(color.name)}
-                    className={`w-10 h-10 rounded-full border-2 transition-all ${
-                      selectedColor === color.name
-                        ? "border-gray-900 scale-110"
-                        : "border-gray-300 hover:border-gray-400"
-                    }`}
+                    className="w-10 h-10 rounded-full border-2 border-gray-300 hover:border-gray-400 transition-all"
                     style={{ backgroundColor: color.hex }}
                     title={color.name}
                     aria-label={`Select color ${color.name}`}
@@ -132,8 +257,9 @@ export const ProductDetails = ({
             </div>
           )}
 
-        {/* Size Selection */}
-        {Array.isArray((product as any).sizes) &&
+        {/* Legacy Size Selection (fallback) */}
+        {!hasVariants &&
+          Array.isArray((product as any).sizes) &&
           (product as any).sizes.length > 0 && (
             <div className="mb-6">
               <div className="flex items-center justify-between mb-3">
@@ -151,12 +277,7 @@ export const ProductDetails = ({
                 {(product as any).sizes.map((size: any) => (
                   <button
                     key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`px-4 py-2 border-2 rounded transition-all text-sm font-medium ${
-                      selectedSize === size
-                        ? "border-gray-900 bg-gray-900 text-white"
-                        : "border-gray-300 hover:border-gray-400 bg-white text-gray-900"
-                    }`}
+                    className="px-4 py-2 border-2 border-gray-300 hover:border-gray-400 rounded transition-all text-sm font-medium bg-white text-gray-900"
                   >
                     {size}
                   </button>
@@ -168,7 +289,15 @@ export const ProductDetails = ({
         {/* Quantity and Add to Cart */}
         <div className="mb-6">
           <ProductActions
-            product={product}
+            product={{
+              ...product,
+              quantity: stock.toString(),
+              price: {
+                final: price,
+                list: listPrice ?? price,
+              } as any,
+            }}
+            selectedVariantId={selectedVariantId}
             className="flex gap-4 items-center"
             isInCart={isInCart}
             cartItemQuantity={cartItemQuantity}

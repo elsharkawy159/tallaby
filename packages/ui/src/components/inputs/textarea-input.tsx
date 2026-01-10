@@ -104,7 +104,7 @@ export function TextareaInput<TFieldValues extends FieldValues>({
                   }}
                   onFocus={onFocus}
                   className={cn(
-                    "h-auto rounded-lg",
+                    "h-auto rounded-lg bg-white",
                     resizeClass,
                     showCharacterCount && validation?.maxLength && "pb-6",
                     readOnly && "cursor-not-allowed bg-gray-100",

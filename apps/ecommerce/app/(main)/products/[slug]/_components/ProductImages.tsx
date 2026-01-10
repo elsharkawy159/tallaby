@@ -1,7 +1,7 @@
 "use client";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
 import Image from "next/image";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { MobileImageCarousel } from "./mobile-image-carousel";
 
 interface ProductImagesProps {
@@ -15,6 +15,13 @@ export const ProductImages = ({ images, productName }: ProductImagesProps) => {
   const [showZoom, setShowZoom] = useState(false);
   const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
   const mainImageRef = useRef<HTMLDivElement>(null);
+
+  // Auto-select the first image when images array changes
+  useEffect(() => {
+    if (images.length > 0 && images[0]) {
+      setSelectedImage(images[0]);
+    }
+  }, [images[0]]); // Track the first image to auto-select when variant changes
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!mainImageRef.current) return;

@@ -11,7 +11,7 @@ export const addProductFormSchema = z.object({
   categoryId: z.string().min(1, "Main category is required"),
   brandId: z.string().optional(),
 
-  sku: z.string().min(1, "SKU is required"),
+  sku: z.string().optional(),
   quantity: z.number().int().min(0).default(0),
   maxOrderQuantity: z.number().int().optional(),
 
@@ -29,7 +29,7 @@ export const addProductFormSchema = z.object({
   images: z.array(z.string()).min(1, "At least one product image is required"),
 
   price: z.object({
-    base: z.number().min(0.01, "Base price must be greater than 0"),
+    base: z.number().min(0.01, "Base price must be greater than 0").optional(),
     list: z.number().min(0.01, "List price must be greater than 0"),
     discountValue: z.number().optional(),
     discountType: z.enum(["amount", "percent"]).default("amount").optional(),
@@ -81,7 +81,7 @@ export const addProductFormSchema = z.object({
         sku: z.string().min(1, "Variant SKU is required").max(100),
         price: z.number().min(0.01, "Price must be greater than 0"),
         stock: z.number().int().min(0).default(0),
-        imageUrl: z.string().url().optional(),
+        imageUrl: z.string().optional(),
         option1: z.string().optional(),
         option2: z.string().optional(),
         option3: z.string().optional(),
@@ -92,7 +92,7 @@ export const addProductFormSchema = z.object({
     .optional(),
 });
 
-export const defaultValues: Partial<AddProductFormData> = {
+export const defaultValues = {
   title: "",
   slug: "",
   description: "",
@@ -112,21 +112,20 @@ export const defaultValues: Partial<AddProductFormData> = {
   },
   images: [],
   price: {
-    base: undefined as unknown as number,
     list: undefined as unknown as number,
     discountValue: undefined,
-    discountType: "percent",
+    discountType: "percent" as const,
     final: undefined as unknown as number,
   },
-  condition: "new",
+  condition: "new" as const,
   conditionDescription: "",
-  fulfillmentType: "platform_fulfilled",
+  fulfillmentType: "platform_fulfilled" as const,
   handlingTime: 1,
   isActive: false,
   isPlatformChoice: false,
   isMostSelling: false,
   isFeatured: false,
-  taxClass: "standard",
+  taxClass: "standard" as const,
   seo: {
     metaTitle: "",
     metaDescription: "",

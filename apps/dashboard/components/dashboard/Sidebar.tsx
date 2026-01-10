@@ -18,7 +18,6 @@ import {
   UserIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
 import { Button } from "@workspace/ui/components/button";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
@@ -26,6 +25,7 @@ import { useTranslations } from "next-intl";
 import { ScrollArea, ScrollBar } from "@workspace/ui/components/scroll-area";
 import { useSiteData } from "@/providers/site-data";
 import { Avatar, AvatarFallback, AvatarImage } from "@workspace/ui/components";
+import { useSidebarStore } from "@/stores";
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -34,8 +34,8 @@ interface SidebarProps {
 
 export const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
   const t = useTranslations();
-  const [isCollapsed, setIsCollapsed] = useState(false);
   const { seller } = useSiteData();
+  const { isCollapsed, toggleCollapse } = useSidebarStore();
   console.log("seller", seller);
 
   const navigationItems = [
@@ -64,7 +64,7 @@ export const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
         <SidebarContent
           navigationItems={navigationItems}
           isCollapsed={isCollapsed}
-          onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
+          onToggleCollapse={toggleCollapse}
           seller={seller.data}
         />
       </aside>
@@ -130,9 +130,16 @@ const SidebarContent = ({
       {!isCollapsed && (
         <div className="flex flex-col items-center py-5 px-6 border-b border-primary-foreground/20">
           <Avatar className="size-30">
-            <AvatarImage src={seller?.logoUrl || ""} alt={`${seller?.businessName} logo`} />
+            <AvatarImage
+              src={seller?.logoUrl || ""}
+              alt={`${seller?.businessName} logo`}
+            />
             <AvatarFallback className="bg-primary text-white font-semibold">
-              {seller?.businessName ? seller?.businessName?.[0] : <UserIcon className="h-10 w-10" />}
+              {seller?.businessName ? (
+                seller?.businessName?.[0]
+              ) : (
+                <UserIcon className="h-10 w-10" />
+              )}
             </AvatarFallback>
           </Avatar>
           <h2 className="text-white font-semibold text-lg mb-1 mt-4">
@@ -158,7 +165,13 @@ const SidebarContent = ({
       {isCollapsed && (
         <div className="flex flex-col items-center py-4 px-2 border-b border-primary-foreground/20">
           <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-            <span className="text-white text-sm font-bold">{seller?.businessName ? seller?.businessName?.[0] : <UserIcon className="h-4 w-4" />}</span>
+            <span className="text-white text-sm font-bold">
+              {seller?.businessName ? (
+                seller?.businessName?.[0]
+              ) : (
+                <UserIcon className="h-4 w-4" />
+              )}
+            </span>
           </div>
         </div>
       )}

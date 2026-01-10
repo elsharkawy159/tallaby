@@ -1,7 +1,7 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, Package } from "lucide-react";
+import { MoreHorizontal, Package, CreditCard } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
 import { Badge } from "@workspace/ui/components/badge";
 import {
@@ -11,6 +11,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
 } from "@workspace/ui/components/dropdown-menu";
 import Link from "next/link";
 import { Order } from "../orders.types";
@@ -25,8 +28,23 @@ import {
   getItemsCount,
 } from "../orders.lib";
 
+const ORDER_STATUSES = [
+  "pending",
+  "payment_processing",
+  "confirmed",
+  "shipping_soon",
+  "shipped",
+  "out_for_delivery",
+  "delivered",
+  "cancelled",
+  "refund_requested",
+  "refunded",
+  "returned",
+] as const;
+
 export function getOrdersColumns(
-  onAction?: (orderId: string, action: string) => void
+  onAction?: (orderId: string, action: string) => void,
+  onPaymentStatusChange?: (orderId: string, paymentStatus: string) => void
 ): ColumnDef<Order>[] {
   return [
     {
@@ -131,7 +149,7 @@ export function getOrdersColumns(
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuItem asChild>
                 <Link href={`/orders/${order.id}`} className="w-full">
@@ -145,25 +163,40 @@ export function getOrdersColumns(
               </DropdownMenuItem>
               <DropdownMenuSeparator />
 
-              {order.status === "pending" && onAction && (
-                <DropdownMenuItem onClick={() => onAction(order.id, "confirm")}>
-                  Confirm Order
-                </DropdownMenuItem>
-              )}
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>Change Status</DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                  {ORDER_STATUSES.map((status) => (
+                    <DropdownMenuItem
+                      key={status}
+                      onClick={() => onAction?.(order.id, status)}
+                      disabled={order.status === status}
+                    >
+                      {getStatusLabel(status)}
+                      {order.status === status && (
+                        <span className="ml-auto">✓</span>
+                      )}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
 
-              {(order.status === "confirmed" ||
-                order.status === "shipping_soon") &&
-                onAction && (
-                  <DropdownMenuItem onClick={() => onAction(order.id, "ship")}>
-                    Mark as Shipped
-                  </DropdownMenuItem>
+              {order.paymentMethod === "online" &&
+                order.paymentStatus !== "paid" &&
+                onPaymentStatusChange && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() =>
+                        onPaymentStatusChange(order.id, "paid")
+                      }
+                      className="text-green-600"
+                    >
+                      <CreditCard className="mr-2 h-4 w-4" />
+                      Mark Payment as Paid
+                    </DropdownMenuItem>
+                  </>
                 )}
-
-              {order.status === "shipped" && onAction && (
-                <DropdownMenuItem onClick={() => onAction(order.id, "deliver")}>
-                  Mark as Delivered
-                </DropdownMenuItem>
-              )}
 
               {order.status !== "cancelled" &&
                 order.status !== "delivered" &&
@@ -172,7 +205,7 @@ export function getOrdersColumns(
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       className="text-red-600"
-                      onClick={() => onAction(order.id, "cancel")}
+                      onClick={() => onAction(order.id, "cancelled")}
                     >
                       Cancel Order
                     </DropdownMenuItem>

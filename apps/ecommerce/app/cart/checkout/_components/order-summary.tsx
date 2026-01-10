@@ -4,6 +4,7 @@ import { Separator } from "@workspace/ui/components/separator";
 import { formatPrice } from "@workspace/lib";
 import { useLocale } from "next-intl";
 import type { ReactNode } from "react";
+import { formatVariantTitle } from "@/lib/variant-utils";
 
 interface OrderSummaryProps {
   checkoutData: {
@@ -12,6 +13,7 @@ interface OrderSummaryProps {
         id: string;
         quantity: number;
         price: string | number;
+        variant?: any;
         product: {
           id: string;
           title: string;
@@ -48,6 +50,8 @@ export function OrderSummary({ checkoutData, children }: OrderSummaryProps) {
           {cart.cartItems.map((item) => {
             const unit = Number(item.price) ?? 0;
             const lineTotal = unit * item.quantity;
+            const variant = item.variant as any;
+            const variantTitle = variant ? formatVariantTitle(variant) : null;
             return (
               <div
                 key={item.id}
@@ -57,6 +61,11 @@ export function OrderSummary({ checkoutData, children }: OrderSummaryProps) {
                   <p className="text-xs md:text-sm font-medium text-gray-900 truncate">
                     {item.product.title}
                   </p>
+                  {variantTitle && (
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {variantTitle}
+                    </p>
+                  )}
                   <p className="text-xs text-muted-foreground mt-0.5">
                     Qty: {item.quantity}
                     {" × "}
