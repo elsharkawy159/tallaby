@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { handle } from "@hono/node-server/vercel";
-import emails from "../src/routes/emails";
-import { internalApiAuth } from "../src/lib/middleware";
+import emails from "../routes/emails";
+import { internalApiAuth } from "../lib/middleware";
 import { cors } from "hono/cors";
 
 const app = new Hono().basePath("/api");
