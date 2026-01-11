@@ -17,6 +17,7 @@ app.post("/welcome", async (c) => {
       return c.json({ error: "Invalid name" }, 400);
     }
 
+    
     await sendEmail({
       to: email,
       subject: "Welcome to our Marketplace 🎉",

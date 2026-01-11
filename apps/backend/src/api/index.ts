@@ -23,7 +23,9 @@ app.use("*", async (c, next) => {
 });
 
 // Routes
+
 app.route("/emails", emails);
 
 // 🚨 THIS IS THE MOST IMPORTANT LINE
 export default handle(app);
+
