@@ -6,7 +6,15 @@ const adminMail =
   `${process.env.EMAIL_FROM_NAME} <${process.env.EMAIL_FROM}>` ||
   "Tallaby <info@tallaby.com>";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+function getResendClient() {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    throw new Error(
+      "RESEND_API_KEY environment variable is not set. Please configure it in your environment."
+    );
+  }
+  return new Resend(apiKey);
+}
 
 export async function sendEmail({
   to,
@@ -18,6 +26,7 @@ export async function sendEmail({
   content: ReactElement;
 }): Promise<void> {
   try {
+    const resend = getResendClient();
     const html = await render(content);
 
     const response = await resend.emails.send({
