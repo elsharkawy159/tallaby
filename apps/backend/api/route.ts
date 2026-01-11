@@ -3,7 +3,8 @@ import { handle } from "@hono/node-server/vercel";
 import emails from "../src/routes/emails.js";
 import { internalApiAuth } from "../src/lib/middleware.js";
 
-const app = new Hono();
+const app = new Hono().basePath("/api");
+
 
 // Homepage (works on Vercel)
 app.get("/", (c) => {
@@ -23,5 +24,7 @@ app.use("*", async (c, next) => {
 // Routes
 app.route("/emails", emails);
 
-// 🚨 THIS IS THE MOST IMPORTANT LINE
-export default handle(app);
+export const GET = handle(app);
+export const POST = handle(app);
+export const PUT = handle(app);
+export const DELETE = handle(app);

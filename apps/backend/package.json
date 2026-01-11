@@ -2,7 +2,7 @@
   "name": "backend",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch api/index.ts",
+    "dev": "tsx watch api/route.ts",
     "build": "tsc"
   },
   "dependencies": {
