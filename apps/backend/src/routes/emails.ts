@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { sendEmail } from "../lib/sender.js";
+import { sendEmail } from "../lib/sender";
 import { WelcomeEmail } from "@workspace/emails";
 
 const app = new Hono();
