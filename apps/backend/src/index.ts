@@ -6,8 +6,18 @@ import { internalApiAuth } from "./lib/middleware.js";
 
 const app = new Hono();
 
-// Apply internal API auth middleware to all routes
-app.use("*", internalApiAuth());
+// Add a homepage route with a welcome message
+app.get("/", (c) => {
+  return c.json({ message: "Welcome to the Multi-Vendor E-commerce API Backend!" });
+});
+
+// Apply internal API auth middleware to all routes except homepage
+app.use("*", (c, next) => {
+  if (c.req.path === "/") {
+    return next();
+  }
+  return internalApiAuth()(c, next);
+});
 
 app.route("/emails", emails);
 
