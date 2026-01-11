@@ -13,6 +13,7 @@ import {
 } from "@react-email/components";
 import React from "react";
 
+
 interface WelcomeEmailProps {
   customerName?: string;
   discountCode?: string;

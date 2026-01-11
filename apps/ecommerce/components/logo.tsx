@@ -3,6 +3,7 @@ import { LogoProps } from "./layout/header.types";
 import Image from "next/image";
 
 export const Logo = ({ className, color = "white" }: LogoProps) => {
+  
   return (
     <Link href="/" className={className}>
       <Image
