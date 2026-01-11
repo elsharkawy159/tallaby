@@ -4,6 +4,7 @@ export interface HeaderProps {
 
 export interface LogoProps {
   className?: string;
+  color?: "white" | "primary" | "secondary";
 }
 
 export interface SearchBarProps {
