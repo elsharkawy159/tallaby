@@ -4,7 +4,7 @@ import emails from "../src/routes/emails";
 import { internalApiAuth } from "../src/lib/middleware";
 import { cors } from "hono/cors";
 
-const app = new Hono();
+const app = new Hono().basePath("/api");
 app.use("/*", cors());
 
 // Homepage (works on Vercel)
