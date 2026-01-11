@@ -15,7 +15,6 @@ app.get("/", (c) => {
 });
 
 // Apply internal API auth middleware to all routes except homepage
-
 app.use("*", async (c, next) => {
   if (c.req.path === "/") {
     return next();
