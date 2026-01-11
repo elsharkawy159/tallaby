@@ -1,14 +1,16 @@
 import "dotenv/config";
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
-import emails from "./routes/emails.js";
-import { internalApiAuth } from "./lib/middleware.js";
+import emails from "../src/routes/emails.js";
+import { internalApiAuth } from "../src/lib/middleware.js";
 
 const app = new Hono();
 
 // Add a homepage route with a welcome message
 app.get("/", (c) => {
-  return c.json({ message: "Welcome to the Multi-Vendor E-commerce API Backend!" });
+  return c.json({
+    message: "Welcome to the Multi-Vendor E-commerce API Backend!",
+  });
 });
 
 // Apply internal API auth middleware to all routes except homepage
