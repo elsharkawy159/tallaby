@@ -93,7 +93,7 @@ export const ProductImages = ({ images, productName }: ProductImagesProps) => {
 
           {/* Magnified view - only on larger screens */}
           {showZoom && (
-            <div className="absolute left-full top-0 ml-2 w-[30vw] h-auto aspect-square bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden pointer-events-none z-10 hidden xl:block">
+            <div className="absolute left-full rtl:right-full top-0 ml-2 w-[30vw] h-auto aspect-square bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden pointer-events-none z-10 hidden xl:block">
               <div
                 className="w-full h-full bg-cover bg-no-repeat"
                 style={{

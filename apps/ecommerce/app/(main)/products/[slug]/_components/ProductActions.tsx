@@ -52,9 +52,7 @@ export const ProductActions = ({
           <p className="text-red-600 font-medium text-sm">
             {t("currentlyOutOfStock")}
           </p>
-          <p className="text-red-500 text-xs">
-            {t("notifyWhenBack")}
-          </p>
+          <p className="text-red-500 text-xs">{t("notifyWhenBack")}</p>
         </div>
       )}
 
@@ -63,7 +61,8 @@ export const ProductActions = ({
         {isInCartStatus ? (
           <Button asChild className="w-full h-12 text-base" size="lg">
             <Link href="/cart">
-              {t("goToCart")} <ChevronRight className="h-4 w-4 rtl:rotate-180" />
+              {t("goToCart")}{" "}
+              <ChevronRight className="h-4 w-4 rtl:rotate-180" />
             </Link>
           </Button>
         ) : (

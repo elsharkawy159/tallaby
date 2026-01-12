@@ -6,6 +6,7 @@ import { CheckoutData } from "./_components/checkout.data";
 import { generateNoIndexMetadata } from "@/lib/metadata";
 import type { Metadata } from "next";
 import { getAddresses } from "@/actions/customer";
+import { getTranslations } from "next-intl/server";
 
 export const metadata: Metadata = generateNoIndexMetadata();
 
@@ -14,19 +15,20 @@ export default async function Checkout() {
   const addressesResult = await getAddresses();
   const addresses = addressesResult.success ? (addressesResult.data ?? []) : [];
   const defaultAddress = addresses.find((addr: any) => addr.isDefault) ?? null;
+  const t = await getTranslations("checkout");
 
   if (!result.success || !result.data) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-linear-to-b from-gray-50 to-white">
         <div className="text-center">
           <h1 className="text-xl md:text-2xl font-bold mb-2">
-            Checkout unavailable
+            {t("checkoutUnavailable")}
           </h1>
           <p className="text-xs md:text-sm text-gray-600 mb-6">
-            {result.error || "Please sign in and add items to your cart."}
+            {result.error || t("pleaseSignIn")}
           </p>
           <Button asChild>
-            <Link href="/products">Continue Shopping</Link>
+            <Link href="/products">{t("continueShopping")}</Link>
           </Button>
         </div>
       </div>
@@ -42,10 +44,10 @@ export default async function Checkout() {
         {/* Header Section */}
         <div className="mb-6 md:mb-8">
           <h1 className="text-xl md:text-3xl font-bold tracking-tight mb-1 md:mb-2">
-            Checkout
+            {t("checkout")}
           </h1>
           <p className="text-xs md:text-lg text-muted-foreground">
-            Complete your order details
+            {t("completeOrderDetails")}
           </p>
         </div>
 

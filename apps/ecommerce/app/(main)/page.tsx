@@ -30,7 +30,6 @@ const HomePage = async () => {
     <div className="min-h-screen">
       <Hero />
 
-
       <ProductsGrid
         title={t("featuredProducts")}
         filters={{
@@ -39,14 +38,13 @@ const HomePage = async () => {
         }}
       />
 
-
       {/* <CategoryCarousel
         title="Browse Categories"
         limit={8}
         className="bg-gray-50"
       /> */}
 
-        {/* <ProductSection
+      {/* <ProductSection
           title="🔥 Offers"
           description="What Everyone's Talking About"
           filters={{
@@ -144,8 +142,6 @@ const HomePage = async () => {
       {/* <FeaturesSection />
 
       <VendorRecruitment /> */}
-
-
     </div>
   );
 };

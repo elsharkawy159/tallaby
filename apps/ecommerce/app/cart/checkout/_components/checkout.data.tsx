@@ -27,7 +27,7 @@ import { useForm } from "react-hook-form";
 import {
   CheckoutFormData,
   checkoutFormDefaults,
-  checkoutFormSchema,
+  createCheckoutFormSchema,
 } from "./checkout-form.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createOrder } from "@/actions/order";
@@ -41,37 +41,7 @@ import { Button } from "@workspace/ui/components/button";
 import { Label } from "@workspace/ui/components/label";
 import { Textarea } from "@workspace/ui/components/textarea";
 import { Info } from "lucide-react";
-
-const paymentMethods = [
-  {
-    id: "cash_on_delivery",
-    value: "cash_on_delivery",
-    title: "Cash on Delivery",
-    description: "Pay when your order is delivered to your doorstep.",
-    enabled: true,
-  },
-  {
-    id: "online_payment",
-    value: "online_payment",
-    title: "Online Payment",
-    description: "You will be contacted by us to complete the payment.",
-    enabled: true,
-  },
-  // {
-  //   id: "wallet",
-  //   value: "wallet",
-  //   title: "Wallet",
-  //   description: "Vodafone Cash",
-  //   enabled: true,
-  // },
-  // {
-  //   id: "bank_transfer",
-  //   value: "bank_transfer",
-  //   title: "Bank Transfer",
-  //   description: "Instapay",
-  //   enabled: true,
-  // },
-];
+import { useMemo } from "react";
 
 export const CheckoutData = ({
   checkoutData,
@@ -95,6 +65,14 @@ export const CheckoutData = ({
   const activeAddress =
     selectedAddress || defaultAddress || addresses[0] || null;
 
+  const t = useTranslations("checkout");
+  const tToast = useTranslations("toast");
+
+  const checkoutFormSchema = useMemo(
+    () => createCheckoutFormSchema((key: string) => t(key as any)),
+    [t]
+  );
+
   const form = useForm<CheckoutFormData>({
     resolver: zodResolver(checkoutFormSchema),
     defaultValues: {
@@ -115,7 +93,37 @@ export const CheckoutData = ({
     }
   }, [selectedAddress?.id, defaultAddress?.id, addresses, form, activeAddress]);
 
-  const t = useTranslations("toast");
+  const paymentMethods = [
+    {
+      id: "cash_on_delivery",
+      value: "cash_on_delivery",
+      title: t("cashOnDelivery"),
+      description: t("cashOnDeliveryDescription"),
+      enabled: true,
+    },
+    {
+      id: "online_payment",
+      value: "online_payment",
+      title: t("onlinePayment"),
+      description: t("onlinePaymentDescription"),
+      enabled: true,
+    },
+    // {
+    //   id: "wallet",
+    //   value: "wallet",
+    //   title: "Wallet",
+    //   description: "Vodafone Cash",
+    //   enabled: true,
+    // },
+    // {
+    //   id: "bank_transfer",
+    //   value: "bank_transfer",
+    //   title: "Bank Transfer",
+    //   description: "Instapay",
+    //   enabled: true,
+    // },
+  ];
+
   const handleSubmit = (data: CheckoutFormData) => {
     startTransition(async () => {
       try {
@@ -131,15 +139,15 @@ export const CheckoutData = ({
         });
 
         if (result.success) {
-          toast.success("Order placed successfully!");
+          toast.success(tToast("orderPlacedSuccessfully"));
           // Redirect to order confirmation page
           router.push(`/orders/${result.data?.order?.id}`);
         } else {
-          toast.error(result.error || "Failed to place order");
+          toast.error(result.error || tToast("failedToPlaceOrder"));
         }
       } catch (error) {
         console.error("Checkout submission error:", error);
-        toast.error("Something went wrong. Please try again.");
+        toast.error(tToast("somethingWentWrong"));
       }
     });
   };
@@ -171,8 +179,7 @@ export const CheckoutData = ({
             <Card className="rounded-xl md:rounded-2xl border border-gray-200 overflow-hidden pt-0">
               <div className="bg-linear-to-r from-gray-50 to-gray-100 px-4 md:px-6 py-3 md:py-5 border-b border-gray-200">
                 <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-gray-900">
-                  <CreditCard className="h-4 w-4 md:h-5 md:w-5" /> Payment
-                  Method
+                  <CreditCard className="h-4 w-4 md:h-5 md:w-5" /> {t("paymentMethod")}
                 </CardTitle>
               </div>
               <CardContent>
@@ -219,7 +226,7 @@ export const CheckoutData = ({
                                       {method.title}
                                       {!method.enabled && (
                                         <span className="ml-2 text-xs text-orange-600 font-normal">
-                                          (Soon)
+                                          ({t("soon")})
                                         </span>
                                       )}
                                     </FieldTitle>
@@ -248,7 +255,7 @@ export const CheckoutData = ({
               <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-4 md:px-6 py-3 md:py-5 border-b border-gray-200">
                 <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-gray-900">
                   <Info className="h-4 w-4 md:h-5 md:w-5" />
-                  Order Details
+                  {t("orderDetails")}
                 </CardTitle>
               </div>
               <CardContent>
@@ -258,7 +265,7 @@ export const CheckoutData = ({
                     htmlFor="notes"
                     className="text-xs md:text-sm font-medium text-gray-700"
                   >
-                    Order Notes (Optional)
+                    {t("orderNotes")}
                   </Label>
                   <FormField
                     control={form.control as any}
@@ -267,7 +274,7 @@ export const CheckoutData = ({
                       <Textarea
                         {...field}
                         id="notes"
-                        placeholder="Any special instructions for your order..."
+                        placeholder={t("specialInstructions")}
                         rows={4}
                         className="w-full resize-none"
                       />
@@ -292,7 +299,7 @@ export const CheckoutData = ({
                 className="w-full h-10 md:h-12 text-xs md:text-base font-semibold transition-all duration-200"
                 disabled={isPending || !form.formState.isValid}
               >
-                {isPending ? "Placing Order..." : "Place Order"}
+                {isPending ? t("placingOrder") : t("placeOrder")}
               </Button>
 
               <Link href="/cart">
@@ -301,7 +308,7 @@ export const CheckoutData = ({
                   className="w-full h-9 md:h-11 text-xs md:text-sm border-2 hover:bg-gray-50 transition-colors"
                 >
                   <ArrowLeft className="h-3 w-3 md:h-4 md:w-4 mr-2" />
-                  Back to Cart
+                  {t("backToCart")}
                 </Button>
               </Link>
             </OrderSummary>

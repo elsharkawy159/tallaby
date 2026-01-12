@@ -1,16 +1,16 @@
 import { z } from "zod";
 
-export const checkoutFormSchema = z.object({
-  shippingAddressId: z.string().min(1, "Shipping address is required"),
+export const createCheckoutFormSchema = (t: (key: string) => string) => z.object({
+  shippingAddressId: z.string().min(1, t("shippingAddressRequired")),
   billingAddressId: z.string().optional(),
-  paymentMethod: z.string().min(1, "Payment method is required"),
+  paymentMethod: z.string().min(1, t("paymentMethodRequired")),
   couponCode: z.string().optional(),
   notes: z.string().optional(),
   isGift: z.boolean().optional(),
   giftMessage: z.string().optional(),
 });
 
-export type CheckoutFormData = z.infer<typeof checkoutFormSchema>;
+export type CheckoutFormData = z.infer<ReturnType<typeof createCheckoutFormSchema>>;
 
 export const checkoutFormDefaults: Partial<CheckoutFormData> = {
   shippingAddressId: "",

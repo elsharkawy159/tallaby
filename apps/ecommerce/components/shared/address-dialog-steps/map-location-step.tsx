@@ -371,7 +371,7 @@ export const MapLocationStep = ({
             <Button
               onClick={() => searchLocation(searchQuery)}
               disabled={isSearching || !searchQuery.trim()}
-              className="gap-2 h-8 absolute rounded-md right-1 top-1"
+              className="gap-2 h-8 absolute rounded-md rtl:left-1 ltr:right-1 top-1"
               type="button"
               size="sm"
             >
