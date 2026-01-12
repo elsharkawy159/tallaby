@@ -11,6 +11,7 @@ import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { Logo } from "../logo";
 import { getTranslations } from "next-intl/server";
+import { InstallAppButton } from "../install-app-button";
 
 const Footer = async () => {
   const t = await getTranslations("footer");
@@ -63,6 +64,11 @@ const Footer = async () => {
                   {t("email")}
                 </a>
               </div>
+            </div>
+
+            {/* Install App Button */}
+            <div className="mt-6">
+              <InstallAppButton />
             </div>
           </div>
 

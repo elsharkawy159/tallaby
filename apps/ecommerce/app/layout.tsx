@@ -74,7 +74,7 @@ export const metadata: Metadata = {
   icons: {
     icon: [{ url: "/favicon.png", sizes: "any" }],
   },
-  manifest: "/manifest.ts",
+  manifest: "/manifest.webmanifest",
   alternates: {
     canonical: "https://www.tallaby.com",
     languages: {

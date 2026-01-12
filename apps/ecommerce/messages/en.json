@@ -591,5 +591,9 @@
     "failedToDeleteAddress": "Failed to delete address",
     "referralCodeGeneratedSuccessfully": "Referral code generated successfully!",
     "profileUpdatedSuccessfully": "Profile updated successfully!"
+  },
+  "installApp": {
+    "installApp": "Install App",
+    "installAppError": "To install the app:\n\n1. Tap the Share icon\n2. Choose \"Add to Home Screen\""
   }
 }

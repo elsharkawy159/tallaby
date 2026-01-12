@@ -243,28 +243,28 @@ export async function createOrder(data: {
         .where(eq(coupons.id, appliedCoupon.id));
     }
 
-    // Update product quantities and variant stock
-    for (const item of cart.cartItems) {
-      const variant = item.variant as any;
+    // // Update product quantities and variant stock
+    // for (const item of cart.cartItems) {
+    //   const variant = item.variant as any;
 
-      // Update variant stock if item has a variant
-      if (variant?.id) {
-        await db
-          .update(productVariants)
-          .set({
-            stock: sql`${productVariants.stock} - ${item.quantity}`,
-          })
-          .where(eq(productVariants.id, variant.id));
-      } else {
-        // Update product stock if no variant
-        await db
-          .update(products)
-          .set({
-            quantity: sql`${products.quantity} - ${item.quantity}`,
-          })
-          .where(eq(products.id, item.productId));
-      }
-    }
+    //   // Update variant stock if item has a variant
+    //   if (variant?.id) {
+    //     await db
+    //       .update(productVariants)
+    //       .set({
+    //         stock: sql`${productVariants.stock} - ${item.quantity}`,
+    //       })
+    //       .where(eq(productVariants.id, variant.id));
+    //   } else {
+    //     // Update product stock if no variant
+    //     await db
+    //       .update(products)
+    //       .set({
+    //         quantity: sql`${products.quantity} - ${item.quantity}`,
+    //       })
+    //       .where(eq(products.id, item.productId));
+    //   }
+    // }
 
     // Clear cart
     await db

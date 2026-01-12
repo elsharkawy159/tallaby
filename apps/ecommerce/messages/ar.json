@@ -591,5 +591,9 @@
     "failedToDeleteAddress": "فشل حذف العنوان",
     "referralCodeGeneratedSuccessfully": "تم إنشاء رمز الإحالة بنجاح!",
     "profileUpdatedSuccessfully": "تم تحديث الملف الشخصي بنجاح!"
+  },
+  "installApp": {
+    "installApp": "تثبيت التطبيق",
+    "installAppError": "لتثبيت التطبيق:\n\n1. اضغط على زر المشاركة\n2. اختر \"إضافة إلى الشاشة الرئيسية\""
   }
 }
