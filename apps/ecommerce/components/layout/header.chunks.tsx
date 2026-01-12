@@ -21,7 +21,7 @@ export const BecomeSellerButton = ({
         href={
           user?.user_metadata?.is_seller
             ? "https://dashboard.tallaby.com/"
-            : "/onboarding"
+            : "/auth?redirect=/onboarding"
         }
         target={user?.user_metadata?.is_seller ? "_blank" : "_self"}
       >

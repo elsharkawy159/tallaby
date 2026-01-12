@@ -127,7 +127,7 @@ export function AddressesClient({ initialAddresses }: AddressesClientProps) {
       )}
 
       {/* Add Address Hint */}
-      {addresses.length > 0 && addresses.length < 10 && (
+      {/* {addresses.length > 0 && addresses.length < 10 && (
         <Card className="border-dashed">
           <CardContent className="flex items-center justify-center py-8">
             <div className="text-center space-y-2">
@@ -141,7 +141,7 @@ export function AddressesClient({ initialAddresses }: AddressesClientProps) {
             </div>
           </CardContent>
         </Card>
-      )}
+      )} */}
     </div>
   );
 }

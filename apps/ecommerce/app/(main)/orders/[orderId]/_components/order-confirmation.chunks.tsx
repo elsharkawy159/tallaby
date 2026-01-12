@@ -26,17 +26,67 @@ import { formatPrice } from "@workspace/lib";
 import { OrderStatusTracker } from "./order-status-tracker";
 import { OrderItemRow } from "./order-item-row";
 import { cn } from "@/lib/utils";
+import { getTranslations } from "next-intl/server";
 
 interface OrderConfirmationContentProps {
   data: OrderConfirmationData;
   locale: string;
 }
 
-export function OrderConfirmationContent({
+export async function OrderConfirmationContent({
   data,
   locale,
 }: OrderConfirmationContentProps) {
+  const t = await getTranslations("orders");
   const { order, orderItems, shippingAddress, summary } = data;
+
+  const getStatusLabel = (status: string): string => {
+    // Map status to translation key format
+    const statusMap: Record<string, string> = {
+      pending: "pending",
+      payment_processing: "paymentProcessing",
+      confirmed: "confirmed",
+      shipping_soon: "shippingSoon",
+      shipped: "shipped",
+      out_for_delivery: "outForDelivery",
+      delivered: "delivered",
+      cancelled: "cancelled",
+      refund_requested: "refundRequested",
+      refunded: "refunded",
+      returned: "returned",
+    };
+    const translationKey = statusMap[status] || status;
+    try {
+      return t(translationKey as any);
+    } catch {
+      return (
+        status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, " ")
+      );
+    }
+  };
+
+  const getPaymentMethodLabel = (paymentMethod: string): string => {
+    // Map payment method to translation key
+    const paymentMethodMap: Record<string, string> = {
+      cash_on_delivery: "cashOnDelivery",
+      cash: "cashOnDelivery",
+      card: "onlinePayment",
+      credit_card: "onlinePayment",
+      debit_card: "onlinePayment",
+      wallet: "wallet",
+      bank_transfer: "bankTransfer",
+    };
+    const translationKey =
+      paymentMethodMap[paymentMethod.toLowerCase()] || paymentMethod;
+    try {
+      return t(translationKey as any);
+    } catch {
+      return (
+        paymentMethod.charAt(0).toUpperCase() +
+        paymentMethod.slice(1).replace(/_/g, " ")
+      );
+    }
+  };
 
   return (
     <div className="space-y-4 md:space-y-8 px-4 max-w-6xl mx-auto">
@@ -67,18 +117,17 @@ export function OrderConfirmationContent({
         <div className="space-y-2">
           <h1 className="text-xl md:text-3xl font-bold text-gray-900">
             {order.status === "pending"
-              ? "Order Placed!"
-              : `${order.status
-                  .replace(/_/g, " ")
-                  .replace(/\b\w/g, (c) => c.toUpperCase())}`}
+              ? t("orderPlaced")
+              : getStatusLabel(order.status)}
           </h1>
           <p className="text-xs md:text-lg text-gray-600">
-            Thank you for your purchase. Your order has been successfully
-            placed.
+            {t("thankYouForPurchase")}
           </p>
           <div className="flex items-center justify-center space-x-2 text-xs md:text-sm text-gray-500">
             <Calendar className="w-3 h-3 md:w-4 md:h-4" />
-            <span>Order placed on {formatDate(order.createdAt)}</span>
+            <span>
+              {t("orderPlacedOn")} {formatDate(order.createdAt)}
+            </span>
           </div>
         </div>
       </div>
@@ -88,7 +137,7 @@ export function OrderConfirmationContent({
       <Card className="rounded-xl md:rounded-2xl border overflow-hidden pt-0 border-green-200 bg-green-50/50">
         <div className="bg-green-50/50 px-4 md:px-6 py-3 md:py-5 border-b border-green-200">
           <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-gray-900">
-            Order Summary
+            {t("orderSummary")}
           </CardTitle>
         </div>
         <CardContent>
@@ -96,7 +145,7 @@ export function OrderConfirmationContent({
             <div className="space-y-2 md:space-y-3">
               <div className="flex justify-between">
                 <span className="text-xs md:text-sm font-medium text-gray-600">
-                  Order Number:
+                  {t("orderNumber")}:
                 </span>
                 <span className="text-xs md:text-sm font-mono font-bold text-gray-900">
                   {order.orderNumber}
@@ -104,13 +153,13 @@ export function OrderConfirmationContent({
               </div>
               <div className="flex justify-between">
                 <span className="text-xs md:text-sm font-medium text-gray-600">
-                  Status:
+                  {t("status")}:
                 </span>
                 <Badge
                   variant="outline"
                   className={`text-xs ${getOrderStatusStyle(order.status).bg} ${getOrderStatusStyle(order.status).text} ${getOrderStatusStyle(order.status).border}`}
                 >
-                  {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                  {getStatusLabel(order.status)}
                 </Badge>
               </div>
               {/* <div className="flex justify-between">
@@ -129,18 +178,19 @@ export function OrderConfirmationContent({
             <div className="space-y-2 md:space-y-3">
               <div className="flex justify-between">
                 <span className="text-xs md:text-sm font-medium text-gray-600">
-                  Payment Method:
+                  {t("paymentMethod")}:
                 </span>
-                <span className="text-xs md:text-sm text-gray-900 capitalize">
-                  {order.paymentMethod.replace(/_/g, " ")}
+                <span className="text-xs md:text-sm text-gray-900">
+                  {getPaymentMethodLabel(order.paymentMethod)}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-xs md:text-sm font-medium text-gray-600">
-                  Items:
+                  {t("items")}:
                 </span>
                 <span className="text-xs md:text-sm text-gray-900">
-                  {summary.itemCount} item{summary.itemCount !== 1 ? "s" : ""}
+                  {summary.itemCount}{" "}
+                  {summary.itemCount !== 1 ? t("items") : t("item")}
                 </span>
               </div>
             </div>
@@ -158,7 +208,7 @@ export function OrderConfirmationContent({
       <Card className="rounded-xl md:rounded-2xl border overflow-hidden pt-0 bg-white">
         <div className="bg-linear-to-r from-gray-50 to-gray-100 px-4 md:px-6 py-3 md:py-5 border-b border-gray-200">
           <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-gray-900">
-            <Package className="h-4 w-4 md:h-5 md:w-5" /> Order Items
+            <Package className="h-4 w-4 md:h-5 md:w-5" /> {t("orderItems")}
           </CardTitle>
         </div>
         <CardContent>
@@ -176,7 +226,7 @@ export function OrderConfirmationContent({
             {/* Invoice Breakdown */}
             <div className="mt-4 md:mt-6 pt-4 md:pt-6 border-t space-y-2 md:space-y-3">
               <div className="flex justify-between text-xs md:text-sm">
-                <span className="text-gray-600">Subtotal:</span>
+                <span className="text-gray-600">{t("subtotal")}:</span>
                 <span
                   className="text-gray-900 font-medium"
                   dangerouslySetInnerHTML={{
@@ -187,7 +237,7 @@ export function OrderConfirmationContent({
 
               {summary.shippingCost > 0 && (
                 <div className="flex justify-between text-xs md:text-sm">
-                  <span className="text-gray-600">Delivery Fee:</span>
+                  <span className="text-gray-600">{t("deliveryFee")}:</span>
                   <span
                     className="text-gray-900 font-medium"
                     dangerouslySetInnerHTML={{
@@ -199,7 +249,7 @@ export function OrderConfirmationContent({
 
               {summary.tax > 0 && (
                 <div className="flex justify-between text-xs md:text-sm">
-                  <span className="text-gray-600">Tax:</span>
+                  <span className="text-gray-600">{t("tax")}:</span>
                   <span
                     className="text-gray-900 font-medium"
                     dangerouslySetInnerHTML={{
@@ -211,7 +261,7 @@ export function OrderConfirmationContent({
 
               {summary.discountAmount > 0 && (
                 <div className="flex justify-between text-xs md:text-sm">
-                  <span className="text-gray-600">Discount:</span>
+                  <span className="text-gray-600">{t("discount")}:</span>
                   <span
                     className="text-green-600 font-medium"
                     dangerouslySetInnerHTML={{
@@ -223,7 +273,7 @@ export function OrderConfirmationContent({
 
               <div className="flex justify-between pt-2 md:pt-3 border-t">
                 <span className="text-sm md:text-base font-semibold text-gray-900">
-                  Total Amount:
+                  {t("totalAmount")}:
                 </span>
                 <span
                   className="text-base md:text-lg font-bold text-gray-900"
@@ -242,7 +292,7 @@ export function OrderConfirmationContent({
       <Card className="rounded-xl md:rounded-2xl border overflow-hidden pt-0 bg-white">
         <div className="bg-linear-to-r from-gray-50 to-gray-100 px-4 md:px-6 py-3 md:py-5 border-b border-gray-200">
           <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-gray-900">
-            <Truck className="h-4 w-4 md:h-5 md:w-5" /> Shipping Address
+            <Truck className="h-4 w-4 md:h-5 md:w-5" /> {t("shippingAddress")}
           </CardTitle>
         </div>
         <CardContent>
@@ -266,7 +316,7 @@ export function OrderConfirmationContent({
           </p>
           {shippingAddress.phone && (
             <p className="text-xs md:text-sm text-gray-600">
-              Phone: {shippingAddress.phone}
+              {t("phone")}: {shippingAddress.phone}
             </p>
           )}
         </CardContent>
@@ -303,7 +353,8 @@ export function OrderConfirmationContent({
         <Card className="rounded-xl md:rounded-2xl border overflow-hidden pt-0 bg-white">
           <div className="bg-linear-to-r from-gray-50 to-gray-100 px-4 md:px-6 py-3 md:py-5 border-b border-gray-200">
             <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-gray-900">
-              <span className="text-base md:text-xl">🎁</span> Gift Message
+              <span className="text-base md:text-xl">🎁</span>{" "}
+              {t("giftMessage")}
             </CardTitle>
           </div>
           <CardContent>
@@ -319,7 +370,7 @@ export function OrderConfirmationContent({
         <Card className="rounded-xl md:rounded-2xl border overflow-hidden pt-0 bg-white">
           <div className="bg-linear-to-r from-gray-50 to-gray-100 px-4 md:px-6 py-3 md:py-5 border-b border-gray-200">
             <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-gray-900">
-              <span className="text-base md:text-xl">📝</span> Order Notes
+              <span className="text-base md:text-xl">📝</span> {t("orderNotes")}
             </CardTitle>
           </div>
           <CardContent className="p-4 md:p-6">
@@ -375,7 +426,7 @@ export function OrderConfirmationContent({
         <div className="bg-linear-to-r from-gray-50 to-gray-100 px-4 md:px-6 py-3 md:py-5 border-b border-gray-200">
           <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-gray-900">
             <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
-            What's Next?
+            {t("whatsNext")}
           </CardTitle>
         </div>
         <CardContent>
@@ -386,10 +437,10 @@ export function OrderConfirmationContent({
               </div>
               <div>
                 <p className="text-xs md:text-sm font-medium text-blue-900">
-                  Order Processing
+                  {t("orderProcessing")}
                 </p>
                 <p className="text-xs md:text-sm text-blue-700">
-                  We'll prepare your order for shipment days.
+                  {t("orderProcessingDescription")}
                 </p>
               </div>
             </div>
@@ -399,11 +450,10 @@ export function OrderConfirmationContent({
               </div>
               <div>
                 <p className="text-xs md:text-sm font-medium text-blue-900">
-                  Shipping Notification
+                  {t("shippingNotification")}
                 </p>
                 <p className="text-xs md:text-sm text-blue-700">
-                  You'll receive an email with tracking information once your
-                  order ships.
+                  {t("shippingNotificationDescription")}
                 </p>
               </div>
             </div>
@@ -413,10 +463,10 @@ export function OrderConfirmationContent({
               </div>
               <div>
                 <p className="text-xs md:text-sm font-medium text-blue-900">
-                  Delivery
+                  {t("delivery")}
                 </p>
                 <p className="text-xs md:text-sm text-blue-700">
-                  Your order will be delivered to the address provided.
+                  {t("deliveryDescription")}
                 </p>
               </div>
             </div>
@@ -468,7 +518,7 @@ export function OrderConfirmationContent({
         >
           <Link href="/profile/orders">
             <Package className="w-3 h-3 md:w-4 md:h-4 mr-2" />
-            View All Orders
+            {t("viewAllOrders")}
           </Link>
         </Button>
 
@@ -480,7 +530,7 @@ export function OrderConfirmationContent({
         >
           <Link href="/products">
             <ArrowRight className="w-3 h-3 md:w-4 md:h-4 mr-2" />
-            Continue Shopping
+            {t("continueShopping")}
           </Link>
         </Button>
       </div>
@@ -488,7 +538,7 @@ export function OrderConfirmationContent({
       {/* Support Information */}
       <div className="text-center py-6 md:py-8 border-t">
         <p className="text-xs md:text-sm text-gray-600 mb-2 md:mb-3">
-          Need help with your order?
+          {t("needHelpWithOrder")}
         </p>
         <div className="flex justify-center">
           <Button
@@ -498,10 +548,10 @@ export function OrderConfirmationContent({
             className="flex items-center gap-2 text-xs md:text-sm"
           >
             <Link
-              href="https://wa.me/15551234567"
+              href="https://wa.me/201013626248"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Chat with us on WhatsApp"
+              aria-label={t("chatWithUs")}
             >
               <svg
                 aria-hidden="true"
@@ -511,7 +561,7 @@ export function OrderConfirmationContent({
               >
                 <path d="M16 2C8.28 2 2 8.28 2 16c0 2.63.68 5.21 1.97 7.47L2 30l6.77-1.76A13.87 13.87 0 0 0 16 30c7.72 0 14-6.28 14-14S23.72 2 16 2zm0 25.77c-2.35 0-4.66-.65-6.65-1.88l-.48-.29-4.03 1.05 1.08-3.93-.31-.51A11.8 11.8 0 0 1 4.21 16c0-6.51 5.29-11.79 11.79-11.79 6.51 0 11.79 5.28 11.79 11.79S22.51 27.77 16 27.77zm6.41-8.76c-.35-.18-2.04-1.01-2.35-1.13-.31-.12-.53-.18-.75.18-.22.35-.86 1.13-1.05 1.36-.19.22-.39.26-.74.09-.35-.18-1.48-.54-2.83-1.72-1.05-.94-1.76-2.1-1.97-2.45-.21-.35-.02-.53.16-.7.16-.16.35-.39.52-.58.18-.18.24-.31.35-.53.12-.22.06-.41-.03-.59-.09-.18-.75-1.81-1.03-2.49-.27-.65-.55-.56-.74-.57l-.63-.01c-.22 0-.58.08-.88.39-.3.3-1.15 1.12-1.15 2.72 0 1.59 1.17 3.14 1.33 3.36.16.22 2.3 3.52 5.57 4.79.78.34 1.39.55 1.87.7.79.25 1.5.22 2.07.14.63-.09 2.04-.83 2.33-1.63.29-.8.29-1.48.2-1.62-.09-.13-.32-.21-.67-.38z" />
               </svg>
-              Chat with us
+              {t("chatWithUs")}
             </Link>
           </Button>
         </div>

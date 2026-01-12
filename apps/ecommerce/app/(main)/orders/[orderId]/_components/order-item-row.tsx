@@ -9,6 +9,7 @@ import Link from "next/link";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { formatPrice } from "@workspace/lib";
 import { Package } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface OrderItemRowProps {
   item: {
@@ -45,6 +46,8 @@ export function OrderItemRow({
   orderStatus,
   locale,
 }: OrderItemRowProps) {
+  const t = useTranslations("orders");
+  const tCommon = useTranslations("common");
   const [showReviewForm, setShowReviewForm] = useState(false);
   const canReview = orderStatus === "delivered" && !item.hasReview;
 
@@ -84,10 +87,10 @@ export function OrderItemRow({
             {item.productName}
           </Link>
           {item.variantName && (
-            <p className="text-xs text-gray-600">Variant: {item.variantName}</p>
+            <p className="text-xs text-gray-600">{t("variant")}: {item.variantName}</p>
           )}
           <p className="text-xs text-gray-500">
-            Sold by {item.seller.displayName}
+            {t("soldBy")} {item.seller.displayName}
           </p>
         </div>
 
@@ -98,7 +101,7 @@ export function OrderItemRow({
               __html: formatPrice(Number(item.price), locale),
             }}
           />
-          <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
+          <p className="text-xs text-gray-500">{tCommon("quantity")}: {item.quantity}</p>
           <p
             className="text-xs md:text-sm font-semibold text-gray-900"
             dangerouslySetInnerHTML={{
@@ -119,7 +122,7 @@ export function OrderItemRow({
             className="w-full flex items-center justify-center gap-2"
           >
             <Star className="h-4 w-4" />
-            Review this product
+            {t("reviewThisProduct")}
           </Button>
         </div>
       )}
@@ -147,7 +150,7 @@ export function OrderItemRow({
           <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
             <p className="text-sm text-green-800 flex items-center gap-2">
               <Star className="h-4 w-4 fill-current" />
-              You have reviewed this product
+              {t("youHaveReviewedThisProduct")}
             </p>
           </div>
         </div>

@@ -18,6 +18,7 @@ import {
   CardTitle,
 } from "@workspace/ui/components/card"
 import { cn } from "@workspace/ui/lib/utils"
+import { useTranslations } from "next-intl"
 
 export type OrderStatusType =
   | "pending"
@@ -70,19 +71,24 @@ function getStatusFlow(paymentMethod?: string): OrderStatusType[] {
   return flow
 }
 
-const STATUS_LABELS: Record<OrderStatusType, string> = {
-  pending: "Pending",
-  payment_processing: "Payment Processing",
-  confirmed: "Confirmed",
-  shipping_soon: "Shipping Soon",
-  shipped: "Shipped",
-  out_for_delivery: "Out for Delivery",
-  delivered: "Delivered",
-  cancelled: "Cancelled",
-  refund_requested: "Refund Requested",
-  refunded: "Refunded",
-  returned: "Returned",
-}
+// Status labels will be retrieved from translations
+const getStatusLabel = (status: OrderStatusType, t: (key: string) => string): string => {
+  const statusMap: Record<OrderStatusType, string> = {
+    pending: "pending",
+    payment_processing: "paymentProcessing",
+    confirmed: "confirmed",
+    shipping_soon: "shippingSoon",
+    shipped: "shipped",
+    out_for_delivery: "outForDelivery",
+    delivered: "delivered",
+    cancelled: "cancelled",
+    refund_requested: "refundRequested",
+    refunded: "refunded",
+    returned: "returned",
+  };
+  const translationKey = statusMap[status];
+  return t(translationKey);
+};
 
 const STATUS_ICONS: Record<OrderStatusType, React.ComponentType<{ className?: string }>> = {
   pending: Clock,
@@ -98,7 +104,7 @@ const STATUS_ICONS: Record<OrderStatusType, React.ComponentType<{ className?: st
   returned: RotateCcw,
 }
 
-function getStatusSteps(currentStatus: string, paymentMethod?: string): StatusStep[] {
+function getStatusSteps(currentStatus: string, paymentMethod: string | undefined, t: (key: string) => string): StatusStep[] {
   const currentStatusKey = currentStatus as OrderStatusType
   const isErrorState = ["cancelled", "refund_requested", "refunded", "returned"].includes(
     currentStatus
@@ -109,7 +115,7 @@ function getStatusSteps(currentStatus: string, paymentMethod?: string): StatusSt
     return [
       {
         key: currentStatusKey,
-        label: STATUS_LABELS[currentStatusKey],
+        label: getStatusLabel(currentStatusKey, t),
         icon: STATUS_ICONS[currentStatusKey],
         isActive: true,
         isCompleted: false,
@@ -126,7 +132,7 @@ function getStatusSteps(currentStatus: string, paymentMethod?: string): StatusSt
 
   return statusFlow.map((statusKey, index) => ({
     key: statusKey,
-    label: STATUS_LABELS[statusKey],
+    label: getStatusLabel(statusKey, t),
     icon: STATUS_ICONS[statusKey],
     isActive: index === activeIndex,
     isCompleted: index < activeIndex,
@@ -159,7 +165,8 @@ export function OrderStatusTracker({
   paymentMethod,
   className,
 }: OrderStatusTrackerProps) {
-  const steps = getStatusSteps(status, paymentMethod)
+  const t = useTranslations("orders");
+  const steps = getStatusSteps(status, paymentMethod, (key: string) => t(key as any))
   const progressValue = getProgressValue(status, paymentMethod)
   const isErrorState = ["cancelled", "refund_requested", "refunded", "returned"].includes(status)
   const isCompleted = status === "delivered"
@@ -169,7 +176,7 @@ export function OrderStatusTracker({
       <CardHeader className="pb-4">
         <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-gray-900">
           <Package className="h-4 w-4 md:h-5 md:w-5" />
-          Order Status Tracking
+          {t("orderStatusTracking")}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -192,7 +199,7 @@ export function OrderStatusTracker({
             )}
           </div>
           <div className="flex justify-between items-center text-xs md:text-sm">
-            <span className="text-gray-600">Progress</span>
+            <span className="text-gray-600">{t("progress")}</span>
             <span className="font-medium text-gray-900">{Math.round(progressValue)}%</span>
           </div>
         </div>
@@ -254,7 +261,7 @@ export function OrderStatusTracker({
                   </div>
                   {isErrorState && step.isActive && (
                     <p className="text-xs md:text-sm text-red-600">
-                      This order has been {step.label.toLowerCase()}
+                      {t("thisOrderHasBeen")} {step.label.toLowerCase()}
                     </p>
                   )}
                 </div>

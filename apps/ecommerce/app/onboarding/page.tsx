@@ -6,7 +6,6 @@ import { OAuth } from "@/components/auth/o-auth";
 import { OnboardingFormClient } from "@/components/onboarding/onboarding-form.client";
 import { createClient } from "@/supabase/server";
 import { getTranslations } from "next-intl/server";
-import { OnboardingPageContent } from "./onboarding-page-content";
 
 export default async function OnboardingPage() {
   const supabase = await createClient();
@@ -19,7 +18,7 @@ export default async function OnboardingPage() {
   return (
     <div className="flex items-center justify-center min-h-screen">
       <div className="mx-auto w-full max-w-2xl">
-        <Logo className="*:text-primary flex justify-center" />
+        <Logo color="primary" />
         <h2 className="mt-4 text-2xl/9 font-bold tracking-tight text-gray-900 text-center">
           {t("becomeSeller")}
         </h2>

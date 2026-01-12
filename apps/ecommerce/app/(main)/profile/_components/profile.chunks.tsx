@@ -150,7 +150,7 @@ export function ProfileSidebar({
                     // Optionally, you can map field keys to more user-friendly labels here
                     switch (field) {
                       case "fullName":
-                        return t("firstName");
+                        return t("fullName");
                       case "lastName":
                         return t("lastName");
                       case "phone":
@@ -275,6 +275,7 @@ export function UserPointsCard({
 }: {
   totalPoints: number | null;
 }) {
+  const t = useTranslations("profile");
   const points = totalPoints ?? 0;
 
   return (
@@ -287,7 +288,7 @@ export function UserPointsCard({
             </div>
             <div>
               <h3 className="text-lg font-semibold text-muted-foreground">
-                Total Points
+                {t("totalPoints")}
               </h3>
               <p className="text-4xl font-bold text-primary">
                 {points.toLocaleString()}
@@ -756,7 +757,7 @@ export function ReferralSection({
               >
                 <Input
                   name="referralCode"
-                  placeholder="Enter referral code"
+                  placeholder={t("enterReferralCode")}
                   className="w-full"
                   maxLength={20}
                   disabled={isApplying}
@@ -902,6 +903,8 @@ export function AddressForm({
   onSuccess,
   onCancel,
 }: AddressFormProps) {
+  const t = useTranslations("addresses");
+  const tToast = useTranslations("toast");
   const [isPending, startTransition] = useTransition();
   const isEditing = !!address;
 
@@ -995,43 +998,43 @@ export function AddressForm({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <TextInput
-                placeholder="Enter full name"
+                placeholder={t("enterFullName")}
                 name="fullName"
                 form={form}
               />
 
               <TextInput
-                placeholder="Enter phone number"
+                placeholder={t("enterPhoneNumber")}
                 name="phone"
                 form={form}
               />
             </div>
 
             <TextInput
-              placeholder="Enter company name"
+              placeholder={t("enterCompanyName")}
               name="company"
               form={form}
             />
 
             <TextInput
-              placeholder="Street address"
+              placeholder={t("addressLine1Placeholder")}
               name="addressLine1"
               form={form}
             />
 
             <TextInput
-              placeholder="Apartment, suite, etc."
+              placeholder={t("buildingFloorPlaceholder")}
               name="addressLine2"
               form={form}
             />
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <TextInput placeholder="Enter city" name="city" form={form} />
+              <TextInput placeholder={t("enterCity")} name="city" form={form} />
 
-              <TextInput placeholder="Enter state" name="state" form={form} />
+              <TextInput placeholder={t("enterStateProvince")} name="state" form={form} />
 
               <TextInput
-                placeholder="Enter postal code"
+                placeholder={t("enterPostalCode")}
                 name="postalCode"
                 form={form}
               />
@@ -1042,10 +1045,10 @@ export function AddressForm({
               name="country"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Country</FormLabel>
+                  <FormLabel>{t("country")}</FormLabel>
                   <FormControl>
                     <SelectInput
-                      placeholder="Select country"
+                      placeholder={t("selectCountry")}
                       options={countryOptions}
                       {...field}
                     />
@@ -1056,13 +1059,13 @@ export function AddressForm({
             />
 
             <TextInput
-              placeholder="Special delivery instructions"
+              placeholder={t("specialInstructionsPlaceholder")}
               name="deliveryInstructions"
               form={form}
             />
 
             <TextInput
-              placeholder="Building or gate access code"
+              placeholder={t("specialInstructionsPlaceholder")}
               name="accessCode"
               form={form}
             />

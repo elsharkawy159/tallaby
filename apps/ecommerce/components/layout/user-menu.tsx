@@ -111,9 +111,9 @@ export function UserMenu({
           </Avatar>
           <div className="flex-1 min-w-0">
             <p className="font-medium text-sm truncate">{userName}</p>
-            <p className="text-xs text-muted-foreground truncate">
+            {/* <p className="text-xs text-muted-foreground truncate">
               {user.email}
-            </p>
+            </p> */}
             {isSeller && (
               <div className="flex items-center gap-1 mt-1">
                 <Store className="size-3 text-green-600" />
@@ -190,7 +190,7 @@ export function UserMenu({
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <Store className="size-4 mr-3" />
+                    <Store className="size-4" />
                     {t("sellerDashboard")}
                   </Link>
                 </Button>
