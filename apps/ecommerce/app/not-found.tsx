@@ -1,6 +1,7 @@
 import { Button } from "@workspace/ui/components";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
+import { ChevronRight } from "lucide-react";
 
 export default async function NotFound() {
   const t = await getTranslations("notFound");
@@ -21,7 +22,7 @@ export default async function NotFound() {
           </Button>
           <Button variant="outline" asChild>
             <Link href="/contact" className="text-gray-900">
-              {t("contactSupport")} <span aria-hidden="true">&rarr;</span>
+              {t("contactSupport")} <ChevronRight className="size-4 rtl:rotate-180" />
             </Link>
           </Button>
         </div>

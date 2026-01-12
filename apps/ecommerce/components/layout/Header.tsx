@@ -28,6 +28,7 @@ const MainHeader = async () => {
         {/* Mobile top section */}
         <div className="flex items-center md:hidden justify-between">
           <Logo />
+          <LanguageSwitcher />
           <BecomeSellerButton user={user} />
         </div>
 
