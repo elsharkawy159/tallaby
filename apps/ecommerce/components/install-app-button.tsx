@@ -12,12 +12,11 @@ export function InstallAppButton() {
     typeof window !== "undefined" &&
     /iphone|ipad|ipod/i.test(window.navigator.userAgent);
 
-  if (!isInstallable && !isIOS) return null;
+  if (!isInstallable) return null;
 
   return (
     <Button
       variant="outline"
-      
       onClick={() => {
         if (isIOS) {
           toast.error(t("installAppError"));

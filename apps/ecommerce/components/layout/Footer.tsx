@@ -7,8 +7,6 @@ import {
   Phone,
 } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@workspace/ui/components/button";
-import { Input } from "@workspace/ui/components/input";
 import { Logo } from "../logo";
 import { getTranslations } from "next-intl/server";
 import { InstallAppButton } from "../install-app-button";
@@ -24,7 +22,7 @@ const Footer = async () => {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(120,119,198,0.1),transparent_50%)] pointer-events-none" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(120,119,198,0.05),transparent_50%)] pointer-events-none" />
 
-      <div className="relative z-10 container mx-auto px-4 py-16">
+      <div className="relative z-10 container mx-auto px-4 py-16 lg:pb-10 pb-26">
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 lg:gap-8 mb-12">
           {/* Brand Column */}
