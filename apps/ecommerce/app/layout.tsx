@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Montserrat } from "next/font/google";
+import { Montserrat, Noto_Kufi_Arabic } from "next/font/google";
 import "@workspace/ui/globals.css";
 import { NextIntlClientProvider } from "next-intl";
 import "./globals.css";
@@ -12,6 +12,12 @@ import { Toaster } from "@workspace/ui/components/sonner";
 const montserrat = Montserrat({
   subsets: ["latin"],
   variable: "--font-montserrat",
+  weight: ["400", "500", "600", "700"],
+});
+
+const notoKufiArabic = Noto_Kufi_Arabic({
+  subsets: ["arabic"],
+  variable: "--font-noto-kufi-arabic",
   weight: ["400", "500", "600", "700"],
 });
 
@@ -66,9 +72,7 @@ export const metadata: Metadata = {
       "Tallaby.com brings you Amazon-like shopping with millions of products, great prices, and secure delivery.",
   },
   icons: {
-    icon: [
-      { url: "/favicon.png", sizes: "any" },
-    ],
+    icon: [{ url: "/favicon.png", sizes: "any" }],
   },
   manifest: "/manifest.ts",
   alternates: {
@@ -92,7 +96,11 @@ export default async function RootLayout({
       <head>
         <Scripts />
       </head>
-      <body className={`${montserrat.variable} antialiased`}>
+      <body
+        className={`${
+          locale === "ar" ? notoKufiArabic.variable : montserrat.variable
+        } antialiased`}
+      >
         <NextTopLoader
           color="var(--accent)"
           crawlSpeed={200}

@@ -6,6 +6,7 @@ import { getProducts } from "@/actions/products";
 import { getCartItems } from "@/actions/cart";
 import { getWishlistItems } from "@/actions/wishlist";
 import { ProductCardProps } from "../product";
+import { getTranslations } from "next-intl/server";
 
 interface ProductFilters {
   categoryId?: string;
@@ -34,6 +35,7 @@ const ProductsGrid = async ({
   description,
   filters = {},
 }: ProductsGridProps) => {
+  const t = await getTranslations("product");
   const products = await getProducts(filters);
   if (!products?.data) {
     return null;
@@ -71,8 +73,8 @@ const ProductsGrid = async ({
           </h2>
           <Button asChild className="p-0 gap-1" variant="link">
             <Link href="/products">
-              View More
-              <ChevronRight className="size-4" />
+              {t("viewMore")}
+              <ChevronRight className="size-4 rtl:rotate-180" />
             </Link>
           </Button>
         </div>

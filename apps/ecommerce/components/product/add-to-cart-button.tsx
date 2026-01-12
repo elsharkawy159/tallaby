@@ -7,6 +7,7 @@ import { useState, useTransition } from "react";
 import { addToCart as addToCartAction } from "@/actions/cart";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 export const AddToCartButton = ({
   productId,
@@ -22,6 +23,8 @@ export const AddToCartButton = ({
 }: AddToCartButtonProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const t = useTranslations("toast");
+  const tProduct = useTranslations("product");
 
   const handleAddToCart = async () => {
     setIsLoading(true);
@@ -29,12 +32,12 @@ export const AddToCartButton = ({
       const result = await addToCartAction(productId, quantity, variantId);
       if (result.success) {
         router.refresh();
-        toast.success("Item added to cart");
+        toast.success(t("itemAddedToCart"));
       } else {
-        toast.error(result.error || "Failed to add item");
+        toast.error(result.error || t("failedToAddItem"));
       }
     } catch (error) {
-      toast.error("Failed to add item");
+      toast.error(t("failedToAddItem"));
     } finally {
       setIsLoading(false);
     }
@@ -57,7 +60,7 @@ export const AddToCartButton = ({
       )}
       {showText && (
         <span className={showIcon ? "ml-2" : ""}>
-          {isLoading ? "Adding..." : "Add to Cart"}
+          {isLoading ? tProduct("adding") : tProduct("addToCart")}
         </span>
       )}
     </Button>

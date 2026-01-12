@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -51,40 +52,40 @@ interface OnboardingFormClientProps {
   user: any;
 }
 
-const steps = [
-  {
-    title: "Business Information",
-    description: "Tell us about your business",
-    fields: [
-      "businessName",
-      // "displayName",
-      "businessType",
-      "description",
-      "logoUrl",
-      "supportEmail",
-      "supportPhone",
-    ],
-  },
-  {
-    title: "Legal & Contact Details",
-    description: "Provide your business legal address and registration details",
-    fields: [
-      "legalAddress.street",
-      "legalAddress.city",
-      "legalAddress.state",
-      "legalAddress.postalCode",
-      "legalAddress.country",
-      // "registrationNumber",
-      // "taxId",
-    ],
-  },
-];
-
 export function OnboardingFormClient({ user }: OnboardingFormClientProps) {
+  const t = useTranslations("onboarding");
+  const tToast = useTranslations("toast");
+  const tAuth = useTranslations("auth");
   const [isPending, startTransition] = useTransition();
   const [currentStep, setCurrentStep] = useState(0);
   const router = useRouter();
   const { open: openAuthDialog } = useAuthDialog();
+
+  const steps = [
+    {
+      title: t("businessInformation"),
+      description: t("tellUsAboutBusiness"),
+      fields: [
+        "businessName",
+        "businessType",
+        "description",
+        "logoUrl",
+        "supportEmail",
+        "supportPhone",
+      ],
+    },
+    {
+      title: t("legalContactDetails"),
+      description: t("provideBusinessLegalAddress"),
+      fields: [
+        "legalAddress.street",
+        "legalAddress.city",
+        "legalAddress.state",
+        "legalAddress.postalCode",
+        "legalAddress.country",
+      ],
+    },
+  ];
 
   const currentForm = steps[currentStep];
   const isLastStep = currentStep === steps.length - 1;
@@ -147,7 +148,7 @@ export function OnboardingFormClient({ user }: OnboardingFormClientProps) {
         }
       } catch (error) {
         console.error("Form submission error:", error);
-        toast.error("Something went wrong. Please try again.");
+        toast.error(tToast("unexpectedError"));
       }
     });
   };

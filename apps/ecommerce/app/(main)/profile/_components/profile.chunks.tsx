@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -92,6 +93,8 @@ export function ProfileSidebar({
   user: User | null;
   addresses: any[];
 }) {
+  const t = useTranslations("profile");
+  const tCommon = useTranslations("common");
   const pathname = usePathname();
   const { percentage, missingFields } = calculateProfileCompletion(
     user,
@@ -135,29 +138,29 @@ export function ProfileSidebar({
           {/* Profile Completion */}
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span>Profile Completion</span>
+              <span>{t("profileCompletion")}</span>
               <span>{percentage}%</span>
             </div>
             <Progress value={percentage} className="h-2" />
             {missingFields.length > 0 ? (
               <p className="text-xs text-muted-foreground">
-                To complete your profile, please fill in the following fields:{" "}
+                {t("toCompleteYourProfile")}{" "}
                 {missingFields
                   .map((field) => {
                     // Optionally, you can map field keys to more user-friendly labels here
                     switch (field) {
                       case "fullName":
-                        return "First Name";
+                        return t("firstName");
                       case "lastName":
-                        return "Last Name";
+                        return t("lastName");
                       case "phone":
-                        return "Phone Number";
+                        return t("phoneNumber");
                       case "email":
-                        return "Email";
+                        return t("email");
                       case "address":
-                        return "Address";
+                        return t("address");
                       case "avatar":
-                        return "Profile Picture";
+                        return t("profilePicture");
                       // Add more mappings as needed
                       default:
                         // Capitalize first letter
@@ -168,7 +171,7 @@ export function ProfileSidebar({
               </p>
             ) : (
               <p className="text-xs text-green-600">
-                Your profile is 100% complete!
+                {t("yourProfileIs100")}
               </p>
             )}
           </div>
@@ -183,6 +186,21 @@ export function ProfileSidebar({
               const isActive =
                 pathname === tab.href ||
                 (tab.id === "profile" && pathname === "/profile");
+
+              const getTabLabel = () => {
+                switch (tab.id) {
+                  case "profile":
+                    return t("myProfile");
+                  case "orders":
+                    return t("orders");
+                  case "addresses":
+                    return t("addresses");
+                  case "wishlist":
+                    return t("myWishlist");
+                  default:
+                    return tab.label;
+                }
+              };
 
               return (
                 <Link
@@ -212,7 +230,7 @@ export function ProfileSidebar({
                   />
 
                   {/* Label */}
-                  <span className="flex-1">{tab.label}</span>
+                  <span className="flex-1">{getTabLabel()}</span>
 
                   {/* Active indicator dot */}
                   {isActive && (
@@ -241,7 +259,7 @@ export function ProfileSidebar({
                 <LogOut
                   className={cn("h-4 w-4 shrink-0 transition-all duration-200")}
                 />
-                <span>Sign Out</span>
+                <span>{t("signOut")}</span>
               </Button>
             </form>
           </nav>
@@ -297,6 +315,9 @@ export function ProfileForm({
   user: User | null;
   referredBy?: string | null;
 }) {
+  const t = useTranslations("profile");
+  const tCommon = useTranslations("common");
+  const tAuth = useTranslations("auth");
   const queryClient = useQueryClient();
   const [isPending, startTransition] = useTransition();
 
@@ -396,7 +417,7 @@ export function ProfileForm({
         const result = await updateUserProfile(data);
 
         if (result.success) {
-          toast.success(result.message || "Profile updated successfully");
+          toast.success(result.message || t("changesSaved"));
 
           // Invalidate user queries to refresh data
           await queryClient.invalidateQueries({
@@ -408,7 +429,7 @@ export function ProfileForm({
           const newUserData = getUserData();
           form.reset(newUserData);
         } else {
-          toast.error(result.message || "Failed to update profile");
+          toast.error(result.message || tAuth("somethingWentWrong"));
 
           // Set server-side field errors
           if (result.errors) {
@@ -422,7 +443,7 @@ export function ProfileForm({
         }
       } catch (error) {
         console.error("Form submission error:", error);
-        toast.error("Something went wrong. Please try again.");
+        toast.error(tAuth("somethingWentWrong"));
       }
     });
   };
@@ -431,9 +452,9 @@ export function ProfileForm({
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Personal Information</CardTitle>
+          <CardTitle>{t("personalInformation")}</CardTitle>
           <CardDescription>
-            Update your personal details and preferences
+            {t("updatePersonalDetails")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -444,14 +465,14 @@ export function ProfileForm({
             >
               <TextInput
                 form={form}
-                label="Full Name"
-                placeholder="Enter your full name"
+                label={t("fullName")}
+                placeholder={t("enterFullName")}
                 name="fullName"
               />
 
               <TextInput
-                label="Phone Number"
-                placeholder="Enter your phone number"
+                label={t("phoneNumber")}
+                placeholder={t("enterPhoneNumber")}
                 name="phone"
                 form={form}
               />
@@ -478,10 +499,10 @@ export function ProfileForm({
                 name="preferredLanguage"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Language</FormLabel>
+                    <FormLabel>{t("language")}</FormLabel>
                     <FormControl>
                       <SelectInput
-                        placeholder="Select your language"
+                        placeholder={t("selectYourLanguage")}
                         options={languageOptions}
                         {...field}
                       />
@@ -516,10 +537,10 @@ export function ProfileForm({
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                     <div className="space-y-0.5">
                       <FormLabel className="text-base">
-                        Marketing Emails
+                        {t("marketingEmails")}
                       </FormLabel>
                       <FormDescription>
-                        Receive emails about new products and special offers
+                        {t("receiveMarketingEmailsDescription")}
                       </FormDescription>
                     </div>
                     <FormControl>
@@ -537,7 +558,7 @@ export function ProfileForm({
                 disabled={isPending}
                 className="w-full md:w-auto"
               >
-                {isPending ? "Updating..." : "Update Profile"}
+                {isPending ? t("updating") : t("updateProfile")}
               </Button>
             </form>
           </Form>
@@ -558,6 +579,9 @@ export function ReferralSection({
   user: User | null;
   referredBy?: string | null;
 }) {
+  const t = useTranslations("profile");
+  const tCommon = useTranslations("common");
+  const tAuth = useTranslations("auth");
   const queryClient = useQueryClient();
   const [isGenerating, setIsGenerating] = useState(false);
   const [isApplying, startApplyTransition] = useTransition();
@@ -576,7 +600,7 @@ export function ReferralSection({
 
       if (result.success) {
         toast.success(
-          result.message || "Referral code generated successfully!"
+          result.message || tToast("referralCodeGeneratedSuccessfully")
         );
         if (result.data?.referralCode) {
           setReferralCode(result.data.referralCode);
@@ -591,11 +615,11 @@ export function ReferralSection({
         // Refresh the page to get updated user data
         window.location.reload();
       } else {
-        toast.error(result.message || "Failed to generate referral code");
+        toast.error(result.message || t("failedToGenerateReferralCode"));
       }
     } catch (error) {
       console.error("Generate referral code error:", error);
-      toast.error("Something went wrong. Please try again.");
+      toast.error(tAuth("somethingWentWrong"));
     } finally {
       setIsGenerating(false);
     }
@@ -603,7 +627,7 @@ export function ReferralSection({
 
   const handleApplyReferralCode = (code: string) => {
     if (!code.trim()) {
-      toast.error("Please enter a referral code");
+      toast.error(t("pleaseEnterReferralCode"));
       return;
     }
 
@@ -613,7 +637,7 @@ export function ReferralSection({
 
         if (result.success) {
           toast.success(
-            result.message || "Referral code applied successfully!"
+            result.message || t("referralCodeApplied")
           );
           setShowInput(false);
           setReferralCode("");
@@ -627,11 +651,11 @@ export function ReferralSection({
           // Refresh the page to get updated user data
           window.location.reload();
         } else {
-          toast.error(result.message || "Failed to apply referral code");
+          toast.error(result.message || t("failedToApplyReferralCode"));
         }
       } catch (error) {
         console.error("Apply referral code error:", error);
-        toast.error("Something went wrong. Please try again.");
+        toast.error(tAuth("somethingWentWrong"));
       }
     });
   };
@@ -640,20 +664,19 @@ export function ReferralSection({
     try {
       await navigator.clipboard.writeText(code);
       setCopied(true);
-      toast.success("Referral code copied to clipboard!");
+      toast.success(t("referralCodeCopied"));
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      toast.error("Failed to copy code");
+      toast.error(t("failedToCopyCode"));
     }
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Referral Program</CardTitle>
+        <CardTitle>{t("referralProgram")}</CardTitle>
         <CardDescription>
-          Refer friends and get rewarded! Share your code or enter a friend's
-          code.
+          {t("referFriendsDescription")}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -661,9 +684,9 @@ export function ReferralSection({
           {/* Refer a Friend Box */}
           <div className="flex-1 rounded-xl border p-4 space-y-3">
             <div>
-              <h4 className="font-medium mb-1">Refer a friend</h4>
+              <h4 className="font-medium mb-1">{t("referAFriend")}</h4>
               <p className="text-sm text-muted-foreground">
-                Generate your referral code to share with friends
+                {t("generateReferralCodeDescription")}
               </p>
             </div>
 
@@ -674,7 +697,7 @@ export function ReferralSection({
                 variant="default"
                 className="w-full"
               >
-                {isGenerating ? "Generating..." : "Generate Code"}
+                {isGenerating ? t("generating") : t("generateCode")}
               </Button>
             ) : (
               currentReferralCode && (
@@ -702,15 +725,15 @@ export function ReferralSection({
           {/* Got a Referral Code Box */}
           <div className="flex-1 rounded-xl border p-4 space-y-3">
             <div>
-              <h4 className="font-medium mb-1">Got a referral code?</h4>
+              <h4 className="font-medium mb-1">{t("gotReferralCode")}</h4>
               <p className="text-sm text-muted-foreground">
-                Enter a friend's referral code to apply it
+                {t("enterFriendReferralCode")}
               </p>
             </div>
 
             {hasAppliedCode ? (
               <p className="text-sm text-muted-foreground">
-                You have already applied a referral code.
+                {t("youHaveAlreadyApplied")}
               </p>
             ) : !showInput ? (
               <Button
@@ -719,7 +742,7 @@ export function ReferralSection({
                 disabled={isApplying}
                 className="w-full"
               >
-                Enter Code
+                {t("enterCode")}
               </Button>
             ) : (
               <form
@@ -753,14 +776,14 @@ export function ReferralSection({
                     className="flex-1"
                     disabled={isApplying}
                   >
-                    Cancel
+                    {tCommon("cancel")}
                   </Button>
                   <Button
                     type="submit"
                     disabled={isApplying || !referralCode.trim()}
                     className="flex-1"
                   >
-                    {isApplying ? "Applying..." : "Apply"}
+                    {isApplying ? t("applying") : t("apply")}
                   </Button>
                 </div>
               </form>
@@ -781,6 +804,7 @@ interface AddressCardProps {
 
 export function AddressCard({ address, onEdit, onDelete }: AddressCardProps) {
   const [isDeleting, setIsDeleting] = useState(false);
+  const tToast = useTranslations("toast");
 
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this address?")) return;
@@ -794,7 +818,7 @@ export function AddressCard({ address, onEdit, onDelete }: AddressCardProps) {
         toast.error(result.message);
       }
     } catch (error) {
-      toast.error("Failed to delete address");
+      toast.error(tToast("failedToDeleteAddress"));
     } finally {
       setIsDeleting(false);
     }
@@ -926,7 +950,7 @@ export function AddressForm({
           }
         }
       } catch (error) {
-        toast.error("Something went wrong. Please try again.");
+        toast.error(tToast("unexpectedError"));
       }
     });
   };

@@ -22,6 +22,7 @@ import {
 import type { AuthFormProps } from "./auth-dialog.types";
 import { forgotPasswordAction, signInAction, signUpUser } from "@/actions/auth";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 // Sign In Form Component
 export function SignInForm({
@@ -36,6 +37,7 @@ export function SignInForm({
   const [isPending, startTransition] = useTransition();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const router = useRouter();
+  const t = useTranslations("auth");
   const form = useForm<SignInFormData>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
@@ -69,12 +71,12 @@ export function SignInForm({
           }
         } else {
           setErrorMessage(
-            result.message || "Sign in failed. Please try again."
+            result.message || t("signInFailed")
           );
         }
       } catch (error) {
         console.error("Sign in error:", error);
-        setErrorMessage("Something went wrong. Please try again.");
+        setErrorMessage(t("somethingWentWrong"));
       }
     });
   };
@@ -85,9 +87,9 @@ export function SignInForm({
         <TextInput
           form={form}
           name="email"
-          label="Email Address"
+          label={t("emailAddress")}
           type="email"
-          placeholder="Enter your email"
+          placeholder={t("enterEmail")}
           disabled={isPending}
           required
         />
@@ -95,16 +97,16 @@ export function SignInForm({
         <TextInput
           form={form}
           name="password"
-          label="Password"
+          label={t("password")}
           type="password"
-          placeholder="Enter your password"
+          placeholder={t("enterPassword")}
           disabled={isPending}
           required
         />
 
         <Button type="submit" className="w-full" disabled={isPending}>
           {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {isPending ? "Signing In..." : "Sign In"}
+          {isPending ? t("signingIn") : t("signIn")}
         </Button>
 
         {errorMessage && (
@@ -125,6 +127,7 @@ export function SignUpForm({
   onSuccess?: (credentials?: { email: string; password: string }) => void;
 }) {
   const [isPending, startTransition] = useTransition();
+  const t = useTranslations("auth");
 
   const form = useForm<SignUpFormData>({
     resolver: zodResolver(signUpSchema),
@@ -141,9 +144,7 @@ export function SignUpForm({
       try {
         const result = await signUpUser(data);
         if (result.success) {
-          toast.success(
-            "Account created successfully! Please check your email to verify your account."
-          );
+          toast.success(t("accountCreated"));
           // Store credentials before resetting
           const credentials = {
             email: data.email,
@@ -161,7 +162,7 @@ export function SignUpForm({
         }
       } catch (error) {
         console.error("Sign up error:", error);
-        toast.error("Something went wrong. Please try again.");
+        toast.error(t("somethingWentWrong"));
       }
     });
   };
@@ -172,9 +173,9 @@ export function SignUpForm({
         <TextInput
           form={form}
           name="fullName"
-          label="Full Name"
+          label={t("fullName")}
           type="text"
-          placeholder="John"
+          placeholder={t("enterFullName")}
           disabled={isPending}
           required
         />
@@ -182,9 +183,9 @@ export function SignUpForm({
         <TextInput
           form={form}
           name="email"
-          label="Email Address"
+          label={t("emailAddress")}
           type="email"
-          placeholder="john.doe@example.com"
+          placeholder={t("enterEmail")}
           disabled={isPending}
           required
         />
@@ -192,9 +193,9 @@ export function SignUpForm({
         <TextInput
           form={form}
           name="password"
-          label="Password"
+          label={t("password")}
           type="password"
-          placeholder="Create a strong password"
+          placeholder={t("enterPassword")}
           disabled={isPending}
           required
         />
@@ -202,16 +203,16 @@ export function SignUpForm({
         <TextInput
           form={form}
           name="confirmPassword"
-          label="Confirm Password"
+          label={t("confirmPassword")}
           type="password"
-          placeholder="Confirm your password"
+          placeholder={t("enterConfirmPassword")}
           disabled={isPending}
           required
         />
 
         <Button type="submit" className="w-full" disabled={isPending}>
           {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {isPending ? "Creating Account..." : "Create Account"}
+          {isPending ? t("signingUp") : t("createAccount")}
         </Button>
       </form>
     </Form>
@@ -223,6 +224,7 @@ export function ForgotPasswordForm({
   onSuccess,
 }: Omit<AuthFormProps, "isLoading" | "setIsLoading">) {
   const [isPending, startTransition] = useTransition();
+  const tToast = useTranslations("toast");
 
   const form = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),
@@ -245,7 +247,7 @@ export function ForgotPasswordForm({
         }
       } catch (error) {
         console.error("Forgot password error:", error);
-        toast.error("Something went wrong. Please try again.");
+        toast.error(tToast("forgotPasswordError"));
       }
     });
   };

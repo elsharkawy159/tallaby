@@ -195,9 +195,8 @@ export function generateOrganizationStructuredData() {
       availableLanguage: ["English", "Arabic"],
     },
     sameAs: [
-      "https://twitter.com/tallaby",
-      "https://facebook.com/tallaby",
-      "https://instagram.com/tallaby",
+      "https://www.facebook.com/profile.php?id=100070155523046",
+      "https://www.instagram.com/tallabycommerce/",
     ],
   };
 }

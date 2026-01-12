@@ -4,6 +4,7 @@ import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@workspace/ui/components/button";
 import { Form } from "@workspace/ui/components/form";
@@ -45,6 +46,7 @@ export const AddressFormStep = ({
   onSuccess,
   onCancel,
 }: AddressFormStepProps) => {
+  const t = useTranslations("addresses");
   const [isPending, startTransition] = useTransition();
 
   const form = useForm<AddressData>({
@@ -87,7 +89,7 @@ export const AddressFormStep = ({
           form.reset();
           onSuccess?.(result.data as AddressData);
         } else {
-          toast.error(result.error || "Failed to save address");
+          toast.error(result.error || t("failedToSaveAddress"));
 
           // Set server-side field errors if available
           if (result && typeof result === "object" && "error" in result) {
@@ -106,7 +108,7 @@ export const AddressFormStep = ({
         }
       } catch (error) {
         console.error("Form submission error:", error);
-        toast.error("Something went wrong. Please try again.");
+        toast.error(t("failedToSaveAddress"));
       }
     });
   };
@@ -123,22 +125,22 @@ export const AddressFormStep = ({
             className="space-y-4"
           >
             <div className="space-y-3 px-6">
-              <h3 className="font-semibold text-sm">Personal Information</h3>
+              <h3 className="font-semibold text-sm">{t("personalInformation")}</h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <TextInput
                   form={form as any}
                   name="fullName"
-                  label="Full Name"
-                  placeholder="Enter your full name"
+                  label={t("fullName")}
+                  placeholder={t("enterFullName")}
                   required
                 />
 
                 <TextInput
                   form={form as any}
                   name="phone"
-                  label="Phone Number"
-                  placeholder="Enter your phone number"
+                  label={t("phoneNumber")}
+                  placeholder={t("enterPhoneNumber")}
                   type="tel"
                   required
                 />
@@ -148,22 +150,22 @@ export const AddressFormStep = ({
             <Separator />
 
             <div className="space-y-3 px-6">
-              <h3 className="font-semibold text-sm">Address Information</h3>
+              <h3 className="font-semibold text-sm">{t("addressInformation")}</h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <TextInput
                   form={form as any}
                   name="addressLine1"
-                  label="Address Line 1"
-                  placeholder="Street address, building name, etc."
+                  label={t("addressLine1")}
+                  placeholder={t("addressLine1Placeholder")}
                   required
                 />
 
                 <TextInput
                   form={form as any}
                   name="addressLine2"
-                  label="Building / Floor (Optional)"
-                  placeholder="Apartment, suite, unit, building, floor, etc."
+                  label={t("buildingFloorOptional")}
+                  placeholder={t("buildingFloorPlaceholder")}
                 />
               </div>
 
@@ -171,24 +173,24 @@ export const AddressFormStep = ({
                 <TextInput
                   form={form as any}
                   name="city"
-                  label="City"
-                  placeholder="Enter city"
+                  label={t("city")}
+                  placeholder={t("enterCity")}
                   required
                 />
 
                 <TextInput
                   form={form as any}
                   name="state"
-                  label="State/Province"
-                  placeholder="Enter state or province"
+                  label={t("stateProvince")}
+                  placeholder={t("enterStateProvince")}
                   required
                 />
 
                 <TextInput
                   form={form as any}
                   name="postalCode"
-                  label="Postal Code"
-                  placeholder="Enter postal code"
+                  label={t("postalCode")}
+                  placeholder={t("enterPostalCode")}
                   required
                 />
               </div>
@@ -199,7 +201,7 @@ export const AddressFormStep = ({
             <div className="space-y-3 px-6">
               <SwitchInput
                 name="isBusinessAddress"
-                label="This is a business address"
+                label={t("isBusinessAddress")}
                 labelPosition="right"
                 className="space-y-0"
               />
@@ -208,8 +210,8 @@ export const AddressFormStep = ({
                 <TextInput
                   form={form as any}
                   name="company"
-                  label="Company Name"
-                  placeholder="Enter company name"
+                  label={t("companyName")}
+                  placeholder={t("enterCompanyName")}
                   required
                 />
               )}
@@ -221,8 +223,8 @@ export const AddressFormStep = ({
               <TextareaInput
                 form={form as any}
                 name="deliveryInstructions"
-                label="Special Instructions (Optional)"
-                placeholder="Gate codes, building access, special delivery instructions, etc."
+                label={t("specialInstructions")}
+                placeholder={t("specialInstructionsPlaceholder")}
                 showCharacterCount={true}
               />
             </div>
@@ -237,7 +239,7 @@ export const AddressFormStep = ({
                     disabled={isPending}
                     className="flex-1"
                   >
-                    Cancel
+                    {t("cancel")}
                   </Button>
                 )}
 
@@ -251,11 +253,11 @@ export const AddressFormStep = ({
                 >
                   {isPending
                     ? address?.id
-                      ? "Updating..."
-                      : "Creating..."
+                      ? t("updating")
+                      : t("creating")
                     : address?.id
-                      ? "Update Address"
-                      : "Save Address"}
+                      ? t("updateAddress")
+                      : t("saveAddress")}
                 </Button>
               </div>
             </div>

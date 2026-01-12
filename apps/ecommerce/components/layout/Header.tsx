@@ -45,10 +45,10 @@ const MainHeader = async () => {
             "hidden md:flex items-center justify-between gap-4 lg:gap-5 md:mt-0 mt-4"
           )}
         >
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-8">
             <Logo />
             {/* <DeliveryLocation className="hidden lg:flex" user={user} /> */}
-            {/* <LanguageSwitcher /> */}
+            <LanguageSwitcher />
           </div>
 
           <SearchBar variant="desktop" />

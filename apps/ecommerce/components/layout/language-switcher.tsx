@@ -10,9 +10,9 @@ export function LanguageSwitcher() {
   const router = useRouter();
   const locale = useLocale();
 
-  function switchLocale(locale: string) {
+  function switchLocale(newLocale: string) {
     const oneYear = 60 * 60 * 24 * 365;
-    document.cookie = `locale=${locale}; path=/; max-age=${oneYear};`;
+    document.cookie = `locale=${newLocale}; path=/; max-age=${oneYear};`;
     router.refresh();
   }
 

@@ -5,9 +5,12 @@ import { Separator } from "@workspace/ui/components";
 import { OAuth } from "@/components/auth/o-auth";
 import { OnboardingFormClient } from "@/components/onboarding/onboarding-form.client";
 import { createClient } from "@/supabase/server";
+import { getTranslations } from "next-intl/server";
+import { OnboardingPageContent } from "./onboarding-page-content";
 
 export default async function OnboardingPage() {
   const supabase = await createClient();
+  const t = await getTranslations("onboarding");
 
   const {
     data: { user },
@@ -18,16 +21,16 @@ export default async function OnboardingPage() {
       <div className="mx-auto w-full max-w-2xl">
         <Logo className="*:text-primary flex justify-center" />
         <h2 className="mt-4 text-2xl/9 font-bold tracking-tight text-gray-900 text-center">
-          Become a Seller
+          {t("becomeSeller")}
         </h2>
         <p className="mt-1 text-sm text-gray-600 text-center">
-          Create your vendor account and start selling on our platform.{" "}
+          {t("createVendorAccount")}{" "}
           {!user && (
             <Link
               href="/auth?redirect=/onboarding"
               className="font-semibold text-primary hover:text-primary/80"
             >
-              Already have an account? Sign in
+              {t("alreadyHaveAccount")}
             </Link>
           )}
         </p>
@@ -44,7 +47,7 @@ export default async function OnboardingPage() {
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
                   <span className="bg-background px-2 text-muted-foreground">
-                    Or sign in with
+                    {t("orSignInWith")}
                   </span>
                 </div>
               </div>

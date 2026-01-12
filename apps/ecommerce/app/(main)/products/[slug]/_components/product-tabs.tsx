@@ -38,6 +38,7 @@ import {
 } from "@workspace/ui/components/form";
 import { Dialog, DialogContent } from "@workspace/ui/components/dialog";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 // Zod schema for question form
 const questionFormSchema = z.object({
@@ -68,6 +69,9 @@ interface ProductTabsProps {
 }
 
 export const ProductTabs = ({ product, user }: ProductTabsProps) => {
+  const t = useTranslations("product");
+  const tCommon = useTranslations("common");
+  const tToast = useTranslations("toast");
   const [expandedQuestions, setExpandedQuestions] = useState<Set<string>>(
     new Set()
   );
@@ -181,17 +185,15 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
 
         if (result.success) {
           form.reset();
-          toast.success(
-            "Your question has been submitted and is pending approval"
-          );
+          toast.success(tToast("questionSubmitted"));
           // Refresh the page to show the new question (after moderation)
           router.refresh();
         } else {
-          toast.error(result.error || "Failed to submit question");
+          toast.error(result.error || tToast("failedToSubmitQuestion"));
         }
       } catch (error) {
         console.error("Error submitting question:", error);
-        toast.error("An unexpected error occurred. Please try again.");
+        toast.error(tToast("unexpectedError"));
       }
     });
   };
@@ -209,11 +211,11 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
         if (result.success) {
           router.refresh();
         } else {
-          toast.error(result.error || "Failed to vote on review");
+          toast.error(result.error || tToast("failedToVote"));
         }
       } catch (error) {
         console.error("Error voting on review:", error);
-        toast.error("An unexpected error occurred. Please try again.");
+        toast.error(tToast("unexpectedError"));
       } finally {
         setVotingReviews((prev) => {
           const next = new Set(prev);
@@ -244,7 +246,7 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
   const handleSubmitComment = (reviewId: string) => {
     const formData = commentFormsData[reviewId];
     if (!formData || !formData.comment.trim()) {
-      toast.error("Please enter a comment");
+      toast.error(t("pleaseEnterComment"));
       return;
     }
 
@@ -268,14 +270,14 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
             next.delete(reviewId);
             return next;
           });
-          toast.success("Comment added successfully");
+          toast.success(t("commentAddedSuccessfully"));
           router.refresh();
         } else {
-          toast.error(result.error || "Failed to add comment");
+          toast.error(result.error || t("failedToAddComment"));
         }
       } catch (error) {
         console.error("Error submitting comment:", error);
-        toast.error("An unexpected error occurred. Please try again.");
+        toast.error(t("failedToAddComment"));
       } finally {
         setCommentingReviews((prev) => {
           const next = new Set(prev);
@@ -373,10 +375,10 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
               <div className="space-y-4 lg:space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <h3 className="text-lg lg:text-xl font-bold text-gray-900">
-                    Frequently Asked Questions
+                    {t("frequentlyAskedQuestions")}
                   </h3>
                   <Button variant="outline" size="sm" className="w-fit">
-                    View More
+                    {t("viewMore")}
                   </Button>
                 </div>
 
@@ -427,7 +429,7 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
                     <div className="text-center py-8 text-gray-500">
                       <HelpCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                       <p className="text-sm lg:text-base">
-                        No questions yet. Ask a question below!
+                        {t("noQuestions")} {t("beFirstToAsk")}
                       </p>
                     </div>
                   )}
@@ -437,18 +439,18 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
               <div className="space-y-4 lg:space-y-6">
                 <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
                   <h4 className="font-semibold text-gray-900 mb-3 lg:mb-4 text-sm lg:text-base">
-                    Have a Question?
+                    {t("haveAQuestion")}
                   </h4>
                   {!user ? (
                     <div className="space-y-3 lg:space-y-4">
                       <p className="text-sm lg:text-base text-gray-600">
-                        Please sign in to ask a question about this product.
+                        {t("pleaseSignInToAsk")}
                       </p>
                       <Button
                         onClick={() => openAuthDialog("signin")}
                         className="w-full"
                       >
-                        Sign In to Ask a Question
+                        {t("signInToAskQuestion")}
                       </Button>
                     </div>
                   ) : (
@@ -465,7 +467,7 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
                               <FormControl>
                                 <Input
                                   type="text"
-                                  placeholder="Type your question here..."
+                                  placeholder={t("typeYourQuestion")}
                                   disabled={isPending}
                                   {...field}
                                 />
@@ -482,7 +484,7 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
                           {isPending && (
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                           )}
-                          {isPending ? "Submitting..." : "Send Question"}
+                          {isPending ? t("submitting") : t("sendQuestion")}
                         </Button>
                       </form>
                     </Form>
@@ -499,7 +501,7 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
               <div className="lg:col-span-2 space-y-4 lg:space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <h3 className="text-lg lg:text-xl font-bold text-gray-900">
-                    Customer Reviews
+                    {t("customerReviews")}
                   </h3>
                   {/* <Button variant="outline" size="sm" className="w-fit">
                     Write a Review
@@ -536,7 +538,7 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
                         <div className="flex-1">
                           <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-2">
                             <span className="font-semibold text-gray-900 text-sm lg:text-base">
-                              {review.user?.fullName || "Anonymous"}
+                              {review.user?.fullName || t("anonymous")}
                             </span>
                             <span className="text-xs lg:text-sm text-gray-500">
                               {formatDate(review.createdAt)}
@@ -591,8 +593,7 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
                                             controls={false}
                                             preload="metadata"
                                           >
-                                            Your browser does not support the
-                                            video tag.
+                                            {t("videoNotSupported")}
                                           </video>
                                         </div>
                                       ) : isImage ? (
@@ -661,7 +662,7 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
                               onClick={() => handleToggleCommentForm(review.id)}
                             >
                               <MessageCircle className="h-4 w-4 mr-1.5" />
-                              Comment
+                              {t("comment")}
                             </Button>
                           </div>
                         )}
@@ -681,8 +682,10 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
                                 ) : (
                                   <ChevronDown className="h-4 w-4 mr-1.5" />
                                 )}
-                                {review.reviewComments.length} Comment
-                                {review.reviewComments.length !== 1 ? "s" : ""}
+                                {review.reviewComments.length}{" "}
+                                {review.reviewComments.length === 1
+                                  ? t("comment")
+                                  : t("comments")}
                               </Button>
                               {expandedComments.has(review.id) && (
                                 <div className="space-y-3 mt-2">
@@ -694,8 +697,9 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
                                       <div className="flex items-center gap-2 mb-1">
                                         <span className="font-medium text-sm text-gray-900">
                                           {comment.isAnonymous
-                                            ? "Anonymous"
-                                            : comment.user?.fullName || "User"}
+                                            ? t("anonymous")
+                                            : comment.user?.fullName ||
+                                              t("user")}
                                         </span>
                                         <span className="text-xs text-gray-500">
                                           {formatDate(comment.createdAt)}
@@ -716,7 +720,7 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
                           <div className="border-t pt-4 mt-4 space-y-3">
                             <div className="space-y-2">
                               <Textarea
-                                placeholder="Write a comment..."
+                                placeholder={t("writeComment")}
                                 value={
                                   commentFormsData[review.id]?.comment || ""
                                 }
@@ -744,7 +748,7 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
                                   htmlFor={`anonymous-${review.id}`}
                                   className="text-sm text-gray-600 cursor-pointer"
                                 >
-                                  Post as anonymous
+                                  {t("postAsAnonymous")}
                                 </label>
                               </div>
                             </div>
@@ -757,7 +761,7 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
                                 {commentingReviews.has(review.id) && (
                                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                                 )}
-                                Submit
+                                {tCommon("submit")}
                               </Button>
                               <Button
                                 variant="outline"
@@ -766,7 +770,7 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
                                   handleToggleCommentForm(review.id)
                                 }
                               >
-                                Cancel
+                                {tCommon("cancel")}
                               </Button>
                             </div>
                           </div>
@@ -778,7 +782,7 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
                   <div className="text-center py-8 text-gray-500">
                     <MessageCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                     <p className="text-sm lg:text-base">
-                      No reviews yet. Be the first to review this product!
+                      {t("noReviews")} {t("beTheFirst")}
                     </p>
                   </div>
                 )}
@@ -799,7 +803,7 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
                       {renderStars(Math.round(product.averageRating ?? 0))}
                     </div>
                     <p className="text-xs lg:text-sm text-gray-600">
-                      Based on {product.reviewCount} ratings
+                      {t("basedOnRatings", { count: product.reviewCount ?? 0 })}
                     </p>
                   </div>
 
@@ -814,15 +818,13 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
 
                 <div className="border border-gray-200 rounded-lg p-4 lg:p-6">
                   <h4 className="font-semibold text-gray-900 mb-3 lg:mb-4 text-sm lg:text-base">
-                    Leave a Review
+                    {t("leaveReview")}
                   </h4>
                   <p className="text-xs lg:text-sm text-gray-600 mb-3 lg:mb-4">
-                    You can only review products you've purchased. Share your
-                    experience with the product, the vendor, and the delivery.
+                    {t("leaveReviewDescription")}
                   </p>
                   <p className="text-xs text-gray-500">
-                    Note: Reviews can be submitted after your order is marked as
-                    delivered.
+                    {t("leaveReviewNote")}
                   </p>
                 </div>
               </div>
@@ -834,7 +836,7 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
           <div className="space-y-4 lg:space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <h3 className="text-lg lg:text-xl font-bold text-gray-900">
-                Product Gallery
+                {t("productGallery")}
               </h3>
 
             </div>
@@ -928,7 +930,7 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
                   className="absolute right-4 z-50 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
                   aria-label="Next"
                 >
-                  <ChevronRight className="h-6 w-6" />
+                  <ChevronRight className="h-6 w-6 rtl:rotate-180" />
                 </button>
               )}
 
@@ -959,7 +961,7 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
                           controls
                           autoPlay
                         >
-                          Your browser does not support the video tag.
+                          {t("videoNotSupported")}
                         </video>
                       ) : isImage ? (
                         <Image

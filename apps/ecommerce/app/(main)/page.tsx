@@ -7,6 +7,7 @@ import ProductSection from "@/components/home/ProductSection";
 import Hero from "@/components/home/hero/hero";
 import type { Metadata } from "next";
 import { ProductsGrid } from "@/components/home";
+import { getTranslations } from "next-intl/server";
 
 export const metadata: Metadata = {
   title: "Home | Multi-Vendor E-commerce",
@@ -22,14 +23,16 @@ export const metadata: Metadata = {
   },
 };
 
-const HomePage = () => {
+const HomePage = async () => {
+  const t = await getTranslations("pages.home");
+
   return (
     <div className="min-h-screen">
       <Hero />
 
 
       <ProductsGrid
-        title="Featured Products"
+        title={t("featuredProducts")}
         filters={{
           sortBy: "newest",
           limit: 10,

@@ -1,8 +1,6 @@
 import {
   Facebook,
   Instagram,
-  Twitter,
-  Youtube,
   Mail,
   ArrowRight,
   MapPin,
@@ -12,8 +10,10 @@ import Link from "next/link";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { Logo } from "../logo";
+import { getTranslations } from "next-intl/server";
 
-const Footer = () => {
+const Footer = async () => {
+  const t = await getTranslations("footer");
   return (
     <footer className="relative bg-primary text-white overflow-hidden">
       {/* Gradient overlay */}
@@ -33,9 +33,7 @@ const Footer = () => {
                 <Logo />
               </div>
               <p className="text-gray-300 text-sm leading-relaxed mb-6 max-w-sm">
-                Your ultimate destination for fashion-forward styles. We curate
-                the latest trends and timeless pieces to help you express your
-                unique style.
+                {t("description")}
               </p>
             </div>
 
@@ -43,15 +41,27 @@ const Footer = () => {
             <div className="space-y-3 text-sm text-gray-300">
               <div className="flex items-center gap-3">
                 <MapPin className="h-4 w-4 text-accent flex-shrink-0" />
-                <span>123 Fashion Street, Style City, SC 12345</span>
+                <span>{t("address")}</span>
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="h-4 w-4 text-accent flex-shrink-0" />
-                <span>+1 (555) 123-STYLE</span>
+                <a
+                  href={`https://wa.me/201013626248`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-white transition-colors"
+                >
+                  {t("phone")}
+                </a>
               </div>
               <div className="flex items-center gap-3">
                 <Mail className="h-4 w-4 text-accent flex-shrink-0" />
-                <span>hello@tallaby.com</span>
+                <a
+                  href={`mailto:${t("email")}`}
+                  className="hover:text-white transition-colors"
+                >
+                  {t("email")}
+                </a>
               </div>
             </div>
           </div>
@@ -59,16 +69,16 @@ const Footer = () => {
           {/* Company Links */}
           <div>
             <h4 className="font-semibold mb-6 text-white relative">
-              Company
+              {t("company")}
               <div className="absolute -bottom-2 start-0 w-8 h-0.5 bg-gradient-to-r from-accent to-accent/50 rounded-full" />
             </h4>
             <ul className="space-y-3 text-sm">
               {[
-                { href: "/about", label: "About Us" },
-                { href: "/contact", label: "Contact Us" },
-                { href: "/stores", label: "Store Locator" },
-                { href: "/careers", label: "Careers" },
-                { href: "/press", label: "Press & Media" },
+                { href: "/about", label: t("aboutUs") },
+                { href: "/contact", label: t("contactUs") },
+                { href: "/stores", label: t("storeLocator") },
+                { href: "/careers", label: t("careers") },
+                { href: "/press", label: t("pressMedia") },
               ].map((link) => (
                 <li key={link.href}>
                   <Link
@@ -85,16 +95,16 @@ const Footer = () => {
           {/* Customer Service */}
           <div>
             <h4 className="font-semibold mb-6 text-white relative">
-              Support
+              {t("support")}
               <div className="absolute -bottom-2 start-0 w-8 h-0.5 bg-gradient-to-r from-accent to-accent/50 rounded-full" />
             </h4>
             <ul className="space-y-3 text-sm">
               {[
-                { href: "/help", label: "Help Center" },
-                { href: "/returns", label: "Returns & Exchanges" },
-                { href: "/shipping", label: "Shipping Info" },
-                { href: "/size-guide", label: "Size Guide" },
-                { href: "/faq", label: "FAQ" },
+                { href: "/help", label: t("helpCenter") },
+                { href: "/returns", label: t("returnsExchanges") },
+                { href: "/shipping", label: t("shippingInfo") },
+                { href: "/size-guide", label: t("sizeGuide") },
+                { href: "/faq", label: t("faq") },
               ].map((link) => (
                 <li key={link.href}>
                   <Link
@@ -111,21 +121,29 @@ const Footer = () => {
           {/* Social & Legal */}
           <div>
             <h4 className="font-semibold mb-6 text-white relative">
-              Connect
+              {t("connect")}
               <div className="absolute -bottom-2 start-0 w-8 h-0.5 bg-gradient-to-r from-accent to-accent/50 rounded-full" />
             </h4>
 
             {/* Social Media */}
             <div className="flex flex-wrap gap-3 mb-6">
               {[
-                { icon: Facebook, href: "#", label: "Facebook" },
-                { icon: Instagram, href: "#", label: "Instagram" },
-                { icon: Twitter, href: "#", label: "Twitter" },
-                { icon: Youtube, href: "#", label: "YouTube" },
+                {
+                  icon: Facebook,
+                  href: "https://www.facebook.com/profile.php?id=100070155523046",
+                  label: "Facebook",
+                },
+                {
+                  icon: Instagram,
+                  href: "https://www.instagram.com/tallabycommerce/",
+                  label: "Instagram",
+                },
               ].map((social) => (
                 <a
                   key={social.label}
                   href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-10 h-10 bg-slate-800 hover:bg-gradient-to-r hover:from-accent hover:to-accent/80 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 group"
                   aria-label={social.label}
                 >
@@ -136,9 +154,11 @@ const Footer = () => {
 
             {/* Payment Methods */}
             <div className="mb-6">
-              <h5 className="text-sm font-medium mb-3 text-white">We Accept</h5>
+              <h5 className="text-sm font-medium mb-3 text-white">
+                {t("weAccept")}
+              </h5>
               <div className="flex gap-2 flex-wrap">
-                {["VISA", "MC", "AMEX", "PP"].map((payment) => (
+                {[t("wallet"), t("instapay")].map((payment) => (
                   <div
                     key={payment}
                     className="bg-white text-slate-900 px-3 py-1.5 rounded-md text-xs font-bold shadow-sm"
@@ -152,9 +172,9 @@ const Footer = () => {
             {/* Legal Links */}
             <ul className="space-y-2 text-xs">
               {[
-                { href: "/privacy", label: "Privacy Policy" },
-                { href: "/terms", label: "Terms of Service" },
-                { href: "/cookies", label: "Cookie Policy" },
+                { href: "/privacy", label: t("privacyPolicy") },
+                { href: "/terms", label: t("termsOfService") },
+                { href: "/cookies", label: t("cookiePolicy") },
               ].map((link) => (
                 <li key={link.href}>
                   <Link
@@ -173,15 +193,8 @@ const Footer = () => {
         <div className="border-t border-gray-700 pt-8">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-gray-400 text-sm text-center sm:text-left">
-              © 2024 tallaby.com, Inc. All rights reserved.
+              {t("copyright", { year: new Date().getFullYear() })}
             </p>
-            <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 text-xs text-gray-400">
-              <span>Made with ❤️ for fashion lovers</span>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                <span>All systems operational</span>
-              </div>
-            </div>
           </div>
         </div>
       </div>

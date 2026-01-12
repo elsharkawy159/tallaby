@@ -122,14 +122,17 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-montserrat);
+    font-family: var(--font-noto-kufi-arabic, var(--font-montserrat), sans-serif);
   }
 }
 
-/* Add Montserrat utility class */
+/* Add font utility classes */
 @layer utilities {
   .font-montserrat {
-    font-family: var(--font-montserrat);
+    font-family: var(--font-montserrat, sans-serif);
+  }
+  .font-noto-kufi-arabic {
+    font-family: var(--font-noto-kufi-arabic, sans-serif);
   }
 }
 

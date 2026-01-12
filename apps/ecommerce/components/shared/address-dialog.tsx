@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@workspace/ui/components/button";
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -40,6 +41,7 @@ export const AddressDialog = ({
   onSuccess,
   onAddressSelect,
 }: AddressDialogProps) => {
+  const t = useTranslations("addresses");
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState<DialogStep>("list");
@@ -112,7 +114,7 @@ export const AddressDialog = ({
   // Handle address selection
   const handleAddressSelect = (selectedAddress: AddressData) => {
     onAddressSelect?.(selectedAddress);
-    toast.success("Address selected");
+    toast.success(t("addressSelected"));
     setIsOpen(false);
   };
 
@@ -158,22 +160,22 @@ export const AddressDialog = ({
 
   // Handle delete address
   const handleDelete = async (addressId: string) => {
-    if (!confirm("Are you sure you want to delete this address?")) {
+    if (!confirm(t("confirmDeleteAddress"))) {
       return;
     }
 
     try {
       const result = await deleteAddress(addressId);
       if (result.success) {
-        toast.success("Address deleted");
+        toast.success(t("addressDeleted"));
         await loadAddresses();
         router.refresh();
       } else {
-        toast.error(result.error || "Failed to delete address");
+        toast.error(result.error || t("failedToDeleteAddress"));
       }
     } catch (error) {
       console.error("Delete error:", error);
-      toast.error("Failed to delete address");
+      toast.error(t("failedToDeleteAddress"));
     }
   };
 
@@ -182,15 +184,15 @@ export const AddressDialog = ({
     try {
       const result = await setDefaultAddress(addressId);
       if (result.success) {
-        toast.success("Default address updated");
+        toast.success(t("defaultAddressUpdated"));
         await loadAddresses();
         router.refresh();
       } else {
-        toast.error(result.error || "Failed to set default address");
+        toast.error(result.error || t("failedToSetDefault"));
       }
     } catch (error) {
       console.error("Set default error:", error);
-      toast.error("Failed to set default address");
+      toast.error(t("failedToSetDefault"));
     }
   };
 
@@ -223,20 +225,20 @@ export const AddressDialog = ({
   const getStepTitle = () => {
     switch (currentStep) {
       case "list":
-        return "Manage Addresses";
+        return t("manageAddresses");
       case "map":
-        return "Select Location";
+        return t("selectLocation");
       case "form":
-        return editingAddress?.id ? "Edit Address" : "Add New Address";
+        return editingAddress?.id ? t("editAddress") : t("addNewAddress");
       default:
-        return "Manage Addresses";
+        return t("manageAddresses");
     }
   };
 
   const defaultTrigger = (
     <Button variant="outline" className="gap-2">
       <MapPin className="h-4 w-4" />
-      Manage Addresses
+      {t("manageAddresses")}
     </Button>
   );
 
@@ -297,11 +299,11 @@ export const AddressDialog = ({
                 onClick={() => setIsOpen(false)}
                 className="flex-1"
               >
-                Close
+                {t("close")}
               </Button>
               <Button onClick={handleAddNew} className="flex-1 gap-2">
                 <Plus className="h-4 w-4" />
-                Add New Address
+                {t("addNewAddress")}
               </Button>
             </div>
           </div>

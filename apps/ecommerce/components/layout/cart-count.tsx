@@ -8,7 +8,7 @@ export const CartCount = async () => {
   return (
     <span
       className={
-        "absolute md:-top-1 -top-2 md:-right-1 -right-2 bg-red-500 text-white text-xs rounded-full size-5 flex items-center justify-center"
+        "absolute md:-top-1 -top-1.5 md:-right-1 -right-1 bg-red-500 text-white md:text-xs text-[10px] rounded-full md:size-5 size-4 flex items-center justify-center"
       }
     >
       {itemCount}

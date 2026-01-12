@@ -19,7 +19,7 @@ export function formatPrice(
   const formatted = new Intl.NumberFormat(isArabic ? "ar-EG" : "en-EG", {
     style: "currency",
     currency: "EGP",
-    minimumFractionDigits: 2,
+    minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   }).format(price);
 

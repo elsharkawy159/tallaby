@@ -6,6 +6,7 @@ import { removeFromCart } from "@/actions/cart";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 interface CartItemRemoveButtonProps {
   cartItemId: string;
@@ -16,6 +17,7 @@ export const CartItemRemoveButton = ({
 }: CartItemRemoveButtonProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const t = useTranslations("toast");
 
   const handleRemove = async () => {
     setIsLoading(true);
@@ -23,12 +25,12 @@ export const CartItemRemoveButton = ({
       const result = await removeFromCart(cartItemId);
       if (result.success) {
         router.refresh();
-        toast.success("Item removed");
+        toast.success(t("itemRemoved"));
       } else {
-        toast.error(result.error || "Failed to remove item");
+        toast.error(result.error || t("failedToRemoveItem"));
       }
     } catch (error) {
-      toast.error("Failed to remove item");
+      toast.error(t("failedToRemoveItem"));
     } finally {
       setIsLoading(false);
     }

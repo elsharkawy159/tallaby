@@ -24,6 +24,7 @@ import {
 } from "@/actions/cart";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 interface CartSheetProps {
   open: boolean;
@@ -46,6 +47,7 @@ export function CartSheet({
   const [loadingItems, setLoadingItems] = useState<Set<string>>(new Set());
   const router = useRouter();
   const locale = useLocale();
+  const tToast = useTranslations("toast");
 
   const updateQuantity = async (itemId: string, quantity: number) => {
     setLoadingItems((prev) => new Set(prev).add(itemId));
@@ -53,12 +55,12 @@ export function CartSheet({
       const result = await updateCartItem(itemId, quantity);
       if (result.success) {
         router.refresh();
-        toast.success("Cart updated");
+        toast.success(tToast("cartUpdated"));
       } else {
         toast.error(result.error || "Failed to update cart");
       }
     } catch (error) {
-      toast.error("Failed to update cart");
+      toast.error(tToast("failedToUpdateCart"));
     } finally {
       setLoadingItems((prev) => {
         const newSet = new Set(prev);
@@ -74,7 +76,7 @@ export function CartSheet({
       const result = await removeFromCartAction(itemId);
       if (result.success) {
         router.refresh();
-        toast.success("Item removed");
+        toast.success(tToast("itemRemoved"));
       } else {
         toast.error(result.error || "Failed to remove item");
       }

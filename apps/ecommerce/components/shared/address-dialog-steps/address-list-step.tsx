@@ -4,6 +4,7 @@ import { Button } from "@workspace/ui/components/button";
 import { Card, CardContent } from "@workspace/ui/components/card";
 import { Badge } from "@workspace/ui/components/badge";
 import { Skeleton } from "@workspace/ui/components/skeleton";
+import { useTranslations } from "next-intl";
 import {
   Edit,
   Trash2,
@@ -36,6 +37,7 @@ export const AddressListStep = ({
   onDelete,
   onSetDefault,
 }: AddressListStepProps) => {
+  const t = useTranslations("addresses");
   const getShortAddress = (address: AddressData) => {
     return `${address.city}, ${address.addressLine1}`;
   };
@@ -49,14 +51,13 @@ export const AddressListStep = ({
       <div className="p-6">
         <div className="flex flex-col items-center justify-center py-12">
           <MapPin className="h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-2">No addresses found</h3>
+          <h3 className="text-lg font-semibold mb-2">{t("noAddressesFound")}</h3>
           <p className="text-muted-foreground text-center mb-6">
-            You haven't added any addresses yet. Add your first address to get
-            started.
+            {t("noAddressesYet")}
           </p>
           <Button onClick={onAddNew} className="gap-2">
             <Plus className="h-4 w-4" />
-            Add New Address
+            {t("addNewAddress")}
           </Button>
         </div>
       </div>
@@ -92,14 +93,14 @@ export const AddressListStep = ({
                     {isDefault && (
                       <Badge variant="secondary" className="gap-1">
                         <Star className="h-3 w-3" />
-                        Default
+                        {t("default")}
                       </Badge>
                     )}
 
                     {address.isBusinessAddress && (
                       <Badge variant="outline" className="gap-1">
                         <Building2 className="h-3 w-3" />
-                        Business
+                        {t("business")}
                       </Badge>
                     )}
                   </div>

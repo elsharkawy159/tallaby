@@ -8,6 +8,7 @@ import { AddToCartButton } from "@/components/product";
 import { ProductQuantitySelector } from "./product-quantity-selector";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 interface ProductActionsProps {
   product: Product;
@@ -26,6 +27,7 @@ export const ProductActions = ({
   isInCart: isInCartStatus = false,
   cartItemQuantity = 0,
 }: ProductActionsProps) => {
+  const t = useTranslations("product");
   const [quantity, setQuantity] = useState(cartItemQuantity || 1);
   const stockCount = product.quantity ? Number(product.quantity) : 0;
   const hasStock = product.isActive && stockCount > 0;
@@ -48,10 +50,10 @@ export const ProductActions = ({
       {!hasStock && (
         <div className="text-center p-3 bg-red-50 border border-red-200 rounded-lg">
           <p className="text-red-600 font-medium text-sm">
-            Currently Out of Stock
+            {t("currentlyOutOfStock")}
           </p>
           <p className="text-red-500 text-xs">
-            We&apos;ll notify you when it&apos;s back
+            {t("notifyWhenBack")}
           </p>
         </div>
       )}
@@ -61,7 +63,7 @@ export const ProductActions = ({
         {isInCartStatus ? (
           <Button asChild className="w-full h-12 text-base" size="lg">
             <Link href="/cart">
-              Go To Cart <ChevronRight className="h-4 w-4 ml-2" />
+              {t("goToCart")} <ChevronRight className="h-4 w-4 rtl:rotate-180" />
             </Link>
           </Button>
         ) : (

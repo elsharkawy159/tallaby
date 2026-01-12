@@ -14,7 +14,7 @@ import { Badge } from "@workspace/ui/components/badge";
 import { ProductActions } from "./ProductActions";
 import type { Product } from "./product-page.types";
 import { formatPrice } from "@workspace/lib";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState, useMemo } from "react";
 import {
   Accordion,
@@ -42,6 +42,7 @@ export const ProductDetails = ({
   onVariantChange,
 }: ProductDetailsProps) => {
   const locale = useLocale();
+  const t = useTranslations("product");
 
   // Use internal state if props are not provided (backwards compatibility)
   const [internalSelectedVariantId, setInternalSelectedVariantId] = useState<
@@ -139,7 +140,9 @@ export const ProductDetails = ({
               {product.averageRating?.toFixed(1) || "0.0"}
             </span>
             <Link href="#reviews" className="text-sm text-gray-600 underline">
-              {product.reviewCount || 0} reviews
+              {product.reviewCount === 1
+                ? t("reviewsCountOne", { count: product.reviewCount || 0 })
+                : t("reviewsCount", { count: product.reviewCount || 0 })}
             </Link>
           </div>
           <div className="flex items-center gap-2">
@@ -149,7 +152,9 @@ export const ProductDetails = ({
               }`}
             />
             <span className="text-sm font-medium text-gray-900">
-              {hasStock ? `In stock (${stock} available)` : "Out of stock"}
+              {hasStock
+                ? t("inStockAvailable", { count: stock })
+                : t("outOfStock")}
             </span>
           </div>
         </div>
@@ -158,7 +163,7 @@ export const ProductDetails = ({
         {hasVariants && (
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-900 mb-3">
-              Select Variant
+              {t("selectVariant")}
             </label>
             <div className="grid lg:grid-cols-2 grid-cols-1 gap-2">
               {product.productVariants?.map((variant) => {
@@ -223,8 +228,8 @@ export const ProductDetails = ({
                           }`}
                         >
                           {isAvailable
-                            ? `${variantStock} in stock`
-                            : "Out of stock"}
+                            ? t("inStockCount", { count: variantStock })
+                            : t("outOfStock")}
                         </p>
                       </div>
                     </div>
@@ -315,7 +320,7 @@ export const ProductDetails = ({
             className="border-b border-gray-200"
           >
             <AccordionTrigger className="text-base font-medium text-gray-900 py-4">
-              Description
+              {t("description")}
             </AccordionTrigger>
             <AccordionContent className="text-sm text-gray-700 pb-4">
               {product.description}
@@ -329,7 +334,7 @@ export const ProductDetails = ({
                 className="border-b border-gray-200"
               >
                 <AccordionTrigger className="text-base font-medium text-gray-900 py-4">
-                  Attributes
+                  {t("attributes")}
                 </AccordionTrigger>
                 <AccordionContent className="text-sm text-gray-700 pb-4">
                   <ul className="list-disc list-inside space-y-2">
@@ -352,9 +357,9 @@ export const ProductDetails = ({
             </div>
             <div>
               <p className="font-medium text-gray-900 text-sm mb-1">
-                Free shipping
+                {t("freeShipping")}
               </p>
-              <p className="text-xs text-gray-600">On orders over $50.00</p>
+              <p className="text-xs text-gray-600">{t("ordersOverAmount")}</p>
             </div>
           </div>
 
@@ -364,9 +369,9 @@ export const ProductDetails = ({
             </div>
             <div>
               <p className="font-medium text-gray-900 text-sm mb-1">
-                Very easy to return
+                {t("veryEasyToReturn")}
               </p>
-              <p className="text-xs text-gray-600">Just phone number</p>
+              <p className="text-xs text-gray-600">{t("justPhoneNumber")}</p>
             </div>
           </div>
 
@@ -376,9 +381,11 @@ export const ProductDetails = ({
             </div>
             <div>
               <p className="font-medium text-gray-900 text-sm mb-1">
-                Nationwide Delivery
+                {t("nationwideDelivery")}
               </p>
-              <p className="text-xs text-gray-600">Fast delivery nationwide</p>
+              <p className="text-xs text-gray-600">
+                {t("fastDeliveryNationwide")}
+              </p>
             </div>
           </div>
 
@@ -388,11 +395,9 @@ export const ProductDetails = ({
             </div>
             <div>
               <p className="font-medium text-gray-900 text-sm mb-1">
-                Refunds policy
+                {t("refundsPolicy")}
               </p>
-              <p className="text-xs text-gray-600">
-                30 days return for any reason
-              </p>
+              <p className="text-xs text-gray-600">{t("thirtyDaysReturn")}</p>
             </div>
           </div>
         </div>

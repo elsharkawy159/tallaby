@@ -35,6 +35,7 @@ import {
 import { Seller } from "@/app/(main)/profile/_components/profile.types";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { signOutAction } from "@/actions/auth";
+import { useTranslations } from "next-intl";
 
 interface UserMenuProps {
   variant?: "desktop" | "mobile";
@@ -55,6 +56,7 @@ export function UserMenu({
 }: UserMenuProps) {
   if (!user) return null;
 
+  const t = useTranslations("profile");
   const avatarUrl = getUserAvatar(user) || undefined;
   const userInitials = getUserInitials(user);
   const userName = formatUserName(user) || user.email;
@@ -81,7 +83,7 @@ export function UserMenu({
               : "text-gray-600 hover:text-primary",
             className
           )}
-          title={`Welcome, ${userName}`}
+          title={t("welcome", { name: userName })}
         >
           {avatarUrl ? (
             <>
@@ -94,7 +96,7 @@ export function UserMenu({
           ) : (
             <User className="md:size-6 size-4.5" />
           )}
-          <span className="text-xs md:hidden">Profile</span>
+          <span className="text-xs md:hidden">{t("myProfile")}</span>
         </Button>
       </PopoverTrigger>
 
@@ -116,7 +118,7 @@ export function UserMenu({
               <div className="flex items-center gap-1 mt-1">
                 <Store className="size-3 text-green-600" />
                 <span className="text-xs text-green-600 font-medium">
-                  Seller Account
+                  {t("sellerAccount")}
                 </span>
               </div>
             )}
@@ -132,7 +134,7 @@ export function UserMenu({
               className="w-full justify-start h-9 px-3 gap-2.5 font-medium flex items-center hover:bg-gray-100 rounded-md"
             >
               <UserCircle className="size-5 text-gray-500" />
-              My Profile
+              {t("myProfile")}
             </Link>
 
             <Link
@@ -140,7 +142,7 @@ export function UserMenu({
               className="w-full justify-start h-9 px-3 gap-2.5 font-medium flex items-center hover:bg-gray-100 rounded-md"
             >
               <Package className="size-4.5 text-gray-500" />
-              My Orders
+              {t("myOrders")}
             </Link>
 
             <Link
@@ -148,7 +150,7 @@ export function UserMenu({
               className="w-full justify-start h-9 px-3 gap-2.5 font-medium flex items-center hover:bg-gray-100 rounded-md"
             >
               <Heart className="size-4.5 text-gray-500" />
-              Wishlist
+              {t("myWishlist")}
             </Link>
 
             <AddressManagerDialog
@@ -158,7 +160,7 @@ export function UserMenu({
               trigger={
                 <div className="w-full justify-start h-9 px-3 gap-2.5 font-medium flex items-center hover:bg-gray-100 rounded-md cursor-pointer">
                   <MapPin className="size-4.5 text-gray-500" />
-                  Manage Addresses
+                  {t("manageAddresses")}
                 </div>
               }
             />
@@ -171,7 +173,7 @@ export function UserMenu({
               <div className="space-y-1">
                 <div className="px-3 py-1">
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Seller Tools
+                    {t("sellerTools")}
                   </p>
                 </div>
                 <Button
@@ -189,7 +191,7 @@ export function UserMenu({
                     rel="noopener noreferrer"
                   >
                     <Store className="size-4 mr-3" />
-                    Seller Dashboard
+                    {t("sellerDashboard")}
                   </Link>
                 </Button>
               </div>
@@ -205,7 +207,7 @@ export function UserMenu({
             disabled={isSigningOut}
           >
             <LogOut className="size-4.5 text-red-500" />
-            {isSigningOut ? "Signing out..." : "Sign Out"}
+            {isSigningOut ? t("signingOut") : t("signOut")}
           </Button>
         </div>
       </PopoverContent>

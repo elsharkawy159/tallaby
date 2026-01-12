@@ -5,6 +5,7 @@ import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { ArrowLeft, Check, Navigation, Plus, Search } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import {
   reverseGeocode,
   createPulsingDotMarker,
@@ -35,6 +36,7 @@ export const MapLocationStep = ({
   handlePreviousStep,
   initialLocation,
 }: MapLocationStepProps) => {
+  const t = useTranslations("addresses");
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const markerRef = useRef<any>(null);
@@ -90,13 +92,13 @@ export const MapLocationStep = ({
         }
 
         setSelectedCoordinates({ lat, lng });
-        toast.success("Location found!");
+        toast.success(t("locationFound"));
       } else {
-        toast.error("No locations found for your search");
+        toast.error(t("noLocationsFound"));
       }
     } catch (error) {
       console.error("Search error:", error);
-      toast.error("Failed to search for location");
+      toast.error(t("failedToSearchLocation"));
     } finally {
       setIsSearching(false);
     }
@@ -161,7 +163,7 @@ export const MapLocationStep = ({
           markerRef.current = marker;
 
           setSelectedCoordinates({ lat, lng });
-          toast.success("Location selected!");
+          toast.success(t("locationSelected"));
         });
       } catch (error) {
         console.error("Failed to initialize map:", error);
@@ -194,14 +196,14 @@ export const MapLocationStep = ({
    */
   const handleGetCurrentLocation = async () => {
     if (!navigator.geolocation) {
-      const errorMsg = "Geolocation is not supported by your browser";
+      const errorMsg = t("geolocationNotSupported");
       setLocationError(errorMsg);
       toast.error(errorMsg);
       return;
     }
 
     if (!isMapLoaded || !mapInstanceRef.current) {
-      toast.error("Map is not ready. Please wait a moment and try again.");
+      toast.error(t("mapNotReady"));
       return;
     }
 
@@ -258,16 +260,16 @@ export const MapLocationStep = ({
 
             // Store address details (will be used when confirming location)
             if (addressDetails.formattedAddress || addressDetails.displayName) {
-              toast.success("Location found! Full address details retrieved.");
+              toast.success(t("locationFoundFullDetails"));
             } else {
-              toast.success("Location found! Address details may be limited.");
+              toast.success(t("locationFoundLimitedDetails"));
             }
           }
 
           setIsLocating(false);
         } catch (error) {
           console.error("Error processing location:", error);
-          const errorMsg = "Failed to process your location";
+          const errorMsg = t("failedToProcessLocation");
           setLocationError(errorMsg);
           toast.error(errorMsg);
           setIsLocating(false);
@@ -275,22 +277,20 @@ export const MapLocationStep = ({
       },
       (error) => {
         // Handle different geolocation error types
-        let errorMessage = "Unable to retrieve your location";
+        let errorMessage = t("unableToRetrieveLocation");
 
         switch (error.code) {
           case error.PERMISSION_DENIED:
-            errorMessage =
-              "Location access denied. Please enable location permissions in your browser settings.";
+            errorMessage = t("locationAccessDenied");
             break;
           case error.POSITION_UNAVAILABLE:
-            errorMessage = "Location information is unavailable.";
+            errorMessage = t("locationUnavailable");
             break;
           case error.TIMEOUT:
-            errorMessage = "Location request timed out. Please try again.";
+            errorMessage = t("locationTimeout");
             break;
           default:
-            errorMessage =
-              "An unknown error occurred while retrieving location.";
+            errorMessage = t("locationUnknownError");
             break;
         }
 
@@ -309,7 +309,7 @@ export const MapLocationStep = ({
    */
   const handleConfirmLocation = async () => {
     if (!selectedCoordinates) {
-      toast.error("Please select a location on the map");
+      toast.error(t("pleaseSelectLocation"));
       return;
     }
 
@@ -338,7 +338,7 @@ export const MapLocationStep = ({
       onLocationConfirm(locationData);
     } catch (error) {
       console.error("Reverse geocoding error:", error);
-      toast.error("Failed to retrieve address details, using coordinates only");
+      toast.error(t("failedToRetrieveAddress"));
       // Still proceed with coordinates only
       const locationData: LocationData = {
         latitude: selectedCoordinates.lat,
@@ -357,7 +357,7 @@ export const MapLocationStep = ({
         <div className="flex items-center gap-2 absolute top-2.5 lg:w-6/7 w-3/4 left-1/2 -translate-x-1/2">
           <div className="relative w-full">
             <Input
-              placeholder="Search for address"
+              placeholder={t("searchForAddress")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => {
@@ -376,7 +376,7 @@ export const MapLocationStep = ({
               size="sm"
             >
               <Search className="h-4 w-4" />
-              {isSearching ? "Searching..." : "Search"}
+              {isSearching ? t("searching") : t("search")}
             </Button>
           </div>
         </div>
@@ -391,7 +391,7 @@ export const MapLocationStep = ({
             type="button"
           >
             <Navigation className="h-4 w-4" />
-            {isLocating ? "Locating..." : "Locate Me"}
+            {isLocating ? t("locating") : t("locateMe")}
           </Button>
           {locationError && (
             <div className="text-xs text-red-600 bg-white px-2 py-1 rounded shadow-md max-w-[200px] text-right">
@@ -410,14 +410,14 @@ export const MapLocationStep = ({
               className="flex-1 rounded"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back
+              {t("back")}
             </Button>
             <Button
               onClick={handleConfirmLocation}
               disabled={!selectedCoordinates}
               className="flex-1 rounded"
             >
-              Confirm
+              {t("confirm")}
             </Button>
           </>
         </div>

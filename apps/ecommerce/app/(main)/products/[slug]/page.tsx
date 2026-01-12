@@ -2,7 +2,6 @@ import { Suspense } from "react";
 import { getProductBySlug, getAllProductSlugs } from "@/actions/products";
 import { ProductTabs } from "./_components/product-tabs";
 import { SimilarProducts } from "./_components/similar-products";
-import { ProductTabsSkeleton } from "./_components/product-tabs.skeleton";
 import { SimilarProductsSkeleton } from "./_components/similar-products.skeleton";
 
 import type {
@@ -18,6 +17,7 @@ import { ProductStructuredData } from "./_components/product-structured-data";
 import { createClient } from "@/supabase/server";
 import { getCartItems } from "@/actions/cart";
 import { getWishlistItems } from "@/actions/wishlist";
+import { getTranslations } from "next-intl/server";
 
 // ISR: Revalidate every 10 minutes
 export const revalidate = 600;
@@ -39,11 +39,12 @@ export async function generateMetadata({
   params,
 }: ProductPageProps): Promise<Metadata> {
   const { slug } = await params;
+  const t = await getTranslations("product");
   const productResult = await getProductBySlug(slug);
   if (!productResult.success || !productResult.data) {
     return {
-      title: "Product Not Found | Tallaby.com",
-      description: "The requested product could not be found on Tallaby.com",
+      title: `${t("productNotFound")} | Tallaby.com`,
+      description: t("productNotFoundDescription"),
     };
   }
 

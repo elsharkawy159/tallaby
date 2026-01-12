@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Search } from "lucide-react";
 import { Input } from "@workspace/ui/components/input";
 import { useQuery } from "@tanstack/react-query";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useDebounce } from "@/hooks/use-debounce";
 import { getProducts } from "@/actions/products";
 import { cn } from "@/lib/utils";
@@ -14,7 +14,6 @@ import Image from "next/image";
 import { Spinner } from "@workspace/ui/components";
 import { ProductCardProps } from "@/components/product";
 import { resolvePrice, resolvePrimaryImage } from "@/lib/utils";
-import { getSearchPlaceholder } from "./header.lib";
 import type { SearchBarProps } from "./header.types";
 
 // Helper function to highlight matching text
@@ -47,6 +46,7 @@ export const SearchBar = ({
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const searchRef = React.useRef<HTMLDivElement>(null);
   const locale = useLocale();
+  const t = useTranslations("search");
 
   // Fetch search results using useQuery
   const { data: searchResultsData, isLoading: isSearching } = useQuery({
@@ -104,7 +104,7 @@ export const SearchBar = ({
     }
   };
 
-  const searchPlaceholder = placeholder || getSearchPlaceholder(variant);
+  const searchPlaceholder = placeholder || (variant === "mobile" ? t("searchProducts") : t("searchForProducts"));
 
   return (
     <div className={cn("relative flex-1 max-w-3xl", className)} ref={searchRef}>
@@ -125,7 +125,7 @@ export const SearchBar = ({
       {isOpen && searchQuery && (
         <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-50 max-h-106 overflow-y-auto">
           {isSearching ? (
-            <div className="p-4 text-center text-gray-500">Searching...</div>
+            <div className="p-4 text-center text-gray-500">{t("searching")}</div>
           ) : searchResults.length > 0 ? (
             <ul className="divide-y divide-gray-200">
               {searchResults.map((product) => {
@@ -164,7 +164,7 @@ export const SearchBar = ({
                             }}
                           />
                           <p className="text-xs text-gray-500 truncate">
-                            {product.category?.name || "No category"}
+                            {product.category?.name || t("noCategory")}
                           </p>
                         </div>
                         <span
@@ -188,14 +188,14 @@ export const SearchBar = ({
                     }}
                     className="block p-3 text-center text-sm font-medium text-primary hover:bg-gray-50"
                   >
-                    View all results
+                    {t("viewAllResults")}
                   </Link>
                 </li>
               )}
             </ul>
           ) : (
             <div className="p-4 text-center text-gray-500 text-sm">
-              No products found
+              {t("noProductsFound")}
             </div>
           )}
         </div>

@@ -8,6 +8,7 @@ import {
 } from "@workspace/ui/components/carousel";
 import ProductCard from "./ProductCard";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 interface SimilarProductsProps {
   products?: any[];
@@ -20,6 +21,7 @@ export const SimilarProducts = ({
   cartItems = [],
   wishlistItems = [],
 }: SimilarProductsProps) => {
+  const t = useTranslations("product");
   if (!products || products.length === 0) return null;
 
   // Create maps for quick lookup
@@ -37,10 +39,10 @@ export const SimilarProducts = ({
       <div className="container">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 lg:mb-8">
           <h2 className="text-xl lg:text-3xl font-bold text-gray-900">
-            Customers also purchased
+            {t("customersAlsoPurchased")}
           </h2>
           <Button variant="outline" className="w-fit">
-            <Link href="/products"> View More</Link>
+            <Link href="/products">{t("viewMore")}</Link>
           </Button>
         </div>
         <Carousel

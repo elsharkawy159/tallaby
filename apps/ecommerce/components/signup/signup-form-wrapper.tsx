@@ -11,12 +11,14 @@ import { SignInForm, SignUpForm } from "../auth/auth-dialog.chunks";
 import { OAuth } from "../auth/o-auth";
 import { Separator } from "@workspace/ui/components";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import type { AuthMode } from "../auth/auth-dialog.types";
 
 export function SignupFormWrapper() {
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirect") || "/";
   const [mode, setMode] = useState<AuthMode>("signin");
+  const t = useTranslations("auth");
   const [signInCredentials, setSignInCredentials] = useState<{
     email?: string;
     password?: string;
@@ -29,8 +31,8 @@ export function SignupFormWrapper() {
       onValueChange={(value) => setMode(value as AuthMode)}
     >
       <TabsList className="grid w-full grid-cols-2 mb-5 bg-white">
-        <TabsTrigger value="signin">Sign In</TabsTrigger>
-        <TabsTrigger value="signup">Create Account</TabsTrigger>
+        <TabsTrigger value="signin">{t("signIn")}</TabsTrigger>
+        <TabsTrigger value="signup">{t("createAccount")}</TabsTrigger>
       </TabsList>
 
       <TabsContent value="signin" className="mt-0">
@@ -59,7 +61,7 @@ export function SignupFormWrapper() {
           </div>
           <div className="relative flex justify-center text-xs uppercase">
             <span className="bg-background px-2 text-muted-foreground">
-              Or sign in with
+              {t("orSignInWith")}
             </span>
           </div>
         </div>

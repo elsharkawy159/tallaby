@@ -32,6 +32,7 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createOrder } from "@/actions/order";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import type { AddressData } from "@/components/address/address.schema";
 import { ShippingInformation } from "./shipping-information";
 import { CreditCard, ArrowLeft } from "lucide-react";
@@ -114,6 +115,7 @@ export const CheckoutData = ({
     }
   }, [selectedAddress?.id, defaultAddress?.id, addresses, form, activeAddress]);
 
+  const t = useTranslations("toast");
   const handleSubmit = (data: CheckoutFormData) => {
     startTransition(async () => {
       try {

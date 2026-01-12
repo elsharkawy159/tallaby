@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { User as UserIcon } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 interface AuthLinkClientProps {
   variant?: "mobile" | "desktop";
@@ -16,6 +17,7 @@ export function AuthLinkClient({
   className,
 }: AuthLinkClientProps) {
   const pathname = usePathname();
+  const t = useTranslations("auth");
 
   // Don't add redirect if already on login page
   const loginUrl =
@@ -38,7 +40,7 @@ export function AuthLinkClient({
     >
       <Link href={loginUrl}>
         <UserIcon className={"md:size-6 size-4.5"} />
-        {variant === "mobile" && <span className="text-xs">Sign In</span>}
+        {variant === "mobile" && <span className="text-xs">{t("signIn")}</span>}
       </Link>
     </Button>
   );

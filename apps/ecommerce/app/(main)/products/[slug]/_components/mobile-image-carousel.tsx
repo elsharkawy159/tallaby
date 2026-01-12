@@ -12,6 +12,7 @@ import {
   type CarouselApi,
 } from "@workspace/ui/components/carousel";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
+import { useLocale } from "next-intl";
 
 interface MobileImageCarouselProps {
   images: string[];
@@ -22,6 +23,7 @@ export const MobileImageCarousel = ({
   images,
   productName,
 }: MobileImageCarouselProps) => {
+  const locale = useLocale();
   if (images.length === 0) {
     return (
       <div className="aspect-square bg-gray-200 rounded-lg flex items-center justify-center">
@@ -37,6 +39,7 @@ export const MobileImageCarousel = ({
         opts={{
           align: "start",
           loop: true,
+          direction: locale === "ar" ? "rtl" : "ltr",
         }}
       >
         <CarouselContent>
@@ -57,12 +60,12 @@ export const MobileImageCarousel = ({
         </CarouselContent>
 
         {/* Navigation arrows - only show if more than 1 image */}
-        {images.length > 1 && (
+        {/* {images.length > 1 && (
           <>
             <CarouselPrevious className="left-2 top-1/2 -translate-y-1/2 bg-white/90 opacity-0 group-hover:opacity-100 hover:bg-white shadow-md z-10 border-0" />
             <CarouselNext className="right-2 top-1/2 -translate-y-1/2 bg-white/90 opacity-0 group-hover:opacity-100 hover:bg-white shadow-md z-10 border-0" />
           </>
-        )}
+        )} */}
 
         <CarouselDots />
       </Carousel>

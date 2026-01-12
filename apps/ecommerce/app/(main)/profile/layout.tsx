@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import { createClient } from "@/supabase/server";
 import { getAddresses } from "@/actions/customer";
 import { signOutAction } from "@/actions/auth";
+import { getTranslations } from "next-intl/server";
 
 export const metadata: Metadata = generateNoIndexMetadata();
 
@@ -75,20 +76,21 @@ function ProfileLayoutSkeleton({ children }: { children: React.ReactNode }) {
 }
 
 // Main Profile Layout Component
-export default function ProfileLayout({
+export default async function ProfileLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const t = await getTranslations("profile");
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Breadcrumbs */}
       <DynamicBreadcrumb
         customLabels={{
-          orders: "My Orders",
-          addresses: "My Addresses",
-          wishlist: "My Wishlist",
-          security: "Security Settings",
+          orders: t("myOrders"),
+          addresses: t("myAddresses"),
+          wishlist: t("myWishlist"),
+          security: t("securitySettings"),
         }}
       />
 

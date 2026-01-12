@@ -16,7 +16,7 @@ export default function AuthPage() {
           </div>
           <div></div>
           <div className="mt-10">
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div>{/* Loading... */}</div>}>
               <SignupFormWrapper />
             </Suspense>
           </div>

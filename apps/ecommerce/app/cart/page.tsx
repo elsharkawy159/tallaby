@@ -9,7 +9,7 @@ import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import { formatPrice } from "@workspace/lib";
 import { getCartItems } from "@/actions/cart";
 import Link from "next/link";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { QuantitySelector } from "@/components/product/quantity-selector";
 import { formatVariantTitle } from "@/lib/variant-utils";
 import { CartItemRemoveButton } from "./_components/cart-item-remove-button";
@@ -19,6 +19,7 @@ export const metadata: Metadata = generateNoIndexMetadata();
 export default async function Cart() {
   const cartResult = await getCartItems();
   const locale = await getLocale();
+  const t = await getTranslations("cart");
   const cartData = cartResult.success ? cartResult.data : null;
 
   return (
@@ -28,11 +29,10 @@ export default async function Cart() {
         {/* Header Section */}
         <div className="mb-6 md:mb-10">
           <h1 className="text-xl md:text-3xl font-bold tracking-tight mb-1 md:mb-2">
-            Shopping Cart
+            {t("shoppingCart")}
           </h1>
           <p className="text-xs md:text-lg text-muted-foreground">
-            {cartData?.itemCount || 0}{" "}
-            {cartData?.itemCount === 1 ? "item" : "items"} in your cart
+            {t("itemsInCart", { count: cartData?.itemCount || 0 })}
           </p>
         </div>
 
@@ -104,7 +104,7 @@ export default async function Cart() {
                             )}
                             {p.seller?.displayName && (
                               <span className="text-gray-600">
-                                by {p.seller.displayName}
+                                {t("by")} {p.seller.displayName}
                               </span>
                             )}
                             {/* {variant?.sku ? (
@@ -129,7 +129,7 @@ export default async function Cart() {
                         {/* Unit Price */}
                         <div className="gap-1 md:gap-2">
                           <span className="text-xs block text-muted-foreground uppercase tracking-wide">
-                            Per Item
+                            {t("perItem")}
                           </span>
                           <span
                             className="text-base md:text-xl font-bold text-gray-900"
@@ -141,7 +141,7 @@ export default async function Cart() {
 
                         <div className="text-right">
                           <span className="text-xs text-muted-foreground uppercase tracking-wide">
-                            Line Total
+                            {t("lineTotal")}
                           </span>
                           <div
                             className="text-base md:text-xl font-bold text-gray-900"
@@ -164,7 +164,7 @@ export default async function Cart() {
               {/* Summary Header */}
               <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-4 md:px-6 py-3 md:py-5 border-b border-gray-200">
                 <h2 className="text-sm md:text-xl font-bold text-gray-900">
-                  Order Summary
+                  {t("orderSummary")}
                 </h2>
               </div>
 
@@ -194,7 +194,7 @@ export default async function Cart() {
                             </p>
                           )}
                           <p className="text-xs text-muted-foreground mt-0.5">
-                            Qty: {item.quantity}
+                            {t("quantity")}: {item.quantity}
                             {" × "}
                             <span
                               dangerouslySetInnerHTML={{
@@ -217,7 +217,7 @@ export default async function Cart() {
                 {/* Totals */}
                 <div className="space-y-3 md:space-y-4 pt-3 md:pt-4 border-t-2 border-gray-200">
                   <div className="flex items-center justify-between text-sm md:text-base">
-                    <span className="font-medium text-gray-700">Subtotal</span>
+                    <span className="font-medium text-gray-700">{t("subtotal")}</span>
                     <span
                       className="font-semibold text-gray-900"
                       dangerouslySetInnerHTML={{
@@ -230,7 +230,7 @@ export default async function Cart() {
 
                   <div className="flex items-center justify-between pt-1 md:pt-2">
                     <span className="text-base md:text-xl font-bold text-gray-900">
-                      Total
+                      {t("total")}
                     </span>
                     <span
                       className="text-lg md:text-2xl font-bold text-primary"
@@ -252,7 +252,7 @@ export default async function Cart() {
                       !cartData?.items.length || cartData.items.length === 0
                     }
                   >
-                    Proceed to Checkout
+                    {t("proceedToCheckout")}
                   </Button>
                 </Link>
 
@@ -262,7 +262,7 @@ export default async function Cart() {
                     className="w-full h-9 md:h-11 text-xs md:text-sm border-2 hover:bg-gray-50 transition-colors"
                   >
                     <ArrowLeft className="h-3 w-3 md:h-4 md:w-4 mr-2" />
-                    Continue Shopping
+                    {t("continueShopping")}
                   </Button>
                 </Link>
 

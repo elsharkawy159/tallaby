@@ -1,41 +1,42 @@
 import { Home, Compass, ShoppingCart, Store } from "lucide-react";
 import type { NavigationItem } from "./header.types";
+import { getTranslations } from "next-intl/server";
 
-export const navigationItems: NavigationItem[] = [
-  {
-    href: "/products",
-    label: "All Products",
-  },
-  {
-    href: "/stores",
-    label: "Stores",
-  },
-  {
-    href: "/about",
-    label: "About",
-  },
-];
+export const getNavigationItems = async (): Promise<NavigationItem[]> => {
+  const t = await getTranslations("navigation");
+  return [
+    {
+      href: "/products",
+      label: t("allProducts"),
+    },
+    {
+      href: "/stores",
+      label: t("stores"),
+    },
+    {
+      href: "/about",
+      label: t("about"),
+    },
+  ];
+};
 
-export const bottomNavigationItems: NavigationItem[] = [
-  {
-    href: "/",
-    label: "Home",
-    icon: Home,
-  },
-  {
-    href: "/products",
-    label: "Shopping",
-    icon: Store,
-  },
-  {
-    href: "/cart",
-    label: "Cart",
-    icon: ShoppingCart,
-  },
-];
-
-export const getSearchPlaceholder = (variant: "mobile" | "desktop"): string => {
-  return variant === "mobile"
-    ? "Search products..."
-    : "Search for products, brands, categories...";
+export const getBottomNavigationItems = async (): Promise<NavigationItem[]> => {
+  const t = await getTranslations("navigation");
+  return [
+    {
+      href: "/",
+      label: t("home"),
+      icon: Home,
+    },
+    {
+      href: "/products",
+      label: t("shopping"),
+      icon: Store,
+    },
+    {
+      href: "/cart",
+      label: t("cart"),
+      icon: ShoppingCart,
+    },
+  ];
 };
