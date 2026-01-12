@@ -5,8 +5,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { usePathname, useRouter } from "next/navigation";
+import { useTranslations, useLocale } from "next-intl";
 
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -58,7 +58,6 @@ import {
   updateAddress,
   deleteAddress,
   //   updatePassword,
-  createWishlist,
   generateUserReferralCode,
   applyReferralCode,
 } from "./profile.server";
@@ -94,7 +93,6 @@ export function ProfileSidebar({
   addresses: any[];
 }) {
   const t = useTranslations("profile");
-  const tCommon = useTranslations("common");
   const pathname = usePathname();
   const { percentage, missingFields } = calculateProfileCompletion(
     user,
@@ -170,9 +168,7 @@ export function ProfileSidebar({
                   .join(", ")}
               </p>
             ) : (
-              <p className="text-xs text-green-600">
-                {t("yourProfileIs100")}
-              </p>
+              <p className="text-xs text-green-600">{t("yourProfileIs100")}</p>
             )}
           </div>
         </CardContent>
@@ -319,10 +315,20 @@ export function ProfileForm({
   const t = useTranslations("profile");
   const tCommon = useTranslations("common");
   const tAuth = useTranslations("auth");
+  const tToast = useTranslations("toast");
   const queryClient = useQueryClient();
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+  const locale = useLocale();
 
   console.log("user", user);
+
+  // Function to switch locale (same as LanguageSwitcher)
+  const switchLocale = (newLocale: string) => {
+    const oneYear = 60 * 60 * 24 * 365;
+    document.cookie = `locale=${newLocale}; path=/; max-age=${oneYear};`;
+    router.refresh();
+  };
 
   // Extract user data with proper fallbacks for Supabase auth user structure
   const getUserData = () => {
@@ -331,7 +337,7 @@ export function ProfileForm({
         fullName: "",
         phone: "",
         timezone: "Africa/Cairo",
-        preferredLanguage: "en",
+        preferredLanguage: locale, // Use current locale instead of hardcoded "en"
         defaultCurrency: "EGP",
         receiveMarketingEmails: true,
       };
@@ -353,7 +359,7 @@ export function ProfileForm({
         fullName,
         phone: user.phone || metadata.phone || "",
         timezone: metadata.timezone || "Africa/Cairo",
-        preferredLanguage: metadata.preferredLanguage || "en",
+        preferredLanguage: metadata.preferredLanguage || locale, // Use current locale as fallback
         defaultCurrency: metadata.defaultCurrency || "EGP",
         receiveMarketingEmails: metadata.receiveMarketingEmails ?? true,
       };
@@ -365,7 +371,7 @@ export function ProfileForm({
       fullName: dbUser.fullName || "",
       phone: dbUser.phone || "",
       timezone: dbUser.timezone || "Africa/Cairo",
-      preferredLanguage: dbUser.preferredLanguage || "en",
+      preferredLanguage: dbUser.preferredLanguage || locale, // Use current locale as fallback
       defaultCurrency: dbUser.defaultCurrency || "EGP",
       receiveMarketingEmails: dbUser.receiveMarketingEmails ?? true,
     };
@@ -385,7 +391,7 @@ export function ProfileForm({
       const newUserData = getUserData();
       form.reset(newUserData);
     }
-  }, [user, form]);
+  }, [user, form, locale]);
 
   // Return loading state if no user data (after all hooks are called)
   if (!user) {
@@ -418,7 +424,7 @@ export function ProfileForm({
         const result = await updateUserProfile(data);
 
         if (result.success) {
-          toast.success(result.message || t("changesSaved"));
+          toast.success(tToast("profileUpdatedSuccessfully"));
 
           // Invalidate user queries to refresh data
           await queryClient.invalidateQueries({
@@ -454,9 +460,7 @@ export function ProfileForm({
       <Card>
         <CardHeader>
           <CardTitle>{t("personalInformation")}</CardTitle>
-          <CardDescription>
-            {t("updatePersonalDetails")}
-          </CardDescription>
+          <CardDescription>{t("updatePersonalDetails")}</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -506,6 +510,12 @@ export function ProfileForm({
                         placeholder={t("selectYourLanguage")}
                         options={languageOptions}
                         {...field}
+                        onChange={(value) => {
+                          // Immediately switch locale when language changes
+                          if (value && value !== locale) {
+                            switchLocale(value);
+                          }
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -583,6 +593,7 @@ export function ReferralSection({
   const t = useTranslations("profile");
   const tCommon = useTranslations("common");
   const tAuth = useTranslations("auth");
+  const tToast = useTranslations("toast");
   const queryClient = useQueryClient();
   const [isGenerating, setIsGenerating] = useState(false);
   const [isApplying, startApplyTransition] = useTransition();
@@ -637,9 +648,7 @@ export function ReferralSection({
         const result = await applyReferralCode(code);
 
         if (result.success) {
-          toast.success(
-            result.message || t("referralCodeApplied")
-          );
+          toast.success(result.message || t("referralCodeApplied"));
           setShowInput(false);
           setReferralCode("");
 
@@ -676,9 +685,7 @@ export function ReferralSection({
     <Card>
       <CardHeader>
         <CardTitle>{t("referralProgram")}</CardTitle>
-        <CardDescription>
-          {t("referFriendsDescription")}
-        </CardDescription>
+        <CardDescription>{t("referFriendsDescription")}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="flex flex-col md:flex-row gap-4">
@@ -1031,7 +1038,11 @@ export function AddressForm({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <TextInput placeholder={t("enterCity")} name="city" form={form} />
 
-              <TextInput placeholder={t("enterStateProvince")} name="state" form={form} />
+              <TextInput
+                placeholder={t("enterStateProvince")}
+                name="state"
+                form={form}
+              />
 
               <TextInput
                 placeholder={t("enterPostalCode")}

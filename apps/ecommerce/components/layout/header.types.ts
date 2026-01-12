@@ -4,6 +4,7 @@ export interface HeaderProps {
 
 export interface LogoProps {
   className?: string;
+  logoClassName?: string;
   color?: "white" | "primary" | "secondary";
 }
 

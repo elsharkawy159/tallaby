@@ -2,7 +2,6 @@
 import { useTransition, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { CheckoutForm } from "./checkout-form";
 import {
   Card,
   CardContent,
@@ -179,7 +178,8 @@ export const CheckoutData = ({
             <Card className="rounded-xl md:rounded-2xl border border-gray-200 overflow-hidden pt-0">
               <div className="bg-linear-to-r from-gray-50 to-gray-100 px-4 md:px-6 py-3 md:py-5 border-b border-gray-200">
                 <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-gray-900">
-                  <CreditCard className="h-4 w-4 md:h-5 md:w-5" /> {t("paymentMethod")}
+                  <CreditCard className="h-4 w-4 md:h-5 md:w-5" />{" "}
+                  {t("paymentMethod")}
                 </CardTitle>
               </div>
               <CardContent>
@@ -193,14 +193,14 @@ export const CheckoutData = ({
                           <RadioGroup
                             value={field.value}
                             onValueChange={field.onChange}
-                            className="grid grid-cols-1 lg:grid-cols-3 gap-4"
+                            className="flex items-center gap-5 w-full md:flex-row rtl:md:flex-row-reverse flex-col"
                           >
                             {paymentMethods.map((method) => (
                               <FieldLabel
                                 key={method.id}
                                 htmlFor={method.id}
                                 className={`
-                              rounded-xl border-2 p-4 transition-all duration-200
+                              rounded-xl border-2 flex-1 p-4 transition-all duration-200
                               ${
                                 method.enabled
                                   ? `cursor-pointer ${
@@ -212,10 +212,7 @@ export const CheckoutData = ({
                               }
                             `}
                               >
-                                <Field
-                                  orientation="horizontal"
-                                  className="flex items-start gap-2"
-                                >
+                                <Field orientation="horizontal">
                                   <RadioGroupItem
                                     value={method.value}
                                     id={method.id}

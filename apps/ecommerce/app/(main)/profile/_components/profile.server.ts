@@ -68,7 +68,7 @@ export const updateUserProfile = async (
 
     return {
       success: true,
-      message: "Profile updated successfully!",
+      message: "", // Message will be handled by client-side translation
     };
   } catch (error) {
     console.error("Update profile error:", error);

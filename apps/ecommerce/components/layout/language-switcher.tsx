@@ -6,7 +6,13 @@ import { useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Globe } from "lucide-react";
 
-export function LanguageSwitcher() {
+interface LanguageSwitcherProps {
+  variant?: "header" | "default";
+}
+
+export function LanguageSwitcher({
+  variant = "header",
+}: LanguageSwitcherProps) {
   const router = useRouter();
   const locale = useLocale();
 
@@ -21,6 +27,8 @@ export function LanguageSwitcher() {
     { code: "en", label: "English" },
   ];
 
+  const isHeader = variant === "header";
+
   return (
     <>
       {locales.map((l) => (
@@ -30,10 +38,15 @@ export function LanguageSwitcher() {
           variant={l.code === locale ? "default" : "ghost"}
           onClick={() => switchLocale(l.code)}
           className={cn(
-            "h-8 px-3 text-xs rounded-md font-medium transition-all duration-200 bg-gray-50/15",
+            "h-8 px-3 text-xs rounded-md font-medium transition-all duration-200",
+            isHeader ? "bg-gray-50/15" : "bg-gray-100",
             l.code === locale
-              ? "bg-white text-black shadow-sm hover:bg-white cursor-default hidden"
-              : "text-white hover:bg-white/20 hover:text-white"
+              ? isHeader
+                ? "bg-white text-black shadow-sm hover:bg-white cursor-default hidden"
+                : "bg-primary text-primary-foreground shadow-sm hover:bg-primary"
+              : isHeader
+                ? "text-white hover:bg-white/20 hover:text-white"
+                : "text-gray-700 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700"
           )}
           aria-label={`Switch to ${l.label}`}
         >

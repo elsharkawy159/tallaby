@@ -29,10 +29,6 @@ const MainHeader = async () => {
         <div className="flex items-center md:hidden justify-between">
           <Logo />
           <BecomeSellerButton user={user} />
-          <div className="flex items-center gap-4">
-            <LanguageSwitcher />
-            {/* <DeliveryLocation user={user} /> */}
-          </div>
         </div>
 
         <div className="md:mt-0 mt-3 md:hidden">

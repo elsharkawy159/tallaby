@@ -589,6 +589,7 @@
     "cartUpdated": "Cart updated",
     "forgotPasswordError": "Something went wrong. Please try again.",
     "failedToDeleteAddress": "Failed to delete address",
-    "referralCodeGeneratedSuccessfully": "Referral code generated successfully!"
+    "referralCodeGeneratedSuccessfully": "Referral code generated successfully!",
+    "profileUpdatedSuccessfully": "Profile updated successfully!"
   }
 }

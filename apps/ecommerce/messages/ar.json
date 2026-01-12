@@ -564,7 +564,7 @@
     "creatingSellerAccount": "جاري إنشاء حساب البائع...",
     "createSellerAccount": "إنشاء حساب بائع",
     "youMustBeLoggedIn": "يجب عليك تسجيل الدخول لإنشاء حساب بائع",
-    "viewDashboard": "عرض لوحة التحكم",
+    "viewDashboard": "لوحة تحكم البائع",
     "startSelling": "ابدأ البيع الأن",
     "pleaseSelectImageFile": "يرجى اختيار ملف صورة",
     "fileSizeMustBeLess": "يجب أن يكون حجم الملف أقل من 5 ميجابايت",
@@ -589,6 +589,7 @@
     "cartUpdated": "تم تحديث السلة",
     "forgotPasswordError": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
     "failedToDeleteAddress": "فشل حذف العنوان",
-    "referralCodeGeneratedSuccessfully": "تم إنشاء رمز الإحالة بنجاح!"
+    "referralCodeGeneratedSuccessfully": "تم إنشاء رمز الإحالة بنجاح!",
+    "profileUpdatedSuccessfully": "تم تحديث الملف الشخصي بنجاح!"
   }
 }

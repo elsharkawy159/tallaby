@@ -61,6 +61,15 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Redirect authenticated sellers from /onboarding to dashboard
+  if (
+    user &&
+    request.nextUrl.pathname === "/onboarding" &&
+    user?.user_metadata?.is_seller
+  ) {
+    return NextResponse.redirect("https://dashboard.tallaby.com/");
+  }
+
   // Redirect authenticated users away from login page
   if (user && request.nextUrl.pathname === "/auth") {
     const url = request.nextUrl.clone();

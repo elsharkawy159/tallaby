@@ -18,7 +18,7 @@ export default async function OnboardingPage() {
   return (
     <div className="flex items-center justify-center min-h-screen">
       <div className="mx-auto w-full max-w-2xl">
-        <Logo color="primary" />
+        <Logo color="primary" logoClassName="mx-auto" />
         <h2 className="mt-4 text-2xl/9 font-bold tracking-tight text-gray-900 text-center">
           {t("becomeSeller")}
         </h2>
