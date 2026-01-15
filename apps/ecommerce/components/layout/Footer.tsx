@@ -2,7 +2,6 @@ import {
   Facebook,
   Instagram,
   Mail,
-  ArrowRight,
   MapPin,
   Phone,
 } from "lucide-react";

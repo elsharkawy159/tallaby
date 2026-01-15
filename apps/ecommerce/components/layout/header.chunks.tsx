@@ -19,9 +19,11 @@ export const BecomeSellerButton = ({
     <Button asChild className={cn("text-sm", className)} size="sm">
       <Link
         href={
-          user?.user_metadata?.is_seller
-            ? "https://dashboard.tallaby.com/"
-            : "/auth?redirect=/onboarding"
+          !user
+            ? "/auth?redirect=/onboarding"
+            : user?.user_metadata?.is_seller
+              ? "https://dashboard.tallaby.com/"
+              : "/onboarding"
         }
         target={user?.user_metadata?.is_seller ? "_blank" : "_self"}
       >
