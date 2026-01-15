@@ -121,7 +121,6 @@ export const defaultValues = {
   conditionDescription: "",
   fulfillmentType: "platform_fulfilled" as const,
   handlingTime: 1,
-  isActive: false,
   isPlatformChoice: false,
   isMostSelling: false,
   isFeatured: false,
