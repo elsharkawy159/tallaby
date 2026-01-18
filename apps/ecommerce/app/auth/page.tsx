@@ -2,15 +2,19 @@ import Image from "next/image";
 import { Suspense } from "react";
 import { SignupFormWrapper } from "@/components/signup/signup-form-wrapper";
 import { Logo } from "@/components/logo";
+import { LanguageSwitcher } from "@/components/layout/language-switcher";
 
 export default function AuthPage() {
   return (
     <div className="flex min-h-screen relative">
-      <div className="absolute top-10 left-1/2 md:hidden -translate-x-1/2">
+      <div className="absolute rtl:right-4 ltr:left-4 top-4 z-10 flex items-center gap-2">
+        <LanguageSwitcher variant="default" />
+      </div>
+      <div className="absolute top-16 left-1/2 md:hidden -translate-x-1/2">
         <Logo color="primary" />
       </div>
-      <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
-        <div className="mx-auto w-full max-w-sm lg:w-96">
+      <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20">
+        <div className="mx-auto w-full xl:w-115 lg:w-96">
           <div className="mb-8 md:block hidden">
             <Logo color="primary" />
           </div>
