@@ -140,6 +140,7 @@ export type AddProductFormData = z.infer<typeof addProductFormSchema>;
 export interface CategoryOption {
   id: string;
   name: string;
+  nameAr?: string | null;
   slug: string;
   level: number;
   parentId?: string;

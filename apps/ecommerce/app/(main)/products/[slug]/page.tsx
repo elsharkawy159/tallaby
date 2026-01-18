@@ -17,7 +17,7 @@ import { ProductStructuredData } from "./_components/product-structured-data";
 import { createClient } from "@/supabase/server";
 import { getCartItems } from "@/actions/cart";
 import { getWishlistItems } from "@/actions/wishlist";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 // ISR: Revalidate every 10 minutes
 export const revalidate = 600;
@@ -40,6 +40,7 @@ export async function generateMetadata({
 }: ProductPageProps): Promise<Metadata> {
   const { slug } = await params;
   const t = await getTranslations("product");
+  const locale = await getLocale();
   const productResult = await getProductBySlug(slug);
   if (!productResult.success || !productResult.data) {
     return {
@@ -53,6 +54,12 @@ export async function generateMetadata({
   // Category is not included in the query, so we use categoryId if needed
   // For metadata, we'll use a fallback
   const category = (product as any).category;
+  const categoryName = category
+    ? locale === "ar"
+      ? category.nameAr || category.name || ""
+      : category.name || ""
+    : "Products";
+  const categorySlug = category?.slug || "products";
 
   return generateProductMetadata({
     product: {
@@ -69,8 +76,8 @@ export async function generateMetadata({
       },
       category: category
         ? {
-            name: category.name ?? "",
-            slug: category.slug ?? "",
+            name: categoryName,
+            slug: categorySlug,
           }
         : {
             name: "Products",

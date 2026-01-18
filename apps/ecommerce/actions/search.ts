@@ -20,6 +20,7 @@ import {
   db,
 } from "@workspace/db";
 import { getUser, getSessionId } from "./auth";
+import { getLocale } from "next-intl/server";
 
 interface SearchFilters {
   query: string;
@@ -326,12 +327,14 @@ export async function searchSuggestions(query: string) {
   }
 
   const user = await getUser();
-  const cacheKey = `search-suggestions-${query.toLowerCase()}${user?.user.id || "anon"}`;
+  const locale = await getLocale();
+  const cacheKey = `search-suggestions-${query.toLowerCase()}-${locale}-${user?.user.id || "anon"}`;
 
   return unstable_cache(
     async () => {
       try {
         const searchPattern = `${query}%`;
+        const categoryNameColumn = locale === "ar" ? categories.nameAr : categories.name;
 
         // Get product title suggestions
         const productSuggestions = await db
@@ -361,11 +364,11 @@ export async function searchSuggestions(query: string) {
         // Get category suggestions
         const categorySuggestions = await db
           .select({
-            suggestion: categories.name,
+            suggestion: categoryNameColumn,
             type: sql<string>`'category'`,
           })
           .from(categories)
-          .where(like(categories.name, searchPattern))
+          .where(like(categoryNameColumn, searchPattern))
           .limit(3);
 
         // Get recent searches (if user is logged in)
@@ -501,10 +504,12 @@ export async function globalSearch(query: string) {
     };
   }
 
+  const locale = await getLocale();
   return unstable_cache(
     async () => {
       try {
         const searchPattern = `%${query}%`;
+        const categoryNameColumn = locale === "ar" ? categories.nameAr : categories.name;
 
         // Search products
         const productResults = await db.query.products.findMany({
@@ -529,7 +534,7 @@ export async function globalSearch(query: string) {
 
         // Search categories
         const categoryResults = await db.query.categories.findMany({
-          where: like(categories.name, searchPattern),
+          where: like(categoryNameColumn, searchPattern),
           limit: 3,
         });
 
@@ -566,7 +571,7 @@ export async function globalSearch(query: string) {
         return { success: false, error: "Failed to search" };
       }
     },
-    [`global-search-${query.toLowerCase()}`],
+    [`global-search-${locale}-${query.toLowerCase()}`],
     {
       tags: ["search", "global-search"],
       revalidate: 600, // 10 minutes - global search results change infrequently

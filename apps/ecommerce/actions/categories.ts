@@ -110,6 +110,7 @@ export const getTopCategories = unstable_cache(
         .select({
           id: categories.id,
           name: categories.name,
+          nameAr: categories.nameAr,
           slug: categories.slug,
           productCount: sql<number>`count(${products.id})`,
         })

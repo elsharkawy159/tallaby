@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getTopCategories } from "@/actions/categories";
 import { Button } from "@workspace/ui/components/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { getLocale } from "next-intl/server";
 
 interface CategoryCarouselProps {
   title?: string;
@@ -16,6 +17,7 @@ export default async function CategoryCarousel({
   showProductCount = true,
   className = "",
 }: CategoryCarouselProps) {
+  const locale = await getLocale();
   const result = await getTopCategories();
   const categories = result.success ? result.data?.slice(0, limit) : [];
 
@@ -31,7 +33,17 @@ export default async function CategoryCarousel({
 
       <div className="relative group">
         <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-4">
-          {categories.map((category) => (
+          {categories.map((category) => {
+            const categoryName =
+              locale === "ar"
+                ? category.nameAr || category.name
+                : category.name;
+            const categoryInitial =
+              locale === "ar"
+                ? categoryName?.charAt(0)
+                : categoryName?.charAt(0).toUpperCase();
+
+            return (
             <Link
               key={category.id}
               href={`/products?category=${category.slug}`}
@@ -39,12 +51,12 @@ export default async function CategoryCarousel({
             >
               <div className="flex flex-col items-center gap-2 p-4 rounded-lg hover:bg-gray-50 transition-colors min-w-[120px]">
                 <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
-                  {category.name?.charAt(0).toUpperCase()}
+                  {categoryInitial}
                 </div>
 
                 <div className="text-center">
                   <h4 className="font-medium text-gray-900 text-sm group-hover:text-primary transition-colors">
-                    {category.name}
+                    {categoryName}
                   </h4>
 
                   {showProductCount && category.productCount && (
@@ -55,7 +67,8 @@ export default async function CategoryCarousel({
                 </div>
               </div>
             </Link>
-          ))}
+            )
+          })}
         </div>
 
         {/* Navigation buttons */}

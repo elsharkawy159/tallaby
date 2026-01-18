@@ -12,6 +12,7 @@ import {
 } from "@workspace/ui/components/sheet";
 import { X, PlusIcon } from "lucide-react";
 import { ScrollArea } from "@workspace/ui/components";
+import { useLocale } from "next-intl";
 
 interface FilterOptionsResponse {
   success: boolean;
@@ -19,6 +20,7 @@ interface FilterOptionsResponse {
     categories: Array<{
       id: string;
       name: string | null;
+      nameAr?: string | null;
       slug: string | null;
       productCount: number;
     }>;
@@ -41,6 +43,7 @@ interface ProductsFilterProps {
 }
 
 export function ProductsFilter({ filterOptions }: ProductsFilterProps) {
+  const locale = useLocale();
   const { params, updateParams } = useUrlParams();
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
@@ -166,9 +169,15 @@ export function ProductsFilter({ filterOptions }: ProductsFilterProps) {
               <ScrollArea className="flex flex-col max-h-100 overflow-y-auto">
                 {filterOptions.data.categories
                   .filter((category) => category.name) // Filter out categories with null names
-                  .map((category) => (
+                  .map((category) => {
+                    const categoryLabel =
+                      locale === "ar"
+                        ? category.nameAr || category.name
+                        : category.name;
+
+                    return (
                     <label
-                      key={category.name}
+                      key={category.id}
                       className="flex items-center py-1 justify-between cursor-pointer"
                     >
                       <div className="flex items-center gap-2">
@@ -183,13 +192,14 @@ export function ProductsFilter({ filterOptions }: ProductsFilterProps) {
                           }
                           id={`category-${category.name}${isMobile ? "-mobile" : ""}`}
                         />
-                        <span className="text-sm">{category.name}</span>
+                        <span className="text-sm">{categoryLabel}</span>
                       </div>
                       <span className="text-sm text-muted-foreground">
                         ({category.productCount})
                       </span>
                     </label>
-                  ))}
+                    )
+                  })}
               </ScrollArea>
             </div>
           )}

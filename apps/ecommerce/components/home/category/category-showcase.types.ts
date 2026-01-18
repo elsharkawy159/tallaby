@@ -1,6 +1,7 @@
 export interface Category {
   id: string
   name: string | null
+  nameAr?: string | null
   slug: string | null
   productCount: number
 }
@@ -8,6 +9,7 @@ export interface Category {
 export interface CategoryWithRequiredFields {
   id: string
   name: string
+  nameAr?: string | null
   slug: string
   productCount: number
 }

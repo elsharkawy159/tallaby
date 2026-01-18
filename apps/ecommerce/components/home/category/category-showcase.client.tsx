@@ -31,12 +31,15 @@ export const CategoryShowcaseClient = ({
       )
       .map((category) => ({
         id: category.id,
-        name: category.name!,
+        name:
+          locale === "ar"
+            ? category.nameAr || category.name!
+            : category.name!,
         slug: category.slug!,
         productCount: category.productCount,
       }))
       .slice(0, 12);
-  }, [categories]);
+  }, [categories, locale]);
 
   if (categoriesWithProducts.length === 0) {
     return null;

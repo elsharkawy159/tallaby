@@ -4,6 +4,7 @@ import { getCategoryBySlug } from "@/actions/categories";
 import ProductCard from "@/app/(main)/products/[slug]/_components/ProductCard";
 import { Button } from "@workspace/ui/components/button";
 import { ChevronRight } from "lucide-react";
+import { getLocale } from "next-intl/server";
 import {
   Carousel,
   CarouselContent,
@@ -27,6 +28,7 @@ export default async function BestSellersInCategory({
   showViewMore = true,
   className = "",
 }: BestSellersInCategoryProps) {
+  const locale = await getLocale();
   // Get category info
   const categoryResult = await getCategoryBySlug(categorySlug);
   const category = categoryResult.success ? categoryResult.data : null;
@@ -34,6 +36,9 @@ export default async function BestSellersInCategory({
   if (!category) {
     return null;
   }
+
+  const categoryName =
+    locale === "ar" ? category.nameAr || category.name : category.name;
 
   // Get best sellers in this category
   const productsResult = await getProducts({
@@ -48,7 +53,7 @@ export default async function BestSellersInCategory({
     return null;
   }
 
-  const displayTitle = title || `Best Sellers in ${category.name}`;
+  const displayTitle = title || `Best Sellers in ${categoryName}`;
 
   return (
     <section className={`lg:py-8 py-5 container mx-auto ${className}`}>
@@ -65,7 +70,7 @@ export default async function BestSellersInCategory({
             {displayTitle}
           </h2>
           <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-            Discover the most popular products in {category.name}
+            Discover the most popular products in {categoryName}
           </p>
           {showViewMore && (
             <Button asChild className="!px-8 gap-1" variant="secondary">

@@ -491,6 +491,9 @@ importers:
 
   packages/eslint-config:
     devDependencies:
+      '@eslint/js':
+        specifier: ^9.39.2
+        version: 9.39.2
       '@next/eslint-plugin-next':
         specifier: ^16.1.1
         version: 16.1.1

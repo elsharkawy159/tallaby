@@ -5,6 +5,10 @@ import { cn } from "@workspace/ui/lib/utils";
 import type { CategoryOption } from "./add-product.schema";
 import { searchCategoriesByProductName } from "./add-product.lib";
 
+function isArabicText(value: string): boolean {
+  return /[\u0600-\u06FF]/.test(value)
+}
+
 interface CategorySuggestionsProps {
   categories: CategoryOption[];
   productName: string;
@@ -23,6 +27,7 @@ export function CategorySuggestions({
   const matchedCategories = useMemo(() => {
     return searchCategoriesByProductName(categories, productName, 8);
   }, [categories, productName]);
+  const shouldUseArabic = isArabicText(productName);
 
   if (
     !productName ||
@@ -38,6 +43,9 @@ export function CategorySuggestions({
       <div className="flex flex-wrap gap-2">
         {matchedCategories.map((category) => {
           const isSelected = selectedCategoryId === category.id;
+          const categoryLabel = shouldUseArabic
+            ? category.nameAr || category.name
+            : category.name;
           return (
             <button
               key={category.id}
@@ -52,9 +60,9 @@ export function CategorySuggestions({
                 "focus:ring-primary"
               )}
               aria-pressed={isSelected}
-              aria-label={`Select category ${category.name}`}
+              aria-label={`Select category ${categoryLabel}`}
             >
-              {category.name}
+              {categoryLabel}
             </button>
           );
         })}

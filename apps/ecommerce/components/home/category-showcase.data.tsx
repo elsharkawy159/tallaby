@@ -12,7 +12,6 @@ export const CategoryShowcaseData = async ({
   limit = 12,
 }: CategoryShowcaseProps) => {
   const result = await getTopCategories();
-  console.log("resultresultresult", result);
   if (!result.success || !result.data) {
     return null;
   }
@@ -28,6 +27,7 @@ export const CategoryShowcaseData = async ({
     .map((category) => ({
       id: category.id,
       name: category.name!,
+      nameAr: category.nameAr ?? null,
       slug: category.slug!,
       productCount: category.productCount,
     }))

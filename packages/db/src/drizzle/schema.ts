@@ -266,6 +266,7 @@ export const categories = pgTable(
   {
     id: uuid().defaultRandom().primaryKey().notNull(),
     name: varchar(),
+    nameAr: varchar("name_ar"),
     slug: varchar(),
     level: smallint(),
     parentId: uuid("parent_id"),

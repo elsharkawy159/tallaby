@@ -3,6 +3,7 @@ import type { CategoryOption } from "./add-product.schema";
 interface FlattenedCategory {
   id: string;
   name: string;
+  nameAr?: string | null;
   slug: string;
   level: number;
   parentId?: string;
@@ -26,6 +27,7 @@ export function flattenCategories(
     result.push({
       id: category.id,
       name: category.name,
+      nameAr: category.nameAr ?? null,
       slug: category.slug || "",
       level: category.level,
       parentId: category.parentId,
@@ -44,6 +46,10 @@ export function flattenCategories(
   }
 
   return result;
+}
+
+function isArabicText(value: string): boolean {
+  return /[\u0600-\u06FF]/.test(value)
 }
 
 /**
@@ -101,11 +107,15 @@ export function searchCategoriesByProductName(
     return [];
   }
 
+  const shouldUseArabic = isArabicText(productName);
   const flattened = flattenCategories(categories);
   const scored = flattened
     .map((category) => ({
       ...category,
-      score: scoreCategoryMatch(category.name, productName),
+      score: scoreCategoryMatch(
+        shouldUseArabic ? category.nameAr || category.name : category.name,
+        productName
+      ),
     }))
     .filter((item) => item.score > 0)
     .sort((a, b) => b.score - a.score)
@@ -117,6 +127,7 @@ export function searchCategoriesByProductName(
       ({
         id: category.id,
         name: category.name,
+        nameAr: category.nameAr ?? null,
         slug: category.slug,
         level: category.level,
         parentId: category.parentId,

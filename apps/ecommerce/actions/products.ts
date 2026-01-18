@@ -524,6 +524,7 @@ export async function getFilterOptions() {
           .select({
             id: categories.id,
             name: categories.name,
+            nameAr: categories.nameAr,
             slug: categories.slug,
             productCount: sql<number>`COUNT(${products.id})`,
           })
@@ -535,7 +536,7 @@ export async function getFilterOptions() {
               eq(products.isActive, true)
             )
           )
-          .groupBy(categories.id, categories.name, categories.slug)
+          .groupBy(categories.id, categories.name, categories.nameAr, categories.slug)
           .having(sql`COUNT(${products.id}) > 0`)
           .orderBy(categories.name);
 

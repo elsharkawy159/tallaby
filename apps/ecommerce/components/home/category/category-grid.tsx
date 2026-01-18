@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getTopCategories } from "@/actions/categories";
 import { Badge } from "@workspace/ui/components/badge";
 import { Card, CardContent } from "@workspace/ui/components/card";
+import { getLocale } from "next-intl/server";
 
 interface CategoryGridProps {
   title?: string;
@@ -18,6 +19,7 @@ export default async function CategoryGrid({
   showProductCount = true,
   className = "",
 }: CategoryGridProps) {
+  const locale = await getLocale();
   const result = await getTopCategories();
   const categories =
     result.success && result.data ? result.data.slice(0, limit) : [];
@@ -37,7 +39,17 @@ export default async function CategoryGrid({
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-        {categories.map((category) => (
+        {categories.map((category) => {
+          const categoryName =
+            locale === "ar"
+              ? category.nameAr || category.name
+              : category.name;
+          const categoryInitial =
+            locale === "ar"
+              ? categoryName?.charAt(0)
+              : categoryName?.charAt(0).toUpperCase();
+
+          return (
           <Link
             key={category.id}
             href={`/products?category=${category.slug}`}
@@ -46,11 +58,11 @@ export default async function CategoryGrid({
             <Card className="h-full hover:shadow-lg transition-all duration-300 group-hover:scale-105">
               <CardContent className="p-4 sm:p-6 text-center">
                 <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
-                  {category.name?.charAt(0).toUpperCase()}
+                  {categoryInitial}
                 </div>
 
                 <h3 className="font-semibold text-gray-900 mb-2 group-hover:text-primary transition-colors">
-                  {category.name}
+                  {categoryName}
                 </h3>
 
                 {showProductCount && category.productCount && (
@@ -61,7 +73,8 @@ export default async function CategoryGrid({
               </CardContent>
             </Card>
           </Link>
-        ))}
+          )
+        })}
       </div>
 
       <div className="text-center mt-8">
