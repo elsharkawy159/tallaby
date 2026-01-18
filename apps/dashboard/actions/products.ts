@@ -716,7 +716,7 @@ export async function bulkInsertProductsAction(records: ParsedBulkRow[]) {
     }
 
     revalidatePath("/products");
-    revalidateTag("products");
+    revalidateTag("products", "layout");
     return { success: true, ...results };
   } catch (error) {
     console.error("bulkInsertProductsAction error:", error);
@@ -853,8 +853,7 @@ export async function createProduct(data: {
       await db.insert(productVariants).values(variantValues);
     }
 
-    revalidateTag("products");
-    revalidatePath("/products");
+    revalidateTag("products", "layout");
 
     return { success: true, data: createdProduct };
   } catch (error: any) {
@@ -957,7 +956,6 @@ export async function updateProduct(
 
     revalidatePath("/products");
     revalidatePath(`/products/${productId}`);
-    revalidateTag("products");
 
     return { success: true, data: updatedProduct[0] };
   } catch (error) {
@@ -995,9 +993,6 @@ export async function toggleProductStatus(productId: string) {
       })
       .where(eq(products.id, productId))
       .returning();
-
-    revalidatePath("/products");
-    revalidateTag("products");
 
     return { success: true, data: updatedProduct[0] };
   } catch (error) {
@@ -1215,9 +1210,6 @@ export async function deleteProduct(productId: string) {
     }
 
     await db.delete(products).where(eq(products.id, productId));
-
-    revalidatePath("/products");
-    revalidateTag("products");
 
     return { success: true, data: product };
   } catch (error) {
