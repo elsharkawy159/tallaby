@@ -11,6 +11,7 @@ import { eq, and, desc, asc, sql, inArray } from "drizzle-orm";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { getUser } from "./auth";
 import slugify from "slugify";
+import { revalidateProductsWebhook } from "@/lib/revalidate-webhook";
 
 // Excel parsing
 import * as XLSX from "xlsx";
@@ -717,6 +718,10 @@ export async function bulkInsertProductsAction(records: ParsedBulkRow[]) {
 
     revalidatePath("/products");
     revalidateTag("products");
+
+    // Call webhook to revalidate products in ecommerce app
+    await revalidateProductsWebhook();
+
     return { success: true, ...results };
   } catch (error) {
     console.error("bulkInsertProductsAction error:", error);
@@ -856,6 +861,9 @@ export async function createProduct(data: {
     revalidateTag("products");
     revalidatePath("/products");
 
+    // Call webhook to revalidate products in ecommerce app
+    await revalidateProductsWebhook();
+
     return { success: true, data: createdProduct };
   } catch (error: any) {
     console.error("Error creating product:", error);
@@ -959,6 +967,9 @@ export async function updateProduct(
     revalidatePath(`/products/${productId}`);
     revalidateTag("products");
 
+    // Call webhook to revalidate products in ecommerce app
+    await revalidateProductsWebhook();
+
     return { success: true, data: updatedProduct[0] };
   } catch (error) {
     console.error("Error updating product:", error);
@@ -998,6 +1009,9 @@ export async function toggleProductStatus(productId: string) {
 
     revalidatePath("/products");
     revalidateTag("products");
+
+    // Call webhook to revalidate products in ecommerce app
+    await revalidateProductsWebhook();
 
     return { success: true, data: updatedProduct[0] };
   } catch (error) {
@@ -1218,6 +1232,9 @@ export async function deleteProduct(productId: string) {
 
     revalidatePath("/products");
     revalidateTag("products");
+
+    // Call webhook to revalidate products in ecommerce app
+    await revalidateProductsWebhook();
 
     return { success: true, data: product };
   } catch (error) {
