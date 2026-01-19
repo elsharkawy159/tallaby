@@ -276,7 +276,6 @@ export const categories = pgTable(
       .defaultNow()
       .notNull(),
     imageUrl: text("image_url"),
-    locale: text().default("en"),
   },
   (table) => [
     foreignKey({

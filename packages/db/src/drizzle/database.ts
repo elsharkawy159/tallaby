@@ -3,8 +3,8 @@ import "dotenv/config";
 import postgres from "postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
 
-import * as DB_SCHEMA from "../../migrations/schema";
-import * as DB_RELATIONS from "../../migrations/relations";
+import * as DB_SCHEMA from "./schema";
+import * as DB_RELATIONS from "./relations";
 
 export const schema = { ...DB_SCHEMA, ...DB_RELATIONS };
 
