@@ -229,9 +229,27 @@ const extractAmazonImages = ($: ReturnType<typeof load>, finalUrl: string) => {
   const img = $("#landingImage").attr("data-a-dynamic-image");
   if (typeof img === "string" && img.trim()) {
     try {
-      const json = JSON.parse(img);
-      const urls = Object.keys(json)
-        .map((u) => toAbsoluteUrl(finalUrl, u))
+      const json = JSON.parse(img) as unknown;
+      if (!json || typeof json !== "object") return [];
+
+      // `data-a-dynamic-image` maps url -> [width, height] (usually multiple sizes of the same image)
+      const entries = Object.entries(json as Record<string, unknown>)
+        .map(([url, value]) => {
+          let area = 0;
+          if (Array.isArray(value)) {
+            const w = typeof value[0] === "number" ? value[0] : 0;
+            const h = typeof value[1] === "number" ? value[1] : 0;
+            if (Number.isFinite(w) && Number.isFinite(h)) area = w * h;
+          }
+          return { url, area };
+        })
+        .sort((a, b) => {
+          if (b.area !== a.area) return b.area - a.area;
+          return b.url.length - a.url.length;
+        });
+
+      const urls = entries
+        .map((e) => toAbsoluteUrl(finalUrl, e.url))
         .filter((u): u is string => Boolean(u));
       if (urls.length > 0) return urls;
     } catch {
@@ -465,7 +483,7 @@ export async function POST(request: NextRequest) {
       ...imageCandidatesAmazon,
       ...(jsonLdProduct?.images || []),
       ...imageCandidatesMeta,
-    ]).slice(0, 10);
+    ]).slice(0, 1);
 
     const bulletPointsFromJsonLd = (jsonLdProduct?.additionalProperties || []).map(
       (p) => `${p.name}: ${p.value}`

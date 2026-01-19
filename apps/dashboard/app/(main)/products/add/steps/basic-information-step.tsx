@@ -163,7 +163,7 @@ export function BasicInformationStep({
       }
 
       // Store scraped images as suggestions (these are NOT uploaded to Supabase)
-      setSuggestedImages(scrapedImages.slice(0, 5));
+      setSuggestedImages(scrapedImages.slice(0, 1));
 
       // Auto-import images into Supabase and populate Media (images) if we have any
       if (scrapedImages.length > 0) {
@@ -178,7 +178,7 @@ export function BasicInformationStep({
           const importRes = await fetch("/api/import-product-images", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ urls: scrapedImages.slice(0, 5) }),
+            body: JSON.stringify({ urls: scrapedImages.slice(0, 1) }),
           });
 
           const importData = await importRes.json();
@@ -313,7 +313,7 @@ export function BasicInformationStep({
                 value={field.value || []}
                 onChange={field.onChange}
                 form={form}
-                maxImages={5}
+                maxImages={8}
               />
             </FormControl>
             <p className="text-xs text-gray-500 mt-1">

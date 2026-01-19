@@ -178,7 +178,7 @@ export const BasicInformationSection = ({
                       value={field.value || []}
                       onChange={field.onChange}
                       form={form}
-                      maxImages={5}
+                      maxImages={8}
                     />
                   </FormControl>
                   <p className="text-xs text-gray-500 mt-1">
@@ -238,7 +238,7 @@ export const PricingSection = () => {
       shouldDirty: true,
       shouldValidate: true,
     });
-  }, [listPrice, discountValue, discountType]);
+  }, [form, listPrice, discountValue, discountType]);
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm">

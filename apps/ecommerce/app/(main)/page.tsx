@@ -34,7 +34,7 @@ const HomePage = async () => {
         title={t("featuredProducts")}
         filters={{
           sortBy: "newest",
-          limit: 10,
+          limit: 30,
         }}
       />
 
