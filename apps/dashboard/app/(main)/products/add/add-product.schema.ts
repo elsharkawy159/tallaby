@@ -2,6 +2,14 @@ import { z } from "zod";
 
 // Product schema aligned with DB products + product_variants
 export const addProductFormSchema = z.object({
+  productUrl: z.preprocess(
+    (val) => {
+      if (typeof val !== "string") return val;
+      const trimmed = val.trim();
+      return trimmed === "" ? undefined : trimmed;
+    },
+    z.string().url("Please enter a valid URL").optional()
+  ),
   // products
   title: z.string().min(1, "Product name is required").max(255),
   slug: z.string().min(1, "Product slug is required").max(255),
@@ -93,6 +101,7 @@ export const addProductFormSchema = z.object({
 });
 
 export const defaultValues = {
+  productUrl: "",
   title: "",
   slug: "",
   description: "",

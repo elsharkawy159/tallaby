@@ -775,6 +775,7 @@ export async function getProduct(productId: string) {
 }
 
 export async function createProduct(data: {
+  productUrl?: string;
   title: string;
   slug: string;
   description?: string;
@@ -816,13 +817,16 @@ export async function createProduct(data: {
       throw new Error("Unauthorized");
     }
 
+    // productUrl is used only for prefill/import in the UI (not persisted in DB)
+    const { productUrl: _productUrl, ...productData } = data as any;
+
     // Generate SKU if not provided
-    const sku = data.sku?.trim() || (await generateRandomSKU());
+    const sku = productData.sku?.trim() || (await generateRandomSKU());
 
     const newProduct = await db
       .insert(products)
       .values({
-        ...data,
+        ...productData,
         sku,
         sellerId: session.user.id,
       } as any)
@@ -833,10 +837,10 @@ export async function createProduct(data: {
     // Insert variants if provided
     if (
       createdProduct?.id &&
-      Array.isArray(data.variants) &&
-      data.variants.length > 0
+      Array.isArray(productData.variants) &&
+      productData.variants.length > 0
     ) {
-      const variantValues = data.variants.map((v) => ({
+      const variantValues = productData.variants.map((v: any) => ({
         productId: createdProduct.id,
         title: v.title,
         price: v.price as any,

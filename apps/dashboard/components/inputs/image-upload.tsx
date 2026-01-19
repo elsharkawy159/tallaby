@@ -66,6 +66,30 @@ export function ImageUpload({
     }))
   );
 
+  // Keep local state in sync when form value changes externally
+  useEffect(() => {
+    const hasInProgress = filesToUpload.some((f) => !f.isUploaded);
+    if (hasInProgress) return;
+
+    const currentLiveSources = filesToUpload
+      .map((f) => f.liveSource)
+      .filter((v): v is string => Boolean(v));
+
+    const isSame =
+      currentLiveSources.length === value.length &&
+      currentLiveSources.every((v, i) => v === value[i]);
+
+    if (isSame) return;
+
+    setFilesToUpload(
+      value.map((file) => ({
+        progress: 0,
+        liveSource: file,
+        isUploaded: true,
+      }))
+    );
+  }, [value]);
+
   // Cleanup blob URLs on unmount to prevent memory leaks
   useEffect(() => {
     return () => {
