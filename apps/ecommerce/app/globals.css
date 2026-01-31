@@ -72,3 +72,48 @@
     opacity: 0;
   }
 }
+
+/* Hero banner gradient shift */
+@keyframes hero-banner-gradient {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Hero banner text subtle pulse */
+@keyframes hero-banner-text {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.02);
+  }
+}
+
+.hero-banner-gradient {
+  background-size: 400% 400%;
+  animation: hero-banner-gradient 8s ease infinite;
+}
+
+.hero-banner-text {
+  animation: hero-banner-text 3s ease-in-out infinite;
+}
+
+@keyframes hero-banner-shimmer {
+  0% {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  50% {
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}

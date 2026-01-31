@@ -46,7 +46,7 @@ export async function getAllBrands(params?: {
       // like(brands.descriptionAr, `%${params.search}%`),
     }
 
-    let orderBy = [];
+    const orderBy = [];
     switch (params?.sortBy) {
       case "products":
         orderBy.push(desc(brands.productCount));

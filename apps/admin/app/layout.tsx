@@ -1,6 +1,7 @@
 import { Montserrat } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { AdminProvider } from "@/contexts/admin-context";
+import { QueryProvider } from "@/providers/query-provider";
 import "./globals.css";
 import "@workspace/ui/globals.css";
 import { Toaster } from "@workspace/ui/components/sonner";
@@ -45,7 +46,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AdminProvider>{children}</AdminProvider>
+          <QueryProvider>
+            <AdminProvider>{children}</AdminProvider>
+          </QueryProvider>
           <Toaster />
         </ThemeProvider>
       </body>

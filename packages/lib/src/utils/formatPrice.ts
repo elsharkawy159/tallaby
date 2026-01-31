@@ -16,19 +16,24 @@ export function formatPrice(
 
   // Format using Intl.NumberFormat with appropriate locale
   // Display prices with 2 decimal places for currency precision
+  // Use English numbers (latn) for Arabic to avoid Arabic-Indic numerals (٠١٢٣٤٥٦٧٨٩)
   const formatted = new Intl.NumberFormat(isArabic ? "ar-EG" : "en-EG", {
     style: "currency",
     currency: "EGP",
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
+    ...(isArabic && { numberingSystem: "latn" }),
   }).format(price);
 
   const sizeClass = sizeToClass[currencySize] || sizeToClass.sm;
 
   // Adjust the currency symbol for Arabic layout
   if (isArabic) {
-    // Ensures correct RTL display: ٦١١ ج.م
-    const result = formatted.replace("EGP", "ج.م");
+    // Intl outputs "ج.م." (with trailing dot) - normalize to "ج.م"
+    // Ensures correct RTL display with English numerals: 611 ج.م
+    const result = formatted
+      .replace("EGP", "ج.م")
+      .replace(/ج\.م\.\u200F?/g, "ج.م");
     return result.replace("ج.م", `<span class="${sizeClass}">ج.م</span>`);
   }
 

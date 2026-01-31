@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import Image from "next/image";
+import { useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import {
   Accordion,
@@ -20,31 +19,26 @@ import {
 } from "@workspace/ui/components/dropdown-menu";
 import { Badge } from "@workspace/ui/components/badge";
 import { Skeleton } from "@workspace/ui/components/skeleton";
-import {
-  Edit,
-  Plus,
-  Trash2,
-  MoreVertical,
-  FolderTree,
-  ImageIcon,
-} from "lucide-react";
+import { Edit, Plus, Trash2, MoreVertical, FolderTree } from "lucide-react";
 import type { Category } from "../categories.types";
-import { CategoryImageUpload } from "./category-image-upload";
+import { ImageUploadCell } from "@/components/image-upload-cell";
+import { updateCategory } from "@/actions/categories";
 import { CategoryEditDialog } from "./category-edit-dialog";
 import { CategoryDeleteDialog } from "./category-delete-dialog";
 import { CategoryAddDialog } from "./category-add-dialog";
-import { getPublicUrl } from "@/lib/utils";
-import { CATEGORY_BUCKET } from "../categories.constants";
 import {
   useCategoryChildren,
   invalidateCategoryCache,
 } from "./use-category-children";
+import { cn } from "@workspace/ui/lib/utils";
 
 interface CategoryItemProps {
   category: Category;
   locale: "en" | "ar";
   onRefresh: () => void;
   level?: number;
+  expandedIds?: string[];
+  scrollToCategoryId?: string | null;
 }
 
 /**
@@ -56,28 +50,25 @@ export function CategoryItem({
   locale,
   onRefresh,
   level = 0,
+  expandedIds = [],
+  scrollToCategoryId,
 }: CategoryItemProps) {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isAddOpen, setIsAddOpen] = useState(false);
-  const [isImageUploadOpen, setIsImageUploadOpen] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const rowRef = useRef<HTMLDivElement>(null);
 
   const hasChildren = category.childrenCount > 0;
-  const imageUrl = category.imageUrl
-    ? getPublicUrl(category.imageUrl, CATEGORY_BUCKET)
-    : null;
+  const isScrollTarget = scrollToCategoryId === category.id;
+
+  const isExpanded = expandedIds.includes(category.id);
 
   // Use the custom hook for fetching children with caching
   const { data: children, isLoading: isLoadingChildren } = useCategoryChildren({
     categoryId: category.id,
     locale,
-    enabled: isExpanded && hasChildren, // Only fetch when expanded
+    enabled: isExpanded && hasChildren,
   });
-
-  const handleExpand = useCallback(() => {
-    setIsExpanded((prev) => !prev);
-  }, []);
 
   const handleRefresh = useCallback(() => {
     // Invalidate cache for this category and parent
@@ -90,22 +81,15 @@ export function CategoryItem({
 
   const CategoryContent = (
     <div className="flex items-center gap-3 group w-full">
-      {/* Category Image/Icon */}
-      <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-        {imageUrl ? (
-          <Image
-            src={imageUrl}
-            alt={category.name || "Category"}
-            fill
-            className="object-cover"
-            sizes="40px"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <FolderTree className="h-5 w-5 text-gray-400" />
-          </div>
-        )}
-      </div>
+      {/* Category Image - same reusable component as products row */}
+      <ImageUploadCell
+        value={category.imageUrl}
+        bucket="categories"
+        onSave={(path) => updateCategory(category.id, { imageUrl: path })}
+        onSuccess={handleRefresh}
+        alt={category.name || "Category"}
+        size="sm"
+      />
 
       {/* Category Info */}
       <div className="flex-1 text-left min-w-0">
@@ -138,18 +122,6 @@ export function CategoryItem({
 
       {/* Action Buttons */}
       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsImageUploadOpen(true);
-          }}
-          title="Upload image"
-        >
-          <ImageIcon className="h-4 w-4" />
-        </Button>
         <Button
           variant="ghost"
           size="icon"
@@ -197,13 +169,6 @@ export function CategoryItem({
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => setIsImageUploadOpen(true)}
-              className="cursor-pointer"
-            >
-              <ImageIcon className="mr-2 h-4 w-4" />
-              Upload image
-            </DropdownMenuItem>
-            <DropdownMenuItem
               onClick={() => setIsAddOpen(true)}
               className="cursor-pointer"
             >
@@ -236,11 +201,16 @@ export function CategoryItem({
     return (
       <>
         <AccordionItem value={category.id} className="border-none">
-          <div className="flex items-center gap-3">
-            <AccordionTrigger
-              className="flex-1 hover:no-underline py-2 px-3 rounded-lg hover:bg-gray-50"
-              onClick={handleExpand}
-            >
+          <div
+            ref={rowRef}
+            data-category-id={category.id}
+            className={cn(
+              "flex items-center gap-3 transition-colors",
+              isScrollTarget &&
+                "rounded-lg bg-primary/5 ring-1 ring-primary/20",
+            )}
+          >
+            <AccordionTrigger className="flex-1 hover:no-underline py-2 px-3 rounded-lg hover:bg-gray-50">
               {CategoryContent}
             </AccordionTrigger>
           </div>
@@ -261,6 +231,8 @@ export function CategoryItem({
                     locale={locale}
                     onRefresh={handleRefresh}
                     level={level + 1}
+                    expandedIds={expandedIds}
+                    scrollToCategoryId={scrollToCategoryId}
                   />
                 ))}
               </div>
@@ -273,14 +245,6 @@ export function CategoryItem({
         </AccordionItem>
 
         {/* Dialogs */}
-        <CategoryImageUpload
-          categoryId={category.id}
-          currentImageUrl={category.imageUrl}
-          open={isImageUploadOpen}
-          onOpenChange={setIsImageUploadOpen}
-          onSuccess={handleRefresh}
-        />
-
         <CategoryEditDialog
           category={category}
           locale={locale}
@@ -312,19 +276,18 @@ export function CategoryItem({
   // If category has no children, render as regular item (no accordion)
   return (
     <>
-      <div className="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-gray-50 group">
+      <div
+        ref={rowRef}
+        data-category-id={category.id}
+        className={cn(
+          "flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-gray-50 group transition-colors",
+          isScrollTarget && "bg-primary/5 ring-1 ring-primary/20",
+        )}
+      >
         {CategoryContent}
       </div>
 
       {/* Dialogs */}
-      <CategoryImageUpload
-        categoryId={category.id}
-        currentImageUrl={category.imageUrl}
-        open={isImageUploadOpen}
-        onOpenChange={setIsImageUploadOpen}
-        onSuccess={handleRefresh}
-      />
-
       <CategoryEditDialog
         category={category}
         locale={locale}
@@ -357,6 +320,9 @@ interface CategoryTreeProps {
   rootCategories: Category[];
   locale: "en" | "ar";
   onRefresh: () => void;
+  expandedIds?: string[];
+  onExpandedIdsChange?: (ids: string[]) => void;
+  scrollToCategoryId?: string | null;
 }
 
 /**
@@ -367,8 +333,16 @@ export function CategoryTree({
   rootCategories,
   locale,
   onRefresh,
+  expandedIds: controlledExpandedIds,
+  onExpandedIdsChange: controlledOnExpandedIdsChange,
+  scrollToCategoryId,
 }: CategoryTreeProps) {
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [internalExpandedIds, setInternalExpandedIds] = useState<string[]>([]);
+
+  const expandedIds = controlledExpandedIds ?? internalExpandedIds;
+  const setExpandedIds =
+    controlledOnExpandedIdsChange ?? setInternalExpandedIds;
 
   if (rootCategories.length === 0) {
     return (
@@ -398,10 +372,10 @@ export function CategoryTree({
 
   // Separate categories with and without children
   const categoriesWithChildren = rootCategories.filter(
-    (cat) => cat.childrenCount > 0
+    (cat) => cat.childrenCount > 0,
   );
   const categoriesWithoutChildren = rootCategories.filter(
-    (cat) => cat.childrenCount === 0
+    (cat) => cat.childrenCount === 0,
   );
 
   return (
@@ -417,13 +391,20 @@ export function CategoryTree({
       <div className="space-y-1">
         {/* Categories with children - use accordion */}
         {categoriesWithChildren.length > 0 && (
-          <Accordion type="single" collapsible className="space-y-1">
+          <Accordion
+            type="multiple"
+            value={expandedIds}
+            onValueChange={setExpandedIds}
+            className="space-y-1"
+          >
             {categoriesWithChildren.map((category) => (
               <CategoryItem
                 key={category.id}
                 category={category}
                 locale={locale}
                 onRefresh={onRefresh}
+                expandedIds={expandedIds}
+                scrollToCategoryId={scrollToCategoryId}
               />
             ))}
           </Accordion>
@@ -438,6 +419,7 @@ export function CategoryTree({
                 category={category}
                 locale={locale}
                 onRefresh={onRefresh}
+                scrollToCategoryId={scrollToCategoryId}
               />
             ))}
           </div>

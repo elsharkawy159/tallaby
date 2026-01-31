@@ -1,7 +1,17 @@
 "use server";
 
 import { db } from "@workspace/db";
-import { categories, products, eq, and, desc, sql, isNull, asc } from "@workspace/db";
+import {
+  categories,
+  products,
+  eq,
+  and,
+  desc,
+  sql,
+  isNull,
+  asc,
+  inArray,
+} from "@workspace/db";
 import { unstable_cache } from "next/cache";
 
 export const getAllCategories = unstable_cache(
@@ -24,7 +34,7 @@ export const getAllCategories = unstable_cache(
   {
     tags: ["categories"],
     revalidate: 60 * 60 * 24,
-  }
+  },
 );
 
 export const getCategoryTree = unstable_cache(
@@ -53,7 +63,7 @@ export const getCategoryTree = unstable_cache(
   {
     tags: ["categories"],
     revalidate: 60 * 60 * 24,
-  }
+  },
 );
 
 export const getCategoryBySlug = unstable_cache(
@@ -79,7 +89,10 @@ export const getCategoryBySlug = unstable_cache(
         .select({ count: sql<number>`count(*)` })
         .from(products)
         .where(
-          and(eq(products.categoryId, category.id), eq(products.isActive, true))
+          and(
+            eq(products.categoryId, category.id),
+            eq(products.isActive, true),
+          ),
         );
 
       return {
@@ -99,7 +112,7 @@ export const getCategoryBySlug = unstable_cache(
   {
     tags: ["categories"],
     revalidate: 60 * 60 * 24,
-  }
+  },
 );
 
 export const getTopCategories = unstable_cache(
@@ -112,6 +125,7 @@ export const getTopCategories = unstable_cache(
           name: categories.name,
           nameAr: categories.nameAr,
           slug: categories.slug,
+          imageUrl: categories.imageUrl,
           productCount: sql<number>`count(${products.id})`,
         })
         .from(categories)
@@ -119,14 +133,49 @@ export const getTopCategories = unstable_cache(
           products,
           and(
             eq(products.categoryId, categories.id),
-            eq(products.isActive, true)
-          )
+            eq(products.isActive, true),
+          ),
         )
         .groupBy(categories.id)
         .orderBy(desc(sql`count(${products.id})`))
         .limit(12);
 
-      return { success: true, data: topCategories };
+      // For categories without image, fetch first product image as fallback
+      const needFallback = topCategories.filter((c) => !c.imageUrl);
+      const fallbackMap = new Map<string, string>();
+
+      if (needFallback.length > 0) {
+        const categoryIds = needFallback.map((c) => c.id);
+        const fallbackRows = await db
+          .select({
+            categoryId: products.categoryId,
+            firstImage: sql<string>`(${products.images}->>0)`.as("first_image"),
+          })
+          .from(products)
+          .where(
+            and(
+              inArray(products.categoryId, categoryIds),
+              eq(products.isActive, true),
+              sql`${products.images} IS NOT NULL`,
+              sql`jsonb_array_length(${products.images}) > 0`,
+            ),
+          );
+
+        // Pick first product image per category (query may return multiple per category)
+        for (const row of fallbackRows) {
+          const img = row.firstImage;
+          if (row.categoryId && img && !fallbackMap.has(row.categoryId)) {
+            fallbackMap.set(row.categoryId, img);
+          }
+        }
+      }
+
+      const data = topCategories.map((c) => ({
+        ...c,
+        fallbackImageUrl: fallbackMap.get(c.id) ?? null,
+      }));
+
+      return { success: true, data };
     } catch (error) {
       console.error("Error fetching top categories:", error);
       return { success: false, error: "Failed to fetch top categories" };
@@ -136,7 +185,7 @@ export const getTopCategories = unstable_cache(
   {
     tags: ["categories"],
     revalidate: 60 * 60 * 24, // 1 day
-  }
+  },
 );
 
 export const getCategoriesWithProducts = unstable_cache(
@@ -162,15 +211,15 @@ export const getCategoriesWithProducts = unstable_cache(
             .where(
               and(
                 eq(products.categoryId, category.id),
-                eq(products.isActive, true)
-              )
+                eq(products.isActive, true),
+              ),
             );
 
           return {
             ...category,
             productCount: count[0]?.count || 0,
           };
-        })
+        }),
       );
 
       return { success: true, data: categoriesWithCounts };
@@ -183,7 +232,7 @@ export const getCategoriesWithProducts = unstable_cache(
   {
     tags: ["categories"],
     revalidate: 60 * 60 * 24, // 1 day
-  }
+  },
 );
 
 const buildCategoryTree = unstable_cache(
@@ -214,7 +263,7 @@ const buildCategoryTree = unstable_cache(
   {
     tags: ["categories"],
     revalidate: 60 * 60 * 24, // 1 day
-  }
+  },
 );
 
 const getCategoryBreadcrumb = unstable_cache(
@@ -241,5 +290,5 @@ const getCategoryBreadcrumb = unstable_cache(
   {
     tags: ["categories"],
     revalidate: 60 * 60 * 24, // 1 day
-  }
+  },
 );

@@ -463,7 +463,12 @@
     "home": {
       "title": "Tallaby.com – Your Everything Store",
       "description": "Shop millions of products at Tallaby.com — from fashion and electronics to home, beauty, and more. Fast delivery, great prices, and trusted sellers.",
-      "featuredProducts": "Featured Products"
+      "featuredProducts": "Featured Products",
+      "heroBannerText": "GET FREE DELIVERY ON YOUR FIRST ORDER NOW",
+      "heroHeadline": "Get free delivery on your first order",
+      "heroDescription": "Shop from hundreds of products across accessories, skincare, and fashion. Fast delivery, great prices, and trusted sellers.",
+      "heroCtaPrimary": "Shop now",
+      "heroCtaSecondary": "See offers"
     },
     "products": {
       "title": "All Products | Shop Online | Tallaby.com",
