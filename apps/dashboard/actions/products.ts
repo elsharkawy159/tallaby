@@ -3,6 +3,7 @@
 import {
   products,
   productVariants,
+  productTranslations,
   productQuestions,
   productAnswers,
   db,
@@ -104,15 +105,25 @@ export async function getSellerProducts(params?: {
       conditions.push(eq(products.isActive, params.isActive));
     }
 
-    const productList = await db.query.products.findMany({
+    const productListRaw = await db.query.products.findMany({
       where: and(...conditions),
       with: {
         brand: true,
+        category: true,
         productVariants: true,
+        productTranslations: true,
       },
       orderBy: [desc(products.createdAt)],
       ...(params?.limit !== undefined ? { limit: params.limit } : {}),
       offset: params?.offset || 0,
+    });
+
+    const productList = productListRaw.map((p) => {
+      const translations = (p as { productTranslations?: Array<{ locale: string; title: string }> }).productTranslations ?? [];
+      const enT = translations.find((t) => t.locale === "en");
+      const arT = translations.find((t) => t.locale === "ar");
+      const title = enT?.title ?? arT?.title ?? "";
+      return { ...p, title };
     });
 
     const totalCount = await db
@@ -736,9 +747,9 @@ export async function bulkInsertProductsAction(records: ParsedBulkRow[]) {
 
 export async function getProduct(productId: string) {
   try {
-    const session = await getUser();
+    const session = await getUser()
     if (!session?.user?.id) {
-      throw new Error("Unauthorized");
+      throw new Error("Unauthorized")
     }
 
     const product = await db.query.products.findFirst({
@@ -749,6 +760,7 @@ export async function getProduct(productId: string) {
       with: {
         brand: true,
         productVariants: true,
+        productTranslations: true,
         productQuestions: {
           with: {
             productAnswers: true,
@@ -758,89 +770,169 @@ export async function getProduct(productId: string) {
           limit: 10,
         },
       },
-    });
+    })
 
     if (!product) {
-      throw new Error("Product not found");
+      throw new Error("Product not found")
     }
 
-    return { success: true, data: product };
+    // Build localized map from productTranslations for edit form
+    const translations = (product as { productTranslations?: Array<{ locale: string; title: string; slug: string | null; description: string | null; bulletPoints: unknown; metaTitle: string | null; metaDescription: string | null }> }).productTranslations ?? []
+    const enRow = translations.find((t) => t.locale === "en")
+    const arRow = translations.find((t) => t.locale === "ar")
+    const localized = {
+      en: {
+        title: enRow?.title ?? "",
+        slug: enRow?.slug ?? "",
+        description: enRow?.description ?? undefined,
+        bulletPoints: enRow ? (Array.isArray(enRow.bulletPoints) ? enRow.bulletPoints : []) : [],
+        metaTitle: enRow?.metaTitle ?? undefined,
+        metaDescription: enRow?.metaDescription ?? undefined,
+      },
+      ar: arRow
+        ? {
+            title: arRow.title,
+            slug: arRow.slug ?? "",
+            description: arRow.description ?? undefined,
+            bulletPoints: Array.isArray(arRow.bulletPoints) ? arRow.bulletPoints : [],
+            metaTitle: arRow.metaTitle ?? undefined,
+            metaDescription: arRow.metaDescription ?? undefined,
+          }
+        : { title: "", slug: "", description: "", bulletPoints: [], metaTitle: "", metaDescription: "" },
+    }
+
+    return {
+      success: true,
+      data: { ...product, localized },
+    }
   } catch (error) {
-    console.error("Error fetching product:", error);
+    console.error("Error fetching product:", error)
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
-    };
+    }
   }
 }
 
-export async function createProduct(data: {
-  productUrl?: string;
-  title: string;
-  slug: string;
-  description?: string;
-  sku?: string;
-  brandId?: string;
-  categoryId: string;
-  price: any;
-  quantity: number;
-  bulletPoints?: any;
-  images?: any;
-  dimensions?: any;
-  seo?: any;
-  condition?: string;
-  conditionDescription?: string;
-  fulfillmentType?: string;
-  handlingTime?: number;
-  maxOrderQuantity?: number;
-  isActive?: boolean;
-  isPlatformChoice?: boolean;
-  isMostSelling?: boolean;
-  isFeatured?: boolean;
-  taxClass?: string;
+type CreateProductLegacy = {
+  productUrl?: string
+  title: string
+  slug: string
+  description?: string
+  sku?: string
+  brandId?: string
+  categoryId: string
+  price: any
+  quantity: number
+  bulletPoints?: any
+  images?: any
+  dimensions?: any
+  seo?: any
+  condition?: string
+  conditionDescription?: string
+  fulfillmentType?: string
+  handlingTime?: number
+  maxOrderQuantity?: number
+  isActive?: boolean
+  isPlatformChoice?: boolean
+  isMostSelling?: boolean
+  isFeatured?: boolean
+  taxClass?: string
   variants?: Array<{
-    title: string;
-    sku: string;
-    price: number;
-    stock?: number;
-    imageUrl?: string;
-    option1?: string;
-    option2?: string;
-    option3?: string;
-    barCode?: string;
-    position?: number;
-  }>;
-}) {
+    title: string
+    sku: string
+    price: number
+    stock?: number
+    imageUrl?: string
+    option1?: string
+    option2?: string
+    option3?: string
+    barCode?: string
+    position?: number
+  }>
+}
+
+type CreateProductNew = Omit<
+  CreateProductLegacy,
+  "title" | "slug" | "description" | "bulletPoints" | "seo"
+> & {
+  localized: {
+    en: {
+      title: string
+      slug: string
+      description?: string
+      bulletPoints?: string[]
+      metaTitle?: string
+      metaDescription?: string
+    }
+    ar: {
+      title?: string
+      slug?: string
+      description?: string
+      bulletPoints?: string[]
+      metaTitle?: string
+      metaDescription?: string
+    }
+  }
+}
+
+function hasLocalized(
+  data: CreateProductLegacy | CreateProductNew
+): data is CreateProductNew {
+  return "localized" in data && data.localized != null
+}
+
+export async function createProduct(data: CreateProductLegacy | CreateProductNew) {
   try {
-    const session = await getUser();
+    const session = await getUser()
     if (!session?.user?.id) {
-      throw new Error("Unauthorized");
+      throw new Error("Unauthorized")
     }
 
-    // productUrl is used only for prefill/import in the UI (not persisted in DB)
-    const { productUrl: _productUrl, ...productData } = data as any;
+    const { productUrl: _productUrl, ...rest } = data as CreateProductLegacy & {
+      productUrl?: string
+      localized?: CreateProductNew["localized"]
+    }
 
-    // Generate SKU if not provided
-    const sku = productData.sku?.trim() || (await generateRandomSKU());
+    const sku =
+      (typeof rest.sku === "string" && rest.sku.trim()) || (await generateRandomSKU())
 
-    const newProduct = await db
-      .insert(products)
-      .values({
-        ...productData,
-        sku,
-        sellerId: session.user.id,
-      } as any)
-      .returning();
+    const {
+      localized: _localized,
+      title: _t,
+      slug: _s,
+      description: _d,
+      bulletPoints: _b,
+      seo: _seo,
+      locale: _locale,
+      ...sharedOnly
+    } = rest as typeof rest & {
+      localized?: CreateProductNew["localized"]
+      title?: string
+      slug?: string
+      description?: string
+      bulletPoints?: unknown
+      seo?: unknown
+      locale?: string
+    }
 
-    const createdProduct = newProduct[0];
+    // products table: shared data only (content lives in product_translations)
+    const productPayload = {
+      ...sharedOnly,
+      sku,
+      sellerId: session.user.id,
+    } as any
+
+    const newProduct = await db.insert(products).values(productPayload).returning()
+    const createdProduct = newProduct[0]
 
     // Insert variants if provided
     if (
       createdProduct?.id &&
-      Array.isArray(productData.variants) &&
-      productData.variants.length > 0
+      Array.isArray(rest.variants) &&
+      rest.variants.length > 0
     ) {
-      const variantValues = productData.variants.map((v: any) => ({
+      const variantValues = rest.variants.map((v: any) => ({
         productId: createdProduct.id,
         title: v.title,
         price: v.price as any,
@@ -852,40 +944,95 @@ export async function createProduct(data: {
         option3: v.option3,
         barCode: v.barCode,
         position: v.position,
-      }));
-
-      await db.insert(productVariants).values(variantValues);
+      }))
+      await db.insert(productVariants).values(variantValues)
     }
 
-    revalidateTag("products", "layout");
+    // Insert product_translations for en (always) and ar (if has content)
+    let localizedData: CreateProductNew["localized"] | undefined
+    if (hasLocalized(data)) {
+      localizedData = data.localized
+    } else {
+      // Legacy flow: build localized from top-level fields
+      localizedData = {
+        en: {
+          title: (data.title ?? "").trim() || "Untitled",
+          slug:
+            (data.slug ?? "").trim() ||
+            slugify(data.title ?? "untitled", { lower: true, strict: true }),
+          description: data.description?.trim(),
+          bulletPoints: Array.isArray(data.bulletPoints) ? data.bulletPoints : [],
+          metaTitle: (data.seo as any)?.metaTitle,
+          metaDescription: (data.seo as any)?.metaDescription,
+        },
+        ar: { title: "", slug: "", description: "", bulletPoints: [], metaTitle: "", metaDescription: "" },
+      }
+    }
 
-    return { success: true, data: createdProduct };
+    if (createdProduct?.id && localizedData) {
+      const enTitle = (localizedData.en.title ?? "").trim() || "Untitled"
+      const enSlug = (localizedData.en.slug ?? "").trim() || slugify(localizedData.en.title ?? "untitled", { lower: true, strict: true })
+      const enRow = {
+        productId: createdProduct.id,
+        locale: "en" as const,
+        title: enTitle,
+        description: localizedData.en.description?.trim() || null,
+        bulletPoints: localizedData.en.bulletPoints ?? [],
+        slug: enSlug,
+        metaTitle: localizedData.en.metaTitle?.trim() || null,
+        metaDescription: localizedData.en.metaDescription?.trim() || null,
+      }
+      await db.insert(productTranslations).values(enRow)
+
+      const arHasContent =
+        (localizedData.ar?.title ?? "").trim() !== "" ||
+        (localizedData.ar?.description ?? "").trim() !== "" ||
+        (localizedData.ar?.slug ?? "").trim() !== "" ||
+        ((localizedData.ar?.bulletPoints ?? []).length > 0) ||
+        (localizedData.ar?.metaTitle ?? "").trim() !== "" ||
+        (localizedData.ar?.metaDescription ?? "").trim() !== ""
+
+      if (arHasContent) {
+        const arRow = {
+          productId: createdProduct.id,
+          locale: "ar" as const,
+          title: (localizedData.ar!.title ?? "").trim() || enTitle,
+          description: localizedData.ar?.description?.trim() || null,
+          bulletPoints: localizedData.ar?.bulletPoints ?? [],
+          slug: localizedData.ar?.slug?.trim() || null,
+          metaTitle: localizedData.ar?.metaTitle?.trim() || null,
+          metaDescription: localizedData.ar?.metaDescription?.trim() || null,
+        }
+        await db.insert(productTranslations).values(arRow)
+      }
+    }
+
+    revalidateTag("products", "layout")
+    return { success: true, data: createdProduct }
   } catch (error: any) {
-    console.error("Error creating product:", error);
+    console.error("Error creating product:", error)
 
-    // Handle duplicate slug error
-    if (
-      error?.code === "23505" &&
-      error?.constraint_name === "products_slug_unique"
-    ) {
+    const skuUsed =
+      (data as CreateProductLegacy).sku || "generated"
+
+    if (error?.code === "23505" && error?.constraint_name?.includes("slug")) {
+      const slugUsed = hasLocalized(data) ? data.localized.en.slug : (data as CreateProductLegacy).slug
       return {
         success: false,
-        error: `A product with the slug "${data.slug}" already exists. Please use a different slug.`,
-      };
+        error: `A product with the slug "${slugUsed}" already exists. Please use a different slug.`,
+      }
     }
-
-    // Handle duplicate SKU error
     if (error?.code === "23505" && error?.constraint_name?.includes("sku")) {
       return {
         success: false,
-        error: `A product with the SKU "${data.sku || "generated"}" already exists. Please use a different SKU.`,
-      };
+        error: `A product with the SKU "${skuUsed}" already exists. Please use a different SKU.`,
+      }
     }
 
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error occurred",
-    };
+    }
   }
 }
 
@@ -912,10 +1059,19 @@ export async function updateProduct(
       throw new Error("Unauthorized");
     }
 
-    // Extract variants from data
-    const { variants, ...productData } = data;
+    // Extract variants and content columns (content lives in product_translations)
+    const {
+      variants,
+      title: _t,
+      slug: _s,
+      description: _d,
+      bulletPoints: _b,
+      seo: _seo,
+      locale: _locale,
+      ...productData
+    } = data;
 
-    // Update the main product
+    // Update the main product (shared fields only)
     const updatedProduct = await db
       .update(products)
       .set({
@@ -1244,12 +1400,19 @@ export async function getSellerUnansweredQuestions(params?: {
         question: productQuestions.question,
         createdAt: productQuestions.createdAt,
         productId: products.id,
-        productTitle: products.title,
+        productTitle: productTranslations.title,
         productSku: products.sku,
         productImages: products.images,
       })
       .from(productQuestions)
       .leftJoin(products, eq(productQuestions.productId as any, products.id))
+      .leftJoin(
+        productTranslations,
+        and(
+          eq(productTranslations.productId, products.id),
+          eq(productTranslations.locale, "en")
+        )
+      )
       .where(
         and(
           eq(products.sellerId, session.user.id),
@@ -1305,12 +1468,19 @@ export async function getSellerQuestions(params?: {
         createdAt: productQuestions.createdAt,
         isAnswered: productQuestions.isAnswered,
         productId: products.id,
-        productTitle: products.title,
+        productTitle: productTranslations.title,
         productSku: products.sku,
         productImages: products.images,
       })
       .from(productQuestions)
       .leftJoin(products, eq(productQuestions.productId as any, products.id))
+      .leftJoin(
+        productTranslations,
+        and(
+          eq(productTranslations.productId, products.id),
+          eq(productTranslations.locale, "en")
+        )
+      )
       .where(eq(products.sellerId, session.user.id))
       .orderBy(
         asc(productQuestions.isAnswered),

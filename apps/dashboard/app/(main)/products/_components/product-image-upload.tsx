@@ -146,7 +146,7 @@ export function ProductImageUpload({
           alt={productTitle}
           width={100}
           height={100}
-          className="h-16 w-16 object-cover"
+          className="h-16 w-16 object-contain"
         />
 
         {/* Upload overlay when dragging */}

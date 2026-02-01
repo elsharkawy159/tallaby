@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@workspace/ui/components/button";
@@ -40,12 +40,16 @@ import {
   sellerApplicationDefaults,
   type SellerApplicationFormData,
 } from "@/app/(main)/become-seller/_components/become-seller.dto";
-import { submitSellerApplication } from "@/app/(main)/become-seller/_components/become-seller.server";
+import {
+  checkBusinessNameAvailability,
+  submitSellerApplication,
+} from "@/app/(main)/become-seller/_components/become-seller.server";
 import {
   BUSINESS_TYPE_OPTIONS,
   COUNTRY_OPTIONS,
 } from "@/app/(main)/become-seller/_components/become-seller.types";
 import { useAuthDialog } from "@/hooks/use-auth-dialog";
+import { useDebounce } from "@/hooks/use-debounce";
 import { Input } from "@workspace/ui/components";
 
 interface OnboardingFormClientProps {
@@ -55,9 +59,11 @@ interface OnboardingFormClientProps {
 export function OnboardingFormClient({ user }: OnboardingFormClientProps) {
   const t = useTranslations("onboarding");
   const tToast = useTranslations("toast");
-  const tAuth = useTranslations("auth");
   const [isPending, startTransition] = useTransition();
   const [currentStep, setCurrentStep] = useState(0);
+  const [businessNameCheck, setBusinessNameCheck] = useState<
+    "idle" | "checking" | "available" | "taken"
+  >("idle");
   const router = useRouter();
   const { open: openAuthDialog } = useAuthDialog();
 
@@ -97,6 +103,43 @@ export function OnboardingFormClient({ user }: OnboardingFormClientProps) {
     mode: "onChange",
   });
 
+  const businessName = form.watch("businessName");
+  const debouncedBusinessName = useDebounce(businessName?.trim() ?? "", 400);
+  const checkInFlightRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (debouncedBusinessName.length < 2) {
+      setBusinessNameCheck("idle");
+      if (form.formState.errors.businessName?.type === "manual") {
+        form.clearErrors("businessName");
+      }
+      return;
+    }
+
+    let cancelled = false;
+    checkInFlightRef.current = debouncedBusinessName;
+    setBusinessNameCheck("checking");
+
+    checkBusinessNameAvailability(debouncedBusinessName).then((available) => {
+      if (cancelled || checkInFlightRef.current !== debouncedBusinessName)
+        return;
+      checkInFlightRef.current = null;
+      setBusinessNameCheck(available ? "available" : "taken");
+      if (!available) {
+        form.setError("businessName", {
+          type: "manual",
+          message: t("businessNameTaken"),
+        });
+      } else {
+        form.clearErrors("businessName");
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [debouncedBusinessName, t, form]);
+
   const handleNext = async (e?: React.MouseEvent<HTMLButtonElement>) => {
     e?.preventDefault();
     e?.stopPropagation();
@@ -120,7 +163,7 @@ export function OnboardingFormClient({ user }: OnboardingFormClientProps) {
 
   const handleSubmit = (data: SellerApplicationFormData) => {
     if (!user) {
-      toast.error("You must be logged in to create a seller account");
+      toast.error(t("youMustBeLoggedIn"));
       openAuthDialog("signin");
       return;
     }
@@ -157,23 +200,23 @@ export function OnboardingFormClient({ user }: OnboardingFormClientProps) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Authentication Required</CardTitle>
-          <CardDescription>
-            You must be logged in to create a seller account
-          </CardDescription>
+          <CardTitle>{t("authenticationRequired")}</CardTitle>
+          <CardDescription>{t("mustBeLoggedIn")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-4">
             <Button className="w-full" asChild>
-              <Link href="/auth?redirect=/onboarding">Sign In to Continue</Link>
+              <Link href="/auth?redirect=/onboarding">
+                {t("signInToContinue")}
+              </Link>
             </Button>
             <p className="text-sm text-center text-gray-600">
-              Don't have an account?{" "}
+              {t("dontHaveAccount")}{" "}
               <Link
                 href="/auth?redirect=/onboarding"
                 className="font-semibold text-primary hover:text-primary/80"
               >
-                Sign up
+                {t("signUp")}
               </Link>
             </p>
           </div>
@@ -192,7 +235,7 @@ export function OnboardingFormClient({ user }: OnboardingFormClientProps) {
               name="logoUrl"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Business Logo</FormLabel>
+                  <FormLabel>{t("businessLogo")}</FormLabel>
                   <FormControl>
                     <LogoUploader
                       value={field.value}
@@ -211,14 +254,38 @@ export function OnboardingFormClient({ user }: OnboardingFormClientProps) {
                 name="businessName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Business Name</FormLabel>
+                    <FormLabel>{t("businessName")}</FormLabel>
                     <FormControl>
-                      <Input
-                        type="text"
-                        placeholder="Enter your business name"
-                        required
-                        {...field}
-                      />
+                      <div className="relative">
+                        <Input
+                          type="text"
+                          placeholder={t("enterBusinessName")}
+                          required
+                          className="ltr:pr-9 rtl:pl-9"
+                          {...field}
+                          onChange={(e) => {
+                            field.onChange(e);
+                            setBusinessNameCheck("idle");
+                            if (
+                              form.formState.errors.businessName?.type ===
+                              "manual"
+                            ) {
+                              form.clearErrors("businessName");
+                            }
+                          }}
+                        />
+                        <span className="pointer-events-none absolute ltr:right-3 rtl:left-3 top-1/2 -translate-y-1/2">
+                          {businessNameCheck === "checking" && (
+                            <Spinner className="h-4 w-4 text-muted-foreground" />
+                          )}
+                          {businessNameCheck === "available" && (
+                            <Check className="h-4 w-4 text-green-600" />
+                          )}
+                          {businessNameCheck === "taken" && (
+                            <X className="h-4 w-4 text-destructive" />
+                          )}
+                        </span>
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -227,11 +294,13 @@ export function OnboardingFormClient({ user }: OnboardingFormClientProps) {
 
               <SelectInput
                 name="businessType"
-                label="Business Type"
-                placeholder="Select your business type"
+                label={t("businessType")}
+                placeholder={t("selectBusinessType")}
                 options={BUSINESS_TYPE_OPTIONS.map((opt) => ({
                   value: opt.value,
-                  label: opt.label,
+                  label: t(
+                    `businessType_${opt.value}` as "businessType_individual"
+                  ),
                 }))}
                 required
               />
@@ -248,8 +317,8 @@ export function OnboardingFormClient({ user }: OnboardingFormClientProps) {
             <TextareaInput
               form={form}
               name="description"
-              label="Business Description"
-              placeholder="Tell customers about your business (optional)"
+              label={t("businessDescription")}
+              placeholder={t("tellCustomersAboutBusiness")}
               rows={4}
               validation={{ maxLength: 1000 }}
               showCharacterCount
@@ -259,18 +328,18 @@ export function OnboardingFormClient({ user }: OnboardingFormClientProps) {
               <TextInput
                 form={form}
                 name="supportEmail"
-                label="Support Email"
+                label={t("supportEmail")}
                 type="email"
-                placeholder="Enter your business email"
+                placeholder={t("enterBusinessEmail")}
                 required
               />
 
               <TextInput
                 form={form}
                 name="supportPhone"
-                label="Support Phone"
+                label={t("supportPhone")}
                 type="tel"
-                placeholder="Enter support phone (optional)"
+                placeholder={t("enterSupportPhone")}
               />
             </div>
           </div>
@@ -283,8 +352,8 @@ export function OnboardingFormClient({ user }: OnboardingFormClientProps) {
             <TextInput
               form={form}
               name="legalAddress.street"
-              label="Street Address"
-              placeholder="Street address"
+              label={t("streetAddress")}
+              placeholder={t("streetAddressPlaceholder")}
               required
             />
 
@@ -292,16 +361,16 @@ export function OnboardingFormClient({ user }: OnboardingFormClientProps) {
               <TextInput
                 form={form}
                 name="legalAddress.city"
-                label="City"
-                placeholder="Enter city"
+                label={t("city")}
+                placeholder={t("enterCity")}
                 required
               />
 
               <TextInput
                 form={form}
                 name="legalAddress.state"
-                label="State/Province"
-                placeholder="Enter state/province"
+                label={t("stateProvince")}
+                placeholder={t("enterStateProvince")}
                 required
               />
             </div>
@@ -310,15 +379,15 @@ export function OnboardingFormClient({ user }: OnboardingFormClientProps) {
               <TextInput
                 form={form}
                 name="legalAddress.postalCode"
-                label="Postal/ZIP Code"
-                placeholder="Enter postal code"
+                label={t("postalZipCode")}
+                placeholder={t("enterPostalCode")}
               />
 
               <div className="w-full">
                 <SelectInput
                   name="legalAddress.country"
-                  label="Country"
-                  placeholder="Select country"
+                  label={t("country")}
+                  placeholder={t("selectCountry")}
                   disabled
                   options={COUNTRY_OPTIONS.map((opt) => ({
                     value: opt.value,
@@ -361,7 +430,10 @@ export function OnboardingFormClient({ user }: OnboardingFormClientProps) {
           <div className="flex items-center justify-between">
             <CardTitle>{currentForm?.title}</CardTitle>
             <p className="text-muted-foreground text-xs">
-              Step {currentStep + 1} of {steps.length}
+              {t("stepOf", {
+                current: currentStep + 1,
+                total: steps.length,
+              })}
             </p>
           </div>
           <CardDescription>{currentForm?.description}</CardDescription>
@@ -385,14 +457,14 @@ export function OnboardingFormClient({ user }: OnboardingFormClientProps) {
         {currentStep > 0 ? (
           <Button type="button" variant="ghost" onClick={handleBack}>
             <ChevronLeft className="h-4 w-4" />
-            Back
+            {t("back")}
           </Button>
         ) : (
           <div />
         )}
         {!isLastStep ? (
           <Button type="button" onClick={handleNext}>
-            Next
+            {t("next")}
             <ChevronRight className="h-4 w-4" />
           </Button>
         ) : (
@@ -405,10 +477,10 @@ export function OnboardingFormClient({ user }: OnboardingFormClientProps) {
             {isPending ? (
               <>
                 <Spinner className="h-4 w-4" />
-                Creating Seller Account...
+                {t("creatingSellerAccount")}
               </>
             ) : (
-              "Create Seller Account"
+              t("createSellerAccount")
             )}
           </Button>
         )}

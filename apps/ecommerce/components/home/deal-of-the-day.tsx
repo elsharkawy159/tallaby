@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getProducts } from "@/actions/products";
+import { getLocale } from "next-intl/server";
 import ProductCard from "@/app/(main)/products/[slug]/_components/ProductCard";
 import { Button } from "@workspace/ui/components/button";
 import { Badge } from "@workspace/ui/components/badge";
@@ -27,12 +28,12 @@ export default async function DealOfTheDay({
   showCountdown = true,
   className = "",
 }: DealOfTheDayProps) {
-  // Get products with discounts
+  const locale = (await getLocale()) as "en" | "ar"
   const productsResult = await getProducts({
     sortBy: "popular",
     limit,
-    // In a real implementation, you'd filter by products with active deals
-  });
+    locale,
+  })
 
   const products = productsResult.success ? productsResult.data : [];
 

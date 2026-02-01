@@ -1,4 +1,4 @@
-import { pgTable, index, foreignKey, uuid, text, integer, jsonb, timestamp, numeric, varchar, smallint, unique, boolean, pgPolicy, uniqueIndex, real, bigint, date, pgView, pgEnum } from "drizzle-orm/pg-core"
+import { pgTable, index, foreignKey, uuid, text, integer, jsonb, timestamp, numeric, varchar, smallint, unique, boolean, pgPolicy, uniqueIndex, real, bigint, date, check, pgView, pgEnum } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 export const addressType = pgEnum("address_type", ['shipping', 'billing', 'both'])
@@ -991,10 +991,6 @@ export const users = pgTable("users", {
 
 export const products = pgTable("products", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
-	title: text().notNull(),
-	slug: text().notNull(),
-	description: text(),
-	bulletPoints: jsonb("bullet_points"),
 	brandId: uuid("brand_id"),
 	categoryId: uuid("category_id").notNull(),
 	averageRating: real("average_rating"),
@@ -1018,15 +1014,11 @@ export const products = pgTable("products", {
 	isFeatured: boolean("is_featured").default(false),
 	dimensions: jsonb(),
 	price: jsonb(),
-	seo: jsonb(),
-	locale: text().default('en'),
 }, (table) => [
 	index("product_brand_id_idx").using("btree", table.brandId.asc().nullsLast().op("uuid_ops")),
 	index("product_main_category_id_idx").using("btree", table.categoryId.asc().nullsLast().op("uuid_ops")),
 	index("product_seller_id_idx").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops")),
 	index("product_sku_idx").using("btree", table.sku.asc().nullsLast().op("text_ops")),
-	uniqueIndex("product_slug_idx").using("btree", table.slug.asc().nullsLast().op("text_ops")),
-	index("product_title_idx").using("btree", table.title.asc().nullsLast().op("text_ops")),
 	uniqueIndex("unique_product_seller_sku_idx").using("btree", table.sellerId.asc().nullsLast().op("text_ops"), table.sku.asc().nullsLast().op("text_ops")),
 	foreignKey({
 			columns: [table.brandId],
@@ -1043,7 +1035,6 @@ export const products = pgTable("products", {
 			foreignColumns: [sellers.id],
 			name: "products_seller_id_fkey"
 		}).onDelete("cascade"),
-	unique("products_slug_unique").on(table.slug),
 	pgPolicy("Allow authenticated insert access", { as: "permissive", for: "insert", to: ["authenticated"] }),
 	pgPolicy("Public full access", { as: "permissive", for: "all", to: ["public"] }),
 	pgPolicy("Enable read access for all users", { as: "permissive", for: "select", to: ["public"] }),
@@ -1167,6 +1158,29 @@ export const rewardActions = pgTable("reward_actions", {
 	isActive: boolean("is_active").default(true),
 	action: text(),
 });
+
+export const productTranslations = pgTable("product_translations", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	productId: uuid("product_id").notNull(),
+	locale: text().notNull(),
+	title: text().notNull(),
+	description: text(),
+	bulletPoints: jsonb("bullet_points").default([]).notNull(),
+	slug: text(),
+	metaTitle: text("meta_title"),
+	metaDescription: text("meta_description"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("product_translations_locale_idx").using("btree", table.locale.asc().nullsLast().op("text_ops")),
+	index("product_translations_product_id_idx").using("btree", table.productId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.productId],
+			foreignColumns: [products.id],
+			name: "product_translations_product_id_fkey"
+		}).onDelete("cascade"),
+	unique("product_translations_product_id_locale_key").on(table.productId, table.locale),
+	check("product_translations_locale_check", sql`locale = ANY (ARRAY['en'::text, 'ar'::text])`),
+]);
 export const userPoints = pgView("user_points", {	userId: uuid("user_id"),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	totalPoints: bigint("total_points", { mode: "number" }),

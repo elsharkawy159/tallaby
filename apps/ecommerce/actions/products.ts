@@ -6,6 +6,7 @@ import {
   productAnswers,
   products,
   productVariants,
+  productTranslations,
   reviews,
   reviewComments,
   productQuestions,
@@ -20,12 +21,20 @@ import {
   desc,
   asc,
   isNotNull,
-} from "@workspace/db";
+} from "@workspace/db"
+import {
+  getProductIdBySlug,
+  getProductTranslationWithFallback,
+  mergeProductWithTranslation,
+  pickTranslationFromArray,
+  type ProductLocale,
+} from "@/lib/product-translations"
 import { getUser } from "./auth";
 import { revalidatePath } from "next/cache";
 
 interface ProductFilters {
   categoryId?: string;
+  categoryName?: string;
   brandId?: string;
   minPrice?: number;
   maxPrice?: number;
@@ -38,6 +47,7 @@ interface ProductFilters {
   sortBy?: "price_asc" | "price_desc" | "rating" | "newest" | "popular";
   limit?: number;
   offset?: number;
+  locale?: ProductLocale;
 }
 
 export async function getProducts(filters: ProductFilters = {}) {
@@ -48,10 +58,16 @@ export async function getProducts(filters: ProductFilters = {}) {
   return unstable_cache(
     async () => {
       try {
+        const locale = (filters.locale ?? "en") as ProductLocale
         const conditions = [eq(products.isActive, filters.isActive ?? true)];
 
         if (filters.categoryId) {
-          conditions.push(eq(categories.id, filters.categoryId));
+          conditions.push(eq(products.categoryId, filters.categoryId));
+        }
+
+        if (filters.categoryName) {
+          const [cat] = await db.select({ id: categories.id }).from(categories).where(eq(categories.name, filters.categoryName!)).limit(1)
+          if (cat) conditions.push(eq(products.categoryId, cat.id))
         }
 
         if (filters.brandId) {
@@ -87,11 +103,14 @@ export async function getProducts(filters: ProductFilters = {}) {
         }
 
         if (filters.searchQuery) {
+          const pattern = `%${filters.searchQuery}%`;
           conditions.push(
-            or(
-              like(products.title, `%${filters.searchQuery}%`),
-              like(products.description, `%${filters.searchQuery}%`)
-            ) as any
+            sql`EXISTS (
+              SELECT 1 FROM product_translations pt
+              WHERE pt.product_id = ${products.id}
+              AND pt.locale IN ('en', 'ar')
+              AND (pt.title ILIKE ${pattern} OR pt.description ILIKE ${pattern})
+            )`
           );
         }
 
@@ -117,16 +136,25 @@ export async function getProducts(filters: ProductFilters = {}) {
             orderBy.push(desc(products.createdAt));
         }
 
-        const productsList = await db.query.products.findMany({
+        const productsListRaw = await db.query.products.findMany({
           where: and(...conditions),
           with: {
             brand: true,
             category: true,
+            productTranslations: true,
           },
           orderBy,
           limit: filters.limit || 30,
           offset: filters.offset || 0,
-        });
+        })
+
+        type ProductWithTranslations = Record<string, unknown> & {
+          productTranslations?: Array<{ locale: string; title: string; description?: string | null; bulletPoints?: unknown; slug?: string | null; metaTitle?: string | null; metaDescription?: string | null }>
+        }
+        const productsList = productsListRaw.map((p: ProductWithTranslations) => {
+          const translation = pickTranslationFromArray(p.productTranslations ?? [], locale)
+          return mergeProductWithTranslation(p, translation)
+        })
 
         // Get total count for pagination
         const totalCount = await db
@@ -157,14 +185,17 @@ export async function getProducts(filters: ProductFilters = {}) {
   )();
 }
 
-export async function getProductBySlug(slug: string) {
-  // CACHED: Semi-dynamic public data - product details change infrequently
-  // Note: Pricing/stock are real-time but product metadata is cacheable
+export async function getProductBySlug(slug: string, locale: ProductLocale = "en") {
   return unstable_cache(
     async () => {
       try {
+        const productId = await getProductIdBySlug(slug, locale)
+        if (!productId) {
+          return { success: false, error: "Product not found" }
+        }
+
         const product = await db.query.products.findFirst({
-          where: and(eq(products.slug, slug), eq(products.isActive, true)),
+          where: and(eq(products.id, productId), eq(products.isActive, true)),
           with: {
             brand: true,
             seller: {
@@ -208,41 +239,56 @@ export async function getProductBySlug(slug: string) {
               },
             },
           },
-        });
+        })
 
         if (!product) {
-          return { success: false, error: "Product not found" };
+          return { success: false, error: "Product not found" }
         }
 
-        // Get related products
-        const relatedProducts = await db.query.products.findMany({
+        // Apply locale fallback: ar uses product_translations.ar if exists else en
+        const translation = await getProductTranslationWithFallback(product.id, locale)
+        const merged = mergeProductWithTranslation(product, translation)
+
+        const relatedProductsRaw = await db.query.products.findMany({
           where: and(
             eq(products.categoryId, product.categoryId),
             eq(products.isActive, true),
             sql`${products.id} != ${product.id}`
           ),
+          with: {
+            brand: true,
+            productTranslations: true,
+          },
           limit: 8,
           orderBy: [desc(products.averageRating)],
-        });
+        })
+
+        type RelatedProductWithTranslations = Record<string, unknown> & {
+          productTranslations?: Array<{ locale: string; title: string; description?: string | null; bulletPoints?: unknown; slug?: string | null; metaTitle?: string | null; metaDescription?: string | null }>
+        }
+        const relatedProducts = relatedProductsRaw.map((p: RelatedProductWithTranslations) => {
+          const t = pickTranslationFromArray(p.productTranslations ?? [], locale)
+          return mergeProductWithTranslation(p, t)
+        })
 
         return {
           success: true,
           data: {
-            ...product,
+            ...merged,
             relatedProducts,
           },
-        };
+        }
       } catch (error) {
-        console.error("Error fetching product:", error);
-        return { success: false, error: "Failed to fetch product" };
+        console.error("Error fetching product:", error)
+        return { success: false, error: "Failed to fetch product" }
       }
     },
-    [`product-${slug}`],
+    [`product-${slug}-${locale}`],
     {
       tags: ["products", `product-${slug}`],
-      revalidate: 600, // 10 minutes - product details change less frequently
+      revalidate: 600,
     }
-  )();
+  )()
 }
 
 export async function getProductVariants(productId: string) {
@@ -487,20 +533,24 @@ export async function getProductsBySeller(sellerId: string, limit: number) {
 }
 
 export async function getAllProductSlugs() {
-  // CACHED: Static data for ISR - product slugs change infrequently
   return unstable_cache(
     async () => {
       try {
-        const productSlugs = await db
-          .select({
-            slug: products.slug,
-          })
-          .from(products)
-          .where(eq(products.isActive, true));
+        const slugsResult = await db
+          .select({ slug: productTranslations.slug })
+          .from(productTranslations)
+          .innerJoin(products, eq(productTranslations.productId, products.id))
+          .where(
+            and(
+              eq(productTranslations.locale, "en"),
+              eq(products.isActive, true),
+              isNotNull(productTranslations.slug)
+            )
+          )
 
         return {
           success: true,
-          data: productSlugs.map((product) => product.slug),
+          data: slugsResult.map((r) => r.slug).filter(Boolean) as string[],
         };
       } catch (error) {
         console.error("Error fetching product slugs:", error);

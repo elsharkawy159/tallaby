@@ -615,7 +615,16 @@
     "logoUploadedSuccessfully": "Logo uploaded successfully",
     "somethingWentWrong": "Something went wrong. Please try again.",
     "enterCity": "Enter city",
-    "selectCountry": "Select country"
+    "selectCountry": "Select country",
+    "businessNameTaken": "A seller with this business name already exists.",
+    "streetAddressPlaceholder": "Street address",
+    "stateProvince": "State/Province",
+    "country": "Country",
+    "businessType_individual": "Individual/Sole Proprietor",
+    "businessType_company": "Company/LLC",
+    "businessType_partnership": "Partnership",
+    "businessType_corporation": "Corporation",
+    "city": "City"
   },
   "toast": {
     "questionSubmitted": "Your question has been submitted and is pending approval",

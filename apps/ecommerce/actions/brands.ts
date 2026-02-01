@@ -9,7 +9,7 @@ import {
   and,
   desc,
   sql,
-  like,
+  ilike,
   asc,
   or,
 } from "@workspace/db";
@@ -173,8 +173,8 @@ export async function searchBrands(query: string) {
       try {
         const searchResults = await db.query.brands.findMany({
           where: or(
-            like(brands.name, `%${query}%`),
-            like(brands.description, `%${query}%`)
+            ilike(brands.name, `%${query}%`),
+            ilike(brands.description, `%${query}%`)
           ),
           orderBy: [desc(brands.isVerified), desc(brands.productCount)],
           limit: 10,

@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@workspace/db";
-import { products, brands, categories, sellers } from "@workspace/db";
+import { products, productTranslations, brands, categories, sellers } from "@workspace/db";
 import { eq, and, desc, sql, gte, lte, like, or } from "drizzle-orm";
 import { getAdminUser } from "./auth";
 import { revalidatePath } from "next/cache";
@@ -37,20 +37,26 @@ export async function getAllProducts(params?: {
     }
 
     if (params?.search) {
+      const pattern = `%${params.search}%`;
       conditions.push(
         or(
-          like(products.title, `%${params.search}%`),
-          like(products.sku, `%${params.search}%`),
-          like(products.description, `%${params.search}%`)
+          like(products.sku, pattern),
+          sql`EXISTS (
+            SELECT 1 FROM product_translations pt
+            WHERE pt.product_id = ${products.id}
+            AND pt.locale = 'en'
+            AND (pt.title ILIKE ${pattern} OR pt.description ILIKE ${pattern})
+          )`
         )
       );
     }
 
-    const productsList = await db.query.products.findMany({
+    const productsListRaw = await db.query.products.findMany({
       where: conditions.length > 0 ? and(...conditions) : undefined,
       with: {
         brand: true,
         category: true,
+        productTranslations: true,
         seller: {
           columns: {
             businessName: true,
@@ -65,6 +71,11 @@ export async function getAllProducts(params?: {
       orderBy: [desc(products.createdAt)],
       limit: params?.limit || 50,
       offset: params?.offset || 0,
+    });
+
+    const productsList = productsListRaw.map((p) => {
+      const enT = (p as { productTranslations?: Array<{ locale: string; title: string; description?: string | null }> }).productTranslations?.find((t) => t.locale === "en");
+      return { ...p, title: enT?.title ?? "", description: enT?.description ?? null };
     });
 
     const totalCount = await db

@@ -38,10 +38,10 @@ export const revalidate = 600;
 export async function generateMetadata({
   params,
 }: ProductPageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const t = await getTranslations("product");
-  const locale = await getLocale();
-  const productResult = await getProductBySlug(slug);
+  const { slug } = await params
+  const t = await getTranslations("product")
+  const locale = (await getLocale()) as "en" | "ar"
+  const productResult = await getProductBySlug(slug, locale)
   if (!productResult.success || !productResult.data) {
     return {
       title: `${t("productNotFound")} | Tallaby.com`,
@@ -90,8 +90,9 @@ export async function generateMetadata({
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
-  const { slug } = await params;
-  const productResult = await getProductBySlug(slug);
+  const { slug } = await params
+  const locale = (await getLocale()) as "en" | "ar"
+  const productResult = await getProductBySlug(slug, locale)
   if (!productResult.success || !productResult.data) {
     notFound();
   }

@@ -45,7 +45,8 @@ export default async function BestSellersInCategory({
     categoryName: category.name || undefined,
     sortBy: "popular",
     limit,
-  });
+    locale: locale as "en" | "ar",
+  })
 
   const products = productsResult.success ? productsResult.data : [];
 

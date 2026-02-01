@@ -1,6 +1,8 @@
 ---
+description: Forms and useForm
 alwaysApply: false
 ---
+
 # Form Handling Rules - Next.js with App Router
 
 ## 🎯 Form Architecture Overview
@@ -31,153 +33,152 @@ FormName/
 
 ```typescript
 // form-name.schema.ts
-import { z } from 'zod'
+import { z } from "zod";
 
 export const formNameSchema = z.object({
   email: z
     .string()
-    .min(1, 'Email is required')
-    .email('Please enter a valid email address'),
-  
+    .min(1, "Email is required")
+    .email("Please enter a valid email address"),
+
   firstName: z
     .string()
-    .min(1, 'First name is required')
-    .min(2, 'First name must be at least 2 characters')
-    .max(50, 'First name must be less than 50 characters'),
-  
+    .min(1, "First name is required")
+    .min(2, "First name must be at least 2 characters")
+    .max(50, "First name must be less than 50 characters"),
+
   lastName: z
     .string()
-    .min(1, 'Last name is required')
-    .min(2, 'Last name must be at least 2 characters')
-    .max(50, 'Last name must be less than 50 characters'),
-  
+    .min(1, "Last name is required")
+    .min(2, "Last name must be at least 2 characters")
+    .max(50, "Last name must be less than 50 characters"),
+
   phone: z
     .string()
     .optional()
     .refine((val) => !val || /^\+?[\d\s-()]+$/.test(val), {
-      message: 'Please enter a valid phone number'
+      message: "Please enter a valid phone number",
     }),
-  
-  role: z.enum(['customer', 'seller'], {
-    required_error: 'Please select a role'
+
+  role: z.enum(["customer", "seller"], {
+    required_error: "Please select a role",
   }),
-  
-  acceptTerms: z
-    .boolean()
-    .refine((val) => val === true, {
-      message: 'You must accept the terms and conditions'
-    })
-})
+
+  acceptTerms: z.boolean().refine((val) => val === true, {
+    message: "You must accept the terms and conditions",
+  }),
+});
 
 // Export the inferred type
-export type FormNameData = z.infer<typeof formNameSchema>
+export type FormNameData = z.infer<typeof formNameSchema>;
 
 // Default values (must match schema structure)
 export const formNameDefaults: Partial<FormNameData> = {
-  email: '',
-  firstName: '',
-  lastName: '',
-  phone: '',
-  role: 'customer',
-  acceptTerms: false
-}
+  email: "",
+  firstName: "",
+  lastName: "",
+  phone: "",
+  role: "customer",
+  acceptTerms: false,
+};
 ```
 
 ### **2. Server Action (Backend Handler)**
 
 ```typescript
 // form-name.server.ts
-'use server'
+"use server";
 
-import { z } from 'zod'
-import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
-import { formNameSchema, type FormNameData } from './form-name.schema'
-import { createUser } from '@/lib/database/users'
-import { sendWelcomeEmail } from '@/lib/email'
+import { z } from "zod";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { formNameSchema, type FormNameData } from "./form-name.schema";
+import { createUser } from "@/lib/database/users";
+import { sendWelcomeEmail } from "@/lib/email";
 
 // Server action result type
 type ActionResult = {
-  success: boolean
-  message: string
-  errors?: Record<string, string[]>
-}
+  success: boolean;
+  message: string;
+  errors?: Record<string, string[]>;
+};
 
 export const handleFormSubmission = async (
   data: FormNameData
 ): Promise<ActionResult> => {
   try {
     // 1. Validate data on server (double validation)
-    const validatedData = formNameSchema.parse(data)
-    
+    const validatedData = formNameSchema.parse(data);
+
     // 2. Check if user already exists
-    const existingUser = await getUserByEmail(validatedData.email)
+    const existingUser = await getUserByEmail(validatedData.email);
     if (existingUser) {
       return {
         success: false,
-        message: 'User with this email already exists',
-        errors: { email: ['Email is already taken'] }
-      }
+        message: "User with this email already exists",
+        errors: { email: ["Email is already taken"] },
+      };
     }
-    
+
     // 3. Create user in database
     const newUser = await createUser({
       email: validatedData.email,
       firstName: validatedData.firstName,
       lastName: validatedData.lastName,
       phone: validatedData.phone || null,
-      role: validatedData.role
-    })
-    
+      role: validatedData.role,
+    });
+
     // 4. Send welcome email (optional async operation)
-    await sendWelcomeEmail(newUser.email, newUser.firstName)
-    
+    await sendWelcomeEmail(newUser.email, newUser.firstName);
+
     // 5. Revalidate relevant paths
-    revalidatePath('/dashboard')
-    revalidatePath('/users')
-    
+    revalidatePath("/dashboard");
+    revalidatePath("/users");
+
     // 6. Return success
     return {
       success: true,
-      message: 'Account created successfully! Welcome aboard.'
-    }
-    
+      message: "Account created successfully! Welcome aboard.",
+    };
   } catch (error) {
-    console.error('Form submission error:', error)
-    
+    console.error("Form submission error:", error);
+
     // Handle Zod validation errors
     if (error instanceof z.ZodError) {
-      const fieldErrors: Record<string, string[]> = {}
+      const fieldErrors: Record<string, string[]> = {};
       error.errors.forEach((err) => {
-        const field = err.path.join('.')
-        if (!fieldErrors[field]) fieldErrors[field] = []
-        fieldErrors[field].push(err.message)
-      })
-      
+        const field = err.path.join(".");
+        if (!fieldErrors[field]) fieldErrors[field] = [];
+        fieldErrors[field].push(err.message);
+      });
+
       return {
         success: false,
-        message: 'Please fix the validation errors',
-        errors: fieldErrors
-      }
+        message: "Please fix the validation errors",
+        errors: fieldErrors,
+      };
     }
-    
+
     // Handle other errors
     return {
       success: false,
-      message: 'Something went wrong. Please try again later.'
-    }
+      message: "Something went wrong. Please try again later.",
+    };
   }
-}
+};
 
 // Optional: Separate action for specific operations
-export const checkEmailAvailability = async (email: string): Promise<boolean> => {
+export const checkEmailAvailability = async (
+  email: string
+): Promise<boolean> => {
   try {
-    const user = await getUserByEmail(email)
-    return !user // true if email is available
+    const user = await getUserByEmail(email);
+    return !user; // true if email is available
   } catch {
-    return false
+    return false;
   }
-}
+};
 ```
 
 ### **3. Reusable Form Field Components**
@@ -232,7 +233,7 @@ export const TextFormField = <T extends Record<string, any>>({
           {label}
         </FormLabel>
         <FormControl>
-          <Input 
+          <Input
             placeholder={placeholder}
             {...field}
             autoComplete={name}
@@ -335,16 +336,16 @@ import { Button } from '@/components/ui/button'
 import { Form } from '@/components/ui/form'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-import { 
-  formNameSchema, 
-  formNameDefaults, 
-  type FormNameData 
+import {
+  formNameSchema,
+  formNameDefaults,
+  type FormNameData
 } from './form-name.schema'
 import { handleFormSubmission } from './form-name.server'
-import { 
-  TextFormField, 
-  SelectFormField, 
-  CheckboxFormField 
+import {
+  TextFormField,
+  SelectFormField,
+  CheckboxFormField
 } from './form-name.fields'
 
 interface FormNameProps {
@@ -353,10 +354,10 @@ interface FormNameProps {
   onCancel?: () => void
 }
 
-export const FormName = ({ 
-  initialData, 
-  onSuccess, 
-  onCancel 
+export const FormName = ({
+  initialData,
+  onSuccess,
+  onCancel
 }: FormNameProps) => {
   const [isPending, startTransition] = useTransition()
 
@@ -374,14 +375,14 @@ export const FormName = ({
     startTransition(async () => {
       try {
         const result = await handleFormSubmission(data)
-        
+
         if (result.success) {
           toast.success(result.message)
           form.reset() // Reset form on success
           onSuccess?.() // Call optional success callback
         } else {
           toast.error(result.message)
-          
+
           // Set server-side field errors
           if (result.errors) {
             Object.entries(result.errors).forEach(([field, messages]) => {
@@ -406,8 +407,8 @@ export const FormName = ({
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form 
-            onSubmit={form.handleSubmit(handleSubmit)} 
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
             className="space-y-6"
           >
             {/* Personal Information */}
@@ -419,7 +420,7 @@ export const FormName = ({
                 placeholder="Enter your first name"
                 required
               />
-              
+
               <TextFormField
                 control={form.control}
                 name="lastName"
@@ -470,9 +471,9 @@ export const FormName = ({
             {/* Form Actions */}
             <div className="flex gap-4 pt-4">
               {onCancel && (
-                <Button 
-                  type="button" 
-                  variant="outline" 
+                <Button
+                  type="button"
+                  variant="outline"
                   onClick={onCancel}
                   disabled={isPending}
                   className="flex-1"
@@ -480,9 +481,9 @@ export const FormName = ({
                   Cancel
                 </Button>
               )}
-              
-              <Button 
-                type="submit" 
+
+              <Button
+                type="submit"
                 disabled={isPending || !form.formState.isValid}
                 className="flex-1"
               >
@@ -694,7 +695,7 @@ export const DynamicForm = () => {
                 label="Variant Name"
                 required
               />
-              
+
               <TextFormField
                 control={form.control}
                 name={`variants.${index}.price`}
@@ -702,7 +703,7 @@ export const DynamicForm = () => {
                 type="number"
                 required
               />
-              
+
               <TextFormField
                 control={form.control}
                 name={`variants.${index}.sku`}
@@ -733,6 +734,7 @@ export const DynamicForm = () => {
 ## ✅ Form Best Practices Checklist
 
 ### **Schema Design**
+
 - [ ] Use descriptive error messages
 - [ ] Include proper validation rules (min, max, regex)
 - [ ] Export inferred types
@@ -740,6 +742,7 @@ export const DynamicForm = () => {
 - [ ] Use appropriate Zod types (enum, refine, optional)
 
 ### **Server Actions**
+
 - [ ] Always validate data server-side
 - [ ] Handle all error types (Zod, database, network)
 - [ ] Return consistent result structure
@@ -747,6 +750,7 @@ export const DynamicForm = () => {
 - [ ] Include proper error logging
 
 ### **Client Components**
+
 - [ ] Use useTransition for pending states
 - [ ] Handle both client and server errors
 - [ ] Provide loading feedback
@@ -754,11 +758,11 @@ export const DynamicForm = () => {
 - [ ] Include accessibility attributes
 
 ### **Reusability**
+
 - [ ] Extract common field patterns
 - [ ] Use generic types for field components
 - [ ] Create consistent styling patterns
 - [ ] Include proper TypeScript types
 - [ ] Document component props
-
 
 Remember: **Always validate twice (client + server), use transitions for UX, keep components reusable, and provide clear error feedback!**

@@ -1,4 +1,5 @@
 import { getProducts } from "@/actions/products";
+import { getLocale } from "next-intl/server";
 import ProductCard from "@/app/(main)/products/[slug]/_components/ProductCard";
 import type { ProductCardProps } from "@/components/product";
 import Pagination from "./Pagination";
@@ -58,7 +59,8 @@ const ProductsList = async ({ searchParams }: ProductsListProps) => {
 
   filters.sortBy = sortBy;
 
-  const result = await getProducts(filters);
+  const locale = (await getLocale()) as "en" | "ar"
+  const result = await getProducts({ ...filters, locale })
 
   if (!result.success) {
     return (

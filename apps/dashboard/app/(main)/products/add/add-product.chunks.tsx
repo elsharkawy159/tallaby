@@ -157,7 +157,7 @@ export const BasicInformationSection = ({
                   addButtonText="Add Feature"
                   itemPlaceholder="Enter a key feature..."
                   maxItems={10}
-                  description="Add up to 10 key product features"
+                  // description="Add up to 10 key product features"
                   className="text-sm"
                 />
               )}

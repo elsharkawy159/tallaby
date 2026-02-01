@@ -1,5 +1,5 @@
 import { Sidebar } from "@/components/dashboard/Sidebar";
-import { Navbar } from "@/components/layout/Navbar";
+// import { Navbar } from "@/components/layout/Navbar";
 import { MainContentWrapper } from "@/components/layout/main-content-wrapper";
 
 export default function DashboardLayout({
@@ -13,9 +13,9 @@ export default function DashboardLayout({
 
       {/* Main Content Area */}
       <MainContentWrapper>
-        <Navbar />
+        {/* <Navbar /> */}
 
-        <div className="pt-[73px]">{children}</div>
+        <main>{children}</main>
       </MainContentWrapper>
     </div>
   );

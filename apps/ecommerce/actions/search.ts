@@ -4,6 +4,7 @@
 import { unstable_cache } from "next/cache";
 import {
   products,
+  productTranslations,
   brands,
   categories,
   sellers,
@@ -21,6 +22,11 @@ import {
 } from "@workspace/db";
 import { getUser, getSessionId } from "./auth";
 import { getLocale } from "next-intl/server";
+import {
+  pickTranslationFromArray,
+  mergeProductWithTranslation,
+  type ProductLocale,
+} from "@/lib/product-translations";
 
 interface SearchFilters {
   query: string;
@@ -52,18 +58,22 @@ export async function searchProducts(filters: SearchFilters) {
   try {
     const user = await getUser();
     const sessionId = await getSessionId();
+    const locale = (await getLocale()) as ProductLocale;
 
     // Build search conditions
     const conditions = [eq(products.isActive, true)];
 
-    // Text search across multiple fields
+    // Text search across product_translations (en + ar) and products.sku
     if (filters.query) {
       const searchPattern = `%${filters.query}%`;
       conditions.push(
         or(
-          like(products.title, searchPattern),
-          like(products.description, searchPattern),
-          sql`${products.bulletPoints}::text ILIKE ${searchPattern}`,
+          sql`EXISTS (
+            SELECT 1 FROM product_translations pt
+            WHERE pt.product_id = ${products.id}
+            AND pt.locale IN ('en', 'ar')
+            AND (pt.title ILIKE ${searchPattern} OR pt.description ILIKE ${searchPattern} OR pt.bullet_points::text ILIKE ${searchPattern})
+          )`,
           like(products.sku, searchPattern)
         ) as any
       );
@@ -154,21 +164,11 @@ export async function searchProducts(filters: SearchFilters) {
         break;
       case "relevance":
       default:
-        // Relevance sorting - prioritize title matches, then rating
-        if (filters.query) {
-          orderBy.push(
-            desc(
-              sql`CASE WHEN ${products.title} ILIKE ${`%${filters.query}%`} THEN 1 ELSE 0 END`
-            ),
-            desc(products.averageRating)
-          );
-        } else {
-          orderBy.push(desc(products.averageRating));
-        }
+        orderBy.push(desc(products.averageRating));
     }
 
     // Execute search
-    const searchResults = await db.query.products.findMany({
+    const searchResultsRaw = await db.query.products.findMany({
       where: and(...conditions),
       with: {
         brand: {
@@ -184,10 +184,17 @@ export async function searchProducts(filters: SearchFilters) {
             storeRating: true,
           },
         },
+        productTranslations: true,
       },
       orderBy,
       limit: filters.limit || 20,
       offset: filters.offset || 0,
+    });
+
+    const searchResults = searchResultsRaw.map((p) => {
+      const translations = (p as { productTranslations?: Array<{ locale: string; title: string; description?: string | null; bulletPoints?: unknown; slug?: string | null; metaTitle?: string | null; metaDescription?: string | null }> }).productTranslations;
+      const translation = pickTranslationFromArray(translations ?? [], locale);
+      return mergeProductWithTranslation(p as Record<string, unknown>, translation);
     });
 
     // Get total count for pagination
@@ -336,16 +343,18 @@ export async function searchSuggestions(query: string) {
         const searchPattern = `${query}%`;
         const categoryNameColumn = locale === "ar" ? categories.nameAr : categories.name;
 
-        // Get product title suggestions
+        // Get product title suggestions from product_translations
         const productSuggestions = await db
           .select({
-            suggestion: products.title,
+            suggestion: productTranslations.title,
             type: sql<string>`'product'`,
           })
-          .from(products)
+          .from(productTranslations)
+          .innerJoin(products, eq(productTranslations.productId, products.id))
           .where(
             and(
-              like(products.title, searchPattern),
+              eq(productTranslations.locale, "en"),
+              like(productTranslations.title, searchPattern),
               eq(products.isActive, true)
             )
           )
@@ -511,19 +520,28 @@ export async function globalSearch(query: string) {
         const searchPattern = `%${query}%`;
         const categoryNameColumn = locale === "ar" ? categories.nameAr : categories.name;
 
-        // Search products
-        const productResults = await db.query.products.findMany({
+        // Search products via product_translations
+        const searchPatternForProducts = `%${query}%`;
+        const productResultsRaw = await db.query.products.findMany({
           where: and(
             eq(products.isActive, true),
-            or(
-              like(products.title, searchPattern),
-              like(products.description, searchPattern)
-            )
+            sql`EXISTS (
+              SELECT 1 FROM product_translations pt
+              WHERE pt.product_id = ${products.id}
+              AND pt.locale = 'en'
+              AND (pt.title ILIKE ${searchPatternForProducts} OR pt.description ILIKE ${searchPatternForProducts})
+            )`
           ),
           limit: 5,
           with: {
             brand: true,
+            productTranslations: true,
           },
+        });
+        const productResults = productResultsRaw.map((p) => {
+          const translations = (p as { productTranslations?: Array<{ locale: string; title: string; description?: string | null; bulletPoints?: unknown; slug?: string | null; metaTitle?: string | null; metaDescription?: string | null }> }).productTranslations;
+          const translation = pickTranslationFromArray(translations ?? [], locale as ProductLocale);
+          return mergeProductWithTranslation(p as Record<string, unknown>, translation);
         });
 
         // Search brands

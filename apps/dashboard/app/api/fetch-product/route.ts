@@ -4,6 +4,7 @@ import { z } from "zod";
 
 const bodySchema = z.object({
   url: z.string().url(),
+  locale: z.enum(["en", "ar"]).optional().default("en"),
 });
 
 const uniq = (items: string[]) => Array.from(new Set(items));
@@ -370,7 +371,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { url } = parsed.data;
+    const { url, locale } = parsed.data;
+
+    const acceptLanguage =
+      locale === "ar"
+        ? "ar-EG,ar;q=0.9,en-US;q=0.8,en;q=0.7"
+        : "en-US,en;q=0.9,ar-EG;q=0.8,ar;q=0.7";
 
     const res = await fetch(url, {
       redirect: "follow",
@@ -379,7 +385,7 @@ export async function POST(request: NextRequest) {
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
         accept:
           "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "accept-language": "ar-EG,ar;q=0.9,en-US;q=0.8,en;q=0.7",
+        "accept-language": acceptLanguage,
         "upgrade-insecure-requests": "1",
       },
     });

@@ -40,8 +40,8 @@ const ProductSection = async ({
   description,
   filters = {},
 }: ProductSectionProps) => {
-  const products = await getProducts(filters);
-  const locale = await getLocale();
+  const locale = (await getLocale()) as "en" | "ar"
+  const products = await getProducts({ ...filters, locale })
   if (!products?.data) {
     return null;
   }

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getProducts } from "@/actions/products";
+import { getLocale } from "next-intl/server";
 import ProductCard from "@/app/(main)/products/[slug]/_components/ProductCard";
 import { Button } from "@workspace/ui/components/button";
 import { Badge } from "@workspace/ui/components/badge";
@@ -41,12 +42,14 @@ export default async function FeaturedCollection({
   showViewMore = true,
   className = "",
 }: FeaturedCollectionProps) {
+  const locale = (await getLocale()) as "en" | "ar"
   const productsResult = await getProducts({
     sortBy: "popular",
     limit: 8,
     isFeatured: true,
+    locale,
     ...filters,
-  });
+  })
 
   const products = productsResult.success ? productsResult.data : [];
 

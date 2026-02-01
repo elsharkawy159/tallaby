@@ -4,19 +4,24 @@ import { Logo } from "@/components/logo";
 import { Separator } from "@workspace/ui/components";
 import { OAuth } from "@/components/auth/o-auth";
 import { OnboardingFormClient } from "@/components/onboarding/onboarding-form.client";
+import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { createClient } from "@/supabase/server";
 import { getTranslations } from "next-intl/server";
 
 export default async function OnboardingPage() {
   const supabase = await createClient();
   const t = await getTranslations("onboarding");
+  const tCommon = await getTranslations("common");
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
+    <div className="flex items-center justify-center min-h-screen relative">
+      <div className="absolute rtl:right-4 ltr:left-4 top-4 z-10 flex items-center gap-2">
+        <LanguageSwitcher variant="default" />
+      </div>
       <div className="mx-auto w-full max-w-2xl">
         <Logo color="primary" logoClassName="mx-auto" />
         <h2 className="mt-4 text-2xl/9 font-bold tracking-tight text-gray-900 text-center">
@@ -34,7 +39,7 @@ export default async function OnboardingPage() {
           )}
         </p>
         <div className="mt-8">
-          <Suspense fallback={<div>Loading...</div>}>
+          <Suspense fallback={<div>{tCommon("loading")}</div>}>
             <OnboardingFormClient user={user} />
           </Suspense>
 

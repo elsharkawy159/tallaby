@@ -3,7 +3,8 @@
 
 import { db } from "@workspace/db";
 import { brands, products } from "@workspace/db";
-import { eq, and, desc, sql, like, asc, or } from "drizzle-orm";
+import { eq, and, desc, sql, ilike, asc, or } from "drizzle-orm";
+import slugify from "slugify";
 
 export async function getAllBrands(params?: {
   verified?: boolean;
@@ -123,8 +124,8 @@ export async function searchBrands(query: string) {
 
     const searchResults = await db.query.brands.findMany({
       where: or(
-        like(brands.name, `%${query}%`),
-        like(brands.description, `%${query}%`)
+        ilike(brands.name, `%${query}%`),
+        ilike(brands.description, `%${query}%`)
       ),
       orderBy: [desc(brands.isVerified), desc(brands.productCount)],
       limit: 10,
@@ -186,5 +187,58 @@ export async function getAlphabeticalBrands() {
   } catch (error) {
     console.error("Error fetching alphabetical brands:", error);
     return { success: false, error: "Failed to fetch brands" };
+  }
+}
+
+export async function createBrand(name: string) {
+  try {
+    const trimmed = (name || "").trim();
+    if (!trimmed) {
+      return { success: false, error: "Brand name is required" };
+    }
+
+    const baseSlug = slugify(trimmed, { lower: true, strict: true });
+    if (!baseSlug) {
+      return { success: false, error: "Invalid brand name" };
+    }
+
+    // Check if brand with same name already exists (case-insensitive)
+    const existing = await db.query.brands.findFirst({
+      where: sql`lower(${brands.name}) = lower(${trimmed})`,
+    });
+    if (existing) {
+      return { success: true, data: existing };
+    }
+
+    // Ensure unique slug
+    let slug = baseSlug;
+    let suffix = 0;
+    while (true) {
+      const slugExists = await db.query.brands.findFirst({
+        where: eq(brands.slug, slug),
+      });
+      if (!slugExists) break;
+      suffix += 1;
+      slug = `${baseSlug}-${suffix}`;
+    }
+
+    const [newBrand] = await db
+      .insert(brands)
+      .values({
+        name: trimmed,
+        slug,
+        isVerified: false,
+        isOfficial: false,
+      })
+      .returning();
+
+    if (!newBrand) {
+      return { success: false, error: "Failed to create brand" };
+    }
+
+    return { success: true, data: newBrand };
+  } catch (error) {
+    console.error("Error creating brand:", error);
+    return { success: false, error: "Failed to create brand" };
   }
 }

@@ -2,19 +2,25 @@
 {
     "nav": {
       "dashboard": "Dashboard",
-      "products": "Products Management",
-      "orders": "Orders Management", 
+      "products": "Products",
+      "manageProducts": "Manage Products",
+      "addProducts": "Add products",
+      "orders": "Orders",
+      "reviews": "Reviews & Q&A",
+      "promotions": "Promotions",
+      "advertiseProducts": "Advertise your products",
+      "accountStatements": "Account Statements",
       "coupons": "Coupons & Discounts",
       "settings": "Profile Settings",
       "financial": "Financial Dashboard",
-      "reviews": "Reviews & Q&A",
       "marketing": "Marketing & Promotions",
       "shipping": "Shipping & Logistics",
       "reports": "Reports & Analytics",
       "help": "Help & Support",
       "search": "Search products, orders, customers...",
       "profile": "My Account",
-      "logout": "Log out"
+      "logout": "Log out",
+      "giveFeedback": "Give us your feedback!"
     },
     "common": {
       "loading": "Loading...",

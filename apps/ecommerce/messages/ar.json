@@ -615,7 +615,16 @@
     "logoUploadedSuccessfully": "تم تحميل الشعار بنجاح",
     "somethingWentWrong": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
     "enterCity": "أدخل المدينة",
-    "selectCountry": "اختر الدولة"
+    "selectCountry": "اختر الدولة",
+    "businessNameTaken": "يوجد بالفعل بائع بهذا الاسم.",
+    "streetAddressPlaceholder": "عنوان الشارع",
+    "stateProvince": "المحافظة/الولاية",
+    "country": "الدولة",
+    "businessType_individual": "فرد/مؤسسة فردية",
+    "businessType_company": "شركة/شركة ذات مسؤولية محدودة",
+    "businessType_partnership": "شراكة",
+    "businessType_corporation": "شركة مساهمة",
+    "city": "المدينة"
   },
   "toast": {
     "questionSubmitted": "تم إرسال سؤالك وهو في انتظار الموافقة",

@@ -260,6 +260,7 @@ export const ArrayInput = React.forwardRef<HTMLDivElement, ArrayInputProps>(
                   {option.label}
                 </option>
               ))}
+              
             </select>
           );
 
@@ -386,7 +387,7 @@ export const ArrayInput = React.forwardRef<HTMLDivElement, ArrayInputProps>(
                             disabled={disabled || !canRemove || isDragging}
                             className={cn(
                               "px-2 text-muted-foreground hover:text-destructive transition-all duration-200",
-                              "opacity-0 group-hover:opacity-100",
+                              "opacity-50 group-hover:opacity-100",
                               focusedIndex === index && "opacity-100"
                             )}
                             title={removeButtonText}
@@ -461,29 +462,14 @@ export const ArrayInput = React.forwardRef<HTMLDivElement, ArrayInputProps>(
                       </Button>
                     )}
 
-                    {enableSmartPaste && items.length > 0 && (
+                    {/* {enableSmartPaste && items.length > 0 && (
                       <div className="text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded">
                         💡 Paste list in first field to split into items
                       </div>
-                    )}
+                    )} */}
                   </div>
 
-                  {showItemCount && (
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <span className="font-medium">
-                        {
-                          items.filter((item) =>
-                            itemType === "number"
-                              ? item > 0
-                              : Boolean(item?.toString().trim())
-                          ).length
-                        }
-                      </span>
-                      <span>/</span>
-                      <span>{maxItems === Infinity ? "∞" : maxItems}</span>
-                      <span>items</span>
-                    </div>
-                  )}
+
                 </div>
 
                 {/* Hints */}
@@ -499,7 +485,7 @@ export const ArrayInput = React.forwardRef<HTMLDivElement, ArrayInputProps>(
                         Drag by the grip handle to reorder
                       </span>
                     )}
-                  {autoAddEmpty && <span>New field appears when you type</span>}
+                  {/* {autoAddEmpty && <span>New field appears when you type</span>} */}
                   {isDragging && (
                     <span className="flex items-center gap-1 text-primary">
                       🔄 Drop to reorder items

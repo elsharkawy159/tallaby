@@ -233,7 +233,7 @@ function CategoryPopover({
             ))}
           </div>
         </div>
-        <Command>
+        <Command shouldFilter={false}>
           <CommandInput
             placeholder="Search categories..."
             value={query}

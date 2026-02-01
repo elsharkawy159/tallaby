@@ -6,7 +6,7 @@ import { getProducts } from "@/actions/products";
 import { getCartItems } from "@/actions/cart";
 import { getWishlistItems } from "@/actions/wishlist";
 import { ProductCardProps } from "../product";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 interface ProductFilters {
   categoryId?: string;
@@ -35,8 +35,9 @@ const ProductsGrid = async ({
   description,
   filters = {},
 }: ProductsGridProps) => {
-  const t = await getTranslations("product");
-  const products = await getProducts(filters);
+  const t = await getTranslations("product")
+  const locale = (await getLocale()) as "en" | "ar"
+  const products = await getProducts({ ...filters, locale })
   if (!products?.data) {
     return null;
   }
@@ -62,7 +63,6 @@ const ProductsGrid = async ({
     wishlistItems.map((item: any) => [item.productId, item])
   );
 
-  console.log(products.data);
   return (
     <section className="lg:py-8 py-5 container">
       {/* Header Section */}

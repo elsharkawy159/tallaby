@@ -1,23 +1,25 @@
-"use client";
+"use client"
 
-import { useState, useTransition } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { Button } from "@workspace/ui/components/button";
-import { Form } from "@workspace/ui/components/form";
-import { ChevronLeft, LoaderCircle, ChevronRight } from "lucide-react";
-import { createProduct } from "@/actions/products";
+import { useState, useTransition } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
+import { Button } from "@workspace/ui/components/button"
+import { Form } from "@workspace/ui/components/form"
+import { ChevronLeft, LoaderCircle, ChevronRight } from "lucide-react"
+import { createProduct } from "@/actions/products"
 import {
   addProductFormSchema,
   defaultValues,
   type AddProductFormData,
-} from "./add-product.schema";
-import { BasicInformationStep } from "./steps/basic-information-step";
-import { PriceStockStep } from "./steps/price-stock-step";
-import { SeoStep } from "./steps/seo-step";
-import type { CategoryOption, BrandOption } from "./add-product.schema";
+  type SupportedLocale,
+} from "./add-product.schema"
+import { BasicInformationStep } from "./steps/basic-information-step"
+import { PriceStockStep } from "./steps/price-stock-step"
+import { SeoStep } from "./steps/seo-step"
+import type { CategoryOption, BrandOption } from "./add-product.schema"
+import { cn } from "@/lib/utils"
 
 interface AddProductProps {
   categories: CategoryOption[];
@@ -30,19 +32,25 @@ const STEPS = [
   { id: 3, title: "Search Engine", key: "seo" },
 ] as const;
 
+const LOCALE_LABELS: Record<SupportedLocale, string> = {
+  en: "English",
+  ar: "العربية",
+}
+
 export default function AddProduct({ categories, brands }: AddProductProps) {
-  const [isPending, startTransition] = useTransition();
-  const [currentStep, setCurrentStep] = useState(1);
-  const router = useRouter();
+  const [isPending, startTransition] = useTransition()
+  const [currentStep, setCurrentStep] = useState(1)
+  const [activeLocale, setActiveLocale] = useState<SupportedLocale>("en")
+  const router = useRouter()
 
   const form = useForm<AddProductFormData>({
     resolver: zodResolver(addProductFormSchema) as any,
     defaultValues: defaultValues as any,
     mode: "onChange",
-  });
+    shouldUnregister: false,
+  })
 
   const handleSubmit = (data: AddProductFormData) => {
-    
     startTransition(async () => {
       try {
         const result = await createProduct(data);
@@ -62,25 +70,27 @@ export default function AddProduct({ categories, brands }: AddProductProps) {
   };
 
   const validateStep = async (step: number): Promise<boolean> => {
-    let fieldsToValidate: (keyof AddProductFormData)[] = [];
-
     if (step === 1) {
-      fieldsToValidate = [
-        "title",
-        "slug",
+      const result = await form.trigger([
+        "localized.en.title",
+        "localized.en.slug",
+        "localized.ar.title",
         "categoryId",
         "images",
-      ] as (keyof AddProductFormData)[];
-    } else if (step === 2) {
-      fieldsToValidate = ["price.list", "price.final", "quantity"] as any;
-    } else if (step === 3) {
-      // SEO is optional, so no validation needed
-      return true;
+      ])
+      return result
     }
-
-    const result = await form.trigger(fieldsToValidate);
-    return result;
-  };
+    if (step === 2) {
+      const result = await form.trigger([
+        "price.list",
+        "price.final",
+        "quantity",
+      ])
+      return result
+    }
+    // Step 3 (SEO) is optional
+    return true
+  }
 
   const handleNext = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -115,12 +125,13 @@ export default function AddProduct({ categories, brands }: AddProductProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50/30 pb-20">
-      {/* Step Indicator */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center gap-4">
-          {STEPS.map((step, index) => (
-            <div key={step.id} className="flex items-center gap-4 flex-1">
+    <div className="min-h-screen bg-gray-50/30 pb-24">
+      {/* Step Indicator + Content language - fixed at top */}
+      <div className="sticky top-0 z-20 bg-white border-b border-gray-200 shadow-sm">
+        <div className="container px-6 py-4">
+          <div className="flex items-center gap-4">
+            {STEPS.map((step, index) => (
+            <div key={step.id} className={cn("flex items-center gap-4", index < STEPS.length - 1 && "flex-1")}>
               <button
                 type="button"
                 onClick={() => handleStepClick(step.id)}
@@ -170,67 +181,86 @@ export default function AddProduct({ categories, brands }: AddProductProps) {
               )}
             </div>
           ))}
+          </div>
+          {/* Content language - always visible under steps */}
+          <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between gap-4">
+            <span className="text-sm font-medium text-gray-700">
+              Content language
+            </span>
+            <div className="flex items-center gap-1">
+              {(["en", "ar"] as const).map((loc) => (
+                <Button
+                  key={loc}
+                  type="button"
+                  variant={activeLocale === loc ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setActiveLocale(loc)}
+                  className="min-w-[4rem]"
+                >
+                  {LOCALE_LABELS[loc]}
+                </Button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Form Content */}
-      <div className="max-w-7xl mx-auto px-6 py-6">
+      <div className="container py-6">
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleSubmit as any)}
             className="space-y-6"
             id="add-product-form"
           >
-            {/* Step Content using Activity API pattern */}
+            {/* Step Content */}
             {currentStep === 1 && (
-              <BasicInformationStep categories={categories} brands={brands} />
+              <BasicInformationStep
+                categories={categories}
+                brands={brands}
+                activeLocale={activeLocale}
+              />
             )}
             {currentStep === 2 && <PriceStockStep />}
-            {currentStep === 3 && <SeoStep />}
-
-            {/* Navigation Buttons */}
-            <div className="flex items-center justify-between pt-6 border-t border-gray-200">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handlePrevious}
-                disabled={currentStep === 1}
-                className="text-sm"
-              >
-                <ChevronLeft className="h-4 w-4 mr-1" />
-                Previous
-              </Button>
-              {currentStep < STEPS.length ? (
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={handleNext}
-                  className="text-sm"
-                >
-                  Next
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </Button>
-              ) : (
-                <Button
-                  type="submit"
-                  size="sm"
-                  disabled={isPending || !form.formState.isValid}
-                  className="text-sm"
-                >
-                  {isPending ? (
-                    <span className="flex items-center gap-2">
-                      <LoaderCircle className="h-4 w-4 animate-spin" />
-                      Saving...
-                    </span>
-                  ) : (
-                    "Save Product"
-                  )}
-                </Button>
-              )}
-            </div>
+            {currentStep === 3 && <SeoStep activeLocale={activeLocale} />}
           </form>
         </Form>
+      </div>
+
+      {/* Fixed bottom navigation */}
+      <div className="fixed bottom-0 left-0 right-0 z-10 border-t border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+        <div className="px-6 py-4 flex items-center gap-6 justify-end container">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handlePrevious}
+            disabled={currentStep === 1}
+          >
+            <ChevronLeft className="size-4" />
+            Previous
+          </Button>
+          {currentStep < STEPS.length ? (
+            <Button type="button" onClick={handleNext}>
+              Next
+              <ChevronRight className="size-4" />
+            </Button>
+          ) : (
+            <Button
+              type="submit"
+              form="add-product-form"
+              disabled={isPending || !form.formState.isValid}
+            >
+              {isPending ? (
+                <span className="flex items-center gap-2">
+                  <LoaderCircle className="size-4 animate-spin" />
+                  Saving...
+                </span>
+              ) : (
+                "Save Product"
+              )}
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

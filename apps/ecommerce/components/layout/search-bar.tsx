@@ -50,7 +50,7 @@ export const SearchBar = ({
 
   // Fetch search results using useQuery
   const { data: searchResultsData, isLoading: isSearching } = useQuery({
-    queryKey: ["search-products", debouncedSearchQuery],
+    queryKey: ["search-products", debouncedSearchQuery, locale],
     queryFn: async () => {
       if (!debouncedSearchQuery.trim() || debouncedSearchQuery.length < 1) {
         return { success: true, data: [] };
@@ -59,6 +59,7 @@ export const SearchBar = ({
         searchQuery: debouncedSearchQuery.trim(),
         isActive: true,
         limit: 5,
+        locale: locale as "en" | "ar",
       });
     },
     enabled: debouncedSearchQuery.length >= 1,

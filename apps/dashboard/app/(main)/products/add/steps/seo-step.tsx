@@ -1,11 +1,16 @@
-"use client";
+"use client"
 
-import { useFormContext } from "react-hook-form";
-import { TextInput, TextareaInput } from "@workspace/ui/components";
-import type { AddProductFormData } from "../add-product.schema";
+import { useFormContext } from "react-hook-form"
+import { TextInput, TextareaInput } from "@workspace/ui/components"
+import { cn } from "@/lib/utils"
+import type { AddProductFormData, SupportedLocale } from "../add-product.schema"
 
-export function SeoStep() {
-  const form = useFormContext<AddProductFormData>();
+interface SeoStepProps {
+  activeLocale: SupportedLocale
+}
+
+export function SeoStep({ activeLocale }: SeoStepProps) {
+  const form = useFormContext<AddProductFormData>()
 
   return (
     <div className="space-y-6">
@@ -18,34 +23,29 @@ export function SeoStep() {
           </p>
         </div>
 
-        <TextInput
-          form={form}
-          name="seo.metaTitle"
-          label="Meta Title"
-          placeholder="SEO-friendly title for search engines"
-          description="Recommended: 50-60 characters"
-          className="text-sm"
-        />
+        {(["en", "ar"] as const).map((loc) => (
+          <div key={loc} className={cn("space-y-4", activeLocale !== loc && "hidden")}>
+            <TextInput
+              form={form}
+              name={`localized.${loc}.metaTitle`}
+              label="Meta Title"
+              placeholder="SEO-friendly title for search engines"
+              description="Recommended: 50-60 characters"
+              className="text-sm"
+            />
 
-        <TextareaInput
-          form={form}
-          name="seo.metaDescription"
-          label="Meta Description"
-          placeholder="Brief SEO description"
-          rows={3}
-          description="Recommended: 150-160 characters"
-          className="text-sm"
-        />
-
-        <TextInput
-          form={form}
-          name="seo.metaKeywords"
-          label="Meta Keywords"
-          placeholder="keyword1, keyword2, keyword3"
-          description="Comma-separated keywords for SEO"
-          className="text-sm"
-        />
+            <TextareaInput
+              form={form}
+              name={`localized.${loc}.metaDescription`}
+              label="Meta Description"
+              placeholder="Brief SEO description"
+              rows={3}
+              description="Recommended: 150-160 characters"
+              className="text-sm"
+            />
+          </div>
+        ))}
       </div>
     </div>
-  );
+  )
 }
