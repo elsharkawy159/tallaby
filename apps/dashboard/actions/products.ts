@@ -11,6 +11,7 @@ import {
 import { eq, and, desc, asc, sql, inArray } from "drizzle-orm";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { getUser } from "./auth";
+import { revalidateEcommerce } from "@/lib/revalidate-ecommerce";
 import slugify from "slugify";
 
 // Excel parsing
@@ -119,7 +120,12 @@ export async function getSellerProducts(params?: {
     });
 
     const productList = productListRaw.map((p) => {
-      const translations = (p as { productTranslations?: Array<{ locale: string; title: string }> }).productTranslations ?? [];
+      const translations =
+        (
+          p as {
+            productTranslations?: Array<{ locale: string; title: string }>;
+          }
+        ).productTranslations ?? [];
       const enT = translations.find((t) => t.locale === "en");
       const arT = translations.find((t) => t.locale === "ar");
       const title = enT?.title ?? arT?.title ?? "";
@@ -728,6 +734,7 @@ export async function bulkInsertProductsAction(records: ParsedBulkRow[]) {
 
     revalidatePath("/products");
     revalidateTag("products", "layout");
+    await revalidateEcommerce(["products"]);
     return { success: true, ...results };
   } catch (error) {
     console.error("bulkInsertProductsAction error:", error);
@@ -747,9 +754,9 @@ export async function bulkInsertProductsAction(records: ParsedBulkRow[]) {
 
 export async function getProduct(productId: string) {
   try {
-    const session = await getUser()
+    const session = await getUser();
     if (!session?.user?.id) {
-      throw new Error("Unauthorized")
+      throw new Error("Unauthorized");
     }
 
     const product = await db.query.products.findFirst({
@@ -770,22 +777,39 @@ export async function getProduct(productId: string) {
           limit: 10,
         },
       },
-    })
+    });
 
     if (!product) {
-      throw new Error("Product not found")
+      throw new Error("Product not found");
     }
 
     // Build localized map from productTranslations for edit form
-    const translations = (product as { productTranslations?: Array<{ locale: string; title: string; slug: string | null; description: string | null; bulletPoints: unknown; metaTitle: string | null; metaDescription: string | null }> }).productTranslations ?? []
-    const enRow = translations.find((t) => t.locale === "en")
-    const arRow = translations.find((t) => t.locale === "ar")
+    const translations =
+      (
+        product as {
+          productTranslations?: Array<{
+            locale: string;
+            title: string;
+            slug: string | null;
+            description: string | null;
+            bulletPoints: unknown;
+            metaTitle: string | null;
+            metaDescription: string | null;
+          }>;
+        }
+      ).productTranslations ?? [];
+    const enRow = translations.find((t) => t.locale === "en");
+    const arRow = translations.find((t) => t.locale === "ar");
     const localized = {
       en: {
         title: enRow?.title ?? "",
         slug: enRow?.slug ?? "",
         description: enRow?.description ?? undefined,
-        bulletPoints: enRow ? (Array.isArray(enRow.bulletPoints) ? enRow.bulletPoints : []) : [],
+        bulletPoints: enRow
+          ? Array.isArray(enRow.bulletPoints)
+            ? enRow.bulletPoints
+            : []
+          : [],
         metaTitle: enRow?.metaTitle ?? undefined,
         metaDescription: enRow?.metaDescription ?? undefined,
       },
@@ -794,63 +818,72 @@ export async function getProduct(productId: string) {
             title: arRow.title,
             slug: arRow.slug ?? "",
             description: arRow.description ?? undefined,
-            bulletPoints: Array.isArray(arRow.bulletPoints) ? arRow.bulletPoints : [],
+            bulletPoints: Array.isArray(arRow.bulletPoints)
+              ? arRow.bulletPoints
+              : [],
             metaTitle: arRow.metaTitle ?? undefined,
             metaDescription: arRow.metaDescription ?? undefined,
           }
-        : { title: "", slug: "", description: "", bulletPoints: [], metaTitle: "", metaDescription: "" },
-    }
+        : {
+            title: "",
+            slug: "",
+            description: "",
+            bulletPoints: [],
+            metaTitle: "",
+            metaDescription: "",
+          },
+    };
 
     return {
       success: true,
       data: { ...product, localized },
-    }
+    };
   } catch (error) {
-    console.error("Error fetching product:", error)
+    console.error("Error fetching product:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
-    }
+    };
   }
 }
 
 type CreateProductLegacy = {
-  productUrl?: string
-  title: string
-  slug: string
-  description?: string
-  sku?: string
-  brandId?: string
-  categoryId: string
-  price: any
-  quantity: number
-  bulletPoints?: any
-  images?: any
-  dimensions?: any
-  seo?: any
-  condition?: string
-  conditionDescription?: string
-  fulfillmentType?: string
-  handlingTime?: number
-  maxOrderQuantity?: number
-  isActive?: boolean
-  isPlatformChoice?: boolean
-  isMostSelling?: boolean
-  isFeatured?: boolean
-  taxClass?: string
+  productUrl?: string;
+  title: string;
+  slug: string;
+  description?: string;
+  sku?: string;
+  brandId?: string;
+  categoryId: string;
+  price: any;
+  quantity: number;
+  bulletPoints?: any;
+  images?: any;
+  dimensions?: any;
+  seo?: any;
+  condition?: string;
+  conditionDescription?: string;
+  fulfillmentType?: string;
+  handlingTime?: number;
+  maxOrderQuantity?: number;
+  isActive?: boolean;
+  isPlatformChoice?: boolean;
+  isMostSelling?: boolean;
+  isFeatured?: boolean;
+  taxClass?: string;
   variants?: Array<{
-    title: string
-    sku: string
-    price: number
-    stock?: number
-    imageUrl?: string
-    option1?: string
-    option2?: string
-    option3?: string
-    barCode?: string
-    position?: number
-  }>
-}
+    title: string;
+    sku: string;
+    price: number;
+    stock?: number;
+    imageUrl?: string;
+    option1?: string;
+    option2?: string;
+    option3?: string;
+    barCode?: string;
+    position?: number;
+  }>;
+};
 
 type CreateProductNew = Omit<
   CreateProductLegacy,
@@ -858,44 +891,47 @@ type CreateProductNew = Omit<
 > & {
   localized: {
     en: {
-      title: string
-      slug: string
-      description?: string
-      bulletPoints?: string[]
-      metaTitle?: string
-      metaDescription?: string
-    }
+      title: string;
+      slug: string;
+      description?: string;
+      bulletPoints?: string[];
+      metaTitle?: string;
+      metaDescription?: string;
+    };
     ar: {
-      title?: string
-      slug?: string
-      description?: string
-      bulletPoints?: string[]
-      metaTitle?: string
-      metaDescription?: string
-    }
-  }
-}
+      title?: string;
+      slug?: string;
+      description?: string;
+      bulletPoints?: string[];
+      metaTitle?: string;
+      metaDescription?: string;
+    };
+  };
+};
 
 function hasLocalized(
   data: CreateProductLegacy | CreateProductNew
 ): data is CreateProductNew {
-  return "localized" in data && data.localized != null
+  return "localized" in data && data.localized != null;
 }
 
-export async function createProduct(data: CreateProductLegacy | CreateProductNew) {
+export async function createProduct(
+  data: CreateProductLegacy | CreateProductNew
+) {
   try {
-    const session = await getUser()
+    const session = await getUser();
     if (!session?.user?.id) {
-      throw new Error("Unauthorized")
+      throw new Error("Unauthorized");
     }
 
     const { productUrl: _productUrl, ...rest } = data as CreateProductLegacy & {
-      productUrl?: string
-      localized?: CreateProductNew["localized"]
-    }
+      productUrl?: string;
+      localized?: CreateProductNew["localized"];
+    };
 
     const sku =
-      (typeof rest.sku === "string" && rest.sku.trim()) || (await generateRandomSKU())
+      (typeof rest.sku === "string" && rest.sku.trim()) ||
+      (await generateRandomSKU());
 
     const {
       localized: _localized,
@@ -907,24 +943,27 @@ export async function createProduct(data: CreateProductLegacy | CreateProductNew
       locale: _locale,
       ...sharedOnly
     } = rest as typeof rest & {
-      localized?: CreateProductNew["localized"]
-      title?: string
-      slug?: string
-      description?: string
-      bulletPoints?: unknown
-      seo?: unknown
-      locale?: string
-    }
+      localized?: CreateProductNew["localized"];
+      title?: string;
+      slug?: string;
+      description?: string;
+      bulletPoints?: unknown;
+      seo?: unknown;
+      locale?: string;
+    };
 
     // products table: shared data only (content lives in product_translations)
     const productPayload = {
       ...sharedOnly,
       sku,
       sellerId: session.user.id,
-    } as any
+    } as any;
 
-    const newProduct = await db.insert(products).values(productPayload).returning()
-    const createdProduct = newProduct[0]
+    const newProduct = await db
+      .insert(products)
+      .values(productPayload)
+      .returning();
+    const createdProduct = newProduct[0];
 
     // Insert variants if provided
     if (
@@ -944,14 +983,14 @@ export async function createProduct(data: CreateProductLegacy | CreateProductNew
         option3: v.option3,
         barCode: v.barCode,
         position: v.position,
-      }))
-      await db.insert(productVariants).values(variantValues)
+      }));
+      await db.insert(productVariants).values(variantValues);
     }
 
     // Insert product_translations for en (always) and ar (if has content)
-    let localizedData: CreateProductNew["localized"] | undefined
+    let localizedData: CreateProductNew["localized"] | undefined;
     if (hasLocalized(data)) {
-      localizedData = data.localized
+      localizedData = data.localized;
     } else {
       // Legacy flow: build localized from top-level fields
       localizedData = {
@@ -961,17 +1000,31 @@ export async function createProduct(data: CreateProductLegacy | CreateProductNew
             (data.slug ?? "").trim() ||
             slugify(data.title ?? "untitled", { lower: true, strict: true }),
           description: data.description?.trim(),
-          bulletPoints: Array.isArray(data.bulletPoints) ? data.bulletPoints : [],
+          bulletPoints: Array.isArray(data.bulletPoints)
+            ? data.bulletPoints
+            : [],
           metaTitle: (data.seo as any)?.metaTitle,
           metaDescription: (data.seo as any)?.metaDescription,
         },
-        ar: { title: "", slug: "", description: "", bulletPoints: [], metaTitle: "", metaDescription: "" },
-      }
+        ar: {
+          title: "",
+          slug: "",
+          description: "",
+          bulletPoints: [],
+          metaTitle: "",
+          metaDescription: "",
+        },
+      };
     }
 
     if (createdProduct?.id && localizedData) {
-      const enTitle = (localizedData.en.title ?? "").trim() || "Untitled"
-      const enSlug = (localizedData.en.slug ?? "").trim() || slugify(localizedData.en.title ?? "untitled", { lower: true, strict: true })
+      const enTitle = (localizedData.en.title ?? "").trim() || "Untitled";
+      const enSlug =
+        (localizedData.en.slug ?? "").trim() ||
+        slugify(localizedData.en.title ?? "untitled", {
+          lower: true,
+          strict: true,
+        });
       const enRow = {
         productId: createdProduct.id,
         locale: "en" as const,
@@ -981,16 +1034,16 @@ export async function createProduct(data: CreateProductLegacy | CreateProductNew
         slug: enSlug,
         metaTitle: localizedData.en.metaTitle?.trim() || null,
         metaDescription: localizedData.en.metaDescription?.trim() || null,
-      }
-      await db.insert(productTranslations).values(enRow)
+      };
+      await db.insert(productTranslations).values(enRow);
 
       const arHasContent =
         (localizedData.ar?.title ?? "").trim() !== "" ||
         (localizedData.ar?.description ?? "").trim() !== "" ||
         (localizedData.ar?.slug ?? "").trim() !== "" ||
-        ((localizedData.ar?.bulletPoints ?? []).length > 0) ||
+        (localizedData.ar?.bulletPoints ?? []).length > 0 ||
         (localizedData.ar?.metaTitle ?? "").trim() !== "" ||
-        (localizedData.ar?.metaDescription ?? "").trim() !== ""
+        (localizedData.ar?.metaDescription ?? "").trim() !== "";
 
       if (arHasContent) {
         const arRow = {
@@ -1002,37 +1055,39 @@ export async function createProduct(data: CreateProductLegacy | CreateProductNew
           slug: localizedData.ar?.slug?.trim() || null,
           metaTitle: localizedData.ar?.metaTitle?.trim() || null,
           metaDescription: localizedData.ar?.metaDescription?.trim() || null,
-        }
-        await db.insert(productTranslations).values(arRow)
+        };
+        await db.insert(productTranslations).values(arRow);
       }
     }
 
-    revalidateTag("products", "layout")
-    return { success: true, data: createdProduct }
+    revalidateTag("products", "layout");
+    await revalidateEcommerce(["products"]);
+    return { success: true, data: createdProduct };
   } catch (error: any) {
-    console.error("Error creating product:", error)
+    console.error("Error creating product:", error);
 
-    const skuUsed =
-      (data as CreateProductLegacy).sku || "generated"
+    const skuUsed = (data as CreateProductLegacy).sku || "generated";
 
     if (error?.code === "23505" && error?.constraint_name?.includes("slug")) {
-      const slugUsed = hasLocalized(data) ? data.localized.en.slug : (data as CreateProductLegacy).slug
+      const slugUsed = hasLocalized(data)
+        ? data.localized.en.slug
+        : (data as CreateProductLegacy).slug;
       return {
         success: false,
         error: `A product with the slug "${slugUsed}" already exists. Please use a different slug.`,
-      }
+      };
     }
     if (error?.code === "23505" && error?.constraint_name?.includes("sku")) {
       return {
         success: false,
         error: `A product with the SKU "${skuUsed}" already exists. Please use a different SKU.`,
-      }
+      };
     }
 
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error occurred",
-    }
+    };
   }
 }
 
@@ -1116,6 +1171,7 @@ export async function updateProduct(
 
     revalidatePath("/products");
     revalidatePath(`/products/${productId}`);
+    await revalidateEcommerce(["products"]);
 
     return { success: true, data: updatedProduct[0] };
   } catch (error) {
@@ -1154,6 +1210,7 @@ export async function toggleProductStatus(productId: string) {
       .where(eq(products.id, productId))
       .returning();
 
+    await revalidateEcommerce(["products"]);
     return { success: true, data: updatedProduct[0] };
   } catch (error) {
     console.error("Error toggling product status:", error);
@@ -1370,6 +1427,7 @@ export async function deleteProduct(productId: string) {
     }
 
     await db.delete(products).where(eq(products.id, productId));
+    await revalidateEcommerce(["products"]);
 
     return { success: true, data: product };
   } catch (error) {
