@@ -62,7 +62,9 @@ export const ProductImages = ({ images, productName }: ProductImagesProps) => {
               }`}
             >
               <Image
-                src={image ? getPublicUrl(image, "products") : "/png product.png"}
+                src={
+                  image ? getPublicUrl(image, "products") : "/png product.png"
+                }
                 alt={`${productName} ${index + 1}`}
                 width={140}
                 height={140}
@@ -72,7 +74,7 @@ export const ProductImages = ({ images, productName }: ProductImagesProps) => {
           ))}
         </div>
 
-        <div className="relative flex-1">
+        <div className="relative flex-1 z-[999]">
           <div
             ref={mainImageRef}
             className="aspect-square bg-gray-100 relative rounded-lg overflow-hidden w-full cursor-zoom-in"
@@ -81,7 +83,11 @@ export const ProductImages = ({ images, productName }: ProductImagesProps) => {
             onMouseLeave={handleMouseLeave}
           >
             <Image
-              src={activeImage ? getPublicUrl(activeImage, "products") : "/png product.png"}
+              src={
+                activeImage
+                  ? getPublicUrl(activeImage, "products")
+                  : "/png product.png"
+              }
               alt={productName}
               className="w-full h-full object-contain bg-white"
               fill
@@ -93,13 +99,13 @@ export const ProductImages = ({ images, productName }: ProductImagesProps) => {
 
           {/* Magnified view - only on larger screens */}
           {showZoom && (
-            <div className="absolute left-full rtl:right-full top-0 ml-2 w-[30vw] h-auto aspect-square bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden pointer-events-none z-10 hidden xl:block">
+            <div className="absolute w-full h-full top-0 border border-gray-200 rounded-lg shadow-lg overflow-hidden pointer-events-none z-[999] hidden xl:block">
               <div
-                className="w-full h-full bg-cover bg-no-repeat"
+                className="w-full h-full bg-cover bg-no-repeat z-[999]"
                 style={{
                   backgroundImage: `url(${activeImage ? getPublicUrl(activeImage, "products") : "/png product.png"})`,
                   backgroundPosition: `${zoomPosition.x}% ${zoomPosition.y}%`,
-                  backgroundSize: "300%",
+                  backgroundSize: "150%",
                 }}
               />
             </div>

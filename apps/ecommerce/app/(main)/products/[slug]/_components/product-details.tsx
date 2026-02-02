@@ -292,7 +292,7 @@ export const ProductDetails = ({
           )}
 
         {/* Quantity and Add to Cart */}
-        <div className="mb-6">
+        <div className="md:mb-6 md:relative fixed md:bg-transparent md:border-0 bg-white md:p-0 px-4 py-2.5 border border-gray-200 md:bottom-0 bottom-15 md:z-auto z-50 left-0 right-0">
           <ProductActions
             product={{
               ...product,

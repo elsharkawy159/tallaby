@@ -231,12 +231,6 @@ export function ImageUpload({
       );
 
       onChange([...value, ...successfulUploads]);
-
-      if (successfulUploads.length > 0) {
-        toast.success(
-          `${successfulUploads.length} image(s) uploaded successfully`
-        );
-      }
     },
     [handleFileUpload, onChange, value, filesToUpload.length, maxImages]
   );

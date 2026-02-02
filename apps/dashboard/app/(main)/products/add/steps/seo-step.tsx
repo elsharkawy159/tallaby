@@ -1,16 +1,19 @@
-"use client"
+"use client";
 
-import { useFormContext } from "react-hook-form"
-import { TextInput, TextareaInput } from "@workspace/ui/components"
-import { cn } from "@/lib/utils"
-import type { AddProductFormData, SupportedLocale } from "../add-product.schema"
+import { useFormContext } from "react-hook-form";
+import { TextInput, TextareaInput } from "@workspace/ui/components";
+import { cn } from "@/lib/utils";
+import type {
+  AddProductFormData,
+  SupportedLocale,
+} from "../add-product.schema";
 
 interface SeoStepProps {
-  activeLocale: SupportedLocale
+  activeLocale: SupportedLocale;
 }
 
 export function SeoStep({ activeLocale }: SeoStepProps) {
-  const form = useFormContext<AddProductFormData>()
+  const form = useFormContext<AddProductFormData>();
 
   return (
     <div className="space-y-6">
@@ -24,14 +27,17 @@ export function SeoStep({ activeLocale }: SeoStepProps) {
         </div>
 
         {(["en", "ar"] as const).map((loc) => (
-          <div key={loc} className={cn("space-y-4", activeLocale !== loc && "hidden")}>
+          <div
+            key={loc}
+            className={cn("space-y-4", activeLocale !== loc && "hidden")}
+          >
             <TextInput
               form={form}
               name={`localized.${loc}.metaTitle`}
               label="Meta Title"
               placeholder="SEO-friendly title for search engines"
               description="Recommended: 50-60 characters"
-              className="text-sm"
+              className={cn("text-sm", loc === "ar" && "text-right")}
             />
 
             <TextareaInput
@@ -41,11 +47,11 @@ export function SeoStep({ activeLocale }: SeoStepProps) {
               placeholder="Brief SEO description"
               rows={3}
               description="Recommended: 150-160 characters"
-              className="text-sm"
+              className={cn("text-sm", loc === "ar" && "text-right")}
             />
           </div>
         ))}
       </div>
     </div>
-  )
+  );
 }

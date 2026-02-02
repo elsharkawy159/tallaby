@@ -29,6 +29,7 @@ import { ProductImageUpload } from "./product-image-upload";
 export type VendorProduct = {
   id: string;
   title: string;
+  slug?: string | null;
   sku?: string | null;
   images?: string[] | null;
   isActive: boolean;
@@ -205,15 +206,19 @@ export function VendorProductsSection({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem asChild>
-              <Link
-                href={`/products/${row.original.id}`}
-                className="w-full h-full block"
-                tabIndex={0}
-              >
-                View
-              </Link>
-            </DropdownMenuItem>
+            {row.original.slug && (
+              <DropdownMenuItem asChild>
+                <a
+                  href={`https://www.tallaby.com/products/${row.original.slug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full h-full block"
+                  tabIndex={0}
+                >
+                  View
+                </a>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem asChild>
               <Link
                 href={`/products/${row.original.id}/edit`}

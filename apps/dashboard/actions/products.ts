@@ -1106,6 +1106,24 @@ export async function updateProduct(
       barCode?: string;
       position?: number;
     }>;
+    localized?: {
+      en: {
+        title: string;
+        slug: string;
+        description?: string;
+        bulletPoints?: string[];
+        metaTitle?: string;
+        metaDescription?: string;
+      };
+      ar: {
+        title?: string;
+        slug?: string;
+        description?: string;
+        bulletPoints?: string[];
+        metaTitle?: string;
+        metaDescription?: string;
+      };
+    };
   }
 ) {
   try {
@@ -1114,17 +1132,30 @@ export async function updateProduct(
       throw new Error("Unauthorized");
     }
 
-    // Extract variants and content columns (content lives in product_translations)
+    // Extract variants, localized, notes and content columns (content lives in product_translations)
+    type FormOnly = {
+      title?: string;
+      slug?: string;
+      description?: string;
+      bulletPoints?: unknown;
+      seo?: unknown;
+      locale?: string;
+      productUrl?: string;
+      notes?: string;
+    };
     const {
       variants,
+      localized: localizedData,
       title: _t,
       slug: _s,
       description: _d,
       bulletPoints: _b,
       seo: _seo,
       locale: _locale,
+      productUrl: _productUrl,
+      notes: _notes,
       ...productData
-    } = data;
+    } = data as typeof data & FormOnly;
 
     // Update the main product (shared fields only)
     const updatedProduct = await db
@@ -1140,6 +1171,75 @@ export async function updateProduct(
 
     if (!updatedProduct.length) {
       throw new Error("Product not found or unauthorized");
+    }
+
+    // Update product_translations for en and ar when localized is provided
+    if (localizedData) {
+      const enTitle = (localizedData.en?.title ?? "").trim() || "Untitled";
+      const enSlug =
+        (localizedData.en?.slug ?? "").trim() ||
+        slugify(localizedData.en?.title ?? "untitled", {
+          lower: true,
+          strict: true,
+        });
+      await db
+        .update(productTranslations)
+        .set({
+          title: enTitle,
+          slug: enSlug,
+          description: localizedData.en?.description?.trim() || null,
+          bulletPoints: localizedData.en?.bulletPoints ?? [],
+          metaTitle: localizedData.en?.metaTitle?.trim() || null,
+          metaDescription: localizedData.en?.metaDescription?.trim() || null,
+        })
+        .where(
+          and(
+            eq(productTranslations.productId, productId),
+            eq(productTranslations.locale, "en")
+          )
+        );
+
+      const arHasContent =
+        (localizedData.ar?.title ?? "").trim() !== "" ||
+        (localizedData.ar?.description ?? "").trim() !== "" ||
+        (localizedData.ar?.slug ?? "").trim() !== "" ||
+        (localizedData.ar?.bulletPoints ?? []).length > 0 ||
+        (localizedData.ar?.metaTitle ?? "").trim() !== "" ||
+        (localizedData.ar?.metaDescription ?? "").trim() !== "";
+
+      if (arHasContent && localizedData.ar) {
+        const arRow = await db.query.productTranslations.findFirst({
+          where: and(
+            eq(productTranslations.productId, productId),
+            eq(productTranslations.locale, "ar")
+          ),
+        });
+        const arPayload = {
+          title: (localizedData.ar.title ?? "").trim() || enTitle,
+          slug: localizedData.ar.slug?.trim() || null,
+          description: localizedData.ar.description?.trim() || null,
+          bulletPoints: localizedData.ar.bulletPoints ?? [],
+          metaTitle: localizedData.ar.metaTitle?.trim() || null,
+          metaDescription: localizedData.ar.metaDescription?.trim() || null,
+        };
+        if (arRow) {
+          await db
+            .update(productTranslations)
+            .set(arPayload)
+            .where(
+              and(
+                eq(productTranslations.productId, productId),
+                eq(productTranslations.locale, "ar")
+              )
+            );
+        } else {
+          await db.insert(productTranslations).values({
+            productId,
+            locale: "ar",
+            ...arPayload,
+          });
+        }
+      }
     }
 
     // Handle variants if provided

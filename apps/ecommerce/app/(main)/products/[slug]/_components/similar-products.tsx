@@ -59,7 +59,7 @@ export const SimilarProducts = ({
               const wishlistItem = wishlistMap.get(product.id);
 
               return (
-                <CarouselItem key={product.id} className="basis-auto">
+                <CarouselItem key={product.id} className="max-w-80">
                   <ProductCard
                     {...product}
                     isInCart={!!cartItem}

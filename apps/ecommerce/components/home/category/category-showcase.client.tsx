@@ -74,7 +74,7 @@ export const CategoryShowcaseClient = ({
           {categoriesWithProducts.map((category) => (
             <Link
               key={category.id}
-              href={`/products?category=${category.slug}`}
+              href={`/products?categories=${category.name}`}
               className="group block"
             >
               <CarouselItem className="basis-auto">

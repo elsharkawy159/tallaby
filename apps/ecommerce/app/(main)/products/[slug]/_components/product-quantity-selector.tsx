@@ -40,7 +40,7 @@ export const ProductQuantitySelector = ({
   return (
     <div
       className={cn(
-        "flex items-center border border-gray-300 rounded-lg w-fit",
+        "flex items-center border border-gray-300 overflow-hidden rounded-lg w-fit",
         className
       )}
     >
@@ -48,7 +48,7 @@ export const ProductQuantitySelector = ({
         variant="ghost"
         size="sm"
         disabled={disabled || quantity <= min}
-        className="h-10 w-10 rounded-r-none border-r rounded-l-lg border-gray-300 hover:bg-gray-100 duration-100"
+        className="h-10 w-10 rounded-r-none ltr:border-r rtl:border-l rounded-none border-gray-300 hover:bg-gray-100 duration-100"
         onClick={() => handleQuantityChange(-1)}
         aria-label="Decrease quantity"
       >
@@ -61,7 +61,7 @@ export const ProductQuantitySelector = ({
         variant="ghost"
         size="sm"
         disabled={disabled || (max !== undefined && quantity >= max)}
-        className="h-10 w-10 rounded-l-none border-l rounded-r-lg border-gray-300 hover:bg-gray-100 duration-100"
+        className="h-10 w-10 rounded-l-none ltr:border-l rtl:border-r rounded-none border-gray-300 hover:bg-gray-100 duration-100"
         onClick={() => handleQuantityChange(1)}
         aria-label="Increase quantity"
       >

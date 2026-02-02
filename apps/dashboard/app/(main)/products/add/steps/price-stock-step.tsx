@@ -362,7 +362,6 @@ function VariantImageUpload({
           // Clean up preview blob URL
           URL.revokeObjectURL(preview);
           form.setValue(name, filePath, { shouldValidate: true });
-          toast.success("Image uploaded successfully");
         } else {
           // Clean up preview blob URL on error
           URL.revokeObjectURL(preview);

@@ -56,10 +56,10 @@ export const AddToCartButton = ({
       {isLoading ? (
         <Loader2 className="size-4 animate-spin" />
       ) : (
-        showIcon && <ShoppingCart className="size-4" />
+        showIcon && <ShoppingCart className="size-4" strokeWidth={3} />
       )}
       {showText && (
-        <span className={showIcon ? "ml-2" : ""}>
+        <span className={showIcon ? "ml-1" : ""}>
           {isLoading ? tProduct("adding") : tProduct("addToCart")}
         </span>
       )}

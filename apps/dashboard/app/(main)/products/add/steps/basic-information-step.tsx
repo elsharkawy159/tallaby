@@ -1,41 +1,41 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useFormContext } from "react-hook-form"
+import { useState } from "react";
+import { useFormContext } from "react-hook-form";
 import {
   TextInput,
   TextareaInput,
   ArrayInput,
   CategoryPopover,
-} from "@workspace/ui/components"
-import { Button } from "@workspace/ui/components/button"
-import { Input } from "@workspace/ui/components/input"
-import { BrandSearchInput } from "@/components/inputs/brand-search-input"
-import { ImageUpload } from "@/components/inputs/image-upload"
+} from "@workspace/ui/components";
+import { Button } from "@workspace/ui/components/button";
+import { Input } from "@workspace/ui/components/input";
+import { BrandSearchInput } from "@/components/inputs/brand-search-input";
+import { ImageUpload } from "@/components/inputs/image-upload";
 import {
   FormField,
   FormItem,
   FormControl,
   FormMessage,
   FormLabel,
-} from "@workspace/ui/components/form"
-import { LoaderCircle } from "lucide-react"
-import slugify from "slugify"
-import { useDebounce } from "@/hooks/use-debounce"
-import { CategorySuggestions } from "../category-suggestions"
-import { toast } from "sonner"
-import { cn } from "@/lib/utils"
+} from "@workspace/ui/components/form";
+import { LoaderCircle } from "lucide-react";
+import slugify from "slugify";
+import { useDebounce } from "@/hooks/use-debounce";
+import { CategorySuggestions } from "../category-suggestions";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import type {
   AddProductFormData,
   BrandOption,
   CategoryOption,
   SupportedLocale,
-} from "../add-product.schema"
+} from "../add-product.schema";
 
 interface BasicInformationStepProps {
-  categories: CategoryOption[]
-  brands: BrandOption[]
-  activeLocale: SupportedLocale
+  categories: CategoryOption[];
+  brands: BrandOption[];
+  activeLocale: SupportedLocale;
 }
 
 export function BasicInformationStep({
@@ -43,14 +43,14 @@ export function BasicInformationStep({
   brands,
   activeLocale,
 }: BasicInformationStepProps) {
-  const form = useFormContext<AddProductFormData>()
-  const [isFetching, setIsFetching] = useState(false)
-  const [_suggestedImages, setSuggestedImages] = useState<string[]>([])
+  const form = useFormContext<AddProductFormData>();
+  const [isFetching, setIsFetching] = useState(false);
+  const [_suggestedImages, setSuggestedImages] = useState<string[]>([]);
 
-  const productUrl = form.watch("productUrl")
-  const productTitle = form.watch(`localized.${activeLocale}.title`)
-  const debouncedTitle = useDebounce(productTitle || "", 300)
-  const selectedCategoryId = form.watch("categoryId")
+  const productUrl = form.watch("productUrl");
+  const productTitle = form.watch(`localized.${activeLocale}.title`);
+  const debouncedTitle = useDebounce(productTitle || "", 300);
+  const selectedCategoryId = form.watch("categoryId");
 
   const handleCategorySelect = (categoryId: string) => {
     form.setValue("categoryId", categoryId, { shouldValidate: true });
@@ -64,7 +64,10 @@ export function BasicInformationStep({
 
     if (typeof value !== "string") return undefined;
 
-    const match = value.replace(/\s+/g, " ").trim().match(/[\d.,]+/);
+    const match = value
+      .replace(/\s+/g, " ")
+      .trim()
+      .match(/[\d.,]+/);
     if (!match?.[0]) return undefined;
 
     const normalized = match[0].replace(/,/g, "");
@@ -74,7 +77,9 @@ export function BasicInformationStep({
   };
 
   const handleFetchFromUrl = async (urlOverride?: string) => {
-    const url = (urlOverride ?? (typeof productUrl === "string" ? productUrl.trim() : "")).trim();
+    const url = (
+      urlOverride ?? (typeof productUrl === "string" ? productUrl.trim() : "")
+    ).trim();
     if (!url) {
       toast.error("Please paste a product URL first");
       return;
@@ -105,11 +110,17 @@ export function BasicInformationStep({
 
       const parseData = (data: any) => ({
         title: typeof data?.title === "string" ? data.title.trim() : "",
-        description: typeof data?.description === "string" ? data.description.trim() : "",
+        description:
+          typeof data?.description === "string" ? data.description.trim() : "",
         bulletPoints: Array.isArray(data?.bulletPoints)
-          ? data.bulletPoints.filter((b: unknown) => typeof b === "string").map((b: string) => b.trim()).filter(Boolean)
+          ? data.bulletPoints
+              .filter((b: unknown) => typeof b === "string")
+              .map((b: string) => b.trim())
+              .filter(Boolean)
           : [],
-        price: parsePriceToNumber(data?.priceAmount) || parsePriceToNumber(data?.price),
+        price:
+          parsePriceToNumber(data?.priceAmount) ||
+          parsePriceToNumber(data?.price),
         images: Array.isArray(data?.images)
           ? data.images.filter((img: unknown) => typeof img === "string")
           : [],
@@ -118,11 +129,14 @@ export function BasicInformationStep({
       const scrapedEn = parseData(dataEn);
       const scrapedAr = parseData(dataAr);
 
-      const scrapedImages = scrapedEn.images.length > 0 ? scrapedEn.images : scrapedAr.images;
+      const scrapedImages =
+        scrapedEn.images.length > 0 ? scrapedEn.images : scrapedAr.images;
       const scrapedPrice = scrapedEn.price ?? scrapedAr.price;
 
       if (scrapedEn.title) {
-        form.setValue("localized.en.title", scrapedEn.title, { shouldDirty: true });
+        form.setValue("localized.en.title", scrapedEn.title, {
+          shouldDirty: true,
+        });
         form.setValue(
           "localized.en.slug",
           slugify(scrapedEn.title, { lower: true, strict: true }),
@@ -130,17 +144,22 @@ export function BasicInformationStep({
         );
       }
       if (scrapedEn.description) {
-        form.setValue("localized.en.description", scrapedEn.description, { shouldDirty: true });
+        form.setValue("localized.en.description", scrapedEn.description, {
+          shouldDirty: true,
+        });
       }
       if (scrapedEn.bulletPoints.length > 0) {
-        const current = form.getValues("localized.en.bulletPoints");
-        const currentList = Array.isArray(current) ? current.filter((x: unknown) => typeof x === "string") : [];
-        const merged = Array.from(new Set([...currentList, ...scrapedEn.bulletPoints])).slice(0, 10);
-        form.setValue("localized.en.bulletPoints", merged, { shouldDirty: true, shouldValidate: true });
+        form.setValue(
+          "localized.en.bulletPoints",
+          scrapedEn.bulletPoints.slice(0, 10),
+          { shouldDirty: true, shouldValidate: true }
+        );
       }
 
       if (scrapedAr.title) {
-        form.setValue("localized.ar.title", scrapedAr.title, { shouldDirty: true });
+        form.setValue("localized.ar.title", scrapedAr.title, {
+          shouldDirty: true,
+        });
         form.setValue(
           "localized.ar.slug",
           slugify(scrapedAr.title, { lower: true, strict: true }),
@@ -148,17 +167,23 @@ export function BasicInformationStep({
         );
       }
       if (scrapedAr.description) {
-        form.setValue("localized.ar.description", scrapedAr.description, { shouldDirty: true });
+        form.setValue("localized.ar.description", scrapedAr.description, {
+          shouldDirty: true,
+        });
       }
       if (scrapedAr.bulletPoints.length > 0) {
-        const current = form.getValues("localized.ar.bulletPoints");
-        const currentList = Array.isArray(current) ? current.filter((x: unknown) => typeof x === "string") : [];
-        const merged = Array.from(new Set([...currentList, ...scrapedAr.bulletPoints])).slice(0, 10);
-        form.setValue("localized.ar.bulletPoints", merged, { shouldDirty: true, shouldValidate: true });
+        form.setValue(
+          "localized.ar.bulletPoints",
+          scrapedAr.bulletPoints.slice(0, 10),
+          { shouldDirty: true, shouldValidate: true }
+        );
       }
 
       if (scrapedPrice) {
-        form.setValue("price.list", scrapedPrice, { shouldDirty: true, shouldValidate: true });
+        form.setValue("price.list", scrapedPrice, {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
         form.setValue("price.base", scrapedPrice, { shouldDirty: true });
         form.setValue("price.final", Number((scrapedPrice * 1.1).toFixed(2)), {
           shouldDirty: true,
@@ -167,15 +192,24 @@ export function BasicInformationStep({
       }
 
       const currentQty = form.getValues("quantity");
-      if (typeof currentQty !== "number" || !Number.isFinite(currentQty) || currentQty <= 0) {
-        form.setValue("quantity", 25, { shouldDirty: true, shouldValidate: true });
+      if (
+        typeof currentQty !== "number" ||
+        !Number.isFinite(currentQty) ||
+        currentQty <= 0
+      ) {
+        form.setValue("quantity", 25, {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
       }
 
       setSuggestedImages(scrapedImages.slice(0, 1));
 
       if (scrapedImages.length > 0) {
         const currentImages = form.getValues("images") || [];
-        const shouldImport = Array.isArray(currentImages) ? currentImages.length === 0 : true;
+        const shouldImport = Array.isArray(currentImages)
+          ? currentImages.length === 0
+          : true;
 
         if (!shouldImport) {
           toast.message("Media already has images — skipped auto import.");
@@ -195,11 +229,18 @@ export function BasicInformationStep({
               : [];
 
             if (importedPaths.length > 0) {
-              form.setValue("images", importedPaths, { shouldDirty: true, shouldValidate: true });
+              form.setValue("images", importedPaths, {
+                shouldDirty: true,
+                shouldValidate: true,
+              });
               await form.trigger("images");
-              toast.success(`Imported ${importedPaths.length} image(s) to Media`);
+              toast.success(
+                `Imported ${importedPaths.length} image(s) to Media`
+              );
             } else {
-              toast.message("No images were imported (some sites block downloads).");
+              toast.message(
+                "No images were imported (some sites block downloads)."
+              );
             }
           }
         }
@@ -208,22 +249,36 @@ export function BasicInformationStep({
       const currentMetaTitleEn = form.getValues("localized.en.metaTitle");
       const currentMetaDescEn = form.getValues("localized.en.metaDescription");
       if (!currentMetaTitleEn && scrapedEn.title) {
-        form.setValue("localized.en.metaTitle", scrapedEn.title.slice(0, 60), { shouldDirty: true });
+        form.setValue("localized.en.metaTitle", scrapedEn.title.slice(0, 60), {
+          shouldDirty: true,
+        });
       }
       if (!currentMetaDescEn && scrapedEn.description) {
-        form.setValue("localized.en.metaDescription", scrapedEn.description.slice(0, 160), { shouldDirty: true });
+        form.setValue(
+          "localized.en.metaDescription",
+          scrapedEn.description.slice(0, 160),
+          { shouldDirty: true }
+        );
       }
 
       const currentMetaTitleAr = form.getValues("localized.ar.metaTitle");
       const currentMetaDescAr = form.getValues("localized.ar.metaDescription");
       if (!currentMetaTitleAr && scrapedAr.title) {
-        form.setValue("localized.ar.metaTitle", scrapedAr.title.slice(0, 60), { shouldDirty: true });
+        form.setValue("localized.ar.metaTitle", scrapedAr.title.slice(0, 60), {
+          shouldDirty: true,
+        });
       }
       if (!currentMetaDescAr && scrapedAr.description) {
-        form.setValue("localized.ar.metaDescription", scrapedAr.description.slice(0, 160), { shouldDirty: true });
+        form.setValue(
+          "localized.ar.metaDescription",
+          scrapedAr.description.slice(0, 160),
+          { shouldDirty: true }
+        );
       }
 
-      toast.success("Product details fetched for EN and AR. Review and adjust before saving.");
+      toast.success(
+        "Product details fetched for EN and AR. Review and adjust before saving."
+      );
     } catch (error) {
       console.error("Fetch product error:", error);
       toast.error("Something went wrong while fetching product data");
@@ -244,10 +299,13 @@ export function BasicInformationStep({
                 type="url"
                 value={productUrl || ""}
                 onChange={(e) =>
-                  form.setValue("productUrl", e.target.value, { shouldDirty: true })
+                  form.setValue("productUrl", e.target.value, {
+                    shouldDirty: true,
+                  })
                 }
                 onPaste={(e) => {
-                  const pasted = e.clipboardData?.getData?.("text/plain")?.trim() ?? "";
+                  const pasted =
+                    e.clipboardData?.getData?.("text/plain")?.trim() ?? "";
                   if (pasted && /^https?:\/\//i.test(pasted)) {
                     e.preventDefault();
                     form.setValue("productUrl", pasted, { shouldDirty: true });
@@ -360,17 +418,19 @@ export function BasicInformationStep({
               name={`localized.${loc}.title`}
               label="Title"
               placeholder={
-                loc === "en"
-                  ? "Short sleeve t-shirt"
-                  : "قميص قصير الأكمام"
+                loc === "en" ? "Short sleeve t-shirt" : "قميص قصير الأكمام"
               }
               required={loc === "en"}
               onBlur={(e) => {
                 if (e.target.value) {
-                  form.setValue(`localized.${loc}.slug`, slugify(e.target.value, { lower: true, strict: true }), { shouldValidate: true })
+                  form.setValue(
+                    `localized.${loc}.slug`,
+                    slugify(e.target.value, { lower: true, strict: true }),
+                    { shouldValidate: true }
+                  );
                 }
               }}
-              className="text-sm"
+              className={cn("text-sm", loc === "ar" && "text-right")}
             />
             <TextInput
               form={form}
@@ -378,7 +438,7 @@ export function BasicInformationStep({
               label="Slug"
               placeholder="short-sleeve-t-shirt"
               disabled
-              className="text-sm"
+              className={cn("text-sm", loc === "ar" && "text-right")}
             />
           </div>
 
@@ -392,7 +452,7 @@ export function BasicInformationStep({
                 form={form}
                 placeholder="Product description..."
                 rows={6}
-                className="text-sm"
+                className={cn("text-sm", loc === "ar" && "text-right")}
               />
             )}
           />
@@ -445,7 +505,10 @@ export function BasicInformationStep({
       {(["en", "ar"] as const).map((loc) => (
         <div
           key={loc}
-          className={cn(activeLocale !== loc && "hidden")}
+          className={cn(
+            activeLocale !== loc && "hidden",
+            loc === "ar" && "[&_input]:text-right [&_textarea]:text-right"
+          )}
         >
           <FormField
             control={form.control}
