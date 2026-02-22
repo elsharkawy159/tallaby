@@ -59,7 +59,7 @@ export const ProductActions = ({
       {/* Action Buttons */}
       <div className="flex-1">
         {isInCartStatus ? (
-          <Button asChild className="w-full h-12 text-base" size="lg">
+          <Button asChild className="w-full h-10.5 text-base rounded-lg md:rounded-full bg-primary text-white hover:bg-primary/90" size="lg">
             <Link href="/cart">
               {t("goToCart")}{" "}
               <ChevronRight className="h-4 w-4 rtl:rotate-180" />

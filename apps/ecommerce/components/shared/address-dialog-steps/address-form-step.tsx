@@ -127,7 +127,7 @@ export const AddressFormStep = ({
             <div className="space-y-3 px-6">
               <h3 className="font-semibold text-sm">{t("personalInformation")}</h3>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <TextInput
                   form={form as any}
                   name="fullName"
@@ -149,10 +149,10 @@ export const AddressFormStep = ({
 
             <Separator />
 
-            <div className="space-y-3 px-6">
+            <div className="space-y-5 px-6">
               <h3 className="font-semibold text-sm">{t("addressInformation")}</h3>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <TextInput
                   form={form as any}
                   name="addressLine1"
@@ -169,7 +169,7 @@ export const AddressFormStep = ({
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 <TextInput
                   form={form as any}
                   name="city"

@@ -77,17 +77,17 @@ export async function getCheckoutData() {
         acc[sellerId].subtotal += Number(item.price) * item.quantity;
         return acc;
       },
-      {} as Record<string, any>
+      {} as Record<string, any>,
     );
 
     // Calculate totals without rounding to maintain precision
     const subtotal = cart.cartItems.reduce(
       (sum, item) => sum + Number(item.price) * item.quantity,
-      0
+      0,
     );
 
     const tax = 0;
-    const shippingCost = Object.keys(itemsBySeller).length * 25; // Flat rate per seller
+    const shippingCost = Number(process.env.NEXT_PUBLIC_SHIPPING_COST) || 50;
     const total = subtotal + tax + shippingCost;
 
     return {
@@ -104,7 +104,7 @@ export async function getCheckoutData() {
           total,
           itemCount: cart.cartItems.reduce(
             (sum, item) => sum + item.quantity,
-            0
+            0,
           ),
         },
       },
@@ -132,7 +132,7 @@ export async function validateCheckout(data: {
       where: and(
         eq(carts.id, data.cartId),
         eq(carts.userId, userId),
-        eq(carts.status, "active")
+        eq(carts.status, "active"),
       ),
       with: {
         cartItems: {
@@ -152,7 +152,7 @@ export async function validateCheckout(data: {
     const address = await db.query.userAddresses.findFirst({
       where: and(
         eq(userAddresses.id, data.shippingAddressId),
-        eq(userAddresses.userId, userId)
+        eq(userAddresses.userId, userId),
       ),
     });
 
@@ -165,7 +165,7 @@ export async function validateCheckout(data: {
       const paymentMethod = await db.query.paymentMethods.findFirst({
         where: and(
           eq(paymentMethods.id, data.paymentMethodId),
-          eq(paymentMethods.userId, userId)
+          eq(paymentMethods.userId, userId),
         ),
       });
 
@@ -232,7 +232,7 @@ export async function calculateShipping(data: {
     const address = await db.query.userAddresses.findFirst({
       where: and(
         eq(userAddresses.id, data.addressId),
-        eq(userAddresses.userId, userId)
+        eq(userAddresses.userId, userId),
       ),
     });
 
@@ -275,7 +275,7 @@ export async function calculateShipping(data: {
         acc[sellerId].items.push(item);
         return acc;
       },
-      {} as Record<string, any>
+      {} as Record<string, any>,
     );
 
     for (const [sellerId, data] of Object.entries(itemsBySeller)) {

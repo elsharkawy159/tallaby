@@ -367,6 +367,7 @@
     "noAddresses": "No addresses saved",
     "addYourFirstAddress": "Add your first address to get started",
     "enterCity": "Enter city",
+    "city": "City",
     "country": "Country",
     "selectCountry": "Select country",
     "saveAddress": "Save Address",
