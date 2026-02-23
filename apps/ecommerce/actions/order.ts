@@ -26,6 +26,7 @@ import { customAlphabet } from "nanoid";
 import { revalidatePath } from "next/cache";
 import { getUser } from "./auth";
 import { formatVariantTitle } from "@/lib/variant-utils";
+import { pickTranslationFromArray } from "@/lib/product-translations";
 
 /**
  * Formats a number to a string with 2 decimal places for database storage.
@@ -53,14 +54,18 @@ export async function createOrder(data: {
       return { success: false, error: "Unable to get user ID" };
     }
 
-    // Get cart items
+    // Get cart items with product translations
     const cart = await db.query.carts.findFirst({
       where: and(eq(carts.id, data.cartId), eq(carts.userId, userId)),
       with: {
         cartItems: {
           where: eq(cartItems.savedForLater, false),
           with: {
-            product: true,
+            product: {
+              with: {
+                productTranslations: true,
+              },
+            },
           },
         },
       },
@@ -84,8 +89,8 @@ export async function createOrder(data: {
 
     // Calculate totals
     let subtotal = 0;
-    let tax = 0;
-    let shippingCost = 25;
+    const tax = 0;
+    const shippingCost = Number(process.env.NEXT_PUBLIC_SHIPPING_COST) || 50;
 
     const orderItemsData = cart.cartItems.map((item) => {
       const itemSubtotal = Number(item.price) * item.quantity;
@@ -103,12 +108,20 @@ export async function createOrder(data: {
       const variant = item.variant as any;
       const variantTitle = variant ? formatVariantTitle(variant) : null;
 
+      // Get product title from translations (fallback to SKU if no translation)
+      const productWithTranslations = item.product as any;
+      const translation = pickTranslationFromArray(
+        productWithTranslations.productTranslations ?? [],
+        "en"
+      );
+      const productName = translation?.title || `Product ${item.product.sku || item.productId}`;
+
       return {
         productId: item.productId,
         variantId: variant?.id || null,
         sellerId: item.sellerId,
         sku: variant?.sku || item.product.sku,
-        productName: item.product.title,
+        productName,
         variantName: variantTitle,
         quantity: item.quantity,
         price: item.price,
@@ -129,15 +142,18 @@ export async function createOrder(data: {
 
     // Apply coupon if provided
     let discountAmount = 0;
+    let shippingDiscount = 0;
     let appliedCoupon = null;
 
     if (data.couponCode) {
+      // Case-insensitive coupon lookup
+      const normalizedCode = data.couponCode.trim().toUpperCase();
       const coupon = await db.query.coupons.findFirst({
         where: and(
-          eq(coupons.code, data.couponCode),
+          sql`UPPER(${coupons.code}) = ${normalizedCode}`,
           eq(coupons.isActive, true),
-          sql`${coupons.startsAt} <= NOW()`,
-          sql`${coupons.expiresAt} >= NOW()`
+          sql`(${coupons.startsAt} IS NULL OR ${coupons.startsAt} <= NOW())`,
+          sql`(${coupons.expiresAt} IS NULL OR ${coupons.expiresAt} >= NOW())`
         ),
       });
 
@@ -156,20 +172,24 @@ export async function createOrder(data: {
           coupon.minimumPurchase &&
           subtotal < Number(coupon.minimumPurchase)
         ) {
+          const minAmount = Number(coupon.minimumPurchase);
           return {
             success: false,
-            error: `Minimum purchase of ${coupon.minimumPurchase} required`,
+            error: "minPurchase",
+            minimumPurchase: minAmount,
           };
         }
 
-        // Calculate discount
+        // Calculate discount based on type
         if (coupon.discountType === "percentage") {
           discountAmount = subtotal * (Number(coupon.discountValue) / 100);
         } else if (coupon.discountType === "fixed_amount") {
           discountAmount = Number(coupon.discountValue);
+        } else if (coupon.discountType === "free_shipping") {
+          shippingDiscount = shippingCost;
         }
 
-        // Apply maximum discount if set
+        // Apply maximum discount if set (for percentage/fixed_amount)
         if (
           coupon.maximumDiscount &&
           discountAmount > Number(coupon.maximumDiscount)
@@ -177,11 +197,21 @@ export async function createOrder(data: {
           discountAmount = Number(coupon.maximumDiscount);
         }
 
+        // Ensure discount doesn't exceed subtotal
+        if (discountAmount > subtotal) {
+          discountAmount = subtotal;
+        }
+
         appliedCoupon = coupon;
       }
     }
 
-    const totalAmount = subtotal + tax + shippingCost - discountAmount;
+    // Calculate total discount and final amount
+    // shipping_cost stores original delivery cost, discount_amount includes all discounts
+    // total_amount = (subtotal + shipping_cost + tax) - discount_amount
+    const totalDiscount = discountAmount + shippingDiscount;
+    const totalAmount = subtotal + shippingCost + tax - totalDiscount;
+
     // Generate a 10-character order number (e.g., ORD + 7 random alphanumeric chars)
     // Generate a more unique order number using nanoid
     const nanoid = customAlphabet("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 8);
@@ -197,7 +227,7 @@ export async function createOrder(data: {
         subtotal: formatDecimal(subtotal),
         shippingCost: formatDecimal(shippingCost),
         tax: formatDecimal(tax),
-        discountAmount: formatDecimal(discountAmount),
+        discountAmount: formatDecimal(totalDiscount),
         totalAmount: formatDecimal(totalAmount),
         currency: cart.currency || "EGP",
         status: "pending",
@@ -229,16 +259,14 @@ export async function createOrder(data: {
         couponId: appliedCoupon.id,
         userId,
         orderId: newOrder?.id as string,
-        discountAmount: formatDecimal(discountAmount),
+        discountAmount: formatDecimal(totalDiscount),
       });
 
       // Update coupon usage count
       await db
         .update(coupons)
         .set({
-          usageCount: appliedCoupon.usageCount
-            ? appliedCoupon.usageCount + 1
-            : 1,
+          usageCount: (appliedCoupon.usageCount ?? 0) + 1,
         })
         .where(eq(coupons.id, appliedCoupon.id));
     }

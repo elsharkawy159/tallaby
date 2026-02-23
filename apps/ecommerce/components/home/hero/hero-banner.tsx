@@ -64,7 +64,13 @@ export default async function HeroBanner() {
               <p className="md:mt-8 mt-4 max-w-md font-medium leading-relaxed text-gray-500 sm:max-w-md sm:text-xl lg:max-w-none">
                 {t("heroDescription")}
               </p>
-              <div className="mt-10">
+              <p className="mt-4 text-sm text-gray-600">
+                {t("freeDeliveryPromo")}{" "}
+                <span className="inline-flex items-center rounded-md bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary ring-1 ring-inset ring-primary/20">
+                  FREEDEL
+                </span>
+              </p>
+              <div className="mt-8">
                 <Button asChild>
                   <Link href="/products">{t("heroCtaPrimary")}</Link>
                 </Button>

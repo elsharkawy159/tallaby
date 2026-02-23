@@ -1,11 +1,10 @@
 "use client";
-import { useTransition, useEffect, useState } from "react";
+import { useTransition, useEffect, useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Card,
   CardContent,
-  CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card";
 import { Form, FormField } from "@workspace/ui/components/form";
@@ -40,21 +39,35 @@ import { Button } from "@workspace/ui/components/button";
 import { Label } from "@workspace/ui/components/label";
 import { Textarea } from "@workspace/ui/components/textarea";
 import { Info } from "lucide-react";
-import { useMemo } from "react";
+import type { CheckoutSummary } from "@/lib/coupon-utils";
 
 export const CheckoutData = ({
   checkoutData,
   addresses: initialAddresses = [],
   defaultAddress: initialDefaultAddress = null,
+  isLoggedIn = false,
 }: {
   checkoutData: any;
   addresses?: any[];
   defaultAddress?: any;
+  isLoggedIn?: boolean;
 }) => {
-  const { cart, user } = checkoutData;
+  const { cart, user, summary: initialSummary } = checkoutData;
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const [selectedAddress, setSelectedAddress] = useState<any>(null);
+  const [summary, setSummary] = useState<CheckoutSummary>({
+    ...initialSummary,
+    discountAmount: 0,
+    shippingDiscount: 0,
+    totalAfterDiscount: initialSummary.total,
+    appliedCoupon: null,
+  });
+  const [appliedCoupon, setAppliedCoupon] = useState<{
+    code: string;
+    name: string;
+    discountType: string;
+  } | null>(null);
 
   const addresses = initialAddresses;
   const defaultAddress = initialDefaultAddress;
@@ -157,6 +170,35 @@ export const CheckoutData = ({
       form.setValue("shippingAddressId", address.id);
     }
   };
+
+  const handleCouponApplied = useCallback(
+    (data: {
+      coupon: { code: string; name: string; discountType: string };
+      summary: CheckoutSummary;
+    }) => {
+      setAppliedCoupon(data.coupon);
+      setSummary(data.summary);
+      form.setValue("couponCode", data.coupon.code);
+    },
+    [form]
+  );
+
+  const handleCouponRemoved = useCallback(
+    (newSummary: CheckoutSummary) => {
+      setAppliedCoupon(null);
+      setSummary(newSummary);
+      form.setValue("couponCode", "");
+    },
+    [form]
+  );
+
+  const checkoutDataWithCoupon = useMemo(
+    () => ({
+      ...checkoutData,
+      summary,
+    }),
+    [checkoutData, summary]
+  );
 
   return (
     <Form {...form}>
@@ -289,7 +331,13 @@ export const CheckoutData = ({
 
           {/* Order Summary Sidebar */}
           <div className="lg:sticky lg:top-8 h-fit order-2 lg:order-2">
-            <OrderSummary checkoutData={checkoutData}>
+            <OrderSummary
+              checkoutData={checkoutDataWithCoupon}
+              isLoggedIn={isLoggedIn}
+              onCouponApplied={handleCouponApplied}
+              onCouponRemoved={handleCouponRemoved}
+              appliedCoupon={appliedCoupon}
+            >
               <Button
                 type="submit"
                 size="lg"

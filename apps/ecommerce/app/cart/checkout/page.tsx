@@ -7,15 +7,20 @@ import { generateNoIndexMetadata } from "@/lib/metadata";
 import type { Metadata } from "next";
 import { getAddresses } from "@/actions/customer";
 import { getTranslations } from "next-intl/server";
+import { getUser } from "@/actions/auth";
 
 export const metadata: Metadata = generateNoIndexMetadata();
 
 export default async function Checkout() {
-  const result = await getCheckoutData();
-  const addressesResult = await getAddresses();
+  const [result, addressesResult, user, t] = await Promise.all([
+    getCheckoutData(),
+    getAddresses(),
+    getUser(),
+    getTranslations("checkout"),
+  ]);
   const addresses = addressesResult.success ? (addressesResult.data ?? []) : [];
   const defaultAddress = addresses.find((addr: any) => addr.isDefault) ?? null;
-  const t = await getTranslations("checkout");
+  const isLoggedIn = !!user?.user?.id;
 
   if (!result.success || !result.data) {
     return (
@@ -27,7 +32,7 @@ export default async function Checkout() {
           <p className="text-xs md:text-sm text-gray-600 mb-6">
             {result.error || t("pleaseSignIn")}
           </p>
-          <Button asChild>
+        <Button asChild>
             <Link href="/products">{t("continueShopping")}</Link>
           </Button>
         </div>
@@ -55,6 +60,7 @@ export default async function Checkout() {
           checkoutData={checkoutData}
           addresses={addresses}
           defaultAddress={defaultAddress}
+          isLoggedIn={isLoggedIn}
         />
       </main>
     </div>
