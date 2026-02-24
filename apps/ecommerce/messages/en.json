@@ -242,7 +242,13 @@
     "commentCannotBeEmpty": "Comment cannot be empty",
     "commentMaxLength": "Comment must be less than 1000 characters",
     "user": "User",
-    "videoNotSupported": "Your browser does not support the video tag."
+    "videoNotSupported": "Your browser does not support the video tag.",
+    "insteadOf": "instead of",
+    "discountAvailableUntil": "Discount available until:",
+    "days": "Days",
+    "hours": "Hours",
+    "minutes": "Minutes",
+    "seconds": "Seconds"
   },
   "profile": {
     "myProfile": "My Profile",

@@ -242,7 +242,13 @@
     "commentCannotBeEmpty": "لا يمكن أن يكون التعليق فارغاً",
     "commentMaxLength": "يجب أن يكون التعليق أقل من 1000 حرف",
     "user": "مستخدم",
-    "videoNotSupported": "متصفحك لا يدعم علامة الفيديو."
+    "videoNotSupported": "متصفحك لا يدعم علامة الفيديو.",
+    "insteadOf": "بدلاً من",
+    "discountAvailableUntil": "الخصم متاح حتى:",
+    "days": "أيام",
+    "hours": "ساعات",
+    "minutes": "دقائق",
+    "seconds": "ثواني"
   },
   "profile": {
     "myProfile": "ملفي الشخصي",

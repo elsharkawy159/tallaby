@@ -1,15 +1,6 @@
 "use client";
 
-import {
-  Star,
-  Truck,
-  RotateCcw,
-  Globe,
-  DollarSign,
-  Heart,
-  ChevronDown,
-  ChevronUp,
-} from "lucide-react";
+import { Truck, RotateCcw, Globe, DollarSign } from "lucide-react";
 import { Badge } from "@workspace/ui/components/badge";
 import { ProductActions } from "./ProductActions";
 import type { Product } from "./product-page.types";
@@ -25,6 +16,7 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
+import { DiscountCountdown } from "./discount-countdown";
 
 interface ProductDetailsProps {
   product: Product;
@@ -50,7 +42,7 @@ export const ProductDetails = ({
   >(
     product.productVariants && product.productVariants.length > 0
       ? (product.productVariants[0]?.id ?? null)
-      : null
+      : null,
   );
 
   const selectedVariantId =
@@ -80,7 +72,7 @@ export const ProductDetails = ({
       (product.price as any)?.final ??
         (product.price as any)?.current ??
         (product.price as any)?.list ??
-        0
+        0,
     );
     const baseListPrice = (product.price as any)?.list
       ? Number((product.price as any).list)
@@ -115,15 +107,21 @@ export const ProductDetails = ({
             }}
           />
           {listPrice && listPrice > price && (
-            <span className="ml-3 font-medium text-red-400 line-through">
-              {listPrice}
+            <span className="mx-3 text-sm text-gray-500">
+              {t("insteadOf")}{" "}
+              <span className="font-medium text-red-400 line-through">
+                {listPrice}
+              </span>
             </span>
           )}
         </div>
 
+        {/* Discount Countdown */}
+        {listPrice && listPrice > price && <DiscountCountdown />}
+
         {/* Rating and Stock */}
         <div className="flex items-center gap-4 mb-6">
-          <div className="flex items-center gap-2">
+          {/* <div className="flex items-center gap-2">
             <div className="flex items-center">
               {Array.from({ length: 5 }).map((_, i) => (
                 <Star
@@ -144,7 +142,7 @@ export const ProductDetails = ({
                 ? t("reviewsCountOne", { count: product.reviewCount || 0 })
                 : t("reviewsCount", { count: product.reviewCount || 0 })}
             </Link>
-          </div>
+          </div> */}
           <div className="flex items-center gap-2">
             <div
               className={`w-2 h-2 rounded-full ${
@@ -218,7 +216,7 @@ export const ProductDetails = ({
                             __html: formatPrice(
                               Number(variant.price ?? 0),
                               locale,
-                              "sm"
+                              "sm",
                             ),
                           }}
                         />
@@ -341,7 +339,7 @@ export const ProductDetails = ({
                     {product.bulletPoints.map(
                       (point: string, index: number) => (
                         <li key={index}>{point}</li>
-                      )
+                      ),
                     )}
                   </ul>
                 </AccordionContent>
