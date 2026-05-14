@@ -1,4 +1,4 @@
-import { pgTable, index, foreignKey, uuid, text, integer, jsonb, timestamp, numeric, varchar, smallint, unique, boolean, pgPolicy, uniqueIndex, real, bigint, date, check, pgView, pgEnum } from "drizzle-orm/pg-core"
+import { pgTable, index, foreignKey, uuid, text, integer, jsonb, timestamp, numeric, varchar, smallint, unique, boolean, pgPolicy, uniqueIndex, real, bigint, date, check, pgView, pgEnum, primaryKey } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 export const addressType = pgEnum("address_type", ['shipping', 'billing', 'both'])
@@ -15,6 +15,7 @@ export const sellerStatus = pgEnum("seller_status", ['pending', 'approved', 'sus
 export const shippingSpeed = pgEnum("shipping_speed", ['standard', 'expedited', 'priority', 'one_day', 'same_day'])
 export const userRole = pgEnum("user_role", ['customer', 'seller', 'admin', 'support', 'driver'])
 export const productType = pgEnum("product_type", ['physical', 'digital'])
+export const transactionType = pgEnum("transaction_type", ['sale', 'refund', 'withdrawal', 'fee'])
 
 
 export const deliveries = pgTable("deliveries", {
@@ -1194,3 +1195,65 @@ export const userPoints = pgView("user_points", {	userId: uuid("user_id"),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	totalPoints: bigint("total_points", { mode: "number" }),
 }).as(sql`SELECT user_id, sum(points) AS total_points FROM user_rewards GROUP BY user_id`);
+
+export const digitalProducts = pgTable("digital_products", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	productId: uuid("product_id").notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	fileUrl: text("file_url").notNull(),
+	fileName: text("file_name").notNull(),
+	fileSize: integer("file_size").notNull(),
+	fileType: text("file_type").notNull(),
+	downloadLimit: integer("download_limit").default(5),
+	downloadExpiryHours: integer("download_expiry_hours").default(72),
+	price: numeric({ precision: 10, scale: 2 }).notNull(),
+	currency: text().default('EGP'),
+	status: text().default('draft'),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("digital_products_product_id_idx").using("btree", table.productId.asc().nullsLast().op("uuid_ops")),
+	index("digital_products_seller_id_idx").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+		columns: [table.productId],
+		foreignColumns: [products.id],
+		name: "digital_products_product_id_products_id_fk"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.sellerId],
+		foreignColumns: [sellers.id],
+		name: "digital_products_seller_id_sellers_id_fk"
+	}).onDelete("cascade"),
+]);
+
+export const digitalOrders = pgTable("digital_orders", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	orderId: uuid("order_id").notNull(),
+	digitalProductId: uuid("digital_product_id").notNull(),
+	buyerId: uuid("buyer_id").notNull(),
+	downloadToken: text("download_token").notNull(),
+	downloadCount: integer("download_count").default(0),
+	maxDownloads: integer("max_downloads").default(5),
+	expiresAt: timestamp("expires_at", { withTimezone: true, mode: 'string' }),
+	downloadedAt: timestamp("downloaded_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	uniqueIndex("digital_orders_download_token_idx").using("btree", table.downloadToken.asc().nullsLast().op("text_ops")),
+	index("digital_orders_order_id_idx").using("btree", table.orderId.asc().nullsLast().op("uuid_ops")),
+	index("digital_orders_buyer_id_idx").using("btree", table.buyerId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+		columns: [table.orderId],
+		foreignColumns: [orders.id],
+		name: "digital_orders_order_id_orders_id_fk"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.digitalProductId],
+		foreignColumns: [digitalProducts.id],
+		name: "digital_orders_digital_product_id_digital_products_id_fk"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.buyerId],
+		foreignColumns: [users.id],
+		name: "digital_orders_buyer_id_users_id_fk"
+	}).onDelete("cascade"),
+]);
