@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { handle } from "@hono/node-server/vercel";
 import emails from "../routes/emails";
+import stripeRoutes from "../routes/stripe";
 import { internalApiAuth } from "../lib/middleware";
 import { cors } from "hono/cors";
 
@@ -14,9 +15,10 @@ app.get("/", (c) => {
   });
 });
 
-// Apply internal API auth middleware to all routes except homepage
+// Apply internal API auth middleware to all routes except homepage and stripe connect
 app.use("*", async (c, next) => {
-  if (c.req.path === "/") {
+  const path = c.req.path;
+  if (path === "/" || path.startsWith("/stripe/connect/")) {
     return next();
   }
   return internalApiAuth()(c, next);
@@ -25,7 +27,7 @@ app.use("*", async (c, next) => {
 // Routes
 
 app.route("/emails", emails);
+app.route("/stripe", stripeRoutes);
 
 // 🚨 THIS IS THE MOST IMPORTANT LINE
 export default handle(app);
-
