@@ -1257,3 +1257,61 @@ export const digitalOrders = pgTable("digital_orders", {
 		name: "digital_orders_buyer_id_users_id_fk"
 	}).onDelete("cascade"),
 ]);
+
+export const sellerCategories = pgTable("seller_categories", {
+	sellerId: uuid("seller_id").notNull(),
+	categoryId: uuid("category_id").notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	primaryKey({ columns: [table.sellerId, table.categoryId] }),
+	foreignKey({
+		columns: [table.sellerId],
+		foreignColumns: [sellers.id],
+		name: "seller_categories_seller_id_sellers_id_fk"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.categoryId],
+		foreignColumns: [categories.id],
+		name: "seller_categories_category_id_categories_id_fk"
+	}).onDelete("cascade"),
+]);
+
+export const sellerWallet = pgTable("seller_wallet", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	balance: numeric({ precision: 10, scale: 2 }).default('0').notNull(),
+	currency: text().default('EGP').notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	uniqueIndex("seller_wallet_seller_id_idx").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+		columns: [table.sellerId],
+		foreignColumns: [sellers.id],
+		name: "seller_wallet_seller_id_sellers_id_fk"
+	}).onDelete("cascade"),
+]);
+
+export const walletTransactions = pgTable("wallet_transactions", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	type: transactionType().notNull(),
+	amount: numeric({ precision: 10, scale: 2 }).notNull(),
+	currency: text().default('EGP'),
+	stripeTransferId: text("stripe_transfer_id"),
+	orderId: uuid("order_id"),
+	description: text(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("wallet_transactions_seller_id_idx").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops")),
+	index("wallet_transactions_type_idx").using("btree", table.type.asc().nullsLast().op("enum_ops")),
+	foreignKey({
+		columns: [table.sellerId],
+		foreignColumns: [sellers.id],
+		name: "wallet_transactions_seller_id_sellers_id_fk"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.orderId],
+		foreignColumns: [orders.id],
+		name: "wallet_transactions_order_id_orders_id_fk"
+	}),
+]);
