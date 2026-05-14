@@ -69,6 +69,13 @@ app.get("/connect/return", async (c) => {
       );
     }
 
+    const account = await stripe.accounts.retrieve(seller.stripeAccountId);
+    if (!account.charges_enabled) {
+      return c.redirect(
+        DASHBOARD_URL + "/onboarding?step=3&stripe=incomplete&seller=" + sellerId
+      );
+    }
+
     await db.transaction(async (tx) => {
       await tx
         .update(sellers)
