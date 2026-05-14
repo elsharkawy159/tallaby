@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { users, deliveries, shipments, orders, payments, paymentMethods, carts, categories, sellers, coupons, notifications, contacts, userAddresses, products, productVariants, refunds, returns, orderItems, shipmentItems, productQuestions, shippingAddresses, couponUsage, cartItems, reviews, returnItems, reviewVotes, searchLogs, sellerDocuments, sellerPayoutItems, sellerPayouts, reviewComments, userDevices, wishlistItems, wishlists, brands, productAnswers, userRewards, productTranslations } from "./schema";
+import { users, deliveries, shipments, orders, payments, paymentMethods, carts, categories, sellers, coupons, notifications, contacts, userAddresses, products, productVariants, refunds, returns, orderItems, shipmentItems, productQuestions, shippingAddresses, couponUsage, cartItems, reviews, returnItems, reviewVotes, searchLogs, sellerDocuments, sellerPayoutItems, sellerPayouts, reviewComments, userDevices, wishlistItems, wishlists, brands, productAnswers, userRewards, productTranslations, digitalProducts, digitalOrders, sellerCategories, sellerWallet, walletTransactions } from "./schema";
 
 export const deliveriesRelations = relations(deliveries, ({one}) => ({
 	user: one(users, {
@@ -42,6 +42,7 @@ export const usersRelations = relations(users, ({one, many}) => ({
 	productAnswers: many(productAnswers),
 	orders: many(orders),
 	userRewards: many(userRewards),
+	digitalOrders: many(digitalOrders),
 }));
 
 export const shipmentsRelations = relations(shipments, ({one, many}) => ({
@@ -77,6 +78,8 @@ export const ordersRelations = relations(orders, ({one, many}) => ({
 	reviews: many(reviews),
 	sellerPayoutItems: many(sellerPayoutItems),
 	orderItems: many(orderItems),
+	digitalOrders: many(digitalOrders),
+	walletTransactions: many(walletTransactions),
 	userAddress_billingAddressId: one(userAddresses, {
 		fields: [orders.billingAddressId],
 		references: [userAddresses.id],
@@ -153,6 +156,10 @@ export const sellersRelations = relations(sellers, ({one, many}) => ({
 	orderItems: many(orderItems),
 	products: many(products),
 	productAnswers: many(productAnswers),
+	digitalProducts: many(digitalProducts),
+	sellerWallet: many(sellerWallet),
+	sellerCategories: many(sellerCategories),
+	walletTransactions: many(walletTransactions),
 }));
 
 export const notificationsRelations = relations(notifications, ({one}) => ({
@@ -200,6 +207,7 @@ export const productsRelations = relations(products, ({one, many}) => ({
 	searchLogs: many(searchLogs),
 	wishlistItems: many(wishlistItems),
 	orderItems: many(orderItems),
+	digitalProducts: many(digitalProducts),
 	brand: one(brands, {
 		fields: [products.brandId],
 		references: [brands.id]
@@ -493,5 +501,61 @@ export const productTranslationsRelations = relations(productTranslations, ({one
 	product: one(products, {
 		fields: [productTranslations.productId],
 		references: [products.id]
+	}),
+}));
+
+export const digitalProductsRelations = relations(digitalProducts, ({one, many}) => ({
+	product: one(products, {
+		fields: [digitalProducts.productId],
+		references: [products.id]
+	}),
+	seller: one(sellers, {
+		fields: [digitalProducts.sellerId],
+		references: [sellers.id]
+	}),
+	digitalOrders: many(digitalOrders),
+}));
+
+export const digitalOrdersRelations = relations(digitalOrders, ({one}) => ({
+	order: one(orders, {
+		fields: [digitalOrders.orderId],
+		references: [orders.id]
+	}),
+	digitalProduct: one(digitalProducts, {
+		fields: [digitalOrders.digitalProductId],
+		references: [digitalProducts.id]
+	}),
+	buyer: one(users, {
+		fields: [digitalOrders.buyerId],
+		references: [users.id]
+	}),
+}));
+
+export const sellerCategoriesRelations = relations(sellerCategories, ({one}) => ({
+	seller: one(sellers, {
+		fields: [sellerCategories.sellerId],
+		references: [sellers.id]
+	}),
+	category: one(categories, {
+		fields: [sellerCategories.categoryId],
+		references: [categories.id]
+	}),
+}));
+
+export const sellerWalletRelations = relations(sellerWallet, ({one}) => ({
+	seller: one(sellers, {
+		fields: [sellerWallet.sellerId],
+		references: [sellers.id]
+	}),
+}));
+
+export const walletTransactionsRelations = relations(walletTransactions, ({one}) => ({
+	seller: one(sellers, {
+		fields: [walletTransactions.sellerId],
+		references: [sellers.id]
+	}),
+	order: one(orders, {
+		fields: [walletTransactions.orderId],
+		references: [orders.id]
 	}),
 }));
