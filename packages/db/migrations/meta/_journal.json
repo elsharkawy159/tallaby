@@ -15,6 +15,13 @@
       "when": 1756150000000,
       "tag": "0001_products_shared_only",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1778719304945,
+      "tag": "0002_digital_commerce",
+      "breakpoints": true
     }
   ]
 }
