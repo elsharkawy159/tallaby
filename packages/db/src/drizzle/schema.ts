@@ -14,6 +14,7 @@ export const returnReason = pgEnum("return_reason", ['defective', 'damaged', 'wr
 export const sellerStatus = pgEnum("seller_status", ['pending', 'approved', 'suspended', 'restricted'])
 export const shippingSpeed = pgEnum("shipping_speed", ['standard', 'expedited', 'priority', 'one_day', 'same_day'])
 export const userRole = pgEnum("user_role", ['customer', 'seller', 'admin', 'support', 'driver'])
+export const productType = pgEnum("product_type", ['physical', 'digital'])
 
 
 export const deliveries = pgTable("deliveries", {
@@ -305,6 +306,13 @@ export const sellers = pgTable("sellers", {
 	lastPayoutAmount: numeric("last_payout_amount", { precision: 10, scale:  2 }),
 	walletBalance: numeric("wallet_balance", { precision: 10, scale:  2 }).default('0'),
 	stripeAccountId: text("stripe_account_id"),
+	stripeOnboardingComplete: boolean("stripe_onboarding_complete").default(false),
+	payoutEnabled: boolean("payout_enabled").default(false),
+	identityVerified: boolean("identity_verified").default(false),
+	identityDocsUrl: text("identity_docs_url"),
+	onboardingStep: integer("onboarding_step").default(0),
+	onboardingComplete: boolean("onboarding_complete").default(false),
+	storeDescription: text("store_description"),
 	externalIds: jsonb("external_ids"),
 	sellerLevel: text("seller_level").default('standard'),
 	joinDate: timestamp("join_date", { withTimezone: true, mode: 'string' }).defaultNow(),
@@ -1014,6 +1022,7 @@ export const products = pgTable("products", {
 	isFeatured: boolean("is_featured").default(false),
 	dimensions: jsonb(),
 	price: jsonb(),
+	productType: productType("product_type").default('physical'),
 }, (table) => [
 	index("product_brand_id_idx").using("btree", table.brandId.asc().nullsLast().op("uuid_ops")),
 	index("product_main_category_id_idx").using("btree", table.categoryId.asc().nullsLast().op("uuid_ops")),
