@@ -10,6 +10,7 @@
     "@react-email/render": "^2.0.2",
     "@workspace/db": "workspace:^",
     "@workspace/emails": "workspace:^",
+    "@workspace/lib": "workspace:^",
     "dotenv": "^17.2.3",
     "hono": "^4.11.3",
     "next": "16.1.1",

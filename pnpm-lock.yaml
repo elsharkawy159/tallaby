@@ -147,6 +147,9 @@ importers:
       '@workspace/emails':
         specifier: workspace:^
         version: link:../../packages/emails
+      '@workspace/lib':
+        specifier: workspace:^
+        version: link:../../packages/lib
       dotenv:
         specifier: ^17.2.3
         version: 17.2.3
