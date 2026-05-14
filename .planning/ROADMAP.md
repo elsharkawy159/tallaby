@@ -43,7 +43,11 @@ Plans:
   3. The refresh route allows a seller to restart Connect onboarding without creating a duplicate Stripe account
   4. A seller who clicks "Skip" during payout setup advances to the next onboarding step with `payoutEnabled` remaining `false`
   5. All three Connect route handlers (`/onboard`, `/return`, `/refresh`) return appropriate HTTP status codes and never expose raw Stripe API keys to the client
-**Plans**: TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 02-01-PLAN.md -- Install Stripe SDK and create stripe singleton in @workspace/lib; wire env vars
+- [ ] 02-02-PLAN.md -- Create Connect route handlers (onboard/return/refresh) and register with auth exclusion
 
 ### Phase 3: Digital Product Upload (Dashboard)
 **Goal**: Sellers can create and edit digital products with file uploads to the private `digital-products` Supabase Storage bucket from the dashboard; colocated feature files follow the established pattern
