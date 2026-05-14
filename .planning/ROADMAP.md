@@ -25,7 +25,12 @@
   3. The `orders` table migration adds or confirms a `status` column that accepts the value `pending`
   4. `packages/db/src/drizzle/relations.ts` contains relation definitions for every new table, and TypeScript compilation passes across all workspace packages
   5. Running the migration against the Supabase database succeeds with no constraint violations on the existing dataset
-**Plans**: TBD
+**Plans:** 3 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Add productType enum, products.productType column, and 7 new sellers onboarding columns
+- [ ] 01-02-PLAN.md — Add digitalProducts, digitalOrders, sellerCategories, sellerWallet, walletTransactions tables
+- [ ] 01-03-PLAN.md — Add relations for all new tables and generate migration file
 
 ### Phase 2: Stripe Connect & Wallet Infrastructure
 **Goal**: Sellers can initiate Stripe Connect account creation during onboarding; Connect OAuth callback routes handle return and refresh; wallet schema is ready in the DB (covered by Phase 1)
@@ -114,7 +119,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Schema & Migrations | 0/? | Not started | - |
+| 1. Schema & Migrations | 0/3 | Not started | - |
 | 2. Stripe Connect & Wallet Infrastructure | 0/? | Not started | - |
 | 3. Digital Product Upload (Dashboard) | 0/? | Not started | - |
 | 4. Stripe Checkout Integration | 0/? | Not started | - |
