@@ -7,7 +7,8 @@
 - [ ] **DB-01**: Schema defines `digitalProducts` table with all specified columns (id, productId FK, sellerId FK, fileUrl, fileName, fileSize, fileType, downloadLimit, downloadExpiryHours, price, currency, status, createdAt, updatedAt)
 - [ ] **DB-02**: Schema defines `digitalOrders` table (id, orderId FK, digitalProductId FK, buyerId FK, downloadToken, downloadCount, maxDownloads, expiresAt, downloadedAt, createdAt)
 - [ ] **DB-03**: `productType` pgEnum (`physical` | `digital`) added and column added to `products` table with default `physical`
-- [ ] **DB-04**: `sellers` table extended with fields: stripeAccountId, stripeOnboardingComplete, payoutEnabled, storeSlug, storeBannerUrl, storeLogoUrl, storeDescription, identityVerified, identityDocsUrl, onboardingStep (int), onboardingComplete
+- [x] **DB-04**: `sellers` table extended with fields: stripeAccountId, stripeOnboardingComplete, payoutEnabled, storeSlug, storeBannerUrl, storeLogoUrl, storeDescription, identityVerified, identityDocsUrl, onboardingStep (int), onboardingComplete
+  > **Column mapping (per D-01, D-02):** `storeSlug` maps to existing `sellers.slug` (unique-indexed); `storeBannerUrl` maps to existing `sellers.bannerUrl`; `storeLogoUrl` maps to existing `sellers.logoUrl`. These three fields were intentionally NOT added as duplicate columns. The 7 new columns (stripeOnboardingComplete, payoutEnabled, identityVerified, identityDocsUrl, onboardingStep, onboardingComplete, storeDescription) were added in Phase 1. stripeAccountId was already present.
 - [ ] **DB-05**: `sellerCategories` join table created (sellerId FK, categoryId FK, primary key on both)
 - [ ] **DB-06**: `sellerWallet` table created (id, sellerId FK, balance decimal, currency, updatedAt)
 - [ ] **DB-07**: `walletTransactions` table created (id, sellerId FK, type enum sale/refund/withdrawal/fee, amount, currency, stripeTransferId nullable, orderId nullable FK, description, createdAt)
@@ -133,7 +134,7 @@
 | DB-01 | Phase 1: Schema & Migrations | Pending |
 | DB-02 | Phase 1: Schema & Migrations | Pending |
 | DB-03 | Phase 1: Schema & Migrations | Pending |
-| DB-04 | Phase 1: Schema & Migrations | Pending |
+| DB-04 | Phase 1: Schema & Migrations | Satisfied (see column mapping note) |
 | DB-05 | Phase 1: Schema & Migrations | Pending |
 | DB-06 | Phase 1: Schema & Migrations | Pending |
 | DB-07 | Phase 1: Schema & Migrations | Pending |

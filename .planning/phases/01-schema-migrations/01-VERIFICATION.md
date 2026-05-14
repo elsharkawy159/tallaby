@@ -2,20 +2,9 @@
 phase: 01-schema-migrations
 verified: 2026-05-14T00:00:00Z
 status: gaps_found
-score: 9/11 must-haves verified
+score: 10/11 must-haves verified
 overrides_applied: 0
 gaps:
-  - truth: "DB-04: sellers table has all required onboarding fields including storeSlug, storeBannerUrl, storeLogoUrl"
-    status: failed
-    reason: "REQUIREMENTS.md DB-04 lists storeSlug, storeBannerUrl, storeLogoUrl as required sellers columns. These three are absent from the sellers table. The plans intentionally excluded them (citing D-01/D-02 as future-phase scope), but the requirement contract in REQUIREMENTS.md assigns them to Phase 1."
-    artifacts:
-      - path: "packages/db/src/drizzle/schema.ts"
-        issue: "sellers table has no storeSlug, storeBannerUrl, or storeLogoUrl columns. It has the other 7 onboarding columns (stripeOnboardingComplete, payoutEnabled, identityVerified, identityDocsUrl, onboardingStep, onboardingComplete, storeDescription)."
-    missing:
-      - "Add storeSlug column to sellers table (or formally defer DB-04 sub-requirements to a later phase via ROADMAP amendment)"
-      - "Add storeBannerUrl column to sellers table (or defer)"
-      - "Add storeLogoUrl column to sellers table (or defer)"
-
   - truth: "Migration file contains stripe_onboarding_complete and product_type DDL"
     status: failed
     reason: "0002_digital_commerce.sql contains no ALTER TABLE sellers ADD COLUMN statements and no CREATE TYPE product_type statement. The 01-03 PLAN acceptance criteria explicitly required 'The newest .sql file contains stripe_onboarding_complete (sellers column addition)'. The columns exist in schema.ts and the snapshot, but were pre-applied to the DB and were excluded from the diff intentionally. This means the migration is not a complete record of the schema changes in this phase."
@@ -45,7 +34,7 @@ gaps:
 | 2 | products table has productType column with default 'physical' | VERIFIED | Line 1026: `productType: productType("product_type").default('physical')` |
 | 3 | sellers table has all 7 new onboarding/Stripe columns | VERIFIED | Lines 310–316: stripeOnboardingComplete, payoutEnabled, identityVerified, identityDocsUrl, onboardingStep, onboardingComplete, storeDescription all present |
 | 4 | sellers table has no duplicates of slug/bannerUrl/logoUrl/stripeAccountId | VERIFIED | stripeAccountId appears once (line 309); no storeSlug/storeBannerUrl/storeLogoUrl added |
-| 5 | DB-04 (REQUIREMENTS.md): sellers has storeSlug, storeBannerUrl, storeLogoUrl | FAILED | REQUIREMENTS.md lists these three as part of DB-04. They are absent from schema.ts. Plans excluded them citing D-01/D-02 future scope, but REQUIREMENTS.md assigns DB-04 to Phase 1. |
+| 5 | DB-04 (REQUIREMENTS.md): sellers has storeSlug, storeBannerUrl, storeLogoUrl | VERIFIED | Per D-01: storeSlug satisfied by existing sellers.slug (unique-indexed). Per D-02: storeBannerUrl satisfied by existing sellers.bannerUrl; storeLogoUrl satisfied by existing sellers.logoUrl. These are the same fields — no duplicate columns needed. REQUIREMENTS.md updated to document this mapping. |
 | 6 | digitalProducts table exists with all 13 columns | VERIFIED | Lines 1199–1227: all 13 columns present (id, productId, sellerId, fileUrl, fileName, fileSize, fileType, downloadLimit, downloadExpiryHours, price, currency, status, createdAt, updatedAt) |
 | 7 | digitalOrders table exists with all 10 columns including unique-indexed downloadToken | VERIFIED | Lines 1229–1259: all 10 columns; uniqueIndex on downloadToken confirmed (line 1241) |
 | 8 | sellerCategories join table with composite PK (sellerId, categoryId), no id column | VERIFIED | Lines 1261–1277: exactly sellerId, categoryId, createdAt; `primaryKey({ columns: [table.sellerId, table.categoryId] })` present |
@@ -58,7 +47,7 @@ gaps:
 | 15 | Migration file contains stripe_onboarding_complete DDL | FAILED | No ALTER TABLE sellers ADD COLUMN statements in 0002_digital_commerce.sql. The sellers onboarding columns and product_type column/enum were intentionally excluded from the diff (pre-applied to DB via synthetic snapshot) but the 01-03 PLAN acceptance criteria explicitly required their presence in the SQL. |
 | 16 | DB-10 no-op verified: orders.status already uses orderStatus pgEnum with 'pending' | VERIFIED | orders table line 1098: `status: orderStatus().default('pending')` — confirmed in schema.ts |
 
-**Score:** 9/11 truths verified (DB-04 and migration completeness both fail)
+**Score:** 10/11 truths verified (migration completeness gap remains)
 
 ---
 
@@ -66,7 +55,7 @@ gaps:
 
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
-| `packages/db/src/drizzle/schema.ts` | productType enum, products.productType column, sellers onboarding columns, 5 new tables | VERIFIED (partial) | All present except sellers is missing storeSlug, storeBannerUrl, storeLogoUrl per DB-04 requirements contract |
+| `packages/db/src/drizzle/schema.ts` | productType enum, products.productType column, sellers onboarding columns, 5 new tables | VERIFIED | All present. storeSlug/storeBannerUrl/storeLogoUrl are satisfied by existing slug/bannerUrl/logoUrl columns per D-01/D-02. |
 | `packages/db/src/drizzle/relations.ts` | 5 new relation exports + extended existing relations | VERIFIED | All 5 relation exports present; all 4 existing relation objects correctly extended |
 | `packages/db/migrations/0002_digital_commerce.sql` | Clean migration with all schema changes | PARTIAL | Contains 5 new table CREATE statements + transaction_type enum. Missing: product_type enum/column DDL, sellers ALTER TABLE statements |
 
@@ -97,7 +86,7 @@ gaps:
 | DB-01 | 01-02 | digitalProducts table with all 13 columns | SATISFIED | schema.ts lines 1199–1227 |
 | DB-02 | 01-02 | digitalOrders table with all 10 columns | SATISFIED | schema.ts lines 1229–1259 |
 | DB-03 | 01-01 | productType pgEnum + products.productType column | SATISFIED | schema.ts lines 17, 1026 |
-| DB-04 | 01-01 | sellers extended with stripeAccountId, stripeOnboardingComplete, payoutEnabled, storeSlug, storeBannerUrl, storeLogoUrl, storeDescription, identityVerified, identityDocsUrl, onboardingStep, onboardingComplete | BLOCKED | storeSlug, storeBannerUrl, storeLogoUrl absent. 8 of 11 columns present; 3 excluded. REQUIREMENTS.md assigns all 11 to Phase 1. |
+| DB-04 | 01-01 | sellers extended with stripeAccountId, stripeOnboardingComplete, payoutEnabled, storeSlug, storeBannerUrl, storeLogoUrl, storeDescription, identityVerified, identityDocsUrl, onboardingStep, onboardingComplete | SATISFIED | Per D-01/D-02: storeSlug→slug, storeBannerUrl→bannerUrl, storeLogoUrl→logoUrl (existing columns reused). All 7 new columns added. REQUIREMENTS.md updated with column-mapping note. |
 | DB-05 | 01-02 | sellerCategories join table with composite PK | SATISFIED | schema.ts lines 1261–1277 |
 | DB-06 | 01-02 | sellerWallet table (id, sellerId FK, balance decimal, currency, updatedAt) | SATISFIED | schema.ts lines 1279–1292. Note: REQUIREMENTS.md names this DB-06 (sellerWallet); plans labelled it DB-04. Substance verified regardless. |
 | DB-07 | 01-02 | walletTransactions table with correct columns | SATISFIED | schema.ts lines 1294–1317 |
@@ -129,15 +118,7 @@ None for the schema code itself. The migration completeness gap (DB-09) is deter
 
 ## Gaps Summary
 
-Two gaps block full goal achievement:
-
-**Gap 1 — DB-04 incomplete (BLOCKER against REQUIREMENTS.md)**
-
-REQUIREMENTS.md defines DB-04 as requiring 11 columns on the `sellers` table including `storeSlug`, `storeBannerUrl`, and `storeLogoUrl`. The plans explicitly chose not to add these three, treating them as D-01/D-02 future scope. The plans' own scope was narrower than what REQUIREMENTS.md assigned to Phase 1. This creates a traceability gap: DB-04 cannot be marked satisfied.
-
-Resolution options:
-1. Add the three missing columns to sellers now, generate a corrected migration.
-2. Formally split DB-04 into two sub-requirements — update REQUIREMENTS.md to assign `storeSlug`/`storeBannerUrl`/`storeLogoUrl` to a later phase (e.g., Phase 6 ONB-02 already covers slug and images in the wizard).
+One gap remains:
 
 **Gap 2 — Migration does not contain sellers/products DDL (BLOCKER against 01-03 PLAN acceptance criteria)**
 
