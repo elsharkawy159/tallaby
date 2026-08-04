@@ -21,13 +21,13 @@ export function getShareUrl(url?: string) {
   }
 }
 
-export function resolvePrimaryImage(images?: ProductCardProps["images"]) {
-  const fallbackImage = "/png product.png";
+export const PRODUCT_IMAGE_FALLBACK = "/png product.png";
 
-  if (!images || images.length === 0) return fallbackImage;
+export function resolvePrimaryImage(images?: ProductCardProps["images"]) {
+  if (!images || images.length === 0) return PRODUCT_IMAGE_FALLBACK;
   const first = images[0] as any;
   const key = typeof first === "string" ? first : first?.url;
-  if (!key || typeof key !== "string") return fallbackImage;
+  if (!key || typeof key !== "string") return PRODUCT_IMAGE_FALLBACK;
   return getPublicUrl(key, "products");
 }
 

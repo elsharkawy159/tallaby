@@ -1,18 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Image from "next/image";
 import {
   Carousel,
   CarouselContent,
   CarouselDots,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-  type CarouselApi,
 } from "@workspace/ui/components/carousel";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { useLocale } from "next-intl";
+import { ImageWithFallback } from "@/components/shared/image-with-fallback";
+import { PRODUCT_IMAGE_FALLBACK } from "@/lib/utils";
 
 interface MobileImageCarouselProps {
   images: string[];
@@ -26,8 +23,14 @@ export const MobileImageCarousel = ({
   const locale = useLocale();
   if (images.length === 0) {
     return (
-      <div className="aspect-square bg-gray-200 rounded-lg flex items-center justify-center">
-        <span className="text-gray-500">No images available</span>
+      <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden relative">
+        <ImageWithFallback
+          src={PRODUCT_IMAGE_FALLBACK}
+          alt={productName}
+          fill
+          className="object-contain bg-white"
+          sizes="100vw"
+        />
       </div>
     );
   }
@@ -46,8 +49,8 @@ export const MobileImageCarousel = ({
           {images.map((image, index) => (
             <CarouselItem key={index}>
               <div className="aspect-square relative bg-gray-100 rounded-lg overflow-hidden">
-                <Image
-                  src={getPublicUrl(image, "products") || ""}
+                <ImageWithFallback
+                  src={getPublicUrl(image, "products")}
                   alt={`${productName} ${index + 1}`}
                   fill
                   className="object-contain bg-white"
@@ -58,14 +61,6 @@ export const MobileImageCarousel = ({
             </CarouselItem>
           ))}
         </CarouselContent>
-
-        {/* Navigation arrows - only show if more than 1 image */}
-        {/* {images.length > 1 && (
-          <>
-            <CarouselPrevious className="left-2 top-1/2 -translate-y-1/2 bg-white/90 opacity-0 group-hover:opacity-100 hover:bg-white shadow-md z-10 border-0" />
-            <CarouselNext className="right-2 top-1/2 -translate-y-1/2 bg-white/90 opacity-0 group-hover:opacity-100 hover:bg-white shadow-md z-10 border-0" />
-          </>
-        )} */}
 
         <CarouselDots />
       </Carousel>

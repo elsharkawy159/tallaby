@@ -1,14 +1,12 @@
 "use client";
 
 import { useMemo } from "react";
-import Image from "next/image";
-import { cn } from "@/lib/utils";
+import { cn, PRODUCT_IMAGE_FALLBACK } from "@/lib/utils";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
 } from "@workspace/ui/components/carousel";
-// import Autoplay from "embla-carousel-autoplay";
 import Link from "next/link";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
 import {
@@ -16,16 +14,59 @@ import {
   CategoryWithRequiredFields,
 } from "./category-showcase.types";
 import { useLocale } from "next-intl";
+import { ImageWithFallback } from "@/components/shared/image-with-fallback";
 
 const CATEGORY_BUCKET = "categories";
 const PRODUCTS_BUCKET = "products";
+
+function CategoryImage({
+  name,
+  imageUrl,
+  fallbackImageUrl,
+  productCount,
+}: {
+  name: string;
+  imageUrl: string | null;
+  fallbackImageUrl: string | null;
+  productCount: number;
+}) {
+  const primarySrc = imageUrl
+    ? getPublicUrl(imageUrl, CATEGORY_BUCKET)
+    : fallbackImageUrl
+      ? getPublicUrl(fallbackImageUrl, PRODUCTS_BUCKET)
+      : null;
+
+  if (!primarySrc) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <span className="md:text-2xl text-base font-bold text-primary group-hover:scale-105 transition-transform duration-300">
+          {productCount}
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <ImageWithFallback
+      src={primarySrc}
+      fallbackSrc={PRODUCT_IMAGE_FALLBACK}
+      alt={name}
+      fill
+      sizes="100px"
+      className={
+        imageUrl
+          ? "object-cover group-hover:scale-105 transition-transform duration-300 p-2"
+          : "object-contain group-hover:scale-105 transition-transform duration-300 p-3"
+      }
+    />
+  );
+}
 
 export const CategoryShowcaseClient = ({
   categories,
   className,
 }: CategoryShowcaseClientProps) => {
   const locale = useLocale();
-  // Memoize the filtering and transformation to avoid recalculating on every render
   const categoriesWithProducts = useMemo(() => {
     return categories
       .filter(
@@ -63,11 +104,6 @@ export const CategoryShowcaseClient = ({
           dragFree: true,
           direction: locale === "ar" ? "rtl" : "ltr",
         }}
-        // plugins={[
-        //   Autoplay({
-        //     delay: 3000,
-        //   }),
-        // ]}
         className="container"
       >
         <CarouselContent>
@@ -79,33 +115,13 @@ export const CategoryShowcaseClient = ({
             >
               <CarouselItem className="basis-auto">
                 <div className="md:w-[108px] w-14">
-                  <div className="relative overflow-hidden rounded-full md:size-[100px] size-[60px] mx-auto mb-2.5 bg-white shadow-sm group-hover:shadow-md transition-all duration-300">
-                    {category.imageUrl ? (
-                      <Image
-                        src={getPublicUrl(category.imageUrl, CATEGORY_BUCKET)}
-                        alt={category.name}
-                        fill
-                        sizes="100px"
-                        className="object-cover group-hover:scale-105 transition-transform duration-300 p-2"
-                      />
-                    ) : category.fallbackImageUrl ? (
-                      <Image
-                        src={getPublicUrl(
-                          category.fallbackImageUrl,
-                          PRODUCTS_BUCKET,
-                        )}
-                        alt={category.name}
-                        fill
-                        sizes="100px"
-                        className="object-contain group-hover:scale-105 transition-transform duration-300 p-3"
-                      />
-                    ) : (
-                      <div className="flex items-center justify-center h-full">
-                        <span className="md:text-2xl text-base font-bold text-primary group-hover:scale-105 transition-transform duration-300">
-                          {category.productCount}
-                        </span>
-                      </div>
-                    )}
+                  <div className="relative overflow-hidden rounded-full md:size-[100px] size-[60px] mx-auto mb-2.5 bg-muted/40 shadow-sm group-hover:shadow-md transition-all duration-300">
+                    <CategoryImage
+                      name={category.name}
+                      imageUrl={category.imageUrl}
+                      fallbackImageUrl={category.fallbackImageUrl}
+                      productCount={category.productCount}
+                    />
                   </div>
                   <h3 className="md:text-sm text-xs font-medium text-center group-hover:text-primary transition-colors line-clamp-1">
                     {category.name}

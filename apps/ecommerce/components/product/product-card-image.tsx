@@ -1,14 +1,14 @@
-import Image from "next/image";
+"use client";
+
 import Link from "next/link";
 import type { ProductCardProps } from "./product-card.types";
 import { resolvePrimaryImage } from "@/lib/utils";
+import { ImageWithFallback } from "@/components/shared/image-with-fallback";
 
 interface ProductCardImageProps {
   product: ProductCardProps;
   className?: string;
 }
-
-
 
 export const ProductCardImage = ({
   product,
@@ -21,7 +21,7 @@ export const ProductCardImage = ({
   return (
     <div className={`relative rounded-md overflow-hidden p-2 ${className}`}>
       <Link href={`/products/${slug}`}>
-        <Image
+        <ImageWithFallback
           src={productImage}
           alt={title}
           width={270}

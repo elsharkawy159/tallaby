@@ -1,8 +1,9 @@
 "use client";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
-import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 import { MobileImageCarousel } from "./mobile-image-carousel";
+import { ImageWithFallback } from "@/components/shared/image-with-fallback";
+import { PRODUCT_IMAGE_FALLBACK } from "@/lib/utils";
 
 interface ProductImagesProps {
   images: string[];
@@ -61,9 +62,11 @@ export const ProductImages = ({ images, productName }: ProductImagesProps) => {
                   : "border-transparent hover:border-gray-300"
               }`}
             >
-              <Image
+              <ImageWithFallback
                 src={
-                  image ? getPublicUrl(image, "products") : "/png product.png"
+                  image
+                    ? getPublicUrl(image, "products")
+                    : PRODUCT_IMAGE_FALLBACK
                 }
                 alt={`${productName} ${index + 1}`}
                 width={140}
@@ -82,11 +85,11 @@ export const ProductImages = ({ images, productName }: ProductImagesProps) => {
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
           >
-            <Image
+            <ImageWithFallback
               src={
                 activeImage
                   ? getPublicUrl(activeImage, "products")
-                  : "/png product.png"
+                  : PRODUCT_IMAGE_FALLBACK
               }
               alt={productName}
               className="w-full h-full object-contain bg-white"
@@ -103,7 +106,7 @@ export const ProductImages = ({ images, productName }: ProductImagesProps) => {
               <div
                 className="w-full h-full bg-cover bg-no-repeat z-[999]"
                 style={{
-                  backgroundImage: `url(${activeImage ? getPublicUrl(activeImage, "products") : "/png product.png"})`,
+                  backgroundImage: `url(${activeImage ? getPublicUrl(activeImage, "products") : PRODUCT_IMAGE_FALLBACK})`,
                   backgroundPosition: `${zoomPosition.x}% ${zoomPosition.y}%`,
                   backgroundSize: "150%",
                 }}
