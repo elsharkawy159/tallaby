@@ -1,4 +1,3 @@
-import ProductSection from "@/components/home/ProductSection";
 // import CategoryGrid from "@/components/home/category/category-grid";
 // import BestSellersInCategory from "@/components/home/best-sellers-in-category";
 // import EventBanner from "@/components/home/event-banner";

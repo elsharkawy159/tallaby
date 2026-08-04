@@ -1,11 +1,19 @@
 import { Hono } from "hono";
 import { db, sellers, sellerWallet, eq } from "@workspace/db";
-import { stripe } from "@workspace/lib";
+import { getStripe } from "@workspace/lib/stripe";
 
 const app = new Hono();
 
 app.get("/connect/onboard", async (c) => {
   try {
+    const stripe = getStripe();
+    if (!stripe) {
+      return c.json(
+        { error: "Stripe is not configured (cash-only payments enabled)" },
+        503
+      );
+    }
+
     const sellerId = c.req.query("sellerId");
     if (!sellerId) {
       return c.json({ error: "Missing sellerId" }, 400);
@@ -48,6 +56,14 @@ app.get("/connect/onboard", async (c) => {
 
 app.get("/connect/return", async (c) => {
   try {
+    const stripe = getStripe();
+    if (!stripe) {
+      return c.json(
+        { error: "Stripe is not configured (cash-only payments enabled)" },
+        503
+      );
+    }
+
     const sellerId = c.req.query("seller");
     if (!sellerId) {
       return c.json({ error: "Missing seller" }, 400);
@@ -97,6 +113,14 @@ app.get("/connect/return", async (c) => {
 
 app.get("/connect/refresh", async (c) => {
   try {
+    const stripe = getStripe();
+    if (!stripe) {
+      return c.json(
+        { error: "Stripe is not configured (cash-only payments enabled)" },
+        503
+      );
+    }
+
     const sellerId = c.req.query("seller");
     if (!sellerId) {
       return c.json({ error: "Missing seller" }, 400);

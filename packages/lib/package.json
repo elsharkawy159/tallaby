@@ -20,6 +20,10 @@
     ".": {
       "types": "./index.ts",
       "default": "./index.ts"
+    },
+    "./stripe": {
+      "types": "./src/stripe.ts",
+      "default": "./src/stripe.ts"
     }
   }
 }
