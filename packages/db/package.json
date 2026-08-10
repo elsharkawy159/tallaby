@@ -14,6 +14,11 @@
       "types": "./src/drizzle/schema.ts",
       "import": "./src/drizzle/schema.ts",
       "require": "./src/drizzle/schema.ts"
+    },
+    "./supabase/service": {
+      "types": "./src/supabase/service.ts",
+      "import": "./src/supabase/service.ts",
+      "require": "./src/supabase/service.ts"
     }
   },
   "scripts": {

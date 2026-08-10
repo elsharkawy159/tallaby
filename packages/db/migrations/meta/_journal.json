@@ -29,6 +29,20 @@
       "when": 1778719400000,
       "tag": "0003_sellers_products_columns",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1786403531508,
+      "tag": "0004_digital_products_extended",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1786403912035,
+      "tag": "0005_orders_digital_flags",
+      "breakpoints": true
     }
   ]
 }

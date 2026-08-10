@@ -39,7 +39,7 @@ function formatDecimal(value: number): string {
 
 export async function createOrder(data: {
   cartId: string;
-  shippingAddressId: string;
+  shippingAddressId?: string;
   billingAddressId?: string;
   paymentMethod: string;
   couponCode?: string;
@@ -75,22 +75,38 @@ export async function createOrder(data: {
       return { success: false, error: "Cart is empty" };
     }
 
-    // Verify addresses belong to user
-    const shippingAddress = await db.query.userAddresses.findFirst({
-      where: and(
-        eq(userAddresses.id, data.shippingAddressId),
-        eq(userAddresses.userId, userId)
-      ),
-    });
+    const isDigitalOnlyCart = cart.cartItems.every(
+      (item) => item.product.productType === "digital"
+    );
 
-    if (!shippingAddress) {
-      return { success: false, error: "Shipping address not found" };
+    // Digital-only orders have nothing to ship, so no shipping address is required.
+    let shippingAddress: { id: string } | undefined;
+    if (!isDigitalOnlyCart) {
+      if (!data.shippingAddressId) {
+        return { success: false, error: "Shipping address is required" };
+      }
+
+      shippingAddress = await db.query.userAddresses.findFirst({
+        where: and(
+          eq(userAddresses.id, data.shippingAddressId),
+          eq(userAddresses.userId, userId)
+        ),
+      });
+
+      if (!shippingAddress) {
+        return { success: false, error: "Shipping address not found" };
+      }
     }
 
     // Calculate totals
     let subtotal = 0;
     const tax = 0;
-    const shippingCost = Number(process.env.NEXT_PUBLIC_SHIPPING_COST) || 50;
+    const hasDigitalItems = cart.cartItems.some(
+      (item) => item.product.productType === "digital"
+    );
+    const shippingCost = isDigitalOnlyCart
+      ? 0
+      : Number(process.env.NEXT_PUBLIC_SHIPPING_COST) || 50;
 
     const orderItemsData = cart.cartItems.map((item) => {
       const itemSubtotal = Number(item.price) * item.quantity;
@@ -233,12 +249,14 @@ export async function createOrder(data: {
         status: "pending",
         paymentStatus: "pending",
         paymentMethod: data.paymentMethod,
-        shippingAddressId: data.shippingAddressId,
-        billingAddressId: data.billingAddressId || data.shippingAddressId,
+        shippingAddressId: data.shippingAddressId || null,
+        billingAddressId: data.billingAddressId || data.shippingAddressId || null,
         isGift: data.isGift || false,
         giftMessage: data.giftMessage,
         couponCode: data.couponCode,
         notes: data.notes,
+        hasDigitalItems,
+        isDigitalOnly: isDigitalOnlyCart,
       })
       .returning();
 
