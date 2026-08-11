@@ -56,6 +56,9 @@ importers:
       '@workspace/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@workspace/lib':
+        specifier: workspace:*
+        version: link:../../packages/lib
       '@workspace/ui':
         specifier: workspace:^
         version: link:../../packages/ui
@@ -542,6 +545,9 @@ importers:
 
   packages/lib:
     dependencies:
+      '@supabase/supabase-js':
+        specifier: ^2.89.0
+        version: 2.89.0
       '@workspace/db':
         specifier: workspace:*
         version: link:../db

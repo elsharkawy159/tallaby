@@ -12,6 +12,7 @@
   "packageManager": "pnpm@10.4.1",
   "dependencies": {
     "@workspace/db": "workspace:*",
+    "@supabase/supabase-js": "^2.89.0",
     "drizzle-orm": "0.45.1",
     "stripe": "^22.1.1"
   },
@@ -24,6 +25,10 @@
     "./stripe": {
       "types": "./src/stripe.ts",
       "default": "./src/stripe.ts"
+    },
+    "./digital": {
+      "types": "./src/digital/index.ts",
+      "default": "./src/digital/index.ts"
     }
   }
 }

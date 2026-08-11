@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { users, deliveries, shipments, orders, payments, paymentMethods, carts, categories, sellers, coupons, notifications, contacts, userAddresses, products, productVariants, refunds, returns, orderItems, shipmentItems, productQuestions, shippingAddresses, couponUsage, cartItems, reviews, returnItems, reviewVotes, searchLogs, sellerDocuments, sellerPayoutItems, sellerPayouts, reviewComments, userDevices, wishlistItems, wishlists, brands, productAnswers, userRewards, productTranslations, digitalProducts, digitalOrders, sellerCategories, sellerWallet, walletTransactions } from "./schema";
+import { users, deliveries, shipments, orders, payments, paymentMethods, carts, categories, sellers, coupons, notifications, contacts, userAddresses, products, productVariants, refunds, returns, orderItems, shipmentItems, productQuestions, shippingAddresses, couponUsage, cartItems, reviews, returnItems, reviewVotes, searchLogs, sellerDocuments, sellerPayoutItems, sellerPayouts, reviewComments, userDevices, wishlistItems, wishlists, brands, productAnswers, userRewards, productTranslations, digitalProducts, digitalOrders, sellerCategories, sellerWallet, walletTransactions, digitalFiles, licenseKeys, digitalBundleItems, digitalAccessLogs } from "./schema";
 
 export const deliveriesRelations = relations(deliveries, ({one}) => ({
 	user: one(users, {
@@ -43,6 +43,7 @@ export const usersRelations = relations(users, ({one, many}) => ({
 	orders: many(orders),
 	userRewards: many(userRewards),
 	digitalOrders: many(digitalOrders),
+	digitalAccessLogs: many(digitalAccessLogs),
 }));
 
 export const shipmentsRelations = relations(shipments, ({one, many}) => ({
@@ -283,6 +284,7 @@ export const orderItemsRelations = relations(orderItems, ({one, many}) => ({
 		fields: [orderItems.variantId],
 		references: [productVariants.id]
 	}),
+	digitalOrders: many(digitalOrders),
 }));
 
 export const productQuestionsRelations = relations(productQuestions, ({one, many}) => ({
@@ -514,12 +516,56 @@ export const digitalProductsRelations = relations(digitalProducts, ({one, many})
 		references: [sellers.id]
 	}),
 	digitalOrders: many(digitalOrders),
+	digitalFiles: many(digitalFiles),
+	licenseKeys: many(licenseKeys),
+	bundleItems: many(digitalBundleItems, {
+		relationName: "digital_bundle_items_bundle_product_id_digital_products_id_fk"
+	}),
+	bundleOf: many(digitalBundleItems, {
+		relationName: "digital_bundle_items_child_product_id_digital_products_id_fk"
+	}),
 }));
 
-export const digitalOrdersRelations = relations(digitalOrders, ({one}) => ({
+export const digitalFilesRelations = relations(digitalFiles, ({one}) => ({
+	digitalProduct: one(digitalProducts, {
+		fields: [digitalFiles.digitalProductId],
+		references: [digitalProducts.id]
+	}),
+}));
+
+export const licenseKeysRelations = relations(licenseKeys, ({one, many}) => ({
+	digitalProduct: one(digitalProducts, {
+		fields: [licenseKeys.digitalProductId],
+		references: [digitalProducts.id]
+	}),
+	assignedOrder: one(orders, {
+		fields: [licenseKeys.assignedToOrderId],
+		references: [orders.id]
+	}),
+	digitalOrders: many(digitalOrders),
+}));
+
+export const digitalBundleItemsRelations = relations(digitalBundleItems, ({one}) => ({
+	bundleProduct: one(digitalProducts, {
+		fields: [digitalBundleItems.bundleProductId],
+		references: [digitalProducts.id],
+		relationName: "digital_bundle_items_bundle_product_id_digital_products_id_fk"
+	}),
+	childProduct: one(digitalProducts, {
+		fields: [digitalBundleItems.childProductId],
+		references: [digitalProducts.id],
+		relationName: "digital_bundle_items_child_product_id_digital_products_id_fk"
+	}),
+}));
+
+export const digitalOrdersRelations = relations(digitalOrders, ({one, many}) => ({
 	order: one(orders, {
 		fields: [digitalOrders.orderId],
 		references: [orders.id]
+	}),
+	orderItem: one(orderItems, {
+		fields: [digitalOrders.orderItemId],
+		references: [orderItems.id]
 	}),
 	digitalProduct: one(digitalProducts, {
 		fields: [digitalOrders.digitalProductId],
@@ -527,6 +573,22 @@ export const digitalOrdersRelations = relations(digitalOrders, ({one}) => ({
 	}),
 	buyer: one(users, {
 		fields: [digitalOrders.buyerId],
+		references: [users.id]
+	}),
+	licenseKey: one(licenseKeys, {
+		fields: [digitalOrders.licenseKeyId],
+		references: [licenseKeys.id]
+	}),
+	accessLogs: many(digitalAccessLogs),
+}));
+
+export const digitalAccessLogsRelations = relations(digitalAccessLogs, ({one}) => ({
+	digitalOrder: one(digitalOrders, {
+		fields: [digitalAccessLogs.digitalOrderId],
+		references: [digitalOrders.id]
+	}),
+	actor: one(users, {
+		fields: [digitalAccessLogs.actorUserId],
 		references: [users.id]
 	}),
 }));

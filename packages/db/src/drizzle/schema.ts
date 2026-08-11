@@ -16,6 +16,11 @@ export const shippingSpeed = pgEnum("shipping_speed", ['standard', 'expedited', 
 export const userRole = pgEnum("user_role", ['customer', 'seller', 'admin', 'support', 'driver'])
 export const productType = pgEnum("product_type", ['physical', 'digital'])
 export const transactionType = pgEnum("transaction_type", ['sale', 'refund', 'withdrawal', 'fee'])
+export const digitalProductType = pgEnum("digital_product_type", ['digital_download', 'ebook', 'template', 'design_asset', 'audio', 'video', 'course', 'ai_prompt', 'software', 'font', 'printable', 'game_asset', 'gift_card', 'license_key', 'external_access', 'bundle'])
+export const digitalDeliveryMethod = pgEnum("digital_delivery_method", ['automatic', 'manual'])
+export const digitalFulfillmentStatus = pgEnum("digital_fulfillment_status", ['pending', 'delivered', 'downloaded', 'expired', 'revoked', 'failed'])
+export const digitalAccessAction = pgEnum("digital_access_action", ['grant', 'download', 'view', 'resend', 'revoke', 'reinstate'])
+export const licenseKeyStatus = pgEnum("license_key_status", ['available', 'reserved', 'assigned', 'revoked'])
 
 
 export const deliveries = pgTable("deliveries", {
@@ -1109,9 +1114,12 @@ export const orders = pgTable("orders", {
 	customerUserAgent: text("customer_user_agent"),
 	referralSource: text("referral_source"),
 	metadata: jsonb(),
+	hasDigitalItems: boolean("has_digital_items").default(false),
+	isDigitalOnly: boolean("is_digital_only").default(false),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	processedAt: timestamp("processed_at", { withTimezone: true, mode: 'string' }),
+	paidAt: timestamp("paid_at", { withTimezone: true, mode: 'string' }),
 	shippedAt: timestamp("shipped_at", { withTimezone: true, mode: 'string' }),
 	deliveredAt: timestamp("delivered_at", { withTimezone: true, mode: 'string' }),
 	cancelledAt: timestamp("cancelled_at", { withTimezone: true, mode: 'string' }),
@@ -1200,10 +1208,16 @@ export const digitalProducts = pgTable("digital_products", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	productId: uuid("product_id").notNull(),
 	sellerId: uuid("seller_id").notNull(),
-	fileUrl: text("file_url").notNull(),
-	fileName: text("file_name").notNull(),
-	fileSize: integer("file_size").notNull(),
-	fileType: text("file_type").notNull(),
+	digitalType: digitalProductType("digital_type").default('digital_download').notNull(),
+	deliveryMethod: digitalDeliveryMethod("delivery_method").default('automatic').notNull(),
+	fileUrl: text("file_url"),
+	fileName: text("file_name"),
+	fileSize: integer("file_size"),
+	fileType: text("file_type"),
+	externalUrl: text("external_url"),
+	accessInstructions: text("access_instructions"),
+	courseContent: jsonb("course_content"),
+	requiresLicenseKey: boolean("requires_license_key").default(false),
 	downloadLimit: integer("download_limit").default(5),
 	downloadExpiryHours: integer("download_expiry_hours").default(72),
 	price: numeric({ precision: 10, scale: 2 }).notNull(),
@@ -1214,6 +1228,7 @@ export const digitalProducts = pgTable("digital_products", {
 }, (table) => [
 	index("digital_products_product_id_idx").using("btree", table.productId.asc().nullsLast().op("uuid_ops")),
 	index("digital_products_seller_id_idx").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops")),
+	index("digital_products_digital_type_idx").using("btree", table.digitalType.asc().nullsLast().op("enum_ops")),
 	foreignKey({
 		columns: [table.productId],
 		foreignColumns: [products.id],
@@ -1226,25 +1241,100 @@ export const digitalProducts = pgTable("digital_products", {
 	}).onDelete("cascade"),
 ]);
 
+export const digitalFiles = pgTable("digital_files", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	digitalProductId: uuid("digital_product_id").notNull(),
+	fileName: text("file_name").notNull(),
+	fileUrl: text("file_url").notNull(),
+	fileSize: integer("file_size").notNull(),
+	fileType: text("file_type").notNull(),
+	sortOrder: integer("sort_order").default(0),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("digital_files_digital_product_id_idx").using("btree", table.digitalProductId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+		columns: [table.digitalProductId],
+		foreignColumns: [digitalProducts.id],
+		name: "digital_files_digital_product_id_digital_products_id_fk"
+	}).onDelete("cascade"),
+]);
+
+export const licenseKeys = pgTable("license_keys", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	digitalProductId: uuid("digital_product_id").notNull(),
+	code: text().notNull(),
+	status: licenseKeyStatus().default('available').notNull(),
+	batchLabel: text("batch_label"),
+	assignedToOrderId: uuid("assigned_to_order_id"),
+	assignedAt: timestamp("assigned_at", { withTimezone: true, mode: 'string' }),
+	revokedAt: timestamp("revoked_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("license_keys_digital_product_id_idx").using("btree", table.digitalProductId.asc().nullsLast().op("uuid_ops")),
+	index("license_keys_status_idx").using("btree", table.status.asc().nullsLast().op("enum_ops")),
+	uniqueIndex("license_keys_product_code_idx").using("btree", table.digitalProductId.asc().nullsLast().op("uuid_ops"), table.code.asc().nullsLast().op("text_ops")),
+	foreignKey({
+		columns: [table.digitalProductId],
+		foreignColumns: [digitalProducts.id],
+		name: "license_keys_digital_product_id_digital_products_id_fk"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.assignedToOrderId],
+		foreignColumns: [orders.id],
+		name: "license_keys_assigned_to_order_id_orders_id_fk"
+	}).onDelete("set null"),
+]);
+
+export const digitalBundleItems = pgTable("digital_bundle_items", {
+	bundleProductId: uuid("bundle_product_id").notNull(),
+	childProductId: uuid("child_product_id").notNull(),
+	sortOrder: integer("sort_order").default(0),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	primaryKey({ columns: [table.bundleProductId, table.childProductId] }),
+	foreignKey({
+		columns: [table.bundleProductId],
+		foreignColumns: [digitalProducts.id],
+		name: "digital_bundle_items_bundle_product_id_digital_products_id_fk"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.childProductId],
+		foreignColumns: [digitalProducts.id],
+		name: "digital_bundle_items_child_product_id_digital_products_id_fk"
+	}).onDelete("cascade"),
+]);
+
 export const digitalOrders = pgTable("digital_orders", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	orderId: uuid("order_id").notNull(),
+	orderItemId: uuid("order_item_id"),
 	digitalProductId: uuid("digital_product_id").notNull(),
 	buyerId: uuid("buyer_id").notNull(),
+	licenseKeyId: uuid("license_key_id"),
+	fulfillmentStatus: digitalFulfillmentStatus("fulfillment_status").default('pending').notNull(),
 	downloadToken: text("download_token").notNull(),
 	downloadCount: integer("download_count").default(0),
 	maxDownloads: integer("max_downloads").default(5),
 	expiresAt: timestamp("expires_at", { withTimezone: true, mode: 'string' }),
 	downloadedAt: timestamp("downloaded_at", { withTimezone: true, mode: 'string' }),
+	lastAccessedAt: timestamp("last_accessed_at", { withTimezone: true, mode: 'string' }),
+	revokedAt: timestamp("revoked_at", { withTimezone: true, mode: 'string' }),
+	revokedReason: text("revoked_reason"),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 }, (table) => [
 	uniqueIndex("digital_orders_download_token_idx").using("btree", table.downloadToken.asc().nullsLast().op("text_ops")),
 	index("digital_orders_order_id_idx").using("btree", table.orderId.asc().nullsLast().op("uuid_ops")),
 	index("digital_orders_buyer_id_idx").using("btree", table.buyerId.asc().nullsLast().op("uuid_ops")),
+	index("digital_orders_fulfillment_status_idx").using("btree", table.fulfillmentStatus.asc().nullsLast().op("enum_ops")),
 	foreignKey({
 		columns: [table.orderId],
 		foreignColumns: [orders.id],
 		name: "digital_orders_order_id_orders_id_fk"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.orderItemId],
+		foreignColumns: [orderItems.id],
+		name: "digital_orders_order_item_id_order_items_id_fk"
 	}).onDelete("cascade"),
 	foreignKey({
 		columns: [table.digitalProductId],
@@ -1256,6 +1346,35 @@ export const digitalOrders = pgTable("digital_orders", {
 		foreignColumns: [users.id],
 		name: "digital_orders_buyer_id_users_id_fk"
 	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.licenseKeyId],
+		foreignColumns: [licenseKeys.id],
+		name: "digital_orders_license_key_id_license_keys_id_fk"
+	}).onDelete("set null"),
+]);
+
+export const digitalAccessLogs = pgTable("digital_access_logs", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	digitalOrderId: uuid("digital_order_id").notNull(),
+	action: digitalAccessAction().notNull(),
+	actorUserId: uuid("actor_user_id"),
+	ipAddress: text("ip_address"),
+	userAgent: text("user_agent"),
+	notes: text(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("digital_access_logs_digital_order_id_idx").using("btree", table.digitalOrderId.asc().nullsLast().op("uuid_ops")),
+	index("digital_access_logs_action_idx").using("btree", table.action.asc().nullsLast().op("enum_ops")),
+	foreignKey({
+		columns: [table.digitalOrderId],
+		foreignColumns: [digitalOrders.id],
+		name: "digital_access_logs_digital_order_id_digital_orders_id_fk"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.actorUserId],
+		foreignColumns: [users.id],
+		name: "digital_access_logs_actor_user_id_users_id_fk"
+	}).onDelete("set null"),
 ]);
 
 export const sellerCategories = pgTable("seller_categories", {

@@ -3,6 +3,7 @@
 import { db } from "@workspace/db";
 import { orders, orderItems, users, products, sellers } from "@workspace/db";
 import { eq, and, desc, sql, gte, lte, like, or } from "drizzle-orm";
+import { fulfillDigitalOrderItems } from "@workspace/lib/digital";
 import { getAdminUser } from "./auth";
 
 export async function getAllOrders(params?: {
@@ -202,7 +203,12 @@ export async function updateOrderPaymentStatus(
     | "partially_refunded"
 ) {
   try {
-    await getAdminUser(); // Verify admin access
+    const adminUser = await getAdminUser(); // Verify admin access
+
+    const previousOrder = await db.query.orders.findFirst({
+      where: eq(orders.id, orderId),
+      columns: { paymentStatus: true },
+    });
 
     const updatedOrder = await db
       .update(orders)
@@ -218,6 +224,20 @@ export async function updateOrderPaymentStatus(
 
     if (!updatedOrder.length) {
       throw new Error("Order not found");
+    }
+
+    // Grant digital access the moment payment is confirmed. Idempotent, so a
+    // re-save of an already-paid order never double-fulfills.
+    if (paymentStatus === "paid" && previousOrder?.paymentStatus !== "paid") {
+      const fulfillment = await fulfillDigitalOrderItems(orderId, {
+        actorUserId: adminUser.user?.id,
+      });
+      if (!fulfillment.success) {
+        console.error(
+          "updateOrderPaymentStatus: digital fulfillment failed:",
+          fulfillment.error
+        );
+      }
     }
 
     return { success: true, data: updatedOrder[0] };
