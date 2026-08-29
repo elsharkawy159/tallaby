@@ -11,20 +11,12 @@
   "devDependencies": {
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
-    "prettier": "^3.7.4",
-    "turbo": "^2.7.2",
-    "typescript": "5.9.3"
+    "prettier": "^3.9.6",
+    "turbo": "^2.10.12",
+    "typescript": "7.0.2"
   },
   "packageManager": "pnpm@10.4.1",
   "engines": {
     "node": ">=20"
-  },
-  "pnpm": {
-    "overrides": {
-      "drizzle-orm": "0.45.1",
-      "@upstash/redis>drizzle-orm": "0.45.1",
-      "@types/react": "19.2.7",
-      "@types/react-dom": "19.2.3"
-    }
   }
 }

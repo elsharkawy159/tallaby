@@ -31,8 +31,17 @@ export function generateImageName(file: File, folderName: string, extra = "") {
   return `${folderName}/${formattedDate}-${sanitizedFileName}-${uniqueIdentifier}.${fileExtension}`;
 }
 
-export function getPublicUrl( url: string, bucket = "products") {
-  return `https://${process.env.NEXT_PUBLIC_SUPABASE_PROJECT_ID}.supabase.co/storage/v1/object/public/${bucket}/${url}?format=WebP&quality=${75}`;
+export function getPublicUrl(url: string, bucket = "products") {
+  if (!url?.trim()) return "";
+
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    return url;
+  }
+
+  const projectId = process.env.NEXT_PUBLIC_SUPABASE_PROJECT_ID;
+  if (!projectId) return url;
+
+  return `https://${projectId}.supabase.co/storage/v1/object/public/${bucket}/${url}`;
 }
 
 export function getTodayDate() {

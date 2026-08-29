@@ -1,5 +1,7 @@
-import { UserAddress, ProfileTabType } from "./profile.types";
 import { User as UserIcon, Package, Heart, MapPin } from "lucide-react";
+import { getPublicUrl } from "@workspace/ui/lib/utils";
+
+import { UserAddress, ProfileTabType } from "./profile.types";
 
 // Profile navigation tabs
 export const profileTabs: ProfileTabType[] = [
@@ -119,16 +121,7 @@ export function getAvatarUrl(
     return trimmedPath;
   }
 
-  return getImageUrl(trimmedPath, "avatars");
-}
-
-function getImageUrl(url: string, bucket: string = "avatars"): string {
-  const projectId = process.env.NEXT_PUBLIC_SUPABASE_PROJECT_ID;
-  if (!projectId) {
-    console.warn("NEXT_PUBLIC_SUPABASE_PROJECT_ID is not defined");
-    return url;
-  }
-  return `https://${projectId}.supabase.co/storage/v1/object/public/${bucket}/${url}?format=WebP&quality=75`;
+  return getPublicUrl(trimmedPath, "avatars");
 }
 
 export function getUserAvatar(user: any): string | null {
