@@ -1,9 +1,14 @@
 "use server";
 
 import { db, eq, and } from "@workspace/db";
-import { orders, orderItems, userAddresses, reviews } from "@workspace/db";
+import { orders, reviews } from "@workspace/db";
 import type { OrderConfirmationData } from "./order-confirmation.types";
 import { getCurrentUserId } from "@/lib/get-current-user-id";
+import { getLocale } from "next-intl/server";
+import {
+  pickTranslationFromArray,
+  type ProductLocale,
+} from "@/lib/product-translations";
 
 export async function getOrderConfirmationData(orderId: string): Promise<{
   success: boolean;
@@ -16,6 +21,8 @@ export async function getOrderConfirmationData(orderId: string): Promise<{
       return { success: false, error: "Authentication required" };
     }
 
+    const locale = (await getLocale()) as ProductLocale;
+
     // Fetch order with all related data
     const order = await db.query.orders.findFirst({
       where: and(eq(orders.id, orderId), eq(orders.userId, userId)),
@@ -24,9 +31,10 @@ export async function getOrderConfirmationData(orderId: string): Promise<{
           with: {
             product: {
               columns: {
-                title: true,
-                slug: true,
                 images: true,
+              },
+              with: {
+                productTranslations: true,
               },
             },
             seller: {
@@ -90,6 +98,11 @@ export async function getOrderConfirmationData(orderId: string): Promise<{
             columns: { id: true },
           });
 
+          const translation = pickTranslationFromArray(
+            item.product.productTranslations ?? [],
+            locale
+          );
+
           return {
             id: item.id,
             productId: item.productId,
@@ -100,9 +113,9 @@ export async function getOrderConfirmationData(orderId: string): Promise<{
             price: item.price,
             subtotal: item.subtotal,
             product: {
-              title: item.product.title,
-              slug: item.product.slug,
-              images: item.product.images || [],
+              title: translation?.title ?? item.productName,
+              slug: translation?.slug ?? "",
+              images: (item.product.images as string[] | null) ?? [],
             },
             variant: item.productVariant
               ? {

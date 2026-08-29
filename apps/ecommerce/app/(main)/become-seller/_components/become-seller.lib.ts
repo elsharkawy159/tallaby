@@ -227,7 +227,7 @@ export const getPricingPlansData = (): PricingPlan[] => [
   },
   {
     name: "Professional",
-    price: "$29/month",
+    price: "EGP 29/month",
     description: "Best for growing businesses",
     features: [
       "Unlimited products",

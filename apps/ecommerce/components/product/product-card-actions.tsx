@@ -5,14 +5,12 @@ import { WishlistButton } from "./wishlist-button";
 import { QuantitySelector } from "./quantity-selector";
 import type { ProductCardProps } from "./product-card.types";
 import { cn } from "@/lib/utils";
+import { useCart } from "@/providers/cart-provider";
 
 interface ProductCardActionsProps {
   product: ProductCardProps;
   className?: string;
   variant?: "card" | "page";
-  isInCart?: boolean;
-  cartItemId?: string;
-  cartItemQuantity?: number;
   isInWishlist?: boolean;
   wishlistItemId?: string;
 }
@@ -21,15 +19,16 @@ export const ProductCardActions = ({
   product,
   className,
   variant = "card",
-  isInCart: isInCartStatus = false,
-  cartItemId,
-  cartItemQuantity = 0,
   isInWishlist = false,
   wishlistItemId,
 }: ProductCardActionsProps) => {
   const productId = product.id || "";
+  const { getCartItem } = useCart();
+  const cartItem = productId ? getCartItem(productId) : undefined;
+  const isInCartStatus = !!cartItem;
+  const cartItemId = cartItem?.id;
+  const cartItemQuantity = cartItem?.quantity ?? 0;
 
-  // Safely convert maxOrderQuantity - preserve null/undefined to mean "no limit"
   const maxOrderQty =
     product.maxOrderQuantity != null
       ? typeof product.maxOrderQuantity === "string"
@@ -37,14 +36,12 @@ export const ProductCardActions = ({
         : product.maxOrderQuantity
       : null;
 
-  // Validate: if conversion resulted in NaN or <= 0, treat as no limit (null)
   const safeMaxOrderQty =
     maxOrderQty != null && !isNaN(maxOrderQty) && maxOrderQty > 0
       ? maxOrderQty
       : null;
 
   if (variant === "page") {
-    // For product page - show quantity selector if in cart, otherwise add to cart button
     return (
       <div className={`space-y-3 ${className}`}>
         {isInCartStatus ? (
@@ -98,7 +95,6 @@ export const ProductCardActions = ({
     );
   }
 
-  // For product card - show compact version
   if (isInCartStatus || cartItemQuantity > 0) {
     return (
       <div

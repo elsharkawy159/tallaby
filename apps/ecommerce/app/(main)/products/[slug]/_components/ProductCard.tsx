@@ -11,17 +11,11 @@ import type { ProductCardProps } from "@/components/product";
 import { useLocale } from "next-intl";
 
 interface ProductCardWithStatusProps extends ProductCardProps {
-  isInCart?: boolean;
-  cartItemId?: string;
-  cartItemQuantity?: number;
   isInWishlist?: boolean;
   wishlistItemId?: string;
 }
 
 const ProductCard = ({
-  isInCart = false,
-  cartItemId,
-  cartItemQuantity = 0,
   isInWishlist = false,
   wishlistItemId,
   ...product
@@ -60,12 +54,8 @@ const ProductCard = ({
         <ProductCardActions
           product={product}
           variant="card"
-          isInCart={isInCart}
-          cartItemId={cartItemId}
-          cartItemQuantity={cartItemQuantity}
           isInWishlist={isInWishlist}
           wishlistItemId={wishlistItemId}
-
         />
       </CardContent>
     </Card>

@@ -5,7 +5,7 @@ import { Logo } from "../logo";
 import { LanguageSwitcher } from "./language-switcher";
 import { SearchBar } from "./search-bar";
 import { AuthLink } from "./auth-link";
-import { CartCount } from "./cart-count";
+import { CartCountClient } from "./cart-count.client";
 import { WishlistCount } from "./wishlist-count";
 import { NotificationButton } from "./notification-button";
 // import { DeliveryLocation } from "./delivery-location";
@@ -67,9 +67,7 @@ const MainHeader = async () => {
             >
               <Link href="/cart">
                 <ShoppingCart className={cn("md:size-6 size-5")} />
-                <Suspense>
-                  <CartCount />
-                </Suspense>
+                <CartCountClient />
               </Link>
             </Button>
 

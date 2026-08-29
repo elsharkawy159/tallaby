@@ -3,7 +3,6 @@ import { getLocale } from "next-intl/server";
 import ProductCard from "@/app/(main)/products/[slug]/_components/ProductCard";
 import type { ProductCardProps } from "@/components/product";
 import Pagination from "./Pagination";
-import { getCartItems } from "@/actions/cart";
 import { getWishlistItems } from "@/actions/wishlist";
 
 interface ProductsListProps {
@@ -74,23 +73,11 @@ const ProductsList = async ({ searchParams }: ProductsListProps) => {
     );
   }
 
-    // Fetch cart and wishlist items
-    const cartResult = await getCartItems();
-    const cartData = cartResult.success ? cartResult.data : null;
-    const cartItems = cartData?.items ?? [];
-  
     const wishlistResult = await getWishlistItems();
     const wishlistItems = wishlistResult.success
       ? (wishlistResult.data ?? [])
       : [];
-  
-    // Create maps for quick lookup
-    const cartItemsMap = new Map(
-      cartItems
-        .filter((item: any) => !item.savedForLater)
-        .map((item: any) => [item.productId, item])
-    );
-  
+
     const wishlistMap = new Map(
       wishlistItems.map((item: any) => [item.productId, item])
     );
@@ -115,9 +102,6 @@ const ProductsList = async ({ searchParams }: ProductsListProps) => {
               <ProductCard
                 key={product.id}
                 {...(product as ProductCardProps)}
-                isInCart={cartItemsMap.has(product.id)}
-                cartItemId={cartItemsMap.get(product.id)?.id}
-                cartItemQuantity={cartItemsMap.get(product.id)?.quantity}
                 isInWishlist={wishlistMap.has(product.id)}
                 wishlistItemId={wishlistMap.get(product.id)?.id}
               />

@@ -7,6 +7,11 @@ import Image from "next/image";
 import { ImageIcon, X, LoaderCircle } from "lucide-react";
 import { createClient } from "@/supabase/client";
 import { generateImageName, getPublicUrl, validateImage } from "@/lib/utils";
+import {
+  calculateProductFinalPrice,
+  getFinalPriceHelpText,
+  type SellerPricingSettings,
+} from "@/lib/utils/product-pricing.lib";
 import { toast } from "sonner";
 import {
   Accordion,
@@ -26,46 +31,35 @@ import { FormLabel } from "@workspace/ui/components/form";
 import type { AddProductFormData } from "../add-product.schema";
 import { fulfillmentOptions } from "../add-product.schema";
 
-export function PriceStockStep() {
+interface PriceStockStepProps {
+  sellerPricing: SellerPricingSettings;
+}
+
+export function PriceStockStep({ sellerPricing }: PriceStockStepProps) {
   const form = useFormContext<AddProductFormData>();
 
-  // Auto-calculate final price when list price changes (10% commission)
   const listPrice = form.watch("price.list");
   const discountValue = form.watch("price.discountValue");
   const discountType = form.watch("price.discountType");
 
   useEffect(
     () => {
-      const commissionRate = 0.1;
       const numericList = typeof listPrice === "number" ? listPrice : 0;
 
-      // Only calculate if list price is valid
       if (numericList <= 0) {
         return;
       }
 
-      // Set base price equal to list price
       form.setValue("price.base", numericList, {
         shouldDirty: true,
         shouldValidate: false,
       });
 
-      // Apply discount if present
-      let discountedPrice = numericList;
-      if (discountValue && Number(discountValue) > 0) {
-        if (discountType === "percent") {
-          discountedPrice =
-            numericList - (numericList * Number(discountValue)) / 100;
-        } else if (discountType === "amount") {
-          discountedPrice = numericList - Number(discountValue);
-        }
-        // Prevent negative price
-        if (discountedPrice < 0) discountedPrice = 0;
-      }
-
-      // Add commission
-      const finalPrice = parseFloat(
-        (discountedPrice * (1 + commissionRate)).toFixed(2)
+      const finalPrice = calculateProductFinalPrice(
+        numericList,
+        discountValue,
+        discountType,
+        sellerPricing
       );
 
       form.setValue("price.final", finalPrice, {
@@ -74,7 +68,7 @@ export function PriceStockStep() {
       });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [listPrice, discountValue, discountType]
+    [listPrice, discountValue, discountType, sellerPricing]
   );
 
   return (
@@ -146,7 +140,7 @@ export function PriceStockStep() {
             label="Final Price"
             placeholder="0.00"
             currency="EGP"
-            helpText="Product Display price (List Price + 10% commission)"
+            helpText={getFinalPriceHelpText(sellerPricing)}
             disabled
             className="text-sm"
           />

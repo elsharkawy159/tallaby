@@ -67,8 +67,9 @@ export function OrderItemRow({
               <Image
                 src={getPublicUrl(imageUrl, "products")}
                 alt={item.productName}
-                fill
-                className="object-cover"
+                width={64}
+                height={64}
+                className="object-contain"
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-gray-400">
@@ -79,13 +80,19 @@ export function OrderItemRow({
         </div>
 
         <div className="flex-1 space-y-1 min-w-0">
-          <Link
-            href={`/products/${item.product.slug}`}
-            target="_blank"
-            className="text-xs md:text-sm font-medium text-gray-900 line-clamp-2"
-          >
-            {item.productName}
-          </Link>
+          {item.product.slug ? (
+            <Link
+              href={`/products/${item.product.slug}`}
+              target="_blank"
+              className="text-xs md:text-sm font-medium text-gray-900 line-clamp-2"
+            >
+              {item.productName}
+            </Link>
+          ) : (
+            <p className="text-xs md:text-sm font-medium text-gray-900 line-clamp-2">
+              {item.productName}
+            </p>
+          )}
           {item.variantName && (
             <p className="text-xs text-gray-600">{t("variant")}: {item.variantName}</p>
           )}

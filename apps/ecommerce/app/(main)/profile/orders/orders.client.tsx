@@ -7,12 +7,16 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@workspace/ui/components/accordion";
+import {
+  Card,
+  CardContent,
+} from "@workspace/ui/components/card";
 import { CheckCircle, ShoppingBag, MoreVertical } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { formatPrice } from "@workspace/lib";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -65,10 +69,15 @@ interface Order {
 
 interface OrdersClientProps {
   initialOrders: Order[];
+  isGuest?: boolean;
 }
 
-export function OrdersClient({ initialOrders }: OrdersClientProps) {
+export function OrdersClient({
+  initialOrders,
+  isGuest = false,
+}: OrdersClientProps) {
   const locale = useLocale();
+  const t = useTranslations("profile");
   const orders = initialOrders;
 
   const getDeliveryDate = (order: Order, orderItem: Order["orderItems"][0]) => {
@@ -77,6 +86,26 @@ export function OrdersClient({ initialOrders }: OrdersClientProps) {
 
   return (
     <div>
+      {isGuest && (
+        <Card className="mb-6 border-amber-200 bg-amber-50/60 dark:border-amber-900 dark:bg-amber-950/20">
+          <CardContent className="p-4 sm:p-6">
+            <div className="space-y-2">
+              <p className="font-medium text-amber-900 dark:text-amber-100">
+                {t("guestOrdersPageTitle")}
+              </p>
+              <p className="text-sm text-amber-800/90 dark:text-amber-200/90">
+                {t("guestOrdersPageDescription")}
+              </p>
+              <Button asChild variant="outline" size="sm" className="mt-2">
+                <Link href="/auth?redirect=/profile/orders">
+                  {t("signInToSaveAccount")}
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <h2 className="sr-only">Recent orders</h2>
       <div>
         <div className="space-y-4 sm:px-4 lg:px-0">

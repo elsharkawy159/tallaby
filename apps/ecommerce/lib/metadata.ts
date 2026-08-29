@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { BASE_URL } from "./constants";
+import { BASE_URL, DEFAULT_CURRENCY } from "./constants";
 
 
 interface ProductMetadataProps {
@@ -75,7 +75,7 @@ export function generateProductMetadata({
     },
     other: {
       "product:price:amount": price.toString(),
-      "product:price:currency": "USD",
+      "product:price:currency": DEFAULT_CURRENCY,
       "product:availability": "in stock",
       "product:brand": product.brand.name,
       "product:category": product.category.name,

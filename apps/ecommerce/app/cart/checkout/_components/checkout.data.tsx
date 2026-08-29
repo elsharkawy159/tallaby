@@ -87,11 +87,19 @@ export const CheckoutData = ({
 
   const form = useForm<CheckoutFormData>({
     resolver: zodResolver(checkoutFormSchema),
+    mode: "onChange",
     defaultValues: {
       ...checkoutFormDefaults,
       shippingAddressId: activeAddress?.id || "",
     },
   });
+
+  const shippingAddressId = form.watch("shippingAddressId");
+  const paymentMethod = form.watch("paymentMethod");
+
+  const canPlaceOrder = Boolean(
+    shippingAddressId?.trim() && paymentMethod?.trim()
+  );
 
   // Sync form with address changes from hook
   // Update form when selectedAddress, defaultAddress, or addresses change
@@ -100,7 +108,10 @@ export const CheckoutData = ({
       const currentAddressId = form.getValues("shippingAddressId");
       // Only update if different to avoid unnecessary re-renders
       if (currentAddressId !== activeAddress.id) {
-        form.setValue("shippingAddressId", activeAddress.id);
+        form.setValue("shippingAddressId", activeAddress.id, {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
       }
     }
   }, [selectedAddress?.id, defaultAddress?.id, addresses, form, activeAddress]);
@@ -167,7 +178,10 @@ export const CheckoutData = ({
   const handleAddressSelect = (address: AddressData) => {
     setSelectedAddress(address);
     if (address?.id) {
-      form.setValue("shippingAddressId", address.id);
+      form.setValue("shippingAddressId", address.id, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
     }
   };
 
@@ -342,7 +356,7 @@ export const CheckoutData = ({
                 type="submit"
                 size="lg"
                 className="w-full h-10 md:h-12 text-xs md:text-base font-semibold transition-all duration-200"
-                disabled={isPending || !form.formState.isValid}
+                disabled={isPending || !canPlaceOrder}
               >
                 {isPending ? t("placingOrder") : t("placeOrder")}
               </Button>

@@ -64,6 +64,8 @@ export interface CartState {
   clearCart: () => Promise<{ success: boolean; message?: string }>;
   isInCart: (productId: string) => boolean;
   getItemQuantity: (productId: string) => number;
+  getCartItem: (productId: string) => CartItem | undefined;
+  getCartItemById: (cartItemId: string) => CartItem | undefined;
   refreshCart: () => void;
   // Loading state functions
   isItemLoading: (itemId: string) => boolean;

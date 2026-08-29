@@ -77,16 +77,22 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Redirect unauthenticated users away from protected routes
+  // Redirect unauthenticated users without a guest session away from profile
   if (
     !user &&
     request.nextUrl.pathname.startsWith("/profile") &&
     !request.nextUrl.pathname.startsWith("/error")
   ) {
-    // no user, potentially respond by redirecting the user to the login page
-    const url = request.nextUrl.clone();
-    url.pathname = "/";
-    return NextResponse.redirect(url);
+    const hasGuestSession = Boolean(
+      request.cookies.get("guest_uid")?.value
+    );
+
+    if (!hasGuestSession) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/auth";
+      url.searchParams.set("redirect", request.nextUrl.pathname);
+      return NextResponse.redirect(url);
+    }
   }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is.

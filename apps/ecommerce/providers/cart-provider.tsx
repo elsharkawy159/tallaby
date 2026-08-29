@@ -162,6 +162,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     getItemQuantity: (productId: string) =>
       cartItems.find((i) => i.productId === productId && !i.savedForLater)
         ?.quantity || 0,
+    getCartItem: (productId: string) =>
+      cartItems.find((i) => i.productId === productId && !i.savedForLater),
+    getCartItemById: (cartItemId: string) =>
+      cartItems.find((i) => i.id === cartItemId),
     refreshCart,
     // Loading state functions
     isItemLoading: (itemId: string) => loadingItems.has(itemId),

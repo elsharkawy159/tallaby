@@ -101,7 +101,8 @@
     "quantity": "Qty",
     "by": "by",
     "emptyCart": "Your cart is empty",
-    "addItemsToCart": "Add items to your cart to continue shopping"
+    "addItemsToCart": "Add items to your cart to continue shopping",
+    "similarItems": "You might also like"
   },
   "checkout": {
     "checkout": "Checkout",
@@ -174,7 +175,7 @@
     "viewDetails": "View Details",
     "viewMore": "View More",
     "freeShipping": "Free shipping",
-    "ordersOverAmount": "On orders over $50.00",
+    "ordersOverAmount": "On orders over EGP 500.00",
     "veryEasyToReturn": "Very easy to return",
     "justPhoneNumber": "Just phone number",
     "nationwideDelivery": "Nationwide Delivery",
@@ -316,7 +317,20 @@
     "failedToApplyReferralCode": "Failed to apply referral code",
     "pleaseEnterReferralCode": "Please enter a referral code",
     "failedToCopyCode": "Failed to copy code",
-    "youHaveAlreadyApplied": "You have already applied a referral code."
+    "youHaveAlreadyApplied": "You have already applied a referral code.",
+    "guestAccount": "Guest account",
+    "guestBadge": "Guest",
+    "guestAccountTitle": "You are browsing as a guest",
+    "guestAccountDescription": "Your cart, addresses, and orders on this device are linked to this guest profile. Sign in to save them permanently to your account.",
+    "guestLinkedOrdersHint": "You have {count, plural, =1 {# order} other {# orders}} linked to this guest profile. View them in My Orders.",
+    "guestOrdersTitle": "Your orders on this device",
+    "guestOrdersDescription": "You have {count, plural, =1 {# order} other {# orders}} linked to this guest profile.",
+    "guestOrdersEmptyDescription": "Orders you place while browsing as a guest will appear here on this device.",
+    "guestOrdersPageTitle": "Guest orders on this device",
+    "guestOrdersPageDescription": "These orders are linked to your guest profile on this browser. Sign in to keep them in your account across devices.",
+    "guestUpdatePersonalDetails": "Update the details saved for checkout on this device",
+    "signInToSaveAccount": "Sign in to save account",
+    "viewMyOrders": "View my orders"
   },
   "orders": {
     "orders": "Orders",
@@ -502,10 +516,9 @@
       "dealOfTheDaySubtitle": "Limited-time picks you don't want to miss",
       "hotDeal": "HOT DEAL",
       "viewAllDeals": "View All Deals",
-      "heroBannerText": "GET FREE DELIVERY ON YOUR FIRST ORDER NOW",
-      "heroHeadline": "Get free delivery on your first order",
-      "heroDescription": "Shop from hundreds of products across accessories, personal care, fashion and more.. Fast delivery, great prices, and trusted sellers.",
-      "freeDeliveryPromo": "Use code",
+      "heroBannerText": "DISCOVER TRENDING PRODUCTS FROM TRUSTED SELLERS",
+      "heroHeadline": "Your Everything Store",
+      "heroDescription": "Shop from hundreds of products across accessories, personal care, fashion and more. Fast delivery, great prices, and trusted sellers.",
       "heroCtaPrimary": "Shop now",
       "heroCtaSecondary": "See offers"
     },

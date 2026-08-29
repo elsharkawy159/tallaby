@@ -1,3 +1,5 @@
+export const DEFAULT_CURRENCY = "EGP";
+
 type FormatPriceSize = "lg" | "md" | "sm";
 
 const sizeToClass: Record<FormatPriceSize, string> = {
@@ -6,39 +8,43 @@ const sizeToClass: Record<FormatPriceSize, string> = {
   sm: "text-xs",
 };
 
-export function formatPrice(
-  price: number,
-  locale: string,
-  currencySize: FormatPriceSize = "sm"
-): string {
-  // Determine if the locale is Arabic
+/**
+ * Plain-text EGP price formatting for labels, filters, and metadata.
+ */
+export function formatPricePlain(price: number, locale: string): string {
   const isArabic = locale.startsWith("ar");
 
-  // Format using Intl.NumberFormat with appropriate locale
-  // Display prices with 2 decimal places for currency precision
-  // Use English numbers (latn) for Arabic to avoid Arabic-Indic numerals (٠١٢٣٤٥٦٧٨٩)
   const formatted = new Intl.NumberFormat(isArabic ? "ar-EG" : "en-EG", {
     style: "currency",
-    currency: "EGP",
+    currency: DEFAULT_CURRENCY,
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
     ...(isArabic && { numberingSystem: "latn" }),
   }).format(price);
 
-  const sizeClass = sizeToClass[currencySize] || sizeToClass.sm;
-
-  // Adjust the currency symbol for Arabic layout
   if (isArabic) {
-    // Intl outputs "ج.م." (with trailing dot) - normalize to "ج.م"
-    // Ensures correct RTL display with English numerals: 611 ج.م
-    const result = formatted
+    return formatted
       .replace("EGP", "ج.م")
       .replace(/ج\.م\.\u200F?/g, "ج.م");
-    return result.replace("ج.م", `<span class="${sizeClass}">ج.م</span>`);
   }
 
-  // English format: EGP 611.00
-  return formatted.replace("EGP", `<span class="${sizeClass}">EGP</span>`);
+  return formatted;
+}
+
+export function formatPrice(
+  price: number,
+  locale: string,
+  currencySize: FormatPriceSize = "sm"
+): string {
+  const formatted = formatPricePlain(price, locale);
+  const sizeClass = sizeToClass[currencySize] || sizeToClass.sm;
+  const isArabic = locale.startsWith("ar");
+  const currencyLabel = isArabic ? "ج.م" : "EGP";
+
+  return formatted.replace(
+    currencyLabel,
+    `<span class="${sizeClass}">${currencyLabel}</span>`
+  );
 }
 
 /**

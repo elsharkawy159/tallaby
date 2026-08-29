@@ -9,7 +9,7 @@ import { cookies } from "next/headers";
 import { db, users, eq } from "@workspace/db";
 import { createClient } from "@/supabase/server";
 
-const GUEST_UID_COOKIE_NAME = "guest_uid";
+export const GUEST_UID_COOKIE_NAME = "guest_uid";
 const GUEST_UID_COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
 
 /**

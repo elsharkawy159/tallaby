@@ -1,2 +1,6 @@
 export * from "./actions/actions";
-export { formatPrice } from "./src/utils/formatPrice";
+export {
+  DEFAULT_CURRENCY,
+  formatPrice,
+  formatPricePlain,
+} from "./src/utils/formatPrice";

@@ -13,6 +13,7 @@ import {
 import { X, PlusIcon } from "lucide-react";
 import { ScrollArea } from "@workspace/ui/components";
 import { useLocale } from "next-intl";
+import { formatPricePlain } from "@workspace/lib";
 
 interface FilterOptionsResponse {
   success: boolean;
@@ -240,7 +241,8 @@ export function ProductsFilter({ filterOptions }: ProductsFilterProps) {
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-lg mb-2">Price Range</h3>
               <span className="font-semibold text-base">
-                ${price[0]} - ${price[1]}
+                {formatPricePlain(price[0], locale)} -{" "}
+                {formatPricePlain(price[1], locale)}
               </span>
             </div>
             <Slider
@@ -252,8 +254,12 @@ export function ProductsFilter({ filterOptions }: ProductsFilterProps) {
               step={1}
             />
             <div className="flex justify-between text-sm text-muted-foreground">
-              <span>${filterOptions.data.priceRange.min}</span>
-              <span>${filterOptions.data.priceRange.max}</span>
+              <span>
+                {formatPricePlain(filterOptions.data.priceRange.min, locale)}
+              </span>
+              <span>
+                {formatPricePlain(filterOptions.data.priceRange.max, locale)}
+              </span>
             </div>
           </div>
         )}

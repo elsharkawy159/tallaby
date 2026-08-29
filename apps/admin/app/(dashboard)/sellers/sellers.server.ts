@@ -87,6 +87,7 @@ export async function getSellers(filters: SellerFilters = {}) {
         supportEmail: sellers.supportEmail,
         supportPhone: sellers.supportPhone,
         commissionRate: sellers.commissionRate,
+        isCommissionExempt: sellers.isCommissionExempt,
         feeStructure: sellers.feeStructure,
         taxInformation: sellers.taxInformation,
         paymentDetails: sellers.paymentDetails,
@@ -129,6 +130,7 @@ export async function getSellers(filters: SellerFilters = {}) {
       totalRatings: seller.totalRatings ?? 0,
       productCount: seller.productCount ?? 0,
       commissionRate: seller.commissionRate ?? 15,
+      isCommissionExempt: seller.isCommissionExempt ?? false,
       payoutSchedule: seller.payoutSchedule ?? "biweekly",
       sellerLevel: seller.sellerLevel ?? "standard",
       walletBalance: seller.walletBalance ?? "0",
@@ -288,6 +290,37 @@ export async function getSellerById(sellerId: string) {
   } catch (error) {
     console.error("Error fetching seller:", error);
     return { success: false, error: "Failed to fetch seller" };
+  }
+}
+
+export async function updateSellerCommissionExempt(
+  sellerId: string,
+  isCommissionExempt: boolean
+) {
+  try {
+    const validatedData = sellerUpdateSchema.parse({ isCommissionExempt });
+
+    await db
+      .update(sellers)
+      .set({
+        isCommissionExempt: validatedData.isCommissionExempt,
+        updatedAt: new Date().toISOString(),
+      })
+      .where(eq(sellers.id, sellerId));
+
+    revalidatePath("/sellers");
+    return {
+      success: true,
+      message: isCommissionExempt
+        ? "Seller is now exempt from platform commission"
+        : "Platform commission re-enabled for seller",
+    };
+  } catch (error) {
+    console.error("Error updating seller commission exemption:", error);
+    return {
+      success: false,
+      error: "Failed to update commission exemption",
+    };
   }
 }
 

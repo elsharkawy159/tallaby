@@ -1,8 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useState, useTransition } from "react";
 import { Button } from "@workspace/ui/components/button";
 import { Badge } from "@workspace/ui/components/badge";
+import { Switch } from "@workspace/ui/components/switch";
+import { toast } from "sonner";
+import { updateSellerCommissionExempt } from "./sellers.server";
 import {
   Avatar,
   AvatarFallback,
@@ -40,6 +44,53 @@ import {
   canSuspendSeller,
   canReactivateSeller,
 } from "./sellers.lib";
+
+interface CommissionExemptToggleProps {
+  sellerId: string;
+  isCommissionExempt: boolean;
+}
+
+export const CommissionExemptToggle = ({
+  sellerId,
+  isCommissionExempt,
+}: CommissionExemptToggleProps) => {
+  const [isExempt, setIsExempt] = useState(isCommissionExempt);
+  const [isPending, startTransition] = useTransition();
+
+  const handleToggle = (checked: boolean) => {
+    const previousValue = isExempt;
+    setIsExempt(checked);
+
+    startTransition(async () => {
+      const result = await updateSellerCommissionExempt(sellerId, checked);
+
+      if (result.success) {
+        toast.success(result.message);
+      } else {
+        setIsExempt(previousValue);
+        toast.error(result.error || "Failed to update commission exemption");
+      }
+    });
+  };
+
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <Switch
+        checked={isExempt}
+        onCheckedChange={handleToggle}
+        disabled={isPending}
+        aria-label={
+          isExempt
+            ? "Disable platform commission exemption"
+            : "Enable platform commission exemption"
+        }
+      />
+      <span className="text-xs text-muted-foreground">
+        {isExempt ? "Exempt" : "Standard"}
+      </span>
+    </div>
+  );
+};
 
 interface StatusBadgeProps {
   status: SellerStatus;
@@ -238,7 +289,20 @@ export const SellerRow = ({ seller, onAction }: SellerRowProps) => {
         </div>
       </td>
 
-      <td className="py-4 px-4 text-center">{seller.commissionRate}%</td>
+      <td className="py-4 px-4 text-center">
+        {seller.isCommissionExempt ? (
+          <span className="text-sm text-muted-foreground">0%</span>
+        ) : (
+          <span>{seller.commissionRate}%</span>
+        )}
+      </td>
+
+      <td className="py-4 px-4 text-center">
+        <CommissionExemptToggle
+          sellerId={seller.id}
+          isCommissionExempt={seller.isCommissionExempt}
+        />
+      </td>
 
       <td className="py-4 px-4 text-right font-medium">
         {formatCurrency(seller.walletBalance)}

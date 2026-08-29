@@ -48,7 +48,7 @@ const HomePage = async () => {
     <div className="min-h-screen">
       <Hero />
 
-      <Suspense fallback={<SectionSkeleton className="bg-amber-50/40" />}>
+      {/* <Suspense fallback={<SectionSkeleton className="bg-amber-50/40" />}>
         <DealOfTheDay
           title={t("dealOfTheDay")}
           subtitle={t("dealOfTheDaySubtitle")}
@@ -56,9 +56,9 @@ const HomePage = async () => {
           showCountdown={true}
           className="bg-gradient-to-b from-amber-50/80 via-orange-50/40 to-transparent"
         />
-      </Suspense>
+      </Suspense> */}
 
-      <Suspense fallback={<SectionSkeleton />}>
+      {/* <Suspense fallback={<SectionSkeleton />}>
         <ProductSection
           title={t("newArrivals")}
           description={t("newArrivalsDescription")}
@@ -67,7 +67,7 @@ const HomePage = async () => {
             limit: 12,
           }}
         />
-      </Suspense>
+      </Suspense> */}
 
       <ProductsGrid
         title={t("featuredProducts")}

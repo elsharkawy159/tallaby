@@ -2,8 +2,7 @@ import { getBottomNavigationItems } from "./header.lib";
 import { cn } from "@/lib/utils";
 import { BottomNavClient } from "./bottom-navigation.client";
 import { AuthLink } from "./auth-link";
-import { CartCount } from "./cart-count";
-import { Suspense } from "react";
+import { CartCountClient } from "./cart-count.client";
 import Link from "next/link";
 import { Button } from "@workspace/ui/components/button";
 import { ShoppingCart } from "lucide-react";
@@ -39,9 +38,7 @@ export const BottomNavigation = async () => {
               <Link href={cartItem.href}>
                 <ShoppingCart className="size-4.5" />
                 <span className="text-xs">{cartItem.label}</span>
-                <Suspense fallback={null}>
-                  <CartCount />
-                </Suspense>
+                <CartCountClient />
               </Link>
             </Button>
           )}

@@ -2,9 +2,17 @@
 
 import bcrypt from "bcryptjs";
 import { createClient } from "@/supabase/server";
-import { db, eq, desc, and } from "@workspace/db";
-import { userAddresses, wishlists, users } from "@workspace/db";
+import { db, eq, desc, and, sql } from "@workspace/db";
+import { userAddresses, wishlists, users, orders } from "@workspace/db";
 import { revalidatePath } from "next/cache";
+import {
+  getCurrentUserId,
+  getOrCreateCurrentUserId,
+} from "@/lib/get-current-user-id";
+import {
+  dbUserToProfileUser,
+  type ProfileDisplayUser,
+} from "./profile-user.lib";
 import type {
   ProfileFormData,
   AddressFormData,
@@ -21,6 +29,117 @@ type ActionResult = {
   errors?: Record<string, string[]>;
   data?: any;
 };
+
+export interface ProfileContext {
+  user: ProfileDisplayUser | null;
+  isGuest: boolean;
+  orderCount: number;
+}
+
+export async function getProfileContext(): Promise<ProfileContext> {
+  const supabase = await createClient();
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+
+  if (authUser) {
+    const orderCount = await getOrderCountForUser(authUser.id);
+
+    return {
+      user: authUser as ProfileDisplayUser,
+      isGuest: false,
+      orderCount,
+    };
+  }
+
+  const guestUserId = await getOrCreateCurrentUserId();
+  if (!guestUserId) {
+    return {
+      user: null,
+      isGuest: true,
+      orderCount: 0,
+    };
+  }
+
+  const guestDbUser = await db.query.users.findFirst({
+    where: and(eq(users.id, guestUserId), eq(users.isGuest, true)),
+  });
+
+  if (!guestDbUser) {
+    return {
+      user: null,
+      isGuest: true,
+      orderCount: 0,
+    };
+  }
+
+  const orderCount = await getOrderCountForUser(guestDbUser.id);
+
+  return {
+    user: dbUserToProfileUser(guestDbUser),
+    isGuest: true,
+    orderCount,
+  };
+}
+
+async function getOrderCountForUser(userId: string): Promise<number> {
+  const result = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(orders)
+    .where(eq(orders.userId, userId));
+
+  return Number(result[0]?.count ?? 0);
+}
+
+export async function updateGuestProfile(
+  data: ProfileFormData
+): Promise<ActionResult> {
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      return {
+        success: false,
+        message: "Unable to find guest profile",
+      };
+    }
+
+    const guestUser = await db.query.users.findFirst({
+      where: and(eq(users.id, userId), eq(users.isGuest, true)),
+    });
+
+    if (!guestUser) {
+      return {
+        success: false,
+        message: "Guest profile not found",
+      };
+    }
+
+    await db
+      .update(users)
+      .set({
+        fullName: data.fullName,
+        phone: data.phone || null,
+        preferredLanguage: data.preferredLanguage,
+        defaultCurrency: data.defaultCurrency,
+        receiveMarketingEmails: data.receiveMarketingEmails,
+        updatedAt: new Date().toISOString(),
+      })
+      .where(eq(users.id, userId));
+
+    revalidatePath("/profile");
+
+    return {
+      success: true,
+      message: "",
+    };
+  } catch (error) {
+    console.error("Update guest profile error:", error);
+    return {
+      success: false,
+      message: "Failed to update profile. Please try again.",
+    };
+  }
+}
 
 /* Update user profile */
 export const updateUserProfile = async (

@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@workspace/ui/components/button";
 import {
   Carousel,
@@ -12,24 +14,19 @@ import { useTranslations } from "next-intl";
 
 interface SimilarProductsProps {
   products?: any[];
-  cartItems?: any[];
   wishlistItems?: any[];
+  title?: string;
 }
 
 export const SimilarProducts = ({
   products,
-  cartItems = [],
   wishlistItems = [],
+  title,
 }: SimilarProductsProps) => {
   const t = useTranslations("product");
   if (!products || products.length === 0) return null;
+  const sectionTitle = title ?? t("customersAlsoPurchased");
 
-  // Create maps for quick lookup
-  const cartItemsMap = new Map(
-    cartItems
-      .filter((item: any) => !item.savedForLater)
-      .map((item: any) => [item.productId, item])
-  );
   const wishlistMap = new Map(
     wishlistItems.map((item: any) => [item.productId, item])
   );
@@ -39,7 +36,7 @@ export const SimilarProducts = ({
       <div className="container">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 lg:mb-8">
           <h2 className="text-xl lg:text-3xl font-bold text-gray-900">
-            {t("customersAlsoPurchased")}
+            {sectionTitle}
           </h2>
           <Button variant="outline" className="w-fit">
             <Link href="/products">{t("viewMore")}</Link>
@@ -55,16 +52,12 @@ export const SimilarProducts = ({
         >
           <CarouselContent className="">
             {products.map((product) => {
-              const cartItem = cartItemsMap.get(product.id);
               const wishlistItem = wishlistMap.get(product.id);
 
               return (
                 <CarouselItem key={product.id} className="max-w-80">
                   <ProductCard
                     {...product}
-                    isInCart={!!cartItem}
-                    cartItemId={cartItem?.id}
-                    cartItemQuantity={cartItem?.quantity || 0}
                     isInWishlist={!!wishlistItem}
                     wishlistItemId={wishlistItem?.id}
                   />

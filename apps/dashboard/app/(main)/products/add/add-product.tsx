@@ -19,11 +19,13 @@ import { BasicInformationStep } from "./steps/basic-information-step"
 import { PriceStockStep } from "./steps/price-stock-step"
 import { SeoStep } from "./steps/seo-step"
 import type { CategoryOption, BrandOption } from "./add-product.schema"
+import type { SellerPricingSettings } from "@/lib/utils/product-pricing.lib"
 import { cn } from "@/lib/utils"
 
 interface AddProductProps {
   categories: CategoryOption[];
   brands: BrandOption[];
+  sellerPricing: SellerPricingSettings;
 }
 
 const STEPS = [
@@ -37,7 +39,7 @@ const LOCALE_LABELS: Record<SupportedLocale, string> = {
   ar: "العربية",
 }
 
-export default function AddProduct({ categories, brands }: AddProductProps) {
+export default function AddProduct({ categories, brands, sellerPricing }: AddProductProps) {
   const [isPending, startTransition] = useTransition()
   const [currentStep, setCurrentStep] = useState(1)
   const [activeLocale, setActiveLocale] = useState<SupportedLocale>("en")
@@ -221,7 +223,9 @@ export default function AddProduct({ categories, brands }: AddProductProps) {
                 activeLocale={activeLocale}
               />
             )}
-            {currentStep === 2 && <PriceStockStep />}
+            {currentStep === 2 && (
+              <PriceStockStep sellerPricing={sellerPricing} />
+            )}
             {currentStep === 3 && <SeoStep activeLocale={activeLocale} />}
           </form>
         </Form>

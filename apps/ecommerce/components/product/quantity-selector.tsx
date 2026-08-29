@@ -4,13 +4,7 @@ import { Button } from "@workspace/ui/components/button";
 import { Minus, Plus, Trash, Loader2 } from "lucide-react";
 import type { QuantitySelectorProps } from "./product-card.types";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
-import {
-  updateCartItem,
-  removeFromCart as removeFromCartAction,
-} from "@/actions/cart";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useCart } from "@/providers/cart-provider";
 
 const sizeStyles = {
   sm: {
@@ -48,16 +42,17 @@ export const QuantitySelector = ({
   initialQuantity = 0,
   maxOrderQuantity,
 }: QuantitySelectorProps) => {
-  const [quantity, setQuantity] = useState(initialQuantity);
-  const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
+  const { getCartItemById, updateQuantity, removeFromCart, isItemLoading } =
+    useCart();
 
-  if (quantity === 0 && initialQuantity === 0) return null;
+  const cartItem = cartItemId ? getCartItemById(cartItemId) : undefined;
+  const quantity = cartItem?.quantity ?? initialQuantity;
+  const isLoading = cartItemId ? isItemLoading(cartItemId) : false;
+
+  if (!cartItemId || quantity === 0) return null;
 
   const styles = sizeStyles[size] || sizeStyles.default;
 
-  // Safely convert maxOrderQuantity to number
-  // null/undefined means no limit, so we return undefined
   const maxOrderQty =
     maxOrderQuantity != null
       ? typeof maxOrderQuantity === "string"
@@ -65,7 +60,6 @@ export const QuantitySelector = ({
         : maxOrderQuantity
       : undefined;
 
-  // Validate the converted value - if it's NaN or <= 0, treat as no limit
   const effectiveMaxOrderQty =
     maxOrderQty != null && !isNaN(maxOrderQty) && maxOrderQty > 0
       ? maxOrderQty
@@ -74,32 +68,12 @@ export const QuantitySelector = ({
   const handleQuantityChange = async (newQuantity: number) => {
     if (!cartItemId) return;
 
-    setIsLoading(true);
-    try {
-      if (newQuantity <= 0) {
-        const result = await removeFromCartAction(cartItemId);
-        if (result.success) {
-          setQuantity(0);
-          router.refresh();
-          toast.success("Item removed");
-        } else {
-          toast.error(result.error || "Failed to remove item");
-        }
-      } else {
-        const result = await updateCartItem(cartItemId, newQuantity);
-        if (result.success) {
-          setQuantity(newQuantity);
-          router.refresh();
-          toast.success("Cart updated");
-        } else {
-          // toast.error(result.error || "Failed to update cart");
-        }
-      }
-    } catch (error) {
-      toast.error("An error occurred");
-    } finally {
-      setIsLoading(false);
+    if (newQuantity <= 0) {
+      await removeFromCart(cartItemId);
+      return;
     }
+
+    await updateQuantity(cartItemId, newQuantity);
   };
 
   return (

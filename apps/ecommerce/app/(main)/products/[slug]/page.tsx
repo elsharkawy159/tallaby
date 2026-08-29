@@ -147,7 +147,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <Suspense fallback={<SimilarProductsSkeleton />}>
               <SimilarProducts
                 products={productWithCategory.relatedProducts}
-                cartItems={cartItems}
                 wishlistItems={wishlistItems}
               />
             </Suspense>

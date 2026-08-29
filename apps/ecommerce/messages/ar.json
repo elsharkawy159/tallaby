@@ -101,7 +101,8 @@
     "quantity": "الكمية",
     "by": "بواسطة",
     "emptyCart": "سلة التسوق فارغة",
-    "addItemsToCart": "أضف عناصر إلى سلة التسوق لمتابعة التسوق"
+    "addItemsToCart": "أضف عناصر إلى سلة التسوق لمتابعة التسوق",
+    "similarItems": "قد يعجبك أيضاً"
   },
   "checkout": {
     "checkout": "الدفع",
@@ -316,7 +317,20 @@
     "failedToApplyReferralCode": "فشل تطبيق كود الإحالة",
     "pleaseEnterReferralCode": "يرجى إدخال كود إحالة",
     "failedToCopyCode": "فشل نسخ الكود",
-    "youHaveAlreadyApplied": "لقد قمت بتطبيق كود إحالة بالفعل."
+    "youHaveAlreadyApplied": "لقد قمت بتطبيق كود إحالة بالفعل.",
+    "guestAccount": "حساب ضيف",
+    "guestBadge": "ضيف",
+    "guestAccountTitle": "أنت تتصفح كضيف",
+    "guestAccountDescription": "سلة التسوق والعناوين والطلبات على هذا الجهاز مرتبطة بملف الضيف هذا. سجّل الدخول لحفظها بشكل دائم في حسابك.",
+    "guestLinkedOrdersHint": "لديك {count, plural, =1 {طلب واحد} other {# طلبات}} مرتبطة بملف الضيف هذا. اعرضها في طلباتي.",
+    "guestOrdersTitle": "طلباتك على هذا الجهاز",
+    "guestOrdersDescription": "لديك {count, plural, =1 {طلب واحد} other {# طلبات}} مرتبطة بملف الضيف هذا.",
+    "guestOrdersEmptyDescription": "الطلبات التي تقدمها كضيف ستظهر هنا على هذا الجهاز.",
+    "guestOrdersPageTitle": "طلبات الضيف على هذا الجهاز",
+    "guestOrdersPageDescription": "هذه الطلبات مرتبطة بملف الضيف على هذا المتصفح. سجّل الدخول للاحتفاظ بها في حسابك على جميع الأجهزة.",
+    "guestUpdatePersonalDetails": "حدّث البيانات المحفوظة للدفع على هذا الجهاز",
+    "signInToSaveAccount": "سجّل الدخول لحفظ الحساب",
+    "viewMyOrders": "عرض طلباتي"
   },
   "orders": {
     "orders": "الطلبات",
@@ -502,10 +516,9 @@
       "dealOfTheDaySubtitle": "عروض لفترة محدودة لا تفوتها",
       "hotDeal": "عرض ساخن",
       "viewAllDeals": "عرض كل العروض",
-      "heroBannerText": "احصل على توصيل مجاني على طلبك الأول الآن",
-      "heroHeadline": "احصل على توصيل مجاني على طلبك الأول",
-      "heroDescription": "تسوق من مئات المنتجات في الإكسسوارات، العناية الشخصية، الموضة و أكثر.. توصيل سريع وأسعار رائعة وبائعين موثوقين.",
-      "freeDeliveryPromo": "استخدم الكود",
+      "heroBannerText": "اكتشف منتجات رائجة من بائعين موثوقين",
+      "heroHeadline": "متجرك الشامل",
+      "heroDescription": "تسوق من مئات المنتجات في الإكسسوارات، العناية الشخصية، الموضة و أكثر. توصيل سريع وأسعار رائعة وبائعين موثوقين.",
       "heroCtaPrimary": "تسوق الآن",
       "heroCtaSecondary": "عرض العروض"
     },

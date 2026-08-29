@@ -171,6 +171,8 @@ export const ShippingInformation = ({
         {/* Change Address Button */}
         <AddressSelectorDialog
           onAddressSelect={handleAddressSelect}
+          defaultOpen={!isLoading && addresses.length === 0}
+          initialStep={addresses.length === 0 ? "map" : "list"}
           trigger={
             <Button
               variant="outline"

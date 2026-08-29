@@ -56,6 +56,9 @@ export const SellersData = async ({ filters, onAction }: SellersDataProps) => {
               <th className="py-4 px-4 text-center text-sm font-medium">
                 Commission
               </th>
+              <th className="py-4 px-4 text-center text-sm font-medium">
+                Fee Exempt
+              </th>
               <th className="py-4 px-4 text-right text-sm font-medium">
                 Balance
               </th>

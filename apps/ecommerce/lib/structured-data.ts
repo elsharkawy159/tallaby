@@ -1,4 +1,4 @@
-import { BASE_URL } from "./constants";
+import { BASE_URL, DEFAULT_CURRENCY } from "./constants";
 
 interface Product {
   id: string;
@@ -42,7 +42,7 @@ export function generateProductStructuredData(product: Product) {
   const offers = {
     "@type": "Offer",
     price: product.price.final,
-    priceCurrency: "USD",
+    priceCurrency: DEFAULT_CURRENCY,
     availability:
       product.isActive && (product.stockCount || 0) > 0
         ? "https://schema.org/InStock"

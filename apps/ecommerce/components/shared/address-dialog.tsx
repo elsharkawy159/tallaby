@@ -33,6 +33,8 @@ interface AddressDialogProps {
   trigger?: React.ReactElement;
   onSuccess?: (address: AddressData) => void;
   onAddressSelect?: (address: AddressData) => void;
+  defaultOpen?: boolean;
+  initialStep?: DialogStep;
 }
 
 export const AddressDialog = ({
@@ -40,10 +42,12 @@ export const AddressDialog = ({
   trigger,
   onSuccess,
   onAddressSelect,
+  defaultOpen = false,
+  initialStep = "list",
 }: AddressDialogProps) => {
   const t = useTranslations("addresses");
   const router = useRouter();
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(defaultOpen);
   const [currentStep, setCurrentStep] = useState<DialogStep>("list");
   const [editingAddress, setEditingAddress] = useState<AddressData | null>(
     null
@@ -80,13 +84,15 @@ export const AddressDialog = ({
   // Reset state when dialog opens
   useEffect(() => {
     if (isOpen) {
-      setCurrentStep("list");
-      if (!address) {
+      if (address) {
+        setCurrentStep("form");
+      } else {
+        setCurrentStep(initialStep);
         setEditingAddress(null);
       }
       setSelectedLocation(null);
     }
-  }, [isOpen, address]);
+  }, [isOpen, address, initialStep]);
 
   const loadAddresses = async () => {
     setIsLoading(true);
@@ -203,6 +209,9 @@ export const AddressDialog = ({
     router.refresh();
 
     onSuccess?.(addressData);
+    if (!editingAddress?.id) {
+      onAddressSelect?.(addressData);
+    }
     setCurrentStep("list");
     setEditingAddress(null);
     setSelectedLocation(null);
@@ -317,8 +326,18 @@ export const AddressDialog = ({
 export const AddressSelectorDialog = ({
   onAddressSelect,
   trigger,
-}: Pick<AddressDialogProps, "onAddressSelect" | "trigger">) => (
-  <AddressDialog onAddressSelect={onAddressSelect} trigger={trigger} />
+  defaultOpen,
+  initialStep,
+}: Pick<
+  AddressDialogProps,
+  "onAddressSelect" | "trigger" | "defaultOpen" | "initialStep"
+>) => (
+  <AddressDialog
+    onAddressSelect={onAddressSelect}
+    trigger={trigger}
+    defaultOpen={defaultOpen}
+    initialStep={initialStep}
+  />
 );
 
 // Simple wrapper for address management (profile use case)

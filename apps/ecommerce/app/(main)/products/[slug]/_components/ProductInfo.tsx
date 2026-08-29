@@ -1,4 +1,8 @@
+"use client";
+
 import { Star } from "lucide-react";
+import { useLocale } from "next-intl";
+import { formatPricePlain } from "@workspace/lib";
 import { Badge } from "@workspace/ui/components/badge";
 
 interface ProductInfoProps {
@@ -20,6 +24,8 @@ export const ProductInfo = ({
   description,
   inStock,
 }: ProductInfoProps) => {
+  const locale = useLocale();
+
   return (
     <div className="space-y-6">
       <div>
@@ -45,10 +51,12 @@ export const ProductInfo = ({
           </Badge>
         </div>
         <div className="flex items-center space-x-3">
-          <span className="text-3xl font-bold text-primary">${price}</span>
+          <span className="text-3xl font-bold text-primary">
+            {formatPricePlain(price, locale)}
+          </span>
           {originalPrice && (
             <span className="text-xl text-gray-500 line-through">
-              ${originalPrice}
+              {formatPricePlain(originalPrice, locale)}
             </span>
           )}
         </div>

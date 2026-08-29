@@ -20,6 +20,80 @@ import {
   sql,
 } from "@workspace/db";
 import { getUser, getSessionId } from "./auth";
+import {
+  mergeProductWithTranslation,
+  pickTranslationFromArray,
+  type ProductLocale,
+} from "@/lib/product-translations";
+
+export async function getCartRecommendations(
+  cartProductIds: string[],
+  locale: ProductLocale = "en"
+) {
+  try {
+    if (cartProductIds.length === 0) {
+      return getTrendingProducts();
+    }
+
+    const cartProducts = await db.query.products.findMany({
+      where: inArray(products.id, cartProductIds),
+      columns: { id: true, categoryId: true },
+    });
+
+    const categoryIds = [
+      ...new Set(cartProducts.map((product) => product.categoryId).filter(Boolean)),
+    ] as string[];
+
+    if (categoryIds.length === 0) {
+      return getTrendingProducts();
+    }
+
+    const similarProductsRaw = await db.query.products.findMany({
+      where: and(
+        eq(products.isActive, true),
+        inArray(products.categoryId, categoryIds),
+        sql`${products.id} NOT IN (${sql.join(cartProductIds, sql`, `)})`
+      ),
+      with: {
+        brand: true,
+        productTranslations: true,
+      },
+      orderBy: [desc(products.averageRating), desc(products.reviewCount)],
+      limit: 12,
+    });
+
+    type ProductWithTranslations = Record<string, unknown> & {
+      productTranslations?: Array<{
+        locale: string;
+        title: string;
+        description?: string | null;
+        bulletPoints?: unknown;
+        slug?: string | null;
+        metaTitle?: string | null;
+        metaDescription?: string | null;
+      }>;
+    };
+
+    const similarProducts = similarProductsRaw.map(
+      (product: ProductWithTranslations) => {
+        const translation = pickTranslationFromArray(
+          product.productTranslations ?? [],
+          locale
+        );
+        return mergeProductWithTranslation(product, translation);
+      }
+    );
+
+    if (similarProducts.length === 0) {
+      return getTrendingProducts();
+    }
+
+    return { success: true, data: similarProducts };
+  } catch (error) {
+    console.error("Error getting cart recommendations:", error);
+    return { success: false, error: "Failed to get cart recommendations" };
+  }
+}
 
 export async function getRecommendedProducts(
   type: "personalized" | "trending" | "similar",

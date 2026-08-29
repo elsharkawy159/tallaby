@@ -18,6 +18,7 @@ import { BasicInformationStep } from "../../add/steps/basic-information-step";
 import { PriceStockStep } from "../../add/steps/price-stock-step";
 import { SeoStep } from "../../add/steps/seo-step";
 import type { CategoryOption, BrandOption } from "../../add/add-product.schema";
+import type { SellerPricingSettings } from "@/lib/utils/product-pricing.lib";
 import { cn } from "@/lib/utils";
 
 const STEPS = [
@@ -36,6 +37,7 @@ interface EditProductProps {
   defaultValues: AddProductFormData;
   categories: CategoryOption[];
   brands: BrandOption[];
+  sellerPricing: SellerPricingSettings;
 }
 
 export function EditProduct({
@@ -43,6 +45,7 @@ export function EditProduct({
   defaultValues,
   categories,
   brands,
+  sellerPricing,
 }: EditProductProps) {
   const [isPending, startTransition] = useTransition();
   const [currentStep, setCurrentStep] = useState(1);
@@ -227,7 +230,9 @@ export function EditProduct({
                 activeLocale={activeLocale}
               />
             )}
-            {currentStep === 2 && <PriceStockStep />}
+            {currentStep === 2 && (
+              <PriceStockStep sellerPricing={sellerPricing} />
+            )}
             {currentStep === 3 && <SeoStep activeLocale={activeLocale} />}
           </form>
         </Form>

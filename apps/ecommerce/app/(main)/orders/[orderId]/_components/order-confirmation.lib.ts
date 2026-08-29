@@ -5,12 +5,15 @@ import type { OrderConfirmationData } from "./order-confirmation.types";
  */
 export function formatCurrency(
   amount: number,
-  currency: string = "EGP"
+  currency: string = "EGP",
+  locale: string = "en-EG"
 ): string {
-  return new Intl.NumberFormat("en-US", {
+  const isArabic = locale.startsWith("ar");
+  return new Intl.NumberFormat(isArabic ? "ar-EG" : "en-EG", {
     style: "currency",
     currency: currency,
     minimumFractionDigits: 2,
+    ...(isArabic && { numberingSystem: "latn" }),
   }).format(amount);
 }
 

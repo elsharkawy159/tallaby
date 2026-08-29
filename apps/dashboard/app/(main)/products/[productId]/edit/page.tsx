@@ -5,6 +5,8 @@ import { getAllCategories } from "@/actions/categories";
 import { getAllBrands } from "@/actions/brands";
 import { EditProduct } from "./edit-product";
 import { buildEditDefaultValues } from "./edit-product.lib";
+import { getSellerProfile } from "@/actions/seller";
+import { DEFAULT_COMMISSION_RATE } from "@/lib/utils/product-pricing.lib";
 import type { CategoryOption, BrandOption } from "../../add/add-product.schema";
 
 export const dynamic = "force-dynamic";
@@ -22,11 +24,13 @@ export default async function EditProductPage({
   params,
 }: EditProductPageProps) {
   const { productId } = await params;
-  const [productResult, categoriesRes, brandsRes] = await Promise.all([
-    getProduct(productId),
-    getAllCategories(),
-    getAllBrands(),
-  ]);
+  const [productResult, categoriesRes, brandsRes, sellerProfile] =
+    await Promise.all([
+      getProduct(productId),
+      getAllCategories(),
+      getAllBrands(),
+      getSellerProfile(),
+    ]);
 
   if (!productResult.success || !productResult.data) {
     notFound();
@@ -35,6 +39,7 @@ export default async function EditProductPage({
   const product = productResult.data;
   const categories = (categoriesRes.data || []) as CategoryOption[];
   const brands = (brandsRes.data || []) as BrandOption[];
+  const seller = sellerProfile.success ? sellerProfile.data : null;
   const defaultValues = buildEditDefaultValues(
     product as Parameters<typeof buildEditDefaultValues>[0]
   );
@@ -45,6 +50,10 @@ export default async function EditProductPage({
       defaultValues={defaultValues}
       categories={categories}
       brands={brands}
+      sellerPricing={{
+        commissionRate: seller?.commissionRate ?? DEFAULT_COMMISSION_RATE,
+        isCommissionExempt: seller?.isCommissionExempt ?? false,
+      }}
     />
   );
 }

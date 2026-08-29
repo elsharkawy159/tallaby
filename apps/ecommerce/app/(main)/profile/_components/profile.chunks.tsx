@@ -39,6 +39,8 @@ import {
   Copy,
   Check,
   Award,
+  Package,
+  LogIn,
 } from "lucide-react";
 
 import {
@@ -60,6 +62,7 @@ import {
   //   updatePassword,
   generateUserReferralCode,
   applyReferralCode,
+  updateGuestProfile,
 } from "./profile.server";
 
 import {
@@ -84,13 +87,17 @@ import { AvatarUploader } from "@/components/shared/avatar-uploader";
 import { cn } from "@/lib/utils";
 import type { User } from "@supabase/supabase-js";
 import { signOutAction } from "@/actions/auth";
+import type { ProfileDisplayUser } from "./profile-user.lib";
+import { formatProfileEmail } from "./profile-user.lib";
 
 export function ProfileSidebar({
   user,
   addresses,
+  isGuest = false,
 }: {
-  user: User | null;
+  user: ProfileDisplayUser | User | null;
   addresses: any[];
+  isGuest?: boolean;
 }) {
   const t = useTranslations("profile");
   const pathname = usePathname();
@@ -99,8 +106,14 @@ export function ProfileSidebar({
     addresses as UserAddress[]
   );
 
+  const displayEmail = user?.email
+    ? formatProfileEmail(user.email) || t("guestAccount")
+    : isGuest
+      ? t("guestAccount")
+      : "";
+
   // Check if user is verified (Supabase auth user structure)
-  const isVerified = user?.user_metadata?.email_verified ? true : false;
+  const isVerified = !isGuest && user?.user_metadata?.email_verified ? true : false;
 
   return (
     <div className="space-y-6">
@@ -108,11 +121,22 @@ export function ProfileSidebar({
       <Card>
         <CardContent>
           <div className="flex items-center space-x-4 mb-4">
-            <AvatarUploader user={user} size="xl" className="h-16 w-16" />
+            <AvatarUploader
+              user={user}
+              size="xl"
+              className="h-16 w-16"
+              showEditIcon={!isGuest}
+            />
             <div className="flex-1">
               <div className="flex items-center space-x-2">
                 <h3 className="font-semibold text-sm flex items-center gap-1">
                   {formatUserName(user)}
+
+                  {isGuest && (
+                    <Badge variant="secondary" className="text-xs">
+                      {t("guestBadge")}
+                    </Badge>
+                  )}
 
                   {isVerified && (
                     <span title="Verified">
@@ -129,7 +153,11 @@ export function ProfileSidebar({
                   )}
                 </h3>
               </div>
-              <p className="text-xs text-muted-foreground">{user?.email}</p>
+              {displayEmail ? (
+                <p className="text-xs text-muted-foreground">{displayEmail}</p>
+              ) : isGuest ? (
+                <p className="text-xs text-muted-foreground">{t("guestAccount")}</p>
+              ) : null}
             </div>
           </div>
 
@@ -239,29 +267,100 @@ export function ProfileSidebar({
             {/* Divider */}
             <div className="my-2 h-px bg-border" />
 
-            {/* Sign Out */}
-            <form action={signOutAction}>
-              <Button
-                type="submit"
-                variant="ghost"
+            {isGuest ? (
+              <Link
+                href="/auth?redirect=/profile"
                 className={cn(
-                  "group relative w-full justify-start gap-3 rounded-lg px-3 py-2.5 text-sm font-medium",
-                  "text-red-600 transition-all duration-200 ease-in-out",
-                  "hover:translate-x-0.5 hover:bg-red-50 hover:text-red-700",
-                  "dark:text-red-400 dark:hover:bg-red-950/50 dark:hover:text-red-300",
-                  "disabled:opacity-50 disabled:cursor-not-allowed"
+                  "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ease-in-out",
+                  "text-primary hover:bg-primary/5 hover:translate-x-0.5"
                 )}
               >
-                <LogOut
-                  className={cn("h-4 w-4 shrink-0 transition-all duration-200")}
-                />
-                <span>{t("signOut")}</span>
-              </Button>
-            </form>
+                <LogIn className="h-4 w-4 shrink-0" />
+                <span>{t("signInToSaveAccount")}</span>
+              </Link>
+            ) : (
+              /* Sign Out */
+              <form action={signOutAction}>
+                <Button
+                  type="submit"
+                  variant="ghost"
+                  className={cn(
+                    "group relative w-full justify-start gap-3 rounded-lg px-3 py-2.5 text-sm font-medium",
+                    "text-red-600 transition-all duration-200 ease-in-out",
+                    "hover:translate-x-0.5 hover:bg-red-50 hover:text-red-700",
+                    "dark:text-red-400 dark:hover:bg-red-950/50 dark:hover:text-red-300",
+                    "disabled:opacity-50 disabled:cursor-not-allowed"
+                  )}
+                >
+                  <LogOut
+                    className={cn("h-4 w-4 shrink-0 transition-all duration-200")}
+                  />
+                  <span>{t("signOut")}</span>
+                </Button>
+              </form>
+            )}
           </nav>
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export function GuestAccountBanner({ orderCount }: { orderCount: number }) {
+  const t = useTranslations("profile");
+
+  return (
+    <Card className="border-amber-200 bg-amber-50/60 dark:border-amber-900 dark:bg-amber-950/20">
+      <CardContent className="p-4 sm:p-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1">
+            <p className="font-medium text-amber-900 dark:text-amber-100">
+              {t("guestAccountTitle")}
+            </p>
+            <p className="text-sm text-amber-800/90 dark:text-amber-200/90">
+              {t("guestAccountDescription")}
+            </p>
+          </div>
+          <Button asChild variant="outline" className="shrink-0">
+            <Link href="/auth?redirect=/profile">{t("signInToSaveAccount")}</Link>
+          </Button>
+        </div>
+        {orderCount > 0 && (
+          <p className="mt-3 text-sm text-amber-800/90 dark:text-amber-200/90">
+            {t("guestLinkedOrdersHint", { count: orderCount })}
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+export function GuestOrdersCard({ orderCount }: { orderCount: number }) {
+  const t = useTranslations("profile");
+
+  return (
+    <Card>
+      <CardContent className="p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-4">
+            <div className="rounded-full bg-primary/10 p-3">
+              <Package className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold">{t("guestOrdersTitle")}</h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {orderCount > 0
+                  ? t("guestOrdersDescription", { count: orderCount })
+                  : t("guestOrdersEmptyDescription")}
+              </p>
+            </div>
+          </div>
+          <Button asChild variant="secondary">
+            <Link href="/profile/orders">{t("viewMyOrders")}</Link>
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -308,9 +407,11 @@ interface ProfileFormProps {}
 export function ProfileForm({
   user,
   referredBy,
+  isGuest = false,
 }: {
-  user: User | null;
+  user: ProfileDisplayUser | User | null;
   referredBy?: string | null;
+  isGuest?: boolean;
 }) {
   const t = useTranslations("profile");
   const tCommon = useTranslations("common");
@@ -320,8 +421,6 @@ export function ProfileForm({
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const locale = useLocale();
-
-  console.log("user", user);
 
   // Function to switch locale (same as LanguageSwitcher)
   const switchLocale = (newLocale: string) => {
@@ -421,16 +520,22 @@ export function ProfileForm({
   const handleSubmit = (data: ProfileFormData) => {
     startTransition(async () => {
       try {
-        const result = await updateUserProfile(data);
+        const result = isGuest
+          ? await updateGuestProfile(data)
+          : await updateUserProfile(data);
 
         if (result.success) {
           toast.success(tToast("profileUpdatedSuccessfully"));
 
-          // Invalidate user queries to refresh data
-          await queryClient.invalidateQueries({
-            queryKey: ["user"],
-            refetchType: "active",
-          });
+          if (!isGuest) {
+            // Invalidate user queries to refresh data
+            await queryClient.invalidateQueries({
+              queryKey: ["user"],
+              refetchType: "active",
+            });
+          }
+
+          router.refresh();
 
           // Update form with new data
           const newUserData = getUserData();
@@ -460,7 +565,9 @@ export function ProfileForm({
       <Card>
         <CardHeader>
           <CardTitle>{t("personalInformation")}</CardTitle>
-          <CardDescription>{t("updatePersonalDetails")}</CardDescription>
+          <CardDescription>
+            {isGuest ? t("guestUpdatePersonalDetails") : t("updatePersonalDetails")}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -576,8 +683,8 @@ export function ProfileForm({
         </CardContent>
       </Card>
 
-      {/* Referral Section */}
-      <ReferralSection user={user} referredBy={referredBy} />
+      {/* Referral Section - authenticated users only */}
+      {!isGuest && <ReferralSection user={user} referredBy={referredBy} />}
     </div>
   );
 }

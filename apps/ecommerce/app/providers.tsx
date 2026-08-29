@@ -3,6 +3,7 @@
 import { ReactNode } from "react";
 import { QueryProvider } from "@/providers/query-provider";
 import { AddressProvider } from "@/providers/address-provider";
+import { CartProvider } from "@/providers/cart-provider";
 
 interface ProvidersProps {
   children: ReactNode;
@@ -11,7 +12,9 @@ interface ProvidersProps {
 export function Providers({ children }: ProvidersProps) {
   return (
     <QueryProvider>
-      <AddressProvider>{children}</AddressProvider>
+      <CartProvider>
+        <AddressProvider>{children}</AddressProvider>
+      </CartProvider>
     </QueryProvider>
   );
 }
