@@ -156,12 +156,14 @@ export default function Sidebar({ counts }: SidebarProps) {
                                 <sublink.icon className="h-4 w-4 mr-2 shrink-0 text-gray-500" />
                                 <span className="truncate">{sublink.title}</span>
                               </span>
+                              {counts[sublink.countKey] > 0 && (
                               <Badge
                                 variant="secondary"
                                 className={SIDEBAR_COUNT_BADGE_CLASS}
                               >
                                 {counts[sublink.countKey].toLocaleString()}
                               </Badge>
+                              )}
                             </Link>
                           </li>
                         ))}
@@ -190,7 +192,7 @@ export default function Sidebar({ counts }: SidebarProps) {
                         <span className="truncate">{link.title}</span>
                       )}
                     </span>
-                    {expanded && (
+                    {expanded && counts[link.countKey] > 0 && (
                       <Badge
                         variant="secondary"
                         className={SIDEBAR_COUNT_BADGE_CLASS}

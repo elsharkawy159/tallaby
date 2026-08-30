@@ -239,7 +239,7 @@ const SidebarContent = ({
                       />
                       {!isCollapsed && <span className="truncate">{item.name}</span>}
                     </span>
-                    {!isCollapsed && (
+                    {!isCollapsed && counts[item.countKey] > 0 && (
                       <Badge variant="secondary" className={SIDEBAR_COUNT_BADGE_CLASS}>
                         {counts[item.countKey].toLocaleString()}
                       </Badge>
@@ -270,9 +270,11 @@ const SidebarContent = ({
                           <Package className={cn(SIDEBAR_ICON, "mr-3")} />
                           {t("nav.products")}
                         </span>
+                        {counts.products > 0 && (
                         <Badge variant="secondary" className={SIDEBAR_COUNT_BADGE_CLASS}>
                           {counts.products.toLocaleString()}
                         </Badge>
+                        )}
                       </span>
                     </AccordionTrigger>
                     <AccordionContent className="pt-0 pb-2">
@@ -343,7 +345,7 @@ const SidebarContent = ({
                       />
                       {!isCollapsed && <span className="truncate">{item.name}</span>}
                     </span>
-                    {!isCollapsed && (
+                    {!isCollapsed && counts[item.countKey] > 0 && (
                       <Badge variant="secondary" className={SIDEBAR_COUNT_BADGE_CLASS}>
                         {counts[item.countKey].toLocaleString()}
                       </Badge>
