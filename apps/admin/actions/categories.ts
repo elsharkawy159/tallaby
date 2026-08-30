@@ -14,6 +14,7 @@ import {
   inArray,
 } from "drizzle-orm";
 import { getAdminUser } from "./auth";
+import { applyInvalidation, invalidateCategory } from "@workspace/cache";
 
 export async function getAllCategories(params?: {
   locale?: "en" | "ar";
@@ -186,6 +187,13 @@ export async function createCategory(data: {
       })
       .returning();
 
+    if (newCategory[0]) {
+      await applyInvalidation(
+        invalidateCategory(newCategory[0].id, newCategory[0].slug ?? undefined),
+        { from: "admin", mode: "action" }
+      );
+    }
+
     return {
       success: true,
       data: newCategory[0],
@@ -212,6 +220,10 @@ export async function updateCategory(
 ) {
   try {
     await getAdminUser(); // Verify admin access
+
+    const existingCategory = await db.query.categories.findFirst({
+      where: eq(categories.id, categoryId),
+    });
 
     // Recalculate level if parent changed
     let levelUpdate: { level?: number } = {};
@@ -241,8 +253,21 @@ export async function updateCategory(
       .where(eq(categories.id, categoryId))
       .returning();
 
-    if (!updatedCategory.length) {
+    if (!updatedCategory.length || !updatedCategory[0]) {
       throw new Error("Category not found");
+    }
+
+    // Invalidate both old and new slug — a rename or a re-parent both
+    // affect what the storefront resolves for either slug.
+    await applyInvalidation(
+      invalidateCategory(categoryId, existingCategory?.slug ?? undefined),
+      { from: "admin", mode: "action" }
+    );
+    if (updatedCategory[0].slug !== existingCategory?.slug) {
+      await applyInvalidation(
+        invalidateCategory(categoryId, updatedCategory[0].slug ?? undefined),
+        { from: "admin", mode: "action" }
+      );
     }
 
     return {
@@ -294,9 +319,14 @@ export async function deleteCategory(categoryId: string) {
       .where(eq(categories.id, categoryId))
       .returning();
 
-    if (!deletedCategory.length) {
+    if (!deletedCategory.length || !deletedCategory[0]) {
       throw new Error("Category not found");
     }
+
+    await applyInvalidation(
+      invalidateCategory(deletedCategory[0].id, deletedCategory[0].slug ?? undefined),
+      { from: "admin", mode: "action" }
+    );
 
     return {
       success: true,

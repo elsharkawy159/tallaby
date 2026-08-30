@@ -22,7 +22,7 @@ interface Product {
   slug: string;
   description: string | null;
   sku: string;
-  isActive: boolean;
+  status: "draft" | "pending" | "active" | "rejected";
   averageRating: number | null;
   reviewCount: number | null;
   quantity: string | number;
@@ -122,9 +122,9 @@ export function getProductsColumns(
           amount = parseFloat(String(price));
         }
 
-        const formatted = new Intl.NumberFormat("en-US", {
+        const formatted = new Intl.NumberFormat("en-EG", {
           style: "currency",
-          currency: "USD",
+          currency: "EGP",
         }).format(amount);
 
         return <div>{formatted}</div>;
@@ -205,22 +205,25 @@ export function getProductsColumns(
       },
     },
     {
-      accessorKey: "isActive",
+      accessorKey: "status",
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Status" />
       ),
       cell: ({ row }) => {
-        const isActive = row.original.isActive;
+        const status = row.original.status;
+        const styles: Record<string, string> = {
+          draft: "bg-gray-600",
+          pending: "bg-amber-600",
+          active: "bg-green-700",
+          rejected: "bg-red-600",
+        };
 
         return (
-          <Badge className={isActive ? "bg-green-700" : "bg-red-600"}>
-            {isActive ? "Active" : "Inactive"}
-          </Badge>
+          <Badge className={styles[status] ?? "bg-gray-600"}>{status}</Badge>
         );
       },
       filterFn: (row, id, value) => {
-        const isActive = row.original.isActive;
-        return String(isActive) === value;
+        return row.original.status === value;
       },
     },
     {
@@ -241,11 +244,12 @@ export function getProductsColumns(
       id: "actions",
       cell: ({ row }) => {
         const product = row.original;
-        const isActive = product.isActive;
+        const needsApproval =
+          product.status === "pending" || product.status === "rejected";
 
         return (
           <div className="flex items-center gap-2">
-            {!isActive && onApprove && (
+            {needsApproval && onApprove && (
               <Button
                 variant="default"
                 size="sm"

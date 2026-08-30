@@ -187,7 +187,7 @@ export async function getSellerProfile(sellerId: string) {
           },
           with: {
             products: {
-              where: eq(products.isActive, true),
+              where: eq(products.status, "active"),
               limit: 12,
               orderBy: [desc(products.averageRating)],
             },

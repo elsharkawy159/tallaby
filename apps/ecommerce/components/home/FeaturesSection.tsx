@@ -6,13 +6,17 @@ import {
   CreditCard,
   Star,
 } from "lucide-react";
+import { FREE_SHIPPING_THRESHOLD } from "@/lib/constants";
+import { formatPricePlain } from "@workspace/lib";
 
-const FeaturesSection = () => {
+const FeaturesSection = ({ locale = "en" }: { locale?: string }) => {
+  const freeShippingLabel = formatPricePlain(FREE_SHIPPING_THRESHOLD, locale);
+
   const features = [
     {
       icon: Truck,
       title: "Free Shipping",
-      description: "Free delivery on orders over $50",
+      description: `Free delivery on orders over ${freeShippingLabel}`,
     },
     {
       icon: Shield,

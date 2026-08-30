@@ -16,6 +16,8 @@ import {
 } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getCurrentAdminUser } from "@/lib/auth/admin-auth";
+import { applyInvalidation, invalidateSeller } from "@workspace/cache";
 import {
   sellerActionSchema,
   sellerFiltersSchema,
@@ -25,6 +27,8 @@ import type { Seller, SellerStats, SellerFilters } from "./sellers.types";
 
 export async function getSellers(filters: SellerFilters = {}) {
   try {
+    await getCurrentAdminUser();
+
     const conditions = [];
 
     // Status filter
@@ -152,6 +156,8 @@ export async function getSellerStats(): Promise<{
   error?: string;
 }> {
   try {
+    await getCurrentAdminUser();
+
     // Get total sellers count
     const totalSellersResult = await db
       .select({ count: count() })
@@ -216,6 +222,8 @@ export async function updateSellerStatus(
   reason?: string
 ) {
   try {
+    await getCurrentAdminUser();
+
     const validatedData = sellerActionSchema.parse({
       sellerId,
       action:
@@ -241,6 +249,10 @@ export async function updateSellerStatus(
       .where(eq(sellers.id, validatedData.sellerId));
 
     revalidatePath("/sellers");
+    await applyInvalidation(invalidateSeller(validatedData.sellerId), {
+      from: "admin",
+      mode: "action",
+    });
     return {
       success: true,
       message: `Seller ${validatedData.action}d successfully`,
@@ -256,6 +268,8 @@ export async function updateSeller(
   data: Record<string, unknown>
 ) {
   try {
+    await getCurrentAdminUser();
+
     const validatedData = sellerUpdateSchema.parse(data);
 
     await db
@@ -267,6 +281,10 @@ export async function updateSeller(
       .where(eq(sellers.id, sellerId));
 
     revalidatePath("/sellers");
+    await applyInvalidation(invalidateSeller(sellerId), {
+      from: "admin",
+      mode: "action",
+    });
     return { success: true, message: "Seller updated successfully" };
   } catch (error) {
     console.error("Error updating seller:", error);
@@ -276,6 +294,8 @@ export async function updateSeller(
 
 export async function getSellerById(sellerId: string) {
   try {
+    await getCurrentAdminUser();
+
     const seller = await db
       .select()
       .from(sellers)
@@ -298,6 +318,8 @@ export async function updateSellerCommissionExempt(
   isCommissionExempt: boolean
 ) {
   try {
+    await getCurrentAdminUser();
+
     const validatedData = sellerUpdateSchema.parse({ isCommissionExempt });
 
     await db
@@ -309,6 +331,10 @@ export async function updateSellerCommissionExempt(
       .where(eq(sellers.id, sellerId));
 
     revalidatePath("/sellers");
+    await applyInvalidation(invalidateSeller(sellerId), {
+      from: "admin",
+      mode: "action",
+    });
     return {
       success: true,
       message: isCommissionExempt
@@ -326,10 +352,15 @@ export async function updateSellerCommissionExempt(
 
 export async function deleteSeller(sellerId: string) {
   try {
+    await getCurrentAdminUser();
 
     await db.delete(sellers).where(eq(sellers.id, sellerId));
 
     revalidatePath("/sellers");
+    await applyInvalidation(invalidateSeller(sellerId), {
+      from: "admin",
+      mode: "action",
+    });
     return { success: true, message: "Seller deleted successfully" };
   } catch (error) {
     console.error("Error deleting seller:", error);

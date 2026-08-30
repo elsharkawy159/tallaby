@@ -5,51 +5,64 @@ import { db } from "@workspace/db";
 import { brands, products } from "@workspace/db";
 import { eq, and, desc, sql, ilike, asc, or } from "drizzle-orm";
 import slugify from "slugify";
+import { brandTags, cacheProfiles, createCachedQuery } from "@workspace/cache";
 
-export async function getAllBrands(params?: {
+type GetAllBrandsParams = {
   verified?: boolean;
   official?: boolean;
-  sortBy?: 'name' | 'products' | 'rating';
+  sortBy?: "name" | "products" | "rating";
   limit?: number;
   offset?: number;
-}) {
-  try {
-    const conditions = [];
-    
-    if (params?.verified) {
-      conditions.push(eq(brands.isVerified, true));
-    }
-    
-    if (params?.official) {
-      conditions.push(eq(brands.isOfficial, true));
-    }
+};
 
-    let orderBy = [];
-    switch (params?.sortBy) {
-      case 'products':
-        orderBy.push(desc(brands.productCount));
-        break;
-      case 'rating':
-        orderBy.push(desc(brands.averageRating));
-        break;
-      case 'name':
-      default:
-        orderBy.push(asc(brands.name));
+/**
+ * Brand list is admin-curated, shared reference data — cached and
+ * invalidated by admin's brand mutations (see apps/admin/actions/brands.ts)
+ * via the cross-app broadcast, not by anything in the dashboard app.
+ */
+export const getAllBrands = createCachedQuery({
+  name: "dashboard:brands:all",
+  ttl: cacheProfiles.taxonomy,
+  tags: () => [brandTags.all()],
+  query: async (params?: GetAllBrandsParams) => {
+    try {
+      const conditions = [];
+
+      if (params?.verified) {
+        conditions.push(eq(brands.isVerified, true));
+      }
+
+      if (params?.official) {
+        conditions.push(eq(brands.isOfficial, true));
+      }
+
+      let orderBy = [];
+      switch (params?.sortBy) {
+        case "products":
+          orderBy.push(desc(brands.productCount));
+          break;
+        case "rating":
+          orderBy.push(desc(brands.averageRating));
+          break;
+        case "name":
+        default:
+          orderBy.push(asc(brands.name));
+      }
+
+      const brandList = await db.query.brands.findMany({
+        where: conditions.length > 0 ? and(...conditions) : undefined,
+        orderBy,
+        limit: params?.limit || 50,
+        offset: params?.offset || 0,
+      });
+
+      return { success: true, data: brandList };
+    } catch (error) {
+      console.error("Error fetching brands:", error);
+      return { success: false, error: "Failed to fetch brands" };
     }
-
-    const brandList = await db.query.brands.findMany({
-      where: conditions.length > 0 ? and(...conditions) : undefined,
-      orderBy,
-      limit: params?.limit || 50,
-      offset: params?.offset || 0,
-    });
-
-    return { success: true, data: brandList };
-  } catch (error) {
-    console.error("Error fetching brands:", error);
-    return { success: false, error: "Failed to fetch brands" };
-  }
-}
+  },
+});
 
 export async function getBrandBySlug(slug: string) {
   try {
@@ -67,7 +80,7 @@ export async function getBrandBySlug(slug: string) {
       .from(products)
       .where(and(
         eq(products.brandId, brand.id),
-        eq(products.isActive, true)
+        eq(products.status, "active")
       ));
 
     return { 
@@ -153,7 +166,7 @@ export async function getBrandsByCategory(categoryId: string) {
       .innerJoin(products, and(
         eq(products.brandId, brands.id),
         eq(products.categoryId, categoryId),
-        eq(products.isActive, true)
+        eq(products.status, "active")
       ))
       .groupBy(brands.id)
       .orderBy(desc(sql`count(${products.id})`))

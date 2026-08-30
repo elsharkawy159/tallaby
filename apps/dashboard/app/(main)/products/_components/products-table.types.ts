@@ -3,5 +3,5 @@ export interface ProductTableRow {
   title: string;
   description?: string;
   images: string[];
-  isActive: boolean;
+  status: "draft" | "pending" | "active" | "rejected";
 }

@@ -20,7 +20,7 @@ interface Product {
   averageRating: number;
   reviewCount: number;
   stockCount?: number;
-  isActive: boolean;
+  status?: string;
 }
 
 interface Category {
@@ -44,7 +44,7 @@ export function generateProductStructuredData(product: Product) {
     price: product.price.final,
     priceCurrency: DEFAULT_CURRENCY,
     availability:
-      product.isActive && (product.stockCount || 0) > 0
+      product.status === "active" && (product.stockCount || 0) > 0
         ? "https://schema.org/InStock"
         : "https://schema.org/OutOfStock",
     url: productUrl,

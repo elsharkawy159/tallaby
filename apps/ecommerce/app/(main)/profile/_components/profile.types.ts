@@ -83,7 +83,7 @@ export interface User {
   preferredLanguage: string;
   referralCode: string | null;
   referredBy: string | null;
-  defaultCurrency: string;
+  defaultCurrency: "EGP";
   receiveMarketingEmails: boolean;
   hasTwoFactorAuth: boolean;
   twoFactorMethod: string | null;
@@ -152,7 +152,7 @@ export interface ProfileFormData {
   phone: string;
   timezone: string;
   preferredLanguage: string;
-  defaultCurrency: string;
+  defaultCurrency: "EGP";
   receiveMarketingEmails: boolean;
 }
 

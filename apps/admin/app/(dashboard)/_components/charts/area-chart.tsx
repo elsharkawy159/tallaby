@@ -1,5 +1,6 @@
 "use client";
 
+import { formatCurrency } from "@workspace/lib";
 import {
   ResponsiveContainer,
   AreaChart as RechartsAreaChart,
@@ -33,15 +34,6 @@ export function AreaChart({
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return format(date, "MMM dd, yyyy");
-  };
-
-  // Format currency for tooltip
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 0,
-    }).format(value);
   };
 
   // Get data keys for multiple series

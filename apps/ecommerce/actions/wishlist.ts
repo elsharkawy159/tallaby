@@ -70,11 +70,18 @@ export async function getWishlistItems(wishlistId?: string) {
     let targetWishlistId = wishlistId;
 
     if (!targetWishlistId) {
-      const defaultWishlist = await getOrCreateWishlist();
-      if (!defaultWishlist.success || !defaultWishlist.data) {
-        return { success: false, error: "Failed to get wishlist" };
+      // Read-only lookup — do NOT create a wishlist here. This function runs
+      // during page renders (homepage, listings, product detail); creating a
+      // row on a GET was an INSERT hiding inside what should be a pure read.
+      // addToWishlist() is the write path and already calls
+      // getOrCreateWishlist() when a user actually adds an item.
+      const defaultWishlist = await db.query.wishlists.findFirst({
+        where: and(eq(wishlists.userId, user.user.id), eq(wishlists.isDefault, true)),
+      });
+      if (!defaultWishlist) {
+        return { success: true, data: [] };
       }
-      targetWishlistId = defaultWishlist.data.id;
+      targetWishlistId = defaultWishlist.id;
     }
 
     const items = await db.query.wishlistItems.findMany({
@@ -144,7 +151,7 @@ export async function addToWishlist(data: {
 
     // Check if product exists and is active
     const product = await db.query.products.findFirst({
-      where: and(eq(products.id, data.productId), eq(products.isActive, true)),
+      where: and(eq(products.id, data.productId), eq(products.status, "active")),
     });
 
     if (!product) {

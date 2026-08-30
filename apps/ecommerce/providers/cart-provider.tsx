@@ -33,10 +33,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const result = await getCartItems();
       return result.success ? result.data : null;
     },
-    staleTime: 0, // Always consider data stale - no caching
-    gcTime: 0, // Don't cache in memory - always fetch fresh data
-    refetchOnMount: true, // Refetch when component mounts
-    refetchOnWindowFocus: true, // Refetch when window gains focus
+    // CartProvider is mounted once at the app root (apps/ecommerce/app/providers.tsx),
+    // so staleTime: 0 + refetchOnWindowFocus: true meant a getCartItems()
+    // server action (auth + DB) fired on every window focus, site-wide,
+    // including on pages that never touch the cart. Every mutation already
+    // explicitly invalidates + refetches this query (see handleAction
+    // below), so a short staleTime is sufficient to stay correct.
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
   });
 
   const cartItems = cartData?.items ?? [];

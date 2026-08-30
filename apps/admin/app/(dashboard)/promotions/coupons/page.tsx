@@ -158,8 +158,8 @@ const coupons = [
   {
     id: "coupon_005",
     code: "FIXED25",
-    name: "$25 Off",
-    description: "$25 off on orders over $150",
+    name: "EGP 25 Off",
+    description: "EGP 25 off on orders over EGP 150",
     discountType: "fixed_amount",
     discountValue: 25,
     minimumPurchase: 150,
@@ -353,7 +353,7 @@ export default function CouponsPage() {
         const minPurchase = row.getValue("minimumPurchase");
         if (!minPurchase) return <div>-</div>;
 
-        return <div>${minPurchase}</div>;
+        return <div>EGP {minPurchase}</div>;
       },
     },
     {

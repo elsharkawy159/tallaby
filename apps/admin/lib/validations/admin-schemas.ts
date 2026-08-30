@@ -68,10 +68,7 @@ export const adminSettingsSchema = z.object({
 
   supportEmail: z.string().email("Please enter a valid support email"),
 
-  defaultCurrency: z
-    .string()
-    .min(3)
-    .max(3, "Currency code must be 3 characters"),
+  defaultCurrency: z.literal("EGP"),
 
   timezone: z.string().min(1, "Timezone is required"),
 
@@ -127,7 +124,7 @@ export const adminOrderUpdateSchema = z.object({
 // Product Management Schema
 export const adminProductUpdateSchema = z.object({
   productId: z.string().uuid("Invalid product ID"),
-  status: z.enum(["active", "inactive", "pending", "rejected"], {
+  status: z.enum(["draft", "pending", "active", "rejected"], {
     required_error: "Please select a valid product status",
   }),
   notes: z
@@ -205,7 +202,7 @@ export const adminSettingsDefaults: Partial<AdminSettingsData> = {
   siteDescription: "",
   contactEmail: "",
   supportEmail: "",
-  defaultCurrency: "USD",
+  defaultCurrency: "EGP",
   timezone: "UTC",
   maintenanceMode: false,
   allowRegistration: true,

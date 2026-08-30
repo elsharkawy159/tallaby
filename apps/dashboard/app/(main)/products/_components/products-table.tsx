@@ -47,10 +47,10 @@ export default function ProductsTable({ rows }: ProductsTableProps) {
               <ProductDescriptionCell description={row.description} />
             </TableCell>
             <TableCell>
-              <ProductActionsCell id={row.id} isActive={row.isActive} />
+              <ProductActionsCell id={row.id} status={row.status} />
             </TableCell>
             <TableCell>
-              <ProductStatusCell status={row.isActive} />
+              <ProductStatusCell status={row.status} />
             </TableCell>
           </TableRow>
         ))}

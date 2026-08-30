@@ -8,7 +8,7 @@
  * when you need to ensure a user exists (e.g., when creating a cart, adding to wishlist, etc.)
  */
 
-import { getUser } from "@/actions/auth";
+import { getAuthUser } from "@/lib/auth/current-user";
 import { getGuestUserId, createGuestUser } from "./guest-user";
 
 /**
@@ -18,9 +18,9 @@ import { getGuestUserId, createGuestUser } from "./guest-user";
  */
 export async function getCurrentUserId(): Promise<string | null> {
   // Check if user is authenticated first
-  const user = await getUser();
-  if (user?.user?.id) {
-    return user.user.id;
+  const user = await getAuthUser();
+  if (user?.id) {
+    return user.id;
   }
 
   // Fall back to existing guest user (don't create)
@@ -34,9 +34,9 @@ export async function getCurrentUserId(): Promise<string | null> {
  */
 export async function getOrCreateCurrentUserId(): Promise<string | null> {
   // Check if user is authenticated first
-  const user = await getUser();
-  if (user?.user?.id) {
-    return user.user.id;
+  const user = await getAuthUser();
+  if (user?.id) {
+    return user.id;
   }
 
   // Get existing guest user or create a new one
@@ -53,6 +53,6 @@ export async function getOrCreateCurrentUserId(): Promise<string | null> {
  * Check if current user is a guest
  */
 export async function isGuestUser(): Promise<boolean> {
-  const user = await getUser();
-  return !user?.user?.id;
+  const user = await getAuthUser();
+  return !user?.id;
 }

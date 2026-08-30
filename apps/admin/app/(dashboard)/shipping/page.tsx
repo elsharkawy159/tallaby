@@ -307,9 +307,9 @@ export default function ShippingPage() {
         const cost = parseFloat(row.getValue("cost"));
         return (
           <div className="font-medium text-right">
-            {new Intl.NumberFormat("en-US", {
+            {new Intl.NumberFormat("en-EG", {
               style: "currency",
-              currency: "USD",
+              currency: "EGP",
               minimumFractionDigits: 2,
             }).format(cost)}
           </div>

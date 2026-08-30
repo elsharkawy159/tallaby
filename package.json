@@ -5,7 +5,10 @@
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
+    "start": "turbo start --filter=ecommerce --filter=admin --filter=dashboard --filter=shipping",
     "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test",
     "format": "prettier --write \"**/*.{ts,tsx,md}\""
   },
   "devDependencies": {

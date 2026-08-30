@@ -183,9 +183,9 @@ export function getCustomersColumns({
       ),
       cell: ({ row }) => {
         const amount = Number(row.getValue("totalSpent")) || 0;
-        const formatted = new Intl.NumberFormat("en-US", {
+        const formatted = new Intl.NumberFormat("en-EG", {
           style: "currency",
-          currency: "USD",
+          currency: "EGP",
         }).format(amount);
 
         const valueClass = cn(

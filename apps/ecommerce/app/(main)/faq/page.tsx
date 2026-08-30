@@ -110,7 +110,7 @@ const FAQ = () => {
         {
           question: "Do you offer payment plans?",
           answer:
-            "We partner with select payment providers to offer installment plans for purchases over $100. Options will be shown at checkout if available.",
+            "We partner with select payment providers to offer installment plans for purchases over EGP 1,000. Options will be shown at checkout if available.",
         },
       ],
     },

@@ -41,7 +41,7 @@ export default function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <MetricCard
           title="Total Revenue"
-          value="$45,231.89"
+          value="EGP 45,231.89"
           percentageChange={20.1}
           trend="positive"
           helpText="vs last period"

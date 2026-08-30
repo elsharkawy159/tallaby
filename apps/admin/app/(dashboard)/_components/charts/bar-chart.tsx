@@ -1,5 +1,6 @@
 "use client";
 
+import { formatCurrency } from "@workspace/lib";
 import {
   ResponsiveContainer,
   BarChart as RechartsBarChart,
@@ -28,15 +29,6 @@ export function BarChart({
   isMultiple = false,
   className,
 }: BarChartProps) {
-  // Format currency for tooltip
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 0,
-    }).format(value);
-  };
-
   // Get data keys for multiple series
   const dataKeys = isMultiple
     ? Object.keys(data[0]).filter((key) => key !== "name")

@@ -10,7 +10,20 @@
     "lint": {
       "dependsOn": ["^lint"]
     },
+    "typecheck": {
+      "dependsOn": ["^build"]
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
     "dev": {
+      "cache": false,
+      "persistent": true,
+      "outputs": []
+    },
+    "start": {
+      "dependsOn": ["build"],
       "cache": false,
       "persistent": true,
       "outputs": []

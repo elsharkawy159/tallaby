@@ -1,4 +1,4 @@
-import { createClient } from "@/supabase/server";
+import { getAuthUser } from "@/lib/auth/current-user";
 import { getSellerProfile } from "@/actions/seller";
 import { UserMenu } from "./user-menu";
 import { signOutAction } from "@/actions/auth";
@@ -16,9 +16,7 @@ export const AuthLink = async ({
   variant = "desktop",
   className,
 }: AuthLinkProps) => {
-  const supabase = await createClient();
-  const { data: authData } = await supabase.auth.getUser();
-  const user = authData?.user ?? null;
+  const user = await getAuthUser();
 
   // If user is authenticated, show UserMenu
   if (user) {

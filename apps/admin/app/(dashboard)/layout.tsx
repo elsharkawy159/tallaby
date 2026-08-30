@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import Sidebar from "./_components/layout/sidebar";
+import SidebarData from "./_components/layout/sidebar.data";
 import Header from "./_components/layout/header";
 import { ScrollArea } from "@workspace/ui/components/scroll-area";
 import { Toaster } from "@workspace/ui/components/sonner";
@@ -11,7 +11,7 @@ interface DashboardShellProps {
 export default function DashboardLayout({ children }: DashboardShellProps) {
   return (
     <div className="flex">
-      <Sidebar />
+      <SidebarData />
       <div className="flex-1 overflow-hidden">
         <Header />
         <ScrollArea className="h-[calc(100vh-64px)]">

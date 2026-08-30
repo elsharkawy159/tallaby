@@ -32,7 +32,7 @@ export type VendorProduct = {
   slug?: string | null;
   sku?: string | null;
   images?: string[] | null;
-  isActive: boolean;
+  status: "draft" | "pending" | "active" | "rejected";
   isFeatured?: boolean | null;
   quantity?: number | null;
   basePrice?: string | number | null;
@@ -178,16 +178,22 @@ export function VendorProductsSection({
       size: 80,
     },
     {
-      accessorKey: "isActive",
+      accessorKey: "status",
       header: "Status",
-      cell: ({ row }) =>
-        row.original.isActive ? (
-          <Badge className="bg-green-100 text-green-800">Active</Badge>
-        ) : (
-          <Badge variant="secondary" className="bg-gray-100 text-gray-800">
-            Inactive
+      cell: ({ row }) => {
+        const status = row.original.status;
+        const styles: Record<string, string> = {
+          draft: "bg-gray-100 text-gray-800",
+          pending: "bg-amber-100 text-amber-800",
+          active: "bg-green-100 text-green-800",
+          rejected: "bg-red-100 text-red-800",
+        };
+        return (
+          <Badge className={styles[status] ?? "bg-gray-100 text-gray-800"}>
+            {status}
           </Badge>
-        ),
+        );
+      },
       size: 80,
     },
     {

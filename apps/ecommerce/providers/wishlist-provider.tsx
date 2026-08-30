@@ -40,10 +40,10 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       const result = await getWishlists();
       return result.success ? result.data : [];
     },
-    staleTime: 0, // Always consider data stale - no caching
-    gcTime: 0, // Don't cache in memory - always fetch fresh data
-    refetchOnMount: true, // Refetch when component mounts
-    refetchOnWindowFocus: true, // Refetch when window gains focus
+    // Mutations below explicitly invalidate + refetch these queries, so a
+    // short staleTime (rather than 0 + refetchOnWindowFocus) is sufficient.
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
   });
 
   const {
@@ -56,10 +56,10 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       const result = await getWishlistItems();
       return result.success ? result.data : [];
     },
-    staleTime: 0, // Always consider data stale - no caching
-    gcTime: 0, // Don't cache in memory - always fetch fresh data
-    refetchOnMount: true, // Refetch when component mounts
-    refetchOnWindowFocus: true, // Refetch when window gains focus
+    // Mutations below explicitly invalidate + refetch these queries, so a
+    // short staleTime (rather than 0 + refetchOnWindowFocus) is sufficient.
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
   });
 
   const wishlists = wishlistsData ?? [];

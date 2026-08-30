@@ -11,7 +11,7 @@ export async function VendorProductsData() {
     title: string
     sku?: string
     images?: string[]
-    isActive?: boolean
+    status?: "draft" | "pending" | "active" | "rejected"
     isFeatured?: boolean
     quantity?: string | number
     price?: { base?: number; final?: number }
@@ -29,8 +29,8 @@ export async function VendorProductsData() {
       slug: slug || null,
       sku: p.sku,
       images: Array.isArray(p.images) ? p.images : [],
-      isActive: p.isActive,
-      isFeatured: p.isFeatured,
+      status: p.status ?? "pending",
+      isFeatured: p.isFeatured ?? false,
       quantity: typeof p.quantity === 'string' ? parseInt(p.quantity, 10) : (p.quantity ?? 0),
       basePrice: p.price?.base ?? null,
       salePrice: p.price?.final ?? null,

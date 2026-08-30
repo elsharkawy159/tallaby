@@ -1,10 +1,8 @@
 import { Order } from "./orders.types";
+import { formatCurrency as formatCurrencyValue } from "@workspace/lib";
 
 export const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(amount);
+  return formatCurrencyValue(amount);
 };
 
 export const formatDate = (dateString: string): string => {

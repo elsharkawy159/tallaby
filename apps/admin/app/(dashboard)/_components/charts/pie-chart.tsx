@@ -93,7 +93,7 @@ export function PieChart({ data, className }: PieChartProps) {
           </Pie>
           <Tooltip
             formatter={(value: number) => [
-              new Intl.NumberFormat("en-US").format(value),
+              new Intl.NumberFormat("en-EG").format(value),
               "Value",
             ]}
             contentStyle={{

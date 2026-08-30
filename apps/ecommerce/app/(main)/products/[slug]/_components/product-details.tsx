@@ -88,7 +88,7 @@ export const ProductDetails = ({
 
   const hasVariants =
     product.productVariants && product.productVariants.length > 0;
-  const hasStock = product.isActive && stock > 0;
+  const hasStock = product.status === "active" && stock > 0;
 
   return (
     <div className="space-y-6 w-full">

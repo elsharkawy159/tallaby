@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev --webpack -p 3000",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 3000",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "typecheck": "tsc --noEmit"
@@ -17,7 +17,7 @@
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.89.0",
     "@tanstack/react-query": "^5.90.14",
-    "@upstash/redis": "^1.36.0",
+    "@workspace/cache": "workspace:*",
     "@workspace/db": "workspace:*",
     "@workspace/lib": "workspace:*",
     "@workspace/ui": "workspace:*",

@@ -22,7 +22,7 @@ const notifications = [
     id: 1,
     type: "success",
     title: "New Order Received",
-    message: "Order #12345 for $299.99 has been placed successfully.",
+    message: "Order #12345 for EGP 299.99 has been placed successfully.",
     time: "2 minutes ago",
     read: false,
   },

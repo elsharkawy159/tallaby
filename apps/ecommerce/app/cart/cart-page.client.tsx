@@ -14,7 +14,6 @@ import { QuantitySelector } from "@/components/product/quantity-selector";
 import { formatVariantTitle } from "@/lib/variant-utils";
 import { useCart } from "@/providers/cart-provider";
 import { CartItemRemoveButton } from "./_components/cart-item-remove-button";
-import { CartSimilarProducts } from "./_components/cart-similar-products";
 import type { CartSummary } from "@/types/cart";
 
 interface CartPageClientProps {
@@ -26,7 +25,6 @@ export function CartPageClient({ initialCartData }: CartPageClientProps) {
   const { cartItems, itemCount, subtotal } = useCart();
   const locale = useLocale();
   const t = useTranslations("cart");
-  const cartProductIds = cartItems.map((item) => item.productId);
 
   useLayoutEffect(() => {
     if (initialCartData) {
@@ -277,8 +275,6 @@ export function CartPageClient({ initialCartData }: CartPageClientProps) {
           </div>
         </div>
       </div>
-
-      <CartSimilarProducts cartProductIds={cartProductIds} />
     </>
   );
 }

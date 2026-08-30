@@ -9,13 +9,18 @@ import {
 } from "@/lib/validations/auth-schemas";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getAuthUser } from "@/lib/auth/current-user";
 
+/**
+ * Sourced from getAuthUser() (React cache()-deduplicated per request) so
+ * every one of this function's callers across the app shares a single
+ * supabase.auth.getUser() network round-trip per request, instead of each
+ * issuing its own.
+ */
 export async function getUser() {
   try {
-    const supabase = await createClient();
-    const { data, error } = await supabase.auth.getUser();
-    if (error) return null;
-    return data ?? null;
+    const user = await getAuthUser();
+    return user ? { user } : null;
   } catch {
     return null;
   }

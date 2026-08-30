@@ -186,7 +186,7 @@ export async function addToCart(
   }
 
   const product = await db.query.products.findFirst({
-    where: and(eq(products.id, productId), eq(products.isActive, true)),
+    where: and(eq(products.id, productId), eq(products.status, "active")),
   });
   if (!product) return { success: false, error: "Product not found" };
 

@@ -111,7 +111,7 @@ export default function AnalyticsPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$743,500</div>
+            <div className="text-2xl font-bold">EGP 743,500</div>
             <div className="flex items-center pt-1 text-xs text-green-600">
               <ArrowUpRight className="h-4 w-4 mr-1" />
               +12.5% from last period
@@ -154,7 +154,7 @@ export default function AnalyticsPage() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$35.61</div>
+            <div className="text-2xl font-bold">EGP 35.61</div>
             <div className="flex items-center pt-1 text-xs text-red-600">
               <ArrowDownRight className="h-4 w-4 mr-1" />
               -1.2% from last period
@@ -324,31 +324,31 @@ export default function AnalyticsPage() {
                   <tbody>
                     <tr className="border-b">
                       <td className="py-3">Smartphone X Pro</td>
-                      <td className="py-3 text-right">$58,700</td>
+                      <td className="py-3 text-right">EGP 58,700</td>
                       <td className="py-3 text-right">587</td>
                       <td className="py-3 text-right">4.2%</td>
                     </tr>
                     <tr className="border-b">
                       <td className="py-3">Wireless Headphones</td>
-                      <td className="py-3 text-right">$42,300</td>
+                      <td className="py-3 text-right">EGP 42,300</td>
                       <td className="py-3 text-right">845</td>
                       <td className="py-3 text-right">5.8%</td>
                     </tr>
                     <tr className="border-b">
                       <td className="py-3">Laptop Pro 15</td>
-                      <td className="py-3 text-right">$37,800</td>
+                      <td className="py-3 text-right">EGP 37,800</td>
                       <td className="py-3 text-right">235</td>
                       <td className="py-3 text-right">3.5%</td>
                     </tr>
                     <tr className="border-b">
                       <td className="py-3">Smart Watch Series 5</td>
-                      <td className="py-3 text-right">$31,200</td>
+                      <td className="py-3 text-right">EGP 31,200</td>
                       <td className="py-3 text-right">650</td>
                       <td className="py-3 text-right">6.1%</td>
                     </tr>
                     <tr>
                       <td className="py-3">Gaming Console X</td>
-                      <td className="py-3 text-right">$29,400</td>
+                      <td className="py-3 text-right">EGP 29,400</td>
                       <td className="py-3 text-right">245</td>
                       <td className="py-3 text-right">4.8%</td>
                     </tr>
@@ -468,31 +468,31 @@ export default function AnalyticsPage() {
                   <tbody>
                     <tr className="border-b">
                       <td className="py-3">Electronics</td>
-                      <td className="py-3 text-right">$352,000</td>
+                      <td className="py-3 text-right">EGP 352,000</td>
                       <td className="py-3 text-right">1,245</td>
                       <td className="py-3 text-right">4.8%</td>
                     </tr>
                     <tr className="border-b">
                       <td className="py-3">Clothing</td>
-                      <td className="py-3 text-right">$215,000</td>
+                      <td className="py-3 text-right">EGP 215,000</td>
                       <td className="py-3 text-right">932</td>
                       <td className="py-3 text-right">3.9%</td>
                     </tr>
                     <tr className="border-b">
                       <td className="py-3">Home & Kitchen</td>
-                      <td className="py-3 text-right">$178,000</td>
+                      <td className="py-3 text-right">EGP 178,000</td>
                       <td className="py-3 text-right">845</td>
                       <td className="py-3 text-right">3.2%</td>
                     </tr>
                     <tr className="border-b">
                       <td className="py-3">Books</td>
-                      <td className="py-3 text-right">$98,000</td>
+                      <td className="py-3 text-right">EGP 98,000</td>
                       <td className="py-3 text-right">728</td>
                       <td className="py-3 text-right">5.4%</td>
                     </tr>
                     <tr>
                       <td className="py-3">Beauty</td>
-                      <td className="py-3 text-right">$87,000</td>
+                      <td className="py-3 text-right">EGP 87,000</td>
                       <td className="py-3 text-right">512</td>
                       <td className="py-3 text-right">4.1%</td>
                     </tr>

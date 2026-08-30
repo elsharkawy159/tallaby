@@ -33,10 +33,7 @@ export const profileFormSchema = z.object({
     .min(1, "Language preference is required")
     .max(5, "Invalid language code"),
 
-  defaultCurrency: z
-    .string()
-    .min(1, "Currency is required")
-    .length(3, "Currency must be a 3-letter code"),
+  defaultCurrency: z.literal("EGP"),
 
   receiveMarketingEmails: z.boolean(),
 });

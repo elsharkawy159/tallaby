@@ -14,7 +14,7 @@ import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import { generateProductMetadata } from "@/lib/metadata";
 import type { Metadata } from "next";
 import { ProductStructuredData } from "./_components/product-structured-data";
-import { createClient } from "@/supabase/server";
+import { getAuthUser } from "@/lib/auth/current-user";
 import { getCartItems } from "@/actions/cart";
 import { getWishlistItems } from "@/actions/wishlist";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -106,9 +106,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   };
 
   // Fetch user for ProductTabs
-  const supabase = await createClient();
-  const { data: authData } = await supabase.auth.getUser();
-  const user = authData?.user ?? null;
+  const user = await getAuthUser();
 
   // Fetch cart and wishlist data server-side
   const cartResult = await getCartItems();

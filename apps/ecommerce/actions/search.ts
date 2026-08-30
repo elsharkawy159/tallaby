@@ -61,7 +61,7 @@ export async function searchProducts(filters: SearchFilters) {
     const locale = (await getLocale()) as ProductLocale;
 
     // Build search conditions
-    const conditions = [eq(products.isActive, true)];
+    const conditions = [eq(products.status, "active")];
 
     // Text search across product_translations (en + ar) and products.sku
     if (filters.query) {
@@ -355,7 +355,7 @@ export async function searchSuggestions(query: string) {
             and(
               eq(productTranslations.locale, "en"),
               like(productTranslations.title, searchPattern),
-              eq(products.isActive, true)
+              eq(products.status, "active")
             )
           )
           .limit(5);
@@ -524,7 +524,7 @@ export async function globalSearch(query: string) {
         const searchPatternForProducts = `%${query}%`;
         const productResultsRaw = await db.query.products.findMany({
           where: and(
-            eq(products.isActive, true),
+            eq(products.status, "active"),
             sql`EXISTS (
               SELECT 1 FROM product_translations pt
               WHERE pt.product_id = ${products.id}

@@ -15,12 +15,14 @@ export const sellerStatus = pgEnum("seller_status", ['pending', 'approved', 'sus
 export const shippingSpeed = pgEnum("shipping_speed", ['standard', 'expedited', 'priority', 'one_day', 'same_day'])
 export const userRole = pgEnum("user_role", ['customer', 'seller', 'admin', 'support', 'driver'])
 export const productType = pgEnum("product_type", ['physical', 'digital'])
+export const productStatus = pgEnum("product_status", ['draft', 'pending', 'active', 'rejected'])
 export const transactionType = pgEnum("transaction_type", ['sale', 'refund', 'withdrawal', 'fee'])
 export const digitalProductType = pgEnum("digital_product_type", ['digital_download', 'ebook', 'template', 'design_asset', 'audio', 'video', 'course', 'ai_prompt', 'software', 'font', 'printable', 'game_asset', 'gift_card', 'license_key', 'external_access', 'bundle'])
 export const digitalDeliveryMethod = pgEnum("digital_delivery_method", ['automatic', 'manual'])
 export const digitalFulfillmentStatus = pgEnum("digital_fulfillment_status", ['pending', 'delivered', 'downloaded', 'expired', 'revoked', 'failed'])
 export const digitalAccessAction = pgEnum("digital_access_action", ['grant', 'download', 'view', 'resend', 'revoke', 'reinstate'])
 export const licenseKeyStatus = pgEnum("license_key_status", ['available', 'reserved', 'assigned', 'revoked'])
+export const shipmentStatus = pgEnum("shipment_status", ['pending', 'assigned', 'out_for_delivery', 'delivered', 'failed', 'returned', 'cancelled'])
 
 
 export const deliveries = pgTable("deliveries", {
@@ -57,7 +59,7 @@ export const payments = pgTable("payments", {
 	orderId: uuid("order_id").notNull(),
 	amount: numeric({ precision: 10, scale:  2 }).notNull(),
 	method: text().notNull(),
-	currency: text().default('USD'),
+	currency: text().default('EGP'),
 	status: paymentStatus().default('pending'),
 	transactionId: text("transaction_id"),
 	paymentMethodId: uuid("payment_method_id"),
@@ -87,7 +89,7 @@ export const carts = pgTable("carts", {
 	userId: uuid("user_id").notNull(),
 	sessionId: text("session_id"),
 	status: text().default('active'),
-	currency: text().default('USD'),
+	currency: text().default('EGP'),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	lastActivity: timestamp("last_activity", { withTimezone: true, mode: 'string' }).defaultNow(),
@@ -113,6 +115,9 @@ export const categories = pgTable("categories", {
 	imageUrl: text("image_url"),
 	nameAr: text("name_ar"),
 }, (table) => [
+	// This table had no indexes at all.
+	index("category_slug_idx").using("btree", table.slug.asc().nullsLast().op("text_ops")),
+	index("category_parent_id_idx").using("btree", table.parentId.asc().nullsLast().op("uuid_ops")),
 	foreignKey({
 			columns: [table.parentId],
 			foreignColumns: [table.id],
@@ -238,11 +243,14 @@ export const productVariants = pgTable("product_variants", {
 	barCode: varchar("bar_code"),
 	locale: text().default('en'),
 }, (table) => [
+	// No index existed on this FK — every variant lookup by product was a seq scan.
+	index("product_variants_product_id_idx").using("btree", table.productId.asc().nullsLast().op("uuid_ops")),
 	foreignKey({
 			columns: [table.productId],
 			foreignColumns: [products.id],
 			name: "product_variants_product_id_fkey"
 		}).onDelete("cascade"),
+	check("product_variants_stock_non_negative", sql`stock >= 0`),
 ]);
 
 export const refunds = pgTable("refunds", {
@@ -330,6 +338,7 @@ export const sellers = pgTable("sellers", {
 	index("seller_business_name_idx").using("btree", table.businessName.asc().nullsLast().op("text_ops")),
 	index("seller_display_name_idx").using("btree", table.displayName.asc().nullsLast().op("text_ops")),
 	uniqueIndex("seller_slug_idx").using("btree", table.slug.asc().nullsLast().op("text_ops")),
+	index("seller_status_idx").using("btree", table.status.asc().nullsLast().op("enum_ops")),
 	foreignKey({
 			columns: [table.id],
 			foreignColumns: [users.id],
@@ -473,10 +482,36 @@ export const cartItems = pgTable("cart_items", {
 		}).onUpdate("cascade").onDelete("cascade"),
 ]);
 
+/**
+ * Shipping providers available for last-mile delivery (Bosta, ShipBlu,
+ * Egypt Post, ...). Deliberately minimal: real carrier API integrations live
+ * behind the adapter layer in apps/shipping, keyed off `code`.
+ */
+export const shippingProviders = pgTable("shipping_providers", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	name: text().notNull(),
+	code: text().notNull(),
+	isActive: boolean("is_active").default(true).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("shipping_providers_active_idx").using("btree", table.isActive.asc().nullsLast().op("bool_ops")),
+	unique("shipping_providers_code_unique").on(table.code),
+]);
+
+/**
+ * One shipping record per order. `sellerId` is nullable because a
+ * platform-fulfilled last-mile delivery is not tied to a single seller — it
+ * carries the whole order to the customer's door. The unique constraint on
+ * `orderId` is what lets the shipping app upsert idempotently
+ * (insert ... on conflict (order_id) do update).
+ */
 export const shipments = pgTable("shipments", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	orderId: uuid("order_id").notNull(),
-	sellerId: uuid("seller_id").notNull(),
+	sellerId: uuid("seller_id"),
+	providerId: uuid("provider_id"),
+	riderId: uuid("rider_id"),
 	trackingNumber: text("tracking_number"),
 	carrier: text(),
 	serviceLevel: text("service_level"),
@@ -485,17 +520,22 @@ export const shipments = pgTable("shipments", {
 	weightUnit: text("weight_unit").default('kg'),
 	dimensions: jsonb(),
 	cost: numeric({ precision: 10, scale:  2 }).default('0'),
-	status: text().default('pending'),
+	status: shipmentStatus().default('pending').notNull(),
+	failureReason: text("failure_reason"),
 	estimatedDeliveryDate: date("estimated_delivery_date"),
 	notes: text(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	assignedAt: timestamp("assigned_at", { withTimezone: true, mode: 'string' }),
 	shippedAt: timestamp("shipped_at", { withTimezone: true, mode: 'string' }),
 	deliveredAt: timestamp("delivered_at", { withTimezone: true, mode: 'string' }),
 }, (table) => [
 	index("shipment_order_id_idx").using("btree", table.orderId.asc().nullsLast().op("uuid_ops")),
 	index("shipment_seller_id_idx").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops")),
 	index("shipment_tracking_number_idx").using("btree", table.trackingNumber.asc().nullsLast().op("text_ops")),
+	index("shipment_rider_id_idx").using("btree", table.riderId.asc().nullsLast().op("uuid_ops")),
+	index("shipment_status_idx").using("btree", table.status.asc().nullsLast().op("enum_ops")),
+	index("shipment_provider_id_idx").using("btree", table.providerId.asc().nullsLast().op("uuid_ops")),
 	foreignKey({
 			columns: [table.orderId],
 			foreignColumns: [orders.id],
@@ -506,6 +546,17 @@ export const shipments = pgTable("shipments", {
 			foreignColumns: [sellers.id],
 			name: "shipments_seller_id_sellers_id_fk"
 		}),
+	foreignKey({
+			columns: [table.providerId],
+			foreignColumns: [shippingProviders.id],
+			name: "shipments_provider_id_shipping_providers_id_fk"
+		}),
+	foreignKey({
+			columns: [table.riderId],
+			foreignColumns: [users.id],
+			name: "shipments_rider_id_users_id_fk"
+		}),
+	unique("shipments_order_id_unique").on(table.orderId),
 ]);
 
 export const returns = pgTable("returns", {
@@ -565,6 +616,8 @@ export const reviews = pgTable("reviews", {
 	index("review_product_id_idx").using("btree", table.productId.asc().nullsLast().op("uuid_ops")),
 	index("review_seller_id_idx").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops")),
 	index("review_user_id_idx").using("btree", table.userId.asc().nullsLast().op("uuid_ops")),
+	// Product detail page filters reviews by (productId, status='approved') — status was unindexed.
+	index("review_product_status_idx").using("btree", table.productId.asc().nullsLast().op("uuid_ops"), table.status.asc().nullsLast().op("text_ops")),
 	foreignKey({
 			columns: [table.orderId],
 			foreignColumns: [orders.id],
@@ -730,7 +783,7 @@ export const sellerPayouts = pgTable("seller_payouts", {
 	fee: numeric({ precision: 10, scale:  2 }).default('0'),
 	taxWithheld: numeric("tax_withheld", { precision: 10, scale:  2 }).default('0'),
 	netAmount: numeric("net_amount", { precision: 10, scale:  2 }).notNull(),
-	currency: text().default('USD'),
+	currency: text().default('EGP'),
 	status: text().default('pending'),
 	method: text().notNull(),
 	reference: text(),
@@ -902,7 +955,7 @@ export const orderItems = pgTable("order_items", {
 	commissionAmount: numeric("commission_amount", { precision: 10, scale:  2 }).notNull(),
 	commissionRate: real("commission_rate").notNull(),
 	sellerEarning: numeric("seller_earning", { precision: 10, scale:  2 }).notNull(),
-	currency: text().default('\'EGP'),
+	currency: text().default('EGP'),
 	condition: itemCondition().default('new'),
 	fulfillmentType: fulfillmentType("fulfillment_type").default('seller_fulfilled'),
 	status: orderStatus().default('pending'),
@@ -1011,9 +1064,10 @@ export const products = pgTable("products", {
 	averageRating: real("average_rating"),
 	reviewCount: integer("review_count").default(0),
 	totalQuestions: integer("total_questions").default(0),
-	isActive: boolean("is_active").default(true),
 	isPlatformChoice: boolean("is_platform_choice").default(false),
 	isMostSelling: boolean("is_most_selling").default(false),
+	/** Only status = 'active' products are visible on the storefront. */
+	status: productStatus("status").default('pending').notNull(),
 	taxClass: text("tax_class").default('standard'),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
@@ -1036,6 +1090,13 @@ export const products = pgTable("products", {
 	index("product_seller_id_idx").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops")),
 	index("product_sku_idx").using("btree", table.sku.asc().nullsLast().op("text_ops")),
 	uniqueIndex("unique_product_seller_sku_idx").using("btree", table.sellerId.asc().nullsLast().op("text_ops"), table.sku.asc().nullsLast().op("text_ops")),
+	index("product_status_idx").using("btree", table.status.asc().nullsLast().op("enum_ops")),
+	// "newest" sort.
+	index("product_created_at_idx").using("btree", table.createdAt.desc()),
+	// "rating" sort.
+	index("product_rating_idx").using("btree", table.averageRating.desc().nullsLast()),
+	// price filter (min/maxPrice) and "price_asc"/"price_desc" sort read price->>'final'.
+	index("product_price_final_idx").using("btree", sql`(((price ->> 'final'::text))::numeric)`),
 	foreignKey({
 			columns: [table.brandId],
 			foreignColumns: [brands.id],
@@ -1055,6 +1116,8 @@ export const products = pgTable("products", {
 	pgPolicy("Public full access", { as: "permissive", for: "all", to: ["public"] }),
 	pgPolicy("Enable read access for all users", { as: "permissive", for: "select", to: ["public"] }),
 	pgPolicy("Enable insert for authenticated users only", { as: "permissive", for: "insert", to: ["authenticated"] }),
+	// Last line of defence behind the atomic decrementStock() WHERE-guard (packages/db/src/inventory).
+	check("products_quantity_non_negative", sql`quantity >= 0`),
 ]);
 
 export const productAnswers = pgTable("product_answers", {
@@ -1100,10 +1163,10 @@ export const orders = pgTable("orders", {
 	discountAmount: numeric("discount_amount", { precision: 10, scale:  2 }).default('0'),
 	giftWrapCost: numeric("gift_wrap_cost", { precision: 10, scale:  2 }).default('0'),
 	totalAmount: numeric("total_amount", { precision: 10, scale:  2 }).notNull(),
-	currency: text().default('\'EGP'),
+	currency: text().default('EGP'),
 	status: orderStatus().default('pending'),
 	paymentStatus: paymentStatus("payment_status").default('pending'),
-	paymentMethod: text("payment_method").default('\'cash').notNull(),
+	paymentMethod: text("payment_method").default('cash').notNull(),
 	shippingAddressId: uuid("shipping_address_id"),
 	billingAddressId: uuid("billing_address_id"),
 	isGift: boolean("is_gift").default(false),
@@ -1192,6 +1255,9 @@ export const productTranslations = pgTable("product_translations", {
 }, (table) => [
 	index("product_translations_locale_idx").using("btree", table.locale.asc().nullsLast().op("text_ops")),
 	index("product_translations_product_id_idx").using("btree", table.productId.asc().nullsLast().op("uuid_ops")),
+	// getProductIdBySlug() is the hottest storefront lookup and had no index on slug at all.
+	// Non-unique: existing duplicate/NULL slugs would fail a unique index migration; uniqueness stays app-enforced (see docs).
+	index("product_translations_locale_slug_idx").using("btree", table.locale.asc().nullsLast().op("text_ops"), table.slug.asc().nullsLast().op("text_ops")),
 	foreignKey({
 			columns: [table.productId],
 			foreignColumns: [products.id],

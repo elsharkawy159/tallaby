@@ -3,28 +3,39 @@
 import { db } from "@workspace/db";
 import { categories, products } from "@workspace/db";
 import { eq, and, desc, sql, isNull, asc } from "drizzle-orm";
+import { cacheProfiles, categoryTags, createCachedQuery } from "@workspace/cache";
 
-export async function getAllCategories() {
-  try {
-    // Get root categories
-    const rootCategories = await db.query.categories.findMany({
-      where: isNull(categories.parentId),
-      with: {
-        categories: {
-          with: {
-            categories: true,
+/**
+ * Category tree is admin-curated, shared reference data — cached and
+ * invalidated by admin's category mutations (see apps/admin/actions/categories.ts)
+ * via the cross-app broadcast, not by anything in the dashboard app.
+ */
+export const getAllCategories = createCachedQuery({
+  name: "dashboard:categories:all",
+  ttl: cacheProfiles.taxonomy,
+  tags: () => [categoryTags.all(), categoryTags.tree()],
+  query: async () => {
+    try {
+      // Get root categories
+      const rootCategories = await db.query.categories.findMany({
+        where: isNull(categories.parentId),
+        with: {
+          categories: {
+            with: {
+              categories: true,
+            },
           },
         },
-      },
-      orderBy: [asc(categories.name)],
-    });
+        orderBy: [asc(categories.name)],
+      });
 
-    return { success: true, data: rootCategories };
-  } catch (error) {
-    console.error("Error fetching category tree:", error);
-    return { success: false, error: "Failed to fetch category tree" };
-  }
-}
+      return { success: true, data: rootCategories };
+    } catch (error) {
+      console.error("Error fetching category tree:", error);
+      return { success: false, error: "Failed to fetch category tree" };
+    }
+  },
+});
 
 export async function getCategoryBySlug(slug: string) {
   try {
@@ -48,7 +59,7 @@ export async function getCategoryBySlug(slug: string) {
       .select({ count: sql<number>`count(*)` })
       .from(products)
       .where(
-        and(eq(products.categoryId, category.id), eq(products.isActive, true))
+        and(eq(products.categoryId, category.id), eq(products.status, "active"))
       );
 
     return {
@@ -79,7 +90,7 @@ export async function getTopCategories() {
       .from(categories)
       .leftJoin(
         products,
-        and(eq(products.categoryId, categories.id), eq(products.isActive, true))
+        and(eq(products.categoryId, categories.id), eq(products.status, "active"))
       )
       .groupBy(categories.id)
       .orderBy(desc(sql`count(${products.id})`))
@@ -114,7 +125,7 @@ export async function getCategoriesWithProducts() {
           .where(
             and(
               eq(products.categoryId, category.id),
-              eq(products.isActive, true)
+              eq(products.status, "active")
             )
           );
 

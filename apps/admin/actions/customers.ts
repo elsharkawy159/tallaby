@@ -4,6 +4,7 @@ import { db } from "@workspace/db";
 import { users, orders, userAddresses } from "@workspace/db";
 import { eq, and, desc, sql, gte, lte, like, or } from "drizzle-orm";
 import { getAdminUser } from "./auth";
+import { getCurrentAdminUser } from "@/lib/auth/admin-auth";
 
 export async function getAllCustomers(params?: {
   role?: string;
@@ -159,7 +160,17 @@ export async function updateCustomerStatus(
   }
 ) {
   try {
-    await getAdminUser(); // Verify admin access
+    const currentAdmin = await getCurrentAdminUser(); // Verify admin access + get own role
+
+    // Role changes are a privilege escalation vector — only super_admin may
+    // grant/change a role (previously any admin/moderator could promote a
+    // user, including themselves, to super_admin via this action).
+    if (updates.role && currentAdmin.role !== "super_admin") {
+      return {
+        success: false,
+        error: "Only super administrators can change user roles",
+      };
+    }
 
     const updatedCustomer = await db
       .update(users)

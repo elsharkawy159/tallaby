@@ -61,10 +61,10 @@ const shipments = [
 ];
 
 const carriers = [
-  { name: "FedEx", rate: "$12.50", deliveryTime: "2-3 days", status: "Active" },
-  { name: "UPS", rate: "$11.75", deliveryTime: "2-4 days", status: "Active" },
-  { name: "DHL", rate: "$15.00", deliveryTime: "1-2 days", status: "Active" },
-  { name: "USPS", rate: "$8.50", deliveryTime: "3-5 days", status: "Active" },
+  { name: "FedEx", rate: "EGP 12.50", deliveryTime: "2-3 days", status: "Active" },
+  { name: "UPS", rate: "EGP 11.75", deliveryTime: "2-4 days", status: "Active" },
+  { name: "DHL", rate: "EGP 15.00", deliveryTime: "1-2 days", status: "Active" },
+  { name: "USPS", rate: "EGP 8.50", deliveryTime: "3-5 days", status: "Active" },
 ];
 
 export const ShippingDashboard = () => {
@@ -144,8 +144,8 @@ export const ShippingDashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Avg. Shipping Cost</p>
-                <p className="text-2xl font-bold text-gray-900">$11.94</p>
-                <p className="text-sm text-red-600">+$0.50 this month</p>
+                <p className="text-2xl font-bold text-gray-900">EGP 11.94</p>
+                <p className="text-sm text-red-600">+EGP 0.50 this month</p>
               </div>
               <div className="bg-purple-100 p-3 rounded-full">
                 <MapPin className="h-6 w-6 text-purple-600" />

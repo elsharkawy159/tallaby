@@ -2,8 +2,23 @@
 
 import { createClient } from "@/supabase/server";
 import { redirect } from "next/navigation";
+import { getCurrentAdminUser } from "@/lib/auth/admin-auth";
 
+/**
+ * Verifies the caller is an authenticated, verified admin/super_admin/
+ * moderator (via getCurrentAdminUser — role + isVerified check) and, if so,
+ * returns the raw Supabase auth data.
+ *
+ * Previously this only checked that SOME Supabase session existed —
+ * getCurrentAdminUser() existed elsewhere in the codebase with the real
+ * role check but was never called from any Server Action. Every one of
+ * this function's ~20 call sites across admin's Server Actions is fixed by
+ * this one change; the return shape ({ user }) is unchanged so no caller
+ * needs to be touched.
+ */
 export const getAdminUser = async () => {
+  await getCurrentAdminUser();
+
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getUser();
 
@@ -45,9 +60,9 @@ export const register = async (
       id: data.user.id,
       email: data.user.email,
       role: "admin", // Default to admin role for admin code registrations
-      isVerified: false, // Will be verified after email confirmation
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      is_verified: false, // Will be verified after email confirmation
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     });
 
     if (profileError) {
@@ -149,7 +164,7 @@ export const updateAdminProfile = async (updates: {
     .from("users")
     .update({
       ...updates,
-      updatedAt: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     })
     .eq("id", user.id)
     .select()

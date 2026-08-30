@@ -8,7 +8,6 @@ import { Controller, useFormContext } from "react-hook-form";
 
 export interface CurrencyInputProps extends Omit<BaseFieldProps, "children"> {
   placeholder?: string;
-  currency?: string;
   min?: number;
   max?: number;
   allowNegative?: boolean;
@@ -16,20 +15,7 @@ export interface CurrencyInputProps extends Omit<BaseFieldProps, "children"> {
   value?: number;
 }
 
-const currencySymbols: Record<string, string> = {
-  USD: "$",
-  EUR: "€",
-  GBP: "£",
-  JPY: "¥",
-  EGP: "ج.م",
-  SAR: "ر.س",
-  AED: "د.إ",
-  KWD: "د.ك",
-  QAR: "ر.ق",
-  BHD: "د.ب",
-  OMR: "ر.ع",
-  JOD: "د.أ",
-};
+const EGP_SYMBOL = "ج.م";
 
 export const CurrencyInput = React.forwardRef<
   HTMLDivElement,
@@ -39,7 +25,6 @@ export const CurrencyInput = React.forwardRef<
     {
       name,
       placeholder = "",
-      currency = "EGP",
       min = 0,
       max,
       allowNegative = false,
@@ -56,7 +41,6 @@ export const CurrencyInput = React.forwardRef<
     } = useFormContext();
 
     const fieldError = errors[name]?.message as string;
-    const currencySymbol = currencySymbols[currency] || currency;
 
     const parseNumber = (value: string): number => {
       const cleaned = value.replace(/[^\d.-]/g, "");
@@ -68,10 +52,6 @@ export const CurrencyInput = React.forwardRef<
       if (max !== undefined && parsed > max) return max;
 
       return parsed;
-    };
-
-    const formatNumber = (value: number): string => {
-      return value.toFixed(2);
     };
 
     return (
@@ -88,7 +68,7 @@ export const CurrencyInput = React.forwardRef<
           render={({ field }) => (
             <div className="relative">
               <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
-                <span className="text-xs font-medium">{currencySymbol}</span>
+                <span className="text-xs font-medium">{EGP_SYMBOL}</span>
               </div>
 
               <Input
@@ -112,7 +92,6 @@ export const CurrencyInput = React.forwardRef<
                 onBlur={(e) => {
                   const numericValue = parseNumber(e.target.value);
                   field.onChange(numericValue);
-                  // Only format to 2 decimal places on blur
                   if (numericValue > 0) {
                     field.onChange(parseFloat(numericValue.toFixed(2)));
                   }

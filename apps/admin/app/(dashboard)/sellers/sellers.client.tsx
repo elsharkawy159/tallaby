@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, Suspense } from "react";
+import { useState, useTransition, useEffect, useCallback } from "react";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import {
@@ -18,10 +18,10 @@ import {
 } from "@workspace/ui/components/tabs";
 import { Filter, Download, Plus, Search, X } from "lucide-react";
 import { toast } from "sonner";
-import { updateSellerStatus } from "./sellers.server";
+import { getSellers, getSellerStats, updateSellerStatus } from "./sellers.server";
 import { getStatusOptions, getBusinessTypeOptions } from "./sellers.lib";
-import type { SellerFilters, SellerStats, SellerStatus } from "./sellers.types";
-import { SellersDataWrapper } from "./sellers.data";
+import { SellerStatsCards, SellerRow } from "./sellers.chunks";
+import type { Seller, SellerFilters, SellerStats, SellerStatus } from "./sellers.types";
 import { SellersTableSkeleton } from "./sellers.skeleton";
 
 interface SellersFiltersProps {
@@ -272,7 +272,47 @@ export const SellersClientWrapper = ({
   const [filters, setFilters] = useState<SellerFilters>(initialFilters);
   const [activeTab, setActiveTab] = useState("all");
   const [stats, setStats] = useState(initialStats);
+  const [sellersList, setSellersList] = useState<Seller[]>([]);
+  const [isLoadingSellers, setIsLoadingSellers] = useState(true);
+  const [sellersError, setSellersError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  // This used to render <SellersDataWrapper> (an async Server Component,
+  // from sellers.data.tsx) directly inside this Client Component's JSX.
+  // React does not support async function components on the client, so
+  // that <Suspense> boundary could never resolve — this page was stuck on
+  // its skeleton forever. Fetching client-side instead, matching the
+  // pattern every other admin list page (orders, customers, brands,
+  // categories) already uses.
+  const loadSellers = useCallback(async (currentFilters: SellerFilters) => {
+    setIsLoadingSellers(true);
+    setSellersError(null);
+    try {
+      const [sellersResult, statsResult] = await Promise.all([
+        getSellers(currentFilters),
+        getSellerStats(),
+      ]);
+
+      if (sellersResult.success) {
+        setSellersList(sellersResult.data ?? []);
+      } else {
+        setSellersError(sellersResult.error || "Failed to fetch sellers");
+      }
+
+      if (statsResult.success && statsResult.data) {
+        setStats(statsResult.data);
+      }
+    } catch (error) {
+      console.error("Error loading sellers:", error);
+      setSellersError("Failed to fetch sellers");
+    } finally {
+      setIsLoadingSellers(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadSellers(filters);
+  }, [filters, loadSellers]);
 
   const handleFiltersChange = (newFilters: SellerFilters) => {
     setFilters(newFilters);
@@ -313,8 +353,8 @@ export const SellersClientWrapper = ({
 
         if (result.success) {
           toast.success(result.message);
-          // Trigger a page refresh to update the data
-          window.location.reload();
+          // Refetch in place instead of a full page reload.
+          await loadSellers(filters);
         } else {
           toast.error(result.error || "Failed to update seller status");
         }
@@ -337,10 +377,53 @@ export const SellersClientWrapper = ({
         stats={stats}
       />
 
-      {/* Render the data component with action handler */}
-      <Suspense fallback={<SellersTableSkeleton />}>
-        <SellersDataWrapper filters={filters} onAction={handleAction} />
-      </Suspense>
+      {isLoadingSellers ? (
+        <SellersTableSkeleton />
+      ) : sellersError ? (
+        <div className="text-center py-8">
+          <p className="text-red-600">{sellersError}</p>
+        </div>
+      ) : (
+        <>
+          <SellerStatsCards stats={stats} />
+
+          <div className="rounded-md border">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b bg-gray-50 dark:bg-gray-800">
+                  <th className="py-4 px-4 text-left text-sm font-medium">
+                    Seller
+                  </th>
+                  <th className="py-4 px-4 text-center text-sm font-medium">
+                    Status
+                  </th>
+                  <th className="py-4 px-4 text-center text-sm font-medium">
+                    Products
+                  </th>
+                  <th className="py-4 px-4 text-center text-sm font-medium">
+                    Rating
+                  </th>
+                  <th className="py-4 px-4 text-center text-sm font-medium">
+                    Commission
+                  </th>
+                  <th className="py-4 px-4 text-center text-sm font-medium">
+                    Fee Exempt
+                  </th>
+                  <th className="py-4 px-4 text-right text-sm font-medium">
+                    Balance
+                  </th>
+                  <th className="py-4 px-4"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {sellersList.map((seller) => (
+                  <SellerRow key={seller.id} seller={seller} onAction={handleAction} />
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
     </div>
   );
 };

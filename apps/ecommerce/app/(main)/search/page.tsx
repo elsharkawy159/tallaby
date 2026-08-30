@@ -44,7 +44,6 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                 title=""
                 filters={{
                   searchQuery: query,
-                  isActive: true,
                   limit: 30,
                 }}
               />

@@ -1,6 +1,5 @@
 "use server";
 
-import { unstable_cache } from "next/cache";
 import {
   db,
   productAnswers,
@@ -30,18 +29,19 @@ import {
   type ProductLocale,
 } from "@/lib/product-translations"
 import { getUser } from "./auth";
-import { revalidatePath } from "next/cache";
+import { unstable_cache } from "next/cache";
+import { brandTags, cacheProfiles, categoryTags, createCachedQuery, productTags } from "@workspace/cache";
 
 interface ProductFilters {
   categoryId?: string;
   categoryName?: string;
   brandId?: string;
+  brandName?: string;
   minPrice?: number;
   maxPrice?: number;
   minRating?: number;
   condition?: string;
   sellerId?: string;
-  isActive?: boolean;
   isFeatured?: boolean;
   searchQuery?: string;
   sortBy?: "price_asc" | "price_desc" | "rating" | "newest" | "popular";
@@ -50,144 +50,158 @@ interface ProductFilters {
   locale?: ProductLocale;
 }
 
-export async function getProducts(filters: ProductFilters = {}) {
-  // CACHED: Semi-dynamic public data - product listings change infrequently
-  // Note: Pricing/stock are real-time but product listings are cacheable
-  const cacheKey = `products-${JSON.stringify(filters)}`;
+export const getProducts = createCachedQuery({
+  name: "ecommerce:products:list",
+  ttl: cacheProfiles.listing,
+  // categoryName/brandName resolve to an id inside the query, so a
+  // name-filtered call can only be tagged with the general listing tag —
+  // it still gets purged by any structural product change (see
+  // invalidateProduct in packages/cache/src/invalidate.ts), just not by a
+  // change scoped to a single OTHER category/brand.
+  tags: (filters: ProductFilters) => {
+    const tags = [productTags.listing()];
+    if (filters.categoryId) tags.push(productTags.category(filters.categoryId));
+    if (filters.brandId) tags.push(productTags.brand(filters.brandId));
+    if (filters.sellerId) tags.push(productTags.seller(filters.sellerId));
+    if (filters.isFeatured) tags.push(productTags.featured());
+    return tags;
+  },
+  query: async (filters: ProductFilters = {}) => {
+    try {
+      const locale = (filters.locale ?? "en") as ProductLocale
+      // Storefront visibility: an admin-approved product the seller has left on.
+      const conditions = [eq(products.status, "active")];
 
-  return unstable_cache(
-    async () => {
-      try {
-        const locale = (filters.locale ?? "en") as ProductLocale
-        const conditions = [eq(products.isActive, filters.isActive ?? true)];
-
-        if (filters.categoryId) {
-          conditions.push(eq(products.categoryId, filters.categoryId));
-        }
-
-        if (filters.categoryName) {
-          const [cat] = await db.select({ id: categories.id }).from(categories).where(eq(categories.name, filters.categoryName!)).limit(1)
-          if (cat) conditions.push(eq(products.categoryId, cat.id))
-        }
-
-        if (filters.brandId) {
-          conditions.push(eq(brands.id, filters.brandId));
-        }
-
-        if (filters.minPrice !== undefined) {
-          conditions.push(
-            sql`(${products.price}->>'current')::numeric >= ${filters.minPrice}`
-          );
-        }
-
-        if (filters.maxPrice !== undefined) {
-          conditions.push(
-            sql`(${products.price}->>'current')::numeric <= ${filters.maxPrice}`
-          );
-        }
-
-        if (filters.minRating !== undefined) {
-          conditions.push(gte(products.averageRating, filters.minRating));
-        }
-
-        if (filters.condition) {
-          conditions.push(eq(products.condition, filters.condition as any));
-        }
-
-        if (filters.sellerId) {
-          conditions.push(eq(products.sellerId, filters.sellerId));
-        }
-
-        if (filters.isFeatured !== undefined) {
-          conditions.push(eq(products.isFeatured, filters.isFeatured));
-        }
-
-        if (filters.searchQuery) {
-          const pattern = `%${filters.searchQuery}%`;
-          conditions.push(
-            sql`EXISTS (
-              SELECT 1 FROM product_translations pt
-              WHERE pt.product_id = ${products.id}
-              AND pt.locale IN ('en', 'ar')
-              AND (pt.title ILIKE ${pattern} OR pt.description ILIKE ${pattern})
-            )`
-          );
-        }
-
-        // Determine ordering
-        let orderBy = [];
-        switch (filters.sortBy) {
-          case "price_asc":
-            orderBy.push(asc(sql`(${products.price}->>'current')::numeric`));
-            break;
-          case "price_desc":
-            orderBy.push(desc(sql`(${products.price}->>'current')::numeric`));
-            break;
-          case "rating":
-            orderBy.push(desc(products.averageRating));
-            break;
-          case "newest":
-            orderBy.push(desc(products.createdAt));
-            break;
-          case "popular":
-            orderBy.push(desc(products.reviewCount));
-            break;
-          default:
-            orderBy.push(desc(products.createdAt));
-        }
-
-        const productsListRaw = await db.query.products.findMany({
-          where: and(...conditions),
-          with: {
-            brand: true,
-            category: true,
-            productTranslations: true,
-          },
-          orderBy,
-          limit: filters.limit || 30,
-          offset: filters.offset || 0,
-        })
-
-        type ProductWithTranslations = Record<string, unknown> & {
-          productTranslations?: Array<{ locale: string; title: string; description?: string | null; bulletPoints?: unknown; slug?: string | null; metaTitle?: string | null; metaDescription?: string | null }>
-        }
-        const productsList = productsListRaw.map((p: ProductWithTranslations) => {
-          const translation = pickTranslationFromArray(p.productTranslations ?? [], locale)
-          return mergeProductWithTranslation(p, translation)
-        })
-
-        // Get total count for pagination
-        const totalCount = await db
-          .select({ count: sql`count(*)` })
-          .from(products)
-          .leftJoin(categories, eq(products.categoryId, categories.id))
-          .leftJoin(brands, eq(products.brandId, brands.id))
-          .where(and(...conditions));
-
-        return {
-          success: true,
-          data: productsList,
-          totalCount: Number(totalCount[0]?.count),
-          hasMore:
-            (filters.offset || 0) + productsList.length <
-            Number(totalCount[0]?.count),
-        };
-      } catch (error) {
-        console.error("Error fetching products:", error);
-        return { success: false, error: "Failed to fetch products" };
+      if (filters.categoryId) {
+        conditions.push(eq(products.categoryId, filters.categoryId));
       }
-    },
-    [cacheKey],
-    {
-      tags: ["products"],
-      revalidate: 1800, // 30 minutes - product listings change less frequently than daily
-    }
-  )();
-}
 
-export async function getProductBySlug(slug: string, locale: ProductLocale = "en") {
-  return unstable_cache(
-    async () => {
+      if (filters.categoryName) {
+        const [cat] = await db.select({ id: categories.id }).from(categories).where(eq(categories.name, filters.categoryName!)).limit(1)
+        if (cat) conditions.push(eq(products.categoryId, cat.id))
+      }
+
+      if (filters.brandId) {
+        conditions.push(eq(products.brandId, filters.brandId));
+      }
+
+      if (filters.brandName) {
+        const [brand] = await db.select({ id: brands.id }).from(brands).where(eq(brands.name, filters.brandName!)).limit(1)
+        if (brand) conditions.push(eq(products.brandId, brand.id))
+      }
+
+      if (filters.minPrice !== undefined) {
+        conditions.push(
+          sql`(${products.price}->>'final')::numeric >= ${filters.minPrice}`
+        );
+      }
+
+      if (filters.maxPrice !== undefined) {
+        conditions.push(
+          sql`(${products.price}->>'final')::numeric <= ${filters.maxPrice}`
+        );
+      }
+
+      if (filters.minRating !== undefined) {
+        conditions.push(gte(products.averageRating, filters.minRating));
+      }
+
+      if (filters.condition) {
+        conditions.push(eq(products.condition, filters.condition as any));
+      }
+
+      if (filters.sellerId) {
+        conditions.push(eq(products.sellerId, filters.sellerId));
+      }
+
+      if (filters.isFeatured !== undefined) {
+        conditions.push(eq(products.isFeatured, filters.isFeatured));
+      }
+
+      if (filters.searchQuery) {
+        const pattern = `%${filters.searchQuery}%`;
+        conditions.push(
+          sql`EXISTS (
+            SELECT 1 FROM product_translations pt
+            WHERE pt.product_id = ${products.id}
+            AND pt.locale IN ('en', 'ar')
+            AND (pt.title ILIKE ${pattern} OR pt.description ILIKE ${pattern})
+          )`
+        );
+      }
+
+      // Determine ordering
+      let orderBy = [];
+      switch (filters.sortBy) {
+        case "price_asc":
+          orderBy.push(asc(sql`(${products.price}->>'final')::numeric`));
+          break;
+        case "price_desc":
+          orderBy.push(desc(sql`(${products.price}->>'final')::numeric`));
+          break;
+        case "rating":
+          orderBy.push(desc(products.averageRating));
+          break;
+        case "newest":
+          orderBy.push(desc(products.createdAt));
+          break;
+        case "popular":
+          orderBy.push(desc(products.reviewCount));
+          break;
+        default:
+          orderBy.push(desc(products.createdAt));
+      }
+
+      const productsListRaw = await db.query.products.findMany({
+        where: and(...conditions),
+        with: {
+          brand: true,
+          category: true,
+          productTranslations: true,
+        },
+        orderBy,
+        limit: filters.limit || 30,
+        offset: filters.offset || 0,
+        extras: {
+          totalCount: sql<number>`count(*) over ()`.as("total_count"),
+        },
+      })
+
+      type ProductWithTranslations = Record<string, unknown> & {
+        totalCount: number
+        productTranslations?: Array<{ locale: string; title: string; description?: string | null; bulletPoints?: unknown; slug?: string | null; metaTitle?: string | null; metaDescription?: string | null }>
+      }
+      const productsList = (productsListRaw as ProductWithTranslations[]).map((p) => {
+        const translation = pickTranslationFromArray(p.productTranslations ?? [], locale)
+        return mergeProductWithTranslation(p, translation)
+      })
+
+      // count(*) over () on the same query replaces a second round-trip count query.
+      const totalCount = (productsListRaw[0] as ProductWithTranslations | undefined)?.totalCount ?? 0;
+
+      return {
+        success: true,
+        data: productsList,
+        totalCount: Number(totalCount),
+        hasMore:
+          (filters.offset || 0) + productsList.length < Number(totalCount),
+      };
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      return { success: false, error: "Failed to fetch products" };
+    }
+  },
+});
+
+export const getProductBySlug = createCachedQuery({
+  name: "ecommerce:products:by-slug",
+  ttl: cacheProfiles.detail,
+  // The product id isn't known until the slug lookup runs, so this can only
+  // be tagged by slug — but invalidateProduct() always includes the
+  // CURRENT slug tag on every mutation (not just slug changes), so this is
+  // still purged by every create/update/delete/price/visibility change.
+  tags: (slug: string, locale: ProductLocale = "en") => [productTags.slug(locale, slug)],
+  query: async (slug: string, locale: ProductLocale = "en") => {
       try {
         const productId = await getProductIdBySlug(slug, locale)
         if (!productId) {
@@ -195,7 +209,10 @@ export async function getProductBySlug(slug: string, locale: ProductLocale = "en
         }
 
         const product = await db.query.products.findFirst({
-          where: and(eq(products.id, productId), eq(products.isActive, true)),
+          where: and(
+            eq(products.id, productId),
+            eq(products.status, "active"),
+          ),
           with: {
             brand: true,
             seller: {
@@ -252,7 +269,7 @@ export async function getProductBySlug(slug: string, locale: ProductLocale = "en
         const relatedProductsRaw = await db.query.products.findMany({
           where: and(
             eq(products.categoryId, product.categoryId),
-            eq(products.isActive, true),
+            eq(products.status, "active"),
             sql`${products.id} != ${product.id}`
           ),
           with: {
@@ -282,14 +299,8 @@ export async function getProductBySlug(slug: string, locale: ProductLocale = "en
         console.error("Error fetching product:", error)
         return { success: false, error: "Failed to fetch product" }
       }
-    },
-    [`product-${slug}-${locale}`],
-    {
-      tags: ["products", `product-${slug}`],
-      revalidate: 600,
-    }
-  )()
-}
+  },
+});
 
 export async function getProductVariants(productId: string) {
   // NOT CACHED: Real-time data - inventory and pricing change frequently
@@ -312,7 +323,7 @@ export async function getFeaturedProducts() {
       try {
         const featured = await db.query.products.findMany({
           where: and(
-            eq(products.isActive, true),
+            eq(products.status, "active"),
             eq(products.isFeatured, true)
           ),
           with: {
@@ -336,7 +347,7 @@ export async function getFeaturedProducts() {
     },
     ["featured-products"],
     {
-      tags: ["products", "featured-products"],
+      tags: [productTags.listing(), productTags.featured()],
       revalidate: 120,
     }
   )();
@@ -348,7 +359,7 @@ export async function getBestSellingProducts() {
       try {
         const bestSelling = await db.query.products.findMany({
           where: and(
-            eq(products.isActive, true),
+            eq(products.status, "active"),
             eq(products.isMostSelling, true)
           ),
           with: {
@@ -369,7 +380,7 @@ export async function getBestSellingProducts() {
     },
     ["best-selling-products"],
     {
-      tags: ["products", "best-selling-products"],
+      tags: [productTags.listing(), productTags.bestSelling()],
       revalidate: 180,
     }
   )();
@@ -384,7 +395,7 @@ export async function getNewArrivals() {
 
         const newProducts = await db.query.products.findMany({
           where: and(
-            eq(products.isActive, true),
+            eq(products.status, "active"),
             gte(products.createdAt, thirtyDaysAgo.toISOString())
           ),
           with: {
@@ -402,7 +413,7 @@ export async function getNewArrivals() {
     },
     ["new-arrivals"],
     {
-      tags: ["products", "new-arrivals"],
+      tags: [productTags.listing(), productTags.newArrivals()],
       revalidate: 300,
     }
   )();
@@ -413,7 +424,7 @@ export async function getDeals() {
   try {
     const deals = await db.query.products.findMany({
       where: and(
-        eq(products.isActive, true),
+        eq(products.status, "active"),
         sql`${products.price}->>'discount' IS NOT NULL`,
         sql`(${products.price}->>'discount')::numeric > 0`
       ),
@@ -438,7 +449,7 @@ export async function getProductsByCategory(categoryId: string, limit: number) {
         const categoryProducts = await db.query.products.findMany({
           where: and(
             eq(products.categoryId, categoryId),
-            eq(products.isActive, true)
+            eq(products.status, "active"),
           ),
           with: {
             brand: true,
@@ -461,7 +472,7 @@ export async function getProductsByCategory(categoryId: string, limit: number) {
     },
     [`category-products-${categoryId}-${limit}`],
     {
-      tags: ["products", `category-${categoryId}`],
+      tags: [productTags.listing(), productTags.category(categoryId)],
       revalidate: 180,
     }
   )();
@@ -474,7 +485,7 @@ export async function getProductsByBrand(brandId: string, limit: number) {
         const brandProducts = await db.query.products.findMany({
           where: and(
             eq(products.brandId, brandId),
-            eq(products.isActive, true)
+            eq(products.status, "active"),
           ),
           with: {
             seller: {
@@ -496,7 +507,7 @@ export async function getProductsByBrand(brandId: string, limit: number) {
     },
     [`brand-products-${brandId}-${limit}`],
     {
-      tags: ["products", `brand-${brandId}`],
+      tags: [productTags.listing(), productTags.brand(brandId)],
       revalidate: 180,
     }
   )();
@@ -509,7 +520,7 @@ export async function getProductsBySeller(sellerId: string, limit: number) {
         const sellerProducts = await db.query.products.findMany({
           where: and(
             eq(products.sellerId, sellerId),
-            eq(products.isActive, true)
+            eq(products.status, "active"),
           ),
           with: {
             brand: true,
@@ -526,7 +537,7 @@ export async function getProductsBySeller(sellerId: string, limit: number) {
     },
     [`seller-products-${sellerId}-${limit}`],
     {
-      tags: ["products", `seller-${sellerId}`],
+      tags: [productTags.listing(), productTags.seller(sellerId)],
       revalidate: 180,
     }
   )();
@@ -543,7 +554,7 @@ export async function getAllProductSlugs() {
           .where(
             and(
               eq(productTranslations.locale, "en"),
-              eq(products.isActive, true),
+              eq(products.status, "active"),
               isNotNull(productTranslations.slug)
             )
           )
@@ -559,7 +570,7 @@ export async function getAllProductSlugs() {
     },
     ["all-product-slugs"],
     {
-      tags: ["products", "product-slugs"],
+      tags: [productTags.all()],
       revalidate: 3600, // 1 hour - slugs change infrequently
     }
   )();
@@ -583,7 +594,7 @@ export async function getFilterOptions() {
             products,
             and(
               eq(products.categoryId, categories.id),
-              eq(products.isActive, true)
+              eq(products.status, "active")
             )
           )
           .groupBy(categories.id, categories.name, categories.nameAr, categories.slug)
@@ -601,7 +612,10 @@ export async function getFilterOptions() {
           .from(brands)
           .leftJoin(
             products,
-            and(eq(products.brandId, brands.id), eq(products.isActive, true))
+            and(
+              eq(products.brandId, brands.id),
+              eq(products.status, "active")
+            )
           )
           .groupBy(brands.id, brands.name, brands.slug)
           .having(sql`COUNT(${products.id}) > 0`)
@@ -610,11 +624,11 @@ export async function getFilterOptions() {
         // Get price range
         const priceRange = await db
           .select({
-            minPrice: sql<number>`MIN((${products.price}->>'current')::numeric)`,
-            maxPrice: sql<number>`MAX((${products.price}->>'current')::numeric)`,
+            minPrice: sql<number>`MIN((${products.price}->>'final')::numeric)`,
+            maxPrice: sql<number>`MAX((${products.price}->>'final')::numeric)`,
           })
           .from(products)
-          .where(eq(products.isActive, true));
+          .where(eq(products.status, "active"));
 
         return {
           success: true,
@@ -634,7 +648,7 @@ export async function getFilterOptions() {
     },
     ["filter-options"],
     {
-      tags: ["products", "filter-options", "categories", "brands"],
+      tags: [productTags.filterOptions(), categoryTags.all(), brandTags.all()],
       revalidate: 600,
     }
   )();
@@ -667,10 +681,12 @@ export async function submitProductQuestion(
       };
     }
 
-    // Verify product exists and is active
+    // Verify product exists and is active. `slug` is not a column on
+    // `products` (it lives on product_translations) — selecting it here
+    // previously threw at the database level on every call.
     const product = await db.query.products.findFirst({
-      where: and(eq(products.id, productId), eq(products.isActive, true)),
-      columns: { id: true, slug: true },
+      where: and(eq(products.id, productId), eq(products.status, "active")),
+      columns: { id: true },
     });
 
     if (!product) {
@@ -689,8 +705,8 @@ export async function submitProductQuestion(
       } as any)
       .returning();
 
-    // Revalidate the product page cache
-    revalidatePath(`/products/${product.slug}`);
+    // A pending question isn't shown until approved, so no cache bump is
+    // needed here — approval happens elsewhere and invalidates then.
 
     return {
       success: true,

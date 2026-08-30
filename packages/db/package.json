@@ -19,10 +19,21 @@
       "types": "./src/supabase/service.ts",
       "import": "./src/supabase/service.ts",
       "require": "./src/supabase/service.ts"
+    },
+    "./inventory": {
+      "types": "./src/inventory/index.ts",
+      "import": "./src/inventory/index.ts",
+      "require": "./src/inventory/index.ts"
+    },
+    "./coupons": {
+      "types": "./src/coupons/index.ts",
+      "import": "./src/coupons/index.ts",
+      "require": "./src/coupons/index.ts"
     }
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
@@ -41,7 +52,10 @@
   },
   "devDependencies": {
     "@types/node": "^25.0.3",
+    "@workspace/typescript-config": "workspace:*",
     "drizzle-kit": "^0.31.8",
-    "tsx": "^4.21.0"
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
   }
 }

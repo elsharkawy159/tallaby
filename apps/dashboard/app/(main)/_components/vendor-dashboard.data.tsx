@@ -1,5 +1,9 @@
 import { getSellerMetrics } from "@/actions/seller";
 import { getSellerOrders } from "@/actions/orders";
+import {
+  getOrderDisplayNumber,
+  resolveVendorOrderStatus,
+} from "../orders/orders.lib";
 import { UnansweredQuestionsData } from "./unanswered-questions.data";
 
 import {
@@ -47,8 +51,6 @@ export async function VendorDashboardData() {
     getSellerMetrics(),
     getSellerOrders({ limit: 5, offset: 0 }),
   ]);
-
-  console.log("metricsRes", metricsRes);
 
   const metrics = metricsRes?.data ?? ({} as any);
   const latest = Array.isArray(ordersRes?.data)
@@ -210,10 +212,7 @@ export async function VendorDashboardData() {
                     </TableRow>
                   ) : (
                     latest.map((item: any) => {
-                      const orderNo =
-                        item.order?.orderNumber ??
-                        item.orderId?.slice(0, 8) ??
-                        "—";
+                      const orderNo = getOrderDisplayNumber(item);
                       const customer =
                         item.order?.user?.fullName ||
                         [
@@ -249,10 +248,9 @@ export async function VendorDashboardData() {
                           </TableCell>
                           <TableCell className="hidden sm:table-cell">
                             <Badge variant="secondary" className="capitalize">
-                              {String(item.status || "pending").replaceAll(
-                                "_",
-                                " "
-                              )}
+                              {String(
+                                resolveVendorOrderStatus(item)
+                              ).replaceAll("_", " ")}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-right">{total}</TableCell>

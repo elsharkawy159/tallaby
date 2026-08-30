@@ -1,13 +1,9 @@
 import type { Seller, SellerStatus } from "./sellers.types";
+import { formatCurrency as formatCurrencyValue } from "@workspace/lib";
 
 export const formatCurrency = (amount: string | number): string => {
   const numAmount = typeof amount === "string" ? parseFloat(amount) : amount;
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(numAmount);
+  return formatCurrencyValue(numAmount);
 };
 
 export const formatDate = (dateString: string): string => {

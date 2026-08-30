@@ -100,7 +100,7 @@ app.get("/connect/return", async (c) => {
       await tx.insert(sellerWallet).values({
         sellerId,
         balance: "0.00",
-        currency: "usd",
+        currency: "egp",
       });
     });
 

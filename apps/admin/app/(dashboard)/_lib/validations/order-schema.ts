@@ -34,7 +34,7 @@ export const orderSchema = z.object({
     .number()
     .min(0, "Total amount must be a positive number")
     .max(1000000, "Total amount must be less than 1,000,000"),
-  currency: z.string().default("USD"),
+  currency: z.literal("EGP").default("EGP"),
   status: z
     .enum([
       "pending",
@@ -125,7 +125,7 @@ export const orderItemSchema = z.object({
     .min(0, "Commission rate must be a positive number")
     .max(100, "Commission rate must be less than or equal to 100"),
   sellerEarning: z.number().min(0, "Seller earning must be a positive number"),
-  currency: z.string().default("USD"),
+  currency: z.literal("EGP").default("EGP"),
   condition: z
     .enum([
       "new",

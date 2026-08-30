@@ -1,6 +1,7 @@
 "use server";
 
 import { unstable_cache } from "next/cache";
+import { brandTags } from "@workspace/cache";
 import { db } from "@workspace/db";
 import {
   brands,
@@ -65,7 +66,7 @@ export async function getAllBrands(params?: {
     },
     [cacheKey],
     {
-      tags: ["brands"],
+      tags: [brandTags.all()],
       revalidate: 86400, // 24 hours - brands change infrequently
     }
   )();
@@ -89,7 +90,7 @@ export async function getBrandBySlug(slug: string) {
           .select({ count: sql<number>`count(*)` })
           .from(products)
           .where(
-            and(eq(products.brandId, brand.id), eq(products.isActive, true))
+            and(eq(products.brandId, brand.id), eq(products.status, "active"))
           );
 
         return {
@@ -106,7 +107,7 @@ export async function getBrandBySlug(slug: string) {
     },
     [`brand-${slug}`],
     {
-      tags: ["brands", `brand-${slug}`],
+      tags: [brandTags.all(), brandTags.slug(slug)],
       revalidate: 86400, // 24 hours - brands change infrequently
     }
   )();
@@ -131,7 +132,7 @@ export async function getPopularBrands() {
     },
     ["popular-brands"],
     {
-      tags: ["brands", "popular-brands"],
+      tags: [brandTags.all(), brandTags.popular()],
       revalidate: 3600, // 1 hour - popularity metrics change more frequently
     }
   )();
@@ -156,7 +157,7 @@ export async function getFeaturedBrands() {
     },
     ["featured-brands"],
     {
-      tags: ["brands", "featured-brands"],
+      tags: [brandTags.all(), brandTags.featured()],
       revalidate: 86400, // 24 hours - featured brands change infrequently
     }
   )();
@@ -188,7 +189,7 @@ export async function searchBrands(query: string) {
     },
     [`brand-search-${query.toLowerCase()}`],
     {
-      tags: ["brands", "brand-search"],
+      tags: [brandTags.all()],
       revalidate: 3600, // 1 hour - search results change infrequently
     }
   )();
@@ -214,7 +215,7 @@ export async function getBrandsByCategory(categoryId: string) {
             and(
               eq(products.brandId, brands.id),
               eq(products.categoryId, categoryId),
-              eq(products.isActive, true)
+              eq(products.status, "active")
             )
           )
           .groupBy(brands.id)
@@ -229,7 +230,7 @@ export async function getBrandsByCategory(categoryId: string) {
     },
     [`brands-category-${categoryId}`],
     {
-      tags: ["brands", `category-${categoryId}`],
+      tags: [brandTags.all()],
       revalidate: 3600, // 1 hour - category-brand relationships change infrequently
     }
   )();
@@ -266,7 +267,7 @@ export async function getAlphabeticalBrands() {
     },
     ["alphabetical-brands"],
     {
-      tags: ["brands", "alphabetical-brands"],
+      tags: [brandTags.all()],
       revalidate: 86400, // 24 hours - alphabetical listing changes infrequently
     }
   )();

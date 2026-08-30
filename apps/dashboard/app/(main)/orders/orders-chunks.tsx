@@ -11,6 +11,7 @@ import {
 } from "@workspace/ui/components/card";
 import { Badge } from "@workspace/ui/components/badge";
 import { getPublicUrl } from "@/lib/utils";
+import Image from "next/image";
 
 export type VendorOrderRow = {
   id: string;
@@ -24,12 +25,15 @@ export type VendorOrderRow = {
   total: string;
   status:
     | "pending"
+    | "assigned"
     | "payment_processing"
     | "confirmed"
     | "shipping_soon"
     | "shipped"
     | "out_for_delivery"
     | "delivered"
+    | "failed"
+    | "returned"
     | "cancelled"
     | "refund_requested"
     | "refunded"
@@ -71,10 +75,11 @@ export function VendorOrdersTable({ rows }: { rows: VendorOrderRow[] }) {
           return (
             <div className="flex items-center gap-3">
               {image ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <Image
                   src={image}
                   alt={row.original.productTitle}
+                  width={40}
+                  height={40}
                   className="h-10 w-10 rounded object-cover border"
                 />
               ) : (
@@ -145,16 +150,21 @@ function statusToVariant(
     case "pending":
     case "payment_processing":
       return "secondary";
+    case "assigned":
     case "confirmed":
     case "shipping_soon":
     case "shipped":
     case "out_for_delivery":
+      return "outline";
     case "delivered":
       return "default";
+    case "failed":
     case "cancelled":
     case "refund_requested":
     case "refunded":
       return "destructive";
+    case "returned":
+      return "secondary";
     default:
       return "outline";
   }

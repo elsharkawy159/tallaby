@@ -57,9 +57,10 @@ export const useAdminAuth = (): UseAdminAuthReturn => {
     userId: string
   ): Promise<AdminUser | null> => {
     try {
+      // Real columns are snake_case; aliased so the returned shape matches AdminUser.
       const { data, error } = await supabase
         .from("users")
-        .select("id, email, role, isVerified, fullName, createdAt, updatedAt")
+        .select("id, email, role, isVerified:is_verified, fullName:full_name, createdAt:created_at, updatedAt:updated_at")
         .eq("id", userId)
         .single();
 

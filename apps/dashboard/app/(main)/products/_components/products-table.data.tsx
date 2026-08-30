@@ -11,7 +11,7 @@ export default async function ProductsTableData() {
       title: productTranslations.title,
       description: productTranslations.description,
       images: products.images,
-      isActive: products.isActive,
+      status: products.status,
     })
     .from(products)
     .leftJoin(
@@ -27,7 +27,7 @@ export default async function ProductsTableData() {
         title: row.title ?? "",
         description: row.description ?? undefined,
         images: Array.isArray(row.images) ? (row.images as string[]) : [],
-        isActive: row.isActive ?? false,
+        status: row.status ?? "pending",
       }))
     );
 

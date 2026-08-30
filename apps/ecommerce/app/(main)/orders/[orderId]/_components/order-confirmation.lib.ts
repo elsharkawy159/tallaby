@@ -3,15 +3,19 @@ import type { OrderConfirmationData } from "./order-confirmation.types";
 /**
  * Format currency amount with proper locale formatting
  */
+import type { OrderConfirmationData } from "./order-confirmation.types";
+
+/**
+ * Format currency amount with proper locale formatting
+ */
 export function formatCurrency(
   amount: number,
-  currency: string = "EGP",
   locale: string = "en-EG"
 ): string {
   const isArabic = locale.startsWith("ar");
   return new Intl.NumberFormat(isArabic ? "ar-EG" : "en-EG", {
     style: "currency",
-    currency: currency,
+    currency: "EGP",
     minimumFractionDigits: 2,
     ...(isArabic && { numberingSystem: "latn" }),
   }).format(amount);
@@ -132,7 +136,7 @@ export function getEstimatedDeliveryDate(orderDate: string): string {
 export function generateOrderSummary(data: OrderConfirmationData): string {
   const { order, summary } = data;
 
-  return `Order ${order.orderNumber} for ${formatCurrency(summary.totalAmount, order.currency)} with ${summary.itemCount} item${summary.itemCount !== 1 ? "s" : ""}`;
+  return `Order ${order.orderNumber} for ${formatCurrency(summary.totalAmount)} with ${summary.itemCount} item${summary.itemCount !== 1 ? "s" : ""}`;
 }
 
 /**

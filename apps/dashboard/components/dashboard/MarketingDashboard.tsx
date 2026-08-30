@@ -26,6 +26,7 @@ import { Badge } from "@workspace/ui/components/badge";
 import { Progress } from "@workspace/ui/components/progress";
 import { NewCampaignModal } from "@/components/modals/NewCampaignModal";
 import { useTranslations } from "next-intl";
+import { parseCurrencyAmount } from "@workspace/lib";
 
 const campaigns = [
   {
@@ -35,8 +36,8 @@ const campaigns = [
     status: "Active",
     reach: 12500,
     conversions: 580,
-    budget: "$2,500",
-    spent: "$1,850",
+    budget: "EGP 2,500",
+    spent: "EGP 1,850",
   },
   {
     id: "CAM002",
@@ -45,8 +46,8 @@ const campaigns = [
     status: "Scheduled",
     reach: 8200,
     conversions: 320,
-    budget: "$1,500",
-    spent: "$0",
+    budget: "EGP 1,500",
+    spent: "EGP 0",
   },
   {
     id: "CAM003",
@@ -55,8 +56,8 @@ const campaigns = [
     status: "Completed",
     reach: 15600,
     conversions: 890,
-    budget: "$3,000",
-    spent: "$2,950",
+    budget: "EGP 3,000",
+    spent: "EGP 2,950",
   },
 ];
 
@@ -79,7 +80,7 @@ const promotions = [
   },
   {
     code: "BUNDLE50",
-    discount: "$50",
+    discount: "EGP 50",
     uses: 156,
     limit: 500,
     expires: "2024-07-15",
@@ -183,9 +184,9 @@ export const MarketingDashboard = () => {
                   {t("marketing.adSpend")}
                 </p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  $4,800
+                  EGP 4,800
                 </p>
-                <p className="text-sm text-orange-600">$1,200 remaining</p>
+                <p className="text-sm text-orange-600">EGP 1,200 remaining</p>
               </div>
               <div className="bg-orange-100 dark:bg-orange-900 p-3 rounded-full">
                 <DollarSign className="h-6 w-6 text-orange-600" />
@@ -236,12 +237,8 @@ export const MarketingDashboard = () => {
                       <span>Budget Used</span>
                       <span>
                         {Math.round(
-                          (parseInt(
-                            campaign.spent.replace("$", "").replace(",", "")
-                          ) /
-                            parseInt(
-                              campaign.budget.replace("$", "").replace(",", "")
-                            )) *
+                          (parseCurrencyAmount(campaign.spent) /
+                            parseCurrencyAmount(campaign.budget)) *
                             100
                         )}
                         %
@@ -249,12 +246,8 @@ export const MarketingDashboard = () => {
                     </div>
                     <Progress
                       value={
-                        (parseInt(
-                          campaign.spent.replace("$", "").replace(",", "")
-                        ) /
-                          parseInt(
-                            campaign.budget.replace("$", "").replace(",", "")
-                          )) *
+                        (parseCurrencyAmount(campaign.spent) /
+                          parseCurrencyAmount(campaign.budget)) *
                         100
                       }
                       className="h-2"

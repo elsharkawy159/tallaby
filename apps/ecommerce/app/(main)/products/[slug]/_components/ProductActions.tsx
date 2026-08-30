@@ -30,7 +30,7 @@ export const ProductActions = ({
   const t = useTranslations("product");
   const [quantity, setQuantity] = useState(cartItemQuantity || 1);
   const stockCount = product.quantity ? Number(product.quantity) : 0;
-  const hasStock = product.isActive && stockCount > 0;
+  const hasStock = product.status === "active" && stockCount > 0;
 
   const handleQuantityChange = (newQuantity: number) => {
     setQuantity(newQuantity);

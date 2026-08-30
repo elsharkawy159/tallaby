@@ -13,6 +13,7 @@ import {
   inArray,
 } from "@workspace/db";
 import { unstable_cache } from "next/cache";
+import { categoryTags } from "@workspace/cache";
 
 export const getAllCategories = unstable_cache(
   async () => {
@@ -32,7 +33,7 @@ export const getAllCategories = unstable_cache(
   },
   ["all-categories"],
   {
-    tags: ["categories"],
+    tags: [categoryTags.all(), categoryTags.tree()],
     revalidate: 60 * 60 * 24,
   },
 );
@@ -61,7 +62,7 @@ export const getCategoryTree = unstable_cache(
   },
   ["category-tree"],
   {
-    tags: ["categories"],
+    tags: [categoryTags.all(), categoryTags.tree()],
     revalidate: 60 * 60 * 24,
   },
 );
@@ -91,7 +92,7 @@ export const getCategoryBySlug = unstable_cache(
         .where(
           and(
             eq(products.categoryId, category.id),
-            eq(products.isActive, true),
+            eq(products.status, "active"),
           ),
         );
 
@@ -110,7 +111,7 @@ export const getCategoryBySlug = unstable_cache(
   },
   ["category-by-slug"],
   {
-    tags: ["categories"],
+    tags: [categoryTags.all(), categoryTags.tree()],
     revalidate: 60 * 60 * 24,
   },
 );
@@ -133,7 +134,7 @@ export const getTopCategories = unstable_cache(
           products,
           and(
             eq(products.categoryId, categories.id),
-            eq(products.isActive, true),
+            eq(products.status, "active"),
           ),
         )
         .groupBy(categories.id)
@@ -155,7 +156,7 @@ export const getTopCategories = unstable_cache(
           .where(
             and(
               inArray(products.categoryId, categoryIds),
-              eq(products.isActive, true),
+              eq(products.status, "active"),
               sql`${products.images} IS NOT NULL`,
               sql`jsonb_array_length(${products.images}) > 0`,
             ),
@@ -183,7 +184,7 @@ export const getTopCategories = unstable_cache(
   },
   ["top-categories"],
   {
-    tags: ["categories"],
+    tags: [categoryTags.all(), categoryTags.tree()],
     revalidate: 60 * 60 * 24, // 1 day
   },
 );
@@ -211,7 +212,7 @@ export const getCategoriesWithProducts = unstable_cache(
             .where(
               and(
                 eq(products.categoryId, category.id),
-                eq(products.isActive, true),
+                eq(products.status, "active"),
               ),
             );
 
@@ -230,7 +231,7 @@ export const getCategoriesWithProducts = unstable_cache(
   },
   ["categories-with-products"],
   {
-    tags: ["categories"],
+    tags: [categoryTags.all(), categoryTags.tree()],
     revalidate: 60 * 60 * 24, // 1 day
   },
 );
@@ -261,7 +262,7 @@ const buildCategoryTree = unstable_cache(
   },
   ["build-category-tree"],
   {
-    tags: ["categories"],
+    tags: [categoryTags.all(), categoryTags.tree()],
     revalidate: 60 * 60 * 24, // 1 day
   },
 );
@@ -288,7 +289,7 @@ const getCategoryBreadcrumb = unstable_cache(
   },
   ["get-category-breadcrumb"],
   {
-    tags: ["categories"],
+    tags: [categoryTags.all(), categoryTags.tree()],
     revalidate: 60 * 60 * 24, // 1 day
   },
 );

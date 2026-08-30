@@ -254,7 +254,6 @@ export const PricingSection = () => {
                 label="Base Price"
                 placeholder="0.00"
                 required
-                currency="EGP"
                 helpText="This is the standard retail price"
                 className="text-sm"
               />
@@ -262,7 +261,6 @@ export const PricingSection = () => {
                 name="price.list"
                 label="List Price (MSRP)"
                 placeholder="0.00"
-                currency="EGP"
                 helpText="Manufacturer's suggested retail price"
                 className="text-sm"
               />
@@ -273,7 +271,6 @@ export const PricingSection = () => {
                 name="price.discountValue"
                 label="Discount"
                 placeholder="0.00"
-                currency="EGP"
                 helpText="Discount amount or percentage"
                 className="text-sm"
               />
@@ -292,7 +289,6 @@ export const PricingSection = () => {
               name="price.final"
               label="Final Price"
               placeholder="0.00"
-              currency="EGP"
               helpText="Product Display price (List Price + 10% commission)"
               disabled
               className="text-sm"
@@ -525,7 +521,6 @@ export const VariantsSection = () => {
                         name={`variants.${index}.price`}
                         label="Price"
                         placeholder="0.00"
-                        currency="EGP"
                         required
                         className="text-sm"
                       />

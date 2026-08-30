@@ -61,7 +61,7 @@ const payments = [
     amount: 124.99,
     method: "Credit Card",
     methodDetails: "Visa •••• 1234",
-    currency: "USD",
+    currency: "EGP",
     status: "paid",
     transactionId: "txn_abc123def456",
     authorizedAt: "2023-10-15T10:30:00Z",
@@ -77,7 +77,7 @@ const payments = [
     amount: 89.5,
     method: "PayPal",
     methodDetails: "emily.johnson@example.com",
-    currency: "USD",
+    currency: "EGP",
     status: "paid",
     transactionId: "txn_bcd234efg567",
     authorizedAt: "2023-10-14T15:45:00Z",
@@ -93,7 +93,7 @@ const payments = [
     amount: 356.75,
     method: "Credit Card",
     methodDetails: "Mastercard •••• 5678",
-    currency: "USD",
+    currency: "EGP",
     status: "paid",
     transactionId: "txn_cde345fgh678",
     authorizedAt: "2023-10-13T09:15:00Z",
@@ -109,7 +109,7 @@ const payments = [
     amount: 67.25,
     method: "Credit Card",
     methodDetails: "Amex •••• 9012",
-    currency: "USD",
+    currency: "EGP",
     status: "pending",
     transactionId: "txn_def456ghi789",
     authorizedAt: "2023-10-12T14:20:00Z",
@@ -125,7 +125,7 @@ const payments = [
     amount: 215.0,
     method: "Credit Card",
     methodDetails: "Visa •••• 3456",
-    currency: "USD",
+    currency: "EGP",
     status: "refunded",
     transactionId: "txn_efg567hij890",
     authorizedAt: "2023-10-11T11:50:00Z",
@@ -142,7 +142,7 @@ const payments = [
     amount: 178.45,
     method: "Apple Pay",
     methodDetails: "Apple Pay",
-    currency: "USD",
+    currency: "EGP",
     status: "paid",
     transactionId: "txn_fgh678ijk901",
     authorizedAt: "2023-10-10T16:30:00Z",
@@ -158,7 +158,7 @@ const payments = [
     amount: 432.0,
     method: "Credit Card",
     methodDetails: "Mastercard •••• 7890",
-    currency: "USD",
+    currency: "EGP",
     status: "failed",
     transactionId: "txn_ghi789jkl012",
     authorizedAt: null,
@@ -175,7 +175,7 @@ const payments = [
     amount: 99.99,
     method: "Google Pay",
     methodDetails: "Google Pay",
-    currency: "USD",
+    currency: "EGP",
     status: "authorized",
     transactionId: "txn_hij890klm123",
     authorizedAt: "2023-10-08T10:15:00Z",
@@ -194,7 +194,7 @@ const refunds = [
     customerId: "cust_005",
     customerName: "Robert Wilson",
     amount: 215.0,
-    currency: "USD",
+    currency: "EGP",
     reason: "Customer requested cancellation",
     status: "completed",
     transactionId: "txn_refund_123",
@@ -209,7 +209,7 @@ const refunds = [
     customerId: "cust_009",
     customerName: "Kevin Thompson",
     amount: 45.5,
-    currency: "USD",
+    currency: "EGP",
     reason: "Item damaged during shipping",
     status: "pending",
     transactionId: "txn_refund_456",
@@ -224,7 +224,7 @@ const refunds = [
     customerId: "cust_010",
     customerName: "Karen Robinson",
     amount: 32.75,
-    currency: "USD",
+    currency: "EGP",
     reason: "Wrong item received",
     status: "completed",
     transactionId: "txn_refund_789",
@@ -315,13 +315,12 @@ export default function PaymentsPage() {
       header: "Amount",
       cell: ({ row }) => {
         const amount = parseFloat(row.getValue("amount"));
-        const currency = row.original.currency;
 
         return (
           <div className="font-medium text-right">
-            {new Intl.NumberFormat("en-US", {
+            {new Intl.NumberFormat("en-EG", {
               style: "currency",
-              currency: currency,
+              currency: "EGP",
             }).format(amount)}
           </div>
         );
@@ -454,13 +453,12 @@ export default function PaymentsPage() {
       header: "Amount",
       cell: ({ row }) => {
         const amount = parseFloat(row.getValue("amount"));
-        const currency = row.original.currency;
 
         return (
           <div className="font-medium text-right">
-            {new Intl.NumberFormat("en-US", {
+            {new Intl.NumberFormat("en-EG", {
               style: "currency",
-              currency: currency,
+              currency: "EGP",
             }).format(amount)}
           </div>
         );
@@ -605,9 +603,9 @@ export default function PaymentsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {new Intl.NumberFormat("en-US", {
+              {new Intl.NumberFormat("en-EG", {
                 style: "currency",
-                currency: "USD",
+                currency: "EGP",
                 maximumFractionDigits: 0,
               }).format(totalPaid)}
             </div>
@@ -626,9 +624,9 @@ export default function PaymentsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-amber-600">
-              {new Intl.NumberFormat("en-US", {
+              {new Intl.NumberFormat("en-EG", {
                 style: "currency",
-                currency: "USD",
+                currency: "EGP",
                 maximumFractionDigits: 0,
               }).format(totalPending)}
             </div>
@@ -651,9 +649,9 @@ export default function PaymentsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-600">
-              {new Intl.NumberFormat("en-US", {
+              {new Intl.NumberFormat("en-EG", {
                 style: "currency",
-                currency: "USD",
+                currency: "EGP",
                 maximumFractionDigits: 0,
               }).format(totalRefunded)}
             </div>
@@ -672,9 +670,9 @@ export default function PaymentsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">
-              {new Intl.NumberFormat("en-US", {
+              {new Intl.NumberFormat("en-EG", {
                 style: "currency",
-                currency: "USD",
+                currency: "EGP",
                 maximumFractionDigits: 0,
               }).format(totalFailed)}
             </div>

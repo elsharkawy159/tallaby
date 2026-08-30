@@ -1,4 +1,8 @@
 import { getSellerOrders } from "@/actions/orders";
+import {
+  getOrderDisplayNumber,
+  resolveVendorOrderStatus,
+} from "./orders.lib";
 import { VendorOrdersTable, type VendorOrderRow } from "./orders-chunks";
 
 export async function VendorOrdersData() {
@@ -17,7 +21,7 @@ export async function VendorOrdersData() {
 
       return {
         id: item.id,
-        orderId: item.orderId,
+        orderId: getOrderDisplayNumber(item),
         createdAt: item.createdAt,
         customerName,
         productTitle: item.product?.title ?? "",
@@ -25,7 +29,7 @@ export async function VendorOrdersData() {
         variant: item.productVariant?.name ?? null,
         quantity: item.quantity ?? 1,
         total: item.total ?? "0",
-        status: item.status,
+        status: resolveVendorOrderStatus(item),
       } as VendorOrderRow;
     }
   );

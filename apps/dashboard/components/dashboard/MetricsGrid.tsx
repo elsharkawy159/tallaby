@@ -4,7 +4,7 @@ import { Card, CardContent } from "@workspace/ui/components/card";
 const metrics = [
   {
     title: "Total Sales",
-    value: "$12,345",
+    value: "EGP 12,345",
     change: "+12.5%",
     changeText: "from last month",
     icon: DollarSign,

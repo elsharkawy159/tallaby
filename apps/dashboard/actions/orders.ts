@@ -36,6 +36,11 @@ export async function getSellerOrders(params?: {
       where: and(...conditions),
       with: {
         order: {
+          columns: {
+            id: true,
+            orderNumber: true,
+            status: true,
+          },
           with: {
             user: {
               columns: {
@@ -43,6 +48,12 @@ export async function getSellerOrders(params?: {
                 firstName: true,
                 lastName: true,
                 fullName: true,
+              },
+            },
+            shipments: {
+              columns: {
+                id: true,
+                status: true,
               },
             },
             userAddress_shippingAddressId: true,

@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { users, deliveries, shipments, orders, payments, paymentMethods, carts, categories, sellers, coupons, notifications, contacts, userAddresses, products, productVariants, refunds, returns, orderItems, shipmentItems, productQuestions, shippingAddresses, couponUsage, cartItems, reviews, returnItems, reviewVotes, searchLogs, sellerDocuments, sellerPayoutItems, sellerPayouts, reviewComments, userDevices, wishlistItems, wishlists, brands, productAnswers, userRewards, productTranslations, digitalProducts, digitalOrders, sellerCategories, sellerWallet, walletTransactions, digitalFiles, licenseKeys, digitalBundleItems, digitalAccessLogs } from "./schema";
+import { users, deliveries, shipments, orders, payments, paymentMethods, carts, categories, sellers, coupons, notifications, contacts, userAddresses, products, productVariants, refunds, returns, orderItems, shipmentItems, productQuestions, shippingAddresses, couponUsage, cartItems, reviews, returnItems, reviewVotes, searchLogs, sellerDocuments, sellerPayoutItems, sellerPayouts, reviewComments, userDevices, wishlistItems, wishlists, brands, productAnswers, userRewards, productTranslations, digitalProducts, digitalOrders, sellerCategories, sellerWallet, walletTransactions, digitalFiles, licenseKeys, digitalBundleItems, digitalAccessLogs, shippingProviders } from "./schema";
 
 export const deliveriesRelations = relations(deliveries, ({one}) => ({
 	user: one(users, {
@@ -13,6 +13,7 @@ export const deliveriesRelations = relations(deliveries, ({one}) => ({
 }));
 
 export const usersRelations = relations(users, ({one, many}) => ({
+	shipments: many(shipments),
 	deliveries: many(deliveries),
 	carts: many(carts),
 	notifications: many(notifications),
@@ -57,6 +58,18 @@ export const shipmentsRelations = relations(shipments, ({one, many}) => ({
 		fields: [shipments.sellerId],
 		references: [sellers.id]
 	}),
+	provider: one(shippingProviders, {
+		fields: [shipments.providerId],
+		references: [shippingProviders.id]
+	}),
+	rider: one(users, {
+		fields: [shipments.riderId],
+		references: [users.id]
+	}),
+}));
+
+export const shippingProvidersRelations = relations(shippingProviders, ({many}) => ({
+	shipments: many(shipments),
 }));
 
 export const paymentsRelations = relations(payments, ({one}) => ({

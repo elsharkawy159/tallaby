@@ -19,7 +19,7 @@ export const AnalyticsDashboard = () => {
   const metrics = [
     {
       title: t("dashboard.totalSales"),
-      value: "$15,234",
+      value: "EGP 15,234",
       change: "+12.5%",
       changeType: "positive" as const,
       icon: DollarSign,

@@ -10,8 +10,6 @@ import {
   coupons,
   carts,
   cartItems,
-  products,
-  productVariants,
   returns,
   returnItems,
   reviews,
@@ -19,14 +17,31 @@ import {
   eq,
   and,
   desc,
+  inArray,
   sql,
 } from "@workspace/db";
+import {
+  decrementStock,
+  restoreStock,
+  InsufficientStockError,
+  type StockLine,
+} from "@workspace/db/inventory";
+import { claimCouponUsage } from "@workspace/db/coupons";
+import {
+  applyInvalidation,
+  invalidateProductInventory,
+} from "@workspace/cache";
 import { getCurrentUserId } from "@/lib/get-current-user-id";
 import { customAlphabet } from "nanoid";
 import { revalidatePath } from "next/cache";
 import { getUser } from "./auth";
 import { formatVariantTitle } from "@/lib/variant-utils";
 import { pickTranslationFromArray } from "@/lib/product-translations";
+
+/** Internal control-flow signal: the coupon lost a concurrent usage-limit race inside the order transaction. */
+class CouponClaimFailedError extends Error {}
+/** Internal control-flow signal: a concurrent request already transitioned this order (cancel idempotency guard). */
+class OrderAlreadyTransitionedError extends Error {}
 
 /**
  * Formats a number to a string with 2 decimal places for database storage.
@@ -54,7 +69,11 @@ export async function createOrder(data: {
       return { success: false, error: "Unable to get user ID" };
     }
 
-    // Get cart items with product translations
+    // Get cart items with product translations. `product` carries the
+    // AUTHORITATIVE status/categoryId/brandId used below — price
+    // is still taken from cartItems.price (frozen at add-to-cart, matching
+    // what the customer was shown), but every line is re-validated against
+    // the live product row before anything is written.
     const cart = await db.query.carts.findFirst({
       where: and(eq(carts.id, data.cartId), eq(carts.userId, userId)),
       with: {
@@ -98,6 +117,18 @@ export async function createOrder(data: {
       }
     }
 
+    // Fast-fail if a cart item is no longer purchasable. The atomic stock
+    // decrement below is the real concurrency guard against overselling;
+    // this just gives a clear error for an obviously stale/deactivated item.
+    for (const item of cart.cartItems) {
+      if (item.product.status !== "active") {
+        return {
+          success: false,
+          error: `Product is no longer available: ${item.product.sku ?? item.productId}`,
+        };
+      }
+    }
+
     // Calculate totals
     let subtotal = 0;
     const tax = 0;
@@ -110,13 +141,7 @@ export async function createOrder(data: {
 
     const orderItemsData = cart.cartItems.map((item) => {
       const itemSubtotal = Number(item.price) * item.quantity;
-      // const itemTax = itemSubtotal * 0.14; // 14% tax
-      // const itemShipping = 25; // Flat rate per item for now
-      // const itemTotal = itemSubtotal;
-
       subtotal += itemSubtotal;
-      // tax += itemTax;
-      // shippingCost += itemShipping;
 
       const itemCommission = itemSubtotal * 0.1; // 10% commission
       const itemSellerEarning = itemSubtotal * 0.9;
@@ -143,7 +168,8 @@ export async function createOrder(data: {
         price: item.price,
         subtotal: formatDecimal(itemSubtotal),
         tax: formatDecimal(tax),
-        shippingCost: formatDecimal(shippingCost),
+        // Shipping is recorded once on the order below, not duplicated per line.
+        shippingCost: "0.00",
         total: formatDecimal(itemSubtotal),
         discountAmount: "0.00",
         commissionRate: 0.1, // 10% commission
@@ -156,10 +182,14 @@ export async function createOrder(data: {
       };
     });
 
-    // Apply coupon if provided
+    // Apply coupon if provided. Validation (limits/dates/minimum purchase)
+    // happens here to compute totals; the actual usage-count CLAIM happens
+    // atomically inside the transaction below via claimCouponUsage, which
+    // re-checks the limit at write time and is what actually prevents two
+    // concurrent checkouts from both exceeding usageLimit.
     let discountAmount = 0;
     let shippingDiscount = 0;
-    let appliedCoupon = null;
+    let appliedCoupon: typeof coupons.$inferSelect | null = null;
 
     if (data.couponCode) {
       // Case-insensitive coupon lookup
@@ -228,108 +258,144 @@ export async function createOrder(data: {
     const totalDiscount = discountAmount + shippingDiscount;
     const totalAmount = subtotal + shippingCost + tax - totalDiscount;
 
-    // Generate a 10-character order number (e.g., ORD + 7 random alphanumeric chars)
     // Generate a more unique order number using nanoid
     const nanoid = customAlphabet("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 8);
     const orderNumber = `ORD${nanoid()}`;
 
-    // Create order
-    const [newOrder] = await db
-      .insert(orders)
-      .values({
-        orderNumber,
-        userId,
-        cartId: data.cartId,
-        subtotal: formatDecimal(subtotal),
-        shippingCost: formatDecimal(shippingCost),
-        tax: formatDecimal(tax),
-        discountAmount: formatDecimal(totalDiscount),
-        totalAmount: formatDecimal(totalAmount),
-        currency: cart.currency || "EGP",
-        status: "pending",
-        paymentStatus: "pending",
-        paymentMethod: data.paymentMethod,
-        shippingAddressId: data.shippingAddressId || null,
-        billingAddressId: data.billingAddressId || data.shippingAddressId || null,
-        isGift: data.isGift || false,
-        giftMessage: data.giftMessage,
-        couponCode: data.couponCode,
-        notes: data.notes,
-        hasDigitalItems,
-        isDigitalOnly: isDigitalOnlyCart,
-      })
-      .returning();
+    // Build the atomic stock-decrement lines. Keyed by (kind,id) so results
+    // can be matched back to their cart item afterward regardless of the
+    // order decrementStock actually applies them in (it sorts internally to
+    // avoid deadlocks against a concurrent multi-item order).
+    const stockLineMeta = new Map<string, (typeof cart.cartItems)[number]>();
+    const stockLines: StockLine[] = cart.cartItems.map((item) => {
+      const variant = item.variant as { id?: string } | null;
+      const line: StockLine = variant?.id
+        ? { kind: "variant", id: variant.id, quantity: item.quantity }
+        : { kind: "product", id: item.productId, quantity: item.quantity };
+      stockLineMeta.set(`${line.kind}:${line.id}`, item);
+      return line;
+    });
 
-    // Create order items
-    const createdOrderItems = await db
-      .insert(orderItems)
-      .values(
-        orderItemsData.map((item) => ({
-          ...item,
-          orderId: newOrder?.id as string,
-        })) as any
-      )
-      .returning();
+    let newOrder: typeof orders.$inferSelect | undefined;
+    let createdOrderItems: (typeof orderItems.$inferSelect)[] = [];
+    let stockResults: Awaited<ReturnType<typeof decrementStock>> = [];
 
-    // Record coupon usage
-    if (appliedCoupon) {
-      await db.insert(couponUsage).values({
-        couponId: appliedCoupon.id,
-        userId,
-        orderId: newOrder?.id as string,
-        discountAmount: formatDecimal(totalDiscount),
+    try {
+      await db.transaction(async (tx) => {
+        // 1. Atomic, WHERE-guarded decrement — no read-then-write. Throws
+        //    InsufficientStockError (rolling back everything below) the
+        //    instant any line can't be satisfied, so a multi-item order
+        //    either fully succeeds or fully fails.
+        stockResults = await decrementStock(tx, stockLines);
+
+        // 2. Atomic coupon claim — replaces the old read `usageCount` ->
+        //    write `usageCount + 1` race.
+        if (appliedCoupon) {
+          const claimed = await claimCouponUsage(tx, appliedCoupon.id);
+          if (!claimed) {
+            throw new CouponClaimFailedError();
+          }
+        }
+
+        // 3. Create order
+        [newOrder] = await tx
+          .insert(orders)
+          .values({
+            orderNumber,
+            userId,
+            cartId: data.cartId,
+            subtotal: formatDecimal(subtotal),
+            shippingCost: formatDecimal(shippingCost),
+            tax: formatDecimal(tax),
+            discountAmount: formatDecimal(totalDiscount),
+            totalAmount: formatDecimal(totalAmount),
+            currency: cart.currency || "EGP",
+            status: "pending",
+            paymentStatus: "pending",
+            paymentMethod: data.paymentMethod,
+            shippingAddressId: data.shippingAddressId || null,
+            billingAddressId:
+              data.billingAddressId || data.shippingAddressId || null,
+            isGift: data.isGift || false,
+            giftMessage: data.giftMessage,
+            couponCode: data.couponCode,
+            notes: data.notes,
+            hasDigitalItems,
+            isDigitalOnly: isDigitalOnlyCart,
+          })
+          .returning();
+
+        // 4. Create order items
+        createdOrderItems = await tx
+          .insert(orderItems)
+          .values(
+            orderItemsData.map((item) => ({
+              ...item,
+              orderId: newOrder!.id,
+            })) as any
+          )
+          .returning();
+
+        // 5. Record coupon usage
+        if (appliedCoupon) {
+          await tx.insert(couponUsage).values({
+            couponId: appliedCoupon.id,
+            userId,
+            orderId: newOrder!.id,
+            discountAmount: formatDecimal(totalDiscount),
+          });
+        }
+
+        // 6. Clear cart + mark completed
+        await tx
+          .delete(cartItems)
+          .where(
+            and(
+              eq(cartItems.cartId, data.cartId),
+              eq(cartItems.savedForLater, false)
+            )
+          );
+
+        await tx
+          .update(carts)
+          .set({
+            status: "completed",
+            updatedAt: new Date().toISOString(),
+          })
+          .where(eq(carts.id, data.cartId));
       });
-
-      // Update coupon usage count
-      await db
-        .update(coupons)
-        .set({
-          usageCount: (appliedCoupon.usageCount ?? 0) + 1,
-        })
-        .where(eq(coupons.id, appliedCoupon.id));
+    } catch (err) {
+      if (err instanceof InsufficientStockError) {
+        return {
+          success: false,
+          error: `Insufficient stock for ${err.kind === "variant" ? "a selected option" : "a product"} in your cart`,
+        };
+      }
+      if (err instanceof CouponClaimFailedError) {
+        return { success: false, error: "Coupon usage limit reached" };
+      }
+      throw err;
     }
 
-    // // Update product quantities and variant stock
-    // for (const item of cart.cartItems) {
-    //   const variant = item.variant as any;
-
-    //   // Update variant stock if item has a variant
-    //   if (variant?.id) {
-    //     await db
-    //       .update(productVariants)
-    //       .set({
-    //         stock: sql`${productVariants.stock} - ${item.quantity}`,
-    //       })
-    //       .where(eq(productVariants.id, variant.id));
-    //   } else {
-    //     // Update product stock if no variant
-    //     await db
-    //       .update(products)
-    //       .set({
-    //         quantity: sql`${products.quantity} - ${item.quantity}`,
-    //       })
-    //       .where(eq(products.id, item.productId));
-    //   }
-    // }
-
-    // Clear cart
-    await db
-      .delete(cartItems)
-      .where(
-        and(
-          eq(cartItems.cartId, data.cartId),
-          eq(cartItems.savedForLater, false)
-        )
-      );
-
-    // Update cart status
-    await db
-      .update(carts)
-      .set({
-        status: "completed",
-        updatedAt: new Date().toISOString(),
-      })
-      .where(eq(carts.id, data.cartId));
+    // Invalidate inventory-affected caches AFTER commit. Matched by
+    // (kind,id) rather than array position since decrementStock's internal
+    // lock ordering may not preserve input order.
+    const inventoryItems = stockResults.map((r) => {
+      const item = stockLineMeta.get(`${r.kind}:${r.id}`)!;
+      return {
+        snapshot: {
+          id: item.productId,
+          sellerId: item.sellerId,
+          categoryId: item.product.categoryId,
+          brandId: item.product.brandId,
+        },
+        stockBoundaryCrossed: r.stockBoundaryCrossed,
+      };
+    });
+    await applyInvalidation(invalidateProductInventory(inventoryItems), {
+      from: "ecommerce",
+      mode: "action",
+    });
 
     // Revalidate cart page to reflect cleared cart
     revalidatePath("/cart");
@@ -458,6 +524,8 @@ export async function getOrder(orderId: string) {
   }
 }
 
+const CANCELLABLE_STATUSES = ["pending", "payment_processing", "confirmed"] as const;
+
 export async function cancelOrder(orderId: string, reason?: string) {
   try {
     const user = await getUser();
@@ -465,7 +533,6 @@ export async function cancelOrder(orderId: string, reason?: string) {
       return { success: false, error: "Authentication required" };
     }
 
-    // Check if order can be cancelled
     const order = await db.query.orders.findFirst({
       where: and(eq(orders.id, orderId), eq(orders.userId, user.user.id)),
     });
@@ -475,8 +542,8 @@ export async function cancelOrder(orderId: string, reason?: string) {
     }
 
     if (
-      !["pending", "payment_processing", "confirmed"].includes(
-        order.status as string
+      !CANCELLABLE_STATUSES.includes(
+        order.status as (typeof CANCELLABLE_STATUSES)[number]
       )
     ) {
       return {
@@ -485,52 +552,85 @@ export async function cancelOrder(orderId: string, reason?: string) {
       };
     }
 
-    // Update order status
-    const [updatedOrder] = await db
-      .update(orders)
-      .set({
-        status: "cancelled",
-        cancelledAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        notes: reason || order.notes,
-      })
-      .where(eq(orders.id, orderId))
-      .returning();
-
-    // Update order items status
-    await db
-      .update(orderItems)
-      .set({
-        status: "cancelled",
-        cancelledAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      })
-      .where(eq(orderItems.orderId, orderId));
-
-    // Restore product quantities and variant stock
+    // orderItems carries sellerId directly; join to products for
+    // categoryId/brandId, needed only for cache invalidation below.
     const items = await db.query.orderItems.findMany({
       where: eq(orderItems.orderId, orderId),
+      with: {
+        product: {
+          columns: { categoryId: true, brandId: true },
+        },
+      },
     });
 
-    for (const item of items) {
-      // Restore variant stock if item has a variant
-      if (item.variantId) {
-        await db
-          .update(productVariants)
+    let updatedOrder: typeof orders.$inferSelect | undefined;
+    let stockResults: Awaited<ReturnType<typeof restoreStock>> = [];
+
+    try {
+      await db.transaction(async (tx) => {
+        // The WHERE ... status IN (...) clause IS the idempotency guard: a
+        // concurrent second cancel request for this order matches zero rows
+        // here, so the restock below never runs twice for the same order.
+        const [row] = await tx
+          .update(orders)
           .set({
-            stock: sql`${productVariants.stock} + ${item.quantity}`,
+            status: "cancelled",
+            cancelledAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            notes: reason || order.notes,
           })
-          .where(eq(productVariants.id, item.variantId));
-      } else {
-        // Restore product stock if no variant
-        await db
-          .update(products)
+          .where(
+            and(eq(orders.id, orderId), inArray(orders.status, [...CANCELLABLE_STATUSES]))
+          )
+          .returning();
+
+        if (!row) {
+          throw new OrderAlreadyTransitionedError();
+        }
+        updatedOrder = row;
+
+        await tx
+          .update(orderItems)
           .set({
-            quantity: sql`${products.quantity} + ${item.quantity}`,
+            status: "cancelled",
+            cancelledAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
           })
-          .where(eq(products.id, item.productId));
+          .where(eq(orderItems.orderId, orderId));
+
+        const stockLines: StockLine[] = items.map((item) =>
+          item.variantId
+            ? { kind: "variant" as const, id: item.variantId, quantity: item.quantity }
+            : { kind: "product" as const, id: item.productId, quantity: item.quantity }
+        );
+        stockResults = await restoreStock(tx, stockLines);
+      });
+    } catch (err) {
+      if (err instanceof OrderAlreadyTransitionedError) {
+        return {
+          success: false,
+          error: "Order was already updated by another request",
+        };
       }
+      throw err;
     }
+
+    const inventoryItems = stockResults.map((r) => {
+      const item = items.find((i) => (i.variantId ?? i.productId) === r.id)!;
+      return {
+        snapshot: {
+          id: item.productId,
+          sellerId: item.sellerId,
+          categoryId: item.product?.categoryId ?? null,
+          brandId: item.product?.brandId ?? null,
+        },
+        stockBoundaryCrossed: r.stockBoundaryCrossed,
+      };
+    });
+    await applyInvalidation(invalidateProductInventory(inventoryItems), {
+      from: "ecommerce",
+      mode: "action",
+    });
 
     return { success: true, data: updatedOrder };
   } catch (error) {
@@ -598,44 +698,50 @@ export async function initiateReturn(data: {
     // Generate RMA number
     const rmaNumber = `RMA${Date.now()}${Math.random().toString(36).substring(2, 5).toUpperCase()}`;
 
-    // Create return
-    const [newReturn] = await db
-      .insert(returns)
-      .values({
-        orderId: data.orderId,
-        userId: user.user.id,
-        rmaNumber,
-        status: "requested",
-        returnReason: data.items[0]?.reason as any, // Use first item's reason as primary
-        returnType: data.returnType || "refund",
-        additionalDetails: data.additionalDetails,
-        totalAmount: formatDecimal(totalAmount),
-      })
-      .returning();
+    // Note: this only records the return request. Stock is NOT restored
+    // here — the item hasn't physically come back to the seller yet.
+    // Restoring on receipt/approval is a separate flow this refactor does
+    // not add (no such transition exists in the app today); see
+    // docs/caching-and-data-fetching.md for the tracked gap.
+    let newReturn: typeof returns.$inferSelect | undefined;
 
-    // Create return items
-    const returnItemsData = data.items.map((item) => ({
-      returnId: newReturn?.id as string,
-      orderItemId: item.orderItemId,
-      quantity: item.quantity,
-      reason: item.reason,
-      condition: item.condition,
-      details: item.details,
-      status: "pending",
-    }));
-
-    await db.insert(returnItems).values(returnItemsData as any);
-
-    // Update order items status
-    for (const item of data.items) {
-      await db
-        .update(orderItems)
-        .set({
-          isReturned: true,
-          updatedAt: new Date().toISOString(),
+    await db.transaction(async (tx) => {
+      [newReturn] = await tx
+        .insert(returns)
+        .values({
+          orderId: data.orderId,
+          userId: user.user.id,
+          rmaNumber,
+          status: "requested",
+          returnReason: data.items[0]?.reason as any, // Use first item's reason as primary
+          returnType: data.returnType || "refund",
+          additionalDetails: data.additionalDetails,
+          totalAmount: formatDecimal(totalAmount),
         })
-        .where(eq(orderItems.id, item.orderItemId));
-    }
+        .returning();
+
+      const returnItemsData = data.items.map((item) => ({
+        returnId: newReturn!.id,
+        orderItemId: item.orderItemId,
+        quantity: item.quantity,
+        reason: item.reason,
+        condition: item.condition,
+        details: item.details,
+        status: "pending",
+      }));
+
+      await tx.insert(returnItems).values(returnItemsData as any);
+
+      for (const item of data.items) {
+        await tx
+          .update(orderItems)
+          .set({
+            isReturned: true,
+            updatedAt: new Date().toISOString(),
+          })
+          .where(eq(orderItems.id, item.orderItemId));
+      }
+    });
 
     return {
       success: true,

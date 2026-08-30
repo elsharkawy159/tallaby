@@ -150,7 +150,7 @@ export default function SettingsPage() {
                   siteDescription: "Your one-stop shop for all your needs",
                   contactEmail: "contact@example.com",
                   contactPhone: "+1 (555) 123-4567",
-                  defaultCurrency: "USD",
+                  defaultCurrency: "EGP",
                   defaultLanguage: "en",
                   timeZone: "America/New_York",
                   logoUrl: "",
@@ -201,11 +201,7 @@ export default function SettingsPage() {
                       label="Default Currency"
                       type="select"
                       options={[
-                        { label: "USD - US Dollar", value: "USD" },
-                        { label: "EUR - Euro", value: "EUR" },
-                        { label: "GBP - British Pound", value: "GBP" },
-                        { label: "JPY - Japanese Yen", value: "JPY" },
-                        { label: "CAD - Canadian Dollar", value: "CAD" },
+                        { label: "EGP - Egyptian Pound", value: "EGP" },
                       ]}
                     />
                     <FormInputField
@@ -536,16 +532,12 @@ export default function SettingsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="currency">Default Currency</Label>
-                  <Select defaultValue="USD">
+                  <Select defaultValue="EGP">
                     <SelectTrigger id="currency">
                       <SelectValue placeholder="Select currency" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="USD">USD - US Dollar</SelectItem>
-                      <SelectItem value="EUR">EUR - Euro</SelectItem>
-                      <SelectItem value="GBP">GBP - British Pound</SelectItem>
-                      <SelectItem value="JPY">JPY - Japanese Yen</SelectItem>
-                      <SelectItem value="CAD">CAD - Canadian Dollar</SelectItem>
+                      <SelectItem value="EGP">EGP - Egyptian Pound</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

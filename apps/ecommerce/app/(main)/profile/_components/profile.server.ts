@@ -120,7 +120,7 @@ export async function updateGuestProfile(
         fullName: data.fullName,
         phone: data.phone || null,
         preferredLanguage: data.preferredLanguage,
-        defaultCurrency: data.defaultCurrency,
+        defaultCurrency: "EGP",
         receiveMarketingEmails: data.receiveMarketingEmails,
         updatedAt: new Date().toISOString(),
       })
@@ -167,7 +167,7 @@ export const updateUserProfile = async (
         phone: data.phone || null,
         timezone: data.timezone,
         preferredLanguage: data.preferredLanguage,
-        defaultCurrency: data.defaultCurrency,
+        defaultCurrency: "EGP",
         receiveMarketingEmails: data.receiveMarketingEmails,
         // OAuth compatibility fields
         name: data.fullName,

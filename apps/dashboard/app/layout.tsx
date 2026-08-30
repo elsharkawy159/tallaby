@@ -27,8 +27,9 @@ export const metadata: Metadata = {
   },
 };
 
-// Force dynamic rendering for this layout
-export const dynamic = "force-dynamic";
+// Not needed as a blanket declaration: this layout reads getLocale() (cookie-
+// driven), which already forces dynamic rendering. Individual private routes
+// keep their own explicit `export const dynamic = "force-dynamic"` as a marker.
 
 export default async function RootLayout({
   children,

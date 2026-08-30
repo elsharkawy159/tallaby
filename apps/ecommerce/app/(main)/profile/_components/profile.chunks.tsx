@@ -630,24 +630,6 @@ export function ProfileForm({
                 )}
               />
 
-              {/* <FormField
-                  control={form.control}
-                  name="defaultCurrency"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Default Currency</FormLabel>
-                      <FormControl>
-                        <SelectInput
-                          placeholder="Select your currency"
-                          options={currencyOptions}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                /> */}
-
               <FormField
                 control={form.control}
                 name="receiveMarketingEmails"

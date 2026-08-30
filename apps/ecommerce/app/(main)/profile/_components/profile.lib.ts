@@ -61,17 +61,7 @@ export const languageOptions = [
   // { value: "ru", label: "Русский (Russian)" },
 ];
 
-// Currency options
-export const currencyOptions = [
-  { value: "EGP", label: "EGP - Egyptian Pound" },
-  { value: "USD", label: "USD - US Dollar" },
-  { value: "EUR", label: "EUR - Euro" },
-  { value: "GBP", label: "GBP - British Pound" },
-  { value: "SAR", label: "SAR - Saudi Riyal" },
-  { value: "AED", label: "AED - UAE Dirham" },
-  { value: "JPY", label: "JPY - Japanese Yen" },
-  { value: "CNY", label: "CNY - Chinese Yuan" },
-];
+export const DEFAULT_CURRENCY_CODE = "EGP" as const;
 
 // Country options (commonly used countries)
 export const countryOptions = [
@@ -345,19 +335,18 @@ export function generateReferralCode(
 
 export function formatCurrency(
   amount: number,
-  currency: string = "EGP",
   locale: string = "en-EG"
 ): string {
   try {
     const isArabic = locale.startsWith("ar");
     return new Intl.NumberFormat(isArabic ? "ar-EG" : "en-EG", {
       style: "currency",
-      currency: currency,
+      currency: DEFAULT_CURRENCY_CODE,
       minimumFractionDigits: 2,
       ...(isArabic && { numberingSystem: "latn" }),
     }).format(amount);
   } catch (error) {
-    return `${currency} ${amount.toFixed(2)}`;
+    return `EGP ${amount.toFixed(2)}`;
   }
 }
 

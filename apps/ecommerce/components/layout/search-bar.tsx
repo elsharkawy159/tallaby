@@ -57,7 +57,6 @@ export const SearchBar = ({
       }
       return getProducts({
         searchQuery: debouncedSearchQuery.trim(),
-        isActive: true,
         limit: 5,
         locale: locale as "en" | "ar",
       });

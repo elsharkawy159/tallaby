@@ -50,7 +50,7 @@ export async function getCartRecommendations(
 
     const similarProductsRaw = await db.query.products.findMany({
       where: and(
-        eq(products.isActive, true),
+        eq(products.status, "active"),
         inArray(products.categoryId, categoryIds),
         sql`${products.id} NOT IN (${sql.join(cartProductIds, sql`, `)})`
       ),
@@ -202,7 +202,7 @@ async function getPersonalizedRecommendations() {
     ];
 
     // Build recommendations based on preferences
-    const conditions = [eq(products.isActive, true)];
+    const conditions = [eq(products.status, "active")];
 
     if (interactedProductIds.length > 0) {
       conditions.push(
@@ -275,7 +275,7 @@ async function getTrendingProducts() {
         if (productIds.length === 0) {
           // Fallback to best rated products
           const bestRated = await db.query.products.findMany({
-            where: eq(products.isActive, true),
+            where: eq(products.status, "active"),
             orderBy: [desc(products.averageRating), desc(products.reviewCount)],
             limit: 20,
           });
@@ -285,7 +285,7 @@ async function getTrendingProducts() {
         const trendingProducts = await db.query.products.findMany({
           where: and(
             inArray(products.id, productIds),
-            eq(products.isActive, true)
+            eq(products.status, "active")
           ),
           with: {
             brand: true,
@@ -329,7 +329,7 @@ async function getSimilarProducts(productId: string) {
 
     const similar = await db.query.products.findMany({
       where: and(
-        eq(products.isActive, true),
+        eq(products.status, "active"),
         ne(products.id, productId),
         or(
           eq(products.categoryId, product.categoryId),
@@ -387,7 +387,7 @@ export async function getFrequentlyBoughtTogether(productId: string) {
 
           const similar = await db.query.products.findMany({
             where: and(
-              eq(products.isActive, true),
+              eq(products.status, "active"),
               ne(products.id, productId),
               or(
                 eq(products.categoryId, product.categoryId),
@@ -406,7 +406,7 @@ export async function getFrequentlyBoughtTogether(productId: string) {
         const frequentProducts = await db.query.products.findMany({
           where: and(
             inArray(products.id, productIds),
-            eq(products.isActive, true)
+            eq(products.status, "active")
           ),
         });
 
@@ -462,7 +462,7 @@ export async function getRecentlyViewed() {
     const viewedProducts = await db.query.products.findMany({
       where: and(
         inArray(products.id, productIds as any),
-        eq(products.isActive, true)
+        eq(products.status, "active")
       ),
       with: {
         brand: true,

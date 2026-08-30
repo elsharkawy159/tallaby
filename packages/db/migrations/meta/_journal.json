@@ -50,6 +50,20 @@
       "when": 1786404000000,
       "tag": "0006_seller_commission_exempt",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1787978538376,
+      "tag": "0007_product_status_and_indexes",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1787988966540,
+      "tag": "0009_shipping_module",
+      "breakpoints": true
     }
   ]
 }

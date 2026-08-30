@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@workspace/ui/lib/utils";
 import { Button } from "@workspace/ui/components/button";
+import { Badge } from "@workspace/ui/components/badge";
 import { ScrollArea } from "@workspace/ui/components/scroll-area";
 import {
   ShoppingCart,
@@ -16,11 +17,14 @@ import {
   ChevronRight,
   Home,
 } from "lucide-react";
+import type { SidebarCounts, SidebarProps } from "./sidebar.types";
+import { SIDEBAR_COUNT_BADGE_CLASS } from "./sidebar.types";
 
 interface SidebarLink {
   title: string;
   href: string;
   icon: React.ElementType;
+  countKey: keyof SidebarCounts;
   submenu?: SidebarLink[];
 }
 
@@ -29,95 +33,47 @@ const sidebarLinks: SidebarLink[] = [
     title: "Dashboard",
     href: "/",
     icon: Home,
+    countKey: "dashboard",
   },
   {
     title: "Customers",
     href: "/customers",
     icon: Users,
+    countKey: "customers",
   },
-  // {
-  //   title: "Orders",
-  //   href: "/orders",
-  //   icon: ShoppingCart,
-  //   submenu: [
-  //     {
-  //       title: "All Orders",
-  //       href: "/orders",
-  //       icon: ShoppingCart,
-  //     },
-  //     // {
-  //     //   title: "Returns",
-  //     //   href: "/orders/returns",
-  //     //   icon: RefreshCcw,
-  //     // },
-  //   ],
-  // },
   {
     title: "Orders",
     href: "/orders",
     icon: ShoppingCart,
+    countKey: "orders",
   },
   {
     title: "Products",
     href: "/products",
     icon: Package,
+    countKey: "products",
   },
   {
     title: "Categories",
     href: "/categories",
     icon: Tag,
+    countKey: "categories",
   },
   {
     title: "Brands",
     href: "/brands",
     icon: Store,
+    countKey: "brands",
   },
-
   {
     title: "Sellers",
     href: "/sellers",
     icon: Store,
+    countKey: "sellers",
   },
-  // {
-  //   title: "Shipping",
-  //   href: "/shipping",
-  //   icon: Truck,
-  // },
-  // {
-  //   title: "Payments",
-  //   href: "/payments",
-  //   icon: CreditCard,
-  // },
-  // {
-  //   title: "Promotions",
-  //   href: "/promotions",
-  //   icon: Gift,
-  //   submenu: [
-  //     {
-  //       title: "Coupons",
-  //       href: "/promotions/coupons",
-  //       icon: Gift,
-  //     },
-  //     // {
-  //     //   title: "Deals",
-  //     //   href: "/promotions/deals",
-  //     //   icon: Tag,
-  //     // },
-  //   ],
-  // },
-  // {
-  //   title: "Analytics",
-  //   href: "/analytics",
-  //   icon: BarChart3,
-  // },
-  // {
-  //   title: "Settings",
-  //   href: "/settings",
-  //   icon: Settings,
-  // },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ counts }: SidebarProps) {
   const pathname = usePathname();
   const [expanded, setExpanded] = useState(true);
   const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({});
@@ -161,24 +117,26 @@ export default function Sidebar() {
                     <button
                       onClick={() => toggleSubmenu(link.title)}
                       className={cn(
-                        "flex items-center w-full px-3 py-2 text-sm rounded-md",
+                        "flex items-center justify-between w-full px-3 py-2 text-sm rounded-md",
                         "hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors",
                         pathname.startsWith(link.href) &&
                           "bg-gray-100 dark:bg-gray-800"
                       )}
                     >
-                      <link.icon className="h-5 w-5 mr-2 text-gray-500" />
+                      <span className="flex items-center min-w-0">
+                        <link.icon className="h-5 w-5 mr-2 shrink-0 text-gray-500" />
+                        {expanded && (
+                          <span className="truncate">{link.title}</span>
+                        )}
+                      </span>
                       {expanded && (
-                        <>
-                          <span>{link.title}</span>
-                          <ChevronRight
-                            size={16}
-                            className={cn(
-                              "transition-transform ml-auto",
-                              openSubmenus[link.title] && "transform rotate-90"
-                            )}
-                          />
-                        </>
+                        <ChevronRight
+                          size={16}
+                          className={cn(
+                            "transition-transform shrink-0",
+                            openSubmenus[link.title] && "transform rotate-90"
+                          )}
+                        />
                       )}
                     </button>
                     {expanded && openSubmenus[link.title] && (
@@ -188,14 +146,22 @@ export default function Sidebar() {
                             <Link
                               href={sublink.href}
                               className={cn(
-                                "flex items-center px-3 py-2 text-sm rounded-md",
+                                "flex items-center justify-between px-3 py-2 text-sm rounded-md",
                                 "hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors",
                                 pathname === sublink.href &&
                                   "bg-gray-100 dark:bg-gray-800 font-medium"
                               )}
                             >
-                              <sublink.icon className="h-4 w-4 mr-2 text-gray-500" />
-                              <span>{sublink.title}</span>
+                              <span className="flex items-center min-w-0">
+                                <sublink.icon className="h-4 w-4 mr-2 shrink-0 text-gray-500" />
+                                <span className="truncate">{sublink.title}</span>
+                              </span>
+                              <Badge
+                                variant="secondary"
+                                className={SIDEBAR_COUNT_BADGE_CLASS}
+                              >
+                                {counts[sublink.countKey].toLocaleString()}
+                              </Badge>
                             </Link>
                           </li>
                         ))}
@@ -208,17 +174,30 @@ export default function Sidebar() {
                     className={cn(
                       "flex items-center px-3 py-2 text-sm rounded-md",
                       "hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors",
+                      expanded && "justify-between",
                       pathname === link.href &&
                         "bg-gray-100 dark:bg-gray-800 font-medium"
                     )}
                   >
-                    <link.icon
-                      className={cn(
-                        "h-5 w-5 text-gray-500",
-                        expanded ? "mr-2" : "mx-auto"
+                    <span className="flex items-center min-w-0">
+                      <link.icon
+                        className={cn(
+                          "h-5 w-5 shrink-0 text-gray-500",
+                          expanded ? "mr-2" : "mx-auto"
+                        )}
+                      />
+                      {expanded && (
+                        <span className="truncate">{link.title}</span>
                       )}
-                    />
-                    {expanded && <span>{link.title}</span>}
+                    </span>
+                    {expanded && (
+                      <Badge
+                        variant="secondary"
+                        className={SIDEBAR_COUNT_BADGE_CLASS}
+                      >
+                        {counts[link.countKey].toLocaleString()}
+                      </Badge>
+                    )}
                   </Link>
                 )}
               </li>

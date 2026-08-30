@@ -1,9 +1,14 @@
-import React from "react";
+"use client";
+
+import React, { useTransition } from "react";
 import { Button } from "@workspace/ui/components/button";
 import { Edit, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { cn, getPublicUrl } from "@/lib/utils";
 import Image from "next/image";
+import { toggleProductStatus } from "@/actions/products";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export const ProductImageCell = ({
   images,
@@ -14,7 +19,6 @@ export const ProductImageCell = ({
 }) => (
   <div className="w-16 h-16 flex items-center justify-center bg-gray-100 rounded overflow-hidden">
     {images && images.length > 0 ? (
-      // eslint-disable-next-line @next/next/no-img-element
       <Image
         src={getPublicUrl(images[0], "products")}
         alt={title}
@@ -46,45 +50,79 @@ export const ProductDescriptionCell = ({
 
 export const ProductActionsCell = ({
   id,
-  isActive,
+  status,
 }: {
   id: string;
-  isActive: boolean;
-}) => (
-  <div className="flex gap-2">
-    <form
-      action={isActive ? "/api/products/deactivate" : "/api/products/activate"}
-      method="post"
-    >
-      <input type="hidden" name="productId" value={id} />
-      <Button
-        type="submit"
-        size="icon"
-        variant={isActive ? "outline" : "secondary"}
-        aria-label={isActive ? "Deactivate" : "Activate"}
-      >
-        {isActive ? (
-          <EyeOff className="w-4 h-4" />
-        ) : (
-          <Eye className="w-4 h-4" />
-        )}
-      </Button>
-    </form>
-    <Button asChild size="icon" variant="ghost" aria-label="Edit">
-      <Link href={`/products/${id}`}>
-        <Edit className="w-4 h-4" />
-      </Link>
-    </Button>
-  </div>
-);
+  status: "draft" | "pending" | "active" | "rejected";
+}) => {
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+  const canToggle = status === "active" || status === "draft";
 
-export const ProductStatusCell = ({ status }: { status: boolean }) => (
+  const handleToggle = () => {
+    startTransition(async () => {
+      const result = await toggleProductStatus(id);
+      if (result.success) {
+        toast.success(
+          status === "active"
+            ? "Product hidden (draft)"
+            : "Product submitted for review"
+        );
+        router.refresh();
+      } else {
+        toast.error(result.error || "Failed to update product status");
+      }
+    });
+  };
+
+  return (
+    <div className="flex gap-2">
+      {canToggle && (
+        <Button
+          type="button"
+          size="icon"
+          variant={status === "active" ? "outline" : "secondary"}
+          aria-label={status === "active" ? "Deactivate" : "Activate"}
+          disabled={isPending}
+          onClick={handleToggle}
+        >
+          {status === "active" ? (
+            <EyeOff className="w-4 h-4" />
+          ) : (
+            <Eye className="w-4 h-4" />
+          )}
+        </Button>
+      )}
+      <Button asChild size="icon" variant="ghost" aria-label="Edit">
+        <Link href={`/products/${id}`}>
+          <Edit className="w-4 h-4" />
+        </Link>
+      </Button>
+    </div>
+  );
+};
+
+const statusStyles: Record<
+  "draft" | "pending" | "active" | "rejected",
+  string
+> = {
+  draft: "bg-gray-100 text-gray-800",
+  pending: "bg-amber-100 text-amber-800",
+  active: "bg-green-100 text-green-800",
+  rejected: "bg-red-100 text-red-800",
+};
+
+export const ProductStatusCell = ({
+  status,
+}: {
+  status: "draft" | "pending" | "active" | "rejected";
+}) => (
   <span
     className={cn(
-      "text-xs px-2 py-0.5 rounded font-medium",
-      status ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+      "text-xs px-2 py-0.5 rounded font-medium capitalize",
+      statusStyles[status]
     )}
   >
-    {status ? "Active" : "Inactive"}
+    {status}
   </span>
 );

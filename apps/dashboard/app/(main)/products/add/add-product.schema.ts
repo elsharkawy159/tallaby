@@ -56,7 +56,6 @@ export const addProductFormSchema = z
       .enum(["seller_fulfilled", "platform_fulfilled", "fba", "digital"])
       .default("seller_fulfilled"),
     handlingTime: z.number().int().min(1).default(1),
-    isActive: z.boolean().default(true),
     isPlatformChoice: z.boolean().default(false),
     isMostSelling: z.boolean().default(false),
     isFeatured: z.boolean().default(false),

@@ -14,7 +14,6 @@ type ProductForEdit = {
   conditionDescription: string | null;
   fulfillmentType: string | null;
   handlingTime: string | number | null;
-  isActive: boolean | null;
   isPlatformChoice: boolean | null;
   isMostSelling: boolean | null;
   isFeatured: boolean | null;

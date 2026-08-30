@@ -15,7 +15,7 @@ interface Product {
   slug: string;
   description: string | null;
   sku: string;
-  isActive: boolean;
+  status: "draft" | "pending" | "active" | "rejected";
   averageRating: number | null;
   reviewCount: number | null;
   quantity: string | number;
@@ -37,6 +37,13 @@ interface Product {
   } | null;
 }
 
+const statusSortOrder: Record<Product["status"], number> = {
+  pending: 0,
+  rejected: 1,
+  draft: 2,
+  active: 3,
+};
+
 export function ProductsClient() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -44,19 +51,18 @@ export function ProductsClient() {
   const loadProducts = useCallback(async () => {
     try {
       const result = await getAllProducts({
-        limit: 1000, // Get all products for now
+        limit: 1000,
       });
 
       if (result.success && result.data) {
-        // Sort products: inactive first, then by createdAt desc
         const sortedProducts = [...result.data].sort((a, b) => {
-          // First sort by isActive (false/inactive first)
-          if (a.isActive !== b.isActive) {
-            return a.isActive ? 1 : -1;
-          }
-          // Then by createdAt (newest first)
+          const statusDiff =
+            statusSortOrder[a.status as Product["status"]] -
+            statusSortOrder[b.status as Product["status"]];
+          if (statusDiff !== 0) return statusDiff;
           return (
-            new Date(b.createdAt || "").getTime() - new Date(a.createdAt || "").getTime()
+            new Date(b.createdAt || "").getTime() -
+            new Date(a.createdAt || "").getTime()
           );
         });
 
@@ -78,20 +84,20 @@ export function ProductsClient() {
 
   const handleApproveProduct = async (productId: string) => {
     try {
-      const result = await updateProductStatus(productId, true);
+      const result = await updateProductStatus(productId, "active");
 
       if (result.success) {
         toast.success("Product approved successfully");
-        // Update local state and re-sort in one operation
         setProducts((prev) => {
           const updated = prev.map((product) =>
-            product.id === productId ? { ...product, isActive: true } : product
+            product.id === productId
+              ? { ...product, status: "active" as const }
+              : product
           );
-          // Re-sort after update: inactive first, then by createdAt desc
           return updated.sort((a, b) => {
-            if (a.isActive !== b.isActive) {
-              return a.isActive ? 1 : -1;
-            }
+            const statusDiff =
+              statusSortOrder[a.status] - statusSortOrder[b.status];
+            if (statusDiff !== 0) return statusDiff;
             return (
               new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
             );
@@ -108,7 +114,6 @@ export function ProductsClient() {
 
   const columns = getProductsColumns(handleApproveProduct);
 
-  // Get unique categories and brands for filters
   const categories = Array.from(
     new Set(
       products
@@ -127,52 +132,58 @@ export function ProductsClient() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-2 text-gray-400" />
-          <p className="text-sm text-gray-500">Loading products...</p>
-        </div>
+      <div className="flex items-center justify-center py-12">
+        <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   return (
-    <div className="h-screen">
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Products</h1>
+          <p className="text-muted-foreground">
+            Manage and approve seller products
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={loadProducts}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+          <Button asChild size="sm">
+            <Link href="/products/new">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Product
+            </Link>
+          </Button>
+        </div>
+      </div>
+
       <DataTable
         columns={columns}
         data={products}
         filterableColumns={[
           {
-            id: "isActive",
+            id: "status",
             title: "Status",
             options: [
-              { label: "Active", value: "true" },
-              { label: "Inactive", value: "false" },
+              { label: "Draft", value: "draft" },
+              { label: "Pending", value: "pending" },
+              { label: "Active", value: "active" },
+              { label: "Rejected", value: "rejected" },
             ],
           },
-          ...(categories.length > 0
-            ? [
-                {
-                  id: "category",
-                  title: "Category",
-                  options: categories,
-                },
-              ]
-            : []),
-          ...(brands.length > 0
-            ? [
-                {
-                  id: "brand",
-                  title: "Brand",
-                  options: brands,
-                },
-              ]
-            : []),
-        ]}
-        searchableColumns={[
           {
-            id: "title",
-            title: "Product Title",
+            id: "category",
+            title: "Category",
+            options: categories,
+          },
+          {
+            id: "brand",
+            title: "Brand",
+            options: brands,
           },
         ]}
       />

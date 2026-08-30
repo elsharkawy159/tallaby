@@ -18,26 +18,26 @@ import { Badge } from "@workspace/ui/components/badge";
 const revenueData = [
   {
     period: "January 2024",
-    revenue: "$12,450",
-    profit: "$3,680",
+    revenue: "EGP 12,450",
+    profit: "EGP 3,680",
     growth: "+12.5%",
   },
   {
     period: "December 2023",
-    revenue: "$11,200",
-    profit: "$3,200",
+    revenue: "EGP 11,200",
+    profit: "EGP 3,200",
     growth: "+8.2%",
   },
   {
     period: "November 2023",
-    revenue: "$10,800",
-    profit: "$2,950",
+    revenue: "EGP 10,800",
+    profit: "EGP 2,950",
     growth: "+5.1%",
   },
   {
     period: "October 2023",
-    revenue: "$10,300",
-    profit: "$2,800",
+    revenue: "EGP 10,300",
+    profit: "EGP 2,800",
     growth: "+3.8%",
   },
 ];
@@ -45,21 +45,21 @@ const revenueData = [
 const payouts = [
   {
     id: "PAY-001",
-    amount: "$2,450",
+    amount: "EGP 2,450",
     status: "Completed",
     date: "2024-01-15",
     method: "Bank Transfer",
   },
   {
     id: "PAY-002",
-    amount: "$1,890",
+    amount: "EGP 1,890",
     status: "Pending",
     date: "2024-01-14",
     method: "PayPal",
   },
   {
     id: "PAY-003",
-    amount: "$3,200",
+    amount: "EGP 3,200",
     status: "Completed",
     date: "2024-01-10",
     method: "Bank Transfer",
@@ -90,7 +90,7 @@ export const FinancialDashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Revenue</p>
-                <p className="text-2xl font-bold text-gray-900">$45,890</p>
+                <p className="text-2xl font-bold text-gray-900">EGP 45,890</p>
                 <p className="text-sm text-green-600">+15.2% this month</p>
               </div>
               <div className="bg-green-100 p-3 rounded-full">
@@ -105,7 +105,7 @@ export const FinancialDashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Net Profit</p>
-                <p className="text-2xl font-bold text-gray-900">$13,280</p>
+                <p className="text-2xl font-bold text-gray-900">EGP 13,280</p>
                 <p className="text-sm text-green-600">+12.8% this month</p>
               </div>
               <div className="bg-blue-100 p-3 rounded-full">
@@ -120,7 +120,7 @@ export const FinancialDashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Pending Payouts</p>
-                <p className="text-2xl font-bold text-gray-900">$1,890</p>
+                <p className="text-2xl font-bold text-gray-900">EGP 1,890</p>
                 <p className="text-sm text-yellow-600">2 pending</p>
               </div>
               <div className="bg-yellow-100 p-3 rounded-full">
@@ -135,7 +135,7 @@ export const FinancialDashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Available Balance</p>
-                <p className="text-2xl font-bold text-gray-900">$4,560</p>
+                <p className="text-2xl font-bold text-gray-900">EGP 4,560</p>
                 <p className="text-sm text-gray-600">Ready for withdrawal</p>
               </div>
               <div className="bg-purple-100 p-3 rounded-full">

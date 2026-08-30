@@ -26,7 +26,7 @@ export const userSchema = z.object({
   isSuspended: z.boolean().default(false),
   timezone: z.string().optional(),
   preferredLanguage: z.string().default("en"),
-  defaultCurrency: z.string().default("USD"),
+  defaultCurrency: z.literal("EGP"),
   receiveMarketingEmails: z.boolean().default(true),
   hasTwoFactorAuth: z.boolean().default(false),
   twoFactorMethod: z.string().optional(),

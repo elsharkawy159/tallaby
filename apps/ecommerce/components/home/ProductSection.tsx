@@ -21,7 +21,6 @@ interface ProductFilters {
   minRating?: number;
   condition?: string;
   sellerId?: string;
-  isActive?: boolean;
   isFeatured?: boolean;
   searchQuery?: string;
   sortBy?: "price_asc" | "price_desc" | "rating" | "newest" | "popular";

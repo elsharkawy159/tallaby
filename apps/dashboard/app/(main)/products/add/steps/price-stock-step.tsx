@@ -82,7 +82,6 @@ export function PriceStockStep({ sellerPricing }: PriceStockStepProps) {
               name="price.list"
               label="Product price"
               placeholder="0.00"
-              currency="EGP"
               className="text-sm"
               required
             />
@@ -92,7 +91,6 @@ export function PriceStockStep({ sellerPricing }: PriceStockStepProps) {
             name="price.discountValue"
             label="Discount"
             placeholder="0.00"
-            currency="EGP"
             // helpText="Discount amount or percentage"
             className="text-sm"
           />
@@ -139,7 +137,6 @@ export function PriceStockStep({ sellerPricing }: PriceStockStepProps) {
             name="price.final"
             label="Final Price"
             placeholder="0.00"
-            currency="EGP"
             helpText={getFinalPriceHelpText(sellerPricing)}
             disabled
             className="text-sm"
@@ -830,7 +827,6 @@ function VariantsSection() {
                         <CurrencyInput
                           name={`variants.${index}.price`}
                           placeholder="0.00"
-                          currency="EGP"
                           className="text-sm w-full"
                         />
                       </td>

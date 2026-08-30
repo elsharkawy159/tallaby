@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@workspace/ui/components/button";
+import { Badge } from "@workspace/ui/components/badge";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -39,8 +40,11 @@ import { useSiteData } from "@/providers/site-data";
 import { Avatar, AvatarFallback, AvatarImage } from "@workspace/ui/components";
 import { useSidebarStore } from "@/stores";
 import { logout } from "@/actions/auth";
+import type { SidebarCounts } from "./sidebar.types";
+import { SIDEBAR_COUNT_BADGE_CLASS } from "./sidebar.types";
 
 interface SidebarProps {
+  counts: SidebarCounts;
   isOpen?: boolean;
   onToggle?: () => void;
 }
@@ -50,21 +54,21 @@ const SIDEBAR_LINK =
 const SIDEBAR_LINK_ACTIVE = "bg-gray-100 text-gray-900";
 const SIDEBAR_ICON = "h-5 w-5 shrink-0 text-gray-600";
 
-export const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
+export const Sidebar = ({ counts, isOpen, onToggle }: SidebarProps) => {
   const t = useTranslations();
   const { seller } = useSiteData();
   const { isCollapsed, toggleCollapse } = useSidebarStore();
 
   const topNavItems = [
-    { name: t("nav.dashboard"), icon: BarChart3, href: "/" },
-    { name: t("nav.orders"), icon: ShoppingBag, href: "/orders" },
+    { name: t("nav.dashboard"), icon: BarChart3, href: "/", countKey: "dashboard" as const },
+    { name: t("nav.orders"), icon: ShoppingBag, href: "/orders", countKey: "orders" as const },
   ];
 
   const afterProductsItems = [
-    { name: t("nav.reviews"), icon: Star, href: "/reviews" },
-    { name: t("nav.promotions"), icon: Gift, href: "/coupons" },
-    { name: t("nav.advertiseProducts"), icon: TrendingUp, href: "/marketing" },
-    { name: t("nav.accountStatements"), icon: DollarSign, href: "/financial" },
+    { name: t("nav.reviews"), icon: Star, href: "/reviews", countKey: "reviews" as const },
+    { name: t("nav.promotions"), icon: Gift, href: "/coupons", countKey: "promotions" as const },
+    { name: t("nav.advertiseProducts"), icon: TrendingUp, href: "/marketing", countKey: "marketing" as const },
+    { name: t("nav.accountStatements"), icon: DollarSign, href: "/financial", countKey: "financial" as const },
   ];
 
   return (
@@ -77,6 +81,7 @@ export const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
         )}
       >
         <SidebarContent
+          counts={counts}
           topNavItems={topNavItems}
           afterProductsItems={afterProductsItems}
           isCollapsed={isCollapsed}
@@ -113,6 +118,7 @@ export const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
           </Button>
         </div>
         <SidebarContent
+          counts={counts}
           topNavItems={topNavItems}
           afterProductsItems={afterProductsItems}
           isCollapsed={false}
@@ -125,15 +131,18 @@ export const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
 };
 
 interface SidebarContentProps {
+  counts: SidebarCounts;
   topNavItems: {
     name: string;
     icon: React.ComponentType<{ className?: string }>;
     href: string;
+    countKey: keyof SidebarCounts;
   }[];
   afterProductsItems: {
     name: string;
     icon: React.ComponentType<{ className?: string }>;
     href: string;
+    countKey: keyof SidebarCounts;
   }[];
   isCollapsed: boolean;
   onToggleCollapse?: () => void;
@@ -145,6 +154,7 @@ interface SidebarContentProps {
 }
 
 const SidebarContent = ({
+  counts,
   topNavItems,
   afterProductsItems,
   isCollapsed,
@@ -215,18 +225,25 @@ const SidebarContent = ({
                     className={cn(
                       SIDEBAR_LINK,
                       isActive && SIDEBAR_LINK_ACTIVE,
-                      isCollapsed && "justify-center px-2"
+                      isCollapsed ? "justify-center px-2" : "justify-between"
                     )}
                     title={isCollapsed ? item.name : undefined}
                   >
-                    <item.icon
-                      className={cn(
-                        SIDEBAR_ICON,
-                        isActive && "text-gray-900",
-                        !isCollapsed && "mr-3"
-                      )}
-                    />
-                    {!isCollapsed && <span>{item.name}</span>}
+                    <span className="flex items-center min-w-0">
+                      <item.icon
+                        className={cn(
+                          SIDEBAR_ICON,
+                          isActive && "text-gray-900",
+                          !isCollapsed && "mr-3"
+                        )}
+                      />
+                      {!isCollapsed && <span className="truncate">{item.name}</span>}
+                    </span>
+                    {!isCollapsed && (
+                      <Badge variant="secondary" className={SIDEBAR_COUNT_BADGE_CLASS}>
+                        {counts[item.countKey].toLocaleString()}
+                      </Badge>
+                    )}
                   </Link>
                 </li>
               );
@@ -247,10 +264,15 @@ const SidebarContent = ({
                   }
                 >
                   <AccordionItem value="products" className="border-0">
-                    <AccordionTrigger className="bg-transparent py-3 px-4 hover:no-underline hover:bg-gray-100 rounded-lg [&[data-state=open]]:bg-transparent [&[data-state=open]]:hover:bg-gray-100">
-                      <span className="flex items-center text-sm font-medium text-gray-700">
-                        <Package className={cn(SIDEBAR_ICON, "mr-3")} />
-                        {t("nav.products")}
+                    <AccordionTrigger className="bg-transparent py-3 px-4 hover:no-underline hover:bg-gray-100 rounded-lg [&[data-state=open]]:bg-transparent [&[data-state=open]]:hover:bg-gray-100 [&>svg]:hidden">
+                      <span className="flex w-full items-center justify-between">
+                        <span className="flex items-center min-w-0 text-sm font-medium text-gray-700">
+                          <Package className={cn(SIDEBAR_ICON, "mr-3")} />
+                          {t("nav.products")}
+                        </span>
+                        <Badge variant="secondary" className={SIDEBAR_COUNT_BADGE_CLASS}>
+                          {counts.products.toLocaleString()}
+                        </Badge>
                       </span>
                     </AccordionTrigger>
                     <AccordionContent className="pt-0 pb-2">
@@ -307,18 +329,25 @@ const SidebarContent = ({
                     className={cn(
                       SIDEBAR_LINK,
                       isActive && SIDEBAR_LINK_ACTIVE,
-                      isCollapsed && "justify-center px-2"
+                      isCollapsed ? "justify-center px-2" : "justify-between"
                     )}
                     title={isCollapsed ? item.name : undefined}
                   >
-                    <item.icon
-                      className={cn(
-                        SIDEBAR_ICON,
-                        isActive && "text-gray-900",
-                        !isCollapsed && "mr-3"
-                      )}
-                    />
-                    {!isCollapsed && <span>{item.name}</span>}
+                    <span className="flex items-center min-w-0">
+                      <item.icon
+                        className={cn(
+                          SIDEBAR_ICON,
+                          isActive && "text-gray-900",
+                          !isCollapsed && "mr-3"
+                        )}
+                      />
+                      {!isCollapsed && <span className="truncate">{item.name}</span>}
+                    </span>
+                    {!isCollapsed && (
+                      <Badge variant="secondary" className={SIDEBAR_COUNT_BADGE_CLASS}>
+                        {counts[item.countKey].toLocaleString()}
+                      </Badge>
+                    )}
                   </Link>
                 </li>
               );

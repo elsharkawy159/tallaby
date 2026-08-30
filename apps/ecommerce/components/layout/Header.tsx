@@ -10,7 +10,7 @@ import { WishlistCount } from "./wishlist-count";
 import { NotificationButton } from "./notification-button";
 // import { DeliveryLocation } from "./delivery-location";
 import { BecomeSellerButton } from "./header.chunks";
-import { createClient } from "@/supabase/server";
+import { getAuthUser } from "@/lib/auth/current-user";
 import { Suspense } from "react";
 import { Button, Spinner } from "@workspace/ui/components";
 import { Heart, ShoppingCart } from "lucide-react";
@@ -18,9 +18,7 @@ import Link from "next/link";
 
 // Main Header Component
 const MainHeader = async () => {
-  const supabase = await createClient();
-  const { data: authData } = await supabase.auth.getUser();
-  const user = authData?.user ?? null;
+  const user = await getAuthUser();
 
   return (
     <div className={cn("bg-primary shadow-xs h-full w-full")}>

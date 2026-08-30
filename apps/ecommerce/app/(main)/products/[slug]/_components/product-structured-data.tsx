@@ -44,7 +44,7 @@ export async function ProductStructuredData({ product }: ProductStructuredDataPr
     averageRating: Number(product.averageRating ?? 0),
     reviewCount: Number(product.reviewCount ?? 0),
     stockCount,
-    isActive: Boolean(product.isActive),
+    status: product.status,
   });
 
   return (

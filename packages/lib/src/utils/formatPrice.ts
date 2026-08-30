@@ -1,5 +1,37 @@
 export const DEFAULT_CURRENCY = "EGP";
 
+const currencyNumberFormatOptions = {
+  style: "currency" as const,
+  currency: DEFAULT_CURRENCY,
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2,
+};
+
+/**
+ * Standard EGP currency formatting for admin and dashboard surfaces.
+ */
+export function formatCurrency(
+  amount: number,
+  locale = "en-EG",
+  options?: Partial<Intl.NumberFormatOptions>
+): string {
+  const isArabic = locale.startsWith("ar");
+
+  return new Intl.NumberFormat(isArabic ? "ar-EG" : "en-EG", {
+    ...currencyNumberFormatOptions,
+    ...options,
+    ...(isArabic && { numberingSystem: "latn" }),
+  }).format(amount);
+}
+
+/**
+ * Parse display currency strings like "EGP 2,500" or "2,500 EGP".
+ */
+export function parseCurrencyAmount(value: string): number {
+  const parsed = parseInt(value.replace(/[^\d]/g, ""), 10);
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
 type FormatPriceSize = "lg" | "md" | "sm";
 
 const sizeToClass: Record<FormatPriceSize, string> = {

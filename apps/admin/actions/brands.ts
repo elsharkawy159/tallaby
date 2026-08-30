@@ -4,7 +4,7 @@ import { db } from "@workspace/db";
 import { brands, products } from "@workspace/db";
 import { eq, and, desc, sql, like, asc, or } from "drizzle-orm";
 import { getAdminUser } from "./auth";
-import { revalidatePath } from "next/cache";
+import { applyInvalidation, invalidateBrand } from "@workspace/cache";
 
 export async function getAllBrands(params?: {
   locale?: "en" | "ar";
@@ -101,7 +101,7 @@ export async function getBrandById(brandId: string) {
     const productCount = await db
       .select({ count: sql<number>`count(*)` })
       .from(products)
-      .where(and(eq(products.brandId, brand.id), eq(products.isActive, true)));
+      .where(and(eq(products.brandId, brand.id), eq(products.status, "active")));
 
     return {
       success: true,
@@ -164,7 +164,12 @@ export async function createBrand(data: {
       })
       .returning();
 
-    revalidatePath("/withAuth/brands");
+    if (newBrand[0]) {
+      await applyInvalidation(invalidateBrand(newBrand[0].id, newBrand[0].slug), {
+        from: "admin",
+        mode: "action",
+      });
+    }
 
     return { success: true, data: newBrand[0] };
   } catch (error) {
@@ -230,7 +235,17 @@ export async function updateBrand(
       .where(eq(brands.id, brandId))
       .returning();
 
-    revalidatePath("/withAuth/brands");
+    // Invalidate both the old and new slug in case it changed.
+    await applyInvalidation(
+      invalidateBrand(brandId, existingBrand.slug),
+      { from: "admin", mode: "action" }
+    );
+    if (updatedBrand[0] && updatedBrand[0].slug !== existingBrand.slug) {
+      await applyInvalidation(
+        invalidateBrand(brandId, updatedBrand[0].slug),
+        { from: "admin", mode: "action" }
+      );
+    }
 
     return { success: true, data: updatedBrand[0] };
   } catch (error) {
@@ -276,7 +291,12 @@ export async function deleteBrands(brandIds: string[]) {
       .where(sql`${brands.id} = ANY(${brandIds})`)
       .returning();
 
-    revalidatePath("/withAuth/brands");
+    for (const brand of deletedBrands) {
+      await applyInvalidation(invalidateBrand(brand.id, brand.slug), {
+        from: "admin",
+        mode: "action",
+      });
+    }
 
     return { success: true, data: deletedBrands };
   } catch (error) {
@@ -307,11 +327,14 @@ export async function updateBrandStatus(
       .where(eq(brands.id, brandId))
       .returning();
 
-    if (!updatedBrand.length) {
+    if (!updatedBrand.length || !updatedBrand[0]) {
       return { success: false, error: "Brand not found" };
     }
 
-    revalidatePath("/withAuth/brands");
+    await applyInvalidation(invalidateBrand(updatedBrand[0].id, updatedBrand[0].slug), {
+      from: "admin",
+      mode: "action",
+    });
 
     return { success: true, data: updatedBrand[0] };
   } catch (error) {

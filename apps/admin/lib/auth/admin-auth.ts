@@ -22,9 +22,14 @@ export const getCurrentAdminUser = async (): Promise<AdminUser> => {
     throw new Error("User not authenticated");
   }
 
+  // supabase-js goes through PostgREST, which queries literal column names —
+  // the actual columns are snake_case (is_verified, full_name, ...); the
+  // previous camelCase selectors matched no column, so `data` came back
+  // null/undefined for every field, making every admin look unverified.
+  // Aliased here (alias:column) so the returned shape still matches AdminUser.
   const { data: userProfile, error: profileError } = await supabase
     .from("users")
-    .select("id, email, role, isVerified, fullName, createdAt, updatedAt")
+    .select("id, email, role, isVerified:is_verified, fullName:full_name, createdAt:created_at, updatedAt:updated_at")
     .eq("id", user.id)
     .single();
 

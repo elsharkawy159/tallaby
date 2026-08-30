@@ -9,14 +9,42 @@ import {
   db,
 } from "@workspace/db";
 import { eq, and, desc, asc, sql, inArray } from "drizzle-orm";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 import { getUser } from "./auth";
-import { revalidateEcommerce } from "@/lib/revalidate-ecommerce";
 import slugify from "slugify";
+import {
+  applyInvalidation,
+  invalidateProduct,
+  type ProductCacheSnapshot,
+} from "@workspace/cache";
 
 // Excel parsing
 import * as XLSX from "xlsx";
 // tables imported above via @workspace/db default export; no need for direct table imports here
+
+/** Builds the cache-invalidation snapshot for a product from its current DB state. */
+async function toSnapshot(productId: string): Promise<ProductCacheSnapshot | null> {
+  const product = await db.query.products.findFirst({
+    where: eq(products.id, productId),
+    with: {
+      productTranslations: { columns: { locale: true, slug: true } },
+    },
+  });
+  if (!product) return null;
+
+  return {
+    id: product.id,
+    sellerId: product.sellerId,
+    categoryId: product.categoryId,
+    brandId: product.brandId,
+    slugs: product.productTranslations.map((t) => ({ locale: t.locale, slug: t.slug })),
+    status: product.status,
+    isFeatured: product.isFeatured ?? false,
+    isMostSelling: product.isMostSelling ?? false,
+    isPlatformChoice: product.isPlatformChoice ?? false,
+    priceKey: JSON.stringify(product.price ?? null),
+  };
+}
 
 // Generate random SKU function
 async function generateRandomSKU(): Promise<string> {
@@ -90,7 +118,7 @@ async function findBestCategoryMatch(
 }
 
 export async function getSellerProducts(params?: {
-  isActive?: boolean;
+  status?: "draft" | "pending" | "active" | "rejected";
   limit?: number;
   offset?: number;
 }) {
@@ -102,8 +130,8 @@ export async function getSellerProducts(params?: {
 
     const conditions = [eq(products.sellerId, session.user.id)];
 
-    if (params?.isActive !== undefined) {
-      conditions.push(eq(products.isActive, params.isActive));
+    if (params?.status !== undefined) {
+      conditions.push(eq(products.status, params.status));
     }
 
     const productListRaw = await db.query.products.findMany({
@@ -216,7 +244,7 @@ export type ParsedBulkRow = {
     categoryId: string;
     quantity: number;
     images: string[];
-    isActive: boolean;
+    status: "draft" | "pending" | "active" | "rejected";
     isFeatured: boolean;
     condition: any;
     conditionDescription?: string;
@@ -419,10 +447,12 @@ export async function bulkUploadProductsAction(formData: FormData) {
 
       // Parse numbers/booleans
       const quantity = Number(record.quantity ?? 0) || 0;
-      // TODO: Ignore the isActive and isFeatured columns in the Excel file
-      const isActive =
+      // Legacy Excel isActive column maps to status for bulk import
+      const importStatus =
         String(record.isActive ?? "").toLowerCase() === "true" ||
-        String(record.isActive).toLowerCase() === "yes";
+        String(record.isActive).toLowerCase() === "yes"
+          ? ("active" as const)
+          : ("pending" as const);
       const isFeatured =
         String(record.isFeatured ?? "").toLowerCase() === "true" ||
         String(record.isFeatured).toLowerCase() === "yes";
@@ -573,7 +603,7 @@ export async function bulkUploadProductsAction(formData: FormData) {
           price,
           quantity,
           images: imagesArr,
-          isActive,
+          status: importStatus,
           isFeatured,
           condition,
           conditionDescription: record.conditionDescription
@@ -672,7 +702,7 @@ export async function bulkInsertProductsAction(records: ParsedBulkRow[]) {
           fulfillmentType: "seller_fulfilled",
           handlingTime: 1,
           maxOrderQuantity: undefined,
-          isActive: rec.product.isActive,
+          status: rec.product.status,
           isPlatformChoice: false,
           isMostSelling: false,
           isFeatured: rec.product.isFeatured,
@@ -732,9 +762,9 @@ export async function bulkInsertProductsAction(records: ParsedBulkRow[]) {
       }
     }
 
+    // Each createProduct() call above already invalidates and broadcasts
+    // its own product's caches; only the local (uncached) dashboard list needs a nudge.
     revalidatePath("/products");
-    revalidateTag("products", "layout");
-    await revalidateEcommerce(["products"]);
     return { success: true, ...results };
   } catch (error) {
     console.error("bulkInsertProductsAction error:", error);
@@ -866,7 +896,7 @@ type CreateProductLegacy = {
   fulfillmentType?: string;
   handlingTime?: number;
   maxOrderQuantity?: number;
-  isActive?: boolean;
+  status?: "draft" | "pending" | "active" | "rejected";
   isPlatformChoice?: boolean;
   isMostSelling?: boolean;
   isFeatured?: boolean;
@@ -952,116 +982,141 @@ export async function createProduct(
       locale?: string;
     };
 
-    // products table: shared data only (content lives in product_translations)
+    // products table: shared data only (content lives in product_translations).
+    // status is always seller-set to 'pending' here — it is not a field the
+    // seller form is allowed to set directly, regardless of what `rest` carries.
     const productPayload = {
       ...sharedOnly,
       sku,
       sellerId: session.user.id,
+      status: (rest as CreateProductLegacy).status ?? ("pending" as const),
     } as any;
 
-    const newProduct = await db
-      .insert(products)
-      .values(productPayload)
-      .returning();
-    const createdProduct = newProduct[0];
+    const slugsForSnapshot: { locale: string; slug: string | null }[] = [];
 
-    // Insert variants if provided
-    if (
-      createdProduct?.id &&
-      Array.isArray(rest.variants) &&
-      rest.variants.length > 0
-    ) {
-      const variantValues = rest.variants.map((v: any) => ({
-        productId: createdProduct.id,
-        title: v.title,
-        price: v.price as any,
-        stock: v.stock ?? 0,
-        sku: v.sku,
-        imageUrl: v.imageUrl,
-        option1: v.option1,
-        option2: v.option2,
-        option3: v.option3,
-        barCode: v.barCode,
-        position: v.position,
-      }));
-      await db.insert(productVariants).values(variantValues);
-    }
+    const createdProduct = await db.transaction(async (tx) => {
+      const newProduct = await tx
+        .insert(products)
+        .values(productPayload)
+        .returning();
+      const created = newProduct[0];
+      if (!created) return created;
 
-    // Insert product_translations for en (always) and ar (if has content)
-    let localizedData: CreateProductNew["localized"] | undefined;
-    if (hasLocalized(data)) {
-      localizedData = data.localized;
-    } else {
-      // Legacy flow: build localized from top-level fields
-      localizedData = {
-        en: {
-          title: (data.title ?? "").trim() || "Untitled",
-          slug:
-            (data.slug ?? "").trim() ||
-            slugify(data.title ?? "untitled", { lower: true, strict: true }),
-          description: data.description?.trim(),
-          bulletPoints: Array.isArray(data.bulletPoints)
-            ? data.bulletPoints
-            : [],
-          metaTitle: (data.seo as any)?.metaTitle,
-          metaDescription: (data.seo as any)?.metaDescription,
-        },
-        ar: {
-          title: "",
-          slug: "",
-          description: "",
-          bulletPoints: [],
-          metaTitle: "",
-          metaDescription: "",
-        },
-      };
-    }
-
-    if (createdProduct?.id && localizedData) {
-      const enTitle = (localizedData.en.title ?? "").trim() || "Untitled";
-      const enSlug =
-        (localizedData.en.slug ?? "").trim() ||
-        slugify(localizedData.en.title ?? "untitled", {
-          lower: true,
-          strict: true,
-        });
-      const enRow = {
-        productId: createdProduct.id,
-        locale: "en" as const,
-        title: enTitle,
-        description: localizedData.en.description?.trim() || null,
-        bulletPoints: localizedData.en.bulletPoints ?? [],
-        slug: enSlug,
-        metaTitle: localizedData.en.metaTitle?.trim() || null,
-        metaDescription: localizedData.en.metaDescription?.trim() || null,
-      };
-      await db.insert(productTranslations).values(enRow);
-
-      const arHasContent =
-        (localizedData.ar?.title ?? "").trim() !== "" ||
-        (localizedData.ar?.description ?? "").trim() !== "" ||
-        (localizedData.ar?.slug ?? "").trim() !== "" ||
-        (localizedData.ar?.bulletPoints ?? []).length > 0 ||
-        (localizedData.ar?.metaTitle ?? "").trim() !== "" ||
-        (localizedData.ar?.metaDescription ?? "").trim() !== "";
-
-      if (arHasContent) {
-        const arRow = {
-          productId: createdProduct.id,
-          locale: "ar" as const,
-          title: (localizedData.ar!.title ?? "").trim() || enTitle,
-          description: localizedData.ar?.description?.trim() || null,
-          bulletPoints: localizedData.ar?.bulletPoints ?? [],
-          slug: localizedData.ar?.slug?.trim() || null,
-          metaTitle: localizedData.ar?.metaTitle?.trim() || null,
-          metaDescription: localizedData.ar?.metaDescription?.trim() || null,
-        };
-        await db.insert(productTranslations).values(arRow);
+      // Insert variants if provided
+      if (Array.isArray(rest.variants) && rest.variants.length > 0) {
+        const variantValues = rest.variants.map((v: any) => ({
+          productId: created.id,
+          title: v.title,
+          price: v.price as any,
+          stock: v.stock ?? 0,
+          sku: v.sku,
+          imageUrl: v.imageUrl,
+          option1: v.option1,
+          option2: v.option2,
+          option3: v.option3,
+          barCode: v.barCode,
+          position: v.position,
+        }));
+        await tx.insert(productVariants).values(variantValues);
       }
+
+      // Insert product_translations for en (always) and ar (if has content)
+      let localizedData: CreateProductNew["localized"] | undefined;
+      if (hasLocalized(data)) {
+        localizedData = data.localized;
+      } else {
+        // Legacy flow: build localized from top-level fields
+        localizedData = {
+          en: {
+            title: (data.title ?? "").trim() || "Untitled",
+            slug:
+              (data.slug ?? "").trim() ||
+              slugify(data.title ?? "untitled", { lower: true, strict: true }),
+            description: data.description?.trim(),
+            bulletPoints: Array.isArray(data.bulletPoints)
+              ? data.bulletPoints
+              : [],
+            metaTitle: (data.seo as any)?.metaTitle,
+            metaDescription: (data.seo as any)?.metaDescription,
+          },
+          ar: {
+            title: "",
+            slug: "",
+            description: "",
+            bulletPoints: [],
+            metaTitle: "",
+            metaDescription: "",
+          },
+        };
+      }
+
+      if (localizedData) {
+        const enTitle = (localizedData.en.title ?? "").trim() || "Untitled";
+        const enSlug =
+          (localizedData.en.slug ?? "").trim() ||
+          slugify(localizedData.en.title ?? "untitled", {
+            lower: true,
+            strict: true,
+          });
+        const enRow = {
+          productId: created.id,
+          locale: "en" as const,
+          title: enTitle,
+          description: localizedData.en.description?.trim() || null,
+          bulletPoints: localizedData.en.bulletPoints ?? [],
+          slug: enSlug,
+          metaTitle: localizedData.en.metaTitle?.trim() || null,
+          metaDescription: localizedData.en.metaDescription?.trim() || null,
+        };
+        await tx.insert(productTranslations).values(enRow);
+        slugsForSnapshot.push({ locale: "en", slug: enSlug });
+
+        const arHasContent =
+          (localizedData.ar?.title ?? "").trim() !== "" ||
+          (localizedData.ar?.description ?? "").trim() !== "" ||
+          (localizedData.ar?.slug ?? "").trim() !== "" ||
+          (localizedData.ar?.bulletPoints ?? []).length > 0 ||
+          (localizedData.ar?.metaTitle ?? "").trim() !== "" ||
+          (localizedData.ar?.metaDescription ?? "").trim() !== "";
+
+        if (arHasContent) {
+          const arSlug = localizedData.ar?.slug?.trim() || null;
+          const arRow = {
+            productId: created.id,
+            locale: "ar" as const,
+            title: (localizedData.ar!.title ?? "").trim() || enTitle,
+            description: localizedData.ar?.description?.trim() || null,
+            bulletPoints: localizedData.ar?.bulletPoints ?? [],
+            slug: arSlug,
+            metaTitle: localizedData.ar?.metaTitle?.trim() || null,
+            metaDescription: localizedData.ar?.metaDescription?.trim() || null,
+          };
+          await tx.insert(productTranslations).values(arRow);
+          slugsForSnapshot.push({ locale: "ar", slug: arSlug });
+        }
+      }
+
+      return created;
+    });
+
+    if (createdProduct) {
+      await applyInvalidation(
+        invalidateProduct(null, {
+          id: createdProduct.id,
+          sellerId: createdProduct.sellerId,
+          categoryId: createdProduct.categoryId,
+          brandId: createdProduct.brandId,
+          slugs: slugsForSnapshot,
+          status: createdProduct.status,
+          isFeatured: createdProduct.isFeatured ?? false,
+          isMostSelling: createdProduct.isMostSelling ?? false,
+          isPlatformChoice: createdProduct.isPlatformChoice ?? false,
+          priceKey: JSON.stringify(createdProduct.price ?? null),
+        }),
+        { from: "dashboard", mode: "action" }
+      );
     }
 
-    revalidateTag("products", "layout");
-    await revalidateEcommerce(["products"]);
     return { success: true, data: createdProduct };
   } catch (error: any) {
     console.error("Error creating product:", error);
@@ -1132,6 +1187,11 @@ export async function updateProduct(
       throw new Error("Unauthorized");
     }
 
+    const before = await toSnapshot(productId);
+    if (!before || before.sellerId !== session.user.id) {
+      throw new Error("Product not found or unauthorized");
+    }
+
     // Extract variants, localized, notes and content columns (content lives in product_translations)
     type FormOnly = {
       title?: string;
@@ -1157,121 +1217,133 @@ export async function updateProduct(
       ...productData
     } = data as typeof data & FormOnly;
 
-    // Update the main product (shared fields only)
-    const updatedProduct = await db
-      .update(products)
-      .set({
-        ...productData,
-        updatedAt: new Date().toISOString(),
-      })
-      .where(
-        and(eq(products.id, productId), eq(products.sellerId, session.user.id))
-      )
-      .returning();
-
-    if (!updatedProduct.length) {
-      throw new Error("Product not found or unauthorized");
-    }
-
-    // Update product_translations for en and ar when localized is provided
-    if (localizedData) {
-      const enTitle = (localizedData.en?.title ?? "").trim() || "Untitled";
-      const enSlug =
-        (localizedData.en?.slug ?? "").trim() ||
-        slugify(localizedData.en?.title ?? "untitled", {
-          lower: true,
-          strict: true,
-        });
-      await db
-        .update(productTranslations)
+    const updatedProduct = await db.transaction(async (tx) => {
+      // Update the main product (shared fields only). Any seller edit sends
+      // the product back to review — status is never left as-is here, and
+      // it is never taken from `productData` (the seller form cannot set it).
+      const updated = await tx
+        .update(products)
         .set({
-          title: enTitle,
-          slug: enSlug,
-          description: localizedData.en?.description?.trim() || null,
-          bulletPoints: localizedData.en?.bulletPoints ?? [],
-          metaTitle: localizedData.en?.metaTitle?.trim() || null,
-          metaDescription: localizedData.en?.metaDescription?.trim() || null,
+          ...productData,
+          status: "pending",
+          updatedAt: new Date().toISOString(),
         })
         .where(
-          and(
-            eq(productTranslations.productId, productId),
-            eq(productTranslations.locale, "en")
-          )
-        );
+          and(eq(products.id, productId), eq(products.sellerId, session.user.id))
+        )
+        .returning();
 
-      const arHasContent =
-        (localizedData.ar?.title ?? "").trim() !== "" ||
-        (localizedData.ar?.description ?? "").trim() !== "" ||
-        (localizedData.ar?.slug ?? "").trim() !== "" ||
-        (localizedData.ar?.bulletPoints ?? []).length > 0 ||
-        (localizedData.ar?.metaTitle ?? "").trim() !== "" ||
-        (localizedData.ar?.metaDescription ?? "").trim() !== "";
+      if (!updated.length) {
+        throw new Error("Product not found or unauthorized");
+      }
 
-      if (arHasContent && localizedData.ar) {
-        const arRow = await db.query.productTranslations.findFirst({
-          where: and(
-            eq(productTranslations.productId, productId),
-            eq(productTranslations.locale, "ar")
-          ),
-        });
-        const arPayload = {
-          title: (localizedData.ar.title ?? "").trim() || enTitle,
-          slug: localizedData.ar.slug?.trim() || null,
-          description: localizedData.ar.description?.trim() || null,
-          bulletPoints: localizedData.ar.bulletPoints ?? [],
-          metaTitle: localizedData.ar.metaTitle?.trim() || null,
-          metaDescription: localizedData.ar.metaDescription?.trim() || null,
-        };
-        if (arRow) {
-          await db
-            .update(productTranslations)
-            .set(arPayload)
-            .where(
-              and(
-                eq(productTranslations.productId, productId),
-                eq(productTranslations.locale, "ar")
-              )
-            );
-        } else {
-          await db.insert(productTranslations).values({
-            productId,
-            locale: "ar",
-            ...arPayload,
+      // Update product_translations for en and ar when localized is provided
+      if (localizedData) {
+        const enTitle = (localizedData.en?.title ?? "").trim() || "Untitled";
+        const enSlug =
+          (localizedData.en?.slug ?? "").trim() ||
+          slugify(localizedData.en?.title ?? "untitled", {
+            lower: true,
+            strict: true,
           });
+        await tx
+          .update(productTranslations)
+          .set({
+            title: enTitle,
+            slug: enSlug,
+            description: localizedData.en?.description?.trim() || null,
+            bulletPoints: localizedData.en?.bulletPoints ?? [],
+            metaTitle: localizedData.en?.metaTitle?.trim() || null,
+            metaDescription: localizedData.en?.metaDescription?.trim() || null,
+          })
+          .where(
+            and(
+              eq(productTranslations.productId, productId),
+              eq(productTranslations.locale, "en")
+            )
+          );
+
+        const arHasContent =
+          (localizedData.ar?.title ?? "").trim() !== "" ||
+          (localizedData.ar?.description ?? "").trim() !== "" ||
+          (localizedData.ar?.slug ?? "").trim() !== "" ||
+          (localizedData.ar?.bulletPoints ?? []).length > 0 ||
+          (localizedData.ar?.metaTitle ?? "").trim() !== "" ||
+          (localizedData.ar?.metaDescription ?? "").trim() !== "";
+
+        if (arHasContent && localizedData.ar) {
+          const arRow = await tx.query.productTranslations.findFirst({
+            where: and(
+              eq(productTranslations.productId, productId),
+              eq(productTranslations.locale, "ar")
+            ),
+          });
+          const arPayload = {
+            title: (localizedData.ar.title ?? "").trim() || enTitle,
+            slug: localizedData.ar.slug?.trim() || null,
+            description: localizedData.ar.description?.trim() || null,
+            bulletPoints: localizedData.ar.bulletPoints ?? [],
+            metaTitle: localizedData.ar.metaTitle?.trim() || null,
+            metaDescription: localizedData.ar.metaDescription?.trim() || null,
+          };
+          if (arRow) {
+            await tx
+              .update(productTranslations)
+              .set(arPayload)
+              .where(
+                and(
+                  eq(productTranslations.productId, productId),
+                  eq(productTranslations.locale, "ar")
+                )
+              );
+          } else {
+            await tx.insert(productTranslations).values({
+              productId,
+              locale: "ar",
+              ...arPayload,
+            });
+          }
         }
       }
-    }
 
-    // Handle variants if provided
-    if (variants && Array.isArray(variants)) {
-      // First, delete existing variants
-      await db
-        .delete(productVariants)
-        .where(eq(productVariants.productId, productId));
+      // Handle variants if provided
+      if (variants && Array.isArray(variants)) {
+        // First, delete existing variants
+        await tx
+          .delete(productVariants)
+          .where(eq(productVariants.productId, productId));
 
-      // Then insert new variants if any
-      if (variants.length > 0) {
-        const variantValues = variants.map((v) => ({
-          productId: productId,
-          title: v.title,
-          price: v.price as any,
-          stock: v.stock ?? 0,
-          sku: v.sku,
-          imageUrl: v.imageUrl,
-          option1: v.option1,
-          option2: v.option2,
-          option3: v.option3,
-          barCode: v.barCode,
-          position: v.position,
-        }));
+        // Then insert new variants if any
+        if (variants.length > 0) {
+          const variantValues = variants.map((v) => ({
+            productId: productId,
+            title: v.title,
+            price: v.price as any,
+            stock: v.stock ?? 0,
+            sku: v.sku,
+            imageUrl: v.imageUrl,
+            option1: v.option1,
+            option2: v.option2,
+            option3: v.option3,
+            barCode: v.barCode,
+            position: v.position,
+          }));
 
-        await db.insert(productVariants).values(variantValues);
+          await tx.insert(productVariants).values(variantValues);
+        }
       }
-    }
+
+      return updated;
+    });
 
     revalidatePath("/products");
     revalidatePath(`/products/${productId}`);
-    await revalidateEcommerce(["products"]);
+
+    const after = await toSnapshot(productId);
+    await applyInvalidation(invalidateProduct(before, after), {
+      from: "dashboard",
+      mode: "action",
+    });
 
     return { success: true, data: updatedProduct[0] };
   } catch (error) {
@@ -1301,16 +1373,32 @@ export async function toggleProductStatus(productId: string) {
       throw new Error("Product not found");
     }
 
+    if (product.status !== "active" && product.status !== "draft") {
+      return {
+        success: false,
+        error: `Cannot toggle product with status "${product.status}"`,
+      };
+    }
+
+    const before = await toSnapshot(productId);
+
+    const nextStatus = product.status === "active" ? "draft" : "pending";
+
     const updatedProduct = await db
       .update(products)
       .set({
-        isActive: !product.isActive,
+        status: nextStatus,
         updatedAt: new Date().toISOString(),
       })
       .where(eq(products.id, productId))
       .returning();
 
-    await revalidateEcommerce(["products"]);
+    const after = await toSnapshot(productId);
+    await applyInvalidation(invalidateProduct(before, after), {
+      from: "dashboard",
+      mode: "action",
+    });
+
     return { success: true, data: updatedProduct[0] };
   } catch (error) {
     console.error("Error toggling product status:", error);
@@ -1526,8 +1614,22 @@ export async function deleteProduct(productId: string) {
       throw new Error("Product not found");
     }
 
-    await db.delete(products).where(eq(products.id, productId));
-    await revalidateEcommerce(["products"]);
+    const before = await toSnapshot(productId);
+
+    // Scope the delete itself by sellerId — previously guarded only by the
+    // findFirst above, not by the delete's own WHERE clause.
+    await db
+      .delete(products)
+      .where(
+        and(eq(products.id, productId), eq(products.sellerId, session.user.id))
+      );
+
+    if (before) {
+      await applyInvalidation(invalidateProduct(before, null), {
+        from: "dashboard",
+        mode: "action",
+      });
+    }
 
     return { success: true, data: product };
   } catch (error) {
