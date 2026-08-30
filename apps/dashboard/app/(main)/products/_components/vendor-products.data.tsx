@@ -18,6 +18,8 @@ export async function VendorProductsData() {
     brand?: { name: string } | null
     category?: { name?: string | null; nameAr?: string | null } | null
     productTranslations?: Array<{ locale: string; slug?: string | null }>
+    averageRating?: number | null
+    reviewCount?: number | null
   }) => {
     const translations = p.productTranslations ?? []
     const enSlug = translations.find((t) => t.locale === "en")?.slug
@@ -36,6 +38,8 @@ export async function VendorProductsData() {
       salePrice: p.price?.final ?? null,
       brand: p.brand ? { name: p.brand.name } : null,
       category: p.category ? { name: p.category.name ?? p.category.nameAr ?? null } : null,
+      averageRating: p.averageRating ?? null,
+      reviewCount: p.reviewCount ?? 0,
     }
   });
 

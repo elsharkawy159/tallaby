@@ -172,7 +172,13 @@ export function OrderStatusTracker({
   const isCompleted = status === "delivered"
 
   return (
-    <Card className={cn("rounded-xl md:rounded-2xl border overflow-hidden bg-white gap-2", className)}>
+    <Card
+      id="order-status-tracking"
+      className={cn(
+        "scroll-mt-24 rounded-xl md:rounded-2xl border overflow-hidden bg-white gap-2",
+        className
+      )}
+    >
       <CardHeader className="pb-4">
         <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-gray-900">
           <Package className="h-4 w-4 md:h-5 md:w-5" />

@@ -10,34 +10,14 @@ import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { formatPrice } from "@workspace/lib";
 import { Package } from "lucide-react";
 import { useTranslations } from "next-intl";
+import type { OrderConfirmationData } from "./order-confirmation.types";
 
 interface OrderItemRowProps {
-  item: {
-    id: string;
-    productId: string;
-    sellerId: string;
-    productName: string;
-    variantName?: string;
-    quantity: number;
-    price: string;
-    subtotal: string;
-    product: {
-      title: string;
-      slug: string;
-      images: string[];
-    };
-    variant: {
-      imageUrl: string | null;
-    } | null;
-    seller: {
-      displayName: string;
-      slug: string;
-    };
-    hasReview: boolean;
-  };
+  item: OrderConfirmationData["orderItems"][number];
   orderId: string;
   orderStatus: string;
   locale: string;
+  autoExpandReview?: boolean;
 }
 
 export function OrderItemRow({
@@ -45,18 +25,22 @@ export function OrderItemRow({
   orderId,
   orderStatus,
   locale,
+  autoExpandReview = false,
 }: OrderItemRowProps) {
   const t = useTranslations("orders");
   const tCommon = useTranslations("common");
-  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [showReviewForm, setShowReviewForm] = useState(autoExpandReview);
   const canReview = orderStatus === "delivered" && !item.hasReview;
+  const canEditReview = orderStatus === "delivered" && item.hasReview;
 
   return (
-    <div className="border rounded-lg hover:bg-gray-50 transition-colors">
+    <div
+      id={`review-item-${item.id}`}
+      className="scroll-mt-24 border rounded-lg hover:bg-gray-50 transition-colors"
+    >
       <div className="flex items-center space-x-2 md:space-x-4 p-3 md:p-4">
         <div className="relative w-12 h-12 md:w-16 md:h-16 rounded-lg overflow-hidden bg-gray-100 shrink-0">
           {(() => {
-            // Prioritize variant image if available, otherwise use product image
             const imageUrl =
               item.variant?.imageUrl ||
               (item.product.images && item.product.images.length > 0
@@ -94,7 +78,9 @@ export function OrderItemRow({
             </p>
           )}
           {item.variantName && (
-            <p className="text-xs text-gray-600">{t("variant")}: {item.variantName}</p>
+            <p className="text-xs text-gray-600">
+              {t("variant")}: {item.variantName}
+            </p>
           )}
           <p className="text-xs text-gray-500">
             {t("soldBy")} {item.seller.displayName}
@@ -108,7 +94,9 @@ export function OrderItemRow({
               __html: formatPrice(Number(item.price), locale),
             }}
           />
-          <p className="text-xs text-gray-500">{tCommon("quantity")}: {item.quantity}</p>
+          <p className="text-xs text-gray-500">
+            {tCommon("quantity")}: {item.quantity}
+          </p>
           <p
             className="text-xs md:text-sm font-semibold text-gray-900"
             dangerouslySetInnerHTML={{
@@ -118,14 +106,13 @@ export function OrderItemRow({
         </div>
       </div>
 
-      {/* Review Product Button */}
       {canReview && !showReviewForm && (
         <div className="px-3 md:px-4 py-3 md:py-4 border-t">
           <Button
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => setShowReviewForm(!showReviewForm)}
+            onClick={() => setShowReviewForm(true)}
             className="w-full flex items-center justify-center gap-2"
           >
             <Star className="h-4 w-4" />
@@ -134,7 +121,6 @@ export function OrderItemRow({
         </div>
       )}
 
-      {/* Review Form - Show when button is clicked */}
       {canReview && showReviewForm && (
         <div className="px-3 md:px-4 py-3 md:py-4 border-t">
           <OrderItemReviewForm
@@ -146,20 +132,44 @@ export function OrderItemRow({
             productImage={
               item.variant?.imageUrl || item.product.images?.[0] || undefined
             }
-            hasReview={item.hasReview}
+            mode="create"
           />
         </div>
       )}
 
-      {/* Show message if already reviewed */}
-      {item.hasReview && (
+      {canEditReview && !showReviewForm && (
         <div className="px-3 md:px-4 py-3 md:py-4 border-t">
-          <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+          <div className="p-3 bg-green-50 border border-green-200 rounded-lg flex items-center justify-between gap-3">
             <p className="text-sm text-green-800 flex items-center gap-2">
               <Star className="h-4 w-4 fill-current" />
               {t("youHaveReviewedThisProduct")}
             </p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setShowReviewForm(true)}
+            >
+              {t("editReview")}
+            </Button>
           </div>
+        </div>
+      )}
+
+      {canEditReview && showReviewForm && item.review && (
+        <div className="px-3 md:px-4 py-3 md:py-4 border-t">
+          <OrderItemReviewForm
+            orderId={orderId}
+            orderItemId={item.id}
+            productId={item.productId}
+            sellerId={item.sellerId}
+            productName={item.productName}
+            productImage={
+              item.variant?.imageUrl || item.product.images?.[0] || undefined
+            }
+            mode="edit"
+            existingReview={item.review}
+          />
         </div>
       )}
     </div>

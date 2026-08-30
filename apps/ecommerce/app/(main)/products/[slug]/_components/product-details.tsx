@@ -17,6 +17,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { DiscountCountdown } from "./discount-countdown";
+import { SellerInfo } from "./SellerInfo";
+import { Star } from "lucide-react";
 
 interface ProductDetailsProps {
   product: Product;
@@ -120,29 +122,31 @@ export const ProductDetails = ({
         {listPrice && listPrice > price && <DiscountCountdown />}
 
         {/* Rating and Stock */}
-        <div className="flex items-center gap-4 mb-6">
-          {/* <div className="flex items-center gap-2">
-            <div className="flex items-center">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Star
-                  key={i}
-                  className={`h-5 w-5 ${
-                    i < Math.floor(product.averageRating || 0)
-                      ? "text-yellow-400 fill-current"
-                      : "text-gray-300"
-                  }`}
-                />
-              ))}
+        <div className="flex flex-wrap items-center gap-4 mb-6">
+          {(product.averageRating ?? 0) > 0 && (
+            <div className="flex items-center gap-2">
+              <div className="flex items-center">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star
+                    key={i}
+                    className={`h-5 w-5 ${
+                      i < Math.floor(product.averageRating || 0)
+                        ? "text-yellow-400 fill-current"
+                        : "text-gray-300"
+                    }`}
+                  />
+                ))}
+              </div>
+              <span className="text-lg font-semibold text-gray-900">
+                {product.averageRating?.toFixed(1) || "0.0"}
+              </span>
+              <Link href="#reviews" className="text-sm text-gray-600 underline">
+                {product.reviewCount === 1
+                  ? t("reviewsCountOne", { count: product.reviewCount || 0 })
+                  : t("reviewsCount", { count: product.reviewCount || 0 })}
+              </Link>
             </div>
-            <span className="text-lg font-semibold text-gray-900">
-              {product.averageRating?.toFixed(1) || "0.0"}
-            </span>
-            <Link href="#reviews" className="text-sm text-gray-600 underline">
-              {product.reviewCount === 1
-                ? t("reviewsCountOne", { count: product.reviewCount || 0 })
-                : t("reviewsCount", { count: product.reviewCount || 0 })}
-            </Link>
-          </div> */}
+          )}
           <div className="flex items-center gap-2">
             <div
               className={`w-2 h-2 rounded-full ${
@@ -288,6 +292,16 @@ export const ProductDetails = ({
               </div>
             </div>
           )}
+
+        {product.seller && (
+          <div className="mb-6">
+            <SellerInfo
+              name={product.seller.displayName}
+              rating={product.seller.storeRating}
+              reviewCount={product.seller.totalRatings}
+            />
+          </div>
+        )}
 
         {/* Quantity and Add to Cart */}
         <div className="md:mb-6 md:relative fixed md:bg-transparent md:border-0 bg-white md:p-0 px-4 py-2.5 border border-gray-200 md:bottom-0 bottom-15 md:z-auto z-50 left-0 right-0">

@@ -1,4 +1,35 @@
 
+export interface OrderItemReview {
+  id: string;
+  rating: number;
+  title: string | null;
+  comment: string | null;
+  images: string[] | null;
+  status: string | null;
+  isAnonymous: boolean | null;
+}
+
+export interface StoreSellerReview {
+  sellerId: string;
+  displayName: string;
+  slug: string;
+  hasStoreReview: boolean;
+  storeReview: {
+    id: string;
+    rating: number;
+    title: string | null;
+    comment: string | null;
+    status: string | null;
+    isAnonymous: boolean | null;
+  } | null;
+}
+
+export interface ShipmentInfo {
+  trackingNumber: string | null;
+  carrier: string | null;
+  status: string | null;
+  estimatedDeliveryDate: string | null;
+}
 
 export interface OrderConfirmationData {
   order: {
@@ -36,7 +67,10 @@ export interface OrderConfirmationData {
       slug: string;
     };
     hasReview: boolean;
+    review: OrderItemReview | null;
   }>;
+  storeSellers: StoreSellerReview[];
+  shipments: ShipmentInfo[];
   shippingAddress: {
     fullName: string;
     addressLine1: string;

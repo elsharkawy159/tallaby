@@ -5,10 +5,12 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 interface OrderConfirmationDataProps {
   orderId: string;
+  autoExpandReviewItemId?: string;
 }
 
 export async function OrderConfirmationData({
   orderId,
+  autoExpandReviewItemId,
 }: OrderConfirmationDataProps) {
   const result = await getOrderConfirmationData(orderId);
   const locale = await getLocale();
@@ -34,5 +36,11 @@ export async function OrderConfirmationData({
     );
   }
 
-  return <OrderConfirmationContent data={result.data} locale={locale} />;
+  return (
+    <OrderConfirmationContent
+      data={result.data}
+      locale={locale}
+      autoExpandReviewItemId={autoExpandReviewItemId}
+    />
+  );
 }

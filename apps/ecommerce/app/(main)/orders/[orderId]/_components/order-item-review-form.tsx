@@ -4,11 +4,13 @@ import { useState, useTransition, useRef, useEffect } from "react";
 import { Star, Loader2, Image as ImageIcon, X, Upload, Video } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
 import { Textarea, Input, Checkbox } from "@workspace/ui/components";
-import { createReview } from "@/actions/reviews";
+import { createReview, updateReview } from "@/actions/reviews";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createClient } from "@/supabase/client";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
+import type { OrderItemReview } from "./order-confirmation.types";
 
 interface OrderItemReviewFormProps {
   orderId: string;
@@ -17,7 +19,8 @@ interface OrderItemReviewFormProps {
   sellerId: string;
   productName: string;
   productImage?: string;
-  hasReview: boolean;
+  mode?: "create" | "edit";
+  existingReview?: OrderItemReview;
 }
 
 export function OrderItemReviewForm({
@@ -27,30 +30,26 @@ export function OrderItemReviewForm({
   sellerId,
   productName,
   productImage,
-  hasReview,
+  mode = "create",
+  existingReview,
 }: OrderItemReviewFormProps) {
-  const [rating, setRating] = useState<number>(0);
+  const t = useTranslations("orders");
+  const [rating, setRating] = useState<number>(existingReview?.rating ?? 0);
   const [hoverRating, setHoverRating] = useState<number>(0);
-  const [title, setTitle] = useState("");
-  const [comment, setComment] = useState("");
-  const [isAnonymous, setIsAnonymous] = useState(false);
-  const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
+  const [title, setTitle] = useState(existingReview?.title ?? "");
+  const [comment, setComment] = useState(existingReview?.comment ?? "");
+  const [isAnonymous, setIsAnonymous] = useState(
+    existingReview?.isAnonymous ?? false
+  );
+  const [uploadedFiles, setUploadedFiles] = useState<string[]>(
+    existingReview?.images ?? []
+  );
   const [filePreviews, setFilePreviews] = useState<Array<{ url: string; type: 'image' | 'video'; path: string }>>([]);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const supabase = createClient();
-
-  if (hasReview) {
-    return (
-      <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-        <p className="text-sm text-green-800">
-          ✓ You have already reviewed this product
-        </p>
-      </div>
-    );
-  }
 
   // Generate unique filename for uploads
   const generateFileName = (file: File): string => {
@@ -181,6 +180,25 @@ export function OrderItemReviewForm({
 
     startTransition(async () => {
       try {
+        if (mode === "edit" && existingReview) {
+          const result = await updateReview({
+            reviewId: existingReview.id,
+            rating,
+            title: title.trim() || undefined,
+            comment: comment.trim() || undefined,
+            images: uploadedFiles.length > 0 ? uploadedFiles : undefined,
+            isAnonymous,
+          });
+
+          if (result.success) {
+            toast.success(t("reviewUpdated"));
+            router.refresh();
+          } else {
+            toast.error(result.error || t("reviewSubmitFailed"));
+          }
+          return;
+        }
+
         const result = await createReview({
           orderId,
           orderItemId,
@@ -194,21 +212,23 @@ export function OrderItemReviewForm({
         });
 
         if (result.success) {
-          toast.success("Review submitted successfully! It will be visible after approval.");
+          toast.success(t("reviewSubmitted"));
           router.refresh();
         } else {
-          toast.error(result.error || "Failed to submit review");
+          toast.error(result.error || t("reviewSubmitFailed"));
         }
       } catch (error) {
         console.error("Error submitting review:", error);
-        toast.error("An unexpected error occurred. Please try again.");
+        toast.error(t("unexpectedError"));
       }
     });
   };
 
   return (
     <div className="mt-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
-      <h4 className="font-semibold text-sm mb-3">Write a Review</h4>
+      <h4 className="font-semibold text-sm mb-3">
+        {mode === "edit" ? t("editReview") : t("writeReview")}
+      </h4>
 
       {/* Rating Stars */}
       <div className="mb-3">
@@ -372,7 +392,7 @@ export function OrderItemReviewForm({
         className="w-full"
       >
         {isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-        {isPending ? "Submitting..." : "Submit Review"}
+        {isPending ? t("submitting") : mode === "edit" ? t("updateReview") : t("submitReview")}
       </Button>
     </div>
   );

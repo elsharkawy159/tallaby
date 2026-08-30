@@ -37,10 +37,53 @@ export type VendorReviewRow = {
   productTitle: string;
   productImage?: string | null;
   productSlug?: string | null;
+  orderNumber?: string | null;
+  reviewType?: "product" | "store";
   replied: boolean;
 };
 
-export function VendorReviewsTable({ rows }: { rows: VendorReviewRow[] }) {
+export function VendorReviewsTabs({
+  productRows,
+  storeRows,
+}: {
+  productRows: VendorReviewRow[];
+  storeRows: VendorReviewRow[];
+}) {
+  const [activeTab, setActiveTab] = useState<"product" | "store">("product");
+
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-2">
+        <Button
+          variant={activeTab === "product" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setActiveTab("product")}
+        >
+          Product Reviews ({productRows.length})
+        </Button>
+        <Button
+          variant={activeTab === "store" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setActiveTab("store")}
+        >
+          Store Reviews ({storeRows.length})
+        </Button>
+      </div>
+      <VendorReviewsTable
+        rows={activeTab === "product" ? productRows : storeRows}
+        reviewType={activeTab}
+      />
+    </div>
+  );
+}
+
+export function VendorReviewsTable({
+  rows,
+  reviewType = "product",
+}: {
+  rows: VendorReviewRow[];
+  reviewType?: "product" | "store";
+}) {
   const columns = useMemo<ColumnDef<VendorReviewRow, any>[]>(
     () => [
       {
@@ -88,9 +131,22 @@ export function VendorReviewsTable({ rows }: { rows: VendorReviewRow[] }) {
       },
       {
         id: "product",
-        header: "Product",
+        header: reviewType === "store" ? "Order" : "Product",
         size: 320,
         cell: ({ row }) => {
+          if (reviewType === "store") {
+            return (
+              <div className="min-w-0">
+                <div className="truncate font-medium">
+                  Order #{row.original.orderNumber ?? "—"}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Store review
+                </div>
+              </div>
+            );
+          }
+
           const image = row.original.productImage
             ? getPublicUrl(row.original.productImage, "products")
             : undefined;
@@ -187,7 +243,7 @@ export function VendorReviewsTable({ rows }: { rows: VendorReviewRow[] }) {
           ),
       },
     ],
-    []
+    [reviewType]
   );
 
   return (

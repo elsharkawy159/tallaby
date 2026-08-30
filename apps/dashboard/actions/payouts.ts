@@ -1,6 +1,6 @@
 "use server";
 
-import { db, orders, products, sellerPayouts, sellerPayoutItems, orderItems, sellers } from "@workspace/db";
+import { db, orders, products, sellerPayouts, sellerPayoutItems, orderItems, sellers, walletTransactions } from "@workspace/db";
 import { eq, and, desc, sql, gte, between } from "drizzle-orm";
 import { getUser } from "./auth";
 
@@ -162,6 +162,36 @@ export async function getWalletBalance() {
   } catch (error) {
     console.error("Error fetching wallet balance:", error);
     return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
+  }
+}
+
+export async function getWalletTransactions(params?: { limit?: number }) {
+  try {
+    const session = await getUser();
+    if (!session?.user?.id) {
+      throw new Error("Unauthorized");
+    }
+
+    const transactions = await db.query.walletTransactions.findMany({
+      where: eq(walletTransactions.sellerId, session.user.id),
+      orderBy: [desc(walletTransactions.createdAt)],
+      limit: params?.limit ?? 20,
+      with: {
+        order: {
+          columns: {
+            orderNumber: true,
+          },
+        },
+      },
+    });
+
+    return { success: true, data: transactions };
+  } catch (error) {
+    console.error("Error fetching wallet transactions:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
   }
 }
 

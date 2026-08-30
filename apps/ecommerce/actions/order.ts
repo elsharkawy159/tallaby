@@ -438,10 +438,17 @@ export async function getOrders(params?: {
           with: {
             product: {
               columns: {
-                title: true,
-                slug: true,
                 images: true,
-                description: true,
+              },
+              with: {
+                productTranslations: {
+                  columns: {
+                    locale: true,
+                    title: true,
+                    slug: true,
+                    description: true,
+                  },
+                },
               },
             },
           },
@@ -458,9 +465,70 @@ export async function getOrders(params?: {
       .from(orders)
       .where(and(...conditions));
 
+    const enrichedOrders = await Promise.all(
+      userOrders.map(async (order) => {
+        const orderItemsWithReviews = await Promise.all(
+          order.orderItems.map(async (item) => {
+            const productReview = await db.query.reviews.findFirst({
+              where: and(
+                eq(reviews.orderItemId, item.id),
+                eq(reviews.userId, userId),
+                eq(reviews.reviewType, "product")
+              ),
+              columns: { id: true },
+            });
+
+            const translations = item.product?.productTranslations ?? [];
+            const enTranslation =
+              translations.find((t) => t.locale === "en") ?? translations[0];
+
+            return {
+              ...item,
+              sellerId: item.sellerId,
+              hasReview: !!productReview,
+              reviewId: productReview?.id ?? null,
+              product: {
+                title: enTranslation?.title ?? item.productName,
+                slug: enTranslation?.slug ?? "",
+                images: (item.product?.images as string[] | null) ?? null,
+                description: enTranslation?.description ?? null,
+              },
+            };
+          })
+        );
+
+        const sellerIds = [
+          ...new Set(orderItemsWithReviews.map((item) => item.sellerId)),
+        ];
+        const storeSellers = await Promise.all(
+          sellerIds.map(async (sellerId) => {
+            const storeReview = await db.query.reviews.findFirst({
+              where: and(
+                eq(reviews.orderId, order.id),
+                eq(reviews.sellerId, sellerId),
+                eq(reviews.userId, userId),
+                eq(reviews.reviewType, "store")
+              ),
+              columns: { id: true },
+            });
+            return {
+              sellerId,
+              hasStoreReview: !!storeReview,
+            };
+          })
+        );
+
+        return {
+          ...order,
+          orderItems: orderItemsWithReviews,
+          storeSellers,
+        };
+      })
+    );
+
     return {
       success: true,
-      data: userOrders,
+      data: enrichedOrders,
       totalCount: Number(totalCount[0]?.count),
     };
   } catch (error) {

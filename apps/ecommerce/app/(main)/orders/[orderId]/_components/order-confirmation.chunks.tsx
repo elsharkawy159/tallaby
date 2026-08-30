@@ -24,21 +24,24 @@ import { Button } from "@workspace/ui/components/button";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { formatPrice } from "@workspace/lib";
 import { OrderStatusTracker } from "./order-status-tracker";
-import { OrderItemRow } from "./order-item-row";
+import { OrderItemsList } from "./order-items-list";
+import { OrderStoreReviewCard } from "./order-store-review-card";
 import { cn } from "@/lib/utils";
 import { getTranslations } from "next-intl/server";
 
 interface OrderConfirmationContentProps {
   data: OrderConfirmationData;
   locale: string;
+  autoExpandReviewItemId?: string;
 }
 
 export async function OrderConfirmationContent({
   data,
   locale,
+  autoExpandReviewItemId,
 }: OrderConfirmationContentProps) {
   const t = await getTranslations("orders");
-  const { order, orderItems, shippingAddress, summary } = data;
+  const { order, orderItems, storeSellers, shipments, shippingAddress, summary } = data;
 
   const getStatusLabel = (status: string): string => {
     // Map status to translation key format
@@ -204,6 +207,38 @@ export async function OrderConfirmationContent({
         paymentMethod={order.paymentMethod}
       />
 
+      {shipments.length > 0 && shipments.some((s) => s.trackingNumber) && (
+        <Card className="rounded-xl md:rounded-2xl border overflow-hidden pt-0 bg-white">
+          <div className="bg-linear-to-r from-gray-50 to-gray-100 px-4 md:px-6 py-3 md:py-5 border-b border-gray-200">
+            <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-gray-900">
+              <Truck className="h-4 w-4 md:h-5 md:w-5" /> {t("trackingInfo")}
+            </CardTitle>
+          </div>
+          <CardContent className="space-y-3">
+            {shipments.map((shipment, index) => (
+              <div key={index} className="text-xs md:text-sm space-y-1">
+                {shipment.carrier && (
+                  <p>
+                    <span className="font-medium text-gray-600">
+                      {t("carrier")}:
+                    </span>{" "}
+                    {shipment.carrier}
+                  </p>
+                )}
+                {shipment.trackingNumber && (
+                  <p>
+                    <span className="font-medium text-gray-600">
+                      {t("trackingNumber")}:
+                    </span>{" "}
+                    {shipment.trackingNumber}
+                  </p>
+                )}
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Order Items */}
       <Card className="rounded-xl md:rounded-2xl border overflow-hidden pt-0 bg-white">
         <div className="bg-linear-to-r from-gray-50 to-gray-100 px-4 md:px-6 py-3 md:py-5 border-b border-gray-200">
@@ -212,16 +247,13 @@ export async function OrderConfirmationContent({
           </CardTitle>
         </div>
         <CardContent>
-          <div className="space-y-3 md:space-y-4">
-            {orderItems.map((item) => (
-              <OrderItemRow
-                key={item.id}
-                item={item}
-                orderId={order.id}
-                orderStatus={order.status}
-                locale={locale}
-              />
-            ))}
+          <OrderItemsList
+            orderItems={orderItems}
+            orderId={order.id}
+            orderStatus={order.status}
+            locale={locale}
+            autoExpandReviewItemId={autoExpandReviewItemId}
+          />
 
             {/* Invoice Breakdown */}
             <div className="mt-4 md:mt-6 pt-4 md:pt-6 border-t space-y-2 md:space-y-3">
@@ -283,9 +315,27 @@ export async function OrderConfirmationContent({
                 />
               </div>
             </div>
-          </div>
         </CardContent>
       </Card>
+
+      {order.status === "delivered" && storeSellers.length > 0 && (
+        <Card className="rounded-xl md:rounded-2xl border overflow-hidden pt-0 bg-white">
+          <div className="bg-linear-to-r from-gray-50 to-gray-100 px-4 md:px-6 py-3 md:py-5 border-b border-gray-200">
+            <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-gray-900">
+              <Package className="h-4 w-4 md:h-5 md:w-5" /> {t("rateTheStore")}
+            </CardTitle>
+          </div>
+          <CardContent className="space-y-4">
+            {storeSellers.map((seller) => (
+              <OrderStoreReviewCard
+                key={seller.sellerId}
+                orderId={order.id}
+                seller={seller}
+              />
+            ))}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Shipping & Billing Information */}
       {/* Shipping Address */}

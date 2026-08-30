@@ -8,6 +8,7 @@ import { getUser } from "./auth";
 export async function getSellerReviews(params?: {
   rating?: number;
   productId?: string;
+  reviewType?: "product" | "store";
   limit?: number;
   offset?: number;
 }) {
@@ -18,6 +19,10 @@ export async function getSellerReviews(params?: {
     }
 
     const conditions = [eq(reviews.sellerId, session.user.id)];
+
+    if (params?.reviewType) {
+      conditions.push(eq(reviews.reviewType, params.reviewType));
+    }
     
     if (params?.rating) {
       conditions.push(eq(reviews.rating, params.rating));
@@ -43,6 +48,11 @@ export async function getSellerReviews(params?: {
             title: true,
             slug: true,
             images: true,
+          },
+        },
+        order: {
+          columns: {
+            orderNumber: true,
           },
         },
         reviewComments: {

@@ -1,4 +1,5 @@
 import { and, db, eq, orderItems, orders, shipments } from "@workspace/db";
+import { creditSellerOnDelivery } from "@workspace/db/wallet";
 
 import type { ShippingStatus } from "./shipping-status";
 
@@ -100,6 +101,10 @@ export async function applyShipmentStatus({
           ...(status === "cancelled" ? { cancelledAt: now } : {}),
         })
         .where(eq(orderItems.orderId, orderId));
+    }
+
+    if (status === "delivered") {
+      await creditSellerOnDelivery(tx, orderId);
     }
   });
 }

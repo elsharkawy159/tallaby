@@ -29,6 +29,16 @@
       "types": "./src/coupons/index.ts",
       "import": "./src/coupons/index.ts",
       "require": "./src/coupons/index.ts"
+    },
+    "./wallet": {
+      "types": "./src/wallet/index.ts",
+      "import": "./src/wallet/index.ts",
+      "require": "./src/wallet/index.ts"
+    },
+    "./reviews": {
+      "types": "./src/reviews/index.ts",
+      "import": "./src/reviews/index.ts",
+      "require": "./src/reviews/index.ts"
     }
   },
   "scripts": {

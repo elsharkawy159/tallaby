@@ -1,25 +1,16 @@
 import { getSellerReviews } from "@/actions/reviews";
 import { getSellerQuestions } from "@/actions/products";
 import {
-  VendorReviewsTable,
+  VendorReviewsTabs,
   VendorQASection,
   type VendorReviewRow,
 } from "./reviews.chunks";
 
-export async function VendorReviewsData() {
-  const res = await getSellerReviews({ limit: 100, offset: 0 });
-  const qres = await getSellerQuestions({ limit: 100, offset: 0 });
-
-  const reviews: any[] = Array.isArray((res as any)?.data)
-    ? ((res as any).data as any[])
-    : [];
-  const questionsRaw: any[] = Array.isArray((qres as any)?.data)
-    ? ((qres as any).data as any[])
-    : [];
-
-  const rows: VendorReviewRow[] = reviews.map((r: any) => {
+function mapReviewRows(reviews: any[]): VendorReviewRow[] {
+  return reviews.map((r: any) => {
     const user = r.user || {};
     const product = r.product || {};
+    const order = r.order || {};
 
     const customerName =
       user.fullName ||
@@ -36,16 +27,39 @@ export async function VendorReviewsData() {
       customerName,
       customerEmail: user.email ?? null,
       customerAvatar: user.avatar ?? null,
-      productTitle: product.title ?? "",
+      productTitle: product.title ?? order.orderNumber ?? "Store review",
       productImage: product.images?.[0] ?? null,
       productSlug: product.slug ?? null,
+      orderNumber: order.orderNumber ?? null,
+      reviewType: r.reviewType ?? "product",
       replied: Array.isArray(r.reviewComments) && r.reviewComments.length > 0,
     } satisfies VendorReviewRow;
   });
+}
+
+export async function VendorReviewsData() {
+  const [productRes, storeRes, qres] = await Promise.all([
+    getSellerReviews({ limit: 100, offset: 0, reviewType: "product" }),
+    getSellerReviews({ limit: 100, offset: 0, reviewType: "store" }),
+    getSellerQuestions({ limit: 100, offset: 0 }),
+  ]);
+
+  const productReviews: any[] = Array.isArray((productRes as any)?.data)
+    ? ((productRes as any).data as any[])
+    : [];
+  const storeReviews: any[] = Array.isArray((storeRes as any)?.data)
+    ? ((storeRes as any).data as any[])
+    : [];
+  const questionsRaw: any[] = Array.isArray((qres as any)?.data)
+    ? ((qres as any).data as any[])
+    : [];
 
   return (
     <div className="space-y-6">
-      <VendorReviewsTable rows={rows} />
+      <VendorReviewsTabs
+        productRows={mapReviewRows(productReviews)}
+        storeRows={mapReviewRows(storeReviews)}
+      />
       <VendorQASection
         questions={questionsRaw.map((q: any) => ({
           id: q.id,

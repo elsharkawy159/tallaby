@@ -6,7 +6,7 @@ import { useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
-import { MoreVertical, PlusIcon, Upload, ImageIcon } from "lucide-react";
+import { MoreVertical, PlusIcon, Upload, ImageIcon, Star } from "lucide-react";
 import { getPublicUrl } from "@/lib/utils";
 import { deleteProduct, updateProduct } from "@/actions/products";
 import { TableSection } from "@workspace/ui/components/table-section";
@@ -39,6 +39,8 @@ export type VendorProduct = {
   salePrice?: string | number | null;
   brand?: { name: string } | null;
   category?: { name: string } | null;
+  averageRating?: number | null;
+  reviewCount?: number | null;
 };
 
 const formatCurrency = (amount?: string | number | null) => {
@@ -166,6 +168,24 @@ export function VendorProductsSection({
         );
       },
       size: 140,
+    },
+    {
+      id: "rating",
+      header: "Rating",
+      cell: ({ row }) => {
+        const rating = row.original.averageRating ?? 0;
+        const count = row.original.reviewCount ?? 0;
+        return (
+          <div className="flex items-center gap-1 text-sm">
+            <Star
+              className={`h-4 w-4 ${rating > 0 ? "text-yellow-500 fill-yellow-500" : "text-gray-300"}`}
+            />
+            <span>{rating > 0 ? rating.toFixed(1) : "—"}</span>
+            <span className="text-xs text-muted-foreground">({count})</span>
+          </div>
+        );
+      },
+      size: 100,
     },
     {
       accessorKey: "quantity",

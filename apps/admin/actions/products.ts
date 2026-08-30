@@ -16,6 +16,7 @@ import {
   mergeInvalidations,
   type ProductCacheSnapshot,
 } from "@workspace/cache";
+import { syncProductRating, syncSellerRating } from "@workspace/db/reviews";
 
 /** Builds the cache-invalidation snapshot for a product from its current DB state. */
 async function toSnapshot(productId: string): Promise<ProductCacheSnapshot | null> {
@@ -235,31 +236,6 @@ export async function getProductSalesSummary(productId: string) {
   }
 }
 
-async function syncProductRatingDenormalized(productId: string) {
-  const [aggregate] = await db
-    .select({
-      count: sql<number>`count(*)`,
-      average: sql<number>`avg(${reviews.rating})`,
-    })
-    .from(reviews)
-    .where(and(eq(reviews.productId, productId), eq(reviews.status, "approved")));
-
-  const reviewCount = Number(aggregate?.count ?? 0);
-  const averageRating =
-    reviewCount > 0 && aggregate?.average != null
-      ? Number(aggregate.average)
-      : null;
-
-  await db
-    .update(products)
-    .set({
-      reviewCount,
-      averageRating,
-      updatedAt: new Date().toISOString(),
-    })
-    .where(eq(products.id, productId));
-}
-
 /** Clears stale denormalized ratings when products.average_rating exists but there are no reviews. */
 export async function repairProductRatingIfStale(productId: string) {
   try {
@@ -279,7 +255,7 @@ export async function repairProductRatingIfStale(productId: string) {
       ((product.averageRating ?? 0) > 0 || (product.reviewCount ?? 0) > 0);
 
     if (hasStaleRating || hasReviews) {
-      await syncProductRatingDenormalized(productId);
+      await syncProductRating(productId);
     }
 
     return { success: true };
@@ -313,7 +289,7 @@ export async function updateReviewStatus(
     }
 
     if (updatedReview.productId) {
-      await syncProductRatingDenormalized(updatedReview.productId);
+      await syncProductRating(updatedReview.productId);
 
       const before = await toSnapshot(updatedReview.productId);
       const after = await toSnapshot(updatedReview.productId);
@@ -323,6 +299,10 @@ export async function updateReviewStatus(
           mode: "action",
         });
       }
+    }
+
+    if (updatedReview.sellerId && updatedReview.reviewType === "store") {
+      await syncSellerRating(updatedReview.sellerId);
     }
 
     return { success: true, data: updatedReview };
