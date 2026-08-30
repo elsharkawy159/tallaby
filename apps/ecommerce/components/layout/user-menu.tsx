@@ -1,9 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import {
-  User,
   Heart,
   LogOut,
   Store,
@@ -35,7 +33,6 @@ import {
 } from "@/app/(main)/profile/_components/profile.lib";
 import { Seller } from "@/app/(main)/profile/_components/profile.types";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
-import { signOutAction } from "@/actions/auth";
 import { useTranslations } from "next-intl";
 
 interface UserMenuProps {
@@ -86,17 +83,12 @@ export function UserMenu({
           )}
           title={t("welcome", { name: userName })}
         >
-          {avatarUrl ? (
-            <Image
-              src={avatarUrl}
-              alt="User avatar"
-              width={24}
-              height={24}
-              className="md:size-6 size-4.5 rounded-full object-cover"
-            />
-          ) : (
-            <User className="md:size-6 size-4.5" />
-          )}
+          <Avatar className="size-4.5 md:size-6 shrink-0">
+            <AvatarImage src={avatarUrl} alt="User avatar" />
+            <AvatarFallback className="bg-primary text-primary-foreground text-[10px] md:text-xs font-medium">
+              {userInitials}
+            </AvatarFallback>
+          </Avatar>
           <span className="text-xs md:hidden">{t("myProfile")}</span>
         </Button>
       </PopoverTrigger>

@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import type { HeaderProps } from "./header.types";
+import { ScrollingHeader } from "./header.client";
 import { BottomNavigation } from "./bottom-navigation";
 import { Logo } from "../logo";
 import { LanguageSwitcher } from "./language-switcher";
@@ -92,9 +93,9 @@ const MainHeader = async () => {
 const Header = async ({ className }: HeaderProps) => {
   return (
     <>
-      <header className={cn("sticky top-0 z-50", className)}>
+      <ScrollingHeader className={className}>
         <MainHeader />
-      </header>
+      </ScrollingHeader>
 
       {/* Mobile bottom navigation */}
       <BottomNavigation />

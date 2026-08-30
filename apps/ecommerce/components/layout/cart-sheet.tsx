@@ -57,7 +57,7 @@ export function CartSheet({
         router.refresh();
         toast.success(tToast("cartUpdated"));
       } else {
-        toast.error(result.error || "Failed to update cart");
+        toast.error(result.error || tToast("failedToUpdateCart"));
       }
     } catch (error) {
       toast.error(tToast("failedToUpdateCart"));
@@ -78,10 +78,10 @@ export function CartSheet({
         router.refresh();
         toast.success(tToast("itemRemoved"));
       } else {
-        toast.error(result.error || "Failed to remove item");
+        toast.error(result.error || tToast("failedToRemoveItem"));
       }
     } catch (error) {
-      toast.error("Failed to remove item");
+      toast.error(tToast("failedToRemoveItem"));
     } finally {
       setLoadingItems((prev) => {
         const newSet = new Set(prev);

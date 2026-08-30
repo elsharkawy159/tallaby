@@ -7,6 +7,7 @@ import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -35,16 +36,15 @@ export default function AuthPage() {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const tToast = useTranslations("toast");
 
   // Check if user returned from password reset email
   useEffect(() => {
     const resetParam = searchParams.get("reset");
     if (resetParam === "true") {
-      toast.success(
-        "Password reset successful! You can now sign in with your new password."
-      );
+      toast.success(tToast("passwordResetSuccessful"));
     }
-  }, [searchParams]);
+  }, [searchParams, tToast]);
 
   // Sign In Form
   const signInForm = useForm<SignInFormData>({
@@ -67,11 +67,11 @@ export default function AuthPage() {
     startTransition(async () => {
       try {
         await login(data.email, data.password);
-        toast.success("Redirecting to dashboard...");
+        toast.success(tToast("redirectingToDashboard"));
         router.push("/");
       } catch (error) {
         toast.error(
-          error instanceof Error ? error.message : "Failed to sign in"
+          error instanceof Error ? error.message : tToast("failedToSignIn")
         );
       }
     });
@@ -82,11 +82,11 @@ export default function AuthPage() {
       try {
         await resetPassword(data.resetEmail);
         setResetSuccess(true);
-        toast.success("Password reset link sent to your email!");
+        toast.success(tToast("passwordResetLinkSent"));
         resetForm.reset();
       } catch (error) {
         toast.error(
-          error instanceof Error ? error.message : "Failed to send reset email"
+          error instanceof Error ? error.message : tToast("failedToSendResetEmail")
         );
       }
     });

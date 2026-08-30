@@ -34,6 +34,7 @@ export function OrderItemReviewForm({
   existingReview,
 }: OrderItemReviewFormProps) {
   const t = useTranslations("orders");
+  const tToast = useTranslations("toast");
   const [rating, setRating] = useState<number>(existingReview?.rating ?? 0);
   const [hoverRating, setHoverRating] = useState<number>(0);
   const [title, setTitle] = useState(existingReview?.title ?? "");
@@ -66,7 +67,7 @@ export function OrderItemReviewForm({
 
     // Check if adding new files would exceed max limit (5 files)
     if (uploadedFiles.length + files.length > 5) {
-      toast.error("Maximum 5 files allowed per review");
+      toast.error(tToast("maxFilesAllowedPerReview"));
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -83,14 +84,17 @@ export function OrderItemReviewForm({
         const isVideo = file.type.startsWith("video/");
 
         if (!isImage && !isVideo) {
-          toast.error(`${file.name} is not a valid image or video file`);
+          toast.error(tToast("invalidFileType", { fileName: file.name }));
           return null;
         }
 
         // Validate file size (10MB max for images, 50MB for videos)
         const maxSize = isImage ? 10 * 1024 * 1024 : 50 * 1024 * 1024;
         if (file.size > maxSize) {
-          toast.error(`${file.name} is too large. Max size: ${isImage ? '10MB' : '50MB'}`);
+          toast.error(tToast("fileTooLarge", {
+            fileName: file.name,
+            maxSize: isImage ? "10MB" : "50MB",
+          }));
           return null;
         }
 
@@ -107,7 +111,7 @@ export function OrderItemReviewForm({
 
         if (error) {
           console.error("Upload error:", error);
-          toast.error(`Failed to upload ${file.name}`);
+          toast.error(tToast("failedToUploadFile", { fileName: file.name }));
           return null;
         }
 
@@ -138,11 +142,11 @@ export function OrderItemReviewForm({
 
         setUploadedFiles((prev) => [...prev, ...newPaths]);
         setFilePreviews((prev) => [...prev, ...newPreviews]);
-        toast.success(`${successfulUploads.length} file(s) uploaded successfully`);
+        toast.success(tToast("filesUploadedSuccessfully", { count: successfulUploads.length }));
       }
     } catch (error) {
       console.error("File upload error:", error);
-      toast.error("Failed to upload files");
+      toast.error(tToast("failedToUploadFiles"));
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) {
@@ -174,7 +178,7 @@ export function OrderItemReviewForm({
 
   const handleSubmit = () => {
     if (rating === 0) {
-      toast.error("Please select a rating");
+      toast.error(tToast("pleaseSelectRating"));
       return;
     }
 

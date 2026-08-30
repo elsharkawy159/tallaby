@@ -3,6 +3,7 @@
 import { createContext, ReactNode, useState, useCallback, use } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import {
   getWishlists,
   getWishlistItems,
@@ -20,6 +21,7 @@ const WishlistContext = createContext<WishlistState | undefined>(undefined);
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
+  const tToast = useTranslations("toast");
 
   // Individual item loading states
   const [loadingItems, setLoadingItems] = useState<Set<string>>(new Set());
@@ -156,8 +158,8 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     handleAction(
       addToWishlistAction,
       [params],
-      "Added to wishlist",
-      "Failed to add to wishlist",
+      tToast("addedToWishlist"),
+      tToast("failedToAddToWishlist"),
       params.productId,
       setProductLoading
     );
@@ -166,8 +168,8 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     handleAction(
       removeFromWishlistAction,
       [itemId],
-      "Removed from wishlist",
-      "Failed to remove from wishlist",
+      tToast("removedFromWishlist"),
+      tToast("failedToRemoveFromWishlist"),
       itemId,
       setItemLoading
     );
@@ -176,8 +178,8 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     handleAction(
       moveToCartAction,
       [itemId],
-      "Moved to cart",
-      "Failed to move to cart",
+      tToast("movedToCart"),
+      tToast("failedToMoveToCart"),
       itemId,
       setItemLoading
     );
@@ -190,8 +192,8 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     handleAction(
       createWishlistAction,
       [params],
-      "Wishlist created",
-      "Failed to create wishlist"
+      tToast("wishlistCreated"),
+      tToast("failedToCreateWishlist")
     );
 
   const updateWishlist = (
@@ -205,8 +207,8 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     handleAction(
       updateWishlistAction,
       [wishlistId, params],
-      "Wishlist updated",
-      "Failed to update wishlist",
+      tToast("wishlistUpdated"),
+      tToast("failedToUpdateWishlist"),
       wishlistId,
       setWishlistLoading
     );
@@ -215,8 +217,8 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     handleAction(
       deleteWishlistAction,
       [wishlistId],
-      "Wishlist deleted",
-      "Failed to delete wishlist",
+      tToast("wishlistDeleted"),
+      tToast("failedToDeleteWishlist"),
       wishlistId,
       setWishlistLoading
     );

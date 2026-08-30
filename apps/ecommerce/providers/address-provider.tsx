@@ -9,6 +9,7 @@ import {
 } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import {
   getAddresses,
   addAddress as addAddressAction,
@@ -46,6 +47,7 @@ const AddressContext = createContext<AddressState | undefined>(undefined);
 
 export function AddressProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
+  const tToast = useTranslations("toast");
   const [selectedAddress, setSelectedAddress] = useState<AddressData | null>(
     null
   );
@@ -92,10 +94,10 @@ export function AddressProvider({ children }: { children: ReactNode }) {
           : old;
         return [data, ...updated];
       });
-      toast.success("Address added successfully");
+      toast.success(tToast("addressAddedSuccessfully"));
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Failed to add address");
+      toast.error(error.message || tToast("failedToAddAddress"));
     },
     onSettled: () => {
       // Refetch to ensure consistency
@@ -128,10 +130,10 @@ export function AddressProvider({ children }: { children: ReactNode }) {
         setSelectedAddress(data);
       }
 
-      toast.success("Address updated successfully");
+      toast.success(tToast("addressUpdatedSuccessfully"));
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Failed to update address");
+      toast.error(error.message || tToast("failedToUpdateAddress"));
     },
     onSettled: () => {
       // Refetch to ensure consistency
@@ -158,10 +160,10 @@ export function AddressProvider({ children }: { children: ReactNode }) {
         setSelectedAddress(null);
       }
 
-      toast.success("Address deleted successfully");
+      toast.success(tToast("addressDeletedSuccessfully"));
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Failed to delete address");
+      toast.error(error.message || tToast("failedToDeleteAddress"));
     },
     onSettled: () => {
       // Refetch to ensure consistency
@@ -211,14 +213,14 @@ export function AddressProvider({ children }: { children: ReactNode }) {
         setSelectedAddress({ ...selectedAddress, isDefault: true });
       }
 
-      toast.success("Default address updated");
+      toast.success(tToast("defaultAddressUpdated"));
     },
     onError: (error: Error, id, context) => {
       // Rollback on error
       if (context?.previousAddresses) {
         queryClient.setQueryData(["addresses"], context.previousAddresses);
       }
-      toast.error(error.message || "Failed to set default address");
+      toast.error(error.message || tToast("failedToSetDefaultAddress"));
     },
     onSettled: () => {
       // Always refetch after error or success to ensure consistency

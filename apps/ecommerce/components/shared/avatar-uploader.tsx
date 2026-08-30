@@ -3,6 +3,7 @@
 import React, { useRef, useTransition } from "react";
 import { Camera, Loader2, Pen } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { UserAvatar } from "@/components/shared/user-avatar";
@@ -25,6 +26,7 @@ export function AvatarUploader({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isPending, startTransition] = useTransition();
   const queryClient = useQueryClient();
+  const tToast = useTranslations("toast");
 
   const handleAvatarClick = () => {
     if (isPending) return;
@@ -37,13 +39,13 @@ export function AvatarUploader({
 
     // Validate file type
     if (!file.type.startsWith("image/")) {
-      toast.error("Please select an image file");
+      toast.error(tToast("pleaseSelectImageFile"));
       return;
     }
 
     // Validate file size (5MB max)
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("File size must be less than 5MB");
+      toast.error(tToast("fileSizeMustBeLessThan5MB"));
       return;
     }
 
@@ -52,13 +54,13 @@ export function AvatarUploader({
         // Upload file to Supabase Storage
         const uploadResult = await uploadAvatar(file);
         if (!uploadResult.success) {
-          toast.error(uploadResult.error || "Failed to upload avatar");
+          toast.error(uploadResult.error || tToast("failedToUploadAvatar"));
           return;
         }
 
         const avatarUrl = uploadResult.data?.url || "";
         if (!avatarUrl) {
-          toast.error("Failed to get avatar URL");
+          toast.error(tToast("failedToGetAvatarUrl"));
           return;
         }
 
@@ -68,7 +70,7 @@ export function AvatarUploader({
         });
 
         if (updateResult.success) {
-          toast.success("Avatar updated successfully");
+          toast.success(tToast("avatarUpdatedSuccessfully"));
 
           // Invalidate user queries to refresh data
           await queryClient.invalidateQueries({
@@ -76,11 +78,11 @@ export function AvatarUploader({
             refetchType: "active",
           });
         } else {
-          toast.error(updateResult.error || "Failed to update avatar");
+          toast.error(updateResult.error || tToast("failedToUpdateAvatar"));
         }
       } catch (error) {
         console.error("Error updating avatar:", error);
-        toast.error("Something went wrong. Please try again.");
+        toast.error(tToast("somethingWentWrong"));
       } finally {
         // Reset file input
         if (fileInputRef.current) {

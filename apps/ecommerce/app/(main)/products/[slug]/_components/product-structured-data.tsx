@@ -1,13 +1,16 @@
 import { generateProductStructuredData } from "@/lib/structured-data";
 import type { Product } from "./product-page.types";
-import { getLocale } from "next-intl/server";
+import type { ProductLocale } from "@/lib/product-translations";
 
 interface ProductStructuredDataProps {
   product: Product;
+  locale: ProductLocale;
 }
 
-export async function ProductStructuredData({ product }: ProductStructuredDataProps) {
-  const locale = await getLocale();
+export function ProductStructuredData({
+  product,
+  locale,
+}: ProductStructuredDataProps) {
   const price = (product.price as any) || {};
   const stockCount = product.quantity ? Number(product.quantity) : undefined;
   const categoryName =

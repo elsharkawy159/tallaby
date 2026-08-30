@@ -12,6 +12,7 @@ import {
 import { Input } from "@workspace/ui/components/input";
 import { Separator } from "@workspace/ui/components/separator";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { handleAnswerQuestion } from "./unanswered-questions.server";
 import { MessageCircleQuestion, Send } from "lucide-react";
 import { getPublicUrl } from "@/lib/utils";
@@ -34,6 +35,7 @@ export function UnansweredQuestionsClient({
   const [rows, setRows] = useState<QuestionRow[]>(initial);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [isPending, startTransition] = useTransition();
+  const tToast = useTranslations("toast");
 
   const handleChange = (id: string, v: string) => {
     setAnswers((s) => ({ ...s, [id]: v }));
@@ -42,17 +44,17 @@ export function UnansweredQuestionsClient({
   const handleSubmit = (id: string) => {
     const payload = { questionId: id, answer: answers[id]?.trim() ?? "" };
     if (!payload.answer) {
-      toast.error("Please write an answer first");
+      toast.error(tToast("pleaseWriteAnswerFirst"));
       return;
     }
     startTransition(async () => {
       const res = await handleAnswerQuestion(payload);
       if (res.success) {
-        toast.success("Answer submitted");
+        toast.success(tToast("answerSubmitted"));
         setRows((r) => r.filter((q) => q.id !== id));
         setAnswers((s) => ({ ...s, [id]: "" }));
       } else {
-        toast.error(res.error || "Failed to submit answer");
+        toast.error(res.error || tToast("failedToSubmitAnswer"));
       }
     });
   };

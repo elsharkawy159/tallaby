@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { getProductBySlug, getAllProductSlugs } from "@/actions/products";
-import { ProductTabs } from "./_components/product-tabs";
+import { ProductTabsWrapper } from "./_components/product-tabs-wrapper.client";
 import { SimilarProducts } from "./_components/similar-products";
 import { SimilarProductsSkeleton } from "./_components/similar-products.skeleton";
 
@@ -14,26 +14,25 @@ import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import { generateProductMetadata } from "@/lib/metadata";
 import type { Metadata } from "next";
 import { ProductStructuredData } from "./_components/product-structured-data";
-import { getAuthUser } from "@/lib/auth/current-user";
-import { getCartItems } from "@/actions/cart";
-import { getWishlistItems } from "@/actions/wishlist";
 import { getLocale, getTranslations } from "next-intl/server";
 
-// ISR: Revalidate every 10 minutes
+// ISR: pre-render product pages at build time, revalidate every 10 minutes
 export const revalidate = 600;
 
-// Generate static params for all product slugs
-// export async function generateStaticParams() {
-//   const slugsResult = await getAllProductSlugs();
+// On-demand ISR for products not in the build-time set
+export const dynamicParams = true;
 
-//   if (!slugsResult.success || !slugsResult.data) {
-//     return [];
-//   }
+export async function generateStaticParams() {
+  const slugsResult = await getAllProductSlugs();
 
-//   return slugsResult.data.map((slug) => ({
-//     slug,
-//   }));
-// }
+  if (!slugsResult.success || !slugsResult.data) {
+    return [];
+  }
+
+  return slugsResult.data.map((slug) => ({
+    slug,
+  }));
+}
 
 export async function generateMetadata({
   params,
@@ -105,48 +104,28 @@ export default async function ProductPage({ params }: ProductPageProps) {
     category: (product as any).category || null,
   };
 
-  // Fetch user for ProductTabs
-  const user = await getAuthUser();
-
-  // Fetch cart and wishlist data server-side
-  const cartResult = await getCartItems();
-  const cartData = cartResult.success ? cartResult.data : null;
-  const cartItems = cartData?.items ?? [];
-
-  const wishlistResult = await getWishlistItems();
-  const wishlistItems = wishlistResult.success
-    ? (wishlistResult.data ?? [])
-    : [];
-  const wishlistItem = wishlistItems.find(
-    (item: any) => item.productId === productWithCategory.id
-  );
-  const isInWishlist = !!wishlistItem;
-
   return (
     <main className="min-h-screen">
-      <ProductStructuredData product={productWithCategory} />
+      <ProductStructuredData product={productWithCategory} locale={locale} />
       <section className="bg-white">
         <DynamicBreadcrumb />
       </section>
 
       <section className="bg-white py-5 pb-10">
         <div className="container">
-          <ProductDisplay product={productWithCategory} cartItems={cartItems} />
+          <ProductDisplay product={productWithCategory} />
         </div>
       </section>
 
       <section>
-        <ProductTabs product={productWithCategory} user={user} />
+        <ProductTabsWrapper product={productWithCategory} />
       </section>
 
       {Array.isArray(productWithCategory.relatedProducts) &&
         productWithCategory.relatedProducts.length > 0 && (
           <section>
             <Suspense fallback={<SimilarProductsSkeleton />}>
-              <SimilarProducts
-                products={productWithCategory.relatedProducts}
-                wishlistItems={wishlistItems}
-              />
+              <SimilarProducts products={productWithCategory.relatedProducts} />
             </Suspense>
           </section>
         )}

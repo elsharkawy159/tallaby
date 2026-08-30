@@ -25,6 +25,7 @@ import slugify from "slugify";
 import { useDebounce } from "@/hooks/use-debounce";
 import { CategorySuggestions } from "../category-suggestions";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import type {
   AddProductFormData,
@@ -45,6 +46,7 @@ export function BasicInformationStep({
   activeLocale,
 }: BasicInformationStepProps) {
   const form = useFormContext<AddProductFormData>();
+  const tToast = useTranslations("toast");
   const [isFetching, setIsFetching] = useState(false);
   const [_suggestedImages, setSuggestedImages] = useState<string[]>([]);
 
@@ -82,7 +84,7 @@ export function BasicInformationStep({
       urlOverride ?? (typeof productUrl === "string" ? productUrl.trim() : "")
     ).trim();
     if (!url) {
-      toast.error("Please paste a product URL first");
+      toast.error(tToast("pleasePasteProductUrlFirst"));
       return;
     }
 
@@ -105,7 +107,7 @@ export function BasicInformationStep({
       const dataAr = await resAr.json();
 
       if (!resEn.ok) {
-        toast.error(dataEn?.error || "Failed to fetch product data");
+        toast.error(dataEn?.error || tToast("failedToFetchProductData"));
         return;
       }
 
@@ -213,7 +215,7 @@ export function BasicInformationStep({
           : true;
 
         if (!shouldImport) {
-          toast.message("Media already has images — skipped auto import.");
+          toast.message(tToast("mediaAlreadyHasImages"));
         } else {
           const importRes = await fetch("/api/import-product-images", {
             method: "POST",
@@ -223,7 +225,7 @@ export function BasicInformationStep({
 
           const importData = await importRes.json();
           if (!importRes.ok) {
-            toast.error(importData?.error || "Failed to import images");
+            toast.error(importData?.error || tToast("failedToImportImages"));
           } else {
             const importedPaths = Array.isArray(importData?.paths)
               ? importData.paths.filter((p: unknown) => typeof p === "string")
@@ -236,12 +238,10 @@ export function BasicInformationStep({
               });
               await form.trigger("images");
               toast.success(
-                `Imported ${importedPaths.length} image(s) to Media`
+                tToast("importedImagesToMedia", { count: importedPaths.length })
               );
             } else {
-              toast.message(
-                "No images were imported (some sites block downloads)."
-              );
+              toast.message(tToast("noImagesImported"));
             }
           }
         }
@@ -277,12 +277,10 @@ export function BasicInformationStep({
         );
       }
 
-      toast.success(
-        "Product details fetched for EN and AR. Review and adjust before saving."
-      );
+      toast.success(tToast("productDetailsFetchedEnAr"));
     } catch (error) {
       console.error("Fetch product error:", error);
-      toast.error("Something went wrong while fetching product data");
+      toast.error(tToast("somethingWentWrongWhileFetching"));
     } finally {
       setIsFetching(false);
     }
@@ -357,9 +355,9 @@ export function BasicInformationStep({
                   onClick={async () => {
                     try {
                       await navigator.clipboard.writeText(src);
-                      toast.success("Image URL copied");
+                      toast.success(tToast("imageUrlCopied"));
                     } catch {
-                      toast.error("Could not copy image URL");
+                      toast.error(tToast("couldNotCopyImageUrl"));
                     }
                   }}
                   aria-label="Copy image URL"

@@ -31,6 +31,7 @@ import {
   validateImage,
 } from "@/lib/utils";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { Button } from "@workspace/ui/components/button";
 
 interface FileToUpload {
@@ -57,6 +58,7 @@ export function ImageUpload({
   maxImages = 5,
 }: ImageUploadProps) {
   const supabase = createClient();
+  const tToast = useTranslations("toast");
 
   const [filesToUpload, setFilesToUpload] = useState<FileToUpload[]>(() =>
     value.map((file) => ({
@@ -157,11 +159,11 @@ export function ImageUpload({
         setFilesToUpload((prev) =>
           prev.filter((item) => item.file?.name !== file.name)
         );
-        toast.error(`An error occurred during upload of ${file.name}!`);
+        toast.error(tToast("uploadError", { fileName: file.name }));
         return null;
       }
     },
-    [supabase]
+    [supabase, tToast]
   );
 
   const onDrop = useCallback(
@@ -171,7 +173,7 @@ export function ImageUpload({
       const availableSlots = maxImages - currentCount;
 
       if (availableSlots <= 0) {
-        toast.error(`Maximum ${maxImages} images allowed`);
+        toast.error(tToast("maxImagesAllowed", { max: maxImages }));
         return;
       }
 
@@ -181,7 +183,10 @@ export function ImageUpload({
 
       if (exceededFiles.length > 0) {
         toast.warning(
-          `Only ${availableSlots} more image(s) allowed. ${exceededFiles.length} file(s) skipped.`
+          tToast("onlyMoreImagesAllowed", {
+            available: availableSlots,
+            skipped: exceededFiles.length,
+          })
         );
       }
 
@@ -232,7 +237,7 @@ export function ImageUpload({
 
       onChange([...value, ...successfulUploads]);
     },
-    [handleFileUpload, onChange, value, filesToUpload.length, maxImages]
+    [handleFileUpload, onChange, value, filesToUpload.length, maxImages, tToast]
   );
 
   const isMaxReached = filesToUpload.length >= maxImages;

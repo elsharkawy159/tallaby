@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import {
   getWishlistItems,
   addToWishlist as addToWishlistAction,
@@ -49,6 +50,7 @@ interface Wishlist {
 }
 
 export const useWishlist = () => {
+  const tToast = useTranslations("toast");
   const [wishlists, setWishlists] = useState<Wishlist[]>([]);
   const [defaultWishlist, setDefaultWishlist] = useState<Wishlist | null>(null);
   const [loading, setLoading] = useState(true);
@@ -103,21 +105,21 @@ export const useWishlist = () => {
 
         if (result.success) {
           await fetchWishlists();
-          toast.success("Added to wishlist");
+          toast.success(tToast("addedToWishlist"));
           return { success: true };
         } else {
-          toast.error(result.error || "Failed to add to wishlist");
+          toast.error(result.error || tToast("failedToAddToWishlist"));
           return { success: false, error: result.error };
         }
       } catch (error) {
         console.error("Error adding to wishlist:", error);
-        toast.error("Failed to add to wishlist");
-        return { success: false, error: "Failed to add to wishlist" };
+        toast.error(tToast("failedToAddToWishlist"));
+        return { success: false, error: tToast("failedToAddToWishlist") };
       } finally {
         setIsAdding(false);
       }
     },
-    [fetchWishlists]
+    [fetchWishlists, tToast]
   );
 
   const removeFromWishlist = useCallback(
@@ -128,21 +130,21 @@ export const useWishlist = () => {
 
         if (result.success) {
           await fetchWishlists();
-          toast.success("Removed from wishlist");
+          toast.success(tToast("removedFromWishlist"));
           return { success: true };
         } else {
-          toast.error("Failed to remove from wishlist");
-          return { success: false, error: "Failed to remove from wishlist" };
+          toast.error(tToast("failedToRemoveFromWishlist"));
+          return { success: false, error: tToast("failedToRemoveFromWishlist") };
         }
       } catch (error) {
         console.error("Error removing from wishlist:", error);
-        toast.error("Failed to remove from wishlist");
-        return { success: false, error: "Failed to remove from wishlist" };
+        toast.error(tToast("failedToRemoveFromWishlist"));
+        return { success: false, error: tToast("failedToRemoveFromWishlist") };
       } finally {
         setIsRemoving(false);
       }
     },
-    [fetchWishlists]
+    [fetchWishlists, tToast]
   );
 
   const moveToCart = useCallback(
@@ -153,21 +155,21 @@ export const useWishlist = () => {
 
         if (result.success) {
           await fetchWishlists();
-          toast.success("Moved to cart");
+          toast.success(tToast("movedToCart"));
           return { success: true };
         } else {
-          toast.error("Failed to move to cart");
-          return { success: false, error: "Failed to move to cart" };
+          toast.error(tToast("failedToMoveToCart"));
+          return { success: false, error: tToast("failedToMoveToCart") };
         }
       } catch (error) {
         console.error("Error moving to cart:", error);
-        toast.error("Failed to move to cart");
-        return { success: false, error: "Failed to move to cart" };
+        toast.error(tToast("failedToMoveToCart"));
+        return { success: false, error: tToast("failedToMoveToCart") };
       } finally {
         setIsMoving(false);
       }
     },
-    [fetchWishlists]
+    [fetchWishlists, tToast]
   );
 
   const isInWishlist = useCallback(async (productId: string) => {

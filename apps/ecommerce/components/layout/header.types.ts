@@ -2,6 +2,11 @@ export interface HeaderProps {
   className?: string;
 }
 
+export interface ScrollingHeaderProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
 export interface LogoProps {
   className?: string;
   logoClassName?: string;

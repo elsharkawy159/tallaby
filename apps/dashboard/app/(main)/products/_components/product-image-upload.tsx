@@ -7,6 +7,7 @@ import { Upload, ImageIcon, LoaderCircle } from "lucide-react";
 import { getPublicUrl } from "@/lib/utils";
 import { updateProduct } from "@/actions/products";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/supabase/client";
 import { generateImageName, getTodayDate, validateImage } from "@/lib/utils";
 
@@ -23,6 +24,7 @@ export function ProductImageUpload({
 }: ProductImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const supabase = createClient();
+  const tToast = useTranslations("toast");
 
   const handleFileUpload = useCallback(
     async (file: File): Promise<string | null> => {
@@ -42,18 +44,18 @@ export function ProductImageUpload({
 
         if (error) {
           console.error("Upload error:", error);
-          toast.error("Failed to upload image");
+          toast.error(tToast("failedToUploadImage"));
           return null;
         }
 
         return filePath;
       } catch (error) {
         console.error("File upload error:", error);
-        toast.error("Failed to upload image");
+        toast.error(tToast("failedToUploadImage"));
         return null;
       }
     },
-    [supabase]
+    [supabase, tToast]
   );
 
   const onDrop = useCallback(
@@ -62,7 +64,7 @@ export function ProductImageUpload({
 
       // Check if adding new files would exceed max limit of 5
       if (images.length + acceptedFiles.length > 5) {
-        toast.error("Maximum 5 images allowed per product");
+        toast.error(tToast("maxImagesAllowedPerProduct"));
         return;
       }
 
@@ -82,22 +84,24 @@ export function ProductImageUpload({
 
           if (result.success) {
             toast.success(
-              `${successfulUploads.length} image(s) uploaded successfully`
+              tToast("imagesUploadedSuccessfully", {
+                count: successfulUploads.length,
+              })
             );
             // Trigger a page refresh to show updated images
             // window.location.reload();
           } else {
-            toast.error("Failed to update product images");
+            toast.error(tToast("failedToUpdateProductImages"));
           }
         }
       } catch (error) {
         console.error("Upload error:", error);
-        toast.error("Failed to upload images");
+        toast.error(tToast("failedToUploadImages"));
       } finally {
         setIsUploading(false);
       }
     },
-    [images, handleFileUpload, productId]
+    [images, handleFileUpload, productId, tToast]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({

@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { cn } from "@workspace/ui/lib/utils";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 import { EditAddressDialog } from "./address-dialog";
 import type { AddressData } from "./address.schema";
@@ -52,6 +53,7 @@ export const AddressList = ({
   setDefaultAddress,
 }: AddressListProps) => {
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const tToast = useTranslations("toast");
 
   const handleDelete = async (addressId: string) => {
     if (!confirm("Are you sure you want to delete this address?")) {
@@ -59,7 +61,7 @@ export const AddressList = ({
     }
 
     if (!deleteAddress) {
-      toast.error("Delete function not available");
+      toast.error(tToast("deleteFunctionNotAvailable"));
       return;
     }
 
@@ -75,7 +77,7 @@ export const AddressList = ({
       }
     } catch (error) {
       console.error("Delete address error:", error);
-      toast.error("Failed to delete address");
+      toast.error(tToast("failedToDeleteAddress"));
     } finally {
       setIsDeleting(null);
     }
@@ -83,7 +85,7 @@ export const AddressList = ({
 
   const handleSetDefault = async (addressId: string) => {
     if (!setDefaultAddress) {
-      toast.error("Set default function not available");
+      toast.error(tToast("setDefaultFunctionNotAvailable"));
       return;
     }
 
@@ -99,7 +101,7 @@ export const AddressList = ({
       }
     } catch (error) {
       console.error("Set default address error:", error);
-      toast.error("Failed to set default address");
+      toast.error(tToast("failedToSetDefaultAddress"));
     }
   };
 

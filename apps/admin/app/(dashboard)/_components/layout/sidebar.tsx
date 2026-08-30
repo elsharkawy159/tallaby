@@ -13,6 +13,7 @@ import {
   Package,
   Tag,
   Store,
+  Calculator,
   ChevronLeft,
   ChevronRight,
   Home,
@@ -24,7 +25,8 @@ interface SidebarLink {
   title: string;
   href: string;
   icon: React.ElementType;
-  countKey: keyof SidebarCounts;
+  /** Omitted for links that have nothing to count, such as tools. */
+  countKey?: keyof SidebarCounts;
   submenu?: SidebarLink[];
 }
 
@@ -52,6 +54,11 @@ const sidebarLinks: SidebarLink[] = [
     href: "/products",
     icon: Package,
     countKey: "products",
+  },
+  {
+    title: "Pricing Calculator",
+    href: "/pricing-calculator",
+    icon: Calculator,
   },
   {
     title: "Categories",
@@ -156,14 +163,15 @@ export default function Sidebar({ counts }: SidebarProps) {
                                 <sublink.icon className="h-4 w-4 mr-2 shrink-0 text-gray-500" />
                                 <span className="truncate">{sublink.title}</span>
                               </span>
-                              {counts[sublink.countKey] > 0 && (
-                              <Badge
-                                variant="secondary"
-                                className={SIDEBAR_COUNT_BADGE_CLASS}
-                              >
-                                {counts[sublink.countKey].toLocaleString()}
-                              </Badge>
-                              )}
+                              {sublink.countKey &&
+                                counts[sublink.countKey] > 0 && (
+                                  <Badge
+                                    variant="secondary"
+                                    className={SIDEBAR_COUNT_BADGE_CLASS}
+                                  >
+                                    {counts[sublink.countKey].toLocaleString()}
+                                  </Badge>
+                                )}
                             </Link>
                           </li>
                         ))}
@@ -192,7 +200,7 @@ export default function Sidebar({ counts }: SidebarProps) {
                         <span className="truncate">{link.title}</span>
                       )}
                     </span>
-                    {expanded && counts[link.countKey] > 0 && (
+                    {expanded && link.countKey && counts[link.countKey] > 0 && (
                       <Badge
                         variant="secondary"
                         className={SIDEBAR_COUNT_BADGE_CLASS}

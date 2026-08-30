@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { Button } from "@workspace/ui/components/button";
 import { Form } from "@workspace/ui/components/form";
 import { ChevronLeft, LoaderCircle, ChevronRight } from "lucide-react";
@@ -51,6 +52,7 @@ export function EditProduct({
   const [currentStep, setCurrentStep] = useState(1);
   const [activeLocale, setActiveLocale] = useState<SupportedLocale>("en");
   const router = useRouter();
+  const tToast = useTranslations("toast");
 
   const form = useForm<AddProductFormData>({
     resolver: zodResolver(addProductFormSchema) as any,
@@ -65,14 +67,14 @@ export function EditProduct({
         const result = await updateProduct(productId, data);
 
         if (result.success) {
-          toast.success("Product updated successfully!");
+          toast.success(tToast("productUpdatedSuccessfully"));
           router.push("/products");
         } else {
-          toast.error(result.error || "Failed to update product");
+          toast.error(result.error || tToast("failedToUpdateProduct"));
         }
       } catch (error) {
         console.error("Form submission error:", error);
-        toast.error("Something went wrong. Please try again.");
+        toast.error(tToast("somethingWentWrong"));
       }
     });
   };
@@ -106,7 +108,7 @@ export function EditProduct({
     if (isValid && currentStep < STEPS.length) {
       setCurrentStep(currentStep + 1);
     } else if (!isValid) {
-      toast.error("Please fill in all required fields");
+      toast.error(tToast("pleaseFillRequiredFields"));
     }
   };
 
@@ -126,7 +128,7 @@ export function EditProduct({
       if (isValid) {
         setCurrentStep(step);
       } else {
-        toast.error("Please complete the current step first");
+        toast.error(tToast("pleaseCompleteCurrentStep"));
       }
     }
   };

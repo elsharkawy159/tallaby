@@ -13,6 +13,7 @@ import {
   type SellerPricingSettings,
 } from "@/lib/utils/product-pricing.lib";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import {
   Accordion,
   AccordionContent,
@@ -36,6 +37,7 @@ interface PriceStockStepProps {
 }
 
 export function PriceStockStep({ sellerPricing }: PriceStockStepProps) {
+  const tToast = useTranslations("toast");
   const form = useFormContext<AddProductFormData>();
 
   const listPrice = form.watch("price.list");
@@ -322,7 +324,7 @@ function VariantImageUpload({
 
         if (error) {
           console.error("Upload error:", error);
-          toast.error("Failed to upload image");
+          toast.error(tToast("failedToUploadImage"));
           return null;
         }
 
@@ -330,12 +332,12 @@ function VariantImageUpload({
       } catch (error) {
         console.error("File upload error:", error);
         toast.error(
-          error instanceof Error ? error.message : "Failed to upload image"
+          error instanceof Error ? error.message : tToast("failedToUploadImage")
         );
         return null;
       }
     },
-    [supabase]
+    [supabase, tToast]
   );
 
   const onDrop = useCallback(

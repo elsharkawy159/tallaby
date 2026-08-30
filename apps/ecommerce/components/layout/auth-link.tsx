@@ -1,4 +1,4 @@
-import { getAuthUser } from "@/lib/auth/current-user";
+import { getAuthUserForDisplay } from "@/lib/auth/current-user";
 import { getSellerProfile } from "@/actions/seller";
 import { UserMenu } from "./user-menu";
 import { signOutAction } from "@/actions/auth";
@@ -16,7 +16,7 @@ export const AuthLink = async ({
   variant = "desktop",
   className,
 }: AuthLinkProps) => {
-  const user = await getAuthUser();
+  const user = await getAuthUserForDisplay();
 
   // If user is authenticated, show UserMenu
   if (user) {

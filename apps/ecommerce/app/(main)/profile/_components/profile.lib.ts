@@ -122,6 +122,7 @@ export function getUserAvatar(user: any): string | null {
   if (user.user_metadata) {
     const avatarSources = [
       user.user_metadata.avatar_url,
+      user.user_metadata.avatarUrl,
       user.user_metadata.picture,
     ];
 

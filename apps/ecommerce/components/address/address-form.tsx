@@ -4,6 +4,7 @@ import { useTransition, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@workspace/ui/components/button";
 import { Form } from "@workspace/ui/components/form";
@@ -46,6 +47,7 @@ export const AddressForm = ({
   mode = "create",
 }: AddressFormProps) => {
   const [isPending, startTransition] = useTransition();
+  const tToast = useTranslations("toast");
 
   // Handle location selection from map
   const handleLocationSelect = (locationData: {
@@ -101,15 +103,15 @@ export const AddressForm = ({
 
         if (result.success) {
           toast.success(
-            "Address " +
-              (mode === "create" ? "added" : "updated") +
-              " successfully"
+            mode === "create"
+              ? tToast("addressAddedSuccessfully")
+              : tToast("addressUpdatedSuccessfully")
           );
           form.reset();
           onSuccess?.(result.data as AddressData);
         } else {
           toast.error(
-            result.error || "Something went wrong. Please try again."
+            result.error || tToast("somethingWentWrong")
           );
 
           // Set server-side field errors
@@ -126,7 +128,7 @@ export const AddressForm = ({
         }
       } catch (error) {
         console.error("Form submission error:", error);
-        toast.error("Something went wrong. Please try again.");
+        toast.error(tToast("somethingWentWrong"));
       }
     });
   };

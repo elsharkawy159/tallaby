@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
+import { useTranslations } from "next-intl"
 import { Button } from "@workspace/ui/components/button"
 import { Form } from "@workspace/ui/components/form"
 import { ChevronLeft, LoaderCircle, ChevronRight } from "lucide-react"
@@ -44,6 +45,7 @@ export default function AddProduct({ categories, brands, sellerPricing }: AddPro
   const [currentStep, setCurrentStep] = useState(1)
   const [activeLocale, setActiveLocale] = useState<SupportedLocale>("en")
   const router = useRouter()
+  const tToast = useTranslations("toast")
 
   const form = useForm<AddProductFormData>({
     resolver: zodResolver(addProductFormSchema) as any,
@@ -58,15 +60,15 @@ export default function AddProduct({ categories, brands, sellerPricing }: AddPro
         const result = await createProduct(data);
 
         if (result.success) {
-          toast.success("Product created successfully!");
+          toast.success(tToast("productCreatedSuccessfully"));
           form.reset(defaultValues as any);
           router.push("/products");
         } else {
-          toast.error(result.error || "Failed to create product");
+          toast.error(result.error || tToast("failedToCreateProduct"));
         }
       } catch (error) {
         console.error("Form submission error:", error);
-        toast.error("Something went wrong. Please try again.");
+        toast.error(tToast("somethingWentWrong"));
       }
     });
   };
@@ -101,7 +103,7 @@ export default function AddProduct({ categories, brands, sellerPricing }: AddPro
     if (isValid && currentStep < STEPS.length) {
       setCurrentStep(currentStep + 1);
     } else if (!isValid) {
-      toast.error("Please fill in all required fields");
+      toast.error(tToast("pleaseFillRequiredFields"));
     }
   };
 
@@ -121,7 +123,7 @@ export default function AddProduct({ categories, brands, sellerPricing }: AddPro
       if (isValid) {
         setCurrentStep(step);
       } else {
-        toast.error("Please complete the current step first");
+        toast.error(tToast("pleaseCompleteCurrentStep"));
       }
     }
   };

@@ -13,6 +13,7 @@ import {
 } from "@workspace/ui/components/card";
 import { Info, MapPin, Navigation, Search } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 interface LocationData {
   latitude: number;
@@ -42,6 +43,7 @@ export const LocationMap = ({
   initialLocation,
   className,
 }: LocationMapProps) => {
+  const t = useTranslations("address");
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markerRef = useRef<L.Marker | null>(null);
@@ -102,13 +104,13 @@ export const LocationMap = ({
         };
 
         onLocationSelect(locationData);
-        toast.success("Location found and selected!");
+        toast.success(t("locationSelected"));
       } else {
-        toast.error("No locations found for your search");
+        toast.error(t("noLocationsFound"));
       }
     } catch (error) {
       console.error("Search error:", error);
-      toast.error("Failed to search for location");
+      toast.error(t("failedToSearchLocation"));
     } finally {
       setIsSearching(false);
     }
@@ -176,7 +178,7 @@ export const LocationMap = ({
         };
 
         onLocationSelect(locationData);
-        toast.success("Location selected!");
+        toast.success(t("locationSelected"));
       } catch (error) {
         console.error("Reverse geocoding error:", error);
         const locationData: LocationData = {
@@ -185,7 +187,7 @@ export const LocationMap = ({
         };
 
         onLocationSelect(locationData);
-        toast.success("Location selected!");
+        toast.success(t("locationSelected"));
       }
     });
   }, [initialLocation, onLocationSelect]);
@@ -193,7 +195,7 @@ export const LocationMap = ({
   // Get current location
   const handleGetCurrentLocation = () => {
     if (!navigator.geolocation) {
-      toast.error("Geolocation is not supported by your browser");
+      toast.error(t("geolocationNotSupported"));
       return;
     }
 
@@ -238,17 +240,17 @@ export const LocationMap = ({
           };
 
           onLocationSelect(locationData);
-          toast.success("Current location selected!");
+          toast.success(t("locationSelected"));
         } catch (error) {
           console.error("Reverse geocoding error:", error);
           const locationData: LocationData = { latitude, longitude };
 
           onLocationSelect(locationData);
-          toast.success("Current location selected!");
+          toast.success(t("locationSelected"));
         }
       },
       () => {
-        toast.error("Unable to retrieve your location");
+        toast.error(t("unableToRetrieveLocation"));
       }
     );
   };

@@ -28,6 +28,7 @@ import {
 import { searchBrands, createBrand } from '@/actions/brands'
 import { useDebounce } from '@/hooks/use-debounce'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 
 export interface BrandOption {
   id: string
@@ -53,6 +54,7 @@ export function BrandSearchInput({
   selectedBrands = [],
 }: BrandSearchInputProps) {
   const form = useFormContext()
+  const tToast = useTranslations('toast')
   const [open, setOpen] = React.useState(false)
   const [query, setQuery] = React.useState('')
   const [results, setResults] = React.useState<BrandOption[]>([])
@@ -119,12 +121,12 @@ export function BrandSearchInput({
         form.setValue(name, newBrand.id, { shouldDirty: true, shouldValidate: true })
         setOpen(false)
         setQuery('')
-        toast.success(`Brand "${newBrand.name}" created and selected`)
+        toast.success(tToast('brandCreatedAndSelected', { name: newBrand.name }))
       } else {
-        toast.error(res.error || 'Failed to create brand')
+        toast.error(res.error || tToast('failedToCreateBrand'))
       }
     } catch {
-      toast.error('Failed to create brand')
+      toast.error(tToast('failedToCreateBrand'))
     } finally {
       setIsCreating(false)
     }

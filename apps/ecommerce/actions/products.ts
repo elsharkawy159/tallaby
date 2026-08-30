@@ -553,15 +553,24 @@ export async function getAllProductSlugs() {
           .innerJoin(products, eq(productTranslations.productId, products.id))
           .where(
             and(
-              eq(productTranslations.locale, "en"),
+              or(
+                eq(productTranslations.locale, "en"),
+                eq(productTranslations.locale, "ar")
+              ),
               eq(products.status, "active"),
               isNotNull(productTranslations.slug)
             )
           )
 
+        const uniqueSlugs = [
+          ...new Set(
+            slugsResult.map((r) => r.slug).filter(Boolean) as string[]
+          ),
+        ];
+
         return {
           success: true,
-          data: slugsResult.map((r) => r.slug).filter(Boolean) as string[],
+          data: uniqueSlugs,
         };
       } catch (error) {
         console.error("Error fetching product slugs:", error);

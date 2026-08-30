@@ -4,6 +4,7 @@ import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -298,6 +299,7 @@ export const TestimonialsSection = ({
 export const ApplicationFormSection = ({ user }: any) => {
   const [isPending, startTransition] = useTransition();
   const { open: openAuthDialog } = useAuthDialog();
+  const tToast = useTranslations("toast");
   const form = useForm<SellerApplicationFormData>({
     resolver: zodResolver(sellerApplicationSchema),
     defaultValues: sellerApplicationDefaults,
@@ -306,7 +308,7 @@ export const ApplicationFormSection = ({ user }: any) => {
 
   const handleSubmit = (data: SellerApplicationFormData) => {
     if (!user) {
-      toast.error("You are not logged in. Please login to continue.");
+      toast.error(tToast("notLoggedInPleaseLogin"));
       openAuthDialog("signin");
       return;
     }
@@ -345,7 +347,7 @@ export const ApplicationFormSection = ({ user }: any) => {
         }
       } catch (error) {
         console.error("💥 Form submission error:", error);
-        toast.error("Something went wrong. Please try again.");
+        toast.error(tToast("somethingWentWrong"));
       }
     });
   };

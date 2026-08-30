@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@workspace/ui/components/button";
 import { FileSpreadsheet, LoaderIcon } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import {
   bulkUploadProductsAction,
   bulkInsertProductsAction,
@@ -22,6 +23,7 @@ export function UploadExcelButton() {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+  const tToast = useTranslations("toast");
 
   const [open, setOpen] = useState(false);
   const [currentFile, setCurrentFile] = useState<File | null>(null);
@@ -55,11 +57,11 @@ export function UploadExcelButton() {
           });
           setOpen(true);
         } else {
-          toast.error(res?.invalid?.[0]?.message || "Could not parse file");
+          toast.error(res?.invalid?.[0]?.message || tToast("couldNotParseFile"));
         }
       } catch (err) {
         console.error(err);
-        toast.error("Something went wrong while parsing the file");
+        toast.error(tToast("somethingWentWrongWhileParsing"));
       } finally {
         if (inputRef.current) inputRef.current.value = "";
       }
@@ -80,11 +82,11 @@ export function UploadExcelButton() {
           setPreview(null);
           router.refresh();
         } else {
-          toast.error(res?.errors?.[0]?.message || "Insert failed");
+          toast.error(res?.errors?.[0]?.message || tToast("insertFailed"));
         }
       } catch (err) {
         console.error(err);
-        toast.error("Something went wrong while inserting");
+        toast.error(tToast("somethingWentWrongWhileInserting"));
       }
     });
   };
@@ -116,10 +118,10 @@ export function UploadExcelButton() {
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
 
-        toast.success("Categorized Excel file downloaded successfully");
+        toast.success(tToast("categorizedExcelDownloaded"));
       } catch (err) {
         console.error(err);
-        toast.error("Failed to download categorized file");
+        toast.error(tToast("failedToDownloadCategorizedFile"));
       }
     });
   };

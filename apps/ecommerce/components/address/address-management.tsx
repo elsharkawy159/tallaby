@@ -12,6 +12,7 @@ import { Skeleton } from "@workspace/ui/components/skeleton";
 import { Alert, AlertDescription } from "@workspace/ui/components/alert";
 import { Plus, MapPin, AlertCircle, Edit } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 import { ProfileAddressList, CheckoutAddressList } from "./address-list";
 import { AddAddressDialog, AddAddressButton } from "./address-dialog";
@@ -40,6 +41,7 @@ export const AddressManagement = ({
   deleteAddress,
   setDefaultAddress,
 }: AddressManagementProps) => {
+  const tToast = useTranslations("toast");
   const [addresses, setAddresses] = useState<AddressData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -80,17 +82,17 @@ export const AddressManagement = ({
         addr.id === updatedAddress.id ? updatedAddress : addr
       )
     );
-    toast.success("Address updated successfully");
+    toast.success(tToast("addressUpdatedSuccessfully"));
   };
 
   const handleAddressDelete = (addressId: string) => {
     setAddresses((prev) => prev.filter((addr) => addr.id !== addressId));
-    toast.success("Address deleted successfully");
+    toast.success(tToast("addressDeletedSuccessfully"));
   };
 
   const handleAddressAdd = (newAddress: AddressData) => {
     setAddresses((prev) => [newAddress, ...prev]);
-    toast.success("Address added successfully");
+    toast.success(tToast("addressAddedSuccessfully"));
   };
 
   if (isLoading) {

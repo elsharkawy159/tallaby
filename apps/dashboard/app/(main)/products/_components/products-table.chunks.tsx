@@ -8,6 +8,7 @@ import { cn, getPublicUrl } from "@/lib/utils";
 import Image from "next/image";
 import { toggleProductStatus } from "@/actions/products";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 
 export const ProductImageCell = ({
@@ -57,6 +58,7 @@ export const ProductActionsCell = ({
 }) => {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+  const tToast = useTranslations("toast");
   const canToggle = status === "active" || status === "draft";
 
   const handleToggle = () => {
@@ -65,12 +67,12 @@ export const ProductActionsCell = ({
       if (result.success) {
         toast.success(
           status === "active"
-            ? "Product hidden (draft)"
-            : "Product submitted for review"
+            ? tToast("productHiddenDraft")
+            : tToast("productSubmittedForReview")
         );
         router.refresh();
       } else {
-        toast.error(result.error || "Failed to update product status");
+        toast.error(result.error || tToast("failedToUpdateProductStatus"));
       }
     });
   };

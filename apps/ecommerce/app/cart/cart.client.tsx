@@ -7,7 +7,7 @@ import { Separator } from "@workspace/ui/components/separator";
 import { Minus, Plus, ArrowLeft, Loader2, Trash2 } from "lucide-react";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { formatPrice } from "@workspace/lib";
 import { useState } from "react";
 import {
@@ -26,6 +26,7 @@ export default function CartClient({ initialCartData }: CartClientProps) {
   const [loadingItems, setLoadingItems] = useState<Set<string>>(new Set());
   const router = useRouter();
   const locale = useLocale();
+  const tToast = useTranslations("toast");
 
   const cartItems = cartData?.items ?? [];
   const itemCount = cartData?.itemCount ?? 0;
@@ -37,12 +38,12 @@ export default function CartClient({ initialCartData }: CartClientProps) {
       const result = await updateCartItem(itemId, quantity);
       if (result.success) {
         router.refresh();
-        toast.success("Cart updated");
+        toast.success(tToast("cartUpdated"));
       } else {
-        toast.error(result.error || "Failed to update cart");
+        toast.error(result.error || tToast("failedToUpdateCart"));
       }
     } catch (error) {
-      toast.error("Failed to update cart");
+      toast.error(tToast("failedToUpdateCart"));
     } finally {
       setLoadingItems((prev) => {
         const newSet = new Set(prev);
@@ -58,12 +59,12 @@ export default function CartClient({ initialCartData }: CartClientProps) {
       const result = await removeFromCartAction(itemId);
       if (result.success) {
         router.refresh();
-        toast.success("Item removed");
+        toast.success(tToast("itemRemoved"));
       } else {
-        toast.error(result.error || "Failed to remove item");
+        toast.error(result.error || tToast("failedToRemoveItem"));
       }
     } catch (error) {
-      toast.error("Failed to remove item");
+      toast.error(tToast("failedToRemoveItem"));
     } finally {
       setLoadingItems((prev) => {
         const newSet = new Set(prev);

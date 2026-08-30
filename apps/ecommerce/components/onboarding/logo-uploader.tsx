@@ -3,6 +3,7 @@
 import React, { useRef, useState } from "react";
 import { Camera, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { createClient } from "@/supabase/client";
 
@@ -26,6 +27,7 @@ export function LogoUploader({
   const [isUploading, setIsUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(value || null);
   const supabase = createClient();
+  const t = useTranslations("onboarding");
 
   const handleLogoClick = () => {
     if (disabled || isUploading) return;
@@ -38,13 +40,13 @@ export function LogoUploader({
 
     // Validate file type
     if (!file.type.startsWith("image/")) {
-      toast.error("Please select an image file");
+      toast.error(t("pleaseSelectImageFile"));
       return;
     }
 
     // Validate file size (5MB max)
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("File size must be less than 5MB");
+      toast.error(t("fileSizeMustBeLess"));
       return;
     }
 
@@ -71,7 +73,7 @@ export function LogoUploader({
 
       if (uploadError) {
         console.error("Error uploading file:", uploadError);
-        toast.error("Failed to upload logo");
+        toast.error(t("failedToUploadLogo"));
         setPreview(value || null);
         return;
       }
@@ -82,10 +84,10 @@ export function LogoUploader({
       } = supabase.storage.from("sellers").getPublicUrl(filePath);
 
       onChange(publicUrl);
-      toast.success("Logo uploaded successfully");
+      toast.success(t("logoUploadedSuccessfully"));
     } catch (error) {
       console.error("Error uploading logo:", error);
-      toast.error("Something went wrong. Please try again.");
+      toast.error(t("somethingWentWrong"));
       setPreview(value || null);
     } finally {
       setIsUploading(false);

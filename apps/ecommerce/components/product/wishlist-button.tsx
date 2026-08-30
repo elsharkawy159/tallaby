@@ -3,6 +3,7 @@
 import { Button } from "@workspace/ui/components/button";
 import { Heart, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import type { WishlistButtonProps } from "./product-card.types";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -54,6 +55,7 @@ export const WishlistButton = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(initialIsInWishlist);
   const router = useRouter();
+  const tToast = useTranslations("toast");
 
   const toggleWishlist = async () => {
     if (disabled || !productId || isLoading) return;
@@ -65,24 +67,24 @@ export const WishlistButton = ({
         if (result.success) {
           setIsWishlisted(false);
           router.refresh();
-          toast.success("Removed from wishlist");
+          toast.success(tToast("removedFromWishlist"));
         } else {
-          toast.error(result.error || "Failed to remove from wishlist");
+          toast.error(result.error || tToast("failedToRemoveFromWishlist"));
         }
       } else {
         const result = await addToWishlistAction({ productId });
         if (result.success) {
           setIsWishlisted(true);
           router.refresh();
-          toast.success("Added to wishlist");
+          toast.success(tToast("addedToWishlist"));
         } else {
-          toast.error(result.error || "Failed to add to wishlist");
+          toast.error(result.error || tToast("failedToAddToWishlist"));
         }
       }
       onSuccess?.();
     } catch (error) {
       console.error("Wishlist toggle error:", error);
-      toast.error("An error occurred with wishlist");
+      toast.error(tToast("wishlistError"));
     } finally {
       setIsLoading(false);
     }

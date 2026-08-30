@@ -3,6 +3,7 @@
 import { createContext, ReactNode, useState, useCallback, use } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import {
   getCartItems,
   addToCart as addToCartAction,
@@ -16,6 +17,7 @@ const CartContext = createContext<CartState | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
+  const tToast = useTranslations("toast");
 
   // Individual item loading states
   const [loadingItems, setLoadingItems] = useState<Set<string>>(new Set());
@@ -117,22 +119,22 @@ export function CartProvider({ children }: { children: ReactNode }) {
     handleAction(
       addToCartAction,
       [p.productId, p.quantity],
-      "Item added",
-      "Failed to add item",
+      tToast("itemAddedToCart"),
+      tToast("failedToAddItem"),
       p.productId,
       setProductLoading
     );
 
   const updateQuantity = (itemId: string, quantity: number) => {
     if (quantity < 0) {
-      toast.error("Quantity cannot be negative");
+      toast.error(tToast("quantityCannotBeNegative"));
       return Promise.resolve({ success: false, message: "Invalid quantity" });
     }
     return handleAction(
       updateCartItem,
       [itemId, quantity],
-      "Cart Updated",
-      "Failed to update cart",
+      tToast("cartUpdated"),
+      tToast("failedToUpdateCart"),
       itemId,
       setItemLoading
     );
@@ -142,14 +144,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
     handleAction(
       removeFromCartAction,
       [itemId],
-      "Item removed",
-      "Failed to remove item",
+      tToast("itemRemoved"),
+      tToast("failedToRemoveItem"),
       itemId,
       setItemLoading
     );
 
   const clearCart = () =>
-    handleAction(clearCartAction, [], "Cart cleared", "Failed to clear cart");
+    handleAction(
+      clearCartAction,
+      [],
+      tToast("cartCleared"),
+      tToast("failedToClearCart")
+    );
 
   const value: CartState = {
     cartData: cartData ?? null,

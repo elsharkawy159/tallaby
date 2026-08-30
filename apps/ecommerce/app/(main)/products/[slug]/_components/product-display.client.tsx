@@ -4,19 +4,14 @@ import { useState, useMemo } from "react";
 import { ProductHero } from "./product-hero";
 import { ProductDetails } from "./product-details";
 import type { Product } from "./product-page.types";
+import { useCart } from "@/providers/cart-provider";
 
 interface ProductDisplayProps {
   product: Product;
-  cartItems: Array<{
-    id: string;
-    productId: string;
-    quantity: number;
-    variant?: any;
-    savedForLater?: boolean | null;
-  }>;
 }
 
-export const ProductDisplay = ({ product, cartItems }: ProductDisplayProps) => {
+export const ProductDisplay = ({ product }: ProductDisplayProps) => {
+  const { cartItems } = useCart();
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(
     product.productVariants && product.productVariants.length > 0
       ? (product.productVariants[0]?.id ?? null)
