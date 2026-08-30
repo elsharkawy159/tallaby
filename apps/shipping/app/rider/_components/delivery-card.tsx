@@ -5,12 +5,11 @@ import { Badge } from "@workspace/ui/components/badge";
 import { Card, CardContent } from "@workspace/ui/components/card";
 
 import { formatAddress, formatCurrency } from "@/lib/format";
-import { getStatusColor, getStatusLabel } from "@/lib/shipping-status";
+import { getStatusColor, getStatusLabel, isSettled } from "@/lib/shipping-status";
 import type { RiderDelivery } from "../rider.server";
 
 export function DeliveryCard({ delivery }: { delivery: RiderDelivery }) {
-  const cod =
-    delivery.paymentStatus === "paid" ? 0 : Number(delivery.totalAmount);
+  const cod = isSettled(delivery.paymentStatus) ? 0 : Number(delivery.totalAmount);
 
   return (
     <Link href={`/rider/${delivery.shipmentId}`} className="block">

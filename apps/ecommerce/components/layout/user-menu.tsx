@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import {
   User,
   Heart,
@@ -86,13 +87,13 @@ export function UserMenu({
           title={t("welcome", { name: userName })}
         >
           {avatarUrl ? (
-            <>
-              <img
-                src={avatarUrl}
-                alt="User avatar"
-                className="md:size-6 size-4.5 rounded-full object-cover"
-              />
-            </>
+            <Image
+              src={avatarUrl}
+              alt="User avatar"
+              width={24}
+              height={24}
+              className="md:size-6 size-4.5 rounded-full object-cover"
+            />
           ) : (
             <User className="md:size-6 size-4.5" />
           )}

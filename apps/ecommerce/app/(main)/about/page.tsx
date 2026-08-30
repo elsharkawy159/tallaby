@@ -1,4 +1,5 @@
 import { Users, Target, Award, Globe, Heart, Truck } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@workspace/ui/components/button";
 import { Badge } from "@workspace/ui/components/badge";
@@ -182,11 +183,13 @@ const About = () => {
                   <Button>Join Our Team</Button>
                 </Link>
               </div>
-              <div className="relative">
-                <img
+              <div className="relative aspect-[3/2] w-full">
+                <Image
                   src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=600&h=400&fit=crop"
                   alt="Our team working together"
-                  className="rounded-lg shadow-lg"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  className="rounded-lg shadow-lg object-cover"
                 />
               </div>
             </div>
@@ -233,9 +236,11 @@ const About = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {team.map((member, index) => (
                 <div key={index} className="text-center">
-                  <img
+                  <Image
                     src={member.image}
                     alt={member.name}
+                    width={128}
+                    height={128}
                     className="w-32 h-32 rounded-full mx-auto mb-4 object-cover"
                   />
                   <h3 className="text-lg font-bold mb-1">{member.name}</h3>

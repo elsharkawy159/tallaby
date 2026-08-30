@@ -86,6 +86,7 @@ export function getPaymentStatusColor(status: string): string {
     case "authorized":
       return "bg-blue-100 text-blue-800";
     case "paid":
+    case "collected":
       return "bg-green-100 text-green-800";
     case "failed":
       return "bg-red-100 text-red-800";
@@ -96,3 +97,48 @@ export function getPaymentStatusColor(status: string): string {
       return "bg-gray-100 text-gray-800";
   }
 }
+
+/** Reason codes a rider can pick when a delivery attempt fails. */
+export const DELIVERY_FAILURE_REASONS = [
+  { code: "customer_unavailable", label: "Customer unavailable" },
+  { code: "customer_refused", label: "Customer refused" },
+  { code: "wrong_address", label: "Wrong address" },
+  { code: "could_not_contact_customer", label: "Could not contact customer" },
+  { code: "customer_requested_reschedule", label: "Customer requested reschedule" },
+  { code: "payment_not_collected", label: "Payment not collected" },
+  { code: "other", label: "Other" },
+] as const;
+
+export type DeliveryFailureReasonCode =
+  (typeof DELIVERY_FAILURE_REASONS)[number]["code"];
+
+export function getFailureReasonLabel(code: string): string {
+  return (
+    DELIVERY_FAILURE_REASONS.find((reason) => reason.code === code)?.label ??
+    code.replace(/_/g, " ")
+  );
+}
+
+/** Payment collection methods a rider can record. */
+export const COLLECTION_METHODS = ["cash", "card", "other"] as const;
+export type CollectionMethod = (typeof COLLECTION_METHODS)[number];
+
+/**
+ * Whether the order's balance is already settled — prepaid up front (`paid`)
+ * or collected on delivery (`collected`). Used everywhere a COD amount is
+ * derived, so "delivered" is never confused with "paid".
+ */
+export function isSettled(paymentStatus: string | null | undefined): boolean {
+  return paymentStatus === "paid" || paymentStatus === "collected";
+}
+
+/** Mirrors the `payment_status` DB enum for filter/select inputs. */
+export const PAYMENT_STATUSES = [
+  "pending",
+  "authorized",
+  "paid",
+  "collected",
+  "failed",
+  "refunded",
+  "partially_refunded",
+] as const;

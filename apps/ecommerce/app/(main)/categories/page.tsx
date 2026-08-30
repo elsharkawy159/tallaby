@@ -14,6 +14,7 @@ import {
   Heart,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 const Categories = () => {
   const mainCategories = [
@@ -198,11 +199,13 @@ const Categories = () => {
                 <div key={category.id} className="group">
                   <Link href={`/category/${category.id}`}>
                     <div className="bg-white border rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 group-hover:-translate-y-1">
-                      <div className="relative overflow-hidden">
-                        <img
+                      <div className="relative overflow-hidden h-48">
+                        <Image
                           src={category.image}
                           alt={category.name}
-                          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                          fill
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                         <div className="absolute top-4 right-4">
                           <Badge className="bg-white text-primary">

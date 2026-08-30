@@ -121,8 +121,10 @@ export function ShippingActions({
               .map((rider) => (
                 <SelectItem key={rider.id} value={rider.id}>
                   {rider.fullName ?? rider.email ?? "Unnamed rider"}
+                  {rider.isAvailable === false && " (off duty)"}
                   {rider.activeDeliveries > 0 &&
                     ` · ${rider.activeDeliveries} active`}
+                  {rider.codHeld > 0 && ` · EGP ${rider.codHeld.toFixed(0)} COD held`}
                 </SelectItem>
               ))}
           </SelectContent>
@@ -132,6 +134,19 @@ export function ShippingActions({
             No rider accounts exist yet.
           </p>
         )}
+        {riderId &&
+          (() => {
+            const selected = riders.find((rider) => rider.id === riderId);
+            if (!selected) return null;
+            return (
+              <p className="text-xs text-muted-foreground">
+                {selected.phone ?? "No phone on file"} · {selected.todayDeliveries}{" "}
+                today · {selected.activeDeliveries} active
+                {selected.codHeld > 0 &&
+                  ` · EGP ${selected.codHeld.toFixed(0)} COD currently held`}
+              </p>
+            );
+          })()}
       </div>
 
       <div className="space-y-2">

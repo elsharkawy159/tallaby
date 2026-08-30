@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
 
-import { Badge } from "@workspace/ui/components/badge";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import {
   Table,
@@ -13,6 +12,8 @@ import {
 } from "@workspace/ui/components/table";
 
 import { getRiders } from "../orders/orders.server";
+import { RiderFormDialog } from "./_components/rider-form-dialog";
+import { RiderActiveToggle, RiderAvailableToggle } from "./_components/rider-toggles";
 
 export const dynamic = "force-dynamic";
 
@@ -31,11 +32,7 @@ async function RidersTable() {
     return (
       <div className="rounded-md border bg-white p-10 text-center dark:bg-gray-950">
         <p className="text-sm text-muted-foreground">
-          No rider accounts yet. Promote an existing user with{" "}
-          <code className="rounded bg-muted px-1 py-0.5 text-xs">
-            UPDATE users SET role = &apos;driver&apos; WHERE email = &apos;…&apos;
-          </code>
-          .
+          No rider accounts yet. Add one to get started.
         </p>
       </div>
     );
@@ -49,18 +46,24 @@ async function RidersTable() {
             <TableHead>Name</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Phone</TableHead>
-            <TableHead className="text-right">Active deliveries</TableHead>
-            <TableHead>Status</TableHead>
+            <TableHead className="text-right">Today</TableHead>
+            <TableHead className="text-right">Active</TableHead>
+            <TableHead>Available</TableHead>
+            <TableHead>Active</TableHead>
+            <TableHead className="w-16" />
           </TableRow>
         </TableHeader>
         <TableBody>
           {result.data.map((rider) => (
             <TableRow key={rider.id}>
               <TableCell className="font-medium">
-                {rider.fullName ?? "—"}
+                <Link href={`/riders/${rider.id}`} className="hover:underline">
+                  {rider.fullName ?? "—"}
+                </Link>
               </TableCell>
               <TableCell>{rider.email ?? "—"}</TableCell>
               <TableCell>{rider.phone ?? "—"}</TableCell>
+              <TableCell className="text-right">{rider.todayDeliveries}</TableCell>
               <TableCell className="text-right">
                 {rider.activeDeliveries > 0 ? (
                   <Link
@@ -74,15 +77,16 @@ async function RidersTable() {
                 )}
               </TableCell>
               <TableCell>
-                <Badge
-                  className={
-                    rider.isSuspended
-                      ? "bg-red-100 text-red-800"
-                      : "bg-green-100 text-green-800"
-                  }
-                >
-                  {rider.isSuspended ? "Suspended" : "Active"}
-                </Badge>
+                <RiderAvailableToggle
+                  riderId={rider.id}
+                  isAvailable={rider.isAvailable ?? true}
+                />
+              </TableCell>
+              <TableCell>
+                <RiderActiveToggle riderId={rider.id} isActive={!rider.isSuspended} />
+              </TableCell>
+              <TableCell>
+                <RiderFormDialog rider={rider} />
               </TableCell>
             </TableRow>
           ))}
@@ -95,11 +99,14 @@ async function RidersTable() {
 export default function RidersPage() {
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Riders</h1>
-        <p className="text-sm text-muted-foreground">
-          Users with the rider role. Assign them to orders from the order page.
-        </p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Riders</h1>
+          <p className="text-sm text-muted-foreground">
+            Users with the rider role. Assign them to orders from the order page.
+          </p>
+        </div>
+        <RiderFormDialog />
       </div>
 
       <Suspense fallback={<Skeleton className="h-64 w-full rounded-md" />}>

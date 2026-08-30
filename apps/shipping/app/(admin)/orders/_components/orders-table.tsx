@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@workspace/ui/components/table";
 
-import { formatAddress, formatCurrency } from "@/lib/format";
+import { formatAddress, formatCurrency, formatDate } from "@/lib/format";
 import {
   getPaymentStatusColor,
   getStatusColor,
@@ -44,10 +44,14 @@ export function OrdersTable({ rows }: OrdersTableProps) {
             <TableHead>Phone</TableHead>
             <TableHead className="min-w-64">Address</TableHead>
             <TableHead className="text-right">Amount</TableHead>
+            <TableHead className="text-right">Delivery</TableHead>
+            <TableHead className="text-right">Discount</TableHead>
             <TableHead>Payment</TableHead>
             <TableHead>Provider</TableHead>
             <TableHead>Rider</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead>Created</TableHead>
+            <TableHead>Updated</TableHead>
             <TableHead className="w-10" />
           </TableRow>
         </TableHeader>
@@ -83,6 +87,14 @@ export function OrdersTable({ rows }: OrdersTableProps) {
               <TableCell className="whitespace-nowrap text-right">
                 {formatCurrency(Number(row.totalAmount))}
               </TableCell>
+              <TableCell className="whitespace-nowrap text-right text-muted-foreground">
+                {formatCurrency(Number(row.shippingCost ?? 0))}
+              </TableCell>
+              <TableCell className="whitespace-nowrap text-right text-muted-foreground">
+                {Number(row.discountAmount ?? 0) > 0
+                  ? `-${formatCurrency(Number(row.discountAmount))}`
+                  : "—"}
+              </TableCell>
               <TableCell>
                 <Badge className={getPaymentStatusColor(row.paymentStatus ?? "")}>
                   {getStatusLabel(row.paymentStatus ?? "unknown")}
@@ -94,6 +106,12 @@ export function OrdersTable({ rows }: OrdersTableProps) {
                 <Badge className={getStatusColor(row.shippingStatus)}>
                   {getStatusLabel(row.shippingStatus)}
                 </Badge>
+              </TableCell>
+              <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
+                {formatDate(row.createdAt)}
+              </TableCell>
+              <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
+                {formatDate(row.updatedAt)}
               </TableCell>
               <TableCell>
                 <Link

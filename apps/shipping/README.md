@@ -6,8 +6,8 @@ Two surfaces in one app, split by role:
 
 | Route | Role | Purpose |
 |---|---|---|
-| `/`, `/orders`, `/riders`, `/providers` | `admin` | See orders needing shipping, pick a provider, assign a rider, track status |
-| `/rider`, `/rider/[shipmentId]` | `driver` | A rider's own deliveries only |
+| `/`, `/orders`, `/riders`, `/providers` | `admin` | Dashboard, orders, provider/rider CRUD and assignment, COD and delivery-activity audit trail |
+| `/rider`, `/rider/[shipmentId]`, `/rider/profile` | `driver` | A rider's own deliveries only — dashboard, delivery details, COD collection, notes |
 
 ## Setup
 
@@ -21,8 +21,12 @@ pnpm --filter shipping dev
 ## Creating a rider account
 
 Riders are ordinary platform users with `users.role = 'driver'` — there is no
-separate auth system, and this app does not create users. Promote an existing
-account:
+separate auth system. Admins can create one directly from **Riders → Add
+rider**, which uses the Supabase service-role client
+(`SUPABASE_SERVICE_ROLE_KEY`, server-only) to create the auth account and
+upserts the matching `public.users` row with `role: 'driver'`.
+
+To promote an existing account instead:
 
 ```sql
 UPDATE users SET role = 'driver', is_verified = true WHERE email = 'rider@example.com';
@@ -40,8 +44,20 @@ There is no `shipping_orders` table. A shipping record is a row in the existing
 - `status` → the `shipment_status` enum: `pending | assigned | out_for_delivery | delivered | failed | returned | cancelled`
 
 Status changes mirror onto `orders.status` / `shipped_at` / `delivered_at` in
-the same transaction. `shipment_items` and `deliveries` are untouched and stay
-available for split shipments and per-attempt proof-of-delivery later.
+the same transaction (`lib/apply-shipment-status.ts`). `shipment_items` stays
+available for split shipments later.
+
+**Payment status is tracked separately from delivery status**, on
+`orders.payment_status` — prepaid orders are `paid`; COD orders start
+`pending` and become `collected` only when a rider confirms the collection.
+That confirmation, plus every delivery note and failed attempt, is logged as
+a `deliveries` row (one per event: `note` | `failed` | `delivered`,
+`proof_of_delivery` jsonb carries the reason code / collection detail) and,
+for a collection specifically, a `payments` row (`status: 'collected'`,
+`payment_data` jsonb carries `collectedBy`, `expectedAmount`, and
+`discrepancy`) — the auditable COD trail shown on the admin order-detail
+page. See `RIDER_STATUSES` / `DELIVERY_FAILURE_REASONS` in
+`lib/shipping-status.ts`.
 
 ## Adding a real carrier integration
 

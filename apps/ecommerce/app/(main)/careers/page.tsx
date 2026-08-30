@@ -19,6 +19,7 @@ import {
   Briefcase,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 const Careers = () => {
   const benefits = [
@@ -203,11 +204,13 @@ const Careers = () => {
                   </Button>
                 </div>
               </div>
-              <div className="relative">
-                <img
+              <div className="relative aspect-[3/2] w-full">
+                <Image
                   src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600&h=400&fit=crop"
                   alt="Team collaboration"
-                  className="rounded-lg shadow-2xl"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  className="rounded-lg shadow-2xl object-cover"
                 />
               </div>
             </div>
@@ -362,25 +365,33 @@ const Careers = () => {
                 <Button>Learn More About Our Culture</Button>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <img
+                <Image
                   src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=300&h=200&fit=crop"
                   alt="Team meeting"
-                  className="rounded-lg"
+                  width={300}
+                  height={200}
+                  className="rounded-lg w-full h-auto"
                 />
-                <img
+                <Image
                   src="https://images.unsplash.com/photo-1556761175-b413da4baf72?w=300&h=200&fit=crop"
                   alt="Office space"
-                  className="rounded-lg"
+                  width={300}
+                  height={200}
+                  className="rounded-lg w-full h-auto"
                 />
-                <img
+                <Image
                   src="https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=300&h=200&fit=crop"
                   alt="Team collaboration"
-                  className="rounded-lg"
+                  width={300}
+                  height={200}
+                  className="rounded-lg w-full h-auto"
                 />
-                <img
+                <Image
                   src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=300&h=200&fit=crop"
                   alt="Team discussion"
-                  className="rounded-lg"
+                  width={300}
+                  height={200}
+                  className="rounded-lg w-full h-auto"
                 />
               </div>
             </div>

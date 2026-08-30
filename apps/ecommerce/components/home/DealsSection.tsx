@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { Button } from "@workspace/ui/components/button";
 import { Badge } from "@workspace/ui/components/badge";
 import { Card, CardContent } from "@workspace/ui/components/card";
@@ -168,11 +169,13 @@ const DealsSection = () => {
                 className="group hover:shadow-2xl transition-all duration-300 overflow-hidden transform hover:-translate-y-2"
               >
                 <CardContent className="p-0">
-                  <div className="relative overflow-hidden">
-                    <img
+                  <div className="relative overflow-hidden h-56">
+                    <Image
                       src={deal.featured_image_url}
                       alt={deal.name}
-                      className="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-500"
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      className="object-cover group-hover:scale-110 transition-transform duration-500"
                     />
                     <Badge className="absolute top-4 left-4 bg-red-500 hover:bg-red-600 text-lg px-3 py-2">
                       -{deal.discount_value}% OFF

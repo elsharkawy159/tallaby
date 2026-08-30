@@ -23,6 +23,7 @@ import {
   AvatarImage,
 } from "@workspace/ui/components/avatar";
 import { Input } from "@workspace/ui/components/input";
+import Image from "next/image";
 import {
   Select,
   SelectContent,
@@ -705,10 +706,12 @@ export default function SettingsPage() {
                   <div className="border rounded-lg p-4">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
-                        <img
+                        <Image
                           src="/api/placeholder/120/40"
                           alt="Stripe"
-                          className="h-8"
+                          width={120}
+                          height={40}
+                          className="h-8 w-auto"
                         />
                         <Badge
                           variant="outline"
@@ -744,10 +747,12 @@ export default function SettingsPage() {
                   <div className="border rounded-lg p-4">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
-                        <img
+                        <Image
                           src="/api/placeholder/120/40"
                           alt="PayPal"
-                          className="h-8"
+                          width={120}
+                          height={40}
+                          className="h-8 w-auto"
                         />
                         <Badge
                           variant="outline"
@@ -783,10 +788,12 @@ export default function SettingsPage() {
                   <div className="border rounded-lg p-4">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
-                        <img
+                        <Image
                           src="/api/placeholder/120/40"
                           alt="Bank Transfer"
-                          className="h-8"
+                          width={120}
+                          height={40}
+                          className="h-8 w-auto"
                         />
                         <Badge
                           variant="outline"

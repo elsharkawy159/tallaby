@@ -13,7 +13,14 @@ import {
 import { Card, CardContent } from "@workspace/ui/components/card";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 
-import { getShippingStats } from "./orders/orders.server";
+import { formatCurrency } from "@/lib/format";
+
+import { OrdersTable } from "./orders/_components/orders-table";
+import {
+  getOperationalStats,
+  getRecentShipments,
+  getShippingStats,
+} from "./orders/orders.server";
 import type { ShippingStats } from "./orders/orders.types";
 
 export const dynamic = "force-dynamic";
@@ -81,6 +88,83 @@ function StatsGridSkeleton() {
   );
 }
 
+const OPERATIONAL_CARDS: {
+  key:
+    | "unassignedOrders"
+    | "withoutProvider"
+    | "withoutRider"
+    | "delayedOrders"
+    | "todaysDeliveries";
+  label: string;
+  href: string;
+}[] = [
+  { key: "unassignedOrders", label: "Unassigned orders", href: "/orders?status=pending" },
+  { key: "withoutProvider", label: "Without provider", href: "/orders" },
+  { key: "withoutRider", label: "Without rider", href: "/orders" },
+  { key: "delayedOrders", label: "Delayed orders", href: "/orders?status=out_for_delivery" },
+  { key: "todaysDeliveries", label: "Today's deliveries", href: "/orders" },
+];
+
+async function OperationalSection() {
+  const [statsResult, shipmentsResult] = await Promise.all([
+    getOperationalStats(),
+    getRecentShipments(10),
+  ]);
+
+  if (!statsResult.success || !statsResult.data) {
+    return (
+      <p className="text-sm text-destructive">
+        {statsResult.error ?? "Failed to load operational stats"}
+      </p>
+    );
+  }
+
+  const stats = statsResult.data;
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
+        {OPERATIONAL_CARDS.map((card) => (
+          <Link key={card.key} href={card.href} className="block">
+            <Card className="gap-0 py-4 transition-colors hover:border-primary/40">
+              <CardContent className="px-4">
+                <p className="text-xs text-muted-foreground">{card.label}</p>
+                <p className="mt-2 text-2xl font-bold">{stats[card.key]}</p>
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <Card className="gap-0 py-4">
+          <CardContent className="px-4">
+            <p className="text-xs text-muted-foreground">COD outstanding</p>
+            <p className="mt-2 text-xl font-bold">
+              {formatCurrency(stats.codOutstanding)}
+            </p>
+          </CardContent>
+        </Card>
+        <Card className="gap-0 py-4">
+          <CardContent className="px-4">
+            <p className="text-xs text-muted-foreground">COD collected today</p>
+            <p className="mt-2 text-xl font-bold">
+              {formatCurrency(stats.codCollectedToday)}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div>
+        <h2 className="mb-2 text-sm font-medium text-muted-foreground">
+          Recent activity
+        </h2>
+        <OrdersTable rows={shipmentsResult.data} />
+      </div>
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   return (
     <div className="space-y-6">
@@ -93,6 +177,10 @@ export default function DashboardPage() {
 
       <Suspense fallback={<StatsGridSkeleton />}>
         <StatsGrid />
+      </Suspense>
+
+      <Suspense fallback={<Skeleton className="h-64 w-full rounded-md" />}>
+        <OperationalSection />
       </Suspense>
     </div>
   );

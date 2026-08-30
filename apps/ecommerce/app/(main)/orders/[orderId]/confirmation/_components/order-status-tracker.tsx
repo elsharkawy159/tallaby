@@ -214,7 +214,7 @@ export function OrderStatusTracker({
               progressValue > 0 &&
               progressValue < 100 && (
                 <div className="absolute inset-0 overflow-hidden rounded-full pointer-events-none">
-                  <div className="h-full w-1/2 bg-gradient-to-r from-transparent via-white/50 to-transparent progress-shimmer" />
+                  <div className="h-full w-1/2 bg-gradient-to-r from-transparent via-white/50 to-transparent rtl:bg-gradient-to-l progress-shimmer" />
                 </div>
               )}
           </div>

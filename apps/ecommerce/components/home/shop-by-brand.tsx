@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { getPopularBrands } from "@/actions/brands";
 import { Card, CardContent } from "@workspace/ui/components/card";
 import { Badge } from "@workspace/ui/components/badge";
@@ -54,9 +55,11 @@ export default async function ShopByBrand({
                 <CardContent className="p-4 sm:p-6 text-center">
                   {brand.logoUrl ? (
                     <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                      <img
+                      <Image
                         src={brand.logoUrl}
                         alt={brand.name}
+                        width={64}
+                        height={64}
                         className="max-w-full max-h-full object-contain grayscale group-hover:grayscale-0 transition-all duration-300"
                       />
                     </div>
@@ -104,9 +107,11 @@ export default async function ShopByBrand({
                 <CardContent className="p-4 text-center">
                   {brand.logoUrl ? (
                     <div className="w-12 h-12 mx-auto mb-3 flex items-center justify-center">
-                      <img
+                      <Image
                         src={brand.logoUrl}
                         alt={brand.name}
+                        width={64}
+                        height={64}
                         className="max-w-full max-h-full object-contain grayscale group-hover:grayscale-0 transition-all duration-300"
                       />
                     </div>

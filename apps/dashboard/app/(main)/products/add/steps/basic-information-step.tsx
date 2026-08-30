@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useFormContext } from "react-hook-form";
 import {
   TextInput,
@@ -352,7 +353,7 @@ export function BasicInformationStep({
                 <button
                   key={`${src}-${i}`}
                   type="button"
-                  className="rounded-md border border-gray-200 overflow-hidden w-20 h-20 bg-gray-50 hover:border-gray-300"
+                  className="relative rounded-md border border-gray-200 overflow-hidden w-20 h-20 bg-gray-50 hover:border-gray-300"
                   onClick={async () => {
                     try {
                       await navigator.clipboard.writeText(src);
@@ -364,11 +365,14 @@ export function BasicInformationStep({
                   aria-label="Copy image URL"
                   title="Click to copy image URL"
                 >
-                  <img
+                  <Image
                     src={src}
                     alt=""
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
                     referrerPolicy="no-referrer"
+                    unoptimized
+                    sizes="80px"
                   />
                 </button>
               ))}

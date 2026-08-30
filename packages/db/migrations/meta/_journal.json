@@ -64,6 +64,13 @@
       "when": 1787988966540,
       "tag": "0009_shipping_module",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1798310400000,
+      "tag": "0011_shipping_cod_and_crud",
+      "breakpoints": true
     }
   ]
 }

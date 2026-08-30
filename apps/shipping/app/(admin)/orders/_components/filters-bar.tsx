@@ -15,7 +15,11 @@ import {
 } from "@workspace/ui/components/select";
 import { useDebounce } from "@workspace/ui/hooks/use-debounce";
 
-import { SHIPPING_STATUSES, getStatusLabel } from "@/lib/shipping-status";
+import {
+  PAYMENT_STATUSES,
+  SHIPPING_STATUSES,
+  getStatusLabel,
+} from "@/lib/shipping-status";
 import type { ProviderOption, RiderOption } from "../orders.types";
 
 /** Radix Select cannot hold an empty string value, so "all" stands in for it. */
@@ -64,8 +68,15 @@ export function FiltersBar({ providers, riders }: FiltersBarProps) {
   const status = searchParams.get("status") ?? ALL;
   const providerId = searchParams.get("providerId") ?? ALL;
   const riderId = searchParams.get("riderId") ?? ALL;
+  const paymentStatus = searchParams.get("paymentStatus") ?? ALL;
+  const codOnly = searchParams.get("codOnly") ?? ALL;
   const hasFilters =
-    Boolean(urlSearch) || status !== ALL || providerId !== ALL || riderId !== ALL;
+    Boolean(urlSearch) ||
+    status !== ALL ||
+    providerId !== ALL ||
+    riderId !== ALL ||
+    paymentStatus !== ALL ||
+    codOnly !== ALL;
 
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
@@ -134,6 +145,39 @@ export function FiltersBar({ providers, riders }: FiltersBarProps) {
               {rider.fullName ?? rider.email ?? "Unnamed rider"}
             </SelectItem>
           ))}
+        </SelectContent>
+      </Select>
+
+      <Select
+        value={paymentStatus}
+        onValueChange={(value) =>
+          applyParam("paymentStatus", value === ALL ? null : value)
+        }
+      >
+        <SelectTrigger className="w-full sm:w-44" aria-label="Filter by payment status">
+          <SelectValue placeholder="Payment status" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value={ALL}>All payment statuses</SelectItem>
+          {PAYMENT_STATUSES.map((value) => (
+            <SelectItem key={value} value={value}>
+              {getStatusLabel(value)}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      <Select
+        value={codOnly}
+        onValueChange={(value) => applyParam("codOnly", value === ALL ? null : value)}
+      >
+        <SelectTrigger className="w-full sm:w-36" aria-label="Filter by COD or prepaid">
+          <SelectValue placeholder="COD / Prepaid" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value={ALL}>COD & prepaid</SelectItem>
+          <SelectItem value="cod">COD only</SelectItem>
+          <SelectItem value="prepaid">Prepaid only</SelectItem>
         </SelectContent>
       </Select>
 

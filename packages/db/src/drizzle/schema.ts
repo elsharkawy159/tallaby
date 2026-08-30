@@ -8,7 +8,7 @@ export const fulfillmentType = pgEnum("fulfillment_type", ['seller_fulfilled', '
 export const itemCondition = pgEnum("item_condition", ['new', 'renewed', 'refurbished', 'used_like_new', 'used_very_good', 'used_good', 'used_acceptable'])
 export const notificationType = pgEnum("notification_type", ['order_update', 'shipment_update', 'price_drop', 'review_response', 'marketing'])
 export const orderStatus = pgEnum("order_status", ['pending', 'payment_processing', 'confirmed', 'shipping_soon', 'shipped', 'out_for_delivery', 'delivered', 'cancelled', 'refund_requested', 'refunded', 'returned'])
-export const paymentStatus = pgEnum("payment_status", ['pending', 'authorized', 'paid', 'failed', 'refunded', 'partially_refunded'])
+export const paymentStatus = pgEnum("payment_status", ['pending', 'authorized', 'paid', 'failed', 'refunded', 'partially_refunded', 'collected'])
 export const promotionType = pgEnum("promotion_type", ['percentage', 'fixed_amount', 'buy_x_get_y', 'free_shipping'])
 export const returnReason = pgEnum("return_reason", ['defective', 'damaged', 'wrong_item', 'not_as_described', 'better_price', 'no_longer_needed', 'unauthorized_purchase', 'other'])
 export const sellerStatus = pgEnum("seller_status", ['pending', 'approved', 'suspended', 'restricted'])
@@ -492,6 +492,12 @@ export const shippingProviders = pgTable("shipping_providers", {
 	name: text().notNull(),
 	code: text().notNull(),
 	isActive: boolean("is_active").default(true).notNull(),
+	logoUrl: text("logo_url"),
+	contactName: text("contact_name"),
+	contactPhone: text("contact_phone"),
+	contactEmail: text("contact_email"),
+	website: text(),
+	notes: text(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 }, (table) => [
@@ -1040,6 +1046,8 @@ export const users = pgTable("users", {
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	isGuest: boolean("is_guest").default(false).notNull(),
+	/** Rider on/off-duty toggle. Distinct from `isSuspended` (admin-controlled access). */
+	isAvailable: boolean("is_available").default(true),
 }, (table) => [
 	index("user_email_idx").using("btree", table.email.asc().nullsLast().op("text_ops")),
 	index("user_name_idx").using("btree", table.fullName.asc().nullsLast().op("text_ops")),

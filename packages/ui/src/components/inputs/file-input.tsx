@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useState } from "react";
+import Image from "next/image";
 import { Upload, X, FileImage } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { Input } from "../input";
@@ -195,10 +196,13 @@ export function FileInput({
               Preview:
             </label>
             <div className="relative inline-block">
-              <img
+              <Image
                 src={previewUrl}
                 alt="Preview"
-                className="max-w-full max-h-48 rounded-lg border"
+                width={320}
+                height={192}
+                unoptimized
+                className="max-w-full max-h-48 rounded-lg border object-contain"
                 onError={() => setPreviewUrl(null)}
               />
             </div>

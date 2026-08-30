@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ColumnDef } from "@tanstack/react-table";
 import {
@@ -332,10 +333,12 @@ export function ProductReviewsTable({ reviews: initialReviews }: ProductReviewsT
               {selectedReview.images.length > 0 && (
                 <div className="flex flex-wrap gap-3">
                   {selectedReview.images.map((image, index) => (
-                    <img
+                    <Image
                       key={index}
                       src={image}
                       alt={`Review image ${index + 1}`}
+                      width={96}
+                      height={96}
                       className="h-24 w-24 object-cover rounded-md border"
                     />
                   ))}

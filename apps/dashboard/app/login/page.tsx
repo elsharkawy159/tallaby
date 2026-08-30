@@ -4,6 +4,7 @@ import { useState, useTransition, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
@@ -93,11 +94,14 @@ export default function AuthPage() {
 
   if (showResetForm) {
     return (
-      <div className="min-h-screen flex items-center justify-center from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4">
-        <img
+      <div className="relative min-h-screen flex items-center justify-center from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4">
+        <Image
           src="https://images.unsplash.com/photo-1496917756835-20cb06e75b4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1908&q=80"
           alt="Background"
-          className="object-cover absolute top-0 left-0 w-full h-full z-[-1]"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover -z-10"
         />
         <div className="absolute top-0 left-0 w-full h-full z-[-1] bg-gradient-to-b from-black/30 to-black from-70%" />
         <Card className="w-full max-w-md">
@@ -213,11 +217,14 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4">
-      <img
+    <div className="relative min-h-screen flex items-center justify-center from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4">
+      <Image
         src="https://images.unsplash.com/photo-1496917756835-20cb06e75b4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1908&q=80"
         alt="Background"
-        className="object-cover absolute top-0 left-0 w-full h-full z-[-1]"
+        fill
+        priority
+        sizes="100vw"
+        className="object-cover -z-10"
       />
       <div className="absolute top-0 left-0 w-full h-full z-[-1] bg-gradient-to-b from-black/30 to-black from-70%" />
       <Card className="w-full max-w-md">

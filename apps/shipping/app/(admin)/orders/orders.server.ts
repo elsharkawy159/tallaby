@@ -14,6 +14,7 @@ import {
   or,
   sql,
   orders,
+  payments,
   shipments,
   shippingProviders,
   userAddresses,
@@ -77,6 +78,18 @@ function buildWhere(filters: ShippingFilters) {
     conditions.push(eq(shipments.riderId, filters.riderId));
   }
 
+  if (filters.paymentStatus) {
+    conditions.push(eq(orders.paymentStatus, filters.paymentStatus));
+  }
+
+  if (filters.codOnly === "cod") {
+    conditions.push(
+      or(isNull(orders.paymentStatus), sql`${orders.paymentStatus} not in ('paid', 'collected')`)!
+    );
+  } else if (filters.codOnly === "prepaid") {
+    conditions.push(sql`${orders.paymentStatus} in ('paid', 'collected')`);
+  }
+
   if (filters.search) {
     const term = `%${filters.search}%`;
     conditions.push(
@@ -110,10 +123,14 @@ export async function getShippingOrders(
         orderId: orders.id,
         orderNumber: orders.orderNumber,
         totalAmount: orders.totalAmount,
+        shippingCost: orders.shippingCost,
+        discountAmount: orders.discountAmount,
+        couponCode: orders.couponCode,
         paymentStatus: orders.paymentStatus,
         paymentMethod: orders.paymentMethod,
         orderStatus: orders.status,
         createdAt: orders.createdAt,
+        updatedAt: orders.updatedAt,
         customerName: customer.fullName,
         customerPhone: customer.phone,
         addressPhone: address.phone,
@@ -207,6 +224,131 @@ export async function getShippingStats(): Promise<ActionResult<ShippingStats>> {
   }
 }
 
+/** A shipment sitting in "out for delivery" longer than this is delayed. */
+const DELAYED_HOURS = 24;
+
+/** Operational cards for the admin dashboard — what still needs attention. */
+export async function getOperationalStats(): Promise<
+  ActionResult<{
+    unassignedOrders: number;
+    withoutProvider: number;
+    withoutRider: number;
+    delayedOrders: number;
+    todaysDeliveries: number;
+    codOutstanding: number;
+    codCollectedToday: number;
+  }>
+> {
+  try {
+    await requireShippingAdmin();
+
+    const [row] = await db
+      .select({
+        unassignedOrders: sql<number>`count(*) filter (where ${shipments.id} is null)`,
+        withoutProvider: sql<number>`count(*) filter (
+          where ${shipments.providerId} is null
+            and (${shipments.status} is null or ${shipments.status} not in ('delivered', 'returned', 'cancelled'))
+        )`,
+        withoutRider: sql<number>`count(*) filter (
+          where ${shipments.riderId} is null
+            and (${shipments.status} is null or ${shipments.status} not in ('delivered', 'returned', 'cancelled'))
+        )`,
+        delayedOrders: sql<number>`count(*) filter (
+          where ${shipments.status} = 'out_for_delivery'
+            and ${shipments.assignedAt} < now() - ${sql.raw(`interval '${DELAYED_HOURS} hours'`)}
+        )`,
+        todaysDeliveries: sql<number>`count(*) filter (where ${shipments.assignedAt}::date = current_date)`,
+        codOutstanding: sql<number>`coalesce(sum(${orders.totalAmount}) filter (
+          where ${orders.paymentStatus} not in ('paid', 'collected')
+            and (${shipments.status} is null or ${shipments.status} not in ('delivered', 'returned', 'cancelled'))
+        ), 0)::numeric`,
+      })
+      .from(orders)
+      .leftJoin(shipments, eq(shipments.orderId, orders.id))
+      .where(SHIPPABLE);
+
+    const [codRow] = await db
+      .select({
+        value: sql<number>`coalesce(sum(${payments.amount}), 0)::numeric`,
+      })
+      .from(payments)
+      .where(
+        and(eq(payments.status, "collected"), sql`${payments.capturedAt}::date = current_date`)
+      );
+
+    return {
+      success: true,
+      data: {
+        unassignedOrders: Number(row?.unassignedOrders ?? 0),
+        withoutProvider: Number(row?.withoutProvider ?? 0),
+        withoutRider: Number(row?.withoutRider ?? 0),
+        delayedOrders: Number(row?.delayedOrders ?? 0),
+        todaysDeliveries: Number(row?.todaysDeliveries ?? 0),
+        codOutstanding: Number(row?.codOutstanding ?? 0),
+        codCollectedToday: Number(codRow?.value ?? 0),
+      },
+    };
+  } catch (error) {
+    return { success: false, error: actionError("getOperationalStats", error) };
+  }
+}
+
+/** The most recently updated shipments, for the dashboard's activity table. */
+export async function getRecentShipments(
+  limit = 10
+): Promise<ListResult<ShippingOrderRow>> {
+  try {
+    await requireShippingAdmin();
+
+    const rows = await db
+      .select({
+        orderId: orders.id,
+        orderNumber: orders.orderNumber,
+        totalAmount: orders.totalAmount,
+        shippingCost: orders.shippingCost,
+        discountAmount: orders.discountAmount,
+        couponCode: orders.couponCode,
+        paymentStatus: orders.paymentStatus,
+        paymentMethod: orders.paymentMethod,
+        orderStatus: orders.status,
+        createdAt: orders.createdAt,
+        updatedAt: orders.updatedAt,
+        customerName: customer.fullName,
+        customerPhone: customer.phone,
+        addressPhone: address.phone,
+        addressLine1: address.addressLine1,
+        addressLine2: address.addressLine2,
+        city: address.city,
+        state: address.state,
+        postalCode: address.postalCode,
+        country: address.country,
+        shipmentId: shipments.id,
+        shippingStatus: shipments.status,
+        providerId: shipments.providerId,
+        providerName: shippingProviders.name,
+        riderId: shipments.riderId,
+        riderName: rider.fullName,
+      })
+      .from(shipments)
+      .innerJoin(orders, eq(orders.id, shipments.orderId))
+      .leftJoin(customer, eq(customer.id, orders.userId))
+      .leftJoin(address, eq(address.id, orders.shippingAddressId))
+      .leftJoin(shippingProviders, eq(shippingProviders.id, shipments.providerId))
+      .leftJoin(rider, eq(rider.id, shipments.riderId))
+      .orderBy(desc(shipments.updatedAt))
+      .limit(limit);
+
+    const data: ShippingOrderRow[] = rows.map((row) => ({
+      ...row,
+      shippingStatus: (row.shippingStatus ?? "pending") as ShippingStatus,
+    }));
+
+    return { success: true, data };
+  } catch (error) {
+    return { success: false, error: actionError("getRecentShipments", error), data: [] };
+  }
+}
+
 export async function getActiveProviders(): Promise<ListResult<ProviderOption>> {
   try {
     await requireShippingAdmin();
@@ -241,18 +383,49 @@ export async function getRiders(): Promise<ListResult<RiderOption>> {
         fullName: users.fullName,
         email: users.email,
         phone: users.phone,
+        avatarUrl: users.avatarUrl,
         isSuspended: users.isSuspended,
+        isAvailable: users.isAvailable,
+        // Written with fully-literal table/column identifiers rather than
+        // ${shipments.riderId}-style interpolation: when the outer query
+        // selects from a single table (users, here), drizzle-orm 0.45's
+        // compiler strips table qualifiers from every interpolated column
+        // it renders — including inside these nested raw-sql subqueries,
+        // which reference other tables entirely. That silently turns
+        // `${shipments.riderId} = ${users.id}` into bare `"rider_id" = "id"`,
+        // which resolves against the subquery's own FROM table (shadowing
+        // the correlation) instead of erroring — always false — and, once a
+        // second joined table also has an `id` column (the codHeld join
+        // below), becomes a genuine "column reference is ambiguous" error.
+        // Verified against drizzle-orm@0.45.1's actual .toSQL() output.
         activeDeliveries: sql<number>`(
-          select count(*)::int from ${shipments}
-          where ${shipments.riderId} = ${users.id}
-            and ${shipments.status} in ('assigned', 'out_for_delivery')
+          select count(*)::int from "shipments"
+          where "shipments"."rider_id" = "users"."id"
+            and "shipments"."status" in ('assigned', 'out_for_delivery')
+        )`,
+        todayDeliveries: sql<number>`(
+          select count(*)::int from "shipments"
+          where "shipments"."rider_id" = "users"."id"
+            and "shipments"."assigned_at"::date = current_date
+        )`,
+        codHeld: sql<number>`(
+          select coalesce(sum("orders"."total_amount"), 0)::numeric from "shipments"
+          inner join "orders" on "orders"."id" = "shipments"."order_id"
+          where "shipments"."rider_id" = "users"."id"
+            and "shipments"."status" in ('assigned', 'out_for_delivery')
+            and "orders"."payment_status" not in ('paid', 'collected')
         )`,
       })
       .from(users)
       .where(eq(users.role, "driver"))
       .orderBy(asc(users.fullName));
 
-    return { success: true, data };
+    // codHeld is a ::numeric aggregate — postgres (via node-postgres) returns
+    // those as strings, not numbers, regardless of the sql<number> TS hint.
+    return {
+      success: true,
+      data: data.map((row) => ({ ...row, codHeld: Number(row.codHeld) })),
+    };
   } catch (error) {
     return { success: false, error: actionError("getRiders", error), data: [] };
   }
@@ -286,7 +459,16 @@ export async function getShippingOrderDetail(
           with: {
             provider: { columns: { id: true, name: true, code: true } },
             rider: { columns: { id: true, fullName: true, phone: true } },
+            deliveries: {
+              orderBy: (deliveries, { desc }) => [desc(deliveries.createdAt)],
+              with: {
+                user: { columns: { id: true, fullName: true } },
+              },
+            },
           },
+        },
+        payments: {
+          orderBy: (payments, { desc }) => [desc(payments.createdAt)],
         },
       },
     });
@@ -504,6 +686,7 @@ export async function updateShipmentStatus(
       status,
       failureReason,
       existingId: existing?.id ?? null,
+      expectedFromStatus: existing?.status,
     });
 
     revalidateShipping(orderId);

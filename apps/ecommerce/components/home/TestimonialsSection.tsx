@@ -1,4 +1,5 @@
 import { Star } from "lucide-react";
+import Image from "next/image";
 
 const TestimonialsSection = () => {
   const testimonials = [
@@ -62,9 +63,11 @@ const TestimonialsSection = () => {
                 "{testimonial.text}"
               </p>
               <div className="flex items-center">
-                <img
+                <Image
                   src={testimonial.image}
                   alt={testimonial.name}
+                  width={48}
+                  height={48}
                   className="w-12 h-12 rounded-full object-cover mr-4"
                 />
                 <div>

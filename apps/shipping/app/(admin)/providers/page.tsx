@@ -10,6 +10,8 @@ import {
   TableRow,
 } from "@workspace/ui/components/table";
 
+import { DeleteProviderButton } from "./_components/delete-provider-button";
+import { ProviderFormDialog } from "./_components/provider-form-dialog";
 import { ProviderToggle } from "./providers.client";
 import { getProviders } from "./providers.server";
 
@@ -26,6 +28,14 @@ async function ProvidersTable() {
     );
   }
 
+  if (result.data.length === 0) {
+    return (
+      <div className="rounded-md border bg-white p-10 text-center dark:bg-gray-950">
+        <p className="text-sm text-muted-foreground">No providers yet.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="overflow-x-auto rounded-md border bg-white shadow-sm dark:bg-gray-950">
       <Table>
@@ -33,8 +43,13 @@ async function ProvidersTable() {
           <TableRow>
             <TableHead>Provider</TableHead>
             <TableHead>Code</TableHead>
-            <TableHead className="text-right">Shipments</TableHead>
+            <TableHead>Contact</TableHead>
+            <TableHead className="text-right">Active</TableHead>
+            <TableHead className="text-right">Delivered</TableHead>
+            <TableHead className="text-right">Failed</TableHead>
+            <TableHead className="text-right">Returned</TableHead>
             <TableHead className="w-24">Active</TableHead>
+            <TableHead className="w-20" />
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -46,15 +61,36 @@ async function ProvidersTable() {
                   {provider.code}
                 </code>
               </TableCell>
-              <TableCell className="text-right">
-                {provider.shipmentCount}
+              <TableCell className="text-sm text-muted-foreground">
+                {provider.contactName || provider.contactPhone ? (
+                  <>
+                    {provider.contactName ?? "—"}
+                    {provider.contactPhone && ` · ${provider.contactPhone}`}
+                  </>
+                ) : (
+                  "—"
+                )}
               </TableCell>
+              <TableCell className="text-right">{provider.activeCount}</TableCell>
+              <TableCell className="text-right">{provider.deliveredCount}</TableCell>
+              <TableCell className="text-right">{provider.failedCount}</TableCell>
+              <TableCell className="text-right">{provider.returnedCount}</TableCell>
               <TableCell>
                 <ProviderToggle
                   providerId={provider.id}
                   name={provider.name}
                   isActive={provider.isActive}
                 />
+              </TableCell>
+              <TableCell>
+                <div className="flex items-center gap-1">
+                  <ProviderFormDialog provider={provider} />
+                  <DeleteProviderButton
+                    providerId={provider.id}
+                    name={provider.name}
+                    shipmentCount={provider.shipmentCount}
+                  />
+                </div>
               </TableCell>
             </TableRow>
           ))}
@@ -67,13 +103,16 @@ async function ProvidersTable() {
 export default function ProvidersPage() {
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Providers</h1>
-        <p className="text-sm text-muted-foreground">
-          Only active providers can be assigned to an order. Carrier API
-          integrations live in <code>providers/</code> and are wired up per
-          provider code.
-        </p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Providers</h1>
+          <p className="text-sm text-muted-foreground">
+            Only active providers can be assigned to an order. Carrier API
+            integrations live in <code>providers/</code> and are wired up per
+            provider code.
+          </p>
+        </div>
+        <ProviderFormDialog />
       </div>
 
       <Suspense fallback={<Skeleton className="h-48 w-full rounded-md" />}>

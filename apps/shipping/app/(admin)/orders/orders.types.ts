@@ -4,10 +4,14 @@ export interface ShippingOrderRow {
   orderId: string;
   orderNumber: string;
   totalAmount: string;
+  shippingCost: string | null;
+  discountAmount: string | null;
+  couponCode: string | null;
   paymentStatus: string | null;
   paymentMethod: string;
   orderStatus: string | null;
   createdAt: string | null;
+  updatedAt: string | null;
   customerName: string | null;
   customerPhone: string | null;
   addressPhone: string | null;
@@ -46,8 +50,12 @@ export interface RiderOption {
   fullName: string | null;
   email: string | null;
   phone: string | null;
+  avatarUrl: string | null;
   isSuspended: boolean | null;
+  isAvailable: boolean | null;
   activeDeliveries: number;
+  todayDeliveries: number;
+  codHeld: number;
 }
 
 export interface OrdersPageProps {
@@ -57,7 +65,12 @@ export interface OrdersPageProps {
 export interface OrderDetail {
   id: string;
   orderNumber: string;
+  subtotal: string;
+  shippingCost: string | null;
+  discountAmount: string | null;
+  couponCode: string | null;
   totalAmount: string;
+  paymentMethod: string;
   paymentStatus: string | null;
   createdAt: string | null;
   user: {
@@ -98,5 +111,22 @@ export interface OrderDetail {
     deliveredAt: string | null;
     provider: { id: string; name: string; code: string } | null;
     rider: { id: string; fullName: string | null; phone: string | null } | null;
+    deliveries: Array<{
+      id: string;
+      status: string | null;
+      deliveryNotes: string | null;
+      proofOfDelivery: unknown;
+      createdAt: string | null;
+      user: { id: string; fullName: string | null } | null;
+    }>;
+  }>;
+  payments: Array<{
+    id: string;
+    amount: string;
+    method: string;
+    status: string | null;
+    paymentData: unknown;
+    capturedAt: string | null;
+    createdAt: string | null;
   }>;
 }

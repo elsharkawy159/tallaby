@@ -1,6 +1,7 @@
-import { and, db, eq, orderItems, orders, shipments } from "@workspace/db";
+import { and, db, deliveries, eq, orderItems, orders, payments, shipments } from "@workspace/db";
 import { creditSellerOnDelivery } from "@workspace/db/wallet";
 
+import type { CollectionMethod } from "./shipping-status";
 import type { ShippingStatus } from "./shipping-status";
 
 const ORDER_ITEM_STATUS_BY_SHIPMENT: Partial<
@@ -13,6 +14,21 @@ const ORDER_ITEM_STATUS_BY_SHIPMENT: Partial<
   cancelled: "cancelled",
 };
 
+interface CodCollectionInput {
+  /** Amount the rider actually collected, in EGP. */
+  amount: number;
+  method: CollectionMethod;
+  /** The authoritative expected amount — always server-computed, never from the client. */
+  expectedAmount: number;
+}
+
+interface DeliveryEventInput {
+  /** Structured reason code (see DELIVERY_FAILURE_REASONS), stored alongside the free-text reason. */
+  reasonCode?: string;
+  note?: string;
+  collection?: CodCollectionInput;
+}
+
 interface ApplyStatusInput {
   orderId: string;
   status: ShippingStatus;
@@ -21,6 +37,16 @@ interface ApplyStatusInput {
   existingId: string | null;
   /** When set, the update is additionally scoped to this rider. */
   riderId?: string;
+  /**
+   * The status the caller observed before this call. When set, it's added to
+   * the update's WHERE clause so a concurrent duplicate submit (double-tap,
+   * retried request) finds zero matching rows and fails instead of silently
+   * re-applying — critical for collectPayment, where a race would otherwise
+   * record the same COD collection twice.
+   */
+  expectedFromStatus?: ShippingStatus;
+  /** Logs a `deliveries` event (and, for a COD collection, a `payments` row) in the same transaction. */
+  deliveryEvent?: DeliveryEventInput;
 }
 
 /**
@@ -37,6 +63,8 @@ export async function applyShipmentStatus({
   failureReason,
   existingId,
   riderId,
+  expectedFromStatus,
+  deliveryEvent,
 }: ApplyStatusInput): Promise<void> {
   const now = new Date().toISOString();
 
@@ -49,12 +77,20 @@ export async function applyShipmentStatus({
       ...(status === "delivered" ? { deliveredAt: now } : {}),
     };
 
+    let shipmentId = existingId;
+
     if (existingId) {
-      // The rider guard is repeated inside the transaction so the ownership
-      // check and the write cannot be separated by a concurrent reassignment.
-      const guard = riderId
-        ? and(eq(shipments.id, existingId), eq(shipments.riderId, riderId))
-        : eq(shipments.id, existingId);
+      // The rider guard and the expected-from-status guard are both repeated
+      // inside the transaction (not just checked beforehand) so a concurrent
+      // reassignment or a duplicate submit (double-tap, retried request)
+      // can't slip between the check and the write. A duplicate finds zero
+      // matching rows here and fails below, rather than silently re-applying
+      // — the property that makes collectPayment double-submit-safe.
+      const guard = and(
+        eq(shipments.id, existingId),
+        ...(riderId ? [eq(shipments.riderId, riderId)] : []),
+        ...(expectedFromStatus ? [eq(shipments.status, expectedFromStatus)] : [])
+      );
 
       const updated = await tx
         .update(shipments)
@@ -63,10 +99,14 @@ export async function applyShipmentStatus({
         .returning({ id: shipments.id });
 
       if (updated.length === 0) {
-        throw new Error("Delivery not found");
+        throw new Error("Delivery not found or already updated");
       }
     } else {
-      await tx.insert(shipments).values({ orderId, ...shipmentPatch });
+      const [inserted] = await tx
+        .insert(shipments)
+        .values({ orderId, ...shipmentPatch })
+        .returning({ id: shipments.id });
+      shipmentId = inserted?.id ?? null;
     }
 
     // Mirror onto the order. `failed` and `cancelled` leave the order alone: a
@@ -80,6 +120,12 @@ export async function applyShipmentStatus({
       orderPatch.deliveredAt = now;
     } else if (status === "returned") {
       orderPatch.status = "returned";
+    }
+
+    // A confirmed COD collection sets payment status independently of
+    // delivery status — being "delivered" never implies "paid" on its own.
+    if (deliveryEvent?.collection) {
+      orderPatch.paymentStatus = "collected";
     }
 
     if (Object.keys(orderPatch).length > 0) {
@@ -101,6 +147,51 @@ export async function applyShipmentStatus({
           ...(status === "cancelled" ? { cancelledAt: now } : {}),
         })
         .where(eq(orderItems.orderId, orderId));
+    }
+
+    // Event log: one `deliveries` row per attempt/outcome, auditable by
+    // order, rider, and timestamp — never overwritten.
+    if (deliveryEvent && shipmentId) {
+      const { reasonCode, note, collection } = deliveryEvent;
+
+      await tx.insert(deliveries).values({
+        shipmentId,
+        driverId: riderId ?? null,
+        status,
+        deliveryNotes: note ?? failureReason ?? null,
+        proofOfDelivery: {
+          ...(reasonCode ? { reasonCode } : {}),
+          ...(collection
+            ? {
+                codCollected: true,
+                collectedAmount: collection.amount,
+                expectedAmount: collection.expectedAmount,
+                method: collection.method,
+                discrepancy: collection.amount - collection.expectedAmount,
+              }
+            : {}),
+        },
+        startedAt: now,
+        completedAt: now,
+      });
+    }
+
+    if (deliveryEvent?.collection) {
+      const { amount, method, expectedAmount } = deliveryEvent.collection;
+      const discrepancy = amount - expectedAmount;
+
+      await tx.insert(payments).values({
+        orderId,
+        amount: amount.toFixed(2),
+        method,
+        status: "collected",
+        paymentData: {
+          collectedBy: riderId ?? null,
+          expectedAmount,
+          discrepancy,
+        },
+        capturedAt: now,
+      });
     }
 
     if (status === "delivered") {

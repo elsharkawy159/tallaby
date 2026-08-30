@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Image from "next/image";
 import type { ColumnDef } from "@tanstack/react-table";
 import { TableSection } from "@workspace/ui/components/table-section";
 import {
@@ -153,9 +154,10 @@ export function VendorReviewsTable({
           return (
             <div className="flex items-center gap-3">
               {image ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <Image
                   src={image}
+                  width={40}
+                  height={40}
                   alt={row.original.productTitle}
                   className="h-10 w-10 rounded object-cover border"
                 />
@@ -359,11 +361,12 @@ export function VendorQASection({
                   <div className="min-w-0">
                     <div className="flex items-center gap-3">
                       {productImg ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
+                        <Image
                           src={productImg}
                           alt={q.productTitle}
                           className="h-10 w-10 rounded object-cover border"
+                          width={40}
+                          height={40}
                         />
                       ) : (
                         <div className="h-10 w-10 rounded border bg-muted" />

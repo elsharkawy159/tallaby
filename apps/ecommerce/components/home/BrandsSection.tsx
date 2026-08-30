@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 // import { supabase } from "@/integrations/supabase/client";
 
 interface Brand {
@@ -104,9 +105,11 @@ const BrandsSection = () => {
             >
               <div className="text-center">
                 {brand.logo_url ? (
-                  <img
+                  <Image
                     src={brand.logo_url}
                     alt={brand.name}
+                    width={64}
+                    height={48}
                     className="h-12 w-auto mx-auto mb-2 grayscale group-hover:grayscale-0 transition-all duration-300"
                   />
                 ) : (

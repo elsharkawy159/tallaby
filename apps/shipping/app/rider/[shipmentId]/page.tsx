@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, MapPin, Phone } from "lucide-react";
+import { ArrowLeft, MapPin } from "lucide-react";
 
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
@@ -12,9 +12,12 @@ import { formatAddress, formatCurrency } from "@/lib/format";
 import {
   getStatusColor,
   getStatusLabel,
+  isSettled,
   type ShippingStatus,
 } from "@/lib/shipping-status";
 
+import { AddNote } from "../_components/add-note";
+import { CustomerActions } from "../_components/customer-actions";
 import { DeliveryActions } from "../_components/delivery-actions";
 import { getMyDelivery } from "../rider.server";
 
@@ -35,9 +38,20 @@ async function DeliveryDetail({ shipmentId }: { shipmentId: string }) {
 
   const delivery = result.data;
   const items = result.items ?? [];
-  const cod =
-    delivery.paymentStatus === "paid" ? 0 : Number(delivery.totalAmount);
+  const cod = isSettled(delivery.paymentStatus) ? 0 : Number(delivery.totalAmount);
   const status = delivery.status as ShippingStatus;
+  const address = formatAddress(
+    delivery.addressLine1
+      ? {
+          addressLine1: delivery.addressLine1,
+          addressLine2: delivery.addressLine2,
+          city: delivery.city ?? "",
+          state: delivery.state ?? "",
+          postalCode: delivery.postalCode,
+          country: delivery.country,
+        }
+      : null
+  );
 
   return (
     <div className="space-y-4">
@@ -61,37 +75,21 @@ async function DeliveryDetail({ shipmentId }: { shipmentId: string }) {
 
           <p className="flex items-start gap-2 text-sm text-muted-foreground">
             <MapPin className="mt-0.5 size-4 shrink-0" />
-            <span className="min-w-0">
-              {formatAddress(
-                delivery.addressLine1
-                  ? {
-                      addressLine1: delivery.addressLine1,
-                      addressLine2: delivery.addressLine2,
-                      city: delivery.city ?? "",
-                      state: delivery.state ?? "",
-                      postalCode: delivery.postalCode,
-                      country: delivery.country,
-                    }
-                  : null
-              )}
-            </span>
+            <span className="min-w-0">{address}</span>
           </p>
-
-          {delivery.phone && (
-            <a
-              href={`tel:${delivery.phone}`}
-              className="flex items-center gap-2 text-sm font-medium text-primary"
-            >
-              <Phone className="size-4 shrink-0" />
-              {delivery.phone}
-            </a>
-          )}
 
           {delivery.deliveryInstructions && (
             <p className="rounded-lg bg-muted p-3 text-sm">
               {delivery.deliveryInstructions}
             </p>
           )}
+
+          <CustomerActions
+            phone={delivery.phone}
+            address={address}
+            latitude={delivery.latitude}
+            longitude={delivery.longitude}
+          />
         </CardContent>
       </Card>
 
@@ -116,6 +114,35 @@ async function DeliveryDetail({ shipmentId }: { shipmentId: string }) {
             ))}
           </ul>
 
+          <div className="space-y-1.5 border-t pt-3 text-sm">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Items total</span>
+              <span>{formatCurrency(Number(delivery.subtotal))}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Delivery charge</span>
+              <span>{formatCurrency(Number(delivery.shippingCost ?? 0))}</span>
+            </div>
+            {Number(delivery.discountAmount ?? 0) > 0 && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">
+                  Discount{delivery.couponCode ? ` (${delivery.couponCode})` : ""}
+                </span>
+                <span>-{formatCurrency(Number(delivery.discountAmount))}</span>
+              </div>
+            )}
+            <div className="flex justify-between font-semibold">
+              <span>Order total</span>
+              <span>{formatCurrency(Number(delivery.totalAmount))}</span>
+            </div>
+            <div className="flex justify-between text-muted-foreground">
+              <span>Payment</span>
+              <span className="capitalize">
+                {delivery.paymentMethod} · {delivery.paymentStatus ?? "—"}
+              </span>
+            </div>
+          </div>
+
           <div className="flex items-center justify-between border-t pt-3">
             <span className="text-sm text-muted-foreground">
               {cod > 0 ? "Collect on delivery" : "Prepaid"}
@@ -127,7 +154,13 @@ async function DeliveryDetail({ shipmentId }: { shipmentId: string }) {
         </CardContent>
       </Card>
 
-      <DeliveryActions shipmentId={delivery.shipmentId} status={status} />
+      <DeliveryActions
+        shipmentId={delivery.shipmentId}
+        status={status}
+        codAmount={cod}
+      />
+
+      {status === "out_for_delivery" && <AddNote shipmentId={delivery.shipmentId} />}
     </div>
   );
 }
