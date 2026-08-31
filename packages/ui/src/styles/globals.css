@@ -2,7 +2,9 @@
 @source "../../../apps/**/*.{ts,tsx}";
 @source "../../../components/**/*.{ts,tsx}";
 @source "../**/*.{ts,tsx}";
+@source "../../../tiptap/**/*.{ts,tsx,css}";
 @import "tw-animate-css";
+@import "../../../tiptap/src/styles/rich-text-content.css";
 
 @custom-variant dark (&:is(.dark *));
 

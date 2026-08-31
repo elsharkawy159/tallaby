@@ -2,9 +2,18 @@ import { formatCurrency } from "@workspace/lib";
 
 export { formatCurrency };
 
-export function formatDate(value: string | Date | null | undefined): string {
+function resolveLocale(locale?: string): string {
+  if (locale?.startsWith("ar")) return "ar-EG";
+  if (locale?.startsWith("en")) return "en-EG";
+  return "ar-EG";
+}
+
+export function formatDate(
+  value: string | Date | null | undefined,
+  locale?: string
+): string {
   if (!value) return "—";
-  return new Intl.DateTimeFormat("en-EG", {
+  return new Intl.DateTimeFormat(resolveLocale(locale), {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));

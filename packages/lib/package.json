@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.ts",
   "scripts": {
-    "test": "echo \"@workspace/lib: no tests yet\""
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",
@@ -29,6 +30,14 @@
     "./digital": {
       "types": "./src/digital/index.ts",
       "default": "./src/digital/index.ts"
+    },
+    "./shipping": {
+      "types": "./src/shipping/index.ts",
+      "default": "./src/shipping/index.ts"
     }
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "vitest": "^3.2.4"
   }
 }

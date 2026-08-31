@@ -31,7 +31,7 @@ export const getAdminUser = async () => {
 export const register = async (
   email: string,
   password: string,
-  adminCode?: string
+  adminCode?: string,
 ) => {
   const supabase = await createClient();
 

@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -23,7 +24,6 @@ import {
   updateShipmentStatus,
 } from "../../orders.server";
 import {
-  getStatusLabel,
   isTerminal,
   nextStatuses,
   type ShippingStatus,
@@ -50,6 +50,9 @@ export function ShippingActions({
   providers,
   riders,
 }: ShippingActionsProps) {
+  const t = useTranslations("orders");
+  const tStatus = useTranslations("status");
+  const tCommon = useTranslations("common");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [nextStatus, setNextStatus] = useState<string>(NONE);
@@ -62,10 +65,10 @@ export function ShippingActions({
     startTransition(async () => {
       const result = await action();
       if (result.success) {
-        toast.success(result.message ?? "Saved");
+        toast.success(result.message ?? tCommon("saved"));
         router.refresh();
       } else {
-        toast.error(result.error ?? "Something went wrong");
+        toast.error(result.error ?? tCommon("somethingWrong"));
       }
     });
   };
@@ -73,7 +76,7 @@ export function ShippingActions({
   return (
     <div className="space-y-5">
       <div className="space-y-2">
-        <Label htmlFor="provider">Shipping provider</Label>
+        <Label htmlFor="provider">{t("shippingProvider")}</Label>
         <Select
           disabled={isPending || closed}
           value={providerId ?? NONE}
@@ -87,10 +90,10 @@ export function ShippingActions({
           }
         >
           <SelectTrigger id="provider" className="w-full">
-            <SelectValue placeholder="Select a provider" />
+            <SelectValue placeholder={t("selectProvider")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={NONE}>No provider</SelectItem>
+            <SelectItem value={NONE}>{t("noProvider")}</SelectItem>
             {providers.map((provider) => (
               <SelectItem key={provider.id} value={provider.id}>
                 {provider.name}
@@ -101,7 +104,7 @@ export function ShippingActions({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="rider">Rider</Label>
+        <Label htmlFor="rider">{t("rider")}</Label>
         <Select
           disabled={isPending || closed}
           value={riderId ?? NONE}
@@ -112,49 +115,56 @@ export function ShippingActions({
           }
         >
           <SelectTrigger id="rider" className="w-full">
-            <SelectValue placeholder="Select a rider" />
+            <SelectValue placeholder={t("rider")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={NONE}>Unassigned</SelectItem>
+            <SelectItem value={NONE}>{t("unassigned")}</SelectItem>
             {riders
               .filter((rider) => !rider.isSuspended)
               .map((rider) => (
                 <SelectItem key={rider.id} value={rider.id}>
-                  {rider.fullName ?? rider.email ?? "Unnamed rider"}
-                  {rider.isAvailable === false && " (off duty)"}
+                  {rider.fullName ?? rider.email ?? tCommon("unnamedRider")}
+                  {rider.isAvailable === false && ` ${t("offDuty")}`}
                   {rider.activeDeliveries > 0 &&
-                    ` · ${rider.activeDeliveries} active`}
-                  {rider.codHeld > 0 && ` · EGP ${rider.codHeld.toFixed(0)} COD held`}
+                    ` · ${t("activeCount", { count: rider.activeDeliveries })}`}
+                  {rider.codHeld > 0 &&
+                    ` · ${t("codHeld", { amount: rider.codHeld.toFixed(0) })}`}
                 </SelectItem>
               ))}
           </SelectContent>
         </Select>
         {riders.length === 0 && (
-          <p className="text-xs text-muted-foreground">
-            No rider accounts exist yet.
-          </p>
+          <p className="text-xs text-muted-foreground">{t("noRiderAccounts")}</p>
         )}
         {riderId &&
           (() => {
             const selected = riders.find((rider) => rider.id === riderId);
             if (!selected) return null;
+            const phone = selected.phone ?? t("noPhoneOnFile");
             return (
               <p className="text-xs text-muted-foreground">
-                {selected.phone ?? "No phone on file"} · {selected.todayDeliveries}{" "}
-                today · {selected.activeDeliveries} active
-                {selected.codHeld > 0 &&
-                  ` · EGP ${selected.codHeld.toFixed(0)} COD currently held`}
+                {selected.codHeld > 0
+                  ? t("riderSummaryCod", {
+                      phone,
+                      today: selected.todayDeliveries,
+                      active: selected.activeDeliveries,
+                      cod: selected.codHeld.toFixed(0),
+                    })
+                  : t("riderSummary", {
+                      phone,
+                      today: selected.todayDeliveries,
+                      active: selected.activeDeliveries,
+                    })}
               </p>
             );
           })()}
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="status">Shipping status</Label>
+        <Label htmlFor="status">{t("shippingStatus")}</Label>
         {closed ? (
           <p className="text-sm text-muted-foreground">
-            This delivery is {getStatusLabel(status).toLowerCase()} and can no
-            longer be changed.
+            {t("terminalStatus", { status: tStatus(status).toLowerCase() })}
           </p>
         ) : (
           <>
@@ -164,15 +174,15 @@ export function ShippingActions({
               onValueChange={setNextStatus}
             >
               <SelectTrigger id="status" className="w-full">
-                <SelectValue placeholder="Move to..." />
+                <SelectValue placeholder={t("moveTo")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value={NONE} disabled>
-                  Move to...
+                  {t("moveTo")}
                 </SelectItem>
                 {available.map((value) => (
                   <SelectItem key={value} value={value}>
-                    {getStatusLabel(value)}
+                    {tStatus(value)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -182,7 +192,7 @@ export function ShippingActions({
               <Textarea
                 value={failureReason}
                 onChange={(event) => setFailureReason(event.target.value)}
-                placeholder="What went wrong? (optional)"
+                placeholder={t("failurePlaceholder")}
                 rows={2}
               />
             )}
@@ -206,7 +216,7 @@ export function ShippingActions({
               }
             >
               {isPending && <Loader2 className="size-4 animate-spin" />}
-              Update status
+              {t("updateStatus")}
             </Button>
           </>
         )}

@@ -1,3 +1,5 @@
+import type { EgyptPostOrderInput, EgyptPostRow, PackageVolume } from "@workspace/lib/shipping";
+
 /**
  * Provider adapter contract.
  *
@@ -36,11 +38,62 @@ export interface ProviderTracking {
   raw?: unknown;
 }
 
+/** A driver eligible to receive orders from a bulk assignment. */
+export interface EligibleRider {
+  id: string;
+  fullName: string | null;
+  phone: string | null;
+  email: string | null;
+  avatarUrl: string | null;
+  /** Open (assigned | out_for_delivery) shipments this rider already carries, before this batch. */
+  activeDeliveries: number;
+}
+
+/** One order being bulk-assigned. A superset of what an Egypt Post sheet row needs. */
+export type BulkAssignOrder = EgyptPostOrderInput;
+
+export interface BulkAssignDefaults {
+  /** Applied to any order whose shipment has no package_weight yet. */
+  weightKg: number;
+  volume: PackageVolume;
+  merchantCode: string;
+  merchantName: string;
+  warehouseName: string;
+}
+
+export interface BulkAssignContext {
+  orders: BulkAssignOrder[];
+  /** On-duty, non-suspended riders — empty when none are available. */
+  riders: EligibleRider[];
+  defaults: BulkAssignDefaults;
+}
+
+export interface BulkAssignError {
+  orderId: string;
+  orderNumber: string;
+  reason: string;
+}
+
+export interface BulkAssignPlan {
+  /** orderId -> riderId. Empty for a provider that doesn't split across our own fleet. */
+  riderByOrderId: Record<string, string>;
+  /** Set when the provider hands off via a generated sheet (e.g. Egypt Post). */
+  export: { format: "egypt_post_xlsx"; rows: EgyptPostRow[] } | null;
+  /**
+   * Any order that couldn't be planned. A non-empty array blocks the whole
+   * batch — bulkAssignProvider writes nothing when this is non-empty, so a
+   * half-uploadable sheet or a half-split batch never reaches the database.
+   */
+  errors: BulkAssignError[];
+}
+
 export interface ShippingProviderAdapter {
   readonly code: string;
   createShipment(input: CreateShipmentInput): Promise<CreateShipmentResult>;
   trackShipment(trackingNumber: string): Promise<ProviderTracking | null>;
   cancelShipment(trackingNumber: string): Promise<void>;
+  /** Only providers that need bulk-assign-time work (a sheet export, a rider split) implement this. */
+  planBulkAssign?(ctx: BulkAssignContext): BulkAssignPlan;
 }
 
 export class ProviderNotImplementedError extends Error {

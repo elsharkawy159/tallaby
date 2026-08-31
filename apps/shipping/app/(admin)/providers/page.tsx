@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { getTranslations } from "next-intl/server";
 
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import {
@@ -18,12 +19,14 @@ import { getProviders } from "./providers.server";
 export const dynamic = "force-dynamic";
 
 async function ProvidersTable() {
+  const t = await getTranslations("providers");
+  const tCommon = await getTranslations("common");
   const result = await getProviders();
 
   if (!result.success) {
     return (
       <p className="text-sm text-destructive">
-        {result.error ?? "Failed to load providers"}
+        {result.error ?? t("loadError")}
       </p>
     );
   }
@@ -31,7 +34,7 @@ async function ProvidersTable() {
   if (result.data.length === 0) {
     return (
       <div className="rounded-md border bg-white p-10 text-center dark:bg-gray-950">
-        <p className="text-sm text-muted-foreground">No providers yet.</p>
+        <p className="text-sm text-muted-foreground">{t("empty")}</p>
       </div>
     );
   }
@@ -41,14 +44,14 @@ async function ProvidersTable() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Provider</TableHead>
-            <TableHead>Code</TableHead>
-            <TableHead>Contact</TableHead>
-            <TableHead className="text-right">Active</TableHead>
-            <TableHead className="text-right">Delivered</TableHead>
-            <TableHead className="text-right">Failed</TableHead>
-            <TableHead className="text-right">Returned</TableHead>
-            <TableHead className="w-24">Active</TableHead>
+            <TableHead>{t("colProvider")}</TableHead>
+            <TableHead>{t("colCode")}</TableHead>
+            <TableHead>{t("colContact")}</TableHead>
+            <TableHead className="text-end">{t("colActive")}</TableHead>
+            <TableHead className="text-end">{t("colDelivered")}</TableHead>
+            <TableHead className="text-end">{t("colFailed")}</TableHead>
+            <TableHead className="text-end">{t("colReturned")}</TableHead>
+            <TableHead className="w-24">{t("colActive")}</TableHead>
             <TableHead className="w-20" />
           </TableRow>
         </TableHeader>
@@ -64,17 +67,17 @@ async function ProvidersTable() {
               <TableCell className="text-sm text-muted-foreground">
                 {provider.contactName || provider.contactPhone ? (
                   <>
-                    {provider.contactName ?? "—"}
+                    {provider.contactName ?? tCommon("emDash")}
                     {provider.contactPhone && ` · ${provider.contactPhone}`}
                   </>
                 ) : (
-                  "—"
+                  tCommon("emDash")
                 )}
               </TableCell>
-              <TableCell className="text-right">{provider.activeCount}</TableCell>
-              <TableCell className="text-right">{provider.deliveredCount}</TableCell>
-              <TableCell className="text-right">{provider.failedCount}</TableCell>
-              <TableCell className="text-right">{provider.returnedCount}</TableCell>
+              <TableCell className="text-end">{provider.activeCount}</TableCell>
+              <TableCell className="text-end">{provider.deliveredCount}</TableCell>
+              <TableCell className="text-end">{provider.failedCount}</TableCell>
+              <TableCell className="text-end">{provider.returnedCount}</TableCell>
               <TableCell>
                 <ProviderToggle
                   providerId={provider.id}
@@ -100,17 +103,15 @@ async function ProvidersTable() {
   );
 }
 
-export default function ProvidersPage() {
+export default async function ProvidersPage() {
+  const t = await getTranslations("providers");
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Providers</h1>
-          <p className="text-sm text-muted-foreground">
-            Only active providers can be assigned to an order. Carrier API
-            integrations live in <code>providers/</code> and are wired up per
-            provider code.
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
         <ProviderFormDialog />
       </div>

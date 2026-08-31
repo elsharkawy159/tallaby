@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "@workspace/ui/components/button";
 import { Plus, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
-import { getAllProducts, updateProductStatus } from "@/actions/products";
+import { getAllProducts } from "@/actions/products";
 import { getProductsColumns } from "./_components/table-columns";
 import { DataTable } from "../_components/data-table/data-table";
 
@@ -82,37 +82,7 @@ export function ProductsClient() {
     loadProducts();
   }, [loadProducts]);
 
-  const handleApproveProduct = async (productId: string) => {
-    try {
-      const result = await updateProductStatus(productId, "active");
-
-      if (result.success) {
-        toast.success("Product approved successfully");
-        setProducts((prev) => {
-          const updated = prev.map((product) =>
-            product.id === productId
-              ? { ...product, status: "active" as const }
-              : product
-          );
-          return updated.sort((a, b) => {
-            const statusDiff =
-              statusSortOrder[a.status] - statusSortOrder[b.status];
-            if (statusDiff !== 0) return statusDiff;
-            return (
-              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-            );
-          });
-        });
-      } else {
-        toast.error(result.error || "Failed to approve product");
-      }
-    } catch (error) {
-      console.error("Error approving product:", error);
-      toast.error("Failed to approve product");
-    }
-  };
-
-  const columns = getProductsColumns(handleApproveProduct);
+  const columns = getProductsColumns();
 
   const categories = Array.from(
     new Set(

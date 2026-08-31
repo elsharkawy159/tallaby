@@ -8,14 +8,134 @@ import {
   paymentMethods,
   eq,
   and,
-  sql,
-  gte,
-  lte,
   desc,
 } from "@workspace/db";
 import { getCurrentUserId } from "@/lib/get-current-user-id";
 import { validateCoupon } from "./coupons";
 import { calculateOrderShippingCost } from "@/lib/shipping";
+import type { CheckoutSummary } from "@/lib/coupon-utils";
+
+const cartWithShippingItems = {
+  cartItems: {
+    where: eq(cartItems.savedForLater, false),
+    with: {
+      product: {
+        columns: {
+          sellerId: true,
+          productType: true,
+          freeDelivery: true,
+          dimensions: true,
+        },
+        with: {
+          seller: {
+            columns: {
+              displayName: true,
+              shippingPolicy: true,
+              returnPolicy: true,
+            },
+          },
+        },
+      },
+    },
+  },
+} as const;
+
+async function getDestinationState(
+  userId: string,
+  shippingAddressId?: string,
+): Promise<string | null> {
+  if (!shippingAddressId) {
+    return null;
+  }
+
+  const address = await db.query.userAddresses.findFirst({
+    where: and(
+      eq(userAddresses.id, shippingAddressId),
+      eq(userAddresses.userId, userId),
+    ),
+    columns: { state: true },
+  });
+
+  return address?.state ?? null;
+}
+
+function buildBaseSummary(
+  cartItems: Array<{ quantity: number; price: string | number }>,
+  shippingCost: number,
+) {
+  const subtotal = cartItems.reduce(
+    (sum, item) => sum + Number(item.price) * item.quantity,
+    0,
+  );
+  const tax = 0;
+  const total = subtotal + tax + shippingCost;
+
+  return {
+    subtotal,
+    tax,
+    shippingCost,
+    total,
+    itemCount: cartItems.reduce((sum, item) => sum + item.quantity, 0),
+  };
+}
+
+export async function recalculateCheckoutSummary(data: {
+  shippingAddressId?: string;
+  couponCode?: string;
+}) {
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      return { success: false, error: "Unable to get user ID" };
+    }
+
+    const cart = await db.query.carts.findFirst({
+      where: and(eq(carts.userId, userId), eq(carts.status, "active")),
+      with: cartWithShippingItems,
+    });
+
+    if (!cart || cart.cartItems.length === 0) {
+      return { success: false, error: "Cart is empty" };
+    }
+
+    const destinationState = await getDestinationState(
+      userId,
+      data.shippingAddressId,
+    );
+
+    const shippingCost = calculateOrderShippingCost(cart.cartItems, {
+      destinationState,
+    });
+
+    const baseSummary = buildBaseSummary(cart.cartItems, shippingCost);
+
+    if (data.couponCode?.trim()) {
+      const couponValidation = await validateCoupon(data.couponCode, cart, {
+        shippingAddressId: data.shippingAddressId,
+      });
+
+      if (couponValidation.success && couponValidation.data?.summary) {
+        return {
+          success: true,
+          data: { summary: couponValidation.data.summary },
+        };
+      }
+    }
+
+    const summary: CheckoutSummary = {
+      ...baseSummary,
+      discountAmount: 0,
+      shippingDiscount: 0,
+      totalAfterDiscount: baseSummary.total,
+      appliedCoupon: null,
+    };
+
+    return { success: true, data: { summary } };
+  } catch (error) {
+    console.error("Error recalculating checkout summary:", error);
+    return { success: false, error: "Failed to recalculate checkout summary" };
+  }
+}
 
 export async function getCheckoutData() {
   try {
@@ -24,46 +144,25 @@ export async function getCheckoutData() {
       return { success: false, error: "Unable to get user ID" };
     }
 
-    // Get active cart
     const cart = await db.query.carts.findFirst({
       where: and(eq(carts.userId, userId), eq(carts.status, "active")),
-      with: {
-        cartItems: {
-          where: eq(cartItems.savedForLater, false),
-          with: {
-            product: {
-              with: {
-                seller: {
-                  columns: {
-                    displayName: true,
-                    shippingPolicy: true,
-                    returnPolicy: true,
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
+      with: cartWithShippingItems,
     });
 
     if (!cart || cart.cartItems.length === 0) {
       return { success: false, error: "Cart is empty" };
     }
 
-    // Get user addresses
     const addresses = await db.query.userAddresses.findMany({
       where: eq(userAddresses.userId, userId),
       orderBy: [desc(userAddresses.isDefault)],
     });
 
-    // Get payment methods (guests typically won't have saved payment methods)
     const paymentMethodsList = await db.query.paymentMethods.findMany({
       where: eq(paymentMethods.userId, userId),
       orderBy: [desc(paymentMethods.isDefault)],
     });
 
-    // Calculate totals by seller for shipping
     const itemsBySeller = cart.cartItems.reduce(
       (acc, item) => {
         const sellerId = item.product.sellerId;
@@ -81,15 +180,14 @@ export async function getCheckoutData() {
       {} as Record<string, any>,
     );
 
-    // Calculate totals without rounding to maintain precision
-    const subtotal = cart.cartItems.reduce(
-      (sum, item) => sum + Number(item.price) * item.quantity,
-      0,
-    );
+    const defaultAddress =
+      addresses.find((address) => address.isDefault) ?? addresses[0] ?? null;
 
-    const tax = 0;
-    const shippingCost = calculateOrderShippingCost(cart.cartItems);
-    const total = subtotal + tax + shippingCost;
+    const shippingCost = calculateOrderShippingCost(cart.cartItems, {
+      destinationState: defaultAddress?.state,
+    });
+
+    const summary = buildBaseSummary(cart.cartItems, shippingCost);
 
     return {
       success: true,
@@ -98,16 +196,7 @@ export async function getCheckoutData() {
         addresses,
         paymentMethods: paymentMethodsList,
         itemsBySeller,
-        summary: {
-          subtotal,
-          tax,
-          shippingCost,
-          total,
-          itemCount: cart.cartItems.reduce(
-            (sum, item) => sum + item.quantity,
-            0,
-          ),
-        },
+        summary,
       },
     };
   } catch (error) {
@@ -128,7 +217,6 @@ export async function validateCheckout(data: {
       return { success: false, error: "Unable to get user ID" };
     }
 
-    // Validate cart
     const cart = await db.query.carts.findFirst({
       where: and(
         eq(carts.id, data.cartId),
@@ -149,7 +237,6 @@ export async function validateCheckout(data: {
       return { success: false, error: "Invalid cart" };
     }
 
-    // Validate address
     const address = await db.query.userAddresses.findFirst({
       where: and(
         eq(userAddresses.id, data.shippingAddressId),
@@ -161,7 +248,6 @@ export async function validateCheckout(data: {
       return { success: false, error: "Invalid shipping address" };
     }
 
-    // Validate payment method if provided
     if (data.paymentMethodId) {
       const paymentMethod = await db.query.paymentMethods.findFirst({
         where: and(
@@ -175,12 +261,11 @@ export async function validateCheckout(data: {
       }
     }
 
-    // Check product availability
     const unavailableItems = [];
     for (const item of cart.cartItems) {
       if (Number(item.product.quantity) < item.quantity) {
         unavailableItems.push({
-          product: item.product.title,
+          product: item.product.sku ?? item.productId,
           available: item.product.quantity,
           requested: item.quantity,
         });
@@ -195,10 +280,11 @@ export async function validateCheckout(data: {
       };
     }
 
-    // Validate coupon if provided
     let discount = null;
     if (data.couponCode) {
-      const couponValidation = await validateCoupon(data.couponCode, cart);
+      const couponValidation = await validateCoupon(data.couponCode, cart, {
+        shippingAddressId: data.shippingAddressId,
+      });
       if (!couponValidation.success) {
         return couponValidation;
       }
@@ -216,113 +302,5 @@ export async function validateCheckout(data: {
   } catch (error) {
     console.error("Error validating checkout:", error);
     return { success: false, error: "Failed to validate checkout" };
-  }
-}
-
-export async function calculateShipping(data: {
-  addressId: string;
-  cartId: string;
-}) {
-  try {
-    const userId = await getCurrentUserId();
-    if (!userId) {
-      return { success: false, error: "Unable to get user ID" };
-    }
-
-    // Get address
-    const address = await db.query.userAddresses.findFirst({
-      where: and(
-        eq(userAddresses.id, data.addressId),
-        eq(userAddresses.userId, userId),
-      ),
-    });
-
-    if (!address) {
-      return { success: false, error: "Address not found" };
-    }
-
-    // Get cart items grouped by seller
-    const cart = await db.query.carts.findFirst({
-      where: and(eq(carts.id, data.cartId), eq(carts.userId, userId)),
-      with: {
-        cartItems: {
-          where: eq(cartItems.savedForLater, false),
-          with: {
-            product: {
-              with: {
-                seller: true,
-              },
-            },
-          },
-        },
-      },
-    });
-
-    if (!cart) {
-      return { success: false, error: "Cart not found" };
-    }
-
-    // Calculate shipping cost by seller
-    const shippingOptions = [];
-    const itemsBySeller = cart.cartItems.reduce(
-      (acc, item) => {
-        const sellerId = item.product.sellerId;
-        if (!acc[sellerId]) {
-          acc[sellerId] = {
-            seller: item.product.seller,
-            items: [],
-          };
-        }
-        acc[sellerId].items.push(item);
-        return acc;
-      },
-      {} as Record<string, any>,
-    );
-
-    for (const [sellerId, data] of Object.entries(itemsBySeller)) {
-      // Calculate weight and dimensions
-      let totalWeight = 0;
-      let totalItems = 0;
-
-      for (const item of data.items) {
-        totalItems += item.quantity;
-        // Add weight calculation if available
-      }
-
-      // Shipping options per seller
-      const options = [
-        {
-          sellerId,
-          sellerName: data.seller.displayName,
-          method: "standard",
-          name: "Standard Shipping",
-          cost: 25,
-          estimatedDays: "5-7 business days",
-        },
-        {
-          sellerId,
-          sellerName: data.seller.displayName,
-          method: "express",
-          name: "Express Shipping",
-          cost: 50,
-          estimatedDays: "2-3 business days",
-        },
-        {
-          sellerId,
-          sellerName: data.seller.displayName,
-          method: "overnight",
-          name: "Overnight Shipping",
-          cost: 100,
-          estimatedDays: "1 business day",
-        },
-      ];
-
-      shippingOptions.push(...options);
-    }
-
-    return { success: true, data: shippingOptions };
-  } catch (error) {
-    console.error("Error calculating shipping:", error);
-    return { success: false, error: "Failed to calculate shipping" };
   }
 }

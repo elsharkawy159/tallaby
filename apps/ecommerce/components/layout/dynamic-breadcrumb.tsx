@@ -53,7 +53,7 @@ const defaultLabels: Record<string, string> = {
   register: "Register",
   "reset-password": "Reset Password",
   unauthorized: "Unauthorized",
-  "become-seller": "Become Seller",
+  sell: "Sell on Tallaby",
 };
 
 function formatLabel(

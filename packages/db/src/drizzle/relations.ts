@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { users, deliveries, shipments, orders, payments, paymentMethods, carts, categories, sellers, coupons, notifications, contacts, userAddresses, products, productVariants, refunds, returns, orderItems, shipmentItems, productQuestions, shippingAddresses, couponUsage, cartItems, reviews, returnItems, reviewVotes, searchLogs, sellerDocuments, sellerPayoutItems, sellerPayouts, reviewComments, userDevices, wishlistItems, wishlists, brands, productAnswers, userRewards, productTranslations, digitalProducts, digitalOrders, sellerCategories, sellerWallet, walletTransactions, digitalFiles, licenseKeys, digitalBundleItems, digitalAccessLogs, shippingProviders } from "./schema";
+import { users, deliveries, shipments, orders, payments, paymentMethods, carts, categories, sellers, coupons, notifications, contacts, userAddresses, products, productVariants, refunds, returns, orderItems, shipmentItems, productQuestions, shippingAddresses, couponUsage, cartItems, reviews, returnItems, reviewVotes, searchLogs, sellerDocuments, sellerPayoutItems, sellerPayouts, reviewComments, userDevices, wishlistItems, wishlists, brands, productAnswers, userRewards, productTranslations, digitalProducts, digitalOrders, sellerCategories, sellerWallet, walletTransactions, digitalFiles, licenseKeys, digitalBundleItems, digitalAccessLogs, shippingProviders, shipmentBatches, shipmentBatchItems } from "./schema";
 
 export const deliveriesRelations = relations(deliveries, ({one}) => ({
 	user: one(users, {
@@ -45,6 +45,8 @@ export const usersRelations = relations(users, ({one, many}) => ({
 	userRewards: many(userRewards),
 	digitalOrders: many(digitalOrders),
 	digitalAccessLogs: many(digitalAccessLogs),
+	shipmentBatches: many(shipmentBatches),
+	shipmentBatchItems: many(shipmentBatchItems),
 }));
 
 export const shipmentsRelations = relations(shipments, ({one, many}) => ({
@@ -70,6 +72,34 @@ export const shipmentsRelations = relations(shipments, ({one, many}) => ({
 
 export const shippingProvidersRelations = relations(shippingProviders, ({many}) => ({
 	shipments: many(shipments),
+	shipmentBatches: many(shipmentBatches),
+}));
+
+export const shipmentBatchesRelations = relations(shipmentBatches, ({one, many}) => ({
+	provider: one(shippingProviders, {
+		fields: [shipmentBatches.providerId],
+		references: [shippingProviders.id]
+	}),
+	createdByUser: one(users, {
+		fields: [shipmentBatches.createdBy],
+		references: [users.id]
+	}),
+	items: many(shipmentBatchItems),
+}));
+
+export const shipmentBatchItemsRelations = relations(shipmentBatchItems, ({one}) => ({
+	batch: one(shipmentBatches, {
+		fields: [shipmentBatchItems.batchId],
+		references: [shipmentBatches.id]
+	}),
+	order: one(orders, {
+		fields: [shipmentBatchItems.orderId],
+		references: [orders.id]
+	}),
+	rider: one(users, {
+		fields: [shipmentBatchItems.riderId],
+		references: [users.id]
+	}),
 }));
 
 export const paymentsRelations = relations(payments, ({one}) => ({
@@ -94,6 +124,7 @@ export const ordersRelations = relations(orders, ({one, many}) => ({
 	orderItems: many(orderItems),
 	digitalOrders: many(digitalOrders),
 	walletTransactions: many(walletTransactions),
+	shipmentBatchItems: many(shipmentBatchItems),
 	userAddress_billingAddressId: one(userAddresses, {
 		fields: [orders.billingAddressId],
 		references: [userAddresses.id],

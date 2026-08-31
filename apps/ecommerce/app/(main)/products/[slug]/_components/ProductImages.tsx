@@ -17,12 +17,13 @@ export const ProductImages = ({ images, productName }: ProductImagesProps) => {
   const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
   const mainImageRef = useRef<HTMLDivElement>(null);
 
-  // Auto-select the first image when images array changes
+  // Auto-select the first image when images array changes (e.g. variant switch)
   useEffect(() => {
     if (images.length > 0 && images[0]) {
       setSelectedImage(images[0]);
+      setHoveredImage(null);
     }
-  }, [images[0]]); // Track the first image to auto-select when variant changes
+  }, [images]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!mainImageRef.current) return;
@@ -44,7 +45,11 @@ export const ProductImages = ({ images, productName }: ProductImagesProps) => {
     <>
       {/* Mobile Carousel */}
       <div className="block lg:hidden">
-        <MobileImageCarousel images={images} productName={productName} />
+        <MobileImageCarousel
+          key={images.join("|")}
+          images={images}
+          productName={productName}
+        />
       </div>
 
       {/* Desktop Gallery */}

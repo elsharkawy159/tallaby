@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { Switch } from "@workspace/ui/components/switch";
@@ -15,6 +16,8 @@ export function RiderActiveToggle({
   riderId: string;
   isActive: boolean;
 }) {
+  const t = useTranslations("riders");
+  const tCommon = useTranslations("common");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -22,15 +25,15 @@ export function RiderActiveToggle({
     <Switch
       checked={isActive}
       disabled={isPending}
-      aria-label={isActive ? "Deactivate rider" : "Activate rider"}
+      aria-label={isActive ? t("deactivateAria") : t("activateAria")}
       onCheckedChange={(checked) => {
         startTransition(async () => {
           const result = await setRiderActive({ riderId, isActive: checked });
           if (result.success) {
-            toast.success(result.message ?? "Saved");
+            toast.success(result.message ?? tCommon("saved"));
             router.refresh();
           } else {
-            toast.error(result.error ?? "Something went wrong");
+            toast.error(result.error ?? tCommon("somethingWrong"));
           }
         });
       }}
@@ -45,6 +48,8 @@ export function RiderAvailableToggle({
   riderId: string;
   isAvailable: boolean;
 }) {
+  const t = useTranslations("riders");
+  const tCommon = useTranslations("common");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -52,15 +57,15 @@ export function RiderAvailableToggle({
     <Switch
       checked={isAvailable}
       disabled={isPending}
-      aria-label={isAvailable ? "Mark unavailable" : "Mark available"}
+      aria-label={isAvailable ? t("markUnavailableAria") : t("markAvailableAria")}
       onCheckedChange={(checked) => {
         startTransition(async () => {
           const result = await setRiderAvailable({ riderId, isAvailable: checked });
           if (result.success) {
-            toast.success(result.message ?? "Saved");
+            toast.success(result.message ?? tCommon("saved"));
             router.refresh();
           } else {
-            toast.error(result.error ?? "Something went wrong");
+            toast.error(result.error ?? tCommon("somethingWrong"));
           }
         });
       }}

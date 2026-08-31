@@ -62,7 +62,7 @@ export const ProductInfo = ({
         </div>
       </div>
 
-      <p className="text-gray-600 text-sm">{description}</p>
+      <p className="text-gray-600 text-sm whitespace-pre-wrap">{description}</p>
     </div>
   );
 };

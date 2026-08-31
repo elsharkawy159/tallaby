@@ -2,19 +2,21 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Package, Truck, Users } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { FileSpreadsheet, LayoutDashboard, Package, Truck, Users } from "lucide-react";
 import { cn } from "@workspace/ui/lib/utils";
 
-const links = [
-  { title: "Dashboard", href: "/", icon: LayoutDashboard },
-  { title: "Orders", href: "/orders", icon: Package },
-  { title: "Riders", href: "/riders", icon: Users },
-  { title: "Providers", href: "/providers", icon: Truck },
-];
-
-/** Bottom bar standing in for the sidebar below the md breakpoint. */
 export function MobileNav() {
   const pathname = usePathname();
+  const t = useTranslations("nav");
+
+  const links = [
+    { title: t("dashboard"), href: "/", icon: LayoutDashboard },
+    { title: t("orders"), href: "/orders", icon: Package },
+    { title: t("batches"), href: "/batches", icon: FileSpreadsheet },
+    { title: t("riders"), href: "/riders", icon: Users },
+    { title: t("providers"), href: "/providers", icon: Truck },
+  ];
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 flex border-t border-border bg-white md:hidden dark:bg-gray-950">

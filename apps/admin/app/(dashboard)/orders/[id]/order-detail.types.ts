@@ -72,6 +72,8 @@ export interface OrderDetailWithRelations {
     country: string;
     phone: string | null;
     isDefault: boolean;
+    latitude: number | null;
+    longitude: number | null;
   } | null;
   userAddress_billingAddressId: {
     id: string;
@@ -85,6 +87,8 @@ export interface OrderDetailWithRelations {
     country: string;
     phone: string | null;
     isDefault: boolean;
+    latitude: number | null;
+    longitude: number | null;
   } | null;
   orderItems: Array<{
     id: string;

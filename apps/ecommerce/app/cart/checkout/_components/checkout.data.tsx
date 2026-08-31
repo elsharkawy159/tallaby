@@ -29,6 +29,7 @@ import {
 } from "./checkout-form.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createOrder } from "@/actions/order";
+import { recalculateCheckoutSummary } from "@/actions/checkout";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import type { AddressData } from "@/components/address/address.schema";
@@ -68,6 +69,7 @@ export const CheckoutData = ({
     name: string;
     discountType: string;
   } | null>(null);
+  const [isRecalculatingShipping, setIsRecalculatingShipping] = useState(false);
 
   const addresses = initialAddresses;
   const defaultAddress = initialDefaultAddress;
@@ -115,6 +117,49 @@ export const CheckoutData = ({
       }
     }
   }, [selectedAddress?.id, defaultAddress?.id, addresses, form, activeAddress]);
+
+  useEffect(() => {
+    const addressId = shippingAddressId || activeAddress?.id;
+    if (!addressId) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const recalculateSummary = async () => {
+      setIsRecalculatingShipping(true);
+
+      try {
+        const result = await recalculateCheckoutSummary({
+          shippingAddressId: addressId,
+          couponCode: appliedCoupon?.code,
+        });
+
+        if (cancelled || !result.success || !result.data?.summary) {
+          return;
+        }
+
+        setSummary(result.data.summary);
+
+        if (result.data.summary.appliedCoupon) {
+          setAppliedCoupon(result.data.summary.appliedCoupon);
+          form.setValue("couponCode", result.data.summary.appliedCoupon.code);
+        }
+      } catch (error) {
+        console.error("Failed to recalculate shipping:", error);
+      } finally {
+        if (!cancelled) {
+          setIsRecalculatingShipping(false);
+        }
+      }
+    };
+
+    void recalculateSummary();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [shippingAddressId, activeAddress?.id, appliedCoupon?.code, form]);
 
   const paymentMethods = [
     {
@@ -348,6 +393,8 @@ export const CheckoutData = ({
             <OrderSummary
               checkoutData={checkoutDataWithCoupon}
               isLoggedIn={isLoggedIn}
+              shippingAddressId={shippingAddressId || activeAddress?.id}
+              isRecalculatingShipping={isRecalculatingShipping}
               onCouponApplied={handleCouponApplied}
               onCouponRemoved={handleCouponRemoved}
               appliedCoupon={appliedCoupon}

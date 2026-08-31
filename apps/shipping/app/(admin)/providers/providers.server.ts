@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { asc, count, db, eq, shipments, shippingProviders, sql } from "@workspace/db";
+import { getTranslations } from "next-intl/server";
 
 import {
   actionError,
@@ -87,6 +88,7 @@ export async function getProviders(): Promise<ListResult<ProviderRow>> {
 export async function createProvider(input: unknown): Promise<ActionResult> {
   try {
     await requireShippingAdmin();
+    const t = await getTranslations("providers");
     const values = createProviderSchema.parse(input);
 
     const [existing] = await db
@@ -95,13 +97,13 @@ export async function createProvider(input: unknown): Promise<ActionResult> {
       .where(eq(shippingProviders.code, values.code))
       .limit(1);
     if (existing) {
-      return { success: false, error: "A provider with this code already exists" };
+      return { success: false, error: t("codeExists") };
     }
 
     await db.insert(shippingProviders).values(values);
 
     revalidatePath("/providers");
-    return { success: true, message: "Provider created" };
+    return { success: true, message: t("providerCreated") };
   } catch (error) {
     return { success: false, error: actionError("createProvider", error) };
   }
@@ -110,6 +112,7 @@ export async function createProvider(input: unknown): Promise<ActionResult> {
 export async function updateProvider(input: unknown): Promise<ActionResult> {
   try {
     await requireShippingAdmin();
+    const t = await getTranslations("providers");
     const { providerId, ...values } = updateProviderSchema.parse(input);
 
     const updated = await db
@@ -119,11 +122,11 @@ export async function updateProvider(input: unknown): Promise<ActionResult> {
       .returning({ id: shippingProviders.id });
 
     if (updated.length === 0) {
-      return { success: false, error: "Provider not found" };
+      return { success: false, error: t("providerNotFound") };
     }
 
     revalidatePath("/providers");
-    return { success: true, message: "Provider updated" };
+    return { success: true, message: t("providerUpdated") };
   } catch (error) {
     return { success: false, error: actionError("updateProvider", error) };
   }
@@ -132,6 +135,7 @@ export async function updateProvider(input: unknown): Promise<ActionResult> {
 export async function deleteProvider(input: unknown): Promise<ActionResult> {
   try {
     await requireShippingAdmin();
+    const t = await getTranslations("providers");
     const { providerId } = deleteProviderSchema.parse(input);
 
     const [row] = await db
@@ -143,14 +147,14 @@ export async function deleteProvider(input: unknown): Promise<ActionResult> {
     if (shipmentCount > 0) {
       return {
         success: false,
-        error: `Cannot delete: ${shipmentCount} shipment(s) use this provider. Deactivate it instead.`,
+        error: t("cannotDeleteShipments", { count: shipmentCount }),
       };
     }
 
     await db.delete(shippingProviders).where(eq(shippingProviders.id, providerId));
 
     revalidatePath("/providers");
-    return { success: true, message: "Provider deleted" };
+    return { success: true, message: t("providerDeleted") };
   } catch (error) {
     return { success: false, error: actionError("deleteProvider", error) };
   }
@@ -159,6 +163,7 @@ export async function deleteProvider(input: unknown): Promise<ActionResult> {
 export async function toggleProvider(input: unknown): Promise<ActionResult> {
   try {
     await requireShippingAdmin();
+    const t = await getTranslations("providers");
     const { providerId, isActive } = toggleProviderSchema.parse(input);
 
     const updated = await db
@@ -168,14 +173,14 @@ export async function toggleProvider(input: unknown): Promise<ActionResult> {
       .returning({ id: shippingProviders.id });
 
     if (updated.length === 0) {
-      return { success: false, error: "Provider not found" };
+      return { success: false, error: t("providerNotFound") };
     }
 
     revalidatePath("/providers");
     revalidatePath("/orders");
     return {
       success: true,
-      message: isActive ? "Provider enabled" : "Provider disabled",
+      message: isActive ? t("providerEnabled") : t("providerDisabled"),
     };
   } catch (error) {
     return { success: false, error: actionError("toggleProvider", error) };

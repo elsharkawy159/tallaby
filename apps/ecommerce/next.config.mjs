@@ -5,6 +5,15 @@ const nextConfig = {
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
   transpilePackages: ["@workspace/ui"],
+  async redirects() {
+    return [
+      {
+        source: '/become-seller',
+        destination: '/sell',
+        permanent: true,
+      },
+    ]
+  },
   images: {
     remotePatterns: [
       {

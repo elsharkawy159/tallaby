@@ -78,6 +78,13 @@
       "when": 1798400000000,
       "tag": "0012_product_free_delivery",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1798486400000,
+      "tag": "0017_shipment_batches",
+      "breakpoints": true
     }
   ]
 }

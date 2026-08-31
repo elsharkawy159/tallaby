@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Truck } from "lucide-react";
 
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { getShippingUser } from "@/lib/auth";
 import { RiderSignOut } from "./_components/rider-sign-out";
 
@@ -29,7 +30,10 @@ export default async function RiderLayout({
               {user.fullName ?? t("myDeliveries")}
             </span>
           </div>
-          <RiderSignOut />
+          <div className="flex items-center gap-1">
+            <LanguageSwitcher variant="header" />
+            <RiderSignOut />
+          </div>
         </div>
       </header>
       <main className="mx-auto max-w-md p-4">{children}</main>

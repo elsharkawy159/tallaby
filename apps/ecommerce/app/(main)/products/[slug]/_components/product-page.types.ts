@@ -20,6 +20,7 @@ export interface ProductPageProps {
 export type Product = typeof products.$inferSelect & {
   brand: typeof brands.$inferSelect | null;
   category: typeof categories.$inferSelect | null;
+  content?: string | null;
   seller: Pick<
     typeof sellers.$inferSelect,
     | "id"

@@ -20,6 +20,7 @@
     "@workspace/cache": "workspace:*",
     "@workspace/db": "workspace:*",
     "@workspace/lib": "workspace:*",
+    "@workspace/tiptap": "workspace:*",
     "@workspace/ui": "workspace:*",
     "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",

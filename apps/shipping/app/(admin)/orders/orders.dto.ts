@@ -12,12 +12,31 @@ const FAILURE_REASON_CODES = DELIVERY_FAILURE_REASONS.map((r) => r.code) as [
   ...string[],
 ];
 
-export const PAGE_SIZE = 20;
+export const PAGE_SIZE = 100;
 
 const pageSchema = z.coerce.number().int().min(1);
 const pageSizeSchema = z.coerce.number().int().min(1).max(100);
 
+/**
+ * The order pipeline's tabs. Each is a derived predicate over
+ * `orders.status` + `shipments.status` (see `stageWhere()` in
+ * orders.server.ts) — there is no `stage` column. "all" keeps the old free
+ * `?status=` filter reachable for statuses no tab covers (failed, returned,
+ * cancelled).
+ */
+export const ORDER_STAGES = [
+  "pending",
+  "confirmed",
+  "shipped",
+  "out_for_delivery",
+  "delivered",
+  "all",
+] as const;
+
+export type OrderStage = (typeof ORDER_STAGES)[number];
+
 export const shippingFiltersSchema = z.object({
+  stage: z.enum(ORDER_STAGES).default("pending"),
   search: z.string().trim().max(200).optional(),
   status: z.enum(SHIPPING_STATUSES).optional(),
   providerId: z.uuid().optional(),
@@ -84,6 +103,7 @@ export function parseFilters(
   };
 
   return {
+    stage: pick(shippingFiltersSchema.shape.stage, params.stage) ?? "pending",
     search: pick(shippingFiltersSchema.shape.search, params.search),
     status: pick(shippingFiltersSchema.shape.status, params.status),
     providerId: pick(shippingFiltersSchema.shape.providerId, params.providerId),

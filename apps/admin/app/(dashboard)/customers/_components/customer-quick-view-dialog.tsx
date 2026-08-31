@@ -8,6 +8,8 @@ import {
   DialogTitle,
 } from "@workspace/ui/components/dialog";
 import { Badge } from "@workspace/ui/components/badge";
+import { Button } from "@workspace/ui/components/button";
+import { MapsLinkButton } from "@workspace/ui/components/maps-link-button";
 import {
   Avatar,
   AvatarImage,
@@ -25,8 +27,6 @@ import {
   User,
   Globe,
   Clock,
-  MapPin,
-  ExternalLink,
 } from "lucide-react";
 import type { Customer } from "../customers.types";
 import {
@@ -39,7 +39,6 @@ import {
   getRoleBadgeVariant,
 } from "../customers.lib";
 import Link from "next/link";
-import { Button } from "@workspace/ui/components/button";
 
 interface CustomerQuickViewDialogProps {
   customer: Customer | null;
@@ -223,65 +222,51 @@ export function CustomerQuickViewDialog({
                 <div className="space-y-3">
                   <h4 className="font-semibold text-sm">Addresses</h4>
                   <div className="space-y-3">
-                    {customer.addresses.map((address) => {
-                      const googleMapsUrl =
-                        address.latitude && address.longitude
-                          ? `https://www.google.com/maps?q=${address.latitude},${address.longitude}`
-                          : null;
-
-                      return (
-                        <div
-                          key={address.id}
-                          className="p-3 border rounded-lg space-y-2"
-                        >
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1 space-y-1">
-                              <div className="flex items-center gap-2">
-                                <span className="font-medium">
-                                  {address.fullName}
-                                </span>
-                                {address.isDefault && (
-                                  <Badge variant="outline" className="text-xs">
-                                    Default
-                                  </Badge>
-                                )}
-                                <Badge
-                                  variant="secondary"
-                                  className="text-xs capitalize"
-                                >
-                                  {address.addressType}
+                    {customer.addresses.map((address) => (
+                      <div
+                        key={address.id}
+                        className="p-3 border rounded-lg space-y-2"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">
+                                {address.fullName}
+                              </span>
+                              {address.isDefault && (
+                                <Badge variant="outline" className="text-xs">
+                                  Default
                                 </Badge>
-                              </div>
-                              <div className="text-sm text-muted-foreground">
-                                <div>{address.phone}</div>
-                                <div>
-                                  {address.addressLine1}
-                                  {address.addressLine2 &&
-                                    `, ${address.addressLine2}`}
-                                </div>
-                                <div>
-                                  {address.city}, {address.state}{" "}
-                                  {address.postalCode}
-                                </div>
-                                <div>{address.country}</div>
-                              </div>
-                            </div>
-                            {googleMapsUrl && (
-                              <a
-                                href={googleMapsUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-1 text-sm text-primary hover:underline"
+                              )}
+                              <Badge
+                                variant="secondary"
+                                className="text-xs capitalize"
                               >
-                                <MapPin className="h-4 w-4" />
-                                <span>View on Map</span>
-                                <ExternalLink className="h-3 w-3" />
-                              </a>
-                            )}
+                                {address.addressType}
+                              </Badge>
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              <div>{address.phone}</div>
+                              <div>
+                                {address.addressLine1}
+                                {address.addressLine2 &&
+                                  `, ${address.addressLine2}`}
+                              </div>
+                              <div>
+                                {address.city}, {address.state}{" "}
+                                {address.postalCode}
+                              </div>
+                              <div>{address.country}</div>
+                            </div>
                           </div>
+                          <MapsLinkButton
+                            type="location"
+                            latitude={address.latitude}
+                            longitude={address.longitude}
+                          />
                         </div>
-                      );
-                    })}
+                      </div>
+                    ))}
                   </div>
                 </div>
               </>

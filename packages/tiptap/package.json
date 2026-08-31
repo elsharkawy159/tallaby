@@ -1,0 +1,53 @@
+{
+  "name": "@workspace/tiptap",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "lint": "eslint . --max-warnings 0",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@tiptap/extension-color": "^3.6.2",
+    "@tiptap/extension-highlight": "^3.6.2",
+    "@tiptap/extension-image": "^3.30.6",
+    "@tiptap/extension-link": "^3.6.2",
+    "@tiptap/extension-placeholder": "^3.6.2",
+    "@tiptap/extension-text-align": "^3.6.2",
+    "@tiptap/extension-text-style": "^3.6.2",
+    "@tiptap/extension-underline": "^3.6.2",
+    "@tiptap/pm": "^3.6.2",
+    "@tiptap/react": "^3.6.2",
+    "@tiptap/starter-kit": "^3.6.2",
+    "lucide-react": "^0.562.0",
+    "sanitize-html": "^2.17.0"
+  },
+  "peerDependencies": {
+    "@workspace/ui": "workspace:*",
+    "react": ">=19.0.0",
+    "react-dom": ">=19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.5",
+    "@types/sanitize-html": "^2.16.0",
+    "@workspace/typescript-config": "workspace:*",
+    "typescript": "^5.9.3"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./editor": {
+      "types": "./src/rich-text-editor.tsx",
+      "default": "./src/rich-text-editor.tsx"
+    },
+    "./content": {
+      "types": "./src/rich-text-content.tsx",
+      "default": "./src/rich-text-content.tsx"
+    },
+    "./styles/rich-text-content.css": "./src/styles/rich-text-content.css"
+  }
+}

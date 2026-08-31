@@ -29,7 +29,7 @@ export const createMiddlewareClient = (request: NextRequest) => {
           // This will be handled by the response
         },
       },
-    }
+    },
   );
 };
 
@@ -65,14 +65,16 @@ export const shouldSkipMiddleware = (pathname: string): boolean => {
  */
 export const validateAdminAccess = async (
   supabase: ReturnType<typeof createMiddlewareClient>,
-  userId: string
+  userId: string,
 ): Promise<MiddlewareAuthResult> => {
   try {
     // Get user profile from database
     // Real columns are snake_case; aliased so the returned shape matches AdminUser.
     const { data: userProfile, error: profileError } = await supabase
       .from("users")
-      .select("id, email, role, isVerified:is_verified, fullName:full_name, createdAt:created_at, updatedAt:updated_at")
+      .select(
+        "id, email, role, isVerified:is_verified, fullName:full_name, createdAt:created_at, updatedAt:updated_at",
+      )
       .eq("id", userId)
       .single();
 
@@ -173,7 +175,7 @@ export const getAdminPermissions = (role: AdminRole): AdminPermissions => {
  */
 export const hasPermission = (
   role: AdminRole,
-  permission: keyof AdminPermissions
+  permission: keyof AdminPermissions,
 ): boolean => {
   const permissions = getAdminPermissions(role);
   return permissions[permission];
@@ -184,7 +186,7 @@ export const hasPermission = (
  */
 export const createUnauthorizedUrl = (
   request: NextRequest,
-  error: NonNullable<MiddlewareAuthResult["error"]>
+  error: NonNullable<MiddlewareAuthResult["error"]>,
 ): URL => {
   const url = new URL("/auth/unauthorized", request.url);
 

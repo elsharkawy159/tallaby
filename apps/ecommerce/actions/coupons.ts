@@ -1,7 +1,7 @@
 "use server"
 
 import { unstable_cache, revalidateTag } from "next/cache"
-import { db, carts, cartItems, coupons, couponUsage, eq, and, sql, gte, lte, desc, or, isNull } from "@workspace/db"
+import { db, carts, cartItems, coupons, couponUsage, userAddresses, eq, and, sql, gte, lte, desc, or, isNull } from "@workspace/db"
 import { getUser } from "./auth"
 import { getCurrentUserId } from "@/lib/get-current-user-id"
 import {
@@ -38,8 +38,32 @@ interface CartWithItems {
       categoryId?: string
       productType?: string | null
       freeDelivery?: boolean | null
+      dimensions?: unknown
     }
   }>
+}
+
+interface CouponValidationOptions {
+  shippingAddressId?: string
+}
+
+async function resolveDestinationState(
+  userId: string | undefined,
+  shippingAddressId?: string,
+): Promise<string | null> {
+  if (!userId || !shippingAddressId) {
+    return null
+  }
+
+  const address = await db.query.userAddresses.findFirst({
+    where: and(
+      eq(userAddresses.id, shippingAddressId),
+      eq(userAddresses.userId, userId),
+    ),
+    columns: { state: true },
+  })
+
+  return address?.state ?? null
 }
 
 /**
@@ -47,7 +71,8 @@ interface CartWithItems {
  */
 export async function validateCoupon(
   code: string,
-  cart?: CartWithItems
+  cart?: CartWithItems,
+  options: CouponValidationOptions = {},
 ): Promise<ValidationResult> {
   try {
     const user = await getUser()
@@ -179,7 +204,14 @@ export async function validateCoupon(
     }
 
     // Calculate discount
-    const shippingCost = calculateOrderShippingCost(cart.cartItems)
+    const destinationState = await resolveDestinationState(
+      userId,
+      options.shippingAddressId,
+    )
+
+    const shippingCost = calculateOrderShippingCost(cart.cartItems, {
+      destinationState,
+    })
     const calculationResult = calculateCouponDiscount(
       coupon as CouponData,
       cartItemsForCoupon,
@@ -225,7 +257,10 @@ export async function validateCoupon(
 /**
  * Apply a coupon to the current user's active cart
  */
-export async function applyCouponToCart(data: { code: string }) {
+export async function applyCouponToCart(data: {
+  code: string
+  shippingAddressId?: string
+}) {
   try {
     const userId = await getCurrentUserId()
     if (!userId) {
@@ -246,6 +281,7 @@ export async function applyCouponToCart(data: { code: string }) {
                 categoryId: true,
                 productType: true,
                 freeDelivery: true,
+                dimensions: true,
               }
             }
           }
@@ -258,7 +294,9 @@ export async function applyCouponToCart(data: { code: string }) {
     }
 
     // Validate the coupon
-    const validation = await validateCoupon(normalizedCode, cart)
+    const validation = await validateCoupon(normalizedCode, cart, {
+      shippingAddressId: data.shippingAddressId,
+    })
     if (!validation.success) {
       return validation
     }
@@ -282,7 +320,9 @@ export async function applyCouponToCart(data: { code: string }) {
 /**
  * Remove coupon from cart (clears coupon state)
  */
-export async function removeCouponFromCart() {
+export async function removeCouponFromCart(data?: {
+  shippingAddressId?: string
+}) {
   try {
     const userId = await getCurrentUserId()
     if (!userId) {
@@ -300,6 +340,7 @@ export async function removeCouponFromCart() {
               columns: {
                 productType: true,
                 freeDelivery: true,
+                dimensions: true,
               },
             },
           },
@@ -317,7 +358,13 @@ export async function removeCouponFromCart() {
       0
     )
     const tax = 0
-    const shippingCost = calculateOrderShippingCost(cart.cartItems)
+    const destinationState = await resolveDestinationState(
+      userId,
+      data?.shippingAddressId,
+    )
+    const shippingCost = calculateOrderShippingCost(cart.cartItems, {
+      destinationState,
+    })
     const total = subtotal + tax + shippingCost
 
     const summary: CheckoutSummary = {

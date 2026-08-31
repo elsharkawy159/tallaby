@@ -15,6 +15,7 @@ import {
   users,
 } from "@workspace/db";
 import { getServiceClient } from "@workspace/db/supabase/service";
+import { getTranslations } from "next-intl/server";
 
 import { actionError, type ActionResult } from "@/lib/action-result";
 import { requireShippingAdmin } from "@/lib/auth";
@@ -35,6 +36,7 @@ import {
 export async function createRider(input: unknown): Promise<ActionResult<{ id: string }>> {
   try {
     await requireShippingAdmin();
+    const t = await getTranslations("riders");
     const { fullName, email, phone, avatarUrl } = createRiderSchema.parse(input);
 
     const supabase = getServiceClient();
@@ -48,7 +50,7 @@ export async function createRider(input: unknown): Promise<ActionResult<{ id: st
     });
 
     if (error || !data.user) {
-      return { success: false, error: error?.message ?? "Could not create account" };
+      return { success: false, error: error?.message ?? t("couldNotCreate") };
     }
 
     // Upserted rather than relying on a possible auth->public.users trigger —
@@ -72,7 +74,7 @@ export async function createRider(input: unknown): Promise<ActionResult<{ id: st
       });
 
     revalidatePath("/riders");
-    return { success: true, data: { id: data.user.id }, message: "Rider created" };
+    return { success: true, data: { id: data.user.id }, message: t("riderCreated") };
   } catch (error) {
     return { success: false, error: actionError("createRider", error) };
   }
@@ -81,6 +83,7 @@ export async function createRider(input: unknown): Promise<ActionResult<{ id: st
 export async function updateRider(input: unknown): Promise<ActionResult> {
   try {
     await requireShippingAdmin();
+    const t = await getTranslations("riders");
     const { riderId, fullName, phone, avatarUrl } = updateRiderSchema.parse(input);
 
     const updated = await db
@@ -89,11 +92,11 @@ export async function updateRider(input: unknown): Promise<ActionResult> {
       .where(and(eq(users.id, riderId), eq(users.role, "driver")))
       .returning({ id: users.id });
 
-    if (updated.length === 0) return { success: false, error: "Rider not found" };
+    if (updated.length === 0) return { success: false, error: t("riderNotFound") };
 
     revalidatePath("/riders");
     revalidatePath(`/riders/${riderId}`);
-    return { success: true, message: "Rider updated" };
+    return { success: true, message: t("riderUpdated") };
   } catch (error) {
     return { success: false, error: actionError("updateRider", error) };
   }
@@ -104,6 +107,7 @@ export async function updateRider(input: unknown): Promise<ActionResult> {
 export async function setRiderActive(input: unknown): Promise<ActionResult> {
   try {
     await requireShippingAdmin();
+    const t = await getTranslations("riders");
     const { riderId, isActive } = setRiderActiveSchema.parse(input);
 
     const updated = await db
@@ -112,12 +116,15 @@ export async function setRiderActive(input: unknown): Promise<ActionResult> {
       .where(and(eq(users.id, riderId), eq(users.role, "driver")))
       .returning({ id: users.id });
 
-    if (updated.length === 0) return { success: false, error: "Rider not found" };
+    if (updated.length === 0) return { success: false, error: t("riderNotFound") };
 
     revalidatePath("/riders");
     revalidatePath(`/riders/${riderId}`);
     revalidatePath("/orders");
-    return { success: true, message: isActive ? "Rider activated" : "Rider deactivated" };
+    return {
+      success: true,
+      message: isActive ? t("riderActivated") : t("riderDeactivated"),
+    };
   } catch (error) {
     return { success: false, error: actionError("setRiderActive", error) };
   }
@@ -126,6 +133,8 @@ export async function setRiderActive(input: unknown): Promise<ActionResult> {
 export async function setRiderAvailable(input: unknown): Promise<ActionResult> {
   try {
     await requireShippingAdmin();
+    const t = await getTranslations("riders");
+    const tCommon = await getTranslations("common");
     const { riderId, isAvailable } = setRiderAvailableSchema.parse(input);
 
     const updated = await db
@@ -134,11 +143,11 @@ export async function setRiderAvailable(input: unknown): Promise<ActionResult> {
       .where(and(eq(users.id, riderId), eq(users.role, "driver")))
       .returning({ id: users.id });
 
-    if (updated.length === 0) return { success: false, error: "Rider not found" };
+    if (updated.length === 0) return { success: false, error: t("riderNotFound") };
 
     revalidatePath("/riders");
     revalidatePath(`/riders/${riderId}`);
-    return { success: true, message: "Saved" };
+    return { success: true, message: tCommon("saved") };
   } catch (error) {
     return { success: false, error: actionError("setRiderAvailable", error) };
   }
@@ -189,7 +198,10 @@ export async function getRiderDetail(riderId: string): Promise<RiderDetailResult
       .where(and(eq(users.id, riderId), eq(users.role, "driver")))
       .limit(1);
 
-    if (!rider) return { success: false, error: "Rider not found" };
+    if (!rider) {
+      const t = await getTranslations("riders");
+      return { success: false, error: t("riderNotFound") };
+    }
 
     const [statsRow] = await db
       .select({

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import Image from "next/image";
 import { useFormContext } from "react-hook-form";
 import {
@@ -26,7 +26,9 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { CategorySuggestions } from "../category-suggestions";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { cn } from "@/lib/utils";
+import { cn, generateImageName, getPublicUrl, validateImage } from "@/lib/utils";
+import { createClient } from "@/supabase/client";
+import { RichTextEditor } from "@workspace/tiptap/editor";
 import type {
   AddProductFormData,
   BrandOption,
@@ -47,8 +49,35 @@ export function BasicInformationStep({
 }: BasicInformationStepProps) {
   const form = useFormContext<AddProductFormData>();
   const tToast = useTranslations("toast");
+  const supabase = createClient();
   const [isFetching, setIsFetching] = useState(false);
   const [_suggestedImages, setSuggestedImages] = useState<string[]>([]);
+
+  const handleContentImageUpload = useCallback(
+    async (file: File) => {
+      try {
+        await validateImage(file);
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : tToast("uploadError", { fileName: file.name })
+        );
+        return null;
+      }
+
+      const fileName = generateImageName(file);
+      const { data, error } = await supabase.storage
+        .from("products")
+        .upload(fileName, file, { upsert: false });
+
+      if (error) {
+        toast.error(tToast("uploadError", { fileName: file.name }));
+        return null;
+      }
+
+      return getPublicUrl(data.path, "products");
+    },
+    [supabase, tToast]
+  );
 
   const productUrl = form.watch("productUrl");
   const productTitle = form.watch(`localized.${activeLocale}.title`);
@@ -456,6 +485,26 @@ export function BasicInformationStep({
                 rows={6}
                 className={cn("text-sm", loc === "ar" && "text-right")}
               />
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name={`localized.${loc}.content`}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm">Product Content</FormLabel>
+                <FormControl>
+                  <RichTextEditor
+                    value={field.value ?? ""}
+                    onChange={field.onChange}
+                    placeholder="Write detailed product content with headings, lists, and highlights..."
+                    dir={loc === "ar" ? "rtl" : "ltr"}
+                    onImageUpload={handleContentImageUpload}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )}
           />
         </div>

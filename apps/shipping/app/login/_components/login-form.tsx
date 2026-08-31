@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useTransition } from "react";
+import { useEffect, useMemo, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslations } from "next-intl";
 import { Loader2, Truck } from "lucide-react";
 import { toast } from "sonner";
+import { z } from "zod";
 
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -19,7 +21,7 @@ import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 
 import { login } from "@/actions/auth";
-import { signInSchema, type SignInFormData } from "@/lib/validations";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 /**
  * react-hook-form + zodResolver as everywhere else, but deliberately using
@@ -36,28 +38,40 @@ export function LoginForm() {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const t = useTranslations("login");
+
+  const schema = useMemo(
+    () =>
+      z.object({
+        email: z.email(t("emailInvalid")),
+        password: z.string().min(6, t("passwordMin")),
+      }),
+    [t]
+  );
+
+  type FormData = z.infer<typeof schema>;
 
   useEffect(() => {
     if (searchParams.get("error") === "forbidden") {
-      toast.error("This account cannot access the shipping app.");
+      toast.error(t("forbidden"));
     }
-  }, [searchParams]);
+  }, [searchParams, t]);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<SignInFormData>({
-    resolver: zodResolver(signInSchema),
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
     defaultValues: { email: "", password: "" },
   });
 
-  const onSubmit = (values: SignInFormData) => {
+  const onSubmit = (values: FormData) => {
     startTransition(async () => {
       const result = await login(values.email, values.password);
 
       if (!result.success) {
-        toast.error(result.error ?? "Could not sign in");
+        toast.error(result.error ?? t("couldNotSignIn"));
         return;
       }
 
@@ -67,16 +81,17 @@ export function LoginForm() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4 dark:bg-gray-900">
+    <div className="relative flex min-h-screen items-center justify-center bg-gray-50 p-4 dark:bg-gray-900">
+      <div className="absolute end-4 top-4">
+        <LanguageSwitcher />
+      </div>
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
           <div className="mx-auto mb-2 flex size-11 items-center justify-center rounded-xl bg-primary text-primary-foreground">
             <Truck className="size-5" />
           </div>
-          <CardTitle>Shipping</CardTitle>
-          <CardDescription>
-            Sign in to manage deliveries or view your assigned orders.
-          </CardDescription>
+          <CardTitle>{t("title")}</CardTitle>
+          <CardDescription>{t("description")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form
@@ -85,12 +100,12 @@ export function LoginForm() {
             noValidate
           >
             <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("email")}</Label>
               <Input
                 id="email"
                 type="email"
                 autoComplete="email"
-                placeholder="you@example.com"
+                placeholder={t("emailPlaceholder")}
                 aria-invalid={Boolean(errors.email)}
                 {...register("email")}
               />
@@ -102,7 +117,7 @@ export function LoginForm() {
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("password")}</Label>
               <Input
                 id="password"
                 type="password"
@@ -120,7 +135,7 @@ export function LoginForm() {
 
             <Button type="submit" className="w-full" disabled={isPending}>
               {isPending && <Loader2 className="size-4 animate-spin" />}
-              {isPending ? "Signing in..." : "Sign in"}
+              {isPending ? t("signingIn") : t("signIn")}
             </Button>
           </form>
         </CardContent>

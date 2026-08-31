@@ -13,6 +13,7 @@ import {
 } from "@workspace/ui/components/avatar";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
+import { MapsLinkButton } from "@workspace/ui/components/maps-link-button";
 import {
   Mail,
   Phone,
@@ -24,8 +25,6 @@ import {
   User,
   Globe,
   Clock,
-  MapPin,
-  ExternalLink,
   ArrowLeft,
 } from "lucide-react";
 import Link from "next/link";
@@ -219,64 +218,50 @@ export function CustomerProfileContent({
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {customer.addresses.map((address) => {
-                const googleMapsUrl =
-                  address.latitude && address.longitude
-                    ? `https://www.google.com/maps?q=${address.latitude},${address.longitude}`
-                    : null;
-
-                return (
-                  <div
-                    key={address.id}
-                    className="p-4 border rounded-lg space-y-2"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1 space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">
-                            {address.fullName}
-                          </span>
-                          {address.isDefault && (
-                            <Badge variant="outline" className="text-xs">
-                              Default
-                            </Badge>
-                          )}
-                          <Badge
-                            variant="secondary"
-                            className="text-xs capitalize"
-                          >
-                            {address.addressType}
+              {customer.addresses.map((address) => (
+                <div
+                  key={address.id}
+                  className="p-4 border rounded-lg space-y-2"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">
+                          {address.fullName}
+                        </span>
+                        {address.isDefault && (
+                          <Badge variant="outline" className="text-xs">
+                            Default
                           </Badge>
-                        </div>
-                        <div className="text-sm text-muted-foreground space-y-1">
-                          <div>{address.phone}</div>
-                          <div>
-                            {address.addressLine1}
-                            {address.addressLine2 &&
-                              `, ${address.addressLine2}`}
-                          </div>
-                          <div>
-                            {address.city}, {address.state} {address.postalCode}
-                          </div>
-                          <div>{address.country}</div>
-                        </div>
-                      </div>
-                      {googleMapsUrl && (
-                        <a
-                          href={googleMapsUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1 text-sm text-primary hover:underline"
+                        )}
+                        <Badge
+                          variant="secondary"
+                          className="text-xs capitalize"
                         >
-                          <MapPin className="h-4 w-4" />
-                          <span>View on Map</span>
-                          <ExternalLink className="h-3 w-3" />
-                        </a>
-                      )}
+                          {address.addressType}
+                        </Badge>
+                      </div>
+                      <div className="text-sm text-muted-foreground space-y-1">
+                        <div>{address.phone}</div>
+                        <div>
+                          {address.addressLine1}
+                          {address.addressLine2 &&
+                            `, ${address.addressLine2}`}
+                        </div>
+                        <div>
+                          {address.city}, {address.state} {address.postalCode}
+                        </div>
+                        <div>{address.country}</div>
+                      </div>
                     </div>
+                    <MapsLinkButton
+                      type="location"
+                      latitude={address.latitude}
+                      longitude={address.longitude}
+                    />
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>

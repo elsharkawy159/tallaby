@@ -100,7 +100,7 @@ export async function createOrder(data: {
     );
 
     // Digital-only orders have nothing to ship, so no shipping address is required.
-    let shippingAddress: { id: string } | undefined;
+    let shippingAddress: { id: string; state: string } | undefined;
     if (!isDigitalOnlyCart) {
       if (!data.shippingAddressId) {
         return { success: false, error: "Shipping address is required" };
@@ -136,7 +136,9 @@ export async function createOrder(data: {
     const hasDigitalItems = cart.cartItems.some(
       (item) => item.product.productType === "digital"
     );
-    const shippingCost = calculateOrderShippingCost(cart.cartItems);
+    const shippingCost = calculateOrderShippingCost(cart.cartItems, {
+      destinationState: shippingAddress?.state,
+    });
 
     const orderItemsData = cart.cartItems.map((item) => {
       const itemSubtotal = Number(item.price) * item.quantity;

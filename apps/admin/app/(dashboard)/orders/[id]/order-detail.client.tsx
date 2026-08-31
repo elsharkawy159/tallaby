@@ -12,6 +12,7 @@ import {
 } from "@workspace/ui/components/card";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
+import { MapsLinkButton } from "@workspace/ui/components/maps-link-button";
 import {
   Select,
   SelectContent,
@@ -24,12 +25,10 @@ import {
   User,
   Mail,
   Phone,
-  MapPin,
   Package,
   CreditCard,
   Calendar,
   Truck,
-  Building,
   FileText,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -385,19 +384,26 @@ export function OrderDetailContent({ order }: OrderDetailContentProps) {
             </CardHeader>
             <CardContent>
               {order.userAddress_shippingAddressId ? (
-                <div className="space-y-1 text-sm">
-                  <p className="font-medium">
-                    {order.userAddress_shippingAddressId.firstName}{" "}
-                    {order.userAddress_shippingAddressId.lastName}
-                  </p>
-                  <p className="text-muted-foreground whitespace-pre-line">
-                    {formatAddress(order.userAddress_shippingAddressId)}
-                  </p>
-                  {order.userAddress_shippingAddressId.phone && (
-                    <p className="text-muted-foreground">
-                      Phone: {order.userAddress_shippingAddressId.phone}
+                <div className="space-y-3 text-sm">
+                  <div className="space-y-1">
+                    <p className="font-medium">
+                      {order.userAddress_shippingAddressId.firstName}{" "}
+                      {order.userAddress_shippingAddressId.lastName}
                     </p>
-                  )}
+                    <p className="text-muted-foreground whitespace-pre-line">
+                      {formatAddress(order.userAddress_shippingAddressId)}
+                    </p>
+                    {order.userAddress_shippingAddressId.phone && (
+                      <p className="text-muted-foreground">
+                        Phone: {order.userAddress_shippingAddressId.phone}
+                      </p>
+                    )}
+                  </div>
+                  <MapsLinkButton
+                    type="location"
+                    latitude={order.userAddress_shippingAddressId.latitude}
+                    longitude={order.userAddress_shippingAddressId.longitude}
+                  />
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground">No shipping address</p>
@@ -415,19 +421,26 @@ export function OrderDetailContent({ order }: OrderDetailContentProps) {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-1 text-sm">
-                  <p className="font-medium">
-                    {order.userAddress_billingAddressId.firstName}{" "}
-                    {order.userAddress_billingAddressId.lastName}
-                  </p>
-                  <p className="text-muted-foreground whitespace-pre-line">
-                    {formatAddress(order.userAddress_billingAddressId)}
-                  </p>
-                  {order.userAddress_billingAddressId.phone && (
-                    <p className="text-muted-foreground">
-                      Phone: {order.userAddress_billingAddressId.phone}
+                <div className="space-y-3 text-sm">
+                  <div className="space-y-1">
+                    <p className="font-medium">
+                      {order.userAddress_billingAddressId.firstName}{" "}
+                      {order.userAddress_billingAddressId.lastName}
                     </p>
-                  )}
+                    <p className="text-muted-foreground whitespace-pre-line">
+                      {formatAddress(order.userAddress_billingAddressId)}
+                    </p>
+                    {order.userAddress_billingAddressId.phone && (
+                      <p className="text-muted-foreground">
+                        Phone: {order.userAddress_billingAddressId.phone}
+                      </p>
+                    )}
+                  </div>
+                  <MapsLinkButton
+                    type="location"
+                    latitude={order.userAddress_billingAddressId.latitude}
+                    longitude={order.userAddress_billingAddressId.longitude}
+                  />
                 </div>
               </CardContent>
             </Card>

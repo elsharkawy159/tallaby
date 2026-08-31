@@ -56,7 +56,7 @@ const VendorRecruitment = () => {
         </div>
 
         <div className="text-center">
-          <Link href="/become-seller">
+          <Link href="/sell">
             <Button
               size="lg"
               className="bg-white text-gray-900 hover:bg-white/90 font-semibold px-8 sm:px-12 py-3 sm:py-4 text-base sm:text-lg rounded-full shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all"

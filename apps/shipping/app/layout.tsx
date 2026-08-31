@@ -21,8 +21,11 @@ const notoKufiArabic = Noto_Kufi_Arabic({
 });
 
 export const metadata: Metadata = {
-  title: "Shipping",
-  description: "Shipping and delivery management",
+  title: "الشحن | Shipping",
+  description: "إدارة الشحن والتوصيل | Shipping and delivery management",
+  icons: {
+    icon: [{ url: "/favicon.ico", sizes: "any" }],
+  },
   robots: { index: false, follow: false },
 };
 

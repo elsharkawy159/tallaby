@@ -128,6 +128,17 @@ function ProductRatingSummary({
   );
 }
 
+function TabLabel({ label, count }: { label: string; count: number }) {
+  return (
+    <>
+      {label}
+      <span className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-muted px-1.5 text-xs font-medium tabular-nums text-muted-foreground">
+        {count}
+      </span>
+    </>
+  );
+}
+
 async function ProductDetailContent({ productId }: ProductDetailDataProps) {
   await repairProductRatingIfStale(productId);
 
@@ -282,10 +293,18 @@ async function ProductDetailContent({ productId }: ProductDetailDataProps) {
       <Tabs defaultValue="details">
         <TabsList>
           <TabsTrigger value="details">Details</TabsTrigger>
-          <TabsTrigger value="variants">Variants</TabsTrigger>
-          <TabsTrigger value="images">Images</TabsTrigger>
-          <TabsTrigger value="inventory">Inventory</TabsTrigger>
-          <TabsTrigger value="reviews">Reviews</TabsTrigger>
+          <TabsTrigger value="variants">
+            <TabLabel label="Variants" count={product.variants.length} />
+          </TabsTrigger>
+          <TabsTrigger value="images">
+            <TabLabel label="Images" count={product.images.length} />
+          </TabsTrigger>
+          <TabsTrigger value="inventory">
+            <TabLabel label="Inventory" count={product.inventoryRows.length} />
+          </TabsTrigger>
+          <TabsTrigger value="reviews">
+            <TabLabel label="Reviews" count={product.totalReviewCount} />
+          </TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
 

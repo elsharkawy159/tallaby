@@ -29,7 +29,9 @@ export const getCurrentAdminUser = async (): Promise<AdminUser> => {
   // Aliased here (alias:column) so the returned shape still matches AdminUser.
   const { data: userProfile, error: profileError } = await supabase
     .from("users")
-    .select("id, email, role, isVerified:is_verified, fullName:full_name, createdAt:created_at, updatedAt:updated_at")
+    .select(
+      "id, email, role, isVerified:is_verified, fullName:full_name, createdAt:created_at, updatedAt:updated_at",
+    )
     .eq("id", user.id)
     .single();
 
@@ -53,7 +55,7 @@ export const getCurrentAdminUser = async (): Promise<AdminUser> => {
  * Server-side function to check if user has specific permission
  */
 export const checkAdminPermission = async (
-  permission: keyof AdminPermissions
+  permission: keyof AdminPermissions,
 ): Promise<boolean> => {
   try {
     const user = await getCurrentAdminUser();
@@ -101,7 +103,7 @@ export const isAdminOrHigher = async (): Promise<boolean> => {
  */
 export const validateAdminAccess = async (
   requiredPermission?: keyof AdminPermissions,
-  requiredRole?: AdminRole
+  requiredRole?: AdminRole,
 ): Promise<AdminUser> => {
   const user = await getCurrentAdminUser();
 
@@ -128,7 +130,7 @@ export const validateAdminAccess = async (
  * Server-side function to get admin user with optional permission check
  */
 export const getAdminUserWithPermission = async (
-  permission?: keyof AdminPermissions
+  permission?: keyof AdminPermissions,
 ): Promise<AdminUser> => {
   return validateAdminAccess(permission);
 };

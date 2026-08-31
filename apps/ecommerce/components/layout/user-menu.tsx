@@ -83,7 +83,14 @@ export function UserMenu({
           )}
           title={t("welcome", { name: userName })}
         >
-          <Avatar className="size-4.5 md:size-6 shrink-0">
+          <Avatar
+            className={cn(
+              "size-4.5 md:size-6 shrink-0 rounded-full border-2",
+              variant === "desktop"
+                ? "border-white"
+                : "border-gray-300"
+            )}
+          >
             <AvatarImage src={avatarUrl} alt="User avatar" />
             <AvatarFallback className="bg-primary text-primary-foreground text-[10px] md:text-xs font-medium">
               {userInitials}

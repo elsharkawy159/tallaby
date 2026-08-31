@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { ArrowLeft } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@workspace/ui/components/avatar";
@@ -18,7 +19,8 @@ import {
 } from "@workspace/ui/components/table";
 
 import { formatAddress, formatCurrency } from "@/lib/format";
-import { getStatusColor, getStatusLabel } from "@/lib/shipping-status";
+import { translateShippingStatus } from "@/lib/rider-labels";
+import { getStatusColor } from "@/lib/shipping-status";
 
 import { RiderFormDialog } from "../_components/rider-form-dialog";
 import { RiderActiveToggle, RiderAvailableToggle } from "../_components/rider-toggles";
@@ -30,7 +32,35 @@ interface RiderDetailPageProps {
   params: Promise<{ riderId: string }>;
 }
 
+interface DeliveryRow {
+  shipmentId: string;
+  orderId: string;
+  orderNumber: string;
+  status: string;
+  totalAmount: string;
+  customerName: string | null;
+  addressLine1: string | null;
+  addressLine2: string | null;
+  city: string | null;
+  state: string | null;
+  postalCode: string | null;
+  country: string | null;
+}
+
+interface DeliveryTableLabels {
+  empty: string;
+  colOrder: string;
+  colCustomer: string;
+  colAddress: string;
+  colAmount: string;
+  colStatus: string;
+  emDash: string;
+}
+
 async function RiderDetailContent({ riderId }: { riderId: string }) {
+  const t = await getTranslations("riders");
+  const tCommon = await getTranslations("common");
+  const tStatus = await getTranslations("status");
   const result = await getRiderDetail(riderId);
 
   if (!result.success || !result.data) notFound();
@@ -40,23 +70,36 @@ async function RiderDetailContent({ riderId }: { riderId: string }) {
   const activeOrders = result.activeOrders ?? [];
   const completedOrders = result.completedOrders ?? [];
 
+  const tableLabels = {
+    colOrder: t("colOrder"),
+    colCustomer: t("colCustomer"),
+    colAddress: t("colAddress"),
+    colAmount: t("colAmount"),
+    colStatus: t("colStatus"),
+    emDash: tCommon("emDash"),
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <Button variant="outline" size="icon" asChild>
-            <Link href="/riders" aria-label="Back to riders">
-              <ArrowLeft className="size-4" />
+            <Link href="/riders" aria-label={t("backAria")}>
+              <ArrowLeft className="size-4 rtl:rotate-180" />
             </Link>
           </Button>
           <Avatar className="size-10">
             {rider.avatarUrl && <AvatarImage src={rider.avatarUrl} alt="" />}
-            <AvatarFallback>{(rider.fullName ?? rider.email ?? "?").charAt(0).toUpperCase()}</AvatarFallback>
+            <AvatarFallback>
+              {(rider.fullName ?? rider.email ?? "?").charAt(0).toUpperCase()}
+            </AvatarFallback>
           </Avatar>
           <div>
-            <h1 className="text-xl font-bold tracking-tight">{rider.fullName ?? "—"}</h1>
+            <h1 className="text-xl font-bold tracking-tight">
+              {rider.fullName ?? tCommon("emDash")}
+            </h1>
             <p className="text-sm text-muted-foreground">
-              {rider.email} · {rider.phone ?? "No phone"}
+              {rider.email} · {rider.phone ?? t("noPhone")}
             </p>
           </div>
         </div>
@@ -65,39 +108,50 @@ async function RiderDetailContent({ riderId }: { riderId: string }) {
 
       <div className="flex flex-wrap items-center gap-6">
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Active</span>
+          <span className="text-sm text-muted-foreground">{t("active")}</span>
           <RiderActiveToggle riderId={rider.id} isActive={!rider.isSuspended} />
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Available</span>
+          <span className="text-sm text-muted-foreground">{t("available")}</span>
           <RiderAvailableToggle riderId={rider.id} isAvailable={rider.isAvailable} />
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-        <StatCard label="Active deliveries" value={stats.activeDeliveries} />
-        <StatCard label="Today's deliveries" value={stats.todayDeliveries} />
-        <StatCard label="Delivered today" value={stats.deliveredToday} />
-        <StatCard label="Failed today" value={stats.failedToday} />
-        <StatCard label="COD currently held" value={formatCurrency(stats.codHeld)} />
-        <StatCard label="COD collected today" value={formatCurrency(stats.codCollectedToday)} />
+        <StatCard label={t("activeDeliveries")} value={stats.activeDeliveries} />
+        <StatCard label={t("todaysDeliveries")} value={stats.todayDeliveries} />
+        <StatCard label={t("deliveredToday")} value={stats.deliveredToday} />
+        <StatCard label={t("failedToday")} value={stats.failedToday} />
+        <StatCard label={t("codHeld")} value={formatCurrency(stats.codHeld)} />
+        <StatCard
+          label={t("codCollectedToday")}
+          value={formatCurrency(stats.codCollectedToday)}
+        />
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Active orders</CardTitle>
+          <CardTitle className="text-base">{t("activeOrders")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <DeliveryTable rows={activeOrders} empty="No active deliveries." />
+          <DeliveryTable
+            rows={activeOrders}
+            labels={{ ...tableLabels, empty: t("noActive") }}
+            translateStatus={(status) => translateShippingStatus(tStatus, status)}
+          />
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Completed orders</CardTitle>
+          <CardTitle className="text-base">{t("completedOrders")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <DeliveryTable rows={completedOrders} empty="No completed deliveries yet." />
+          <DeliveryTable
+            rows={completedOrders}
+            labels={{ ...tableLabels, empty: t("noCompleted") }}
+            translateStatus={(status) => translateShippingStatus(tStatus, status)}
+          />
         </CardContent>
       </Card>
     </div>
@@ -117,26 +171,15 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
 
 function DeliveryTable({
   rows,
-  empty,
+  labels,
+  translateStatus,
 }: {
-  rows: Array<{
-    shipmentId: string;
-    orderId: string;
-    orderNumber: string;
-    status: string;
-    totalAmount: string;
-    customerName: string | null;
-    addressLine1: string | null;
-    addressLine2: string | null;
-    city: string | null;
-    state: string | null;
-    postalCode: string | null;
-    country: string | null;
-  }>;
-  empty: string;
+  rows: DeliveryRow[];
+  labels: DeliveryTableLabels;
+  translateStatus: (status: string) => string;
 }) {
   if (rows.length === 0) {
-    return <p className="text-sm text-muted-foreground">{empty}</p>;
+    return <p className="text-sm text-muted-foreground">{labels.empty}</p>;
   }
 
   return (
@@ -144,11 +187,11 @@ function DeliveryTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Order</TableHead>
-            <TableHead>Customer</TableHead>
-            <TableHead>Address</TableHead>
-            <TableHead className="text-right">Amount</TableHead>
-            <TableHead>Status</TableHead>
+            <TableHead>{labels.colOrder}</TableHead>
+            <TableHead>{labels.colCustomer}</TableHead>
+            <TableHead>{labels.colAddress}</TableHead>
+            <TableHead className="text-end">{labels.colAmount}</TableHead>
+            <TableHead>{labels.colStatus}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -159,7 +202,7 @@ function DeliveryTable({
                   {row.orderNumber}
                 </Link>
               </TableCell>
-              <TableCell>{row.customerName ?? "—"}</TableCell>
+              <TableCell>{row.customerName ?? labels.emDash}</TableCell>
               <TableCell className="max-w-64 truncate text-muted-foreground">
                 {formatAddress(
                   row.addressLine1
@@ -174,11 +217,13 @@ function DeliveryTable({
                     : null
                 )}
               </TableCell>
-              <TableCell className="text-right">
+              <TableCell className="text-end">
                 {formatCurrency(Number(row.totalAmount))}
               </TableCell>
               <TableCell>
-                <Badge className={getStatusColor(row.status)}>{getStatusLabel(row.status)}</Badge>
+                <Badge className={getStatusColor(row.status)}>
+                  {translateStatus(row.status)}
+                </Badge>
               </TableCell>
             </TableRow>
           ))}

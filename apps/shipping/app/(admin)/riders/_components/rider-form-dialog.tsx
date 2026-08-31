@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Loader2, Pencil, Plus } from "lucide-react";
 import { toast } from "sonner";
 
@@ -30,6 +31,8 @@ interface RiderFormDialogProps {
 }
 
 export function RiderFormDialog({ rider }: RiderFormDialogProps) {
+  const t = useTranslations("riders");
+  const tCommon = useTranslations("common");
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -45,11 +48,11 @@ export function RiderFormDialog({ rider }: RiderFormDialogProps) {
         : await createRider({ fullName, email, phone, avatarUrl });
 
       if (result.success) {
-        toast.success(result.message ?? "Saved");
+        toast.success(result.message ?? tCommon("saved"));
         setOpen(false);
         router.refresh();
       } else {
-        toast.error(result.error ?? "Something went wrong");
+        toast.error(result.error ?? tCommon("somethingWrong"));
       }
     });
   };
@@ -58,29 +61,35 @@ export function RiderFormDialog({ rider }: RiderFormDialogProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {rider ? (
-          <Button variant="ghost" size="icon" aria-label={`Edit ${rider.fullName ?? "rider"}`}>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={t("editAria", {
+              name: rider.fullName ?? tCommon("unnamedRider"),
+            })}
+          >
             <Pencil className="size-4" />
           </Button>
         ) : (
           <Button>
             <Plus className="size-4" />
-            Add rider
+            {t("addRider")}
           </Button>
         )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{rider ? "Edit rider" : "Add rider"}</DialogTitle>
+          <DialogTitle>{rider ? t("editRider") : t("addRider")}</DialogTitle>
         </DialogHeader>
 
         <div className="grid gap-4">
           <div className="space-y-1.5">
-            <Label htmlFor="rider-name">Full name</Label>
+            <Label htmlFor="rider-name">{t("fullName")}</Label>
             <Input id="rider-name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="rider-email">Email</Label>
+            <Label htmlFor="rider-email">{t("email")}</Label>
             <Input
               id="rider-email"
               type="email"
@@ -89,19 +98,17 @@ export function RiderFormDialog({ rider }: RiderFormDialogProps) {
               disabled={!!rider}
             />
             {rider && (
-              <p className="text-xs text-muted-foreground">
-                Email can&apos;t be changed here.
-              </p>
+              <p className="text-xs text-muted-foreground">{t("emailLocked")}</p>
             )}
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="rider-phone">Phone</Label>
+            <Label htmlFor="rider-phone">{t("phone")}</Label>
             <Input id="rider-phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="rider-avatar">Avatar URL</Label>
+            <Label htmlFor="rider-avatar">{t("avatarUrl")}</Label>
             <Input
               id="rider-avatar"
               value={avatarUrl}
@@ -112,11 +119,11 @@ export function RiderFormDialog({ rider }: RiderFormDialogProps) {
 
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)} disabled={isPending}>
-            Cancel
+            {tCommon("cancel")}
           </Button>
           <Button onClick={submit} disabled={isPending || !fullName || !phone || (!rider && !email)}>
             {isPending && <Loader2 className="size-4 animate-spin" />}
-            {rider ? "Save changes" : "Create rider"}
+            {rider ? t("saveChanges") : t("createRider")}
           </Button>
         </DialogFooter>
       </DialogContent>

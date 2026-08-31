@@ -5,6 +5,11 @@ import { Button } from "@workspace/ui/components/button";
 import { cn } from "@/lib/utils";
 import type { User } from "@supabase/supabase-js";
 import { useTranslations } from "next-intl";
+import {
+  getSellerCtaHref,
+  getSellerCtaOpensInNewTab,
+  isExistingSeller,
+} from "@/lib/seller/seller-cta.lib";
 
 export const BecomeSellerButton = ({
   className,
@@ -14,20 +19,18 @@ export const BecomeSellerButton = ({
   user: User | null;
 }) => {
   const t = useTranslations("onboarding");
+  const href = getSellerCtaHref(user);
+  const opensInNewTab = getSellerCtaOpensInNewTab(user);
+  const label = isExistingSeller(user) ? t("viewDashboard") : t("startSelling");
 
   return (
     <Button asChild className={cn("text-sm", className)} size="sm">
       <Link
-        href={
-          !user
-            ? "/auth?redirect=/onboarding"
-            : user?.user_metadata?.is_seller
-              ? "https://dashboard.tallaby.com/"
-              : "/onboarding"
-        }
-        target={user?.user_metadata?.is_seller ? "_blank" : "_self"}
+        href={href}
+        target={opensInNewTab ? "_blank" : undefined}
+        rel={opensInNewTab ? "noopener noreferrer" : undefined}
       >
-        {user?.user_metadata?.is_seller ? t("viewDashboard") : t("startSelling")}
+        {label}
       </Link>
     </Button>
   );

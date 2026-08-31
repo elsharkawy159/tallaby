@@ -8,6 +8,7 @@ export interface ProductTranslationFromRelation {
   locale: string
   title: string
   description?: string | null
+  content?: string | null
   bulletPoints?: unknown
   slug?: string | null
   metaTitle?: string | null
@@ -33,6 +34,7 @@ export function pickTranslationFromArray<T extends ProductTranslationFromRelatio
 export interface ProductTranslationRow {
   title: string;
   description: string | null;
+  content: string | null;
   bulletPoints: unknown;
   slug: string | null;
   metaTitle: string | null;
@@ -82,6 +84,7 @@ export async function getProductIdBySlug(
 const TRANSLATION_COLUMNS = {
   title: productTranslations.title,
   description: productTranslations.description,
+  content: productTranslations.content,
   bulletPoints: productTranslations.bulletPoints,
   slug: productTranslations.slug,
   metaTitle: productTranslations.metaTitle,
@@ -143,6 +146,7 @@ export async function getProductTranslationWithFallback(
 export type MergedProduct<T> = T & {
   title: string;
   description: string | null;
+  content: string | null;
   bulletPoints: unknown;
   slug: string;
   seo?: { metaTitle?: string; metaDescription?: string };
@@ -174,6 +178,8 @@ export function mergeProductWithTranslation<T extends Record<string, unknown>>(
       title: ((product.title as string | undefined) ?? "") as string,
       description: ((product.description as string | null | undefined) ??
         null) as string | null,
+      content: ((product.content as string | null | undefined) ??
+        null) as string | null,
       bulletPoints: product.bulletPoints ?? null,
       slug: ((product.slug as string | undefined) ?? "") as string,
       seo,
@@ -183,6 +189,7 @@ export function mergeProductWithTranslation<T extends Record<string, unknown>>(
     ...product,
     title: translation.title,
     description: translation.description,
+    content: translation.content ?? null,
     bulletPoints: translation.bulletPoints,
     slug: translation.slug ?? (product.slug as string | undefined) ?? "",
     seo: {

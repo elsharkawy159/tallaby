@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { ProductImages } from "./ProductImages";
 import type { Product } from "./product-page.types";
 import type { productVariants } from "@workspace/db";
+import { getVariantImageUrls } from "@/lib/variant-images";
 
 type ProductVariant = typeof productVariants.$inferSelect;
 
@@ -23,13 +24,14 @@ export const ProductHero = ({
         ? [product.images as string]
         : [];
 
-    // If a variant is selected and has an image, prepend it to the images array
-    if (selectedVariant?.imageUrl) {
-      return [selectedVariant.imageUrl, ...baseImages];
+    const variantImages = getVariantImageUrls(selectedVariant);
+
+    if (variantImages.length > 0) {
+      return variantImages;
     }
 
     return baseImages;
-  }, [product.images, selectedVariant?.imageUrl]);
+  }, [product.images, selectedVariant]);
 
   return (
     <div className="w-full lg:sticky lg:top-5 h-full">

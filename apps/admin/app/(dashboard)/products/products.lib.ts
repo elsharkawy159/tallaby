@@ -66,8 +66,10 @@ export function parseProductImages(images: unknown): string[] {
 export function getStorefrontProductUrl(slug: string | null | undefined): string | null {
   if (!slug) return null;
   const baseUrl =
-    process.env.ECOMMERCE_URL ??
     process.env.NEXT_PUBLIC_ECOMMERCE_URL ??
+    process.env.NEXT_PUBLIC_ECOMMERCE_DOMAIN ??
+    process.env.ECOMMERCE_URL ??
+    process.env.ECOMMERCE_DOMAIN ??
     "http://localhost:3000";
   return `${baseUrl.replace(/\/$/, "")}/products/${slug}`;
 }

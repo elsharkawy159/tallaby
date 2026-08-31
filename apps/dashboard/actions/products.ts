@@ -13,10 +13,20 @@ import { revalidatePath } from "next/cache";
 import { getUser } from "./auth";
 import slugify from "slugify";
 import {
+  isRichTextEmpty,
+  sanitizeRichTextHtml,
+} from "@workspace/tiptap";
+import {
   applyInvalidation,
   invalidateProduct,
   type ProductCacheSnapshot,
 } from "@workspace/cache";
+
+function normalizeRichTextContent(html?: string | null): string | null {
+  if (!html?.trim()) return null;
+  const sanitized = sanitizeRichTextHtml(html);
+  return isRichTextEmpty(sanitized) ? null : sanitized;
+}
 
 // Excel parsing
 import * as XLSX from "xlsx";
@@ -185,6 +195,65 @@ const normalizeKey = (k: string) =>
   String(k || "")
     .toLowerCase()
     .replace(/\s+/g, "");
+
+function normalizeVariantImageFields(v: {
+  images?: string[] | null;
+  imageUrl?: string | null | undefined;
+}) {
+  const images = Array.isArray(v.images)
+    ? v.images.filter(
+        (img): img is string => typeof img === "string" && img.length > 0
+      )
+    : v.imageUrl
+      ? [v.imageUrl]
+      : [];
+
+  return {
+    images: images.length > 0 ? images : null,
+    imageUrl: images[0] ?? null,
+  };
+}
+
+function normalizeVariantDefaultFlags<T extends { isDefault?: boolean | null }>(
+  variants: T[]
+): T[] {
+  if (variants.length === 0) {
+    return variants;
+  }
+
+  const defaultIndex = variants.findIndex((variant) => variant.isDefault === true);
+  const resolvedIndex = defaultIndex >= 0 ? defaultIndex : 0;
+
+  return variants.map((variant, index) => ({
+    ...variant,
+    isDefault: index === resolvedIndex,
+  }));
+}
+
+function mapVariantFormToDb(v: any, index: number) {
+  const { images, imageUrl } = normalizeVariantImageFields(v);
+  const localized = v.localized ?? null;
+  const englishFields =
+    localized && typeof localized === "object" && !Array.isArray(localized)
+      ? (localized as { en?: { title?: string; option1?: string; option2?: string; option3?: string } }).en
+      : null;
+
+  return {
+    title: englishFields?.title ?? v.title,
+    price: v.price as any,
+    stock: v.stock ?? 0,
+    sku: v.sku,
+    imageUrl,
+    images,
+    isDefault: Boolean(v.isDefault),
+    localized,
+    option1: englishFields?.option1 ?? v.option1,
+    option2: englishFields?.option2 ?? v.option2,
+    option3: englishFields?.option3 ?? v.option3,
+    barCode: v.barCode,
+    position: v.position ?? index + 1,
+  };
+}
 
 function buildPriceObject(input: {
   base?: number | null;
@@ -823,6 +892,7 @@ export async function getProduct(productId: string) {
             title: string;
             slug: string | null;
             description: string | null;
+            content: string | null;
             bulletPoints: unknown;
             metaTitle: string | null;
             metaDescription: string | null;
@@ -836,6 +906,7 @@ export async function getProduct(productId: string) {
         title: enRow?.title ?? "",
         slug: enRow?.slug ?? "",
         description: enRow?.description ?? undefined,
+        content: enRow?.content ?? "",
         bulletPoints: enRow
           ? Array.isArray(enRow.bulletPoints)
             ? enRow.bulletPoints
@@ -849,6 +920,7 @@ export async function getProduct(productId: string) {
             title: arRow.title,
             slug: arRow.slug ?? "",
             description: arRow.description ?? undefined,
+            content: arRow.content ?? "",
             bulletPoints: Array.isArray(arRow.bulletPoints)
               ? arRow.bulletPoints
               : [],
@@ -859,6 +931,7 @@ export async function getProduct(productId: string) {
             title: "",
             slug: "",
             description: "",
+            content: "",
             bulletPoints: [],
             metaTitle: "",
             metaDescription: "",
@@ -925,6 +998,7 @@ type CreateProductNew = Omit<
       title: string;
       slug: string;
       description?: string;
+      content?: string;
       bulletPoints?: string[];
       metaTitle?: string;
       metaDescription?: string;
@@ -933,6 +1007,7 @@ type CreateProductNew = Omit<
       title?: string;
       slug?: string;
       description?: string;
+      content?: string;
       bulletPoints?: string[];
       metaTitle?: string;
       metaDescription?: string;
@@ -966,6 +1041,8 @@ export async function createProduct(
 
     const {
       localized: _localized,
+      variants: _variantsForm,
+      variantTypes: _variantTypes,
       title: _t,
       slug: _s,
       description: _d,
@@ -1005,18 +1082,10 @@ export async function createProduct(
 
       // Insert variants if provided
       if (Array.isArray(rest.variants) && rest.variants.length > 0) {
-        const variantValues = rest.variants.map((v: any) => ({
+        const normalizedVariants = normalizeVariantDefaultFlags(rest.variants);
+        const variantValues = normalizedVariants.map((v: any, index: number) => ({
           productId: created.id,
-          title: v.title,
-          price: v.price as any,
-          stock: v.stock ?? 0,
-          sku: v.sku,
-          imageUrl: v.imageUrl,
-          option1: v.option1,
-          option2: v.option2,
-          option3: v.option3,
-          barCode: v.barCode,
-          position: v.position,
+          ...mapVariantFormToDb(v, index),
         }));
         await tx.insert(productVariants).values(variantValues);
       }
@@ -1034,6 +1103,7 @@ export async function createProduct(
               (data.slug ?? "").trim() ||
               slugify(data.title ?? "untitled", { lower: true, strict: true }),
             description: data.description?.trim(),
+            content: "",
             bulletPoints: Array.isArray(data.bulletPoints)
               ? data.bulletPoints
               : [],
@@ -1044,6 +1114,7 @@ export async function createProduct(
             title: "",
             slug: "",
             description: "",
+            content: "",
             bulletPoints: [],
             metaTitle: "",
             metaDescription: "",
@@ -1064,6 +1135,7 @@ export async function createProduct(
           locale: "en" as const,
           title: enTitle,
           description: localizedData.en.description?.trim() || null,
+          content: normalizeRichTextContent(localizedData.en.content),
           bulletPoints: localizedData.en.bulletPoints ?? [],
           slug: enSlug,
           metaTitle: localizedData.en.metaTitle?.trim() || null,
@@ -1075,6 +1147,7 @@ export async function createProduct(
         const arHasContent =
           (localizedData.ar?.title ?? "").trim() !== "" ||
           (localizedData.ar?.description ?? "").trim() !== "" ||
+          (localizedData.ar?.content ?? "").trim() !== "" ||
           (localizedData.ar?.slug ?? "").trim() !== "" ||
           (localizedData.ar?.bulletPoints ?? []).length > 0 ||
           (localizedData.ar?.metaTitle ?? "").trim() !== "" ||
@@ -1087,6 +1160,7 @@ export async function createProduct(
             locale: "ar" as const,
             title: (localizedData.ar!.title ?? "").trim() || enTitle,
             description: localizedData.ar?.description?.trim() || null,
+            content: normalizeRichTextContent(localizedData.ar?.content),
             bulletPoints: localizedData.ar?.bulletPoints ?? [],
             slug: arSlug,
             metaTitle: localizedData.ar?.metaTitle?.trim() || null,
@@ -1155,7 +1229,9 @@ export async function updateProduct(
       sku: string;
       price: number;
       stock?: number;
+      images?: string[];
       imageUrl?: string;
+      isDefault?: boolean;
       option1?: string;
       option2?: string;
       option3?: string;
@@ -1206,6 +1282,7 @@ export async function updateProduct(
     };
     const {
       variants,
+      variantTypes: _variantTypes,
       localized: localizedData,
       title: _t,
       slug: _s,
@@ -1253,6 +1330,7 @@ export async function updateProduct(
             title: enTitle,
             slug: enSlug,
             description: localizedData.en?.description?.trim() || null,
+            content: normalizeRichTextContent(localizedData.en?.content),
             bulletPoints: localizedData.en?.bulletPoints ?? [],
             metaTitle: localizedData.en?.metaTitle?.trim() || null,
             metaDescription: localizedData.en?.metaDescription?.trim() || null,
@@ -1267,6 +1345,7 @@ export async function updateProduct(
         const arHasContent =
           (localizedData.ar?.title ?? "").trim() !== "" ||
           (localizedData.ar?.description ?? "").trim() !== "" ||
+          (localizedData.ar?.content ?? "").trim() !== "" ||
           (localizedData.ar?.slug ?? "").trim() !== "" ||
           (localizedData.ar?.bulletPoints ?? []).length > 0 ||
           (localizedData.ar?.metaTitle ?? "").trim() !== "" ||
@@ -1283,6 +1362,7 @@ export async function updateProduct(
             title: (localizedData.ar.title ?? "").trim() || enTitle,
             slug: localizedData.ar.slug?.trim() || null,
             description: localizedData.ar.description?.trim() || null,
+            content: normalizeRichTextContent(localizedData.ar.content),
             bulletPoints: localizedData.ar.bulletPoints ?? [],
             metaTitle: localizedData.ar.metaTitle?.trim() || null,
             metaDescription: localizedData.ar.metaDescription?.trim() || null,
@@ -1316,18 +1396,10 @@ export async function updateProduct(
 
         // Then insert new variants if any
         if (variants.length > 0) {
-          const variantValues = variants.map((v) => ({
-            productId: productId,
-            title: v.title,
-            price: v.price as any,
-            stock: v.stock ?? 0,
-            sku: v.sku,
-            imageUrl: v.imageUrl,
-            option1: v.option1,
-            option2: v.option2,
-            option3: v.option3,
-            barCode: v.barCode,
-            position: v.position,
+          const normalizedVariants = normalizeVariantDefaultFlags(variants);
+          const variantValues = normalizedVariants.map((v, index) => ({
+            productId,
+            ...mapVariantFormToDb(v, index),
           }));
 
           await tx.insert(productVariants).values(variantValues);

@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import {
@@ -18,12 +19,14 @@ import { RiderActiveToggle, RiderAvailableToggle } from "./_components/rider-tog
 export const dynamic = "force-dynamic";
 
 async function RidersTable() {
+  const t = await getTranslations("riders");
+  const tCommon = await getTranslations("common");
   const result = await getRiders();
 
   if (!result.success) {
     return (
       <p className="text-sm text-destructive">
-        {result.error ?? "Failed to load riders"}
+        {result.error ?? t("loadError")}
       </p>
     );
   }
@@ -31,9 +34,7 @@ async function RidersTable() {
   if (result.data.length === 0) {
     return (
       <div className="rounded-md border bg-white p-10 text-center dark:bg-gray-950">
-        <p className="text-sm text-muted-foreground">
-          No rider accounts yet. Add one to get started.
-        </p>
+        <p className="text-sm text-muted-foreground">{t("empty")}</p>
       </div>
     );
   }
@@ -43,13 +44,13 @@ async function RidersTable() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Phone</TableHead>
-            <TableHead className="text-right">Today</TableHead>
-            <TableHead className="text-right">Active</TableHead>
-            <TableHead>Available</TableHead>
-            <TableHead>Active</TableHead>
+            <TableHead>{t("colName")}</TableHead>
+            <TableHead>{t("colEmail")}</TableHead>
+            <TableHead>{t("colPhone")}</TableHead>
+            <TableHead className="text-end">{t("colToday")}</TableHead>
+            <TableHead className="text-end">{t("colActive")}</TableHead>
+            <TableHead>{t("colAvailable")}</TableHead>
+            <TableHead>{t("colActive")}</TableHead>
             <TableHead className="w-16" />
           </TableRow>
         </TableHeader>
@@ -58,13 +59,13 @@ async function RidersTable() {
             <TableRow key={rider.id}>
               <TableCell className="font-medium">
                 <Link href={`/riders/${rider.id}`} className="hover:underline">
-                  {rider.fullName ?? "—"}
+                  {rider.fullName ?? tCommon("emDash")}
                 </Link>
               </TableCell>
-              <TableCell>{rider.email ?? "—"}</TableCell>
-              <TableCell>{rider.phone ?? "—"}</TableCell>
-              <TableCell className="text-right">{rider.todayDeliveries}</TableCell>
-              <TableCell className="text-right">
+              <TableCell>{rider.email ?? tCommon("emDash")}</TableCell>
+              <TableCell>{rider.phone ?? tCommon("emDash")}</TableCell>
+              <TableCell className="text-end">{rider.todayDeliveries}</TableCell>
+              <TableCell className="text-end">
                 {rider.activeDeliveries > 0 ? (
                   <Link
                     href={`/orders?riderId=${rider.id}`}
@@ -96,15 +97,15 @@ async function RidersTable() {
   );
 }
 
-export default function RidersPage() {
+export default async function RidersPage() {
+  const t = await getTranslations("riders");
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Riders</h1>
-          <p className="text-sm text-muted-foreground">
-            Users with the rider role. Assign them to orders from the order page.
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
         <RiderFormDialog />
       </div>

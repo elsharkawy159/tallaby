@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { roundPriceToNearestNine } from "@/lib/utils/product-pricing.lib";
 
 export const SUPPORTED_LOCALES = ["en", "ar"] as const
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number]
@@ -7,12 +8,33 @@ const localizedFieldsSchema = z.object({
   title: z.string().max(255),
   slug: z.string().max(255),
   description: z.string().optional(),
+  content: z.string().optional(),
   bulletPoints: z.array(z.string()).max(10).optional(),
   metaTitle: z.string().max(60).optional(),
   metaDescription: z.string().max(160).optional(),
 })
 
 export type LocalizedFields = z.infer<typeof localizedFieldsSchema>
+
+const variantLocalizedFieldsSchema = z.object({
+  title: z.string().default(""),
+  option1: z.string().optional(),
+  option2: z.string().optional(),
+  option3: z.string().optional(),
+})
+
+const variantTypeLocalizedSchema = z.object({
+  name: z.string().default(""),
+  values: z.array(z.string()).default([]),
+})
+
+const variantTypeSchema = z.object({
+  id: z.string(),
+  localized: z.object({
+    en: variantTypeLocalizedSchema,
+    ar: variantTypeLocalizedSchema,
+  }),
+})
 
 // Product schema: shared fields + localized fields per locale shared fields + localized fields per locale
 export const addProductFormSchema = z
@@ -34,11 +56,26 @@ export const addProductFormSchema = z
     maxOrderQuantity: z.number().int().optional(),
     images: z.array(z.string()).min(1, "At least one product image is required"),
     price: z.object({
-      base: z.number().min(0.01, "Base price must be greater than 0").optional(),
-      list: z.number().min(0.01, "List price must be greater than 0"),
+      base: z
+        .preprocess(
+          (val) =>
+            typeof val === "number" && val > 0
+              ? roundPriceToNearestNine(val)
+              : val,
+          z.number().min(0.01, "Base price must be greater than 0").optional()
+        ),
+      list: z.preprocess(
+        (val) =>
+          typeof val === "number" && val > 0 ? roundPriceToNearestNine(val) : val,
+        z.number().min(0.01, "List price must be greater than 0")
+      ),
       discountValue: z.number().optional(),
       discountType: z.enum(["amount", "percent"]).default("amount").optional(),
-      final: z.number().min(0.01, "Final price must be greater than 0"),
+      final: z.preprocess(
+        (val) =>
+          typeof val === "number" && val > 0 ? roundPriceToNearestNine(val) : val,
+        z.number().min(0.01, "Final price must be greater than 0")
+      ),
     }),
     condition: z
       .enum([
@@ -73,14 +110,27 @@ export const addProductFormSchema = z
         weightUnit: z.enum(["kg", "g", "lb"]).default("kg").optional(),
       })
       .optional(),
+    variantTypes: z.array(variantTypeSchema).optional(),
     variants: z
       .array(
         z.object({
           title: z.string().min(1, "Variant title is required").max(255),
           sku: z.string().min(1, "Variant SKU is required").max(100),
-          price: z.number().min(0.01, "Price must be greater than 0"),
+          listPrice: z.number().min(0.01, "List price must be greater than 0").optional(),
+          discountValue: z.number().optional(),
+          discountType: z.enum(["amount", "percent"]).default("percent").optional(),
+          price: z.number().min(0.01, "Final price must be greater than 0"),
           stock: z.number().int().min(0).default(0),
+          isDefault: z.boolean().default(false).optional(),
+          images: z.array(z.string()).optional(),
           imageUrl: z.string().optional(),
+          localized: z
+            .object({
+              en: variantLocalizedFieldsSchema,
+              ar: variantLocalizedFieldsSchema,
+            })
+            .optional(),
+          optionValueIndexes: z.array(z.number().int().min(0)).optional(),
           option1: z.string().optional(),
           option2: z.string().optional(),
           option3: z.string().optional(),
@@ -123,6 +173,7 @@ export const addProductFormSchema = z
     const arHasContent =
       (ar.title ?? "").trim() !== "" ||
       (ar.description ?? "").trim() !== "" ||
+      (ar.content ?? "").trim() !== "" ||
       (ar.slug ?? "").trim() !== "" ||
       ((ar.bulletPoints ?? []).length > 0) ||
       (ar.metaTitle ?? "").trim() !== "" ||
@@ -141,6 +192,7 @@ export const defaultLocalizedFields = (): LocalizedFields => ({
   title: "",
   slug: "",
   description: "",
+  content: "",
   bulletPoints: [],
   metaTitle: "",
   metaDescription: "",
@@ -178,6 +230,7 @@ export const defaultValues = {
   freeDelivery: false,
   taxClass: "standard" as const,
   notes: "",
+  variantTypes: [],
   variants: [],
   localized: {
     en: defaultLocalizedFields(),
@@ -268,6 +321,7 @@ export function isLocaleMissingRequiredFields(
     const hasAnyArContent =
       title !== "" ||
       (data?.description ?? "").trim() !== "" ||
+      (data?.content ?? "").trim() !== "" ||
       (data?.slug ?? "").trim() !== "" ||
       ((data?.bulletPoints ?? []).length > 0) ||
       (data?.metaTitle ?? "").trim() !== "" ||

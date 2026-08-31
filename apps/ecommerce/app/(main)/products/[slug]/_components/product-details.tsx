@@ -17,9 +17,13 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
-import { DiscountCountdown } from "./discount-countdown";
+import { getVariantImageUrls } from "@/lib/variant-images";
+import { getDefaultProductVariantId } from "@/lib/product-variants";
+import { getVariantDisplayFields } from "@/lib/variant-localized";
+import type { ProductLocale } from "@/lib/product-translations";
 import { SellerInfo } from "./SellerInfo";
 import { Star } from "lucide-react";
+import { DiscountCountdown } from "./discount-countdown";
 
 interface ProductDetailsProps {
   product: Product;
@@ -36,17 +40,13 @@ export const ProductDetails = ({
   selectedVariantId: externalSelectedVariantId,
   onVariantChange,
 }: ProductDetailsProps) => {
-  const locale = useLocale();
+  const locale = useLocale() as ProductLocale;
   const t = useTranslations("product");
 
   // Use internal state if props are not provided (backwards compatibility)
   const [internalSelectedVariantId, setInternalSelectedVariantId] = useState<
     string | null
-  >(
-    product.productVariants && product.productVariants.length > 0
-      ? (product.productVariants[0]?.id ?? null)
-      : null,
-  );
+  >(getDefaultProductVariantId(product.productVariants));
 
   const selectedVariantId =
     externalSelectedVariantId ?? internalSelectedVariantId;
@@ -64,9 +64,17 @@ export const ProductDetails = ({
     if (selectedVariant) {
       const variantPrice = Number(selectedVariant.price ?? 0);
       const variantStock = Number(selectedVariant.stock ?? 0);
+      const isDefaultVariant = selectedVariant.isDefault === true;
+      const baseListPrice = (product.price as any)?.list
+        ? Number((product.price as any).list)
+        : null;
+
       return {
         price: variantPrice,
-        listPrice: null,
+        listPrice:
+          isDefaultVariant && baseListPrice && baseListPrice > variantPrice
+            ? baseListPrice
+            : null,
         stock: variantStock,
       };
     }
@@ -91,6 +99,30 @@ export const ProductDetails = ({
 
   const hasVariants =
     product.productVariants && product.productVariants.length > 0;
+
+  const variantOptionLabel = useMemo(() => {
+    if (!product.productVariants?.length) return t("selectVariant");
+
+    const optionNames = new Set<string>();
+    for (const variant of product.productVariants) {
+      const display = getVariantDisplayFields(variant, locale);
+      for (const option of [
+        display.option1,
+        display.option2,
+        display.option3,
+      ]) {
+        if (!option) continue;
+        const match = option.match(/^(.+?):\s*(.+)$/);
+        if (match?.[1]) optionNames.add(match[1].trim());
+      }
+    }
+
+    if (optionNames.size === 0) return t("selectVariant");
+
+    return t("selectOption", {
+      option: Array.from(optionNames).join(" / "),
+    });
+  }, [product.productVariants, t]);
   const hasStock = product.status === "active" && stock > 0;
   const isPhysicalProduct = product.productType !== "digital";
   const hasFreeDelivery = isPhysicalProduct && product.freeDelivery === true;
@@ -182,19 +214,21 @@ export const ProductDetails = ({
         {hasVariants && (
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-900 mb-3">
-              {t("selectVariant")}
+              {variantOptionLabel}
             </label>
             <div className="grid lg:grid-cols-2 grid-cols-1 gap-2">
               {product.productVariants?.map((variant) => {
+                const display = getVariantDisplayFields(variant, locale);
                 const isSelected = selectedVariantId === variant.id;
                 const variantStock = Number(variant.stock ?? 0);
                 const isAvailable = variantStock > 0;
-                // Build variant description from options
+                const isDefaultVariant = variant.isDefault === true;
                 const optionParts: string[] = [];
-                if (variant.option1) optionParts.push(variant.option1);
-                if (variant.option2) optionParts.push(variant.option2);
-                if (variant.option3) optionParts.push(variant.option3);
+                if (display.option1) optionParts.push(display.option1);
+                if (display.option2) optionParts.push(display.option2);
+                if (display.option3) optionParts.push(display.option3);
                 const variantDescription = optionParts.join(" • ");
+                const variantThumbnail = getVariantImageUrls(variant)[0];
 
                 return (
                   <button
@@ -210,9 +244,9 @@ export const ProductDetails = ({
                     }`}
                   >
                     <div className="flex items-center gap-2 justify-between">
-                      {variant.imageUrl && (
+                      {variantThumbnail && (
                         <Image
-                          src={getPublicUrl(variant.imageUrl, "products")}
+                          src={getPublicUrl(variantThumbnail, "products")}
                           alt={`${variant.title} image`}
                           width={100}
                           height={100}
@@ -225,8 +259,13 @@ export const ProductDetails = ({
                             isSelected ? "text-gray-900" : "text-gray-700"
                           }`}
                         >
-                          {variant.title}
+                          {display.title || variant.title}
                         </p>
+                        {isDefaultVariant && (
+                          <p className="text-[10px] text-primary font-medium">
+                            Default
+                          </p>
+                        )}
                       </div>
                       <div className="text-right ml-4">
                         <p
@@ -311,13 +350,11 @@ export const ProductDetails = ({
           )}
 
         {product.seller && (
-          <div className="mb-6">
-            <SellerInfo
-              name={product.seller.displayName}
-              rating={product.seller.storeRating}
-              reviewCount={product.seller.totalRatings}
-            />
-          </div>
+          <SellerInfo
+            name={product.seller.displayName}
+            rating={product.seller.storeRating}
+            reviewCount={product.seller.totalRatings}
+          />
         )}
 
         {/* Quantity and Add to Cart */}
@@ -351,7 +388,7 @@ export const ProductDetails = ({
             <AccordionTrigger className="text-base font-medium text-gray-900 py-4">
               {t("description")}
             </AccordionTrigger>
-            <AccordionContent className="text-sm text-gray-700 pb-4">
+            <AccordionContent className="text-sm text-gray-700 pb-4 whitespace-pre-wrap">
               {product.description}
             </AccordionContent>
           </AccordionItem>
@@ -386,12 +423,16 @@ export const ProductDetails = ({
             </div>
             <div>
               <p className="font-medium text-gray-900 text-sm mb-1">
-                {hasFreeDelivery ? t("freeDeliveryOnProduct") : t("freeShipping")}
+                {hasFreeDelivery
+                  ? t("freeDeliveryOnProduct")
+                  : t("freeShipping")}
               </p>
               <p className="text-xs text-gray-600">
                 {hasFreeDelivery
                   ? t("freeDeliveryOnProductDescription")
-                  : t("ordersOverAmount", { amount: freeShippingThresholdLabel })}
+                  : t("ordersOverAmount", {
+                      amount: freeShippingThresholdLabel,
+                    })}
               </p>
             </div>
           </div>

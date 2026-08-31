@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Loader2, Pencil, Plus } from "lucide-react";
 import { toast } from "sonner";
 
@@ -37,6 +38,8 @@ const EMPTY = {
 };
 
 export function ProviderFormDialog({ provider }: ProviderFormDialogProps) {
+  const t = useTranslations("providers");
+  const tCommon = useTranslations("common");
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -65,12 +68,12 @@ export function ProviderFormDialog({ provider }: ProviderFormDialogProps) {
         : await createProvider(values);
 
       if (result.success) {
-        toast.success(result.message ?? "Saved");
+        toast.success(result.message ?? tCommon("saved"));
         setOpen(false);
         if (!provider) setValues(EMPTY);
         router.refresh();
       } else {
-        toast.error(result.error ?? "Something went wrong");
+        toast.error(result.error ?? tCommon("somethingWrong"));
       }
     });
   };
@@ -79,47 +82,53 @@ export function ProviderFormDialog({ provider }: ProviderFormDialogProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {provider ? (
-          <Button variant="ghost" size="icon" aria-label={`Edit ${provider.name}`}>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={t("editAria", { name: provider.name })}
+          >
             <Pencil className="size-4" />
           </Button>
         ) : (
           <Button>
             <Plus className="size-4" />
-            Add provider
+            {t("addProvider")}
           </Button>
         )}
       </DialogTrigger>
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{provider ? "Edit provider" : "Add provider"}</DialogTitle>
+          <DialogTitle>
+            {provider ? t("editProvider") : t("addProvider")}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="grid gap-4">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="provider-name">Name</Label>
+              <Label htmlFor="provider-name">{t("name")}</Label>
               <Input id="provider-name" value={values.name} onChange={set("name")} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="provider-code">Code</Label>
+              <Label htmlFor="provider-code">{t("code")}</Label>
               <Input
                 id="provider-code"
                 value={values.code}
                 onChange={set("code")}
-                placeholder="e.g. bosta"
+                placeholder={t("codePlaceholder")}
                 disabled={!!provider}
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="provider-logo">Logo URL</Label>
+            <Label htmlFor="provider-logo">{t("logoUrl")}</Label>
             <Input id="provider-logo" value={values.logoUrl} onChange={set("logoUrl")} />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="provider-contact-name">Contact person</Label>
+              <Label htmlFor="provider-contact-name">{t("contactPerson")}</Label>
               <Input
                 id="provider-contact-name"
                 value={values.contactName}
@@ -127,7 +136,7 @@ export function ProviderFormDialog({ provider }: ProviderFormDialogProps) {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="provider-contact-phone">Contact phone</Label>
+              <Label htmlFor="provider-contact-phone">{t("contactPhone")}</Label>
               <Input
                 id="provider-contact-phone"
                 value={values.contactPhone}
@@ -138,7 +147,7 @@ export function ProviderFormDialog({ provider }: ProviderFormDialogProps) {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="provider-contact-email">Contact email</Label>
+              <Label htmlFor="provider-contact-email">{t("contactEmail")}</Label>
               <Input
                 id="provider-contact-email"
                 type="email"
@@ -147,24 +156,24 @@ export function ProviderFormDialog({ provider }: ProviderFormDialogProps) {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="provider-website">Website</Label>
+              <Label htmlFor="provider-website">{t("website")}</Label>
               <Input id="provider-website" value={values.website} onChange={set("website")} />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="provider-notes">Notes</Label>
+            <Label htmlFor="provider-notes">{t("notes")}</Label>
             <Textarea id="provider-notes" rows={3} value={values.notes} onChange={set("notes")} />
           </div>
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)} disabled={isPending}>
-            Cancel
+            {tCommon("cancel")}
           </Button>
           <Button onClick={submit} disabled={isPending || !values.name || !values.code}>
             {isPending && <Loader2 className="size-4 animate-spin" />}
-            {provider ? "Save changes" : "Create provider"}
+            {provider ? t("saveChanges") : t("createProvider")}
           </Button>
         </DialogFooter>
       </DialogContent>

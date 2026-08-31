@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { ProductHero } from "./product-hero";
 import { ProductDetails } from "./product-details";
 import type { Product } from "./product-page.types";
+import { getDefaultProductVariantId } from "@/lib/product-variants";
 import { useCart } from "@/providers/cart-provider";
 
 interface ProductDisplayProps {
@@ -13,9 +14,7 @@ interface ProductDisplayProps {
 export const ProductDisplay = ({ product }: ProductDisplayProps) => {
   const { cartItems } = useCart();
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(
-    product.productVariants && product.productVariants.length > 0
-      ? (product.productVariants[0]?.id ?? null)
-      : null
+    getDefaultProductVariantId(product.productVariants)
   );
 
   const selectedVariant = useMemo(() => {

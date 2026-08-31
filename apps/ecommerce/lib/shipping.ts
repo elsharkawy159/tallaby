@@ -1,40 +1,37 @@
+import {
+  calculateLocationShippingCost,
+  cartQualifiesForProductFreeDelivery,
+} from '@workspace/lib/shipping'
+
+export { cartQualifiesForProductFreeDelivery }
+
 export function getFlatShippingCost(): number {
   return Number(process.env.NEXT_PUBLIC_SHIPPING_COST) || 50
 }
 
-export interface ShippingCartItem {
+export interface CalculateOrderShippingOptions {
+  destinationState?: string | null
+}
+
+export interface OrderShippingCartItem {
+  quantity: number
   product?: {
     productType?: string | null
     freeDelivery?: boolean | null
+    dimensions?: unknown
   } | null
 }
 
 export function calculateOrderShippingCost(
-  items: ShippingCartItem[],
-  baseCost = getFlatShippingCost(),
+  items: OrderShippingCartItem[],
+  options: CalculateOrderShippingOptions = {},
 ): number {
-  const physicalItems = items.filter(
-    (item) => item.product?.productType !== 'digital',
-  )
+  const envFallback = Number(process.env.NEXT_PUBLIC_SHIPPING_FALLBACK_BASE)
+  const fallbackBaseRate = Number.isFinite(envFallback) ? envFallback : undefined
 
-  if (physicalItems.length === 0) {
-    return 0
-  }
-
-  return physicalItems.every((item) => item.product?.freeDelivery === true)
-    ? 0
-    : baseCost
-}
-
-export function cartQualifiesForProductFreeDelivery(
-  items: ShippingCartItem[],
-): boolean {
-  const physicalItems = items.filter(
-    (item) => item.product?.productType !== 'digital',
-  )
-
-  return (
-    physicalItems.length > 0 &&
-    physicalItems.every((item) => item.product?.freeDelivery === true)
-  )
+  return calculateLocationShippingCost({
+    items,
+    destinationState: options.destinationState,
+    ...(fallbackBaseRate !== undefined ? { fallbackBaseRate } : {}),
+  })
 }

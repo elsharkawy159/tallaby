@@ -60,6 +60,8 @@ interface OrderSummaryProps {
     name: string;
     discountType: string;
   } | null;
+  shippingAddressId?: string;
+  isRecalculatingShipping?: boolean;
 }
 
 export function OrderSummary({
@@ -69,6 +71,8 @@ export function OrderSummary({
   onCouponApplied,
   onCouponRemoved,
   appliedCoupon,
+  shippingAddressId,
+  isRecalculatingShipping = false,
 }: OrderSummaryProps) {
   const locale = useLocale();
   const t = useTranslations("checkout");
@@ -92,7 +96,10 @@ export function OrderSummary({
 
     setError(null);
     startTransition(async () => {
-      const result = await applyCouponToCart({ code: code.trim() });
+      const result = await applyCouponToCart({
+        code: code.trim(),
+        shippingAddressId,
+      });
 
       if (result.success && result.data) {
         toast.success(t("couponApplied"));
@@ -119,7 +126,7 @@ export function OrderSummary({
 
   const handleRemoveCoupon = () => {
     startTransition(async () => {
-      const result = await removeCouponFromCart();
+      const result = await removeCouponFromCart({ shippingAddressId });
 
       if (result.success && result.data) {
         toast.success(t("couponRemoved"));
@@ -201,15 +208,19 @@ export function OrderSummary({
             />
           </div>
 
-          {summary.shippingCost > 0 && (
+          {(summary.shippingCost > 0 || isRecalculatingShipping) && (
             <div className="flex items-center justify-between text-xs md:text-sm">
               <span className="text-gray-600">{t("shipping")}</span>
-              <span
-                className="font-medium text-gray-900"
-                dangerouslySetInnerHTML={{
-                  __html: formatPrice(summary.shippingCost, locale),
-                }}
-              />
+              {isRecalculatingShipping ? (
+                <Loader2 className="h-3 w-3 animate-spin text-gray-500" />
+              ) : (
+                <span
+                  className="font-medium text-gray-900"
+                  dangerouslySetInnerHTML={{
+                    __html: formatPrice(summary.shippingCost, locale),
+                  }}
+                />
+              )}
             </div>
           )}
 

@@ -1,19 +1,15 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useCallback, useRef } from "react";
 import { useFormContext, useFieldArray, Controller } from "react-hook-form";
-import { useDropzone } from "react-dropzone";
-import Image from "next/image";
-import { ImageIcon, X, LoaderCircle } from "lucide-react";
-import { createClient } from "@/supabase/client";
-import { generateImageName, getPublicUrl, validateImage } from "@/lib/utils";
 import {
+  calculateDiscountFromFinalPrice,
   calculateProductFinalPrice,
   getFinalPriceHelpText,
+  roundPriceToNearestNine,
   type SellerPricingSettings,
 } from "@/lib/utils/product-pricing.lib";
-import { toast } from "sonner";
-import { useTranslations } from "next-intl";
+import { ImageUpload } from "@/components/inputs/image-upload";
 import {
   Accordion,
   AccordionContent,
@@ -29,50 +25,121 @@ import {
 } from "@workspace/ui/components";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
-import { FormLabel } from "@workspace/ui/components/form";
-import type { AddProductFormData } from "../add-product.schema";
+import { FormControl, FormLabel } from "@workspace/ui/components/form";
+import type {
+  AddProductFormData,
+  SupportedLocale,
+} from "../add-product.schema";
 import { fulfillmentOptions } from "../add-product.schema";
+import {
+  buildVariantLocalizedFromCombo,
+  createEmptyVariantType,
+  getVariantValueIndexes,
+  reconstructVariantTypesFromVariants,
+  type VariantTypeFormValue,
+} from "@/lib/utils/variant-types.lib";
+import { VariantPricingFields } from "./variant-pricing-fields";
+import { Badge } from "@workspace/ui/components/badge";
 
 interface PriceStockStepProps {
   sellerPricing: SellerPricingSettings;
+  activeLocale: SupportedLocale;
 }
 
-export function PriceStockStep({ sellerPricing }: PriceStockStepProps) {
-  const tToast = useTranslations("toast");
+export function PriceStockStep({
+  sellerPricing,
+  activeLocale,
+}: PriceStockStepProps) {
   const form = useFormContext<AddProductFormData>();
+
+  const applyNearestNineRounding = useCallback(
+    (field: "price.list" | "price.final", value: number) => {
+      if (value <= 0) {
+        return;
+      }
+
+      const rounded = roundPriceToNearestNine(value);
+
+      if (rounded !== value) {
+        form.setValue(field, rounded, {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
+      }
+    },
+    [form]
+  );
 
   const listPrice = form.watch("price.list");
   const discountValue = form.watch("price.discountValue");
   const discountType = form.watch("price.discountType");
+  const finalPrice = form.watch("price.final");
 
-  useEffect(
-    () => {
-      const numericList = typeof listPrice === "number" ? listPrice : 0;
+  const prevPricingRef = useRef({
+    listPrice,
+    discountValue,
+    discountType,
+    finalPrice,
+  });
 
-      if (numericList <= 0) {
-        return;
-      }
+  useEffect(() => {
+    const numericList = typeof listPrice === "number" ? listPrice : 0;
+    const prev = prevPricingRef.current;
 
-      form.setValue("price.base", numericList, {
-        shouldDirty: true,
-        shouldValidate: false,
-      });
+    const listChanged = listPrice !== prev.listPrice;
+    const discountChanged =
+      discountValue !== prev.discountValue ||
+      discountType !== prev.discountType;
+    const finalChanged = finalPrice !== prev.finalPrice;
 
-      const finalPrice = calculateProductFinalPrice(
+    prevPricingRef.current = {
+      listPrice,
+      discountValue,
+      discountType,
+      finalPrice,
+    };
+
+    if (numericList <= 0) {
+      return;
+    }
+
+    form.setValue("price.base", numericList, {
+      shouldDirty: true,
+      shouldValidate: false,
+    });
+
+    if (listChanged || discountChanged) {
+      const calculatedFinal = calculateProductFinalPrice(
         numericList,
         discountValue,
         discountType,
         sellerPricing
       );
 
-      form.setValue("price.final", finalPrice, {
+      form.setValue("price.final", calculatedFinal, {
         shouldDirty: true,
         shouldValidate: true,
       });
-    },
+      prevPricingRef.current.finalPrice = calculatedFinal;
+      return;
+    }
+
+    if (finalChanged) {
+      const calculatedDiscount = calculateDiscountFromFinalPrice(
+        numericList,
+        finalPrice,
+        discountType,
+        sellerPricing
+      );
+
+      form.setValue("price.discountValue", calculatedDiscount, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+      prevPricingRef.current.discountValue = calculatedDiscount;
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [listPrice, discountValue, discountType, sellerPricing]
-  );
+  }, [listPrice, discountValue, discountType, finalPrice, sellerPricing]);
 
   return (
     <div className="space-y-6">
@@ -87,6 +154,7 @@ export function PriceStockStep({ sellerPricing }: PriceStockStepProps) {
               placeholder="0.00"
               className="text-sm"
               required
+              onBlurValue={(value) => applyNearestNineRounding("price.list", value)}
             />
           </div>
 
@@ -141,8 +209,8 @@ export function PriceStockStep({ sellerPricing }: PriceStockStepProps) {
             label="Final Price"
             placeholder="0.00"
             helpText={getFinalPriceHelpText(sellerPricing)}
-            disabled
             className="text-sm"
+            onBlurValue={(value) => applyNearestNineRounding("price.final", value)}
           />
         </div>
       </div>
@@ -179,7 +247,7 @@ export function PriceStockStep({ sellerPricing }: PriceStockStepProps) {
       </div>
 
       {/* Variants Section */}
-      <VariantsSection />
+      <VariantsSection sellerPricing={sellerPricing} activeLocale={activeLocale} />
 
       {/* Shipping Options - Collapsible */}
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
@@ -290,248 +358,159 @@ export function PriceStockStep({ sellerPricing }: PriceStockStepProps) {
   );
 }
 
-interface VariantType {
-  id: string;
-  name: string;
-  values: string[];
-}
-
-function VariantImageUpload({
-  form,
-  name,
+function VariantsSection({
+  sellerPricing,
+  activeLocale,
 }: {
-  form: ReturnType<typeof useFormContext<AddProductFormData>>;
-  name: `variants.${number}.imageUrl`;
+  sellerPricing: SellerPricingSettings;
+  activeLocale: SupportedLocale;
 }) {
-  const [isUploading, setIsUploading] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const supabase = createClient();
-
-  const currentValue = form.watch(name);
-
-  useEffect(() => {
-    if (currentValue) {
-      setPreviewUrl(getPublicUrl(currentValue, "products"));
-    } else {
-      setPreviewUrl(null);
-    }
-  }, [currentValue]);
-
-  const handleFileUpload = useCallback(
-    async (file: File): Promise<string | null> => {
-      try {
-        await validateImage(file);
-        const imageName = generateImageName(file);
-
-        const { data, error } = await supabase.storage
-          .from("products")
-          .upload(imageName, file, {
-            cacheControl: "3600",
-            upsert: false,
-          });
-
-        if (error) {
-          console.error("Upload error:", error);
-          toast.error(tToast("failedToUploadImage"));
-          return null;
-        }
-
-        return data.path;
-      } catch (error) {
-        console.error("File upload error:", error);
-        toast.error(
-          error instanceof Error ? error.message : tToast("failedToUploadImage")
-        );
-        return null;
-      }
-    },
-    [supabase, tToast]
-  );
-
-  const onDrop = useCallback(
-    async (acceptedFiles: File[]) => {
-      if (acceptedFiles.length === 0) return;
-
-      setIsUploading(true);
-      const file = acceptedFiles[0];
-      const preview = URL.createObjectURL(file);
-      setPreviewUrl(preview);
-
-      try {
-        const filePath = await handleFileUpload(file);
-        if (filePath) {
-          // Clean up preview blob URL
-          URL.revokeObjectURL(preview);
-          form.setValue(name, filePath, { shouldValidate: true });
-        } else {
-          // Clean up preview blob URL on error
-          URL.revokeObjectURL(preview);
-          setPreviewUrl(
-            currentValue ? getPublicUrl(currentValue, "products") : null
-          );
-        }
-      } catch {
-        // Clean up preview blob URL on error
-        if (preview.startsWith("blob:")) {
-          URL.revokeObjectURL(preview);
-        }
-        setPreviewUrl(
-          currentValue ? getPublicUrl(currentValue, "products") : null
-        );
-      } finally {
-        setIsUploading(false);
-      }
-    },
-    [handleFileUpload, form, name, currentValue]
-  );
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    accept: {
-      "image/*": [],
-    },
-    onDrop,
-    disabled: isUploading,
-    maxFiles: 1,
-    multiple: false,
-  });
-
-  const handleRemove = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    // Clean up blob URL if it's a preview
-    if (previewUrl && previewUrl.startsWith("blob:")) {
-      URL.revokeObjectURL(previewUrl);
-    }
-    form.setValue(name, undefined, { shouldValidate: true });
-    setPreviewUrl(null);
-  };
-
-  // Cleanup blob URLs on unmount
-  useEffect(() => {
-    return () => {
-      if (previewUrl && previewUrl.startsWith("blob:")) {
-        URL.revokeObjectURL(previewUrl);
-      }
-    };
-  }, [previewUrl]);
-
-  return (
-    <div
-      {...getRootProps()}
-      className={`relative w-16 h-16 border-2 border-dashed rounded-md cursor-pointer transition-colors ${
-        isDragActive
-          ? "border-primary bg-primary/5"
-          : "border-gray-300 hover:border-gray-400"
-      } ${isUploading ? "opacity-50 cursor-not-allowed" : ""}`}
-    >
-      <input {...getInputProps()} />
-      {previewUrl ? (
-        <>
-          <Image
-            src={previewUrl}
-            alt="Variant image"
-            fill
-            className="object-cover rounded-md"
-            sizes="64px"
-          />
-          {!isUploading && (
-            <button
-              type="button"
-              onClick={handleRemove}
-              className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
-            >
-              <X className="w-3 h-3" />
-            </button>
-          )}
-        </>
-      ) : (
-        <div className="w-full h-full flex items-center justify-center">
-          {isUploading ? (
-            <LoaderCircle className="w-5 h-5 text-gray-400 animate-spin" />
-          ) : (
-            <ImageIcon className="w-5 h-5 text-gray-400" />
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function VariantsSection() {
   const form = useFormContext<AddProductFormData>();
   const { fields, replace } = useFieldArray({
     control: form.control,
     name: "variants",
   });
 
-  // Reconstruct variantTypes from existing form variants on mount
-  const reconstructVariantTypes = useCallback(
-    (
-      variants: Array<{ option1?: string; option2?: string; option3?: string }>
-    ): VariantType[] => {
-      if (!variants || variants.length === 0) return [];
+  const variantTypes = (form.watch("variantTypes") ?? []) as VariantTypeFormValue[];
 
-      const typeMap = new Map<string, Set<string>>();
+  const setVariantTypes = (next: VariantTypeFormValue[]) => {
+    form.setValue("variantTypes", next, { shouldDirty: true });
+  };
 
-      variants.forEach((variant) => {
-        // Parse option1, option2, option3 to extract type name and value
-        [variant.option1, variant.option2, variant.option3]
-          .filter(Boolean)
-          .forEach((option) => {
-            if (option) {
-              const match = option.match(/^(.+?):\s*(.+)$/);
-              if (match) {
-                const [, typeName, value] = match;
-                if (!typeMap.has(typeName)) {
-                  typeMap.set(typeName, new Set());
-                }
-                typeMap.get(typeName)!.add(value);
-              }
-            }
-          });
-      });
+  useEffect(() => {
+    const currentTypes = form.getValues("variantTypes") ?? [];
+    const currentVariants = form.getValues("variants") ?? [];
 
-      return Array.from(typeMap.entries()).map(([name, valuesSet], index) => ({
-        id: `type-${index}`,
-        name,
-        values: Array.from(valuesSet),
-      }));
-    },
-    []
-  );
+    if (currentTypes.length === 0 && currentVariants.length > 0) {
+      form.setValue(
+        "variantTypes",
+        reconstructVariantTypesFromVariants(currentVariants),
+        { shouldDirty: false }
+      );
+    }
+  }, [form]);
 
-  const [variantTypes, setVariantTypes] = useState<VariantType[]>(() => {
-    const currentVariants = form.getValues("variants") || [];
-    return reconstructVariantTypes(currentVariants);
-  });
+  const mainListPrice = form.watch("price.list");
+  const mainDiscountValue = form.watch("price.discountValue");
+  const mainDiscountType = form.watch("price.discountType");
+  const mainQuantity = form.watch("quantity");
 
-  // Generate combinations from variant types
-  const generateCombinations = (types: VariantType[]): string[][] => {
-    if (types.length === 0) return [];
-    if (types.length === 1) {
-      return types[0]!.values.map((v) => [v]);
+  useEffect(() => {
+    const variants = form.getValues("variants") || [];
+    const defaultIndex = variants.findIndex((variant) => variant.isDefault);
+
+    if (defaultIndex === -1) {
+      return;
     }
 
-    const combinations: string[][] = [];
+    const numericList = typeof mainListPrice === "number" ? mainListPrice : 0;
+
+    if (numericList <= 0) {
+      return;
+    }
+
+    const syncedFinal = calculateProductFinalPrice(
+      numericList,
+      mainDiscountValue,
+      mainDiscountType,
+      sellerPricing
+    );
+    const numericQuantity =
+      typeof mainQuantity === "number" ? mainQuantity : 0;
+
+    form.setValue(`variants.${defaultIndex}.listPrice`, numericList, {
+      shouldDirty: true,
+      shouldValidate: false,
+    });
+    form.setValue(
+      `variants.${defaultIndex}.discountValue`,
+      mainDiscountValue ?? 0,
+      { shouldDirty: true, shouldValidate: false }
+    );
+    form.setValue(
+      `variants.${defaultIndex}.discountType`,
+      mainDiscountType ?? "percent",
+      { shouldDirty: true, shouldValidate: false }
+    );
+    form.setValue(`variants.${defaultIndex}.price`, syncedFinal, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+    form.setValue(`variants.${defaultIndex}.stock`, numericQuantity, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+  }, [
+    form,
+    mainDiscountType,
+    mainDiscountValue,
+    mainListPrice,
+    mainQuantity,
+    sellerPricing,
+  ]);
+
+  const handleSetDefaultVariant = (index: number) => {
+    const variants = form.getValues("variants") || [];
+
+    variants.forEach((_, variantIndex) => {
+      form.setValue(`variants.${variantIndex}.isDefault`, variantIndex === index, {
+        shouldDirty: true,
+      });
+    });
+  };
+
+  const generateValueIndexCombinations = (
+    types: VariantTypeFormValue[]
+  ): number[][] => {
+    if (types.length === 0) {
+      return [];
+    }
+
+    const valueCounts = types.map((type) =>
+      Math.max(type.localized.en.values.length, type.localized.ar.values.length, 0)
+    );
+
+    if (valueCounts.some((count) => count === 0)) {
+      return [];
+    }
+
+    if (types.length === 1) {
+      return Array.from({ length: valueCounts[0]! }, (_, index) => [index]);
+    }
+
+    const combinations: number[][] = [];
 
     function cartesianProduct(
-      arrays: string[][],
+      arrays: number[][],
       index = 0,
-      current: string[] = []
+      current: number[] = []
     ): void {
       if (index === arrays.length) {
         combinations.push([...current]);
         return;
       }
 
-      for (const value of arrays[index]!) {
-        current.push(value);
+      for (const valueIndex of arrays[index]!) {
+        current.push(valueIndex);
         cartesianProduct(arrays, index + 1, current);
         current.pop();
       }
     }
 
-    cartesianProduct(types.map((type) => type.values));
+    cartesianProduct(valueCounts.map((count) => Array.from({ length: count }, (_, i) => i)));
+
     return combinations;
+  };
+
+  const isValidVariantType = (type: VariantTypeFormValue) => {
+    const englishReady =
+      type.localized.en.name.trim().length > 0 &&
+      type.localized.en.values.some((value) => value.trim());
+    const arabicReady =
+      type.localized.ar.name.trim().length > 0 &&
+      type.localized.ar.values.some((value) => value.trim());
+
+    return englishReady || arabicReady;
   };
 
   // Sync combinations to form variants
@@ -541,58 +520,99 @@ function VariantsSection() {
       return;
     }
 
-    // Filter out variant types with no name or no values
-    const validTypes = variantTypes.filter(
-      (type: VariantType) =>
-        type.name.trim() !== "" &&
-        type.values.some((v: string) => v.trim() !== "")
-    );
+    const validTypes = variantTypes.filter(isValidVariantType);
 
     if (validTypes.length === 0) {
       replace([]);
       return;
     }
 
-    const combinations = generateCombinations(validTypes);
+    const combinations = generateValueIndexCombinations(validTypes);
     const baseSku = form.getValues("sku") || "PROD";
-    const basePrice = form.getValues("price.list") || 0;
+    const numericMainList =
+      typeof form.getValues("price.list") === "number"
+        ? form.getValues("price.list")
+        : 0;
+    const mainDiscount = form.getValues("price.discountValue");
+    const mainDiscountTypeValue = form.getValues("price.discountType") ?? "percent";
+    const baseFinal =
+      numericMainList > 0
+        ? calculateProductFinalPrice(
+            numericMainList,
+            mainDiscount,
+            mainDiscountTypeValue,
+            sellerPricing
+          )
+        : 0;
+    const hasExistingDefault = fields.some(
+      (variant) => (variant as { isDefault?: boolean }).isDefault
+    );
 
-    const variants = combinations.map((combo, index) => {
-      const title = combo.join(" / ");
-      const option1 = validTypes[0]
-        ? `${validTypes[0].name}: ${combo[0]}`
-        : undefined;
-      const option2 =
-        validTypes[1] && combo[1]
-          ? `${validTypes[1].name}: ${combo[1]}`
-          : undefined;
-      const option3 =
-        validTypes[2] && combo[2]
-          ? `${validTypes[2].name}: ${combo[2]}`
-          : undefined;
-      const comboSlug = combo
-        .map((v) => v.toLowerCase().replace(/\s+/g, "-"))
+    const variants = combinations.map((valueIndexes, index) => {
+      const localized = buildVariantLocalizedFromCombo(validTypes, valueIndexes);
+      const englishTitle = localized.en.title;
+      const comboSlug = valueIndexes
+        .map((valueIndex, typeIndex) => {
+          const englishValue =
+            validTypes[typeIndex]?.localized.en.values[valueIndex] ?? "value";
+          return englishValue.toLowerCase().replace(/\s+/g, "-");
+        })
         .join("-");
       const sku = `${baseSku}-${comboSlug}`.toUpperCase();
 
-      // Try to preserve existing data if combination matches
-      const existingVariant = fields.find(
-        (v: { option1?: string; option2?: string; option3?: string }) =>
-          v.option1 === option1 &&
-          v.option2 === option2 &&
-          v.option3 === option3
-      );
+      const existingVariant = fields.find((variant) => {
+        const existingIndexes = getVariantValueIndexes(
+          validTypes,
+          variant as {
+            option1?: string;
+            option2?: string;
+            option3?: string;
+            localized?: unknown;
+            optionValueIndexes?: number[];
+          }
+        );
+
+        return existingIndexes.every(
+          (valueIndex, typeIndex) => valueIndex === valueIndexes[typeIndex]
+        );
+      });
+
+      const existingImages = (existingVariant as { images?: string[] })?.images;
+      const existingImageUrl = (existingVariant as { imageUrl?: string })?.imageUrl;
+      const images =
+        existingImages && existingImages.length > 0
+          ? existingImages
+          : existingImageUrl
+            ? [existingImageUrl]
+            : [];
+      const wasDefault = (existingVariant as { isDefault?: boolean })?.isDefault;
+      const isDefault = wasDefault ?? (!hasExistingDefault && index === 0);
 
       return {
-        title,
+        title: englishTitle,
         sku: (existingVariant as { sku?: string })?.sku || sku,
-        price: (existingVariant as { price?: number })?.price || basePrice,
+        listPrice:
+          (existingVariant as { listPrice?: number })?.listPrice ?? numericMainList,
+        discountValue:
+          (existingVariant as { discountValue?: number })?.discountValue ??
+          mainDiscount ??
+          0,
+        discountType:
+          (existingVariant as { discountType?: "amount" | "percent" })?.discountType ??
+          mainDiscountTypeValue,
+        price:
+          (existingVariant as { price?: number })?.price ||
+          baseFinal ||
+          numericMainList,
         stock: (existingVariant as { stock?: number })?.stock || 0,
-        imageUrl:
-          (existingVariant as { imageUrl?: string })?.imageUrl || undefined,
-        option1,
-        option2,
-        option3,
+        isDefault,
+        images,
+        imageUrl: images[0] ?? undefined,
+        localized,
+        optionValueIndexes: valueIndexes,
+        option1: localized.en.option1,
+        option2: localized.en.option2,
+        option3: localized.en.option3,
         barCode: (existingVariant as { barCode?: string })?.barCode || "",
         position: index + 1,
       };
@@ -600,17 +620,10 @@ function VariantsSection() {
 
     replace(variants);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [variantTypes, replace]);
+  }, [variantTypes, replace, activeLocale]);
 
   const handleAddVariantType = () => {
-    setVariantTypes([
-      ...variantTypes,
-      {
-        id: `type-${Date.now()}`,
-        name: "",
-        values: [],
-      },
-    ]);
+    setVariantTypes([...variantTypes, createEmptyVariantType()]);
   };
 
   const handleRemoveVariantType = (id: string) => {
@@ -619,32 +632,72 @@ function VariantsSection() {
 
   const handleUpdateVariantTypeName = (id: string, name: string) => {
     setVariantTypes(
-      variantTypes.map((type: VariantType) =>
-        type.id === id ? { ...type, name } : type
+      variantTypes.map((type) =>
+        type.id === id
+          ? {
+              ...type,
+              localized: {
+                ...type.localized,
+                [activeLocale]: {
+                  ...type.localized[activeLocale],
+                  name,
+                },
+              },
+            }
+          : type
       )
     );
   };
 
   const handleAddValue = (typeId: string) => {
     setVariantTypes(
-      variantTypes.map((type: VariantType) =>
-        type.id === typeId ? { ...type, values: [...type.values, ""] } : type
-      )
+      variantTypes.map((type) => {
+        if (type.id !== typeId) {
+          return type;
+        }
+
+        return {
+          ...type,
+          localized: {
+            en: {
+              ...type.localized.en,
+              values: [...type.localized.en.values, ""],
+            },
+            ar: {
+              ...type.localized.ar,
+              values: [...type.localized.ar.values, ""],
+            },
+          },
+        };
+      })
     );
   };
 
   const handleRemoveValue = (typeId: string, valueIndex: number) => {
     setVariantTypes(
-      variantTypes.map((type: VariantType) =>
-        type.id === typeId
-          ? {
-              ...type,
-              values: type.values.filter(
-                (_: string, idx: number) => idx !== valueIndex
+      variantTypes.map((type) => {
+        if (type.id !== typeId) {
+          return type;
+        }
+
+        return {
+          ...type,
+          localized: {
+            en: {
+              ...type.localized.en,
+              values: type.localized.en.values.filter(
+                (_, index) => index !== valueIndex
               ),
-            }
-          : type
-      )
+            },
+            ar: {
+              ...type.localized.ar,
+              values: type.localized.ar.values.filter(
+                (_, index) => index !== valueIndex
+              ),
+            },
+          },
+        };
+      })
     );
   };
 
@@ -654,16 +707,24 @@ function VariantsSection() {
     value: string
   ) => {
     setVariantTypes(
-      variantTypes.map((type: VariantType) =>
-        type.id === typeId
-          ? {
-              ...type,
-              values: type.values.map((v: string, idx: number) =>
-                idx === valueIndex ? value : v
+      variantTypes.map((type) => {
+        if (type.id !== typeId) {
+          return type;
+        }
+
+        return {
+          ...type,
+          localized: {
+            ...type.localized,
+            [activeLocale]: {
+              ...type.localized[activeLocale],
+              values: type.localized[activeLocale].values.map((entry, index) =>
+                index === valueIndex ? value : entry
               ),
-            }
-          : type
-      )
+            },
+          },
+        };
+      })
     );
   };
 
@@ -677,8 +738,8 @@ function VariantsSection() {
               Product Types and Sub-options
             </h3>
             <p className="text-xs text-gray-500 mt-1">
-              Add different product characteristics such as colors, sizes,
-              weights, etc.
+              Add characteristics such as colors and sizes. Use the content
+              language tabs above to enter English and Arabic labels.
             </p>
           </div>
           <Button
@@ -698,7 +759,7 @@ function VariantsSection() {
           </p>
         ) : (
           <div className="space-y-4">
-            {variantTypes.map((type: VariantType) => (
+            {variantTypes.map((type: VariantTypeFormValue) => (
               <div
                 key={type.id}
                 className="rounded-md border border-gray-200 p-4 space-y-4 bg-gray-50"
@@ -707,14 +768,18 @@ function VariantsSection() {
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex-1">
                       <label className="text-xs font-medium text-gray-700 block mb-2">
-                        Sub-option Type
+                        Sub-option Type ({activeLocale === "en" ? "English" : "العربية"})
                       </label>
                       <Input
-                        value={type.name}
+                        value={type.localized[activeLocale].name}
                         onChange={(e) =>
                           handleUpdateVariantTypeName(type.id, e.target.value)
                         }
-                        placeholder="e.g., Color, Size, Weight"
+                        placeholder={
+                          activeLocale === "en"
+                            ? "e.g., Color, Size, Weight"
+                            : "مثال: اللون، الحجم، الوزن"
+                        }
                         className="text-sm h-9"
                       />
                     </div>
@@ -734,7 +799,8 @@ function VariantsSection() {
                       Value or Property
                     </label>
                     <div className="space-y-2">
-                      {type.values.map((value: string, valueIndex: number) => (
+                      {type.localized[activeLocale].values.map(
+                        (value: string, valueIndex: number) => (
                         <div key={valueIndex} className="flex gap-2">
                           <Input
                             value={value}
@@ -745,7 +811,9 @@ function VariantsSection() {
                                 e.target.value
                               )
                             }
-                            placeholder="e.g., Red"
+                            placeholder={
+                              activeLocale === "en" ? "e.g., Red" : "مثال: أحمر"
+                            }
                             className="text-sm h-9 flex-1"
                           />
                           <Button
@@ -790,11 +858,11 @@ function VariantsSection() {
                   <th className="text-left py-3 px-4 text-xs font-medium text-gray-700">
                     Combination
                   </th>
-                  <th className="text-left py-3 px-4 text-xs font-medium text-gray-700">
-                    Image
+                  <th className="text-left py-3 px-4 text-xs font-medium text-gray-700 min-w-[220px]">
+                    Images
                   </th>
-                  <th className="text-left py-3 px-4 text-xs font-medium text-gray-700">
-                    Price
+                  <th className="text-left py-3 px-4 text-xs font-medium text-gray-700 min-w-[300px]">
+                    Pricing
                   </th>
                   <th className="text-left py-3 px-4 text-xs font-medium text-gray-700">
                     Stock
@@ -813,31 +881,74 @@ function VariantsSection() {
                     option2?: string;
                     option3?: string;
                   };
+                  const isDefaultVariant =
+                    form.watch(`variants.${index}.isDefault`) === true;
+                  const localizedDisplay = form.watch(`variants.${index}.localized`);
+                  const displayTitle =
+                    localizedDisplay?.[activeLocale]?.title ?? variant.title;
+                  const displayOptions = [
+                    localizedDisplay?.[activeLocale]?.option1 ?? variant.option1,
+                    localizedDisplay?.[activeLocale]?.option2 ?? variant.option2,
+                    localizedDisplay?.[activeLocale]?.option3 ?? variant.option3,
+                  ].filter(Boolean);
+
                   return (
                     <tr key={variant.id} className="border-b border-gray-100">
                       <td className="py-3 px-4">
-                        <div className="space-y-1">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="radio"
+                              checked={isDefaultVariant}
+                              onChange={() => handleSetDefaultVariant(index)}
+                              className="h-4 w-4"
+                              aria-label={`Set ${displayTitle} as default variant`}
+                            />
+                            {isDefaultVariant && (
+                              <Badge variant="secondary" className="text-[10px]">
+                                Default
+                              </Badge>
+                            )}
+                          </div>
                           <p className="text-sm font-medium text-gray-900">
-                            {variant.title}
+                            {displayTitle}
                           </p>
                           <div className="text-xs text-gray-500 space-y-0.5">
-                            {variant.option1 && <p>{variant.option1}</p>}
-                            {variant.option2 && <p>{variant.option2}</p>}
-                            {variant.option3 && <p>{variant.option3}</p>}
+                            {displayOptions.map((option) => (
+                              <p key={option}>{option}</p>
+                            ))}
                           </div>
                         </div>
                       </td>
-                      <td className="py-3 px-4">
-                        <VariantImageUpload
-                          form={form}
-                          name={`variants.${index}.imageUrl`}
+                      <td className="py-3 px-4 min-w-[220px]">
+                        <Controller
+                          name={`variants.${index}.images`}
+                          control={form.control}
+                          render={({ field }) => (
+                            <FormControl>
+                              <ImageUpload
+                                bucket="products"
+                                value={field.value || []}
+                                onChange={(images) => {
+                                  field.onChange(images);
+                                  form.setValue(
+                                    `variants.${index}.imageUrl`,
+                                    images[0] ?? undefined,
+                                    { shouldValidate: true }
+                                  );
+                                }}
+                                form={form}
+                                maxImages={5}
+                              />
+                            </FormControl>
+                          )}
                         />
                       </td>
                       <td className="py-3 px-4">
-                        <CurrencyInput
-                          name={`variants.${index}.price`}
-                          placeholder="0.00"
-                          className="text-sm w-full"
+                        <VariantPricingFields
+                          index={index}
+                          sellerPricing={sellerPricing}
+                          isDefault={isDefaultVariant}
                         />
                       </td>
                       <td className="py-3 px-4">
@@ -847,6 +958,7 @@ function VariantsSection() {
                           type="number"
                           placeholder="0"
                           className="text-sm w-full"
+                          disabled={isDefaultVariant}
                         />
                       </td>
                       <td className="py-3 px-4">

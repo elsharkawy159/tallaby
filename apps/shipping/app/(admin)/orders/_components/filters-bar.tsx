@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Search, X } from "lucide-react";
 
 import { Button } from "@workspace/ui/components/button";
@@ -18,19 +19,24 @@ import { useDebounce } from "@workspace/ui/hooks/use-debounce";
 import {
   PAYMENT_STATUSES,
   SHIPPING_STATUSES,
-  getStatusLabel,
 } from "@/lib/shipping-status";
+import type { OrderStage } from "../orders.dto";
 import type { ProviderOption, RiderOption } from "../orders.types";
 
 /** Radix Select cannot hold an empty string value, so "all" stands in for it. */
 const ALL = "all";
 
 interface FiltersBarProps {
+  stage: OrderStage;
   providers: ProviderOption[];
   riders: RiderOption[];
 }
 
-export function FiltersBar({ providers, riders }: FiltersBarProps) {
+export function FiltersBar({ stage, providers, riders }: FiltersBarProps) {
+  const t = useTranslations("orders");
+  const tStatus = useTranslations("status");
+  const tPayment = useTranslations("paymentStatus");
+  const tCommon = useTranslations("common");
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -81,34 +87,36 @@ export function FiltersBar({ providers, riders }: FiltersBarProps) {
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
       <div className="relative min-w-0 flex-1 sm:max-w-xs">
-        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           value={search}
           onChange={(event) => setSearch(event.target.value)}
-          placeholder="Order number, customer, phone"
-          className="pl-9"
-          aria-label="Search shipping orders"
+          placeholder={t("searchPlaceholder")}
+          className="ps-9"
+          aria-label={t("searchAria")}
         />
       </div>
 
-      <Select
-        value={status}
-        onValueChange={(value) =>
-          applyParam("status", value === ALL ? null : value)
-        }
-      >
-        <SelectTrigger className="w-full sm:w-44" aria-label="Filter by status">
-          <SelectValue placeholder="Status" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value={ALL}>All statuses</SelectItem>
-          {SHIPPING_STATUSES.map((value) => (
-            <SelectItem key={value} value={value}>
-              {getStatusLabel(value)}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      {stage === "all" && (
+        <Select
+          value={status}
+          onValueChange={(value) =>
+            applyParam("status", value === ALL ? null : value)
+          }
+        >
+          <SelectTrigger className="w-full sm:w-44" aria-label={t("filterStatusAria")}>
+            <SelectValue placeholder={t("status")} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL}>{t("allStatuses")}</SelectItem>
+            {SHIPPING_STATUSES.map((value) => (
+              <SelectItem key={value} value={value}>
+                {tStatus(value)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
 
       <Select
         value={providerId}
@@ -116,11 +124,11 @@ export function FiltersBar({ providers, riders }: FiltersBarProps) {
           applyParam("providerId", value === ALL ? null : value)
         }
       >
-        <SelectTrigger className="w-full sm:w-44" aria-label="Filter by provider">
-          <SelectValue placeholder="Provider" />
+        <SelectTrigger className="w-full sm:w-44" aria-label={t("filterProviderAria")}>
+          <SelectValue placeholder={t("provider")} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={ALL}>All providers</SelectItem>
+          <SelectItem value={ALL}>{t("allProviders")}</SelectItem>
           {providers.map((provider) => (
             <SelectItem key={provider.id} value={provider.id}>
               {provider.name}
@@ -135,14 +143,14 @@ export function FiltersBar({ providers, riders }: FiltersBarProps) {
           applyParam("riderId", value === ALL ? null : value)
         }
       >
-        <SelectTrigger className="w-full sm:w-44" aria-label="Filter by rider">
-          <SelectValue placeholder="Rider" />
+        <SelectTrigger className="w-full sm:w-44" aria-label={t("filterRiderAria")}>
+          <SelectValue placeholder={t("rider")} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={ALL}>All riders</SelectItem>
+          <SelectItem value={ALL}>{t("allRiders")}</SelectItem>
           {riders.map((rider) => (
             <SelectItem key={rider.id} value={rider.id}>
-              {rider.fullName ?? rider.email ?? "Unnamed rider"}
+              {rider.fullName ?? rider.email ?? tCommon("unnamedRider")}
             </SelectItem>
           ))}
         </SelectContent>
@@ -154,14 +162,14 @@ export function FiltersBar({ providers, riders }: FiltersBarProps) {
           applyParam("paymentStatus", value === ALL ? null : value)
         }
       >
-        <SelectTrigger className="w-full sm:w-44" aria-label="Filter by payment status">
-          <SelectValue placeholder="Payment status" />
+        <SelectTrigger className="w-full sm:w-44" aria-label={t("filterPaymentAria")}>
+          <SelectValue placeholder={t("paymentStatus")} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={ALL}>All payment statuses</SelectItem>
+          <SelectItem value={ALL}>{t("allPaymentStatuses")}</SelectItem>
           {PAYMENT_STATUSES.map((value) => (
             <SelectItem key={value} value={value}>
-              {getStatusLabel(value)}
+              {tPayment(value)}
             </SelectItem>
           ))}
         </SelectContent>
@@ -171,13 +179,13 @@ export function FiltersBar({ providers, riders }: FiltersBarProps) {
         value={codOnly}
         onValueChange={(value) => applyParam("codOnly", value === ALL ? null : value)}
       >
-        <SelectTrigger className="w-full sm:w-36" aria-label="Filter by COD or prepaid">
-          <SelectValue placeholder="COD / Prepaid" />
+        <SelectTrigger className="w-full sm:w-36" aria-label={t("filterCodAria")}>
+          <SelectValue placeholder={t("codPrepaid")} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={ALL}>COD & prepaid</SelectItem>
-          <SelectItem value="cod">COD only</SelectItem>
-          <SelectItem value="prepaid">Prepaid only</SelectItem>
+          <SelectItem value={ALL}>{t("codAndPrepaid")}</SelectItem>
+          <SelectItem value="cod">{t("codOnly")}</SelectItem>
+          <SelectItem value="prepaid">{t("prepaidOnly")}</SelectItem>
         </SelectContent>
       </Select>
 
@@ -188,7 +196,7 @@ export function FiltersBar({ providers, riders }: FiltersBarProps) {
           onClick={() => router.replace(pathname, { scroll: false })}
         >
           <X className="size-4" />
-          Reset
+          {tCommon("reset")}
         </Button>
       )}
     </div>

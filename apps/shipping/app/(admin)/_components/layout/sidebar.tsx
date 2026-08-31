@@ -2,32 +2,30 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Package, Truck, Users } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { FileSpreadsheet, LayoutDashboard, Package, Truck, Users } from "lucide-react";
 import { cn } from "@workspace/ui/lib/utils";
-
-interface SidebarLink {
-  title: string;
-  href: string;
-  icon: React.ElementType;
-}
-
-const links: SidebarLink[] = [
-  { title: "Dashboard", href: "/", icon: LayoutDashboard },
-  { title: "Shipping Orders", href: "/orders", icon: Package },
-  { title: "Riders", href: "/riders", icon: Users },
-  { title: "Providers", href: "/providers", icon: Truck },
-];
 
 export function Sidebar() {
   const pathname = usePathname();
+  const t = useTranslations("nav");
+  const tCommon = useTranslations("common");
+
+  const links = [
+    { title: t("dashboard"), href: "/", icon: LayoutDashboard },
+    { title: t("shippingOrders"), href: "/orders", icon: Package },
+    { title: t("batches"), href: "/batches", icon: FileSpreadsheet },
+    { title: t("riders"), href: "/riders", icon: Users },
+    { title: t("providers"), href: "/providers", icon: Truck },
+  ];
 
   return (
-    <aside className="hidden w-60 shrink-0 flex-col border-r border-border bg-white md:flex dark:bg-gray-950">
+    <aside className="hidden w-60 shrink-0 flex-col border-e border-border bg-white md:flex dark:bg-gray-950">
       <div className="flex h-16 items-center gap-2 px-4">
         <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
           <Truck className="size-4" />
         </div>
-        <span className="font-semibold">Shipping</span>
+        <span className="font-semibold">{tCommon("appName")}</span>
       </div>
       <nav className="flex flex-col gap-1 p-3">
         {links.map((link) => {

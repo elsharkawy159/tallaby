@@ -226,7 +226,10 @@ export default function AddProduct({ categories, brands, sellerPricing }: AddPro
               />
             )}
             {currentStep === 2 && (
-              <PriceStockStep sellerPricing={sellerPricing} />
+              <PriceStockStep
+                sellerPricing={sellerPricing}
+                activeLocale={activeLocale}
+              />
             )}
             {currentStep === 3 && <SeoStep activeLocale={activeLocale} />}
           </form>

@@ -12,6 +12,7 @@ export interface CurrencyInputProps extends Omit<BaseFieldProps, "children"> {
   max?: number;
   allowNegative?: boolean;
   onChange?: (value: number) => void;
+  onBlurValue?: (value: number) => void;
   value?: number;
 }
 
@@ -29,6 +30,7 @@ export const CurrencyInput = React.forwardRef<
       max,
       allowNegative = false,
       onChange,
+      onBlurValue,
       value,
       disabled = false,
       ...baseProps
@@ -91,10 +93,12 @@ export const CurrencyInput = React.forwardRef<
                 }}
                 onBlur={(e) => {
                   const numericValue = parseNumber(e.target.value);
-                  field.onChange(numericValue);
-                  if (numericValue > 0) {
-                    field.onChange(parseFloat(numericValue.toFixed(2)));
-                  }
+                  const normalizedValue =
+                    numericValue > 0
+                      ? parseFloat(numericValue.toFixed(2))
+                      : numericValue;
+                  field.onChange(normalizedValue);
+                  onBlurValue?.(normalizedValue);
                   field.onBlur();
                 }}
               />

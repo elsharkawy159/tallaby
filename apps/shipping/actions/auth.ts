@@ -1,6 +1,8 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
+
 import { createClient } from "@/supabase/server";
 
 /**
@@ -27,9 +29,11 @@ export async function login(email: string, password: string) {
     .eq("id", data.user.id)
     .single();
 
+  const t = await getTranslations("login");
+
   if (!profile || profile.isSuspended) {
     await supabase.auth.signOut();
-    return { success: false, error: "This account cannot access the shipping app" };
+    return { success: false, error: t("forbidden") };
   }
 
   if (profile.role === "driver") {
@@ -41,7 +45,7 @@ export async function login(email: string, password: string) {
   }
 
   await supabase.auth.signOut();
-  return { success: false, error: "This account cannot access the shipping app" };
+  return { success: false, error: t("forbidden") };
 }
 
 export async function logout() {

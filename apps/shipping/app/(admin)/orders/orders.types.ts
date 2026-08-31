@@ -21,6 +21,8 @@ export interface ShippingOrderRow {
   state: string | null;
   postalCode: string | null;
   country: string | null;
+  latitude: number | null;
+  longitude: number | null;
   shipmentId: string | null;
   shippingStatus: ShippingStatus;
   providerId: string | null;
@@ -37,6 +39,14 @@ export interface ShippingStats {
   delivered: number;
   failed: number;
   returned: number;
+}
+
+export interface StageCounts {
+  pending: number;
+  confirmed: number;
+  shipped: number;
+  outForDelivery: number;
+  delivered: number;
 }
 
 export interface ProviderOption {
@@ -89,6 +99,8 @@ export interface OrderDetail {
     postalCode: string;
     country: string;
     deliveryInstructions: string | null;
+    latitude: number | null;
+    longitude: number | null;
   } | null;
   orderItems: Array<{
     id: string;

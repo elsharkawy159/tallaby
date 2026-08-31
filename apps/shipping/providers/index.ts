@@ -2,12 +2,14 @@ import { bostaAdapter } from "./bosta";
 import { egyptPostAdapter } from "./egypt-post";
 import { manualAdapter } from "./manual";
 import { shipBluAdapter } from "./shipblu";
+import { tallabyAdapter } from "./tallaby";
 import type { ShippingProviderAdapter } from "./types";
 
 const ADAPTERS: Record<string, ShippingProviderAdapter> = {
   [bostaAdapter.code]: bostaAdapter,
   [shipBluAdapter.code]: shipBluAdapter,
   [egyptPostAdapter.code]: egyptPostAdapter,
+  [tallabyAdapter.code]: tallabyAdapter,
 };
 
 /**
@@ -20,5 +22,5 @@ export function getProviderAdapter(code: string | null | undefined): ShippingPro
   return ADAPTERS[code] ?? manualAdapter;
 }
 
-export { manualAdapter, bostaAdapter, shipBluAdapter, egyptPostAdapter };
+export { manualAdapter, bostaAdapter, shipBluAdapter, egyptPostAdapter, tallabyAdapter };
 export * from "./types";

@@ -234,6 +234,9 @@ export const productVariants = pgTable("product_variants", {
 	stock: integer().default(0),
 	sku: varchar(),
 	imageUrl: varchar("image_url"),
+	images: jsonb(),
+	isDefault: boolean("is_default").default(false),
+	localized: jsonb(),
 	position: integer().default(1),
 	option1: varchar(),
 	option2: varchar(),
@@ -366,6 +369,63 @@ export const shipmentItems = pgTable("shipment_items", {
 			foreignColumns: [shipments.id],
 			name: "shipment_items_shipment_id_shipments_id_fk"
 		}).onDelete("cascade"),
+]);
+
+/**
+ * One row per bulk "Assign" / "Assign all" action from the shipping app's
+ * Confirmed tab. `seq` is a human-friendly display id (BATCH-00007);
+ * `exportFormat` is null for providers with no sheet handoff (e.g. Tallaby),
+ * so the batch detail page can hide the download button without a query.
+ */
+export const shipmentBatches = pgTable("shipment_batches", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	seq: integer().generatedAlwaysAsIdentity(),
+	providerId: uuid("provider_id").notNull(),
+	createdBy: uuid("created_by"),
+	orderCount: integer("order_count").notNull(),
+	exportFormat: text("export_format"),
+	metadata: jsonb(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("shipment_batches_created_at_idx").using("btree", table.createdAt.desc()),
+	index("shipment_batches_provider_id_idx").using("btree", table.providerId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.providerId],
+			foreignColumns: [shippingProviders.id],
+			name: "shipment_batches_provider_id_shipping_providers_id_fk"
+		}),
+	foreignKey({
+			columns: [table.createdBy],
+			foreignColumns: [users.id],
+			name: "shipment_batches_created_by_users_id_fk"
+		}),
+]);
+
+/** One row per order in a batch. `riderId` is set only for Tallaby batches. */
+export const shipmentBatchItems = pgTable("shipment_batch_items", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	batchId: uuid("batch_id").notNull(),
+	orderId: uuid("order_id").notNull(),
+	riderId: uuid("rider_id"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("shipment_batch_items_order_id_idx").using("btree", table.orderId.asc().nullsLast().op("uuid_ops")),
+	unique("shipment_batch_items_batch_id_order_id_unique").on(table.batchId, table.orderId),
+	foreignKey({
+			columns: [table.batchId],
+			foreignColumns: [shipmentBatches.id],
+			name: "shipment_batch_items_batch_id_shipment_batches_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.orderId],
+			foreignColumns: [orders.id],
+			name: "shipment_batch_items_order_id_orders_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.riderId],
+			foreignColumns: [users.id],
+			name: "shipment_batch_items_rider_id_users_id_fk"
+		}),
 ]);
 
 export const productQuestions = pgTable("product_questions", {
@@ -1256,6 +1316,7 @@ export const productTranslations = pgTable("product_translations", {
 	locale: text().notNull(),
 	title: text().notNull(),
 	description: text(),
+	content: text(),
 	bulletPoints: jsonb("bullet_points").default([]).notNull(),
 	slug: text(),
 	metaTitle: text("meta_title"),

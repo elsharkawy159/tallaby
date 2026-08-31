@@ -9,6 +9,7 @@ import type {
   ProductPageProps,
 } from "./_components/product-page.types";
 import { ProductDisplay } from "./_components/product-display.client";
+import { ProductContent } from "./_components/product-content";
 import { notFound } from "next/navigation";
 import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import { generateProductMetadata } from "@/lib/metadata";
@@ -116,6 +117,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <ProductDisplay product={productWithCategory} />
         </div>
       </section>
+
+      <ProductContent html={productWithCategory.content} dir={locale} />
 
       <section>
         <ProductTabsWrapper product={productWithCategory} />

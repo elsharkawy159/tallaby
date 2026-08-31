@@ -1,12 +1,11 @@
 "use client";
 
-import { Copy, MapPin, Phone } from "lucide-react";
+import { Copy, Phone } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { Button } from "@workspace/ui/components/button";
-
-import { getGoogleMapsUrl } from "@/lib/maps";
+import { MapsLinkButton } from "@workspace/ui/components/maps-link-button";
 
 interface CustomerActionsProps {
   phone: string | null;
@@ -22,7 +21,6 @@ export function CustomerActions({
   longitude,
 }: CustomerActionsProps) {
   const t = useTranslations("rider");
-  const mapsUrl = getGoogleMapsUrl(latitude, longitude, address);
 
   return (
     <div className="grid grid-cols-3 gap-2">
@@ -45,12 +43,14 @@ export function CustomerActions({
         )}
       </Button>
 
-      <Button variant="outline" className="h-12 flex-col gap-1 text-xs" asChild>
-        <a href={mapsUrl} target="_blank" rel="noopener noreferrer">
-          <MapPin className="size-4" />
-          {t("maps")}
-        </a>
-      </Button>
+      <MapsLinkButton
+        type="navigation"
+        latitude={latitude}
+        longitude={longitude}
+        label={t("maps")}
+        variant="outline"
+        className="h-12 flex-col gap-1 text-xs"
+      />
 
       <Button
         type="button"

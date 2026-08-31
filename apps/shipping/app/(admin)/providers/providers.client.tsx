@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { Switch } from "@workspace/ui/components/switch";
@@ -19,6 +20,8 @@ export function ProviderToggle({
   name,
   isActive,
 }: ProviderToggleProps) {
+  const t = useTranslations("providers");
+  const tCommon = useTranslations("common");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -26,15 +29,15 @@ export function ProviderToggle({
     <Switch
       checked={isActive}
       disabled={isPending}
-      aria-label={`${isActive ? "Disable" : "Enable"} ${name}`}
+      aria-label={isActive ? t("disableAria", { name }) : t("enableAria", { name })}
       onCheckedChange={(checked) => {
         startTransition(async () => {
           const result = await toggleProvider({ providerId, isActive: checked });
           if (result.success) {
-            toast.success(result.message ?? "Saved");
+            toast.success(result.message ?? tCommon("saved"));
             router.refresh();
           } else {
-            toast.error(result.error ?? "Something went wrong");
+            toast.error(result.error ?? tCommon("somethingWrong"));
           }
         });
       }}

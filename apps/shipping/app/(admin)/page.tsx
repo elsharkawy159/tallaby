@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import {
   CheckCircle2,
   CircleAlert,
@@ -27,27 +28,35 @@ export const dynamic = "force-dynamic";
 
 const CARDS: {
   key: keyof ShippingStats;
-  label: string;
+  labelKey:
+    | "totalOrders"
+    | "pending"
+    | "assigned"
+    | "outForDelivery"
+    | "delivered"
+    | "failed"
+    | "returned";
   href: string;
   icon: React.ElementType;
   tone: string;
 }[] = [
-  { key: "total", label: "Total Orders", href: "/orders", icon: Package, tone: "text-gray-600" },
-  { key: "pending", label: "Pending", href: "/orders?status=pending", icon: Clock, tone: "text-yellow-600" },
-  { key: "assigned", label: "Assigned", href: "/orders?status=assigned", icon: UserCheck, tone: "text-blue-600" },
-  { key: "outForDelivery", label: "Out for Delivery", href: "/orders?status=out_for_delivery", icon: Truck, tone: "text-purple-600" },
-  { key: "delivered", label: "Delivered", href: "/orders?status=delivered", icon: CheckCircle2, tone: "text-green-600" },
-  { key: "failed", label: "Failed", href: "/orders?status=failed", icon: CircleAlert, tone: "text-red-600" },
-  { key: "returned", label: "Returned", href: "/orders?status=returned", icon: RotateCcw, tone: "text-orange-600" },
+  { key: "total", labelKey: "totalOrders", href: "/orders", icon: Package, tone: "text-gray-600" },
+  { key: "pending", labelKey: "pending", href: "/orders?status=pending", icon: Clock, tone: "text-yellow-600" },
+  { key: "assigned", labelKey: "assigned", href: "/orders?status=assigned", icon: UserCheck, tone: "text-blue-600" },
+  { key: "outForDelivery", labelKey: "outForDelivery", href: "/orders?status=out_for_delivery", icon: Truck, tone: "text-purple-600" },
+  { key: "delivered", labelKey: "delivered", href: "/orders?status=delivered", icon: CheckCircle2, tone: "text-green-600" },
+  { key: "failed", labelKey: "failed", href: "/orders?status=failed", icon: CircleAlert, tone: "text-red-600" },
+  { key: "returned", labelKey: "returned", href: "/orders?status=returned", icon: RotateCcw, tone: "text-orange-600" },
 ];
 
 async function StatsGrid() {
+  const t = await getTranslations("dashboard");
   const result = await getShippingStats();
 
   if (!result.success || !result.data) {
     return (
       <p className="text-sm text-destructive">
-        {result.error ?? "Failed to load shipping statistics"}
+        {result.error ?? t("statsLoadError")}
       </p>
     );
   }
@@ -62,7 +71,7 @@ async function StatsGrid() {
             <CardContent className="px-4">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <card.icon className={`size-4 ${card.tone}`} />
-                {card.label}
+                {t(card.labelKey)}
               </div>
               <p className="mt-2 text-2xl font-bold">{stats[card.key]}</p>
             </CardContent>
@@ -95,17 +104,23 @@ const OPERATIONAL_CARDS: {
     | "withoutRider"
     | "delayedOrders"
     | "todaysDeliveries";
-  label: string;
+  labelKey:
+    | "unassignedOrders"
+    | "withoutProvider"
+    | "withoutRider"
+    | "delayedOrders"
+    | "todaysDeliveries";
   href: string;
 }[] = [
-  { key: "unassignedOrders", label: "Unassigned orders", href: "/orders?status=pending" },
-  { key: "withoutProvider", label: "Without provider", href: "/orders" },
-  { key: "withoutRider", label: "Without rider", href: "/orders" },
-  { key: "delayedOrders", label: "Delayed orders", href: "/orders?status=out_for_delivery" },
-  { key: "todaysDeliveries", label: "Today's deliveries", href: "/orders" },
+  { key: "unassignedOrders", labelKey: "unassignedOrders", href: "/orders?status=pending" },
+  { key: "withoutProvider", labelKey: "withoutProvider", href: "/orders" },
+  { key: "withoutRider", labelKey: "withoutRider", href: "/orders" },
+  { key: "delayedOrders", labelKey: "delayedOrders", href: "/orders?status=out_for_delivery" },
+  { key: "todaysDeliveries", labelKey: "todaysDeliveries", href: "/orders" },
 ];
 
 async function OperationalSection() {
+  const t = await getTranslations("dashboard");
   const [statsResult, shipmentsResult] = await Promise.all([
     getOperationalStats(),
     getRecentShipments(10),
@@ -114,7 +129,7 @@ async function OperationalSection() {
   if (!statsResult.success || !statsResult.data) {
     return (
       <p className="text-sm text-destructive">
-        {statsResult.error ?? "Failed to load operational stats"}
+        {statsResult.error ?? t("operationalLoadError")}
       </p>
     );
   }
@@ -128,7 +143,7 @@ async function OperationalSection() {
           <Link key={card.key} href={card.href} className="block">
             <Card className="gap-0 py-4 transition-colors hover:border-primary/40">
               <CardContent className="px-4">
-                <p className="text-xs text-muted-foreground">{card.label}</p>
+                <p className="text-xs text-muted-foreground">{t(card.labelKey)}</p>
                 <p className="mt-2 text-2xl font-bold">{stats[card.key]}</p>
               </CardContent>
             </Card>
@@ -139,7 +154,7 @@ async function OperationalSection() {
       <div className="grid grid-cols-2 gap-4">
         <Card className="gap-0 py-4">
           <CardContent className="px-4">
-            <p className="text-xs text-muted-foreground">COD outstanding</p>
+            <p className="text-xs text-muted-foreground">{t("codOutstanding")}</p>
             <p className="mt-2 text-xl font-bold">
               {formatCurrency(stats.codOutstanding)}
             </p>
@@ -147,7 +162,7 @@ async function OperationalSection() {
         </Card>
         <Card className="gap-0 py-4">
           <CardContent className="px-4">
-            <p className="text-xs text-muted-foreground">COD collected today</p>
+            <p className="text-xs text-muted-foreground">{t("codCollectedToday")}</p>
             <p className="mt-2 text-xl font-bold">
               {formatCurrency(stats.codCollectedToday)}
             </p>
@@ -157,7 +172,7 @@ async function OperationalSection() {
 
       <div>
         <h2 className="mb-2 text-sm font-medium text-muted-foreground">
-          Recent activity
+          {t("recentActivity")}
         </h2>
         <OrdersTable rows={shipmentsResult.data} />
       </div>
@@ -165,14 +180,14 @@ async function OperationalSection() {
   );
 }
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const t = await getTranslations("dashboard");
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-sm text-muted-foreground">
-          Delivery status across all physical orders.
-        </p>
+        <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
       </div>
 
       <Suspense fallback={<StatsGridSkeleton />}>

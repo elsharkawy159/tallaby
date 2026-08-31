@@ -127,7 +127,7 @@ const About = () => {
                   Shop Now
                 </Button>
               </Link>
-              <Link href="/become-seller">
+              <Link href="/sell">
                 <Button
                   variant="outline"
                   className="border-white text-white hover:bg-white hover:text-primary"
@@ -268,7 +268,7 @@ const About = () => {
                   Start Shopping
                 </Button>
               </Link>
-              <Link href="/become-seller">
+              <Link href="/sell">
                 <Button
                   variant="outline"
                   className="border-white text-white hover:bg-white hover:text-primary"

@@ -1,7 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-import { alias } from "drizzle-orm/pg-core";
 import {
   db,
   and,
@@ -9,17 +7,15 @@ import {
   count,
   desc,
   eq,
-  ilike,
-  isNull,
-  or,
   sql,
   orders,
   payments,
   shipments,
   shippingProviders,
-  userAddresses,
   users,
 } from "@workspace/db";
+
+import { getTranslations } from "next-intl/server";
 
 import {
   actionError,
@@ -29,6 +25,7 @@ import {
 } from "@/lib/action-result";
 import { applyShipmentStatus } from "@/lib/apply-shipment-status";
 import { requireShippingAdmin } from "@/lib/auth";
+import { translateShippingStatus } from "@/lib/rider-labels";
 import { canTransition, type ShippingStatus } from "@/lib/shipping-status";
 import { getProviderAdapter } from "@/providers";
 import {
@@ -37,73 +34,17 @@ import {
   updateStatusSchema,
   type ShippingFilters,
 } from "./orders.dto";
+import { address, buildWhere, customer, revalidateShipping, rider, SHIPPABLE } from "./orders.query";
 import type {
   OrderDetail,
   ProviderOption,
   RiderOption,
   ShippingOrderRow,
   ShippingStats,
+  StageCounts,
 } from "./orders.types";
 
-const rider = alias(users, "rider");
-const customer = alias(users, "customer");
-const address = alias(userAddresses, "ship_addr");
-
-/**
- * Only physical orders need a courier. `is_digital_only` is nullable, so NULL is
- * treated as physical — an order must never fall out of the shipping queue
- * because a flag was left unset.
- */
-const SHIPPABLE = or(eq(orders.isDigitalOnly, false), isNull(orders.isDigitalOnly))!;
-
 const CLOSED_STATUSES: ShippingStatus[] = ["delivered", "returned", "cancelled"];
-
-function buildWhere(filters: ShippingFilters) {
-  const conditions = [SHIPPABLE];
-
-  if (filters.status) {
-    conditions.push(
-      filters.status === "pending"
-        ? // An order with no shipment row yet is pending by definition.
-          or(eq(shipments.status, "pending"), isNull(shipments.id))!
-        : eq(shipments.status, filters.status)
-    );
-  }
-
-  if (filters.providerId) {
-    conditions.push(eq(shipments.providerId, filters.providerId));
-  }
-
-  if (filters.riderId) {
-    conditions.push(eq(shipments.riderId, filters.riderId));
-  }
-
-  if (filters.paymentStatus) {
-    conditions.push(eq(orders.paymentStatus, filters.paymentStatus));
-  }
-
-  if (filters.codOnly === "cod") {
-    conditions.push(
-      or(isNull(orders.paymentStatus), sql`${orders.paymentStatus} not in ('paid', 'collected')`)!
-    );
-  } else if (filters.codOnly === "prepaid") {
-    conditions.push(sql`${orders.paymentStatus} in ('paid', 'collected')`);
-  }
-
-  if (filters.search) {
-    const term = `%${filters.search}%`;
-    conditions.push(
-      or(
-        ilike(orders.orderNumber, term),
-        ilike(customer.fullName, term),
-        ilike(customer.phone, term),
-        ilike(address.phone, term)
-      )!
-    );
-  }
-
-  return and(...conditions);
-}
 
 /**
  * The shipping order list. Two queries per page — the joined page of rows and a
@@ -140,6 +81,8 @@ export async function getShippingOrders(
         state: address.state,
         postalCode: address.postalCode,
         country: address.country,
+        latitude: address.latitude,
+        longitude: address.longitude,
         shipmentId: shipments.id,
         shippingStatus: shipments.status,
         providerId: shipments.providerId,
@@ -221,6 +164,47 @@ export async function getShippingStats(): Promise<ActionResult<ShippingStats>> {
     };
   } catch (error) {
     return { success: false, error: actionError("getShippingStats", error) };
+  }
+}
+
+/** The pipeline tab badge counts — one query, same shape as getShippingStats(). */
+export async function getStageCounts(): Promise<ActionResult<StageCounts>> {
+  try {
+    await requireShippingAdmin();
+
+    const [row] = await db
+      .select({
+        pending: sql<number>`count(*) filter (
+          where ${orders.status} = 'pending'
+            and (${orders.paymentStatus} is null or ${orders.paymentStatus} not in ('paid', 'collected'))
+        )`,
+        confirmed: sql<number>`count(*) filter (
+          where (
+            ${orders.status} = 'confirmed'
+            or (${orders.status} = 'pending' and ${orders.paymentStatus} in ('paid', 'collected'))
+          )
+          and (${shipments.id} is null or ${shipments.status} = 'pending')
+        )`,
+        shipped: sql<number>`count(*) filter (where ${shipments.status} = 'assigned')`,
+        outForDelivery: sql<number>`count(*) filter (where ${shipments.status} = 'out_for_delivery')`,
+        delivered: sql<number>`count(*) filter (where ${shipments.status} = 'delivered')`,
+      })
+      .from(orders)
+      .leftJoin(shipments, eq(shipments.orderId, orders.id))
+      .where(SHIPPABLE);
+
+    return {
+      success: true,
+      data: {
+        pending: Number(row?.pending ?? 0),
+        confirmed: Number(row?.confirmed ?? 0),
+        shipped: Number(row?.shipped ?? 0),
+        outForDelivery: Number(row?.outForDelivery ?? 0),
+        delivered: Number(row?.delivered ?? 0),
+      },
+    };
+  } catch (error) {
+    return { success: false, error: actionError("getStageCounts", error) };
   }
 }
 
@@ -322,6 +306,8 @@ export async function getRecentShipments(
         state: address.state,
         postalCode: address.postalCode,
         country: address.country,
+        latitude: address.latitude,
+        longitude: address.longitude,
         shipmentId: shipments.id,
         shippingStatus: shipments.status,
         providerId: shipments.providerId,
@@ -436,6 +422,7 @@ export async function getShippingOrderDetail(
 ): Promise<ActionResult<OrderDetail>> {
   try {
     await requireShippingAdmin();
+    const t = await getTranslations("orders");
 
     const order = await db.query.orders.findFirst({
       where: eq(orders.id, orderId),
@@ -473,7 +460,7 @@ export async function getShippingOrderDetail(
       },
     });
 
-    if (!order) return { success: false, error: "Order not found" };
+    if (!order) return { success: false, error: t("orderNotFound") };
 
     return { success: true, data: order as OrderDetail };
   } catch (error) {
@@ -505,6 +492,7 @@ async function currentShipment(orderId: string) {
 export async function assignProvider(input: unknown): Promise<ActionResult> {
   try {
     await requireShippingAdmin();
+    const t = await getTranslations("orders");
     const { orderId, providerId } = assignProviderSchema.parse(input);
 
     const order = await db.query.orders.findFirst({
@@ -520,7 +508,7 @@ export async function assignProvider(input: unknown): Promise<ActionResult> {
         user: { columns: { fullName: true, phone: true } },
       },
     });
-    if (!order) return { success: false, error: "Order not found" };
+    if (!order) return { success: false, error: t("orderNotFound") };
 
     let provider: { id: string; code: string } | null = null;
     if (providerId) {
@@ -535,7 +523,7 @@ export async function assignProvider(input: unknown): Promise<ActionResult> {
         )
         .limit(1);
       if (!found) {
-        return { success: false, error: "Provider not found or inactive" };
+        return { success: false, error: t("providerNotFound") };
       }
       provider = found;
     }
@@ -595,7 +583,7 @@ export async function assignProvider(input: unknown): Promise<ActionResult> {
     revalidateShipping(orderId);
     return {
       success: true,
-      message: providerId ? "Provider assigned" : "Provider cleared",
+      message: providerId ? t("providerAssigned") : t("providerCleared"),
     };
   } catch (error) {
     return { success: false, error: actionError("assignProvider", error) };
@@ -605,6 +593,7 @@ export async function assignProvider(input: unknown): Promise<ActionResult> {
 export async function assignRider(input: unknown): Promise<ActionResult> {
   try {
     await requireShippingAdmin();
+    const t = await getTranslations("orders");
     const { orderId, riderId } = assignRiderSchema.parse(input);
 
     if (riderId) {
@@ -614,15 +603,15 @@ export async function assignRider(input: unknown): Promise<ActionResult> {
         .from(users)
         .where(and(eq(users.id, riderId), eq(users.role, "driver")))
         .limit(1);
-      if (!target) return { success: false, error: "Rider not found" };
+      if (!target) return { success: false, error: t("riderNotFound") };
       if (target.isSuspended) {
-        return { success: false, error: "Rider account is suspended" };
+        return { success: false, error: t("riderSuspended") };
       }
     }
 
     const existing = await currentShipment(orderId);
     if (existing && CLOSED_STATUSES.includes(existing.status)) {
-      return { success: false, error: "This delivery is already closed" };
+      return { success: false, error: t("deliveryClosed") };
     }
 
     const now = new Date().toISOString();
@@ -654,7 +643,7 @@ export async function assignRider(input: unknown): Promise<ActionResult> {
     revalidateShipping(orderId);
     return {
       success: true,
-      message: riderId ? "Rider assigned" : "Rider unassigned",
+      message: riderId ? t("riderAssigned") : t("riderUnassigned"),
     };
   } catch (error) {
     return { success: false, error: actionError("assignRider", error) };
@@ -666,18 +655,28 @@ export async function updateShipmentStatus(
 ): Promise<ActionResult> {
   try {
     await requireShippingAdmin();
+    const t = await getTranslations("orders");
+    const tStatus = await getTranslations("status");
     const { orderId, status, failureReason } = updateStatusSchema.parse(input);
 
     const existing = await currentShipment(orderId);
     const from: ShippingStatus = existing?.status ?? "pending";
 
     if (from === status) {
-      return { success: false, error: `Delivery is already ${label(status)}` };
+      return {
+        success: false,
+        error: t("alreadyStatus", {
+          status: translateShippingStatus(tStatus, status),
+        }),
+      };
     }
     if (!canTransition(from, status)) {
       return {
         success: false,
-        error: `Cannot move a delivery from ${label(from)} to ${label(status)}`,
+        error: t("cannotMove", {
+          from: translateShippingStatus(tStatus, from),
+          to: translateShippingStatus(tStatus, status),
+        }),
       };
     }
 
@@ -690,22 +689,11 @@ export async function updateShipmentStatus(
     });
 
     revalidateShipping(orderId);
-    return { success: true, message: "Status updated" };
+    return { success: true, message: t("statusUpdated") };
   } catch (error) {
     return {
       success: false,
       error: actionError("updateShipmentStatus", error),
     };
   }
-}
-
-function label(status: string): string {
-  return status.replace(/_/g, " ");
-}
-
-function revalidateShipping(orderId: string) {
-  revalidatePath("/");
-  revalidatePath("/orders");
-  revalidatePath(`/orders/${orderId}`);
-  revalidatePath("/rider");
 }

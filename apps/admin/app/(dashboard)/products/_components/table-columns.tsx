@@ -1,7 +1,7 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, Star, CheckCircle2 } from "lucide-react";
+import { MoreHorizontal, Star, SquareArrowOutUpRight } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
 import { Checkbox } from "@workspace/ui/components/checkbox";
 import { Badge } from "@workspace/ui/components/badge";
@@ -15,6 +15,7 @@ import {
 } from "@workspace/ui/components/dropdown-menu";
 import Link from "next/link";
 import { DataTableColumnHeader } from "@/app/(dashboard)/_components/data-table/data-table-column-header";
+import { formatProductPrice, getStorefrontProductUrl, parseProductPrice } from "../products.lib";
 
 interface Product {
   id: string;
@@ -44,9 +45,7 @@ interface Product {
   } | null;
 }
 
-export function getProductsColumns(
-  onApprove?: (productId: string) => void
-): ColumnDef<Product>[] {
+export function getProductsColumns(): ColumnDef<Product>[] {
   return [
     {
       id: "select",
@@ -112,22 +111,8 @@ export function getProductsColumns(
         <DataTableColumnHeader column={column} title="Price" />
       ),
       cell: ({ row }) => {
-        const price = row.getValue("price") as any;
-        let amount = 0;
-
-        if (typeof price === "object" && price !== null) {
-          // Handle JSONB price object
-          amount = parseFloat(price.base || price.amount || price.value || "0");
-        } else if (typeof price === "string" || typeof price === "number") {
-          amount = parseFloat(String(price));
-        }
-
-        const formatted = new Intl.NumberFormat("en-EG", {
-          style: "currency",
-          currency: "EGP",
-        }).format(amount);
-
-        return <div>{formatted}</div>;
+        const { final } = parseProductPrice(row.getValue("price"));
+        return <div>{formatProductPrice(final)}</div>;
       },
     },
     {
@@ -246,20 +231,33 @@ export function getProductsColumns(
         const product = row.original;
         const needsApproval =
           product.status === "pending" || product.status === "rejected";
+        const storefrontUrl = getStorefrontProductUrl(product.slug);
 
         return (
           <div className="flex items-center gap-2">
-            {needsApproval && onApprove && (
-              <Button
-                variant="default"
-                size="sm"
-                onClick={() => onApprove(product.id)}
-                className="gap-1 bg-green-600 hover:bg-green-700"
-              >
-                <CheckCircle2 className="h-3 w-3" />
-                Approve
-              </Button>
-            )}
+            {needsApproval &&
+              (storefrontUrl ? (
+                <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+                  <a
+                    href={storefrontUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="View product on storefront"
+                  >
+                    <SquareArrowOutUpRight className="h-4 w-4" />
+                  </a>
+                </Button>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  disabled
+                  title="Product slug is missing"
+                >
+                  <SquareArrowOutUpRight className="h-4 w-4" />
+                </Button>
+              ))}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-8 w-8 p-0">
