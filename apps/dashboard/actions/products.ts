@@ -336,6 +336,7 @@ export async function bulkUploadProductsAction(formData: FormData) {
       maxorderquantity: "maxOrderQuantity",
       isplatformchoice: "isPlatformChoice",
       ismostselling: "isMostSelling",
+      freedelivery: "freeDelivery",
       taxclass: "taxClass",
     };
 

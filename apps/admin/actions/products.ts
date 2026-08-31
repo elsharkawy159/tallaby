@@ -332,6 +332,7 @@ type UpdateProductInput = {
   isPlatformChoice?: boolean;
   isMostSelling?: boolean;
   isFeatured?: boolean;
+  freeDelivery?: boolean;
   condition?: typeof products.$inferInsert.condition;
   conditionDescription?: string;
   fulfillmentType?: typeof products.$inferInsert.fulfillmentType;
@@ -377,6 +378,8 @@ export async function updateProduct(productId: string, data: UpdateProductInput)
     if (data.isMostSelling !== undefined)
       productUpdate.isMostSelling = data.isMostSelling;
     if (data.isFeatured !== undefined) productUpdate.isFeatured = data.isFeatured;
+    if (data.freeDelivery !== undefined)
+      productUpdate.freeDelivery = data.freeDelivery;
     if (data.taxClass !== undefined) productUpdate.taxClass = data.taxClass;
     if (data.sku !== undefined) productUpdate.sku = data.sku || null;
     if (data.quantity !== undefined) productUpdate.quantity = String(data.quantity);

@@ -15,6 +15,7 @@ import {
 } from "@workspace/db";
 import { getCurrentUserId } from "@/lib/get-current-user-id";
 import { validateCoupon } from "./coupons";
+import { calculateOrderShippingCost } from "@/lib/shipping";
 
 export async function getCheckoutData() {
   try {
@@ -87,7 +88,7 @@ export async function getCheckoutData() {
     );
 
     const tax = 0;
-    const shippingCost = Number(process.env.NEXT_PUBLIC_SHIPPING_COST) || 50;
+    const shippingCost = calculateOrderShippingCost(cart.cartItems);
     const total = subtotal + tax + shippingCost;
 
     return {

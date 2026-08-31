@@ -25,6 +25,7 @@ import {
   SelectInput,
   CurrencyInput,
   Toggle,
+  SwitchInput,
 } from "@workspace/ui/components";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
@@ -207,6 +208,13 @@ export function PriceStockStep({ sellerPricing }: PriceStockStepProps) {
                   className="text-sm"
                 />
               </div>
+
+              <SwitchInput
+                name="freeDelivery"
+                label="Free delivery on this product"
+                labelPosition="right"
+                className="rounded-lg border border-gray-200 p-4"
+              />
 
               {/* Dimensions */}
               <div className="space-y-2">

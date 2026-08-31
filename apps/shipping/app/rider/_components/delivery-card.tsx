@@ -1,14 +1,18 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { ChevronRight, MapPin, Phone } from "lucide-react";
 
 import { Badge } from "@workspace/ui/components/badge";
 import { Card, CardContent } from "@workspace/ui/components/card";
 
 import { formatAddress, formatCurrency } from "@/lib/format";
-import { getStatusColor, getStatusLabel, isSettled } from "@/lib/shipping-status";
+import { translateShippingStatus } from "@/lib/rider-labels";
+import { getStatusColor, isSettled } from "@/lib/shipping-status";
 import type { RiderDelivery } from "../rider.server";
 
-export function DeliveryCard({ delivery }: { delivery: RiderDelivery }) {
+export async function DeliveryCard({ delivery }: { delivery: RiderDelivery }) {
+  const t = await getTranslations("rider");
+  const tStatus = await getTranslations("status");
   const cod = isSettled(delivery.paymentStatus) ? 0 : Number(delivery.totalAmount);
 
   return (
@@ -23,7 +27,7 @@ export function DeliveryCard({ delivery }: { delivery: RiderDelivery }) {
               </p>
             </div>
             <Badge className={getStatusColor(delivery.status)}>
-              {getStatusLabel(delivery.status)}
+              {translateShippingStatus(tStatus, delivery.status)}
             </Badge>
           </div>
 
@@ -56,14 +60,14 @@ export function DeliveryCard({ delivery }: { delivery: RiderDelivery }) {
             <span className="text-sm">
               {cod > 0 ? (
                 <>
-                  <span className="text-muted-foreground">Collect </span>
+                  <span className="text-muted-foreground">{t("collect")} </span>
                   <span className="font-semibold">{formatCurrency(cod)}</span>
                 </>
               ) : (
-                <span className="text-muted-foreground">Prepaid</span>
+                <span className="text-muted-foreground">{t("prepaid")}</span>
               )}
             </span>
-            <ChevronRight className="size-4 text-muted-foreground" />
+            <ChevronRight className="size-4 text-muted-foreground rtl:rotate-180" />
           </div>
         </CardContent>
       </Card>

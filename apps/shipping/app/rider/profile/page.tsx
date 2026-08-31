@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { getTranslations } from "next-intl/server";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@workspace/ui/components/avatar";
 import { Badge } from "@workspace/ui/components/badge";
@@ -6,7 +7,8 @@ import { Card, CardContent } from "@workspace/ui/components/card";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 
 import { formatCurrency } from "@/lib/format";
-import { getStatusColor, getStatusLabel } from "@/lib/shipping-status";
+import { translateShippingStatus } from "@/lib/rider-labels";
+import { getStatusColor } from "@/lib/shipping-status";
 
 import { AvailabilityToggle } from "./_components/availability-toggle";
 import { getRiderProfile } from "../rider.server";
@@ -14,12 +16,14 @@ import { getRiderProfile } from "../rider.server";
 export const dynamic = "force-dynamic";
 
 async function Profile() {
+  const t = await getTranslations("rider");
+  const tStatus = await getTranslations("status");
   const result = await getRiderProfile();
 
   if (!result.success || !result.data) {
     return (
       <p className="text-sm text-destructive">
-        {result.error ?? "Failed to load your profile"}
+        {result.error ?? t("profileLoadError")}
       </p>
     );
   }
@@ -50,7 +54,7 @@ async function Profile() {
                   : "mt-1 bg-green-100 text-green-800"
               }
             >
-              {rider.isSuspended ? "Deactivated" : "Active"}
+              {rider.isSuspended ? t("deactivated") : t("active")}
             </Badge>
           </div>
         </CardContent>
@@ -60,25 +64,25 @@ async function Profile() {
 
       {stats && (
         <div className="grid grid-cols-2 gap-2">
-          <StatTile label="Today's deliveries" value={stats.todayTotal} />
-          <StatTile label="Remaining" value={stats.remaining} />
-          <StatTile label="Delivered today" value={stats.deliveredToday} />
-          <StatTile label="Failed today" value={stats.failedToday} />
+          <StatTile label={t("todaysDeliveries")} value={stats.todayTotal} />
+          <StatTile label={t("remaining")} value={stats.remaining} />
+          <StatTile label={t("deliveredToday")} value={stats.deliveredToday} />
+          <StatTile label={t("failedToday")} value={stats.failedToday} />
           <StatTile
-            label="COD collected today"
+            label={t("codCollectedToday")}
             value={formatCurrency(stats.codCollectedToday)}
           />
-          <StatTile label="COD remaining" value={formatCurrency(stats.codToCollect)} />
+          <StatTile label={t("codRemaining")} value={formatCurrency(stats.codToCollect)} />
         </div>
       )}
 
       <section className="space-y-2">
         <h2 className="text-sm font-medium text-muted-foreground">
-          Delivery history
+          {t("deliveryHistory")}
         </h2>
         {history.length === 0 ? (
           <p className="rounded-xl border bg-white p-6 text-center text-sm text-muted-foreground dark:bg-gray-950">
-            No completed deliveries yet.
+            {t("noCompletedDeliveries")}
           </p>
         ) : (
           <div className="space-y-2">
@@ -94,7 +98,7 @@ async function Profile() {
                   </p>
                 </div>
                 <Badge className={getStatusColor(delivery.status)}>
-                  {getStatusLabel(delivery.status)}
+                  {translateShippingStatus(tStatus, delivery.status)}
                 </Badge>
               </div>
             ))}
@@ -114,10 +118,12 @@ function StatTile({ label, value }: { label: string; value: string | number }) {
   );
 }
 
-export default function RiderProfilePage() {
+export default async function RiderProfilePage() {
+  const t = await getTranslations("rider");
+
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-bold tracking-tight">Profile</h1>
+      <h1 className="text-xl font-bold tracking-tight">{t("profile")}</h1>
 
       <Suspense fallback={<Skeleton className="h-96 w-full rounded-xl" />}>
         <Profile />

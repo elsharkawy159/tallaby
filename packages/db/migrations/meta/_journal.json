@@ -71,6 +71,13 @@
       "when": 1798310400000,
       "tag": "0011_shipping_cod_and_crud",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1798400000000,
+      "tag": "0012_product_free_delivery",
+      "breakpoints": true
     }
   ]
 }

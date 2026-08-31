@@ -129,9 +129,9 @@ export async function searchProducts(filters: SearchFilters) {
       conditions.push(sql`${products.quantity} > 0`);
     }
 
-    // Free shipping filter (simplified - you might want to add shipping cost field)
+    // Free shipping filter
     if (filters.freeShipping) {
-      conditions.push(sql`${products.price}->>'freeShipping' = 'true'`);
+      conditions.push(eq(products.freeDelivery, true));
     }
 
     // On sale filter

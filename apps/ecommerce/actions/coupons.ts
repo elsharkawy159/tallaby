@@ -11,6 +11,7 @@ import {
   type CartItemForCoupon,
   type CheckoutSummary
 } from "@/lib/coupon-utils"
+import { calculateOrderShippingCost } from "@/lib/shipping"
 
 interface ValidationResult {
   success: boolean
@@ -35,6 +36,8 @@ interface CartWithItems {
     price: string | number
     product?: {
       categoryId?: string
+      productType?: string | null
+      freeDelivery?: boolean | null
     }
   }>
 }
@@ -176,7 +179,7 @@ export async function validateCoupon(
     }
 
     // Calculate discount
-    const shippingCost = Number(process.env.NEXT_PUBLIC_SHIPPING_COST) || 50
+    const shippingCost = calculateOrderShippingCost(cart.cartItems)
     const calculationResult = calculateCouponDiscount(
       coupon as CouponData,
       cartItemsForCoupon,
@@ -240,7 +243,9 @@ export async function applyCouponToCart(data: { code: string }) {
           with: {
             product: {
               columns: {
-                categoryId: true
+                categoryId: true,
+                productType: true,
+                freeDelivery: true,
               }
             }
           }
@@ -289,8 +294,16 @@ export async function removeCouponFromCart() {
       where: and(eq(carts.userId, userId), eq(carts.status, "active")),
       with: {
         cartItems: {
-          where: eq(cartItems.savedForLater, false)
-        }
+          where: eq(cartItems.savedForLater, false),
+          with: {
+            product: {
+              columns: {
+                productType: true,
+                freeDelivery: true,
+              },
+            },
+          },
+        },
       }
     })
 
@@ -304,7 +317,7 @@ export async function removeCouponFromCart() {
       0
     )
     const tax = 0
-    const shippingCost = Number(process.env.NEXT_PUBLIC_SHIPPING_COST) || 50
+    const shippingCost = calculateOrderShippingCost(cart.cartItems)
     const total = subtotal + tax + shippingCost
 
     const summary: CheckoutSummary = {

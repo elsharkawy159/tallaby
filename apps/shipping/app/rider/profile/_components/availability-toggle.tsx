@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { Card, CardContent } from "@workspace/ui/components/card";
@@ -10,6 +11,7 @@ import { Switch } from "@workspace/ui/components/switch";
 import { setMyAvailability } from "../../rider.server";
 
 export function AvailabilityToggle({ isAvailable }: { isAvailable: boolean }) {
+  const t = useTranslations("rider");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -18,11 +20,9 @@ export function AvailabilityToggle({ isAvailable }: { isAvailable: boolean }) {
       <CardContent className="flex items-center justify-between px-4">
         <div>
           <p className="text-sm font-medium">
-            {isAvailable ? "On duty" : "Off duty"}
+            {isAvailable ? t("onDuty") : t("offDuty")}
           </p>
-          <p className="text-xs text-muted-foreground">
-            Turn off when you&apos;re not taking new deliveries.
-          </p>
+          <p className="text-xs text-muted-foreground">{t("availabilityHint")}</p>
         </div>
         <Switch
           checked={isAvailable}
@@ -31,10 +31,10 @@ export function AvailabilityToggle({ isAvailable }: { isAvailable: boolean }) {
             startTransition(async () => {
               const result = await setMyAvailability(checked);
               if (result.success) {
-                toast.success(result.message ?? "Saved");
+                toast.success(result.message ?? t("saved"));
                 router.refresh();
               } else {
-                toast.error(result.error ?? "Something went wrong");
+                toast.error(result.error ?? t("somethingWrong"));
               }
             });
           }}

@@ -1089,6 +1089,7 @@ export const products = pgTable("products", {
 	handlingTime: numeric("handling_time").default('1'),
 	maxOrderQuantity: integer("max_order_quantity"),
 	isFeatured: boolean("is_featured").default(false),
+	freeDelivery: boolean("free_delivery").default(false).notNull(),
 	dimensions: jsonb(),
 	price: jsonb(),
 	productType: productType("product_type").default('physical'),

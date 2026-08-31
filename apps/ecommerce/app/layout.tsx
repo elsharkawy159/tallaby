@@ -109,12 +109,12 @@ export default async function RootLayout({
           easing="ease"
           speed={200}
         />
-        <Providers>
-          <NextIntlClientProvider messages={messages}>
+        <NextIntlClientProvider messages={messages}>
+          <Providers>
             {children}
-          </NextIntlClientProvider>
+          </Providers>
           <Toaster />
-        </Providers>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

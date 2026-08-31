@@ -1,11 +1,13 @@
 import * as z from "zod";
 import {
-  DEFAULT_CONSERVATIVE_ORDERS,
   DEFAULT_DESIRED_MARGIN,
   DEFAULT_EXPECTED_ORDERS,
-  DEFAULT_OPTIMISTIC_ORDERS,
   DEFAULT_PACKAGING_COST,
+  DEFAULT_PREDICTION_RANGE,
+  DEFAULT_PROJECTION_QUANTITY,
   MAX_INPUT_VALUE,
+  MAX_PREDICTION_RANGE,
+  MAX_PROJECTION_QUANTITY,
 } from "./pricing-calculator.constants";
 
 const MAX_LABEL = MAX_INPUT_VALUE.toLocaleString("en-US");
@@ -34,16 +36,29 @@ export const pricingCalculatorSchema = z.object({
   packagingCost: optionalAmount("Packaging cost"),
   shippingCost: optionalAmount("Shipping cost"),
   dailyAdBudget: optionalAmount("Daily ad budget"),
-  conservativeOrders: optionalAmount("Estimated orders"),
-  expectedOrders: optionalAmount("Estimated orders"),
-  optimisticOrders: optionalAmount("Estimated orders"),
-  sellingPrice: optionalAmount("Selling price"),
+  expectedOrders: optionalAmount("Expected orders"),
+  predictionRange: z
+    .number()
+    .min(0, "Range must be 0% or more")
+    .max(MAX_PREDICTION_RANGE, `Range must be ${MAX_PREDICTION_RANGE}% or less`)
+    .optional(),
+  sellingPrice: optionalAmount("Market price"),
   // A 100% margin would mean dividing by zero in the recommended-price
   // formula, so it is rejected here as well as guarded in the engine.
   desiredMargin: z
     .number()
     .min(0, "Desired margin must be between 0% and 99.99%")
     .lt(100, "Desired margin must be between 0% and 99.99%")
+    .optional(),
+  // Display-only: how many units the third projection tile covers.
+  projectionQuantity: z
+    .number()
+    .int("Use a whole number of items")
+    .min(1, "Enter at least 1 item")
+    .max(
+      MAX_PROJECTION_QUANTITY,
+      `Up to ${MAX_PROJECTION_QUANTITY.toLocaleString("en-US")} items`
+    )
     .optional(),
 });
 
@@ -55,9 +70,9 @@ export const DEFAULT_FORM_VALUES: PricingCalculatorFormValues = {
   packagingCost: DEFAULT_PACKAGING_COST,
   shippingCost: undefined,
   dailyAdBudget: undefined,
-  conservativeOrders: DEFAULT_CONSERVATIVE_ORDERS,
   expectedOrders: DEFAULT_EXPECTED_ORDERS,
-  optimisticOrders: DEFAULT_OPTIMISTIC_ORDERS,
+  predictionRange: DEFAULT_PREDICTION_RANGE,
   sellingPrice: undefined,
   desiredMargin: DEFAULT_DESIRED_MARGIN,
+  projectionQuantity: DEFAULT_PROJECTION_QUANTITY,
 };

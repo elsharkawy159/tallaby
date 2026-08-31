@@ -17,6 +17,7 @@ type ProductForEdit = {
   isPlatformChoice: boolean | null;
   isMostSelling: boolean | null;
   isFeatured: boolean | null;
+  freeDelivery: boolean | null;
   taxClass: string | null;
   dimensions: unknown;
   localized: AddProductFormData["localized"];
@@ -113,6 +114,7 @@ export function buildEditDefaultValues(
     isPlatformChoice: product.isPlatformChoice ?? false,
     isMostSelling: product.isMostSelling ?? false,
     isFeatured: product.isFeatured ?? false,
+    freeDelivery: product.freeDelivery ?? false,
     taxClass:
       (product.taxClass as AddProductFormData["taxClass"]) ?? "standard",
     notes: "",

@@ -37,6 +37,7 @@ import { revalidatePath } from "next/cache";
 import { getUser } from "./auth";
 import { formatVariantTitle } from "@/lib/variant-utils";
 import { pickTranslationFromArray } from "@/lib/product-translations";
+import { calculateOrderShippingCost } from "@/lib/shipping";
 
 /** Internal control-flow signal: the coupon lost a concurrent usage-limit race inside the order transaction. */
 class CouponClaimFailedError extends Error {}
@@ -135,9 +136,7 @@ export async function createOrder(data: {
     const hasDigitalItems = cart.cartItems.some(
       (item) => item.product.productType === "digital"
     );
-    const shippingCost = isDigitalOnlyCart
-      ? 0
-      : Number(process.env.NEXT_PUBLIC_SHIPPING_COST) || 50;
+    const shippingCost = calculateOrderShippingCost(cart.cartItems);
 
     const orderItemsData = cart.cartItems.map((item) => {
       const itemSubtotal = Number(item.price) * item.quantity;

@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { Truck } from "lucide-react";
 
 import { getShippingUser } from "@/lib/auth";
@@ -10,6 +11,7 @@ export default async function RiderLayout({
   children: React.ReactNode;
 }) {
   const user = await getShippingUser();
+  const t = await getTranslations("rider");
 
   if (!user) redirect("/login");
   if (user.isSuspended) redirect("/login?error=forbidden");
@@ -24,7 +26,7 @@ export default async function RiderLayout({
               <Truck className="size-3.5" />
             </div>
             <span className="truncate text-sm font-semibold">
-              {user.fullName ?? "My Deliveries"}
+              {user.fullName ?? t("myDeliveries")}
             </span>
           </div>
           <RiderSignOut />

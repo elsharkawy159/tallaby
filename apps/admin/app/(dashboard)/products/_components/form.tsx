@@ -239,6 +239,12 @@ function ProductFormFields({
               />
               <FormInputField
                 control={control}
+                name="freeDelivery"
+                label="Free Delivery"
+                type="switch"
+              />
+              <FormInputField
+                control={control}
                 name="maxOrderQuantity"
                 label="Max Order Qty"
                 type="number"
@@ -569,6 +575,7 @@ export function ProductForm({
         isPlatformChoice: data.isPlatformChoice,
         isMostSelling: data.isBestSeller,
         isFeatured: data.isFeatured,
+        freeDelivery: data.freeDelivery,
         condition: data.condition,
         conditionDescription: data.conditionDescription,
         fulfillmentType: data.fulfillmentType,
@@ -615,6 +622,7 @@ export function ProductForm({
         isPlatformChoice: false,
         isBestSeller: false,
         isFeatured: false,
+        freeDelivery: false,
         condition: "new",
         fulfillmentType: "seller_fulfilled",
         handlingTime: 1,

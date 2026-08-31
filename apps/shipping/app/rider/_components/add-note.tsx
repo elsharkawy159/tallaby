@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Loader2, NotebookPen } from "lucide-react";
 import { toast } from "sonner";
 
@@ -11,6 +12,7 @@ import { Textarea } from "@workspace/ui/components/textarea";
 import { addDeliveryNote } from "../rider.server";
 
 export function AddNote({ shipmentId }: { shipmentId: string }) {
+  const t = useTranslations("rider");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
@@ -24,7 +26,7 @@ export function AddNote({ shipmentId }: { shipmentId: string }) {
         onClick={() => setOpen(true)}
       >
         <NotebookPen className="size-4" />
-        Add note
+        {t("addNote")}
       </Button>
     );
   }
@@ -35,7 +37,7 @@ export function AddNote({ shipmentId }: { shipmentId: string }) {
         autoFocus
         value={note}
         onChange={(event) => setNote(event.target.value)}
-        placeholder="e.g. Customer asked to deliver after 6 PM"
+        placeholder={t("notePlaceholder")}
         rows={2}
         disabled={isPending}
       />
@@ -49,7 +51,7 @@ export function AddNote({ shipmentId }: { shipmentId: string }) {
             setNote("");
           }}
         >
-          Cancel
+          {t("cancel")}
         </Button>
         <Button
           className="h-10 flex-1"
@@ -58,18 +60,18 @@ export function AddNote({ shipmentId }: { shipmentId: string }) {
             startTransition(async () => {
               const result = await addDeliveryNote({ shipmentId, note });
               if (result.success) {
-                toast.success(result.message ?? "Note added");
+                toast.success(result.message ?? t("noteAdded"));
                 setOpen(false);
                 setNote("");
                 router.refresh();
               } else {
-                toast.error(result.error ?? "Something went wrong");
+                toast.error(result.error ?? t("somethingWrong"));
               }
             });
           }}
         >
           {isPending && <Loader2 className="size-4 animate-spin" />}
-          Save note
+          {t("saveNote")}
         </Button>
       </div>
     </div>

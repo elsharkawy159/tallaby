@@ -59,6 +59,7 @@ export const addProductFormSchema = z
     isPlatformChoice: z.boolean().default(false),
     isMostSelling: z.boolean().default(false),
     isFeatured: z.boolean().default(false),
+    freeDelivery: z.boolean().default(false),
     taxClass: z
       .enum(["standard", "reduced", "zero", "exempt"])
       .default("standard"),
@@ -174,6 +175,7 @@ export const defaultValues = {
   isPlatformChoice: false,
   isMostSelling: false,
   isFeatured: false,
+  freeDelivery: false,
   taxClass: "standard" as const,
   notes: "",
   variants: [],

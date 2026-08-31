@@ -18,10 +18,12 @@ import {
 } from "@workspace/db";
 
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 
 import { actionError, type ActionResult } from "@/lib/action-result";
 import { applyShipmentStatus } from "@/lib/apply-shipment-status";
 import { requireRider } from "@/lib/auth";
+import { translateShippingStatus } from "@/lib/rider-labels";
 import { canTransition, isSettled, type ShippingStatus } from "@/lib/shipping-status";
 import {
   addDeliveryNoteSchema,
@@ -102,6 +104,7 @@ const baseSelect = {
 export async function getMyDelivery(shipmentId: string): Promise<MyDeliveryResult> {
   try {
     const user = await requireRider();
+    const t = await getTranslations("rider");
 
     const [row] = await db
       .select(baseSelect)
@@ -116,7 +119,7 @@ export async function getMyDelivery(shipmentId: string): Promise<MyDeliveryResul
       .where(and(eq(shipments.id, shipmentId), eq(shipments.riderId, user.id)))
       .limit(1);
 
-    if (!row) return { success: false, error: "Delivery not found" };
+    if (!row) return { success: false, error: t("deliveryNotFound") };
 
     const items = await db
       .select({
@@ -142,6 +145,8 @@ export async function getMyDelivery(shipmentId: string): Promise<MyDeliveryResul
 export async function riderUpdateStatus(input: unknown): Promise<ActionResult> {
   try {
     const user = await requireRider();
+    const t = await getTranslations("rider");
+    const tStatus = await getTranslations("status");
     const { shipmentId, status, reasonCode, failureReason } =
       riderUpdateStatusSchema.parse(input);
 
@@ -157,13 +162,15 @@ export async function riderUpdateStatus(input: unknown): Promise<ActionResult> {
       .where(and(eq(shipments.id, shipmentId), eq(shipments.riderId, user.id)))
       .limit(1);
 
-    if (!owned) return { success: false, error: "Delivery not found" };
+    if (!owned) return { success: false, error: t("deliveryNotFound") };
 
     if (!canTransition(owned.status, status)) {
-      const label = (value: string) => value.replace(/_/g, " ");
       return {
         success: false,
-        error: `Cannot move this delivery from ${label(owned.status)} to ${label(status)}`,
+        error: t("cannotTransition", {
+          from: translateShippingStatus(tStatus, owned.status),
+          to: translateShippingStatus(tStatus, status),
+        }),
       };
     }
 
@@ -176,7 +183,7 @@ export async function riderUpdateStatus(input: unknown): Promise<ActionResult> {
     if (status === "delivered" && isCod) {
       return {
         success: false,
-        error: "Collect the COD payment before marking this order delivered.",
+        error: t("collectCodBeforeDelivered"),
       };
     }
 
@@ -194,7 +201,7 @@ export async function riderUpdateStatus(input: unknown): Promise<ActionResult> {
     revalidatePath(`/rider/${shipmentId}`);
     revalidatePath("/orders");
     revalidatePath(`/orders/${owned.orderId}`);
-    return { success: true, message: "Status updated" };
+    return { success: true, message: t("statusUpdated") };
   } catch (error) {
     return { success: false, error: actionError("riderUpdateStatus", error) };
   }
@@ -209,6 +216,7 @@ export async function riderUpdateStatus(input: unknown): Promise<ActionResult> {
 export async function collectPayment(input: unknown): Promise<ActionResult> {
   try {
     const user = await requireRider();
+    const t = await getTranslations("rider");
     const { shipmentId, amount, method } = collectPaymentSchema.parse(input);
 
     const [owned] = await db
@@ -224,17 +232,17 @@ export async function collectPayment(input: unknown): Promise<ActionResult> {
       .where(and(eq(shipments.id, shipmentId), eq(shipments.riderId, user.id)))
       .limit(1);
 
-    if (!owned) return { success: false, error: "Delivery not found" };
+    if (!owned) return { success: false, error: t("deliveryNotFound") };
 
     if (owned.status !== "out_for_delivery") {
       return {
         success: false,
-        error: "This delivery is not out for delivery.",
+        error: t("notOutForDelivery"),
       };
     }
 
     if (isSettled(owned.paymentStatus)) {
-      return { success: false, error: "This order has already been paid." };
+      return { success: false, error: t("alreadyPaid") };
     }
 
     const expectedAmount = Number(owned.totalAmount);
@@ -260,8 +268,14 @@ export async function collectPayment(input: unknown): Promise<ActionResult> {
       success: true,
       message:
         discrepancy === 0
-          ? "Payment collected and delivery completed"
-          : `Payment collected with a ${discrepancy > 0 ? "surplus" : "shortfall"} of ${Math.abs(discrepancy).toFixed(2)} EGP`,
+          ? t("paymentCollectedCompleted")
+          : discrepancy > 0
+            ? t("paymentCollectedSurplus", {
+                amount: Math.abs(discrepancy).toFixed(2),
+              })
+            : t("paymentCollectedShortfall", {
+                amount: Math.abs(discrepancy).toFixed(2),
+              }),
     };
   } catch (error) {
     return { success: false, error: actionError("collectPayment", error) };
@@ -272,6 +286,7 @@ export async function collectPayment(input: unknown): Promise<ActionResult> {
 export async function addDeliveryNote(input: unknown): Promise<ActionResult> {
   try {
     const user = await requireRider();
+    const t = await getTranslations("rider");
     const { shipmentId, note } = addDeliveryNoteSchema.parse(input);
 
     const [owned] = await db
@@ -280,7 +295,7 @@ export async function addDeliveryNote(input: unknown): Promise<ActionResult> {
       .where(and(eq(shipments.id, shipmentId), eq(shipments.riderId, user.id)))
       .limit(1);
 
-    if (!owned) return { success: false, error: "Delivery not found" };
+    if (!owned) return { success: false, error: t("deliveryNotFound") };
 
     await db.insert(deliveries).values({
       shipmentId: owned.id,
@@ -291,7 +306,7 @@ export async function addDeliveryNote(input: unknown): Promise<ActionResult> {
 
     revalidatePath(`/rider/${shipmentId}`);
     revalidatePath(`/orders`);
-    return { success: true, message: "Note added" };
+    return { success: true, message: t("noteAdded") };
   } catch (error) {
     return { success: false, error: actionError("addDeliveryNote", error) };
   }
@@ -426,6 +441,7 @@ export interface RiderProfileResult extends ActionResult<RiderProfile> {
 export async function getRiderProfile(): Promise<RiderProfileResult> {
   try {
     const user = await requireRider();
+    const t = await getTranslations("rider");
 
     const [profile] = await db
       .select({
@@ -441,7 +457,7 @@ export async function getRiderProfile(): Promise<RiderProfileResult> {
       .where(eq(users.id, user.id))
       .limit(1);
 
-    if (!profile) return { success: false, error: "Profile not found" };
+    if (!profile) return { success: false, error: t("profileLoadError") };
 
     const dashboard = await getRiderDashboard();
 
@@ -477,6 +493,7 @@ export async function getRiderProfile(): Promise<RiderProfileResult> {
 export async function setMyAvailability(isAvailable: boolean): Promise<ActionResult> {
   try {
     const user = await requireRider();
+    const t = await getTranslations("rider");
 
     await db
       .update(users)
@@ -484,7 +501,10 @@ export async function setMyAvailability(isAvailable: boolean): Promise<ActionRes
       .where(eq(users.id, user.id));
 
     revalidatePath("/rider/profile");
-    return { success: true, message: isAvailable ? "You're on duty" : "You're off duty" };
+    return {
+      success: true,
+      message: isAvailable ? t("onDutyMessage") : t("offDutyMessage"),
+    };
   } catch (error) {
     return { success: false, error: actionError("setMyAvailability", error) };
   }

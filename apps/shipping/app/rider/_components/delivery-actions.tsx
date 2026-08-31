@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { CheckCircle2, CircleAlert, Loader2, Truck, Wallet } from "lucide-react";
 import { toast } from "sonner";
 
@@ -18,6 +19,10 @@ import {
 import { Textarea } from "@workspace/ui/components/textarea";
 
 import { formatCurrency } from "@/lib/format";
+import {
+  translateCollectionMethod,
+  translateFailureReason,
+} from "@/lib/rider-labels";
 import {
   DELIVERY_FAILURE_REASONS,
   COLLECTION_METHODS,
@@ -42,6 +47,9 @@ export function DeliveryActions({
   status,
   codAmount,
 }: DeliveryActionsProps) {
+  const t = useTranslations("rider");
+  const tReasons = useTranslations("failureReasons");
+  const tMethods = useTranslations("collectionMethods");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [view, setView] = useState<View>("idle");
@@ -70,11 +78,11 @@ export function DeliveryActions({
       });
 
       if (result.success) {
-        toast.success(result.message ?? "Updated");
+        toast.success(result.message ?? t("updated"));
         reset();
         router.refresh();
       } else {
-        toast.error(result.error ?? "Something went wrong");
+        toast.error(result.error ?? t("somethingWrong"));
       }
     });
   };
@@ -82,7 +90,7 @@ export function DeliveryActions({
   const confirmCollection = () => {
     const parsed = Number(amount);
     if (Number.isNaN(parsed) || parsed < 0) {
-      toast.error("Enter a valid amount");
+      toast.error(t("invalidAmount"));
       return;
     }
 
@@ -90,11 +98,11 @@ export function DeliveryActions({
       const result = await collectPayment({ shipmentId, amount: parsed, method });
 
       if (result.success) {
-        toast.success(result.message ?? "Payment collected");
+        toast.success(result.message ?? t("paymentCollected"));
         reset();
         router.refresh();
       } else {
-        toast.error(result.error ?? "Something went wrong");
+        toast.error(result.error ?? t("somethingWrong"));
       }
     });
   };
@@ -111,7 +119,7 @@ export function DeliveryActions({
         ) : (
           <Truck className="size-5" />
         )}
-        Start Delivery
+        {t("startDelivery")}
       </Button>
     );
   }
@@ -124,10 +132,10 @@ export function DeliveryActions({
 
     return (
       <div className="space-y-3 rounded-xl border bg-white p-4 dark:bg-gray-950">
-        <p className="text-sm font-medium">Collect payment</p>
+        <p className="text-sm font-medium">{t("collectPayment")}</p>
 
         <div className="space-y-2">
-          <Label htmlFor="cod-amount">Amount collected (EGP)</Label>
+          <Label htmlFor="cod-amount">{t("amountCollected")}</Label>
           <Input
             id="cod-amount"
             inputMode="decimal"
@@ -136,12 +144,12 @@ export function DeliveryActions({
             disabled={isPending}
           />
           <p className="text-xs text-muted-foreground">
-            Expected: {formatCurrency(codAmount)}
+            {t("expected")}: {formatCurrency(codAmount)}
           </p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="cod-method">Payment method</Label>
+          <Label htmlFor="cod-method">{t("paymentMethod")}</Label>
           <Select
             value={method}
             onValueChange={(value) => setMethod(value as CollectionMethod)}
@@ -152,8 +160,8 @@ export function DeliveryActions({
             </SelectTrigger>
             <SelectContent>
               {COLLECTION_METHODS.map((value) => (
-                <SelectItem key={value} value={value} className="capitalize">
-                  {value}
+                <SelectItem key={value} value={value}>
+                  {translateCollectionMethod(tMethods, value)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -162,9 +170,9 @@ export function DeliveryActions({
 
         {discrepancy !== 0 && (
           <p className="rounded-lg bg-orange-50 p-3 text-sm text-orange-800 dark:bg-orange-950 dark:text-orange-200">
-            This is {discrepancy > 0 ? "more" : "less"} than the expected amount
-            by {formatCurrency(Math.abs(discrepancy))}. Confirming will record
-            this difference for admin review.
+            {t(discrepancy > 0 ? "discrepancyMore" : "discrepancyLess", {
+              amount: formatCurrency(Math.abs(discrepancy)),
+            })}
           </p>
         )}
 
@@ -175,7 +183,7 @@ export function DeliveryActions({
             disabled={isPending}
             onClick={reset}
           >
-            Cancel
+            {t("cancel")}
           </Button>
           <Button
             className="h-11 flex-1 bg-green-600 text-white hover:bg-green-600/90"
@@ -183,7 +191,7 @@ export function DeliveryActions({
             onClick={confirmCollection}
           >
             {isPending && <Loader2 className="size-4 animate-spin" />}
-            Confirm Collected
+            {t("confirmCollected")}
           </Button>
         </div>
 
@@ -196,7 +204,7 @@ export function DeliveryActions({
           }}
           className="w-full text-center text-sm text-muted-foreground underline-offset-2 hover:underline"
         >
-          Payment was not collected
+          {t("paymentNotCollectedLink")}
         </button>
       </div>
     );
@@ -205,7 +213,7 @@ export function DeliveryActions({
   if (view === "failing") {
     return (
       <div className="space-y-3 rounded-xl border bg-white p-4 dark:bg-gray-950">
-        <p className="text-sm font-medium">What went wrong?</p>
+        <p className="text-sm font-medium">{t("whatWentWrong")}</p>
 
         <div className="grid grid-cols-1 gap-2">
           {DELIVERY_FAILURE_REASONS.map((reason) => (
@@ -214,13 +222,13 @@ export function DeliveryActions({
               type="button"
               disabled={isPending}
               onClick={() => setReasonCode(reason.code)}
-              className={`rounded-lg border px-3 py-2 text-left text-sm transition-colors ${
+              className={`rounded-lg border px-3 py-2 text-start text-sm transition-colors ${
                 reasonCode === reason.code
                   ? "border-primary bg-primary/5 font-medium"
                   : "border-border hover:bg-muted"
               }`}
             >
-              {reason.label}
+              {translateFailureReason(tReasons, reason.code)}
             </button>
           ))}
         </div>
@@ -228,7 +236,7 @@ export function DeliveryActions({
         <Textarea
           value={note}
           onChange={(event) => setNote(event.target.value)}
-          placeholder="Add a note (optional)"
+          placeholder={t("addNoteOptional")}
           rows={2}
           disabled={isPending}
         />
@@ -240,7 +248,7 @@ export function DeliveryActions({
             disabled={isPending}
             onClick={reset}
           >
-            Cancel
+            {t("cancel")}
           </Button>
           <Button
             variant="destructive"
@@ -249,7 +257,7 @@ export function DeliveryActions({
             onClick={() => reasonCode && updateStatus("failed", reasonCode)}
           >
             {isPending && <Loader2 className="size-4 animate-spin" />}
-            Confirm Failed
+            {t("confirmFailed")}
           </Button>
         </div>
       </div>
@@ -272,7 +280,9 @@ export function DeliveryActions({
         ) : (
           <CheckCircle2 className="size-5" />
         )}
-        {codAmount > 0 ? `Collect ${formatCurrency(codAmount)}` : "Mark as Delivered"}
+        {codAmount > 0
+          ? t("collectAmount", { amount: formatCurrency(codAmount) })
+          : t("markDelivered")}
       </Button>
 
       <Button
@@ -282,7 +292,7 @@ export function DeliveryActions({
         onClick={() => setView("failing")}
       >
         <CircleAlert className="size-5" />
-        Delivery Failed
+        {t("deliveryFailed")}
       </Button>
     </div>
   );

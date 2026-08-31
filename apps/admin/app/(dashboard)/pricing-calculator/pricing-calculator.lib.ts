@@ -1,5 +1,12 @@
 import { formatCurrency } from "@workspace/lib";
-import { MAX_INPUT_VALUE, SCENARIOS } from "./pricing-calculator.constants";
+import {
+  MARGIN_SUGGESTION_STEP,
+  MAX_INPUT_VALUE,
+  MAX_PREDICTION_RANGE,
+  MAX_SUGGESTED_MARGIN,
+  MIN_SUGGESTED_MARGIN,
+  SCENARIOS,
+} from "./pricing-calculator.constants";
 import type {
   PriceStatus,
   PricingCalculatorRawInput,
@@ -32,9 +39,34 @@ function round2(value: number): number {
 }
 
 /**
- * The daily ad budget spread across the orders it is expected to produce.
- * Returns null when there are no estimated orders -- dividing by zero is the
- * one thing this page must never do.
+ * Turn one orders-per-day guess into the three cases, so the user only has to
+ * estimate a single number. A wider range means less confidence.
+ */
+export function deriveOrdersPerDay(
+  expectedOrders: number,
+  predictionRangePercent: number
+): Record<ScenarioKey, number> {
+  const spread =
+    Math.min(Math.max(predictionRangePercent, 0), MAX_PREDICTION_RANGE) / 100;
+
+  // Whole orders only: "7.4 orders a day" is not a thing anyone plans around.
+  const toOrders = (value: number): number => {
+    if (expectedOrders <= 0) return 0;
+    return Math.max(1, Math.round(value));
+  };
+
+  return {
+    conservative: toOrders(expectedOrders * (1 - spread)),
+    expected: toOrders(expectedOrders),
+    optimistic: toOrders(expectedOrders * (1 + spread)),
+  };
+}
+
+/**
+ * The daily ad budget spread across the orders it is expected to produce --
+ * the same idea as "cost per purchase" in a social ads dashboard.
+ * Returns null when there are no estimated orders, because dividing by zero is
+ * the one thing this page must never do.
  */
 export function calculateMarketingCostPerOrder(
   dailyAdBudget: number,
@@ -44,31 +76,42 @@ export function calculateMarketingCostPerOrder(
   return round2(dailyAdBudget / ordersPerDay);
 }
 
-/** Supplier + packaging + shipping. Marketing is added per scenario. */
-export function calculateBaseCost(
+/** Supplier + packaging. Marketing is added per scenario; shipping never is. */
+export function calculateProductCost(
   supplierPrice: number,
-  packagingCost: number,
-  shippingCost: number
+  packagingCost: number
 ): number {
-  return round2(supplierPrice + packagingCost + shippingCost);
-}
-
-export function calculateTotalCost(
-  baseCost: number,
-  marketingCostPerOrder: number | null
-): number | null {
-  if (marketingCostPerOrder === null) return null;
-  return round2(baseCost + marketingCostPerOrder);
-}
-
-export function calculateProfit(sellingPrice: number, totalCost: number): number {
-  return round2(sellingPrice - totalCost);
+  return round2(supplierPrice + packagingCost);
 }
 
 /**
- * Profit margin, over the SELLING PRICE -- not markup over cost.
- * Returns null when there is no selling price to measure against.
+ * The cost that profit is measured against. Shipping is excluded on purpose:
+ * it is added on top of the price and collected from the customer, so it
+ * cancels out of profit rather than eating into it.
  */
+export function calculateCostPerItem(
+  productCost: number,
+  marketingCostPerOrder: number | null
+): number | null {
+  if (marketingCostPerOrder === null) return null;
+  return round2(productCost + marketingCostPerOrder);
+}
+
+/** A product price as the customer sees it, with delivery added on top. */
+export function calculateListedPrice(
+  productPrice: number,
+  shippingCost: number
+): number {
+  return round2(productPrice + shippingCost);
+}
+
+export function calculateProfit(
+  sellingPrice: number,
+  costPerItem: number
+): number {
+  return round2(sellingPrice - costPerItem);
+}
+
 /** Profit across a batch of units, for the volume projection. */
 export function calculateProfitForQuantity(
   profitPerItem: number | null,
@@ -78,6 +121,10 @@ export function calculateProfitForQuantity(
   return round2(profitPerItem * quantity);
 }
 
+/**
+ * Profit margin, over the SELLING PRICE -- not markup over cost.
+ * Returns null when there is no selling price to measure against.
+ */
 export function calculateProfitMargin(
   profit: number,
   sellingPrice: number
@@ -91,12 +138,29 @@ export function calculateProfitMargin(
  * margin), which would be markup and would undershoot the target.
  */
 export function calculateRecommendedPrice(
-  totalCost: number,
+  costPerItem: number,
   desiredMarginPercent: number
 ): number | null {
-  if (totalCost <= 0) return null;
+  if (costPerItem <= 0) return null;
   if (desiredMarginPercent < 0 || desiredMarginPercent >= 100) return null;
-  return round2(totalCost / (1 - desiredMarginPercent / 100));
+  return round2(costPerItem / (1 - desiredMarginPercent / 100));
+}
+
+/**
+ * A target margin taken from what the market price already earns you, rounded
+ * down to a round step. Rounding down matters: it keeps the resulting
+ * recommended price at or below the market price, so you stay competitive
+ * instead of pricing yourself above the going rate.
+ *
+ * Returns null when the market price does not clear the cost by enough for a
+ * target to mean anything.
+ */
+export function suggestDesiredMargin(profitMargin: number | null): number | null {
+  if (profitMargin === null || !Number.isFinite(profitMargin)) return null;
+  if (profitMargin < MIN_SUGGESTED_MARGIN) return null;
+  const stepped =
+    Math.floor(profitMargin / MARGIN_SUGGESTION_STEP) * MARGIN_SUGGESTION_STEP;
+  return Math.min(stepped, MAX_SUGGESTED_MARGIN);
 }
 
 /**
@@ -128,7 +192,8 @@ function buildScenario(
   key: ScenarioKey,
   label: string,
   ordersPerDay: number,
-  baseCost: number,
+  productCost: number,
+  shippingCost: number,
   dailyAdBudget: number,
   sellingPrice: number,
   desiredMargin: number
@@ -137,20 +202,23 @@ function buildScenario(
     dailyAdBudget,
     ordersPerDay
   );
-  const totalCost = calculateTotalCost(baseCost, marketingCostPerOrder);
+  const costPerItem = calculateCostPerItem(productCost, marketingCostPerOrder);
 
-  if (totalCost === null) {
+  if (costPerItem === null) {
     return {
       key,
       label,
       ordersPerDay,
       marketingCostPerOrder: null,
-      totalCost: null,
+      costPerItem: null,
+      cashOutPerOrder: null,
       profitPerItem: null,
       profitMargin: null,
       breakEvenPrice: null,
+      breakEvenListedPrice: null,
       recommendedPriceExact: null,
       recommendedPrice: null,
+      recommendedListedPrice: null,
       profitAtRecommendedPrice: null,
       marginAtRecommendedPrice: null,
       status: null,
@@ -159,20 +227,25 @@ function buildScenario(
 
   const hasSellingPrice = sellingPrice > 0;
   const profitPerItem = hasSellingPrice
-    ? calculateProfit(sellingPrice, totalCost)
+    ? calculateProfit(sellingPrice, costPerItem)
     : null;
   const profitMargin =
     profitPerItem === null
       ? null
       : calculateProfitMargin(profitPerItem, sellingPrice);
 
-  const recommendedPriceExact = calculateRecommendedPrice(totalCost, desiredMargin);
+  const recommendedPriceExact = calculateRecommendedPrice(
+    costPerItem,
+    desiredMargin
+  );
   const recommendedPrice =
     recommendedPriceExact === null
       ? null
       : roundToCharmPrice(recommendedPriceExact);
   const profitAtRecommendedPrice =
-    recommendedPrice === null ? null : calculateProfit(recommendedPrice, totalCost);
+    recommendedPrice === null
+      ? null
+      : calculateProfit(recommendedPrice, costPerItem);
   const marginAtRecommendedPrice =
     recommendedPrice === null || profitAtRecommendedPrice === null
       ? null
@@ -183,16 +256,27 @@ function buildScenario(
     label,
     ordersPerDay,
     marketingCostPerOrder,
-    totalCost,
+    costPerItem,
+    cashOutPerOrder: calculateListedPrice(costPerItem, shippingCost),
     profitPerItem,
     profitMargin,
-    // Break-even is exactly the total cost: at that price profit is 0.
-    breakEvenPrice: totalCost,
+    // Break-even is exactly the cost per item: at that price profit is 0.
+    breakEvenPrice: costPerItem,
+    breakEvenListedPrice: calculateListedPrice(costPerItem, shippingCost),
     recommendedPriceExact,
     recommendedPrice,
+    recommendedListedPrice:
+      recommendedPrice === null
+        ? null
+        : calculateListedPrice(recommendedPrice, shippingCost),
     profitAtRecommendedPrice,
     marginAtRecommendedPrice,
-    status: getPriceStatus(sellingPrice, profitPerItem, profitMargin, desiredMargin),
+    status: getPriceStatus(
+      sellingPrice,
+      profitPerItem,
+      profitMargin,
+      desiredMargin
+    ),
   };
 }
 
@@ -203,23 +287,21 @@ export function calculatePricing(
   const packagingCost = toSafeNumber(input.packagingCost);
   const shippingCost = toSafeNumber(input.shippingCost);
   const dailyAdBudget = toSafeNumber(input.dailyAdBudget);
+  const expectedOrders = toSafeNumber(input.expectedOrders);
+  const predictionRange = toSafeNumber(input.predictionRange);
   const sellingPrice = toSafeNumber(input.sellingPrice);
   const desiredMargin = toSafeNumber(input.desiredMargin);
 
-  const baseCost = calculateBaseCost(supplierPrice, packagingCost, shippingCost);
-
-  const ordersByScenario: Record<ScenarioKey, number> = {
-    conservative: toSafeNumber(input.conservativeOrders),
-    expected: toSafeNumber(input.expectedOrders),
-    optimistic: toSafeNumber(input.optimisticOrders),
-  };
+  const productCost = calculateProductCost(supplierPrice, packagingCost);
+  const ordersByScenario = deriveOrdersPerDay(expectedOrders, predictionRange);
 
   const scenarioList = SCENARIOS.map((scenario) =>
     buildScenario(
       scenario.key,
       scenario.label,
       ordersByScenario[scenario.key],
-      baseCost,
+      productCost,
+      shippingCost,
       dailyAdBudget,
       sellingPrice,
       desiredMargin
@@ -238,9 +320,12 @@ export function calculatePricing(
     supplierPrice,
     packagingCost,
     shippingCost,
-    baseCost,
+    productCost,
     dailyAdBudget,
+    expectedOrders,
+    predictionRange,
     sellingPrice,
+    listedPrice: calculateListedPrice(sellingPrice, shippingCost),
     desiredMargin,
     scenarios,
     scenarioList,

@@ -166,7 +166,8 @@
     "emptyCart": "سلة التسوق فارغة",
     "cartNotFound": "لم يتم العثور على السلة",
     "discount": "الخصم",
-    "freeShipping": "شحن مجاني"
+    "freeShipping": "شحن مجاني",
+    "freeDeliveryAllItemsQualify": "توصيل مجاني — جميع المنتجات مؤهلة"
   },
   "product": {
     "addToCart": "أضف إلى السلة",
@@ -175,7 +176,9 @@
     "viewDetails": "عرض التفاصيل",
     "viewMore": "عرض المزيد",
     "freeShipping": "شحن مجاني",
-    "ordersOverAmount": "على الطلبات أكثر من 500 جنيهاً",
+    "freeDeliveryOnProduct": "توصيل مجاني",
+    "freeDeliveryOnProductDescription": "هذا المنتج يُشحن بدون رسوم توصيل",
+    "ordersOverAmount": "على الطلبات أكثر من {amount}",
     "veryEasyToReturn": "سهل جداً للإرجاع",
     "justPhoneNumber": "فقط رقم الهاتف",
     "nationwideDelivery": "التوصيل على مستوى المحافظات",

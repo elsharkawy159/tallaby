@@ -1,6 +1,7 @@
 "use client";
 
 import { Copy, MapPin, Phone } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { Button } from "@workspace/ui/components/button";
@@ -20,6 +21,7 @@ export function CustomerActions({
   latitude,
   longitude,
 }: CustomerActionsProps) {
+  const t = useTranslations("rider");
   const mapsUrl = getGoogleMapsUrl(latitude, longitude, address);
 
   return (
@@ -33,12 +35,12 @@ export function CustomerActions({
         {phone ? (
           <a href={`tel:${phone}`}>
             <Phone className="size-4" />
-            Call
+            {t("call")}
           </a>
         ) : (
           <span>
             <Phone className="size-4" />
-            Call
+            {t("call")}
           </span>
         )}
       </Button>
@@ -46,7 +48,7 @@ export function CustomerActions({
       <Button variant="outline" className="h-12 flex-col gap-1 text-xs" asChild>
         <a href={mapsUrl} target="_blank" rel="noopener noreferrer">
           <MapPin className="size-4" />
-          Maps
+          {t("maps")}
         </a>
       </Button>
 
@@ -57,14 +59,14 @@ export function CustomerActions({
         onClick={async () => {
           try {
             await navigator.clipboard.writeText(address);
-            toast.success("Address copied");
+            toast.success(t("addressCopied"));
           } catch {
-            toast.error("Could not copy address");
+            toast.error(t("addressCopyFailed"));
           }
         }}
       >
         <Copy className="size-4" />
-        Copy
+        {t("copy")}
       </Button>
     </div>
   );

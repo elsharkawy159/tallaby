@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { ArrowLeft, MapPin } from "lucide-react";
 
 import { Badge } from "@workspace/ui/components/badge";
@@ -9,9 +10,9 @@ import { Card, CardContent } from "@workspace/ui/components/card";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 
 import { formatAddress, formatCurrency } from "@/lib/format";
+import { translateShippingStatus } from "@/lib/rider-labels";
 import {
   getStatusColor,
-  getStatusLabel,
   isSettled,
   type ShippingStatus,
 } from "@/lib/shipping-status";
@@ -28,10 +29,10 @@ interface DeliveryPageProps {
 }
 
 async function DeliveryDetail({ shipmentId }: { shipmentId: string }) {
+  const t = await getTranslations("rider");
+  const tStatus = await getTranslations("status");
   const result = await getMyDelivery(shipmentId);
 
-  // A shipment assigned to someone else is indistinguishable from one that
-  // doesn't exist — the query is scoped by rider id, so both return nothing.
   if (!result.success || !result.data) {
     notFound();
   }
@@ -58,14 +59,14 @@ async function DeliveryDetail({ shipmentId }: { shipmentId: string }) {
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2">
           <Button variant="ghost" size="icon" asChild>
-            <Link href="/rider" aria-label="Back to my deliveries">
-              <ArrowLeft className="size-4" />
+            <Link href="/rider" aria-label={t("backToDeliveries")}>
+              <ArrowLeft className="size-4 rtl:rotate-180" />
             </Link>
           </Button>
           <h1 className="truncate text-lg font-bold">{delivery.orderNumber}</h1>
         </div>
         <Badge className={getStatusColor(status)}>
-          {getStatusLabel(status)}
+          {translateShippingStatus(tStatus, status)}
         </Badge>
       </div>
 
@@ -116,27 +117,28 @@ async function DeliveryDetail({ shipmentId }: { shipmentId: string }) {
 
           <div className="space-y-1.5 border-t pt-3 text-sm">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Items total</span>
+              <span className="text-muted-foreground">{t("itemsTotal")}</span>
               <span>{formatCurrency(Number(delivery.subtotal))}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Delivery charge</span>
+              <span className="text-muted-foreground">{t("deliveryCharge")}</span>
               <span>{formatCurrency(Number(delivery.shippingCost ?? 0))}</span>
             </div>
             {Number(delivery.discountAmount ?? 0) > 0 && (
               <div className="flex justify-between">
                 <span className="text-muted-foreground">
-                  Discount{delivery.couponCode ? ` (${delivery.couponCode})` : ""}
+                  {t("discount")}
+                  {delivery.couponCode ? ` (${delivery.couponCode})` : ""}
                 </span>
                 <span>-{formatCurrency(Number(delivery.discountAmount))}</span>
               </div>
             )}
             <div className="flex justify-between font-semibold">
-              <span>Order total</span>
+              <span>{t("orderTotal")}</span>
               <span>{formatCurrency(Number(delivery.totalAmount))}</span>
             </div>
             <div className="flex justify-between text-muted-foreground">
-              <span>Payment</span>
+              <span>{t("payment")}</span>
               <span className="capitalize">
                 {delivery.paymentMethod} · {delivery.paymentStatus ?? "—"}
               </span>
@@ -145,7 +147,7 @@ async function DeliveryDetail({ shipmentId }: { shipmentId: string }) {
 
           <div className="flex items-center justify-between border-t pt-3">
             <span className="text-sm text-muted-foreground">
-              {cod > 0 ? "Collect on delivery" : "Prepaid"}
+              {cod > 0 ? t("collectOnDelivery") : t("prepaid")}
             </span>
             <span className="text-lg font-bold">
               {cod > 0 ? formatCurrency(cod) : "—"}

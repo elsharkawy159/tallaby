@@ -4,8 +4,9 @@ import { Truck, RotateCcw, Globe, DollarSign } from "lucide-react";
 import { Badge } from "@workspace/ui/components/badge";
 import { ProductActions } from "./ProductActions";
 import type { Product } from "./product-page.types";
-import { formatPrice } from "@workspace/lib";
+import { formatPrice, formatPricePlain } from "@workspace/lib";
 import { useLocale, useTranslations } from "next-intl";
+import { FREE_SHIPPING_THRESHOLD } from "@/lib/constants";
 import { useState, useMemo } from "react";
 import {
   Accordion,
@@ -91,6 +92,12 @@ export const ProductDetails = ({
   const hasVariants =
     product.productVariants && product.productVariants.length > 0;
   const hasStock = product.status === "active" && stock > 0;
+  const isPhysicalProduct = product.productType !== "digital";
+  const hasFreeDelivery = isPhysicalProduct && product.freeDelivery === true;
+  const freeShippingThresholdLabel = formatPricePlain(
+    FREE_SHIPPING_THRESHOLD,
+    locale,
+  );
 
   return (
     <div className="space-y-6 w-full">
@@ -120,6 +127,16 @@ export const ProductDetails = ({
 
         {/* Discount Countdown */}
         {listPrice && listPrice > price && <DiscountCountdown />}
+
+        {hasFreeDelivery && (
+          <Badge
+            variant="secondary"
+            className="mb-4 bg-green-100 text-green-700 hover:bg-green-100 gap-1"
+          >
+            <Truck className="h-3 w-3" />
+            {t("freeDeliveryOnProduct")}
+          </Badge>
+        )}
 
         {/* Rating and Stock */}
         <div className="flex flex-wrap items-center gap-4 mb-6">
@@ -369,9 +386,13 @@ export const ProductDetails = ({
             </div>
             <div>
               <p className="font-medium text-gray-900 text-sm mb-1">
-                {t("freeShipping")}
+                {hasFreeDelivery ? t("freeDeliveryOnProduct") : t("freeShipping")}
               </p>
-              <p className="text-xs text-gray-600">{t("ordersOverAmount")}</p>
+              <p className="text-xs text-gray-600">
+                {hasFreeDelivery
+                  ? t("freeDeliveryOnProductDescription")
+                  : t("ordersOverAmount", { amount: freeShippingThresholdLabel })}
+              </p>
             </div>
           </div>
 

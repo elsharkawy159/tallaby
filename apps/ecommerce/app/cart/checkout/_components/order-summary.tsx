@@ -14,6 +14,7 @@ import { Ticket, X, Loader2, LogIn } from "lucide-react";
 import { applyCouponToCart, removeCouponFromCart } from "@/actions/coupons";
 import { toast } from "sonner";
 import type { CheckoutSummary } from "@/lib/coupon-utils";
+import { cartQualifiesForProductFreeDelivery } from "@/lib/shipping";
 
 interface OrderSummaryProps {
   checkoutData: {
@@ -26,6 +27,8 @@ interface OrderSummaryProps {
         product: {
           id: string;
           title: string;
+          productType?: string | null;
+          freeDelivery?: boolean | null;
         };
       }>;
     };
@@ -71,6 +74,14 @@ export function OrderSummary({
   const t = useTranslations("checkout");
   const tCommon = useTranslations("common");
   const { cart, summary } = checkoutData;
+
+  const qualifiesForProductFreeDelivery = cartQualifiesForProductFreeDelivery(
+    cart.cartItems,
+  );
+  const showProductFreeDeliveryMessage =
+    summary.shippingCost === 0 &&
+    (summary.shippingDiscount ?? 0) === 0 &&
+    qualifiesForProductFreeDelivery;
 
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -197,6 +208,18 @@ export function OrderSummary({
                 className="font-medium text-gray-900"
                 dangerouslySetInnerHTML={{
                   __html: formatPrice(summary.shippingCost, locale),
+                }}
+              />
+            </div>
+          )}
+
+          {showProductFreeDeliveryMessage && (
+            <div className="flex items-center justify-between text-xs md:text-sm">
+              <span className="text-green-600">{t("freeDeliveryAllItemsQualify")}</span>
+              <span
+                className="font-medium text-green-600"
+                dangerouslySetInnerHTML={{
+                  __html: formatPrice(0, locale),
                 }}
               />
             </div>

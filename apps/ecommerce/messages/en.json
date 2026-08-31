@@ -166,7 +166,8 @@
     "emptyCart": "Your cart is empty",
     "cartNotFound": "Cart not found",
     "discount": "Discount",
-    "freeShipping": "Free Shipping"
+    "freeShipping": "Free Shipping",
+    "freeDeliveryAllItemsQualify": "Free delivery — all items qualify"
   },
   "product": {
     "addToCart": "Add to Cart",
@@ -175,7 +176,9 @@
     "viewDetails": "View Details",
     "viewMore": "View More",
     "freeShipping": "Free shipping",
-    "ordersOverAmount": "On orders over EGP 500.00",
+    "freeDeliveryOnProduct": "Free delivery",
+    "freeDeliveryOnProductDescription": "This product ships with no delivery fee",
+    "ordersOverAmount": "On orders over {amount}",
     "veryEasyToReturn": "Very easy to return",
     "justPhoneNumber": "Just phone number",
     "nationwideDelivery": "Nationwide Delivery",

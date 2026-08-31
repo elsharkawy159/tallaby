@@ -184,6 +184,14 @@ async function ProductDetailContent({ productId }: ProductDetailDataProps) {
                 Featured
               </Badge>
             )}
+            {product.freeDelivery && (
+              <Badge
+                variant="outline"
+                className="bg-green-50 text-green-700 border-green-200"
+              >
+                Free Delivery
+              </Badge>
+            )}
           </div>
         </div>
         <div className="flex gap-2">
