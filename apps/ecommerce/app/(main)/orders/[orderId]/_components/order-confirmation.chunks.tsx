@@ -598,7 +598,7 @@ export async function OrderConfirmationContent({
             className="flex items-center gap-2 text-xs md:text-sm"
           >
             <Link
-              href="https://wa.me/201013626248"
+              href="https://wa.me/201003272830"
               target="_blank"
               rel="noopener noreferrer"
               aria-label={t("chatWithUs")}

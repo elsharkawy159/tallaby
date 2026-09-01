@@ -8,17 +8,25 @@ import { CategoryShowcaseClient } from "./category-showcase.client";
 const CategoryShowcase = async (props: CategoryShowcaseProps) => {
   const { className = "" } = props;
   const result = await getTopCategories();
+
   if (!result.success || !result.data) {
-    return null;
+    throw new Error(result.error ?? "Failed to load categories");
   }
 
-  if (result.data.length === 0) {
+  const categories = (result.data as CategoryWithRequiredFields[]).filter(
+    (category) =>
+      Number(category.productCount) > 0 &&
+      category.name !== null &&
+      category.slug !== null,
+  );
+
+  if (categories.length === 0) {
     return null;
   }
 
   return (
     <CategoryShowcaseClient
-      categories={result.data as CategoryWithRequiredFields[]}
+      categories={categories}
       className={className}
     />
   );

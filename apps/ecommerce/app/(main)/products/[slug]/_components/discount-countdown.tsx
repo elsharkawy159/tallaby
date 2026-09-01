@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { Clock } from "lucide-react"
 import { useTranslations } from "next-intl"
 
@@ -43,22 +43,27 @@ const isExpired = (timeLeft: TimeLeft): boolean => {
          timeLeft.minutes === 0 && timeLeft.seconds === 0
 }
 
+const INITIAL_TIME_LEFT: TimeLeft = { days: 0, hours: 0, minutes: 0, seconds: 0 }
+
 export const DiscountCountdown = ({ daysFromNow = 2 }: DiscountCountdownProps) => {
   const t = useTranslations("product")
-  
-  const [endDate, setEndDate] = useState(() => getNextEndDate(daysFromNow))
-  const [timeLeft, setTimeLeft] = useState(() => calculateTimeLeft(endDate))
+  const endDateRef = useRef<Date | null>(null)
+  const [timeLeft, setTimeLeft] = useState<TimeLeft>(INITIAL_TIME_LEFT)
 
   const resetCountdown = useCallback(() => {
     const newEndDate = getNextEndDate(daysFromNow)
-    setEndDate(newEndDate)
+    endDateRef.current = newEndDate
     setTimeLeft(calculateTimeLeft(newEndDate))
   }, [daysFromNow])
 
   useEffect(() => {
+    resetCountdown()
+
     const timer = setInterval(() => {
-      const newTimeLeft = calculateTimeLeft(endDate)
-      
+      if (!endDateRef.current) return
+
+      const newTimeLeft = calculateTimeLeft(endDateRef.current)
+
       if (isExpired(newTimeLeft)) {
         resetCountdown()
       } else {
@@ -67,7 +72,7 @@ export const DiscountCountdown = ({ daysFromNow = 2 }: DiscountCountdownProps) =
     }, 1000)
 
     return () => clearInterval(timer)
-  }, [endDate, resetCountdown])
+  }, [resetCountdown])
 
   const timeBlocks = [
     { value: timeLeft.days, label: t("days") },

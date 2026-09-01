@@ -1,16 +1,29 @@
-import { Skeleton } from "@workspace/ui/components/skeleton"
+import { Skeleton } from "@workspace/ui/components/skeleton";
+import { cn } from "@/lib/utils";
 
-export const CategoryShowcaseSkeleton = () => {
+interface CategoryShowcaseSkeletonProps {
+  className?: string;
+}
+
+export const CategoryShowcaseSkeleton = ({
+  className,
+}: CategoryShowcaseSkeletonProps) => {
   return (
-    <section className="py-6 px-16 rounded-t-[50px] bg-background container mx-auto">
-      <div className="flex gap-4 overflow-hidden justify-center flex-wrap">
+    <section
+      className={cn(
+        "md:py-6 py-4 md:rounded-t-[50px] overflow-hidden rounded-t-4xl bg-background container px-0 mx-auto",
+        className,
+      )}
+      aria-hidden
+    >
+      <div className="container flex gap-4 overflow-hidden">
         {Array.from({ length: 8 }, (_, index) => (
-          <div key={index} className="w-32 text-center flex-shrink-0">
-            <Skeleton className="size-[100px] rounded-full mx-auto mb-2.5" />
-            <Skeleton className="h-4 w-20 mx-auto" />
+          <div key={index} className="w-32 shrink-0 text-center">
+            <Skeleton className="mx-auto mb-2.5 size-[100px] rounded-full" />
+            <Skeleton className="mx-auto h-4 w-20" />
           </div>
         ))}
       </div>
     </section>
-  )
-}
+  );
+};

@@ -1,4 +1,5 @@
 import { BASE_URL, DEFAULT_CURRENCY } from "./constants";
+import { TALLABY_SOCIAL_SAME_AS } from "./social-links";
 
 interface Product {
   id: string;
@@ -194,9 +195,6 @@ export function generateOrganizationStructuredData() {
       contactType: "customer service",
       availableLanguage: ["English", "Arabic"],
     },
-    sameAs: [
-      "https://www.facebook.com/profile.php?id=100070155523046",
-      "https://www.instagram.com/tallabycommerce/",
-    ],
+    sameAs: TALLABY_SOCIAL_SAME_AS,
   };
 }

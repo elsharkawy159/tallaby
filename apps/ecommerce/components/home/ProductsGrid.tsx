@@ -3,7 +3,6 @@ import { Button } from "@workspace/ui/components/button";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { getProducts } from "@/actions/products";
-import { getWishlistItems } from "@/actions/wishlist";
 import { ProductCardProps } from "../product";
 import { getLocale, getTranslations } from "next-intl/server";
 
@@ -36,19 +35,10 @@ const ProductsGrid = async ({
   const t = await getTranslations("product")
   const locale = (await getLocale()) as "en" | "ar"
   const products = await getProducts({ ...filters, locale })
-  if (!products?.data) {
-    return null;
+
+  if (!products?.success || !products.data) {
+    throw new Error(products?.error ?? "Failed to load products");
   }
-
-  // Fetch wishlist items
-  const wishlistResult = await getWishlistItems();
-  const wishlistItems = wishlistResult.success
-    ? (wishlistResult.data ?? [])
-    : [];
-
-  const wishlistMap = new Map(
-    wishlistItems.map((item: any) => [item.productId, item])
-  );
 
   return (
     <section className="lg:py-8 py-5 container">
@@ -74,18 +64,12 @@ const ProductsGrid = async ({
 
       {/* Products Grid */}
       <div className="grid md:gap-4 gap-2 grid-cols-2 md:grid-cols-3 h-full lg:grid-cols-4 xl:grid-cols-5">
-        {products.data.map((product) => {
-          const wishlistItem = wishlistMap.get(product.id);
-
-          return (
-            <ProductCard
-              key={product.id}
-              {...(product as ProductCardProps)}
-              isInWishlist={!!wishlistItem}
-              wishlistItemId={wishlistItem?.id}
-            />
-          );
-        })}
+        {products.data.map((product) => (
+          <ProductCard
+            key={product.id}
+            {...(product as ProductCardProps)}
+          />
+        ))}
       </div>
     </section>
   );

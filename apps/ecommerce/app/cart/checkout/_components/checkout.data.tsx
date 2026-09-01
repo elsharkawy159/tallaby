@@ -41,6 +41,7 @@ import { Label } from "@workspace/ui/components/label";
 import { Textarea } from "@workspace/ui/components/textarea";
 import { Info } from "lucide-react";
 import type { CheckoutSummary } from "@/lib/coupon-utils";
+import { useCart } from "@/providers/cart-provider";
 
 export const CheckoutData = ({
   checkoutData,
@@ -56,6 +57,7 @@ export const CheckoutData = ({
   const { cart, user, summary: initialSummary } = checkoutData;
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+  const { refreshCart } = useCart();
   const [selectedAddress, setSelectedAddress] = useState<any>(null);
   const [summary, setSummary] = useState<CheckoutSummary>({
     ...initialSummary,
@@ -208,6 +210,8 @@ export const CheckoutData = ({
 
         if (result.success) {
           toast.success(tToast("orderPlacedSuccessfully"));
+          await refreshCart();
+          router.refresh();
 
           if (data.paymentMethod === "online_payment") {
             router.push(`/cart/checkout/payment?orderId=${result.data?.order?.id}`);

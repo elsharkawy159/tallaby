@@ -15,6 +15,8 @@ export interface CachedQueryConfig<A extends readonly unknown[], R> {
   query: (...args: A) => Promise<R>;
 }
 
+const cachedQueryWrappers = new Map<string, (...args: never[]) => Promise<unknown>>();
+
 /**
  * Wraps a data-access function in Next's Data Cache with a deterministic,
  * order-independent key and typed tags.
@@ -28,10 +30,19 @@ export function createCachedQuery<A extends readonly unknown[], R>(
   cfg: CachedQueryConfig<A, R>
 ): (...args: A) => Promise<R> {
   return (...args: A) => {
-    const cached = unstable_cache(cfg.query, [cfg.name, stableKey(...args)], {
-      tags: [...cfg.tags(...args)],
-      revalidate: cfg.ttl,
-    });
+    const key = `${cfg.name}:${stableKey(...args)}`;
+    let cached = cachedQueryWrappers.get(key) as
+      | ((...innerArgs: A) => Promise<R>)
+      | undefined;
+
+    if (!cached) {
+      cached = unstable_cache(cfg.query, [cfg.name, stableKey(...args)], {
+        tags: [...cfg.tags(...args)],
+        revalidate: cfg.ttl,
+      }) as (...innerArgs: A) => Promise<R>;
+      cachedQueryWrappers.set(key, cached as (...args: never[]) => Promise<unknown>);
+    }
+
     return cached(...args);
   };
 }

@@ -179,7 +179,7 @@ export const getTopCategories = unstable_cache(
       return { success: true, data };
     } catch (error) {
       console.error("Error fetching top categories:", error);
-      return { success: false, error: "Failed to fetch top categories" };
+      throw error;
     }
   },
   ["top-categories"],

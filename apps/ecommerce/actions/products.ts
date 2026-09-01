@@ -188,7 +188,7 @@ export const getProducts = createCachedQuery({
       };
     } catch (error) {
       console.error("Error fetching products:", error);
-      return { success: false, error: "Failed to fetch products" };
+      throw error;
     }
   },
 });

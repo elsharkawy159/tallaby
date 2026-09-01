@@ -61,7 +61,7 @@ export default async function Contact() {
       description: t("liveChatDescription"),
       value: t("liveChatValue"),
       availability: t("liveChatAvailability"),
-      link: "https://wa.me/201013626248",
+      link: "https://wa.me/201003272830",
       isExternal: true,
     },
   ];

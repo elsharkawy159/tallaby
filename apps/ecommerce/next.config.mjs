@@ -5,6 +5,13 @@ const nextConfig = {
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
   transpilePackages: ["@workspace/ui"],
+  // Avoid serving stale homepage RSC payloads on client-side navigation.
+  experimental: {
+    staleTimes: {
+      dynamic: 0,
+      static: 30,
+    },
+  },
   async redirects() {
     return [
       {

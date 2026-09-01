@@ -2,11 +2,8 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import Hero from "@/components/home/hero/hero";
-import {
-  DealOfTheDay,
-  ProductSection,
-  ProductsGrid,
-} from "@/components/home";
+import { ProductsGrid } from "@/components/home";
+import { ProductsGridSkeleton } from "@/components/home/products-grid.skeleton";
 
 export const metadata: Metadata = {
   title: "Home | Multi-Vendor E-commerce",
@@ -21,6 +18,9 @@ export const metadata: Metadata = {
     type: "website",
   },
 };
+
+// Keep homepage data fresh; avoids stale client-router payloads with empty sections.
+export const revalidate = 60;
 
 function SectionSkeleton({ className = "" }: { className?: string }) {
   return (
@@ -69,13 +69,15 @@ const HomePage = async () => {
         />
       </Suspense> */}
 
-      <ProductsGrid
-        title={t("featuredProducts")}
-        filters={{
-          sortBy: "popular",
-          limit: 30,
-        }}
-      />
+      <Suspense fallback={<ProductsGridSkeleton />}>
+        <ProductsGrid
+          title={t("featuredProducts")}
+          filters={{
+            sortBy: "popular",
+            limit: 30,
+          }}
+        />
+      </Suspense>
     </div>
   );
 };

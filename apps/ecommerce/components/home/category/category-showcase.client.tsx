@@ -1,19 +1,18 @@
 "use client";
 
 import { useMemo } from "react";
+import { useLocale } from "next-intl";
+import Link from "next/link";
 import { cn, PRODUCT_IMAGE_FALLBACK } from "@/lib/utils";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
 } from "@workspace/ui/components/carousel";
-import Link from "next/link";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
 import {
   CategoryShowcaseClientProps,
-  CategoryWithRequiredFields,
 } from "./category-showcase.types";
-import { useLocale } from "next-intl";
 import { ImageWithFallback } from "@/components/shared/image-with-fallback";
 
 const CATEGORY_BUCKET = "categories";
@@ -69,12 +68,6 @@ export const CategoryShowcaseClient = ({
   const locale = useLocale();
   const categoriesWithProducts = useMemo(() => {
     return categories
-      .filter(
-        (category): category is CategoryWithRequiredFields =>
-          category.productCount > 0 &&
-          category.name !== null &&
-          category.slug !== null,
-      )
       .map((category) => ({
         id: category.id,
         name:
@@ -82,7 +75,7 @@ export const CategoryShowcaseClient = ({
         slug: category.slug!,
         imageUrl: category.imageUrl ?? null,
         fallbackImageUrl: category.fallbackImageUrl ?? null,
-        productCount: category.productCount,
+        productCount: Number(category.productCount),
       }))
       .slice(0, 12);
   }, [categories, locale]);
@@ -98,40 +91,62 @@ export const CategoryShowcaseClient = ({
         className,
       )}
     >
-      <Carousel
-        opts={{
-          align: "start",
-          dragFree: true,
-          direction: locale === "ar" ? "rtl" : "ltr",
-        }}
-        className="container"
-      >
-        <CarouselContent>
-          {categoriesWithProducts.map((category) => (
-            <Link
-              key={category.id}
-              href={`/products?categories=${category.name}`}
-              className="group block"
-            >
-              <CarouselItem className="basis-auto">
-                <div className="md:w-[108px] w-14">
-                  <div className="relative overflow-hidden rounded-full md:size-[100px] size-[60px] mx-auto mb-2.5 bg-muted/40 shadow-sm group-hover:shadow-md transition-all duration-300">
-                    <CategoryImage
-                      name={category.name}
-                      imageUrl={category.imageUrl}
-                      fallbackImageUrl={category.fallbackImageUrl}
-                      productCount={category.productCount}
-                    />
-                  </div>
-                  <h3 className="md:text-sm text-xs font-medium text-center group-hover:text-primary transition-colors line-clamp-1">
-                    {category.name}
-                  </h3>
-                </div>
-              </CarouselItem>
-            </Link>
-          ))}
-        </CarouselContent>
-      </Carousel>
+      <CategoryCarousel
+        categories={categoriesWithProducts}
+        locale={locale}
+      />
     </section>
   );
 };
+
+function CategoryCarousel({
+  categories,
+  locale,
+}: {
+  categories: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    imageUrl: string | null;
+    fallbackImageUrl: string | null;
+    productCount: number;
+  }>;
+  locale: string;
+}) {
+  return (
+    <Carousel
+      key={`${locale}-${categories.map((category) => category.id).join("-")}`}
+      opts={{
+        align: "start",
+        dragFree: true,
+        direction: locale === "ar" ? "rtl" : "ltr",
+      }}
+      className="container"
+    >
+      <CarouselContent>
+        {categories.map((category) => (
+          <CarouselItem key={category.id} className="basis-auto">
+            <Link
+              href={`/products?categories=${category.name}`}
+              className="group block"
+            >
+              <div className="md:w-[108px] w-14">
+                <div className="relative overflow-hidden rounded-full md:size-[100px] size-[60px] mx-auto mb-2.5 bg-muted/40 shadow-sm group-hover:shadow-md transition-all duration-300">
+                  <CategoryImage
+                    name={category.name}
+                    imageUrl={category.imageUrl}
+                    fallbackImageUrl={category.fallbackImageUrl}
+                    productCount={category.productCount}
+                  />
+                </div>
+                <h3 className="md:text-sm text-xs font-medium text-center group-hover:text-primary transition-colors line-clamp-1">
+                  {category.name}
+                </h3>
+              </div>
+            </Link>
+          </CarouselItem>
+        ))}
+      </CarouselContent>
+    </Carousel>
+  );
+}

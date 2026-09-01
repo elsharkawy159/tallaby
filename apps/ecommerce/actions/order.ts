@@ -33,8 +33,8 @@ import {
 } from "@workspace/cache";
 import { getCurrentUserId } from "@/lib/get-current-user-id";
 import { customAlphabet } from "nanoid";
-import { revalidatePath } from "next/cache";
 import { getUser } from "./auth";
+import { revalidateCartCheckout } from "@/lib/revalidate-cart-checkout";
 import { formatVariantTitle } from "@/lib/variant-utils";
 import { pickTranslationFromArray } from "@/lib/product-translations";
 import { calculateOrderShippingCost } from "@/lib/shipping";
@@ -398,9 +398,7 @@ export async function createOrder(data: {
       mode: "action",
     });
 
-    // Revalidate cart page to reflect cleared cart
-    revalidatePath("/cart");
-    revalidatePath("/cart/checkout");
+    revalidateCartCheckout();
 
     return {
       success: true,
