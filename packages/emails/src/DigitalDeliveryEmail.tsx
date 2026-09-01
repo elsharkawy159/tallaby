@@ -12,6 +12,8 @@ import {
 } from "@react-email/components";
 import React from "react";
 
+const TALLABY_CONTACT_EMAIL = "tallabycommerce@gmail.com";
+
 interface DigitalDeliveryItem {
   productName: string;
   downloadUrl: string;
@@ -85,8 +87,8 @@ export const DigitalDeliveryEmail = ({
             </Text>
             <Text style={footerText}>
               Questions? Contact us at{" "}
-              <Link href="mailto:info@tallaby.com" style={footerLink}>
-                info@tallaby.com
+              <Link href={`mailto:${TALLABY_CONTACT_EMAIL}`} style={footerLink}>
+                {TALLABY_CONTACT_EMAIL}
               </Link>
             </Text>
             <Text style={copyright}>© 2026 Tallaby. All rights reserved.</Text>

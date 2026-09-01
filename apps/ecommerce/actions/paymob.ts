@@ -22,6 +22,9 @@ export async function getPaymobPaymentOrder(orderId: string) {
       where: and(eq(orders.id, orderId), eq(orders.userId, userId)),
       with: {
         orderItems: true,
+        userAddress_shippingAddressId: true,
+        userAddress_billingAddressId: true,
+        user: true,
       },
     });
 

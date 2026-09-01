@@ -25,6 +25,8 @@ type ProductForEdit = {
   isPlatformChoice: boolean | null;
   isMostSelling: boolean | null;
   isFeatured: boolean | null;
+  isTrending: boolean | null;
+  isSeasonal: boolean | null;
   freeDelivery: boolean | null;
   taxClass: string | null;
   dimensions: unknown;
@@ -183,6 +185,8 @@ export function buildEditDefaultValues(
     isPlatformChoice: product.isPlatformChoice ?? false,
     isMostSelling: product.isMostSelling ?? false,
     isFeatured: product.isFeatured ?? false,
+    isTrending: product.isTrending ?? false,
+    isSeasonal: product.isSeasonal ?? false,
     freeDelivery: product.freeDelivery ?? false,
     taxClass:
       (product.taxClass as AddProductFormData["taxClass"]) ?? "standard",

@@ -36,6 +36,8 @@ async function toSnapshot(productId: string): Promise<ProductCacheSnapshot | nul
     slugs: product.productTranslations.map((t) => ({ locale: t.locale, slug: t.slug })),
     status: product.status,
     isFeatured: product.isFeatured ?? false,
+    isTrending: product.isTrending ?? false,
+    isSeasonal: product.isSeasonal ?? false,
     isMostSelling: product.isMostSelling ?? false,
     isPlatformChoice: product.isPlatformChoice ?? false,
     priceKey: JSON.stringify(product.price ?? null),
@@ -332,6 +334,8 @@ type UpdateProductInput = {
   isPlatformChoice?: boolean;
   isMostSelling?: boolean;
   isFeatured?: boolean;
+  isTrending?: boolean;
+  isSeasonal?: boolean;
   freeDelivery?: boolean;
   condition?: typeof products.$inferInsert.condition;
   conditionDescription?: string;
@@ -378,6 +382,8 @@ export async function updateProduct(productId: string, data: UpdateProductInput)
     if (data.isMostSelling !== undefined)
       productUpdate.isMostSelling = data.isMostSelling;
     if (data.isFeatured !== undefined) productUpdate.isFeatured = data.isFeatured;
+    if (data.isTrending !== undefined) productUpdate.isTrending = data.isTrending;
+    if (data.isSeasonal !== undefined) productUpdate.isSeasonal = data.isSeasonal;
     if (data.freeDelivery !== undefined)
       productUpdate.freeDelivery = data.freeDelivery;
     if (data.taxClass !== undefined) productUpdate.taxClass = data.taxClass;

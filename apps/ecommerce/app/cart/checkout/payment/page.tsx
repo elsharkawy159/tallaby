@@ -9,6 +9,8 @@ import {
 } from "@/actions/paymob";
 import { generateNoIndexMetadata } from "@/lib/metadata";
 import type { Metadata } from "next";
+import { PaymentOrderSummary } from "./_components/payment-order-summary";
+import { PaymobIframe } from "./_components/paymob-iframe";
 
 export const metadata: Metadata = generateNoIndexMetadata();
 export const dynamic = "force-dynamic";
@@ -80,5 +82,27 @@ export default async function CheckoutPaymentPage({
     );
   }
 
-  redirect(checkout.data.checkoutUrl);
+  return (
+    <div className="min-h-screen flex flex-col bg-linear-to-b from-gray-50 to-white">
+      <DynamicBreadcrumb />
+      <main className="container flex-1 py-4 md:py-6 pb-12 md:pb-16">
+        <div className="mb-4 md:mb-6">
+          <h1 className="text-lg md:text-2xl font-bold tracking-tight">
+            {t("paymentProcessing")}
+          </h1>
+          <p className="mt-1 text-xs md:text-sm text-muted-foreground">
+            {t("paymentProcessingNote")}
+          </p>
+        </div>
+
+        <div className="space-y-4 md:space-y-6">
+          <PaymentOrderSummary order={order} />
+          <PaymobIframe
+            checkoutUrl={checkout.data.checkoutUrl}
+            title={t("payWithCard")}
+          />
+        </div>
+      </main>
+    </div>
+  );
 }

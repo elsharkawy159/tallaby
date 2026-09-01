@@ -120,6 +120,8 @@ export interface ProductDetailView {
   isPlatformChoice: boolean;
   isBestSeller: boolean;
   isFeatured: boolean;
+  isTrending: boolean;
+  isSeasonal: boolean;
   freeDelivery: boolean;
   metaTitle: string | null;
   metaDescription: string | null;

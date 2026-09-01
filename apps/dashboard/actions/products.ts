@@ -50,6 +50,8 @@ async function toSnapshot(productId: string): Promise<ProductCacheSnapshot | nul
     slugs: product.productTranslations.map((t) => ({ locale: t.locale, slug: t.slug })),
     status: product.status,
     isFeatured: product.isFeatured ?? false,
+    isTrending: product.isTrending ?? false,
+    isSeasonal: product.isSeasonal ?? false,
     isMostSelling: product.isMostSelling ?? false,
     isPlatformChoice: product.isPlatformChoice ?? false,
     priceKey: JSON.stringify(product.price ?? null),
@@ -974,6 +976,8 @@ type CreateProductLegacy = {
   isPlatformChoice?: boolean;
   isMostSelling?: boolean;
   isFeatured?: boolean;
+  isTrending?: boolean;
+  isSeasonal?: boolean;
   taxClass?: string;
   variants?: Array<{
     title: string;
@@ -1184,6 +1188,8 @@ export async function createProduct(
           slugs: slugsForSnapshot,
           status: createdProduct.status,
           isFeatured: createdProduct.isFeatured ?? false,
+          isTrending: createdProduct.isTrending ?? false,
+          isSeasonal: createdProduct.isSeasonal ?? false,
           isMostSelling: createdProduct.isMostSelling ?? false,
           isPlatformChoice: createdProduct.isPlatformChoice ?? false,
           priceKey: JSON.stringify(createdProduct.price ?? null),

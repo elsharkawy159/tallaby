@@ -12,16 +12,31 @@ import { CurrencyInput, Toggle } from "@workspace/ui/components";
 import { FormLabel } from "@workspace/ui/components/form";
 import type { AddProductFormData } from "../add-product.schema";
 
+interface DefaultVariantPriceDisplayProps {
+  finalPrice: number;
+}
+
+export function DefaultVariantPriceDisplay({
+  finalPrice,
+}: DefaultVariantPriceDisplayProps) {
+  return (
+    <div className="space-y-1 min-w-[140px]">
+      <p className="text-xs text-gray-500">Uses main product price</p>
+      <p className="text-sm font-semibold text-gray-900">
+        {finalPrice > 0 ? finalPrice.toFixed(2) : "—"} ج.م
+      </p>
+    </div>
+  );
+}
+
 interface VariantPricingFieldsProps {
   index: number;
   sellerPricing: SellerPricingSettings;
-  isDefault: boolean;
 }
 
 export function VariantPricingFields({
   index,
   sellerPricing,
-  isDefault,
 }: VariantPricingFieldsProps) {
   const form = useFormContext<AddProductFormData>();
 
@@ -38,10 +53,6 @@ export function VariantPricingFields({
   });
 
   useEffect(() => {
-    if (isDefault) {
-      return;
-    }
-
     const numericList = typeof listPrice === "number" ? listPrice : 0;
     const prev = prevPricingRef.current;
 
@@ -92,16 +103,7 @@ export function VariantPricingFields({
       });
       prevPricingRef.current.discountValue = calculatedDiscount;
     }
-  }, [
-    isDefault,
-    listPrice,
-    discountValue,
-    discountType,
-    finalPrice,
-    form,
-    index,
-    sellerPricing,
-  ]);
+  }, [listPrice, discountValue, discountType, finalPrice, form, index, sellerPricing]);
 
   const applyNearestNineRounding = (
     field: `variants.${number}.listPrice` | `variants.${number}.price`,
@@ -120,19 +122,6 @@ export function VariantPricingFields({
       });
     }
   };
-
-  if (isDefault) {
-    const syncedFinal = typeof finalPrice === "number" ? finalPrice : 0;
-
-    return (
-      <div className="space-y-1 min-w-[140px]">
-        <p className="text-xs text-gray-500">Uses main product price</p>
-        <p className="text-sm font-semibold text-gray-900">
-          {syncedFinal > 0 ? syncedFinal.toFixed(2) : "—"} ج.م
-        </p>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-2 min-w-[280px]">

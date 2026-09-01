@@ -1,31 +1,11 @@
-import {
-  Facebook,
-  Instagram,
-  Mail,
-  MapPin,
-  Phone,
-  X,
-  Youtube,
-} from "lucide-react";
+import { Mail, MapPin, Phone } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "../logo";
 import { getTranslations } from "next-intl/server";
 import { InstallAppButton } from "../install-app-button";
-import { TALLABY_SOCIAL_LINKS } from "@/lib/social-links";
-
-function TikTokIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      className={className}
-      aria-hidden="true"
-    >
-      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
-    </svg>
-  );
-}
+import { TALLABY_CONTACT_EMAIL } from "@/lib/contact";
+import { SocialBrandLinks } from "./social-brand-icons";
+import { PaymentMethodIcons } from "./payment-method-icons";
 
 const Footer = async () => {
   const t = await getTranslations("footer");
@@ -72,10 +52,10 @@ const Footer = async () => {
               <div className="flex items-center gap-3">
                 <Mail className="h-4 w-4 text-accent flex-shrink-0" />
                 <a
-                  href={`mailto:${t("email")}`}
+                  href={`mailto:${TALLABY_CONTACT_EMAIL}`}
                   className="hover:text-white transition-colors"
                 >
-                  {t("email")}
+                  {TALLABY_CONTACT_EMAIL}
                 </a>
               </div>
             </div>
@@ -138,73 +118,13 @@ const Footer = async () => {
             </ul>
           </div>
 
-          {/* Social & Legal */}
+          {/* Legal */}
           <div>
             <h4 className="font-semibold mb-6 text-white relative">
-              {t("connect")}
+              {t("legal")}
               <div className="absolute -bottom-2 start-0 w-8 h-0.5 bg-gradient-to-r from-accent to-accent/50 rounded-full" />
             </h4>
 
-            {/* Social Media */}
-            <div className="flex flex-wrap gap-3 mb-6">
-              {[
-                {
-                  icon: Facebook,
-                  href: TALLABY_SOCIAL_LINKS.facebook,
-                  label: "Facebook",
-                },
-                {
-                  icon: Instagram,
-                  href: TALLABY_SOCIAL_LINKS.instagram,
-                  label: "Instagram",
-                },
-                {
-                  icon: X,
-                  href: TALLABY_SOCIAL_LINKS.x,
-                  label: "X",
-                },
-                {
-                  icon: TikTokIcon,
-                  href: TALLABY_SOCIAL_LINKS.tiktok,
-                  label: "TikTok",
-                },
-                {
-                  icon: Youtube,
-                  href: TALLABY_SOCIAL_LINKS.youtube,
-                  label: "YouTube",
-                },
-              ].map((social) => (
-                <a
-                  key={social.label}
-                  href={social.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 bg-slate-800 hover:bg-gradient-to-r hover:from-accent hover:to-accent/80 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 group"
-                  aria-label={social.label}
-                >
-                  <social.icon className="h-5 w-5 text-gray-300 group-hover:text-white transition-colors" />
-                </a>
-              ))}
-            </div>
-
-            {/* Payment Methods */}
-            <div className="mb-6">
-              <h5 className="text-sm font-medium mb-3 text-white">
-                {t("weAccept")}
-              </h5>
-              <div className="flex gap-2 flex-wrap">
-                {[t("wallet"), t("instapay")].map((payment) => (
-                  <div
-                    key={payment}
-                    className="bg-white text-slate-900 px-3 py-1.5 rounded-md text-xs font-bold shadow-sm"
-                  >
-                    {payment}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Legal Links */}
             <ul className="space-y-2 text-xs">
               {[
                 { href: "/privacy", label: t("privacyPolicy") },
@@ -224,6 +144,22 @@ const Footer = async () => {
           </div>
         </div>
 
+        <div className="my-8 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between w-full">
+              <div>
+                <h5 className="sr-only">
+                  {t("connect")}
+                </h5>
+                <SocialBrandLinks />
+              </div>
+
+              <div>
+                <h5 className="sr-only">
+                  {t("weAccept")}
+                </h5>
+                <PaymentMethodIcons />
+              </div>
+            </div>
+            
         {/* Bottom Bar */}
         <div className="border-t border-gray-700 pt-8">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">

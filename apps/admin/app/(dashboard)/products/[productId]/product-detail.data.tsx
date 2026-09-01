@@ -195,6 +195,22 @@ async function ProductDetailContent({ productId }: ProductDetailDataProps) {
                 Featured
               </Badge>
             )}
+            {product.isTrending && (
+              <Badge
+                variant="outline"
+                className="bg-rose-50 text-rose-700 border-rose-200"
+              >
+                Trending Now
+              </Badge>
+            )}
+            {product.isSeasonal && (
+              <Badge
+                variant="outline"
+                className="bg-teal-50 text-teal-700 border-teal-200"
+              >
+                Seasonal
+              </Badge>
+            )}
             {product.freeDelivery && (
               <Badge
                 variant="outline"

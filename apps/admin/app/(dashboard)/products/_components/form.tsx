@@ -260,37 +260,68 @@ function ProductFormFields({
               placeholder="Optional condition notes"
             />
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <FormInputField
-                control={control}
-                name="taxClass"
-                label="Tax Class"
-                type="select"
-                options={[
-                  { label: "Standard", value: "standard" },
-                  { label: "Reduced", value: "reduced" },
-                  { label: "Zero", value: "zero" },
-                  { label: "Exempt", value: "exempt" },
-                ]}
-              />
-              <FormInputField
-                control={control}
-                name="isPlatformChoice"
-                label="Platform Choice"
-                type="switch"
-              />
-              <FormInputField
-                control={control}
-                name="isBestSeller"
-                label="Best Seller"
-                type="switch"
-              />
-              <FormInputField
-                control={control}
-                name="isFeatured"
-                label="Featured"
-                type="switch"
-              />
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-sm font-medium">Merchandising</h3>
+                <p className="text-sm text-muted-foreground">
+                  How this product is promoted — separate from its category.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <FormInputField
+                  control={control}
+                  name="isTrending"
+                  label="Trending Now"
+                  type="switch"
+                />
+                <FormInputField
+                  control={control}
+                  name="isSeasonal"
+                  label="Seasonal"
+                  type="switch"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-sm font-medium">Platform badges</h3>
+                <p className="text-sm text-muted-foreground">
+                  Admin-curated storefront badges.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <FormInputField
+                  control={control}
+                  name="taxClass"
+                  label="Tax Class"
+                  type="select"
+                  options={[
+                    { label: "Standard", value: "standard" },
+                    { label: "Reduced", value: "reduced" },
+                    { label: "Zero", value: "zero" },
+                    { label: "Exempt", value: "exempt" },
+                  ]}
+                />
+                <FormInputField
+                  control={control}
+                  name="isPlatformChoice"
+                  label="Platform Choice"
+                  type="switch"
+                />
+                <FormInputField
+                  control={control}
+                  name="isBestSeller"
+                  label="Best Seller"
+                  type="switch"
+                />
+                <FormInputField
+                  control={control}
+                  name="isFeatured"
+                  label="Featured"
+                  type="switch"
+                />
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -575,6 +606,8 @@ export function ProductForm({
         isPlatformChoice: data.isPlatformChoice,
         isMostSelling: data.isBestSeller,
         isFeatured: data.isFeatured,
+        isTrending: data.isTrending,
+        isSeasonal: data.isSeasonal,
         freeDelivery: data.freeDelivery,
         condition: data.condition,
         conditionDescription: data.conditionDescription,
@@ -622,6 +655,8 @@ export function ProductForm({
         isPlatformChoice: false,
         isBestSeller: false,
         isFeatured: false,
+        isTrending: false,
+        isSeasonal: false,
         freeDelivery: false,
         condition: "new",
         fulfillmentType: "seller_fulfilled",

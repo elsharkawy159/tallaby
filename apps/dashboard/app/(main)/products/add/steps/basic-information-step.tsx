@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import Image from "next/image";
 import { useFormContext } from "react-hook-form";
 import {
   TextInput,
@@ -10,7 +9,7 @@ import {
   CategoryPopover,
 } from "@workspace/ui/components";
 import { Button } from "@workspace/ui/components/button";
-import { Input } from "@workspace/ui/components/input";
+import { Textarea } from "@workspace/ui/components/textarea";
 import { BrandSearchInput } from "@/components/inputs/brand-search-input";
 import { ImageUpload } from "@/components/inputs/image-upload";
 import {
@@ -29,6 +28,13 @@ import { useTranslations } from "next-intl";
 import { cn, generateImageName, getPublicUrl, validateImage } from "@/lib/utils";
 import { createClient } from "@/supabase/client";
 import { RichTextEditor } from "@workspace/tiptap/editor";
+import type { SellerPricingSettings } from "@/lib/utils/product-pricing.lib";
+import { applyProductImportToForm } from "../apply-product-import.lib";
+import {
+  buildParsedImportFromScrape,
+  detectImportFormat,
+  parseProductImport,
+} from "../parse-product-import.lib";
 import type {
   AddProductFormData,
   BrandOption,
@@ -39,19 +45,20 @@ import type {
 interface BasicInformationStepProps {
   categories: CategoryOption[];
   brands: BrandOption[];
+  sellerPricing: SellerPricingSettings;
   activeLocale: SupportedLocale;
 }
 
 export function BasicInformationStep({
   categories,
   brands,
+  sellerPricing,
   activeLocale,
 }: BasicInformationStepProps) {
   const form = useFormContext<AddProductFormData>();
   const tToast = useTranslations("toast");
   const supabase = createClient();
   const [isFetching, setIsFetching] = useState(false);
-  const [_suggestedImages, setSuggestedImages] = useState<string[]>([]);
 
   const handleContentImageUpload = useCallback(
     async (file: File) => {
@@ -88,327 +95,157 @@ export function BasicInformationStep({
     form.setValue("categoryId", categoryId, { shouldValidate: true });
   };
 
-  const parsePriceToNumber = (value: unknown) => {
-    if (typeof value === "number") {
-      if (!Number.isFinite(value) || value <= 0) return undefined;
-      return value;
+  const handleImportProduct = async (inputOverride?: string) => {
+    const input = (
+      inputOverride ?? (typeof productUrl === "string" ? productUrl.trim() : "")
+    ).trim();
+
+    if (!input) {
+      toast.error(tToast("pleasePasteProductImportFirst"));
+      return;
     }
 
-    if (typeof value !== "string") return undefined;
+    const format = detectImportFormat(input);
 
-    const match = value
-      .replace(/\s+/g, " ")
-      .trim()
-      .match(/[\d.,]+/);
-    if (!match?.[0]) return undefined;
-
-    const normalized = match[0].replace(/,/g, "");
-    const num = Number.parseFloat(normalized);
-    if (!Number.isFinite(num) || num <= 0) return undefined;
-    return num;
-  };
-
-  const handleFetchFromUrl = async (urlOverride?: string) => {
-    const url = (
-      urlOverride ?? (typeof productUrl === "string" ? productUrl.trim() : "")
-    ).trim();
-    if (!url) {
-      toast.error(tToast("pleasePasteProductUrlFirst"));
+    if (format === "unknown") {
+      toast.error(tToast("unknownImportFormat"));
       return;
     }
 
     setIsFetching(true);
+
     try {
-      const [resEn, resAr] = await Promise.all([
-        fetch("/api/fetch-product", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url, locale: "en" }),
-        }),
-        fetch("/api/fetch-product", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url, locale: "ar" }),
-        }),
-      ]);
+      if (format === "url") {
+        const [resEn, resAr] = await Promise.all([
+          fetch("/api/fetch-product", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url: input, locale: "en" }),
+          }),
+          fetch("/api/fetch-product", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url: input, locale: "ar" }),
+          }),
+        ]);
 
-      const dataEn = await resEn.json();
-      const dataAr = await resAr.json();
+        const dataEn = await resEn.json();
+        const dataAr = await resAr.json();
 
-      if (!resEn.ok) {
-        toast.error(dataEn?.error || tToast("failedToFetchProductData"));
+        if (!resEn.ok) {
+          toast.error(dataEn?.error || tToast("failedToFetchProductData"));
+          return;
+        }
+
+        const parsed = buildParsedImportFromScrape(dataEn, dataAr);
+        const applyResult = await applyProductImportToForm(form, parsed, {
+          sellerPricing,
+          categories,
+        });
+
+        if (applyResult.imagesImported > 0) {
+          toast.success(
+            tToast("importedImagesToMedia", { count: applyResult.imagesImported })
+          );
+        } else if (parsed.images?.length) {
+          toast.message(tToast("mediaAlreadyHasImages"));
+        }
+
+        toast.success(tToast("productDetailsFetchedEnAr"));
         return;
       }
 
-      const parseData = (data: any) => ({
-        title: typeof data?.title === "string" ? data.title.trim() : "",
-        description:
-          typeof data?.description === "string" ? data.description.trim() : "",
-        bulletPoints: Array.isArray(data?.bulletPoints)
-          ? data.bulletPoints
-              .filter((b: unknown) => typeof b === "string")
-              .map((b: string) => b.trim())
-              .filter(Boolean)
-          : [],
-        price:
-          parsePriceToNumber(data?.priceAmount) ||
-          parsePriceToNumber(data?.price),
-        images: Array.isArray(data?.images)
-          ? data.images.filter((img: unknown) => typeof img === "string")
-          : [],
-      });
+      const parseResult = parseProductImport(input);
 
-      const scrapedEn = parseData(dataEn);
-      const scrapedAr = parseData(dataAr);
-
-      const scrapedImages =
-        scrapedEn.images.length > 0 ? scrapedEn.images : scrapedAr.images;
-      const scrapedPrice = scrapedEn.price ?? scrapedAr.price;
-
-      if (scrapedEn.title) {
-        form.setValue("localized.en.title", scrapedEn.title, {
-          shouldDirty: true,
-        });
-        form.setValue(
-          "localized.en.slug",
-          slugify(scrapedEn.title, { lower: true, strict: true }),
-          { shouldDirty: true, shouldValidate: true }
-        );
+      if (!parseResult.success) {
+        toast.error(parseResult.error || tToast("failedToParseProductData"));
+        return;
       }
-      if (scrapedEn.description) {
-        form.setValue("localized.en.description", scrapedEn.description, {
-          shouldDirty: true,
-        });
-      }
-      if (scrapedEn.bulletPoints.length > 0) {
-        form.setValue(
-          "localized.en.bulletPoints",
-          scrapedEn.bulletPoints.slice(0, 10),
-          { shouldDirty: true, shouldValidate: true }
+
+      const applyResult = await applyProductImportToForm(
+        form,
+        parseResult.data,
+        { sellerPricing, categories }
+      );
+
+      if (applyResult.imagesImported > 0) {
+        toast.success(
+          tToast("importedImagesToMedia", { count: applyResult.imagesImported })
         );
       }
 
-      if (scrapedAr.title) {
-        form.setValue("localized.ar.title", scrapedAr.title, {
-          shouldDirty: true,
-        });
-        form.setValue(
-          "localized.ar.slug",
-          slugify(scrapedAr.title, { lower: true, strict: true }),
-          { shouldDirty: true, shouldValidate: true }
-        );
-      }
-      if (scrapedAr.description) {
-        form.setValue("localized.ar.description", scrapedAr.description, {
-          shouldDirty: true,
-        });
-      }
-      if (scrapedAr.bulletPoints.length > 0) {
-        form.setValue(
-          "localized.ar.bulletPoints",
-          scrapedAr.bulletPoints.slice(0, 10),
-          { shouldDirty: true, shouldValidate: true }
-        );
-      }
-
-      if (scrapedPrice) {
-        form.setValue("price.list", scrapedPrice, {
-          shouldDirty: true,
-          shouldValidate: true,
-        });
-        form.setValue("price.base", scrapedPrice, { shouldDirty: true });
-        form.setValue("price.final", Number((scrapedPrice * 1.1).toFixed(2)), {
-          shouldDirty: true,
-          shouldValidate: true,
-        });
-      }
-
-      const currentQty = form.getValues("quantity");
-      if (
-        typeof currentQty !== "number" ||
-        !Number.isFinite(currentQty) ||
-        currentQty <= 0
-      ) {
-        form.setValue("quantity", 25, {
-          shouldDirty: true,
-          shouldValidate: true,
-        });
-      }
-
-      setSuggestedImages(scrapedImages.slice(0, 1));
-
-      if (scrapedImages.length > 0) {
-        const currentImages = form.getValues("images") || [];
-        const shouldImport = Array.isArray(currentImages)
-          ? currentImages.length === 0
-          : true;
-
-        if (!shouldImport) {
-          toast.message(tToast("mediaAlreadyHasImages"));
-        } else {
-          const importRes = await fetch("/api/import-product-images", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ urls: scrapedImages.slice(0, 1) }),
-          });
-
-          const importData = await importRes.json();
-          if (!importRes.ok) {
-            toast.error(importData?.error || tToast("failedToImportImages"));
-          } else {
-            const importedPaths = Array.isArray(importData?.paths)
-              ? importData.paths.filter((p: unknown) => typeof p === "string")
-              : [];
-
-            if (importedPaths.length > 0) {
-              form.setValue("images", importedPaths, {
-                shouldDirty: true,
-                shouldValidate: true,
-              });
-              await form.trigger("images");
-              toast.success(
-                tToast("importedImagesToMedia", { count: importedPaths.length })
-              );
-            } else {
-              toast.message(tToast("noImagesImported"));
-            }
-          }
-        }
-      }
-
-      const currentMetaTitleEn = form.getValues("localized.en.metaTitle");
-      const currentMetaDescEn = form.getValues("localized.en.metaDescription");
-      if (!currentMetaTitleEn && scrapedEn.title) {
-        form.setValue("localized.en.metaTitle", scrapedEn.title.slice(0, 60), {
-          shouldDirty: true,
-        });
-      }
-      if (!currentMetaDescEn && scrapedEn.description) {
-        form.setValue(
-          "localized.en.metaDescription",
-          scrapedEn.description.slice(0, 160),
-          { shouldDirty: true }
-        );
-      }
-
-      const currentMetaTitleAr = form.getValues("localized.ar.metaTitle");
-      const currentMetaDescAr = form.getValues("localized.ar.metaDescription");
-      if (!currentMetaTitleAr && scrapedAr.title) {
-        form.setValue("localized.ar.metaTitle", scrapedAr.title.slice(0, 60), {
-          shouldDirty: true,
-        });
-      }
-      if (!currentMetaDescAr && scrapedAr.description) {
-        form.setValue(
-          "localized.ar.metaDescription",
-          scrapedAr.description.slice(0, 160),
-          { shouldDirty: true }
-        );
-      }
-
-      toast.success(tToast("productDetailsFetchedEnAr"));
+      toast.success(tToast("importedFromStructuredData"));
     } catch (error) {
-      console.error("Fetch product error:", error);
+      console.error("Import product error:", error);
       toast.error(tToast("somethingWentWrongWhileFetching"));
     } finally {
       setIsFetching(false);
     }
   };
 
+  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const pasted = e.clipboardData?.getData?.("text/plain")?.trim() ?? "";
+    if (!pasted) return;
+
+    const format = detectImportFormat(pasted);
+    if (format === "unknown") return;
+
+    e.preventDefault();
+    form.setValue("productUrl", pasted, { shouldDirty: true });
+    handleImportProduct(pasted);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleImportProduct();
+    }
+  };
+
   return (
     <div className="space-y-6">
-      {/* Product URL Import */}
+      {/* Product Import */}
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 space-y-3">
         <div className="flex items-center justify-between gap-3">
           <div className="flex-1">
-            <FormLabel className="text-sm">Product URL (optional)</FormLabel>
+            <FormLabel className="text-sm">Import product (URL or data)</FormLabel>
             <div className="mt-2 flex flex-col sm:flex-row gap-2">
-              <Input
-                type="url"
+              <Textarea
                 value={productUrl || ""}
                 onChange={(e) =>
                   form.setValue("productUrl", e.target.value, {
                     shouldDirty: true,
                   })
                 }
-                onPaste={(e) => {
-                  const pasted =
-                    e.clipboardData?.getData?.("text/plain")?.trim() ?? "";
-                  if (pasted && /^https?:\/\//i.test(pasted)) {
-                    e.preventDefault();
-                    form.setValue("productUrl", pasted, { shouldDirty: true });
-                    handleFetchFromUrl(pasted);
-                  }
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleFetchFromUrl();
-                  }
-                }}
-                placeholder="Paste a product URL to prefill details"
-                className="text-sm h-10 flex-1"
+                onPaste={handlePaste}
+                onKeyDown={handleKeyDown}
+                placeholder="Paste a product URL, JSON, or formatted product data"
+                className="text-sm min-h-[100px] flex-1 resize-y"
+                rows={4}
               />
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => handleFetchFromUrl()}
+                onClick={() => handleImportProduct()}
                 disabled={isFetching}
-                className="text-sm h-10"
+                className="text-sm h-10 sm:self-start"
               >
                 {isFetching ? (
                   <span className="flex items-center gap-2">
                     <LoaderCircle className="h-4 w-4 animate-spin" />
-                    Fetching...
+                    Importing...
                   </span>
                 ) : (
-                  "Fetch Product"
+                  "Import Product"
                 )}
               </Button>
             </div>
             <p className="text-xs text-gray-500 mt-2">
-              This will prefill Images, title, description and price.
+              Paste a product URL, JSON, or formatted product data. See
+              PRODUCT_DATA_FORMAT.md for the text format spec.
             </p>
           </div>
         </div>
-
-        {/* {suggestedImages.length > 0 && (
-          <div className="space-y-2">
-            <p className="text-xs font-medium text-gray-700">Suggested images</p>
-            <div className="flex flex-wrap gap-2">
-              {suggestedImages.map((src, i) => (
-                <button
-                  key={`${src}-${i}`}
-                  type="button"
-                  className="relative rounded-md border border-gray-200 overflow-hidden w-20 h-20 bg-gray-50 hover:border-gray-300"
-                  onClick={async () => {
-                    try {
-                      await navigator.clipboard.writeText(src);
-                      toast.success(tToast("imageUrlCopied"));
-                    } catch {
-                      toast.error(tToast("couldNotCopyImageUrl"));
-                    }
-                  }}
-                  aria-label="Copy image URL"
-                  title="Click to copy image URL"
-                >
-                  <Image
-                    src={src}
-                    alt=""
-                    fill
-                    className="object-cover"
-                    referrerPolicy="no-referrer"
-                    unoptimized
-                    sizes="80px"
-                  />
-                </button>
-              ))}
-            </div>
-            <p className="text-xs text-gray-500">
-              Tip: click an image to copy its URL, download it, then upload via Media.
-            </p>
-          </div>
-        )} */}
       </div>
 
       {/* Media */}

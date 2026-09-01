@@ -38,7 +38,7 @@ import {
   reconstructVariantTypesFromVariants,
   type VariantTypeFormValue,
 } from "@/lib/utils/variant-types.lib";
-import { VariantPricingFields } from "./variant-pricing-fields";
+import { VariantPricingFields, DefaultVariantPriceDisplay } from "./variant-pricing-fields";
 import { Badge } from "@workspace/ui/components/badge";
 
 interface PriceStockStepProps {
@@ -284,6 +284,27 @@ export function PriceStockStep({
                 className="rounded-lg border border-gray-200 p-4"
               />
 
+              <div className="space-y-3 rounded-lg border border-gray-200 p-4">
+                <div>
+                  <p className="text-sm font-medium">Merchandising</p>
+                  <p className="text-xs text-muted-foreground">
+                    How this product is promoted — separate from its category.
+                  </p>
+                </div>
+                <div className="space-y-3">
+                  <SwitchInput
+                    name="isTrending"
+                    label="Trending Now"
+                    labelPosition="right"
+                  />
+                  <SwitchInput
+                    name="isSeasonal"
+                    label="Seasonal"
+                    labelPosition="right"
+                  />
+                </div>
+              </div>
+
               {/* Dimensions */}
               <div className="space-y-2">
                 <FormLabel className="text-sm">Product Weight</FormLabel>
@@ -393,13 +414,13 @@ function VariantsSection({
   const mainListPrice = form.watch("price.list");
   const mainDiscountValue = form.watch("price.discountValue");
   const mainDiscountType = form.watch("price.discountType");
+  const mainFinalPrice = form.watch("price.final");
   const mainQuantity = form.watch("quantity");
+  const variants = form.watch("variants") ?? [];
+  const defaultVariantIndex = variants.findIndex((variant) => variant.isDefault);
 
   useEffect(() => {
-    const variants = form.getValues("variants") || [];
-    const defaultIndex = variants.findIndex((variant) => variant.isDefault);
-
-    if (defaultIndex === -1) {
+    if (defaultVariantIndex === -1) {
       return;
     }
 
@@ -409,41 +430,57 @@ function VariantsSection({
       return;
     }
 
-    const syncedFinal = calculateProductFinalPrice(
-      numericList,
-      mainDiscountValue,
-      mainDiscountType,
-      sellerPricing
-    );
+    const syncedFinal =
+      typeof mainFinalPrice === "number" && mainFinalPrice > 0
+        ? mainFinalPrice
+        : calculateProductFinalPrice(
+            numericList,
+            mainDiscountValue,
+            mainDiscountType,
+            sellerPricing
+          );
     const numericQuantity =
       typeof mainQuantity === "number" ? mainQuantity : 0;
+    const discountVal = mainDiscountValue ?? 0;
+    const discountTyp = mainDiscountType ?? "percent";
+    const current = form.getValues(`variants.${defaultVariantIndex}`);
 
-    form.setValue(`variants.${defaultIndex}.listPrice`, numericList, {
+    if (
+      current?.listPrice === numericList &&
+      current?.discountValue === discountVal &&
+      current?.discountType === discountTyp &&
+      current?.price === syncedFinal &&
+      current?.stock === numericQuantity
+    ) {
+      return;
+    }
+
+    form.setValue(`variants.${defaultVariantIndex}.listPrice`, numericList, {
       shouldDirty: true,
       shouldValidate: false,
     });
-    form.setValue(
-      `variants.${defaultIndex}.discountValue`,
-      mainDiscountValue ?? 0,
-      { shouldDirty: true, shouldValidate: false }
-    );
-    form.setValue(
-      `variants.${defaultIndex}.discountType`,
-      mainDiscountType ?? "percent",
-      { shouldDirty: true, shouldValidate: false }
-    );
-    form.setValue(`variants.${defaultIndex}.price`, syncedFinal, {
+    form.setValue(`variants.${defaultVariantIndex}.discountValue`, discountVal, {
       shouldDirty: true,
-      shouldValidate: true,
+      shouldValidate: false,
     });
-    form.setValue(`variants.${defaultIndex}.stock`, numericQuantity, {
+    form.setValue(`variants.${defaultVariantIndex}.discountType`, discountTyp, {
       shouldDirty: true,
-      shouldValidate: true,
+      shouldValidate: false,
+    });
+    form.setValue(`variants.${defaultVariantIndex}.price`, syncedFinal, {
+      shouldDirty: true,
+      shouldValidate: false,
+    });
+    form.setValue(`variants.${defaultVariantIndex}.stock`, numericQuantity, {
+      shouldDirty: true,
+      shouldValidate: false,
     });
   }, [
+    defaultVariantIndex,
     form,
     mainDiscountType,
     mainDiscountValue,
+    mainFinalPrice,
     mainListPrice,
     mainQuantity,
     sellerPricing,
@@ -881,9 +918,9 @@ function VariantsSection({
                     option2?: string;
                     option3?: string;
                   };
-                  const isDefaultVariant =
-                    form.watch(`variants.${index}.isDefault`) === true;
-                  const localizedDisplay = form.watch(`variants.${index}.localized`);
+                  const variantData = variants[index];
+                  const isDefaultVariant = variantData?.isDefault === true;
+                  const localizedDisplay = variantData?.localized;
                   const displayTitle =
                     localizedDisplay?.[activeLocale]?.title ?? variant.title;
                   const displayOptions = [
@@ -945,11 +982,18 @@ function VariantsSection({
                         />
                       </td>
                       <td className="py-3 px-4">
-                        <VariantPricingFields
-                          index={index}
-                          sellerPricing={sellerPricing}
-                          isDefault={isDefaultVariant}
-                        />
+                        {isDefaultVariant ? (
+                          <DefaultVariantPriceDisplay
+                            finalPrice={
+                              typeof mainFinalPrice === "number" ? mainFinalPrice : 0
+                            }
+                          />
+                        ) : (
+                          <VariantPricingFields
+                            index={index}
+                            sellerPricing={sellerPricing}
+                          />
+                        )}
                       </td>
                       <td className="py-3 px-4">
                         <TextInput

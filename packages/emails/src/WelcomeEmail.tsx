@@ -1,18 +1,87 @@
 import {
   Body,
   Button,
+  Column,
   Container,
   Head,
   Hr,
   Html,
+  Img,
   Link,
   Preview,
   Row,
   Section,
   Text,
 } from "@react-email/components";
-import React from "react";
 
+const TALLABY_CONTACT_EMAIL = "tallabycommerce@gmail.com";
+
+const EMAIL_SOCIAL_LINKS = [
+  {
+    label: "Facebook",
+    href: "https://www.facebook.com/usetallaby",
+    icon: "https://cdn.simpleicons.org/facebook/ffffff",
+    backgroundColor: "#1877F2",
+  },
+  {
+    label: "Instagram",
+    href: "https://www.instagram.com/usetallaby",
+    icon: "https://cdn.simpleicons.org/instagram/ffffff",
+    backgroundColor: "#E4405F",
+  },
+  {
+    label: "YouTube",
+    href: "https://www.youtube.com/@usetallaby",
+    icon: "https://cdn.simpleicons.org/youtube/ffffff",
+    backgroundColor: "#FF0000",
+  },
+  {
+    label: "X",
+    href: "https://x.com/usetallaby",
+    icon: "https://cdn.simpleicons.org/x/ffffff",
+    backgroundColor: "#000000",
+  },
+  {
+    label: "Threads",
+    href: "https://www.threads.com/@usetallaby",
+    icon: "https://cdn.simpleicons.org/threads/ffffff",
+    backgroundColor: "#000000",
+  },
+  {
+    label: "TikTok",
+    href: "https://www.tiktok.com/@tallaby_",
+    icon: "https://cdn.simpleicons.org/tiktok/ffffff",
+    backgroundColor: "#000000",
+  },
+] as const;
+
+const socialLinks = {
+  margin: "0 0 24px 0",
+  textAlign: "center" as const,
+};
+
+const socialIconColumn = {
+  width: "48px",
+  padding: "0 4px",
+};
+
+const socialIconLink = {
+  textDecoration: "none",
+};
+
+const socialIconBadge = {
+  display: "inline-block",
+  width: "40px",
+  height: "40px",
+  borderRadius: "9999px",
+  lineHeight: "40px",
+  textAlign: "center" as const,
+};
+
+const socialIconImage = {
+  display: "inline-block",
+  margin: "10px auto 0",
+};
 
 interface WelcomeEmailProps {
   customerName?: string;
@@ -127,23 +196,32 @@ export const WelcomeEmail = ({
           <Section style={footerSection}>
             <Text style={footerTitle}>Connect With Us</Text>
             <Row style={socialLinks}>
-              <Link href="https://instagram.com/tallaby" style={socialLink}>
-                Instagram
-              </Link>
-              <Text style={socialSeparator}>•</Text>
-              <Link href="https://twitter.com/tallaby" style={socialLink}>
-                Twitter
-              </Link>
-              <Text style={socialSeparator}>•</Text>
-              <Link href="https://facebook.com/tallaby" style={socialLink}>
-                Facebook
-              </Link>
+              {EMAIL_SOCIAL_LINKS.map((social) => (
+                <Column key={social.label} style={socialIconColumn}>
+                  <Link href={social.href} style={socialIconLink}>
+                    <span
+                      style={{
+                        ...socialIconBadge,
+                        backgroundColor: social.backgroundColor,
+                      }}
+                    >
+                      <Img
+                        src={social.icon}
+                        alt={social.label}
+                        width="20"
+                        height="20"
+                        style={socialIconImage}
+                      />
+                    </span>
+                  </Link>
+                </Column>
+              ))}
             </Row>
 
             <Text style={footerText}>
               Questions? Contact us at{" "}
-              <Link href="mailto:info@tallaby.com" style={footerLink}>
-                info@tallaby.com
+              <Link href={`mailto:${TALLABY_CONTACT_EMAIL}`} style={footerLink}>
+                {TALLABY_CONTACT_EMAIL}
               </Link>
             </Text>
 
@@ -384,23 +462,6 @@ const footerTitle = {
   fontWeight: "600",
   margin: "0 0 16px 0",
   color: "#2a2a2a",
-};
-
-const socialLinks = {
-  margin: "0 0 24px 0",
-  textAlign: "center" as const,
-};
-
-const socialLink = {
-  color: "#d97757",
-  textDecoration: "none",
-  fontSize: "14px",
-  fontWeight: "500",
-};
-
-const socialSeparator = {
-  color: "#d0d0d0",
-  margin: "0 8px",
 };
 
 const footerText = {

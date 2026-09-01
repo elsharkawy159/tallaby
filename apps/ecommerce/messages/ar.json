@@ -112,6 +112,7 @@
     "continueShopping": "متابعة التسوق",
     "billingAddress": "عنوان الفواتير",
     "shippingAddress": "عنوان الشحن",
+    "contactInfo": "معلومات التواصل",
     "shippingInformation": "معلومات الشحن",
     "loadingAddresses": "جاري تحميل العناوين...",
     "selectedAddress": "العنوان المحدد",
@@ -578,7 +579,7 @@
       "heroDescription": "نحن هنا للمساعدة! تواصل معنا من خلال أي من القنوات أدناه وسنرد عليك في أقرب وقت ممكن.",
       "emailSupport": "الدعم عبر البريد الإلكتروني",
       "emailSupportDescription": "أرسل لنا رسالة مفصلة",
-      "emailSupportValue": "info@tallaby.com",
+      "emailSupportValue": "tallabycommerce@gmail.com",
       "emailSupportAvailability": "رد خلال 24 ساعة",
       "liveChat": "الدردشة المباشرة",
       "liveChatDescription": "تحدث معنا على واتساب",
@@ -740,6 +741,7 @@
     "company": "الشركة",
     "support": "الدعم",
     "connect": "تواصل",
+    "legal": "قانوني",
     "aboutUs": "من نحن",
     "contactUs": "اتصل بنا",
     "storeLocator": "مواقع المتاجر",
@@ -762,7 +764,7 @@
     "description": "وجهتك الشاملة للتسوق عبر الإنترنت. نقدم لك مجموعة واسعة من المنتجات من جميع الفئات لتلبية جميع احتياجاتك.",
     "address": "القاهرة، مصر",
     "phone": "01003272830",
-    "email": "info@tallaby.com"
+    "email": "tallabycommerce@gmail.com"
   },
   "notifications": {
     "notifications": "الإشعارات",

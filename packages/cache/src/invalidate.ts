@@ -30,6 +30,8 @@ export interface ProductCacheSnapshot {
   slugs: { locale: string; slug: string | null }[];
   status: ProductStatus;
   isFeatured: boolean;
+  isTrending: boolean;
+  isSeasonal: boolean;
   isMostSelling: boolean;
   isPlatformChoice: boolean;
   /** Serialized price (e.g. JSON.stringify of the price jsonb column) — used only for change detection. */
@@ -136,11 +138,13 @@ export function invalidateProduct(
   const touchesCollection = (
     key: keyof Pick<
       ProductCacheSnapshot,
-      "isFeatured" | "isMostSelling" | "isPlatformChoice"
+      "isFeatured" | "isTrending" | "isSeasonal" | "isMostSelling" | "isPlatformChoice"
     >
   ) => Boolean(before?.[key]) || Boolean(after?.[key]);
 
   if (touchesCollection("isFeatured")) tags.add(productTags.featured());
+  if (touchesCollection("isTrending")) tags.add(productTags.trending());
+  if (touchesCollection("isSeasonal")) tags.add(productTags.seasonal());
   if (touchesCollection("isMostSelling")) tags.add(productTags.bestSelling());
   if (touchesCollection("isPlatformChoice")) tags.add(productTags.deals());
   if (created) tags.add(productTags.newArrivals());

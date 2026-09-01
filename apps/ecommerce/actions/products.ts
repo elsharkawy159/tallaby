@@ -43,6 +43,8 @@ interface ProductFilters {
   condition?: string;
   sellerId?: string;
   isFeatured?: boolean;
+  isTrending?: boolean;
+  isSeasonal?: boolean;
   searchQuery?: string;
   sortBy?: "price_asc" | "price_desc" | "rating" | "newest" | "popular";
   limit?: number;
@@ -64,6 +66,8 @@ export const getProducts = createCachedQuery({
     if (filters.brandId) tags.push(productTags.brand(filters.brandId));
     if (filters.sellerId) tags.push(productTags.seller(filters.sellerId));
     if (filters.isFeatured) tags.push(productTags.featured());
+    if (filters.isTrending) tags.push(productTags.trending());
+    if (filters.isSeasonal) tags.push(productTags.seasonal());
     return tags;
   },
   query: async (filters: ProductFilters = {}) => {
@@ -116,6 +120,14 @@ export const getProducts = createCachedQuery({
 
       if (filters.isFeatured !== undefined) {
         conditions.push(eq(products.isFeatured, filters.isFeatured));
+      }
+
+      if (filters.isTrending !== undefined) {
+        conditions.push(eq(products.isTrending, filters.isTrending));
+      }
+
+      if (filters.isSeasonal !== undefined) {
+        conditions.push(eq(products.isSeasonal, filters.isSeasonal));
       }
 
       if (filters.searchQuery) {
@@ -388,6 +400,78 @@ export async function getBestSellingProducts() {
     {
       tags: [productTags.listing(), productTags.bestSelling()],
       revalidate: 180,
+    }
+  )();
+}
+
+export async function getTrendingMerchandisedProducts() {
+  return unstable_cache(
+    async () => {
+      try {
+        const trending = await db.query.products.findMany({
+          where: and(
+            eq(products.status, "active"),
+            eq(products.isTrending, true)
+          ),
+          with: {
+            brand: true,
+            seller: {
+              columns: {
+                displayName: true,
+                slug: true,
+              },
+            },
+          },
+          limit: 12,
+          orderBy: [desc(products.updatedAt)],
+        });
+
+        return { success: true, data: trending };
+      } catch (error) {
+        console.error("Error fetching trending merchandised products:", error);
+        return { success: false, error: "Failed to fetch trending products" };
+      }
+    },
+    ["trending-merchandised-products"],
+    {
+      tags: [productTags.listing(), productTags.trending()],
+      revalidate: 120,
+    }
+  )();
+}
+
+export async function getSeasonalProducts() {
+  return unstable_cache(
+    async () => {
+      try {
+        const seasonal = await db.query.products.findMany({
+          where: and(
+            eq(products.status, "active"),
+            eq(products.isSeasonal, true)
+          ),
+          with: {
+            brand: true,
+            seller: {
+              columns: {
+                displayName: true,
+                slug: true,
+              },
+            },
+          },
+          limit: 12,
+          orderBy: [desc(products.updatedAt)],
+        });
+
+        return { success: true, data: seasonal };
+      } catch (error) {
+        console.error("Error fetching seasonal products:", error);
+        return { success: false, error: "Failed to fetch seasonal products" };
+      }
+    },
+    ["seasonal-products"],
+    {
+      tags: [productTags.listing(), productTags.seasonal()],
+      revalidate: 120,
     }
   )();
 }

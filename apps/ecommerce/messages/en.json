@@ -112,6 +112,7 @@
     "continueShopping": "Continue Shopping",
     "billingAddress": "Billing Address",
     "shippingAddress": "Shipping Address",
+    "contactInfo": "Contact Info",
     "shippingInformation": "Shipping Information",
     "loadingAddresses": "Loading addresses...",
     "selectedAddress": "Selected Address",
@@ -578,7 +579,7 @@
       "heroDescription": "We're here to help! Reach out to us through any of the channels below and we'll get back to you as soon as possible.",
       "emailSupport": "Email Support",
       "emailSupportDescription": "Send us a detailed message",
-      "emailSupportValue": "info@tallaby.com",
+      "emailSupportValue": "tallabycommerce@gmail.com",
       "emailSupportAvailability": "Response within 24 hours",
       "liveChat": "Live Chat",
       "liveChatDescription": "Chat with us on WhatsApp",
@@ -740,6 +741,7 @@
     "company": "Company",
     "support": "Support",
     "connect": "Connect",
+    "legal": "Legal",
     "aboutUs": "About Us",
     "contactUs": "Contact Us",
     "storeLocator": "Store Locator",
@@ -762,7 +764,7 @@
     "description": "Your comprehensive destination for online shopping. We offer you a wide range of products from all categories to meet all your needs.",
     "address": "Cairo, Egypt",
     "phone": "01003272830",
-    "email": "info@tallaby.com"
+    "email": "tallabycommerce@gmail.com"
   },
   "notifications": {
     "notifications": "Notifications",

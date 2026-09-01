@@ -1,5 +1,6 @@
 import { BASE_URL, DEFAULT_CURRENCY } from "./constants";
 import { TALLABY_SOCIAL_SAME_AS } from "./social-links";
+import { TALLABY_CONTACT_EMAIL } from "./contact";
 
 interface Product {
   id: string;
@@ -192,6 +193,7 @@ export function generateOrganizationStructuredData() {
     contactPoint: {
       "@type": "ContactPoint",
       telephone: "+1-800-TALLABY",
+      email: TALLABY_CONTACT_EMAIL,
       contactType: "customer service",
       availableLanguage: ["English", "Arabic"],
     },

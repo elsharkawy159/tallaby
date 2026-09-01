@@ -17,6 +17,7 @@ import {
   getCurrentUserId,
   getOrCreateCurrentUserId,
 } from "@/lib/get-current-user-id";
+import { syncGuestProfileFromFirstAddress } from "@/lib/guest-user";
 import { revalidatePath } from "next/cache";
 
 export async function getCustomerProfile() {
@@ -73,23 +74,35 @@ export async function addAddress(data: {
       return { success: false, error: "Unable to get or create user ID" };
     }
 
-    // If setting as default, unset other defaults
-    if (data.isDefault) {
-      await db
-        .update(userAddresses)
-        .set({ isDefault: false })
-        .where(eq(userAddresses.userId, userId));
-    }
+    const newAddress = await db.transaction(async (tx) => {
+      await syncGuestProfileFromFirstAddress(tx, userId, {
+        fullName: data.fullName,
+        phone: data.phone,
+      });
 
-    const [newAddress] = await db
-      .insert(userAddresses)
-      .values({
-        ...data,
-        userId,
-        addressType: data.addressType || "both",
-        isDefault: data.isDefault || false,
-      })
-      .returning();
+      if (data.isDefault) {
+        await tx
+          .update(userAddresses)
+          .set({ isDefault: false })
+          .where(eq(userAddresses.userId, userId));
+      }
+
+      const [address] = await tx
+        .insert(userAddresses)
+        .values({
+          ...data,
+          userId,
+          addressType: data.addressType || "both",
+          isDefault: data.isDefault || false,
+        })
+        .returning();
+
+      return address;
+    });
+
+    if (!newAddress) {
+      return { success: false, error: "Failed to add address" };
+    }
 
     // Revalidate relevant paths to refresh cached data
     revalidatePath("/cart/checkout");

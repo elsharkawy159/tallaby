@@ -45,7 +45,7 @@ export const addProductFormSchema = z
         const trimmed = val.trim()
         return trimmed === "" ? undefined : trimmed
       },
-      z.string().url("Please enter a valid URL").optional()
+      z.string().optional()
     ),
 
     // shared fields
@@ -96,6 +96,8 @@ export const addProductFormSchema = z
     isPlatformChoice: z.boolean().default(false),
     isMostSelling: z.boolean().default(false),
     isFeatured: z.boolean().default(false),
+    isTrending: z.boolean().default(false),
+    isSeasonal: z.boolean().default(false),
     freeDelivery: z.boolean().default(false),
     taxClass: z
       .enum(["standard", "reduced", "zero", "exempt"])
@@ -227,6 +229,8 @@ export const defaultValues = {
   isPlatformChoice: false,
   isMostSelling: false,
   isFeatured: false,
+  isTrending: false,
+  isSeasonal: false,
   freeDelivery: false,
   taxClass: "standard" as const,
   notes: "",

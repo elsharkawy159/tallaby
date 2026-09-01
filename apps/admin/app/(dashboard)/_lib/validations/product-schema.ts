@@ -52,6 +52,8 @@ export const productSchema = z
     isPlatformChoice: z.boolean().default(false),
     isBestSeller: z.boolean().default(false),
     isFeatured: z.boolean().default(false),
+    isTrending: z.boolean().default(false),
+    isSeasonal: z.boolean().default(false),
     freeDelivery: z.boolean().default(false),
     condition: z
       .enum([

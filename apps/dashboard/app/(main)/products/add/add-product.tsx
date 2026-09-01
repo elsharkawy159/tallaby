@@ -222,6 +222,7 @@ export default function AddProduct({ categories, brands, sellerPricing }: AddPro
               <BasicInformationStep
                 categories={categories}
                 brands={brands}
+                sellerPricing={sellerPricing}
                 activeLocale={activeLocale}
               />
             )}

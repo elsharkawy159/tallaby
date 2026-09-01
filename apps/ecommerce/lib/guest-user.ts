@@ -6,8 +6,10 @@
  */
 
 import { cookies } from "next/headers";
-import { db, users, eq } from "@workspace/db";
+import { db, users, userAddresses, eq, and, sql } from "@workspace/db";
 import { createClient } from "@/supabase/server";
+
+type DbTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
 export const GUEST_UID_COOKIE_NAME = "guest_uid";
 const GUEST_UID_COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
@@ -191,4 +193,40 @@ export async function getGuestUserId(): Promise<string | null> {
 export async function clearGuestUID(): Promise<void> {
   const cookieStore = await cookies();
   cookieStore.delete(GUEST_UID_COOKIE_NAME);
+}
+
+/**
+ * Sync guest user's fullName and phone from their first address.
+ * Call before inserting the address; only updates if user is guest with zero addresses.
+ */
+export async function syncGuestProfileFromFirstAddress(
+  tx: DbTransaction,
+  userId: string,
+  data: { fullName: string; phone: string }
+): Promise<void> {
+  const guestUser = await tx.query.users.findFirst({
+    where: and(eq(users.id, userId), eq(users.isGuest, true)),
+  });
+
+  if (!guestUser) {
+    return;
+  }
+
+  const [addressCount] = await tx
+    .select({ count: sql<number>`count(*)` })
+    .from(userAddresses)
+    .where(eq(userAddresses.userId, userId));
+
+  if (Number(addressCount?.count ?? 0) !== 0) {
+    return;
+  }
+
+  await tx
+    .update(users)
+    .set({
+      fullName: data.fullName,
+      phone: data.phone,
+      updatedAt: new Date().toISOString(),
+    })
+    .where(eq(users.id, userId));
 }

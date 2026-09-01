@@ -16,6 +16,8 @@ function snapshot(overrides: Partial<ProductCacheSnapshot> = {}): ProductCacheSn
     slugs: [{ locale: "en", slug: "widget" }],
     status: "active",
     isFeatured: false,
+    isTrending: false,
+    isSeasonal: false,
     isMostSelling: false,
     isPlatformChoice: false,
     priceKey: '{"final":10}',
@@ -143,6 +145,22 @@ describe("invalidateProduct", () => {
     const after = snapshot({ isMostSelling: true });
     const { tags } = invalidateProduct(before, after);
     expect(tags).toContain(productTags.bestSelling());
+    expect(tags).not.toContain(productTags.listing());
+  });
+
+  it("trending toggle: tags trending() only", () => {
+    const before = snapshot({ isTrending: false });
+    const after = snapshot({ isTrending: true });
+    const { tags } = invalidateProduct(before, after);
+    expect(tags).toContain(productTags.trending());
+    expect(tags).not.toContain(productTags.listing());
+  });
+
+  it("seasonal toggle: tags seasonal() only", () => {
+    const before = snapshot({ isSeasonal: false });
+    const after = snapshot({ isSeasonal: true });
+    const { tags } = invalidateProduct(before, after);
+    expect(tags).toContain(productTags.seasonal());
     expect(tags).not.toContain(productTags.listing());
   });
 
