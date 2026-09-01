@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import emails from "../routes/emails";
-import stripeRoutes from "../routes/stripe";
+import paymobRoutes from "../routes/paymob";
 import { internalApiAuth } from "../lib/middleware";
 
 export const app = new Hono().basePath("/api");
@@ -14,10 +14,10 @@ app.get("/", (c) => {
   });
 });
 
-// Apply internal API auth middleware to all routes except homepage and stripe connect
+// Apply internal API auth middleware to all routes except homepage and Paymob webhook
 app.use("*", async (c, next) => {
   const path = c.req.path;
-  if (path === "/" || path.startsWith("/stripe/connect/")) {
+  if (path === "/" || path.startsWith("/paymob/webhook")) {
     return next();
   }
   return internalApiAuth()(c, next);
@@ -26,4 +26,4 @@ app.use("*", async (c, next) => {
 // Routes
 
 app.route("/emails", emails);
-app.route("/stripe", stripeRoutes);
+app.route("/paymob", paymobRoutes);

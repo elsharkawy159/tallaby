@@ -311,7 +311,7 @@ export async function createOrder(data: {
             discountAmount: formatDecimal(totalDiscount),
             totalAmount: formatDecimal(totalAmount),
             currency: cart.currency || "EGP",
-            status: "pending",
+            status: data.paymentMethod === "online_payment" ? "payment_processing" : "pending",
             paymentStatus: "pending",
             paymentMethod: data.paymentMethod,
             shippingAddressId: data.shippingAddressId || null,

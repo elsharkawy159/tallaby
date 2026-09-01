@@ -171,9 +171,6 @@ importers:
       sender:
         specifier: ^0.0.1
         version: 0.0.1
-      stripe:
-        specifier: ^22.1.1
-        version: 22.1.1(@types/node@20.19.28)
       zod:
         specifier: ^4.2.1
         version: 4.2.1
@@ -14256,10 +14253,6 @@ snapshots:
   strip-literal@3.1.0:
     dependencies:
       js-tokens: 9.0.1
-
-  stripe@22.1.1(@types/node@20.19.28):
-    optionalDependencies:
-      '@types/node': 20.19.28
 
   stripe@22.1.1(@types/node@25.0.6):
     optionalDependencies:

@@ -208,7 +208,12 @@ export const CheckoutData = ({
 
         if (result.success) {
           toast.success(tToast("orderPlacedSuccessfully"));
-          // Redirect to order confirmation page
+
+          if (data.paymentMethod === "online_payment") {
+            router.push(`/cart/checkout/payment?orderId=${result.data?.order?.id}`);
+            return;
+          }
+
           router.push(`/orders/${result.data?.order?.id}`);
         } else {
           toast.error(result.error || tToast("failedToPlaceOrder"));
