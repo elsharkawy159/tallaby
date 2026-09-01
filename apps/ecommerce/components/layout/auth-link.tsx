@@ -1,33 +1,55 @@
-import { getAuthUserForDisplay } from "@/lib/auth/current-user";
+"use client";
+
+import { useEffect, useState } from "react";
 import { getSellerProfile } from "@/actions/seller";
-import { UserMenu } from "./user-menu";
 import { signOutAction } from "@/actions/auth";
+import { useAuthUser } from "@/lib/auth/use-auth-user";
+import { UserMenu } from "./user-menu";
 import { AuthLinkClient } from "./auth-link-client";
-import { getGuestUserId } from "@/lib/guest-user";
-import { getProfileContext } from "@/app/(main)/profile/_components/profile.server";
 import { GuestProfileLink } from "./guest-profile-link";
+import type { Seller } from "@/app/(main)/profile/_components/profile.types";
 
 interface AuthLinkProps {
   variant?: "mobile" | "desktop";
   className?: string;
 }
 
-export const AuthLink = async ({
+function getGuestUidFromCookie(): string | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(/(?:^|; )guest_uid=([^;]*)/);
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+export const AuthLink = ({
   variant = "desktop",
   className,
 }: AuthLinkProps) => {
-  const user = await getAuthUserForDisplay();
+  const { user, isLoading } = useAuthUser();
+  const [seller, setSeller] = useState<Seller | null>(null);
+  const [hasGuestSession, setHasGuestSession] = useState(false);
 
-  // If user is authenticated, show UserMenu
-  if (user) {
-    let seller: any = null;
-    if (user.user_metadata?.is_seller === true) {
-      const sellerResult = await getSellerProfile(user.id);
-      if (sellerResult.success && sellerResult.data) {
-        seller = sellerResult.data;
-      }
+  useEffect(() => {
+    setHasGuestSession(Boolean(getGuestUidFromCookie()));
+  }, []);
+
+  useEffect(() => {
+    if (!user || user.user_metadata?.is_seller !== true) {
+      setSeller(null);
+      return;
     }
 
+    getSellerProfile(user.id).then((sellerResult) => {
+      if (sellerResult.success && sellerResult.data) {
+        setSeller(sellerResult.data);
+      }
+    });
+  }, [user]);
+
+  if (isLoading) {
+    return null;
+  }
+
+  if (user) {
     return (
       <UserMenu
         variant={variant}
@@ -40,23 +62,9 @@ export const AuthLink = async ({
     );
   }
 
-  const guestUserId = await getGuestUserId();
-  if (guestUserId) {
-    const profileContext = await getProfileContext();
-    const displayName =
-      profileContext.user?.user_metadata?.fullName ||
-      profileContext.user?.user_metadata?.full_name ||
-      "Guest";
-
-    return (
-      <GuestProfileLink
-        variant={variant}
-        className={className}
-        displayName={displayName}
-      />
-    );
+  if (hasGuestSession) {
+    return <GuestProfileLink variant={variant} className={className} />;
   }
 
-  // If not authenticated, show Link to login
   return <AuthLinkClient variant={variant} className={className} />;
 };

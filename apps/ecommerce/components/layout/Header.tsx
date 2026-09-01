@@ -5,22 +5,10 @@ import { BottomNavigation } from "./bottom-navigation";
 import { Logo } from "../logo";
 import { LanguageSwitcher } from "./language-switcher";
 import { SearchBar } from "./search-bar";
-import { AuthLink } from "./auth-link";
-import { CartCountClient } from "./cart-count.client";
-import { WishlistCount } from "./wishlist-count";
-import { NotificationButton } from "./notification-button";
-// import { DeliveryLocation } from "./delivery-location";
 import { BecomeSellerButton } from "./header.chunks";
-import { getAuthUser } from "@/lib/auth/current-user";
-import { Suspense } from "react";
-import { Button, Spinner } from "@workspace/ui/components";
-import { Heart, ShoppingCart } from "lucide-react";
-import Link from "next/link";
+import { HeaderUserActions } from "./header-user-actions.client";
 
-// Main Header Component
-const MainHeader = async () => {
-  const user = await getAuthUser();
-
+const MainHeader = () => {
   return (
     <div className={cn("bg-primary shadow-xs h-full w-full")}>
       <div className="py-2.5 container">
@@ -28,7 +16,7 @@ const MainHeader = async () => {
         <div className="flex items-center md:hidden justify-between">
           <Logo />
           <LanguageSwitcher />
-          <BecomeSellerButton user={user} />
+          <BecomeSellerButton />
         </div>
 
         <div className="md:mt-0 mt-3 md:hidden">
@@ -43,54 +31,19 @@ const MainHeader = async () => {
         >
           <div className="flex items-center gap-8">
             <Logo />
-            {/* <DeliveryLocation className="hidden lg:flex" user={user} /> */}
             <LanguageSwitcher />
           </div>
 
           <SearchBar variant="desktop" />
 
-          <div className="flex items-center gap-4">
-            <AuthLink variant="desktop" />
-
-            {/* Notifications */}
-            {user && <NotificationButton />}
-
-            {/* Cart */}
-            <Button
-              asChild
-              size="icon"
-              variant="ghost"
-              className={cn(
-                "relative flex flex-col items-center md:text-white text-gray-600 hover:text-gray-200"
-              )}
-            >
-              <Link href="/cart">
-                <ShoppingCart className={cn("md:size-6 size-5")} />
-                <CartCountClient />
-              </Link>
-            </Button>
-
-            {/* Wishlist */}
-            <Button asChild size="icon" variant="ghost">
-              <Link
-                href="/profile/wishlist"
-                className={cn("relative text-white hover:text-gray-200")}
-              >
-                <Heart className="size-6" />
-                <Suspense>
-                  <WishlistCount />
-                </Suspense>
-              </Link>
-            </Button>
-            <BecomeSellerButton user={user} />
-          </div>
+          <HeaderUserActions />
         </div>
       </div>
     </div>
   );
 };
 
-const Header = async ({ className }: HeaderProps) => {
+const Header = ({ className }: HeaderProps) => {
   return (
     <>
       <ScrollingHeader className={className}>

@@ -110,9 +110,7 @@ export default async function RootLayout({
           speed={200}
         />
         <NextIntlClientProvider messages={messages}>
-          <Providers>
-            {children}
-          </Providers>
+          <Providers>{children}</Providers>
           <Toaster />
         </NextIntlClientProvider>
       </body>

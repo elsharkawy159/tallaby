@@ -215,6 +215,7 @@ export const getProductBySlug = createCachedQuery({
           ),
           with: {
             brand: true,
+            category: true,
             seller: {
               columns: {
                 id: true,
@@ -238,8 +239,16 @@ export const getProductBySlug = createCachedQuery({
                 },
                 reviewVotes: true,
                 reviewComments: {
-                  where: isNotNull(reviews.sellerId),
+                  where: isNotNull(reviewComments.sellerId),
                   limit: 1,
+                  with: {
+                    user: {
+                      columns: {
+                        fullName: true,
+                        avatarUrl: true,
+                      },
+                    },
+                  },
                 },
               },
             },
@@ -280,10 +289,7 @@ export const getProductBySlug = createCachedQuery({
           orderBy: [desc(products.averageRating)],
         })
 
-        type RelatedProductWithTranslations = Record<string, unknown> & {
-          productTranslations?: Array<{ locale: string; title: string; description?: string | null; bulletPoints?: unknown; slug?: string | null; metaTitle?: string | null; metaDescription?: string | null }>
-        }
-        const relatedProducts = relatedProductsRaw.map((p: RelatedProductWithTranslations) => {
+        const relatedProducts = relatedProductsRaw.map((p) => {
           const t = pickTranslationFromArray(p.productTranslations ?? [], locale)
           return mergeProductWithTranslation(p, t)
         })

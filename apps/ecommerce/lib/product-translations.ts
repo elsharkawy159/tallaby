@@ -81,6 +81,26 @@ export async function getProductIdBySlug(
   return fallback?.productId ?? null
 }
 
+/**
+ * Resolves which locale a product slug belongs to (for ISR-safe product pages).
+ * Falls back to "ar" when the slug is not found in translations.
+ */
+export async function getProductLocaleFromSlug(
+  slug: string
+): Promise<ProductLocale> {
+  const [match] = await db
+    .select({ locale: productTranslations.locale })
+    .from(productTranslations)
+    .where(eq(productTranslations.slug, slug))
+    .limit(1);
+
+  if (match?.locale === "en" || match?.locale === "ar") {
+    return match.locale;
+  }
+
+  return "ar";
+}
+
 const TRANSLATION_COLUMNS = {
   title: productTranslations.title,
   description: productTranslations.description,

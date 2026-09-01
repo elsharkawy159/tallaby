@@ -1,29 +1,53 @@
-import { Suspense } from "react";
-import { NotificationDropdownClient } from "./notification-dropdown.client";
-import { NotificationCount } from "./notification-count";
-import { getUnreadNotificationCount } from "@/actions/notifications";
+"use client";
 
-/**
- * Server Component wrapper for notification button
- * Fetches initial unread count and passes to client component
- * Renders badge count via Suspense boundary
- *
- * Note: The badge is positioned absolutely and requires the button
- * to have 'relative' class, which is set in NotificationDropdownClient
- */
-export async function NotificationButton() {
-  // Fetch initial unread count server-side
-  const countResult = await getUnreadNotificationCount();
-  const initialUnreadCount = countResult.success
-    ? (countResult.data?.count ?? 0)
-    : 0;
+import { Suspense, useEffect, useState } from "react";
+import { NotificationDropdownClient } from "./notification-dropdown.client";
+import { getUnreadNotificationCount } from "@/actions/notifications";
+import { useAuthUser } from "@/lib/auth/use-auth-user";
+
+export function NotificationButton() {
+  const { user } = useAuthUser();
+  const [initialUnreadCount, setInitialUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (!user) {
+      setInitialUnreadCount(0);
+      return;
+    }
+
+    getUnreadNotificationCount().then((countResult) => {
+      setInitialUnreadCount(
+        countResult.success ? (countResult.data?.count ?? 0) : 0
+      );
+    });
+  }, [user]);
+
+  if (!user) return null;
 
   return (
     <div className="relative">
       <NotificationDropdownClient initialUnreadCount={initialUnreadCount} />
       <Suspense fallback={null}>
-        <NotificationCount />
+        <NotificationCountClient />
       </Suspense>
     </div>
+  );
+}
+
+function NotificationCountClient() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    getUnreadNotificationCount().then((result) => {
+      setCount(result.success ? (result.data?.count ?? 0) : 0);
+    });
+  }, []);
+
+  if (count === 0) return null;
+
+  return (
+    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full size-5 flex items-center justify-center font-medium">
+      {count > 99 ? "99+" : count}
+    </span>
   );
 }

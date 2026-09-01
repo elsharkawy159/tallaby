@@ -1,21 +1,15 @@
 import { getRequestConfig } from "next-intl/server";
-import { cookies } from "next/headers";
 
 const locales = ["en", "ar"] as const;
 type Locale = (typeof locales)[number];
+const defaultLocale: Locale = "ar";
 
 export default getRequestConfig(async ({ locale }) => {
-  // Read locale from cookie if available, otherwise use the provided locale or default to "ar"
-  const cookieStore = await cookies();
-  const cookieLocale = cookieStore.get("locale")?.value;
-
-  // Use cookie locale if valid, otherwise use the provided locale, otherwise default to "ar"
-  const resolvedLocale = (cookieLocale as Locale) || (locale as Locale) || "ar";
-
-  // Validate that it's one of our supported locales
-  const safeLocale = locales.includes(resolvedLocale as Locale)
-    ? resolvedLocale
-    : "ar";
+  // Static default for ISR/SSG. Per-request locale preference is handled
+  // client-side (LanguageSwitcher sets a cookie + refresh); reading cookies
+  // here would opt every route into dynamic rendering (DYNAMIC_SERVER_USAGE).
+  const candidate = (locale as Locale) || defaultLocale;
+  const safeLocale = locales.includes(candidate) ? candidate : defaultLocale;
 
   return {
     locale: safeLocale,

@@ -15,7 +15,8 @@ import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import { generateProductMetadata } from "@/lib/metadata";
 import type { Metadata } from "next";
 import { ProductStructuredData } from "./_components/product-structured-data";
-import { getLocale, getTranslations } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
+import { getProductLocaleFromSlug } from "@/lib/product-translations";
 
 // ISR: pre-render product pages at build time, revalidate every 10 minutes
 export const revalidate = 600;
@@ -40,7 +41,7 @@ export async function generateMetadata({
 }: ProductPageProps): Promise<Metadata> {
   const { slug } = await params
   const t = await getTranslations("product")
-  const locale = (await getLocale()) as "en" | "ar"
+  const locale = await getProductLocaleFromSlug(slug)
   const productResult = await getProductBySlug(slug, locale)
   if (!productResult.success || !productResult.data) {
     return {
@@ -91,19 +92,13 @@ export async function generateMetadata({
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params
-  const locale = (await getLocale()) as "en" | "ar"
+  const locale = await getProductLocaleFromSlug(slug)
   const productResult = await getProductBySlug(slug, locale)
   if (!productResult.success || !productResult.data) {
     notFound();
   }
 
-  const product = productResult.data;
-
-  // Type assertion needed because category might not be included in query
-  const productWithCategory: Product = {
-    ...product,
-    category: (product as any).category || null,
-  };
+  const productWithCategory: Product = productResult.data;
 
   return (
     <main className="min-h-screen">
@@ -118,7 +113,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
         </div>
       </section>
 
-      <ProductContent html={productWithCategory.content} dir={locale} />
+      <ProductContent
+        html={productWithCategory.content}
+        dir={locale === "ar" ? "rtl" : "ltr"}
+      />
 
       <section>
         <ProductTabsWrapper product={productWithCategory} />

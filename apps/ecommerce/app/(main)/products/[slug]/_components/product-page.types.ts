@@ -47,7 +47,12 @@ export type Product = typeof products.$inferSelect & {
       productAnswers?: Array<typeof productAnswers.$inferSelect>;
     }
   >;
-  relatedProducts?: Array<typeof products.$inferSelect>;
+  relatedProducts?: Array<
+    typeof products.$inferSelect & {
+      brand: typeof brands.$inferSelect | null;
+      content?: string | null;
+    }
+  >;
 };
 
 export type Review = typeof reviews.$inferSelect & {

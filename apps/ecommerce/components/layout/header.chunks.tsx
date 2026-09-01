@@ -1,23 +1,23 @@
 "use client";
 
+import type { ReactElement } from "react";
 import Link from "next/link";
 import { Button } from "@workspace/ui/components/button";
 import { cn } from "@/lib/utils";
-import type { User } from "@supabase/supabase-js";
 import { useTranslations } from "next-intl";
 import {
   getSellerCtaHref,
   getSellerCtaOpensInNewTab,
   isExistingSeller,
 } from "@/lib/seller/seller-cta.lib";
+import { useAuthUser } from "@/lib/auth/use-auth-user";
 
 export const BecomeSellerButton = ({
   className,
-  user,
 }: {
   className?: string;
-  user: User | null;
-}) => {
+}): ReactElement => {
+  const { user } = useAuthUser();
   const t = useTranslations("onboarding");
   const href = getSellerCtaHref(user);
   const opensInNewTab = getSellerCtaOpensInNewTab(user);
