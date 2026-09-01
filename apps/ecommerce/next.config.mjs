@@ -2,7 +2,6 @@ import createNextIntlPlugin from 'next-intl/plugin';
 const withNextIntl = createNextIntlPlugin();
 
 const nextConfig = {
-  eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
   transpilePackages: ["@workspace/ui"],
   // Avoid serving stale homepage RSC payloads on client-side navigation.

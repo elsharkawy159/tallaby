@@ -1,6 +1,25 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
+  "globalEnv": [
+    "DATABASE_URL",
+    "REVALIDATE_SECRET",
+    "UPSTASH_REDIS_REST_URL",
+    "UPSTASH_REDIS_REST_TOKEN",
+    "NEXT_PUBLIC_SUPABASE_URL",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+    "NEXT_PUBLIC_SITE_URL",
+    "NEXT_PUBLIC_ROOT_DOMAIN",
+    "NEXT_PUBLIC_URL",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "RESEND_API_KEY",
+    "EMAIL_FROM",
+    "EMAIL_FROM_NAME",
+    "PAYMOB_SECRET_KEY",
+    "PAYMOB_PUBLIC_KEY",
+    "PAYMOB_CARD_INTEGRATION_ID",
+    "PAYMOB_WEBHOOK_URL"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
