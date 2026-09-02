@@ -25,6 +25,7 @@ import {
   generateOrderNumber,
   pickProductTitle,
 } from './place-order.lib'
+import { sendOrderConfirmationEmail } from './notify'
 
 /** Internal control-flow signal: coupon lost a concurrent usage-limit race. */
 class CouponClaimFailedError extends Error {}
@@ -65,6 +66,11 @@ export interface PlaceOrderFromCartInput {
   paymentOverrides?: PaymentOverrides
   locale?: string
   skipCoupons?: boolean
+  /**
+   * Send the customer their order-confirmation email once the order commits.
+   * Defaults to true; set false for flows that intentionally stay silent.
+   */
+  sendConfirmationEmail?: boolean
 }
 
 export interface PlaceOrderInventoryItem {
@@ -109,6 +115,7 @@ export async function placeOrderFromCart(
     paymentOverrides,
     locale = 'en',
     skipCoupons = false,
+    sendConfirmationEmail = true,
   } = input
 
   const cart = await db.query.carts.findFirst({
@@ -409,6 +416,23 @@ export async function placeOrderFromCart(
       return { success: false, error: 'Coupon usage limit reached' }
     }
     throw err
+  }
+
+  // Past this point the order is committed. The confirmation email is
+  // best-effort: it is never allowed to fail the order, and the backend
+  // de-duplicates so a retried checkout cannot send a second email.
+  if (sendConfirmationEmail) {
+    const emailResult = await sendOrderConfirmationEmail({
+      orderId: newOrder!.id,
+      locale,
+    })
+    if (!emailResult.success) {
+      console.error(
+        'placeOrderFromCart: order confirmation email not sent for',
+        newOrder!.orderNumber,
+        emailResult.error,
+      )
+    }
   }
 
   const inventoryItems: PlaceOrderInventoryItem[] = stockResults.map((r) => {

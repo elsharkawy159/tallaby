@@ -11,9 +11,14 @@
 # deps
 node_modules/
 
+# build
+dist/
+.vercel/
+
 # env
 .env
 .env.production
+.env.local
 
 # logs
 logs/

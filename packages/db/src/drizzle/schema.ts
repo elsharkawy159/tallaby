@@ -1606,3 +1606,58 @@ export const walletTransactions = pgTable("wallet_transactions", {
 		name: "wallet_transactions_order_id_orders_id_fk"
 	}),
 ]);
+
+/**
+ * One row per transactional email we intend to send. The unique
+ * (email_type, reference_id) index is the idempotency claim: an insert that
+ * conflicts means another execution already owns that send, so retries,
+ * refreshes and duplicated requests cannot produce a second email.
+ */
+export const emailDeliveries = pgTable("email_deliveries", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	emailType: text("email_type").notNull(),
+	/** Domain row the email is about (e.g. orders.id for order confirmations). */
+	referenceId: uuid("reference_id"),
+	recipient: text().notNull(),
+	/** Resend's email id, used to correlate webhook events back to this row. */
+	resendEmailId: text("resend_email_id"),
+	status: text().default('claimed').notNull(),
+	errorMessage: text("error_message"),
+	metadata: jsonb(),
+	sentAt: timestamp("sent_at", { withTimezone: true, mode: 'string' }),
+	deliveredAt: timestamp("delivered_at", { withTimezone: true, mode: 'string' }),
+	bouncedAt: timestamp("bounced_at", { withTimezone: true, mode: 'string' }),
+	complainedAt: timestamp("complained_at", { withTimezone: true, mode: 'string' }),
+	failedAt: timestamp("failed_at", { withTimezone: true, mode: 'string' }),
+	lastEventAt: timestamp("last_event_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("email_deliveries_type_reference_idx").using("btree", table.emailType.asc().nullsLast().op("text_ops"), table.referenceId.asc().nullsLast().op("uuid_ops")),
+	index("email_deliveries_resend_email_id_idx").using("btree", table.resendEmailId.asc().nullsLast().op("text_ops")),
+	index("email_deliveries_status_idx").using("btree", table.status.asc().nullsLast().op("text_ops")),
+]);
+
+/**
+ * Raw Resend webhook events. `event_id` is the Svix message id — unique, so a
+ * retried webhook delivery is recorded (and applied) exactly once.
+ */
+export const emailEvents = pgTable("email_events", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	eventId: text("event_id").notNull(),
+	emailDeliveryId: uuid("email_delivery_id"),
+	resendEmailId: text("resend_email_id"),
+	type: text().notNull(),
+	payload: jsonb(),
+	occurredAt: timestamp("occurred_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("email_events_resend_email_id_idx").using("btree", table.resendEmailId.asc().nullsLast().op("text_ops")),
+	index("email_events_type_idx").using("btree", table.type.asc().nullsLast().op("text_ops")),
+	foreignKey({
+		columns: [table.emailDeliveryId],
+		foreignColumns: [emailDeliveries.id],
+		name: "email_events_email_delivery_id_email_deliveries_id_fk"
+	}).onDelete("set null"),
+	unique("email_events_event_id_unique").on(table.eventId),
+]);

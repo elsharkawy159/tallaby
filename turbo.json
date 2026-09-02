@@ -15,6 +15,13 @@
     "RESEND_API_KEY",
     "EMAIL_FROM",
     "EMAIL_FROM_NAME",
+    "EMAIL_FROM_ORDERS",
+    "RESEND_WEBHOOK_SECRET",
+    "BACKEND_API_URL",
+    "INTERNAL_API_SECRET",
+    "ORDER_ACCESS_SECRET",
+    "ECOMMERCE_URL",
+    "NEXT_PUBLIC_SUPABASE_PROJECT_ID",
     "PAYMOB_SECRET_KEY",
     "PAYMOB_PUBLIC_KEY",
     "PAYMOB_CARD_INTEGRATION_ID",
@@ -29,7 +36,7 @@
     "backend#build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": ["dist/**"]
+      "outputs": [".vercel/output/**"]
     },
     "lint": {
       "dependsOn": ["^lint"]
