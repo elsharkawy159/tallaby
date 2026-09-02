@@ -45,8 +45,8 @@ const CARDS: {
   { key: "assigned", labelKey: "assigned", href: "/orders?status=assigned", icon: UserCheck, tone: "text-blue-600" },
   { key: "outForDelivery", labelKey: "outForDelivery", href: "/orders?status=out_for_delivery", icon: Truck, tone: "text-purple-600" },
   { key: "delivered", labelKey: "delivered", href: "/orders?status=delivered", icon: CheckCircle2, tone: "text-green-600" },
-  { key: "failed", labelKey: "failed", href: "/orders?status=failed", icon: CircleAlert, tone: "text-red-600" },
-  { key: "returned", labelKey: "returned", href: "/orders?status=returned", icon: RotateCcw, tone: "text-orange-600" },
+  { key: "failed", labelKey: "failed", href: "/orders?stage=failed", icon: CircleAlert, tone: "text-red-600" },
+  { key: "returned", labelKey: "returned", href: "/orders?stage=returned", icon: RotateCcw, tone: "text-orange-600" },
 ];
 
 async function StatsGrid() {

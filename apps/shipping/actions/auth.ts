@@ -37,7 +37,7 @@ export async function login(email: string, password: string) {
   }
 
   if (profile.role === "driver") {
-    return { success: true, redirectTo: "/rider" };
+    return { success: true, redirectTo: "/" };
   }
 
   if (profile.role === "admin" && profile.isVerified) {

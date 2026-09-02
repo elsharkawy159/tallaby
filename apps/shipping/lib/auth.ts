@@ -9,6 +9,7 @@ export interface ShippingUser {
   role: string;
   isVerified: boolean;
   isSuspended: boolean;
+  isAvailable: boolean;
 }
 
 export class UnauthorizedError extends Error {
@@ -38,7 +39,7 @@ export const getShippingUser = cache(async (): Promise<ShippingUser | null> => {
   const { data: profile } = await supabase
     .from("users")
     .select(
-      "id, email, role, fullName:full_name, phone, isVerified:is_verified, isSuspended:is_suspended"
+      "id, email, role, fullName:full_name, phone, isVerified:is_verified, isSuspended:is_suspended, isAvailable:is_available"
     )
     .eq("id", user.id)
     .single();
@@ -53,6 +54,7 @@ export const getShippingUser = cache(async (): Promise<ShippingUser | null> => {
     role: profile.role,
     isVerified: profile.isVerified ?? false,
     isSuspended: profile.isSuspended ?? false,
+    isAvailable: profile.isAvailable ?? true,
   };
 });
 

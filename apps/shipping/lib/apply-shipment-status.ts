@@ -109,8 +109,8 @@ export async function applyShipmentStatus({
       shipmentId = inserted?.id ?? null;
     }
 
-    // Mirror onto the order. `failed` and `cancelled` leave the order alone: a
-    // failed delivery attempt does not cancel the customer's order.
+    // Mirror onto the order. `failed` leaves the order alone — a failed delivery
+    // attempt does not cancel the customer's order and may be retried.
     const orderPatch: Record<string, string> = {};
     if (status === "out_for_delivery") {
       orderPatch.status = "out_for_delivery";
@@ -120,6 +120,9 @@ export async function applyShipmentStatus({
       orderPatch.deliveredAt = now;
     } else if (status === "returned") {
       orderPatch.status = "returned";
+    } else if (status === "cancelled") {
+      orderPatch.status = "cancelled";
+      orderPatch.cancelledAt = now;
     }
 
     // A confirmed COD collection sets payment status independently of

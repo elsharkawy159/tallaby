@@ -10,7 +10,11 @@ import { Card, CardContent } from "@workspace/ui/components/card";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 
 import { formatAddress, formatCurrency } from "@/lib/format";
-import { translateShippingStatus } from "@/lib/rider-labels";
+import {
+  translatePaymentMethod,
+  translatePaymentStatus,
+  translateShippingStatus,
+} from "@/lib/rider-labels";
 import {
   getStatusColor,
   isSettled,
@@ -31,6 +35,8 @@ interface DeliveryPageProps {
 async function DeliveryDetail({ shipmentId }: { shipmentId: string }) {
   const t = await getTranslations("rider");
   const tStatus = await getTranslations("status");
+  const tPaymentStatus = await getTranslations("paymentStatus");
+  const tPaymentMethod = await getTranslations("paymentMethod");
   const result = await getMyDelivery(shipmentId);
 
   if (!result.success || !result.data) {
@@ -59,7 +65,7 @@ async function DeliveryDetail({ shipmentId }: { shipmentId: string }) {
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2">
           <Button variant="ghost" size="icon" asChild>
-            <Link href="/rider" aria-label={t("backToDeliveries")}>
+            <Link href="/" aria-label={t("backToDeliveries")}>
               <ArrowLeft className="size-4 rtl:rotate-180" />
             </Link>
           </Button>
@@ -139,8 +145,10 @@ async function DeliveryDetail({ shipmentId }: { shipmentId: string }) {
             </div>
             <div className="flex justify-between text-muted-foreground">
               <span>{t("payment")}</span>
-              <span className="capitalize">
-                {delivery.paymentMethod} · {delivery.paymentStatus ?? "—"}
+              <span>
+                {translatePaymentMethod(tPaymentMethod, delivery.paymentMethod)}
+                {" · "}
+                {translatePaymentStatus(tPaymentStatus, delivery.paymentStatus)}
               </span>
             </div>
           </div>

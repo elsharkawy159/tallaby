@@ -11,16 +11,17 @@ export default async function OrderConfirmationPage({
   searchParams,
 }: {
   params: Promise<{ orderId: string }>;
-  searchParams: Promise<{ review?: string }>;
+  searchParams: Promise<{ review?: string; access?: string }>;
 }) {
   const { orderId } = await params;
-  const { review: autoExpandReviewItemId } = await searchParams;
+  const { review: autoExpandReviewItemId, access: accessToken } = await searchParams;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-4 md:py-8">
       <Suspense fallback={<OrderConfirmationSkeleton />}>
         <OrderConfirmationData
           orderId={orderId}
+          accessToken={accessToken}
           autoExpandReviewItemId={autoExpandReviewItemId}
         />
       </Suspense>

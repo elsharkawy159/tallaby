@@ -436,7 +436,15 @@
     "carrier": "شركة الشحن",
     "paymentProcessing": "معالجة الدفع",
     "shippingSoon": "الشحن قريباً",
-    "refundRequested": "طلب استرجاع"
+    "refundRequested": "طلب استرجاع",
+    "cancelOrder": "إلغاء الطلب",
+    "cancelOrderTitle": "إلغاء هذا الطلب؟",
+    "cancelOrderDescription": "لا يمكن التراجع عن هذا الإجراء. سيتم إلغاء طلبك وإعادة العناصر المحجوزة إلى المخزون.",
+    "confirmCancelOrder": "نعم، إلغاء الطلب",
+    "keepOrder": "الاحتفاظ بالطلب",
+    "cancellingOrder": "جارٍ الإلغاء...",
+    "cancelOrderDisabled": "لا يمكن إلغاء هذا الطلب بعد الآن.",
+    "cancelOrderDisabledOutForDelivery": "الطلب في الطريق للتوصيل ولا يمكن إلغاؤه."
   },
   "addresses": {
     "addresses": "العناوين",
@@ -896,7 +904,9 @@
     "failedToUploadFile": "فشل رفع {fileName}",
     "filesUploadedSuccessfully": "تم رفع {count, plural, one {ملف واحد} other {# ملفات}} بنجاح",
     "failedToUploadFiles": "فشل رفع الملفات",
-    "pleaseSelectRating": "يرجى اختيار تقييم"
+    "pleaseSelectRating": "يرجى اختيار تقييم",
+    "orderCancelledSuccessfully": "تم إلغاء الطلب بنجاح",
+    "failedToCancelOrder": "فشل إلغاء الطلب"
   },
   "installApp": {
     "installApp": "تثبيت التطبيق",

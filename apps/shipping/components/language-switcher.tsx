@@ -2,13 +2,18 @@
 
 import { useRouter } from "next/navigation"
 import { useLocale, useTranslations } from "next-intl"
-import { Globe } from "lucide-react"
+import { Check, Globe } from "lucide-react"
 
 import { Button } from "@workspace/ui/components/button"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@workspace/ui/components/popover"
 import { cn } from "@workspace/ui/lib/utils"
 
 interface LanguageSwitcherProps {
-  variant?: "header" | "default"
+  variant?: "header" | "default" | "icon-popover"
 }
 
 export function LanguageSwitcher ({
@@ -28,6 +33,38 @@ export function LanguageSwitcher ({
     { code: "ar", label: "عربي" },
     { code: "en", label: "English" },
   ]
+
+  if (variant === "icon-popover") {
+    return (
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={t("language")}
+          >
+            <Globe className="size-4" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent align="end" className="w-40 p-1">
+          {locales.map((l) => (
+            <button
+              key={l.code}
+              type="button"
+              onClick={() => switchLocale(l.code)}
+              className={cn(
+                "flex w-full items-center justify-between rounded-md px-3 py-2 text-sm hover:bg-accent",
+                l.code === locale && "font-medium"
+              )}
+            >
+              {l.label}
+              {l.code === locale && <Check className="size-4" />}
+            </button>
+          ))}
+        </PopoverContent>
+      </Popover>
+    )
+  }
 
   const isHeader = variant === "header"
 

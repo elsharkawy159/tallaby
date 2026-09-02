@@ -1,16 +1,17 @@
+import Link from "next/link";
 import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@workspace/ui/components/avatar";
 import { Badge } from "@workspace/ui/components/badge";
-import { Card, CardContent } from "@workspace/ui/components/card";
 import { Skeleton } from "@workspace/ui/components/skeleton";
+import { cn } from "@workspace/ui/lib/utils";
 
 import { formatCurrency } from "@/lib/format";
 import { translateShippingStatus } from "@/lib/rider-labels";
 import { getStatusColor } from "@/lib/shipping-status";
 
 import { AvailabilityToggle } from "./_components/availability-toggle";
+import { ProfileEditForm } from "./_components/profile-edit-form.client";
 import { getRiderProfile } from "../rider.server";
 
 export const dynamic = "force-dynamic";
@@ -34,31 +35,24 @@ async function Profile() {
 
   return (
     <div className="space-y-4">
-      <Card className="gap-0 py-4">
-        <CardContent className="flex items-center gap-4 px-4">
-          <Avatar className="size-14 shrink-0">
-            {rider.avatarUrl && <AvatarImage src={rider.avatarUrl} alt="" />}
-            <AvatarFallback className="text-lg font-semibold text-primary">
-              {(rider.fullName ?? rider.email ?? "?").charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div className="min-w-0 flex-1">
-            <p className="truncate font-semibold">{rider.fullName ?? "—"}</p>
-            <p className="truncate text-sm text-muted-foreground">
-              {rider.phone ?? rider.email ?? "—"}
-            </p>
-            <Badge
-              className={
-                rider.isSuspended
-                  ? "mt-1 bg-red-100 text-red-800"
-                  : "mt-1 bg-green-100 text-green-800"
-              }
-            >
-              {rider.isSuspended ? t("deactivated") : t("active")}
-            </Badge>
-          </div>
-        </CardContent>
-      </Card>
+      <ProfileEditForm
+        fullName={rider.fullName}
+        phone={rider.phone}
+        email={rider.email}
+        avatarUrl={rider.avatarUrl}
+      />
+
+      <div>
+        <Badge
+          className={
+            rider.isSuspended
+              ? "bg-red-100 text-red-800"
+              : "bg-green-100 text-green-800"
+          }
+        >
+          {rider.isSuspended ? t("deactivated") : t("active")}
+        </Badge>
+      </div>
 
       <AvailabilityToggle isAvailable={rider.isAvailable} />
 
@@ -66,8 +60,16 @@ async function Profile() {
         <div className="grid grid-cols-2 gap-2">
           <StatTile label={t("todaysDeliveries")} value={stats.todayTotal} />
           <StatTile label={t("remaining")} value={stats.remaining} />
-          <StatTile label={t("deliveredToday")} value={stats.deliveredToday} />
-          <StatTile label={t("failedToday")} value={stats.failedToday} />
+          <StatTile
+            label={t("deliveredToday")}
+            value={stats.deliveredToday}
+            href="/rider/delivered"
+          />
+          <StatTile
+            label={t("failedToday")}
+            value={stats.failedToday}
+            href="/rider/failed"
+          />
           <StatTile
             label={t("codCollectedToday")}
             value={formatCurrency(stats.codCollectedToday)}
@@ -109,13 +111,35 @@ async function Profile() {
   );
 }
 
-function StatTile({ label, value }: { label: string; value: string | number }) {
-  return (
-    <div className="rounded-xl border bg-white p-3 dark:bg-gray-950">
+function StatTile({
+  label,
+  value,
+  href,
+}: {
+  label: string;
+  value: string | number;
+  href?: string;
+}) {
+  const className = cn(
+    "rounded-xl border bg-white p-3 dark:bg-gray-950",
+    href && "transition-colors hover:border-primary/40 hover:bg-gray-50 dark:hover:bg-gray-900"
+  );
+  const content = (
+    <>
       <p className="text-lg font-bold">{value}</p>
       <p className="text-xs text-muted-foreground">{label}</p>
-    </div>
+    </>
   );
+
+  if (href) {
+    return (
+      <Link href={href} className={className}>
+        {content}
+      </Link>
+    );
+  }
+
+  return <div className={className}>{content}</div>;
 }
 
 export default async function RiderProfilePage() {

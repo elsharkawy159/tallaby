@@ -29,9 +29,11 @@ import { translateShippingStatus } from "@/lib/rider-labels";
 import { canTransition, type ShippingStatus } from "@/lib/shipping-status";
 import { getProviderAdapter } from "@/providers";
 import {
+  ALL_PAGE_SECTIONS,
   assignProviderSchema,
   assignRiderSchema,
   updateStatusSchema,
+  type AllPageSection,
   type ShippingFilters,
 } from "./orders.dto";
 import { address, buildWhere, customer, revalidateShipping, rider, SHIPPABLE } from "./orders.query";
@@ -42,9 +44,135 @@ import type {
   ShippingOrderRow,
   ShippingStats,
   StageCounts,
+  StageOrdersMap,
 } from "./orders.types";
 
 const CLOSED_STATUSES: ShippingStatus[] = ["delivered", "returned", "cancelled"];
+
+function shippingOrderSelect() {
+  return db
+    .select({
+      orderId: orders.id,
+      orderNumber: orders.orderNumber,
+      totalAmount: orders.totalAmount,
+      shippingCost: orders.shippingCost,
+      discountAmount: orders.discountAmount,
+      couponCode: orders.couponCode,
+      paymentStatus: orders.paymentStatus,
+      paymentMethod: orders.paymentMethod,
+      orderStatus: orders.status,
+      createdAt: orders.createdAt,
+      updatedAt: orders.updatedAt,
+      customerName: customer.fullName,
+      customerPhone: customer.phone,
+      addressPhone: address.phone,
+      addressLine1: address.addressLine1,
+      addressLine2: address.addressLine2,
+      city: address.city,
+      state: address.state,
+      postalCode: address.postalCode,
+      country: address.country,
+      latitude: address.latitude,
+      longitude: address.longitude,
+      shipmentId: shipments.id,
+      shippingStatus: shipments.status,
+      providerId: shipments.providerId,
+      providerName: shippingProviders.name,
+      riderId: shipments.riderId,
+      riderName: rider.fullName,
+    })
+    .from(orders)
+    .leftJoin(shipments, eq(shipments.orderId, orders.id))
+    .leftJoin(customer, eq(customer.id, orders.userId))
+    .leftJoin(address, eq(address.id, orders.shippingAddressId))
+    .leftJoin(shippingProviders, eq(shippingProviders.id, shipments.providerId))
+    .leftJoin(rider, eq(rider.id, shipments.riderId));
+}
+
+function mapShippingRows(
+  rows: Awaited<ReturnType<ReturnType<typeof shippingOrderSelect>["where"]>>
+): ShippingOrderRow[] {
+  return rows.map((row) => ({
+    ...row,
+    shippingStatus: (row.shippingStatus ?? "pending") as ShippingStatus,
+  }));
+}
+
+function shippingOrderCountQuery(where: ReturnType<typeof buildWhere>) {
+  return db
+    .select({ value: count() })
+    .from(orders)
+    .leftJoin(shipments, eq(shipments.orderId, orders.id))
+    .leftJoin(customer, eq(customer.id, orders.userId))
+    .leftJoin(address, eq(address.id, orders.shippingAddressId))
+    .where(where);
+}
+
+/**
+ * Unpaginated orders for one pipeline stage. Shared filters (search, provider,
+ * rider, payment, cod) apply; stage predicate is fixed by `stage`.
+ */
+export async function getStageOrders(
+  baseFilters: ShippingFilters,
+  stage: AllPageSection
+): Promise<PaginatedResult<ShippingOrderRow>> {
+  try {
+    await requireShippingAdmin();
+
+    const filters = { ...baseFilters, stage };
+    const where = buildWhere(filters);
+
+    const [rows, totals] = await Promise.all([
+      shippingOrderSelect().where(where).orderBy(desc(orders.createdAt)),
+      shippingOrderCountQuery(where),
+    ]);
+
+    return {
+      success: true,
+      data: mapShippingRows(rows),
+      totalCount: totals[0]?.value ?? 0,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: actionError("getStageOrders", error),
+      data: [],
+      totalCount: 0,
+    };
+  }
+}
+
+/** All pipeline + terminal stages in parallel for the All tab sections view. */
+export async function getAllStageOrders(
+  filters: ShippingFilters
+): Promise<ActionResult<StageOrdersMap>> {
+  try {
+    await requireShippingAdmin();
+
+    const results = await Promise.all(
+      ALL_PAGE_SECTIONS.map(async (stage) => {
+        const result = await getStageOrders(filters, stage);
+        return [stage, result] as const;
+      })
+    );
+
+    const failed = results.find(([, result]) => !result.success);
+    if (failed) {
+      return {
+        success: false,
+        error: failed[1].error ?? actionError("getAllStageOrders", new Error("stage fetch failed")),
+      };
+    }
+
+    const data = Object.fromEntries(results) as StageOrdersMap;
+    return { success: true, data };
+  } catch (error) {
+    return {
+      success: false,
+      error: actionError("getAllStageOrders", error),
+    };
+  }
+}
 
 /**
  * The shipping order list. Two queries per page — the joined page of rows and a
@@ -59,68 +187,20 @@ export async function getShippingOrders(
     const where = buildWhere(filters);
     const offset = (filters.page - 1) * filters.pageSize;
 
-    const rowsQuery = db
-      .select({
-        orderId: orders.id,
-        orderNumber: orders.orderNumber,
-        totalAmount: orders.totalAmount,
-        shippingCost: orders.shippingCost,
-        discountAmount: orders.discountAmount,
-        couponCode: orders.couponCode,
-        paymentStatus: orders.paymentStatus,
-        paymentMethod: orders.paymentMethod,
-        orderStatus: orders.status,
-        createdAt: orders.createdAt,
-        updatedAt: orders.updatedAt,
-        customerName: customer.fullName,
-        customerPhone: customer.phone,
-        addressPhone: address.phone,
-        addressLine1: address.addressLine1,
-        addressLine2: address.addressLine2,
-        city: address.city,
-        state: address.state,
-        postalCode: address.postalCode,
-        country: address.country,
-        latitude: address.latitude,
-        longitude: address.longitude,
-        shipmentId: shipments.id,
-        shippingStatus: shipments.status,
-        providerId: shipments.providerId,
-        providerName: shippingProviders.name,
-        riderId: shipments.riderId,
-        riderName: rider.fullName,
-      })
-      .from(orders)
-      .leftJoin(shipments, eq(shipments.orderId, orders.id))
-      .leftJoin(customer, eq(customer.id, orders.userId))
-      .leftJoin(address, eq(address.id, orders.shippingAddressId))
-      .leftJoin(
-        shippingProviders,
-        eq(shippingProviders.id, shipments.providerId)
-      )
-      .leftJoin(rider, eq(rider.id, shipments.riderId))
-      .where(where)
-      .orderBy(desc(orders.createdAt))
-      .limit(filters.pageSize)
-      .offset(offset);
+    const [rows, totals] = await Promise.all([
+      shippingOrderSelect()
+        .where(where)
+        .orderBy(desc(orders.createdAt))
+        .limit(filters.pageSize)
+        .offset(offset),
+      shippingOrderCountQuery(where),
+    ]);
 
-    const countQuery = db
-      .select({ value: count() })
-      .from(orders)
-      .leftJoin(shipments, eq(shipments.orderId, orders.id))
-      .leftJoin(customer, eq(customer.id, orders.userId))
-      .leftJoin(address, eq(address.id, orders.shippingAddressId))
-      .where(where);
-
-    const [rows, totals] = await Promise.all([rowsQuery, countQuery]);
-
-    const data: ShippingOrderRow[] = rows.map((row) => ({
-      ...row,
-      // No shipment row yet means nothing has been arranged: pending.
-      shippingStatus: (row.shippingStatus ?? "pending") as ShippingStatus,
-    }));
-
-    return { success: true, data, totalCount: totals[0]?.value ?? 0 };
+    return {
+      success: true,
+      data: mapShippingRows(rows),
+      totalCount: totals[0]?.value ?? 0,
+    };
   } catch (error) {
     return {
       success: false,
@@ -188,6 +268,9 @@ export async function getStageCounts(): Promise<ActionResult<StageCounts>> {
         shipped: sql<number>`count(*) filter (where ${shipments.status} = 'assigned')`,
         outForDelivery: sql<number>`count(*) filter (where ${shipments.status} = 'out_for_delivery')`,
         delivered: sql<number>`count(*) filter (where ${shipments.status} = 'delivered')`,
+        failed: sql<number>`count(*) filter (where ${shipments.status} = 'failed')`,
+        cancelled: sql<number>`count(*) filter (where ${shipments.status} = 'cancelled')`,
+        returned: sql<number>`count(*) filter (where ${shipments.status} = 'returned')`,
       })
       .from(orders)
       .leftJoin(shipments, eq(shipments.orderId, orders.id))
@@ -201,6 +284,9 @@ export async function getStageCounts(): Promise<ActionResult<StageCounts>> {
         shipped: Number(row?.shipped ?? 0),
         outForDelivery: Number(row?.outForDelivery ?? 0),
         delivered: Number(row?.delivered ?? 0),
+        failed: Number(row?.failed ?? 0),
+        cancelled: Number(row?.cancelled ?? 0),
+        returned: Number(row?.returned ?? 0),
       },
     };
   } catch (error) {

@@ -6,11 +6,13 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { Button } from "@workspace/ui/components/button";
+import type { AutomationSettings } from "@/lib/automation";
 import { bulkConfirmOrders, bulkUpdateShipmentStatus } from "../batch.server";
 import type { OrderStage, ShippingFilters } from "../orders.dto";
 import type { ProviderOption, ShippingOrderRow } from "../orders.types";
 import { hasStageAction } from "../stage-actions.lib";
 import { AssignDialog } from "./assign-dialog";
+import { AutomationToggle } from "./automation-toggle";
 import { BulkActionBar } from "./bulk-action-bar";
 import { OrdersTable } from "./orders-table";
 import type { BulkAssignTarget } from "../batch.dto";
@@ -21,6 +23,7 @@ interface OrdersBoardProps {
   filters: ShippingFilters;
   totalCount: number;
   providers: ProviderOption[];
+  automation: AutomationSettings;
 }
 
 const SELECTABLE_STAGES: OrderStage[] = ["pending", "confirmed", "shipped", "out_for_delivery"];
@@ -51,7 +54,14 @@ function stageActionKey(
  * filter change via the `key` orders.data.tsx already puts on the Suspense
  * boundary) — "Assign all" bypasses it entirely via `{ mode: "filters" }`.
  */
-export function OrdersBoard({ rows, stage, filters, totalCount, providers }: OrdersBoardProps) {
+export function OrdersBoard({
+  rows,
+  stage,
+  filters,
+  totalCount,
+  providers,
+  automation,
+}: OrdersBoardProps) {
   const t = useTranslations("orders");
   const tCommon = useTranslations("common");
   const router = useRouter();
@@ -152,18 +162,26 @@ export function OrdersBoard({ rows, stage, filters, totalCount, providers }: Ord
 
   return (
     <div className="space-y-4">
-      {stage === "confirmed" && totalCount > 0 && (
-        <div className="flex justify-end">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setAssignTarget({ mode: "filters", filters });
-              setAssignOpen(true);
-            }}
-          >
-            {t("assignAll", { count: totalCount })}
-          </Button>
+      {(stage === "pending" || stage === "confirmed") && (
+        <div className="flex flex-wrap items-center justify-end gap-3">
+          <AutomationToggle
+            kind={stage === "pending" ? "confirm" : "assign"}
+            initialEnabled={
+              stage === "pending" ? automation.autoConfirm : automation.autoAssign
+            }
+          />
+          {stage === "confirmed" && totalCount > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setAssignTarget({ mode: "filters", filters });
+                setAssignOpen(true);
+              }}
+            >
+              {t("assignAll", { count: totalCount })}
+            </Button>
+          )}
         </div>
       )}
 

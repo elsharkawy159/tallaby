@@ -5,10 +5,7 @@ import {
   and,
   eq,
   inArray,
-  orderItems,
   orders,
-  shipmentBatches,
-  shipmentBatchItems,
   shipments,
   shippingProviders,
 } from "@workspace/db";
@@ -16,28 +13,18 @@ import {
 import { getTranslations } from "next-intl/server";
 
 import { actionError, type ActionResult } from "@/lib/action-result";
+import { applyBulkAssign } from "@/lib/apply-bulk-assign";
 import { applyShipmentStatus } from "@/lib/apply-shipment-status";
 import { requireShippingAdmin } from "@/lib/auth";
 import { translateShippingStatus } from "@/lib/rider-labels";
 import { canTransition, type ShippingStatus } from "@/lib/shipping-status";
-import { getProviderAdapter } from "@/providers";
-import {
-  EGYPT_POST_MERCHANT_CODE,
-  EGYPT_POST_MERCHANT_NAME,
-  EGYPT_POST_WAREHOUSE_NAME,
-} from "@/providers/egypt-post.constants";
 import { formatBatchLabel } from "./batch.lib";
 import {
   bulkAssignProviderSchema,
   bulkConfirmOrdersSchema,
   bulkUpdateShipmentStatusSchema,
 } from "./batch.dto";
-import {
-  buildRiderSplit,
-  loadBulkAssignOrders,
-  loadEligibleRiders,
-  resolveConfirmedOrderIds,
-} from "./batch.query";
+import { loadEligibleRiders, resolveConfirmedOrderIds } from "./batch.query";
 import type {
   BulkAssignResult,
   BulkConfirmResult,
@@ -97,111 +84,38 @@ export async function bulkAssignProvider(input: unknown): Promise<BulkAssignResu
       }
     }
 
-    const bulkOrders = await loadBulkAssignOrders(orderIds);
-    const riders = provider.code === "tallaby" ? await loadEligibleRiders() : [];
-
-    const adapter = getProviderAdapter(provider.code);
-    const plan = adapter.planBulkAssign
-      ? adapter.planBulkAssign({
-          orders: bulkOrders,
-          riders,
-          defaults: {
-            weightKg,
-            volume,
-            merchantCode: EGYPT_POST_MERCHANT_CODE,
-            merchantName: EGYPT_POST_MERCHANT_NAME,
-            warehouseName: EGYPT_POST_WAREHOUSE_NAME,
-          },
-        })
-      : { riderByOrderId: {}, export: null, errors: [] };
-
-    if (plan.errors.length > 0) {
-      return { success: false, error: t("someCouldNotAssign"), invalid: plan.errors };
-    }
-
-    const now = new Date().toISOString();
-
-    const batch = await db.transaction(async (tx) => {
-      const [inserted] = await tx
-        .insert(shipmentBatches)
-        .values({
-          providerId: provider.id,
-          createdBy: admin.id,
-          orderCount: orderIds.length,
-          exportFormat: plan.export?.format ?? null,
-          metadata: { weightKg, volume, providerCode: provider.code },
-        })
-        .returning({ id: shipmentBatches.id, seq: shipmentBatches.seq });
-
-      if (!inserted) throw new Error(t("batchCreateFailed"));
-
-      await tx.insert(shipmentBatchItems).values(
-        orderIds.map((orderId) => ({
-          batchId: inserted.id,
-          orderId,
-          riderId: plan.riderByOrderId[orderId] ?? null,
-        }))
-      );
-
-      // One upsert per order rather than a single multi-row statement, so
-      // the existing `onConflictDoUpdate({ target: shipments.orderId })`
-      // idempotency guarantee (also used by the single-order assignProvider/
-      // assignRider actions) applies identically here.
-      for (const order of bulkOrders) {
-        const riderId = plan.riderByOrderId[order.orderId] ?? null;
-        const weightToWrite = (order.packageWeightKg ?? weightKg).toFixed(2);
-
-        await tx
-          .insert(shipments)
-          .values({
-            orderId: order.orderId,
-            providerId: provider.id,
-            carrier: provider.code,
-            riderId,
-            status: "assigned",
-            packageWeight: weightToWrite,
-            assignedAt: now,
-            updatedAt: now,
-          })
-          .onConflictDoUpdate({
-            target: shipments.orderId,
-            set: {
-              providerId: provider.id,
-              carrier: provider.code,
-              riderId,
-              status: "assigned",
-              packageWeight: weightToWrite,
-              assignedAt: now,
-              updatedAt: now,
-            },
-          });
-      }
-
-      await tx.update(orders).set({ status: "shipped", updatedAt: now }).where(inArray(orders.id, orderIds));
-
-      // Matches ORDER_ITEM_STATUS_BY_SHIPMENT.assigned in apply-shipment-status.ts.
-      await tx
-        .update(orderItems)
-        .set({ status: "shipping_soon", updatedAt: now })
-        .where(inArray(orderItems.orderId, orderIds));
-
-      return inserted;
+    const outcome = await applyBulkAssign({
+      providerId: provider.id,
+      orderIds,
+      weightKg,
+      volume,
+      createdBy: admin.id,
     });
+
+    if (!outcome.ok) {
+      if (outcome.code === "plan_blocked") {
+        return { success: false, error: t("someCouldNotAssign"), invalid: outcome.invalid };
+      }
+      return {
+        success: false,
+        error: outcome.code === "provider_not_found" ? t("providerNotFound") : t("noConfirmedOrders"),
+      };
+    }
 
     revalidateShipping();
 
-    const riderSplit = riders.length > 0 ? buildRiderSplit(plan.riderByOrderId, riders) : null;
+    const { batchId, seq, assigned, providerCode, providerName, hasExport, riderSplit } = outcome.data;
 
     return {
       success: true,
       data: {
-        batchId: batch.id,
-        seq: batch.seq ?? 0,
-        batchLabel: formatBatchLabel(batch.seq ?? 0),
-        assigned: orderIds.length,
-        providerCode: provider.code,
-        providerName: provider.name,
-        exportUrl: plan.export ? `/batches/${batch.id}/export` : null,
+        batchId,
+        seq,
+        batchLabel: formatBatchLabel(seq),
+        assigned,
+        providerCode,
+        providerName,
+        exportUrl: hasExport ? `/batches/${batchId}/export` : null,
         riderSplit,
       },
     };

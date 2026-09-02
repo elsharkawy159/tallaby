@@ -436,7 +436,15 @@
     "carrier": "Carrier",
     "paymentProcessing": "Payment Processing",
     "shippingSoon": "Shipping Soon",
-    "refundRequested": "Refund Requested"
+    "refundRequested": "Refund Requested",
+    "cancelOrder": "Cancel Order",
+    "cancelOrderTitle": "Cancel this order?",
+    "cancelOrderDescription": "This action cannot be undone. Your order will be cancelled and any reserved items will be released.",
+    "confirmCancelOrder": "Yes, cancel order",
+    "keepOrder": "Keep order",
+    "cancellingOrder": "Cancelling...",
+    "cancelOrderDisabled": "This order can no longer be cancelled.",
+    "cancelOrderDisabledOutForDelivery": "This order is out for delivery and can no longer be cancelled."
   },
   "addresses": {
     "addresses": "Addresses",
@@ -896,7 +904,9 @@
     "failedToUploadFile": "Failed to upload {fileName}",
     "filesUploadedSuccessfully": "{count, plural, one {# file uploaded successfully} other {# files uploaded successfully}}",
     "failedToUploadFiles": "Failed to upload files",
-    "pleaseSelectRating": "Please select a rating"
+    "pleaseSelectRating": "Please select a rating",
+    "orderCancelledSuccessfully": "Order cancelled successfully",
+    "failedToCancelOrder": "Failed to cancel order"
   },
   "installApp": {
     "installApp": "Install App",

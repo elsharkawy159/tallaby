@@ -69,13 +69,27 @@ export async function updateSession(request: NextRequest) {
     return forbidden(request);
   }
 
-  const isRiderRoute = pathname === "/rider" || pathname.startsWith("/rider/");
+  const isRiderOnlyPath =
+    pathname === "/rider" || pathname.startsWith("/rider/");
 
   if (profile.role === "driver") {
-    // Riders only ever see their own deliveries.
-    if (!isRiderRoute) {
+    if (pathname === "/rider") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/";
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
+
+    if (pathname === "/") {
       const url = request.nextUrl.clone();
       url.pathname = "/rider";
+      return NextResponse.rewrite(url);
+    }
+
+    // Riders only ever see their own deliveries.
+    if (!isRiderOnlyPath) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/";
       url.search = "";
       return NextResponse.redirect(url);
     }
@@ -86,7 +100,7 @@ export async function updateSession(request: NextRequest) {
     if (!profile.isVerified) {
       return forbidden(request);
     }
-    if (isRiderRoute) {
+    if (isRiderOnlyPath) {
       const url = request.nextUrl.clone();
       url.pathname = "/";
       url.search = "";

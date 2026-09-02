@@ -8,27 +8,37 @@ import type {
   StoreSellerReview,
 } from "./order-confirmation.types";
 import { getCurrentUserId } from "@/lib/get-current-user-id";
+import { verifyOrderAccess } from "@/lib/order-access-token";
 import { getLocale } from "next-intl/server";
 import {
   pickTranslationFromArray,
   type ProductLocale,
 } from "@/lib/product-translations";
 
-export async function getOrderConfirmationData(orderId: string): Promise<{
+export async function getOrderConfirmationData(
+  orderId: string,
+  accessToken?: string
+): Promise<{
   success: boolean;
   data?: OrderConfirmationData;
   error?: string;
 }> {
   try {
     const userId = await getCurrentUserId();
-    if (!userId) {
+    const hasValidAccessToken = accessToken
+      ? verifyOrderAccess(orderId, accessToken)
+      : false;
+
+    if (!userId && !hasValidAccessToken) {
       return { success: false, error: "Authentication required" };
     }
 
     const locale = (await getLocale()) as ProductLocale;
 
     const order = await db.query.orders.findFirst({
-      where: and(eq(orders.id, orderId), eq(orders.userId, userId)),
+      where: userId
+        ? and(eq(orders.id, orderId), eq(orders.userId, userId))
+        : eq(orders.id, orderId),
       with: {
         orderItems: {
           with: {
@@ -70,6 +80,11 @@ export async function getOrderConfirmationData(orderId: string): Promise<{
       return { success: false, error: "Order not found" };
     }
 
+    const resolvedUserId = userId ?? order.userId;
+    if (!resolvedUserId) {
+      return { success: false, error: "Order not found" };
+    }
+
     const subtotal = order.orderItems.reduce(
       (sum, item) => sum + Number(item.subtotal),
       0
@@ -88,7 +103,7 @@ export async function getOrderConfirmationData(orderId: string): Promise<{
         const existingReview = await db.query.reviews.findFirst({
           where: and(
             eq(reviews.orderItemId, item.id),
-            eq(reviews.userId, userId),
+            eq(reviews.userId, resolvedUserId),
             eq(reviews.reviewType, "product")
           ),
           columns: {
@@ -150,7 +165,7 @@ export async function getOrderConfirmationData(orderId: string): Promise<{
           where: and(
             eq(reviews.orderId, orderId),
             eq(reviews.sellerId, item.sellerId),
-            eq(reviews.userId, userId),
+            eq(reviews.userId, resolvedUserId),
             eq(reviews.reviewType, "store")
           ),
           columns: {

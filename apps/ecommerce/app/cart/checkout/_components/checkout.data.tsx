@@ -218,7 +218,7 @@ export const CheckoutData = ({
             return;
           }
 
-          router.push(`/orders/${result.data?.order?.id}`);
+          router.push(result.data?.orderPagePath ?? `/orders/${result.data?.order?.id}`);
         } else {
           toast.error(result.error || tToast("failedToPlaceOrder"));
         }

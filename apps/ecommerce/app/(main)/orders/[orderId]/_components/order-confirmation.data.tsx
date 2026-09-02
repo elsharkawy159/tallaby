@@ -1,23 +1,34 @@
 import { redirect } from "next/navigation";
 import { getOrderConfirmationData } from "./order-confirmation.server";
 import { OrderConfirmationContent } from "./order-confirmation.chunks";
+import { OrderRealtime } from "./order-realtime";
+import { OrderPolling } from "./order-polling";
+import { getAuthUser } from "@/lib/auth/current-user";
 import { getLocale, getTranslations } from "next-intl/server";
 
 interface OrderConfirmationDataProps {
   orderId: string;
+  accessToken?: string;
   autoExpandReviewItemId?: string;
 }
 
 export async function OrderConfirmationData({
   orderId,
+  accessToken,
   autoExpandReviewItemId,
 }: OrderConfirmationDataProps) {
-  const result = await getOrderConfirmationData(orderId);
+  const result = await getOrderConfirmationData(orderId, accessToken);
   const locale = await getLocale();
   const t = await getTranslations("orders");
 
+  // Only a real Supabase session can join the order's private channel. Guests
+  // (cookie or access-token) poll instead.
+  const authUser = await getAuthUser();
+  const canSubscribe = Boolean(authUser?.id);
+  const shouldPoll = !canSubscribe && Boolean(result.success && result.data);
+
   if (!result.success || !result.data) {
-    if (result.error === "Order not found") {
+    if (result.error === "Order not found" && authUser?.id) {
       redirect("/profile/orders");
     }
 
@@ -37,10 +48,15 @@ export async function OrderConfirmationData({
   }
 
   return (
-    <OrderConfirmationContent
-      data={result.data}
-      locale={locale}
-      autoExpandReviewItemId={autoExpandReviewItemId}
-    />
+    <>
+      {canSubscribe && <OrderRealtime orderId={orderId} />}
+      {shouldPoll && <OrderPolling enabled />}
+      <OrderConfirmationContent
+        data={result.data}
+        locale={locale}
+        autoExpandReviewItemId={autoExpandReviewItemId}
+        isAuthenticated={Boolean(authUser?.id)}
+      />
+    </>
   );
 }

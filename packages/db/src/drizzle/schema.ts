@@ -429,6 +429,37 @@ export const shipmentBatchItems = pgTable("shipment_batch_items", {
 		}),
 ]);
 
+/**
+ * The Auto Confirm / Auto Assign toggles on the shipping app's Orders page.
+ * Operation-wide, not per-admin — "auto assign is on" is a property of the
+ * dispatch operation, so the boolean primary key with its CHECK makes a second
+ * row impossible and no caller has to pick which settings row is authoritative.
+ *
+ * `autoAssignProviderId` null means our own fleet (the `tallaby` provider,
+ * resolved by code at run time); the column exists so auto-assign can later be
+ * pointed at a specific external provider without another migration.
+ */
+export const shippingAutomation = pgTable("shipping_automation", {
+	id: boolean().default(true).primaryKey().notNull(),
+	autoConfirm: boolean("auto_confirm").default(false).notNull(),
+	autoAssign: boolean("auto_assign").default(false).notNull(),
+	autoAssignProviderId: uuid("auto_assign_provider_id"),
+	updatedBy: uuid("updated_by"),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	foreignKey({
+			columns: [table.autoAssignProviderId],
+			foreignColumns: [shippingProviders.id],
+			name: "shipping_automation_auto_assign_provider_id_shipping_providers_id_fk"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.updatedBy],
+			foreignColumns: [users.id],
+			name: "shipping_automation_updated_by_users_id_fk"
+		}).onDelete("set null"),
+	check("shipping_automation_singleton", sql`id`),
+]);
+
 export const productQuestions = pgTable("product_questions", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	productId: uuid("product_id").notNull(),

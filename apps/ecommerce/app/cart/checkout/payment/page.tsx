@@ -7,6 +7,7 @@ import {
   createPaymobCheckoutUrl,
   getPaymobPaymentOrder,
 } from "@/actions/paymob";
+import { buildOrderPagePath } from "@/lib/order-access-token";
 import { generateNoIndexMetadata } from "@/lib/metadata";
 import type { Metadata } from "next";
 import { PaymentOrderSummary } from "./_components/payment-order-summary";
@@ -52,11 +53,11 @@ export default async function CheckoutPaymentPage({
   const order = result.data;
 
   if (order.paymentMethod !== "online_payment") {
-    redirect(`/orders/${order.id}`);
+    redirect(buildOrderPagePath(order.id));
   }
 
   if (order.paymentStatus === "paid") {
-    redirect(`/orders/${order.id}`);
+    redirect(buildOrderPagePath(order.id));
   }
 
   const checkout = await createPaymobCheckoutUrl(order.id);

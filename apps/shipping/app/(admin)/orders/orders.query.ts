@@ -50,6 +50,12 @@ export function stageConditions(stage: OrderStage) {
       return [eq(shipments.status, "out_for_delivery")];
     case "delivered":
       return [eq(shipments.status, "delivered")];
+    case "failed":
+      return [eq(shipments.status, "failed")];
+    case "cancelled":
+      return [eq(shipments.status, "cancelled")];
+    case "returned":
+      return [eq(shipments.status, "returned")];
     case "all":
       return [];
   }
@@ -111,5 +117,7 @@ export function revalidateShipping(orderId?: string) {
   revalidatePath("/orders");
   if (orderId) revalidatePath(`/orders/${orderId}`);
   revalidatePath("/rider");
+  revalidatePath("/rider/failed");
+  revalidatePath("/rider/delivered");
   revalidatePath("/batches");
 }

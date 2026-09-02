@@ -20,6 +20,12 @@ function countFor(stage: OrderStage, counts: StageCounts): number | null {
       return counts.outForDelivery;
     case "delivered":
       return counts.delivered;
+    case "failed":
+      return counts.failed;
+    case "cancelled":
+      return counts.cancelled;
+    case "returned":
+      return counts.returned;
     case "all":
       return null;
   }

@@ -18,23 +18,19 @@ import { useDebounce } from "@workspace/ui/hooks/use-debounce";
 
 import {
   PAYMENT_STATUSES,
-  SHIPPING_STATUSES,
 } from "@/lib/shipping-status";
-import type { OrderStage } from "../orders.dto";
 import type { ProviderOption, RiderOption } from "../orders.types";
 
 /** Radix Select cannot hold an empty string value, so "all" stands in for it. */
 const ALL = "all";
 
 interface FiltersBarProps {
-  stage: OrderStage;
   providers: ProviderOption[];
   riders: RiderOption[];
 }
 
-export function FiltersBar({ stage, providers, riders }: FiltersBarProps) {
+export function FiltersBar({ providers, riders }: FiltersBarProps) {
   const t = useTranslations("orders");
-  const tStatus = useTranslations("status");
   const tPayment = useTranslations("paymentStatus");
   const tCommon = useTranslations("common");
   const router = useRouter();
@@ -71,14 +67,12 @@ export function FiltersBar({ stage, providers, riders }: FiltersBarProps) {
     router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
   }
 
-  const status = searchParams.get("status") ?? ALL;
   const providerId = searchParams.get("providerId") ?? ALL;
   const riderId = searchParams.get("riderId") ?? ALL;
   const paymentStatus = searchParams.get("paymentStatus") ?? ALL;
   const codOnly = searchParams.get("codOnly") ?? ALL;
   const hasFilters =
     Boolean(urlSearch) ||
-    status !== ALL ||
     providerId !== ALL ||
     riderId !== ALL ||
     paymentStatus !== ALL ||
@@ -96,27 +90,6 @@ export function FiltersBar({ stage, providers, riders }: FiltersBarProps) {
           aria-label={t("searchAria")}
         />
       </div>
-
-      {stage === "all" && (
-        <Select
-          value={status}
-          onValueChange={(value) =>
-            applyParam("status", value === ALL ? null : value)
-          }
-        >
-          <SelectTrigger className="w-full sm:w-44" aria-label={t("filterStatusAria")}>
-            <SelectValue placeholder={t("status")} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={ALL}>{t("allStatuses")}</SelectItem>
-            {SHIPPING_STATUSES.map((value) => (
-              <SelectItem key={value} value={value}>
-                {tStatus(value)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      )}
 
       <Select
         value={providerId}

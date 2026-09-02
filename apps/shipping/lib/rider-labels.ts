@@ -22,3 +22,19 @@ export function translateCollectionMethod(
 ): string {
   return tMethods(method as "cash");
 }
+
+export function translatePaymentStatus(
+  tPayment: TranslateFn,
+  status: string | null | undefined
+): string {
+  if (!status) return "—";
+  return tPayment(status as "pending");
+}
+
+export function translatePaymentMethod(
+  tMethod: TranslateFn,
+  method: string | null | undefined
+): string {
+  if (!method) return "—";
+  return tMethod(method as "cash_on_delivery");
+}

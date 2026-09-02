@@ -10,6 +10,7 @@ import {
   getPaymobConfig,
   isPaymobConfigured,
 } from "@workspace/lib/paymob";
+import { buildOrderPagePath } from "@/lib/order-access-token";
 
 export async function getPaymobPaymentOrder(orderId: string) {
   try {
@@ -123,7 +124,7 @@ export async function createPaymobCheckoutUrl(orderId: string) {
       billingData,
       specialReference: order.id,
       notificationUrl: config.webhookUrl,
-      redirectionUrl: `${siteUrl}/orders/${order.id}`,
+      redirectionUrl: `${siteUrl}${buildOrderPagePath(order.id)}`,
     });
 
     const checkoutUrl = buildPaymobCheckoutUrl(

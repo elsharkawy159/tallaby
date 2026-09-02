@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { getShippingUser } from "@/lib/auth";
+import { DispatchRealtime } from "./_components/dispatch-realtime";
 import { Header } from "./_components/layout/header";
 import { MobileNav } from "./_components/layout/mobile-nav";
 import { Sidebar } from "./_components/layout/sidebar";
@@ -16,13 +17,15 @@ export default async function AdminLayout({
   const user = await getShippingUser();
 
   if (!user) redirect("/login");
-  if (user.role === "driver") redirect("/rider");
+  if (user.role === "driver") redirect("/");
   if (user.role !== "admin" || !user.isVerified || user.isSuspended) {
     redirect("/login?error=forbidden");
   }
 
   return (
     <div className="flex min-h-screen">
+      {/* One dispatch subscription for the whole admin session. */}
+      <DispatchRealtime />
       <Sidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         <Header name={user.fullName ?? "Admin"} email={user.email ?? ""} />

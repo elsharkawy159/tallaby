@@ -1,4 +1,11 @@
+import type { PaginatedResult } from "@/lib/action-result";
 import type { ShippingStatus } from "@/lib/shipping-status";
+import type { AllPageSection } from "./orders.dto";
+
+export type StageOrdersMap = Record<
+  AllPageSection,
+  PaginatedResult<ShippingOrderRow>
+>;
 
 export interface ShippingOrderRow {
   orderId: string;
@@ -47,6 +54,9 @@ export interface StageCounts {
   shipped: number;
   outForDelivery: number;
   delivered: number;
+  failed: number;
+  cancelled: number;
+  returned: number;
 }
 
 export interface ProviderOption {

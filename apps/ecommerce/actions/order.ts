@@ -25,6 +25,7 @@ import {
   invalidateProductInventory,
 } from "@workspace/cache";
 import { getCurrentUserId } from "@/lib/get-current-user-id";
+import { buildOrderPagePath } from "@/lib/order-access-token";
 import { getUser } from "./auth";
 import { revalidateCartCheckout } from "@/lib/revalidate-cart-checkout";
 
@@ -94,6 +95,7 @@ export async function createOrder(data: {
       data: {
         order,
         orderItems: createdOrderItems,
+        orderPagePath: buildOrderPagePath(order.id),
       },
     };
   } catch (error) {

@@ -19,6 +19,7 @@ import {
   formatDate,
   getOrderStatusStyle,
   getPaymentStatusStyle,
+  canShowCancelOrderButton,
 } from "./order-confirmation.lib";
 import { Button } from "@workspace/ui/components/button";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
@@ -26,6 +27,7 @@ import { formatPrice } from "@workspace/lib";
 import { OrderStatusTracker } from "./order-status-tracker";
 import { OrderItemsList } from "./order-items-list";
 import { OrderStoreReviewCard } from "./order-store-review-card";
+import { OrderCancelButton } from "./order-cancel-button";
 import { cn } from "@/lib/utils";
 import { getTranslations } from "next-intl/server";
 
@@ -33,12 +35,14 @@ interface OrderConfirmationContentProps {
   data: OrderConfirmationData;
   locale: string;
   autoExpandReviewItemId?: string;
+  isAuthenticated: boolean;
 }
 
 export async function OrderConfirmationContent({
   data,
   locale,
   autoExpandReviewItemId,
+  isAuthenticated,
 }: OrderConfirmationContentProps) {
   const t = await getTranslations("orders");
   const { order, orderItems, storeSellers, shipments, shippingAddress, summary } = data;
@@ -198,6 +202,16 @@ export async function OrderConfirmationContent({
               </div>
             </div>
           </div>
+
+          {isAuthenticated && canShowCancelOrderButton(order.status) && (
+            <div className="mt-4 pt-4 border-t border-green-200 flex justify-end">
+              <OrderCancelButton
+                orderId={order.id}
+                status={order.status}
+                isAuthenticated={isAuthenticated}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
 

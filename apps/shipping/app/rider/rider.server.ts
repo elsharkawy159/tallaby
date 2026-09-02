@@ -30,6 +30,9 @@ import {
   collectPaymentSchema,
   riderUpdateStatusSchema,
 } from "@/app/(admin)/orders/orders.dto";
+import { createClient } from "@/supabase/server";
+
+import { updateMyProfileSchema } from "./rider.dto";
 
 export interface RiderDelivery {
   shipmentId: string;
@@ -197,7 +200,10 @@ export async function riderUpdateStatus(input: unknown): Promise<ActionResult> {
       deliveryEvent: { reasonCode, note: failureReason },
     });
 
+    revalidatePath("/");
     revalidatePath("/rider");
+    revalidatePath("/rider/delivered");
+    revalidatePath("/rider/failed");
     revalidatePath(`/rider/${shipmentId}`);
     revalidatePath("/orders");
     revalidatePath(`/orders/${owned.orderId}`);
@@ -258,7 +264,10 @@ export async function collectPayment(input: unknown): Promise<ActionResult> {
       },
     });
 
+    revalidatePath("/");
     revalidatePath("/rider");
+    revalidatePath("/rider/delivered");
+    revalidatePath("/rider/failed");
     revalidatePath(`/rider/${shipmentId}`);
     revalidatePath("/orders");
     revalidatePath(`/orders/${owned.orderId}`);
@@ -327,7 +336,6 @@ export interface RiderDashboardResult {
   stats: RiderDashboardStats;
   next: RiderDelivery | null;
   remaining: RiderDelivery[];
-  completedToday: RiderDelivery[];
 }
 
 /** Everything the rider's home screen needs, in one round trip. */
@@ -408,7 +416,6 @@ export async function getRiderDashboard(): Promise<RiderDashboardResult> {
       },
       next: open[0] ?? null,
       remaining: open.slice(1),
-      completedToday: deliveredToday,
     };
   } catch (error) {
     return {
@@ -417,7 +424,113 @@ export async function getRiderDashboard(): Promise<RiderDashboardResult> {
       stats: empty,
       next: null,
       remaining: [],
-      completedToday: [],
+    };
+  }
+}
+
+export interface RiderDeliveredTodayResult extends ActionResult<RiderDelivery[]> {
+  data?: RiderDelivery[];
+}
+
+/** Deliveries the rider completed today. */
+export async function getRiderDeliveredToday(): Promise<RiderDeliveredTodayResult> {
+  try {
+    const user = await requireRider();
+
+    const rows = await db
+      .select(baseSelect)
+      .from(shipments)
+      .innerJoin(orders, eq(orders.id, shipments.orderId))
+      .leftJoin(userAddresses, eq(userAddresses.id, orders.shippingAddressId))
+      .leftJoin(
+        shippingProviders,
+        eq(shippingProviders.id, shipments.providerId)
+      )
+      .where(
+        and(
+          eq(shipments.riderId, user.id),
+          eq(shipments.status, "delivered"),
+          sql`${shipments.deliveredAt}::date = current_date`
+        )
+      )
+      .orderBy(desc(shipments.deliveredAt));
+
+    return { success: true, data: rows as RiderDelivery[] };
+  } catch (error) {
+    return {
+      success: false,
+      error: actionError("getRiderDeliveredToday", error),
+      data: [],
+    };
+  }
+}
+
+export interface RiderFailedCancelledResult extends ActionResult<RiderDelivery[]> {
+  data?: RiderDelivery[];
+}
+
+/** Failed attempts and cancelled shipments closed out today for the signed-in rider. */
+export async function getRiderFailedCancelledToday(): Promise<RiderFailedCancelledResult> {
+  try {
+    const user = await requireRider();
+
+    const [failedRows, cancelledRows] = await Promise.all([
+      db
+        .select({ ...baseSelect, eventAt: deliveries.createdAt })
+        .from(deliveries)
+        .innerJoin(shipments, eq(shipments.id, deliveries.shipmentId))
+        .innerJoin(orders, eq(orders.id, shipments.orderId))
+        .leftJoin(userAddresses, eq(userAddresses.id, orders.shippingAddressId))
+        .leftJoin(
+          shippingProviders,
+          eq(shippingProviders.id, shipments.providerId)
+        )
+        .where(
+          and(
+            eq(deliveries.driverId, user.id),
+            eq(deliveries.status, "failed"),
+            sql`${deliveries.createdAt}::date = current_date`
+          )
+        ),
+      db
+        .select({ ...baseSelect, eventAt: shipments.updatedAt })
+        .from(shipments)
+        .innerJoin(orders, eq(orders.id, shipments.orderId))
+        .leftJoin(userAddresses, eq(userAddresses.id, orders.shippingAddressId))
+        .leftJoin(
+          shippingProviders,
+          eq(shippingProviders.id, shipments.providerId)
+        )
+        .where(
+          and(
+            eq(shipments.riderId, user.id),
+            eq(shipments.status, "cancelled"),
+            sql`${shipments.updatedAt}::date = current_date`
+          )
+        ),
+    ]);
+
+    type Row = RiderDelivery & { eventAt: string | null };
+    const byShipment = new Map<string, Row>();
+
+    for (const row of [...failedRows, ...cancelledRows] as Row[]) {
+      const existing = byShipment.get(row.shipmentId);
+      const sortAt = row.eventAt ?? "";
+      if (!existing || sortAt > (existing.eventAt ?? "")) {
+        byShipment.set(row.shipmentId, row);
+      }
+    }
+
+    const data = Array.from(byShipment.values())
+      .sort((a, b) => (b.eventAt ?? "").localeCompare(a.eventAt ?? ""))
+      .map(({ eventAt: _eventAt, ...delivery }) => delivery);
+
+    return { success: true, data };
+  } catch (error) {
+    return {
+      success: false,
+      error: actionError("getRiderFailedCancelledToday", error),
+      data: [],
     };
   }
 }
@@ -489,6 +602,83 @@ export async function getRiderProfile(): Promise<RiderProfileResult> {
   }
 }
 
+/** Updates the signed-in rider's name, phone, and avatar URL. */
+export async function updateMyProfile(input: unknown): Promise<ActionResult> {
+  try {
+    const user = await requireRider();
+    const t = await getTranslations("rider");
+    const { fullName, phone, avatarUrl } = updateMyProfileSchema.parse(input);
+
+    await db
+      .update(users)
+      .set({
+        fullName,
+        phone,
+        avatarUrl: avatarUrl ?? null,
+        updatedAt: new Date().toISOString(),
+      })
+      .where(eq(users.id, user.id));
+
+    revalidatePath("/");
+    revalidatePath("/rider");
+    revalidatePath("/rider/profile");
+    return { success: true, message: t("profileUpdated") };
+  } catch (error) {
+    return { success: false, error: actionError("updateMyProfile", error) };
+  }
+}
+
+/** Uploads a profile photo to Supabase Storage for the signed-in rider. */
+export async function uploadRiderAvatar(
+  formData: FormData
+): Promise<ActionResult<{ url: string }>> {
+  try {
+    const user = await requireRider();
+    const t = await getTranslations("rider");
+    const file = formData.get("file");
+
+    if (!(file instanceof File)) {
+      return { success: false, error: t("invalidImage") };
+    }
+
+    if (!file.type.startsWith("image/")) {
+      return { success: false, error: t("invalidImage") };
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      return { success: false, error: t("imageTooLarge") };
+    }
+
+    const supabase = await createClient();
+    const fileExt = file.name.split(".").pop() ?? "jpg";
+    const filePath = `avatars/${user.id}-${Date.now()}.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("avatars")
+      .upload(filePath, file, { cacheControl: "3600", upsert: false });
+
+    if (uploadError) {
+      return { success: false, error: t("avatarUploadFailed") };
+    }
+
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("avatars").getPublicUrl(filePath);
+
+    await db
+      .update(users)
+      .set({ avatarUrl: publicUrl, updatedAt: new Date().toISOString() })
+      .where(eq(users.id, user.id));
+
+    revalidatePath("/");
+    revalidatePath("/rider");
+    revalidatePath("/rider/profile");
+    return { success: true, data: { url: publicUrl }, message: t("profileUpdated") };
+  } catch (error) {
+    return { success: false, error: actionError("uploadRiderAvatar", error) };
+  }
+}
+
 /** Toggles the rider's own on/off-duty availability. */
 export async function setMyAvailability(isAvailable: boolean): Promise<ActionResult> {
   try {
@@ -500,6 +690,8 @@ export async function setMyAvailability(isAvailable: boolean): Promise<ActionRes
       .set({ isAvailable, updatedAt: new Date().toISOString() })
       .where(eq(users.id, user.id));
 
+    revalidatePath("/");
+    revalidatePath("/rider");
     revalidatePath("/rider/profile");
     return {
       success: true,
