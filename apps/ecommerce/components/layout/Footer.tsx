@@ -1,5 +1,5 @@
 import { Mail, MapPin, Phone } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Logo } from "../logo";
 import { getTranslations } from "next-intl/server";
 import { InstallAppButton } from "../install-app-button";
@@ -78,7 +78,6 @@ const Footer = async () => {
                 { href: "/contact", label: t("contactUs") },
                 { href: "/stores", label: t("storeLocator") },
                 { href: "/careers", label: t("careers") },
-                { href: "/press", label: t("pressMedia") },
               ].map((link) => (
                 <li key={link.href}>
                   <Link
@@ -103,7 +102,7 @@ const Footer = async () => {
                 { href: "/help", label: t("helpCenter") },
                 { href: "/returns", label: t("returnsExchanges") },
                 { href: "/shipping", label: t("shippingInfo") },
-                { href: "/size-guide", label: t("sizeGuide") },
+                { href: "/payment", label: t("paymentMethods") },
                 { href: "/faq", label: t("faq") },
               ].map((link) => (
                 <li key={link.href}>

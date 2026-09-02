@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { useLocale } from "next-intl";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { cn, PRODUCT_IMAGE_FALLBACK } from "@/lib/utils";
 import {
   Carousel,

@@ -1,7 +1,7 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getProducts } from "@/actions/products";
 import { getLocale } from "next-intl/server";
-import ProductCard from "@/app/(main)/products/[slug]/_components/ProductCard";
+import ProductCard from "@/app/[locale]/(main)/products/[slug]/_components/ProductCard";
 import { Button } from "@workspace/ui/components/button";
 import { Badge } from "@workspace/ui/components/badge";
 import { Star, TrendingUp } from "lucide-react";

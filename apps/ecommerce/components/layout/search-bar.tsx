@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Search } from "lucide-react";
 import { Input } from "@workspace/ui/components/input";
 import { useQuery } from "@tanstack/react-query";

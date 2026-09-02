@@ -15,6 +15,12 @@ import {
   getCurrentUserId,
   getOrCreateCurrentUserId,
 } from "@/lib/get-current-user-id";
+import { getLocale } from "next-intl/server";
+import {
+  mergeProductWithTranslation,
+  pickTranslationFromArray,
+  type ProductLocale,
+} from "@/lib/product-translations";
 
 type ProductPrice = {
   base: number;
@@ -112,22 +118,64 @@ export const getCartItems = async () => {
       data: { cart: null, items: [], subtotal: 0, itemCount: 0 },
     };
 
+  const locale = (await getLocale()) as ProductLocale;
+
   const items = await db.query.cartItems.findMany({
     where: eq(cartItems.cartId, cart.id),
-    with: { product: true },
+    with: {
+      product: {
+        with: {
+          brand: {
+            columns: {
+              name: true,
+            },
+          },
+          seller: {
+            columns: {
+              displayName: true,
+              slug: true,
+            },
+          },
+          productTranslations: true,
+        },
+      },
+    },
     orderBy: [desc(cartItems.createdAt)],
   });
 
-  // Fix prices for items that have incorrect prices (0.00)
+  // Fix prices for items that have incorrect prices (0.00) and merge localized product fields
   const itemsWithFixedPrices = items.map((item) => {
-    const productPrice = item.product?.price as ProductPrice | undefined;
-    if (Number(item.price) === 0 && productPrice?.final) {
-      return {
+    const product = item.product;
+    const productPrice = product?.price as ProductPrice | undefined;
+
+    let nextItem = item;
+
+    if (product) {
+      const translation = pickTranslationFromArray(
+        product.productTranslations ?? [],
+        locale
+      );
+      const mergedProduct = mergeProductWithTranslation(
+        product as Record<string, unknown>,
+        translation
+      );
+      const { productTranslations: _translations, ...localizedProduct } =
+        mergedProduct;
+
+      nextItem = {
         ...item,
+        product: localizedProduct,
+      };
+    }
+
+    if (Number(nextItem.price) === 0 && productPrice?.final) {
+      return {
+        ...nextItem,
         price: Number(productPrice.final).toString(),
       };
     }
-    return item;
+
+    return nextItem;
   });
 
   const subtotal = itemsWithFixedPrices.reduce(

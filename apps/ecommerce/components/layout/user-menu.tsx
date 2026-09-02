@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import {
   Heart,
   LogOut,
@@ -30,8 +30,8 @@ import {
   getUserAvatar,
   getUserInitials,
   formatUserName,
-} from "@/app/(main)/profile/_components/profile.lib";
-import { Seller } from "@/app/(main)/profile/_components/profile.types";
+} from "@/app/[locale]/(main)/profile/_components/profile.lib";
+import { Seller } from "@/app/[locale]/(main)/profile/_components/profile.types";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { useTranslations } from "next-intl";
 

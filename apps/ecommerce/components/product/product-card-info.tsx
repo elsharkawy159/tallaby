@@ -3,7 +3,7 @@
 import { formatPrice } from "@workspace/lib";
 import { useLocale } from "next-intl";
 import type { ProductCardProps } from "./product-card.types";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { resolvePrice } from "@/lib/utils";
 
 interface ProductCardInfoProps {

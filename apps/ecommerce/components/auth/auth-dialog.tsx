@@ -19,7 +19,7 @@ import {
 } from "./auth-dialog.chunks";
 import { OAuth } from "./o-auth";
 import type { AuthMode, AuthDialogProps } from "./auth-dialog.types";
-import { usePathname } from "next/navigation";
+import { usePathname } from "@/i18n/navigation";
 
 export function AuthDialog({
   open,

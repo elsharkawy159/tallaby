@@ -102,6 +102,31 @@ export async function getProductLocaleFromSlug(
   return "ar";
 }
 
+/**
+ * Returns the slug for an exact-locale translation row, or null when the
+ * product has no translation in that locale — unlike
+ * getProductTranslationWithFallback, this never falls back across locales.
+ * Used to build hreflang alternates and to resolve the language switcher's
+ * target URL, where only a *real* translation should produce a link.
+ */
+export async function getProductSlugForLocaleStrict(
+  productId: string,
+  locale: ProductLocale
+): Promise<string | null> {
+  const [row] = await db
+    .select({ slug: productTranslations.slug })
+    .from(productTranslations)
+    .where(
+      and(
+        eq(productTranslations.productId, productId),
+        eq(productTranslations.locale, locale)
+      )
+    )
+    .limit(1);
+
+  return row?.slug ?? null;
+}
+
 const TRANSLATION_COLUMNS = {
   title: productTranslations.title,
   description: productTranslations.description,
@@ -211,6 +236,27 @@ export type MergedProduct<T> = T & {
   seo?: { metaTitle?: string; metaDescription?: string };
 };
 
+function resolveLocalizedSlug(
+  product: Record<string, unknown>,
+  translation: ProductTranslationRow | ProductTranslationFromRelation | null
+): string {
+  if (translation?.slug) return translation.slug;
+
+  const translations = product.productTranslations as
+    | ProductTranslationFromRelation[]
+    | undefined;
+
+  if (translations?.length) {
+    const englishSlug = translations.find((row) => row.locale === "en")?.slug;
+    if (englishSlug) return englishSlug;
+
+    const fallbackSlug = translations.find((row) => row.slug)?.slug;
+    if (fallbackSlug) return fallbackSlug;
+  }
+
+  return (product.slug as string | undefined) ?? "";
+}
+
 /**
  * Merges product row with localized translation fields.
  * Use products table for shared fields; translation for localized.
@@ -240,7 +286,7 @@ export function mergeProductWithTranslation<T extends Record<string, unknown>>(
       content: ((product.content as string | null | undefined) ??
         null) as string | null,
       bulletPoints: product.bulletPoints ?? null,
-      slug: ((product.slug as string | undefined) ?? "") as string,
+      slug: resolveLocalizedSlug(product, null),
       seo,
     } as MergedProduct<T>;
   }
@@ -250,7 +296,7 @@ export function mergeProductWithTranslation<T extends Record<string, unknown>>(
     description: translation.description,
     content: translation.content ?? null,
     bulletPoints: translation.bulletPoints,
-    slug: translation.slug ?? (product.slug as string | undefined) ?? "",
+    slug: resolveLocalizedSlug(product, translation),
     seo: {
       metaTitle: translation.metaTitle ?? undefined,
       metaDescription: translation.metaDescription ?? undefined,

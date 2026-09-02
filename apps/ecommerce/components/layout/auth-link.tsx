@@ -7,7 +7,7 @@ import { useAuthUser } from "@/lib/auth/use-auth-user";
 import { UserMenu } from "./user-menu";
 import { AuthLinkClient } from "./auth-link-client";
 import { GuestProfileLink } from "./guest-profile-link";
-import type { Seller } from "@/app/(main)/profile/_components/profile.types";
+import type { Seller } from "@/app/[locale]/(main)/profile/_components/profile.types";
 
 interface AuthLinkProps {
   variant?: "mobile" | "desktop";

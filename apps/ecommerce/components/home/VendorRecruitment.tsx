@@ -1,6 +1,6 @@
 import { Button } from "@workspace/ui/components/button";
 import { TrendingUp, Users, DollarSign } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
 const VendorRecruitment = () => {
   const benefits = [

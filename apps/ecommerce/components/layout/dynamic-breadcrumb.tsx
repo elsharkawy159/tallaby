@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { HomeIcon } from "lucide-react";
 import {
   Breadcrumb,
@@ -31,9 +32,13 @@ interface BreadcrumbSegment {
   isLast: boolean;
 }
 
-const defaultLabels: Record<string, string> = {
+// Fallback English labels, used only if a segment has no "breadcrumb.*"
+// translation key (e.g. an unexpected/legacy route).
+const fallbackLabels: Record<string, string> = {
   products: "Products",
   categories: "Categories",
+  brands: "Brands",
+  stores: "Stores",
   cart: "Cart",
   checkout: "Checkout",
   profile: "Profile",
@@ -46,8 +51,11 @@ const defaultLabels: Record<string, string> = {
   faq: "FAQ",
   careers: "Careers",
   returns: "Returns",
+  shipping: "Shipping",
+  payment: "Payment",
+  privacy: "Privacy",
+  cookies: "Cookies",
   terms: "Terms",
-  stores: "Stores",
   auth: "Authentication",
   login: "Login",
   register: "Register",
@@ -58,6 +66,7 @@ const defaultLabels: Record<string, string> = {
 
 function formatLabel(
   segment: string,
+  translate: (segment: string) => string | undefined,
   customLabels?: Record<string, string>
 ): string {
   // Check custom labels first
@@ -65,9 +74,15 @@ function formatLabel(
     return customLabels[segment];
   }
 
+  // Localized label from the "breadcrumb" messages namespace
+  const translated = translate(segment);
+  if (translated) {
+    return translated;
+  }
+
   // Check default labels
-  if (defaultLabels[segment]) {
-    return defaultLabels[segment];
+  if (fallbackLabels[segment]) {
+    return fallbackLabels[segment];
   }
 
   // Handle dynamic segments (like slugs)
@@ -84,6 +99,7 @@ function formatLabel(
 
 function generateBreadcrumbs(
   pathname: string,
+  translate: (segment: string) => string | undefined,
   customLabels?: Record<string, string>
 ): BreadcrumbSegment[] {
   const segments = pathname.split("/").filter(Boolean);
@@ -92,7 +108,7 @@ function generateBreadcrumbs(
   segments.forEach((segment, index) => {
     const href = `/${segments.slice(0, index + 1).join("/")}`;
     const isLast = index === segments.length - 1;
-    const label = formatLabel(segment, customLabels);
+    const label = formatLabel(segment, translate, customLabels);
 
     breadcrumbs.push({
       label,
@@ -106,7 +122,7 @@ function generateBreadcrumbs(
 
 export function DynamicBreadcrumb({
   className,
-  homeLabel = "Home",
+  homeLabel,
   separator,
   maxItems,
   itemClassName,
@@ -116,13 +132,15 @@ export function DynamicBreadcrumb({
   customLabels,
 }: DynamicBreadcrumbProps) {
   const pathname = usePathname();
+  const t = useTranslations("breadcrumb");
+  const translate = (segment: string) => (t.has(segment) ? t(segment) : undefined);
 
   // Don't show breadcrumbs on home page
   if (pathname === "/") {
     return null;
   }
 
-  const breadcrumbs = generateBreadcrumbs(pathname, customLabels);
+  const breadcrumbs = generateBreadcrumbs(pathname, translate, customLabels);
 
   // Handle maxItems limitation
   let displayBreadcrumbs = breadcrumbs;
@@ -140,20 +158,22 @@ export function DynamicBreadcrumb({
           <BreadcrumbList className="text-xs lg:text-sm">
             {/* Home item */}
             <BreadcrumbItem className={itemClassName}>
-              <BreadcrumbLink
-                href="/"
-                className={cn(
-                  "hover:text-primary transition-colors",
-                  linkClassName
-                )}
-              >
-                {showHomeIcon && (
-                  <>
-                    <HomeIcon size={16} aria-hidden="true" className="mr-1" />
-                    <span className="sr-only">Home</span>
-                  </>
-                )}
-                {!showHomeIcon && homeLabel}
+              <BreadcrumbLink asChild>
+                <Link
+                  href="/"
+                  className={cn(
+                    "hover:text-primary transition-colors",
+                    linkClassName
+                  )}
+                >
+                  {showHomeIcon && (
+                    <>
+                      <HomeIcon size={16} aria-hidden="true" className="mr-1" />
+                      <span className="sr-only">{t("home")}</span>
+                    </>
+                  )}
+                  {!showHomeIcon && (homeLabel ?? t("home"))}
+                </Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
 
@@ -175,14 +195,16 @@ export function DynamicBreadcrumb({
                       {breadcrumb.label}
                     </BreadcrumbPage>
                   ) : (
-                    <BreadcrumbLink
-                      href={breadcrumb.href}
-                      className={cn(
-                        "hover:text-primary truncate max-w-[300px] transition-colors whitespace-nowrap",
-                        linkClassName
-                      )}
-                    >
-                      {breadcrumb.label}
+                    <BreadcrumbLink asChild>
+                      <Link
+                        href={breadcrumb.href}
+                        className={cn(
+                          "hover:text-primary truncate max-w-[300px] transition-colors whitespace-nowrap",
+                          linkClassName
+                        )}
+                      >
+                        {breadcrumb.label}
+                      </Link>
                     </BreadcrumbLink>
                   )}
                 </BreadcrumbItem>
@@ -202,10 +224,12 @@ export function DynamicBreadcrumb({
 // Hook for getting current breadcrumb data (useful for SEO)
 export function useBreadcrumbs(customLabels?: Record<string, string>) {
   const pathname = usePathname();
+  const t = useTranslations("breadcrumb");
+  const translate = (segment: string) => (t.has(segment) ? t(segment) : undefined);
 
   if (pathname === "/") {
     return [];
   }
 
-  return generateBreadcrumbs(pathname, customLabels);
+  return generateBreadcrumbs(pathname, translate, customLabels);
 }

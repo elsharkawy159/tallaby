@@ -4,6 +4,7 @@ import { unstable_cache } from "next/cache";
 import { db } from "@workspace/db";
 import {
   products,
+  productVariants,
   orderItems,
   searchLogs,
   wishlistItems,
@@ -17,6 +18,7 @@ import {
   eq,
   and,
   desc,
+  asc,
   sql,
 } from "@workspace/db";
 import { getUser, getSessionId } from "./auth";
@@ -57,6 +59,19 @@ export async function getCartRecommendations(
       with: {
         brand: true,
         productTranslations: true,
+        productVariants: {
+          columns: {
+            id: true,
+            localized: true,
+            option1: true,
+            option2: true,
+            option3: true,
+            images: true,
+            imageUrl: true,
+            position: true,
+          },
+          orderBy: [asc(productVariants.position)],
+        },
       },
       orderBy: [desc(products.averageRating), desc(products.reviewCount)],
       limit: 12,

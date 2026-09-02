@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { BASE_URL } from "@/lib/constants";
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -7,8 +8,18 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: "*",
         allow: "/",
         disallow: [
-          "/checkout/",
-          "/account/",
+          "/cart",
+          "/ar/cart",
+          "/profile",
+          "/ar/profile",
+          "/onboarding",
+          "/ar/onboarding",
+          "/auth",
+          "/ar/auth",
+          "/wishlist",
+          "/ar/wishlist",
+          "/orders/",
+          "/ar/orders/",
           "/admin/",
           "/dashboard/",
           "/api/",
@@ -37,7 +48,7 @@ export default function robots(): MetadataRoute.Robots {
         disallow: "/",
       },
     ],
-    sitemap: "https://www.tallaby.com/sitemap.xml",
-    host: "https://www.tallaby.com",
+    sitemap: `${BASE_URL}/sitemap.xml`,
+    host: BASE_URL,
   };
 }

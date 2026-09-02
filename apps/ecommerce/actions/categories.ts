@@ -116,6 +116,27 @@ export const getCategoryBySlug = unstable_cache(
   },
 );
 
+export const getAllCategorySlugs = unstable_cache(
+  async () => {
+    try {
+      const rows = await db
+        .select({ slug: categories.slug })
+        .from(categories)
+
+      const data = rows.map((r) => r.slug).filter((s): s is string => Boolean(s))
+      return { success: true, data }
+    } catch (error) {
+      console.error("Error fetching category slugs:", error);
+      return { success: false, error: "Failed to fetch category slugs" };
+    }
+  },
+  ["all-category-slugs"],
+  {
+    tags: [categoryTags.all()],
+    revalidate: 60 * 60 * 24,
+  },
+);
+
 export const getTopCategories = unstable_cache(
   async () => {
     try {

@@ -4,8 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { Check, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -39,15 +38,15 @@ import {
   sellerApplicationSchema,
   sellerApplicationDefaults,
   type SellerApplicationFormData,
-} from "@/app/(main)/become-seller/_components/become-seller.dto";
+} from "@/app/[locale]/(main)/become-seller/_components/become-seller.dto";
 import {
   checkBusinessNameAvailability,
   submitSellerApplication,
-} from "@/app/(main)/become-seller/_components/become-seller.server";
+} from "@/app/[locale]/(main)/become-seller/_components/become-seller.server";
 import {
   BUSINESS_TYPE_OPTIONS,
   COUNTRY_OPTIONS,
-} from "@/app/(main)/become-seller/_components/become-seller.types";
+} from "@/app/[locale]/(main)/become-seller/_components/become-seller.types";
 import { useAuthDialog } from "@/hooks/use-auth-dialog";
 import { useDebounce } from "@/hooks/use-debounce";
 import { Input } from "@workspace/ui/components";

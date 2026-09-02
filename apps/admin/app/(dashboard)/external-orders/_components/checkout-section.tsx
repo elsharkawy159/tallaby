@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import { useFormContext } from 'react-hook-form'
 import {
   FormControl,
@@ -18,6 +19,7 @@ import {
   CardTitle,
 } from '@workspace/ui/components/card'
 import { formatPricePlain } from '@workspace/lib'
+import { isCodEligibleForShipping } from '@workspace/lib/orders'
 import type { ExternalOrderFormData } from '../external-orders.schema'
 import type { ExternalOrderPreview } from '../external-orders.types'
 
@@ -31,6 +33,18 @@ export function CheckoutSection({
   isLoadingPreview,
 }: CheckoutSectionProps) {
   const form = useFormContext<ExternalOrderFormData>()
+  const isCodEligible = preview
+    ? isCodEligibleForShipping(preview.shippingCost)
+    : true
+
+  useEffect(() => {
+    if (!isCodEligible && form.getValues('paymentType') === 'cod') {
+      form.setValue('paymentType', 'paid', {
+        shouldValidate: true,
+        shouldDirty: true,
+      })
+    }
+  }, [isCodEligible, form])
 
   return (
     <Card>
@@ -56,8 +70,18 @@ export function CheckoutSection({
                     <Label htmlFor="paid">Paid — customer already paid</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="cod" id="cod" />
-                    <Label htmlFor="cod">COD — Cash on Delivery</Label>
+                    <RadioGroupItem value="cod" id="cod" disabled={!isCodEligible} />
+                    <Label
+                      htmlFor="cod"
+                      className={!isCodEligible ? 'text-muted-foreground' : undefined}
+                    >
+                      COD — Cash on Delivery
+                      {!isCodEligible && (
+                        <span className="ml-2 text-xs text-orange-600">
+                          (Not available when shipping exceeds 90 EGP)
+                        </span>
+                      )}
+                    </Label>
                   </div>
                 </RadioGroup>
               </FormControl>

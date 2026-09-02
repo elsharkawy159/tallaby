@@ -10,8 +10,52 @@ import {
   products,
   eq,
   desc,
+  asc,
 } from "@workspace/db";
 import { getUser } from "./auth";
+
+// CACHED: Public storefront listing - only approved sellers are shown
+export async function getAllSellers(params?: {
+  limit?: number;
+  offset?: number;
+}) {
+  const cacheKey = `all-sellers-${params?.limit ?? 200}-${params?.offset ?? 0}`;
+
+  return unstable_cache(
+    async () => {
+      try {
+        const sellerList = await db.query.sellers.findMany({
+          where: eq(sellers.status, "approved"),
+          columns: {
+            id: true,
+            displayName: true,
+            slug: true,
+            description: true,
+            logoUrl: true,
+            storeRating: true,
+            positiveRatingPercent: true,
+            totalRatings: true,
+            productCount: true,
+            isVerified: true,
+          },
+          orderBy: [asc(sellers.displayName)],
+          limit: params?.limit ?? 200,
+          offset: params?.offset ?? 0,
+        });
+
+        return { success: true, data: sellerList };
+      } catch (error) {
+        console.error("Error fetching sellers:", error);
+        return { success: false, error: "Failed to fetch sellers" };
+      }
+    },
+    [cacheKey],
+    {
+      tags: ["sellers"],
+      revalidate: 3600,
+    }
+  )();
+}
 
 // NOT CACHED: Mutation - creates new seller
 export async function registerAsSeller(data: {
@@ -234,6 +278,7 @@ export async function getSellerBySlug(slug: string) {
             productCount: true,
             isVerified: true,
             joinDate: true,
+            status: true,
           },
         });
 

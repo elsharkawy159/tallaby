@@ -1,7 +1,7 @@
-import ProductCard from "@/app/(main)/products/[slug]/_components/ProductCard";
+import ProductCard from "@/app/[locale]/(main)/products/[slug]/_components/ProductCard";
 import { Button } from "@workspace/ui/components/button";
 import { ChevronRight } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getProducts } from "@/actions/products";
 import { ProductCardProps } from "../product";
 import { getLocale, getTranslations } from "next-intl/server";

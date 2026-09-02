@@ -23,3 +23,8 @@ export {
   generateOrderNumber,
   pickProductTitle,
 } from './place-order.lib'
+
+export {
+  COD_MAX_SHIPPING_COST,
+  isCodEligibleForShipping,
+} from './payment.lib'

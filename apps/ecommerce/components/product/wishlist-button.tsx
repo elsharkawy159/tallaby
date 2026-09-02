@@ -12,7 +12,7 @@ import {
   removeFromWishlist as removeFromWishlistAction,
   getWishlistItems,
 } from "@/actions/wishlist";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 
 // 🔑 Centralized size styles
 const sizeStyles = {

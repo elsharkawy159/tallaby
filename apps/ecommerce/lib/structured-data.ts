@@ -1,6 +1,7 @@
 import { BASE_URL, DEFAULT_CURRENCY } from "./constants";
 import { TALLABY_SOCIAL_SAME_AS } from "./social-links";
 import { TALLABY_CONTACT_EMAIL } from "./contact";
+import { localizedUrl, type SeoLocale } from "./metadata";
 
 interface Product {
   id: string;
@@ -37,8 +38,8 @@ interface BreadcrumbItem {
   url: string;
 }
 
-export function generateProductStructuredData(product: Product) {
-  const productUrl = `${BASE_URL}/products/${product.slug}`;
+export function generateProductStructuredData(product: Product, locale: SeoLocale = "en") {
+  const productUrl = localizedUrl(locale, `/products/${product.slug}`);
   const imageUrl = product.images?.[0] || `${BASE_URL}/og-image.jpg`;
 
   const offers = {
@@ -81,7 +82,7 @@ export function generateProductStructuredData(product: Product) {
     category: product.category ? {
       "@type": "Thing",
       name: product?.category?.name ?? "",
-      url: `${BASE_URL}/products?category=${product.category.slug}`,
+      url: localizedUrl(locale, `/categories/${product.category.slug}`),
     } : undefined,
     offers,
     ...(aggregateRating && { aggregateRating }),
@@ -95,8 +96,8 @@ export function generateProductStructuredData(product: Product) {
   };
 }
 
-export function generateCategoryStructuredData(category: Category) {
-  const categoryUrl = `${BASE_URL}/products?category=${category.slug}`;
+export function generateCategoryStructuredData(category: Category, locale: SeoLocale = "en") {
+  const categoryUrl = localizedUrl(locale, `/categories/${category.slug}`);
 
   return {
     "@context": "https://schema.org",
@@ -118,13 +119,13 @@ export function generateCategoryStructuredData(category: Category) {
           "@type": "ListItem",
           position: 1,
           name: "Home",
-          item: BASE_URL,
+          item: localizedUrl(locale, ""),
         },
         {
           "@type": "ListItem",
           position: 2,
           name: "Products",
-          item: `${BASE_URL}/products`,
+          item: localizedUrl(locale, "/products"),
         },
         {
           "@type": "ListItem",
@@ -158,24 +159,24 @@ export function generateWebsiteStructuredData() {
     "@type": "WebSite",
     name: "Tallaby.com",
     alternateName: "Tallaby",
-    url: "https://www.tallaby.com",
+    url: BASE_URL,
     description:
-      "Tallaby.com is a global online marketplace offering millions of products across electronics, fashion, home essentials, beauty, and more.",
+      "Tallaby is an Egypt-first multi-vendor marketplace offering products across categories from independent sellers.",
     potentialAction: {
       "@type": "SearchAction",
       target: {
         "@type": "EntryPoint",
-        urlTemplate: "https://www.tallaby.com/search?q={search_term_string}",
+        urlTemplate: `${BASE_URL}/search?q={search_term_string}`,
       },
       "query-input": "required name=search_term_string",
     },
     publisher: {
       "@type": "Organization",
       name: "Tallaby.com",
-      url: "https://www.tallaby.com",
+      url: BASE_URL,
       logo: {
         "@type": "ImageObject",
-        url: "https://www.tallaby.com/logo.png",
+        url: `${BASE_URL}/logo.png`,
       },
     },
   };
@@ -186,13 +187,12 @@ export function generateOrganizationStructuredData() {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: "Tallaby.com",
-    url: "https://www.tallaby.com",
-    logo: "https://www.tallaby.com/logo.png",
+    url: BASE_URL,
+    logo: `${BASE_URL}/logo.png`,
     description:
-      "Tallaby.com is a global online marketplace offering millions of products across electronics, fashion, home essentials, beauty, and more.",
+      "Tallaby is an Egypt-first multi-vendor marketplace offering products across categories from independent sellers.",
     contactPoint: {
       "@type": "ContactPoint",
-      telephone: "+1-800-TALLABY",
       email: TALLABY_CONTACT_EMAIL,
       contactType: "customer service",
       availableLanguage: ["English", "Arabic"],

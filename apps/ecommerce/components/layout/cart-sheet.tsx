@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link, useRouter } from "@/i18n/navigation";
 import Image from "next/image";
 import { Button } from "@workspace/ui/components/button";
 import { Separator } from "@workspace/ui/components/separator";
@@ -23,7 +23,6 @@ import {
   removeFromCart as removeFromCartAction,
 } from "@/actions/cart";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
 interface CartSheetProps {

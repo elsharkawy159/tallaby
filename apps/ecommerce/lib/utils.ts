@@ -47,3 +47,32 @@ export function resolvePrice(product: ProductCardProps) {
     return product.base_price as number;
   return 0;
 }
+
+type ProductCardSource = Record<string, unknown> & {
+  id?: string;
+  title?: string;
+  slug?: string;
+  images?: ProductCardProps["images"];
+  price?: ProductCardProps["price"];
+  quantity?: number | string;
+  maxOrderQuantity?: number | string;
+  averageRating?: number | null;
+  reviewCount?: number;
+  productVariants?: ProductCardProps["productVariants"];
+};
+
+/** Maps a merged product row to the flat shape expected by ProductCard. */
+export function toProductCardProps(product: ProductCardSource): ProductCardProps {
+  return {
+    id: product.id,
+    title: product.title,
+    slug: product.slug,
+    images: product.images,
+    price: product.price,
+    quantity: product.quantity,
+    maxOrderQuantity: product.maxOrderQuantity,
+    averageRating: product.averageRating ?? null,
+    reviewCount: product.reviewCount ?? 0,
+    productVariants: product.productVariants,
+  };
+}

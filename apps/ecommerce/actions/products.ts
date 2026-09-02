@@ -309,6 +309,19 @@ export const getProductBySlug = createCachedQuery({
           with: {
             brand: true,
             productTranslations: true,
+            productVariants: {
+              columns: {
+                id: true,
+                localized: true,
+                option1: true,
+                option2: true,
+                option3: true,
+                images: true,
+                imageUrl: true,
+                position: true,
+              },
+              orderBy: [asc(productVariants.position)],
+            },
           },
           limit: 8,
           orderBy: [desc(products.averageRating)],
@@ -681,6 +694,63 @@ export async function getAllProductSlugs() {
       }
     },
     ["all-product-slugs"],
+    {
+      tags: [productTags.all()],
+      revalidate: 3600, // 1 hour - slugs change infrequently
+    }
+  )();
+}
+
+/**
+ * Every product translation slug paired with its locale (and the parent
+ * product's updatedAt). Used for [locale]/products/[slug] generateStaticParams
+ * and the sitemap — unlike getAllProductSlugs, this keeps locale+slug together
+ * so a slug that exists in only one locale doesn't get a static param for the
+ * other.
+ */
+export async function getAllProductTranslationSlugs() {
+  return unstable_cache(
+    async () => {
+      try {
+        const rows = await db
+          .select({
+            productId: productTranslations.productId,
+            locale: productTranslations.locale,
+            slug: productTranslations.slug,
+            updatedAt: products.updatedAt,
+          })
+          .from(productTranslations)
+          .innerJoin(products, eq(productTranslations.productId, products.id))
+          .where(
+            and(
+              or(
+                eq(productTranslations.locale, "en"),
+                eq(productTranslations.locale, "ar")
+              ),
+              eq(products.status, "active"),
+              isNotNull(productTranslations.slug)
+            )
+          )
+
+        const data = rows
+          .filter(
+            (r): r is typeof r & { locale: ProductLocale; slug: string } =>
+              !!r.slug && (r.locale === "en" || r.locale === "ar")
+          )
+          .map((r) => ({
+            productId: r.productId,
+            locale: r.locale,
+            slug: r.slug,
+            updatedAt: r.updatedAt,
+          }))
+
+        return { success: true, data }
+      } catch (error) {
+        console.error("Error fetching product translation slugs:", error);
+        return { success: false, error: "Failed to fetch product translation slugs" };
+      }
+    },
+    ["all-product-translation-slugs"],
     {
       tags: [productTags.all()],
       revalidate: 3600, // 1 hour - slugs change infrequently

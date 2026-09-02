@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Button } from "@workspace/ui/components/button";
 import { Heart, ShoppingCart } from "lucide-react";
 import { AuthLink } from "./auth-link";

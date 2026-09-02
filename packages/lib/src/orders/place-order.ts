@@ -26,6 +26,7 @@ import {
   pickProductTitle,
 } from './place-order.lib'
 import { sendOrderConfirmationEmail } from './notify'
+import { isCodEligibleForShipping } from './payment.lib'
 
 /** Internal control-flow signal: coupon lost a concurrent usage-limit race. */
 class CouponClaimFailedError extends Error {}
@@ -309,6 +310,18 @@ export async function placeOrderFromCart(
 
   const resolvedPaymentMethod =
     paymentOverrides?.paymentMethod ?? paymentMethod
+
+  if (
+    resolvedPaymentMethod === 'cash_on_delivery' &&
+    !isCodEligibleForShipping(shippingCost)
+  ) {
+    return {
+      success: false,
+      error:
+        'Cash on delivery is not available when shipping cost exceeds 90 EGP',
+    }
+  }
+
   const resolvedStatus =
     paymentOverrides?.status ??
     (paymentMethod === 'online_payment' ? 'payment_processing' : 'pending')

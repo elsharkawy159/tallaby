@@ -18,7 +18,7 @@ import { ProfileAddressList, CheckoutAddressList } from "./address-list";
 import { AddAddressDialog, AddAddressButton } from "./address-dialog";
 // Server actions will be imported from the consuming app
 import type { AddressData } from "./address.schema";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
 interface AddressManagementProps {
   userId: string;

@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { getAdminAuthCookieOptions } from "@/supabase/auth-cookie-options";
 import type {
   AdminUser,
   AdminRole,
@@ -18,6 +19,7 @@ export const createMiddlewareClient = (request: NextRequest) => {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      cookieOptions: getAdminAuthCookieOptions(),
       cookies: {
         get(name: string) {
           return request.cookies.get(name)?.value;
