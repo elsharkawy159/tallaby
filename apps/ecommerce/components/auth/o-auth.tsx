@@ -3,7 +3,6 @@
 import { useTransition } from "react";
 import { Button } from "@workspace/ui/components/button";
 import { createClient } from "@/supabase/client";
-import { getShareUrl } from "@/lib/utils";
 
 export function OAuth({ next }: { next?: string }) {
   const [isPending, startTransition] = useTransition();
@@ -11,10 +10,15 @@ export function OAuth({ next }: { next?: string }) {
   const handleOAuthSignin = (provider: "google" | "twitter" | "facebook") => {
     startTransition(async () => {
       // await loginWithOAuth(provider);
-      const baseUrl = getShareUrl();
+      const baseUrl =
+        typeof window !== "undefined" ? window.location.origin : "";
+      if (!baseUrl) {
+        console.error("Unable to determine base URL for OAuth redirect");
+        return;
+      }
 
       const supabase = createClient();
-      const redirectUrl = `${baseUrl}/api/auth/callback?next=${next || "/"}`;
+      const redirectUrl = `${baseUrl}/api/auth/callback?next=${encodeURIComponent(next || "/")}`;
 
       supabase.auth.signInWithOAuth({
         provider: provider,

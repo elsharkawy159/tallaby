@@ -17,13 +17,14 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - api/revalidate (server-to-server cache invalidation webhook —
-     *   authenticated by its own shared secret, not a user session)
+     * - api/ (route handlers under app/api/, including OAuth callback and
+     *   server-to-server webhooks — locale routing must not intercept these
+     *   or they 404 instead of running their handlers)
      * - sitemap.xml, robots.txt, manifest.webmanifest (top-level metadata
      *   route handlers outside app/[locale]/ — locale routing must not
      *   intercept these or they 404 instead of returning their content)
      * Feel free to modify this pattern to include more paths.
      */
-    "/((?!_next/static|_next/image|favicon.ico|api/revalidate|sitemap.xml|robots.txt|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!api/|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
