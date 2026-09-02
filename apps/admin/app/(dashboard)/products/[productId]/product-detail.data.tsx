@@ -42,6 +42,7 @@ import {
   transformProductForDetail,
 } from "../products.lib";
 import { ProductDetailSkeleton } from "./product-detail.skeleton";
+import { ProductStatusActions } from "../_components/product-status-actions.client";
 
 interface ProductDetailDataProps {
   productId: string;
@@ -221,7 +222,11 @@ async function ProductDetailContent({ productId }: ProductDetailDataProps) {
             )}
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <ProductStatusActions
+            productId={product.id}
+            status={product.status}
+          />
           <Link href={`/products/${product.id}/edit`}>
             <Button variant="outline">
               <PencilIcon className="h-4 w-4 mr-2" />

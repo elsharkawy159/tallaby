@@ -1,25 +1,26 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { TableSection } from "@workspace/ui/components/table-section";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/card";
 import { Badge } from "@workspace/ui/components/badge";
 import { getPublicUrl } from "@/lib/utils";
 import Image from "next/image";
+import { formatOrderStatus, orderStatusVariant } from "./orders.lib";
+import { OrderDetailsDialog } from "./order-details-dialog.client";
 
 export type VendorOrderRow = {
+  /** order_items.id */
   id: string;
+  /** orders.id — the UUID `getOrderDetails` expects. */
   orderId: string;
+  /** Customer-facing reference (order_number), not the UUID. */
+  orderNumber: string;
   createdAt: string;
   customerName: string;
   productTitle: string;
   productImage?: string | null;
+  productSlug?: string | null;
   variant?: string | null;
   quantity: number;
   total: string;
@@ -41,16 +42,24 @@ export type VendorOrderRow = {
 };
 
 export function VendorOrdersTable({ rows }: { rows: VendorOrderRow[] }) {
+  const [openOrderId, setOpenOrderId] = useState<string | null>(null);
+
   const columns = useMemo<ColumnDef<VendorOrderRow, any>[]>(
     () => [
       {
         id: "order",
         header: "Order",
         size: 140,
-        accessorFn: (row) => row.orderId,
+        accessorFn: (row) => row.orderNumber,
         cell: ({ row }) => (
           <div className="space-y-1">
-            <div className="font-medium">#{row.original.orderId}</div>
+            <button
+              type="button"
+              onClick={() => setOpenOrderId(row.original.orderId)}
+              className="font-medium text-primary hover:underline focus-visible:ring-ring/50 rounded-sm outline-none focus-visible:ring-[3px]"
+            >
+              #{row.original.orderNumber}
+            </button>
             <div className="text-xs text-muted-foreground">
               {new Date(row.original.createdAt).toLocaleString()}
             </div>
@@ -121,8 +130,8 @@ export function VendorOrdersTable({ rows }: { rows: VendorOrderRow[] }) {
         size: 160,
         accessorFn: (row) => row.status,
         cell: ({ row }) => (
-          <Badge variant={statusToVariant(row.original.status)}>
-            {formatStatus(row.original.status)}
+          <Badge variant={orderStatusVariant(row.original.status)}>
+            {formatOrderStatus(row.original.status)}
           </Badge>
         ),
       },
@@ -131,47 +140,20 @@ export function VendorOrdersTable({ rows }: { rows: VendorOrderRow[] }) {
   );
 
   return (
-    <TableSection<VendorOrderRow>
-      rows={rows}
-      columns={columns}
-      searchColumnId="order"
-    />
+    <>
+      <TableSection<VendorOrderRow>
+        rows={rows}
+        columns={columns}
+        searchColumnId="order"
+      />
+      <OrderDetailsDialog
+        orderId={openOrderId}
+        onClose={() => setOpenOrderId(null)}
+      />
+    </>
   );
-}
-
-function formatStatus(status: string) {
-  return status.replace(/_/g, " ").replace(/^\w/, (m) => m.toUpperCase());
-}
-
-function statusToVariant(
-  status: string
-): "default" | "secondary" | "destructive" | "outline" {
-  switch (status) {
-    case "pending":
-    case "payment_processing":
-      return "secondary";
-    case "assigned":
-    case "confirmed":
-    case "shipping_soon":
-    case "shipped":
-    case "out_for_delivery":
-      return "outline";
-    case "delivered":
-      return "default";
-    case "failed":
-    case "cancelled":
-    case "refund_requested":
-    case "refunded":
-      return "destructive";
-    case "returned":
-      return "secondary";
-    default:
-      return "outline";
-  }
 }
 
 export function VendorOrdersSkeleton() {
-  return (
-    <div className="h-48 rounded-md border bg-muted" />
-  );
+  return <div className="h-48 rounded-md border bg-muted" />;
 }

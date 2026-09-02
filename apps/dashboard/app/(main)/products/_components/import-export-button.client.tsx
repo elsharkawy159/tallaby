@@ -1,9 +1,15 @@
 "use client";
 
-import { useRef, useTransition, useState } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import type { Table } from "@tanstack/react-table";
 import { Button } from "@workspace/ui/components/button";
-import { FileSpreadsheet, LoaderIcon } from "lucide-react";
+import {
+  Download,
+  FileSpreadsheet,
+  LoaderIcon,
+  Upload,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import {
@@ -18,21 +24,39 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@workspace/ui/components/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@workspace/ui/components/popover";
+import {
+  downloadXlsx,
+  productsToExcelRows,
+  todayStamp,
+  PRODUCT_EXCEL_COLUMNS,
+  PRODUCT_EXCEL_TEMPLATE_ROW,
+} from "@/lib/product-excel";
+import type { VendorProduct } from "./vendor-products.section";
 
-export function UploadExcelButton() {
+export function ImportExportButton({
+  table,
+}: {
+  table: Table<VendorProduct>;
+}) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const tToast = useTranslations("toast");
 
+  const [menuOpen, setMenuOpen] = useState(false);
   const [open, setOpen] = useState(false);
-  const [currentFile, setCurrentFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<{
     valid: ParsedBulkRow[];
     invalid: { row: number; message: string }[];
   } | null>(null);
 
-  const handleClick = () => {
+  const handleImportClick = () => {
+    setMenuOpen(false);
     inputRef.current?.click();
   };
 
@@ -40,7 +64,6 @@ export function UploadExcelButton() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setCurrentFile(file);
     const formData = new FormData();
     formData.append("file", file);
 
@@ -91,39 +114,41 @@ export function UploadExcelButton() {
     });
   };
 
-  const handleDownloadCategorized = async () => {
-    if (!currentFile) return;
+  /** Exports what the table currently represents — search filter applied, all pages. */
+  const handleExport = async () => {
+    setMenuOpen(false);
+    const products = table
+      .getFilteredRowModel()
+      .rows.map((row) => row.original);
 
-    startTransition(async () => {
-      try {
-        const formData = new FormData();
-        formData.append("file", currentFile);
+    if (products.length === 0) {
+      toast.error("There are no products to export.");
+      return;
+    }
 
-        const response = await fetch("/api/download-categorized-excel", {
-          method: "POST",
-          body: formData,
-        });
+    try {
+      await downloadXlsx(productsToExcelRows(products), {
+        fileName: `vendor-products-${todayStamp()}.xlsx`,
+        header: PRODUCT_EXCEL_COLUMNS,
+      });
+      toast.success(`Exported ${products.length} products`);
+    } catch (err) {
+      console.error(err);
+      toast.error("Could not export the products sheet.");
+    }
+  };
 
-        if (!response.ok) {
-          throw new Error("Failed to download categorized file");
-        }
-
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `categorized_products_${new Date().toISOString().split("T")[0]}.xlsx`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-
-        toast.success(tToast("categorizedExcelDownloaded"));
-      } catch (err) {
-        console.error(err);
-        toast.error(tToast("failedToDownloadCategorizedFile"));
-      }
-    });
+  const handleDownloadTemplate = async () => {
+    setMenuOpen(false);
+    try {
+      await downloadXlsx([PRODUCT_EXCEL_TEMPLATE_ROW], {
+        fileName: "tallaby-products-template.xlsx",
+        header: PRODUCT_EXCEL_COLUMNS,
+      });
+    } catch (err) {
+      console.error(err);
+      toast.error("Could not download the template.");
+    }
   };
 
   return (
@@ -135,14 +160,53 @@ export function UploadExcelButton() {
         className="hidden"
         onChange={handleFileChange}
       />
-      <Button onClick={handleClick} variant="default" disabled={isPending}>
-        <FileSpreadsheet
-          className="-ms-1 opacity-60"
-          size={16}
-          aria-hidden="true"
-        />
-        {isPending ? "Uploading..." : "Upload Excel Sheet"}
-      </Button>
+
+      <Popover open={menuOpen} onOpenChange={setMenuOpen}>
+        <PopoverTrigger asChild>
+          <Button variant="default" disabled={isPending}>
+            {isPending ? (
+              <LoaderIcon className="-ms-1 animate-spin" size={16} />
+            ) : (
+              <FileSpreadsheet
+                className="-ms-1 opacity-60"
+                size={16}
+                aria-hidden="true"
+              />
+            )}
+            Import / Export
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-56 p-1" align="end">
+          <Button
+            variant="ghost"
+            className="w-full justify-start font-normal"
+            onClick={handleImportClick}
+          >
+            <Upload className="opacity-60" size={16} aria-hidden="true" />
+            Import Products
+          </Button>
+          <Button
+            variant="ghost"
+            className="w-full justify-start font-normal"
+            onClick={handleExport}
+          >
+            <Download className="opacity-60" size={16} aria-hidden="true" />
+            Export Products
+          </Button>
+          <Button
+            variant="ghost"
+            className="w-full justify-start font-normal"
+            onClick={handleDownloadTemplate}
+          >
+            <FileSpreadsheet
+              className="opacity-60"
+              size={16}
+              aria-hidden="true"
+            />
+            Download Template
+          </Button>
+        </PopoverContent>
+      </Popover>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-3xl">

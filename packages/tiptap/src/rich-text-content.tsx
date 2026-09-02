@@ -1,5 +1,10 @@
 import { cn } from "@workspace/ui/lib/utils"
-import { sanitizeRichTextHtml, isRichTextEmpty } from "./sanitize-html"
+import {
+  sanitizeRichTextHtml,
+  isRichTextEmpty,
+  hasRichTextMedia,
+  mergeRichTextMediaFallback,
+} from "./sanitize-html"
 
 interface RichTextContentProps {
   html: string | null | undefined
@@ -21,4 +26,9 @@ export function RichTextContent({ html, className, dir }: RichTextContentProps) 
   )
 }
 
-export { isRichTextEmpty, sanitizeRichTextHtml }
+export {
+  isRichTextEmpty,
+  sanitizeRichTextHtml,
+  hasRichTextMedia,
+  mergeRichTextMediaFallback,
+}

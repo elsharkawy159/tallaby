@@ -8,7 +8,8 @@ import { toast } from "sonner"
 import { useTranslations } from "next-intl"
 import { Button } from "@workspace/ui/components/button"
 import { Form } from "@workspace/ui/components/form"
-import { ChevronLeft, LoaderCircle, ChevronRight } from "lucide-react"
+import { Separator } from "@workspace/ui/components/separator"
+import { LoaderCircle } from "lucide-react"
 import { createProduct } from "@/actions/products"
 import {
   addProductFormSchema,
@@ -16,6 +17,11 @@ import {
   type AddProductFormData,
   type SupportedLocale,
 } from "./add-product.schema"
+import {
+  ADD_PRODUCT_STEPS,
+  getStepValidationStatus,
+  scrollToStepSection,
+} from "./add-product.lib"
 import { BasicInformationStep } from "./steps/basic-information-step"
 import { PriceStockStep } from "./steps/price-stock-step"
 import { SeoStep } from "./steps/seo-step"
@@ -29,12 +35,6 @@ interface AddProductProps {
   sellerPricing: SellerPricingSettings;
 }
 
-const STEPS = [
-  { id: 1, title: "Basic Information", key: "basic" },
-  { id: 2, title: "Price and Stock", key: "priceStock" },
-  { id: 3, title: "Search Engine", key: "seo" },
-] as const;
-
 const LOCALE_LABELS: Record<SupportedLocale, string> = {
   en: "English",
   ar: "العربية",
@@ -42,7 +42,6 @@ const LOCALE_LABELS: Record<SupportedLocale, string> = {
 
 export default function AddProduct({ categories, brands, sellerPricing }: AddProductProps) {
   const [isPending, startTransition] = useTransition()
-  const [currentStep, setCurrentStep] = useState(1)
   const [activeLocale, setActiveLocale] = useState<SupportedLocale>("en")
   const router = useRouter()
   const tToast = useTranslations("toast")
@@ -53,6 +52,8 @@ export default function AddProduct({ categories, brands, sellerPricing }: AddPro
     mode: "onChange",
     shouldUnregister: false,
   })
+
+  const { errors, isValid } = form.formState
 
   const handleSubmit = (data: AddProductFormData) => {
     startTransition(async () => {
@@ -73,122 +74,14 @@ export default function AddProduct({ categories, brands, sellerPricing }: AddPro
     });
   };
 
-  const validateStep = async (step: number): Promise<boolean> => {
-    if (step === 1) {
-      const result = await form.trigger([
-        "localized.en.title",
-        "localized.en.slug",
-        "localized.ar.title",
-        "categoryId",
-        "images",
-      ])
-      return result
-    }
-    if (step === 2) {
-      const result = await form.trigger([
-        "price.list",
-        "price.final",
-        "quantity",
-      ])
-      return result
-    }
-    // Step 3 (SEO) is optional
-    return true
-  }
-
-  const handleNext = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const isValid = await validateStep(currentStep);
-    if (isValid && currentStep < STEPS.length) {
-      setCurrentStep(currentStep + 1);
-    } else if (!isValid) {
-      toast.error(tToast("pleaseFillRequiredFields"));
-    }
-  };
-
-  const handlePrevious = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
-  const handleStepClick = async (step: number) => {
-    if (step < currentStep) {
-      setCurrentStep(step);
-    } else if (step > currentStep) {
-      const isValid = await validateStep(currentStep);
-      if (isValid) {
-        setCurrentStep(step);
-      } else {
-        toast.error(tToast("pleaseCompleteCurrentStep"));
-      }
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gray-50/30 pb-24">
-      {/* Step Indicator + Content language - fixed at top */}
+      {/* Header */}
       <div className="sticky top-0 z-20 bg-white border-b border-gray-200 shadow-sm">
-        <div className="container px-6 py-4">
-          <div className="flex items-center gap-4">
-            {STEPS.map((step, index) => (
-            <div key={step.id} className={cn("flex items-center gap-4", index < STEPS.length - 1 && "flex-1")}>
-              <button
-                type="button"
-                onClick={() => handleStepClick(step.id)}
-                className={`flex items-center gap-2 ${
-                  currentStep === step.id
-                    ? "text-primary font-semibold"
-                    : currentStep > step.id
-                      ? "text-gray-600"
-                      : "text-gray-400"
-                }`}
-              >
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${
-                    currentStep === step.id
-                      ? "border-primary bg-primary text-white"
-                      : currentStep > step.id
-                        ? "border-gray-600 bg-gray-600 text-white"
-                        : "border-gray-300 bg-white text-gray-400"
-                  }`}
-                >
-                  {currentStep > step.id ? (
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                  ) : (
-                    step.id
-                  )}
-                </div>
-                <span className="text-sm hidden sm:inline">{step.title}</span>
-              </button>
-              {index < STEPS.length - 1 && (
-                <div
-                  className={`flex-1 h-0.5 ${
-                    currentStep > step.id ? "bg-gray-600" : "bg-gray-300"
-                  }`}
-                />
-              )}
-            </div>
-          ))}
-          </div>
-          {/* Content language - always visible under steps */}
-          <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between gap-4">
-            <span className="text-sm font-medium text-gray-700">
+        <div className="container px-6 py-4 flex items-center justify-between gap-4">
+          <h1 className="text-lg font-semibold text-gray-900">Add Product</h1>
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-gray-700 hidden sm:inline">
               Content language
             </span>
             <div className="flex items-center gap-1">
@@ -209,67 +102,127 @@ export default function AddProduct({ categories, brands, sellerPricing }: AddPro
         </div>
       </div>
 
-      {/* Form Content */}
       <div className="container py-6">
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit as any)}
-            className="space-y-6"
-            id="add-product-form"
-          >
-            {/* Step Content */}
-            {currentStep === 1 && (
-              <BasicInformationStep
-                categories={categories}
-                brands={brands}
-                sellerPricing={sellerPricing}
-                activeLocale={activeLocale}
-              />
-            )}
-            {currentStep === 2 && (
-              <PriceStockStep
-                sellerPricing={sellerPricing}
-                activeLocale={activeLocale}
-              />
-            )}
-            {currentStep === 3 && <SeoStep activeLocale={activeLocale} />}
-          </form>
-        </Form>
+        <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-8">
+          {/* Vertical stepper */}
+          <aside className="lg:sticky lg:top-24 lg:self-start">
+            <nav className="flex flex-col">
+              {ADD_PRODUCT_STEPS.map((step, index) => {
+                const status = getStepValidationStatus(
+                  step.id,
+                  form.formState,
+                  form.getFieldState
+                );
+
+                return (
+                  <div key={step.id} className="flex flex-col">
+                    <button
+                      type="button"
+                      onClick={() => scrollToStepSection(step.key)}
+                      className={cn(
+                        "flex items-center gap-3 text-left py-2",
+                        status === "valid" && "text-gray-600",
+                        status === "error" && "text-red-600",
+                        status === "default" && "text-gray-400"
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          "w-8 h-8 rounded-full flex items-center justify-center border-2 shrink-0 text-sm font-medium",
+                          status === "valid" &&
+                            "border-gray-600 bg-gray-600 text-white",
+                          status === "error" &&
+                            "border-red-500 bg-red-500 text-white",
+                          status === "default" &&
+                            "border-gray-300 bg-white text-gray-400"
+                        )}
+                      >
+                        {status === "valid" ? (
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                        ) : (
+                          step.id
+                        )}
+                      </div>
+                      <span className="text-sm font-medium">{step.title}</span>
+                    </button>
+                    {index < ADD_PRODUCT_STEPS.length - 1 && (
+                      <div
+                        className={cn(
+                          "ml-4 w-0.5 h-6",
+                          status === "valid" ? "bg-gray-600" : "bg-gray-300"
+                        )}
+                      />
+                    )}
+                  </div>
+                );
+              })}
+            </nav>
+          </aside>
+
+          {/* Form content */}
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(handleSubmit as any)}
+              className="space-y-8"
+              id="add-product-form"
+            >
+              <section id="step-basic" className="scroll-mt-28">
+                <BasicInformationStep
+                  categories={categories}
+                  brands={brands}
+                  sellerPricing={sellerPricing}
+                  activeLocale={activeLocale}
+                />
+              </section>
+
+              <Separator />
+
+              <section id="step-priceStock" className="scroll-mt-28">
+                <PriceStockStep
+                  sellerPricing={sellerPricing}
+                  activeLocale={activeLocale}
+                />
+              </section>
+
+              <Separator />
+
+              <section id="step-seo" className="scroll-mt-28">
+                <SeoStep activeLocale={activeLocale} />
+              </section>
+            </form>
+          </Form>
+        </div>
       </div>
 
-      {/* Fixed bottom navigation */}
+      {/* Fixed bottom save bar */}
       <div className="fixed bottom-0 left-0 right-0 z-10 border-t border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
-        <div className="px-6 py-4 flex items-center gap-6 justify-end container">
+        <div className="px-6 py-4 flex items-center justify-end container">
           <Button
-            type="button"
-            variant="outline"
-            onClick={handlePrevious}
-            disabled={currentStep === 1}
+            type="submit"
+            form="add-product-form"
+            disabled={isPending || !isValid}
           >
-            <ChevronLeft className="size-4" />
-            Previous
+            {isPending ? (
+              <span className="flex items-center gap-2">
+                <LoaderCircle className="size-4 animate-spin" />
+                Saving...
+              </span>
+            ) : (
+              "Save Product"
+            )}
           </Button>
-          {currentStep < STEPS.length ? (
-            <Button type="button" onClick={handleNext}>
-              Next
-              <ChevronRight className="size-4" />
-            </Button>
-          ) : (
-            <Button
-              type="submit"
-              form="add-product-form"
-              disabled={isPending || !form.formState.isValid}
-            >
-              {isPending ? (
-                <span className="flex items-center gap-2">
-                  <LoaderCircle className="size-4 animate-spin" />
-                  Saving...
-                </span>
-              ) : (
-                "Save Product"
-              )}
-            </Button>
-          )}
         </div>
       </div>
     </div>

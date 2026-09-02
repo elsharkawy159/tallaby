@@ -1,5 +1,6 @@
 import { and, db, eq } from "@workspace/db";
 import { productTranslations } from "@workspace/db/schema";
+import { isRichTextEmpty, hasRichTextMedia, mergeRichTextMediaFallback } from "@workspace/tiptap";
 
 export type ProductLocale = "en" | "ar";
 
@@ -147,20 +148,58 @@ export async function getProductTranslationWithFallback(
     )
     .limit(1);
 
-  if (ar) return ar as ProductTranslationRow;
-
-  const [en] = await db
-    .select(TRANSLATION_COLUMNS)
-    .from(productTranslations)
-    .where(
-      and(
-        eq(productTranslations.productId, productId),
-        eq(productTranslations.locale, "en")
+  if (!ar) {
+    const [en] = await db
+      .select(TRANSLATION_COLUMNS)
+      .from(productTranslations)
+      .where(
+        and(
+          eq(productTranslations.productId, productId),
+          eq(productTranslations.locale, "en")
+        )
       )
-    )
-    .limit(1);
+      .limit(1);
 
-  return en as ProductTranslationRow | null;
+    return en as ProductTranslationRow | null;
+  }
+
+  const arRow = ar as ProductTranslationRow;
+
+  const needsEnglishContent =
+    isRichTextEmpty(arRow.content) || !hasRichTextMedia(arRow.content);
+
+  // The ar row can exist (created as soon as any AR field is filled) while
+  // still missing content or media — fall back to EN per-field rather than
+  // losing the whole translation.
+  if (needsEnglishContent) {
+    const [en] = await db
+      .select(TRANSLATION_COLUMNS)
+      .from(productTranslations)
+      .where(
+        and(
+          eq(productTranslations.productId, productId),
+          eq(productTranslations.locale, "en")
+        )
+      )
+      .limit(1);
+
+    if (en?.content && !isRichTextEmpty(en.content)) {
+      if (isRichTextEmpty(arRow.content)) {
+        return { ...arRow, content: en.content };
+      }
+
+      const mergedContent = mergeRichTextMediaFallback(
+        arRow.content,
+        en.content
+      );
+
+      if (mergedContent && mergedContent !== arRow.content) {
+        return { ...arRow, content: mergedContent };
+      }
+    }
+  }
+
+  return arRow;
 }
 
 export type MergedProduct<T> = T & {

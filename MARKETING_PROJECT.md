@@ -11,11 +11,11 @@
 
 Throughout this file, claims are labeled as:
 
-| Label | Meaning |
-|-------|---------|
-| **Confirmed** | Explicitly supported by project files, UI copy, schema, or configuration |
-| **Proposed** | Reasonable marketing direction not officially locked in the codebase — use for creative work but do not present as established fact |
-| **Avoid** | Placeholder or contradictory content found in the project that marketing should not repeat |
+| Label         | Meaning                                                                                                                             |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| **Confirmed** | Explicitly supported by project files, UI copy, schema, or configuration                                                            |
+| **Proposed**  | Reasonable marketing direction not officially locked in the codebase — use for creative work but do not present as established fact |
+| **Avoid**     | Placeholder or contradictory content found in the project that marketing should not repeat                                          |
 
 When Confirmed and Proposed conflict, **Confirmed wins** for factual statements. Proposed items guide tone, campaigns, and creative emphasis.
 
@@ -29,20 +29,20 @@ When Confirmed and Proposed conflict, **Confirmed wins** for factual statements.
 
 The platform consists of:
 
-| Application | Role |
-|-------------|------|
-| **E-commerce storefront** (`apps/ecommerce`) | Customer shopping experience at `www.tallaby.com` |
-| **Vendor dashboard** (`dashboard.tallaby.com`) | Seller product, order, and store management |
-| **Admin panel** | Platform operations, vendor approval, moderation |
+| Application                                    | Role                                              |
+| ---------------------------------------------- | ------------------------------------------------- |
+| **E-commerce storefront** (`apps/ecommerce`)   | Customer shopping experience at `www.tallaby.com` |
+| **Vendor dashboard** (`dashboard.tallaby.com`) | Seller product, order, and store management       |
+| **Admin panel**                                | Platform operations, vendor approval, moderation  |
 
 ### Positioning Statements Found in the Project (Confirmed)
 
-| Context | English | Arabic |
-|---------|---------|--------|
-| Site tagline | "Your Everything Store" | "متجرك الشامل" |
-| Default SEO title | "Online Shopping Egypt - Your Everything Store" | — |
-| Arabic meta description | — | Shopping across fashion, electronics, home, beauty, and more |
-| Marketplace comparison | Described as "Amazon-like" / "بديل أمازون" in keywords | Same |
+| Context                 | English                                                | Arabic                                                       |
+| ----------------------- | ------------------------------------------------------ | ------------------------------------------------------------ |
+| Site tagline            | "Your Everything Store"                                | "متجرك الشامل"                                               |
+| Default SEO title       | "Online Shopping Egypt - Your Everything Store"        | —                                                            |
+| Arabic meta description | —                                                      | Shopping across fashion, electronics, home, beauty, and more |
+| Marketplace comparison  | Described as "Amazon-like" / "بديل أمازون" in keywords | Same                                                         |
 
 ### Egypt Market Focus (Confirmed)
 
@@ -82,14 +82,14 @@ Despite some English copy describing "global" or "worldwide" delivery, the **ope
 
 ### Personality (Proposed — derived from UI copy and design)
 
-| Trait | Expression |
-|-------|------------|
-| **Friendly** | Conversational Arabic, simple CTAs, approachable promo language |
-| **Modern** | Clean cards, rounded corners, minimal chrome, mobile-first |
-| **Exciting** | Deal badges, urgency ("عرض اليوم", "لفترة محدودة"), accent gold highlights |
-| **Trustworthy** | Seller trust language, secure checkout messaging, verified-seller framing |
-| **Practical** | COD, easy returns, phone-only support, governorate delivery |
-| **Social-native** | Short headlines, promo codes, product-discovery framing |
+| Trait             | Expression                                                                 |
+| ----------------- | -------------------------------------------------------------------------- |
+| **Friendly**      | Conversational Arabic, simple CTAs, approachable promo language            |
+| **Modern**        | Clean cards, rounded corners, minimal chrome, mobile-first                 |
+| **Exciting**      | Deal badges, urgency ("عرض اليوم", "لفترة محدودة"), accent gold highlights |
+| **Trustworthy**   | Seller trust language, secure checkout messaging, verified-seller framing  |
+| **Practical**     | COD, easy returns, phone-only support, governorate delivery                |
+| **Social-native** | Short headlines, promo codes, product-discovery framing                    |
 
 ### Values Surfaced in the Product (Confirmed)
 
@@ -131,26 +131,26 @@ No other official Arabic slogan is defined in the project. **Proposed** campaign
 
 > These are **not** stored in the codebase. Use for campaign targeting and creative direction.
 
-| Dimension | Assumption |
-|-----------|------------|
-| **Age** | 18–40 core; secondary 41–55 |
-| **Location** | Urban and semi-urban Egypt — Cairo, Giza, Alexandria, Delta cities, expanding governorates |
-| **Gender** | Mixed; fashion, beauty, accessories skew younger female; gadgets/tools skew male — test per product |
-| **Income** | Middle and value-conscious segments; responsive to deals and free delivery |
+| Dimension            | Assumption                                                                                                  |
+| -------------------- | ----------------------------------------------------------------------------------------------------------- |
+| **Age**              | 18–40 core; secondary 41–55                                                                                 |
+| **Location**         | Urban and semi-urban Egypt — Cairo, Giza, Alexandria, Delta cities, expanding governorates                  |
+| **Gender**           | Mixed; fashion, beauty, accessories skew younger female; gadgets/tools skew male — test per product         |
+| **Income**           | Middle and value-conscious segments; responsive to deals and free delivery                                  |
 | **Digital behavior** | Heavy Facebook, Instagram, TikTok, YouTube consumption; discovers products via Reels and influencer content |
-| **Shopping style** | Mobile-first, comparison-shopping, COD preference, WhatsApp for questions |
-| **Language** | Egyptian Arabic (عامية) for social; Modern Standard Arabic acceptable for formal ads |
+| **Shopping style**   | Mobile-first, comparison-shopping, COD preference, WhatsApp for questions                                   |
+| **Language**         | Egyptian Arabic (عامية) for social; Modern Standard Arabic acceptable for formal ads                        |
 
 ### Pain Points (Proposed)
 
-| Pain point | Tallaby response (Confirmed where noted) |
-|------------|------------------------------------------|
+| Pain point                        | Tallaby response (Confirmed where noted)                             |
+| --------------------------------- | -------------------------------------------------------------------- |
 | Distrust of unknown online stores | Marketplace + trusted sellers messaging; reviews/ratings on products |
-| Delivery uncertainty | Nationwide governorate delivery copy; order tracking |
-| Payment friction | COD confirmed; wallet/InstaPay shown |
-| Hidden costs | Visible EGP pricing; coupon/discount support |
-| Hard returns | 14-day return policy in Arabic product copy |
-| Finding trending products | **Proposed strategy** — curated viral/trendy catalog |
+| Delivery uncertainty              | Nationwide governorate delivery copy; order tracking                 |
+| Payment friction                  | COD confirmed; wallet/InstaPay shown                                 |
+| Hidden costs                      | Visible EGP pricing; coupon/discount support                         |
+| Hard returns                      | 14-day return policy in Arabic product copy                          |
+| Finding trending products         | **Proposed strategy** — curated viral/trendy catalog                 |
 
 ### Shopping Motivations (Proposed)
 
@@ -183,17 +183,17 @@ Customers ←→ Tallaby Marketplace ←→ Multiple Vendors/Sellers
 
 **Marketplace-wide category examples referenced in copy and forms:**
 
-| Category (EN) | Arabic context |
-|---------------|----------------|
-| Electronics & Tech | إلكترونيات |
-| Fashion & Apparel | موضة |
+| Category (EN)          | Arabic context         |
+| ---------------------- | ---------------------- |
+| Electronics & Tech     | إلكترونيات             |
+| Fashion & Apparel      | موضة                   |
 | Beauty & Personal Care | جمال / العناية الشخصية |
-| Home & Garden | المنزل |
-| Accessories | إكسسوارات |
-| Sports & Outdoors | — |
-| Toys & Games | — |
-| Books & Media | — |
-| Automotive | — |
+| Home & Garden          | المنزل                 |
+| Accessories            | إكسسوارات              |
+| Sports & Outdoors      | —                      |
+| Toys & Games           | —                      |
+| Books & Media          | —                      |
+| Automotive             | —                      |
 
 **Hero homepage imagery highlights (Confirmed):** accessories, personal care/cosmetics, fashion.
 
@@ -201,12 +201,12 @@ Customers ←→ Tallaby Marketplace ←→ Multiple Vendors/Sellers
 
 ### Storefront Merchandising Sections (Confirmed)
 
-| Section | Arabic label | Logic |
-|---------|--------------|-------|
-| Hero + category carousel | — | Promo headline + top categories |
-| Deal of the Day | عرض اليوم | Popular products, discount badges |
-| New Arrivals | وصل حديثاً | Sorted by newest |
-| Featured Products | المنتجات المميزة | Sorted by popular |
+| Section                  | Arabic label     | Logic                             |
+| ------------------------ | ---------------- | --------------------------------- |
+| Hero + category carousel | —                | Promo headline + top categories   |
+| Deal of the Day          | عرض اليوم        | Popular products, discount badges |
+| New Arrivals             | وصل حديثاً       | Sorted by newest                  |
+| Featured Products        | المنتجات المميزة | Sorted by popular                 |
 
 ### Product Flags in System (Confirmed)
 
@@ -242,13 +242,13 @@ Tallaby should prioritize products that are:
 
 ### Merchandising Tactics (Proposed)
 
-| Tactic | Execution |
-|--------|-----------|
-| **Trend reactive** | Fast listing of products trending on TikTok/Reels in Egypt |
-| **Bundle hooks** | "اشتري ٢ ووفر" style promos for impulse categories |
-| **Scarcity** | عرض اليوم, limited-time, countdown on deals section |
-| **Discovery naming** | "وصل حديثاً", "ترند الآن", "أكتر حاجة اتباعت" |
-| **UGC alignment** | Creative that mimics native social formats, not catalog dumps |
+| Tactic               | Execution                                                     |
+| -------------------- | ------------------------------------------------------------- |
+| **Trend reactive**   | Fast listing of products trending on TikTok/Reels in Egypt    |
+| **Bundle hooks**     | "اشتري ٢ ووفر" style promos for impulse categories            |
+| **Scarcity**         | عرض اليوم, limited-time, countdown on deals section           |
+| **Discovery naming** | "وصل حديثاً", "ترند الآن", "أكتر حاجة اتباعت"                 |
+| **UGC alignment**    | Creative that mimics native social formats, not catalog dumps |
 
 ### Category Priority for Marketing (Proposed)
 
@@ -264,24 +264,24 @@ Tallaby should prioritize products that are:
 
 ### Voice Attributes (Proposed — aligned with Arabic UI copy)
 
-| Attribute | Do | Don't |
-|-----------|-----|-------|
-| **Egyptian** | Use natural Egyptian Arabic on social | Overly formal فصحى unless brand campaign requires it |
-| **Friendly** | "يلا", "متنساش", "هتعجبك" — warm, direct | Corporate stiffness |
-| **Simple** | Short sentences, one idea per line | Long paragraphs, jargon |
-| **Exciting** | Exclamation where genuine, emoji sparingly ✨🔥 | ALL CAPS spam, false urgency |
-| **Honest** | Real prices, real delivery terms | "Millions of products" unless verified |
-| **Social-friendly** | Hook in first 3 words | Essay-style openings |
+| Attribute           | Do                                              | Don't                                                |
+| ------------------- | ----------------------------------------------- | ---------------------------------------------------- |
+| **Egyptian**        | Use natural Egyptian Arabic on social           | Overly formal فصحى unless brand campaign requires it |
+| **Friendly**        | "يلا", "متنساش", "هتعجبك" — warm, direct        | Corporate stiffness                                  |
+| **Simple**          | Short sentences, one idea per line              | Long paragraphs, jargon                              |
+| **Exciting**        | Exclamation where genuine, emoji sparingly ✨🔥 | ALL CAPS spam, false urgency                         |
+| **Honest**          | Real prices, real delivery terms                | "Millions of products" unless verified               |
+| **Social-friendly** | Hook in first 3 words                           | Essay-style openings                                 |
 
 ### Tone by Channel (Proposed)
 
-| Channel | Tone |
-|---------|------|
-| Instagram / TikTok | Casual, trendy, visual-first, Egyptian slang OK |
-| Facebook | Slightly more explanatory; deals and trust cues |
-| WhatsApp / DM | Helpful, fast, human — mirror support style |
-| Email | Warm but clearer; promo codes prominent |
-| LinkedIn | Professional — vendor recruitment, business growth (secondary audience) |
+| Channel            | Tone                                                                    |
+| ------------------ | ----------------------------------------------------------------------- |
+| Instagram / TikTok | Casual, trendy, visual-first, Egyptian slang OK                         |
+| Facebook           | Slightly more explanatory; deals and trust cues                         |
+| WhatsApp / DM      | Helpful, fast, human — mirror support style                             |
+| Email              | Warm but clearer; promo codes prominent                                 |
+| LinkedIn           | Professional — vendor recruitment, business growth (secondary audience) |
 
 ### Brand Name Usage (Confirmed)
 
@@ -299,14 +299,14 @@ Tallaby should prioritize products that are:
 
 ### Locale Configuration (Confirmed)
 
-| Setting | Value |
-|---------|-------|
-| Supported locales | `ar`, `en` |
-| Default locale | `ar` |
-| Arabic font | **Noto Kufi Arabic** (weights 400–700) |
-| English font | **Montserrat** (weights 400–700) |
-| Text direction | RTL for Arabic, LTR for English |
-| Numerals in Arabic UI | Latin digits (0–9) for prices |
+| Setting               | Value                                  |
+| --------------------- | -------------------------------------- |
+| Supported locales     | `ar`, `en`                             |
+| Default locale        | `ar`                                   |
+| Arabic font           | **Noto Kufi Arabic** (weights 400–700) |
+| English font          | **Montserrat** (weights 400–700)       |
+| Text direction        | RTL for Arabic, LTR for English        |
+| Numerals in Arabic UI | Latin digits (0–9) for prices          |
 
 ### Arabic Style Guide (Proposed)
 
@@ -326,13 +326,13 @@ English remains available via language switcher for expats and bilingual users. 
 
 ### Logo (Confirmed)
 
-| Asset | Path / usage |
-|-------|----------------|
-| White logo | `/logo.white.png` — header on primary background |
-| Primary logo | `/logo-primary.png` |
-| Secondary logo | `/logo.secondary.png` |
-| Default / OG | `/logo.png`, `https://www.tallaby.com/logo.png` |
-| Favicon | `/favicon.png` |
+| Asset          | Path / usage                                     |
+| -------------- | ------------------------------------------------ |
+| White logo     | `/logo.white.png` — header on primary background |
+| Primary logo   | `/logo-primary.png`                              |
+| Secondary logo | `/logo.secondary.png`                            |
+| Default / OG   | `/logo.png`, `https://www.tallaby.com/logo.png`  |
+| Favicon        | `/favicon.png`                                   |
 
 Logo component alt text: **"Tallaby"**
 
@@ -340,49 +340,49 @@ Logo component alt text: **"Tallaby"**
 
 #### Light mode (primary storefront theme)
 
-| Token | Hex | Role |
-|-------|-----|------|
-| **Primary** | `#145163` | Headers, footer, buttons, brand teal |
-| **Primary foreground** | `#fafafa` | Text on primary |
-| **Secondary** | `#89a8b1` | Supporting blue-gray |
-| **Accent** | `#fdad28` | Highlights, badges, CTAs, promo energy |
-| **Accent foreground** | `#171717` | Text on accent |
-| **Background** | `#fafaf8` | Page background (warm off-white) |
-| **Foreground** | `#333333` | Body text |
-| **Muted** | `#f7f7f7` | Subtle surfaces |
-| **Muted foreground** | `#808080` | Secondary text |
-| **Border** | `#e2cbcb` | Warm gray-pink borders |
-| **Destructive** | `#dc2626` | Errors, sale urgency (use sparingly) |
-| **Card** | `#d9d9d9` | Card token (often overridden by white cards in components) |
-| **Border radius** | `0.625rem` (10px) | Standard rounding |
+| Token                  | Hex               | Role                                                       |
+| ---------------------- | ----------------- | ---------------------------------------------------------- |
+| **Primary**            | `#145163`         | Headers, footer, buttons, brand teal                       |
+| **Primary foreground** | `#fafafa`         | Text on primary                                            |
+| **Secondary**          | `#89a8b1`         | Supporting blue-gray                                       |
+| **Accent**             | `#fdad28`         | Highlights, badges, CTAs, promo energy                     |
+| **Accent foreground**  | `#171717`         | Text on accent                                             |
+| **Background**         | `#fafaf8`         | Page background (warm off-white)                           |
+| **Foreground**         | `#333333`         | Body text                                                  |
+| **Muted**              | `#f7f7f7`         | Subtle surfaces                                            |
+| **Muted foreground**   | `#808080`         | Secondary text                                             |
+| **Border**             | `#e2cbcb`         | Warm gray-pink borders                                     |
+| **Destructive**        | `#dc2626`         | Errors, sale urgency (use sparingly)                       |
+| **Card**               | `#d9d9d9`         | Card token (often overridden by white cards in components) |
+| **Border radius**      | `0.625rem` (10px) | Standard rounding                                          |
 
 #### Supporting / contextual colors observed in UI
 
-| Hex | Usage |
-|-----|-------|
-| `#ffffff` | Product cards, mobile nav |
-| `#171717` | Dark text, dark mode base |
+| Hex                    | Usage                                                            |
+| ---------------------- | ---------------------------------------------------------------- |
+| `#ffffff`              | Product cards, mobile nav                                        |
+| `#171717`              | Dark text, dark mode base                                        |
 | Amber/orange gradients | Deal of the Day section (`from-amber-50/80`, `via-orange-50/40`) |
-| `#0f172a` | PWA manifest `theme_color` (note: differs from brand primary) |
+| `#0f172a`              | PWA manifest `theme_color` (note: differs from brand primary)    |
 
 #### Email template palette (Confirmed — `WelcomeEmail.tsx`)
 
-| Hex | Usage |
-|-----|-------|
-| `#faf9f7` | Email background |
+| Hex       | Usage                   |
+| --------- | ----------------------- |
+| `#faf9f7` | Email background        |
 | `#f3e8e0` | Hero section warm beige |
-| `#2a2a2a` | Headings |
-| `#d97757` | Links / accent coral |
-| `#fff5f0` | Offer box |
+| `#2a2a2a` | Headings                |
+| `#d97757` | Links / accent coral    |
+| `#fff5f0` | Offer box               |
 
 **Note:** Email colors skew warmer/coral compared to the web app's teal/gold system. For consistency, **prefer web UI tokens** for new marketing unless designing email-specific templates.
 
 ### Typography (Confirmed)
 
-| Language | Font family |
-|----------|-------------|
-| Arabic | Noto Kufi Arabic |
-| English | Montserrat |
+| Language | Font family      |
+| -------- | ---------------- |
+| Arabic   | Noto Kufi Arabic |
+| English  | Montserrat       |
 
 **Weights used:** 400 (regular), 500 (medium), 600 (semibold), 700 (bold)
 
@@ -420,15 +420,15 @@ Logo component alt text: **"Tallaby"**
 
 ### Social Media Posts (Proposed)
 
-| Element | Guideline |
-|---------|-----------|
-| **Size** | 1080×1080 feed; 1080×1920 stories/reels |
-| **Background** | `#fafaf8`, `#ffffff`, or `#145163` with white text |
-| **Accent use** | `#fdad28` for price tags, badges, CTA buttons |
-| **Product focus** | Product occupies 50–70% of frame |
-| **Text** | Max 8–12 words headline; body optional |
-| **Logo** | Small corner watermark; white logo on dark, primary on light |
-| **RTL** | Design for right-to-left reading when Arabic text is primary |
+| Element           | Guideline                                                    |
+| ----------------- | ------------------------------------------------------------ |
+| **Size**          | 1080×1080 feed; 1080×1920 stories/reels                      |
+| **Background**    | `#fafaf8`, `#ffffff`, or `#145163` with white text           |
+| **Accent use**    | `#fdad28` for price tags, badges, CTA buttons                |
+| **Product focus** | Product occupies 50–70% of frame                             |
+| **Text**          | Max 8–12 words headline; body optional                       |
+| **Logo**          | Small corner watermark; white logo on dark, primary on light |
+| **RTL**           | Design for right-to-left reading when Arabic text is primary |
 
 ### Product Creatives (Proposed)
 
@@ -472,7 +472,7 @@ Logo component alt text: **"Tallaby"**
 
 ### Pillar 1: Trend Discovery (Proposed)
 
-*"لقيته على تالابي"* — surface what's trending before it's everywhere.
+_"لقيته على طلبي"_ — surface what's trending before it's everywhere.
 
 Content: viral product reveals, "ترند الأسبوع", TikTok-style demos.
 
@@ -512,26 +512,26 @@ Content: fresh drops, restocks, seasonal collections.
 
 ### Confirmed Channels
 
-| Platform | URL / handle |
-|----------|----------------|
-| **Facebook** | `https://www.facebook.com/profile.php?id=100070155523046` |
-| **Instagram** | `https://www.instagram.com/tallabycommerce/` |
-| **Twitter/X** | `@tallaby` (in site metadata; not in footer) |
-| **WhatsApp** | `+20 101 362 6248` (`wa.me/201013626248`) |
-| **Email** | `info@tallaby.com` |
+| Platform      | URL / handle                                              |
+| ------------- | --------------------------------------------------------- |
+| **Facebook**  | `https://www.facebook.com/profile.php?id=100070155523046` |
+| **Instagram** | `https://www.instagram.com/tallabycommerce/`              |
+| **Twitter/X** | `@tallaby` (in site metadata; not in footer)              |
+| **WhatsApp**  | `+20 101 362 6248` (`wa.me/201013626248`)                 |
+| **Email**     | `info@tallaby.com`                                        |
 
 No confirmed TikTok or YouTube handles in codebase — **Proposed** to establish consistent handles matching `tallaby` or `tallabycommerce`.
 
 ### Platform-Specific Guidance (Proposed)
 
-| Platform | Content style | Frequency | CTA style |
-|----------|---------------|-----------|-----------|
-| **Instagram** | Carousels (product → price → CTA), Reels, Stories polls | Daily stories; 4–5 feed/week | "اطلب من اللينك في البايو" / DM |
-| **TikTok** | Native vertical video, trend sounds, unboxing | 3–5/week | "لينك في البايو على tallaby.com" |
-| **Facebook** | Deal posts, album catalogs, live shopping potential | 1/day | "تسوق الآن" + link |
-| **YouTube** | Shorts for product demos; longer reviews optional | 2–3 Shorts/week | Link in description |
-| **LinkedIn** | Seller recruitment, company updates | 1–2/week | "كن بائعًا" |
-| **WhatsApp** | Customer support, order updates (operational) | On demand | Direct human tone |
+| Platform      | Content style                                           | Frequency                    | CTA style                        |
+| ------------- | ------------------------------------------------------- | ---------------------------- | -------------------------------- |
+| **Instagram** | Carousels (product → price → CTA), Reels, Stories polls | Daily stories; 4–5 feed/week | "اطلب من اللينك في البايو" / DM  |
+| **TikTok**    | Native vertical video, trend sounds, unboxing           | 3–5/week                     | "لينك في البايو على tallaby.com" |
+| **Facebook**  | Deal posts, album catalogs, live shopping potential     | 1/day                        | "تسوق الآن" + link               |
+| **YouTube**   | Shorts for product demos; longer reviews optional       | 2–3 Shorts/week              | Link in description              |
+| **LinkedIn**  | Seller recruitment, company updates                     | 1–2/week                     | "كن بائعًا"                      |
+| **WhatsApp**  | Customer support, order updates (operational)           | On demand                    | Direct human tone                |
 
 ### Cross-Platform Consistency (Proposed)
 
@@ -555,14 +555,14 @@ UGC / influencer seeding → Retarget engagers → Next trend
 
 ### Content Formats for Trend Products (Proposed)
 
-| Format | Example hook (Egyptian Arabic) |
-|--------|-------------------------------|
-| **Reveal** | "الجزء اللي مفيش حد قاله عن [المنتج]..." |
-| **Problem/solution** | "كنت بتعاني من كده؟ الحل على تالابي" |
-| **Social proof** | "ليه الكل بيطلبها دلوقتي؟" |
-| **Price shock** | "بـ [السعر] ج.م بس؟!" |
-| **Comparison** | "جربناه ٣ أيام — النتيجة..." |
-| **Scarcity** | "العرض ده مش هيقعد كتير" |
+| Format               | Example hook (Egyptian Arabic)           |
+| -------------------- | ---------------------------------------- |
+| **Reveal**           | "الجزء اللي مفيش حد قاله عن [المنتج]..." |
+| **Problem/solution** | "كنت بتعاني من كده؟ الحل على طلبي"       |
+| **Social proof**     | "ليه الكل بيطلبها دلوقتي؟"               |
+| **Price shock**      | "بـ [السعر] ج.م بس؟!"                    |
+| **Comparison**       | "جربناه ٣ أيام — النتيجة..."             |
+| **Scarcity**         | "العرض ده مش هيقعد كتير"                 |
 
 ### Impulse Purchase Triggers (Proposed)
 
@@ -618,32 +618,32 @@ UGC / influencer seeding → Retarget engagers → Next trend
 
 ### Confirmed CTAs from Arabic UI (use verbatim when applicable)
 
-| English | Arabic | Context |
-|---------|--------|---------|
-| Shop now | تسوق الآن | Hero, general |
-| Add to cart | أضف إلى السلة | Product |
-| Buy now | اشتري الآن | Product |
-| Proceed to checkout | المتابعة إلى الدفع | Cart |
-| Place order | تأكيد الطلب | Checkout |
-| Continue shopping | متابعة التسوق | Cart |
-| View details | عرض التفاصيل | Product card |
-| View all products | عرض جميع المنتجات | Listing |
-| Become a seller | كن بائعًا | Vendor |
-| Sign in | تسجيل الدخول | Auth |
-| Create account | إنشاء حساب | Auth |
+| English             | Arabic             | Context       |
+| ------------------- | ------------------ | ------------- |
+| Shop now            | تسوق الآن          | Hero, general |
+| Add to cart         | أضف إلى السلة      | Product       |
+| Buy now             | اشتري الآن         | Product       |
+| Proceed to checkout | المتابعة إلى الدفع | Cart          |
+| Place order         | تأكيد الطلب        | Checkout      |
+| Continue shopping   | متابعة التسوق      | Cart          |
+| View details        | عرض التفاصيل       | Product card  |
+| View all products   | عرض جميع المنتجات  | Listing       |
+| Become a seller     | كن بائعًا          | Vendor        |
+| Sign in             | تسجيل الدخول       | Auth          |
+| Create account      | إنشاء حساب         | Auth          |
 
 ### Proposed Marketing CTAs (campaign use)
 
-| CTA (Arabic) | When to use |
-|--------------|-------------|
-| **اطلب دلوقتي** | Urgency conversion |
-| **جربيها النهارده** | Beauty / personal care trends |
-| **الحق العرض** | Deal of the Day |
-| **استخدم كود FREEDEL** | First-order free delivery |
-| **واتسابنا على 01013626248** | Support / high-consideration |
-| **تسوق من تالابي** | Brand awareness |
-| **لنك المنتج في الكومنت** | Social engagement (then DM/link) |
-| **ابعت "عايز" في الكومنت** | Engagement bait — use sparingly |
+| CTA (Arabic)                 | When to use                      |
+| ---------------------------- | -------------------------------- |
+| **اطلب دلوقتي**              | Urgency conversion               |
+| **جربيها النهارده**          | Beauty / personal care trends    |
+| **الحق العرض**               | Deal of the Day                  |
+| **استخدم كود FREEDEL**       | First-order free delivery        |
+| **واتسابنا على 01013626248** | Support / high-consideration     |
+| **تسوق من طلبي**             | Brand awareness                  |
+| **لنك المنتج في الكومنت**    | Social engagement (then DM/link) |
+| **ابعت "عايز" في الكومنت**   | Engagement bait — use sparingly  |
 
 ### CTA Visual Treatment (Confirmed patterns)
 
@@ -687,21 +687,21 @@ high detail, commercial quality, 4k
 
 ### Product Presentation (Proposed)
 
-| Product type | Visual approach |
-|--------------|-----------------|
-| Gadgets | Hand interaction, desk/lifestyle context |
-| Beauty | Clean skin-tone-aware presentation, bathroom/vanity context |
-| Fashion | On-model or flat lay; modest styling for Egyptian audience |
-| Home | Organized, aspirational but realistic Egyptian home |
+| Product type | Visual approach                                             |
+| ------------ | ----------------------------------------------------------- |
+| Gadgets      | Hand interaction, desk/lifestyle context                    |
+| Beauty       | Clean skin-tone-aware presentation, bathroom/vanity context |
+| Fashion      | On-model or flat lay; modest styling for Egyptian audience  |
+| Home         | Organized, aspirational but realistic Egyptian home         |
 
 ### Composition Specs (Proposed)
 
-| Asset | Dimensions | Notes |
-|-------|------------|-------|
-| Instagram feed | 1080×1080 | Center product |
-| Story/Reel cover | 1080×1920 | Top 20% safe for UI |
-| Facebook ad | 1200×628 | Product right, text space left |
-| OG / link preview | 1200×630 | Logo + headline + product |
+| Asset             | Dimensions | Notes                          |
+| ----------------- | ---------- | ------------------------------ |
+| Instagram feed    | 1080×1080  | Center product                 |
+| Story/Reel cover  | 1080×1920  | Top 20% safe for UI            |
+| Facebook ad       | 1200×628   | Product right, text space left |
+| OG / link preview | 1200×630   | Logo + headline + product      |
 
 ### Brand Consistency Checklist (Proposed)
 
@@ -719,35 +719,35 @@ high detail, commercial quality, 4k
 
 ### Do
 
-| # | Rule |
-|---|------|
-| 1 | Default to **Egyptian Arabic** for all consumer marketing |
-| 2 | Use confirmed colors: `#145163`, `#fdad28`, `#fafaf8` |
-| 3 | Show prices in **EGP / ج.م** with Latin numerals |
-| 4 | Promote verified codes: **FREEDEL**, **WELCOME10** |
-| 5 | Mention **COD** and **governorate delivery** as trust builders |
-| 6 | Link to `www.tallaby.com` |
-| 7 | Use **Noto Kufi Arabic** for Arabic typography |
-| 8 | Design **mobile-first, RTL-aware** layouts |
-| 9 | Focus on **trendy, useful, impulse-friendly** products (strategic direction) |
-| 10 | Route support CTAs to **WhatsApp** and **info@tallaby.com** |
-| 11 | Use real product catalog images when possible |
-| 12 | Mark proposed claims clearly when drafting strategy docs |
+| #   | Rule                                                                         |
+| --- | ---------------------------------------------------------------------------- |
+| 1   | Default to **Egyptian Arabic** for all consumer marketing                    |
+| 2   | Use confirmed colors: `#145163`, `#fdad28`, `#fafaf8`                        |
+| 3   | Show prices in **EGP / ج.م** with Latin numerals                             |
+| 4   | Promote verified codes: **FREEDEL**, **WELCOME10**                           |
+| 5   | Mention **COD** and **governorate delivery** as trust builders               |
+| 6   | Link to `www.tallaby.com`                                                    |
+| 7   | Use **Noto Kufi Arabic** for Arabic typography                               |
+| 8   | Design **mobile-first, RTL-aware** layouts                                   |
+| 9   | Focus on **trendy, useful, impulse-friendly** products (strategic direction) |
+| 10  | Route support CTAs to **WhatsApp** and **info@tallaby.com**                  |
+| 11  | Use real product catalog images when possible                                |
+| 12  | Mark proposed claims clearly when drafting strategy docs                     |
 
 ### Don't
 
-| # | Rule |
-|---|------|
-| 1 | Don't use About page **placeholder stats or fake team** |
-| 2 | Don't claim **online payment is live** (coming soon) |
-| 3 | Don't say **"millions of products"** without verification |
-| 4 | Don't generate **Arabic text inside AI images** |
-| 5 | Don't invent **official slogans** beyond "متجرك الشامل" |
-| 6 | Don't use **USD** in customer-facing Egypt marketing |
-| 7 | Don't ignore **RTL** reading order in layouts |
-| 8 | Don't mix **email coral palette** with web assets inconsistently |
-| 9 | Don't promise **delivery times** not backed by operations |
-| 10 | Don't present **proposed strategy** as historical fact |
+| #   | Rule                                                             |
+| --- | ---------------------------------------------------------------- |
+| 1   | Don't use About page **placeholder stats or fake team**          |
+| 2   | Don't claim **online payment is live** (coming soon)             |
+| 3   | Don't say **"millions of products"** without verification        |
+| 4   | Don't generate **Arabic text inside AI images**                  |
+| 5   | Don't invent **official slogans** beyond "متجرك الشامل"          |
+| 6   | Don't use **USD** in customer-facing Egypt marketing             |
+| 7   | Don't ignore **RTL** reading order in layouts                    |
+| 8   | Don't mix **email coral palette** with web assets inconsistently |
+| 9   | Don't promise **delivery times** not backed by operations        |
+| 10  | Don't present **proposed strategy** as historical fact           |
 
 ---
 
@@ -755,16 +755,16 @@ high detail, commercial quality, 4k
 
 For marketing accuracy — **Confirmed** touchpoints:
 
-| Stage | Experience |
-|-------|------------|
-| **Discover** | Homepage hero, categories, deals, search, social links |
-| **Browse** | Product grid, filters, Arabic/English titles via translations |
-| **Evaluate** | Reviews, ratings, descriptions, similar products |
-| **Cart** | Guest or authenticated cart, coupons |
-| **Checkout** | Address (Egypt), COD, order notes |
-| **Post-purchase** | Order tracking, notifications, returns flow |
-| **Support** | Email, WhatsApp, contact form |
-| **Seller path** | Become seller application → vendor dashboard |
+| Stage             | Experience                                                    |
+| ----------------- | ------------------------------------------------------------- |
+| **Discover**      | Homepage hero, categories, deals, search, social links        |
+| **Browse**        | Product grid, filters, Arabic/English titles via translations |
+| **Evaluate**      | Reviews, ratings, descriptions, similar products              |
+| **Cart**          | Guest or authenticated cart, coupons                          |
+| **Checkout**      | Address (Egypt), COD, order notes                             |
+| **Post-purchase** | Order tracking, notifications, returns flow                   |
+| **Support**       | Email, WhatsApp, contact form                                 |
+| **Seller path**   | Become seller application → vendor dashboard                  |
 
 ### Key Promises Marketing Can Make (Confirmed)
 
@@ -838,7 +838,7 @@ Provide:
 1. **Primary Arabic copy** (ready to publish)
 2. **Optional English secondary** (if requested)
 3. **Visual direction** (colors, layout, image prompt if needed)
-4. **Hashtags** (Proposed — mix Arabic/English, e.g. `#تسوق_اونلاين #تالابي #Tallaby`)
+4. **Hashtags** (Proposed — mix Arabic/English, e.g. `#تسوق_اونلاين #طلبي #Tallaby`)
 5. **Notes** flagging anything Proposed or needing human approval
 
 ### When Uncertain
@@ -861,41 +861,41 @@ This file should be updated when:
 
 ## Appendix A — Key URLs & Contacts (Confirmed)
 
-| Resource | Value |
-|----------|-------|
-| Storefront | https://www.tallaby.com |
-| Vendor dashboard | https://dashboard.tallaby.com |
-| Support email | info@tallaby.com |
-| WhatsApp | +20 101 362 6248 |
-| Facebook | https://www.facebook.com/profile.php?id=100070155523046 |
-| Instagram | https://www.instagram.com/tallabycommerce/ |
-| Twitter/X | @tallaby |
+| Resource         | Value                                                   |
+| ---------------- | ------------------------------------------------------- |
+| Storefront       | https://www.tallaby.com                                 |
+| Vendor dashboard | https://dashboard.tallaby.com                           |
+| Support email    | info@tallaby.com                                        |
+| WhatsApp         | +20 101 362 6248                                        |
+| Facebook         | https://www.facebook.com/profile.php?id=100070155523046 |
+| Instagram        | https://www.instagram.com/tallabycommerce/              |
+| Twitter/X        | @tallaby                                                |
 
 ## Appendix B — Promo Codes (Confirmed)
 
-| Code | Offer | Source |
-|------|-------|--------|
-| **FREEDEL** | Free delivery on first order | Homepage hero (`messages/ar.json`) |
-| **WELCOME10** | 10% off first purchase | Welcome email template |
+| Code          | Offer                        | Source                             |
+| ------------- | ---------------------------- | ---------------------------------- |
+| **FREEDEL**   | Free delivery on first order | Homepage hero (`messages/ar.json`) |
+| **WELCOME10** | 10% off first purchase       | Welcome email template             |
 
 ## Appendix C — Source File Index
 
-| Topic | File |
-|-------|------|
-| Project overview | `PROJECT_DESCRIPTION.md` |
-| Brand colors | `packages/ui/src/styles/globals.css` |
-| Arabic copy | `apps/ecommerce/messages/ar.json` |
-| English copy | `apps/ecommerce/messages/en.json` |
-| Default locale | `apps/ecommerce/i18n/request.ts` |
-| Fonts | `apps/ecommerce/app/layout.tsx` |
-| Homepage structure | `apps/ecommerce/app/(main)/page.tsx` |
-| Hero content | `apps/ecommerce/components/home/hero/hero-banner.tsx` |
-| Footer / social | `apps/ecommerce/components/layout/Footer.tsx` |
-| Price formatting | `packages/lib/src/utils/formatPrice.ts` |
-| Organization schema | `apps/ecommerce/lib/structured-data.ts` |
-| Welcome email brand | `packages/emails/src/WelcomeEmail.tsx` |
-| Database products/categories | `packages/db/src/drizzle/schema.ts` |
+| Topic                        | File                                                  |
+| ---------------------------- | ----------------------------------------------------- |
+| Project overview             | `PROJECT_DESCRIPTION.md`                              |
+| Brand colors                 | `packages/ui/src/styles/globals.css`                  |
+| Arabic copy                  | `apps/ecommerce/messages/ar.json`                     |
+| English copy                 | `apps/ecommerce/messages/en.json`                     |
+| Default locale               | `apps/ecommerce/i18n/request.ts`                      |
+| Fonts                        | `apps/ecommerce/app/layout.tsx`                       |
+| Homepage structure           | `apps/ecommerce/app/(main)/page.tsx`                  |
+| Hero content                 | `apps/ecommerce/components/home/hero/hero-banner.tsx` |
+| Footer / social              | `apps/ecommerce/components/layout/Footer.tsx`         |
+| Price formatting             | `packages/lib/src/utils/formatPrice.ts`               |
+| Organization schema          | `apps/ecommerce/lib/structured-data.ts`               |
+| Welcome email brand          | `packages/emails/src/WelcomeEmail.tsx`                |
+| Database products/categories | `packages/db/src/drizzle/schema.ts`                   |
 
 ---
 
-*This document is for internal marketing and AI context. It is not a public brand guidelines PDF. Verify operational claims with the Tallaby team before paid campaigns.*
+_This document is for internal marketing and AI context. It is not a public brand guidelines PDF. Verify operational claims with the Tallaby team before paid campaigns._

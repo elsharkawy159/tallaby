@@ -114,11 +114,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const addToCart = (p: {
     productId: string;
     quantity: number;
-    variant?: any;
+    variantId?: string;
   }) =>
     handleAction(
       addToCartAction,
-      [p.productId, p.quantity],
+      [p.productId, p.quantity, p.variantId],
       tToast("itemAddedToCart"),
       tToast("failedToAddItem"),
       p.productId,

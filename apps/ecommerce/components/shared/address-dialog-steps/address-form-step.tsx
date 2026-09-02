@@ -1,12 +1,11 @@
 "use client";
 
-import { useTransition } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 
-import { Button } from "@workspace/ui/components/button";
 import { Form } from "@workspace/ui/components/form";
 import { Card, CardContent } from "@workspace/ui/components/card";
 import { Separator } from "@workspace/ui/components/separator";
@@ -21,6 +20,12 @@ import {
   type AddressData,
 } from "../../address/address.schema";
 import { addAddress, updateAddress } from "@/actions/customer";
+
+export const ADDRESS_FORM_ID = "address-form-step";
+
+export interface AddressFormStepHandle {
+  submit: () => void;
+}
 
 interface AddressFormStepProps {
   address?: AddressData | null;
@@ -38,14 +43,16 @@ interface AddressFormStepProps {
   } | null;
   onSuccess?: (address: AddressData) => void;
   onCancel?: () => void;
+  onPendingChange?: (isPending: boolean) => void;
 }
 
-export const AddressFormStep = ({
-  address,
-  selectedLocation,
-  onSuccess,
-  onCancel,
-}: AddressFormStepProps) => {
+export const AddressFormStep = forwardRef<
+  AddressFormStepHandle,
+  AddressFormStepProps
+>(function AddressFormStep(
+  { address, selectedLocation, onSuccess, onPendingChange },
+  ref
+) {
   const t = useTranslations("addresses");
   const [isPending, startTransition] = useTransition();
 
@@ -113,14 +120,30 @@ export const AddressFormStep = ({
     });
   };
 
+  useImperativeHandle(
+    ref,
+    () => ({
+      submit: () => {
+        form.handleSubmit(handleSubmit as any)();
+      },
+    }),
+    [form, handleSubmit]
+  );
+
+  useEffect(() => {
+    onPendingChange?.(isPending);
+  }, [isPending, onPendingChange]);
+
   return (
     <Card className="pb-0 pt-5">
       <CardContent className="px-0">
         <Form {...form}>
           <form
+            id={ADDRESS_FORM_ID}
             onSubmit={(e) => {
               e.preventDefault();
               e.stopPropagation();
+              form.handleSubmit(handleSubmit as any)(e);
             }}
             className="space-y-4"
           >
@@ -219,7 +242,7 @@ export const AddressFormStep = ({
 
             <Separator />
 
-            <div className="space-y-3 px-6">
+            <div className="space-y-3 px-6 pb-6">
               <TextareaInput
                 form={form as any}
                 name="deliveryInstructions"
@@ -228,42 +251,9 @@ export const AddressFormStep = ({
                 showCharacterCount={true}
               />
             </div>
-
-            <div className="px-6 py-3 border-t bg-white">
-              <div className="gap-3 flex">
-                {onCancel && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={onCancel}
-                    disabled={isPending}
-                    className="flex-1"
-                  >
-                    {t("cancel")}
-                  </Button>
-                )}
-
-                <Button
-                  type="button"
-                  onClick={() => {
-                    form.handleSubmit(handleSubmit as any)();
-                  }}
-                  disabled={isPending}
-                  className="flex-1"
-                >
-                  {isPending
-                    ? address?.id
-                      ? t("updating")
-                      : t("creating")
-                    : address?.id
-                      ? t("updateAddress")
-                      : t("saveAddress")}
-                </Button>
-              </div>
-            </div>
           </form>
         </Form>
       </CardContent>
     </Card>
   );
-};
+});

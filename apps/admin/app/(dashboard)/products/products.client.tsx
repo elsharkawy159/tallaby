@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "@workspace/ui/components/button";
 import { Plus, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
-import { getAllProducts } from "@/actions/products";
+import { getAllProducts, updateProductStatus } from "@/actions/products";
 import { getProductsColumns } from "./_components/table-columns";
 import { DataTable } from "../_components/data-table/data-table";
 
@@ -47,6 +47,7 @@ const statusSortOrder: Record<Product["status"], number> = {
 export function ProductsClient() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
 
   const loadProducts = useCallback(async () => {
     try {
@@ -82,7 +83,48 @@ export function ProductsClient() {
     loadProducts();
   }, [loadProducts]);
 
-  const columns = getProductsColumns();
+  const handleStatusChange = useCallback(
+    async (productId: string, status: Product["status"]) => {
+      setUpdatingIds((prev) => new Set(prev).add(productId));
+
+      try {
+        const result = await updateProductStatus(productId, status);
+
+        if (result.success) {
+          setProducts((prev) =>
+            prev.map((product) =>
+              product.id === productId ? { ...product, status } : product
+            )
+          );
+          toast.success(
+            status === "active"
+              ? "Product approved"
+              : status === "rejected"
+                ? "Product rejected"
+                : "Product status updated"
+          );
+          return;
+        }
+
+        toast.error(result.error || "Failed to update product status");
+      } catch (error) {
+        console.error("Error updating product status:", error);
+        toast.error("Failed to update product status");
+      } finally {
+        setUpdatingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(productId);
+          return next;
+        });
+      }
+    },
+    []
+  );
+
+  const columns = getProductsColumns({
+    onStatusChange: handleStatusChange,
+    isStatusUpdating: (productId) => updatingIds.has(productId),
+  });
 
   const categories = Array.from(
     new Set(

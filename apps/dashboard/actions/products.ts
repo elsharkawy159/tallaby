@@ -30,6 +30,10 @@ function normalizeRichTextContent(html?: string | null): string | null {
 
 // Excel parsing
 import * as XLSX from "xlsx";
+import {
+  normalizeHeaderKey,
+  PRODUCT_IMPORT_HEADER_MAP,
+} from "@/lib/product-import-headers";
 // tables imported above via @workspace/db default export; no need for direct table imports here
 
 /** Builds the cache-invalidation snapshot for a product from its current DB state. */
@@ -193,10 +197,7 @@ export async function getSellerProducts(params?: {
 
 // Bulk upload via Excel/CSV
 // Helpers for bulk upload
-const normalizeKey = (k: string) =>
-  String(k || "")
-    .toLowerCase()
-    .replace(/\s+/g, "");
+const normalizeKey = normalizeHeaderKey;
 
 function normalizeVariantImageFields(v: {
   images?: string[] | null;
@@ -230,6 +231,39 @@ function normalizeVariantDefaultFlags<T extends { isDefault?: boolean | null }>(
     ...variant,
     isDefault: index === resolvedIndex,
   }));
+}
+
+function applyDefaultVariantProductImages<
+  T extends {
+    isDefault?: boolean | null;
+    images?: string[] | null;
+    imageUrl?: string | null;
+  },
+>(variants: T[], productImages: string[] | null | undefined): T[] {
+  const images = Array.isArray(productImages)
+    ? productImages.filter(
+        (image): image is string => typeof image === "string" && image.length > 0
+      )
+    : [];
+
+  if (images.length === 0 || variants.length === 0) {
+    return variants;
+  }
+
+  const defaultIndex = variants.findIndex((variant) => variant.isDefault === true);
+  const resolvedIndex = defaultIndex >= 0 ? defaultIndex : 0;
+
+  return variants.map((variant, index) => {
+    if (index !== resolvedIndex) {
+      return variant;
+    }
+
+    return {
+      ...variant,
+      images,
+      imageUrl: images[0] ?? null,
+    };
+  });
 }
 
 function mapVariantFormToDb(v: any, index: number) {
@@ -376,40 +410,9 @@ export async function bulkUploadProductsAction(formData: FormData) {
     const rows = XLSX.utils.sheet_to_json<Record<string, any>>(sheet, {
       defval: "",
     });
-
-    // Map human headers → internal keys (supports nested price fields)
-    const headerMap: Record<string, string> = {
-      title: "title",
-      name: "title",
-      sku: "sku",
-      description: "description",
-      category: "category",
-      categoryname: "category",
-      brand: "brand",
-      brandname: "brand",
-      quantity: "quantity",
-      stock: "quantity",
-      base: "price.base",
-      baseprice: "price.base",
-      price: "price.base",
-      list: "price.list",
-      final: "price.final",
-      discounttype: "price.discountType",
-      discountvalue: "price.discountValue",
-      images: "images",
-      imageurls: "images",
-      isactive: "isActive",
-      isfeatured: "isFeatured",
-      condition: "condition",
-      conditiondescription: "conditionDescription",
-      fulfillmenttype: "fulfillmentType",
-      handlingtime: "handlingTime",
-      maxorderquantity: "maxOrderQuantity",
-      isplatformchoice: "isPlatformChoice",
-      ismostselling: "isMostSelling",
-      freedelivery: "freeDelivery",
-      taxclass: "taxClass",
-    };
+    // Map human headers → internal keys (supports nested price fields).
+    // Shared with the Export/Template sheet — see lib/product-import-headers.ts.
+    const headerMap = PRODUCT_IMPORT_HEADER_MAP;
 
     const valid: ParsedBulkRow[] = [];
     const invalid: Array<{
@@ -1086,7 +1089,10 @@ export async function createProduct(
 
       // Insert variants if provided
       if (Array.isArray(rest.variants) && rest.variants.length > 0) {
-        const normalizedVariants = normalizeVariantDefaultFlags(rest.variants);
+        const normalizedVariants = applyDefaultVariantProductImages(
+          normalizeVariantDefaultFlags(rest.variants),
+          Array.isArray(rest.images) ? rest.images : null
+        );
         const variantValues = normalizedVariants.map((v: any, index: number) => ({
           productId: created.id,
           ...mapVariantFormToDb(v, index),
@@ -1402,7 +1408,21 @@ export async function updateProduct(
 
         // Then insert new variants if any
         if (variants.length > 0) {
-          const normalizedVariants = normalizeVariantDefaultFlags(variants);
+          const productImages = Array.isArray(productData.images)
+            ? productData.images.filter(
+                (image): image is string =>
+                  typeof image === "string" && image.length > 0
+              )
+            : Array.isArray(updated[0]?.images)
+              ? updated[0].images.filter(
+                  (image): image is string =>
+                    typeof image === "string" && image.length > 0
+                )
+              : null;
+          const normalizedVariants = applyDefaultVariantProductImages(
+            normalizeVariantDefaultFlags(variants),
+            productImages
+          );
           const variantValues = normalizedVariants.map((v, index) => ({
             productId,
             ...mapVariantFormToDb(v, index),

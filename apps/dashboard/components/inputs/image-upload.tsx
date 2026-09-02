@@ -48,6 +48,8 @@ interface ImageUploadProps {
   form: UseFormReturn<any>;
   bucket: string;
   maxImages?: number;
+  /** Compact square layout for tight spaces (e.g. a table cell). */
+  compact?: boolean;
 }
 
 export function ImageUpload({
@@ -56,6 +58,7 @@ export function ImageUpload({
   form,
   bucket,
   maxImages = 5,
+  compact = false,
 }: ImageUploadProps) {
   const supabase = createClient();
   const tToast = useTranslations("toast");
@@ -273,23 +276,34 @@ export function ImageUpload({
   );
 
   return (
-    <div className="flex lg:flex-row flex-col justify-between gap-4">
+    <div
+      className={
+        compact
+          ? "flex flex-col gap-2"
+          : "flex lg:flex-row flex-col justify-between gap-4"
+      }
+    >
       {/* Image Preview */}
       {filesToUpload.length > 0 && (
-        <div className="flex gap-6 flex-1">
+        <div className={compact ? "" : "flex gap-6 flex-1"}>
           {/* Thumbnail Grid */}
-          <div className="lg:col-span-1">
+          <div className={compact ? "" : "lg:col-span-1"}>
             <div className="space-y-2">
-              <h3 className="text-xs font-semibold text-gray-700 flex justify-between items-center gap-2">
-                <ImageIcon className="size-4" />
+              {!compact && (
+                <h3 className="text-xs font-semibold text-gray-700 flex justify-between items-center gap-2">
+                  <ImageIcon className="size-4" />
 
-                <span className="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                  {filesToUpload.length}/{maxImages}
-                </span>
-              </h3>
+                  <span className="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                    {filesToUpload.length}/{maxImages}
+                  </span>
+                </h3>
+              )}
 
               <DragDropContext onDragEnd={handleOnDragEnd}>
-                <Droppable droppableId="images" direction="vertical">
+                <Droppable
+                  droppableId="images"
+                  direction={compact ? "horizontal" : "vertical"}
+                >
                   {(droppableProvided) => (
                     <RadioGroup
                       defaultValue={
@@ -297,7 +311,9 @@ export function ImageUpload({
                         filesToUpload[0]?.liveSource ??
                         ""
                       }
-                      className="flex flex-col gap-3"
+                      className={
+                        compact ? "flex flex-wrap gap-2" : "flex flex-col gap-3"
+                      }
                       onValueChange={(cover) =>
                         form.setValue("attachments.cover", cover)
                       }
@@ -315,7 +331,9 @@ export function ImageUpload({
                               ref={provided.innerRef}
                               {...provided.draggableProps}
                               {...provided.dragHandleProps}
-                              className={`relative rounded-lg border min-w-28 transition-all duration-200 ${
+                              className={`relative rounded-lg border transition-all duration-200 ${
+                                compact ? "size-30" : "min-w-28"
+                              } ${
                                 snapshot.isDragging
                                   ? "bg-blue-50 border-blue-200 shadow-lg scale-105 rotate-2"
                                   : "bg-white border-gray-200 hover:border-gray-300 hover:shadow-md"
@@ -326,6 +344,7 @@ export function ImageUpload({
                                 removeFile={removeFile}
                                 idx={idx}
                                 bucket={bucket}
+                                compact={compact}
                               />
                             </div>
                           )}
@@ -340,54 +359,48 @@ export function ImageUpload({
           </div>
 
           {/* Preview Area */}
-          <div className="lg:col-span-2">
-            <div className="space-y-4">
-              {/* <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-green-500" />
-                Preview
-                {filesToUpload[0]?.isUploaded && (
-                  <span className="text-xs font-normal text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                    Ready
-                  </span>
-                )}
-              </h3> */}
-
-              <div className="relative w-full h-[400px] bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-                {filesToUpload.length > 0 ? (
-                  <div className="w-full h-full flex items-center justify-center p-2">
-                    <Image
-                      src={
-                        filesToUpload[0].liveSource
-                          ? getPublicUrl(filesToUpload[0].liveSource, bucket)
-                          : filesToUpload[0].preview || ""
-                      }
-                      width={600}
-                      height={600}
-                      className="w-full h-full object-contain rounded-lg max-w-xl"
-                      alt="Selected image preview"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    />
-                  </div>
-                ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
-                    <ImageIcon className="h-16 w-16 mb-4 opacity-50" />
-                    <p className="text-sm font-medium">No image selected</p>
-                    <p className="text-xs text-gray-400">
-                      Choose an image from the gallery
-                    </p>
-                  </div>
-                )}
+          {!compact && (
+            <div className="lg:col-span-2">
+              <div className="space-y-4">
+                <div className="relative w-full h-[400px] bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+                  {filesToUpload.length > 0 ? (
+                    <div className="w-full h-full flex items-center justify-center p-2">
+                      <Image
+                        src={
+                          filesToUpload[0].liveSource
+                            ? getPublicUrl(filesToUpload[0].liveSource, bucket)
+                            : filesToUpload[0].preview || ""
+                        }
+                        width={600}
+                        height={600}
+                        className="w-full h-full object-contain rounded-lg max-w-xl"
+                        alt="Selected image preview"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
+                      <ImageIcon className="h-16 w-16 mb-4 opacity-50" />
+                      <p className="text-sm font-medium">No image selected</p>
+                      <p className="text-xs text-gray-400">
+                        Choose an image from the gallery
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       )}
 
       {/* Upload */}
-      <div className="relative flex-1">
+      <div className={compact ? "relative" : "relative flex-1"}>
         <label
           {...getRootProps()}
-          className={`group bg-white relative flex w-full flex-col items-center justify-center rounded-xl border-2 border-dashed transition-all duration-200 ease-in-out ${
+          className={`group bg-white relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed transition-all duration-200 ease-in-out ${
+            compact ? "size-30" : "w-full"
+          } ${
             isMaxReached
               ? "cursor-not-allowed border-gray-200 bg-gray-50/50 opacity-60"
               : isDragActive
@@ -395,59 +408,72 @@ export function ImageUpload({
                 : "cursor-pointer border-gray-200 bg-gray-50/30 hover:border-primary/40 hover:bg-primary/5 hover:shadow-md"
           }`}
         >
-          <div className="space-y-4 text-center px-6 py-8">
-            <div
-              className={`relative transition-transform duration-200 ${isDragActive ? "scale-110" : "group-hover:scale-105"}`}
-            >
+          {compact ? (
+            <div className="space-y-1 text-center px-2 py-2">
               {isMaxReached ? (
-                <ImageIcon className="mx-auto h-12 w-12 text-gray-400" />
+                <ImageIcon className="mx-auto size-6 text-gray-400" />
               ) : (
-                <Upload className="mx-auto h-12 w-12 text-gray-400 group-hover:text-primary transition-colors duration-200" />
+                <Upload className="mx-auto size-6 text-gray-400 group-hover:text-primary transition-colors duration-200" />
               )}
+              <p className="text-xs font-medium text-gray-500">
+                {filesToUpload.length}/{maxImages}
+              </p>
             </div>
-
-            <div className="space-y-2">
-              <p
-                className={`text-lg font-semibold transition-colors duration-200 ${
-                  isMaxReached
-                    ? "text-gray-500"
-                    : isDragActive
-                      ? "text-primary"
-                      : "text-gray-700 group-hover:text-primary"
-                }`}
+          ) : (
+            <div className="space-y-4 text-center px-6 py-8">
+              <div
+                className={`relative transition-transform duration-200 ${isDragActive ? "scale-110" : "group-hover:scale-105"}`}
               >
-                {isMaxReached
-                  ? `Maximum ${maxImages} images reached`
-                  : isDragActive
-                    ? "Drop images here"
-                    : "Click to upload or drag and drop"}
-              </p>
+                {isMaxReached ? (
+                  <ImageIcon className="mx-auto h-12 w-12 text-gray-400" />
+                ) : (
+                  <Upload className="mx-auto h-12 w-12 text-gray-400 group-hover:text-primary transition-colors duration-200" />
+                )}
+              </div>
 
-              <p className="text-sm text-gray-500 leading-relaxed">
-                PNG, JPG or WebP (MAX. 2MB per file)
-              </p>
+              <div className="space-y-2">
+                <p
+                  className={`text-lg font-semibold transition-colors duration-200 ${
+                    isMaxReached
+                      ? "text-gray-500"
+                      : isDragActive
+                        ? "text-primary"
+                        : "text-gray-700 group-hover:text-primary"
+                  }`}
+                >
+                  {isMaxReached
+                    ? `Maximum ${maxImages} images reached`
+                    : isDragActive
+                      ? "Drop images here"
+                      : "Click to upload or drag and drop"}
+                </p>
 
-              <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
-                <div className="flex items-center gap-1">
-                  <div className="w-2 h-2 rounded-full bg-gray-300"></div>
-                  <span>Drag & drop</span>
-                </div>
-                <span>•</span>
-                <div className="flex items-center gap-1">
-                  <div className="w-2 h-2 rounded-full bg-gray-300"></div>
-                  <span>Click to browse</span>
+                <p className="text-sm text-gray-500 leading-relaxed">
+                  PNG, JPG or WebP (MAX. 2MB per file)
+                </p>
+
+                <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 rounded-full bg-gray-300"></div>
+                    <span>Drag & drop</span>
+                  </div>
+                  <span>•</span>
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 rounded-full bg-gray-300"></div>
+                    <span>Click to browse</span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Progress indicator */}
-            <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
-              <span className="font-medium">{filesToUpload.length}</span>
-              <span>of</span>
-              <span className="font-medium">{maxImages}</span>
-              <span>images uploaded</span>
+              {/* Progress indicator */}
+              <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+                <span className="font-medium">{filesToUpload.length}</span>
+                <span>of</span>
+                <span className="font-medium">{maxImages}</span>
+                <span>images uploaded</span>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Subtle background pattern */}
           <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-transparent via-transparent to-gray-50/20 pointer-events-none" />
@@ -471,10 +497,11 @@ interface FilePreviewProps {
   removeFile: (file: string) => void;
   idx: number;
   bucket: string;
+  compact?: boolean;
 }
 
 const FilePreview = React.memo(
-  ({ file, removeFile, idx, bucket }: FilePreviewProps) => {
+  ({ file, removeFile, idx, bucket, compact = false }: FilePreviewProps) => {
     // Determine the image source
     const getImageSrc = () => {
       if (file.liveSource) {
@@ -492,7 +519,7 @@ const FilePreview = React.memo(
 
     return (
       <div className="relative group">
-        <AspectRatio ratio={4 / 3} className="relative">
+        <AspectRatio ratio={compact ? 1 : 4 / 3} className="relative">
           {imageSrc ? (
             <Image
               src={imageSrc}

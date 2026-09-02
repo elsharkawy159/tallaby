@@ -347,39 +347,39 @@ export function BasicInformationStep({
         </div>
       ))}
 
-      {/* Category and Brand */}
-      <div className="flex flex-col md:flex-row gap-4">
-        {categories && (
-          <FormField
-            control={form.control}
-            name="categoryId"
-            render={({ field }) => (
-              <FormItem className="flex-1">
-                <FormLabel className="text-sm">
-                  Category <span className="text-red-600">*</span>
-                </FormLabel>
-                <FormControl>
-                  <div className="space-y-3">
-                    <CategoryPopover
-                      categories={categories}
-                      value={field.value}
-                      onChange={field.onChange}
-                      form={form}
-                    />
-                    <CategorySuggestions
-                      categories={categories}
-                      productName={debouncedTitle}
-                      selectedCategoryId={selectedCategoryId}
-                      onSelect={handleCategorySelect}
-                    />
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
-        <div className="flex-1">
+      {/* Category, Brand, and Key Features */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="space-y-4">
+          {categories && (
+            <FormField
+              control={form.control}
+              name="categoryId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm">
+                    Category <span className="text-red-600">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <div className="space-y-3">
+                      <CategoryPopover
+                        categories={categories}
+                        value={field.value}
+                        onChange={field.onChange}
+                        form={form}
+                      />
+                      <CategorySuggestions
+                        categories={categories}
+                        productName={debouncedTitle}
+                        selectedCategoryId={selectedCategoryId}
+                        onSelect={handleCategorySelect}
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
           <BrandSearchInput
             name="brandId"
             label="Brand"
@@ -387,33 +387,34 @@ export function BasicInformationStep({
             selectedBrands={brands ?? []}
           />
         </div>
-      </div>
 
-      {/* Key Features (localized) - render both locales, hide inactive */}
-      {(["en", "ar"] as const).map((loc) => (
-        <div
-          key={loc}
-          className={cn(
-            activeLocale !== loc && "hidden",
-            loc === "ar" && "[&_input]:text-right [&_textarea]:text-right"
-          )}
-        >
-          <FormField
-            control={form.control}
-            name={`localized.${loc}.bulletPoints`}
-            render={({ field }) => (
-              <ArrayInput
-                {...field}
-                label="Key Features (max 10)"
-                addButtonText="Add Feature"
-                itemPlaceholder="Enter a key feature..."
-                maxItems={10}
-                className="text-sm"
+        <div>
+          {(["en", "ar"] as const).map((loc) => (
+            <div
+              key={loc}
+              className={cn(
+                activeLocale !== loc && "hidden",
+                loc === "ar" && "[&_input]:text-right [&_textarea]:text-right"
+              )}
+            >
+              <FormField
+                control={form.control}
+                name={`localized.${loc}.bulletPoints`}
+                render={({ field }) => (
+                  <ArrayInput
+                    {...field}
+                    label="Key Features (max 10)"
+                    addButtonText="Add Feature"
+                    itemPlaceholder="Enter a key feature..."
+                    maxItems={10}
+                    className="text-sm"
+                  />
+                )}
               />
-            )}
-          />
+            </div>
+          ))}
         </div>
-      ))}
+      </div>
     </div>
   );
 }

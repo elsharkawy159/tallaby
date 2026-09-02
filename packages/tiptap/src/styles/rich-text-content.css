@@ -21,7 +21,17 @@
 
   .rich-text-editor .ProseMirror img,
   .rich-text-content img {
-    @apply my-4 h-auto max-w-full rounded-lg border border-gray-200;
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    margin-block: 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-gray-200, #e5e7eb);
+  }
+
+  .rich-text-content li img {
+    margin-block: 0.75rem;
   }
 
   .rich-text-content {

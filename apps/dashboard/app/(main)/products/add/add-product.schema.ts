@@ -16,11 +16,33 @@ const localizedFieldsSchema = z.object({
 
 export type LocalizedFields = z.infer<typeof localizedFieldsSchema>
 
+const variantOptionKindSchema = z.enum([
+  "color",
+  "size",
+  "weight",
+  "material",
+  "style",
+  "custom",
+])
+export type VariantOptionKind = z.infer<typeof variantOptionKindSchema>
+
+const variantOptionMetaEntrySchema = z.object({
+  kind: variantOptionKindSchema.optional(),
+  swatch: z.string().optional(),
+  unit: z.string().optional(),
+})
+
 const variantLocalizedFieldsSchema = z.object({
   title: z.string().default(""),
   option1: z.string().optional(),
   option2: z.string().optional(),
   option3: z.string().optional(),
+})
+
+const variantLocalizedMapSchema = z.object({
+  en: variantLocalizedFieldsSchema,
+  ar: variantLocalizedFieldsSchema,
+  optionMeta: z.array(variantOptionMetaEntrySchema).optional(),
 })
 
 const variantTypeLocalizedSchema = z.object({
@@ -30,6 +52,9 @@ const variantTypeLocalizedSchema = z.object({
 
 const variantTypeSchema = z.object({
   id: z.string(),
+  kind: variantOptionKindSchema.default("custom"),
+  unit: z.string().optional(),
+  swatches: z.array(z.string()).optional(),
   localized: z.object({
     en: variantTypeLocalizedSchema,
     ar: variantTypeLocalizedSchema,
@@ -109,7 +134,7 @@ export const addProductFormSchema = z
         height: z.number().optional(),
         weight: z.number().optional(),
         unit: z.enum(["cm", "in"]).default("cm").optional(),
-        weightUnit: z.enum(["kg", "g", "lb"]).default("kg").optional(),
+        weightUnit: z.enum(["kg", "g", "lb"]).default("g").optional(),
       })
       .optional(),
     variantTypes: z.array(variantTypeSchema).optional(),
@@ -126,12 +151,7 @@ export const addProductFormSchema = z
           isDefault: z.boolean().default(false).optional(),
           images: z.array(z.string()).optional(),
           imageUrl: z.string().optional(),
-          localized: z
-            .object({
-              en: variantLocalizedFieldsSchema,
-              ar: variantLocalizedFieldsSchema,
-            })
-            .optional(),
+          localized: variantLocalizedMapSchema.optional(),
           optionValueIndexes: z.array(z.number().int().min(0)).optional(),
           option1: z.string().optional(),
           option2: z.string().optional(),
@@ -188,6 +208,15 @@ export const addProductFormSchema = z
         path: ["localized", "ar", "title"],
       })
     }
+
+    const weight = data.dimensions?.weight
+    if (weight === undefined || weight === null || weight <= 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Product weight is required",
+        path: ["dimensions", "weight"],
+      })
+    }
   })
 
 export const defaultLocalizedFields = (): LocalizedFields => ({
@@ -213,7 +242,7 @@ export const defaultValues = {
     height: undefined,
     weight: undefined,
     unit: "cm",
-    weightUnit: "kg",
+    weightUnit: "g",
   },
   images: [],
   price: {

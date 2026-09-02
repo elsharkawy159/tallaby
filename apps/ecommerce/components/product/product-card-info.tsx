@@ -1,4 +1,5 @@
-import { Star } from "lucide-react";
+"use client";
+
 import { formatPrice } from "@workspace/lib";
 import { useLocale } from "next-intl";
 import type { ProductCardProps } from "./product-card.types";
@@ -10,40 +11,30 @@ interface ProductCardInfoProps {
   className?: string;
 }
 
-
 export const ProductCardInfo = ({
   product,
   className,
 }: ProductCardInfoProps) => {
-  const locale = useLocale();
+  const locale = useLocale() as "en" | "ar";
   const title = product.title || product.name || "Untitled Product";
   const price = resolvePrice(product);
 
-  const rating =
-    (typeof product.average_rating === "number"
-      ? product.average_rating
-      : null) ??
-    (typeof product.averageRating === "number"
-      ? product.averageRating
-      : null) ??
-    0;
-  const reviews = product.review_count ?? product.reviewCount ?? 0;
-
   return (
     <div
-      className={`md:block flex justify-between items-center md:mt-2.5 mt-1.5 ${className}`}
+      className={`flex items-center justify-between gap-2 ${className ?? ""}`}
     >
-      <div className="flex md:flex-row flex-col md:items-center md:gap-4.5 gap-1 justify-between">
-        <Link href={`/products/${product.slug}`}>
-          <h3 className="md:text-sm text-xs font-medium md:line-clamp-2 line-clamp-1">
-            {title}
-          </h3>
-        </Link>
-        <span
-          className="md:text-lg text-sm font-semibold"
-          dangerouslySetInnerHTML={{ __html: formatPrice(price, locale) }}
-        />
-      </div>
+      <Link
+        href={`/products/${product.slug}`}
+        className="min-w-0 flex-1"
+      >
+        <h3 className="line-clamp-2 text-xs font-medium text-gray-900 md:text-sm">
+          {title}
+        </h3>
+      </Link>
+      <p
+        className="shrink-0 text-sm font-semibold text-gray-900 md:text-lg"
+        dangerouslySetInnerHTML={{ __html: formatPrice(price, locale) }}
+      />
     </div>
   );
 };

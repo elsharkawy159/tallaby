@@ -1,4 +1,4 @@
-import { Montserrat } from "next/font/google";
+import { Montserrat, Noto_Kufi_Arabic } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { AdminProvider } from "@/contexts/admin-context";
 import { QueryProvider } from "@/providers/query-provider";
@@ -9,6 +9,12 @@ import { Toaster } from "@workspace/ui/components/sonner";
 const montserrat = Montserrat({
   subsets: ["latin"],
   variable: "--font-montserrat",
+  weight: ["400", "500", "600", "700"],
+});
+
+const notoKufiArabic = Noto_Kufi_Arabic({
+  subsets: ["arabic"],
+  variable: "--font-noto-kufi-arabic",
   weight: ["400", "500", "600", "700"],
 });
 
@@ -40,7 +46,9 @@ export default function RootLayout({
       <head>
         <meta name="robots" content="noindex, nofollow" />
       </head>
-      <body className={`${montserrat.variable} bg-background text-foreground`}>
+      <body
+        className={`${montserrat.variable} ${notoKufiArabic.variable} font-montserrat bg-background text-foreground`}
+      >
         <ThemeProvider
           defaultTheme="light"
           enableSystem

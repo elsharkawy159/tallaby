@@ -87,17 +87,18 @@ export function buildEditDefaultValues(
   const variantTypes = reconstructVariantTypesFromVariants(rawVariants);
 
   const variants = rawVariants.map((v) => {
-    const variantImages = Array.isArray(v.images)
-      ? v.images.filter(
-          (img): img is string => typeof img === "string" && img.length > 0
-        )
-      : v.imageUrl
-        ? [v.imageUrl]
-        : [];
-
+    const isDefault = v.isDefault === true;
     const variantFinal =
       typeof v.price === "number" ? v.price : Number(v.price) || 0;
-    const isDefault = v.isDefault === true;
+    const variantImages = isDefault
+      ? images
+      : Array.isArray(v.images)
+        ? v.images.filter(
+            (img): img is string => typeof img === "string" && img.length > 0
+          )
+        : v.imageUrl
+          ? [v.imageUrl]
+          : [];
     const inferredDiscount =
       sellerPricing && !isDefault && variantFinal > 0
         ? calculateDiscountFromFinalPrice(

@@ -2,14 +2,18 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import {
+  Column,
   ColumnDef,
   ColumnFiltersState,
+  ColumnOrderState,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   PaginationState,
   SortingState,
+  Table as TanstackTable,
+  Updater,
   useReactTable,
   VisibilityState,
   flexRender,
@@ -57,14 +61,42 @@ import {
   TrashIcon,
 } from "lucide-react";
 
+/** Injected by TableSection itself; always pinned to the left, never reorderable. */
+export const FIXED_COLUMN_IDS = ["__index__", "__select__"];
+
+/**
+ * Human-readable name for a column — `meta.label` first, then a plain-string
+ * header, falling back to the raw id.
+ */
+export function columnLabel<TData>(column: Column<TData, unknown>): string {
+  const metaLabel = (column.columnDef.meta as { label?: string } | undefined)
+    ?.label;
+  if (metaLabel) return metaLabel;
+
+  const header = column.columnDef.header;
+  return typeof header === "string" && header ? header : column.id;
+}
+
 export type TableSectionProps<TData extends { id: string }> = {
   rows: TData[];
   columns: ColumnDef<TData, any>[];
   title?: string;
-  buttons?: React.ReactNode;
+  /**
+   * Toolbar slot. Pass a function to receive the table instance — needed by
+   * anything that reads or writes column state (column manager, export).
+   */
+  buttons?: React.ReactNode | ((table: TanstackTable<TData>) => React.ReactNode);
   onDeleteSelected?: (ids: string[]) => Promise<void> | void;
   searchColumnId?: string; // defaults to first column accessor
   pageSizeOptions?: number[];
+  /** Optional controlled column visibility. Falls back to internal state. */
+  columnVisibility?: VisibilityState;
+  onColumnVisibilityChange?: (visibility: VisibilityState) => void;
+  /** Optional controlled column order (excluding the fixed columns). */
+  columnOrder?: string[];
+  onColumnOrderChange?: (order: string[]) => void;
+  /** Hide the built-in "View" popover when the page provides its own column UI. */
+  hideViewOptions?: boolean;
 };
 
 export function TableSection<TData extends { id: string }>(
@@ -77,6 +109,11 @@ export function TableSection<TData extends { id: string }>(
     onDeleteSelected,
     searchColumnId,
     pageSizeOptions = [10, 50, 100, 500],
+    columnVisibility: controlledVisibility,
+    onColumnVisibilityChange,
+    columnOrder: controlledOrder,
+    onColumnOrderChange,
+    hideViewOptions = false,
   } = props;
 
   const id = useId();
@@ -87,11 +124,44 @@ export function TableSection<TData extends { id: string }>(
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [internalVisibility, setInternalVisibility] = useState<VisibilityState>(
+    {}
+  );
+  const [internalOrder, setInternalOrder] = useState<string[]>([]);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
   });
+
+  const columnVisibility = controlledVisibility ?? internalVisibility;
+  const handleVisibilityChange = (updater: Updater<VisibilityState>) => {
+    const next =
+      typeof updater === "function" ? updater(columnVisibility) : updater;
+    if (onColumnVisibilityChange) onColumnVisibilityChange(next);
+    else setInternalVisibility(next);
+  };
+
+  const userOrder = controlledOrder ?? internalOrder;
+  // The table needs the fixed columns listed first, but callers only ever
+  // manage their own columns.
+  const columnOrder = useMemo<ColumnOrderState>(
+    () =>
+      userOrder.length
+        ? [
+            ...FIXED_COLUMN_IDS,
+            ...userOrder.filter((columnId) => !FIXED_COLUMN_IDS.includes(columnId)),
+          ]
+        : [],
+    [userOrder]
+  );
+  const handleOrderChange = (updater: Updater<ColumnOrderState>) => {
+    const next = typeof updater === "function" ? updater(columnOrder) : updater;
+    const stripped = next.filter(
+      (columnId) => !FIXED_COLUMN_IDS.includes(columnId)
+    );
+    if (onColumnOrderChange) onColumnOrderChange(stripped);
+    else setInternalOrder(stripped);
+  };
 
   // Index column (always first)
   const indexColumn: ColumnDef<TData, any> = {
@@ -149,9 +219,16 @@ export function TableSection<TData extends { id: string }>(
     getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
-    onColumnVisibilityChange: setColumnVisibility,
+    onColumnVisibilityChange: handleVisibilityChange,
+    onColumnOrderChange: handleOrderChange,
     onPaginationChange: setPagination,
-    state: { sorting, columnFilters, columnVisibility, pagination },
+    state: {
+      sorting,
+      columnFilters,
+      columnVisibility,
+      columnOrder,
+      pagination,
+    },
     enableRowSelection: true,
   });
 
@@ -211,45 +288,44 @@ export function TableSection<TData extends { id: string }>(
             )}
           </div>
 
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline">
-                <Columns3Icon
-                  className="-ms-1 opacity-60"
-                  size={16}
-                  aria-hidden="true"
-                />
-                View
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto min-w-36 p-3" align="start">
-              <div className="space-y-2">
-                <div className="text-muted-foreground text-xs font-medium">
-                  Toggle columns
-                </div>
+          {!hideViewOptions && (
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline">
+                  <Columns3Icon
+                    className="-ms-1 opacity-60"
+                    size={16}
+                    aria-hidden="true"
+                  />
+                  View
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto min-w-36 p-3" align="start">
                 <div className="space-y-2">
-                  {table
-                    .getAllLeafColumns()
-                    .filter((c) => c.getCanHide())
-                    .map((column) => (
-                      <div key={column.id} className="flex items-center gap-2">
-                        <Checkbox
-                          id={`${id}-${column.id}`}
-                          checked={column.getIsVisible()}
-                          onCheckedChange={(v) => column.toggleVisibility(!!v)}
-                        />
-                        <Label
-                          htmlFor={`${id}-${column.id}`}
-                          className="capitalize"
-                        >
-                          {column.id}
-                        </Label>
-                      </div>
-                    ))}
+                  <div className="text-muted-foreground text-xs font-medium">
+                    Toggle columns
+                  </div>
+                  <div className="space-y-2">
+                    {table
+                      .getAllLeafColumns()
+                      .filter((c) => c.getCanHide())
+                      .map((column) => (
+                        <div key={column.id} className="flex items-center gap-2">
+                          <Checkbox
+                            id={`${id}-${column.id}`}
+                            checked={column.getIsVisible()}
+                            onCheckedChange={(v) => column.toggleVisibility(!!v)}
+                          />
+                          <Label htmlFor={`${id}-${column.id}`}>
+                            {columnLabel(column)}
+                          </Label>
+                        </div>
+                      ))}
+                  </div>
                 </div>
-              </div>
-            </PopoverContent>
-          </Popover>
+              </PopoverContent>
+            </Popover>
+          )}
         </div>
 
         <div className="flex items-center gap-3">
@@ -307,7 +383,7 @@ export function TableSection<TData extends { id: string }>(
               </AlertDialogContent>
             </AlertDialog>
           )}
-          {buttons && buttons}
+          {typeof buttons === "function" ? buttons(table) : buttons}
         </div>
       </div>
 

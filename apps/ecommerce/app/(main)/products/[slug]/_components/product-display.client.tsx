@@ -31,24 +31,24 @@ export const ProductDisplay = ({ product }: ProductDisplayProps) => {
     );
 
     if (selectedVariantId) {
-      // Check if this specific variant is in cart
       const variantCartItem = productCartItems.find(
-        (item) => (item.variant as any)?.id === selectedVariantId
+        (item) => (item.variant as { id?: string } | null)?.id === selectedVariantId
       );
+      // Fallback for items added before variantId was passed to the server action
+      const legacyCartItem = productCartItems.find((item) => !item.variant);
+      const cartItem = variantCartItem ?? legacyCartItem;
+
       return {
-        isInCart: !!variantCartItem,
-        quantity: variantCartItem?.quantity ?? 0,
-      };
-    } else {
-      // Check if base product (no variant) is in cart
-      const baseProductCartItem = productCartItems.find(
-        (item) => !item.variant
-      );
-      return {
-        isInCart: !!baseProductCartItem,
-        quantity: baseProductCartItem?.quantity ?? 0,
+        isInCart: !!cartItem,
+        quantity: cartItem?.quantity ?? 0,
       };
     }
+
+    const baseProductCartItem = productCartItems.find((item) => !item.variant);
+    return {
+      isInCart: !!baseProductCartItem,
+      quantity: baseProductCartItem?.quantity ?? 0,
+    };
   }, [cartItems, product.id, selectedVariantId]);
 
   return (

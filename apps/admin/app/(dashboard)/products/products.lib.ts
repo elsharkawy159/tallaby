@@ -12,6 +12,7 @@ import type {
   ProductReviewRow,
   ProductTranslationRow,
   ProductVariantRow,
+  ProductStatus,
   ReviewStatus,
   SalesSummary,
 } from "./products.types";
@@ -402,4 +403,12 @@ export function transformProductForForm(product: ProductRaw): Partial<ProductFor
     metaDescription: enTranslation?.metaDescription ?? undefined,
     locale: "en",
   };
+}
+
+export function canApproveProduct(status: ProductStatus): boolean {
+  return status === "pending" || status === "rejected";
+}
+
+export function canRejectProduct(status: ProductStatus): boolean {
+  return status === "pending";
 }

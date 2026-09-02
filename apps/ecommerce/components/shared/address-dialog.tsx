@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@workspace/ui/components/button";
 import { useTranslations } from "next-intl";
@@ -16,6 +16,7 @@ import { toast } from "sonner";
 
 import { AddressListStep } from "./address-dialog-steps/address-list-step";
 import { AddressFormStep } from "./address-dialog-steps/address-form-step";
+import type { AddressFormStepHandle } from "./address-dialog-steps/address-form-step";
 import { MapLocationStep } from "./address-dialog-steps/map-location-step";
 import type { AddressData } from "../address/address.schema";
 import {
@@ -66,6 +67,8 @@ export const AddressDialog = ({
   } | null>(null);
   const [addresses, setAddresses] = useState<AddressData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isFormPending, setIsFormPending] = useState(false);
+  const formStepRef = useRef<AddressFormStepHandle>(null);
 
   // Load addresses when dialog opens
   useEffect(() => {
@@ -91,6 +94,7 @@ export const AddressDialog = ({
         setEditingAddress(null);
       }
       setSelectedLocation(null);
+      setIsFormPending(false);
     }
   }, [isOpen, address, initialStep]);
 
@@ -255,14 +259,14 @@ export const AddressDialog = ({
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{trigger || defaultTrigger}</DialogTrigger>
 
-      <DialogContent className="max-w-4xl max-h-[90vh] gap-0 overflow-y-auto p-0">
-        <DialogHeader className="px-6 py-4 border-b">
+      <DialogContent className="flex max-h-[90vh] max-w-4xl flex-col gap-0 overflow-hidden p-0">
+        <DialogHeader className="shrink-0 border-b px-6 py-4">
           <DialogTitle className="text-lg font-semibold">
             {getStepTitle()}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto">
+        <div className="min-h-0 flex-1 overflow-y-auto">
           {currentStep === "list" && (
             <AddressListStep
               addresses={addresses}
@@ -292,16 +296,18 @@ export const AddressDialog = ({
 
           {currentStep === "form" && (
             <AddressFormStep
+              ref={formStepRef}
               address={editingAddress}
               selectedLocation={selectedLocation}
               onSuccess={handleFormSuccess}
               onCancel={handleFormCancel}
+              onPendingChange={setIsFormPending}
             />
           )}
         </div>
 
         {currentStep === "list" && (
-          <div className="px-6 py-4 border-t bg-white">
+          <div className="shrink-0 border-t bg-background px-6 py-4">
             <div className="flex gap-3">
               <Button
                 variant="outline"
@@ -313,6 +319,36 @@ export const AddressDialog = ({
               <Button onClick={handleAddNew} className="flex-1 gap-2">
                 <Plus className="h-4 w-4" />
                 {t("addNewAddress")}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {currentStep === "form" && (
+          <div className="shrink-0 border-t bg-background px-6 py-4">
+            <div className="flex gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleFormCancel}
+                disabled={isFormPending}
+                className="flex-1"
+              >
+                {t("cancel")}
+              </Button>
+              <Button
+                type="button"
+                onClick={() => formStepRef.current?.submit()}
+                disabled={isFormPending}
+                className="flex-1"
+              >
+                {isFormPending
+                  ? editingAddress?.id
+                    ? t("updating")
+                    : t("creating")
+                  : editingAddress?.id
+                    ? t("updateAddress")
+                    : t("saveAddress")}
               </Button>
             </div>
           </div>

@@ -25,10 +25,18 @@ import {
 } from "@workspace/ui/components";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/select";
 import { FormControl, FormLabel } from "@workspace/ui/components/form";
 import type {
   AddProductFormData,
   SupportedLocale,
+  VariantOptionKind,
 } from "../add-product.schema";
 import { fulfillmentOptions } from "../add-product.schema";
 import {
@@ -36,9 +44,15 @@ import {
   createEmptyVariantType,
   getVariantValueIndexes,
   reconstructVariantTypesFromVariants,
+  VARIANT_TYPE_PRESETS,
+  WEIGHT_UNITS,
   type VariantTypeFormValue,
 } from "@/lib/utils/variant-types.lib";
-import { VariantPricingFields, DefaultVariantPriceDisplay } from "./variant-pricing-fields";
+import {
+  VariantPricingFields,
+  DefaultVariantPriceDisplay,
+  DefaultVariantImagesDisplay,
+} from "./variant-pricing-fields";
 import { Badge } from "@workspace/ui/components/badge";
 
 interface PriceStockStepProps {
@@ -307,7 +321,9 @@ export function PriceStockStep({
 
               {/* Dimensions */}
               <div className="space-y-2">
-                <FormLabel className="text-sm">Product Weight</FormLabel>
+                <FormLabel className="text-sm">
+                  Product Weight <span className="text-red-600">*</span>
+                </FormLabel>
                 <div className="grid grid-cols-2 gap-4">
                   <TextInput
                     form={form}
@@ -315,6 +331,7 @@ export function PriceStockStep({
                     label="Weight"
                     type="number"
                     placeholder="0.0"
+                    required
                     className="text-sm"
                   />
                   <SelectInput
@@ -379,6 +396,22 @@ export function PriceStockStep({
   );
 }
 
+function getVariantValuePlaceholder(
+  kind: VariantOptionKind,
+  activeLocale: SupportedLocale
+): string {
+  switch (kind) {
+    case "color":
+      return activeLocale === "en" ? "e.g., Red" : "مثال: أحمر";
+    case "weight":
+      return activeLocale === "en" ? "e.g., 500" : "مثال: 500";
+    case "size":
+      return activeLocale === "en" ? "e.g., L" : "مثال: L";
+    default:
+      return activeLocale === "en" ? "Enter a value" : "أدخل قيمة";
+  }
+}
+
 function VariantsSection({
   sellerPricing,
   activeLocale,
@@ -416,6 +449,7 @@ function VariantsSection({
   const mainDiscountType = form.watch("price.discountType");
   const mainFinalPrice = form.watch("price.final");
   const mainQuantity = form.watch("quantity");
+  const mainImages = form.watch("images") ?? [];
   const variants = form.watch("variants") ?? [];
   const defaultVariantIndex = variants.findIndex((variant) => variant.isDefault);
 
@@ -443,14 +477,26 @@ function VariantsSection({
       typeof mainQuantity === "number" ? mainQuantity : 0;
     const discountVal = mainDiscountValue ?? 0;
     const discountTyp = mainDiscountType ?? "percent";
+    const syncedImages = Array.isArray(mainImages)
+      ? mainImages.filter(
+          (image): image is string => typeof image === "string" && image.length > 0
+        )
+      : [];
+    const syncedImageUrl = syncedImages[0];
     const current = form.getValues(`variants.${defaultVariantIndex}`);
+    const currentImages = Array.isArray(current?.images) ? current.images : [];
+    const imagesMatch =
+      currentImages.length === syncedImages.length &&
+      currentImages.every((image, index) => image === syncedImages[index]);
 
     if (
       current?.listPrice === numericList &&
       current?.discountValue === discountVal &&
       current?.discountType === discountTyp &&
       current?.price === syncedFinal &&
-      current?.stock === numericQuantity
+      current?.stock === numericQuantity &&
+      imagesMatch &&
+      (current?.imageUrl ?? undefined) === syncedImageUrl
     ) {
       return;
     }
@@ -475,12 +521,25 @@ function VariantsSection({
       shouldDirty: true,
       shouldValidate: false,
     });
+    form.setValue(`variants.${defaultVariantIndex}.images`, syncedImages, {
+      shouldDirty: true,
+      shouldValidate: false,
+    });
+    form.setValue(
+      `variants.${defaultVariantIndex}.imageUrl`,
+      syncedImageUrl,
+      {
+        shouldDirty: true,
+        shouldValidate: false,
+      }
+    );
   }, [
     defaultVariantIndex,
     form,
     mainDiscountType,
     mainDiscountValue,
     mainFinalPrice,
+    mainImages,
     mainListPrice,
     mainQuantity,
     sellerPricing,
@@ -616,14 +675,18 @@ function VariantsSection({
 
       const existingImages = (existingVariant as { images?: string[] })?.images;
       const existingImageUrl = (existingVariant as { imageUrl?: string })?.imageUrl;
-      const images =
-        existingImages && existingImages.length > 0
+      const wasDefault = (existingVariant as { isDefault?: boolean })?.isDefault;
+      const isDefault = wasDefault ?? (!hasExistingDefault && index === 0);
+      const productImages = (form.getValues("images") || []).filter(
+        (image): image is string => typeof image === "string" && image.length > 0
+      );
+      const images = isDefault
+        ? productImages
+        : existingImages && existingImages.length > 0
           ? existingImages
           : existingImageUrl
             ? [existingImageUrl]
             : [];
-      const wasDefault = (existingVariant as { isDefault?: boolean })?.isDefault;
-      const isDefault = wasDefault ?? (!hasExistingDefault && index === 0);
 
       return {
         title: englishTitle,
@@ -686,6 +749,56 @@ function VariantsSection({
     );
   };
 
+  const handleSelectVariantTypeKind = (id: string, kind: VariantOptionKind) => {
+    setVariantTypes(
+      variantTypes.map((type) => {
+        if (type.id !== id) {
+          return type;
+        }
+
+        const preset = VARIANT_TYPE_PRESETS.find((p) => p.kind === kind);
+
+        return {
+          ...type,
+          kind,
+          localized: preset
+            ? {
+                en: { ...type.localized.en, name: preset.en },
+                ar: { ...type.localized.ar, name: preset.ar },
+              }
+            : type.localized,
+        };
+      })
+    );
+  };
+
+  const handleUpdateSwatch = (
+    typeId: string,
+    valueIndex: number,
+    hex: string
+  ) => {
+    setVariantTypes(
+      variantTypes.map((type) => {
+        if (type.id !== typeId) {
+          return type;
+        }
+
+        const swatches = [...(type.swatches ?? [])];
+        swatches[valueIndex] = hex;
+
+        return { ...type, swatches };
+      })
+    );
+  };
+
+  const handleUpdateUnit = (typeId: string, unit: string) => {
+    setVariantTypes(
+      variantTypes.map((type) =>
+        type.id === typeId ? { ...type, unit } : type
+      )
+    );
+  };
+
   const handleAddValue = (typeId: string) => {
     setVariantTypes(
       variantTypes.map((type) => {
@@ -705,6 +818,7 @@ function VariantsSection({
               values: [...type.localized.ar.values, ""],
             },
           },
+          swatches: [...(type.swatches ?? []), ""],
         };
       })
     );
@@ -733,6 +847,9 @@ function VariantsSection({
               ),
             },
           },
+          swatches: (type.swatches ?? []).filter(
+            (_, index) => index !== valueIndex
+          ),
         };
       })
     );
@@ -803,22 +920,47 @@ function VariantsSection({
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between gap-2">
-                    <div className="flex-1">
-                      <label className="text-xs font-medium text-gray-700 block mb-2">
-                        Sub-option Type ({activeLocale === "en" ? "English" : "العربية"})
+                    <div className="flex-1 space-y-2">
+                      <label className="text-xs font-medium text-gray-700 block">
+                        Sub-option Type
                       </label>
-                      <Input
-                        value={type.localized[activeLocale].name}
-                        onChange={(e) =>
-                          handleUpdateVariantTypeName(type.id, e.target.value)
+                      <Select
+                        value={type.kind}
+                        onValueChange={(value) =>
+                          handleSelectVariantTypeKind(
+                            type.id,
+                            value as VariantOptionKind
+                          )
                         }
-                        placeholder={
-                          activeLocale === "en"
-                            ? "e.g., Color, Size, Weight"
-                            : "مثال: اللون، الحجم، الوزن"
-                        }
-                        className="text-sm h-9"
-                      />
+                      >
+                        <SelectTrigger className="h-9 text-sm w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {VARIANT_TYPE_PRESETS.map((preset) => (
+                            <SelectItem key={preset.kind} value={preset.kind}>
+                              {activeLocale === "en" ? preset.en : preset.ar}
+                            </SelectItem>
+                          ))}
+                          <SelectItem value="custom">
+                            {activeLocale === "en" ? "Other" : "أخرى"}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {type.kind === "custom" && (
+                        <Input
+                          value={type.localized[activeLocale].name}
+                          onChange={(e) =>
+                            handleUpdateVariantTypeName(type.id, e.target.value)
+                          }
+                          placeholder={
+                            activeLocale === "en"
+                              ? "e.g., Fabric, Fit"
+                              : "مثال: القماش، القصة"
+                          }
+                          className="text-sm h-9"
+                        />
+                      )}
                     </div>
                     <Button
                       type="button"
@@ -838,7 +980,26 @@ function VariantsSection({
                     <div className="space-y-2">
                       {type.localized[activeLocale].values.map(
                         (value: string, valueIndex: number) => (
-                        <div key={valueIndex} className="flex gap-2">
+                        <div key={valueIndex} className="flex gap-2 items-center">
+                          {type.kind === "color" && (
+                            <input
+                              type="color"
+                              value={type.swatches?.[valueIndex] || "#000000"}
+                              onChange={(e) =>
+                                handleUpdateSwatch(
+                                  type.id,
+                                  valueIndex,
+                                  e.target.value
+                                )
+                              }
+                              className="size-9 shrink-0 cursor-pointer rounded-md border border-gray-200 p-0.5"
+                              aria-label={
+                                activeLocale === "en"
+                                  ? "Swatch color"
+                                  : "لون العينة"
+                              }
+                            />
+                          )}
                           <Input
                             value={value}
                             onChange={(e) =>
@@ -848,11 +1009,35 @@ function VariantsSection({
                                 e.target.value
                               )
                             }
-                            placeholder={
-                              activeLocale === "en" ? "e.g., Red" : "مثال: أحمر"
-                            }
+                            placeholder={getVariantValuePlaceholder(
+                              type.kind,
+                              activeLocale
+                            )}
                             className="text-sm h-9 flex-1"
                           />
+                          {type.kind === "weight" && (
+                            <Select
+                              value={type.unit ?? ""}
+                              onValueChange={(unit) =>
+                                handleUpdateUnit(type.id, unit)
+                              }
+                            >
+                              <SelectTrigger className="h-9 text-sm w-24 shrink-0">
+                                <SelectValue
+                                  placeholder={
+                                    activeLocale === "en" ? "Unit" : "الوحدة"
+                                  }
+                                />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {WEIGHT_UNITS.map((unit) => (
+                                  <SelectItem key={unit} value={unit}>
+                                    {unit}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
                           <Button
                             type="button"
                             variant="ghost"
@@ -895,7 +1080,7 @@ function VariantsSection({
                   <th className="text-left py-3 px-4 text-xs font-medium text-gray-700">
                     Combination
                   </th>
-                  <th className="text-left py-3 px-4 text-xs font-medium text-gray-700 min-w-[220px]">
+                  <th className="text-left py-3 px-4 text-xs font-medium text-gray-700 min-w-[140px]">
                     Images
                   </th>
                   <th className="text-left py-3 px-4 text-xs font-medium text-gray-700 min-w-[300px]">
@@ -957,29 +1142,34 @@ function VariantsSection({
                           </div>
                         </div>
                       </td>
-                      <td className="py-3 px-4 min-w-[220px]">
-                        <Controller
-                          name={`variants.${index}.images`}
-                          control={form.control}
-                          render={({ field }) => (
-                            <FormControl>
-                              <ImageUpload
-                                bucket="products"
-                                value={field.value || []}
-                                onChange={(images) => {
-                                  field.onChange(images);
-                                  form.setValue(
-                                    `variants.${index}.imageUrl`,
-                                    images[0] ?? undefined,
-                                    { shouldValidate: true }
-                                  );
-                                }}
-                                form={form}
-                                maxImages={5}
-                              />
-                            </FormControl>
-                          )}
-                        />
+                      <td className="py-3 px-4 min-w-[140px]">
+                        {isDefaultVariant ? (
+                          <DefaultVariantImagesDisplay images={mainImages} />
+                        ) : (
+                          <Controller
+                            name={`variants.${index}.images`}
+                            control={form.control}
+                            render={({ field }) => (
+                              <FormControl>
+                                <ImageUpload
+                                  bucket="products"
+                                  value={field.value || []}
+                                  onChange={(images) => {
+                                    field.onChange(images);
+                                    form.setValue(
+                                      `variants.${index}.imageUrl`,
+                                      images[0] ?? undefined,
+                                      { shouldValidate: true }
+                                    );
+                                  }}
+                                  form={form}
+                                  maxImages={5}
+                                  compact
+                                />
+                              </FormControl>
+                            )}
+                          />
+                        )}
                       </td>
                       <td className="py-3 px-4">
                         {isDefaultVariant ? (

@@ -97,9 +97,7 @@ export const ProductCardActions = ({
 
   if (isInCartStatus || cartItemQuantity > 0) {
     return (
-      <div
-        className={`absolute right-2.5 md:bottom-19 bottom-16 rounded-lg bg-accent ${className}`}
-      >
+      <div className={cn("rounded-lg bg-accent shadow-sm", className)}>
         <QuantitySelector
           showRemoveButton={true}
           productStock={product.quantity || 0}
@@ -115,10 +113,7 @@ export const ProductCardActions = ({
   return (
     <AddToCartButton
       productId={productId}
-      className={cn(
-        `absolute right-2.5 md:bottom-19 bottom-16 rounded-lg shadow`,
-        className
-      )}
+      className={cn("size-8 shrink-0 rounded-lg p-0 shadow-sm", className)}
       size="sm"
       variant="default"
       showIcon={true}

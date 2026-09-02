@@ -22,6 +22,8 @@ interface ProductFilters {
   condition?: string;
   sellerId?: string;
   isFeatured?: boolean;
+  isTrending?: boolean;
+  isSeasonal?: boolean;
   searchQuery?: string;
   sortBy?: "price_asc" | "price_desc" | "rating" | "newest" | "popular";
   limit?: number;
@@ -39,9 +41,9 @@ const ProductSection = async ({
   description,
   filters = {},
 }: ProductSectionProps) => {
-  const locale = (await getLocale()) as "en" | "ar"
-  const products = await getProducts({ ...filters, locale })
-  if (!products?.data) {
+  const locale = (await getLocale()) as "en" | "ar";
+  const products = await getProducts({ ...filters, locale });
+  if (!products?.data || products.data.length === 0) {
     return null;
   }
 
@@ -83,9 +85,12 @@ const ProductSection = async ({
         {/* Carousel Section */}
         <CarouselContent className="p-1.5">
           {products.data.map((product) => (
-            <CarouselItem key={product.id} className="basis-auto md:ps-4 ps-2 md:max-w-[285px] max-w-43">
+            <CarouselItem
+              key={product.id as string}
+              className="basis-auto md:ps-4 ps-2 md:max-w-[312px] max-w-43"
+            >
               <ProductCard
-                key={product.id}
+                key={product.id as string}
                 {...(product as ProductCardProps)}
               />
             </CarouselItem>

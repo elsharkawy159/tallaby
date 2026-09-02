@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import Hero from "@/components/home/hero/hero";
-import { ProductsGrid } from "@/components/home";
+import { ProductsGrid, ProductSection } from "@/components/home";
 import { ProductsGridSkeleton } from "@/components/home/products-grid.skeleton";
 
 export const metadata: Metadata = {
@@ -69,12 +69,38 @@ const HomePage = async () => {
         />
       </Suspense> */}
 
+      <Suspense fallback={<SectionSkeleton />}>
+        <ProductSection
+          title={t("trending")}
+          description={t("trendingDescription")}
+          filters={{
+            isTrending: true,
+            sortBy: "popular",
+            limit: 12,
+          }}
+        />
+      </Suspense>
+
+      <Suspense fallback={<SectionSkeleton />}>
+        <ProductSection
+          title={t("seasonal")}
+          description={t("seasonalDescription")}
+          filters={{
+            isSeasonal: true,
+            sortBy: "newest",
+            limit: 12,
+          }}
+        />
+      </Suspense>
+
       <Suspense fallback={<ProductsGridSkeleton />}>
         <ProductsGrid
           title={t("featuredProducts")}
           filters={{
             sortBy: "popular",
             limit: 30,
+            isTrending: false,
+            isSeasonal: false,
           }}
         />
       </Suspense>

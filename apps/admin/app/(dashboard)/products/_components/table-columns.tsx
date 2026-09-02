@@ -15,7 +15,13 @@ import {
 } from "@workspace/ui/components/dropdown-menu";
 import Link from "next/link";
 import { DataTableColumnHeader } from "@/app/(dashboard)/_components/data-table/data-table-column-header";
-import { formatProductPrice, getStorefrontProductUrl, parseProductPrice } from "../products.lib";
+import {
+  canApproveProduct,
+  canRejectProduct,
+  formatProductPrice,
+  getStorefrontProductUrl,
+  parseProductPrice,
+} from "../products.lib";
 
 interface Product {
   id: string;
@@ -45,7 +51,18 @@ interface Product {
   } | null;
 }
 
-export function getProductsColumns(): ColumnDef<Product>[] {
+interface ProductsColumnsOptions {
+  onStatusChange?: (
+    productId: string,
+    status: Product["status"]
+  ) => void | Promise<void>;
+  isStatusUpdating?: (productId: string) => boolean;
+}
+
+export function getProductsColumns(
+  options?: ProductsColumnsOptions
+): ColumnDef<Product>[] {
+  const { onStatusChange, isStatusUpdating } = options ?? {};
   return [
     {
       id: "select",
@@ -229,35 +246,43 @@ export function getProductsColumns(): ColumnDef<Product>[] {
       id: "actions",
       cell: ({ row }) => {
         const product = row.original;
-        const needsApproval =
-          product.status === "pending" || product.status === "rejected";
         const storefrontUrl = getStorefrontProductUrl(product.slug);
+        const isUpdating = isStatusUpdating?.(product.id) ?? false;
 
         return (
           <div className="flex items-center gap-2">
-            {needsApproval &&
-              (storefrontUrl ? (
-                <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-                  <a
-                    href={storefrontUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="View product on storefront"
-                  >
-                    <SquareArrowOutUpRight className="h-4 w-4" />
-                  </a>
-                </Button>
-              ) : (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  disabled
-                  title="Product slug is missing"
+            {canApproveProduct(product.status) && (
+              <Button
+                size="sm"
+                onClick={() => onStatusChange?.(product.id, "active")}
+                disabled={isUpdating}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                Approve
+              </Button>
+            )}
+            {storefrontUrl ? (
+              <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+                <a
+                  href={storefrontUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="View product on storefront"
                 >
                   <SquareArrowOutUpRight className="h-4 w-4" />
-                </Button>
-              ))}
+                </a>
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                disabled
+                title="Product slug is missing"
+              >
+                <SquareArrowOutUpRight className="h-4 w-4" />
+              </Button>
+            )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-8 w-8 p-0">
@@ -280,6 +305,18 @@ export function getProductsColumns(): ColumnDef<Product>[] {
                     Edit product
                   </Link>
                 </DropdownMenuItem>
+                {canRejectProduct(product.status) && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => onStatusChange?.(product.id, "rejected")}
+                      disabled={isUpdating}
+                      className="text-red-600"
+                    >
+                      Reject product
+                    </DropdownMenuItem>
+                  </>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>View variants</DropdownMenuItem>
                 <DropdownMenuItem>Manage inventory</DropdownMenuItem>

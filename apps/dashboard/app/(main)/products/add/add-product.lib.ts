@@ -1,4 +1,85 @@
-import type { CategoryOption } from "./add-product.schema";
+import type {
+  FieldErrors,
+  FormState,
+  UseFormGetFieldState,
+} from "react-hook-form";
+import type { AddProductFormData, CategoryOption } from "./add-product.schema";
+
+export const ADD_PRODUCT_STEPS = [
+  { id: 1, title: "Basic Information", key: "basic" },
+  { id: 2, title: "Price and Stock", key: "priceStock" },
+  { id: 3, title: "Search Engine", key: "seo" },
+] as const;
+
+export type AddProductStepId = (typeof ADD_PRODUCT_STEPS)[number]["id"];
+
+export const STEP_VALIDATION_FIELDS: Record<
+  AddProductStepId,
+  readonly (keyof AddProductFormData | string)[]
+> = {
+  1: [
+    "localized.en.title",
+    "localized.en.slug",
+    "localized.ar.title",
+    "categoryId",
+    "images",
+  ],
+  2: ["price.list", "price.final", "quantity", "dimensions.weight"],
+  3: [],
+};
+
+export type StepValidationStatus = "valid" | "error" | "default";
+
+function getErrorAtPath(
+  errors: FieldErrors<AddProductFormData>,
+  fieldPath: string
+): unknown {
+  return fieldPath.split(".").reduce<unknown>((current, segment) => {
+    if (!current || typeof current !== "object") {
+      return undefined;
+    }
+
+    return (current as Record<string, unknown>)[segment];
+  }, errors);
+}
+
+export function getStepValidationStatus(
+  stepId: AddProductStepId,
+  formState: FormState<AddProductFormData>,
+  getFieldState: UseFormGetFieldState<AddProductFormData>
+): StepValidationStatus {
+  const { errors } = formState;
+  const fields = STEP_VALIDATION_FIELDS[stepId];
+
+  if (fields.length === 0) {
+    return "valid";
+  }
+
+  const hasError = fields.some((fieldPath) => {
+    const fieldError = getErrorAtPath(errors, fieldPath);
+    return Boolean(fieldError);
+  });
+
+  if (hasError) {
+    return "error";
+  }
+
+  const allValid = fields.every((fieldPath) => {
+    const { invalid } = getFieldState(
+      fieldPath as keyof AddProductFormData,
+      formState
+    );
+
+    return !invalid;
+  });
+
+  return allValid ? "valid" : "default";
+}
+
+export function scrollToStepSection(stepKey: string) {
+  const section = document.getElementById(`step-${stepKey}`);
+  section?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
 
 interface FlattenedCategory {
   id: string;

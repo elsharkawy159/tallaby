@@ -20,6 +20,7 @@ import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { getVariantImageUrls } from "@/lib/variant-images";
 import { getDefaultProductVariantId } from "@/lib/product-variants";
 import { getVariantDisplayFields } from "@/lib/variant-localized";
+import { splitBulletPoint } from "@/lib/bullet-points";
 import type { ProductLocale } from "@/lib/product-translations";
 import { SellerInfo } from "./SellerInfo";
 import { Star } from "lucide-react";
@@ -405,9 +406,23 @@ export const ProductDetails = ({
                 <AccordionContent className="text-sm text-gray-700 pb-4">
                   <ul className="list-disc list-inside space-y-2">
                     {product.bulletPoints.map(
-                      (point: string, index: number) => (
-                        <li key={index}>{point}</li>
-                      ),
+                      (point: string, index: number) => {
+                        const parts = splitBulletPoint(point);
+                        return (
+                          <li key={index}>
+                            {parts ? (
+                              <>
+                                <span className="font-medium text-gray-900">
+                                  {parts.label}:
+                                </span>{" "}
+                                {parts.value}
+                              </>
+                            ) : (
+                              point
+                            )}
+                          </li>
+                        );
+                      },
                     )}
                   </ul>
                 </AccordionContent>

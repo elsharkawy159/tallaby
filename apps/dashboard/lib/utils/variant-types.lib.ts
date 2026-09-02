@@ -1,6 +1,26 @@
-import type { SupportedLocale } from "../app/(main)/products/add/add-product.schema";
+import type {
+  SupportedLocale,
+  VariantOptionKind,
+} from "../app/(main)/products/add/add-product.schema";
 
 export const VARIANT_LOCALES: SupportedLocale[] = ["en", "ar"];
+
+export type { VariantOptionKind };
+
+export const VARIANT_TYPE_PRESETS: Array<{
+  kind: VariantOptionKind;
+  en: string;
+  ar: string;
+}> = [
+  { kind: "color", en: "Color", ar: "اللون" },
+  { kind: "size", en: "Size", ar: "المقاس" },
+  { kind: "weight", en: "Weight", ar: "الوزن" },
+  { kind: "material", en: "Material", ar: "الخامة" },
+  { kind: "style", en: "Style", ar: "التصميم" },
+];
+
+export const WEIGHT_UNITS = ["g", "kg", "mg", "ml", "l", "oz", "lb"] as const;
+export type WeightUnit = (typeof WEIGHT_UNITS)[number];
 
 export interface VariantTypeLocalizedFields {
   name: string;
@@ -9,6 +29,10 @@ export interface VariantTypeLocalizedFields {
 
 export interface VariantTypeFormValue {
   id: string;
+  kind: VariantOptionKind;
+  unit?: string;
+  /** Hex swatches, index-aligned with localized[locale].values (locale-independent). */
+  swatches?: string[];
   localized: Record<SupportedLocale, VariantTypeLocalizedFields>;
 }
 
@@ -19,7 +43,15 @@ export interface VariantLocalizedFields {
   option3?: string;
 }
 
-export type VariantLocalizedMap = Record<SupportedLocale, VariantLocalizedFields>;
+export interface VariantOptionMetaEntry {
+  kind?: VariantOptionKind;
+  swatch?: string;
+  unit?: string;
+}
+
+export type VariantLocalizedMap = Record<SupportedLocale, VariantLocalizedFields> & {
+  optionMeta?: VariantOptionMetaEntry[];
+};
 
 export function createEmptyVariantTypeLocalized(): VariantTypeLocalizedFields {
   return { name: "", values: [] };
@@ -28,6 +60,7 @@ export function createEmptyVariantTypeLocalized(): VariantTypeLocalizedFields {
 export function createEmptyVariantType(id?: string): VariantTypeFormValue {
   return {
     id: id ?? `type-${Date.now()}`,
+    kind: "custom",
     localized: {
       en: createEmptyVariantTypeLocalized(),
       ar: createEmptyVariantTypeLocalized(),
@@ -55,6 +88,8 @@ export function buildVariantLocalizedFromCombo(
     ar: { title: "" },
   } as VariantLocalizedMap;
 
+  const optionMeta: VariantOptionMetaEntry[] = [];
+
   for (const locale of VARIANT_LOCALES) {
     const titleParts: string[] = [];
     const options: string[] = [];
@@ -62,7 +97,11 @@ export function buildVariantLocalizedFromCombo(
     variantTypes.forEach((type, typeIndex) => {
       const valueIndex = valueIndexes[typeIndex];
       const typeName = type.localized[locale].name.trim();
-      const value = type.localized[locale].values[valueIndex]?.trim() ?? "";
+      let value = type.localized[locale].values[valueIndex]?.trim() ?? "";
+
+      if (type.kind === "weight" && value && type.unit) {
+        value = `${value} ${type.unit}`;
+      }
 
       if (value) {
         titleParts.push(value);
@@ -80,6 +119,20 @@ export function buildVariantLocalizedFromCombo(
       option3: options[2],
     };
   }
+
+  variantTypes.forEach((type, typeIndex) => {
+    const valueIndex = valueIndexes[typeIndex];
+    const meta: VariantOptionMetaEntry = { kind: type.kind };
+    if (type.kind === "color") {
+      meta.swatch = type.swatches?.[valueIndex];
+    }
+    if (type.kind === "weight") {
+      meta.unit = type.unit;
+    }
+    optionMeta.push(meta);
+  });
+
+  localized.optionMeta = optionMeta;
 
   return localized;
 }
@@ -102,6 +155,14 @@ export function parseVariantOption(option?: string | null): {
     typeName: match[1]!.trim(),
     value: match[2]!.trim(),
   };
+}
+
+function inferKindFromTypeName(name: string): VariantOptionKind {
+  const normalized = name.trim().toLowerCase();
+  const preset = VARIANT_TYPE_PRESETS.find(
+    (p) => p.en.toLowerCase() === normalized || p.ar === name.trim()
+  );
+  return preset?.kind ?? "custom";
 }
 
 export function reconstructVariantTypesFromVariants(
@@ -158,6 +219,10 @@ export function reconstructVariantTypesFromVariants(
         ar: { name: "", values: [] },
       };
 
+      let kind: VariantOptionKind = "custom";
+      let unit: string | undefined;
+      const swatches: string[] = [];
+
       for (const locale of VARIANT_LOCALES) {
         const sampleVariant = variants.find((variant) => {
           if (!variant.localized || typeof variant.localized !== "object") {
@@ -187,7 +252,7 @@ export function reconstructVariantTypesFromVariants(
 
         localized[locale].name = parsedSample?.typeName ?? "";
 
-        localized[locale].values = variants.map((variant) => {
+        localized[locale].values = variants.map((variant, variantIndex) => {
           const loc =
             typeof variant.localized === "object" && variant.localized
               ? (variant.localized as Record<string, VariantLocalizedFields>)[
@@ -206,12 +271,36 @@ export function reconstructVariantTypesFromVariants(
             typeof optionValue === "string" ? optionValue : undefined
           );
 
+          if (locale === "en") {
+            const meta =
+              typeof variant.localized === "object" &&
+              variant.localized &&
+              Array.isArray(
+                (variant.localized as { optionMeta?: VariantOptionMetaEntry[] })
+                  .optionMeta
+              )
+                ? (variant.localized as { optionMeta: VariantOptionMetaEntry[] })
+                    .optionMeta[typeIndex]
+                : undefined;
+
+            if (meta?.kind) kind = meta.kind;
+            if (meta?.unit) unit = meta.unit;
+            swatches[variantIndex] = meta?.swatch ?? "";
+          }
+
           return parsedValue?.value ?? "";
         });
       }
 
+      if (kind === "custom") {
+        kind = inferKindFromTypeName(localized.en.name || localized.ar.name);
+      }
+
       types.push({
         id: `type-${typeIndex}`,
+        kind,
+        unit,
+        swatches: kind === "color" ? swatches : undefined,
         localized,
       });
     }
@@ -243,6 +332,7 @@ export function reconstructVariantTypesFromVariants(
 
   return Array.from(typeMap.entries()).map(([name, valuesSet], index) => ({
     id: `type-${index}`,
+    kind: inferKindFromTypeName(name),
     localized: {
       en: { name, values: Array.from(valuesSet) },
       ar: { name: "", values: Array.from(valuesSet).map(() => "") },

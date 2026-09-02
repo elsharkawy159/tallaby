@@ -52,7 +52,7 @@ export interface CartState {
   addToCart: (params: {
     productId: string;
     quantity: number;
-    variant?: any;
+    variantId?: string;
   }) => Promise<{ success: boolean; message?: string }>;
   updateQuantity: (
     itemId: string,

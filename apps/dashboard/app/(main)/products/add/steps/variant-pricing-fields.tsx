@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import {
@@ -8,6 +9,7 @@ import {
   roundPriceToNearestNine,
   type SellerPricingSettings,
 } from "@/lib/utils/product-pricing.lib";
+import { getPublicUrl } from "@/lib/utils";
 import { CurrencyInput, Toggle } from "@workspace/ui/components";
 import { FormLabel } from "@workspace/ui/components/form";
 import type { AddProductFormData } from "../add-product.schema";
@@ -25,6 +27,40 @@ export function DefaultVariantPriceDisplay({
       <p className="text-sm font-semibold text-gray-900">
         {finalPrice > 0 ? finalPrice.toFixed(2) : "—"} ج.م
       </p>
+    </div>
+  );
+}
+
+interface DefaultVariantImagesDisplayProps {
+  images: string[];
+}
+
+export function DefaultVariantImagesDisplay({
+  images,
+}: DefaultVariantImagesDisplayProps) {
+  return (
+    <div className="space-y-2 min-w-[140px]">
+      <p className="text-xs text-gray-500">Uses main product images</p>
+      {images.length > 0 ? (
+        <div className="flex flex-wrap gap-1">
+          {images.slice(0, 5).map((image) => (
+            <div
+              key={image}
+              className="relative size-10 overflow-hidden rounded-md border border-gray-200 bg-gray-50"
+            >
+              <Image
+                src={getPublicUrl(image, "products")}
+                alt=""
+                fill
+                className="object-cover"
+                sizes="40px"
+              />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-xs text-gray-400">Add images in Basic Information</p>
+      )}
     </div>
   );
 }

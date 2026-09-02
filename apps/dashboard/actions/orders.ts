@@ -40,14 +40,19 @@ export async function getSellerOrders(params?: {
             id: true,
             orderNumber: true,
             status: true,
+            notes: true,
+            totalAmount: true,
+            paymentMethod: true,
+            paymentStatus: true,
+            createdAt: true,
           },
           with: {
             user: {
               columns: {
                 email: true,
-                firstName: true,
-                lastName: true,
                 fullName: true,
+                phone: true,
+                isGuest: true,
               },
             },
             shipments: {
@@ -59,11 +64,15 @@ export async function getSellerOrders(params?: {
             userAddress_shippingAddressId: true,
           },
         },
+        // `products` has no title/slug columns — they live in product_translations.
         product: {
           columns: {
-            title: true,
-            slug: true,
             images: true,
+          },
+          with: {
+            productTranslations: {
+              columns: { locale: true, title: true, slug: true },
+            },
           },
         },
         productVariant: true,
@@ -105,7 +114,13 @@ export async function getOrderDetails(orderId: string) {
         orderItems: {
           where: eq(orderItems.sellerId, session.user.id),
           with: {
-            product: true,
+            product: {
+              with: {
+                productTranslations: {
+                  columns: { locale: true, title: true, slug: true },
+                },
+              },
+            },
             productVariant: true,
             shipmentItems: {
               with: {
@@ -118,10 +133,9 @@ export async function getOrderDetails(orderId: string) {
         user: {
           columns: {
             email: true,
-            firstName: true,
-            lastName: true,
             fullName: true,
             phone: true,
+            isGuest: true,
           },
         },
         userAddress_shippingAddressId: true,

@@ -24,6 +24,15 @@ export interface ProductCardProps {
     | null;
   quantity?: number | string;
   maxOrderQuantity?: number | string;
+  productVariants?: Array<{
+    id: string;
+    localized?: unknown;
+    option1?: string | null;
+    option2?: string | null;
+    option3?: string | null;
+    images?: unknown;
+    imageUrl?: string | null;
+  }>;
 }
 
 export interface AddToCartButtonProps {

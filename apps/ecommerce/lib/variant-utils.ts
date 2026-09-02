@@ -1,4 +1,25 @@
 /**
+ * Splits an option string stored as "Type: Value" (e.g. "Color: Red") into
+ * its parts. Mirrors apps/dashboard/lib/utils/variant-types.lib.ts.
+ */
+export function parseVariantOption(
+  option?: string | null
+): { typeName: string; value: string } | null {
+  if (!option) return null;
+
+  const match = option.match(/^(.+?):\s*(.+)$/);
+
+  if (!match) {
+    return { typeName: option.trim(), value: option.trim() };
+  }
+
+  return {
+    typeName: match[1]!.trim(),
+    value: match[2]!.trim(),
+  };
+}
+
+/**
  * Formats a variant title from option fields
  * Example: option1="color: black", option2="size: small" => "color: black, size: small"
  */

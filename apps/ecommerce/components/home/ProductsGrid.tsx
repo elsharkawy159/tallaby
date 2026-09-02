@@ -15,6 +15,8 @@ interface ProductFilters {
   condition?: string;
   sellerId?: string;
   isFeatured?: boolean;
+  isTrending?: boolean;
+  isSeasonal?: boolean;
   searchQuery?: string;
   sortBy?: "price_asc" | "price_desc" | "rating" | "newest" | "popular";
   limit?: number;
