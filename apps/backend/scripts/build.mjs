@@ -30,16 +30,19 @@ await mkdir(functionDir, { recursive: true })
 await esbuild.build({
   absWorkingDir: root,
   entryPoints: [path.join(root, 'src', 'vercel-entry.ts')],
-  outfile: path.join(functionDir, 'index.js'),
+  outfile: path.join(functionDir, 'index.mjs'),
   bundle: true,
   platform: 'node',
   target: 'node20',
-  format: 'cjs',
+  format: 'esm',
   jsx: 'automatic',
   logLevel: 'info',
   sourcemap: false,
-  // Keep Node builtins external; bundle all JS deps including @workspace/*.
   packages: 'bundle',
+  banner: {
+    // Some CJS-only deps still use require(); provide a shim in ESM.
+    js: "import { createRequire as __createRequire } from 'node:module'; const require = __createRequire(import.meta.url);",
+  },
 })
 
 await writeFile(
@@ -47,9 +50,9 @@ await writeFile(
   `${JSON.stringify(
     {
       runtime: 'nodejs22.x',
-      handler: 'index.js',
+      handler: 'index.mjs',
       launcherType: 'Nodejs',
-      shouldAddHelpers: true,
+      shouldAddHelpers: false,
       supportsResponseStreaming: true,
     },
     null,

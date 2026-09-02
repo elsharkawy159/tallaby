@@ -15,10 +15,12 @@ node_modules/
 dist/
 .vercel/
 
-# env
+# env (keep .env.example tracked)
 .env
-.env.production
 .env.local
+.env.production
+.env*.local
+!.env.example
 
 # logs
 logs/
