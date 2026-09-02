@@ -27,7 +27,6 @@ export interface SellFaqItem {
 }
 
 export interface SellCtaProps {
-  user: import('@supabase/supabase-js').User | null
   size?: 'default' | 'sm' | 'lg'
   variant?: 'default' | 'secondary' | 'outline'
   className?: string

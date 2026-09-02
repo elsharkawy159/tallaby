@@ -7,6 +7,11 @@ import { getTranslations } from "next-intl/server";
 import { getProfileContext } from "./_components/profile.server";
 export const metadata: Metadata = generateNoIndexMetadata();
 
+// Everything under /profile is the signed-in viewer's own data. Declaring it
+// on the layout covers every nested page, so none of them are attempted as
+// static renders during `next build`.
+export const dynamic = "force-dynamic";
+
 // Profile Layout Data Component (Server Component)
 async function ProfileLayoutData({ children }: { children: React.ReactNode }) {
   const profileContext = await getProfileContext();

@@ -8,6 +8,9 @@ import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { createClient } from "@/supabase/server";
 import { getTranslations } from "next-intl/server";
 
+// Reads the signed-in seller applicant from the session cookie.
+export const dynamic = "force-dynamic";
+
 export default async function OnboardingPage() {
   const supabase = await createClient();
   const t = await getTranslations("onboarding");

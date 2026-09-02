@@ -2,10 +2,8 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { hasLocale } from "next-intl";
-import { setRequestLocale } from "next-intl/server";
 import { getCategoryBySlug } from "@/actions/categories";
 import { getProducts, getFilterOptions } from "@/actions/products";
-import { getWishlistItems } from "@/actions/wishlist";
 import { generateCategoryMetadata } from "@/lib/metadata";
 import { generateCategoryStructuredData } from "@/lib/structured-data";
 import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
@@ -75,7 +73,6 @@ export default async function CategoryPage({
   searchParams,
 }: CategoryPageProps) {
   const { locale, slug } = await params;
-  setRequestLocale(locale);
   const resolvedSearchParams = await searchParams;
   const { category } = await resolveCategory(locale, slug);
 
@@ -86,12 +83,6 @@ export default async function CategoryPage({
     limit: PAGE_SIZE,
     offset: (page - 1) * PAGE_SIZE,
   });
-
-  const wishlistResult = await getWishlistItems();
-  const wishlistItems = wishlistResult.success ? (wishlistResult.data ?? []) : [];
-  const wishlistMap = new Map(
-    wishlistItems.map((item: any) => [item.productId, item])
-  );
 
   const products = productsResult.success ? (productsResult.data ?? []) : [];
   const totalCount = productsResult.success ? productsResult.totalCount : 0;
@@ -142,8 +133,6 @@ export default async function CategoryPage({
                   <ProductCard
                     key={product.id}
                     {...(product as ProductCardProps)}
-                    isInWishlist={wishlistMap.has(product.id)}
-                    wishlistItemId={wishlistMap.get(product.id)?.id}
                   />
                 ))}
               </div>

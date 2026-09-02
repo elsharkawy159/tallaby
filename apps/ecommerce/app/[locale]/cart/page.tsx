@@ -7,6 +7,11 @@ import { CartSimilarProducts } from "./_components/cart-similar-products";
 
 export const metadata: Metadata = generateNoIndexMetadata();
 
+// The cart is read from the viewer's session cookie, so there is nothing to
+// prerender. Declaring it keeps `next build` from attempting (and logging a
+// DYNAMIC_SERVER_USAGE error for) a static render of this route.
+export const dynamic = "force-dynamic";
+
 export default async function Cart() {
   const cartResult = await getCartItems();
   const initialCartData = cartResult.success ? cartResult.data : null;

@@ -1,8 +1,7 @@
 import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { createClient } from "@/supabase/server";
-import { ContactForm } from "./contact.chunks";
+import { ContactFormWrapper } from "./contact-form-wrapper.client";
 import { ContactMethodCard } from "./contact-method-card";
 import { Mail, MessageCircle } from "lucide-react";
 
@@ -40,11 +39,6 @@ export const metadata: Metadata = {
 
 export default async function Contact() {
   const t = await getTranslations("pages.contactPage");
-
-  // Get current user
-  const supabase = await createClient();
-  const { data: authData } = await supabase.auth.getUser();
-  const user = authData?.user ?? null;
 
   const contactMethods = [
     {
@@ -99,7 +93,7 @@ export default async function Contact() {
             </div>
 
             <div className="grid grid-cols-1 gap-12">
-              <ContactForm user={user} />
+              <ContactFormWrapper />
             </div>
           </div>
         </section>

@@ -19,7 +19,7 @@ export const ProductCardActions = ({
   product,
   className,
   variant = "card",
-  isInWishlist = false,
+  isInWishlist,
   wishlistItemId,
 }: ProductCardActionsProps) => {
   const productId = product.id || "";

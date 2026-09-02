@@ -6,7 +6,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 import NextTopLoader from "nextjs-toploader";
 import { Scripts } from "@/components/layout/structured-data";
-import { getMessages, setRequestLocale } from "next-intl/server";
+import { getMessages } from "next-intl/server";
 import { Toaster } from "@workspace/ui/components/sonner";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
@@ -24,11 +24,17 @@ const notoKufiArabic = Noto_Kufi_Arabic({
   weight: ["400", "500", "600", "700"],
 });
 
+// This is the app's root layout, which makes `[locale]` a root param — the
+// segment `i18n/request.ts` reads via `next/root-params`. Enumerating the
+// locales here is what makes every nested page eligible for static rendering.
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
 export const metadata: Metadata = {
+  // Resolves relative OG/Twitter image paths ("/og-image.jpg") against the
+  // real origin instead of Next's localhost fallback.
+  metadataBase: new URL(BASE_URL || "http://localhost:3000"),
   title: {
     default: "Online Shopping Egypt - Your Everything Store",
     template: "%s | Tallaby.com",
@@ -106,9 +112,6 @@ export default async function RootLayout({
   if (!hasLocale(routing.locales, locale)) {
     notFound();
   }
-
-  // Enables static rendering for this locale (see next-intl docs).
-  setRequestLocale(locale);
 
   const messages = await getMessages();
 

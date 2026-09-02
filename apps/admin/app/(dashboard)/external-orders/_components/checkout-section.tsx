@@ -19,7 +19,7 @@ import {
   CardTitle,
 } from '@workspace/ui/components/card'
 import { formatPricePlain } from '@workspace/lib'
-import { isCodEligibleForShipping } from '@workspace/lib/orders'
+import { isCodEligibleForShipping } from '@workspace/lib/orders/payment'
 import type { ExternalOrderFormData } from '../external-orders.schema'
 import type { ExternalOrderPreview } from '../external-orders.types'
 

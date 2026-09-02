@@ -41,7 +41,7 @@ import { Textarea } from "@workspace/ui/components/textarea";
 import { Info } from "lucide-react";
 import type { CheckoutSummary } from "@/lib/coupon-utils";
 import { useCart } from "@/providers/cart-provider";
-import { isCodEligibleForShipping } from "@workspace/lib/orders";
+import { isCodEligibleForShipping } from "@workspace/lib/orders/payment";
 
 export const CheckoutData = ({
   checkoutData,

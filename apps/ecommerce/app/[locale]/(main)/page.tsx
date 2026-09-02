@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 import Hero from "@/components/home/hero/hero";
 import { ProductsGrid, ProductSection } from "@/components/home";
 import { ProductsGridSkeleton } from "@/components/home/products-grid.skeleton";
@@ -44,7 +44,6 @@ const HomePage = async ({
   params: Promise<{ locale: string }>;
 }) => {
   const { locale } = await params;
-  setRequestLocale(locale);
   const t = await getTranslations("pages.home");
 
   return (

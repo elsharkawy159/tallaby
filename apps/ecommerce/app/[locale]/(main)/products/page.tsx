@@ -1,6 +1,11 @@
+import { Suspense } from "react";
 import ProductsFilterWrapper from "@/app/[locale]/(main)/products/_components/ProductsFilterWrapper";
 import ProductsList from "@/app/[locale]/(main)/products/_components/ProductsList";
 import ProductsSorting from "@/app/[locale]/(main)/products/_components/ProductsSorting";
+import {
+  ProductsFilterSkeleton,
+  ProductsListSkeleton,
+} from "@/app/[locale]/(main)/products/_components/products-list.skeleton";
 import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import { generateNoIndexMetadata, localizedUrl, type SeoLocale } from "@/lib/metadata";
 import type { Metadata } from "next";
@@ -58,6 +63,11 @@ export async function generateMetadata({
   };
 }
 
+// The listing is driven entirely by `searchParams` (filters, sort, page), so
+// the route itself is request-time by definition. The two database-backed
+// regions are streamed instead of awaited inline, so the shell — breadcrumb,
+// layout, sorting control — reaches the browser without waiting on either
+// query.
 const ProductsPage = async ({
   searchParams,
 }: {
@@ -72,7 +82,9 @@ const ProductsPage = async ({
         <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
           {/* Filter Sidebar - Hidden on mobile, shown on desktop */}
           <div className="hidden lg:block">
-            <ProductsFilterWrapper />
+            <Suspense fallback={<ProductsFilterSkeleton />}>
+              <ProductsFilterWrapper />
+            </Suspense>
           </div>
 
           {/* Main Content Area */}
@@ -81,7 +93,9 @@ const ProductsPage = async ({
             <div className="flex sm:flex-row gap-4 items-start sm:items-center justify-between">
               {/* Mobile filter button */}
               <div className="lg:hidden w-full sm:w-auto">
-                <ProductsFilterWrapper />
+                <Suspense fallback={null}>
+                  <ProductsFilterWrapper />
+                </Suspense>
               </div>
 
               {/* Sorting */}
@@ -91,7 +105,12 @@ const ProductsPage = async ({
             </div>
 
             {/* Products Grid - Responsive columns */}
-            <ProductsList searchParams={resolvedSearchParams} />
+            <Suspense
+              key={JSON.stringify(resolvedSearchParams)}
+              fallback={<ProductsListSkeleton />}
+            >
+              <ProductsList searchParams={resolvedSearchParams} />
+            </Suspense>
           </div>
         </div>
       </main>

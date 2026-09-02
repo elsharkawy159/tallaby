@@ -1,19 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getWishlistItems } from "@/actions/wishlist";
+import { useWishlistItems } from "@/lib/wishlist/use-wishlist-items";
 
 export const WishlistCount = ({ className }: { className?: string }) => {
-  const [itemCount, setItemCount] = useState(0);
-
-  useEffect(() => {
-    getWishlistItems().then((wishlistResult) => {
-      const count = wishlistResult.success
-        ? (wishlistResult.data?.length ?? 0)
-        : 0;
-      setItemCount(count);
-    });
-  }, []);
+  // Shares its query with every WishlistButton on the page, so the header
+  // badge costs no extra request.
+  const { items } = useWishlistItems();
+  const itemCount = items.length;
 
   if (itemCount === 0) return null;
 

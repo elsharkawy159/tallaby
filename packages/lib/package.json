@@ -45,6 +45,10 @@
       "types": "./src/orders/index.ts",
       "default": "./src/orders/index.ts"
     },
+    "./orders/payment": {
+      "types": "./src/orders/payment.lib.ts",
+      "default": "./src/orders/payment.lib.ts"
+    },
     "./address": {
       "types": "./src/address/index.ts",
       "default": "./src/address/index.ts"

@@ -11,6 +11,9 @@ import { getUser } from "@/actions/auth";
 
 export const metadata: Metadata = generateNoIndexMetadata();
 
+// Session-scoped (cart + addresses + auth) — never prerenderable.
+export const dynamic = "force-dynamic";
+
 export default async function Checkout() {
   const [result, addressesResult, user, t] = await Promise.all([
     getCheckoutData(),

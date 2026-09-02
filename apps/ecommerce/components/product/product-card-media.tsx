@@ -19,7 +19,9 @@ interface ProductCardMediaProps {
 
 export const ProductCardMedia = ({
   product,
-  isInWishlist = false,
+  // Left undefined by listing pages so WishlistButton resolves membership on
+  // the client — passing `false` here would pin every card to "not saved".
+  isInWishlist,
   wishlistItemId,
   className,
 }: ProductCardMediaProps) => {

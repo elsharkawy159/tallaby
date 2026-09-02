@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
 
-import { getAuthUser } from '@/lib/auth/current-user'
 import { localizedUrl, buildLanguageAlternates, type SeoLocale } from '@/lib/metadata'
 import { routing } from '@/i18n/routing'
 import { SellPageContent } from './sell.chunks'
@@ -43,8 +42,6 @@ export async function generateMetadata({
   }
 }
 
-export default async function SellPage() {
-  const user = await getAuthUser()
-
-  return <SellPageContent user={user} />
+export default function SellPage() {
+  return <SellPageContent />
 }

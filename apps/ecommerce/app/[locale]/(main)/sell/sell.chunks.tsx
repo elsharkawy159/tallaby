@@ -29,11 +29,7 @@ import {
   REQUIREMENTS_ITEMS,
 } from './sell.lib'
 
-interface SellPageContentProps {
-  user: User | null
-}
-
-export async function SellPageContent({ user }: SellPageContentProps) {
+export async function SellPageContent() {
   const t = await getTranslations('pages.sell')
 
   return (
@@ -53,7 +49,7 @@ export async function SellPageContent({ user }: SellPageContentProps) {
                 {t('heroDescription')}
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <SellCta user={user} size="lg" className="hover:bg-accent/90" />
+                <SellCta size="lg" className="hover:bg-accent/90" />
                 <Button
                   asChild
                   size="lg"
@@ -152,7 +148,7 @@ export async function SellPageContent({ user }: SellPageContentProps) {
                 </Card>
               </div>
               <div className="mt-8 flex justify-center">
-                <SellCta user={user} />
+                <SellCta />
               </div>
               <div className="mt-10">
                 <h3 className="text-lg font-semibold mb-4">{t('faqTitle')}</h3>
@@ -304,7 +300,7 @@ export async function SellPageContent({ user }: SellPageContentProps) {
           <h2 className="text-3xl md:text-4xl font-bold mb-4">{t('finalCtaTitle')}</h2>
           <p className="text-lg text-white/90 max-w-2xl mx-auto mb-8">{t('finalCtaDescription')}</p>
           <div className="flex justify-center">
-            <SellCta user={user} size="lg" className="bg-accent text-black hover:bg-accent/90" />
+            <SellCta size="lg" className="bg-accent text-black hover:bg-accent/90" />
           </div>
         </div>
       </section>

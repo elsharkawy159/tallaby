@@ -10,9 +10,8 @@ import { useState } from "react";
 import {
   addToWishlist as addToWishlistAction,
   removeFromWishlist as removeFromWishlistAction,
-  getWishlistItems,
 } from "@/actions/wishlist";
-import { useRouter } from "@/i18n/navigation";
+import { useWishlistItems } from "@/lib/wishlist/use-wishlist-items";
 
 // 🔑 Centralized size styles
 const sizeStyles = {
@@ -46,16 +45,23 @@ export const WishlistButton = ({
   variant = "ghost",
   showText = true,
   onSuccess,
-  isInWishlist: initialIsInWishlist = false,
-  wishlistItemId,
+  isInWishlist: isInWishlistOverride,
+  wishlistItemId: wishlistItemIdOverride,
 }: WishlistButtonProps & {
   isInWishlist?: boolean;
   wishlistItemId?: string;
 }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [isWishlisted, setIsWishlisted] = useState(initialIsInWishlist);
-  const router = useRouter();
   const tToast = useTranslations("toast");
+
+  // Membership is resolved on the client so the surrounding page markup stays
+  // user-agnostic and prerenderable. Callers that already know the answer
+  // (e.g. the wishlist page itself) can still pass it in.
+  const { findByProductId, invalidate } = useWishlistItems();
+  const entry = productId ? findByProductId(productId) : undefined;
+
+  const isWishlisted = isInWishlistOverride ?? Boolean(entry);
+  const wishlistItemId = wishlistItemIdOverride ?? entry?.id;
 
   const toggleWishlist = async () => {
     if (disabled || !productId || isLoading) return;
@@ -65,8 +71,7 @@ export const WishlistButton = ({
       if (isWishlisted && wishlistItemId) {
         const result = await removeFromWishlistAction(wishlistItemId);
         if (result.success) {
-          setIsWishlisted(false);
-          router.refresh();
+          invalidate();
           toast.success(tToast("removedFromWishlist"));
         } else {
           toast.error(result.error || tToast("failedToRemoveFromWishlist"));
@@ -74,8 +79,7 @@ export const WishlistButton = ({
       } else {
         const result = await addToWishlistAction({ productId });
         if (result.success) {
-          setIsWishlisted(true);
-          router.refresh();
+          invalidate();
           toast.success(tToast("addedToWishlist"));
         } else {
           toast.error(result.error || tToast("failedToAddToWishlist"));

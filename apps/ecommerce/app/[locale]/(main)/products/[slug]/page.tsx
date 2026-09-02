@@ -19,7 +19,7 @@ import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import { generateProductMetadata } from "@/lib/metadata";
 import type { Metadata } from "next";
 import { ProductStructuredData } from "./_components/product-structured-data";
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 import { hasLocale } from "next-intl";
 import { routing } from "@/i18n/routing";
 import {
@@ -125,7 +125,6 @@ export async function generateMetadata({
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { locale, slug } = await params;
-  setRequestLocale(locale);
   const t = await getTranslations("product");
   const { product } = await resolveProduct(locale, slug);
 

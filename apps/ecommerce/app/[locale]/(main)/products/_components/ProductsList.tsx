@@ -3,7 +3,6 @@ import { getLocale } from "next-intl/server";
 import ProductCard from "@/app/[locale]/(main)/products/[slug]/_components/ProductCard";
 import type { ProductCardProps } from "@/components/product";
 import Pagination from "./Pagination";
-import { getWishlistItems } from "@/actions/wishlist";
 
 interface ProductsListProps {
   searchParams: { [key: string]: string | string[] | undefined };
@@ -73,15 +72,6 @@ const ProductsList = async ({ searchParams }: ProductsListProps) => {
     );
   }
 
-    const wishlistResult = await getWishlistItems();
-    const wishlistItems = wishlistResult.success
-      ? (wishlistResult.data ?? [])
-      : [];
-
-    const wishlistMap = new Map(
-      wishlistItems.map((item: any) => [item.productId, item])
-    );
-  
   const { data: products, totalCount } = result;
   const currentPage = Number(searchParams.page) || 1;
   const pageSize = Number(searchParams.pageSize) || 40;
@@ -102,8 +92,6 @@ const ProductsList = async ({ searchParams }: ProductsListProps) => {
               <ProductCard
                 key={product.id}
                 {...(product as ProductCardProps)}
-                isInWishlist={wishlistMap.has(product.id)}
-                wishlistItemId={wishlistMap.get(product.id)?.id}
               />
             ))}
           </div>

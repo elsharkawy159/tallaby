@@ -2,12 +2,11 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { hasLocale } from "next-intl";
-import { setRequestLocale, getTranslations } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 import Image from "next/image";
 import { Star, BadgeCheck } from "lucide-react";
 import { getSellerBySlug } from "@/actions/seller";
 import { getProducts } from "@/actions/products";
-import { getWishlistItems } from "@/actions/wishlist";
 import { generateStoreMetadata } from "@/lib/metadata";
 import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import ProductCard from "@/app/[locale]/(main)/products/[slug]/_components/ProductCard";
@@ -62,7 +61,6 @@ const PAGE_SIZE = 24;
 
 export default async function StorePage({ params, searchParams }: StorePageProps) {
   const { locale, slug } = await params;
-  setRequestLocale(locale);
   const t = await getTranslations("pages.stores");
   const resolvedSearchParams = await searchParams;
   const { seller } = await resolveStore(locale, slug);
@@ -74,12 +72,6 @@ export default async function StorePage({ params, searchParams }: StorePageProps
     limit: PAGE_SIZE,
     offset: (page - 1) * PAGE_SIZE,
   });
-
-  const wishlistResult = await getWishlistItems();
-  const wishlistItems = wishlistResult.success ? (wishlistResult.data ?? []) : [];
-  const wishlistMap = new Map(
-    wishlistItems.map((item: any) => [item.productId, item])
-  );
 
   const products = productsResult.success ? (productsResult.data ?? []) : [];
   const totalCount = productsResult.success ? productsResult.totalCount : 0;
@@ -163,8 +155,6 @@ export default async function StorePage({ params, searchParams }: StorePageProps
                   <ProductCard
                     key={product.id}
                     {...(product as ProductCardProps)}
-                    isInWishlist={wishlistMap.has(product.id)}
-                    wishlistItemId={wishlistMap.get(product.id)?.id}
                   />
                 ))}
               </div>
