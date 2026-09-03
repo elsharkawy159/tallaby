@@ -80,7 +80,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   async function handleAction<T extends (...args: any[]) => Promise<any>>(
     action: T,
     args: Parameters<T>,
-    successMsg: string,
+    successMsg: string | null,
     errorMsg: string,
     loadingKey?: string,
     setLoading?: (key: string, loading: boolean) => void
@@ -95,7 +95,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         // Invalidate and immediately refetch to ensure fresh data
         await queryClient.invalidateQueries({ queryKey: ["cart"] });
         await refreshCart();
-        toast.success(successMsg);
+        if (successMsg) toast.success(successMsg);
         return { success: true };
       }
       toast.error(result.error || errorMsg);
@@ -133,7 +133,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return handleAction(
       updateCartItem,
       [itemId, quantity],
-      tToast("cartUpdated"),
+      null,
       tToast("failedToUpdateCart"),
       itemId,
       setItemLoading

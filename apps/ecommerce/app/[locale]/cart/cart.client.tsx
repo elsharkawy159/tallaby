@@ -37,7 +37,6 @@ export default function CartClient({ initialCartData }: CartClientProps) {
       const result = await updateCartItem(itemId, quantity);
       if (result.success) {
         router.refresh();
-        toast.success(tToast("cartUpdated"));
       } else {
         toast.error(result.error || tToast("failedToUpdateCart"));
       }
