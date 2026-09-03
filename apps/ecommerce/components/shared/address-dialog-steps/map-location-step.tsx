@@ -43,6 +43,14 @@ export const MapLocationStep = ({
   const userLocationMarkerRef = useRef<any>(null);
   // Ensures the automatic location lookup runs only once per map entry
   const hasAutoLocatedRef = useRef(false);
+  // A fix that arrived before the map finished loading, replayed once it is
+  const pendingPositionRef = useRef<{
+    position: GeolocationPosition;
+    silent: boolean;
+  } | null>(null);
+  // Accuracy (in metres) of the fix currently shown, so a coarse reading that
+  // lands after a precise one does not push the pin back out
+  const appliedAccuracyRef = useRef<number | null>(null);
   const [selectedCoordinates, setSelectedCoordinates] = useState<{
     lat: number;
     lng: number;
@@ -138,6 +146,14 @@ export const MapLocationStep = ({
         mapInstanceRef.current = map;
         setIsMapLoaded(true);
 
+        // The location lookup starts before the map is ready, so a fix may
+        // already be waiting for it
+        const pending = pendingPositionRef.current;
+        if (pending) {
+          pendingPositionRef.current = null;
+          void applyPosition(pending.position, pending.silent);
+        }
+
         // Add initial marker if location provided
         if (initialLocation) {
           const marker = Leaflet.marker([
@@ -191,8 +207,100 @@ export const MapLocationStep = ({
   }, [initialLocation]);
 
   /**
-   * Requests the browser location, then centers/zooms the map on it,
-   * drops the pulsing dot marker and pre-selects the coordinates.
+   * Moves the map to a browser position: centers/zooms, drops the pulsing
+   * dot marker and pre-selects the coordinates.
+   *
+   * Both stages of the lookup below feed into this, so it keeps the most
+   * precise fix: a coarse reading that lands after a precise one is dropped.
+   * If the map is still initialising the position is stashed and replayed by
+   * initializeMap, which lets the lookup start before the map exists.
+   */
+  const applyPosition = async (
+    position: GeolocationPosition,
+    silent: boolean
+  ) => {
+    const { latitude, longitude, accuracy } = position.coords;
+
+    // Map still loading - remember the fix; map initialisation applies it
+    if (!mapInstanceRef.current) {
+      pendingPositionRef.current = { position, silent };
+      return;
+    }
+
+    if (
+      appliedAccuracyRef.current !== null &&
+      accuracy > appliedAccuracyRef.current
+    ) {
+      return;
+    }
+    appliedAccuracyRef.current = accuracy;
+
+    try {
+      // Show the result immediately - the address lookup below must never
+      // hold up the pin or keep the button spinning
+      setSelectedCoordinates({ lat: latitude, lng: longitude });
+      setIsLocating(false);
+
+      mapInstanceRef.current.setView(
+        [latitude, longitude],
+        MAP_ZOOM_LEVELS.USER_LOCATION,
+        {
+          animate: true,
+          duration: 0.8, // Smooth animation duration
+        }
+      );
+
+      // Remove existing markers (but keep user location marker separate)
+      if (markerRef.current) {
+        markerRef.current.remove();
+        markerRef.current = null;
+      }
+      if (userLocationMarkerRef.current) {
+        userLocationMarkerRef.current.remove();
+      }
+
+      // Dynamically import Leaflet
+      const Leaflet = await import("leaflet");
+
+      // Create and add pulsing dot marker for user location
+      const pulsingIcon = createPulsingDotMarker(Leaflet);
+      userLocationMarkerRef.current = Leaflet.marker([latitude, longitude], {
+        icon: pulsingIcon,
+      }).addTo(mapInstanceRef.current);
+
+      if (silent) return;
+
+      // Reverse geocoding only drives the confirmation toast here; the
+      // address itself is resolved again when the user confirms
+      const addressDetails = await reverseGeocode(latitude, longitude);
+
+      if (addressDetails.formattedAddress || addressDetails.displayName) {
+        toast.success(t("locationFoundFullDetails"));
+      } else {
+        toast.success(t("locationFoundLimitedDetails"));
+      }
+    } catch (error) {
+      console.error("Error processing location:", error);
+      setIsLocating(false);
+      if (silent) return;
+      const errorMsg = t("failedToProcessLocation");
+      setLocationError(errorMsg);
+      toast.error(errorMsg);
+    }
+  };
+
+  /**
+   * Requests the browser location and moves the map to it.
+   *
+   * Two requests are fired at once rather than one slow accurate one:
+   *
+   * 1. A coarse request that accepts a recently cached wifi/network fix,
+   *    which the browser normally answers in well under a second.
+   * 2. The precise GPS request, which can take several seconds on mobile and
+   *    simply sharpens the pin whenever it lands.
+   *
+   * The user sees their location almost immediately and it tightens up on
+   * its own, instead of waiting on GPS before anything moves.
    *
    * @param silent - Used by the automatic lookup performed once when the map
    * opens. In silent mode no toasts or inline errors are shown: if the user
@@ -208,118 +316,65 @@ export const MapLocationStep = ({
       return;
     }
 
-    if (!isMapLoaded || !mapInstanceRef.current) {
-      if (silent) return;
+    // The automatic lookup deliberately runs before the map is ready; the
+    // manual button needs a map to move
+    if (!silent && !mapInstanceRef.current) {
       toast.error(t("mapNotReady"));
       return;
     }
 
     setIsLocating(true);
     setLocationError(null);
+    appliedAccuracyRef.current = null;
 
-    // Geolocation options for better accuracy
-    const geoOptions = {
-      enableHighAccuracy: true,
-      timeout: 10000, // 10 seconds timeout
-      // The automatic lookup accepts a recent cached fix so the map settles
-      // quickly on entry; the manual button always asks for a fresh one
-      maximumAge: silent ? 60000 : 0,
+    const handleFix = (position: GeolocationPosition) => {
+      void applyPosition(position, silent);
     };
 
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          const { latitude, longitude } = position.coords;
+    const handleError = (error: GeolocationPositionError) => {
+      setIsLocating(false);
 
-          // Smoothly center and zoom map to user location
-          if (mapInstanceRef.current) {
-            mapInstanceRef.current.setView(
-              [latitude, longitude],
-              MAP_ZOOM_LEVELS.USER_LOCATION,
-              {
-                animate: true,
-                duration: 0.8, // Smooth animation duration
-              }
-            );
+      // The coarse stage may fail while the precise one still succeeds, and
+      // the automatic attempt fails quietly - the user keeps the default map
+      // view and the manual "Locate me" button
+      if (silent || appliedAccuracyRef.current !== null) return;
 
-            // Remove existing markers (but keep user location marker separate)
-            if (markerRef.current) {
-              markerRef.current.remove();
-            }
-            if (userLocationMarkerRef.current) {
-              userLocationMarkerRef.current.remove();
-            }
+      // Handle different geolocation error types
+      let errorMessage = t("unableToRetrieveLocation");
 
-            // Dynamically import Leaflet
-            const Leaflet = await import("leaflet");
+      switch (error.code) {
+        case error.PERMISSION_DENIED:
+          errorMessage = t("locationAccessDenied");
+          break;
+        case error.POSITION_UNAVAILABLE:
+          errorMessage = t("locationUnavailable");
+          break;
+        case error.TIMEOUT:
+          errorMessage = t("locationTimeout");
+          break;
+        default:
+          errorMessage = t("locationUnknownError");
+          break;
+      }
 
-            // Create and add pulsing dot marker for user location
-            const pulsingIcon = createPulsingDotMarker(Leaflet);
-            const userMarker = Leaflet.marker([latitude, longitude], {
-              icon: pulsingIcon,
-            }).addTo(mapInstanceRef.current);
+      setLocationError(errorMessage);
+      toast.error(errorMessage);
+    };
 
-            userLocationMarkerRef.current = userMarker;
+    // Stage 1 - near-instant: a network fix from the last 5 minutes is good
+    // enough to put the map in the right neighbourhood right away
+    navigator.geolocation.getCurrentPosition(handleFix, () => {}, {
+      enableHighAccuracy: false,
+      timeout: 5000,
+      maximumAge: 300000,
+    });
 
-            // Update selected coordinates
-            setSelectedCoordinates({ lat: latitude, lng: longitude });
-
-            if (!silent) {
-              // Perform reverse geocoding to get full address details
-              const addressDetails = await reverseGeocode(latitude, longitude);
-
-              // Store address details (will be used when confirming location)
-              if (
-                addressDetails.formattedAddress ||
-                addressDetails.displayName
-              ) {
-                toast.success(t("locationFoundFullDetails"));
-              } else {
-                toast.success(t("locationFoundLimitedDetails"));
-              }
-            }
-          }
-
-          setIsLocating(false);
-        } catch (error) {
-          console.error("Error processing location:", error);
-          setIsLocating(false);
-          if (silent) return;
-          const errorMsg = t("failedToProcessLocation");
-          setLocationError(errorMsg);
-          toast.error(errorMsg);
-        }
-      },
-      (error) => {
-        setIsLocating(false);
-
-        // The automatic attempt fails quietly - the user keeps the default
-        // map view and the manual "Locate me" button
-        if (silent) return;
-
-        // Handle different geolocation error types
-        let errorMessage = t("unableToRetrieveLocation");
-
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            errorMessage = t("locationAccessDenied");
-            break;
-          case error.POSITION_UNAVAILABLE:
-            errorMessage = t("locationUnavailable");
-            break;
-          case error.TIMEOUT:
-            errorMessage = t("locationTimeout");
-            break;
-          default:
-            errorMessage = t("locationUnknownError");
-            break;
-        }
-
-        setLocationError(errorMessage);
-        toast.error(errorMessage);
-      },
-      geoOptions
-    );
+    // Stage 2 - precise: the GPS reading that refines the pin once available
+    navigator.geolocation.getCurrentPosition(handleFix, handleError, {
+      enableHighAccuracy: true,
+      timeout: 15000,
+      maximumAge: 0,
+    });
   };
 
   /**
@@ -328,16 +383,19 @@ export const MapLocationStep = ({
   const handleGetCurrentLocation = () => locateUser({ silent: false });
 
   /**
-   * Automatically locates the user once, right after the map is ready.
-   * Skipped when an existing address already provides coordinates, and it
-   * never runs a second time for the same map instance.
+   * Automatically locates the user once, on entry.
+   *
+   * This starts on mount, in parallel with the Leaflet import and map setup,
+   * so the permission prompt and the position request are not queued behind
+   * the map loading. Skipped when an existing address already provides
+   * coordinates, and it never runs a second time for the same map instance.
    */
   useEffect(() => {
-    if (!isMapLoaded || initialLocation || hasAutoLocatedRef.current) return;
+    if (initialLocation || hasAutoLocatedRef.current) return;
 
     hasAutoLocatedRef.current = true;
     locateUser({ silent: true });
-  }, [isMapLoaded, initialLocation]);
+  }, [initialLocation]);
 
   /**
    * Handles location confirmation
