@@ -28,6 +28,44 @@ const client = postgres(connectionString, {
 // Instantiate Drizzle client with pg driver and schema.
 export const db = drizzle(client, { schema });
 
+/**
+ * Drizzle's postgres-js driver replaces date/json serializers with identity
+ * functions so it can parse values itself. postgres.js Bind() then calls
+ * Buffer.byteLength on the raw JS value — numbers (LIMIT/OFFSET as int8),
+ * Date instances, and jsonb objects throw ERR_INVALID_ARG_TYPE.
+ * Always coerce those OIDs to a wire-safe string.
+ *
+ * @see https://github.com/drizzle-team/drizzle-orm/issues/5789
+ */
+const toPostgresWireString = (value: unknown): string => {
+  if (typeof value === "string") return value;
+  if (value instanceof Date) return value.toISOString();
+  if (
+    typeof value === "number" ||
+    typeof value === "boolean" ||
+    typeof value === "bigint"
+  ) {
+    return String(value);
+  }
+  return JSON.stringify(value);
+};
+
+for (const oid of [
+  20, // int8 — LIMIT / OFFSET / count(distinct …)
+  114,
+  3802, // json / jsonb
+  1082,
+  1083,
+  1114,
+  1115,
+  1182,
+  1184,
+  1185,
+  1231, // date / time / timestamp / numeric[]
+]) {
+  client.options.serializers[oid] = toPostgresWireString;
+}
+
 // Re-export specific drizzle-orm functions
 export {
   eq,

@@ -23,6 +23,9 @@ const EXCLUDED_REVENUE_STATUSES: Array<
   'cancelled' | 'refunded' | 'returned'
 > = ['cancelled', 'refunded', 'returned']
 
+/** Inline LIMIT — avoids binding a JS number that postgres.js may fail to serialize. */
+const TOP_N = sql.raw('8') as unknown as number
+
 const STATUS_COLORS: Record<string, string> = {
   pending: '#f59e0b',
   payment_processing: '#f97316',
@@ -160,7 +163,7 @@ export async function getCommerceAnalytics (): Promise<CommerceAnalytics> {
       .where(and(countedOrders, gte(orders.createdAt, periodStartIso), lt(orders.createdAt, periodEndIso)))
       .groupBy(categories.id, categories.name, categories.nameAr)
       .orderBy(desc(sql`coalesce(sum(${orderItems.total}), 0)`))
-      .limit(8),
+      .limit(TOP_N),
     db
       .select({
         categoryId: categories.id,
@@ -221,7 +224,7 @@ export async function getCommerceAnalytics (): Promise<CommerceAnalytics> {
       .where(and(countedOrders, gte(orders.createdAt, yearStartIso), lt(orders.createdAt, periodEndIso)))
       .groupBy(products.id)
       .orderBy(desc(sql`coalesce(sum(${orderItems.total}), 0)`))
-      .limit(8),
+      .limit(TOP_N),
     db
       .select({
         categoryId: products.categoryId,
@@ -242,7 +245,7 @@ export async function getCommerceAnalytics (): Promise<CommerceAnalytics> {
       .from(orders)
       .leftJoin(users, eq(orders.userId, users.id))
       .orderBy(desc(orders.createdAt))
-      .limit(8),
+      .limit(TOP_N),
     db
       .select({
         sellerId: sellers.id,
@@ -256,7 +259,7 @@ export async function getCommerceAnalytics (): Promise<CommerceAnalytics> {
       .where(and(countedOrders, gte(orders.createdAt, yearStartIso), lt(orders.createdAt, periodEndIso)))
       .groupBy(sellers.id, sellers.displayName, sellers.businessName)
       .orderBy(desc(sql`coalesce(sum(${orderItems.total}), 0)`))
-      .limit(8)
+      .limit(TOP_N)
   ])
 
   const currentRevenue = toNumber(currentTotals[0]?.revenue)
