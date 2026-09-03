@@ -7,6 +7,8 @@ import {
   GuestAccountBanner,
 } from "./_components/profile.chunks";
 import { getUserReferredBy, getUserPoints, getProfileContext } from "./_components/profile.server";
+import { WalletSummaryCard } from "./wallet/_components/wallet.chunks";
+import { getWalletSummaryCardData } from "./wallet/_components/wallet.server";
 
 export const metadata: Metadata = generateNoIndexMetadata();
 
@@ -21,10 +23,15 @@ export default async function ProfilePage() {
 
   const referredBy = isGuest ? null : await getUserReferredBy();
   const totalPoints = isGuest ? null : await getUserPoints();
+  // Guests have no wallet at all, so this is null for them by construction.
+  const walletSummary = isGuest ? null : await getWalletSummaryCardData();
 
   return (
     <div className="space-y-6">
       {isGuest && <GuestAccountBanner orderCount={orderCount} />}
+      {walletSummary && (
+        <WalletSummaryCard availableBalance={walletSummary.availableBalance} />
+      )}
       {!isGuest && <UserPointsCard totalPoints={totalPoints} />}
       {isGuest && <GuestOrdersCard orderCount={orderCount} />}
       <ProfileForm

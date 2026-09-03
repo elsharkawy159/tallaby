@@ -17,7 +17,9 @@ import {
   ChevronLeft,
   ChevronRight,
   Home,
+  LineChart,
   Phone,
+  Wallet,
 } from "lucide-react";
 import type { SidebarCounts, SidebarProps } from "./sidebar.types";
 import { SIDEBAR_COUNT_BADGE_CLASS } from "./sidebar.types";
@@ -37,6 +39,11 @@ const sidebarLinks: SidebarLink[] = [
     href: "/",
     icon: Home,
     countKey: "dashboard",
+  },
+  {
+    title: "Analytics",
+    href: "/analytics",
+    icon: LineChart,
   },
   {
     title: "Customers",
@@ -83,6 +90,11 @@ const sidebarLinks: SidebarLink[] = [
     href: "/sellers",
     icon: Store,
     countKey: "sellers",
+  },
+  {
+    title: "Wallets",
+    href: "/wallets",
+    icon: Wallet,
   },
 ];
 

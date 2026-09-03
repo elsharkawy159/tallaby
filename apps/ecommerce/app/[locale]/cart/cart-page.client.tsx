@@ -15,6 +15,7 @@ import { formatVariantTitle } from "@/lib/variant-utils";
 import { useCart } from "@/providers/cart-provider";
 import { CartItemRemoveButton } from "./_components/cart-item-remove-button";
 import type { CartSummary } from "@/types/cart";
+import posthog from "posthog-js";
 
 interface CartPageClientProps {
   initialCartData: CartSummary | null;
@@ -252,7 +253,16 @@ export function CartPageClient({ initialCartData }: CartPageClientProps) {
             </div>
 
             <div className="px-4 md:px-6 pb-4 md:pb-6 space-y-3 md:space-y-4">
-              <Link href="/cart/checkout" className="block">
+              <Link
+                href="/cart/checkout"
+                className="block"
+                onClick={() =>
+                  posthog.capture("checkout_started", {
+                    item_count: itemCount,
+                    cart_total: subtotal,
+                  })
+                }
+              >
                 <Button
                   className="w-full h-10 md:h-12 text-xs md:text-base font-semibold transition-all duration-200"
                   size="lg"

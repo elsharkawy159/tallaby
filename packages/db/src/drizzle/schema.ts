@@ -14,7 +14,7 @@ export const promotionType = pgEnum("promotion_type", ['percentage', 'fixed_amou
 export const returnReason = pgEnum("return_reason", ['defective', 'damaged', 'wrong_item', 'not_as_described', 'better_price', 'no_longer_needed', 'unauthorized_purchase', 'other'])
 export const sellerStatus = pgEnum("seller_status", ['pending', 'approved', 'suspended', 'restricted'])
 export const shippingSpeed = pgEnum("shipping_speed", ['standard', 'expedited', 'priority', 'one_day', 'same_day'])
-export const userRole = pgEnum("user_role", ['customer', 'seller', 'admin', 'support', 'driver'])
+export const userRole = pgEnum("user_role", ['customer', 'seller', 'admin', 'support', 'driver', 'marketing'])
 export const productType = pgEnum("product_type", ['physical', 'digital'])
 export const productStatus = pgEnum("product_status", ['draft', 'pending', 'active', 'rejected'])
 export const transactionType = pgEnum("transaction_type", ['sale', 'refund', 'withdrawal', 'fee'])
@@ -24,6 +24,17 @@ export const digitalFulfillmentStatus = pgEnum("digital_fulfillment_status", ['p
 export const digitalAccessAction = pgEnum("digital_access_action", ['grant', 'download', 'view', 'resend', 'revoke', 'reinstate'])
 export const licenseKeyStatus = pgEnum("license_key_status", ['available', 'reserved', 'assigned', 'revoked'])
 export const shipmentStatus = pgEnum("shipment_status", ['pending', 'assigned', 'out_for_delivery', 'delivered', 'failed', 'returned', 'cancelled'])
+
+/**
+ * User-wallet enums (migration 0025). Distinct from the seller-only
+ * `transaction_type` above, which belongs to `wallet_transactions`/`seller_wallet`
+ * and is deliberately left untouched.
+ */
+export const walletStatus = pgEnum("wallet_status", ['active', 'frozen', 'closed'])
+export const walletTransactionType = pgEnum("wallet_transaction_type", ['top_up', 'payout', 'commission', 'order_payment', 'refund', 'adjustment', 'bonus'])
+export const walletTransactionStatus = pgEnum("wallet_transaction_status", ['pending', 'completed', 'failed', 'reversed'])
+export const walletTopUpStatus = pgEnum("wallet_top_up_status", ['pending', 'processing', 'succeeded', 'failed', 'cancelled'])
+export const walletPayoutStatus = pgEnum("wallet_payout_status", ['pending', 'approved', 'processing', 'completed', 'rejected', 'cancelled', 'failed'])
 
 
 export const deliveries = pgTable("deliveries", {
@@ -1660,4 +1671,207 @@ export const emailEvents = pgTable("email_events", {
 		name: "email_events_email_delivery_id_email_deliveries_id_fk"
 	}).onDelete("set null"),
 	unique("email_events_event_id_unique").on(table.eventId),
+]);
+
+/* ---------------------------------------------------------------------------
+ * Centralized user wallet (migration 0025)
+ *
+ * One wallet per non-guest user. `userWalletTransactions` is the source of
+ * truth for every balance movement; `balance` here is a running total that only
+ * packages/db/src/wallet/user-wallet.ts may move, always through a single
+ * atomic UPDATE ... WHERE. Read that file before touching any of these tables.
+ *
+ * Separate from the seller-only sellerWallet/walletTransactions above, which
+ * stay as they are.
+ * ------------------------------------------------------------------------ */
+
+export const userWallets = pgTable("user_wallets", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	userId: uuid("user_id").notNull(),
+	/** Total held, including anything reserved. Never negative. */
+	balance: numeric({ precision: 10, scale: 2 }).default('0').notNull(),
+	/** Held against open payout requests. `balance - reservedBalance` is spendable. */
+	reservedBalance: numeric("reserved_balance", { precision: 10, scale: 2 }).default('0').notNull(),
+	currency: text().default('EGP').notNull(),
+	status: walletStatus().default('active').notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("user_wallets_status_idx").using("btree", table.status.asc().nullsLast().op("enum_ops")),
+	foreignKey({
+		columns: [table.userId],
+		foreignColumns: [users.id],
+		name: "user_wallets_user_id_users_id_fk"
+	}).onDelete("cascade"),
+	unique("user_wallets_user_id_unique").on(table.userId),
+	// Owner-scoped read only. There is deliberately no insert/update/delete
+	// policy: the anon key can never write a financial row.
+	pgPolicy("Users can read their own wallet", { as: "permissive", for: "select", to: ["authenticated"], using: sql`user_id = (SELECT auth.uid())` }),
+	// Last line of defence behind the atomic WHERE guard in user-wallet.ts,
+	// the same role products_quantity_non_negative plays for stock.
+	check("user_wallets_balance_non_negative", sql`balance >= 0`),
+	check("user_wallets_reserved_non_negative", sql`reserved_balance >= 0`),
+	check("user_wallets_reserved_within_balance", sql`reserved_balance <= balance`),
+	check("user_wallets_currency_egp", sql`currency = 'EGP'`),
+]);
+
+/**
+ * Append-only ledger. A database trigger rejects UPDATE and DELETE — corrections
+ * are made by posting a compensating row, never by rewriting history.
+ *
+ * `amount` is signed: positive credits, negative debits. The unique
+ * (type, reference_type, reference_id) index is the idempotency claim — an
+ * insert that conflicts means the same domain event was already applied, so a
+ * retried webhook cannot credit the wallet twice.
+ */
+export const userWalletTransactions = pgTable("user_wallet_transactions", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	walletId: uuid("wallet_id").notNull(),
+	/** Denormalized from the wallet so RLS and per-user history need no join. */
+	userId: uuid("user_id").notNull(),
+	type: walletTransactionType().notNull(),
+	/** Signed. Positive = credit, negative = debit. Never zero. */
+	amount: numeric({ precision: 10, scale: 2 }).notNull(),
+	/** Generated mirror of amount's sign; readers never re-derive it. */
+	direction: text().generatedAlwaysAs(sql`CASE WHEN amount >= 0 THEN 'credit'::text ELSE 'debit'::text END`),
+	balanceBefore: numeric("balance_before", { precision: 10, scale: 2 }).notNull(),
+	balanceAfter: numeric("balance_after", { precision: 10, scale: 2 }).notNull(),
+	currency: text().default('EGP').notNull(),
+	status: walletTransactionStatus().default('completed').notNull(),
+	/** e.g. 'wallet_top_up', 'wallet_payout_request', 'order'. */
+	referenceType: text("reference_type"),
+	referenceId: uuid("reference_id"),
+	description: text(),
+	metadata: jsonb(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("user_wallet_tx_reference_idx").using("btree", table.type.asc().nullsLast().op("enum_ops"), table.referenceType.asc().nullsLast().op("text_ops"), table.referenceId.asc().nullsLast().op("uuid_ops")).where(sql`reference_id IS NOT NULL`),
+	index("user_wallet_tx_wallet_created_idx").using("btree", table.walletId.asc().nullsLast().op("uuid_ops"), table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
+	index("user_wallet_tx_user_created_idx").using("btree", table.userId.asc().nullsLast().op("uuid_ops"), table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
+	index("user_wallet_tx_type_idx").using("btree", table.type.asc().nullsLast().op("enum_ops")),
+	foreignKey({
+		columns: [table.walletId],
+		foreignColumns: [userWallets.id],
+		name: "user_wallet_transactions_wallet_id_user_wallets_id_fk"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.userId],
+		foreignColumns: [users.id],
+		name: "user_wallet_transactions_user_id_users_id_fk"
+	}).onDelete("cascade"),
+	pgPolicy("Users can read their own wallet transactions", { as: "permissive", for: "select", to: ["authenticated"], using: sql`user_id = (SELECT auth.uid())` }),
+	check("user_wallet_tx_amount_non_zero", sql`amount <> 0`),
+	check("user_wallet_tx_balance_arithmetic", sql`balance_after = balance_before + amount`),
+	check("user_wallet_tx_balance_non_negative", sql`balance_after >= 0`),
+	check("user_wallet_tx_currency_egp", sql`currency = 'EGP'`),
+	// NULLs compare as distinct in a unique index, so a row with a reference_id
+	// but no reference_type would never conflict — silently disabling the
+	// idempotency guard above. The two must travel together.
+	check("user_wallet_tx_reference_pair", sql`(reference_id IS NULL) = (reference_type IS NULL)`),
+]);
+
+/**
+ * A top-up intent. Created before the buyer is sent to the payment provider and
+ * moved to 'succeeded' only by a signature-verified provider webhook
+ * (apps/backend/src/lib/wallet-top-up.ts). No client-reachable path can mark one
+ * successful.
+ */
+export const walletTopUps = pgTable("wallet_top_ups", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	walletId: uuid("wallet_id").notNull(),
+	userId: uuid("user_id").notNull(),
+	amount: numeric({ precision: 10, scale: 2 }).notNull(),
+	currency: text().default('EGP').notNull(),
+	status: walletTopUpStatus().default('pending').notNull(),
+	provider: text().default('paymob').notNull(),
+	/** The reference we hand the provider, e.g. Paymob's special_reference. */
+	providerReference: text("provider_reference"),
+	/** The provider's own transaction id, unique per provider once known. */
+	providerTransactionId: text("provider_transaction_id"),
+	/** The ledger row this top-up produced, once credited. */
+	transactionId: uuid("transaction_id"),
+	failureReason: text("failure_reason"),
+	metadata: jsonb(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("wallet_top_ups_provider_txn_idx").using("btree", table.provider.asc().nullsLast().op("text_ops"), table.providerTransactionId.asc().nullsLast().op("text_ops")).where(sql`provider_transaction_id IS NOT NULL`),
+	index("wallet_top_ups_user_created_idx").using("btree", table.userId.asc().nullsLast().op("uuid_ops"), table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
+	index("wallet_top_ups_status_idx").using("btree", table.status.asc().nullsLast().op("enum_ops")),
+	foreignKey({
+		columns: [table.walletId],
+		foreignColumns: [userWallets.id],
+		name: "wallet_top_ups_wallet_id_user_wallets_id_fk"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.userId],
+		foreignColumns: [users.id],
+		name: "wallet_top_ups_user_id_users_id_fk"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.transactionId],
+		foreignColumns: [userWalletTransactions.id],
+		name: "wallet_top_ups_transaction_id_fk"
+	}).onDelete("set null"),
+	pgPolicy("Users can read their own top ups", { as: "permissive", for: "select", to: ["authenticated"], using: sql`user_id = (SELECT auth.uid())` }),
+	check("wallet_top_ups_amount_positive", sql`amount > 0`),
+	check("wallet_top_ups_currency_egp", sql`currency = 'EGP'`),
+]);
+
+/**
+ * A payout request. Creating one RESERVES funds (bumps
+ * userWallets.reservedBalance); it does not deduct them. Only completion writes
+ * a negative ledger row and lowers the balance; rejection, cancellation and
+ * failure release the reservation. The partial unique index caps a user at one
+ * open request, which is what stops stacked requests from jointly exceeding the
+ * available balance.
+ */
+export const walletPayoutRequests = pgTable("wallet_payout_requests", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	walletId: uuid("wallet_id").notNull(),
+	userId: uuid("user_id").notNull(),
+	amount: numeric({ precision: 10, scale: 2 }).notNull(),
+	currency: text().default('EGP').notNull(),
+	status: walletPayoutStatus().default('pending').notNull(),
+	/** e.g. 'bank_transfer', 'instapay', 'mobile_wallet'. */
+	method: text().notNull(),
+	destination: jsonb(),
+	adminNotes: text("admin_notes"),
+	rejectionReason: text("rejection_reason"),
+	externalReference: text("external_reference"),
+	/** The negative ledger row this payout produced, once completed. */
+	transactionId: uuid("transaction_id"),
+	reviewedBy: uuid("reviewed_by"),
+	reviewedAt: timestamp("reviewed_at", { withTimezone: true, mode: 'string' }),
+	processedAt: timestamp("processed_at", { withTimezone: true, mode: 'string' }),
+	metadata: jsonb(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("wallet_payout_open_request_idx").using("btree", table.userId.asc().nullsLast().op("uuid_ops")).where(sql`status IN ('pending', 'approved', 'processing')`),
+	index("wallet_payout_requests_user_created_idx").using("btree", table.userId.asc().nullsLast().op("uuid_ops"), table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
+	index("wallet_payout_requests_status_idx").using("btree", table.status.asc().nullsLast().op("enum_ops")),
+	foreignKey({
+		columns: [table.walletId],
+		foreignColumns: [userWallets.id],
+		name: "wallet_payout_requests_wallet_id_fk"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.userId],
+		foreignColumns: [users.id],
+		name: "wallet_payout_requests_user_id_fk"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.reviewedBy],
+		foreignColumns: [users.id],
+		name: "wallet_payout_requests_reviewed_by_fk"
+	}).onDelete("set null"),
+	foreignKey({
+		columns: [table.transactionId],
+		foreignColumns: [userWalletTransactions.id],
+		name: "wallet_payout_requests_transaction_id_fk"
+	}).onDelete("set null"),
+	pgPolicy("Users can read their own payout requests", { as: "permissive", for: "select", to: ["authenticated"], using: sql`user_id = (SELECT auth.uid())` }),
+	check("wallet_payout_requests_amount_positive", sql`amount > 0`),
+	check("wallet_payout_requests_currency_egp", sql`currency = 'EGP'`),
 ]);

@@ -10,7 +10,7 @@ const CategoryShowcase = async (props: CategoryShowcaseProps) => {
   const result = await getTopCategories();
 
   if (!result.success || !result.data) {
-    throw new Error(result.error ?? "Failed to load categories");
+    throw new Error("Failed to load categories");
   }
 
   const categories = (result.data as CategoryWithRequiredFields[]).filter(
@@ -25,10 +25,7 @@ const CategoryShowcase = async (props: CategoryShowcaseProps) => {
   }
 
   return (
-    <CategoryShowcaseClient
-      categories={categories}
-      className={className}
-    />
+    <CategoryShowcaseClient categories={categories} className={className} />
   );
 };
 

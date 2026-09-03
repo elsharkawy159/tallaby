@@ -15,7 +15,7 @@ import {
 interface DataPoint {
   name: string;
   value: number;
-  [key: string]: string | number;
+  [key: string]: string | number | undefined;
 }
 
 interface BarChartProps {
@@ -30,6 +30,14 @@ export function BarChart({
   className,
 }: BarChartProps) {
   // Get data keys for multiple series
+  if (data.length === 0) {
+    return (
+      <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+        No data for this period
+      </div>
+    )
+  }
+
   const dataKeys = isMultiple
     ? Object.keys(data[0]).filter((key) => key !== "name")
     : ["value"];
@@ -61,9 +69,9 @@ export function BarChart({
             }}
           />
           <Tooltip
-            formatter={(value: number, name: string) => [
-              formatCurrency(value),
-              name.charAt(0).toUpperCase() + name.slice(1),
+            formatter={(value, name) => [
+              formatCurrency(Number(value ?? 0)),
+              String(name).charAt(0).toUpperCase() + String(name).slice(1),
             ]}
             contentStyle={{
               borderRadius: "4px",

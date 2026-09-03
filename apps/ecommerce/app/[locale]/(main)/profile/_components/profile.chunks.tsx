@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useTranslations, useLocale } from "next-intl";
+import posthog from "posthog-js";
 
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -99,6 +100,7 @@ export function ProfileSidebar({
   isGuest?: boolean;
 }) {
   const t = useTranslations("profile");
+  const tWallet = useTranslations("wallet");
   const pathname = usePathname();
   const { percentage, missingFields } = calculateProfileCompletion(
     user,
@@ -216,6 +218,8 @@ export function ProfileSidebar({
                     return t("myProfile");
                   case "orders":
                     return t("orders");
+                  case "wallet":
+                    return tWallet("wallet");
                   case "addresses":
                     return t("addresses");
                   case "wishlist":
@@ -279,7 +283,7 @@ export function ProfileSidebar({
               </Link>
             ) : (
               /* Sign Out */
-              <form action={signOutAction}>
+              <form action={signOutAction} onSubmit={() => posthog.reset()}>
                 <Button
                   type="submit"
                   variant="ghost"

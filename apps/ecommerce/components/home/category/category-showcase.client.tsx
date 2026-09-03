@@ -10,9 +10,7 @@ import {
   CarouselItem,
 } from "@workspace/ui/components/carousel";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
-import {
-  CategoryShowcaseClientProps,
-} from "./category-showcase.types";
+import { CategoryShowcaseClientProps } from "./category-showcase.types";
 import { ImageWithFallback } from "@/components/shared/image-with-fallback";
 
 const CATEGORY_BUCKET = "categories";
@@ -91,10 +89,7 @@ export const CategoryShowcaseClient = ({
         className,
       )}
     >
-      <CategoryCarousel
-        categories={categoriesWithProducts}
-        locale={locale}
-      />
+      <CategoryCarousel categories={categoriesWithProducts} locale={locale} />
     </section>
   );
 };
@@ -130,8 +125,8 @@ function CategoryCarousel({
               href={`/products?categories=${category.name}`}
               className="group block"
             >
-              <div className="md:w-[108px] w-14">
-                <div className="relative overflow-hidden rounded-full md:size-[100px] size-[60px] mx-auto mb-2.5 bg-muted/40 shadow-sm group-hover:shadow-md transition-all duration-300">
+              <div className="md:w-[108px] w-21">
+                <div className="relative overflow-hidden rounded-full md:size-[100px] size-22 mx-auto mb-2.5 bg-muted/40 shadow-sm group-hover:shadow-md transition-all duration-300">
                   <CategoryImage
                     name={category.name}
                     imageUrl={category.imageUrl}
@@ -139,7 +134,7 @@ function CategoryCarousel({
                     productCount={category.productCount}
                   />
                 </div>
-                <h3 className="md:text-sm text-xs font-medium text-center group-hover:text-primary transition-colors line-clamp-1">
+                <h3 className="md:text-sm text-xs font-medium text-center group-hover:text-primary transition-colors line-clamp-2">
                   {category.name}
                 </h3>
               </div>

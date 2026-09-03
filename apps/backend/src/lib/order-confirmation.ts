@@ -1,28 +1,28 @@
 import { db, orders, eq } from "@workspace/db";
-import { buildOrderPageUrl } from "@workspace/lib/orders";
-import type { OrderConfirmationEmailProps } from "@workspace/emails";
+import { buildOrderPagePath } from "@workspace/lib/orders";
+import {
+  emailDateLocale,
+  emailIntlLocale,
+  emailPathPrefix,
+  formatPaymentMethodLabel,
+  resolveEmailLocale,
+  type OrderConfirmationEmailProps,
+} from "@workspace/emails";
 
 const DEFAULT_CURRENCY = "EGP";
 
 /** Business days padding used by the storefront's order page estimate. */
 const ESTIMATED_DELIVERY_DAYS = 5;
 
-const PAYMENT_METHOD_LABELS: Record<string, string> = {
-  cash: "Cash",
-  cash_on_delivery: "Cash on delivery",
-  online_payment: "Online payment (card)",
-  card: "Card",
-  credit_card: "Credit card",
-  debit_card: "Debit card",
-  wallet: "Wallet",
-  bank_transfer: "Bank transfer",
-};
-
-function formatMoney(value: string | number | null | undefined, currency: string): string {
+function formatMoney(
+  value: string | number | null | undefined,
+  currency: string,
+  locale: ReturnType<typeof resolveEmailLocale>
+): string {
   const amount = Number(value ?? 0);
   const safeAmount = Number.isFinite(amount) ? amount : 0;
 
-  return new Intl.NumberFormat("en-EG", {
+  return new Intl.NumberFormat(emailIntlLocale(locale), {
     style: "currency",
     currency: currency || DEFAULT_CURRENCY,
     minimumFractionDigits: 0,
@@ -30,22 +30,18 @@ function formatMoney(value: string | number | null | undefined, currency: string
   }).format(safeAmount);
 }
 
-function formatDate(value: string | null | undefined): string {
+function formatDate(
+  value: string | null | undefined,
+  locale: ReturnType<typeof resolveEmailLocale>
+): string {
   const date = value ? new Date(value) : new Date();
   const safeDate = Number.isNaN(date.getTime()) ? new Date() : date;
 
-  return safeDate.toLocaleDateString("en-US", {
+  return safeDate.toLocaleDateString(emailDateLocale(locale), {
     year: "numeric",
     month: "long",
     day: "numeric",
   });
-}
-
-function formatPaymentMethod(method: string | null | undefined): string | null {
-  if (!method) return null;
-  const known = PAYMENT_METHOD_LABELS[method.toLowerCase()];
-  if (known) return known;
-  return method.charAt(0).toUpperCase() + method.slice(1).replace(/_/g, " ");
 }
 
 /**
@@ -61,7 +57,7 @@ function resolveImageUrl(images: unknown): string | null {
     typeof first === "string"
       ? first
       : typeof (first as { url?: unknown })?.url === "string"
-        ? ((first as { url: string }).url)
+        ? (first as { url: string }).url
         : null;
 
   if (!key?.trim()) return null;
@@ -79,8 +75,7 @@ export type OrderConfirmationBuildResult =
 
 /**
  * Loads a committed order and shapes it into the customer-facing email
- * contract. Only customer-facing fields are read — commission, seller
- * earnings and other internal figures never leave the database.
+ * contract. Language comes from `users.preferred_language` (Arabic or English).
  */
 export async function buildOrderConfirmationEmailData(
   orderId: string
@@ -89,7 +84,7 @@ export async function buildOrderConfirmationEmailData(
     where: eq(orders.id, orderId),
     with: {
       user: {
-        columns: { email: true, fullName: true },
+        columns: { email: true, fullName: true, preferredLanguage: true },
       },
       userAddress_shippingAddressId: true,
       orderItems: {
@@ -114,6 +109,7 @@ export async function buildOrderConfirmationEmailData(
     };
   }
 
+  const locale = resolveEmailLocale(order.user?.preferredLanguage);
   const currency = order.currency || DEFAULT_CURRENCY;
   const address = order.userAddress_shippingAddressId;
   const discountAmount = Number(order.discountAmount ?? 0);
@@ -124,8 +120,8 @@ export async function buildOrderConfirmationEmailData(
       variantName: item.variantName,
       sellerName: item.seller?.displayName ?? null,
       quantity: item.quantity,
-      unitPrice: formatMoney(item.price, currency),
-      lineTotal: formatMoney(item.subtotal, currency),
+      unitPrice: formatMoney(item.price, currency, locale),
+      lineTotal: formatMoney(item.subtotal, currency, locale),
       imageUrl: resolveImageUrl(item.product?.images),
     })
   );
@@ -136,7 +132,8 @@ export async function buildOrderConfirmationEmailData(
         new Date(
           new Date(order.createdAt ?? Date.now()).getTime() +
             ESTIMATED_DELIVERY_DAYS * 24 * 60 * 60 * 1000
-        ).toISOString()
+        ).toISOString(),
+        locale
       );
 
   const siteUrl =
@@ -148,25 +145,28 @@ export async function buildOrderConfirmationEmailData(
     success: true,
     recipient,
     data: {
+      locale,
       customer: {
         name: address?.fullName || order.user?.fullName || "there",
         email: recipient,
       },
       order: {
         orderNumber: order.orderNumber,
-        orderDate: formatDate(order.createdAt),
+        orderDate: formatDate(order.createdAt, locale),
         estimatedDelivery,
       },
       items,
       pricing: {
-        subtotal: formatMoney(order.subtotal, currency),
-        shipping: formatMoney(order.shippingCost, currency),
+        subtotal: formatMoney(order.subtotal, currency, locale),
+        shipping: formatMoney(order.shippingCost, currency, locale),
         discount:
-          discountAmount > 0 ? formatMoney(discountAmount, currency) : null,
+          discountAmount > 0
+            ? formatMoney(discountAmount, currency, locale)
+            : null,
         couponCode: order.couponCode ?? null,
-        total: formatMoney(order.totalAmount, currency),
+        total: formatMoney(order.totalAmount, currency, locale),
       },
-      paymentMethod: formatPaymentMethod(order.paymentMethod),
+      paymentMethod: formatPaymentMethodLabel(order.paymentMethod, locale),
       shippingAddress: address
         ? {
             fullName: address.fullName,
@@ -180,7 +180,7 @@ export async function buildOrderConfirmationEmailData(
           }
         : null,
       links: {
-        viewOrder: buildOrderPageUrl(order.id, siteUrl),
+        viewOrder: `${siteUrl.replace(/\/+$/, "")}${emailPathPrefix(locale)}${buildOrderPagePath(order.id)}`,
       },
     },
   };

@@ -359,6 +359,190 @@ const extractGenericFeatureBullets = ($: ReturnType<typeof load>) => {
   return uniq(items).slice(0, 20);
 };
 
+interface ScrapedShippingData {
+  length?: number
+  width?: number
+  height?: number
+  weight?: number
+  unit?: "cm" | "in"
+  weightUnit?: "kg" | "g" | "lb"
+}
+
+const normalizeWeightUnit = (raw: string | undefined): "kg" | "g" | "lb" | undefined => {
+  if (!raw) return undefined;
+  const u = raw.toLowerCase().trim();
+  if (u === "kg" || u.startsWith("kilogram") || u === "kgs") return "kg";
+  if (u === "g" || u.startsWith("gram") || u === "gms") return "g";
+  if (u === "lb" || u === "lbs" || u.startsWith("pound")) return "lb";
+  return undefined;
+};
+
+const parseWeightFromValue = (
+  value: string
+): { weight: number; weightUnit: "kg" | "g" | "lb" } | undefined => {
+  const normalized = normalizeText(value);
+  if (!normalized) return undefined;
+
+  // e.g. "1.5 pounds", "500 g", "0.75 kg", "12 oz"
+  const match = normalized.match(
+    /([\d]+(?:[.,]\d+)?)\s*(kg|kilograms?|kgs?|g|grams?|gms?|lb|lbs|pounds?|oz|ounces?)/i
+  );
+  if (!match?.[1] || !match[2]) return undefined;
+
+  let weight = Number.parseFloat(match[1].replace(",", "."));
+  if (!Number.isFinite(weight) || weight <= 0) return undefined;
+
+  const unitRaw = match[2].toLowerCase();
+  if (unitRaw.startsWith("oz") || unitRaw.startsWith("ounce")) {
+    weight = weight / 16;
+    return { weight, weightUnit: "lb" };
+  }
+
+  const weightUnit = normalizeWeightUnit(unitRaw);
+  if (!weightUnit) return undefined;
+  return { weight, weightUnit };
+};
+
+const parsePackageDimensions = (
+  value: string
+): ScrapedShippingData | undefined => {
+  const normalized = normalizeText(value);
+  if (!normalized) return undefined;
+
+  // e.g. "12.99 x 8.66 x 2.36 inches; 1.5 Pounds"
+  // e.g. "30 x 20 x 5 cm; 800 g"
+  const dimMatch = normalized.match(
+    /([\d]+(?:[.,]\d+)?)\s*[x×]\s*([\d]+(?:[.,]\d+)?)\s*[x×]\s*([\d]+(?:[.,]\d+)?)\s*(cm|in|inches?|inch)?/i
+  );
+
+  const result: ScrapedShippingData = {};
+
+  if (dimMatch) {
+    const length = Number.parseFloat(dimMatch[1]!.replace(",", "."));
+    const width = Number.parseFloat(dimMatch[2]!.replace(",", "."));
+    const height = Number.parseFloat(dimMatch[3]!.replace(",", "."));
+    if (Number.isFinite(length) && length > 0) result.length = length;
+    if (Number.isFinite(width) && width > 0) result.width = width;
+    if (Number.isFinite(height) && height > 0) result.height = height;
+
+    const unitRaw = (dimMatch[4] || "").toLowerCase();
+    if (unitRaw.startsWith("in")) result.unit = "in";
+    else if (unitRaw === "cm") result.unit = "cm";
+  }
+
+  const weight = parseWeightFromValue(normalized);
+  if (weight) {
+    result.weight = weight.weight;
+    result.weightUnit = weight.weightUnit;
+  }
+
+  return Object.keys(result).length > 0 ? result : undefined;
+};
+
+const isWeightLabel = (label: string) =>
+  /^(item\s*)?weight$|^shipping\s*weight$|^package\s*weight$|^الوزن$|^وزن$/i.test(
+    normalizeText(label)
+  );
+
+const isDimensionsLabel = (label: string) =>
+  /package\s*dimensions|product\s*dimensions|item\s*dimensions|dimensions|^الأبعاد$|^ابعاد$/i.test(
+    normalizeText(label)
+  );
+
+const extractShippingFromLines = (lines: string[]): ScrapedShippingData => {
+  const result: ScrapedShippingData = {};
+
+  for (const line of lines) {
+    const normalized = normalizeText(line);
+    if (!normalized) continue;
+
+    const colonIdx = normalized.indexOf(":");
+    if (colonIdx > 0) {
+      const label = normalized.slice(0, colonIdx).trim();
+      const value = normalized.slice(colonIdx + 1).trim();
+
+      if (isWeightLabel(label) && !result.weight) {
+        const weight = parseWeightFromValue(value);
+        if (weight) {
+          result.weight = weight.weight;
+          result.weightUnit = weight.weightUnit;
+        }
+      }
+
+      if (isDimensionsLabel(label)) {
+        const dims = parsePackageDimensions(value);
+        if (dims) {
+          if (dims.length !== undefined && result.length === undefined) {
+            result.length = dims.length;
+          }
+          if (dims.width !== undefined && result.width === undefined) {
+            result.width = dims.width;
+          }
+          if (dims.height !== undefined && result.height === undefined) {
+            result.height = dims.height;
+          }
+          if (dims.unit && !result.unit) result.unit = dims.unit;
+          if (dims.weight !== undefined && result.weight === undefined) {
+            result.weight = dims.weight;
+            result.weightUnit = dims.weightUnit;
+          }
+        }
+      }
+    }
+
+    // Fallback: scan free-form lines for embedded package dimensions / weight
+    if (!result.weight || result.length === undefined) {
+      const dims = parsePackageDimensions(normalized);
+      if (dims) {
+        if (dims.weight !== undefined && result.weight === undefined) {
+          result.weight = dims.weight;
+          result.weightUnit = dims.weightUnit;
+        }
+        if (dims.length !== undefined && result.length === undefined) {
+          result.length = dims.length;
+          result.width = dims.width ?? result.width;
+          result.height = dims.height ?? result.height;
+          result.unit = dims.unit ?? result.unit;
+        }
+      }
+    }
+  }
+
+  return result;
+};
+
+const extractShippingFromPage = (
+  $: ReturnType<typeof load>,
+  jsonLdProduct: JsonLdProductData | undefined,
+  bulletPoints: string[]
+): ScrapedShippingData => {
+  const lines: string[] = [];
+
+  // Amazon detail bullets + tech tables
+  lines.push(
+    ...extractSpecTableBullets($, [
+      "#productDetails_techSpec_section_1",
+      "#productDetails_techSpec_section_2",
+      "#productDetails_detailBullets_sections1",
+      "#productDetails_detailBullets_sections2",
+    ])
+  );
+
+  $("#detailBullets_feature_div li").each((_, el) => {
+    const text = normalizeText($(el).text());
+    if (text) lines.push(text.replace(/\s*:\s*/g, ": "));
+  });
+
+  // JSON-LD additional properties (often include weight / dimensions)
+  for (const prop of jsonLdProduct?.additionalProperties || []) {
+    lines.push(`${prop.name}: ${prop.value}`);
+  }
+
+  lines.push(...bulletPoints);
+
+  return extractShippingFromLines(uniq(lines));
+};
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => null);
@@ -539,6 +723,8 @@ export async function POST(request: NextRequest) {
       ? titleFromAmazon || titleFromMeta
       : title;
 
+    const shipping = extractShippingFromPage($, jsonLdProduct, bulletPoints);
+
     return NextResponse.json(
       {
         url: finalUrl,
@@ -549,6 +735,16 @@ export async function POST(request: NextRequest) {
         priceCurrency,
         images,
         bulletPoints,
+        weight: shipping.weight,
+        weightUnit: shipping.weightUnit,
+        dimensions: {
+          length: shipping.length,
+          width: shipping.width,
+          height: shipping.height,
+          unit: shipping.unit,
+          weight: shipping.weight,
+          weightUnit: shipping.weightUnit,
+        },
       },
       { status: 200 }
     );

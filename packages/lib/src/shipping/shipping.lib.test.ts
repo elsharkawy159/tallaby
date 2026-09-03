@@ -166,4 +166,27 @@ describe('calculateLocationShippingCost', () => {
       }),
     ).toBe(80)
   })
+
+  it('returns null when destination address is not set yet', () => {
+    expect(
+      calculateLocationShippingCost({
+        items: [physicalItem],
+        destinationState: null,
+      }),
+    ).toBeNull()
+
+    expect(
+      calculateLocationShippingCost({
+        items: [physicalItem],
+        destinationState: undefined,
+      }),
+    ).toBeNull()
+
+    expect(
+      calculateLocationShippingCost({
+        items: [physicalItem],
+        destinationState: '   ',
+      }),
+    ).toBeNull()
+  })
 })

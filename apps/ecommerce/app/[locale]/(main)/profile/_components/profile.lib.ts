@@ -1,4 +1,4 @@
-import { User as UserIcon, Package, Heart, MapPin } from "lucide-react";
+import { User as UserIcon, Package, Heart, MapPin, Wallet } from "lucide-react";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
 
 import { UserAddress, ProfileTabType } from "./profile.types";
@@ -16,6 +16,12 @@ export const profileTabs: ProfileTabType[] = [
     label: "Orders",
     icon: Package,
     href: "/profile/orders",
+  },
+  {
+    id: "wallet",
+    label: "Wallet",
+    icon: Wallet,
+    href: "/profile/wallet",
   },
   {
     id: "addresses",

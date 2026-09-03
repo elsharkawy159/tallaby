@@ -1,7 +1,16 @@
 import { z } from "zod";
 
-export const IMPORT_FORMATS = ["url", "json", "text", "unknown"] as const;
+export const IMPORT_FORMATS = [
+  "url",
+  "url_bulk",
+  "json",
+  "text",
+  "unknown",
+] as const;
 export type ImportFormat = (typeof IMPORT_FORMATS)[number];
+
+/** Max URLs accepted in one bulk paste. */
+export const MAX_BULK_IMPORT_URLS = 25;
 
 const localizedImportSchema = z.object({
   title: z.string().optional(),

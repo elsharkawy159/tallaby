@@ -20,10 +20,7 @@ function getGuestUidFromCookie(): string | null {
   return match ? decodeURIComponent(match[1]) : null;
 }
 
-export const AuthLink = ({
-  variant = "desktop",
-  className,
-}: AuthLinkProps) => {
+export const AuthLink = ({ variant = "desktop", className }: AuthLinkProps) => {
   const { user, isLoading } = useAuthUser();
   const [seller, setSeller] = useState<Seller | null>(null);
   const [hasGuestSession, setHasGuestSession] = useState(false);

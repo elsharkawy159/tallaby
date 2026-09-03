@@ -7,6 +7,7 @@ export async function sendDigitalDeliveryEmail(params: {
   email: string;
   name: string;
   orderNumber: string;
+  preferredLanguage?: string | null;
   items: Array<{
     productName: string;
     downloadUrl: string;

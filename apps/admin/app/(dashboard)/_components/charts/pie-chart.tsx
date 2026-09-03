@@ -21,6 +21,14 @@ interface PieChartProps {
 }
 
 export function PieChart({ data, className }: PieChartProps) {
+  if (data.length === 0) {
+    return (
+      <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+        No data for this period
+      </div>
+    )
+  }
+
   // Default colors if not provided
   const defaultColors = [
     "#6366f1",

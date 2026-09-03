@@ -29,6 +29,7 @@ import {
   isCancelOrderDisabledForDelivery,
   isCancelOrderEnabled,
 } from "./order-confirmation.lib";
+import posthog from "posthog-js";
 
 interface OrderCancelButtonProps {
   orderId: string;
@@ -68,6 +69,7 @@ export function OrderCancelButton({
         return;
       }
 
+      posthog.capture("order_cancelled", { order_id: orderId, previous_status: status });
       toast.success(tToast("orderCancelledSuccessfully"));
       setOpen(false);
       router.refresh();

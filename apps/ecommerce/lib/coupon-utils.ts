@@ -57,7 +57,8 @@ export interface CouponCalculationResult {
 export interface CheckoutSummary {
   subtotal: number
   tax: number
-  shippingCost: number
+  /** Null when destination address is not selected yet */
+  shippingCost: number | null
   total: number
   discountAmount?: number
   shippingDiscount?: number
@@ -291,7 +292,7 @@ export function buildSummaryWithCoupon(
   baseSummary: {
     subtotal: number
     tax: number
-    shippingCost: number
+    shippingCost: number | null
     total: number
     itemCount: number
   },
@@ -308,11 +309,13 @@ export function buildSummaryWithCoupon(
     }
   }
 
+  const shippingCost = baseSummary.shippingCost ?? 0
+
   const totalAfterDiscount = Math.max(
     0,
     baseSummary.subtotal +
       baseSummary.tax +
-      baseSummary.shippingCost -
+      shippingCost -
       calculationResult.discountAmount -
       calculationResult.shippingDiscount
   )

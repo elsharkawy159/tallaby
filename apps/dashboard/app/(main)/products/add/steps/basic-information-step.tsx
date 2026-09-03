@@ -33,8 +33,10 @@ import { applyProductImportToForm } from "../apply-product-import.lib";
 import {
   buildParsedImportFromScrape,
   detectImportFormat,
+  extractProductUrls,
   parseProductImport,
 } from "../parse-product-import.lib";
+import { MAX_BULK_IMPORT_URLS } from "../parse-product-import.types";
 import type {
   AddProductFormData,
   BrandOption,
@@ -47,6 +49,10 @@ interface BasicInformationStepProps {
   brands: BrandOption[];
   sellerPricing: SellerPricingSettings;
   activeLocale: SupportedLocale;
+  /** Hide the import textarea (used inside bulk accordion item forms). */
+  hideImport?: boolean;
+  /** Called when paste/import detects 2+ product URLs. */
+  onBulkUrls?: (urls: string[]) => void;
 }
 
 export function BasicInformationStep({
@@ -54,6 +60,8 @@ export function BasicInformationStep({
   brands,
   sellerPricing,
   activeLocale,
+  hideImport = false,
+  onBulkUrls,
 }: BasicInformationStepProps) {
   const form = useFormContext<AddProductFormData>();
   const tToast = useTranslations("toast");
@@ -112,20 +120,40 @@ export function BasicInformationStep({
       return;
     }
 
+    if (format === "url_bulk") {
+      const urls = extractProductUrls(input).slice(0, MAX_BULK_IMPORT_URLS);
+      if (urls.length < 2) {
+        toast.error(tToast("unknownImportFormat"));
+        return;
+      }
+      if (extractProductUrls(input).length > MAX_BULK_IMPORT_URLS) {
+        toast.message(
+          `Only the first ${MAX_BULK_IMPORT_URLS} URLs will be imported`
+        );
+      }
+      if (onBulkUrls) {
+        onBulkUrls(urls);
+        return;
+      }
+      toast.error("Bulk URL import is not available here");
+      return;
+    }
+
     setIsFetching(true);
 
     try {
       if (format === "url") {
+        const singleUrl = extractProductUrls(input)[0] ?? input
         const [resEn, resAr] = await Promise.all([
           fetch("/api/fetch-product", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ url: input, locale: "en" }),
+            body: JSON.stringify({ url: singleUrl, locale: "en" }),
           }),
           fetch("/api/fetch-product", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ url: input, locale: "ar" }),
+            body: JSON.stringify({ url: singleUrl, locale: "ar" }),
           }),
         ]);
 
@@ -205,6 +233,7 @@ export function BasicInformationStep({
   return (
     <div className="space-y-6">
       {/* Product Import */}
+      {!hideImport && (
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 space-y-3">
         <div className="flex items-center justify-between gap-3">
           <div className="flex-1">
@@ -219,7 +248,7 @@ export function BasicInformationStep({
                 }
                 onPaste={handlePaste}
                 onKeyDown={handleKeyDown}
-                placeholder="Paste a product URL, JSON, or formatted product data"
+                placeholder="Paste one product URL, many URLs (one per line), JSON, or formatted product data"
                 className="text-sm min-h-[100px] flex-1 resize-y"
                 rows={4}
               />
@@ -241,12 +270,14 @@ export function BasicInformationStep({
               </Button>
             </div>
             <p className="text-xs text-gray-500 mt-2">
-              Paste a product URL, JSON, or formatted product data. See
-              PRODUCT_DATA_FORMAT.md for the text format spec.
+              Paste one URL, or many URLs (one per line) for bulk import. JSON
+              and formatted text also work. See PRODUCT_DATA_FORMAT.md for the
+              text format spec.
             </p>
           </div>
         </div>
       </div>
+      )}
 
       {/* Media */}
       <FormField

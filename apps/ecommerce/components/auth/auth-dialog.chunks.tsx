@@ -23,6 +23,7 @@ import type { AuthFormProps } from "./auth-dialog.types";
 import { forgotPasswordAction, signInAction, signUpUser } from "@/actions/auth";
 import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
+import posthog from "posthog-js";
 
 // Sign In Form Component
 export function SignInForm({
@@ -64,15 +65,14 @@ export function SignInForm({
         const result = await signInAction(data);
 
         if (result.success) {
+          posthog.capture("sign_in_completed");
           if (onSuccess) {
             onSuccess();
           } else {
             router.push(redirectTo || "/");
           }
         } else {
-          setErrorMessage(
-            result.message || t("signInFailed")
-          );
+          setErrorMessage(result.message || t("signInFailed"));
         }
       } catch (error) {
         console.error("Sign in error:", error);
@@ -144,6 +144,7 @@ export function SignUpForm({
       try {
         const result = await signUpUser(data);
         if (result.success) {
+          posthog.capture("account_created");
           toast.success(t("accountCreated"));
           // Store credentials before resetting
           const credentials = {
@@ -239,6 +240,7 @@ export function ForgotPasswordForm({
         const result = await forgotPasswordAction(data);
 
         if (result.success) {
+          posthog.capture("password_reset_requested");
           toast.success(result.message);
           form.reset();
           onSuccess();

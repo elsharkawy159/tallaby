@@ -176,17 +176,27 @@ export async function placeOrderFromCart(
     (item) => item.product.productType === 'digital',
   )
 
-  const shippingCost = calculateLocationShippingCost({
-    items: cart.cartItems.map((item) => ({
-      quantity: item.quantity,
-      product: {
-        productType: item.product.productType,
-        freeDelivery: item.product.freeDelivery,
-        dimensions: item.product.dimensions,
-      },
-    })),
+  const shippingItems = cart.cartItems.map((item) => ({
+    quantity: item.quantity,
+    product: {
+      productType: item.product.productType,
+      freeDelivery: item.product.freeDelivery,
+      dimensions: item.product.dimensions,
+    },
+  }))
+
+  const computedShippingCost = calculateLocationShippingCost({
+    items: shippingItems,
     destinationState: shippingAddress?.state,
   })
+
+  // Address is required at place-order time; if state is missing, bill fallback rate
+  const shippingCost =
+    computedShippingCost ??
+    calculateLocationShippingCost({
+      items: shippingItems,
+      destinationState: '__missing_state__',
+    })!
 
   const orderItemsData = cart.cartItems.map((item) => {
     const itemSubtotal = Number(item.price) * item.quantity

@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { users, deliveries, shipments, orders, payments, paymentMethods, carts, categories, sellers, coupons, notifications, contacts, userAddresses, products, productVariants, refunds, returns, orderItems, shipmentItems, productQuestions, shippingAddresses, couponUsage, cartItems, reviews, returnItems, reviewVotes, searchLogs, sellerDocuments, sellerPayoutItems, sellerPayouts, reviewComments, userDevices, wishlistItems, wishlists, brands, productAnswers, userRewards, productTranslations, digitalProducts, digitalOrders, sellerCategories, sellerWallet, walletTransactions, digitalFiles, licenseKeys, digitalBundleItems, digitalAccessLogs, shippingProviders, shipmentBatches, shipmentBatchItems } from "./schema";
+import { users, deliveries, shipments, orders, payments, paymentMethods, carts, categories, sellers, coupons, notifications, contacts, userAddresses, products, productVariants, refunds, returns, orderItems, shipmentItems, productQuestions, shippingAddresses, couponUsage, cartItems, reviews, returnItems, reviewVotes, searchLogs, sellerDocuments, sellerPayoutItems, sellerPayouts, reviewComments, userDevices, wishlistItems, wishlists, brands, productAnswers, userRewards, productTranslations, digitalProducts, digitalOrders, sellerCategories, sellerWallet, walletTransactions, digitalFiles, licenseKeys, digitalBundleItems, digitalAccessLogs, shippingProviders, shipmentBatches, shipmentBatchItems, userWallets, userWalletTransactions, walletTopUps, walletPayoutRequests } from "./schema";
 
 export const deliveriesRelations = relations(deliveries, ({one}) => ({
 	user: one(users, {
@@ -47,6 +47,15 @@ export const usersRelations = relations(users, ({one, many}) => ({
 	digitalAccessLogs: many(digitalAccessLogs),
 	shipmentBatches: many(shipmentBatches),
 	shipmentBatchItems: many(shipmentBatchItems),
+	userWallet: one(userWallets),
+	userWalletTransactions: many(userWalletTransactions),
+	walletTopUps: many(walletTopUps),
+	walletPayoutRequests_userId: many(walletPayoutRequests, {
+		relationName: "walletPayoutRequests_userId_users_id"
+	}),
+	walletPayoutRequests_reviewedBy: many(walletPayoutRequests, {
+		relationName: "walletPayoutRequests_reviewedBy_users_id"
+	}),
 }));
 
 export const shipmentsRelations = relations(shipments, ({one, many}) => ({
@@ -663,5 +672,69 @@ export const walletTransactionsRelations = relations(walletTransactions, ({one})
 	order: one(orders, {
 		fields: [walletTransactions.orderId],
 		references: [orders.id]
+	}),
+}));
+
+/* Centralized user wallet (migration 0025). */
+
+export const userWalletsRelations = relations(userWallets, ({one, many}) => ({
+	user: one(users, {
+		fields: [userWallets.userId],
+		references: [users.id]
+	}),
+	transactions: many(userWalletTransactions),
+	topUps: many(walletTopUps),
+	payoutRequests: many(walletPayoutRequests, {
+		relationName: "walletPayoutRequests_walletId_userWallets_id"
+	}),
+}));
+
+export const userWalletTransactionsRelations = relations(userWalletTransactions, ({one}) => ({
+	wallet: one(userWallets, {
+		fields: [userWalletTransactions.walletId],
+		references: [userWallets.id]
+	}),
+	user: one(users, {
+		fields: [userWalletTransactions.userId],
+		references: [users.id]
+	}),
+}));
+
+export const walletTopUpsRelations = relations(walletTopUps, ({one}) => ({
+	wallet: one(userWallets, {
+		fields: [walletTopUps.walletId],
+		references: [userWallets.id]
+	}),
+	user: one(users, {
+		fields: [walletTopUps.userId],
+		references: [users.id]
+	}),
+	transaction: one(userWalletTransactions, {
+		fields: [walletTopUps.transactionId],
+		references: [userWalletTransactions.id]
+	}),
+}));
+
+export const walletPayoutRequestsRelations = relations(walletPayoutRequests, ({one}) => ({
+	wallet: one(userWallets, {
+		fields: [walletPayoutRequests.walletId],
+		references: [userWallets.id],
+		relationName: "walletPayoutRequests_walletId_userWallets_id"
+	}),
+	// Two FKs point at users (requester and reviewing admin), so both sides
+	// need an explicit relationName to stay unambiguous.
+	user: one(users, {
+		fields: [walletPayoutRequests.userId],
+		references: [users.id],
+		relationName: "walletPayoutRequests_userId_users_id"
+	}),
+	reviewer: one(users, {
+		fields: [walletPayoutRequests.reviewedBy],
+		references: [users.id],
+		relationName: "walletPayoutRequests_reviewedBy_users_id"
+	}),
+	transaction: one(userWalletTransactions, {
+		fields: [walletPayoutRequests.transactionId],
+		references: [userWalletTransactions.id]
 	}),
 }));

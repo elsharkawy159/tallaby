@@ -15,6 +15,7 @@ import { applyCouponToCart, removeCouponFromCart } from "@/actions/coupons";
 import { toast } from "sonner";
 import type { CheckoutSummary } from "@/lib/coupon-utils";
 import { cartQualifiesForProductFreeDelivery } from "@/lib/shipping";
+import posthog from "posthog-js";
 
 interface OrderSummaryProps {
   checkoutData: {
@@ -35,7 +36,7 @@ interface OrderSummaryProps {
     summary: {
       subtotal: number;
       tax: number;
-      shippingCost: number;
+      shippingCost: number | null;
       total: number;
       itemCount: number;
       discountAmount?: number;
@@ -102,6 +103,7 @@ export function OrderSummary({
       });
 
       if (result.success && result.data) {
+        posthog.capture("coupon_applied", { item_count: summary.itemCount });
         toast.success(t("couponApplied"));
         setCode("");
         onCouponApplied?.({
@@ -129,6 +131,7 @@ export function OrderSummary({
       const result = await removeCouponFromCart({ shippingAddressId });
 
       if (result.success && result.data) {
+        posthog.capture("coupon_removed", { item_count: summary.itemCount });
         toast.success(t("couponRemoved"));
         onCouponRemoved?.(result.data.summary);
       } else {
@@ -208,7 +211,8 @@ export function OrderSummary({
             />
           </div>
 
-          {(summary.shippingCost > 0 || isRecalculatingShipping) && (
+          {((summary.shippingCost != null && summary.shippingCost > 0) ||
+            isRecalculatingShipping) && (
             <div className="flex items-center justify-between text-xs md:text-sm">
               <span className="text-gray-600">{t("shipping")}</span>
               {isRecalculatingShipping ? (
@@ -217,7 +221,7 @@ export function OrderSummary({
                 <span
                   className="font-medium text-gray-900"
                   dangerouslySetInnerHTML={{
-                    __html: formatPrice(summary.shippingCost, locale),
+                    __html: formatPrice(summary.shippingCost ?? 0, locale),
                   }}
                 />
               )}

@@ -1,29 +1,18 @@
 import {
-  Body,
   Button,
   Column,
-  Container,
-  Head,
   Hr,
-  Html,
   Img,
   Link,
-  Preview,
   Row,
   Section,
   Text,
 } from "@react-email/components";
-import React from "react";
+import { getEmailMessages, interpolate } from "./i18n/index.js";
+import type { EmailLocale } from "./i18n/locale.js";
+import { EmailLayout } from "./layout/email-layout.js";
+import { EMAIL_CONTACT } from "./theme/tokens.js";
 
-const TALLABY_CONTACT_EMAIL = "tallabycommerce@gmail.com";
-const TALLABY_SITE_URL = "https://www.tallaby.com";
-
-/**
- * Customer-facing order data for the confirmation email. Everything is
- * pre-formatted by the caller (prices as display strings, dates as localized
- * strings) so the template stays presentation-only and never has to guess at
- * currency or locale rules.
- */
 export interface OrderConfirmationCustomer {
   name: string;
   email: string;
@@ -82,10 +71,8 @@ export interface OrderConfirmationEmailProps {
     /** Absolute URL to the customer's order page. */
     viewOrder: string;
   };
+  locale?: EmailLocale;
 }
-
-const previewText = (orderNumber: string, total: string) =>
-  `Order ${orderNumber} confirmed — ${total}. We'll email you again when it ships.`;
 
 export const OrderConfirmationEmail = ({
   customer,
@@ -95,533 +82,291 @@ export const OrderConfirmationEmail = ({
   paymentMethod,
   shippingAddress,
   links,
+  locale = "en",
 }: OrderConfirmationEmailProps) => {
+  const copy = getEmailMessages(locale).orderConfirmation;
   const hasDiscount = Boolean(pricing.discount);
+  const hasDetails = Boolean(
+    shippingAddress || order.estimatedDelivery || paymentMethod,
+  );
 
   return (
-    <Html>
-      <Head />
-      <Preview>{previewText(order.orderNumber, pricing.total)}</Preview>
-      <Body style={main}>
-        <Container style={container}>
-          {/* Brand header */}
-          <Section style={headerSection}>
-            <Img
-              src={`${TALLABY_SITE_URL}/favicon.ico?favicon.668f7262.ico`}
-              alt="Tallaby"
-              width="110"
-              style={logo}
-            />
-          </Section>
+    <EmailLayout
+      locale={locale}
+      preview={interpolate(copy.preview, {
+        orderNumber: order.orderNumber,
+        total: pricing.total,
+      })}
+      showContactLine={false}
+      footerIntro={
+        <>
+          <Text className="m-0 mb-1.5 text-[14px] font-semibold text-foreground">
+            {copy.needHelp}
+          </Text>
+          <Text className="m-0 text-[13px] leading-5 text-muted-foreground">
+            {copy.helpReply}{" "}
+            <Link
+              href={`mailto:${EMAIL_CONTACT}`}
+              className="text-primary underline"
+            >
+              {EMAIL_CONTACT}
+            </Link>
+            . {copy.helpTrack}{" "}
+            <Link href={links.viewOrder} className="text-primary underline">
+              {copy.orderPage}
+            </Link>
+            .
+          </Text>
+          <Text className="mb-0 mt-2 text-[11px] leading-4 text-secondary">
+            {interpolate(copy.disclaimer, {
+              orderNumber: order.orderNumber,
+              email: customer.email,
+            })}
+          </Text>
+        </>
+      }
+    >
+      <Section className="email-pad px-6 pb-2 pt-7">
+        <Text className="m-0 mb-2 text-[11px] font-bold uppercase tracking-[0.12em] text-primary">
+          {copy.statusEyebrow}
+        </Text>
+        <Text className="email-hero-title m-0 mb-2 text-[26px] font-bold leading-8 text-foreground">
+          {interpolate(copy.heroTitle, { name: customer.name })}
+        </Text>
+        <Text className="m-0 text-[15px] leading-6 text-muted-foreground">
+          {copy.heroCopy}
+        </Text>
+      </Section>
 
-          {/* Confirmation hero */}
-          <Section style={heroSection}>
-            <Text style={heroBadge}>✓ Thank you for your order</Text>
-            <Text style={heroHeading}>Order Confirmed</Text>
-            <Text style={heroSubheading}>
-              Hi {customer.name}, we&apos;ve received your order and are getting
-              it ready.
+      <Section className="email-pad px-6 pt-5">
+        <Row>
+          <Column className="stack-col stack-col-gap w-1/2 align-top pr-3">
+            <Text className="m-0 mb-1 text-[11px] font-semibold uppercase tracking-[0.06em] text-secondary">
+              {copy.orderNumber}
             </Text>
-          </Section>
+            <Text className="m-0 text-[15px] font-semibold leading-[22px] text-foreground">
+              #{order.orderNumber}
+            </Text>
+          </Column>
+          <Column className="stack-col w-1/2 align-top">
+            <Text className="m-0 mb-1 text-[11px] font-semibold uppercase tracking-[0.06em] text-secondary">
+              {copy.orderDate}
+            </Text>
+            <Text className="m-0 text-[15px] font-semibold leading-[22px] text-foreground">
+              {order.orderDate}
+            </Text>
+          </Column>
+        </Row>
+      </Section>
 
-          {/* Order meta */}
-          <Section style={metaSection}>
-            <Row>
-              <Column style={metaColumn}>
-                <Text style={metaLabel}>Order number</Text>
-                <Text style={metaValue}>#{order.orderNumber}</Text>
-              </Column>
-              <Column style={metaColumn}>
-                <Text style={metaLabel}>Order date</Text>
-                <Text style={metaValue}>{order.orderDate}</Text>
-              </Column>
-            </Row>
-          </Section>
+      <Section className="email-pad px-6 pb-2 pt-6">
+        <Button
+          className="cta-btn box-border block w-full rounded-lg bg-primary px-6 py-3.5 text-center text-[15px] font-semibold leading-5 text-primary-foreground no-underline"
+          href={links.viewOrder}
+        >
+          {copy.viewOrder}
+        </Button>
+      </Section>
 
-          {/* Primary CTA */}
-          <Section style={ctaSection}>
-            <Button style={primaryButton} href={links.viewOrder}>
-              View Your Order
-            </Button>
-          </Section>
+      <Hr className="mx-6 my-6 border-0 border-t border-solid border-border" />
 
-          <Hr style={divider} />
+      <Section className="email-pad px-6">
+        <Text className="m-0 mb-3 text-[13px] font-bold uppercase tracking-[0.06em] text-primary">
+          {copy.items}
+        </Text>
 
-          {/* Items */}
-          <Section style={contentSection}>
-            <Text style={sectionTitle}>Order summary</Text>
-
-            {items.map((item, index) => (
-              <Row key={index} style={index === 0 ? itemRowFirst : itemRow}>
-                {item.imageUrl ? (
-                  <Column style={itemImageColumn}>
-                    <Img
-                      src={item.imageUrl}
-                      alt={item.productName}
-                      width="64"
-                      height="64"
-                      style={itemImage}
-                    />
-                  </Column>
-                ) : null}
-                <Column style={itemDetailsColumn}>
-                  <Text style={itemName}>{item.productName}</Text>
-                  {item.variantName ? (
-                    <Text style={itemMeta}>{item.variantName}</Text>
-                  ) : null}
-                  {item.sellerName ? (
-                    <Text style={itemMeta}>Sold by {item.sellerName}</Text>
-                  ) : null}
-                  <Text style={itemMeta}>
-                    Qty {item.quantity} &times; {item.unitPrice}
-                  </Text>
-                </Column>
-                <Column style={itemPriceColumn}>
-                  <Text style={itemPrice}>{item.lineTotal}</Text>
-                </Column>
-              </Row>
-            ))}
-          </Section>
-
-          {/* Totals */}
-          <Section style={totalsSection}>
-            <Row style={totalsRow}>
-              <Column style={totalsLabelColumn}>
-                <Text style={totalsLabel}>Subtotal</Text>
-              </Column>
-              <Column style={totalsValueColumn}>
-                <Text style={totalsValue}>{pricing.subtotal}</Text>
-              </Column>
-            </Row>
-            <Row style={totalsRow}>
-              <Column style={totalsLabelColumn}>
-                <Text style={totalsLabel}>Shipping</Text>
-              </Column>
-              <Column style={totalsValueColumn}>
-                <Text style={totalsValue}>{pricing.shipping}</Text>
-              </Column>
-            </Row>
-            {hasDiscount ? (
-              <Row style={totalsRow}>
-                <Column style={totalsLabelColumn}>
-                  <Text style={totalsLabel}>
-                    Discount
-                    {pricing.couponCode ? ` (${pricing.couponCode})` : ""}
-                  </Text>
-                </Column>
-                <Column style={totalsValueColumn}>
-                  <Text style={discountValue}>-{pricing.discount}</Text>
-                </Column>
-              </Row>
-            ) : null}
-            <Row>
-              <Column style={totalsLabelColumn}>
-                <Text style={grandTotalLabel}>Total</Text>
-              </Column>
-              <Column style={totalsValueColumn}>
-                <Text style={grandTotalValue}>{pricing.total}</Text>
-              </Column>
-            </Row>
-          </Section>
-
-          {/* Delivery + payment details */}
-          {shippingAddress ? (
-            <Section style={contentSection}>
-              <Text style={sectionTitle}>Shipping to</Text>
-              <Text style={addressText}>
-                {shippingAddress.fullName}
-                <br />
-                {shippingAddress.addressLine1}
-                {shippingAddress.addressLine2 ? (
-                  <>
-                    <br />
-                    {shippingAddress.addressLine2}
-                  </>
-                ) : null}
-                <br />
-                {shippingAddress.city}, {shippingAddress.state}
-                {shippingAddress.postalCode
-                  ? ` ${shippingAddress.postalCode}`
-                  : ""}
-                <br />
-                {shippingAddress.country}
-                {shippingAddress.phone ? (
-                  <>
-                    <br />
-                    {shippingAddress.phone}
-                  </>
-                ) : null}
+        {items.map((item, index) => (
+          <Row
+            key={index}
+            className={
+              index === items.length - 1
+                ? ""
+                : "border-0 border-b border-solid border-border"
+            }
+          >
+            <Column className="w-[68px] align-top py-3 pr-3">
+              {item.imageUrl ? (
+                <Img
+                  src={item.imageUrl}
+                  alt={item.productName}
+                  width="56"
+                  height="56"
+                  className="block h-14 w-14 rounded-lg border border-solid border-border bg-muted object-cover"
+                />
+              ) : (
+                <Section className="h-14 w-14 rounded-lg border border-solid border-border bg-muted" />
+              )}
+            </Column>
+            <Column className="align-top py-3 pr-2">
+              <Text className="m-0 mb-1 text-[14px] font-semibold leading-5 text-foreground">
+                {item.productName}
               </Text>
-            </Section>
-          ) : null}
-
-          {order.estimatedDelivery || paymentMethod ? (
-            <Section style={detailsBox}>
-              {order.estimatedDelivery ? (
-                <>
-                  <Text style={detailsLabel}>Estimated delivery</Text>
-                  <Text style={detailsValue}>{order.estimatedDelivery}</Text>
-                </>
+              {item.variantName ? (
+                <Text className="m-0 mb-0.5 text-[13px] leading-[18px] text-muted-foreground">
+                  {item.variantName}
+                </Text>
               ) : null}
-              {paymentMethod ? (
-                <>
-                  <Text style={detailsLabel}>Payment method</Text>
-                  <Text style={detailsValueLast}>{paymentMethod}</Text>
-                </>
+              {item.sellerName ? (
+                <Text className="m-0 mb-0.5 text-[13px] leading-[18px] text-muted-foreground">
+                  {interpolate(copy.soldBy, { sellerName: item.sellerName })}
+                </Text>
               ) : null}
-            </Section>
+              <Text className="m-0 text-[13px] leading-[18px] text-muted-foreground">
+                {interpolate(copy.qty, {
+                  quantity: item.quantity,
+                  unitPrice: item.unitPrice,
+                })}
+              </Text>
+            </Column>
+            <Column className="item-price-col w-24 align-top py-3 text-right">
+              <Text className="m-0 text-[14px] font-semibold leading-5 text-foreground">
+                {item.lineTotal}
+              </Text>
+            </Column>
+          </Row>
+        ))}
+      </Section>
+
+      {/* Outer pad + inner box: email Sections are 100% tables, so mx-* overflows the card. */}
+      <Section className="email-pad mt-5 px-6">
+        <Section className="w-full rounded-[10px] border border-solid border-border bg-muted px-5 py-4">
+          <Row>
+            <Column>
+              <Text className="m-0 mb-2 text-[14px] leading-5 text-muted-foreground">
+                {copy.subtotal}
+              </Text>
+            </Column>
+            <Column className="w-[40%] text-right align-top">
+              <Text className="m-0 mb-2 whitespace-nowrap text-[14px] leading-5 text-foreground">
+                {pricing.subtotal}
+              </Text>
+            </Column>
+          </Row>
+          <Row>
+            <Column>
+              <Text className="m-0 mb-2 text-[14px] leading-5 text-muted-foreground">
+                {copy.shipping}
+              </Text>
+            </Column>
+            <Column className="w-[40%] text-right align-top">
+              <Text className="m-0 mb-2 whitespace-nowrap text-[14px] leading-5 text-foreground">
+                {pricing.shipping}
+              </Text>
+            </Column>
+          </Row>
+          {hasDiscount ? (
+            <Row>
+              <Column>
+                <Text className="m-0 mb-2 text-[14px] leading-5 text-muted-foreground">
+                  {pricing.couponCode
+                    ? interpolate(copy.discountWithCoupon, {
+                        couponCode: pricing.couponCode,
+                      })
+                    : copy.discount}
+                </Text>
+              </Column>
+              <Column className="w-[40%] text-right align-top">
+                <Text className="m-0 mb-2 whitespace-nowrap text-[14px] leading-5 text-success">
+                  -{pricing.discount}
+                </Text>
+              </Column>
+            </Row>
           ) : null}
+          <Hr className="mb-3 mt-1 border-0 border-t border-solid border-border" />
+          <Row>
+            <Column>
+              <Text className="m-0 text-[15px] font-bold leading-[22px] text-foreground">
+                {copy.total}
+              </Text>
+            </Column>
+            <Column className="w-[40%] text-right align-top">
+              <Text className="m-0 whitespace-nowrap text-[16px] font-bold leading-[22px] text-primary">
+                {pricing.total}
+              </Text>
+            </Column>
+          </Row>
+        </Section>
+      </Section>
 
-          <Hr style={divider} />
+      {hasDetails ? (
+        <>
+          <Hr className="mx-6 my-6 border-0 border-t border-solid border-border" />
+          <Section className="email-pad px-6">
+            <Row>
+              {shippingAddress ? (
+                <Column
+                  className={
+                    order.estimatedDelivery || paymentMethod
+                      ? "stack-col stack-col-gap w-1/2 align-top pr-4"
+                      : "stack-col w-full align-top"
+                  }
+                >
+                  <Text className="m-0 mb-3 text-[13px] font-bold uppercase tracking-[0.06em] text-primary">
+                    {copy.shippingTo}
+                  </Text>
+                  <Text className="m-0 text-[14px] leading-[22px] text-foreground">
+                    {shippingAddress.fullName}
+                    <br />
+                    {shippingAddress.addressLine1}
+                    {shippingAddress.addressLine2 ? (
+                      <>
+                        <br />
+                        {shippingAddress.addressLine2}
+                      </>
+                    ) : null}
+                    <br />
+                    {shippingAddress.city}, {shippingAddress.state}
+                    {shippingAddress.postalCode
+                      ? ` ${shippingAddress.postalCode}`
+                      : ""}
+                    <br />
+                    {shippingAddress.country}
+                    {shippingAddress.phone ? (
+                      <>
+                        <br />
+                        {shippingAddress.phone}
+                      </>
+                    ) : null}
+                  </Text>
+                </Column>
+              ) : null}
 
-          {/* Support + footer */}
-          <Section style={footerSection}>
-            <Text style={footerHeading}>Need help with this order?</Text>
-            <Text style={footerText}>
-              Reply to this email or reach our support team at{" "}
-              <Link href={`mailto:${TALLABY_CONTACT_EMAIL}`} style={footerLink}>
-                {TALLABY_CONTACT_EMAIL}
-              </Link>
-              . You can track this order any time from{" "}
-              <Link href={links.viewOrder} style={footerLink}>
-                your order page
-              </Link>
-              .
-            </Text>
-            <Text style={copyright}>
-              © 2026 Tallaby. All rights reserved. |{" "}
-              <Link href={`${TALLABY_SITE_URL}/privacy`} style={footerLink}>
-                Privacy Policy
-              </Link>{" "}
-              |{" "}
-              <Link href={`${TALLABY_SITE_URL}/terms`} style={footerLink}>
-                Terms &amp; Conditions
-              </Link>
-            </Text>
-            <Text style={disclaimer}>
-              This is a transactional confirmation for order #
-              {order.orderNumber}, sent to {customer.email}.
-            </Text>
+              {order.estimatedDelivery || paymentMethod ? (
+                <Column className="stack-col w-1/2 align-top">
+                  {order.estimatedDelivery ? (
+                    <>
+                      <Text className="m-0 mb-3 text-[13px] font-bold uppercase tracking-[0.06em] text-primary">
+                        {copy.estimatedDelivery}
+                      </Text>
+                      <Text className="m-0 text-[14px] leading-[22px] text-foreground">
+                        {order.estimatedDelivery}
+                      </Text>
+                    </>
+                  ) : null}
+                  {paymentMethod ? (
+                    <>
+                      <Text
+                        className={
+                          order.estimatedDelivery
+                            ? "mb-3 mt-5 text-[13px] font-bold uppercase tracking-[0.06em] text-primary"
+                            : "m-0 mb-3 text-[13px] font-bold uppercase tracking-[0.06em] text-primary"
+                        }
+                      >
+                        {copy.payment}
+                      </Text>
+                      <Text className="m-0 text-[14px] leading-[22px] text-foreground">
+                        {paymentMethod}
+                      </Text>
+                    </>
+                  ) : null}
+                </Column>
+              ) : null}
+            </Row>
           </Section>
-        </Container>
-      </Body>
-    </Html>
+        </>
+      ) : null}
+    </EmailLayout>
   );
 };
 
 export default OrderConfirmationEmail;
-
-// Styles — mirrors the Tallaby email design system used by the other templates.
-const main = {
-  backgroundColor: "#faf9f7",
-  fontFamily:
-    '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
-  color: "#3d3d3d",
-};
-
-const container = {
-  margin: "0 auto",
-  padding: "20px 0",
-  maxWidth: "600px",
-  width: "100%",
-};
-
-const headerSection = {
-  padding: "32px 24px 16px",
-  textAlign: "center" as const,
-};
-
-const logo = {
-  width: "110px",
-  height: "auto",
-  display: "block",
-  margin: "0 auto",
-};
-
-const heroSection = {
-  padding: "32px 24px",
-  textAlign: "center" as const,
-  backgroundColor: "#f3e8e0",
-  borderRadius: "12px",
-  margin: "0 16px",
-};
-
-const heroBadge = {
-  fontSize: "12px",
-  fontWeight: "700",
-  textTransform: "uppercase" as const,
-  letterSpacing: "1px",
-  color: "#b8885f",
-  margin: "0 0 12px 0",
-};
-
-const heroHeading = {
-  fontSize: "30px",
-  fontWeight: "700",
-  margin: "0 0 12px 0",
-  color: "#2a2a2a",
-  lineHeight: "1.3",
-};
-
-const heroSubheading = {
-  fontSize: "16px",
-  color: "#8b7355",
-  margin: "0",
-  lineHeight: "1.6",
-};
-
-const metaSection = {
-  padding: "24px 24px 8px",
-};
-
-const metaColumn = {
-  width: "50%",
-  verticalAlign: "top" as const,
-  paddingRight: "8px",
-};
-
-const metaLabel = {
-  fontSize: "11px",
-  fontWeight: "700",
-  textTransform: "uppercase" as const,
-  letterSpacing: "0.6px",
-  color: "#8b7355",
-  margin: "0 0 4px 0",
-};
-
-const metaValue = {
-  fontSize: "15px",
-  fontWeight: "600",
-  color: "#2a2a2a",
-  margin: "0",
-};
-
-const ctaSection = {
-  padding: "20px 24px 8px",
-  textAlign: "center" as const,
-};
-
-const primaryButton = {
-  backgroundColor: "#2a2a2a",
-  color: "#ffffff",
-  fontSize: "16px",
-  fontWeight: "600",
-  textDecoration: "none",
-  textAlign: "center" as const,
-  display: "block",
-  borderRadius: "6px",
-  paddingTop: "12px",
-  paddingBottom: "12px",
-};
-
-const divider = {
-  borderTop: "1px solid #e0dbd5",
-  margin: "24px",
-};
-
-const contentSection = {
-  padding: "0 24px",
-};
-
-const sectionTitle = {
-  fontSize: "16px",
-  fontWeight: "700",
-  margin: "0 0 16px 0",
-  color: "#2a2a2a",
-};
-
-const itemRowBase = {
-  borderTop: "1px solid #f0ebe5",
-};
-
-const itemRowFirst = {
-  ...itemRowBase,
-  borderTop: "none",
-};
-
-const itemRow = itemRowBase;
-
-const itemImageColumn = {
-  width: "76px",
-  verticalAlign: "top" as const,
-  paddingTop: "16px",
-  paddingBottom: "16px",
-};
-
-const itemImage = {
-  width: "64px",
-  height: "64px",
-  borderRadius: "8px",
-  border: "1px solid #f0ebe5",
-  objectFit: "cover" as const,
-  backgroundColor: "#ffffff",
-};
-
-const itemDetailsColumn = {
-  verticalAlign: "top" as const,
-  paddingTop: "16px",
-  paddingBottom: "16px",
-  paddingRight: "8px",
-};
-
-const itemName = {
-  fontSize: "15px",
-  fontWeight: "600",
-  color: "#2a2a2a",
-  margin: "0 0 4px 0",
-  lineHeight: "1.4",
-};
-
-const itemMeta = {
-  fontSize: "13px",
-  color: "#8b7355",
-  margin: "0 0 2px 0",
-  lineHeight: "1.4",
-};
-
-const itemPriceColumn = {
-  width: "90px",
-  verticalAlign: "top" as const,
-  textAlign: "right" as const,
-  paddingTop: "16px",
-  paddingBottom: "16px",
-};
-
-const itemPrice = {
-  fontSize: "15px",
-  fontWeight: "600",
-  color: "#2a2a2a",
-  margin: "0",
-  whiteSpace: "nowrap" as const,
-};
-
-const totalsSection = {
-  backgroundColor: "#fff5f0",
-  border: "1px solid #f0d5cc",
-  borderRadius: "12px",
-  padding: "20px 24px",
-  margin: "24px",
-};
-
-const totalsRow = {
-  marginBottom: "4px",
-};
-
-const totalsLabelColumn = {
-  verticalAlign: "top" as const,
-};
-
-const totalsValueColumn = {
-  verticalAlign: "top" as const,
-  textAlign: "right" as const,
-  width: "40%",
-};
-
-const totalsLabel = {
-  fontSize: "14px",
-  color: "#8b7355",
-  margin: "0 0 8px 0",
-};
-
-const totalsValue = {
-  fontSize: "14px",
-  color: "#3d3d3d",
-  margin: "0 0 8px 0",
-  whiteSpace: "nowrap" as const,
-};
-
-const discountValue = {
-  ...totalsValue,
-  color: "#2f8f5b",
-};
-
-const grandTotalLabel = {
-  fontSize: "16px",
-  fontWeight: "700",
-  color: "#2a2a2a",
-  margin: "8px 0 0 0",
-  borderTop: "1px solid #f0d5cc",
-  paddingTop: "12px",
-};
-
-const grandTotalValue = {
-  fontSize: "18px",
-  fontWeight: "700",
-  color: "#d97757",
-  margin: "8px 0 0 0",
-  borderTop: "1px solid #f0d5cc",
-  paddingTop: "12px",
-  whiteSpace: "nowrap" as const,
-};
-
-const addressText = {
-  fontSize: "14px",
-  lineHeight: "1.7",
-  color: "#555",
-  margin: "0",
-};
-
-const detailsBox = {
-  backgroundColor: "#ffffff",
-  border: "1px solid #f0ebe5",
-  borderRadius: "12px",
-  padding: "20px 24px",
-  margin: "24px",
-};
-
-const detailsLabel = {
-  fontSize: "11px",
-  fontWeight: "700",
-  textTransform: "uppercase" as const,
-  letterSpacing: "0.6px",
-  color: "#8b7355",
-  margin: "0 0 4px 0",
-};
-
-const detailsValue = {
-  fontSize: "15px",
-  fontWeight: "600",
-  color: "#2a2a2a",
-  margin: "0 0 16px 0",
-};
-
-const detailsValueLast = {
-  ...detailsValue,
-  margin: "0",
-};
-
-const footerSection = {
-  padding: "0 24px 32px",
-  textAlign: "center" as const,
-};
-
-const footerHeading = {
-  fontSize: "15px",
-  fontWeight: "600",
-  color: "#2a2a2a",
-  margin: "0 0 8px 0",
-};
-
-const footerText = {
-  fontSize: "13px",
-  color: "#8b7355",
-  margin: "0 0 16px 0",
-  lineHeight: "1.6",
-};
-
-const footerLink = {
-  color: "#d97757",
-  textDecoration: "none",
-};
-
-const copyright = {
-  fontSize: "11px",
-  color: "#a0a0a0",
-  margin: "16px 0 0 0",
-};
-
-const disclaimer = {
-  fontSize: "11px",
-  color: "#b8b8b8",
-  margin: "8px 0 0 0",
-};

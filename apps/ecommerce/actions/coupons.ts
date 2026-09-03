@@ -215,7 +215,7 @@ export async function validateCoupon(
     const calculationResult = calculateCouponDiscount(
       coupon as CouponData,
       cartItemsForCoupon,
-      shippingCost,
+      shippingCost ?? 0,
       true // isGlobalShipping
     )
 
@@ -224,11 +224,12 @@ export async function validateCoupon(
     }
 
     const tax = 0
+    const billedShipping = shippingCost ?? 0
     const baseSummary = {
       subtotal,
       tax,
       shippingCost,
-      total: subtotal + tax + shippingCost,
+      total: subtotal + tax + billedShipping,
       itemCount: cart.cartItems.reduce((sum, i) => sum + i.quantity, 0)
     }
 
@@ -365,7 +366,8 @@ export async function removeCouponFromCart(data?: {
     const shippingCost = calculateOrderShippingCost(cart.cartItems, {
       destinationState,
     })
-    const total = subtotal + tax + shippingCost
+    const billedShipping = shippingCost ?? 0
+    const total = subtotal + tax + billedShipping
 
     const summary: CheckoutSummary = {
       subtotal,

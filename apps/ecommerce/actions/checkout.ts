@@ -61,14 +61,15 @@ async function getDestinationState(
 
 function buildBaseSummary(
   cartItems: Array<{ quantity: number; price: string | number }>,
-  shippingCost: number,
+  shippingCost: number | null,
 ) {
   const subtotal = cartItems.reduce(
     (sum, item) => sum + Number(item.price) * item.quantity,
     0,
   );
   const tax = 0;
-  const total = subtotal + tax + shippingCost;
+  const billedShipping = shippingCost ?? 0;
+  const total = subtotal + tax + billedShipping;
 
   return {
     subtotal,

@@ -107,7 +107,7 @@ export function calculateRawShippingAmount(
 
 export function calculateLocationShippingCost(
   options: LocationShippingOptions,
-): number {
+): number | null {
   const { items, destinationState, fallbackBaseRate = FALLBACK_BASE_RATE } =
     options
 
@@ -121,6 +121,13 @@ export function calculateLocationShippingCost(
 
   if (cartQualifiesForProductFreeDelivery(items)) {
     return 0
+  }
+
+  // No destination yet — shipping is unknown until an address is selected
+  const hasDestination =
+    typeof destinationState === 'string' && destinationState.trim().length > 0
+  if (!hasDestination) {
+    return null
   }
 
   const totalGrams = calculateCartWeightGrams(items)

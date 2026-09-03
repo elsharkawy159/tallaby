@@ -36,12 +36,16 @@ export const CheckoutInteractions = ({
 
           <div className="flex items-center justify-between text-sm md:text-base">
             <span className="font-medium text-gray-700">Shipping</span>
-            <span
-              className="font-semibold text-gray-900"
-              dangerouslySetInnerHTML={{
-                __html: formatPrice(Number(summary.shippingCost), locale),
-              }}
-            />
+            {summary.shippingCost == null ? (
+              <span className="font-semibold text-gray-900">—</span>
+            ) : (
+              <span
+                className="font-semibold text-gray-900"
+                dangerouslySetInnerHTML={{
+                  __html: formatPrice(Number(summary.shippingCost), locale),
+                }}
+              />
+            )}
           </div>
 
           {summary.tax > 0 && (

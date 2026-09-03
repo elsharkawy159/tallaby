@@ -1156,5 +1156,74 @@
   "installApp": {
     "installApp": "تثبيت التطبيق",
     "installAppError": "لتثبيت التطبيق:\n\n1. اضغط على زر المشاركة\n2. اختر \"إضافة إلى الشاشة الرئيسية\""
+  },
+  "wallet": {
+    "wallet": "المحفظة",
+    "myWallet": "محفظتي",
+    "openWallet": "فتح المحفظة",
+    "availableBalance": "الرصيد المتاح",
+    "reservedNotice": "تم حجز {amount} مقابل طلب سحب",
+    "topUp": "شحن الرصيد",
+    "topUpTitle": "شحن رصيد المحفظة",
+    "topUpDescription": "اختر المبلغ وأكمل الدفع بأمان. سيتم تحديث رصيدك بمجرد تأكيد الدفع.",
+    "topUpProcessing": "جارٍ تأكيد عملية الدفع. سيتم تحديث رصيدك فور اكتمالها.",
+    "continueToPayment": "المتابعة إلى الدفع",
+    "redirecting": "جارٍ التحويل…",
+    "amount": "المبلغ",
+    "cancel": "إلغاء",
+    "requestPayout": "طلب سحب",
+    "payoutTitle": "طلب سحب رصيد",
+    "payoutDescription": "يمكنك طلب سحب حتى {amount}. يتم حجز المبلغ أثناء مراجعة طلبك.",
+    "payoutAlreadyOpen": "لديك بالفعل طلب سحب قيد المعالجة.",
+    "payoutMethod": "طريقة السحب",
+    "accountName": "اسم صاحب الحساب",
+    "accountNumber": "رقم الحساب أو المحفظة",
+    "notes": "ملاحظات (اختياري)",
+    "submitRequest": "إرسال الطلب",
+    "submitting": "جارٍ الإرسال…",
+    "payoutRequested": "تم إرسال طلب السحب",
+    "payoutCancelled": "تم إلغاء طلب السحب",
+    "payoutRequests": "طلبات السحب",
+    "payoutRequestsDescription": "تتم مراجعة الطلبات من فريق طلبي قبل تحويل الأموال.",
+    "cancelRequest": "إلغاء",
+    "transactionHistory": "سجل المعاملات",
+    "transactionHistoryDescription": "كل الحركات الواردة والصادرة من محفظتك.",
+    "noTransactions": "لا توجد أي معاملات بعد.",
+    "balanceAfter": "الرصيد: {amount}",
+    "loadMore": "عرض المزيد",
+    "loading": "جارٍ التحميل…",
+    "signInTitle": "سجّل الدخول لاستخدام محفظتك",
+    "signInDescription": "محفظة طلبي تجمع رصيدك وعمليات الشحن والسحب في مكان واحد.",
+    "signIn": "تسجيل الدخول",
+    "unavailableTitle": "المحفظة غير متاحة",
+    "unavailableDescription": "تعذّر تحميل محفظتك في الوقت الحالي. برجاء المحاولة بعد قليل.",
+    "walletStatus": {
+      "active": "نشطة",
+      "frozen": "مجمّدة",
+      "closed": "مغلقة"
+    },
+    "transactionType": {
+      "top_up": "شحن رصيد",
+      "payout": "سحب",
+      "commission": "عمولة",
+      "order_payment": "دفع طلب",
+      "refund": "استرداد",
+      "adjustment": "تسوية",
+      "bonus": "مكافأة"
+    },
+    "payoutStatus": {
+      "pending": "قيد الانتظار",
+      "approved": "تمت الموافقة",
+      "processing": "قيد التنفيذ",
+      "completed": "مكتمل",
+      "rejected": "مرفوض",
+      "cancelled": "ملغي",
+      "failed": "فشل"
+    },
+    "payoutMethods": {
+      "bank_transfer": "تحويل بنكي",
+      "instapay": "إنستا باي",
+      "mobile_wallet": "محفظة إلكترونية"
+    }
   }
 }

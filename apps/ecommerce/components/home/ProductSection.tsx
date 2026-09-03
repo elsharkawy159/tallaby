@@ -87,7 +87,7 @@ const ProductSection = async ({
           {products.data.map((product) => (
             <CarouselItem
               key={product.id as string}
-              className="basis-auto md:ps-4 ps-2 md:max-w-[312px] max-w-43"
+              className="basis-auto md:ps-4 ps-2 md:max-w-[312px] max-w-[50vw]"
             >
               <ProductCard
                 key={product.id as string}

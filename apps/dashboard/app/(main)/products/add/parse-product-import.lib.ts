@@ -12,10 +12,39 @@ const TEXT_SECTION_MARKERS =
 const TEXT_DATA_MARKERS =
   /(?:list\s*price|product\s*price|final\s*price|sku\s*:|quantity\s*:|color\s+\w+\s*:|🇬🇧|🇪🇬|\ben\s*:|ar\s*:)/i;
 
+/** Extract unique http(s) URLs from a multi-line paste (one URL per line). */
+export function extractProductUrls(input: string): string[] {
+  const seen = new Set<string>();
+  const urls: string[] = [];
+
+  for (const line of input.replace(/\r\n/g, "\n").split("\n")) {
+    const trimmed = line.trim();
+    if (!/^https?:\/\//i.test(trimmed)) continue;
+    if (seen.has(trimmed)) continue;
+    seen.add(trimmed);
+    urls.push(trimmed);
+  }
+
+  return urls;
+}
+
 export function detectImportFormat(input: string): ImportFormat {
   const trimmed = input.trim();
   if (!trimmed) return "unknown";
 
+  const urls = extractProductUrls(trimmed);
+  if (urls.length >= 2) return "url_bulk";
+  if (urls.length === 1 && /^https?:\/\//i.test(trimmed.split("\n")[0]!.trim())) {
+    // Single URL line (optionally followed by blank lines only) → url
+    const nonEmpty = trimmed
+      .replace(/\r\n/g, "\n")
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean);
+    if (nonEmpty.length === 1) return "url";
+    // One URL plus non-URL junk lines — still treat as single URL if first line is URL
+    if (/^https?:\/\//i.test(nonEmpty[0]!)) return "url";
+  }
   if (/^https?:\/\//i.test(trimmed)) {
     return "url";
   }
@@ -48,7 +77,7 @@ export function parseProductImport(input: string): ParseProductImportOutput {
     };
   }
 
-  if (format === "url") {
+  if (format === "url" || format === "url_bulk") {
     return {
       success: false,
       format,
@@ -948,6 +977,11 @@ export function buildParsedImportFromScrape(
   const scrapedImages =
     en.images.length > 0 ? en.images : ar.images;
 
+  const dimensions = resolveShippingDimensionsFromScrape(dataEn, dataAr, [
+    ...en.bulletPoints,
+    ...ar.bulletPoints,
+  ]);
+
   return {
     version: "1",
     localized: {
@@ -965,6 +999,126 @@ export function buildParsedImportFromScrape(
     price: scrapedPrice ? { list: scrapedPrice } : undefined,
     images: scrapedImages.length > 0 ? scrapedImages : undefined,
     quantity: 25,
+    // Fill shipping options from scraped product data; weight is required.
+    dimensions,
+    fulfillmentType: "platform_fulfilled",
+    handlingTime: 1,
+    freeDelivery: false,
+  };
+}
+
+const FALLBACK_SCRAPE_WEIGHT = 999;
+
+function pickPositiveNumber(value: unknown): number | undefined {
+  if (typeof value === "number" && Number.isFinite(value) && value > 0) {
+    return value;
+  }
+  if (typeof value === "string") {
+    const num = Number.parseFloat(value.replace(",", "."));
+    if (Number.isFinite(num) && num > 0) return num;
+  }
+  return undefined;
+}
+
+function pickWeightUnit(value: unknown): "kg" | "g" | "lb" | undefined {
+  if (typeof value !== "string") return undefined;
+  const u = value.toLowerCase().trim();
+  if (u === "kg" || u === "g" || u === "lb") return u;
+  return undefined;
+}
+
+function pickLengthUnit(value: unknown): "cm" | "in" | undefined {
+  if (typeof value !== "string") return undefined;
+  const u = value.toLowerCase().trim();
+  if (u === "cm" || u === "in") return u;
+  return undefined;
+}
+
+function parseWeightFromBulletLine(
+  line: string
+): { weight: number; weightUnit?: "kg" | "g" | "lb" } | undefined {
+  const normalized = line.trim();
+  if (!normalized) return undefined;
+
+  const labelMatch = normalized.match(
+    /(?:item\s*)?(?:shipping\s*)?(?:package\s*)?weight\s*[:：]\s*(.+)$/i
+  );
+  const value = labelMatch?.[1] ?? normalized;
+  const match = value.match(
+    /([\d]+(?:[.,]\d+)?)\s*(kg|g|lb|lbs|pounds?|grams?|kilograms?)?/i
+  );
+  if (!match?.[1]) return undefined;
+
+  // Only accept unlabeled numeric weight when the line is clearly a weight field
+  if (!labelMatch && !match[2]) return undefined;
+
+  const weight = Number.parseFloat(match[1].replace(",", "."));
+  if (!Number.isFinite(weight) || weight <= 0) return undefined;
+
+  const unitRaw = (match[2] || "").toLowerCase();
+  let weightUnit: "kg" | "g" | "lb" | undefined;
+  if (unitRaw === "kg" || unitRaw.startsWith("kilogram")) weightUnit = "kg";
+  else if (unitRaw === "g" || unitRaw.startsWith("gram")) weightUnit = "g";
+  else if (unitRaw === "lb" || unitRaw === "lbs" || unitRaw.startsWith("pound")) {
+    weightUnit = "lb";
+  }
+
+  return { weight, weightUnit };
+}
+
+function resolveShippingDimensionsFromScrape(
+  dataEn: Record<string, unknown>,
+  dataAr: Record<string, unknown>,
+  bulletPoints: string[]
+): NonNullable<ParsedProductImport["dimensions"]> {
+  const sources = [dataEn, dataAr];
+
+  let length: number | undefined;
+  let width: number | undefined;
+  let height: number | undefined;
+  let weight: number | undefined;
+  let unit: "cm" | "in" | undefined;
+  let weightUnit: "kg" | "g" | "lb" | undefined;
+
+  for (const data of sources) {
+    const dims =
+      data.dimensions && typeof data.dimensions === "object"
+        ? (data.dimensions as Record<string, unknown>)
+        : undefined;
+
+    length = length ?? pickPositiveNumber(dims?.length);
+    width = width ?? pickPositiveNumber(dims?.width);
+    height = height ?? pickPositiveNumber(dims?.height);
+    weight =
+      weight ??
+      pickPositiveNumber(dims?.weight) ??
+      pickPositiveNumber(data.weight);
+    unit = unit ?? pickLengthUnit(dims?.unit);
+    weightUnit =
+      weightUnit ??
+      pickWeightUnit(dims?.weightUnit) ??
+      pickWeightUnit(data.weightUnit);
+  }
+
+  if (weight === undefined) {
+    for (const line of bulletPoints) {
+      const parsed = parseWeightFromBulletLine(line);
+      if (parsed) {
+        weight = parsed.weight;
+        weightUnit = weightUnit ?? parsed.weightUnit;
+        break;
+      }
+    }
+  }
+
+  return {
+    length,
+    width,
+    height,
+    unit: unit ?? "cm",
+    // Required for add-product validation — use scrape value or 999g fallback
+    weight: weight ?? FALLBACK_SCRAPE_WEIGHT,
+    weightUnit: weightUnit ?? "g",
   };
 }
 

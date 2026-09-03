@@ -5,6 +5,9 @@ import {
   WelcomeEmail,
   DigitalDeliveryEmail,
   OrderConfirmationEmail,
+  getEmailMessages,
+  interpolate,
+  resolveEmailLocale,
 } from "@workspace/emails";
 import { buildOrderConfirmationEmailData } from "../lib/order-confirmation";
 import {
@@ -24,7 +27,7 @@ const orderConfirmationSchema = z.object({
 app.post("/welcome", async (c) => {
   try {
     const body = await c.req.json();
-    const { email, name } = body;
+    const { email, name, preferredLanguage } = body;
 
     if (!email || typeof email !== "string") {
       return c.json({ error: "Invalid email address" }, 400);
@@ -34,14 +37,19 @@ app.post("/welcome", async (c) => {
       return c.json({ error: "Invalid name" }, 400);
     }
 
-    
+    const locale = resolveEmailLocale(
+      typeof preferredLanguage === "string" ? preferredLanguage : null
+    );
+    const copy = getEmailMessages(locale).welcome;
+
     await sendEmail({
       to: email,
-      subject: "Welcome to our Marketplace 🎉",
+      subject: copy.subject,
       content: WelcomeEmail({
         customerName: name,
         discountCode: "WELCOME10",
         discountPercent: 10,
+        locale,
       }),
     });
 
@@ -55,7 +63,7 @@ app.post("/welcome", async (c) => {
 app.post("/digital-delivery", async (c) => {
   try {
     const body = await c.req.json();
-    const { email, name, orderNumber, items } = body;
+    const { email, name, orderNumber, items, preferredLanguage } = body;
 
     if (!email || typeof email !== "string") {
       return c.json({ error: "Invalid email address" }, 400);
@@ -65,13 +73,19 @@ app.post("/digital-delivery", async (c) => {
       return c.json({ error: "No items to deliver" }, 400);
     }
 
+    const locale = resolveEmailLocale(
+      typeof preferredLanguage === "string" ? preferredLanguage : null
+    );
+    const copy = getEmailMessages(locale).digitalDelivery;
+
     await sendEmail({
       to: email,
-      subject: `Your digital order #${orderNumber ?? ""} is ready`,
+      subject: interpolate(copy.subject, { orderNumber: orderNumber ?? "" }),
       content: DigitalDeliveryEmail({
         customerName: name,
         orderNumber,
         items,
+        locale,
       }),
     });
 
@@ -129,7 +143,10 @@ app.post("/order-confirmation", async (c) => {
 
     const { id } = await sendEmail({
       to: built.recipient,
-      subject: `Order confirmed — #${built.data.order.orderNumber}`,
+      subject: interpolate(
+        getEmailMessages(built.data.locale ?? "en").orderConfirmation.subject,
+        { orderNumber: built.data.order.orderNumber }
+      ),
       content: OrderConfirmationEmail(built.data),
       from: ORDERS_FROM_ADDRESS,
       replyTo: ORDERS_FROM_ADDRESS,

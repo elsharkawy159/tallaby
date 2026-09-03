@@ -26,7 +26,8 @@
     "PAYMOB_SECRET_KEY",
     "PAYMOB_PUBLIC_KEY",
     "PAYMOB_CARD_INTEGRATION_ID",
-    "PAYMOB_WEBHOOK_URL"
+    "PAYMOB_WEBHOOK_URL",
+    "PAYMOB_HMAC_SECRET"
   ],
   "tasks": {
     "build": {

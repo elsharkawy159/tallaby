@@ -145,7 +145,7 @@
 @utility container {
   margin-inline: auto;
   padding-inline: 1rem;
-  max-width: 1800px;
+  max-width: 1600px;
 
   /* @media (width >= --theme(--breakpoint-sm)) {
     max-width: none;
@@ -164,7 +164,7 @@
   margin-inline: auto;
 
   @media (width >= 1800px) {
-    padding-inline-start: calc((100vw - 1800px) / 2 + 1rem);
+    padding-inline-start: calc((100vw - 1600px) / 2 + 1rem);
   }
 }
 

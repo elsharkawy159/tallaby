@@ -87,12 +87,14 @@ export default async function ProfileLayout({
   children: React.ReactNode;
 }) {
   const t = await getTranslations("profile");
+  const tWallet = await getTranslations("wallet");
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Breadcrumbs */}
       <DynamicBreadcrumb
         customLabels={{
           orders: t("myOrders"),
+          wallet: tWallet("myWallet"),
           addresses: t("myAddresses"),
           wishlist: t("myWishlist"),
           security: t("securitySettings"),

@@ -50,6 +50,7 @@ import {
 import { useAuthDialog } from "@/hooks/use-auth-dialog";
 import { useDebounce } from "@/hooks/use-debounce";
 import { Input } from "@workspace/ui/components";
+import posthog from "posthog-js";
 
 interface OnboardingFormClientProps {
   user: any;
@@ -172,6 +173,9 @@ export function OnboardingFormClient({ user }: OnboardingFormClientProps) {
         const result = await submitSellerApplication(data);
 
         if (result.success) {
+          posthog.capture("seller_application_submitted", {
+            business_type: data.businessType,
+          });
           toast.success(result.message);
           form.reset();
           router.push("/");

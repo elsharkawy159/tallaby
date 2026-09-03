@@ -25,7 +25,7 @@ export interface OrderShippingCartItem {
 export function calculateOrderShippingCost(
   items: OrderShippingCartItem[],
   options: CalculateOrderShippingOptions = {},
-): number {
+): number | null {
   const envFallback = Number(process.env.NEXT_PUBLIC_SHIPPING_FALLBACK_BASE)
   const fallbackBaseRate = Number.isFinite(envFallback) ? envFallback : undefined
 

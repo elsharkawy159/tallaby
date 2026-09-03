@@ -19,6 +19,10 @@ import {
 } from '@workspace/lib/paymob'
 import { fulfillDigitalOrderItems } from '@workspace/lib/digital'
 import type { PaymobWebhookBody } from '@workspace/lib/paymob'
+import {
+  handleWalletTopUpWebhook,
+  isWalletTopUpReference,
+} from '../lib/wallet-top-up'
 
 const intentionSchema = z.object({
   orderId: z.string().uuid(),
@@ -154,10 +158,25 @@ app.post('/webhook', async (c) => {
       return c.json({ error: 'Invalid HMAC' }, 400)
     }
 
-    const orderId = transaction.merchant_order_id
-    if (!orderId) {
+    const reference = transaction.merchant_order_id
+    if (!reference) {
       return c.json({ error: 'Missing merchant order reference' }, 400)
     }
+
+    // Paymob gives us a single reference field, so wallet top-ups namespace
+    // theirs with a prefix (see parseTopUpReference in @workspace/db/wallet).
+    // Everything below this branch is order payment handling, unchanged.
+    if (isWalletTopUpReference(reference)) {
+      const result = await handleWalletTopUpWebhook(transaction, body)
+
+      if (result.outcome === 'not_found') {
+        return c.json({ error: 'Top up not found' }, 404)
+      }
+
+      return c.json({ received: true, outcome: result.outcome })
+    }
+
+    const orderId = reference
 
     const transactionId = String(transaction.id)
     const now = new Date().toISOString()

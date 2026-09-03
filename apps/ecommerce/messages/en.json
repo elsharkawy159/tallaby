@@ -1156,5 +1156,74 @@
   "installApp": {
     "installApp": "Install App",
     "installAppError": "To install the app:\n\n1. Tap the Share icon\n2. Choose \"Add to Home Screen\""
+  },
+  "wallet": {
+    "wallet": "Wallet",
+    "myWallet": "My Wallet",
+    "openWallet": "Open wallet",
+    "availableBalance": "Available balance",
+    "reservedNotice": "{amount} is on hold for a payout request",
+    "topUp": "Top up",
+    "topUpTitle": "Top up your wallet",
+    "topUpDescription": "Choose an amount and complete the payment securely. Your balance updates once the payment is confirmed.",
+    "topUpProcessing": "We are confirming your payment. Your balance will update as soon as it clears.",
+    "continueToPayment": "Continue to payment",
+    "redirecting": "Redirecting…",
+    "amount": "Amount",
+    "cancel": "Cancel",
+    "requestPayout": "Request payout",
+    "payoutTitle": "Request a payout",
+    "payoutDescription": "You can request up to {amount}. The amount is held while your request is reviewed.",
+    "payoutAlreadyOpen": "You already have a payout request in progress.",
+    "payoutMethod": "Payout method",
+    "accountName": "Account holder name",
+    "accountNumber": "Account or wallet number",
+    "notes": "Notes (optional)",
+    "submitRequest": "Submit request",
+    "submitting": "Submitting…",
+    "payoutRequested": "Payout request submitted",
+    "payoutCancelled": "Payout request cancelled",
+    "payoutRequests": "Payout requests",
+    "payoutRequestsDescription": "Requests are reviewed by the Tallaby team before the money is sent.",
+    "cancelRequest": "Cancel",
+    "transactionHistory": "Transaction history",
+    "transactionHistoryDescription": "Every movement in and out of your wallet.",
+    "noTransactions": "No wallet activity yet.",
+    "balanceAfter": "Balance: {amount}",
+    "loadMore": "Load more",
+    "loading": "Loading…",
+    "signInTitle": "Sign in to use your wallet",
+    "signInDescription": "Your Tallaby wallet keeps your balance, top ups and payouts in one place.",
+    "signIn": "Sign in",
+    "unavailableTitle": "Wallet unavailable",
+    "unavailableDescription": "We could not load your wallet right now. Please try again in a moment.",
+    "walletStatus": {
+      "active": "Active",
+      "frozen": "Frozen",
+      "closed": "Closed"
+    },
+    "transactionType": {
+      "top_up": "Top up",
+      "payout": "Payout",
+      "commission": "Commission",
+      "order_payment": "Order payment",
+      "refund": "Refund",
+      "adjustment": "Adjustment",
+      "bonus": "Bonus"
+    },
+    "payoutStatus": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "processing": "Processing",
+      "completed": "Completed",
+      "rejected": "Rejected",
+      "cancelled": "Cancelled",
+      "failed": "Failed"
+    },
+    "payoutMethods": {
+      "bank_transfer": "Bank transfer",
+      "instapay": "InstaPay",
+      "mobile_wallet": "Mobile wallet"
+    }
   }
 }

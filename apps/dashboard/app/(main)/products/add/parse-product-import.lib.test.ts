@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildParsedImportFromScrape,
   detectImportFormat,
+  extractProductUrls,
   parseProductImport,
   parseProductImportJson,
   parseProductImportText,
@@ -92,10 +93,36 @@ Product Variants:
 Color: Red, Blue, Black
 `;
 
+describe("extractProductUrls", () => {
+  it("extracts unique http(s) URLs one per line", () => {
+    const input = `
+https://amazon.eg/dp/A1
+https://amazon.eg/dp/B2
+not-a-url
+https://amazon.eg/dp/A1
+http://example.com/c
+`;
+    expect(extractProductUrls(input)).toEqual([
+      "https://amazon.eg/dp/A1",
+      "https://amazon.eg/dp/B2",
+      "http://example.com/c",
+    ]);
+  });
+});
+
 describe("detectImportFormat", () => {
   it("detects URLs", () => {
     expect(detectImportFormat("https://amazon.com/product")).toBe("url");
     expect(detectImportFormat("http://example.com")).toBe("url");
+  });
+
+  it("detects url_bulk for multi-line URLs", () => {
+    const multi = [
+      "https://amazon.eg/dp/A1",
+      "https://amazon.eg/dp/B2",
+      "https://chromewebstore.google.com/detail/x",
+    ].join("\n");
+    expect(detectImportFormat(multi)).toBe("url_bulk");
   });
 
   it("detects JSON", () => {
@@ -239,5 +266,49 @@ describe("buildParsedImportFromScrape", () => {
     expect(parsed.price?.list).toBe(199);
     expect(parsed.images).toEqual(["https://example.com/img.jpg"]);
     expect(parsed.quantity).toBe(25);
+    expect(parsed.dimensions?.weight).toBe(999);
+    expect(parsed.dimensions?.weightUnit).toBe("g");
+    expect(parsed.fulfillmentType).toBe("platform_fulfilled");
+    expect(parsed.handlingTime).toBe(1);
+    expect(parsed.freeDelivery).toBe(false);
+  });
+
+  it("uses scraped weight and dimensions when present", () => {
+    const parsed = buildParsedImportFromScrape(
+      {
+        title: "Weighted Product",
+        weight: 1.5,
+        weightUnit: "kg",
+        dimensions: {
+          length: 30,
+          width: 20,
+          height: 5,
+          unit: "cm",
+          weight: 1.5,
+          weightUnit: "kg",
+        },
+      },
+      { title: "منتج" }
+    );
+
+    expect(parsed.dimensions?.weight).toBe(1.5);
+    expect(parsed.dimensions?.weightUnit).toBe("kg");
+    expect(parsed.dimensions?.length).toBe(30);
+    expect(parsed.dimensions?.width).toBe(20);
+    expect(parsed.dimensions?.height).toBe(5);
+    expect(parsed.dimensions?.unit).toBe("cm");
+  });
+
+  it("parses weight from bullet points when structured weight is missing", () => {
+    const parsed = buildParsedImportFromScrape(
+      {
+        title: "Bullet Weight Product",
+        bulletPoints: ["Item Weight: 250 g", "Color: Black"],
+      },
+      { title: "منتج" }
+    );
+
+    expect(parsed.dimensions?.weight).toBe(250);
+    expect(parsed.dimensions?.weightUnit).toBe("g");
   });
 });

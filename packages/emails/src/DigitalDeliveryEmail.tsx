@@ -1,20 +1,11 @@
-import {
-  Body,
-  Button,
-  Container,
-  Head,
-  Hr,
-  Html,
-  Link,
-  Preview,
-  Section,
-  Text,
-} from "@react-email/components";
-import React from "react";
+import { Button, Link, Section, Text } from "@react-email/components";
+import { getEmailMessages, interpolate } from "./i18n/index.js";
+import type { EmailLocale } from "./i18n/locale.js";
+import { emailDateLocale } from "./i18n/locale.js";
+import { EmailLayout } from "./layout/email-layout.js";
+import { EMAIL_SITE_URL } from "./theme/tokens.js";
 
-const TALLABY_CONTACT_EMAIL = "tallabycommerce@gmail.com";
-
-interface DigitalDeliveryItem {
+export interface DigitalDeliveryItem {
   productName: string;
   downloadUrl: string;
   licenseKey?: string | null;
@@ -22,128 +13,82 @@ interface DigitalDeliveryItem {
   maxDownloads?: number | null;
 }
 
-interface DigitalDeliveryEmailProps {
+export interface DigitalDeliveryEmailProps {
   customerName?: string;
   orderNumber?: string;
   items?: DigitalDeliveryItem[];
+  locale?: EmailLocale;
 }
 
 export const DigitalDeliveryEmail = ({
   customerName = "there",
   orderNumber = "",
   items = [],
+  locale = "en",
 }: DigitalDeliveryEmailProps) => {
+  const copy = getEmailMessages(locale).digitalDelivery;
+  const dateLocale = emailDateLocale(locale);
+
   return (
-    <Html>
-      <Head />
-      <Preview>Your digital order {orderNumber} is ready — access it now</Preview>
-      <Body style={main}>
-        <Container style={container}>
-          <Section style={headerSection}>
-            <img
-              src="https://www.tallaby.com/favicon.ico?favicon.668f7262.ico"
-              alt="Tallaby Logo"
-              style={{ width: "110px", height: "auto", margin: "0 auto", display: "block" }}
-            />
-          </Section>
+    <EmailLayout
+      locale={locale}
+      preview={interpolate(copy.preview, { orderNumber })}
+      showContactLine={true}
+    >
+      <Section className="email-pad px-6 pt-7">
+        <Text className="m-0 mb-4 text-[20px] font-semibold text-foreground">
+          {interpolate(copy.greeting, { name: customerName })}
+        </Text>
+        <Text className="m-0 text-[16px] leading-[1.6] text-[#555555]">
+          {interpolate(copy.body, { orderNumber })}
+        </Text>
+      </Section>
 
-          <Section style={contentSection}>
-            <Text style={greeting}>Hi {customerName},</Text>
-            <Text style={bodyText}>
-              Your digital order <strong>#{orderNumber}</strong> is ready. Your download links
-              and access details are below.
+      {items.map((item, index) => (
+        <Section key={index} className="email-pad mb-4 mt-4 px-6">
+          <Section className="w-full rounded-[10px] border-2 border-solid border-border bg-muted px-6 py-6 text-center">
+            <Text className="m-0 mb-3 text-[18px] font-bold text-foreground">
+              {item.productName}
             </Text>
-          </Section>
-
-          {items.map((item, index) => (
-            <Section style={itemBox} key={index}>
-              <Text style={itemTitle}>{item.productName}</Text>
-              {item.licenseKey && (
-                <Text style={codeText}>
-                  License key: <strong>{item.licenseKey}</strong>
-                </Text>
-              )}
-              <Button style={primaryButton} href={item.downloadUrl}>
-                Access / Download
-              </Button>
-              <Text style={metaText}>
-                {item.maxDownloads ? `Up to ${item.maxDownloads} downloads. ` : ""}
-                {item.expiresAt
-                  ? `Link expires ${new Date(item.expiresAt).toLocaleDateString()}.`
-                  : "No expiration."}
+            {item.licenseKey ? (
+              <Text className="mb-4 mt-0 rounded-md bg-card px-3 py-3 font-mono text-[14px] text-foreground">
+                {copy.licenseKey} <strong>{item.licenseKey}</strong>
               </Text>
-            </Section>
-          ))}
-
-          <Hr style={divider} />
-
-          <Section style={footerSection}>
-            <Text style={footerText}>
-              You can always find your purchases under{" "}
-              <Link href="https://www.tallaby.com/profile/downloads" style={footerLink}>
-                My Digital Products
-              </Link>
-              .
+            ) : null}
+            <Button
+              className="cta-btn box-border block w-full rounded-md bg-primary py-3 text-center text-[15px] font-semibold text-primary-foreground no-underline"
+              href={item.downloadUrl}
+            >
+              {copy.accessDownload}
+            </Button>
+            <Text className="mb-0 mt-3 text-[12px] text-secondary">
+              {item.maxDownloads
+                ? `${interpolate(copy.maxDownloads, { count: item.maxDownloads })} `
+                : ""}
+              {item.expiresAt
+                ? interpolate(copy.expires, {
+                    date: new Date(item.expiresAt).toLocaleDateString(dateLocale),
+                  })
+                : copy.noExpiration}
             </Text>
-            <Text style={footerText}>
-              Questions? Contact us at{" "}
-              <Link href={`mailto:${TALLABY_CONTACT_EMAIL}`} style={footerLink}>
-                {TALLABY_CONTACT_EMAIL}
-              </Link>
-            </Text>
-            <Text style={copyright}>© 2026 Tallaby. All rights reserved.</Text>
           </Section>
-        </Container>
-      </Body>
-    </Html>
+        </Section>
+      ))}
+
+      <Section className="email-pad px-6 pt-2">
+        <Text className="m-0 text-[13px] text-muted-foreground">
+          {copy.findPurchases}{" "}
+          <Link
+            href={`${EMAIL_SITE_URL}/profile/downloads`}
+            className="text-primary underline"
+          >
+            {copy.myDigitalProducts}
+          </Link>
+          .
+        </Text>
+      </Section>
+    </EmailLayout>
   );
 };
 
-const main = {
-  backgroundColor: "#faf9f7",
-  fontFamily:
-    '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
-  color: "#3d3d3d",
-};
-
-const container = { margin: "0 auto", padding: "20px 0", maxWidth: "600px" };
-const headerSection = { padding: "32px 24px 24px", textAlign: "center" as const };
-const contentSection = { padding: "8px 24px 16px" };
-const greeting = { fontSize: "20px", fontWeight: "600", margin: "0 0 16px 0", color: "#2a2a2a" };
-const bodyText = { fontSize: "16px", lineHeight: "1.6", margin: "0 0 16px 0", color: "#555" };
-const itemBox = {
-  backgroundColor: "#fff5f0",
-  padding: "24px",
-  borderRadius: "12px",
-  border: "2px solid #f0d5cc",
-  margin: "0 24px 16px",
-  textAlign: "center" as const,
-};
-const itemTitle = { fontSize: "18px", fontWeight: "700", margin: "0 0 12px 0", color: "#2a2a2a" };
-const codeText = {
-  fontSize: "14px",
-  color: "#3d3d3d",
-  margin: "0 0 16px 0",
-  padding: "12px",
-  backgroundColor: "#ffffff",
-  borderRadius: "6px",
-  fontFamily: "monospace",
-};
-const primaryButton = {
-  backgroundColor: "#2a2a2a",
-  color: "#ffffff",
-  fontSize: "15px",
-  fontWeight: "600",
-  textDecoration: "none",
-  textAlign: "center" as const,
-  display: "block",
-  borderRadius: "6px",
-  paddingTop: "12px",
-  paddingBottom: "12px",
-};
-const metaText = { fontSize: "12px", color: "#8b7355", margin: "12px 0 0 0" };
-const divider = { borderTop: "1px solid #e0dbd5", margin: "16px 24px" };
-const footerSection = { padding: "16px 24px 32px", textAlign: "center" as const };
-const footerText = { fontSize: "13px", color: "#8b7355", margin: "8px 0" };
-const footerLink = { color: "#d97757", textDecoration: "none" };
-const copyright = { fontSize: "11px", color: "#a0a0a0", margin: "16px 0 0 0" };
+export default DigitalDeliveryEmail;

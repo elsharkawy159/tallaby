@@ -25,14 +25,15 @@ import {
 import { BasicInformationStep } from "./steps/basic-information-step"
 import { PriceStockStep } from "./steps/price-stock-step"
 import { SeoStep } from "./steps/seo-step"
+import { BulkUrlImport } from "./bulk-url-import.client"
 import type { CategoryOption, BrandOption } from "./add-product.schema"
 import type { SellerPricingSettings } from "@/lib/utils/product-pricing.lib"
 import { cn } from "@/lib/utils"
 
 interface AddProductProps {
-  categories: CategoryOption[];
-  brands: BrandOption[];
-  sellerPricing: SellerPricingSettings;
+  categories: CategoryOption[]
+  brands: BrandOption[]
+  sellerPricing: SellerPricingSettings
 }
 
 const LOCALE_LABELS: Record<SupportedLocale, string> = {
@@ -40,9 +41,15 @@ const LOCALE_LABELS: Record<SupportedLocale, string> = {
   ar: "العربية",
 }
 
-export default function AddProduct({ categories, brands, sellerPricing }: AddProductProps) {
+export default function AddProduct ({
+  categories,
+  brands,
+  sellerPricing,
+}: AddProductProps) {
   const [isPending, startTransition] = useTransition()
   const [activeLocale, setActiveLocale] = useState<SupportedLocale>("en")
+  const [mode, setMode] = useState<"single" | "bulk">("single")
+  const [bulkUrls, setBulkUrls] = useState<string[]>([])
   const router = useRouter()
   const tToast = useTranslations("toast")
 
@@ -53,26 +60,48 @@ export default function AddProduct({ categories, brands, sellerPricing }: AddPro
     shouldUnregister: false,
   })
 
-  const { errors, isValid } = form.formState
+  const { isValid } = form.formState
+
+  const handleEnterBulk = (urls: string[]) => {
+    setBulkUrls(urls)
+    setMode("bulk")
+  }
+
+  const handleExitBulk = () => {
+    setMode("single")
+    setBulkUrls([])
+  }
 
   const handleSubmit = (data: AddProductFormData) => {
     startTransition(async () => {
       try {
-        const result = await createProduct(data);
+        const result = await createProduct(data)
 
         if (result.success) {
-          toast.success(tToast("productCreatedSuccessfully"));
-          form.reset(defaultValues as any);
-          router.push("/products");
+          toast.success(tToast("productCreatedSuccessfully"))
+          form.reset(defaultValues as any)
+          router.push("/products")
         } else {
-          toast.error(result.error || tToast("failedToCreateProduct"));
+          toast.error(result.error || tToast("failedToCreateProduct"))
         }
       } catch (error) {
-        console.error("Form submission error:", error);
-        toast.error(tToast("somethingWentWrong"));
+        console.error("Form submission error:", error)
+        toast.error(tToast("somethingWentWrong"))
       }
-    });
-  };
+    })
+  }
+
+  if (mode === "bulk") {
+    return (
+      <BulkUrlImport
+        urls={bulkUrls}
+        categories={categories}
+        brands={brands}
+        sellerPricing={sellerPricing}
+        onExit={handleExitBulk}
+      />
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50/30 pb-24">
@@ -112,7 +141,7 @@ export default function AddProduct({ categories, brands, sellerPricing }: AddPro
                   step.id,
                   form.formState,
                   form.getFieldState
-                );
+                )
 
                 return (
                   <div key={step.id} className="flex flex-col">
@@ -166,7 +195,7 @@ export default function AddProduct({ categories, brands, sellerPricing }: AddPro
                       />
                     )}
                   </div>
-                );
+                )
               })}
             </nav>
           </aside>
@@ -184,6 +213,7 @@ export default function AddProduct({ categories, brands, sellerPricing }: AddPro
                   brands={brands}
                   sellerPricing={sellerPricing}
                   activeLocale={activeLocale}
+                  onBulkUrls={handleEnterBulk}
                 />
               </section>
 
@@ -226,5 +256,5 @@ export default function AddProduct({ categories, brands, sellerPricing }: AddPro
         </div>
       </div>
     </div>
-  );
+  )
 }

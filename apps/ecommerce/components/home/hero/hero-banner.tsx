@@ -55,7 +55,7 @@ export default async function HeroBanner() {
       </svg>
 
       <div className="overflow-hidden">
-        <div className="mx-auto max-w-7xl px-6 pb-32 pt-18 sm:pt-60 lg:px-8 lg:pt-32">
+        <div className="mx-auto max-w-7xl px-6 pb-38 pt-18 sm:pt-60 lg:px-8 lg:pt-32">
           <div className="mx-auto max-w-2xl gap-x-14 lg:mx-0 lg:flex lg:max-w-none lg:items-center">
             <div className="relative w-full shrink-0 lg:max-w-xl xl:max-w-2xl">
               <h1 className="text-balance text-2xl font-semibold text-gray-900 sm:text-6xl lg:leading-18">

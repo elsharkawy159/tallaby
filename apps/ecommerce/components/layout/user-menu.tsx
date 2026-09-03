@@ -33,6 +33,7 @@ import {
 } from "@/app/[locale]/(main)/profile/_components/profile.lib";
 import { Seller } from "@/app/[locale]/(main)/profile/_components/profile.types";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
+import posthog from "posthog-js";
 import { useTranslations } from "next-intl";
 
 interface UserMenuProps {
@@ -61,6 +62,8 @@ export function UserMenu({
   const isSeller = !!seller;
 
   const handleLogout = async () => {
+    posthog.reset();
+
     try {
       await logout();
     } catch (error) {

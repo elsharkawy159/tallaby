@@ -5,6 +5,7 @@ import { ShoppingCart, Loader2 } from "lucide-react";
 import type { AddToCartButtonProps } from "./product-card.types";
 import { useTranslations } from "next-intl";
 import { useCart } from "@/providers/cart-provider";
+import posthog from "posthog-js";
 
 const sizeStyles = {
   sm: {
@@ -41,11 +42,19 @@ export const AddToCartButton = ({
   const isLoading = isProductLoading(productId);
 
   const handleAddToCart = async () => {
-    await addToCart({
+    const result = await addToCart({
       productId,
       quantity,
       variantId,
     });
+
+    if (result.success) {
+      posthog.capture("product_added_to_cart", {
+        product_id: productId,
+        quantity,
+        has_variant: Boolean(variantId),
+      });
+    }
   };
 
   const isOutOfStock = Number(stock) <= 0;

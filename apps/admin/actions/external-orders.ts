@@ -405,17 +405,18 @@ export async function previewExternalOrderTotals(input: unknown) {
       0,
     )
 
-    const shippingCost = calculateLocationShippingCost({
-      items: linesResult.data.map((line) => ({
-        quantity: line.quantity,
-        product: {
-          productType: line.product.productType,
-          freeDelivery: line.product.freeDelivery,
-          dimensions: line.product.dimensions,
-        },
-      })),
-      destinationState: parsed.data.destinationState,
-    })
+    const shippingCost =
+      calculateLocationShippingCost({
+        items: linesResult.data.map((line) => ({
+          quantity: line.quantity,
+          product: {
+            productType: line.product.productType,
+            freeDelivery: line.product.freeDelivery,
+            dimensions: line.product.dimensions,
+          },
+        })),
+        destinationState: parsed.data.destinationState,
+      }) ?? 0
 
     const itemCount = linesResult.data.reduce(
       (sum, line) => sum + line.quantity,

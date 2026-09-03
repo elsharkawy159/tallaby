@@ -5,5 +5,6 @@ export default function Welcome() {
     customerName: "Omar",
     discountCode: "WELCOME10",
     discountPercent: 10,
+    locale: "en",
   });
 }

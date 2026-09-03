@@ -34,6 +34,7 @@ import {
   type ContactFormGuestData,
 } from "@/lib/validations/contact-schema";
 import { submitContactForm } from "@/actions/contact";
+import posthog from "posthog-js";
 
 interface ContactFormProps {
   user: User | null;
@@ -84,6 +85,10 @@ export function ContactForm({ user }: ContactFormProps) {
         const result = await submitContactForm(data);
 
         if (result.success) {
+          posthog.capture("contact_form_submitted", {
+            subject: data.subject,
+            requested_call: Boolean(data.requestCall),
+          });
           toast.success(tToast("contactMessageSentSuccessfully"));
           form.reset(getDefaultValues());
         } else {

@@ -857,6 +857,68 @@ export async function bulkInsertProductsAction(records: ParsedBulkRow[]) {
   }
 }
 
+/** Bulk-create products from add-product form payloads (URL bulk import). */
+export async function bulkCreateProductsAction(
+  products: Array<Record<string, unknown>>
+) {
+  try {
+    const session = await getUser();
+    if (!session?.user?.id) {
+      throw new Error("Unauthorized");
+    }
+
+    const results: {
+      inserted: number;
+      failed: number;
+      errors: Array<{ index: number; message: string }>;
+    } = {
+      inserted: 0,
+      failed: 0,
+      errors: [],
+    };
+
+    for (let index = 0; index < products.length; index++) {
+      const product = products[index];
+      if (!product) continue;
+
+      try {
+        const res = await createProduct(product as any);
+        if (!res.success || !res.data?.id) {
+          results.failed++;
+          results.errors.push({
+            index,
+            message: res.error || "Failed to create product",
+          });
+          continue;
+        }
+        results.inserted++;
+      } catch (err) {
+        results.failed++;
+        results.errors.push({
+          index,
+          message: err instanceof Error ? err.message : "Unknown error",
+        });
+      }
+    }
+
+    revalidatePath("/products");
+    return { success: true as const, ...results };
+  } catch (error) {
+    console.error("bulkCreateProductsAction error:", error);
+    return {
+      success: false as const,
+      inserted: 0,
+      failed: 0,
+      errors: [
+        {
+          index: 0,
+          message: error instanceof Error ? error.message : "Unknown error",
+        },
+      ],
+    };
+  }
+}
+
 export async function getProduct(productId: string) {
   try {
     const session = await getUser();

@@ -12,6 +12,7 @@ import {
   removeFromWishlist as removeFromWishlistAction,
 } from "@/actions/wishlist";
 import { useWishlistItems } from "@/lib/wishlist/use-wishlist-items";
+import posthog from "posthog-js";
 
 // 🔑 Centralized size styles
 const sizeStyles = {
@@ -71,6 +72,7 @@ export const WishlistButton = ({
       if (isWishlisted && wishlistItemId) {
         const result = await removeFromWishlistAction(wishlistItemId);
         if (result.success) {
+          posthog.capture("wishlist_item_removed", { product_id: productId });
           invalidate();
           toast.success(tToast("removedFromWishlist"));
         } else {
@@ -79,6 +81,7 @@ export const WishlistButton = ({
       } else {
         const result = await addToWishlistAction({ productId });
         if (result.success) {
+          posthog.capture("wishlist_item_added", { product_id: productId });
           invalidate();
           toast.success(tToast("addedToWishlist"));
         } else {

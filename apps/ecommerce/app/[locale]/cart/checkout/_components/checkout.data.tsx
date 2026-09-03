@@ -28,6 +28,7 @@ import {
 } from "./checkout-form.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createOrder } from "@/actions/order";
+import posthog from "posthog-js";
 import { recalculateCheckoutSummary } from "@/actions/checkout";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
@@ -128,6 +129,21 @@ export const CheckoutData = ({
   useEffect(() => {
     const addressId = shippingAddressId || activeAddress?.id;
     if (!addressId) {
+      setSummary((prev) => {
+        const billedShipping = 0;
+        const total = prev.subtotal + prev.tax + billedShipping;
+        const totalAfterDiscount = Math.max(
+          0,
+          total - (prev.discountAmount ?? 0) - (prev.shippingDiscount ?? 0),
+        );
+
+        return {
+          ...prev,
+          shippingCost: null,
+          total,
+          totalAfterDiscount,
+        };
+      });
       return;
     }
 
@@ -215,6 +231,12 @@ export const CheckoutData = ({
         });
 
         if (result.success) {
+          posthog.capture("order_placed", {
+            order_id: result.data?.order?.id,
+            item_count: result.data?.orderItems?.length ?? 0,
+            order_total: Number(result.data?.order?.totalAmount ?? 0),
+            payment_method: data.paymentMethod,
+          });
           toast.success(tToast("orderPlacedSuccessfully"));
           await refreshCart();
           router.refresh();

@@ -159,6 +159,7 @@ export async function fulfillDigitalOrderItems(
       email: buyer.email,
       name: buyer.fullName || "there",
       orderNumber: order.orderNumber,
+      preferredLanguage: buyer.preferredLanguage,
       items: createdRows
         .filter((r) => r.fulfillmentStatus === "delivered")
         .map((r) => ({
@@ -260,6 +261,7 @@ export async function resendDigitalAccess(digitalOrderId: string, actorUserId?: 
     email: digitalOrder.buyer.email,
     name: digitalOrder.buyer.fullName || "there",
     orderNumber: digitalOrder.order.orderNumber,
+    preferredLanguage: digitalOrder.buyer.preferredLanguage,
     items: [
       {
         productName: (digitalOrder.digitalProduct as any)?.fileName || "Your digital product",

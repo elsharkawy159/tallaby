@@ -37,6 +37,14 @@ export function AreaChart({
   };
 
   // Get data keys for multiple series
+  if (data.length === 0) {
+    return (
+      <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+        No data for this period
+      </div>
+    )
+  }
+
   const dataKeys = isMultiple
     ? Object.keys(data[0]).filter((key) => key !== "date")
     : ["value"];
