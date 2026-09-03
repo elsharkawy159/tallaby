@@ -23,6 +23,26 @@ import { addAddress, updateAddress } from "@/actions/customer";
 
 export const ADDRESS_FORM_ID = "address-form-step";
 
+/** Mirrors the `addressLine1` minimum length in `addressSchema`. */
+const ADDRESS_LINE_1_MIN_LENGTH = 5;
+
+/**
+ * Builds the street-level line of a map selection ("<street>, <area>").
+ *
+ * The building number is kept out of it on purpose - it is pre-filled into
+ * addressLine2 ("Building / Floor") instead - and so are city, state, postal
+ * code and country, which each have their own field on this form.
+ *
+ * Returns an empty string when the result is too short to pass validation
+ * (a map tap on an unnamed road), so the caller can fall back to the full
+ * formatted address.
+ */
+const buildStreetLine = (location: { street?: string; area?: string }) => {
+  const line = [location.street, location.area].filter(Boolean).join(", ");
+
+  return line.length >= ADDRESS_LINE_1_MIN_LENGTH ? line : "";
+};
+
 export interface AddressFormStepHandle {
   submit: () => void;
 }
@@ -66,16 +86,13 @@ export const AddressFormStep = forwardRef<
         latitude: selectedLocation.latitude,
         longitude: selectedLocation.longitude,
         addressLine1:
+          buildStreetLine(selectedLocation) ||
           selectedLocation.address ||
-          [
-            selectedLocation.building,
-            selectedLocation.street,
-            selectedLocation.area,
-          ]
-            .filter(Boolean)
-            .join(", ") ||
           address?.addressLine1 ||
           "",
+        // Building/house number reverse-geocoded from the picked point
+        addressLine2:
+          selectedLocation.building || address?.addressLine2 || "",
         city: selectedLocation.city || address?.city || "",
         state: selectedLocation.state || address?.state || "",
         country: selectedLocation.country || address?.country || "Egypt",

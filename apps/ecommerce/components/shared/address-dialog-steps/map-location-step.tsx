@@ -41,6 +41,8 @@ export const MapLocationStep = ({
   const mapInstanceRef = useRef<any>(null);
   const markerRef = useRef<any>(null);
   const userLocationMarkerRef = useRef<any>(null);
+  // Ensures the automatic location lookup runs only once per map entry
+  const hasAutoLocatedRef = useRef(false);
   const [selectedCoordinates, setSelectedCoordinates] = useState<{
     lat: number;
     lng: number;
@@ -189,13 +191,17 @@ export const MapLocationStep = ({
   }, [initialLocation]);
 
   /**
-   * Handles "Locate Me" button click
-   * Gets user's current location using Geolocation API,
-   * centers map, zooms in, adds pulsing dot marker,
-   * and retrieves full address details via reverse geocoding
+   * Requests the browser location, then centers/zooms the map on it,
+   * drops the pulsing dot marker and pre-selects the coordinates.
+   *
+   * @param silent - Used by the automatic lookup performed once when the map
+   * opens. In silent mode no toasts or inline errors are shown: if the user
+   * denies permission or the lookup fails, the map simply stays on the
+   * default center and the user can still search, tap or press "Locate me".
    */
-  const handleGetCurrentLocation = async () => {
+  const locateUser = ({ silent = false }: { silent?: boolean } = {}) => {
     if (!navigator.geolocation) {
+      if (silent) return;
       const errorMsg = t("geolocationNotSupported");
       setLocationError(errorMsg);
       toast.error(errorMsg);
@@ -203,6 +209,7 @@ export const MapLocationStep = ({
     }
 
     if (!isMapLoaded || !mapInstanceRef.current) {
+      if (silent) return;
       toast.error(t("mapNotReady"));
       return;
     }
@@ -214,7 +221,9 @@ export const MapLocationStep = ({
     const geoOptions = {
       enableHighAccuracy: true,
       timeout: 10000, // 10 seconds timeout
-      maximumAge: 0, // Don't use cached location
+      // The automatic lookup accepts a recent cached fix so the map settles
+      // quickly on entry; the manual button always asks for a fresh one
+      maximumAge: silent ? 60000 : 0,
     };
 
     navigator.geolocation.getCurrentPosition(
@@ -255,27 +264,39 @@ export const MapLocationStep = ({
             // Update selected coordinates
             setSelectedCoordinates({ lat: latitude, lng: longitude });
 
-            // Perform reverse geocoding to get full address details
-            const addressDetails = await reverseGeocode(latitude, longitude);
+            if (!silent) {
+              // Perform reverse geocoding to get full address details
+              const addressDetails = await reverseGeocode(latitude, longitude);
 
-            // Store address details (will be used when confirming location)
-            if (addressDetails.formattedAddress || addressDetails.displayName) {
-              toast.success(t("locationFoundFullDetails"));
-            } else {
-              toast.success(t("locationFoundLimitedDetails"));
+              // Store address details (will be used when confirming location)
+              if (
+                addressDetails.formattedAddress ||
+                addressDetails.displayName
+              ) {
+                toast.success(t("locationFoundFullDetails"));
+              } else {
+                toast.success(t("locationFoundLimitedDetails"));
+              }
             }
           }
 
           setIsLocating(false);
         } catch (error) {
           console.error("Error processing location:", error);
+          setIsLocating(false);
+          if (silent) return;
           const errorMsg = t("failedToProcessLocation");
           setLocationError(errorMsg);
           toast.error(errorMsg);
-          setIsLocating(false);
         }
       },
       (error) => {
+        setIsLocating(false);
+
+        // The automatic attempt fails quietly - the user keeps the default
+        // map view and the manual "Locate me" button
+        if (silent) return;
+
         // Handle different geolocation error types
         let errorMessage = t("unableToRetrieveLocation");
 
@@ -296,11 +317,27 @@ export const MapLocationStep = ({
 
         setLocationError(errorMessage);
         toast.error(errorMessage);
-        setIsLocating(false);
       },
       geoOptions
     );
   };
+
+  /**
+   * Handles "Locate Me" button click
+   */
+  const handleGetCurrentLocation = () => locateUser({ silent: false });
+
+  /**
+   * Automatically locates the user once, right after the map is ready.
+   * Skipped when an existing address already provides coordinates, and it
+   * never runs a second time for the same map instance.
+   */
+  useEffect(() => {
+    if (!isMapLoaded || initialLocation || hasAutoLocatedRef.current) return;
+
+    hasAutoLocatedRef.current = true;
+    locateUser({ silent: true });
+  }, [isMapLoaded, initialLocation]);
 
   /**
    * Handles location confirmation
