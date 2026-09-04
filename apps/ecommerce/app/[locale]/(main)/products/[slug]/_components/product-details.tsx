@@ -143,7 +143,7 @@ export const ProductDetails = ({
         {/* Price */}
         <div className="mb-4">
           <span
-            className="text-3xl lg:text-4xl font-semibold text-primary"
+            className="text-3xl lg:text-4xl font-bold text-primary"
             dangerouslySetInnerHTML={{
               __html: formatPrice(price, locale, "lg"),
             }}
