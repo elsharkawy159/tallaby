@@ -191,6 +191,11 @@ export function invalidateCategory(id: string, slug?: string): CacheInvalidation
   return inv(tags);
 }
 
+/** Full taxonomy purge — used by admin's manual "Refresh" control. */
+export function invalidateAllCategories(): CacheInvalidation {
+  return inv([categoryTags.all(), categoryTags.tree()]);
+}
+
 export function invalidateBrand(id: string, slug?: string): CacheInvalidation {
   const tags = [brandTags.detail(id), brandTags.all()];
   if (slug) tags.push(brandTags.slug(slug));

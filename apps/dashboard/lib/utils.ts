@@ -16,9 +16,20 @@ export function getTodayDate() {
 }
 
 export function getPublicUrl(file: string, bucket = "products") {
+  if (!file?.trim()) return "";
+
+  // Already a full URL (e.g. seller logos from onboarding)
+  if (file.startsWith("http://") || file.startsWith("https://")) {
+    return file;
+  }
+
+  // Blob/data URLs used for local previews
+  if (file.startsWith("blob:") || file.startsWith("data:")) {
+    return file;
+  }
+
   const supabase = createClient();
   const { data } = supabase.storage.from(bucket).getPublicUrl(file);
-
   return data.publicUrl;
 }
 

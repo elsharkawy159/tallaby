@@ -44,6 +44,7 @@ export async function handleUpdateSellerProfile(input: unknown) {
       } as const;
     }
     revalidatePath("/settings");
+    revalidatePath("/", "layout");
     return { success: true, message: "Profile updated" } as const;
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -84,7 +85,11 @@ export async function handleUploadDocument(input: unknown) {
       } as const;
     }
     revalidatePath("/settings");
-    return { success: true, message: "Document uploaded" } as const;
+    return {
+      success: true,
+      message: "Document uploaded",
+      document: res.data,
+    } as const;
   } catch (error) {
     if (error instanceof z.ZodError) {
       const fieldErrors: Record<string, string[]> = {};

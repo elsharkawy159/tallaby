@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  invalidateAllCategories,
   invalidateProduct,
   invalidateProductInventory,
   mergeInvalidations,
   type ProductCacheSnapshot,
 } from "./invalidate";
-import { productTags } from "./tags";
+import { categoryTags, productTags } from "./tags";
 
 function snapshot(overrides: Partial<ProductCacheSnapshot> = {}): ProductCacheSnapshot {
   return {
@@ -228,5 +229,15 @@ describe("mergeInvalidations", () => {
     const b = invalidateProduct(null, snapshot({ id: "p1" }));
     const merged = mergeInvalidations(a, b);
     expect(merged.tags.length).toBe(new Set(merged.tags).size);
+  });
+});
+
+describe("invalidateAllCategories", () => {
+  it("emits the shared taxonomy tags used by ecommerce and dashboard", () => {
+    const { tags } = invalidateAllCategories();
+    expect(tags).toEqual(
+      expect.arrayContaining([categoryTags.all(), categoryTags.tree()])
+    );
+    assertNoForbiddenTags(tags);
   });
 });

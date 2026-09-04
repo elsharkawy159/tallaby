@@ -10,7 +10,6 @@ export interface Category {
   childrenCount: number;
   createdAt: string;
   updatedAt: string | null;
-  shopifyId: string | null;
   // When columns are added to database:
   // description?: string | null;
   // isActive?: boolean;

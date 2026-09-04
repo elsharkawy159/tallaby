@@ -14,7 +14,11 @@ import {
   inArray,
 } from "drizzle-orm";
 import { getAdminUser } from "./auth";
-import { applyInvalidation, invalidateCategory } from "@workspace/cache";
+import {
+  applyInvalidation,
+  invalidateAllCategories,
+  invalidateCategory,
+} from "@workspace/cache";
 
 export async function getAllCategories(params?: {
   locale?: "en" | "ar";
@@ -337,6 +341,32 @@ export async function deleteCategory(categoryId: string) {
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+/**
+ * Manual cache purge for the category taxonomy across admin, ecommerce, and
+ * dashboard. Broadcasts category:all / category:tree via /api/revalidate.
+ */
+export async function revalidateCategoriesCache() {
+  try {
+    await getAdminUser();
+
+    await applyInvalidation(invalidateAllCategories(), {
+      from: "admin",
+      mode: "action",
+    });
+
+    return { success: true as const };
+  } catch (error) {
+    console.error("Error revalidating categories cache:", error);
+    return {
+      success: false as const,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to revalidate categories cache",
     };
   }
 }

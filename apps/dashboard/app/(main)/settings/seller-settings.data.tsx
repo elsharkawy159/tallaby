@@ -8,8 +8,27 @@ export async function SellerSettingsData() {
     throw new Error(error || "Failed to load seller settings");
   }
   const initial: SellerSettingsInitialData = {
-    profile: profile as any,
-    documents: (documents ?? []) as any,
-  };
-  return <SellerSettingsForm initialData={initial} />;
+    profile: {
+      id: profile.id,
+      businessName: profile.businessName,
+      displayName: profile.displayName,
+      description: profile.description,
+      logoUrl: profile.logoUrl,
+      bannerUrl: profile.bannerUrl,
+      supportEmail: profile.supportEmail,
+      supportPhone: profile.supportPhone,
+      returnPolicy: profile.returnPolicy,
+      shippingPolicy: profile.shippingPolicy,
+    },
+    documents: (documents ?? []).map((doc) => ({
+      id: doc.id,
+      sellerId: doc.sellerId,
+      documentType: doc.documentType,
+      fileUrl: doc.fileUrl,
+      expiryDate: doc.expiryDate,
+      status: doc.status,
+      uploadedAt: doc.uploadedAt,
+    })),
+  }
+  return <SellerSettingsForm initialData={initial} />
 }

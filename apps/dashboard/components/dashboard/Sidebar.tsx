@@ -17,7 +17,7 @@ import {
   LogOut,
   MessageSquare,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, getPublicUrl } from "@/lib/utils";
 import { Button } from "@workspace/ui/components/button";
 import { Badge } from "@workspace/ui/components/badge";
 import { usePathname } from "next/navigation";
@@ -375,7 +375,11 @@ const SidebarContent = ({
             >
               <Avatar className="size-10 shrink-0">
                 <AvatarImage
-                  src={seller?.logoUrl ?? ""}
+                  src={
+                    seller?.logoUrl
+                      ? getPublicUrl(seller.logoUrl, "sellers")
+                      : undefined
+                  }
                   alt={
                     seller?.businessName
                       ? `${seller.businessName} logo`

@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { toast } from "sonner";
 import { Button } from "@workspace/ui/components/button";
 import {
   Tabs,
@@ -20,7 +21,10 @@ import { Plus, RefreshCw, FolderTree } from "lucide-react";
 import { CategoryTree } from "./_components/categories.chunks";
 import { CategorySearchBar } from "./_components/category-search-bar";
 import type { Category } from "./categories.types";
-import type { CategorySearchResult } from "@/actions/categories";
+import {
+  revalidateCategoriesCache,
+  type CategorySearchResult,
+} from "@/actions/categories";
 
 interface CategoriesContentProps {
   rootCategories: Category[];
@@ -35,10 +39,21 @@ export function CategoriesContent({
   const [locale, setLocale] = useState<"en" | "ar">(initialLocale);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const handleRefresh = useCallback(() => {
+  const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
-    router.refresh();
-    setTimeout(() => setIsRefreshing(false), 500);
+    try {
+      const result = await revalidateCategoriesCache();
+      if (!result.success) {
+        toast.error(result.error || "Failed to revalidate categories cache");
+        return;
+      }
+      router.refresh();
+      toast.success("Categories cache revalidated on storefront and dashboard");
+    } catch {
+      toast.error("Failed to revalidate categories cache");
+    } finally {
+      setIsRefreshing(false);
+    }
   }, [router]);
 
   const handleLocaleChange = useCallback(

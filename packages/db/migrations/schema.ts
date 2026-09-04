@@ -100,7 +100,6 @@ export const categories = pgTable("categories", {
 	slug: varchar(),
 	level: smallint(),
 	parentId: uuid("parent_id"),
-	shopifyId: varchar("shopify_id"),
 	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	imageUrl: text("image_url"),
