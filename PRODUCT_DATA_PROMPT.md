@@ -1,26 +1,3 @@
-# Tallaby — Master Product Content & Creative Prompt
-
-Copy everything below the line into ChatGPT (or Claude) each time you add a new product.
-
-'Before sending:' attach the product image and fill in the 'Product Input' block with whatever you have (name, specs, price, SKU, quantity, colors, etc.).
-
-'After the AI responds:' copy the `TALLABY_PRODUCT_JSON` block into 'Dashboard → Products → Add Product → Import product (URL or data)' and paste. Upload the generated product image separately if the AI created one.
-
-For full field reference, see [`PRODUCT_DATA_FORMAT.md`](./PRODUCT_DATA_FORMAT.md).
-
----
-
-## COPY FROM HERE ↓
-
----
-
-
-
-
-
-
-
-
 # TALLABY — MASTER PRODUCT CONTENT & CREATIVE PROMPT
 
 أنت مسؤول عن إعداد محتوى المنتجات والتسويق لها في متجر 'Tallaby'، ومتخصص في Ecommerce Content، SEO، Social Media Ads، و Product Photography.
@@ -335,29 +312,3 @@ Handling time: ...
 12. إذا لم أُرسل سعرًا أو SKU أو كمية، اترك الحقول فارغة أو `0` في JSON — لا تخمّن.
 13. **الوزن مهم للشحن:** إذا الوزن موجود في Product Input أو المواصفات → ضعه في `dimensions.weight` + `dimensions.weightUnit` في JSON. لا تتجاهل بيانات الشحن المتوفرة.
 14. املأ `fulfillmentType`, `freeDelivery`, `handlingTime` من بيانات المنتج إذا وُجدت؛ استخدم الافتراضيات (`platform_fulfilled`, `false`, `1`) فقط عند غياب المعلومة.
-
----
-
-
-
-
-
-
-
-
-
-
-## COPY UNTIL HERE ↑
-
----
-
-## Quick workflow
-
-1. Open ChatGPT → paste prompt above.
-2. Attach product photo + fill 'Product Input' block.
-3. Copy section '5. TALLABY_PRODUCT_JSON' from the response.
-4. Dashboard → 'Products → Add' → paste into 'Import product (URL or data)' → 'Import Product'.
-5. Upload generated image to 'Media' if not in `images` URLs.
-6. Review category, brand, variants, **shipping (weight & dimensions)** on step 2 → Save.
-
-'Alternative:' If the AI also outputs Tallaby Text Format, that works too — but 'JSON is preferred' for fewer paste errors.
