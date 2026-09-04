@@ -15,6 +15,7 @@ import {
   fillCustomerSeries,
   fillDailySeries,
   percentChange,
+  runInBatches,
   toNumber
 } from './analytics.lib'
 import type { CommerceAnalytics, PeriodMetric } from './analytics.types'
@@ -38,6 +39,9 @@ const STATUS_COLORS: Record<string, string> = {
 }
 
 const countedOrders = notInArray(orders.status, EXCLUDED_REVENUE_STATUSES)
+
+/** Inline LIMIT so postgres.js never binds a JS number for int8. */
+const TOP_N = sql.raw('8') as unknown as number
 
 function metric (current: number, previous: number): PeriodMetric {
   return {
@@ -89,90 +93,103 @@ export async function getCommerceAnalytics (): Promise<CommerceAnalytics> {
     categoryProductCounts,
     recentOrderRows,
     topSellerRows
-  ] = await Promise.all([
-    db
-      .select({
-        revenue: sql<number>`coalesce(sum(${orders.totalAmount}), 0)`,
-        orders: sql<number>`count(*)`
-      })
-      .from(orders)
-      .where(and(countedOrders, gte(orders.createdAt, periodStartIso), lt(orders.createdAt, periodEndIso))),
-    db
-      .select({
-        revenue: sql<number>`coalesce(sum(${orders.totalAmount}), 0)`,
-        orders: sql<number>`count(*)`
-      })
-      .from(orders)
-      .where(and(countedOrders, gte(orders.createdAt, previousStartIso), lt(orders.createdAt, periodStartIso))),
-    db
-      .select({ count: sql<number>`count(*)` })
-      .from(users)
-      .where(and(eq(users.role, 'customer'), gte(users.createdAt, periodStartIso), lt(users.createdAt, periodEndIso))),
-    db
-      .select({ count: sql<number>`count(*)` })
-      .from(users)
-      .where(and(eq(users.role, 'customer'), gte(users.createdAt, previousStartIso), lt(users.createdAt, periodStartIso))),
-    db
-      .select({ count: sql<number>`count(*)` })
-      .from(products)
-      .where(and(eq(products.status, 'active'), lt(products.createdAt, periodEndIso))),
-    db
-      .select({ count: sql<number>`count(*)` })
-      .from(products)
-      .where(and(eq(products.status, 'active'), lt(products.createdAt, periodStartIso))),
-    db
-      .select({
-        date: sql<string>`to_char(date_trunc('day', ${orders.createdAt}), 'YYYY-MM-DD')`,
-        value: sql<number>`coalesce(sum(${orders.totalAmount}), 0)`
-      })
-      .from(orders)
-      .where(and(countedOrders, gte(orders.createdAt, periodStartIso), lt(orders.createdAt, periodEndIso)))
-      .groupBy(sql`date_trunc('day', ${orders.createdAt})`)
-      .orderBy(sql`date_trunc('day', ${orders.createdAt})`),
-    db
-      .select({
-        date: sql<string>`to_char(date_trunc('month', ${orders.createdAt}), 'YYYY-MM-01')`,
-        revenue: sql<number>`coalesce(sum(${orders.totalAmount}), 0)`,
-        orders: sql<number>`count(*)`,
-        customers: sql<number>`count(distinct ${orders.userId})`
-      })
-      .from(orders)
-      .where(and(countedOrders, gte(orders.createdAt, yearStartIso), lt(orders.createdAt, periodEndIso)))
-      .groupBy(sql`date_trunc('month', ${orders.createdAt})`)
-      .orderBy(sql`date_trunc('month', ${orders.createdAt})`),
-    db
-      .select({
-        status: orders.status,
-        value: sql<number>`count(*)`
-      })
-      .from(orders)
-      .groupBy(orders.status),
-    db
-      .select({
-        categoryId: categories.id,
-        name: sql<string>`coalesce(${categories.name}, ${categories.nameAr}, 'Uncategorized')`,
-        revenue: sql<number>`coalesce(sum(${orderItems.total}), 0)`
-      })
-      .from(orderItems)
-      .innerJoin(orders, eq(orderItems.orderId, orders.id))
-      .innerJoin(products, eq(orderItems.productId, products.id))
-      .leftJoin(categories, eq(products.categoryId, categories.id))
-      .where(and(countedOrders, gte(orders.createdAt, periodStartIso), lt(orders.createdAt, periodEndIso)))
-      .groupBy(categories.id, categories.name, categories.nameAr)
-      .orderBy(desc(sql`coalesce(sum(${orderItems.total}), 0)`))
-      .limit(8),
-    db
-      .select({
-        categoryId: categories.id,
-        revenue: sql<number>`coalesce(sum(${orderItems.total}), 0)`
-      })
-      .from(orderItems)
-      .innerJoin(orders, eq(orderItems.orderId, orders.id))
-      .innerJoin(products, eq(orderItems.productId, products.id))
-      .leftJoin(categories, eq(products.categoryId, categories.id))
-      .where(and(countedOrders, gte(orders.createdAt, previousStartIso), lt(orders.createdAt, periodStartIso)))
-      .groupBy(categories.id),
-    db.execute(sql`
+  ] = await runInBatches(
+    [
+    () =>
+      db
+        .select({
+          revenue: sql<number>`coalesce(sum(${orders.totalAmount}), 0)`,
+          orders: sql<number>`count(*)`
+        })
+        .from(orders)
+        .where(and(countedOrders, gte(orders.createdAt, periodStartIso), lt(orders.createdAt, periodEndIso))),
+    () =>
+      db
+        .select({
+          revenue: sql<number>`coalesce(sum(${orders.totalAmount}), 0)`,
+          orders: sql<number>`count(*)`
+        })
+        .from(orders)
+        .where(and(countedOrders, gte(orders.createdAt, previousStartIso), lt(orders.createdAt, periodStartIso))),
+    () =>
+      db
+        .select({ count: sql<number>`count(*)` })
+        .from(users)
+        .where(and(eq(users.role, 'customer'), gte(users.createdAt, periodStartIso), lt(users.createdAt, periodEndIso))),
+    () =>
+      db
+        .select({ count: sql<number>`count(*)` })
+        .from(users)
+        .where(and(eq(users.role, 'customer'), gte(users.createdAt, previousStartIso), lt(users.createdAt, periodStartIso))),
+    () =>
+      db
+        .select({ count: sql<number>`count(*)` })
+        .from(products)
+        .where(and(eq(products.status, 'active'), lt(products.createdAt, periodEndIso))),
+    () =>
+      db
+        .select({ count: sql<number>`count(*)` })
+        .from(products)
+        .where(and(eq(products.status, 'active'), lt(products.createdAt, periodStartIso))),
+    () =>
+      db
+        .select({
+          date: sql<string>`to_char(date_trunc('day', ${orders.createdAt}), 'YYYY-MM-DD')`,
+          value: sql<number>`coalesce(sum(${orders.totalAmount}), 0)`
+        })
+        .from(orders)
+        .where(and(countedOrders, gte(orders.createdAt, periodStartIso), lt(orders.createdAt, periodEndIso)))
+        .groupBy(sql`date_trunc('day', ${orders.createdAt})`)
+        .orderBy(sql`date_trunc('day', ${orders.createdAt})`),
+    () =>
+      db
+        .select({
+          date: sql<string>`to_char(date_trunc('month', ${orders.createdAt}), 'YYYY-MM-01')`,
+          revenue: sql<number>`coalesce(sum(${orders.totalAmount}), 0)`,
+          orders: sql<number>`count(*)`,
+          customers: sql<number>`count(distinct ${orders.userId})`
+        })
+        .from(orders)
+        .where(and(countedOrders, gte(orders.createdAt, yearStartIso), lt(orders.createdAt, periodEndIso)))
+        .groupBy(sql`date_trunc('month', ${orders.createdAt})`)
+        .orderBy(sql`date_trunc('month', ${orders.createdAt})`),
+    () =>
+      db
+        .select({
+          status: orders.status,
+          value: sql<number>`count(*)`
+        })
+        .from(orders)
+        .groupBy(orders.status),
+    () =>
+      db
+        .select({
+          categoryId: categories.id,
+          name: sql<string>`coalesce(${categories.name}, ${categories.nameAr}, 'Uncategorized')`,
+          revenue: sql<number>`coalesce(sum(${orderItems.total}), 0)`
+        })
+        .from(orderItems)
+        .innerJoin(orders, eq(orderItems.orderId, orders.id))
+        .innerJoin(products, eq(orderItems.productId, products.id))
+        .leftJoin(categories, eq(products.categoryId, categories.id))
+        .where(and(countedOrders, gte(orders.createdAt, periodStartIso), lt(orders.createdAt, periodEndIso)))
+        .groupBy(categories.id, categories.name, categories.nameAr)
+        .orderBy(desc(sql`coalesce(sum(${orderItems.total}), 0)`))
+        .limit(TOP_N),
+    () =>
+      db
+        .select({
+          categoryId: categories.id,
+          revenue: sql<number>`coalesce(sum(${orderItems.total}), 0)`
+        })
+        .from(orderItems)
+        .innerJoin(orders, eq(orderItems.orderId, orders.id))
+        .innerJoin(products, eq(orderItems.productId, products.id))
+        .leftJoin(categories, eq(products.categoryId, categories.id))
+        .where(and(countedOrders, gte(orders.createdAt, previousStartIso), lt(orders.createdAt, periodStartIso)))
+        .groupBy(categories.id),
+    () =>
+      db.execute(sql`
       WITH first_orders AS (
         SELECT user_id, date_trunc('day', min(created_at)) AS first_day
         FROM orders
@@ -195,69 +212,75 @@ export async function getCommerceAnalytics (): Promise<CommerceAnalytics> {
       GROUP BY p.day
       ORDER BY p.day
     `),
-    db
-      .select({
-        productId: products.id,
-        name: sql<string>`coalesce(
+    () =>
+      db
+        .select({
+          productId: products.id,
+          name: sql<string>`coalesce(
           max(${orderItems.productName}),
           max(${productTranslations.title}),
           'Untitled product'
         )`,
-        revenue: sql<number>`coalesce(sum(${orderItems.total}), 0)`,
-        orders: sql<number>`count(distinct ${orderItems.orderId})`,
-        units: sql<number>`coalesce(sum(${orderItems.quantity}), 0)`,
-        quantity: sql<number>`coalesce(max(${products.quantity}), 0)`
-      })
-      .from(orderItems)
-      .innerJoin(orders, eq(orderItems.orderId, orders.id))
-      .innerJoin(products, eq(orderItems.productId, products.id))
-      .leftJoin(
-        productTranslations,
-        and(
-          eq(productTranslations.productId, products.id),
-          eq(productTranslations.locale, 'en')
+          revenue: sql<number>`coalesce(sum(${orderItems.total}), 0)`,
+          orders: sql<number>`count(distinct ${orderItems.orderId})`,
+          units: sql<number>`coalesce(sum(${orderItems.quantity}), 0)`,
+          quantity: sql<number>`coalesce(max(${products.quantity}), 0)`
+        })
+        .from(orderItems)
+        .innerJoin(orders, eq(orderItems.orderId, orders.id))
+        .innerJoin(products, eq(orderItems.productId, products.id))
+        .leftJoin(
+          productTranslations,
+          and(
+            eq(productTranslations.productId, products.id),
+            eq(productTranslations.locale, 'en')
+          )
         )
-      )
-      .where(and(countedOrders, gte(orders.createdAt, yearStartIso), lt(orders.createdAt, periodEndIso)))
-      .groupBy(products.id)
-      .orderBy(desc(sql`coalesce(sum(${orderItems.total}), 0)`))
-      .limit(8),
-    db
-      .select({
-        categoryId: products.categoryId,
-        products: sql<number>`count(*)`
-      })
-      .from(products)
-      .where(eq(products.status, 'active'))
-      .groupBy(products.categoryId),
-    db
-      .select({
-        id: orders.id,
-        orderNumber: orders.orderNumber,
-        customer: sql<string>`coalesce(${users.fullName}, ${users.email}, 'Guest')`,
-        total: orders.totalAmount,
-        status: orders.status,
-        createdAt: orders.createdAt
-      })
-      .from(orders)
-      .leftJoin(users, eq(orders.userId, users.id))
-      .orderBy(desc(orders.createdAt))
-      .limit(8),
-    db
-      .select({
-        sellerId: sellers.id,
-        name: sql<string>`coalesce(${sellers.displayName}, ${sellers.businessName})`,
-        revenue: sql<number>`coalesce(sum(${orderItems.total}), 0)`,
-        orders: sql<number>`count(distinct ${orderItems.orderId})`
-      })
-      .from(orderItems)
-      .innerJoin(orders, eq(orderItems.orderId, orders.id))
-      .innerJoin(sellers, eq(orderItems.sellerId, sellers.id))
-      .where(and(countedOrders, gte(orders.createdAt, yearStartIso), lt(orders.createdAt, periodEndIso)))
-      .groupBy(sellers.id, sellers.displayName, sellers.businessName)
-      .orderBy(desc(sql`coalesce(sum(${orderItems.total}), 0)`))
-      .limit(8)
-  ])
+        .where(and(countedOrders, gte(orders.createdAt, yearStartIso), lt(orders.createdAt, periodEndIso)))
+        .groupBy(products.id)
+        .orderBy(desc(sql`coalesce(sum(${orderItems.total}), 0)`))
+        .limit(TOP_N),
+    () =>
+      db
+        .select({
+          categoryId: products.categoryId,
+          products: sql<number>`count(*)`
+        })
+        .from(products)
+        .where(eq(products.status, 'active'))
+        .groupBy(products.categoryId),
+    () =>
+      db
+        .select({
+          id: orders.id,
+          orderNumber: orders.orderNumber,
+          customer: sql<string>`coalesce(${users.fullName}, ${users.email}, 'Guest')`,
+          total: orders.totalAmount,
+          status: orders.status,
+          createdAt: orders.createdAt
+        })
+        .from(orders)
+        .leftJoin(users, eq(orders.userId, users.id))
+        .orderBy(desc(orders.createdAt))
+        .limit(TOP_N),
+    () =>
+      db
+        .select({
+          sellerId: sellers.id,
+          name: sql<string>`coalesce(${sellers.displayName}, ${sellers.businessName})`,
+          revenue: sql<number>`coalesce(sum(${orderItems.total}), 0)`,
+          orders: sql<number>`count(distinct ${orderItems.orderId})`
+        })
+        .from(orderItems)
+        .innerJoin(orders, eq(orderItems.orderId, orders.id))
+        .innerJoin(sellers, eq(orderItems.sellerId, sellers.id))
+        .where(and(countedOrders, gte(orders.createdAt, yearStartIso), lt(orders.createdAt, periodEndIso)))
+        .groupBy(sellers.id, sellers.displayName, sellers.businessName)
+        .orderBy(desc(sql`coalesce(sum(${orderItems.total}), 0)`))
+        .limit(TOP_N)
+    ],
+    1
+  )
 
   const currentRevenue = toNumber(currentTotals[0]?.revenue)
   const currentOrderCount = toNumber(currentTotals[0]?.orders)

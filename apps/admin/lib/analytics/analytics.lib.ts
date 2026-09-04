@@ -57,3 +57,23 @@ export function fillCustomerSeries (
     returning: byDate.get(date)?.returning ?? 0
   }))
 }
+
+/**
+ * Run async tasks in fixed-size batches. Needed when talking to Supabase's
+ * transaction pooler (:6543) — a large Promise.all stamps pgbouncer and
+ * trips statement_timeout even when each query alone is fast.
+ */
+export async function runInBatches<T> (
+  tasks: Array<() => Promise<T>>,
+  batchSize = 3
+): Promise<T[]> {
+  const results: T[] = []
+
+  for (let i = 0; i < tasks.length; i += batchSize) {
+    const batch = tasks.slice(i, i + batchSize)
+    const batchResults = await Promise.all(batch.map((task) => task()))
+    results.push(...batchResults)
+  }
+
+  return results
+}

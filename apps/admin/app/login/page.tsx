@@ -5,7 +5,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { toast } from "sonner";
 
 import { Button } from "@workspace/ui/components/button";
@@ -31,7 +32,6 @@ export default function AuthPage() {
   const [showResetForm, setShowResetForm] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const router = useRouter();
   const searchParams = useSearchParams();
 
   // Check if user returned from password reset email
@@ -65,9 +65,8 @@ export default function AuthPage() {
     startTransition(async () => {
       try {
         await login(data.email, data.password);
-        toast.success("Redirecting to admin dashboard...");
-        router.push("/");
       } catch (error) {
+        if (isRedirectError(error)) throw error;
         toast.error(
           error instanceof Error ? error.message : "Failed to sign in"
         );

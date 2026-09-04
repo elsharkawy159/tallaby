@@ -76,7 +76,7 @@ export const register = async (
 
 export const login = async (email: string, password: string) => {
   const supabase = await createClient();
-  const { data, error } = await supabase.auth.signInWithPassword({
+  const { error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
@@ -85,9 +85,9 @@ export const login = async (email: string, password: string) => {
     throw new Error(error.message);
   }
 
-  // TODO: Add role checking logic here or in middleware
-  // For now, just return the auth data
-  return data;
+  // Server-side redirect so the login button doesn't stay pending on a
+  // client soft-navigation that waits for the heavy dashboard RSC payload.
+  redirect("/");
 };
 
 export const resetPassword = async (email: string) => {

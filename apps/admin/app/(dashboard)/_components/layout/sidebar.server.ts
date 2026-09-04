@@ -20,32 +20,32 @@ export async function getSidebarCounts(): Promise<SidebarCounts> {
   try {
     await getAdminUser();
 
-    const [
-      customersResult,
-      orderCountResult,
-      productCountResult,
-      categoryCountResult,
-      brandCountResult,
-      sellerCountResult,
-    ] = await Promise.all([
-      db.select({ count: sql<number>`count(*)` }).from(users),
-      db.select({ count: sql<number>`count(*)` }).from(orders),
-      db.select({ count: sql<number>`count(*)` }).from(products),
-      db.select({ count: sql<number>`count(*)` }).from(categories),
-      db.select({ count: sql<number>`count(*)` }).from(brands),
-      db.select({ count: sql<number>`count(*)` }).from(sellers),
-    ]);
+    // One round-trip instead of 6 parallel counts (avoids pooler stampede).
+    const result = await db.execute(sql`
+      SELECT
+        (SELECT count(*)::int FROM ${users}) AS customers,
+        (SELECT count(*)::int FROM ${orders}) AS orders,
+        (SELECT count(*)::int FROM ${products}) AS products,
+        (SELECT count(*)::int FROM ${categories}) AS categories,
+        (SELECT count(*)::int FROM ${brands}) AS brands,
+        (SELECT count(*)::int FROM ${sellers}) AS sellers
+    `);
 
-    const orderCount = Number(orderCountResult[0]?.count ?? 0);
+    const rows = Array.isArray(result)
+      ? result
+      : ((result as { rows?: Array<Record<string, unknown>> }).rows ?? []);
+    const row = (rows[0] ?? {}) as Record<string, unknown>;
+
+    const orderCount = Number(row.orders ?? 0);
 
     return {
       dashboard: orderCount,
-      customers: Number(customersResult[0]?.count ?? 0),
+      customers: Number(row.customers ?? 0),
       orders: orderCount,
-      products: Number(productCountResult[0]?.count ?? 0),
-      categories: Number(categoryCountResult[0]?.count ?? 0),
-      brands: Number(brandCountResult[0]?.count ?? 0),
-      sellers: Number(sellerCountResult[0]?.count ?? 0),
+      products: Number(row.products ?? 0),
+      categories: Number(row.categories ?? 0),
+      brands: Number(row.brands ?? 0),
+      sellers: Number(row.sellers ?? 0),
     };
   } catch (error) {
     console.error("Error fetching sidebar counts:", error);

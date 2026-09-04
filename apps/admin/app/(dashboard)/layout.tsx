@@ -1,17 +1,31 @@
-import { ReactNode } from "react";
+import { ReactNode, Suspense } from "react";
 import SidebarData from "./_components/layout/sidebar.data";
 import Header from "./_components/layout/header";
 import { ScrollArea } from "@workspace/ui/components/scroll-area";
 import { Toaster } from "@workspace/ui/components/sonner";
+import { Skeleton } from "@workspace/ui/components/skeleton";
 
 interface DashboardShellProps {
   children: ReactNode;
 }
 
+function SidebarFallback() {
+  return (
+    <aside className="hidden md:flex w-64 shrink-0 flex-col gap-3 border-r bg-background p-4">
+      <Skeleton className="h-8 w-32" />
+      {Array.from({ length: 8 }, (_, i) => (
+        <Skeleton key={i} className="h-9 w-full" />
+      ))}
+    </aside>
+  );
+}
+
 export default function DashboardLayout({ children }: DashboardShellProps) {
   return (
     <div className="flex">
-      <SidebarData />
+      <Suspense fallback={<SidebarFallback />}>
+        <SidebarData />
+      </Suspense>
       <div className="flex-1 overflow-hidden">
         <Header />
         <ScrollArea className="h-[calc(100vh-64px)]">
