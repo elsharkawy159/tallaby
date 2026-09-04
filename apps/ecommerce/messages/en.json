@@ -175,7 +175,11 @@
     "cartNotFound": "Cart not found",
     "discount": "Discount",
     "freeShipping": "Free Shipping",
-    "freeDeliveryAllItemsQualify": "Free delivery — all items qualify"
+    "freeDeliveryAllItemsQualify": "Free delivery — all items qualify",
+    "addAmountForFreeDelivery": "Add {amount} for free delivery",
+    "freeDeliveryUnlocked": "Free Delivery",
+    "freeDeliveryProgressStart": "0",
+    "freeDeliveryProgressEnd": "200"
   },
   "product": {
     "addToCart": "Add to Cart",

@@ -10,7 +10,8 @@ import {
 import { revalidatePath } from "next/cache";
 import { redirect } from "@/i18n/navigation";
 import { getLocale } from "next-intl/server";
-import { getAuthUser } from "@/lib/auth/current-user";
+import { getAuthUser, getAuthUserDisplay } from "@/lib/auth/current-user";
+import type { AuthenticatedUserDisplay } from "@/lib/auth/auth-user.types";
 
 /**
  * Sourced from getAuthUser() (React cache()-deduplicated per request) so
@@ -23,6 +24,33 @@ export async function getUser() {
     const user = await getAuthUser();
     return user ? { user } : null;
   } catch {
+    return null;
+  }
+}
+
+/**
+ * The navbar's (and every other client component's) single source of truth for
+ * the current viewer.
+ *
+ * Routes under (main) are ISR-rendered (`revalidate = 60` and up), so the
+ * layout that hosts the header cannot read cookies without turning the whole
+ * storefront dynamic. The viewer is therefore resolved after hydration — but
+ * through this one server action rather than by each component calling
+ * Supabase from the browser, so the answer is computed with the server client,
+ * includes the application profile row, and is fetched exactly once per page.
+ */
+export async function getCurrentUserDisplay(): Promise<AuthenticatedUserDisplay | null> {
+  try {
+    const display = await getAuthUserDisplay();
+    // #region agent log
+    fetch('http://127.0.0.1:7624/ingest/6c4132ee-ad2b-461c-81f7-d283121d1f71',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7135eb'},body:JSON.stringify({sessionId:'7135eb',runId:'pre-fix',hypothesisId:'A',location:'actions/auth.ts:getCurrentUserDisplay',message:'getCurrentUserDisplay resolved',data:{hasUser:Boolean(display),userIdPrefix:display?.id?.slice(0,8)??null,hasAvatar:Boolean(display?.avatarUrl),isSeller:display?.isSeller??false},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
+    return display;
+  } catch (error) {
+    console.error("getCurrentUserDisplay error:", error);
+    // #region agent log
+    fetch('http://127.0.0.1:7624/ingest/6c4132ee-ad2b-461c-81f7-d283121d1f71',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7135eb'},body:JSON.stringify({sessionId:'7135eb',runId:'pre-fix',hypothesisId:'A',location:'actions/auth.ts:getCurrentUserDisplay:error',message:'getCurrentUserDisplay threw',data:{errorName:error instanceof Error?error.name:'unknown'},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
     return null;
   }
 }
@@ -89,8 +117,11 @@ export async function signInAction({
   password: string;
 }) {
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) {
+    // #region agent log
+    fetch('http://127.0.0.1:7624/ingest/6c4132ee-ad2b-461c-81f7-d283121d1f71',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7135eb'},body:JSON.stringify({sessionId:'7135eb',runId:'pre-fix',hypothesisId:'D',location:'actions/auth.ts:signInAction:error',message:'signInAction failed',data:{errorCode:error.code??null},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
     return { success: false, message: error.message };
   }
 
@@ -103,7 +134,39 @@ export async function signInAction({
     console.error("Failed to merge guest account:", mergeError);
   }
 
-  return { success: true, message: "Signed in successfully" };
+  // Resolve the display model in the same request that wrote the session
+  // cookies, so the client can paint the navbar immediately without waiting
+  // for a follow-up /api/auth/me round-trip that might still miss cookies.
+  const displayUser = await getAuthUserDisplay();
+
+  // #region agent log
+  fetch("http://127.0.0.1:7624/ingest/6c4132ee-ad2b-461c-81f7-d283121d1f71", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Debug-Session-Id": "7135eb",
+    },
+    body: JSON.stringify({
+      sessionId: "7135eb",
+      runId: "post-fix",
+      hypothesisId: "D",
+      location: "actions/auth.ts:signInAction:success",
+      message: "signInAction succeeded",
+      data: {
+        hasSession: Boolean(data.session),
+        userIdPrefix: data.user?.id?.slice(0, 8) ?? null,
+        hasDisplayUser: Boolean(displayUser),
+      },
+      timestamp: Date.now(),
+    }),
+  }).catch(() => {});
+  // #endregion
+
+  return {
+    success: true,
+    message: "Signed in successfully",
+    user: displayUser,
+  };
 }
 
 // Send password reset email
@@ -420,6 +483,41 @@ export async function updateUserProfile(data: {
         success: false,
         error: "Failed to update profile",
       };
+    }
+
+    // Mirror the profile fields the `users` table owns.
+    //
+    // Auth metadata alone used to be the only place an uploaded avatar landed,
+    // so `users.avatar_url` — the column review authors and seller pages read —
+    // stayed null forever and the same person appeared with an avatar in the
+    // navbar and without one on their reviews. Writing both keeps the profile
+    // row canonical while metadata remains the OAuth fallback.
+    const profileUpdate: Partial<typeof users.$inferInsert> = {};
+    if (data.avatar_url !== undefined) profileUpdate.avatarUrl = data.avatar_url;
+    if (data.phone !== undefined) profileUpdate.phone = data.phone;
+    if (typeof authMetadata.full_name === "string") {
+      profileUpdate.fullName = authMetadata.full_name;
+    }
+    if (data.preferredLanguage !== undefined)
+      profileUpdate.preferredLanguage = data.preferredLanguage;
+    if (data.timezone !== undefined) profileUpdate.timezone = data.timezone;
+    if (data.defaultCurrency !== undefined)
+      profileUpdate.defaultCurrency = data.defaultCurrency;
+    if (data.receiveMarketingEmails !== undefined)
+      profileUpdate.receiveMarketingEmails = data.receiveMarketingEmails;
+
+    if (Object.keys(profileUpdate).length > 0) {
+      try {
+        // Scoped to the caller's own id — never an id supplied by the client.
+        await db
+          .update(users)
+          .set({ ...profileUpdate, updatedAt: new Date().toISOString() })
+          .where(eq(users.id, user.user.id));
+      } catch (dbError) {
+        // Auth metadata already succeeded and is the read fallback, so a failed
+        // mirror degrades rather than losing the change.
+        console.error("Error mirroring profile to users table:", dbError);
+      }
     }
 
     return {

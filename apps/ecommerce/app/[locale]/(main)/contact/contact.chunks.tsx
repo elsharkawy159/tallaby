@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import type { User } from "@supabase/supabase-js";
+import type { AuthenticatedUserDisplay } from "@/lib/auth/auth-user.types";
 
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -37,7 +37,7 @@ import { submitContactForm } from "@/actions/contact";
 import posthog from "posthog-js";
 
 interface ContactFormProps {
-  user: User | null;
+  user: AuthenticatedUserDisplay | null;
 }
 
 export function ContactForm({ user }: ContactFormProps) {

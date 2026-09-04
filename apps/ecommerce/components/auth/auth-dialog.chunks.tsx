@@ -21,6 +21,7 @@ import {
 
 import type { AuthFormProps } from "./auth-dialog.types";
 import { forgotPasswordAction, signInAction, signUpUser } from "@/actions/auth";
+import { notifyAuthChanged, useAuthUser } from "@/lib/auth/use-auth-user";
 import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import posthog from "posthog-js";
@@ -38,6 +39,7 @@ export function SignInForm({
   const [isPending, startTransition] = useTransition();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const router = useRouter();
+  const { applyUser } = useAuthUser();
   const t = useTranslations("auth");
   const form = useForm<SignInFormData>({
     resolver: zodResolver(signInSchema),
@@ -66,12 +68,61 @@ export function SignInForm({
 
         if (result.success) {
           posthog.capture("sign_in_completed");
+          // Paint the navbar from the user returned by the same request that
+          // set the session cookies, then broadcast so other mounts refresh.
+          // #region agent log
+          fetch("http://127.0.0.1:7624/ingest/6c4132ee-ad2b-461c-81f7-d283121d1f71", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Debug-Session-Id": "7135eb",
+            },
+            body: JSON.stringify({
+              sessionId: "7135eb",
+              runId: "post-fix",
+              hypothesisId: "D",
+              location: "auth-dialog.chunks.tsx:signIn:success",
+              message: "Applying signed-in user to AuthProvider",
+              data: {
+                hasRedirectTo: Boolean(redirectTo),
+                hasOnSuccess: Boolean(onSuccess),
+                hasUser: Boolean(result.user),
+                userIdPrefix: result.user?.id?.slice(0, 8) ?? null,
+              },
+              timestamp: Date.now(),
+            }),
+          }).catch(() => {});
+          // #endregion
+          if (result.user) {
+            applyUser(result.user);
+          } else {
+            notifyAuthChanged();
+          }
+          router.refresh();
           if (onSuccess) {
             onSuccess();
           } else {
             router.push(redirectTo || "/");
           }
         } else {
+          // #region agent log
+          fetch("http://127.0.0.1:7624/ingest/6c4132ee-ad2b-461c-81f7-d283121d1f71", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Debug-Session-Id": "7135eb",
+            },
+            body: JSON.stringify({
+              sessionId: "7135eb",
+              runId: "post-fix",
+              hypothesisId: "D",
+              location: "auth-dialog.chunks.tsx:signIn:failed",
+              message: "Client received failed sign-in result",
+              data: {},
+              timestamp: Date.now(),
+            }),
+          }).catch(() => {});
+          // #endregion
           setErrorMessage(result.message || t("signInFailed"));
         }
       } catch (error) {
@@ -154,9 +205,11 @@ export function SignUpForm({
           form.reset();
           onSuccess?.(credentials);
 
-          // If user is signed in automatically, refresh the page
+          // With email confirmation disabled Supabase signs the new account in
+          // straight away, and those cookies are set server-side — pick them up
+          // the same way sign-in does.
           if (result.data?.id) {
-            // window.location.reload();
+            notifyAuthChanged();
           }
         } else {
           toast.error(result.error);

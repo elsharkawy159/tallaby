@@ -1,6 +1,12 @@
 import { User as UserIcon, Package, Heart, MapPin, Wallet } from "lucide-react";
-import { getPublicUrl } from "@workspace/ui/lib/utils";
 
+import {
+  getAvatarDisplayName,
+  getAvatarInitials,
+  getAvatarPresentation,
+  resolveAvatarUrl,
+  type AvatarSubject,
+} from "@/lib/auth/avatar";
 import { UserAddress, ProfileTabType } from "./profile.types";
 
 // Profile navigation tabs
@@ -96,135 +102,29 @@ export const twoFactorMethodOptions = [
   { value: "backup_codes", label: "Backup Codes" },
 ];
 
+/**
+ * These four delegate to `lib/auth/avatar` so there is exactly one
+ * implementation of "which avatar does this person have" and "what do we call
+ * them" in the app. They previously each carried their own `any`-typed copy of
+ * that logic, which is how the navbar and the profile page could disagree.
+ */
 export function getAvatarUrl(
   avatarPath: string | null | undefined
 ): string | null {
-  if (!avatarPath || typeof avatarPath !== "string" || !avatarPath.trim()) {
-    return null;
-  }
-
-  const trimmedPath = avatarPath.trim();
-
-  if (
-    trimmedPath.startsWith("https://lh3.googleusercontent.com") ||
-    trimmedPath.startsWith("https://platform-lookaside.fbsbx.com") ||
-    trimmedPath.startsWith("https://graph.facebook.com") ||
-    trimmedPath.startsWith("https://avatars.githubusercontent.com") ||
-    trimmedPath.startsWith("https://pbs.twimg.com") ||
-    trimmedPath.startsWith("http://") ||
-    trimmedPath.startsWith("https://")
-  ) {
-    return trimmedPath;
-  }
-
-  return getPublicUrl(trimmedPath, "avatars");
+  return resolveAvatarUrl(avatarPath);
 }
 
-export function getUserAvatar(user: any): string | null {
-  if (!user) return null;
-
-  let avatarPath: string | null = null;
-
-  if (user.user_metadata) {
-    const avatarSources = [
-      user.user_metadata.avatar_url,
-      user.user_metadata.avatarUrl,
-      user.user_metadata.picture,
-    ];
-
-    for (const avatar of avatarSources) {
-      if (avatar && typeof avatar === "string" && avatar.trim()) {
-        avatarPath = avatar;
-        break;
-      }
-    }
-  }
-
-  if (
-    !avatarPath &&
-    user.avatarUrl &&
-    typeof user.avatarUrl === "string" &&
-    user.avatarUrl.trim()
-  ) {
-    avatarPath = user.avatarUrl;
-  }
-
-  return getAvatarUrl(avatarPath);
+export function getUserAvatar(user: AvatarSubject | null): string | null {
+  return getAvatarPresentation(user).src;
 }
 
-export function getUserInitials(user: any): string {
-  if (!user) return "U";
-
-  let firstName = "";
-  let lastName = "";
-
-  if (user.user_metadata) {
-    firstName =
-      user.user_metadata.firstName ||
-      (user.user_metadata.full_name
-        ? user.user_metadata.full_name.split(" ")[0]
-        : "") ||
-      (user.user_metadata.name ? user.user_metadata.name.split(" ")[0] : "");
-
-    lastName =
-      user.user_metadata.lastName ||
-      (user.user_metadata.full_name
-        ? user.user_metadata.full_name.split(" ").slice(1).join(" ")
-        : "") ||
-      (user.user_metadata.name
-        ? user.user_metadata.name.split(" ").slice(1).join(" ")
-        : "");
-  } else if (user.firstName !== undefined || user.lastName !== undefined) {
-    firstName = user.firstName || "";
-    lastName = user.lastName || "";
-  }
-
-  const firstInitial = firstName.charAt(0).toUpperCase();
-  const lastInitial = lastName.charAt(0).toUpperCase();
-
-  if (firstInitial && lastInitial) {
-    return firstInitial + lastInitial;
-  } else if (firstInitial) {
-    return firstInitial;
-  } else if (user.email) {
-    return user.email.charAt(0).toUpperCase();
-  }
-
-  return "U";
+export function getUserInitials(user: AvatarSubject | null): string {
+  return getAvatarInitials(user);
 }
 
-export function formatUserName(user: any): string {
-  if (!user) return "";
-
-  if (user.user_metadata) {
-    const metadata = user.user_metadata;
-
-    if (metadata.fullName && metadata.fullName.trim()) {
-      return metadata.fullName;
-    }
-
-    if (metadata.full_name && metadata.full_name.trim()) {
-      return metadata.full_name;
-    }
-
-    if (metadata.name && metadata.name.trim()) {
-      return metadata.name;
-    }
-
-    if (metadata.firstName || metadata.lastName) {
-      return `${metadata.firstName || ""} ${metadata.lastName || ""}`.trim();
-    }
-  }
-
-  if (user.fullName && user.fullName.trim()) {
-    return user.fullName;
-  }
-
-  if (user.firstName || user.lastName) {
-    return `${user.firstName || ""} ${user.lastName || ""}`.trim();
-  }
-
-  return user.email || "";
+/** Returns "" rather than null — callers chain it with `|| user.email`. */
+export function formatUserName(user: AvatarSubject | null): string {
+  return getAvatarDisplayName(user) ?? "";
 }
 
 export function formatAddress(address: UserAddress): string {
@@ -401,25 +301,18 @@ export const PROFILE_LIMITS = {
 export const DEFAULT_AVATAR_URL = "/api/avatar/default";
 
 export interface AvatarFallbackProps {
-  user: any;
+  user: AvatarSubject | null;
   className?: string;
   size?: "sm" | "md" | "lg" | "xl";
 }
 
-export function getAvatarWithFallback(user: any): {
+export function getAvatarWithFallback(user: AvatarSubject | null): {
   src: string | null;
   fallback: string;
   alt: string;
 } {
-  const avatar = getUserAvatar(user);
-  const initials = getUserInitials(user);
-  const name = formatUserName(user);
-
-  return {
-    src: avatar,
-    fallback: initials,
-    alt: name || "User Avatar",
-  };
+  const { src, initials, alt } = getAvatarPresentation(user);
+  return { src, fallback: initials, alt };
 }
 
 export function calculateProfileCompletion(

@@ -183,6 +183,7 @@ export async function placeOrderFromCart(
 
   const shippingItems = cart.cartItems.map((item) => ({
     quantity: item.quantity,
+    price: item.price,
     sellerId: item.sellerId,
     product: {
       productType: item.product.productType,
@@ -193,9 +194,15 @@ export async function placeOrderFromCart(
     },
   }))
 
+  const cartSubtotal = cart.cartItems.reduce(
+    (sum, item) => sum + Number(item.price) * item.quantity,
+    0,
+  )
+
   const computedShippingCost = calculateLocationShippingCost({
     items: shippingItems,
     destinationState: shippingAddress?.state,
+    cartSubtotal,
   })
 
   // Address is required at place-order time; if state is missing, bill fallback rate
@@ -204,6 +211,7 @@ export async function placeOrderFromCart(
     calculateLocationShippingCost({
       items: shippingItems,
       destinationState: '__missing_state__',
+      cartSubtotal,
     })!
 
   const orderItemsData = cart.cartItems.map((item) => {

@@ -5,75 +5,93 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@workspace/ui/components/avatar";
+import { cn } from "@/lib/utils";
 import {
-  getUserAvatar,
-  getUserInitials,
-  getAvatarWithFallback,
-} from "@/app/[locale]/(main)/profile/_components/profile.lib";
-import type { SupabaseUser } from "@/app/[locale]/(main)/profile/_components/profile.types";
+  getAvatarInitials,
+  getAvatarPresentation,
+  type AvatarSubject,
+} from "@/lib/auth/avatar";
+
+export type UserAvatarSize = "sm" | "md" | "lg" | "xl";
 
 interface UserAvatarProps {
-  user: SupabaseUser | any;
+  user: AvatarSubject | null;
   className?: string;
-  size?: "sm" | "md" | "lg" | "xl";
+  size?: UserAvatarSize;
   showFallback?: boolean;
+  /** Overrides the derived accessible name (e.g. "Your profile picture"). */
+  alt?: string;
+  /** Extra classes for the initials fallback, e.g. responsive text sizing. */
+  fallbackClassName?: string;
 }
 
-const sizeClasses = {
-  sm: "h-8 w-8",
-  md: "h-10 w-10",
-  lg: "h-12 w-12",
-  xl: "h-16 w-16",
+const sizeClasses: Record<UserAvatarSize, string> = {
+  sm: "size-8",
+  md: "size-10",
+  lg: "size-12",
+  xl: "size-16",
 };
 
+const fallbackTextClasses: Record<UserAvatarSize, string> = {
+  sm: "text-[10px]",
+  md: "text-sm",
+  lg: "text-base",
+  xl: "text-lg",
+};
+
+/**
+ * The one avatar component in the app.
+ *
+ * Radix's AvatarImage only reveals itself once the image actually loads, so a
+ * broken or slow URL falls through to the initials rather than showing a torn
+ * image — which is why the fallback is always rendered rather than being
+ * conditional on `src` being present. The fixed size classes mean the circle
+ * occupies its final box before the image arrives, so no layout shift.
+ */
 export function UserAvatar({
   user,
-  className = "",
+  className,
   size = "md",
   showFallback = true,
+  alt,
+  fallbackClassName,
 }: UserAvatarProps) {
-  const avatarData = getAvatarWithFallback(user);
+  const { src, initials, alt: derivedAlt } = getAvatarPresentation(user);
 
   return (
-    <Avatar className={`${sizeClasses[size]} ${className}`}>
-      <AvatarImage src={avatarData.src || undefined} alt={avatarData.alt} />
+    <Avatar className={cn(sizeClasses[size], "shrink-0", className)}>
+      <AvatarImage src={src ?? undefined} alt={alt ?? derivedAlt} />
       {showFallback && (
-        <AvatarFallback className="text-sm font-medium">
-          {avatarData.fallback}
+        <AvatarFallback
+          className={cn(
+            "bg-primary text-primary-foreground font-medium",
+            fallbackTextClasses[size],
+            fallbackClassName
+          )}
+        >
+          {initials}
         </AvatarFallback>
       )}
     </Avatar>
   );
 }
 
-// Simple avatar with just initials fallback
+/** Initials-only variant, for places that must never show a photo. */
 export function UserInitialsAvatar({
   user,
-  className = "",
+  className,
   size = "md",
-}: Omit<UserAvatarProps, "showFallback">) {
-  const initials = getUserInitials(user);
-
+}: Omit<UserAvatarProps, "showFallback" | "alt">) {
   return (
-    <Avatar className={`${sizeClasses[size]} ${className}`}>
-      <AvatarFallback className="text-sm font-medium">
-        {initials}
+    <Avatar className={cn(sizeClasses[size], "shrink-0", className)}>
+      <AvatarFallback
+        className={cn(
+          "bg-primary text-primary-foreground font-medium",
+          fallbackTextClasses[size]
+        )}
+      >
+        {getAvatarInitials(user)}
       </AvatarFallback>
-    </Avatar>
-  );
-}
-
-// Avatar with image only (no fallback)
-export function UserImageAvatar({
-  user,
-  className = "",
-  size = "md",
-}: Omit<UserAvatarProps, "showFallback">) {
-  const avatar = getUserAvatar(user);
-
-  return (
-    <Avatar className={`${sizeClasses[size]} ${className}`}>
-      <AvatarImage src={avatar || undefined} alt="User Avatar" />
     </Avatar>
   );
 }

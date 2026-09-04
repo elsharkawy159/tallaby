@@ -4,11 +4,70 @@ import {
   EXTRA_KG_RATE,
   FALLBACK_BASE_RATE,
   FEE_MULTIPLIER,
+  FREE_DELIVERY_MIN_SUBTOTAL,
   ROUND_TO,
 } from './shipping-rates'
 import type { LocationShippingOptions, ShippingCartItem } from './shipping.types'
 
+export { FREE_DELIVERY_MIN_SUBTOTAL }
+
 const DEFAULT_ITEM_WEIGHT_GRAMS = 1000
+
+export function resolveCartSubtotal (
+  items: ShippingCartItem[],
+  cartSubtotal?: number,
+): number {
+  if (typeof cartSubtotal === 'number' && Number.isFinite(cartSubtotal)) {
+    return cartSubtotal
+  }
+
+  return items.reduce((sum, item) => {
+    const price = Number(item.price)
+    if (!Number.isFinite(price)) {
+      return sum
+    }
+    return sum + price * item.quantity
+  }, 0)
+}
+
+/**
+ * True when a seller group has a free-delivery *offer* (seller flag or all
+ * products free). Does not check the cart subtotal threshold.
+ */
+export function sellerGroupHasFreeDeliveryOffer (
+  items: ShippingCartItem[],
+): boolean {
+  const physicalItems = items.filter(
+    (item) => item.product?.productType !== 'digital',
+  )
+
+  if (physicalItems.length === 0) {
+    return false
+  }
+
+  if (physicalItems.some((item) => item.product?.seller?.freeDelivery === true)) {
+    return true
+  }
+
+  return physicalItems.every((item) => item.product?.freeDelivery === true)
+}
+
+/** True when any physical line in the cart could unlock free delivery. */
+export function cartHasFreeDeliveryOffer (items: ShippingCartItem[]): boolean {
+  const physicalItems = items.filter(
+    (item) => item.product?.productType !== 'digital',
+  )
+
+  if (physicalItems.length === 0) {
+    return false
+  }
+
+  return physicalItems.some(
+    (item) =>
+      item.product?.seller?.freeDelivery === true ||
+      item.product?.freeDelivery === true,
+  )
+}
 
 export function applyShippingFeesAndRound(amount: number): number {
   const withFees = amount * FEE_MULTIPLIER
@@ -104,12 +163,13 @@ export function groupShippingItemsBySeller(
 }
 
 /**
- * A seller's items ship free when the seller itself has free delivery enabled,
- * or (falling back to the product-level flag) every physical item they're
- * selling in this cart has free delivery enabled individually.
+ * A seller's items ship free when they have a free-delivery offer and the
+ * whole-cart subtotal meets FREE_DELIVERY_MIN_SUBTOTAL. Digital-only groups
+ * always ship free (no physical goods to deliver).
  */
-export function sellerGroupQualifiesForFreeDelivery(
+export function sellerGroupQualifiesForFreeDelivery (
   items: ShippingCartItem[],
+  cartSubtotal = 0,
 ): boolean {
   const physicalItems = items.filter(
     (item) => item.product?.productType !== 'digital',
@@ -119,19 +179,20 @@ export function sellerGroupQualifiesForFreeDelivery(
     return true
   }
 
-  if (physicalItems.some((item) => item.product?.seller?.freeDelivery === true)) {
-    return true
+  if (!sellerGroupHasFreeDeliveryOffer(items)) {
+    return false
   }
 
-  return physicalItems.every((item) => item.product?.freeDelivery === true)
+  return cartSubtotal >= FREE_DELIVERY_MIN_SUBTOTAL
 }
 
 /**
  * Whole-cart check: true only when every seller represented in the cart
  * qualifies for free delivery (used for "your whole order ships free" UI).
  */
-export function cartQualifiesForProductFreeDelivery(
+export function cartQualifiesForProductFreeDelivery (
   items: ShippingCartItem[],
+  cartSubtotal = 0,
 ): boolean {
   const physicalItems = items.filter(
     (item) => item.product?.productType !== 'digital',
@@ -143,7 +204,7 @@ export function cartQualifiesForProductFreeDelivery(
 
   const sellerGroups = groupShippingItemsBySeller(items)
   for (const groupItems of sellerGroups.values()) {
-    if (!sellerGroupQualifiesForFreeDelivery(groupItems)) {
+    if (!sellerGroupQualifiesForFreeDelivery(groupItems, cartSubtotal)) {
       return false
     }
   }
@@ -169,11 +230,17 @@ export function calculateRawShippingAmount(
  * Shipping cost is computed per seller (so one seller's free-delivery status
  * never affects another seller's items in the same order) and summed.
  */
-export function calculateLocationShippingCost(
+export function calculateLocationShippingCost (
   options: LocationShippingOptions,
 ): number | null {
-  const { items, destinationState, fallbackBaseRate = FALLBACK_BASE_RATE } =
-    options
+  const {
+    items,
+    destinationState,
+    fallbackBaseRate = FALLBACK_BASE_RATE,
+    cartSubtotal: cartSubtotalOption,
+  } = options
+
+  const cartSubtotal = resolveCartSubtotal(items, cartSubtotalOption)
 
   const physicalItems = items.filter(
     (item) => item.product?.productType !== 'digital',
@@ -201,7 +268,7 @@ export function calculateLocationShippingCost(
       continue
     }
 
-    if (sellerGroupQualifiesForFreeDelivery(groupItems)) {
+    if (sellerGroupQualifiesForFreeDelivery(groupItems, cartSubtotal)) {
       continue
     }
 

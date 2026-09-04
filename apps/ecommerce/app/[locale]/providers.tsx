@@ -1,41 +1,46 @@
 "use client";
 
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect, useRef } from "react";
 import posthog from "posthog-js";
 import { QueryProvider } from "@/providers/query-provider";
 import { AddressProvider } from "@/providers/address-provider";
 import { CartProvider } from "@/providers/cart-provider";
-import { createClient } from "@/supabase/client";
+import { AuthProvider } from "@/providers/auth-provider";
+import { useAuthUser } from "@/lib/auth/use-auth-user";
 
 interface ProvidersProps {
   children: ReactNode;
 }
 
+/**
+ * Follows the shared auth state rather than its own `onAuthStateChange`
+ * subscription: password sign-in runs as a server action, which never emits a
+ * SIGNED_IN event to the browser client, so those logins were never identified.
+ */
 function PostHogIdentity() {
+  const { user, isLoading } = useAuthUser();
+  const identifiedIdRef = useRef<string | null>(null);
+
   useEffect(() => {
-    const supabase = createClient();
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      const user = session?.user;
+    if (isLoading) return;
 
-      if (user && (event === "INITIAL_SESSION" || event === "SIGNED_IN")) {
-        const properties: Record<string, string> = {};
-        if (user.email) properties.email = user.email;
-
-        const name = user.user_metadata.full_name;
-        if (typeof name === "string") properties.name = name;
-
-        posthog.identify(user.id, properties);
-      }
-
-      if (event === "SIGNED_OUT") {
+    if (!user) {
+      if (identifiedIdRef.current) {
+        identifiedIdRef.current = null;
         posthog.reset();
       }
-    });
+      return;
+    }
 
-    return () => subscription.unsubscribe();
-  }, []);
+    if (identifiedIdRef.current === user.id) return;
+    identifiedIdRef.current = user.id;
+
+    const properties: Record<string, string> = {};
+    if (user.email) properties.email = user.email;
+    if (user.name) properties.name = user.name;
+
+    posthog.identify(user.id, properties);
+  }, [user, isLoading]);
 
   return null;
 }
@@ -43,10 +48,12 @@ function PostHogIdentity() {
 export function Providers({ children }: ProvidersProps) {
   return (
     <QueryProvider>
-      <PostHogIdentity />
-      <CartProvider>
-        <AddressProvider>{children}</AddressProvider>
-      </CartProvider>
+      <AuthProvider>
+        <PostHogIdentity />
+        <CartProvider>
+          <AddressProvider>{children}</AddressProvider>
+        </CartProvider>
+      </AuthProvider>
     </QueryProvider>
   );
 }

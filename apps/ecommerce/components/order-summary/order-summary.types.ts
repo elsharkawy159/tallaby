@@ -16,6 +16,9 @@ export interface OrderSummaryItem {
     title: string
     productType?: string | null
     freeDelivery?: boolean | null
+    seller?: {
+      freeDelivery?: boolean | null
+    } | null
   }
 }
 

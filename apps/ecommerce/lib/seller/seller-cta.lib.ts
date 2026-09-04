@@ -1,16 +1,23 @@
-import type { User } from '@supabase/supabase-js'
+import type { AuthenticatedUserDisplay } from '@/lib/auth/auth-user.types'
 
 export const SELLER_DASHBOARD_URL = 'https://dashboard.tallaby.com/'
 export const SELL_PAGE_PATH = '/sell'
 export const ONBOARDING_PATH = '/onboarding'
 export const AUTH_ONBOARDING_PATH = '/auth?redirect=/onboarding'
 
-export function isExistingSeller(user: User | null): boolean {
-  return user?.user_metadata?.is_seller === true
+/**
+ * Reads the resolved `isSeller` flag rather than `user_metadata.is_seller`.
+ * Metadata is client-writable in principle and only records a *claim*; the
+ * display model confirms it against an approved `sellers` row server-side.
+ */
+export function isExistingSeller(
+  user: AuthenticatedUserDisplay | null,
+): boolean {
+  return user?.isSeller === true
 }
 
 export function getSellerCtaHref(
-  user: User | null,
+  user: AuthenticatedUserDisplay | null,
   options?: { fromSellPage?: boolean },
 ): string {
   if (!user) {
@@ -24,6 +31,8 @@ export function getSellerCtaHref(
   return options?.fromSellPage ? ONBOARDING_PATH : SELL_PAGE_PATH
 }
 
-export function getSellerCtaOpensInNewTab(user: User | null): boolean {
+export function getSellerCtaOpensInNewTab(
+  user: AuthenticatedUserDisplay | null,
+): boolean {
   return isExistingSeller(user)
 }

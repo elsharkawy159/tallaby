@@ -4,15 +4,17 @@ import React, { useRef, useTransition } from "react";
 import { Camera, Loader2, Pen } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { useQueryClient } from "@tanstack/react-query";
 
-import { UserAvatar } from "@/components/shared/user-avatar";
+import { UserAvatar, type UserAvatarSize } from "@/components/shared/user-avatar";
 import { uploadAvatar, updateUserProfile } from "@/actions/auth";
+import { notifyAuthChanged } from "@/lib/auth/use-auth-user";
+import { useRouter } from "@/i18n/navigation";
+import type { AvatarSubject } from "@/lib/auth/avatar";
 import { cn } from "@/lib/utils";
 
 interface AvatarUploaderProps {
-  user: any;
-  size?: "sm" | "md" | "lg" | "xl";
+  user: AvatarSubject | null;
+  size?: UserAvatarSize;
   className?: string;
   showEditIcon?: boolean;
 }
@@ -25,7 +27,7 @@ export function AvatarUploader({
 }: AvatarUploaderProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isPending, startTransition] = useTransition();
-  const queryClient = useQueryClient();
+  const router = useRouter();
   const tToast = useTranslations("toast");
 
   const handleAvatarClick = () => {
@@ -72,11 +74,14 @@ export function AvatarUploader({
         if (updateResult.success) {
           toast.success(tToast("avatarUpdatedSuccessfully"));
 
-          // Invalidate user queries to refresh data
-          await queryClient.invalidateQueries({
-            queryKey: ["user"],
-            refetchType: "active",
-          });
+          // The new avatar lives in cookies-backed auth metadata and the users
+          // table, so nothing client-side observes it on its own. Re-read the
+          // shared viewer (updates the navbar avatar immediately) and refetch
+          // the server-rendered profile page beneath it. The previous
+          // invalidateQueries call targeted a ["user"] key no query uses, so
+          // the navbar kept the old avatar until a hard reload.
+          notifyAuthChanged();
+          router.refresh();
         } else {
           toast.error(updateResult.error || tToast("failedToUpdateAvatar"));
         }
