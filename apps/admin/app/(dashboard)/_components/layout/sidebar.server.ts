@@ -1,4 +1,8 @@
-"use server";
+// Deliberately NOT "use server": nothing here is invoked from the client.
+// That directive turns every export into a callable Server Action endpoint and
+// forces each call through the Action serialization path; this module is read
+// only by the Server Component in sidebar.data.tsx, so a plain async function
+// is both cheaper and a smaller surface.
 
 import { db } from "@workspace/db";
 import {

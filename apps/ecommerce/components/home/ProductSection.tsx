@@ -55,7 +55,7 @@ const ProductSection = async ({
           dragFree: true,
           direction: locale === "ar" ? "rtl" : "ltr",
         }}
-        className="md:flex flex-row items-center mb-8 gap-5"
+        className="md:flex flex-row items-center md:mb-8 gap-5"
       >
         {/* Left Text Block */}
         <div className="md:w-[230px] w-full shrink-0">

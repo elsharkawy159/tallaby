@@ -12,6 +12,7 @@ import {
   orders,
   ne,
   inArray,
+  notInArray,
   gte,
   or,
   isNotNull,
@@ -26,7 +27,44 @@ import {
   mergeProductWithTranslation,
   pickTranslationFromArray,
   type ProductLocale,
+  type ProductTranslationFromRelation,
 } from "@/lib/product-translations";
+
+/** Relations needed for ProductCard (title from translations, color swatches from variants). */
+const productCardWith = {
+  brand: true,
+  productTranslations: true,
+  productVariants: {
+    columns: {
+      id: true,
+      localized: true,
+      option1: true,
+      option2: true,
+      option3: true,
+      images: true,
+      imageUrl: true,
+      position: true,
+    },
+    orderBy: [asc(productVariants.position)],
+  },
+} as const;
+
+type ProductWithTranslations = Record<string, unknown> & {
+  productTranslations?: ProductTranslationFromRelation[];
+};
+
+function localizeProducts<T extends ProductWithTranslations>(
+  productsRaw: T[],
+  locale: ProductLocale
+) {
+  return productsRaw.map((product) => {
+    const translation = pickTranslationFromArray(
+      product.productTranslations ?? [],
+      locale
+    );
+    return mergeProductWithTranslation(product, translation);
+  });
+}
 
 export async function getCartRecommendations(
   cartProductIds: string[],
@@ -34,7 +72,7 @@ export async function getCartRecommendations(
 ) {
   try {
     if (cartProductIds.length === 0) {
-      return getTrendingProducts();
+      return getTrendingProducts(locale);
     }
 
     const cartProducts = await db.query.products.findMany({
@@ -47,60 +85,27 @@ export async function getCartRecommendations(
     ] as string[];
 
     if (categoryIds.length === 0) {
-      return getTrendingProducts();
+      return getTrendingProducts(locale);
     }
 
     const similarProductsRaw = await db.query.products.findMany({
       where: and(
         eq(products.status, "active"),
         inArray(products.categoryId, categoryIds),
-        sql`${products.id} NOT IN (${sql.join(cartProductIds, sql`, `)})`
+        notInArray(products.id, cartProductIds)
       ),
-      with: {
-        brand: true,
-        productTranslations: true,
-        productVariants: {
-          columns: {
-            id: true,
-            localized: true,
-            option1: true,
-            option2: true,
-            option3: true,
-            images: true,
-            imageUrl: true,
-            position: true,
-          },
-          orderBy: [asc(productVariants.position)],
-        },
-      },
+      with: productCardWith,
       orderBy: [desc(products.averageRating), desc(products.reviewCount)],
       limit: 12,
     });
 
-    type ProductWithTranslations = Record<string, unknown> & {
-      productTranslations?: Array<{
-        locale: string;
-        title: string;
-        description?: string | null;
-        bulletPoints?: unknown;
-        slug?: string | null;
-        metaTitle?: string | null;
-        metaDescription?: string | null;
-      }>;
-    };
-
-    const similarProducts = similarProductsRaw.map(
-      (product: ProductWithTranslations) => {
-        const translation = pickTranslationFromArray(
-          product.productTranslations ?? [],
-          locale
-        );
-        return mergeProductWithTranslation(product, translation);
-      }
+    const similarProducts = localizeProducts(
+      similarProductsRaw as ProductWithTranslations[],
+      locale
     );
 
     if (similarProducts.length === 0) {
-      return getTrendingProducts();
+      return getTrendingProducts(locale);
     }
 
     return { success: true, data: similarProducts };
@@ -112,16 +117,17 @@ export async function getCartRecommendations(
 
 export async function getRecommendedProducts(
   type: "personalized" | "trending" | "similar",
-  productId?: string
+  productId?: string,
+  locale: ProductLocale = "en"
 ) {
   // NOT CACHED: User-specific private data (personalized) or query-dependent (similar)
   // Only trending could be cached, but it's handled separately
   try {
     switch (type) {
       case "personalized":
-        return getPersonalizedRecommendations();
+        return getPersonalizedRecommendations(locale);
       case "trending":
-        return getTrendingProducts();
+        return getTrendingProducts(locale);
       case "similar":
         if (!productId) {
           return {
@@ -129,7 +135,7 @@ export async function getRecommendedProducts(
             error: "Product ID required for similar products",
           };
         }
-        return getSimilarProducts(productId);
+        return getSimilarProducts(productId, locale);
       default:
         return { success: false, error: "Invalid recommendation type" };
     }
@@ -139,14 +145,14 @@ export async function getRecommendedProducts(
   }
 }
 
-async function getPersonalizedRecommendations() {
+async function getPersonalizedRecommendations(locale: ProductLocale = "en") {
   // NOT CACHED: User-specific private data - based on user's purchase history and wishlist
   try {
     const user = await getUser();
 
     if (!user) {
       // For anonymous users, show popular products
-      return getTrendingProducts();
+      return getTrendingProducts(locale);
     }
 
     // Get user's purchase history
@@ -195,7 +201,7 @@ async function getPersonalizedRecommendations() {
       ...purchasedProducts.map((p) => p.productId),
       ...wishlistProducts.map((p) => p.productId),
       ...recentlyViewed.map((p) => p.productId).filter(Boolean),
-    ];
+    ].filter(Boolean) as string[];
 
     // Collect categories and brands
     const preferredCategories = [
@@ -205,7 +211,7 @@ async function getPersonalizedRecommendations() {
           ...wishlistProducts.map((p) => p.categoryId),
         ].filter(Boolean)
       ),
-    ];
+    ] as string[];
 
     const preferredBrands = [
       ...new Set(
@@ -214,19 +220,17 @@ async function getPersonalizedRecommendations() {
           ...wishlistProducts.map((p) => p.brandId),
         ].filter(Boolean)
       ),
-    ];
+    ] as string[];
 
     // Build recommendations based on preferences
     const conditions = [eq(products.status, "active")];
 
     if (interactedProductIds.length > 0) {
-      conditions.push(
-        sql`${products.id} NOT IN (${sql.join(interactedProductIds.filter(Boolean) as string[], sql`, `)})`
-      );
+      conditions.push(notInArray(products.id, interactedProductIds));
     }
 
     // Get products from preferred categories and brands
-    let recommendations = [];
+    const recommendations = [];
 
     if (preferredCategories.length > 0) {
       const categoryProducts = await db.query.products.findMany({
@@ -234,6 +238,7 @@ async function getPersonalizedRecommendations() {
           ...conditions,
           inArray(products.categoryId, preferredCategories)
         ),
+        with: productCardWith,
         orderBy: [desc(products.averageRating), desc(products.reviewCount)],
         limit: 10,
       });
@@ -244,8 +249,9 @@ async function getPersonalizedRecommendations() {
       const brandProducts = await db.query.products.findMany({
         where: and(
           ...conditions,
-          inArray(products.brandId, preferredBrands as any)
+          inArray(products.brandId, preferredBrands)
         ),
+        with: productCardWith,
         orderBy: [desc(products.averageRating)],
         limit: 10,
       });
@@ -257,14 +263,20 @@ async function getPersonalizedRecommendations() {
       new Map(recommendations.map((p) => [p.id, p])).values()
     ).slice(0, 20);
 
-    return { success: true, data: uniqueRecommendations };
+    return {
+      success: true,
+      data: localizeProducts(
+        uniqueRecommendations as ProductWithTranslations[],
+        locale
+      ),
+    };
   } catch (error) {
     console.error("Error getting personalized recommendations:", error);
     return { success: false, error: "Failed to get recommendations" };
   }
 }
 
-async function getTrendingProducts() {
+async function getTrendingProducts(locale: ProductLocale = "en") {
   // CACHED: Semi-dynamic public data - trending products change hourly
   return unstable_cache(
     async () => {
@@ -291,10 +303,17 @@ async function getTrendingProducts() {
           // Fallback to best rated products
           const bestRated = await db.query.products.findMany({
             where: eq(products.status, "active"),
+            with: productCardWith,
             orderBy: [desc(products.averageRating), desc(products.reviewCount)],
             limit: 20,
           });
-          return { success: true, data: bestRated };
+          return {
+            success: true,
+            data: localizeProducts(
+              bestRated as ProductWithTranslations[],
+              locale
+            ),
+          };
         }
 
         const trendingProducts = await db.query.products.findMany({
@@ -302,23 +321,24 @@ async function getTrendingProducts() {
             inArray(products.id, productIds),
             eq(products.status, "active")
           ),
-          with: {
-            brand: true,
-          },
+          with: productCardWith,
         });
 
         // Sort by trending order
         const sortedProducts = productIds
           .map((id) => trendingProducts.find((p) => p.id === id))
-          .filter(Boolean);
+          .filter(Boolean) as ProductWithTranslations[];
 
-        return { success: true, data: sortedProducts };
+        return {
+          success: true,
+          data: localizeProducts(sortedProducts, locale),
+        };
       } catch (error) {
         console.error("Error getting trending products:", error);
         return { success: false, error: "Failed to get trending products" };
       }
     },
-    ["trending-products"],
+    ["trending-products", locale],
     {
       tags: ["recommendations", "trending-products"],
       revalidate: 3600, // 1 hour - trending products update hourly
@@ -326,7 +346,10 @@ async function getTrendingProducts() {
   )();
 }
 
-async function getSimilarProducts(productId: string) {
+async function getSimilarProducts(
+  productId: string,
+  locale: ProductLocale = "en"
+) {
   // NOT CACHED: Query-dependent - varies by productId and includes real-time pricing
   try {
     // Get the product details
@@ -339,24 +362,30 @@ async function getSimilarProducts(productId: string) {
     }
 
     // Find similar products based on category, brand, and price range
-    const priceMin = Number((product.price as any)?.current) * 0.7;
-    const priceMax = Number((product.price as any)?.current) * 1.3;
+    const priceMin = Number((product.price as { current?: number } | null)?.current) * 0.7;
+    const priceMax = Number((product.price as { current?: number } | null)?.current) * 1.3;
+
+    const similarityFilters = [eq(products.categoryId, product.categoryId)];
+    if (product.brandId) {
+      similarityFilters.push(eq(products.brandId, product.brandId));
+    }
 
     const similar = await db.query.products.findMany({
       where: and(
         eq(products.status, "active"),
         ne(products.id, productId),
-        or(
-          eq(products.categoryId, product.categoryId),
-          eq(products.brandId, product.brandId as any)
-        ),
+        or(...similarityFilters),
         sql`(${products.price}->>'current')::numeric BETWEEN ${priceMin} AND ${priceMax}`
       ),
+      with: productCardWith,
       orderBy: [desc(products.averageRating)],
       limit: 12,
     });
 
-    return { success: true, data: similar };
+    return {
+      success: true,
+      data: localizeProducts(similar as ProductWithTranslations[], locale),
+    };
   } catch (error) {
     console.error("Error getting similar products:", error);
     return { success: false, error: "Failed to get similar products" };

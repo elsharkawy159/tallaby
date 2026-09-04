@@ -46,7 +46,7 @@ export default async function BestSellersInCategory({
     sortBy: "popular",
     limit,
     locale: locale as "en" | "ar",
-  })
+  });
 
   const products = productsResult.success ? productsResult.data : [];
 
@@ -63,7 +63,7 @@ export default async function BestSellersInCategory({
           align: "start",
           dragFree: false,
         }}
-        className="flex flex-row items-center mb-8 gap-5"
+        className="flex flex-row items-center md:mb-8 gap-5"
       >
         {/* Left Text Block */}
         <div className="w-[280px] shrink-0">

@@ -59,21 +59,56 @@ export function fillCustomerSeries (
 }
 
 /**
- * Run async tasks in fixed-size batches. Needed when talking to Supabase's
- * transaction pooler (:6543) — a large Promise.all stamps pgbouncer and
- * trips statement_timeout even when each query alone is fast.
+ * Ceiling on analytics queries in flight at once, process-wide.
+ *
+ * The postgres-js pool deadlocks — permanently, not slowly — once noticeably
+ * more queries are queued than it has connections (see packages/db's pool
+ * config). A per-call batch size cannot prevent that, because several requests
+ * render concurrently and each would get its own budget. This counter is
+ * module-level, so it bounds the whole process no matter how many dashboards
+ * are being rendered, and leaves the pool plenty of headroom for everything
+ * else (Server Actions, transactions, the sidebar).
  */
-export async function runInBatches<T> (
-  tasks: Array<() => Promise<T>>,
-  batchSize = 3
-): Promise<T[]> {
-  const results: T[] = []
+const MAX_QUERIES_IN_FLIGHT = 6
 
-  for (let i = 0; i < tasks.length; i += batchSize) {
-    const batch = tasks.slice(i, i + batchSize)
-    const batchResults = await Promise.all(batch.map((task) => task()))
-    results.push(...batchResults)
+let inFlight = 0
+const waiting: Array<() => void> = []
+
+async function acquireSlot (): Promise<void> {
+  if (inFlight < MAX_QUERIES_IN_FLIGHT) {
+    inFlight += 1
+    return
   }
 
-  return results
+  await new Promise<void>((resolve) => waiting.push(resolve))
+  inFlight += 1
+}
+
+function releaseSlot (): void {
+  inFlight -= 1
+  waiting.shift()?.()
+}
+
+/**
+ * Run tasks concurrently, but never more than MAX_QUERIES_IN_FLIGHT at a time.
+ *
+ * Results come back positionally, like Promise.all, and the tuple typing keeps
+ * each one's own row type — so a destructured result stays precisely typed
+ * instead of collapsing to a union of every query's shape.
+ */
+export async function runLimited<
+  const T extends ReadonlyArray<() => Promise<unknown>>
+> (
+  tasks: T
+): Promise<{ -readonly [K in keyof T]: Awaited<ReturnType<T[K]>> }> {
+  return await Promise.all(
+    tasks.map(async (task) => {
+      await acquireSlot()
+      try {
+        return await task()
+      } finally {
+        releaseSlot()
+      }
+    })
+  ) as { -readonly [K in keyof T]: Awaited<ReturnType<T[K]>> }
 }

@@ -1,38 +1,35 @@
 import { Suspense } from "react";
 import { getAllCustomers, getCustomerStats } from "@/actions/customers";
-import type { Customer, CustomerStats } from "./customers.types";
+import type {
+  Customer,
+  CustomerStats,
+  CustomersPageProps
+} from "./customers.types";
 import { CustomersContent } from "./customers.client";
 import { CustomersSkeleton } from "./customers.skeleton";
 
-interface CustomersDataProps {
-  searchParams?: {
-    role?: string;
-    isVerified?: string;
-    isSuspended?: string;
-    search?: string;
-    page?: string;
-    limit?: string;
-  };
-}
+type CustomersDataProps = CustomersPageProps;
 
 async function CustomersDataContent({ searchParams }: CustomersDataProps) {
-  const limit = searchParams?.limit ? parseInt(searchParams.limit) : 1000;
-  const offset = searchParams?.page
-    ? (parseInt(searchParams.page) - 1) * limit
-    : 0;
+  // Awaited here, inside the Suspense boundary, rather than in the page — so
+  // the skeleton still shows immediately instead of the route blocking on it.
+  const params = await searchParams;
+
+  const limit = params?.limit ? parseInt(params.limit) : 1000;
+  const offset = params?.page ? (parseInt(params.page) - 1) * limit : 0;
 
   const [customersResult, statsResult] = await Promise.all([
     getAllCustomers({
-      role: searchParams?.role,
+      role: params?.role,
       isVerified:
-        searchParams?.isVerified !== undefined
-          ? searchParams.isVerified === "true"
+        params?.isVerified !== undefined
+          ? params.isVerified === "true"
           : undefined,
       isSuspended:
-        searchParams?.isSuspended !== undefined
-          ? searchParams.isSuspended === "true"
+        params?.isSuspended !== undefined
+          ? params.isSuspended === "true"
           : undefined,
-      search: searchParams?.search,
+      search: params?.search,
       limit,
       offset,
     }),

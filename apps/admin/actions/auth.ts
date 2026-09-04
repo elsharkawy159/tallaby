@@ -2,7 +2,7 @@
 
 import { createClient } from "@/supabase/server";
 import { redirect } from "next/navigation";
-import { getCurrentAdminUser } from "@/lib/auth/admin-auth";
+import { getAuthUser, getCurrentAdminUser } from "@/lib/auth/admin-auth";
 
 /**
  * Verifies the caller is an authenticated, verified admin/super_admin/
@@ -15,17 +15,20 @@ import { getCurrentAdminUser } from "@/lib/auth/admin-auth";
  * this function's ~20 call sites across admin's Server Actions is fixed by
  * this one change; the return shape ({ user }) is unchanged so no caller
  * needs to be touched.
+ *
+ * Both calls below are request-memoized (React.cache), so repeating this
+ * guard across a layout, a page and several data functions costs one
+ * auth round-trip and one profile query for the whole request.
  */
 export const getAdminUser = async () => {
   await getCurrentAdminUser();
 
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.getUser();
+  const user = await getAuthUser();
 
-  if (error) {
-    throw new Error(error.message);
+  if (!user) {
+    throw new Error("User not authenticated");
   }
-  return data;
+  return { user };
 };
 
 export const register = async (

@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createClient } from "@/supabase/server";
 import type {
   AdminUser,
@@ -7,18 +8,37 @@ import type {
 import { getAdminPermissions, hasPermission } from "./middleware-utils";
 
 /**
- * Server-side function to get the current admin user
- * This should be used in Server Components and Server Actions
+ * The raw Supabase auth user for this request, fetched at most once.
+ *
+ * `auth.getUser()` is a network call to the Supabase Auth API, not a cookie
+ * read, so it has to be memoized rather than repeated per guard.
  */
-export const getCurrentAdminUser = async (): Promise<AdminUser> => {
+export const getAuthUser = cache(async () => {
   const supabase = await createClient();
-
   const {
     data: { user },
-    error: userError,
+    error,
   } = await supabase.auth.getUser();
 
-  if (userError || !user) {
+  return error ? null : user;
+});
+
+/**
+ * Server-side function to get the current admin user
+ * This should be used in Server Components and Server Actions
+ *
+ * Wrapped in React.cache so the ~65 call sites that guard a Server Component
+ * or Server Action share ONE result per request. Each call costs two Supabase
+ * round-trips (auth.getUser + the profile select); a single dashboard render
+ * calls it from the layout, the page, and each data function, so without
+ * memoization one page load spent most of its time re-authenticating. The
+ * cache is request-scoped — it never leaks one user's session into another's.
+ */
+export const getCurrentAdminUser = cache(async (): Promise<AdminUser> => {
+  const supabase = await createClient();
+  const user = await getAuthUser();
+
+  if (!user) {
     throw new Error("User not authenticated");
   }
 
@@ -49,7 +69,7 @@ export const getCurrentAdminUser = async (): Promise<AdminUser> => {
   }
 
   return userProfile as AdminUser;
-};
+});
 
 /**
  * Server-side function to check if user has specific permission

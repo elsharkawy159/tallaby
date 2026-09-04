@@ -1,39 +1,33 @@
 import { Suspense } from "react";
 import { getAllBrands } from "@/actions/brands";
-import type { Brand, BrandStats, Locale } from "./brands.types";
+import type {
+  Brand,
+  BrandStats,
+  BrandsPageProps,
+  Locale
+} from "./brands.types";
 import { BrandsContent } from "./brands.client";
 import { BrandsSkeleton } from "./brands.skeleton";
 import { calculateBrandStats } from "./brands.lib";
 
-interface BrandsDataProps {
-  searchParams?: {
-    locale?: Locale;
-    verified?: string;
-    official?: string;
-    search?: string;
-    page?: string;
-    limit?: string;
-  };
-}
+type BrandsDataProps = BrandsPageProps;
 
 async function BrandsDataContent({ searchParams }: BrandsDataProps) {
-  const limit = searchParams?.limit ? parseInt(searchParams.limit) : 1000;
-  const offset = searchParams?.page
-    ? (parseInt(searchParams.page) - 1) * limit
-    : 0;
-  const locale = (searchParams?.locale || "en") as Locale;
+  // Awaited here, inside the Suspense boundary, rather than in the page — so
+  // the skeleton still shows immediately instead of the route blocking on it.
+  const params = await searchParams;
+
+  const limit = params?.limit ? parseInt(params.limit) : 1000;
+  const offset = params?.page ? (parseInt(params.page) - 1) * limit : 0;
+  const locale = (params?.locale || "en") as Locale;
 
   const brandsResult = await getAllBrands({
     locale,
     verified:
-      searchParams?.verified !== undefined
-        ? searchParams.verified === "true"
-        : undefined,
+      params?.verified !== undefined ? params.verified === "true" : undefined,
     official:
-      searchParams?.official !== undefined
-        ? searchParams.official === "true"
-        : undefined,
-    search: searchParams?.search,
+      params?.official !== undefined ? params.official === "true" : undefined,
+    search: params?.search,
     limit,
     offset,
   });

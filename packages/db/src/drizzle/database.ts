@@ -16,10 +16,17 @@ const connectionString = process.env.DATABASE_URL!;
  * default, which is silently incompatible with that pooler mode — disable
  * it whenever the connection string targets :6543.
  *
- * Transaction-mode poolers also cannot safely open many concurrent client
- * connections from one serverless/Node process — Promise.all of ~16 queries
- * with max:10 stamps the pooler and trips statement_timeout. Cap concurrency
- * so queued queries run serially through a single pooled connection.
+ * `max` must stay comfortably ABOVE the app's peak query concurrency. When
+ * noticeably more queries are in flight than the pool has connections, the
+ * postgres-js queue against this pooler stops draining and every waiter hangs
+ * forever — not a slow query, a permanent stall. `max: 1` therefore deadlocked
+ * on any two concurrent queries at all, which Next.js produces on every
+ * request by rendering layout and page in parallel. Measured against this
+ * database: max:1 with 2 parallel queries never resolves; max:20 with 40
+ * parallel queries resolves in ~650ms.
+ *
+ * Serverless invocations serve one request at a time and are billed per
+ * connection, so they stay small; a long-running Node server needs headroom.
  */
 const usesTransactionPooler = /:6543(\/|$)/.test(connectionString);
 const isServerless = Boolean(
@@ -27,10 +34,16 @@ const isServerless = Boolean(
 );
 
 const client = postgres(connectionString, {
-  max: usesTransactionPooler || isServerless ? 1 : 10,
+  max: isServerless ? 4 : 20,
   idle_timeout: 20,
   connect_timeout: 10,
   prepare: !usesTransactionPooler,
+  /**
+   * Skip the type-introspection round-trip postgres-js runs the first time it
+   * meets an unknown OID. It costs an extra query on every new connection and
+   * is the other operation observed to wedge under the transaction pooler.
+   */
+  fetch_types: false,
 });
 
 // Instantiate Drizzle client with pg driver and schema.

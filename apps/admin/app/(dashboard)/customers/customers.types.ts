@@ -76,12 +76,13 @@ export interface CustomerStats {
 }
 
 export interface CustomersPageProps {
-  searchParams?: {
+  /** Next.js 16 passes searchParams as a Promise; it must be awaited. */
+  searchParams?: Promise<{
     role?: string;
     isVerified?: string;
     isSuspended?: string;
     search?: string;
     page?: string;
     limit?: string;
-  };
+  }>;
 }

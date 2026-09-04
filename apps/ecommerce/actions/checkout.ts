@@ -21,6 +21,8 @@ const cartWithShippingItems = {
     with: {
       product: {
         columns: {
+          id: true,
+          title: true,
           sellerId: true,
           productType: true,
           freeDelivery: true,

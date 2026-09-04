@@ -57,25 +57,49 @@ export interface SellerPerformanceRow {
   orders: number
 }
 
-export interface CommerceAnalytics {
+/**
+ * The dashboard is assembled from these four independent slices rather than
+ * one blocking payload, so each can sit behind its own <Suspense> boundary and
+ * stream in as soon as its own queries finish.
+ */
+export interface DashboardMetrics {
   revenue: PeriodMetric
   orders: PeriodMetric
   customers: PeriodMetric
   aov: PeriodMetric
   activeProducts: PeriodMetric
+}
+
+export interface RevenueAndStatus {
   dailyRevenue: ChartPoint[]
+  orderStatus: NamedValue[]
+}
+
+export interface DashboardTables {
+  recentOrders: RecentOrderRow[]
+  topProducts: ProductPerformanceRow[]
+  topSellers: SellerPerformanceRow[]
+}
+
+export interface CategoryAndActivity {
+  salesByCategory: NamedValue[]
+  categories: CategoryPerformanceRow[]
+  customerActivity: MultiSeriesPoint[]
+}
+
+export interface MonthlySeries {
   monthlyRevenue: ChartPoint[]
   monthlyOrders: ChartPoint[]
   monthlyAov: ChartPoint[]
   monthlyClv: ChartPoint[]
-  orderStatus: NamedValue[]
-  salesByCategory: NamedValue[]
-  customerActivity: MultiSeriesPoint[]
-  topProducts: ProductPerformanceRow[]
-  categories: CategoryPerformanceRow[]
-  recentOrders: RecentOrderRow[]
-  topSellers: SellerPerformanceRow[]
 }
+
+export interface CommerceAnalytics
+  extends DashboardMetrics,
+    RevenueAndStatus,
+    DashboardTables,
+    CategoryAndActivity,
+    MonthlySeries {}
 
 export interface PosthogFunnelStep {
   event: string
