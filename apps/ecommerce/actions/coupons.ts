@@ -39,6 +39,10 @@ interface CartWithItems {
       productType?: string | null
       freeDelivery?: boolean | null
       dimensions?: unknown
+      sellerId?: string | null
+      seller?: {
+        freeDelivery?: boolean | null
+      } | null
     }
   }>
 }
@@ -283,7 +287,15 @@ export async function applyCouponToCart(data: {
                 productType: true,
                 freeDelivery: true,
                 dimensions: true,
-              }
+                sellerId: true,
+              },
+              with: {
+                seller: {
+                  columns: {
+                    freeDelivery: true,
+                  },
+                },
+              },
             }
           }
         }
@@ -342,6 +354,14 @@ export async function removeCouponFromCart(data?: {
                 productType: true,
                 freeDelivery: true,
                 dimensions: true,
+                sellerId: true,
+              },
+              with: {
+                seller: {
+                  columns: {
+                    freeDelivery: true,
+                  },
+                },
               },
             },
           },

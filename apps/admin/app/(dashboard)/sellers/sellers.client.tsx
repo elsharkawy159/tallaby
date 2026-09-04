@@ -409,6 +409,9 @@ export const SellersClientWrapper = ({
                   <th className="py-4 px-4 text-center text-sm font-medium">
                     Fee Exempt
                   </th>
+                  <th className="py-4 px-4 text-center text-sm font-medium">
+                    Free Delivery
+                  </th>
                   <th className="py-4 px-4 text-right text-sm font-medium">
                     Balance
                   </th>

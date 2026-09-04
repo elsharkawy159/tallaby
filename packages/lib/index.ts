@@ -20,7 +20,9 @@ export {
   cartQualifiesForProductFreeDelivery,
   getBaseRateForGovernorate,
   getWeightExtraCharge,
+  groupShippingItemsBySeller,
   normalizeGovernorate,
+  sellerGroupQualifiesForFreeDelivery,
 } from "./src/shipping";
 
 export type {

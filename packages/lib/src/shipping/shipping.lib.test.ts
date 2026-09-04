@@ -6,6 +6,7 @@ import {
   calculateCartWeightGrams,
   calculateLocationShippingCost,
   calculateRawShippingAmount,
+  cartQualifiesForProductFreeDelivery,
   getWeightExtraCharge,
 } from './shipping.lib'
 
@@ -188,5 +189,123 @@ describe('calculateLocationShippingCost', () => {
         destinationState: '   ',
       }),
     ).toBeNull()
+  })
+
+  it('waives shipping only for the seller whose free_delivery flag is true', () => {
+    const freeSellerItem = {
+      quantity: 1,
+      sellerId: 'seller-free',
+      product: {
+        productType: 'physical' as const,
+        freeDelivery: false,
+        dimensions: { weight: 1, weightUnit: 'kg' },
+        sellerId: 'seller-free',
+        seller: { freeDelivery: true },
+      },
+    }
+    const paidSellerItem = {
+      quantity: 1,
+      sellerId: 'seller-paid',
+      product: {
+        productType: 'physical' as const,
+        freeDelivery: false,
+        dimensions: { weight: 1, weightUnit: 'kg' },
+        sellerId: 'seller-paid',
+        seller: { freeDelivery: false },
+      },
+    }
+
+    // Only the non-free seller's shipping is billed
+    expect(
+      calculateLocationShippingCost({
+        items: [freeSellerItem, paidSellerItem],
+        destinationState: 'Giza',
+      }),
+    ).toBe(65)
+
+    // Both sellers free -> whole order ships free
+    expect(
+      calculateLocationShippingCost({
+        items: [
+          freeSellerItem,
+          { ...paidSellerItem, sellerId: 'seller-free-2', product: { ...paidSellerItem.product, sellerId: 'seller-free-2', seller: { freeDelivery: true } } },
+        ],
+        destinationState: 'Giza',
+      }),
+    ).toBe(0)
+  })
+
+  it('does not require a destination when the only billable seller is unknown but every seller present is free', () => {
+    expect(
+      calculateLocationShippingCost({
+        items: [
+          {
+            quantity: 1,
+            sellerId: 'seller-free',
+            product: {
+              productType: 'physical',
+              freeDelivery: false,
+              sellerId: 'seller-free',
+              seller: { freeDelivery: true },
+            },
+          },
+        ],
+        destinationState: null,
+      }),
+    ).toBe(0)
+  })
+})
+
+describe('cartQualifiesForProductFreeDelivery', () => {
+  it('is false when one seller in a multi-seller cart is not free delivery', () => {
+    expect(
+      cartQualifiesForProductFreeDelivery([
+        {
+          quantity: 1,
+          sellerId: 'seller-free',
+          product: {
+            productType: 'physical',
+            sellerId: 'seller-free',
+            seller: { freeDelivery: true },
+          },
+        },
+        {
+          quantity: 1,
+          sellerId: 'seller-paid',
+          product: {
+            productType: 'physical',
+            freeDelivery: false,
+            sellerId: 'seller-paid',
+            seller: { freeDelivery: false },
+          },
+        },
+      ]),
+    ).toBe(false)
+  })
+
+  it('is true when every seller in the cart is free delivery', () => {
+    expect(
+      cartQualifiesForProductFreeDelivery([
+        {
+          quantity: 1,
+          sellerId: 'seller-a',
+          product: {
+            productType: 'physical',
+            sellerId: 'seller-a',
+            seller: { freeDelivery: true },
+          },
+        },
+        {
+          quantity: 1,
+          sellerId: 'seller-b',
+          product: {
+            productType: 'physical',
+            freeDelivery: true,
+            sellerId: 'seller-b',
+            seller: { freeDelivery: false },
+          },
+        },
+      ]),
+    ).toBe(true)
   })
 })

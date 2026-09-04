@@ -15,10 +15,15 @@ export interface CalculateOrderShippingOptions {
 
 export interface OrderShippingCartItem {
   quantity: number
+  sellerId?: string | null
   product?: {
     productType?: string | null
     freeDelivery?: boolean | null
     dimensions?: unknown
+    sellerId?: string | null
+    seller?: {
+      freeDelivery?: boolean | null
+    } | null
   } | null
 }
 

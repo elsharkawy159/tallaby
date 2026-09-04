@@ -6,7 +6,10 @@ import { Button } from "@workspace/ui/components/button";
 import { Badge } from "@workspace/ui/components/badge";
 import { Switch } from "@workspace/ui/components/switch";
 import { toast } from "sonner";
-import { updateSellerCommissionExempt } from "./sellers.server";
+import {
+  updateSellerCommissionExempt,
+  updateSellerFreeDelivery,
+} from "./sellers.server";
 import {
   Avatar,
   AvatarFallback,
@@ -87,6 +90,53 @@ export const CommissionExemptToggle = ({
       />
       <span className="text-xs text-muted-foreground">
         {isExempt ? "Exempt" : "Standard"}
+      </span>
+    </div>
+  );
+};
+
+interface FreeDeliveryToggleProps {
+  sellerId: string;
+  freeDelivery: boolean;
+}
+
+export const FreeDeliveryToggle = ({
+  sellerId,
+  freeDelivery,
+}: FreeDeliveryToggleProps) => {
+  const [isFree, setIsFree] = useState(freeDelivery);
+  const [isPending, startTransition] = useTransition();
+
+  const handleToggle = (checked: boolean) => {
+    const previousValue = isFree;
+    setIsFree(checked);
+
+    startTransition(async () => {
+      const result = await updateSellerFreeDelivery(sellerId, checked);
+
+      if (result.success) {
+        toast.success(result.message);
+      } else {
+        setIsFree(previousValue);
+        toast.error(result.error || "Failed to update free delivery");
+      }
+    });
+  };
+
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <Switch
+        checked={isFree}
+        onCheckedChange={handleToggle}
+        disabled={isPending}
+        aria-label={
+          isFree
+            ? "Disable free delivery for all of this seller's products"
+            : "Enable free delivery for all of this seller's products"
+        }
+      />
+      <span className="text-xs text-muted-foreground">
+        {isFree ? "Free" : "Standard"}
       </span>
     </div>
   );
@@ -301,6 +351,13 @@ export const SellerRow = ({ seller, onAction }: SellerRowProps) => {
         <CommissionExemptToggle
           sellerId={seller.id}
           isCommissionExempt={seller.isCommissionExempt}
+        />
+      </td>
+
+      <td className="py-4 px-4 text-center">
+        <FreeDeliveryToggle
+          sellerId={seller.id}
+          freeDelivery={seller.freeDelivery}
         />
       </td>
 

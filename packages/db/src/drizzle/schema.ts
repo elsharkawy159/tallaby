@@ -323,6 +323,7 @@ export const sellers = pgTable("sellers", {
 	supportPhone: text("support_phone"),
 	commissionRate: real("commission_rate").default(sql`'10'`).notNull(),
 	isCommissionExempt: boolean("is_commission_exempt").default(false).notNull(),
+	freeDelivery: boolean("free_delivery").default(false).notNull(),
 	feeStructure: jsonb("fee_structure"),
 	taxInformation: jsonb("tax_information"),
 	paymentDetails: jsonb("payment_details"),
