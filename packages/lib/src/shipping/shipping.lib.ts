@@ -78,6 +78,58 @@ export function calculateCartWeightGrams(items: ShippingCartItem[]): number {
   }, 0)
 }
 
+const UNASSIGNED_SELLER_KEY = '__unassigned__'
+
+function getItemSellerId(item: ShippingCartItem): string {
+  return item.sellerId ?? item.product?.sellerId ?? UNASSIGNED_SELLER_KEY
+}
+
+/** Groups cart items by seller so free delivery can be evaluated per seller. */
+export function groupShippingItemsBySeller(
+  items: ShippingCartItem[],
+): Map<string, ShippingCartItem[]> {
+  const groups = new Map<string, ShippingCartItem[]>()
+
+  for (const item of items) {
+    const sellerId = getItemSellerId(item)
+    const group = groups.get(sellerId)
+    if (group) {
+      group.push(item)
+    } else {
+      groups.set(sellerId, [item])
+    }
+  }
+
+  return groups
+}
+
+/**
+ * A seller's items ship free when the seller itself has free delivery enabled,
+ * or (falling back to the product-level flag) every physical item they're
+ * selling in this cart has free delivery enabled individually.
+ */
+export function sellerGroupQualifiesForFreeDelivery(
+  items: ShippingCartItem[],
+): boolean {
+  const physicalItems = items.filter(
+    (item) => item.product?.productType !== 'digital',
+  )
+
+  if (physicalItems.length === 0) {
+    return true
+  }
+
+  if (physicalItems.some((item) => item.product?.seller?.freeDelivery === true)) {
+    return true
+  }
+
+  return physicalItems.every((item) => item.product?.freeDelivery === true)
+}
+
+/**
+ * Whole-cart check: true only when every seller represented in the cart
+ * qualifies for free delivery (used for "your whole order ships free" UI).
+ */
 export function cartQualifiesForProductFreeDelivery(
   items: ShippingCartItem[],
 ): boolean {
@@ -85,10 +137,18 @@ export function cartQualifiesForProductFreeDelivery(
     (item) => item.product?.productType !== 'digital',
   )
 
-  return (
-    physicalItems.length > 0 &&
-    physicalItems.every((item) => item.product?.freeDelivery === true)
-  )
+  if (physicalItems.length === 0) {
+    return false
+  }
+
+  const sellerGroups = groupShippingItemsBySeller(items)
+  for (const groupItems of sellerGroups.values()) {
+    if (!sellerGroupQualifiesForFreeDelivery(groupItems)) {
+      return false
+    }
+  }
+
+  return true
 }
 
 export function calculateRawShippingAmount(
@@ -105,6 +165,10 @@ export function calculateRawShippingAmount(
   return baseRate + weightExtra
 }
 
+/**
+ * Shipping cost is computed per seller (so one seller's free-delivery status
+ * never affects another seller's items in the same order) and summed.
+ */
 export function calculateLocationShippingCost(
   options: LocationShippingOptions,
 ): number | null {
@@ -119,23 +183,45 @@ export function calculateLocationShippingCost(
     return 0
   }
 
-  if (cartQualifiesForProductFreeDelivery(items)) {
-    return 0
-  }
-
-  // No destination yet — shipping is unknown until an address is selected
+  // No destination yet — shipping is unknown until an address is selected,
+  // but only matters once we know at least one seller isn't free.
   const hasDestination =
     typeof destinationState === 'string' && destinationState.trim().length > 0
-  if (!hasDestination) {
+
+  const sellerGroups = groupShippingItemsBySeller(items)
+  let total = 0
+  let missingDestinationForBillableGroup = false
+
+  for (const groupItems of sellerGroups.values()) {
+    const groupPhysicalItems = groupItems.filter(
+      (item) => item.product?.productType !== 'digital',
+    )
+
+    if (groupPhysicalItems.length === 0) {
+      continue
+    }
+
+    if (sellerGroupQualifiesForFreeDelivery(groupItems)) {
+      continue
+    }
+
+    if (!hasDestination) {
+      missingDestinationForBillableGroup = true
+      continue
+    }
+
+    const totalGrams = calculateCartWeightGrams(groupItems)
+    const rawAmount = calculateRawShippingAmount(
+      destinationState,
+      totalGrams,
+      fallbackBaseRate,
+    )
+    total += applyShippingFeesAndRound(rawAmount)
+  }
+
+  if (missingDestinationForBillableGroup) {
     return null
   }
 
-  const totalGrams = calculateCartWeightGrams(items)
-  const rawAmount = calculateRawShippingAmount(
-    destinationState,
-    totalGrams,
-    fallbackBaseRate,
-  )
-
-  return applyShippingFeesAndRound(rawAmount)
+  return total
 }

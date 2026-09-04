@@ -44,6 +44,9 @@ export const SellersTableSkeleton = () => {
               <th className="py-4 px-4 text-center text-sm font-medium">
                 <Skeleton className="h-4 w-20" />
               </th>
+              <th className="py-4 px-4 text-center text-sm font-medium">
+                <Skeleton className="h-4 w-20" />
+              </th>
               <th className="py-4 px-4 text-right text-sm font-medium">
                 <Skeleton className="h-4 w-16" />
               </th>

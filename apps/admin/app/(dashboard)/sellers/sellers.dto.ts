@@ -27,6 +27,7 @@ export const sellerUpdateSchema = z.object({
   status: z.enum(["pending", "approved", "suspended", "restricted"]).optional(),
   commissionRate: z.number().min(0).max(100).optional(),
   isCommissionExempt: z.boolean().optional(),
+  freeDelivery: z.boolean().optional(),
   isVerified: z.boolean().optional(),
   approvedCategories: z.array(z.string()).optional(),
   sellerLevel: z.string().optional(),

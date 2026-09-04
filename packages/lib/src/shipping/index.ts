@@ -37,6 +37,8 @@ export {
   cartQualifiesForProductFreeDelivery,
   getBaseRateForGovernorate,
   getWeightExtraCharge,
+  groupShippingItemsBySeller,
+  sellerGroupQualifiesForFreeDelivery,
 } from './shipping.lib'
 
 export type { LocationShippingOptions, ShippingCartItem } from './shipping.types'

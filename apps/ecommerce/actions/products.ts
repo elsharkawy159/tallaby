@@ -249,6 +249,7 @@ export const getProductBySlug = createCachedQuery({
                 storeRating: true,
                 positiveRatingPercent: true,
                 totalRatings: true,
+                freeDelivery: true,
               },
             },
             productVariants: true,

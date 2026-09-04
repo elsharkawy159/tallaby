@@ -126,7 +126,9 @@ export const ProductDetails = ({
   }, [product.productVariants, t]);
   const hasStock = product.status === "active" && stock > 0;
   const isPhysicalProduct = product.productType !== "digital";
-  const hasFreeDelivery = isPhysicalProduct && product.freeDelivery === true;
+  const hasFreeDelivery =
+    isPhysicalProduct &&
+    (product.freeDelivery === true || product.seller?.freeDelivery === true);
   const freeShippingThresholdLabel = formatPricePlain(
     FREE_SHIPPING_THRESHOLD,
     locale,

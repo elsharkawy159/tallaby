@@ -129,9 +129,19 @@ export async function searchProducts(filters: SearchFilters) {
       conditions.push(sql`${products.quantity} > 0`);
     }
 
-    // Free shipping filter
+    // Free shipping filter: product-level flag, or the product's seller
+    // has free delivery enabled for their whole store
     if (filters.freeShipping) {
-      conditions.push(eq(products.freeDelivery, true));
+      conditions.push(
+        or(
+          eq(products.freeDelivery, true),
+          sql`EXISTS (
+            SELECT 1 FROM sellers s
+            WHERE s.id = ${products.sellerId}
+            AND s.free_delivery = true
+          )`
+        ) as any
+      );
     }
 
     // On sale filter

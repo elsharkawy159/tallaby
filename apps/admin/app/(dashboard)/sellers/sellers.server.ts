@@ -92,6 +92,7 @@ export async function getSellers(filters: SellerFilters = {}) {
         supportPhone: sellers.supportPhone,
         commissionRate: sellers.commissionRate,
         isCommissionExempt: sellers.isCommissionExempt,
+        freeDelivery: sellers.freeDelivery,
         feeStructure: sellers.feeStructure,
         taxInformation: sellers.taxInformation,
         paymentDetails: sellers.paymentDetails,
@@ -135,6 +136,7 @@ export async function getSellers(filters: SellerFilters = {}) {
       productCount: seller.productCount ?? 0,
       commissionRate: seller.commissionRate ?? 15,
       isCommissionExempt: seller.isCommissionExempt ?? false,
+      freeDelivery: seller.freeDelivery ?? false,
       payoutSchedule: seller.payoutSchedule ?? "biweekly",
       sellerLevel: seller.sellerLevel ?? "standard",
       walletBalance: seller.walletBalance ?? "0",
@@ -346,6 +348,43 @@ export async function updateSellerCommissionExempt(
     return {
       success: false,
       error: "Failed to update commission exemption",
+    };
+  }
+}
+
+export async function updateSellerFreeDelivery(
+  sellerId: string,
+  freeDelivery: boolean
+) {
+  try {
+    await getCurrentAdminUser();
+
+    const validatedData = sellerUpdateSchema.parse({ freeDelivery });
+
+    await db
+      .update(sellers)
+      .set({
+        freeDelivery: validatedData.freeDelivery,
+        updatedAt: new Date().toISOString(),
+      })
+      .where(eq(sellers.id, sellerId));
+
+    revalidatePath("/sellers");
+    await applyInvalidation(invalidateSeller(sellerId), {
+      from: "admin",
+      mode: "action",
+    });
+    return {
+      success: true,
+      message: freeDelivery
+        ? "Free delivery enabled for all of this seller's products"
+        : "Free delivery disabled for this seller",
+    };
+  } catch (error) {
+    console.error("Error updating seller free delivery:", error);
+    return {
+      success: false,
+      error: "Failed to update free delivery",
     };
   }
 }
