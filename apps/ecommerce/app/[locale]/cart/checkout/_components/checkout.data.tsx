@@ -35,7 +35,7 @@ import { useTranslations } from "next-intl";
 import type { AddressData } from "@/components/address/address.schema";
 import { ShippingInformation } from "./shipping-information";
 import { CreditCard, ArrowLeft } from "lucide-react";
-import { OrderSummary } from "./order-summary";
+import { OrderSummary } from "@/components/order-summary";
 import { Button } from "@workspace/ui/components/button";
 import { Label } from "@workspace/ui/components/label";
 import { Textarea } from "@workspace/ui/components/textarea";
@@ -288,14 +288,6 @@ export const CheckoutData = ({
     [form]
   );
 
-  const checkoutDataWithCoupon = useMemo(
-    () => ({
-      ...checkoutData,
-      summary,
-    }),
-    [checkoutData, summary]
-  );
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
@@ -428,7 +420,10 @@ export const CheckoutData = ({
           {/* Order Summary Sidebar */}
           <div className="lg:sticky lg:top-8 h-fit order-2 lg:order-2">
             <OrderSummary
-              checkoutData={checkoutDataWithCoupon}
+              items={cart.cartItems}
+              summary={summary}
+              showShipping
+              enableCoupons
               isLoggedIn={isLoggedIn}
               shippingAddressId={shippingAddressId || activeAddress?.id}
               isRecalculatingShipping={isRecalculatingShipping}

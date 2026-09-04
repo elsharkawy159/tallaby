@@ -95,7 +95,7 @@ export function VendorOrdersTable({ rows }: { rows: VendorOrderRow[] }) {
                 <div className="h-10 w-10 rounded border bg-muted" />
               )}
               <div className="min-w-0">
-                <div className="truncate font-medium">
+                <div className="truncate font-medium max-w-20">
                   {row.original.productTitle}
                 </div>
                 {row.original.variant && (
