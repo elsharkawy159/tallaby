@@ -3,6 +3,7 @@ export {
   EXTRA_KG_RATE,
   FALLBACK_BASE_RATE,
   FEE_MULTIPLIER,
+  FREE_DELIVERY_MIN_SUBTOTAL,
   ROUND_TO,
   SHIPPING_ORIGIN,
 } from './shipping-rates'
@@ -34,9 +35,14 @@ export {
   calculateCartWeightGrams,
   calculateLocationShippingCost,
   calculateRawShippingAmount,
+  cartHasFreeDeliveryOffer,
   cartQualifiesForProductFreeDelivery,
   getBaseRateForGovernorate,
   getWeightExtraCharge,
+  groupShippingItemsBySeller,
+  resolveCartSubtotal,
+  sellerGroupHasFreeDeliveryOffer,
+  sellerGroupQualifiesForFreeDelivery,
 } from './shipping.lib'
 
 export type { LocationShippingOptions, ShippingCartItem } from './shipping.types'

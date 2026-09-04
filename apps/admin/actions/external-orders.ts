@@ -149,6 +149,7 @@ type ResolvedLine = {
     quantity: string | number | null
     sku: string | null
     sellerId: string
+    sellerFreeDelivery: boolean | null
   }
 }
 
@@ -166,6 +167,13 @@ async function resolveLineItems(
         eq(products.id, item.productId),
         eq(products.status, 'active'),
       ),
+      with: {
+        seller: {
+          columns: {
+            freeDelivery: true,
+          },
+        },
+      },
     })
 
     if (!product) {
@@ -232,6 +240,7 @@ async function resolveLineItems(
         quantity: product.quantity,
         sku: product.sku,
         sellerId: product.sellerId,
+        sellerFreeDelivery: product.seller?.freeDelivery ?? null,
       },
     })
   }
@@ -409,13 +418,18 @@ export async function previewExternalOrderTotals(input: unknown) {
       calculateLocationShippingCost({
         items: linesResult.data.map((line) => ({
           quantity: line.quantity,
+          price: line.price,
+          sellerId: line.sellerId,
           product: {
             productType: line.product.productType,
             freeDelivery: line.product.freeDelivery,
             dimensions: line.product.dimensions,
+            sellerId: line.product.sellerId,
+            seller: { freeDelivery: line.product.sellerFreeDelivery },
           },
         })),
         destinationState: parsed.data.destinationState,
+        cartSubtotal: subtotal,
       }) ?? 0
 
     const itemCount = linesResult.data.reduce(

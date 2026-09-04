@@ -29,6 +29,7 @@ export type Product = typeof products.$inferSelect & {
     | "storeRating"
     | "positiveRatingPercent"
     | "totalRatings"
+    | "freeDelivery"
   > | null;
   productVariants?: Array<typeof productVariants.$inferSelect>;
   reviews?: Array<

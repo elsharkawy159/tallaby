@@ -134,6 +134,7 @@ export const getCartItems = async () => {
             columns: {
               displayName: true,
               slug: true,
+              freeDelivery: true,
             },
           },
           productTranslations: true,

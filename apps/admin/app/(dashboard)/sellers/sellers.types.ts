@@ -22,6 +22,7 @@ export interface Seller {
   supportPhone?: string | null;
   commissionRate: number;
   isCommissionExempt: boolean;
+  freeDelivery: boolean;
   feeStructure?: Record<string, unknown> | null;
   taxInformation?: Record<string, unknown> | null;
   paymentDetails?: Record<string, unknown> | null;

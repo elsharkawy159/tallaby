@@ -1,8 +1,12 @@
 'use client'
 
 import { useTranslations } from 'next-intl'
-import { cartQualifiesForProductFreeDelivery } from '@/lib/shipping'
 import {
+  cartHasFreeDeliveryOffer,
+  cartQualifiesForProductFreeDelivery,
+} from '@/lib/shipping'
+import {
+  FreeDeliveryProgress,
   OrderSummaryCoupon,
   OrderSummaryCostRows,
   OrderSummaryLineItems,
@@ -27,8 +31,10 @@ export function OrderSummary ({
 }: OrderSummaryProps) {
   const t = useTranslations('checkout')
 
+  const subtotal = summary.subtotal ?? 0
+  const showFreeDeliveryProgress = cartHasFreeDeliveryOffer(items)
   const qualifiesForProductFreeDelivery =
-    showShipping && cartQualifiesForProductFreeDelivery(items)
+    showShipping && cartQualifiesForProductFreeDelivery(items, subtotal)
   const showProductFreeDeliveryMessage =
     showShipping &&
     summary.shippingCost === 0 &&
@@ -50,6 +56,10 @@ export function OrderSummary ({
         <OrderSummaryLineItems items={items} />
 
         <div className='space-y-2 md:space-y-3 pt-3 md:pt-4 border-t-2 border-gray-200'>
+          {showFreeDeliveryProgress && (
+            <FreeDeliveryProgress subtotal={subtotal} />
+          )}
+
           <OrderSummaryCostRows
             summary={summary}
             showShipping={showShipping}

@@ -35,8 +35,16 @@ export async function updateSession(
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
+          const hostname = process.env.NEXT_PUBLIC_ROOT_DOMAIN;
+          const isDevelopment = process.env.NODE_ENV === "development";
+          const cookieDomain = isDevelopment ? null : `.${hostname}`;
           cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
+            response.cookies.set(name, value, {
+              ...options,
+              ...(cookieDomain ? { domain: cookieDomain } : {}),
+              sameSite: "lax",
+              secure: !isDevelopment,
+            })
           );
         },
       },

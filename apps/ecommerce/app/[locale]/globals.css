@@ -138,3 +138,37 @@
     transform: translateX(100%);
   }
 }
+
+@keyframes free-delivery-celebrate {
+  0% {
+    transform: scale(0.92);
+    opacity: 0.6;
+  }
+  55% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes free-delivery-shimmer {
+  0%,
+  100% {
+    filter: brightness(1);
+    box-shadow: 0 0 0 0 transparent;
+  }
+  50% {
+    filter: brightness(1.15);
+    box-shadow: 0 0 10px 0 color-mix(in oklab, var(--primary) 45%, transparent);
+  }
+}
+
+.free-delivery-celebrate {
+  animation: free-delivery-celebrate 0.7s ease-out;
+}
+
+.free-delivery-bar-shimmer {
+  animation: free-delivery-shimmer 1.4s ease-in-out infinite;
+}

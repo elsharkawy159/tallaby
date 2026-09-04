@@ -7,7 +7,7 @@ export async function createClient() {
   const cookieStore = await cookies();
   const hostname = process.env.NEXT_PUBLIC_ROOT_DOMAIN;
   const isDevelopment = process.env.NODE_ENV === "development";
-  const cookieDomain = isDevelopment ? "" : `.${hostname}`;
+  const cookieDomain = isDevelopment ? null : `.${hostname}`;
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -20,17 +20,20 @@ export async function createClient() {
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) => {
+              // Omit `domain` in development — an empty string is invalid and
+              // can cause the browser to drop the session cookie entirely.
               cookieStore.set(name, value, {
                 ...options,
-                domain: cookieDomain,
-                sameSite: isDevelopment ? "strict" : "lax",
+                ...(cookieDomain ? { domain: cookieDomain } : {}),
+                // Must survive a cross-site navigation (OAuth return). `strict`
+                // withheld cookies on the return leg and left the UI signed-out.
+                sameSite: "lax",
                 secure: !isDevelopment,
-                httpOnly: !isDevelopment,
               });
             });
-          } catch (error) {
+          } catch {
             // The `set` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing
+            // This can be ignored if we have middleware refreshing
             // user sessions.
           }
         },

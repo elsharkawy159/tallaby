@@ -9,6 +9,8 @@ import {
   getCurrentUserId,
   getOrCreateCurrentUserId,
 } from "@/lib/get-current-user-id";
+import { getAuthUser } from "@/lib/auth/current-user";
+import { pickAvatarSource } from "@/lib/auth/avatar";
 import {
   dbUserToProfileUser,
   type ProfileDisplayUser,
@@ -37,16 +39,42 @@ export interface ProfileContext {
 }
 
 export async function getProfileContext(): Promise<ProfileContext> {
-  const supabase = await createClient();
-  const {
-    data: { user: authUser },
-  } = await supabase.auth.getUser();
+  // getAuthUser() is the cache()d lookup shared with the rest of the request,
+  // replacing a second independent supabase.auth.getUser() round-trip here.
+  const authUser = await getAuthUser();
 
   if (authUser) {
-    const orderCount = await getOrderCountForUser(authUser.id);
+    const [orderCount, profileRow] = await Promise.all([
+      getOrderCountForUser(authUser.id),
+      db.query.users.findFirst({
+        where: eq(users.id, authUser.id),
+        columns: { avatarUrl: true },
+      }),
+    ]);
+
+    const metadata = authUser.user_metadata ?? {};
+    // Same precedence the navbar uses (profile row first, auth metadata as the
+    // OAuth fallback) so the two cannot show different pictures for one person.
+    const avatarUrl =
+      pickAvatarSource(
+        profileRow?.avatarUrl,
+        typeof metadata.avatar_url === "string"
+          ? metadata.avatar_url
+          : typeof metadata.picture === "string"
+            ? metadata.picture
+            : null
+      ) ?? null;
 
     return {
-      user: authUser as ProfileDisplayUser,
+      // Built explicitly rather than `authUser as ProfileDisplayUser` — that
+      // cast asserted a shape the auth user does not have.
+      user: {
+        id: authUser.id,
+        email: authUser.email ?? "",
+        phone: authUser.phone ?? null,
+        user_metadata: { ...metadata, avatar_url: avatarUrl },
+        avatarUrl,
+      },
       isGuest: false,
       orderCount,
     };

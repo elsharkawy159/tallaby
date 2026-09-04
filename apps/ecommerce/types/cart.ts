@@ -17,12 +17,15 @@ export interface CartItem {
     slug: string;
     images: any;
     sellerId: string;
+    productType?: string | null;
+    freeDelivery?: boolean | null;
     brand?: {
       name: string;
     } | null;
     seller?: {
       displayName: string;
       slug: string;
+      freeDelivery?: boolean | null;
     } | null;
   };
 }

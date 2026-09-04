@@ -175,7 +175,11 @@
     "cartNotFound": "لم يتم العثور على السلة",
     "discount": "الخصم",
     "freeShipping": "شحن مجاني",
-    "freeDeliveryAllItemsQualify": "توصيل مجاني — جميع المنتجات مؤهلة"
+    "freeDeliveryAllItemsQualify": "توصيل مجاني — جميع المنتجات مؤهلة",
+    "addAmountForFreeDelivery": "أضف {amount} للحصول على توصيل مجاني",
+    "freeDeliveryUnlocked": "توصيل مجاني",
+    "freeDeliveryProgressStart": "0",
+    "freeDeliveryProgressEnd": "200"
   },
   "product": {
     "addToCart": "أضف إلى السلة",

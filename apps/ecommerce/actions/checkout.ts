@@ -34,6 +34,7 @@ const cartWithShippingItems = {
               displayName: true,
               shippingPolicy: true,
               returnPolicy: true,
+              freeDelivery: true,
             },
           },
         },

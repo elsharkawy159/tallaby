@@ -6,13 +6,14 @@ import { Badge } from '@workspace/ui/components/badge'
 import { Button } from '@workspace/ui/components/button'
 import { Input } from '@workspace/ui/components/input'
 import { Separator } from '@workspace/ui/components/separator'
-import { formatPrice } from '@workspace/lib'
+import { formatPrice, FREE_DELIVERY_MIN_SUBTOTAL } from '@workspace/lib'
 import { useLocale, useTranslations } from 'next-intl'
-import { Ticket, X, Loader2, LogIn } from 'lucide-react'
+import { Ticket, X, Loader2, LogIn, Truck } from 'lucide-react'
 import { applyCouponToCart, removeCouponFromCart } from '@/actions/coupons'
 import { toast } from 'sonner'
 import { formatVariantTitle } from '@/lib/variant-utils'
 import posthog from 'posthog-js'
+import { cn } from '@workspace/ui/lib/utils'
 import type {
   AppliedCouponInfo,
   OrderSummaryItem,
@@ -70,6 +71,71 @@ export function OrderSummaryLineItems ({ items }: OrderSummaryLineItemsProps) {
           </div>
         )
       })}
+    </div>
+  )
+}
+
+interface FreeDeliveryProgressProps {
+  subtotal: number
+}
+
+export function FreeDeliveryProgress ({ subtotal }: FreeDeliveryProgressProps) {
+  const locale = useLocale()
+  const t = useTranslations('checkout')
+
+  const threshold = FREE_DELIVERY_MIN_SUBTOTAL
+  const progress = Math.min(100, Math.max(0, (subtotal / threshold) * 100))
+  const isUnlocked = subtotal >= threshold
+  const remaining = Math.max(0, threshold - subtotal)
+  const remainingLabel = formatPrice(remaining, locale).replace(/<[^>]*>/g, '')
+
+  return (
+    <div
+      className={cn(
+        'rounded-lg border px-3 py-2.5 md:px-3.5 md:py-3 transition-colors duration-300',
+        isUnlocked
+          ? 'border-primary/30 bg-primary/5'
+          : 'border-gray-200 bg-gray-50/80',
+      )}
+    >
+      <div className='mb-1.5 flex items-center justify-between gap-2'>
+        {isUnlocked ? (
+          <p className='free-delivery-celebrate flex items-center gap-1.5 text-xs font-semibold text-primary md:text-sm'>
+            <Truck className='h-3.5 w-3.5 shrink-0' aria-hidden />
+            {t('freeDeliveryUnlocked')}
+          </p>
+        ) : (
+          <p className='text-[11px] text-muted-foreground md:text-xs'>
+            {t('addAmountForFreeDelivery', { amount: remainingLabel })}
+          </p>
+        )}
+      </div>
+
+      <div
+        className='relative h-2 w-full overflow-hidden rounded-full bg-gray-200'
+        role='progressbar'
+        aria-valuemin={0}
+        aria-valuemax={threshold}
+        aria-valuenow={Math.min(subtotal, threshold)}
+        aria-label={
+          isUnlocked
+            ? t('freeDeliveryUnlocked')
+            : t('addAmountForFreeDelivery', { amount: remainingLabel })
+        }
+      >
+        <div
+          className={cn(
+            'h-full rounded-full bg-primary transition-[width] duration-500 ease-out',
+            isUnlocked && 'free-delivery-bar-shimmer',
+          )}
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+
+      <div className='mt-1 flex items-center justify-between text-[10px] tabular-nums text-muted-foreground md:text-[11px]'>
+        <span>{t('freeDeliveryProgressStart')}</span>
+        <span>{t('freeDeliveryProgressEnd')}</span>
+      </div>
     </div>
   )
 }

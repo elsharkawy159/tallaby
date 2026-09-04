@@ -9,6 +9,7 @@ import {
   Package,
   MapPin,
 } from "lucide-react";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 
 import {
   Popover,
@@ -17,30 +18,20 @@ import {
 } from "@workspace/ui/components/popover";
 import { Button } from "@workspace/ui/components/button";
 import { Separator } from "@workspace/ui/components/separator";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@workspace/ui/components/avatar";
 
 import { cn } from "@/lib/utils";
 import { AddressManagerDialog } from "@/components/shared/address-dialog";
+import { UserAvatar } from "@/components/shared/user-avatar";
 import type { AddressData } from "@/components/address/address.schema";
-import {
-  getUserAvatar,
-  getUserInitials,
-  formatUserName,
-} from "@/app/[locale]/(main)/profile/_components/profile.lib";
-import { Seller } from "@/app/[locale]/(main)/profile/_components/profile.types";
-import type { User as SupabaseUser } from "@supabase/supabase-js";
+import type { AuthenticatedUserDisplay } from "@/lib/auth/auth-user.types";
+import { useAuthUser } from "@/lib/auth/use-auth-user";
 import posthog from "posthog-js";
 import { useTranslations } from "next-intl";
 
 interface UserMenuProps {
   variant?: "desktop" | "mobile";
   className?: string;
-  user: SupabaseUser | null;
-  seller: Seller | null;
+  user: AuthenticatedUserDisplay | null;
   logout: () => Promise<void>;
   isSigningOut: boolean;
 }
@@ -48,28 +39,54 @@ interface UserMenuProps {
 export function UserMenu({
   variant = "desktop",
   user,
-  seller,
   logout,
   isSigningOut,
   className,
 }: UserMenuProps) {
-  if (!user) return null;
-
+  // Hooks run before any early return — `t` used to be read after
+  // `if (!user) return null`, which is a conditional hook call.
   const t = useTranslations("profile");
-  const avatarUrl = getUserAvatar(user) || undefined;
-  const userInitials = getUserInitials(user);
-  const userName = formatUserName(user) || user.email;
-  const isSeller = !!seller;
+  const { applyUser } = useAuthUser();
+
+  const userName = user?.name || user?.email || "";
+  const isSeller = user?.isSeller ?? false;
 
   const handleLogout = async () => {
+    // #region agent log
+    fetch("http://127.0.0.1:7624/ingest/6c4132ee-ad2b-461c-81f7-d283121d1f71", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Debug-Session-Id": "7135eb",
+      },
+      body: JSON.stringify({
+        sessionId: "7135eb",
+        runId: "post-fix",
+        hypothesisId: "G",
+        location: "user-menu.tsx:handleLogout",
+        message: "Logout clicked",
+        data: { userIdPrefix: user?.id?.slice(0, 8) ?? null },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
+
     posthog.reset();
+    // Clear the shared navbar state immediately — do not re-fetch, or a
+    // hung /api/auth/me can leave a stale signed-in avatar on screen.
+    applyUser(null);
 
     try {
       await logout();
     } catch (error) {
+      // signOutAction ends with redirect(), which throws NEXT_REDIRECT.
+      // Swallowing it aborts navigation back to home.
+      if (isRedirectError(error)) throw error;
       console.error("Logout error:", error);
     }
   };
+
+  if (!user) return null;
 
   return (
     <Popover>
@@ -86,19 +103,15 @@ export function UserMenu({
           )}
           title={t("welcome", { name: userName })}
         >
-          <Avatar
+          <UserAvatar
+            user={user}
+            size="sm"
             className={cn(
-              "size-4.5 md:size-6 shrink-0 rounded-full border-2",
-              variant === "desktop"
-                ? "border-white"
-                : "border-gray-300"
+              "size-4.5 md:size-6 border-2",
+              variant === "desktop" ? "border-white" : "border-gray-300"
             )}
-          >
-            <AvatarImage src={avatarUrl} alt="User avatar" />
-            <AvatarFallback className="bg-primary text-primary-foreground text-[10px] md:text-xs font-medium">
-              {userInitials}
-            </AvatarFallback>
-          </Avatar>
+            fallbackClassName="text-[10px] md:text-xs"
+          />
           <span className="text-xs md:hidden">{t("myProfile")}</span>
         </Button>
       </PopoverTrigger>
@@ -106,12 +119,7 @@ export function UserMenu({
       <PopoverContent className="w-64 p-0" align="end" sideOffset={8}>
         {/* User Info Header */}
         <div className="flex items-center gap-3 p-4 border-b">
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={avatarUrl} alt="User avatar" />
-            <AvatarFallback className="bg-primary text-primary-foreground font-medium">
-              {userInitials}
-            </AvatarFallback>
-          </Avatar>
+          <UserAvatar user={user} size="md" />
           <div className="flex-1 min-w-0">
             <p className="font-medium text-sm truncate">{userName}</p>
             {/* <p className="text-xs text-muted-foreground truncate">
