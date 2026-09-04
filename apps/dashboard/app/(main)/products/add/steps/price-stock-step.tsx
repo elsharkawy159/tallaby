@@ -11,12 +11,6 @@ import {
 } from "@/lib/utils/product-pricing.lib";
 import { ImageUpload } from "@/components/inputs/image-upload";
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@workspace/ui/components/accordion";
-import {
   TextInput,
   SelectInput,
   CurrencyInput,
@@ -263,134 +257,124 @@ export function PriceStockStep({
       {/* Variants Section */}
       <VariantsSection sellerPricing={sellerPricing} activeLocale={activeLocale} />
 
-      {/* Shipping Options - Collapsible */}
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-        <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="shipping" className="border-0">
-            <AccordionTrigger className="px-6 py-3 text-sm font-semibold hover:no-underline">
-              Shipping Options
-            </AccordionTrigger>
-            <AccordionContent className="px-6 pb-6 space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <SelectInput
-                  name="fulfillmentType"
-                  label="Fulfillment Method"
-                  placeholder="Select fulfillment"
-                  options={fulfillmentOptions}
-                  required
-                  className="text-sm"
-                />
-                <TextInput
-                  form={form}
-                  name="handlingTime"
-                  label="Handling Time (days)"
-                  type="number"
-                  placeholder="1"
-                  required
-                  className="text-sm"
-                />
-              </div>
+      {/* Shipping Options */}
+      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 space-y-4">
+        <h3 className="text-sm font-semibold">Shipping Options</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <SelectInput
+            name="fulfillmentType"
+            label="Fulfillment Method"
+            placeholder="Select fulfillment"
+            options={fulfillmentOptions}
+            required
+            className="text-sm"
+          />
+          <TextInput
+            form={form}
+            name="handlingTime"
+            label="Handling Time (days)"
+            type="number"
+            placeholder="1"
+            required
+            className="text-sm"
+          />
+        </div>
 
-              <SwitchInput
-                name="freeDelivery"
-                label="Free delivery on this product"
-                labelPosition="right"
-                className="rounded-lg border border-gray-200 p-4"
-              />
+        <SwitchInput
+          name="freeDelivery"
+          label="Free delivery on this product"
+          labelPosition="right"
+          className="rounded-lg border border-gray-200 p-4"
+        />
 
-              <div className="space-y-3 rounded-lg border border-gray-200 p-4">
-                <div>
-                  <p className="text-sm font-medium">Merchandising</p>
-                  <p className="text-xs text-muted-foreground">
-                    How this product is promoted — separate from its category.
-                  </p>
-                </div>
-                <div className="space-y-3">
-                  <SwitchInput
-                    name="isTrending"
-                    label="Trending Now"
-                    labelPosition="right"
-                  />
-                  <SwitchInput
-                    name="isSeasonal"
-                    label="Seasonal"
-                    labelPosition="right"
-                  />
-                </div>
-              </div>
+        <div className="space-y-3 rounded-lg border border-gray-200 p-4">
+          <div>
+            <p className="text-sm font-medium">Merchandising</p>
+            <p className="text-xs text-muted-foreground">
+              How this product is promoted — separate from its category.
+            </p>
+          </div>
+          <div className="space-y-3">
+            <SwitchInput
+              name="isTrending"
+              label="Trending Now"
+              labelPosition="right"
+            />
+            <SwitchInput
+              name="isSeasonal"
+              label="Seasonal"
+              labelPosition="right"
+            />
+          </div>
+        </div>
 
-              {/* Dimensions */}
-              <div className="space-y-2">
-                <FormLabel className="text-sm">
-                  Product Weight <span className="text-red-600">*</span>
-                </FormLabel>
-                <div className="grid grid-cols-2 gap-4">
-                  <TextInput
-                    form={form}
-                    name="dimensions.weight"
-                    label="Weight"
-                    type="number"
-                    placeholder="0.0"
-                    required
-                    className="text-sm"
-                  />
-                  <SelectInput
-                    name="dimensions.weightUnit"
-                    label="Unit"
-                    placeholder="Select unit"
-                    options={[
-                      { value: "kg", label: "kg" },
-                      { value: "g", label: "g" },
-                      { value: "lb", label: "lb" },
-                    ]}
-                    className="text-sm"
-                  />
-                </div>
-              </div>
+        <div className="space-y-2">
+          <FormLabel className="text-sm">
+            Product Weight <span className="text-red-600">*</span>
+          </FormLabel>
+          <div className="grid grid-cols-2 gap-4">
+            <TextInput
+              form={form}
+              name="dimensions.weight"
+              label="Weight"
+              type="number"
+              placeholder="0.0"
+              required
+              className="text-sm"
+            />
+            <SelectInput
+              name="dimensions.weightUnit"
+              label="Unit"
+              placeholder="Select unit"
+              options={[
+                { value: "kg", label: "kg" },
+                { value: "g", label: "g" },
+                { value: "lb", label: "lb" },
+              ]}
+              className="text-sm"
+            />
+          </div>
+        </div>
 
-              {/* Dimensions */}
-              <div className="space-y-2">
-                <FormLabel className="text-sm">Dimensions</FormLabel>
-                <div className="grid grid-cols-4 gap-4">
-                  <TextInput
-                    form={form}
-                    name="dimensions.length"
-                    label="Length"
-                    type="number"
-                    placeholder="0"
-                    className="text-sm"
-                  />
-                  <TextInput
-                    form={form}
-                    name="dimensions.width"
-                    label="Width"
-                    type="number"
-                    placeholder="0"
-                    className="text-sm"
-                  />
-                  <TextInput
-                    form={form}
-                    name="dimensions.height"
-                    label="Height"
-                    type="number"
-                    placeholder="0"
-                    className="text-sm"
-                  />
-                  <SelectInput
-                    name="dimensions.unit"
-                    label="Unit"
-                    placeholder="Select unit"
-                    options={[
-                      { value: "cm", label: "cm" },
-                      { value: "in", label: "in" },
-                    ]}
-                    className="text-sm"
-                  />
-                </div>
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
+        <div className="space-y-2">
+          <FormLabel className="text-sm">Dimensions</FormLabel>
+          <div className="grid grid-cols-4 gap-4">
+            <TextInput
+              form={form}
+              name="dimensions.length"
+              label="Length"
+              type="number"
+              placeholder="0"
+              className="text-sm"
+            />
+            <TextInput
+              form={form}
+              name="dimensions.width"
+              label="Width"
+              type="number"
+              placeholder="0"
+              className="text-sm"
+            />
+            <TextInput
+              form={form}
+              name="dimensions.height"
+              label="Height"
+              type="number"
+              placeholder="0"
+              className="text-sm"
+            />
+            <SelectInput
+              name="dimensions.unit"
+              label="Unit"
+              placeholder="Select unit"
+              options={[
+                { value: "cm", label: "cm" },
+                { value: "in", label: "in" },
+              ]}
+              className="text-sm"
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
