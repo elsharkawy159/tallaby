@@ -64,7 +64,7 @@ export const ProductDetails = ({
   }, [selectedVariantId, product.productVariants]);
 
   // Calculate price and stock based on selected variant or base product
-  const { price, listPrice, stock } = useMemo(() => {
+  const { price, listPrice, stock, discountEndsAt } = useMemo(() => {
     if (selectedVariant) {
       const variantPriceData = parsePriceJson(selectedVariant.price);
       const variantStock = Number(selectedVariant.stock ?? 0);
@@ -76,6 +76,11 @@ export const ProductDetails = ({
             ? variantPriceData.list
             : null,
         stock: variantStock,
+        // The default variant mirrors the main product's discount, so its
+        // expiry lives in `product.price`; other variants carry their own.
+        discountEndsAt: isDefaultVariant
+          ? ((product.price as any)?.discountEndsAt ?? null)
+          : ((selectedVariant as any)?.discountEndsAt ?? null),
       };
     }
 
@@ -89,8 +94,18 @@ export const ProductDetails = ({
           ? basePriceData.list
           : null,
       stock: baseStock,
+      discountEndsAt: (product.price as any)?.discountEndsAt ?? null,
     };
   }, [selectedVariant, product]);
+
+  const discountExpiryDate = useMemo(() => {
+    if (!discountEndsAt) return null;
+    const parsed = new Date(discountEndsAt);
+    if (Number.isNaN(parsed.getTime()) || parsed.getTime() <= Date.now()) {
+      return null;
+    }
+    return parsed;
+  }, [discountEndsAt]);
 
   const hasVariants =
     product.productVariants && product.productVariants.length > 0;
@@ -154,8 +169,10 @@ export const ProductDetails = ({
           )}
         </div>
 
-        {/* Discount Countdown */}
-        {listPrice && listPrice > price && <DiscountCountdown />}
+        {/* Discount Countdown — only when the seller set a discount expiry */}
+        {listPrice && listPrice > price && discountExpiryDate && (
+          <DiscountCountdown endDate={discountExpiryDate} />
+        )}
 
         {hasFreeDelivery && (
           <Badge

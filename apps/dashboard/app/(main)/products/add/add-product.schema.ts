@@ -102,6 +102,7 @@ export const addProductFormSchema = z
           typeof val === "number" && val > 0 ? roundPriceToNearestNine(val) : val,
         z.number().min(0.01, "Final price must be greater than 0")
       ),
+      discountEndsAt: z.date().optional().nullable(),
     }),
     condition: z
       .enum([
@@ -148,6 +149,7 @@ export const addProductFormSchema = z
           discountValue: z.number().optional(),
           discountType: z.enum(["amount", "percent"]).default("percent").optional(),
           price: z.number().min(0.01, "Final price must be greater than 0"),
+          discountEndsAt: z.date().optional().nullable(),
           stock: z.number().int().min(0).default(0),
           isDefault: z.boolean().default(false).optional(),
           images: z.array(z.string()).optional(),
@@ -251,6 +253,7 @@ export const defaultValues = {
     discountValue: undefined,
     discountType: "percent" as const,
     final: undefined as unknown as number,
+    discountEndsAt: null,
   },
   condition: "new" as const,
   conditionDescription: "",

@@ -32,6 +32,7 @@ type ProductForEdit = {
     title: string;
     sku: string;
     price: unknown;
+    discountEndsAt?: string | null;
     stock?: number;
     images?: string[] | null;
     imageUrl?: string | null;
@@ -43,6 +44,12 @@ type ProductForEdit = {
     barCode?: string | null;
     position?: number | null;
   }>;
+};
+
+const parseDateOrNull = (value: unknown): Date | null => {
+  if (!value || typeof value !== "string") return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
 };
 
 const safeNum = (v: unknown): number | undefined =>
@@ -124,6 +131,7 @@ export function buildEditDefaultValues(
       discountValue: variantDiscountValue,
       discountType: variantDiscountType,
       price: variantFinal,
+      discountEndsAt: parseDateOrNull(v.discountEndsAt),
       stock: isDefault
         ? quantity
         : typeof v.stock === "number"
@@ -163,6 +171,7 @@ export function buildEditDefaultValues(
       discountValue,
       discountType,
       final: final >= 0.01 ? final : list,
+      discountEndsAt: parseDateOrNull(priceObj.discountEndsAt),
     },
     condition: (product.condition as AddProductFormData["condition"]) ?? "new",
     conditionDescription: product.conditionDescription ?? "",
