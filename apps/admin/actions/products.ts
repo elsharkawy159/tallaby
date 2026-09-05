@@ -495,7 +495,13 @@ export async function updateProduct(productId: string, data: UpdateProductInput)
             data.variants.map((variant, index) => ({
               productId,
               title: variant.title,
-              price: String(variant.price),
+              price: {
+                base: variant.price,
+                list: variant.price,
+                final: variant.price,
+                discountType: null,
+                discountValue: null,
+              },
               stock: variant.stock ?? 0,
               sku: variant.sku,
               imageUrl: variant.imageUrl ?? null,

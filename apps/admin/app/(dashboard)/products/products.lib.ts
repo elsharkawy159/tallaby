@@ -1,4 +1,4 @@
-import { formatCurrency } from "@workspace/lib";
+import { formatCurrency, parsePriceJson } from "@workspace/lib";
 import type { z } from "zod";
 
 import type { productSchema } from "../_lib/validations/product-schema";
@@ -86,7 +86,7 @@ export function mapVariants(raw: ProductRaw): ProductVariantRow[] {
     id: String(variant.id),
     sku: (variant.sku as string | null) ?? null,
     title: (variant.title as string | null) ?? null,
-    price: variant.price ? parseFloat(String(variant.price)) : 0,
+    price: parsePriceJson(variant.price).final,
     stock: variant.stock ? parseInt(String(variant.stock), 10) : 0,
     imageUrl: (variant.imageUrl as string | null) ?? null,
     option1: (variant.option1 as string | null) ?? null,
@@ -358,7 +358,7 @@ export function transformProductForForm(product: ProductRaw): Partial<ProductFor
     id: variant.id,
     title: variant.title ?? "",
     sku: variant.sku ?? "",
-    price: variant.price ? parseFloat(String(variant.price)) : 0,
+    price: parsePriceJson(variant.price).final,
     stock: variant.stock ?? 0,
     imageUrl: variant.imageUrl ?? undefined,
     option1: variant.option1 ?? undefined,

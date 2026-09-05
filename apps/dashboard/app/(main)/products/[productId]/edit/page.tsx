@@ -41,11 +41,7 @@ export default async function EditProductPage({
   const brands = (brandsRes.data || []) as BrandOption[];
   const seller = sellerProfile.success ? sellerProfile.data : null;
   const defaultValues = buildEditDefaultValues(
-    product as Parameters<typeof buildEditDefaultValues>[0],
-    {
-      commissionRate: seller?.commissionRate ?? DEFAULT_COMMISSION_RATE,
-      isCommissionExempt: seller?.isCommissionExempt ?? false,
-    }
+    product as Parameters<typeof buildEditDefaultValues>[0]
   );
 
   return (

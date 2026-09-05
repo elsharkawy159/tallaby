@@ -4,7 +4,10 @@ export {
   formatPrice,
   formatPricePlain,
   parseCurrencyAmount,
+  parsePriceJson,
 } from "./src/utils/formatPrice";
+
+export type { ParsedPrice, PriceJson } from "./src/utils/formatPrice";
 
 export {
   CAIRO_ORIGIN_RATES,

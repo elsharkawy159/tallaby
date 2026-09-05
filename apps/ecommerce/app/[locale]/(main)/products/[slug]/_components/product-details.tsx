@@ -4,7 +4,7 @@ import { Truck, RotateCcw, Globe, DollarSign, Check } from "lucide-react";
 import { Badge } from "@workspace/ui/components/badge";
 import { ProductActions } from "./ProductActions";
 import type { Product } from "./product-page.types";
-import { formatPrice, formatPricePlain } from "@workspace/lib";
+import { formatPrice, formatPricePlain, parsePriceJson } from "@workspace/lib";
 import { useLocale, useTranslations } from "next-intl";
 import {
   FREE_SHIPPING_THRESHOLD,
@@ -66,37 +66,28 @@ export const ProductDetails = ({
   // Calculate price and stock based on selected variant or base product
   const { price, listPrice, stock } = useMemo(() => {
     if (selectedVariant) {
-      const variantPrice = Number(selectedVariant.price ?? 0);
+      const variantPriceData = parsePriceJson(selectedVariant.price);
       const variantStock = Number(selectedVariant.stock ?? 0);
-      const isDefaultVariant = selectedVariant.isDefault === true;
-      const baseListPrice = (product.price as any)?.list
-        ? Number((product.price as any).list)
-        : null;
 
       return {
-        price: variantPrice,
+        price: variantPriceData.final,
         listPrice:
-          isDefaultVariant && baseListPrice && baseListPrice > variantPrice
-            ? baseListPrice
+          variantPriceData.list && variantPriceData.list > variantPriceData.final
+            ? variantPriceData.list
             : null,
         stock: variantStock,
       };
     }
 
-    const basePrice = Number(
-      (product.price as any)?.final ??
-        (product.price as any)?.current ??
-        (product.price as any)?.list ??
-        0,
-    );
-    const baseListPrice = (product.price as any)?.list
-      ? Number((product.price as any).list)
-      : null;
+    const basePriceData = parsePriceJson(product.price);
     const baseStock = product.quantity ? Number(product.quantity) : 0;
 
     return {
-      price: basePrice,
-      listPrice: baseListPrice,
+      price: basePriceData.final,
+      listPrice:
+        basePriceData.list && basePriceData.list > basePriceData.final
+          ? basePriceData.list
+          : null,
       stock: baseStock,
     };
   }, [selectedVariant, product]);
@@ -331,7 +322,7 @@ export const ProductDetails = ({
                           className="truncate text-[10px] font-medium leading-tight text-gray-500"
                           dangerouslySetInnerHTML={{
                             __html: formatPrice(
-                              Number(variant.price ?? 0),
+                              parsePriceJson(variant.price).final,
                               locale,
                               "sm",
                             ),

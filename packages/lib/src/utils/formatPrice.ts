@@ -1,5 +1,48 @@
 export const DEFAULT_CURRENCY = "EGP";
 
+/**
+ * Shape shared by products.price and product_variants.price (both jsonb):
+ * a list price plus an optional discount, resolved down to a final price.
+ */
+export interface PriceJson {
+  base?: number | string | null;
+  list?: number | string | null;
+  final?: number | string | null;
+  discountType?: "amount" | "percent" | null;
+  discountValue?: number | string | null;
+}
+
+export interface ParsedPrice {
+  base: number;
+  list: number | null;
+  final: number;
+  discountType: "amount" | "percent" | null;
+  discountValue: number | null;
+}
+
+/**
+ * Parses a products.price / product_variants.price jsonb value. Falls back to
+ * treating a bare number as the final price, for legacy/unset rows.
+ */
+export function parsePriceJson(price: unknown): ParsedPrice {
+  if (typeof price === "number") {
+    return { base: price, list: null, final: price, discountType: null, discountValue: null };
+  }
+
+  if (!price || typeof price !== "object") {
+    return { base: 0, list: null, final: 0, discountType: null, discountValue: null };
+  }
+
+  const p = price as PriceJson;
+  const base = p.base != null ? Number(p.base) : 0;
+  const list = p.list != null ? Number(p.list) : null;
+  const final = p.final != null ? Number(p.final) : (list ?? base);
+  const discountType = p.discountType ?? null;
+  const discountValue = p.discountValue != null ? Number(p.discountValue) : null;
+
+  return { base, list, final, discountType, discountValue };
+}
+
 const currencyNumberFormatOptions = {
   style: "currency" as const,
   currency: DEFAULT_CURRENCY,
