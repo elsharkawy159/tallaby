@@ -126,7 +126,7 @@ export function OrderDetailContent({ order }: OrderDetailContentProps) {
   };
 
   const customerName = order.user
-    ? `${order.user.firstName || ""} ${order.user.lastName || ""}`.trim() || order.user.email
+    ? order.user.fullName || order.user.email || "Unknown Customer"
     : "Unknown Customer";
 
   const subtotal = Number(order.subtotal);
@@ -387,8 +387,7 @@ export function OrderDetailContent({ order }: OrderDetailContentProps) {
                 <div className="space-y-3 text-sm">
                   <div className="space-y-1">
                     <p className="font-medium">
-                      {order.userAddress_shippingAddressId.firstName}{" "}
-                      {order.userAddress_shippingAddressId.lastName}
+                      {order.userAddress_shippingAddressId.fullName}
                     </p>
                     <p className="text-muted-foreground whitespace-pre-line">
                       {formatAddress(order.userAddress_shippingAddressId)}
@@ -424,8 +423,7 @@ export function OrderDetailContent({ order }: OrderDetailContentProps) {
                 <div className="space-y-3 text-sm">
                   <div className="space-y-1">
                     <p className="font-medium">
-                      {order.userAddress_billingAddressId.firstName}{" "}
-                      {order.userAddress_billingAddressId.lastName}
+                      {order.userAddress_billingAddressId.fullName}
                     </p>
                     <p className="text-muted-foreground whitespace-pre-line">
                       {formatAddress(order.userAddress_billingAddressId)}

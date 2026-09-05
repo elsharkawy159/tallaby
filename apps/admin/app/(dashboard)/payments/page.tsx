@@ -570,13 +570,7 @@ export default function PaymentsPage() {
 
   return (
     <>
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Payments</h1>
-          <p className="text-muted-foreground">
-            Manage payments, transactions, and refunds
-          </p>
-        </div>
+      <div className="flex items-center justify-end mb-6">
         <div className="flex gap-2">
           <Button variant="outline" size="sm">
             <Filter className="h-4 w-4 mr-2" />

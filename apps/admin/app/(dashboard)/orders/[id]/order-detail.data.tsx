@@ -17,7 +17,7 @@ async function OrderDetailDataContent({ orderId }: OrderDetailDataProps) {
   }
 
   return (
-    <OrderDetailContent order={result.data as OrderDetailWithRelations} />
+    <OrderDetailContent order={result.data as unknown as OrderDetailWithRelations} />
   );
 }
 

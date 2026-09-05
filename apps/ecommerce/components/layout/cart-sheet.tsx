@@ -47,6 +47,7 @@ export function CartSheet({
   const router = useRouter();
   const locale = useLocale();
   const tToast = useTranslations("toast");
+  const t = useTranslations("cart");
 
   const updateQuantity = async (itemId: string, quantity: number) => {
     setLoadingItems((prev) => new Set(prev).add(itemId));
@@ -106,20 +107,20 @@ export function CartSheet({
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <ShoppingBag className="size-5" />
-            Shopping Cart ({itemCount} {itemCount === 1 ? "item" : "items"})
+            {t("shoppingCartWithCount", { count: itemCount })}
           </SheetTitle>
         </SheetHeader>
 
         {cartItems.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
             <ShoppingBag className="size-16 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Your cart is empty</h3>
+            <h3 className="text-lg font-semibold mb-2">{t("emptyCart")}</h3>
             <p className="text-sm text-muted-foreground mb-6">
-              Start adding items to your cart
+              {t("addItemsToCart")}
             </p>
             <Button asChild>
               <Link href="/products" onClick={() => onOpenChange(false)}>
-                Continue Shopping
+                {t("continueShopping")}
               </Link>
             </Button>
           </div>
@@ -248,7 +249,7 @@ export function CartSheet({
             <SheetFooter className="flex-col gap-4 sm:flex-row sm:justify-between border-t pt-4 mt-4">
               <div className="w-full space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Subtotal</span>
+                  <span className="text-muted-foreground">{t("subtotal")}</span>
                   <span
                     className="font-semibold"
                     dangerouslySetInnerHTML={{
@@ -258,7 +259,7 @@ export function CartSheet({
                 </div>
                 <Separator />
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold">Total</span>
+                  <span className="font-semibold">{t("total")}</span>
                   <span
                     className="text-lg font-bold text-primary"
                     dangerouslySetInnerHTML={{
@@ -273,12 +274,12 @@ export function CartSheet({
                     href="/cart/checkout"
                     onClick={() => onOpenChange(false)}
                   >
-                    Proceed to Checkout
+                    {t("proceedToCheckout")}
                   </Link>
                 </Button>
                 <Button asChild variant="outline" className="w-full">
                   <Link href="/cart" onClick={() => onOpenChange(false)}>
-                    View Cart
+                    {t("viewCart")}
                   </Link>
                 </Button>
               </div>

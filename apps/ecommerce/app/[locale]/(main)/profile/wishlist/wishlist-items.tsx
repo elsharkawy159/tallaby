@@ -9,6 +9,7 @@ import { Heart, ShoppingCart } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import ProductCard from "@/app/[locale]/(main)/products/[slug]/_components/ProductCard";
 import type { ProductCardProps } from "@/components/product";
+import { useTranslations } from "next-intl";
 
 interface TransformedProduct extends ProductCardProps {
   wishlistItemId: string;
@@ -19,6 +20,8 @@ interface WishlistItemsProps {
 }
 
 export function WishlistItems({ products }: WishlistItemsProps) {
+  const t = useTranslations("wishlist");
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -26,14 +29,12 @@ export function WishlistItems({ products }: WishlistItemsProps) {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>My Wishlist</CardTitle>
-              <CardDescription>
-                Items you&apos;ve saved for later
-              </CardDescription>
+              <CardTitle>{t("myWishlist")}</CardTitle>
+              <CardDescription>{t("itemsSavedForLater")}</CardDescription>
             </div>
             {products.length > 0 && (
               <div className="text-sm text-muted-foreground">
-                {products.length} item(s)
+                {t("itemsCount", { count: products.length })}
               </div>
             )}
           </div>
@@ -61,16 +62,16 @@ export function WishlistItems({ products }: WishlistItemsProps) {
               </div>
               <div>
                 <h3 className="text-lg font-semibold">
-                  Your wishlist is empty
+                  {t("wishlistEmpty")}
                 </h3>
                 <p className="text-muted-foreground">
-                  Save items you like to your wishlist
+                  {t("saveItemsToWishlist")}
                 </p>
               </div>
               <Button asChild>
                 <Link href="/products">
                   <ShoppingCart className="h-4 w-4 mr-2" />
-                  Start Shopping
+                  {t("startShopping")}
                 </Link>
               </Button>
             </div>

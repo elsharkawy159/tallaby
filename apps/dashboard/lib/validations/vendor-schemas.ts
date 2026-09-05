@@ -150,7 +150,7 @@ export const productCreationSchema = z.object({
       "used_acceptable",
     ],
     {
-      required_error: "Please select a product condition",
+      message: "Please select a product condition",
     }
   ),
 
@@ -175,7 +175,7 @@ export const productCreationSchema = z.object({
   fulfillmentType: z.enum(
     ["seller_fulfilled", "platform_fulfilled", "fba", "digital"],
     {
-      required_error: "Please select a fulfillment type",
+      message: "Please select a fulfillment type",
     }
   ),
 
@@ -248,7 +248,7 @@ export const orderStatusUpdateSchema = z.object({
       "returned",
     ],
     {
-      required_error: "Please select a valid order status",
+      message: "Please select a valid order status",
     }
   ),
   notes: z
@@ -293,7 +293,7 @@ export type AnalyticsPeriodData = z.infer<typeof analyticsPeriodSchema>;
 export const bulkProductOperationSchema = z.object({
   productIds: z.array(z.string().uuid()).min(1, "Select at least one product"),
   operation: z.enum(["activate", "deactivate", "delete"], {
-    required_error: "Please select an operation",
+    message: "Please select an operation",
   }),
 });
 

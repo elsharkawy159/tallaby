@@ -12,6 +12,7 @@ const localizedFieldsSchema = z.object({
   bulletPoints: z.array(z.string()).max(10).optional(),
   metaTitle: z.string().max(60).optional(),
   metaDescription: z.string().max(160).optional(),
+  metaKeywords: z.string().optional(),
 })
 
 export type LocalizedFields = z.infer<typeof localizedFieldsSchema>
@@ -241,8 +242,8 @@ export const defaultValues = {
     width: undefined,
     height: undefined,
     weight: undefined,
-    unit: "cm",
-    weightUnit: "g",
+    unit: "cm" as const,
+    weightUnit: "g" as const,
   },
   images: [],
   price: {

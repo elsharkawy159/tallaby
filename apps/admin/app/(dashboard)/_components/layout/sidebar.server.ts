@@ -12,6 +12,7 @@ import {
   categories,
   brands,
   sellers,
+  carts,
 } from "@workspace/db";
 import { sql } from "drizzle-orm";
 import { getAdminUser } from "@/actions/auth";
@@ -28,6 +29,7 @@ export async function getSidebarCounts(): Promise<SidebarCounts> {
     const result = await db.execute(sql`
       SELECT
         (SELECT count(*)::int FROM ${users}) AS customers,
+        (SELECT count(*)::int FROM ${carts} WHERE status = 'active') AS pending_carts,
         (SELECT count(*)::int FROM ${orders}) AS orders,
         (SELECT count(*)::int FROM ${products}) AS products,
         (SELECT count(*)::int FROM ${categories}) AS categories,
@@ -45,6 +47,7 @@ export async function getSidebarCounts(): Promise<SidebarCounts> {
     return {
       dashboard: orderCount,
       customers: Number(row.customers ?? 0),
+      pendingCarts: Number(row.pending_carts ?? 0),
       orders: orderCount,
       products: Number(row.products ?? 0),
       categories: Number(row.categories ?? 0),

@@ -48,7 +48,7 @@ export const BasicInformationSection = ({
     const title = e.target.value;
     if (title) {
       const newSlug = slugify(title, { lower: true, strict: true });
-      form.setValue("slug", newSlug, { shouldValidate: true });
+      form.setValue("localized.en.slug", newSlug, { shouldValidate: true });
     }
   };
 
@@ -69,7 +69,7 @@ export const BasicInformationSection = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <TextInput
                 form={form}
-                name="title"
+                name="localized.en.title"
                 label="Title"
                 placeholder="Short sleeve t-shirt"
                 required
@@ -78,7 +78,7 @@ export const BasicInformationSection = ({
               />
               <TextInput
                 form={form}
-                name="slug"
+                name="localized.en.slug"
                 label="Slug"
                 placeholder="short-sleeve-t-shirt"
                 disabled
@@ -89,7 +89,7 @@ export const BasicInformationSection = ({
             {/* Description */}
             <FormField
               control={form.control}
-              name="description"
+              name="localized.en.description"
               render={({ field }) => (
                 <TextareaInput
                   {...field}
@@ -149,7 +149,7 @@ export const BasicInformationSection = ({
             {/* Key Features */}
             <FormField
               control={form.control}
-              name="bulletPoints"
+              name="localized.en.bulletPoints"
               render={({ field }) => (
                 <ArrayInput
                   {...field}
@@ -595,19 +595,19 @@ export const SeoSection = () => {
             </p>
             <TextInput
               form={form}
-              name="seo.metaTitle"
+              name="localized.en.metaTitle"
               label="Meta Title"
               placeholder="SEO-friendly title for search engines"
               className="text-sm"
             />
             <FormField
               control={form.control}
-              name="seo.metaDescription"
+              name="localized.en.metaDescription"
               render={({ field }) => (
                 <TextareaInput
                   {...field}
                   form={form}
-                  name="seo.metaDescription"
+                  name="localized.en.metaDescription"
                   label="Meta Description"
                   placeholder="Brief SEO description"
                   rows={3}
@@ -617,7 +617,7 @@ export const SeoSection = () => {
             />
             <TextInput
               form={form}
-              name="seo.metaKeywords"
+              name="localized.en.metaKeywords"
               label="Meta Keywords"
               placeholder="keyword1, keyword2, keyword3"
               className="text-sm"

@@ -1,7 +1,7 @@
 import type {
   SupportedLocale,
   VariantOptionKind,
-} from "../app/(main)/products/add/add-product.schema";
+} from "@/app/(main)/products/add/add-product.schema";
 
 export const VARIANT_LOCALES: SupportedLocale[] = ["en", "ar"];
 
@@ -33,7 +33,7 @@ export interface VariantTypeFormValue {
   unit?: string;
   /** Hex swatches, index-aligned with localized[locale].values (locale-independent). */
   swatches?: string[];
-  localized: Record<SupportedLocale, VariantTypeLocalizedFields>;
+  localized: { en: VariantTypeLocalizedFields; ar: VariantTypeLocalizedFields };
 }
 
 export interface VariantLocalizedFields {
@@ -49,7 +49,7 @@ export interface VariantOptionMetaEntry {
   unit?: string;
 }
 
-export type VariantLocalizedMap = Record<SupportedLocale, VariantLocalizedFields> & {
+export type VariantLocalizedMap = { en: VariantLocalizedFields; ar: VariantLocalizedFields } & {
   optionMeta?: VariantOptionMetaEntry[];
 };
 
@@ -213,7 +213,7 @@ export function reconstructVariantTypesFromVariants(
     const types: VariantTypeFormValue[] = [];
 
     for (let typeIndex = 0; typeIndex < typeCount; typeIndex += 1) {
-      const optionKey = `option${typeIndex + 1}` as keyof VariantLocalizedFields;
+      const optionKey = `option${typeIndex + 1}` as 'option1' | 'option2' | 'option3';
       const localized: Record<SupportedLocale, VariantTypeLocalizedFields> = {
         en: { name: "", values: [] },
         ar: { name: "", values: [] },
@@ -363,7 +363,7 @@ export function getVariantValueIndexes(
       : undefined;
 
   return variantTypes.map((type, typeIndex) => {
-    const optionKey = `option${typeIndex + 1}` as keyof VariantLocalizedFields;
+    const optionKey = `option${typeIndex + 1}` as 'option1' | 'option2' | 'option3';
     const optionText =
       localized?.[optionKey] ??
       (locale === "en" ? variant[optionKey] : undefined);

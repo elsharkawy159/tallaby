@@ -72,16 +72,25 @@ export async function OrderConfirmationContent({
     }
   };
 
+  const MANUAL_PAYMENT_METHODS = ["instapay", "vodafone_cash", "e_cash"];
+  const isAwaitingManualVerification =
+    MANUAL_PAYMENT_METHODS.includes(order.paymentMethod) &&
+    order.paymentStatus === "pending";
+
   const getPaymentMethodLabel = (paymentMethod: string): string => {
     // Map payment method to translation key
     const paymentMethodMap: Record<string, string> = {
       cash_on_delivery: "cashOnDelivery",
       cash: "cashOnDelivery",
-      card: "onlinePayment",
-      credit_card: "onlinePayment",
-      debit_card: "onlinePayment",
-      wallet: "wallet",
+      online_payment: "payByCard",
+      card: "payByCard",
+      credit_card: "payByCard",
+      debit_card: "payByCard",
+      wallet: "walletBalance",
       bank_transfer: "bankTransfer",
+      instapay: "instapay",
+      vodafone_cash: "vodafoneCash",
+      e_cash: "eCash",
     };
     const translationKey =
       paymentMethodMap[paymentMethod.toLowerCase()] || paymentMethod;
@@ -214,6 +223,14 @@ export async function OrderConfirmationContent({
           )}
         </CardContent>
       </Card>
+
+      {isAwaitingManualVerification && (
+        <Card className="rounded-xl md:rounded-2xl border border-amber-200 bg-amber-50/60">
+          <CardContent className="py-3 md:py-4 text-xs md:text-sm text-amber-800">
+            {t("paymentAwaitingVerification")}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Order Status Tracking */}
       <OrderStatusTracker
@@ -565,7 +582,7 @@ export async function OrderConfirmationContent({
           <CardContent>
             <p className="text-sm text-purple-700">
               {isOrderEligibleForReturn(order.createdAt)
-                ? "You have 30 days from delivery to return items if needed."
+                ? "You have 7 days from delivery to return items if needed."
                 : "Return period has expired for this order."}
             </p>
           </CardContent>

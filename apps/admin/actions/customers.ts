@@ -34,8 +34,7 @@ export async function getAllCustomers(params?: {
     if (params?.search) {
       conditions.push(
         or(
-          like(users.firstName, `%${params.search}%`),
-          like(users.lastName, `%${params.search}%`),
+          like(users.fullName, `%${params.search}%`),
           like(users.email, `%${params.search}%`),
           like(users.phone, `%${params.search}%`)
         )

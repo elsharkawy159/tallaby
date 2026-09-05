@@ -282,6 +282,53 @@ export async function getOrder(orderId: string) {
   }
 }
 
+const MANUAL_PAYMENT_METHODS = ["instapay", "vodafone_cash", "e_cash"] as const;
+
+export async function reportManualPaymentSent(orderId: string) {
+  try {
+    const user = await getUser();
+    if (!user) {
+      return { success: false, error: "Authentication required" };
+    }
+
+    const order = await db.query.orders.findFirst({
+      where: and(eq(orders.id, orderId), eq(orders.userId, user.user.id)),
+    });
+
+    if (!order) {
+      return { success: false, error: "Order not found" };
+    }
+
+    if (
+      !MANUAL_PAYMENT_METHODS.includes(
+        order.paymentMethod as (typeof MANUAL_PAYMENT_METHODS)[number]
+      )
+    ) {
+      return { success: false, error: "Order is not a manual-transfer payment" };
+    }
+
+    await db
+      .update(orders)
+      .set({
+        metadata: {
+          ...((order.metadata as Record<string, unknown> | null) ?? {}),
+          paymentSelfReported: true,
+          paymentSelfReportedAt: new Date().toISOString(),
+        },
+        updatedAt: new Date().toISOString(),
+      })
+      .where(eq(orders.id, orderId));
+
+    return {
+      success: true,
+      data: { orderPagePath: buildOrderPagePath(orderId) },
+    };
+  } catch (error) {
+    console.error("Error reporting manual payment:", error);
+    return { success: false, error: "Failed to update order" };
+  }
+}
+
 const CANCELLABLE_STATUSES = ["pending", "payment_processing", "confirmed"] as const;
 
 export async function cancelOrder(orderId: string, reason?: string) {

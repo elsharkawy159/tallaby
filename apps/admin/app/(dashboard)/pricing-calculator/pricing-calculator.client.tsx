@@ -138,8 +138,6 @@ export function PricingCalculatorClient() {
     <Form {...form}>
       <div className="space-y-6">
         <PageHeader
-          title="Pricing Calculator"
-          description="Estimate the true cost of a product, then find a selling price that actually makes money."
           actions={
             <Button variant="outline" size="sm" onClick={handleReset}>
               <RotateCcw className="h-4 w-4 mr-2" />

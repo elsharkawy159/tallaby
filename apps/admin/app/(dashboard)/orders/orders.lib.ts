@@ -62,9 +62,7 @@ export const getStatusLabel = (status: string): string => {
 
 export const getCustomerName = (order: Order): string => {
   if (!order.user) return "Unknown Customer";
-  const firstName = order.user.firstName || "";
-  const lastName = order.user.lastName || "";
-  return `${firstName} ${lastName}`.trim() || "Unknown Customer";
+  return order.user.fullName || "Unknown Customer";
 };
 
 export const getCustomerEmail = (order: Order): string => {

@@ -101,15 +101,17 @@ export const DateInput = React.forwardRef<HTMLDivElement, DateInputProps>(
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
-                    mode={mode}
-                    selected={field.value}
-                    onSelect={(date: any) => {
-                      field.onChange(date);
-                      onChange?.(date);
-                      setIsOpen(false);
-                    }}
-                    disabled={(date: Date) => disabled || isDateDisabled(date)}
-                    initialFocus
+                    {...{
+                      mode,
+                      selected: field.value,
+                      onSelect: (date: any) => {
+                        field.onChange(date);
+                        onChange?.(date);
+                        setIsOpen(false);
+                      },
+                      disabled: (date: Date) => disabled || isDateDisabled(date),
+                      autoFocus: true,
+                    } as any}
                   />
                 </PopoverContent>
               </Popover>

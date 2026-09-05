@@ -18,6 +18,14 @@ import {
   type StockLine,
 } from '@workspace/db/inventory'
 import { claimCouponUsage } from '@workspace/db/coupons'
+import {
+  getOrCreateUserWallet,
+  postWalletTransaction,
+  WALLET_REFERENCE_TYPES,
+  InsufficientWalletBalanceError,
+  WalletNotActiveError,
+  WalletNotFoundError,
+} from '@workspace/db/wallet'
 import { calculateLocationShippingCost } from '../shipping/shipping.lib'
 import {
   formatDecimal,
@@ -416,6 +424,41 @@ export async function placeOrderFromCart(
         })
       }
 
+      if (resolvedPaymentMethod === 'wallet') {
+        const wallet = await getOrCreateUserWallet(tx, userId)
+        await postWalletTransaction(tx, {
+          walletId: wallet.id,
+          userId,
+          type: 'order_payment',
+          amount: formatDecimal(totalAmount),
+          direction: 'debit',
+          referenceType: WALLET_REFERENCE_TYPES.order,
+          referenceId: newOrder!.id,
+          description: `Order ${orderNumber}`,
+        })
+
+        const paidNow = new Date().toISOString()
+        ;[newOrder] = await tx
+          .update(orders)
+          .set({
+            status: 'confirmed',
+            paymentStatus: 'paid',
+            paidAt: paidNow,
+            updatedAt: paidNow,
+          })
+          .where(eq(orders.id, newOrder!.id))
+          .returning()
+
+        await tx.insert(payments).values({
+          orderId: newOrder!.id,
+          amount: formatDecimal(totalAmount),
+          method: 'wallet',
+          currency: cart.currency || 'EGP',
+          status: 'paid',
+          capturedAt: paidNow,
+        })
+      }
+
       if (paymentOverrides?.recordPayment) {
         await tx.insert(payments).values({
           orderId: newOrder!.id,
@@ -453,6 +496,12 @@ export async function placeOrderFromCart(
     }
     if (err instanceof CouponClaimFailedError) {
       return { success: false, error: 'Coupon usage limit reached' }
+    }
+    if (err instanceof InsufficientWalletBalanceError) {
+      return { success: false, error: 'Insufficient wallet balance' }
+    }
+    if (err instanceof WalletNotActiveError || err instanceof WalletNotFoundError) {
+      return { success: false, error: 'Wallet is not available for payment' }
     }
     throw err
   }

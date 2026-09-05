@@ -13,10 +13,13 @@ interface Product {
     list?: number;
   };
   images: string[];
-  brand: {
+  brand?: {
+    id?: string;
     name: string;
+    logoUrl?: string;
   };
-  category: {
+  category?: {
+    id?: string;
     name: string;
     slug: string;
   };

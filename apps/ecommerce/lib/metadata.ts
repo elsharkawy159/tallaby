@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { BASE_URL, DEFAULT_CURRENCY } from "./constants";
+import { contentParams } from "./content-params";
 import { routing } from "@/i18n/routing";
 
 export type SeoLocale = (typeof routing.locales)[number];
@@ -59,15 +61,22 @@ interface ProductMetadataProps {
   alternateSlug?: string | null;
 }
 
-export function generateProductMetadata({
+export async function generateProductMetadata({
   locale,
   product,
   alternateSlug,
-}: ProductMetadataProps): Metadata {
-  const title = `${product.title} | Tallaby.com`;
+}: ProductMetadataProps): Promise<Metadata> {
+  const t = await getTranslations({ locale, namespace: "seo" });
+  const params = contentParams(locale);
+  const title = t("productTitle", { title: product.title });
   const description =
     product.description ||
-    `Buy ${product.title} from ${product.brand.name} on Tallaby.com. ${product.category.name} with ${product.averageRating > 0 ? `${product.averageRating}★ rating` : "great quality"}. Fast shipping and secure checkout.`;
+    t("productDescription", {
+      ...params,
+      title: product.title,
+      brand: product.brand.name,
+      category: product.category.name,
+    });
 
   const price = product.price.final;
   const originalPrice = product.price.list;
@@ -87,15 +96,16 @@ export function generateProductMetadata({
   } as Partial<Record<SeoLocale, string>>);
 
   return {
-    title,
+    // The message already carries "| Tallaby.com"; `absolute` stops the root
+    // layout's "%s | Tallaby.com" template appending the brand a second time.
+    title: { absolute: title },
     description,
     keywords: [
       product.title,
       product.brand.name,
       product.category.name,
-      "buy online",
+      t("keywordBuyOnline"),
       "tallaby",
-      "ecommerce",
       ...(discount > 0 ? [`${discount}% off`, "sale", "discount"] : []),
     ],
     openGraph: {
@@ -143,14 +153,16 @@ interface CategoryMetadataProps {
   };
 }
 
-export function generateCategoryMetadata({
+export async function generateCategoryMetadata({
   locale,
   category,
-}: CategoryMetadataProps): Metadata {
-  const title = `${category.name} | Shop ${category.name} on Tallaby.com`;
+}: CategoryMetadataProps): Promise<Metadata> {
+  const t = await getTranslations({ locale, namespace: "seo" });
+  const params = contentParams(locale);
+  const title = t("categoryTitle", { name: category.name });
   const description =
     category.description ||
-    `Shop ${category.name} products on Tallaby.com. ${category.productCount ? `${category.productCount}+ products` : "Wide selection"} available with fast shipping and great prices.`;
+    t("categoryDescription", { ...params, name: category.name });
 
   // Categories share one slug across locales, so both language URLs exist
   // whenever the category exists at all.
@@ -162,14 +174,13 @@ export function generateCategoryMetadata({
   );
 
   return {
-    title,
+    title: { absolute: title },
     description,
     keywords: [
       category.name,
-      "shop online",
+      t("keywordShopOnline"),
+      t("keywordBuyOnline"),
       "tallaby",
-      "ecommerce",
-      "buy",
       ...(category.productCount ? [`${category.productCount} products`] : []),
     ],
     openGraph: {
@@ -184,7 +195,7 @@ export function generateCategoryMetadata({
           url: "/og-image.jpg",
           width: 1200,
           height: 630,
-          alt: `Shop ${category.name} on Tallaby.com`,
+          alt: t("categoryImageAlt", { name: category.name }),
         },
       ],
     },
@@ -213,11 +224,15 @@ interface BrandMetadataProps {
   };
 }
 
-export function generateBrandMetadata({ locale, brand }: BrandMetadataProps): Metadata {
-  const title = `${brand.name} | Shop ${brand.name} on Tallaby.com`;
+export async function generateBrandMetadata({
+  locale,
+  brand,
+}: BrandMetadataProps): Promise<Metadata> {
+  const t = await getTranslations({ locale, namespace: "seo" });
+  const params = contentParams(locale);
+  const title = t("brandTitle", { name: brand.name });
   const description =
-    brand.description ||
-    `Shop official ${brand.name} products on Tallaby.com. ${brand.productCount ? `${brand.productCount}+ products` : "Wide selection"} available with fast shipping.`;
+    brand.description || t("brandDescription", { ...params, name: brand.name });
 
   const brandUrl = localizedUrl(locale, `/brands/${brand.slug}`);
   const languages = buildLanguageAlternates(
@@ -228,9 +243,14 @@ export function generateBrandMetadata({ locale, brand }: BrandMetadataProps): Me
   const image = brand.logoUrl || "/og-image.jpg";
 
   return {
-    title,
+    title: { absolute: title },
     description,
-    keywords: [brand.name, "shop online", "tallaby", "ecommerce", "buy"],
+    keywords: [
+      brand.name,
+      t("keywordShopOnline"),
+      t("keywordBuyOnline"),
+      "tallaby",
+    ],
     openGraph: {
       type: "website",
       locale: OG_LOCALE[locale],
@@ -281,7 +301,9 @@ export function generateStaticPageMetadata({
   );
 
   return {
-    title,
+    // Page titles in messages/*.json already end in "| Tallaby", so `absolute`
+    // stops the root layout template appending the brand a second time.
+    title: { absolute: title },
     description,
     openGraph: {
       type: "website",
@@ -317,11 +339,15 @@ interface StoreMetadataProps {
   };
 }
 
-export function generateStoreMetadata({ locale, store }: StoreMetadataProps): Metadata {
-  const title = `${store.name} | Tallaby.com`;
+export async function generateStoreMetadata({
+  locale,
+  store,
+}: StoreMetadataProps): Promise<Metadata> {
+  const t = await getTranslations({ locale, namespace: "seo" });
+  const params = contentParams(locale);
+  const title = t("storeTitle", { name: store.name });
   const description =
-    store.description ||
-    `Shop products from ${store.name} on Tallaby.com. ${store.productCount ? `${store.productCount}+ products` : "Browse their storefront"} and shop with cash on delivery.`;
+    store.description || t("storeDescription", { ...params, name: store.name });
 
   const storeUrl = localizedUrl(locale, `/stores/${store.slug}`);
   const languages = buildLanguageAlternates(
@@ -332,7 +358,7 @@ export function generateStoreMetadata({ locale, store }: StoreMetadataProps): Me
   const image = store.logoUrl || "/og-image.jpg";
 
   return {
-    title,
+    title: { absolute: title },
     description,
     openGraph: {
       type: "website",
@@ -366,10 +392,13 @@ export function generateNoIndexMetadata(): Metadata {
   };
 }
 
-export function generateHomeMetadata(locale: SeoLocale): Metadata {
-  const title = "Tallaby.com – Your Everything Store";
-  const description =
-    "Tallaby.com is a global online marketplace offering millions of products across electronics, fashion, home essentials, beauty, and more. Shop securely, fast, and conveniently like Amazon.";
+export async function generateHomeMetadata(
+  locale: SeoLocale
+): Promise<Metadata> {
+  const t = await getTranslations({ locale, namespace: "metadata" });
+  const params = contentParams(locale);
+  const title = t("title", params);
+  const description = t("description", params);
   const homeUrl = localizedUrl(locale, "");
   const languages = buildLanguageAlternates(
     Object.fromEntries(
@@ -378,15 +407,18 @@ export function generateHomeMetadata(locale: SeoLocale): Metadata {
   );
 
   return {
-    title,
+    // `absolute` opts out of the layout's "%s | Tallaby.com" template — the
+    // localized home title already carries the brand.
+    title: { absolute: title },
     description,
+    keywords: t("keywords").split(",").map((k) => k.trim()),
     openGraph: {
       type: "website",
       locale: OG_LOCALE[locale],
       url: homeUrl,
-      siteName: "Tallaby.com",
-      title,
-      description,
+      siteName: t("siteName"),
+      title: t("ogTitle"),
+      description: t("ogDescription", params),
       images: [
         {
           url: "/og-image.jpg",
@@ -399,8 +431,8 @@ export function generateHomeMetadata(locale: SeoLocale): Metadata {
     twitter: {
       card: "summary_large_image",
       site: "@tallaby",
-      title,
-      description,
+      title: t("twitterTitle"),
+      description: t("twitterDescription", params),
       images: ["/og-image.jpg"],
     },
     alternates: {

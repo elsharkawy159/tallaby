@@ -11,6 +11,7 @@ interface AddToCartButtonProps {
   variantId?: string;
   disabled?: boolean;
   className?: string;
+  stock?: number | string;
 }
 
 export function AddToCartButton({
@@ -19,6 +20,7 @@ export function AddToCartButton({
   variantId,
   disabled,
   className,
+  stock = 0,
 }: AddToCartButtonProps) {
   const locale = useLocale();
 
@@ -39,7 +41,7 @@ export function AddToCartButton({
       variantId={variantId}
       disabled={disabled}
       className={className}
-      onSuccess={handleSuccess}
+      stock={stock}
     />
   );
 }

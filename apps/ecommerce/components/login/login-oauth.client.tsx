@@ -4,8 +4,10 @@ import { useTransition } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@workspace/ui/components/button";
 import { createClient } from "@/supabase/client";
+import { useTranslations } from "next-intl";
 
 export function LoginOAuth() {
+  const t = useTranslations("auth");
   const [isPending, startTransition] = useTransition();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirect") || "/";
@@ -43,7 +45,9 @@ export function LoginOAuth() {
           <div className="w-full border-t border-gray-200" />
         </div>
         <div className="relative flex justify-center text-sm/6 font-medium">
-          <span className="bg-white px-6 text-gray-900">Or continue with</span>
+          <span className="bg-white px-6 text-gray-900">
+            {t("orSignInWith")}
+          </span>
         </div>
       </div>
 

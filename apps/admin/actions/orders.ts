@@ -50,8 +50,7 @@ export async function getAllOrders(params?: {
       with: {
         user: {
           columns: {
-            firstName: true,
-            lastName: true,
+            fullName: true,
             email: true,
             phone: true,
           },
@@ -60,9 +59,16 @@ export async function getAllOrders(params?: {
           with: {
             product: {
               columns: {
-                title: true,
                 sku: true,
                 images: true,
+              },
+              with: {
+                productTranslations: {
+                  columns: {
+                    title: true,
+                    locale: true,
+                  },
+                },
               },
             },
             seller: {
@@ -332,8 +338,7 @@ export async function exportOrders(format: "csv" | "excel" = "csv") {
       with: {
         user: {
           columns: {
-            firstName: true,
-            lastName: true,
+            fullName: true,
             email: true,
           },
         },
@@ -341,7 +346,6 @@ export async function exportOrders(format: "csv" | "excel" = "csv") {
           with: {
             product: {
               columns: {
-                title: true,
                 sku: true,
               },
             },
@@ -354,8 +358,7 @@ export async function exportOrders(format: "csv" | "excel" = "csv") {
     // Transform data for export
     const exportData = ordersData.map((order) => ({
       "Order Number": order.orderNumber,
-      "Customer Name":
-        `${order.user?.firstName || ""} ${order.user?.lastName || ""}`.trim(),
+      "Customer Name": order.user?.fullName || "",
       "Customer Email": order.user?.email || "",
       "Total Amount": order.totalAmount,
       Status: order.status,

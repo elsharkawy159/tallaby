@@ -9,9 +9,11 @@ export interface Category {
 export interface CategoryWithRequiredFields {
   id: string;
   name: string;
-  nameAr?: string | null;
+  nameAr: string | null;
   slug: string;
   productCount: number;
+  fallbackImageUrl: string | null;
+  imageUrl: string | null;
 }
 
 export interface CategoryShowcaseProps {

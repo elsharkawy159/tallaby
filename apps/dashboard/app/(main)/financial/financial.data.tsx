@@ -23,12 +23,12 @@ export async function FinancialData() {
 
   return (
     <FinancialDashboardContent
-      wallet={walletRes.success ? walletRes.data : null}
-      pending={pendingRes.success ? pendingRes.data : null}
+      wallet={walletRes.success ? (walletRes.data ?? null) : null}
+      pending={pendingRes.success ? (pendingRes.data ?? null) : null}
       payouts={payoutsRes.success ? (payoutsRes.data ?? []) : []}
-      stats={statsRes.success ? statsRes.data : null}
+      stats={statsRes.success ? (statsRes.data ?? null) : null}
       transactions={txRes.success ? (txRes.data ?? []) : []}
-      analytics={analyticsRes.success ? analyticsRes.data?.sales : null}
+      analytics={analyticsRes.success ? (analyticsRes.data?.sales ?? null) : null}
     />
   );
 }

@@ -35,6 +35,7 @@ export function OrderItemReviewForm({
   existingReview,
 }: OrderItemReviewFormProps) {
   const t = useTranslations("orders");
+  const tCommon = useTranslations("common");
   const tToast = useTranslations("toast");
   const [rating, setRating] = useState<number>(existingReview?.rating ?? 0);
   const [hoverRating, setHoverRating] = useState<number>(0);
@@ -276,7 +277,7 @@ export function OrderItemReviewForm({
       {/* Title */}
       <div className="mb-3">
         <Input
-          placeholder="Review title (optional)"
+          placeholder={t("reviewTitleOptional")}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           disabled={isPending}
@@ -288,7 +289,7 @@ export function OrderItemReviewForm({
       {/* Comment */}
       <div className="mb-3">
         <Textarea
-          placeholder="Share your experience with this product..."
+          placeholder={t("shareYourExperience")}
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           disabled={isPending}
@@ -363,14 +364,14 @@ export function OrderItemReviewForm({
                     onClick={() => handleRemoveFile(index)}
                     disabled={isPending || isUploading}
                     className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
-                    aria-label="Remove file"
+                    aria-label={tCommon("removeFile")}
                   >
                     <X className="h-3 w-3" />
                   </button>
                   {preview.type === "video" && (
                     <div className="absolute bottom-1 left-1 bg-black/50 text-white text-xs px-1.5 py-0.5 rounded flex items-center gap-1">
                       <Video className="h-3 w-3" />
-                      <span>Video</span>
+                      <span>{tCommon("video")}</span>
                     </div>
                   )}
                 </div>

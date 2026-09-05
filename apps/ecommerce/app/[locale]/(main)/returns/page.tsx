@@ -5,6 +5,7 @@ import { Button } from "@workspace/ui/components/button";
 import { Badge } from "@workspace/ui/components/badge";
 import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import { generateStaticPageMetadata, type SeoLocale } from "@/lib/metadata";
+import { contentParams } from "@/lib/content-params";
 
 export async function generateMetadata({
   params,
@@ -13,18 +14,26 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations("pages.returns");
+  const values = contentParams(locale);
 
   return generateStaticPageMetadata({
     locale: locale as SeoLocale,
     path: "/returns",
     title: t("title"),
-    description: t("description"),
+    description: t("description", values),
   });
 }
 
-export default async function ReturnsPage() {
+export default async function ReturnsPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
   const t = await getTranslations("pages.returns");
   const tFooter = await getTranslations("footer");
+  const values = contentParams(locale);
+
   const reasons = [
     t("reason1"),
     t("reason2"),
@@ -34,6 +43,11 @@ export default async function ReturnsPage() {
     t("reason6"),
     t("reason7"),
     t("reason8"),
+  ];
+  const refundMethods = [
+    t("refundMethod1"),
+    t("refundMethod2"),
+    t("refundMethod3"),
   ];
 
   return (
@@ -50,8 +64,10 @@ export default async function ReturnsPage() {
         <section className="py-16">
           <div className="container max-w-3xl mx-auto space-y-10">
             <div>
-              <h2 className="text-xl font-bold mb-2">{t("windowTitle")}</h2>
-              <p className="text-gray-600">{t("windowBody")}</p>
+              <h2 className="text-xl font-bold mb-2">
+                {t("windowTitle", values)}
+              </h2>
+              <p className="text-gray-600">{t("windowBody", values)}</p>
             </div>
 
             <div>
@@ -72,8 +88,26 @@ export default async function ReturnsPage() {
             </div>
 
             <div>
+              <h2 className="text-xl font-bold mb-2">{t("costTitle")}</h2>
+              <p className="text-gray-600">{t("costFreeBody")}</p>
+              <p className="text-gray-600 mt-3">{t("costPaidBody", values)}</p>
+            </div>
+
+            <div>
               <h2 className="text-xl font-bold mb-2">{t("refundTitle")}</h2>
               <p className="text-gray-600">{t("refundBody")}</p>
+              <p className="text-gray-600 mt-3">{t("refundMethodsIntro")}</p>
+              <ul className="mt-3 space-y-1.5 text-gray-600">
+                {refundMethods.map((method, index) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <span
+                      className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
+                      aria-hidden
+                    />
+                    <span>{method}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
 
             <div className="border-t pt-8 text-center">

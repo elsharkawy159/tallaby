@@ -5,6 +5,7 @@ import { Minus, Plus, Trash, Loader2 } from "lucide-react";
 import type { QuantitySelectorProps } from "./product-card.types";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/providers/cart-provider";
+import { useTranslations } from "next-intl";
 
 const sizeStyles = {
   sm: {
@@ -42,6 +43,7 @@ export const QuantitySelector = ({
   initialQuantity = 0,
   maxOrderQuantity,
 }: QuantitySelectorProps) => {
+  const t = useTranslations("common");
   const { getCartItemById, updateQuantity, removeFromCart, isItemLoading } =
     useCart();
 
@@ -86,7 +88,7 @@ export const QuantitySelector = ({
         className={cn(`rounded-none `, styles.button)}
         onClick={() => handleQuantityChange(quantity - 1)}
         disabled={isLoading}
-        aria-label="Decrease quantity"
+        aria-label={t("decreaseQuantity")}
       >
         {quantity === 1 && showRemoveButton ? (
           <Trash className={cn(styles.icon, "size-4")} />
@@ -114,7 +116,7 @@ export const QuantitySelector = ({
           (effectiveMaxOrderQty !== undefined &&
             quantity >= effectiveMaxOrderQty)
         }
-        aria-label="Increase quantity"
+        aria-label={t("increaseQuantity")}
       >
         <Plus className={cn(styles.icon, "size-4")} />
       </Button>

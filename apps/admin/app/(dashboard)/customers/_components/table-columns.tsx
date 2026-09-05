@@ -67,7 +67,7 @@ export function getCustomersColumns({
       enableHiding: false,
     },
     {
-      accessorKey: "firstName",
+      accessorKey: "fullName",
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Name" />
       ),

@@ -14,6 +14,7 @@ import { Separator } from "@workspace/ui/components/separator";
 import { ScrollArea } from "@workspace/ui/components/scroll-area";
 import { cn } from "@/lib/utils";
 import { formatNotificationTime } from "./notification.lib";
+import { useTranslations } from "next-intl";
 import {
   getNotifications,
   markNotificationRead,
@@ -51,6 +52,7 @@ interface NotificationDropdownClientProps {
 export function NotificationDropdownClient({
   initialUnreadCount = 0,
 }: NotificationDropdownClientProps) {
+  const t = useTranslations("notifications");
   const [isOpen, setIsOpen] = useState(false);
   const [isMarkingRead, setIsMarkingRead] = useState<string | null>(null);
   const queryClient = useQueryClient();
@@ -129,7 +131,7 @@ export function NotificationDropdownClient({
           className={cn(
             "relative flex flex-col items-center text-white hover:text-gray-200"
           )}
-          aria-label="Notifications"
+          aria-label={t("notifications")}
         >
           <Bell className="md:size-6 size-5" />
         </Button>
@@ -143,7 +145,7 @@ export function NotificationDropdownClient({
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
-          <h3 className="font-semibold text-sm">Notifications</h3>
+          <h3 className="font-semibold text-sm">{t("notifications")}</h3>
           {hasUnread && (
             <Button
               variant="ghost"

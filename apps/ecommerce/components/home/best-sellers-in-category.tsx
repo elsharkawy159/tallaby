@@ -90,9 +90,9 @@ export default async function BestSellersInCategory({
         {/* Carousel Section */}
         <CarouselContent className="p-1.5">
           {products.map((product) => (
-            <CarouselItem key={product.id} className="basis-auto">
+            <CarouselItem key={String(product.id)} className="basis-auto">
               <ProductCard
-                id={product.id}
+                id={String(product.id)}
                 title={product.title}
                 slug={product.slug}
                 images={
@@ -110,8 +110,8 @@ export default async function BestSellersInCategory({
                       }
                     | null
                 }
-                averageRating={product.averageRating ?? undefined}
-                reviewCount={product.reviewCount ?? undefined}
+                averageRating={(product.averageRating as number) ?? undefined}
+                reviewCount={(product.reviewCount as number) ?? undefined}
               />
             </CarouselItem>
           ))}

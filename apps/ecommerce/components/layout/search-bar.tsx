@@ -136,7 +136,7 @@ export const SearchBar = ({
                 );
 
                 return (
-                  <li key={product.id}>
+                  <li key={String(product.id)}>
                     <Link
                       href={`/products/${product.slug}`}
                       onClick={() => {
@@ -164,7 +164,7 @@ export const SearchBar = ({
                             }}
                           />
                           <p className="text-xs text-gray-500 truncate">
-                            {product.category?.name || t("noCategory")}
+                            {(product.category as Record<string, unknown> | undefined)?.name as string || t("noCategory")}
                           </p>
                         </div>
                         <span

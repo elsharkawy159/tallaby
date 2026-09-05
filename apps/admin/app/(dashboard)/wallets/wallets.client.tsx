@@ -111,13 +111,6 @@ export function WalletsClientWrapper({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Wallets</h1>
-        <p className="text-sm text-muted-foreground">
-          User wallet balances, the transaction ledger and payout requests.
-        </p>
-      </div>
-
       <WalletStatsCards stats={stats} />
 
       <Tabs defaultValue={initialTab}>

@@ -1,7 +1,7 @@
 export interface CustomerAddress {
   id: string;
   userId: string;
-  addressType: "shipping" | "billing" | "both";
+  addressType: "shipping" | "billing" | "both" | null;
   fullName: string;
   phone: string;
   company: string | null;
@@ -11,27 +11,25 @@ export interface CustomerAddress {
   state: string;
   postalCode: string;
   country: string;
-  isDefault: boolean;
-  isBusinessAddress: boolean;
+  isDefault: boolean | null;
+  isBusinessAddress: boolean | null;
   deliveryInstructions: string | null;
   accessCode: string | null;
   latitude: number | null;
   longitude: number | null;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: string | null;
+  updatedAt: string | null;
 }
 
 export interface Customer {
   id: string;
-  firstName: string | null;
-  lastName: string | null;
   fullName: string | null;
-  email: string;
+  email: string | null;
   phone: string | null;
-  role: string;
+  role: string | null;
   avatarUrl: string | null;
-  isVerified: boolean;
-  isSuspended: boolean;
+  isVerified: boolean | null;
+  isSuspended: boolean | null;
   isGuest: boolean;
   lastLoginAt: string | null;
   timezone: string | null;
@@ -39,14 +37,15 @@ export interface Customer {
   referralCode: string | null;
   referredBy: string | null;
   defaultCurrency: string | null;
-  receiveMarketingEmails: boolean;
-  hasTwoFactorAuth: boolean;
+  receiveMarketingEmails: boolean | null;
+  hasTwoFactorAuth: boolean | null;
   twoFactorMethod: string | null;
-  createdAt: string;
-  updatedAt: string;
-  totalOrders: number;
-  totalSpent: number;
-  lastOrderDate: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+  isAvailable: boolean | null;
+  totalOrders?: number;
+  totalSpent?: number;
+  lastOrderDate?: string | null;
   addresses?: CustomerAddress[];
 }
 
@@ -54,9 +53,10 @@ export interface CustomerWithDetails extends Customer {
   orders?: Array<{
     id: string;
     orderNumber: string;
-    totalAmount: number;
-    status: string;
-    createdAt: string;
+    totalAmount: string | number;
+    status: string | null;
+    createdAt: string | null;
+    [key: string]: unknown;
   }>;
   stats?: {
     totalOrders: number;

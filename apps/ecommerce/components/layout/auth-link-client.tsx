@@ -35,7 +35,7 @@ export function AuthLinkClient({
           "flex flex-col items-center text-gray-600 hover:text-primary transition-colors",
         className
       )}
-      title="Sign in to your account"
+      title={t("signInToYourAccount")}
     >
       <Link href={loginUrl}>
         <UserIcon className={"md:size-6 size-4.5"} />

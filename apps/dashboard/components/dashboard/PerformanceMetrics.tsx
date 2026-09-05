@@ -178,8 +178,8 @@ export const PerformanceMetrics = () => {
                     innerRadius={60}
                     outerRadius={100}
                     dataKey="users"
-                    label={({ device, percentage }) =>
-                      `${device}: ${percentage}%`
+                    label={(props: any) =>
+                      `${props.device}: ${props.percentage}%`
                     }
                   >
                     {deviceData.map((entry, index) => (

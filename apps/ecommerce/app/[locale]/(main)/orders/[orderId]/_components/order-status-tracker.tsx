@@ -59,8 +59,8 @@ const BASE_STATUS_FLOW: OrderStatusType[] = [
 function getStatusFlow(paymentMethod?: string): OrderStatusType[] {
   const flow: OrderStatusType[] = ["pending"]
 
-  // Only include payment_processing for online payments
-  const isOnlinePayment = paymentMethod && paymentMethod !== "cash_on_delivery"
+  // Only the card-payment gateway flow has a real intermediate processing step.
+  const isOnlinePayment = paymentMethod === "online_payment"
   if (isOnlinePayment) {
     flow.push("payment_processing")
   }

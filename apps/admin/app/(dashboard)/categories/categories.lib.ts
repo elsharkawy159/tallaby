@@ -78,7 +78,7 @@ export function getCategoryPath(
   while (current) {
     path.unshift(current.name || "");
     if (current.parentId) {
-      current = allCategories.find((c) => c.id === current.parentId);
+      current = allCategories.find((c) => c.id === current!.parentId);
     } else {
       break;
     }

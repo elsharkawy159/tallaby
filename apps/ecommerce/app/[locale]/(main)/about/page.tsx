@@ -5,6 +5,7 @@ import { Button } from "@workspace/ui/components/button";
 import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import { generateStaticPageMetadata, type SeoLocale } from "@/lib/metadata";
 import { ShoppingBag, ShieldCheck, Truck } from "lucide-react";
+import { contentParams } from "@/lib/content-params";
 
 export async function generateMetadata({
   params,
@@ -22,13 +23,23 @@ export async function generateMetadata({
   });
 }
 
-export default async function About() {
+export default async function About({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
   const t = await getTranslations("pages.about");
+  const content = contentParams(locale);
 
   const values = [
     { icon: ShoppingBag, title: t("value1Title"), description: t("value1Description") },
     { icon: ShieldCheck, title: t("value2Title"), description: t("value2Description") },
-    { icon: Truck, title: t("value3Title"), description: t("value3Description") },
+    {
+      icon: Truck,
+      title: t("value3Title"),
+      description: t("value3Description", content),
+    },
   ];
 
   return (
@@ -45,9 +56,9 @@ export default async function About() {
         <section className="py-16">
           <div className="container max-w-3xl mx-auto">
             <h2 className="text-2xl font-bold mb-4">{t("whatIsTitle")}</h2>
-            <p className="text-gray-600 mb-8">{t("whatIsBody")}</p>
+            <p className="text-gray-600 mb-8">{t("whatIsBody", content)}</p>
             <h2 className="text-2xl font-bold mb-4">{t("howItWorksTitle")}</h2>
-            <p className="text-gray-600">{t("howItWorksBody")}</p>
+            <p className="text-gray-600">{t("howItWorksBody", content)}</p>
           </div>
         </section>
 

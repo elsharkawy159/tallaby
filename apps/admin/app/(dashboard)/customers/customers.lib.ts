@@ -21,11 +21,6 @@ export function formatDateShort(date: string | null | undefined): string {
 }
 
 export function getCustomerInitials(customer: Customer): string {
-  const firstName = customer.firstName || "";
-  const lastName = customer.lastName || "";
-  if (firstName && lastName) {
-    return `${firstName[0]}${lastName[0]}`.toUpperCase();
-  }
   if (customer.fullName) {
     const parts = customer.fullName.split(" ");
     if (parts.length >= 2) {
@@ -33,17 +28,12 @@ export function getCustomerInitials(customer: Customer): string {
     }
     return customer.fullName[0]?.toUpperCase() || "C";
   }
-  return customer.email[0]?.toUpperCase() || "C";
+  return customer.email?.[0]?.toUpperCase() || "C";
 }
 
 export function getCustomerFullName(customer: Customer): string {
   if (customer.fullName) return customer.fullName;
-  if (customer.firstName && customer.lastName) {
-    return `${customer.firstName} ${customer.lastName}`;
-  }
-  if (customer.firstName) return customer.firstName;
-  if (customer.lastName) return customer.lastName;
-  return customer.email;
+  return customer.email || "Unknown";
 }
 
 export function getCustomerDisplayName(customer: Customer): string {
@@ -78,6 +68,7 @@ export function calculateCustomerStats(customers: Customer[]): CustomerStats {
 
   const now = new Date();
   const newCustomersThisMonth = customers.filter((c) => {
+    if (!c.createdAt) return false;
     const createdDate = new Date(c.createdAt);
     return (
       createdDate.getMonth() === now.getMonth() &&

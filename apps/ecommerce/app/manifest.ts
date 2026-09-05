@@ -2,10 +2,10 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Tallaby.com – Your Everything Store",
+    name: "Tallaby.com – Online Shopping in Egypt",
     short_name: "Tallaby",
     description:
-      "Tallaby.com is a global online marketplace offering millions of products across electronics, fashion, home essentials, beauty, and more.",
+      "Tallaby is a multi-vendor marketplace in Egypt — shop accessories, beauty, fashion and home products from verified sellers, with cash on delivery.",
     start_url: "/",
     display: "standalone",
     background_color: "#ffffff",
@@ -39,7 +39,10 @@ export default function manifest(): MetadataRoute.Manifest {
       },
     ],
     categories: ["shopping", "ecommerce", "marketplace"],
+    // The manifest is served once at /manifest.webmanifest, outside the
+    // `[locale]` segment, so it can only describe the default locale.
     lang: "en",
+    dir: "ltr",
     scope: "/",
   };
 }

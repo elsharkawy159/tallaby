@@ -64,7 +64,11 @@ export function EditProduct({
   const handleSubmit = (data: AddProductFormData) => {
     startTransition(async () => {
       try {
-        const result = await updateProduct(productId, data);
+        const result = await updateProduct(productId, {
+          ...data,
+          quantity: String(data.quantity),
+          handlingTime: String(data.handlingTime),
+        } as unknown as Parameters<typeof updateProduct>[1]);
 
         if (result.success) {
           toast.success(tToast("productUpdatedSuccessfully"));
@@ -229,6 +233,7 @@ export function EditProduct({
               <BasicInformationStep
                 categories={categories}
                 brands={brands}
+                sellerPricing={sellerPricing}
                 activeLocale={activeLocale}
               />
             )}

@@ -95,10 +95,10 @@ export default async function FeaturedCollection({
         >
           <CarouselContent className="p-1.5">
             {products.map((product) => (
-              <CarouselItem key={product.id} className="basis-auto">
+              <CarouselItem key={String(product.id)} className="basis-auto">
                 <div className="relative group">
                   <ProductCard
-                    id={product.id}
+                    id={String(product.id)}
                     title={product.title}
                     slug={product.slug}
                     images={
@@ -118,8 +118,8 @@ export default async function FeaturedCollection({
                           }
                         | null
                     }
-                    averageRating={product.averageRating ?? undefined}
-                    reviewCount={product.reviewCount ?? undefined}
+                    averageRating={(product.averageRating as number) ?? undefined}
+                    reviewCount={(product.reviewCount as number) ?? undefined}
                   />
 
                   {/* Featured badge overlay */}
@@ -145,9 +145,9 @@ export default async function FeaturedCollection({
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {products.map((product) => (
-            <div key={product.id} className="relative group">
+            <div key={String(product.id)} className="relative group">
               <ProductCard
-                id={product.id}
+                id={String(product.id)}
                 title={product.title}
                 slug={product.slug}
                 images={
@@ -165,8 +165,8 @@ export default async function FeaturedCollection({
                       }
                     | null
                 }
-                averageRating={product.averageRating ?? undefined}
-                reviewCount={product.reviewCount ?? undefined}
+                averageRating={(product.averageRating as number) ?? undefined}
+                reviewCount={(product.reviewCount as number) ?? undefined}
               />
 
               {/* Featured badge overlay */}

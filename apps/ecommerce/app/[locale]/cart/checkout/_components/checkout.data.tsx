@@ -42,7 +42,15 @@ import { Textarea } from "@workspace/ui/components/textarea";
 import { Info } from "lucide-react";
 import type { CheckoutSummary } from "@/lib/coupon-utils";
 import { useCart } from "@/providers/cart-provider";
-import { isCodEligibleForShipping } from "@workspace/lib/orders/payment";
+import {
+  isCodEligibleForShipping,
+  isWalletEligibleForTotal,
+} from "@workspace/lib/orders/payment";
+import {
+  MANUAL_PAYMENT_METHODS,
+  DEFAULT_MANUAL_PAYMENT_METHOD,
+  isManualPaymentMethod,
+} from "@/lib/manual-payment-methods";
 
 export const CheckoutData = ({
   checkoutData,
@@ -90,17 +98,13 @@ export const CheckoutData = ({
     [t]
   );
 
-  const initialPaymentMethod = isCodEligibleForShipping(initialSummary.shippingCost)
-    ? checkoutFormDefaults.paymentMethod!
-    : "online_payment";
-
   const form = useForm<CheckoutFormData>({
     resolver: zodResolver(checkoutFormSchema),
     mode: "onChange",
     defaultValues: {
       ...checkoutFormDefaults,
       shippingAddressId: activeAddress?.id || "",
-      paymentMethod: initialPaymentMethod,
+      paymentMethod: DEFAULT_MANUAL_PAYMENT_METHOD,
     },
   });
 
@@ -186,17 +190,43 @@ export const CheckoutData = ({
 
   const isCodEligible = isCodEligibleForShipping(summary.shippingCost);
 
+  const walletAvailableBalance =
+    checkoutData.walletAvailableBalance != null
+      ? Number(checkoutData.walletAvailableBalance)
+      : null;
+  const hasWallet = walletAvailableBalance != null && walletAvailableBalance > 0;
+  const isWalletEligible = isWalletEligibleForTotal(
+    walletAvailableBalance,
+    summary.totalAfterDiscount ?? summary.total
+  );
+
   useEffect(() => {
     if (!isCodEligible && form.getValues("paymentMethod") === "cash_on_delivery") {
-      form.setValue("paymentMethod", "online_payment", {
+      form.setValue("paymentMethod", DEFAULT_MANUAL_PAYMENT_METHOD, {
         shouldValidate: true,
         shouldDirty: true,
       });
     }
   }, [isCodEligible, form]);
 
-  const paymentMethods = useMemo(
-    () => [
+  useEffect(() => {
+    if (form.getValues("paymentMethod") === "wallet" && !isWalletEligible) {
+      form.setValue("paymentMethod", DEFAULT_MANUAL_PAYMENT_METHOD, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+    }
+  }, [isWalletEligible, form]);
+
+  const paymentGroups = useMemo(() => {
+    const groups = [
+      {
+        id: "online_manual",
+        value: "online_manual",
+        title: t("onlinePayment"),
+        description: t("onlinePaymentDescription"),
+        enabled: true,
+      },
       {
         id: "cash_on_delivery",
         value: "cash_on_delivery",
@@ -205,16 +235,50 @@ export const CheckoutData = ({
         enabled: isCodEligible,
         disabledLabel: isCodEligible ? undefined : t("codUnavailableHighShipping"),
       },
-      {
-        id: "online_payment",
-        value: "online_payment",
-        title: t("onlinePayment"),
-        description: t("onlinePaymentDescription"),
-        enabled: true,
-      },
-    ],
-    [isCodEligible, t]
-  );
+    ];
+
+    if (hasWallet) {
+      groups.push({
+        id: "wallet",
+        value: "wallet",
+        title: t("walletBalance"),
+        description: t("walletBalanceDescription"),
+        enabled: isWalletEligible,
+        disabledLabel: isWalletEligible ? undefined : t("walletInsufficientBalance"),
+      });
+    }
+
+    groups.push({
+      id: "online_payment",
+      value: "online_payment",
+      title: t("payByCard"),
+      description: t("payByCardDescription"),
+      enabled: true,
+    });
+
+    return groups;
+  }, [isCodEligible, hasWallet, isWalletEligible, t]);
+
+  const getGroupForPaymentMethod = useCallback((value: string) => {
+    if (isManualPaymentMethod(value)) return "online_manual";
+    return value;
+  }, []);
+
+  const selectedGroup = getGroupForPaymentMethod(paymentMethod);
+
+  const handleGroupChange = (group: string) => {
+    if (group === "online_manual") {
+      form.setValue("paymentMethod", DEFAULT_MANUAL_PAYMENT_METHOD, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+    } else {
+      form.setValue("paymentMethod", group, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+    }
+  };
 
   const handleSubmit = (data: CheckoutFormData) => {
     startTransition(async () => {
@@ -241,7 +305,10 @@ export const CheckoutData = ({
           await refreshCart();
           router.refresh();
 
-          if (data.paymentMethod === "online_payment") {
+          if (
+            data.paymentMethod === "online_payment" ||
+            isManualPaymentMethod(data.paymentMethod)
+          ) {
             router.push(`/cart/checkout/payment?orderId=${result.data?.order?.id}`);
             return;
           }
@@ -317,15 +384,15 @@ export const CheckoutData = ({
                   control={form.control}
                   name="paymentMethod"
                   render={({ field }) => (
-                    <div className="w-full">
+                    <div className="w-full space-y-4">
                       <FieldGroup>
                         <FieldSet>
                           <RadioGroup
-                            value={field.value}
-                            onValueChange={field.onChange}
-                            className="flex items-center gap-5 w-full md:flex-row rtl:md:flex-row-reverse flex-col"
+                            value={selectedGroup}
+                            onValueChange={handleGroupChange}
+                            className="flex items-stretch gap-5 w-full md:flex-row rtl:md:flex-row-reverse flex-col"
                           >
-                            {paymentMethods.map((method) => (
+                            {paymentGroups.map((method) => (
                               <FieldLabel
                                 key={method.id}
                                 htmlFor={method.id}
@@ -334,7 +401,7 @@ export const CheckoutData = ({
                               ${
                                 method.enabled
                                   ? `cursor-pointer ${
-                                      field.value === method.value
+                                      selectedGroup === method.value
                                         ? "ring-2 ring-primary bg-primary/5 border-primary shadow-sm"
                                         : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
                                     }`
@@ -367,6 +434,47 @@ export const CheckoutData = ({
                           </RadioGroup>
                         </FieldSet>
                       </FieldGroup>
+
+                      {selectedGroup === "online_manual" && (
+                        <FieldGroup>
+                          <FieldSet>
+                            <RadioGroup
+                              value={field.value}
+                              onValueChange={field.onChange}
+                              className="flex items-stretch gap-3 w-full md:flex-row rtl:md:flex-row-reverse flex-col pl-0 md:pl-4"
+                            >
+                              {MANUAL_PAYMENT_METHODS.map((method) => {
+                                const Icon = method.icon;
+                                return (
+                                  <FieldLabel
+                                    key={method.value}
+                                    htmlFor={`payment-${method.value}`}
+                                    className={`rounded-lg border-2 flex-1 p-3 cursor-pointer transition-all duration-200 ${
+                                      field.value === method.value
+                                        ? "ring-2 ring-primary bg-primary/5 border-primary shadow-sm"
+                                        : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                                    }`}
+                                  >
+                                    <Field orientation="horizontal">
+                                      <RadioGroupItem
+                                        value={method.value}
+                                        id={`payment-${method.value}`}
+                                      />
+                                      <Icon className="h-4 w-4 text-gray-500 shrink-0" />
+                                      <FieldContent>
+                                        <FieldTitle className="text-xs md:text-sm">
+                                          {t(method.titleKey as any)}
+                                        </FieldTitle>
+                                      </FieldContent>
+                                    </Field>
+                                  </FieldLabel>
+                                );
+                              })}
+                            </RadioGroup>
+                          </FieldSet>
+                        </FieldGroup>
+                      )}
+
                       {form.formState.errors.paymentMethod && (
                         <p className="text-xs md:text-sm text-red-500 mt-2">
                           {form.formState.errors.paymentMethod.message}

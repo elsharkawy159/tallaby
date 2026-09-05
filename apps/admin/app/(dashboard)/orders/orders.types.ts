@@ -2,10 +2,9 @@ export interface Order {
   id: string;
   orderNumber: string;
   user?: {
-    firstName?: string;
-    lastName?: string;
-    email?: string;
-    phone?: string;
+    fullName?: string | null;
+    email?: string | null;
+    phone?: string | null;
   };
   totalAmount: number;
   status:

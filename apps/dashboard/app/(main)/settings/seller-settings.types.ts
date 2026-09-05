@@ -17,7 +17,7 @@ export interface SellerDocument {
   documentType: string
   fileUrl: string
   expiryDate: string | null
-  status: string
+  status: string | null
   uploadedAt?: string | null
 }
 

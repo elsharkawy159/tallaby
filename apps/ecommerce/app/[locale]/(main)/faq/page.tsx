@@ -10,6 +10,7 @@ import {
 } from "@workspace/ui/components/accordion";
 import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import { generateStaticPageMetadata, type SeoLocale } from "@/lib/metadata";
+import { applyContentParams, contentParams } from "@/lib/content-params";
 
 interface FaqItem {
   question: string;
@@ -28,13 +29,25 @@ export async function generateMetadata({
     locale: locale as SeoLocale,
     path: "/faq",
     title: t("title"),
-    description: t("description"),
+    description: t("description", contentParams(locale)),
   });
 }
 
-export default async function FAQ() {
+export default async function FAQ({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
   const t = await getTranslations("pages.faq");
-  const items = t.raw("items") as FaqItem[];
+
+  // `t.raw` returns the array verbatim, so ICU params are never interpolated —
+  // substitute the delivery/returns values ourselves so the answers (and the
+  // FAQPage JSON-LD built from them) stay in step with the constants.
+  const items = (t.raw("items") as FaqItem[]).map((item) => ({
+    question: applyContentParams(item.question, locale),
+    answer: applyContentParams(item.answer, locale),
+  }));
 
   const faqStructuredData = {
     "@context": "https://schema.org",

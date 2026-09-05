@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@workspace/ui/components/button";
+import { contentParams } from "@/lib/content-params";
 
 const HERO_PRODUCT_IMAGES = [
   {
@@ -18,8 +19,9 @@ const HERO_PRODUCT_IMAGES = [
   },
 ] as const;
 
-export default async function HeroBanner() {
+export default async function HeroBanner({ locale }: { locale: string }) {
   const t = await getTranslations("pages.home");
+  const values = contentParams(locale);
 
   return (
     <div className="relative isolate bg-white">
@@ -62,7 +64,7 @@ export default async function HeroBanner() {
                 {t("heroHeadline")}
               </h1>
               <p className="md:mt-8 mt-4 max-w-md font-medium leading-relaxed text-gray-500 sm:max-w-md sm:text-xl lg:max-w-none">
-                {t("heroDescription")}
+                {t("heroDescription", values)}
               </p>
               <div className="mt-8">
                 <Button asChild>

@@ -1,19 +1,17 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import * as z from "zod";
-// import { cn } from "@workspace/ui/lib/utils";
+import { useForm, type FieldValues } from "react-hook-form";
+import type { ZodType } from "zod";
 import { Form } from "@workspace/ui/components/form";
-// import { Button } from "@workspace/ui/components/button";
 import { Loader2 } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
 import { cn } from "@workspace/ui/lib/utils";
 
-interface FormWrapperProps<T extends z.ZodType> {
-  schema: T;
-  defaultValues?: z.infer<T>;
-  onSubmit: (values: z.infer<T>) => Promise<void> | void;
+interface FormWrapperProps<TValues extends FieldValues> {
+  schema: ZodType<TValues>;
+  defaultValues?: Partial<TValues>;
+  onSubmit: (values: TValues) => Promise<void> | void;
   children: React.ReactNode;
   className?: string;
   submitText?: string;
@@ -22,7 +20,7 @@ interface FormWrapperProps<T extends z.ZodType> {
   isPending?: boolean;
 }
 
-export function FormWrapper<T extends z.ZodType>({
+export function FormWrapper<TValues extends FieldValues>({
   schema,
   defaultValues,
   onSubmit,
@@ -32,18 +30,18 @@ export function FormWrapper<T extends z.ZodType>({
   resetText = "Reset",
   showReset = false,
   isPending = false,
-}: FormWrapperProps<T>) {
-  const form = useForm<z.infer<T>>({
-    resolver: zodResolver(schema),
-    defaultValues,
+}: FormWrapperProps<TValues>) {
+  const form = useForm<TValues>({
+    resolver: zodResolver(schema as any) as any,
+    defaultValues: defaultValues as any,
   });
 
-  async function handleSubmit(values: z.infer<T>) {
+  async function handleSubmit(values: TValues) {
     await onSubmit(values);
   }
 
   return (
-    <Form {...form}>
+    <Form {...(form as any)}>
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
         className={cn("space-y-6", className)}

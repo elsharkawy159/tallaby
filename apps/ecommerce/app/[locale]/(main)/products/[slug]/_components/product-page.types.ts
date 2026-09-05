@@ -11,16 +11,21 @@ import type {
   sellers,
   productVariants,
 } from "@workspace/db";
+import type { MergedProduct } from "@/lib/product-translations";
 
 export interface ProductPageProps {
   params: Promise<{ locale: string; slug: string }>;
 }
 
 // Type based on actual Drizzle query return with relations from getProductBySlug
-export type Product = typeof products.$inferSelect & {
+export type Product = MergedProduct<typeof products.$inferSelect> & {
+  title: string;
+  description: string | null;
+  content: string | null;
+  bulletPoints: unknown;
+  slug: string;
   brand: typeof brands.$inferSelect | null;
   category: typeof categories.$inferSelect | null;
-  content?: string | null;
   seller: Pick<
     typeof sellers.$inferSelect,
     | "id"
@@ -49,11 +54,8 @@ export type Product = typeof products.$inferSelect & {
     }
   >;
   relatedProducts?: Array<
-    typeof products.$inferSelect & {
+    MergedProduct<typeof products.$inferSelect> & {
       brand: typeof brands.$inferSelect | null;
-      content?: string | null;
-      title?: string;
-      slug?: string;
       productVariants?: Array<{
         id: string;
         localized?: unknown;

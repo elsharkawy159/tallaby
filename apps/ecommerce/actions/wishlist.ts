@@ -387,8 +387,7 @@ export async function getPublicWishlist(shareUrl: string) {
       with: {
         user: {
           columns: {
-            firstName: true,
-            lastName: true,
+            fullName: true,
           },
         },
         wishlistItems: {

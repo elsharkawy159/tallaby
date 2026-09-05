@@ -39,7 +39,7 @@ const ProductsGrid = async ({
   const products = await getProducts({ ...filters, locale });
 
   if (!products?.success || !products.data) {
-    throw new Error(products?.error ?? "Failed to load products");
+    throw new Error("Failed to load products");
   }
 
   return (
@@ -67,7 +67,7 @@ const ProductsGrid = async ({
       {/* Products Grid */}
       <div className="grid md:gap-4 gap-2 grid-cols-2 md:grid-cols-3 h-full lg:grid-cols-4 xl:grid-cols-5">
         {products.data.map((product) => (
-          <ProductCard key={product.id} {...(product as ProductCardProps)} />
+          <ProductCard key={String(product.id)} {...(product as ProductCardProps)} />
         ))}
       </div>
     </section>

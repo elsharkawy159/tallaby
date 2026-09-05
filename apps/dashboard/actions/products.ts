@@ -1050,6 +1050,7 @@ type CreateProductLegacy = {
     price: number;
     stock?: number;
     imageUrl?: string;
+    isDefault?: boolean;
     option1?: string;
     option2?: string;
     option3?: string;
@@ -1121,6 +1122,7 @@ export async function createProduct(
       ...sharedOnly
     } = rest as typeof rest & {
       localized?: CreateProductNew["localized"];
+      variantTypes?: unknown;
       title?: string;
       slug?: string;
       description?: string;
@@ -1317,6 +1319,7 @@ export async function updateProduct(
         title: string;
         slug: string;
         description?: string;
+        content?: string;
         bulletPoints?: string[];
         metaTitle?: string;
         metaDescription?: string;
@@ -1325,6 +1328,7 @@ export async function updateProduct(
         title?: string;
         slug?: string;
         description?: string;
+        content?: string;
         bulletPoints?: string[];
         metaTitle?: string;
         metaDescription?: string;
@@ -1353,6 +1357,7 @@ export async function updateProduct(
       locale?: string;
       productUrl?: string;
       notes?: string;
+      variantTypes?: unknown;
     };
     const {
       variants,

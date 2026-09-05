@@ -48,6 +48,7 @@ async function CustomersDataContent({ searchParams }: CustomersDataProps) {
   // Calculate additional stats from customers data
   const now = new Date();
   const newCustomersThisMonth = customers.filter((c) => {
+    if (!c.createdAt) return false;
     const createdDate = new Date(c.createdAt);
     return (
       createdDate.getMonth() === now.getMonth() &&

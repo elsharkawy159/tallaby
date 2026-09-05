@@ -121,7 +121,7 @@ export function LogoUploader({
           <>
             <Image
               src={preview}
-              alt="Business logo"
+              alt={t("businessLogo")}
               width={124}
               height={124}
               className="object-cover rounded-full w-full h-full"
@@ -151,8 +151,12 @@ export function LogoUploader({
             ) : (
               <>
                 <Camera className="size-6 text-gray-400 mb-2" />
-                <span className="text-xs text-gray-500">Click to upload</span>
-                <span className="text-xs text-gray-400 mt-1">PNG, JPG (max 5MB)</span>
+                <span className="text-xs text-gray-500">
+                  {t("clickToUpload")}
+                </span>
+                <span className="text-xs text-gray-400 mt-1">
+                  {t("pngJpgMax")}
+                </span>
               </>
             )}
           </div>

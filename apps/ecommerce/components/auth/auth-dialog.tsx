@@ -20,30 +20,32 @@ import {
 import { OAuth } from "./o-auth";
 import type { AuthMode, AuthDialogProps } from "./auth-dialog.types";
 import { usePathname } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 
 export function AuthDialog({
   open,
   onOpenChange,
   defaultMode = "signin",
 }: AuthDialogProps) {
+  const t = useTranslations("auth");
   const [mode, setMode] = useState<AuthMode>(defaultMode);
   const pathname = usePathname();
   const getDialogContent = () => {
     switch (mode) {
       case "signin":
         return {
-          title: "Sign In",
-          description: "Sign in to your account to continue shopping",
+          title: t("signIn"),
+          description: t("signInDescription"),
         };
       case "signup":
         return {
-          title: "Create Account",
-          description: "Join us and start your shopping journey",
+          title: t("createAccount"),
+          description: t("signUpDescription"),
         };
       case "forgot-password":
         return {
-          title: "Reset Password",
-          description: "Enter your email to receive reset instructions",
+          title: t("resetPassword"),
+          description: t("resetPasswordDescription"),
         };
     }
   };

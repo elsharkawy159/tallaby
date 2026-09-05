@@ -6,7 +6,10 @@ import { ProductActions } from "./ProductActions";
 import type { Product } from "./product-page.types";
 import { formatPrice, formatPricePlain } from "@workspace/lib";
 import { useLocale, useTranslations } from "next-intl";
-import { FREE_SHIPPING_THRESHOLD } from "@/lib/constants";
+import {
+  FREE_SHIPPING_THRESHOLD,
+  RETURN_WINDOW_DAYS,
+} from "@/lib/constants";
 import { useState, useMemo } from "react";
 import {
   Accordion,
@@ -488,7 +491,9 @@ export const ProductDetails = ({
               <p className="font-medium text-gray-900 text-sm mb-1">
                 {t("refundsPolicy")}
               </p>
-              <p className="text-xs text-gray-600">{t("thirtyDaysReturn")}</p>
+              <p className="text-xs text-gray-600">
+                {t("returnWindow", { days: String(RETURN_WINDOW_DAYS) })}
+              </p>
             </div>
           </div>
         </div>

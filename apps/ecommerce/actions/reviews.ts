@@ -135,7 +135,7 @@ export async function createReview(data: z.infer<typeof createReviewSchema>) {
     if (error instanceof z.ZodError) {
       return {
         success: false,
-        error: error.errors[0]?.message || "Validation error",
+        error: error.issues[0]?.message || "Validation error",
       };
     }
     return {
@@ -226,7 +226,7 @@ export async function createStoreReview(
     if (error instanceof z.ZodError) {
       return {
         success: false,
-        error: error.errors[0]?.message || "Validation error",
+        error: error.issues[0]?.message || "Validation error",
       };
     }
     return {
@@ -284,7 +284,7 @@ export async function updateReview(data: z.infer<typeof updateReviewSchema>) {
     if (error instanceof z.ZodError) {
       return {
         success: false,
-        error: error.errors[0]?.message || "Validation error",
+        error: error.issues[0]?.message || "Validation error",
       };
     }
     return {
@@ -452,7 +452,7 @@ export async function voteReview(data: z.infer<typeof voteReviewSchema>) {
     if (error instanceof z.ZodError) {
       return {
         success: false,
-        error: error.errors[0]?.message || "Validation error",
+        error: error.issues[0]?.message || "Validation error",
       };
     }
     return {
@@ -511,7 +511,7 @@ export async function createReviewComment(
     if (error instanceof z.ZodError) {
       return {
         success: false,
-        error: error.errors[0]?.message || "Validation error",
+        error: error.issues[0]?.message || "Validation error",
       };
     }
     return {

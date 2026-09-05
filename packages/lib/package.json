@@ -13,8 +13,8 @@
   "license": "ISC",
   "packageManager": "pnpm@10.4.1",
   "dependencies": {
-    "@workspace/db": "workspace:*",
     "@supabase/supabase-js": "^2.89.0",
+    "@workspace/db": "workspace:*",
     "drizzle-orm": "0.45.1",
     "stripe": "^22.1.1",
     "zod": "^4.2.1"
@@ -56,6 +56,7 @@
   },
   "devDependencies": {
     "@types/node": "^25.0.3",
+    "@workspace/typescript-config": "workspace:^",
     "vitest": "^3.2.4"
   }
 }

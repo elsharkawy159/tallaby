@@ -30,20 +30,24 @@ export function ProductStructuredData({
       list: Number(price.list ?? price.current ?? price.final ?? 0),
     },
     images: Array.isArray(product.images) ? (product.images as string[]) : [],
-    brand: product.brand
+    ...(product.brand
       ? {
-          id: product.brand.id,
-          name: product.brand.name,
-          logoUrl: product.brand.logoUrl ?? undefined,
+          brand: {
+            id: product.brand.id,
+            name: product.brand.name,
+            logoUrl: product.brand.logoUrl ?? undefined,
+          },
         }
-      : undefined,
-    category: product.category
+      : {}),
+    ...(product.category
       ? {
-          id: product.category.id,
-          name: categoryName ?? "",
-          slug: product.category.slug ?? "",
+          category: {
+            id: product.category.id,
+            name: categoryName ?? "",
+            slug: product.category.slug ?? "",
+          },
         }
-      : undefined,
+      : {}),
     averageRating: Number(product.averageRating ?? 0),
     reviewCount: Number(product.reviewCount ?? 0),
     stockCount,

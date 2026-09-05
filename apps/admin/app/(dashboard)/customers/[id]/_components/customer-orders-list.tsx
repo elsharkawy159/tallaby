@@ -60,17 +60,19 @@ export function CustomerOrdersList({ orders }: CustomerOrdersListProps) {
             <div className="flex items-center gap-3">
               <span className="font-medium">#{order.orderNumber}</span>
               <Badge
-                variant={getStatusBadgeVariant(order.status)}
+                variant={getStatusBadgeVariant(order.status || "pending")}
                 className="capitalize"
               >
-                {order.status}
+                {order.status || "pending"}
               </Badge>
-              <Badge
-                variant={getPaymentStatusBadgeVariant(order.paymentStatus)}
-                className="capitalize"
-              >
-                {order.paymentStatus}
-              </Badge>
+              {order.paymentStatus && (
+                <Badge
+                  variant={getPaymentStatusBadgeVariant(order.paymentStatus)}
+                  className="capitalize"
+                >
+                  {order.paymentStatus}
+                </Badge>
+              )}
             </div>
             <div className="text-sm text-muted-foreground">
               {formatDate(order.createdAt)}

@@ -54,39 +54,36 @@ export interface OrderDetailWithRelations {
   paidAt: string | null;
   user: {
     id: string;
-    firstName: string | null;
-    lastName: string | null;
-    email: string;
+    fullName: string | null;
+    email: string | null;
     phone: string | null;
     avatarUrl: string | null;
   } | null;
   userAddress_shippingAddressId: {
     id: string;
-    firstName: string | null;
-    lastName: string | null;
+    fullName: string;
     addressLine1: string;
     addressLine2: string | null;
     city: string;
-    state: string | null;
+    state: string;
     postalCode: string;
     country: string;
-    phone: string | null;
-    isDefault: boolean;
+    phone: string;
+    isDefault: boolean | null;
     latitude: number | null;
     longitude: number | null;
   } | null;
   userAddress_billingAddressId: {
     id: string;
-    firstName: string | null;
-    lastName: string | null;
+    fullName: string;
     addressLine1: string;
     addressLine2: string | null;
     city: string;
-    state: string | null;
+    state: string;
     postalCode: string;
     country: string;
-    phone: string | null;
-    isDefault: boolean;
+    phone: string;
+    isDefault: boolean | null;
     latitude: number | null;
     longitude: number | null;
   } | null;
@@ -114,9 +111,12 @@ export interface OrderDetailWithRelations {
     status: string;
     product: {
       id: string;
-      title: string;
-      images: string[] | null;
+      images: any;
       sku: string | null;
+      productTranslations?: Array<{
+        title: string;
+        locale: string;
+      }>;
     } | null;
     productVariant: {
       id: string;

@@ -49,7 +49,7 @@ export async function handleUpdateSellerProfile(input: unknown) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       const fieldErrors: Record<string, string[]> = {};
-      for (const e of error.errors) {
+      for (const e of error.issues) {
         const field = e.path.join(".");
         if (!fieldErrors[field]) fieldErrors[field] = [];
         fieldErrors[field].push(e.message);
@@ -93,7 +93,7 @@ export async function handleUploadDocument(input: unknown) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       const fieldErrors: Record<string, string[]> = {};
-      for (const e of error.errors) {
+      for (const e of error.issues) {
         const field = e.path.join(".");
         if (!fieldErrors[field]) fieldErrors[field] = [];
         fieldErrors[field].push(e.message);

@@ -32,7 +32,7 @@ export const adminProfileSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
 
   role: z.enum(["super_admin", "admin", "moderator"], {
-    required_error: "Please select a valid role",
+    error: "Please select a valid role",
   }),
 
   permissions: z.array(z.string()).optional(),
@@ -107,12 +107,12 @@ export const adminOrderUpdateSchema = z.object({
       "returned",
     ],
     {
-      required_error: "Please select a valid order status",
+      error: "Please select a valid order status",
     }
   ),
   paymentStatus: z
     .enum(["pending", "paid", "failed", "refunded", "partially_refunded"], {
-      required_error: "Please select a valid payment status",
+      error: "Please select a valid payment status",
     })
     .optional(),
   notes: z
@@ -125,7 +125,7 @@ export const adminOrderUpdateSchema = z.object({
 export const adminProductUpdateSchema = z.object({
   productId: z.string().uuid("Invalid product ID"),
   status: z.enum(["draft", "pending", "active", "rejected"], {
-    required_error: "Please select a valid product status",
+    error: "Please select a valid product status",
   }),
   notes: z
     .string()
@@ -137,7 +137,7 @@ export const adminProductUpdateSchema = z.object({
 export const adminVendorUpdateSchema = z.object({
   vendorId: z.string().uuid("Invalid vendor ID"),
   status: z.enum(["pending", "approved", "suspended", "rejected"], {
-    required_error: "Please select a valid vendor status",
+    error: "Please select a valid vendor status",
   }),
   notes: z
     .string()
@@ -149,7 +149,7 @@ export const adminVendorUpdateSchema = z.object({
 export const adminBulkOperationSchema = z.object({
   ids: z.array(z.string().uuid()).min(1, "Select at least one item"),
   operation: z.enum(["activate", "deactivate", "delete", "export"], {
-    required_error: "Please select an operation",
+    error: "Please select an operation",
   }),
 });
 

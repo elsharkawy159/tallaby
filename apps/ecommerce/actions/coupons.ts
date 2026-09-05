@@ -317,7 +317,7 @@ export async function applyCouponToCart(data: {
     // Store the applied coupon code in cart metadata
     // Since carts table doesn't have couponId, we'll return the validated data
     // The coupon code is passed during order creation
-    revalidateTag("checkout")
+    revalidateTag("checkout", "max")
 
     return {
       success: true,
@@ -401,7 +401,7 @@ export async function removeCouponFromCart(data?: {
       appliedCoupon: null
     }
 
-    revalidateTag("checkout")
+    revalidateTag("checkout", "max")
 
     return {
       success: true,

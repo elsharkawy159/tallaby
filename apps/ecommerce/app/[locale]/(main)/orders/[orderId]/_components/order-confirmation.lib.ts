@@ -1,4 +1,5 @@
 import type { OrderConfirmationData } from "./order-confirmation.types";
+import { RETURN_WINDOW_DAYS } from "@/lib/constants";
 
 const CANCELLABLE_STATUSES = [
   "pending",
@@ -167,12 +168,12 @@ export function generateOrderSummary(data: OrderConfirmationData): string {
 }
 
 /**
- * Check if order is eligible for return
+ * Check if an order is still inside the return window (see RETURN_WINDOW_DAYS).
  */
 export function isOrderEligibleForReturn(orderDate: string): boolean {
   const order = new Date(orderDate);
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const windowStart = new Date();
+  windowStart.setDate(windowStart.getDate() - RETURN_WINDOW_DAYS);
 
-  return order > thirtyDaysAgo;
+  return order > windowStart;
 }

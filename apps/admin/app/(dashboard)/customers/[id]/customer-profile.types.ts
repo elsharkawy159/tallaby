@@ -5,9 +5,9 @@ export interface CustomerProfilePageProps {
 export interface CustomerOrder {
   id: string;
   orderNumber: string;
-  totalAmount: number;
-  status: string;
-  paymentStatus: string;
-  createdAt: string;
-  updatedAt: string;
+  totalAmount: string | number;
+  status: string | null;
+  paymentStatus?: string | null;
+  createdAt: string | null;
+  updatedAt?: string | null;
 }

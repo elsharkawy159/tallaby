@@ -26,6 +26,7 @@ export default function CartClient({ initialCartData }: CartClientProps) {
   const router = useRouter();
   const locale = useLocale();
   const tToast = useTranslations("toast");
+  const t = useTranslations("cart");
 
   const cartItems = cartData?.items ?? [];
   const itemCount = cartData?.itemCount ?? 0;
@@ -208,24 +209,24 @@ export default function CartClient({ initialCartData }: CartClientProps) {
           </div>
           <div className="space-y-6">
             <div className="bg-white p-6 rounded-lg shadow-sm">
-              <h2 className="text-2xl font-bold mb-4">Order Summary</h2>
+              <h2 className="text-2xl font-bold mb-4">{t("orderSummary")}</h2>
               <table className="w-full text-sm mb-4">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left py-2">Item</th>
-                    <th className="text-right py-2">Qty</th>
-                    <th className="text-right py-2">Unit</th>
-                    <th className="text-right py-2">Total</th>
+                    <th className="text-left py-2">{t("item")}</th>
+                    <th className="text-right py-2">{t("quantity")}</th>
+                    <th className="text-right py-2">{t("perItem")}</th>
+                    <th className="text-right py-2">{t("total")}</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {cartItems.map((item) => {
+                  {cartItems.map((item: Record<string, unknown> & { id: string; price: unknown; quantity: number; product: Record<string, unknown> }) => {
                     const p = item.product;
                     const unit = Number(item.price) ?? 0;
                     const lineTotal = unit * item.quantity;
                     return (
                       <tr key={item.id} className="border-b last:border-b-0">
-                        <td className="py-2 truncate max-w-30">{p.title}</td>
+                        <td className="py-2 truncate max-w-30">{String(p.title ?? "")}</td>
                         <td className="py-2 text-right">{item.quantity}</td>
                         <td
                           className="py-2 text-right"
@@ -246,7 +247,7 @@ export default function CartClient({ initialCartData }: CartClientProps) {
               </table>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="font-medium">Subtotal</span>
+                  <span className="font-medium">{t("subtotal")}</span>
                   <span
                     dangerouslySetInnerHTML={{
                       __html: formatPrice(subtotal, locale),
@@ -255,7 +256,7 @@ export default function CartClient({ initialCartData }: CartClientProps) {
                 </div>
                 <Separator />
                 <div className="flex justify-between font-bold text-lg">
-                  <span>Total</span>
+                  <span>{t("total")}</span>
                   <span
                     className="text-primary"
                     dangerouslySetInnerHTML={{

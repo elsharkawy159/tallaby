@@ -12,7 +12,7 @@ import {
 } from "@workspace/ui/components/sheet";
 import { X, PlusIcon } from "lucide-react";
 import { ScrollArea } from "@workspace/ui/components";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { formatPricePlain } from "@workspace/lib";
 
 interface FilterOptionsResponse {
@@ -45,6 +45,7 @@ interface ProductsFilterProps {
 
 export function ProductsFilter({ filterOptions }: ProductsFilterProps) {
   const locale = useLocale();
+  const t = useTranslations("search");
   const { params, updateParams } = useUrlParams();
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
@@ -140,7 +141,7 @@ export function ProductsFilter({ filterOptions }: ProductsFilterProps) {
       return (
         <div className="flex flex-col gap-6">
           <div className="text-center py-8">
-            <p className="text-muted-foreground">Loading filters...</p>
+            <p className="text-muted-foreground">{t("loadingFilters")}</p>
           </div>
         </div>
       );
@@ -157,7 +158,7 @@ export function ProductsFilter({ filterOptions }: ProductsFilterProps) {
               onClick={clearAllFilters}
               className="w-full"
             >
-              Clear All Filters
+              {t("clearAllFilters")}
             </Button>
           </div>
         )}
@@ -166,7 +167,7 @@ export function ProductsFilter({ filterOptions }: ProductsFilterProps) {
         {filterOptions?.data?.categories &&
           filterOptions.data.categories.length > 0 && (
             <div>
-              <h3 className="font-bold text-lg mb-2">Categories</h3>
+              <h3 className="font-bold text-lg mb-2">{t("categories")}</h3>
               <ScrollArea className="flex flex-col max-h-100 overflow-y-auto">
                 {filterOptions.data.categories
                   .filter((category) => category.name) // Filter out categories with null names
@@ -209,7 +210,7 @@ export function ProductsFilter({ filterOptions }: ProductsFilterProps) {
         {filterOptions?.data?.brands &&
           filterOptions.data.brands.length > 0 && (
             <div>
-              <h3 className="font-bold text-lg mb-2">Brands</h3>
+              <h3 className="font-bold text-lg mb-2">{t("brands")}</h3>
               <ScrollArea className="flex flex-col max-h-100 overflow-y-auto">
                 {filterOptions.data.brands.map((brand) => (
                   <label
@@ -239,15 +240,15 @@ export function ProductsFilter({ filterOptions }: ProductsFilterProps) {
         {filterOptions?.data?.priceRange && (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <h3 className="font-bold text-lg mb-2">Price Range</h3>
+              <h3 className="font-bold text-lg mb-2">{t("priceRange")}</h3>
               <span className="font-semibold text-base">
-                {formatPricePlain(price[0], locale)} -{" "}
-                {formatPricePlain(price[1], locale)}
+                {formatPricePlain(price[0] ?? 0, locale)} -{" "}
+                {formatPricePlain(price[1] ?? 0, locale)}
               </span>
             </div>
             <Slider
-              min={filterOptions.data.priceRange.min}
-              max={filterOptions.data.priceRange.max}
+              min={filterOptions.data.priceRange.min ?? 0}
+              max={filterOptions.data.priceRange.max ?? 0}
               value={price}
               onValueChange={handlePriceChange}
               className="w-full"
@@ -303,7 +304,7 @@ export function ProductsFilter({ filterOptions }: ProductsFilterProps) {
           className="max-w-xs w-full p-0 pt-4 pb-6 flex flex-col overflow-y-auto shadow-xl lg:hidden"
         >
           <div className="flex items-center justify-between px-4 mb-2">
-            <h2 className="text-lg font-medium text-gray-900">Filters</h2>
+            <h2 className="text-lg font-medium text-gray-900">{t("filters")}</h2>
             <SheetClose asChild>
               <button
                 type="button"
@@ -311,7 +312,7 @@ export function ProductsFilter({ filterOptions }: ProductsFilterProps) {
                 onClick={() => setMobileFiltersOpen(false)}
               >
                 <span className="absolute -inset-0.5" />
-                <span className="sr-only">Close menu</span>
+                <span className="sr-only">{t("closeMenu")}</span>
                 <X aria-hidden="true" className="size-6" />
               </button>
             </SheetClose>
@@ -327,7 +328,7 @@ export function ProductsFilter({ filterOptions }: ProductsFilterProps) {
 
       {/* Desktop sidebar */}
       <aside className="hidden lg:block w-76 h-screen overflow-y-auto p-5 top-0 sticky border-r border-r-gray-200">
-        <h2 className="sr-only">Filters</h2>
+        <h2 className="sr-only">{t("filters")}</h2>
         {renderFilters(false)}
       </aside>
     </>

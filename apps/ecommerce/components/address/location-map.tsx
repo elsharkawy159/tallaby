@@ -43,7 +43,7 @@ export const LocationMap = ({
   initialLocation,
   className,
 }: LocationMapProps) => {
-  const t = useTranslations("address");
+  const t = useTranslations("addresses");
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markerRef = useRef<L.Marker | null>(null);

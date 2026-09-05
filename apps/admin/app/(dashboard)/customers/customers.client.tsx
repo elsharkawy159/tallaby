@@ -44,7 +44,7 @@ export function CustomersContent({ customers, stats }: CustomersContentProps) {
   const recentCustomers = [...customers]
     .sort(
       (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
     )
     .slice(0, 10);
 
@@ -58,26 +58,6 @@ export function CustomersContent({ customers, stats }: CustomersContentProps) {
 
   return (
     <>
-      <div className="flex items-center justify-between mb-6">
-        {/* <h1 className="text-3xl font-bold tracking-tight">Customers</h1> */}
-        {/* <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <FilterIcon className="h-4 w-4 mr-2" />
-            Filter
-          </Button>
-          <Button variant="outline" size="sm">
-            <DownloadIcon className="h-4 w-4 mr-2" />
-            Export
-          </Button>
-          <Link href="/customers/create">
-            <Button size="sm">
-              <PlusIcon className="h-4 w-4 mr-2" />
-              Add Customer
-            </Button>
-          </Link>
-        </div> */}
-      </div>
-
       {/* Stats Cards */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-4 mb-6">
         <Card>
@@ -176,12 +156,8 @@ export function CustomersContent({ customers, stats }: CustomersContentProps) {
             ]}
             searchableColumns={[
               {
-                id: "firstName",
-                title: "First Name",
-              },
-              {
-                id: "lastName",
-                title: "Last Name",
+                id: "fullName",
+                title: "Name",
               },
               {
                 id: "email",
@@ -196,12 +172,8 @@ export function CustomersContent({ customers, stats }: CustomersContentProps) {
             data={highValueCustomers}
             searchableColumns={[
               {
-                id: "firstName",
-                title: "First Name",
-              },
-              {
-                id: "lastName",
-                title: "Last Name",
+                id: "fullName",
+                title: "Name",
               },
               {
                 id: "email",
@@ -216,12 +188,8 @@ export function CustomersContent({ customers, stats }: CustomersContentProps) {
             data={recentCustomers}
             searchableColumns={[
               {
-                id: "firstName",
-                title: "First Name",
-              },
-              {
-                id: "lastName",
-                title: "Last Name",
+                id: "fullName",
+                title: "Name",
               },
               {
                 id: "email",
@@ -236,12 +204,8 @@ export function CustomersContent({ customers, stats }: CustomersContentProps) {
             data={unverifiedCustomers}
             searchableColumns={[
               {
-                id: "firstName",
-                title: "First Name",
-              },
-              {
-                id: "lastName",
-                title: "Last Name",
+                id: "fullName",
+                title: "Name",
               },
               {
                 id: "email",
@@ -256,12 +220,8 @@ export function CustomersContent({ customers, stats }: CustomersContentProps) {
             data={suspendedCustomers}
             searchableColumns={[
               {
-                id: "firstName",
-                title: "First Name",
-              },
-              {
-                id: "lastName",
-                title: "Last Name",
+                id: "fullName",
+                title: "Name",
               },
               {
                 id: "email",

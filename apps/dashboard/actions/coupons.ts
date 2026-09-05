@@ -100,8 +100,7 @@ export async function getCouponDetails(couponId: string) {
             },
             user: {
               columns: {
-                firstName: true,
-                lastName: true,
+                fullName: true,
                 email: true,
               },
             },

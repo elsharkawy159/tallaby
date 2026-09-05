@@ -6,6 +6,7 @@ import { WishlistData } from "./_components/wishlist-data";
 import { WishlistSkeleton } from "./_components/wishlist-skeleton";
 import { WishlistProvider } from "@/providers/wishlist-provider";
 import { generateNoIndexMetadata } from "@/lib/metadata";
+import { useTranslations } from "next-intl";
 
 export const metadata: Metadata = generateNoIndexMetadata();
 
@@ -15,6 +16,8 @@ export const revalidate = 0;
 export const fetchCache = "force-no-store";
 
 const Wishlist = () => {
+  const t = useTranslations("wishlist");
+
   return (
     // WishlistProvider was never mounted anywhere in the app — useWishlist()
     // (used by _components/wishlist-items.tsx) threw at runtime on this
@@ -25,7 +28,7 @@ const Wishlist = () => {
         <DynamicBreadcrumb />
         <main className="flex-1 container mx-auto px-4 py-8">
           <div className="flex items-center justify-between mb-8">
-            <h1 className="text-3xl font-bold">My Wishlist</h1>
+            <h1 className="text-3xl font-bold">{t("myWishlist")}</h1>
             <Heart className="h-8 w-8 text-red-500 fill-current" />
           </div>
 

@@ -278,6 +278,7 @@ export function ForgotPasswordForm({
   onSuccess,
 }: Omit<AuthFormProps, "isLoading" | "setIsLoading">) {
   const [isPending, startTransition] = useTransition();
+  const t = useTranslations("auth");
   const tToast = useTranslations("toast");
 
   const form = useForm<ForgotPasswordFormData>({
@@ -313,9 +314,9 @@ export function ForgotPasswordForm({
         <TextInput
           form={form}
           name="email"
-          label="Email Address"
+          label={t("emailAddress")}
           type="email"
-          placeholder="Enter your email address"
+          placeholder={t("enterEmail")}
           disabled={isPending}
           required
         />

@@ -72,6 +72,7 @@ export const PROTECTED_ROUTES = [
   "/dashboard",
   "/users",
   "/products",
+  "/pending-carts",
   "/orders",
   "/analytics",
   "/settings",

@@ -11,3 +11,15 @@ export function isCodEligibleForShipping(
 
   return shippingCost <= COD_MAX_SHIPPING_COST
 }
+
+/** Wallet payment must cover the full order total — no partial payments. */
+export function isWalletEligibleForTotal(
+  availableBalance: number | null | undefined,
+  orderTotal: number,
+): boolean {
+  if (availableBalance == null) {
+    return false
+  }
+
+  return availableBalance >= orderTotal
+}

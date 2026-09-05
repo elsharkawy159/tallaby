@@ -94,13 +94,14 @@ export const countryOptions = [
   { value: "Oman", label: "Oman" },
 ];
 
-// Two-factor authentication method options
+// Two-factor authentication method options. `labelKey` resolves against the
+// "profile" namespace at render time — these are shown to the user.
 export const twoFactorMethodOptions = [
-  { value: "sms", label: "SMS Text Message" },
-  { value: "email", label: "Email" },
-  { value: "authenticator", label: "Authenticator App" },
-  { value: "backup_codes", label: "Backup Codes" },
-];
+  { value: "sms", labelKey: "twoFactorSms" },
+  { value: "email", labelKey: "twoFactorEmail" },
+  { value: "authenticator", labelKey: "twoFactorApp" },
+  { value: "backup_codes", labelKey: "twoFactorBackupCodes" },
+] as const;
 
 /**
  * These four delegate to `lib/auth/avatar` so there is exactly one

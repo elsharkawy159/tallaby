@@ -11,6 +11,8 @@ import { generateNoIndexMetadata } from "@/lib/metadata";
 import type { Metadata } from "next";
 import { PaymentOrderSummary } from "./_components/payment-order-summary";
 import { PaymobIframe } from "./_components/paymob-iframe";
+import { ManualPaymentInstructions } from "./_components/manual-payment-instructions";
+import { isManualPaymentMethod } from "@/lib/manual-payment-methods";
 
 export const metadata: Metadata = generateNoIndexMetadata();
 export const dynamic = "force-dynamic";
@@ -30,7 +32,7 @@ export default async function CheckoutPaymentPage({
     redirect({ href: "/cart/checkout", locale });
   }
 
-  const result = await getPaymobPaymentOrder(orderId);
+  const result = await getPaymobPaymentOrder(orderId as string);
 
   if (!result.success || !result.data) {
     return (
@@ -52,11 +54,35 @@ export default async function CheckoutPaymentPage({
 
   const order = result.data;
 
-  if (order.paymentMethod !== "online_payment") {
+  if (order.paymentStatus === "paid" || order.status === "confirmed") {
     redirect({ href: buildOrderPagePath(order.id), locale });
   }
 
-  if (order.paymentStatus === "paid") {
+  if (isManualPaymentMethod(order.paymentMethod)) {
+    return (
+      <div className="min-h-screen flex flex-col bg-linear-to-b from-gray-50 to-white">
+        <DynamicBreadcrumb />
+        <main className="container flex-1 py-4 md:py-6 pb-12 md:pb-16">
+          <div className="mb-4 md:mb-6">
+            <h1 className="text-lg md:text-2xl font-bold tracking-tight">
+              {t("paymentInstructions")}
+            </h1>
+          </div>
+          <div className="space-y-4 md:space-y-6">
+            <PaymentOrderSummary order={order} />
+            <ManualPaymentInstructions
+              orderId={order.id}
+              method={order.paymentMethod}
+              amount={order.totalAmount}
+              currency={order.currency || "EGP"}
+            />
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (order.paymentMethod !== "online_payment") {
     redirect({ href: buildOrderPagePath(order.id), locale });
   }
 

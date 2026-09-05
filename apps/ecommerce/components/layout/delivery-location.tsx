@@ -4,6 +4,7 @@ import { getAddresses } from "@/actions/customer";
 import { AddressSelectorDialog } from "@/components/shared/address-dialog";
 import { cn } from "@/lib/utils";
 import type { User } from "@supabase/supabase-js";
+import { getTranslations } from "next-intl/server";
 
 interface DeliveryLocationProps {
   className?: string;
@@ -14,6 +15,7 @@ export const DeliveryLocation = async ({
   className,
   user,
 }: DeliveryLocationProps) => {
+  const t = await getTranslations("navigation");
   const addressesResult = await getAddresses();
   const addresses = addressesResult.success ? (addressesResult.data ?? []) : [];
   const defaultAddress = addresses.find((addr: any) => addr.isDefault) ?? null;
@@ -35,15 +37,15 @@ export const DeliveryLocation = async ({
             <MapPin className="md:size-5 size-4 flex-shrink-0" />
             <div className="flex flex-col items-start text-left">
               <div className="text-xs font-normal">
-                Deliver to{" "}
+                {t("deliverTo")}{" "}
                 <span className="capitalize">
                   {user?.user_metadata?.full_name?.split(" ")[0] ||
                     user?.email?.split("@")[0] ||
-                    "Guest"}
+                    t("guest")}
                 </span>
               </div>
               <span className="md:text-sm text-xs font-semibold flex items-center gap-1">
-                Add delivery address
+                {t("addDeliveryAddress")}
                 <ChevronDown className="size-3" />
               </span>
             </div>
@@ -66,13 +68,13 @@ export const DeliveryLocation = async ({
           <MapPin className="h-5 w-5 flex-shrink-0" />
           <div className="flex flex-col items-start text-left">
             <span className="text-xs font-normal">
-              Deliver to{" "}
+              {t("deliverTo")}{" "}
               {currentAddress.fullName.split(" ")[0] ||
                 user?.user_metadata?.full_name?.split(" ")[0] ||
-                "you"}
+                t("you")}
             </span>
             <span className="text-sm font-semibold flex items-center gap-1 truncate max-w-[150px]">
-              {currentAddress.city || currentAddress.state || "Your location"}
+              {currentAddress.city || currentAddress.state || t("yourLocation")}
               <ChevronDown className="h-3 w-3 flex-shrink-0" />
             </span>
           </div>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, type Resolver } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -84,7 +84,7 @@ export function SellerSettingsForm ({ initialData }: SellerSettingsFormProps) {
   )
 
   const form = useForm<SellerProfileForm>({
-    resolver: zodResolver(sellerProfileSchema),
+    resolver: zodResolver(sellerProfileSchema) as Resolver<SellerProfileForm>,
     defaultValues: defaults,
     mode: 'onChange',
   })

@@ -287,7 +287,6 @@ export const BrandForm = ({
           {/* Status Switches */}
           <div className="space-y-4">
             <SwitchInput
-              form={form as any}
               name="isVerified"
               label="Verified Brand"
               description="Mark this brand as verified by platform administrators"
@@ -295,7 +294,6 @@ export const BrandForm = ({
             />
 
             <SwitchInput
-              form={form as any}
               name="isOfficial"
               label="Official Brand"
               description="Mark this as an official brand partner"

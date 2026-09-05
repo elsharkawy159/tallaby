@@ -7,7 +7,13 @@ import {
   ProductsListSkeleton,
 } from "@/app/[locale]/(main)/products/_components/products-list.skeleton";
 import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
-import { generateNoIndexMetadata, localizedUrl, type SeoLocale } from "@/lib/metadata";
+import {
+  generateNoIndexMetadata,
+  generateStaticPageMetadata,
+  type SeoLocale,
+} from "@/lib/metadata";
+import { contentParams } from "@/lib/content-params";
+import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 
 export async function generateMetadata({
@@ -27,40 +33,14 @@ export async function generateMetadata({
     return generateNoIndexMetadata();
   }
 
-  const title = "All Products | Shop Online | Tallaby.com";
-  const description =
-    "Browse thousands of products across all categories on Tallaby.com. Find electronics, fashion, home essentials, beauty products and more with fast shipping.";
-  const productsUrl = localizedUrl(locale as SeoLocale, "/products");
+  const t = await getTranslations("pages.products");
 
-  return {
-    title,
-    description,
-    openGraph: {
-      type: "website",
-      title,
-      description,
-      url: productsUrl,
-      siteName: "Tallaby.com",
-      images: [
-        {
-          url: "/og-image.jpg",
-          width: 1200,
-          height: 630,
-          alt: "All Products on Tallaby.com",
-        },
-      ],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: ["/og-image.jpg"],
-      site: "@tallaby",
-    },
-    alternates: {
-      canonical: productsUrl,
-    },
-  };
+  return generateStaticPageMetadata({
+    locale: locale as SeoLocale,
+    path: "/products",
+    title: t("title"),
+    description: t("description", contentParams(locale)),
+  });
 }
 
 // The listing is driven entirely by `searchParams` (filters, sort, page), so

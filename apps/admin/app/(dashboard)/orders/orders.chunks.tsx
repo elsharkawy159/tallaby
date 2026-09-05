@@ -157,8 +157,7 @@ export const OrdersHeader = ({
   isRefreshing = false,
 }: OrdersHeaderProps) => {
   return (
-    <div className="flex items-center justify-between mb-6">
-      <h1 className="text-3xl font-bold tracking-tight">Orders</h1>
+    <div className="flex items-center justify-end mb-6">
       <div className="flex gap-2">
         <Button variant="outline" size="sm" onClick={onFilter}>
           <FilterIcon className="h-4 w-4 mr-2" />

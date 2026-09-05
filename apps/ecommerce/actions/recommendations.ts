@@ -32,22 +32,22 @@ import {
 
 /** Relations needed for ProductCard (title from translations, color swatches from variants). */
 const productCardWith = {
-  brand: true,
-  productTranslations: true,
+  brand: true as const,
+  productTranslations: true as const,
   productVariants: {
     columns: {
-      id: true,
-      localized: true,
-      option1: true,
-      option2: true,
-      option3: true,
-      images: true,
-      imageUrl: true,
-      position: true,
+      id: true as const,
+      localized: true as const,
+      option1: true as const,
+      option2: true as const,
+      option3: true as const,
+      images: true as const,
+      imageUrl: true as const,
+      position: true as const,
     },
-    orderBy: [asc(productVariants.position)],
+    orderBy: [asc(productVariants.position)] as [ReturnType<typeof asc>],
   },
-} as const;
+};
 
 type ProductWithTranslations = Record<string, unknown> & {
   productTranslations?: ProductTranslationFromRelation[];

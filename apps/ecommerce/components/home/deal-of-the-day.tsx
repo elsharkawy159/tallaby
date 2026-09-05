@@ -119,12 +119,12 @@ export default async function DealOfTheDay({
 
               return (
                 <CarouselItem
-                  key={product.id}
+                  key={String(product.id)}
                   className="basis-auto md:max-w-[285px] max-w-43 md:ps-4 ps-2"
                 >
                   <div className="relative group h-full">
                     <ProductCard
-                      id={product.id}
+                      id={String(product.id)}
                       title={product.title}
                       slug={product.slug}
                       images={
@@ -144,8 +144,8 @@ export default async function DealOfTheDay({
                             }
                           | null
                       }
-                      averageRating={product.averageRating ?? undefined}
-                      reviewCount={product.reviewCount ?? undefined}
+                      averageRating={(product.averageRating as number) ?? undefined}
+                      reviewCount={(product.reviewCount as number) ?? undefined}
                     />
 
                     {discount != null && discount > 0 && (

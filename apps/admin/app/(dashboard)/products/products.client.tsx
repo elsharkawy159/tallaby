@@ -152,13 +152,7 @@ export function ProductsClient() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Products</h1>
-          <p className="text-muted-foreground">
-            Manage and approve seller products
-          </p>
-        </div>
+      <div className="flex items-center justify-end">
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={loadProducts}>
             <RefreshCw className="h-4 w-4 mr-2" />

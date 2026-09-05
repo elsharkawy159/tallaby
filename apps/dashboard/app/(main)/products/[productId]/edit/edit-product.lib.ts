@@ -163,8 +163,8 @@ export function buildEditDefaultValues(
       width: safeNum(dimensions.width),
       height: safeNum(dimensions.height),
       weight: safeNum(dimensions.weight),
-      unit: (dimensions.unit as string) ?? "cm",
-      weightUnit: (dimensions.weightUnit as string) ?? "kg",
+      unit: (dimensions.unit as "cm" | "in") ?? "cm",
+      weightUnit: (dimensions.weightUnit as "kg" | "g" | "lb") ?? "kg",
     },
     images: images.length > 0 ? images : [],
     price: {

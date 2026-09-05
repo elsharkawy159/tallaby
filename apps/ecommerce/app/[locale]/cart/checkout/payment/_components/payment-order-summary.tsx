@@ -10,6 +10,15 @@ interface PaymentOrderSummaryProps {
   order: PaymentOrder;
 }
 
+const PAYMENT_METHOD_LABEL_KEYS: Record<string, string> = {
+  online_payment: "payByCard",
+  cash_on_delivery: "cashOnDelivery",
+  wallet: "walletBalance",
+  instapay: "instapay",
+  vodafone_cash: "vodafoneCash",
+  e_cash: "eCash",
+};
+
 function formatAddressLines(
   address: PaymentOrder["userAddress_shippingAddressId"]
 ) {
@@ -70,7 +79,10 @@ export async function PaymentOrderSummary({ order }: PaymentOrderSummaryProps) {
               <span className="font-medium text-gray-500">
                 {tCheckout("paymentMethod")}:
               </span>{" "}
-              {tCheckout("onlinePayment")}
+              {tCheckout(
+                (PAYMENT_METHOD_LABEL_KEYS[order.paymentMethod] ??
+                  "onlinePayment") as any
+              )}
             </p>
             {order.couponCode && (
               <p>

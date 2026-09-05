@@ -91,8 +91,8 @@ export function CustomerProfileContent({
                 )}
               </div>
               <div className="flex items-center gap-2 flex-wrap">
-                <Badge variant={getRoleBadgeVariant(customer.role)}>
-                  {customer.role}
+                <Badge variant={getRoleBadgeVariant(customer.role || "customer")}>
+                  {customer.role || "customer"}
                 </Badge>
                 {customer.isVerified && (
                   <Badge variant="outline" className="text-green-600">
@@ -150,7 +150,7 @@ export function CustomerProfileContent({
             <div className="text-2xl font-bold">
               {customer.stats?.averageOrderValue
                 ? formatCurrency(Number(customer.stats.averageOrderValue))
-                : customer.totalOrders > 0
+                : (customer.totalOrders ?? 0) > 0
                   ? formatCurrency(
                       Number(customer.totalSpent || 0) /
                         Number(customer.totalOrders || 1)

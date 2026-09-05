@@ -164,7 +164,7 @@ export const OrdersClientWrapper = ({ filters }: OrdersClientWrapperProps) => {
     paymentStatus: string
   ) => {
     try {
-      const result = await updateOrderPaymentStatus(
+      const result = await updateOrderStatus(
         orderId,
         paymentStatus as any
       );

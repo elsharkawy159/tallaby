@@ -891,7 +891,7 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
                   setMediaPreview((prev) => ({ ...prev, isOpen: false }))
                 }
                 className="absolute top-4 right-4 z-50 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
-                aria-label="Close preview"
+                aria-label={tCommon("closePreview")}
               >
                 <X className="h-5 w-5" />
               </button>
@@ -909,7 +909,7 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
                     }))
                   }
                   className="absolute left-4 z-50 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
-                  aria-label="Previous"
+                  aria-label={tCommon("previous")}
                 >
                   <ChevronLeft className="h-6 w-6" />
                 </button>

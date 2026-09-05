@@ -13,6 +13,7 @@ interface DataPoint {
   name: string;
   value: number;
   color?: string;
+  [key: string]: string | number | undefined;
 }
 
 interface PieChartProps {
@@ -49,29 +50,35 @@ export function PieChart({ data, className }: PieChartProps) {
     outerRadius,
     percent,
   }: {
-    cx: number;
-    cy: number;
-    midAngle: number;
-    innerRadius: number;
-    outerRadius: number;
-    percent: number;
+    cx?: number;
+    cy?: number;
+    midAngle?: number;
+    innerRadius?: number;
+    outerRadius?: number;
+    percent?: number;
   }) => {
     const RADIAN = Math.PI / 180;
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-    const x = cx + radius * Math.cos(-midAngle * RADIAN);
-    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+    const cxVal = cx ?? 0;
+    const cyVal = cy ?? 0;
+    const midAngleVal = midAngle ?? 0;
+    const innerRadiusVal = innerRadius ?? 0;
+    const outerRadiusVal = outerRadius ?? 0;
+    const percentVal = percent ?? 0;
+    const radius = innerRadiusVal + (outerRadiusVal - innerRadiusVal) * 0.5;
+    const x = cxVal + radius * Math.cos(-midAngleVal * RADIAN);
+    const y = cyVal + radius * Math.sin(-midAngleVal * RADIAN);
 
     return (
       <text
         x={x}
         y={y}
         fill="white"
-        textAnchor={x > cx ? "start" : "end"}
+        textAnchor={x > cxVal ? "start" : "end"}
         dominantBaseline="central"
         fontSize={12}
         fontWeight="bold"
       >
-        {`${(percent * 100).toFixed(0)}%`}
+        {`${(percentVal * 100).toFixed(0)}%`}
       </text>
     );
   };
@@ -100,8 +107,8 @@ export function PieChart({ data, className }: PieChartProps) {
             ))}
           </Pie>
           <Tooltip
-            formatter={(value: number) => [
-              new Intl.NumberFormat("en-EG").format(value),
+            formatter={(value: number | undefined) => [
+              new Intl.NumberFormat("en-EG").format(value ?? 0),
               "Value",
             ]}
             contentStyle={{

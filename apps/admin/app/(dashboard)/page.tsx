@@ -22,13 +22,7 @@ import {
 export default function DashboardPage () {
   return (
     <>
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Live store metrics from orders. Last 30 days vs previous 30 days.
-          </p>
-        </div>
+      <div className="mb-6 flex items-center justify-end">
         <AnalyticsRefreshButton />
       </div>
 

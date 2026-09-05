@@ -6,11 +6,12 @@ import "./globals.css";
 import { Providers } from "./providers";
 import NextTopLoader from "nextjs-toploader";
 import { Scripts } from "@/components/layout/structured-data";
-import { getMessages } from "next-intl/server";
+import { getMessages, getTranslations } from "next-intl/server";
 import { Toaster } from "@workspace/ui/components/sonner";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { BASE_URL } from "@/lib/constants";
+import { contentParams } from "@/lib/content-params";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -31,73 +32,72 @@ export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
-export const metadata: Metadata = {
-  // Resolves relative OG/Twitter image paths ("/og-image.jpg") against the
-  // real origin instead of Next's localhost fallback.
-  metadataBase: new URL(BASE_URL || "http://localhost:3000"),
-  title: {
-    default: "Online Shopping Egypt - Your Everything Store",
-    template: "%s | Tallaby.com",
-  },
-  description:
-    "Tallaby.com is a global online marketplace offering millions of products across electronics, fashion, home essentials, beauty, and more. Shop securely, fast, and conveniently like Amazon.",
-  keywords: [
-    "tallaby",
-    "online shopping",
-    "ecommerce",
-    "amazon alternative",
-    "buy online",
-    "fashion",
-    "electronics",
-    "home",
-    "beauty",
-    "marketplace",
-  ],
-  authors: [{ name: "Tallaby.com" }],
-  creator: "Tallaby.com",
-  publisher: "Tallaby.com",
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "metadata" });
+  const contentValues = contentParams(locale);
+
+  return {
+    // Resolves relative OG/Twitter image paths ("/og-image.jpg") against the
+    // real origin instead of Next's localhost fallback.
+    metadataBase: new URL(BASE_URL || "http://localhost:3000"),
+    title: {
+      default: t("titleDefault"),
+      template: "%s | Tallaby.com",
+    },
+    description: t("description", contentValues),
+    keywords: t("keywords")
+      .split(",")
+      .map((keyword) => keyword.trim()),
+    authors: [{ name: "Tallaby.com" }],
+    creator: "Tallaby.com",
+    publisher: "Tallaby.com",
+    robots: {
       index: true,
       follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
     },
-  },
-  openGraph: {
-    type: "website",
-    locale: "en_US",
-    url: BASE_URL,
-    siteName: "Tallaby.com",
-    title: "Tallaby.com – Your Everything Store",
-    description:
-      "Discover endless shopping on Tallaby.com – electronics, fashion, home, beauty, and more. Worldwide delivery, secure checkout, and trusted sellers.",
-  },
-  twitter: {
-    card: "summary_large_image",
-    site: "@tallaby",
-    creator: "@tallaby",
-    title: "Tallaby.com – Your Everything Store",
-    description:
-      "Tallaby.com brings you Amazon-like shopping with millions of products, great prices, and secure delivery.",
-  },
-  icons: {
-    icon: [{ url: "/favicon.png", sizes: "any" }],
-  },
-  manifest: "/manifest.webmanifest",
-  alternates: {
-    canonical: BASE_URL,
-    languages: {
-      en: BASE_URL,
-      ar: `${BASE_URL}/ar`,
-      "x-default": BASE_URL,
+    openGraph: {
+      type: "website",
+      locale: locale === "ar" ? "ar_EG" : "en_US",
+      url: locale === routing.defaultLocale ? BASE_URL : `${BASE_URL}/${locale}`,
+      siteName: t("siteName"),
+      title: t("ogTitle"),
+      description: t("ogDescription", contentValues),
     },
-  },
-  category: "ecommerce",
-};
+    twitter: {
+      card: "summary_large_image",
+      site: "@tallaby",
+      creator: "@tallaby",
+      title: t("twitterTitle"),
+      description: t("twitterDescription", contentValues),
+    },
+    icons: {
+      icon: [{ url: "/favicon.png", sizes: "any" }],
+    },
+    manifest: "/manifest.webmanifest",
+    alternates: {
+      canonical:
+        locale === routing.defaultLocale ? BASE_URL : `${BASE_URL}/${locale}`,
+      languages: {
+        en: BASE_URL,
+        ar: `${BASE_URL}/ar`,
+        "x-default": BASE_URL,
+      },
+    },
+    category: "ecommerce",
+  };
+}
 
 type RootLayoutProps = {
   children: React.ReactNode;

@@ -41,7 +41,7 @@ export const profileFormSchema = z.object({
 // Address form validation schema
 export const addressFormSchema = z.object({
   addressType: z.enum(["billing", "shipping", "both"], {
-    required_error: "Please select an address type",
+    message: "Please select an address type",
   }),
 
   fullName: z

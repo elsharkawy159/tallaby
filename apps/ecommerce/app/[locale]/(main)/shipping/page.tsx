@@ -2,7 +2,16 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import { generateStaticPageMetadata, type SeoLocale } from "@/lib/metadata";
-import { Truck, MapPin, PackageCheck, Gift } from "lucide-react";
+import { contentParams } from "@/lib/content-params";
+import {
+  Truck,
+  MapPin,
+  PackageCheck,
+  Gift,
+  Clock,
+  BadgePercent,
+  Store,
+} from "lucide-react";
 
 export async function generateMetadata({
   params,
@@ -11,23 +20,62 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations("pages.shipping");
+  const values = contentParams(locale);
 
   return generateStaticPageMetadata({
     locale: locale as SeoLocale,
     path: "/shipping",
     title: t("title"),
-    description: t("description"),
+    description: t("description", values),
   });
 }
 
-export default async function ShippingPage() {
+export default async function ShippingPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
   const t = await getTranslations("pages.shipping");
+  const values = contentParams(locale);
 
   const sections = [
-    { icon: MapPin, title: t("coverageTitle"), body: t("coverageBody") },
-    { icon: Truck, title: t("costTitle"), body: t("costBody") },
-    { icon: Gift, title: t("freeDeliveryTitle"), body: t("freeDeliveryBody") },
-    { icon: PackageCheck, title: t("trackingTitle"), body: t("trackingBody") },
+    {
+      icon: Gift,
+      title: t("freeDeliveryTitle", values),
+      body: t("freeDeliveryBody", values),
+    },
+    {
+      icon: BadgePercent,
+      title: t("sellerFreeDeliveryTitle"),
+      body: t("sellerFreeDeliveryBody", values),
+    },
+    {
+      icon: Truck,
+      title: t("costTitle", values),
+      body: t("costBody", values),
+    },
+    {
+      icon: Clock,
+      title: t("timingTitle"),
+      body: t("timingBody"),
+      bullets: [t("timingMetro", values), t("timingOther", values)],
+    },
+    {
+      icon: MapPin,
+      title: t("coverageTitle"),
+      body: t("coverageBody"),
+    },
+    {
+      icon: Store,
+      title: t("multiSellerTitle"),
+      body: t("multiSellerBody"),
+    },
+    {
+      icon: PackageCheck,
+      title: t("trackingTitle"),
+      body: t("trackingBody"),
+    },
   ];
 
   return (
@@ -51,6 +99,22 @@ export default async function ShippingPage() {
                 <div>
                   <h2 className="text-xl font-bold mb-2">{section.title}</h2>
                   <p className="text-gray-600">{section.body}</p>
+                  {section.bullets && (
+                    <ul className="mt-3 space-y-1.5 text-gray-600">
+                      {section.bullets.map((bullet, bulletIndex) => (
+                        <li
+                          key={bulletIndex}
+                          className="flex items-start gap-2"
+                        >
+                          <span
+                            className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
+                            aria-hidden
+                          />
+                          <span>{bullet}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               </div>
             ))}

@@ -15,7 +15,7 @@ export interface CachedQueryConfig<A extends readonly unknown[], R> {
   query: (...args: A) => Promise<R>;
 }
 
-const cachedQueryWrappers = new Map<string, (...args: never[]) => Promise<unknown>>();
+const cachedQueryWrappers = new Map<string, (...args: unknown[]) => Promise<unknown>>();
 
 /**
  * Wraps a data-access function in Next's Data Cache with a deterministic,
@@ -40,7 +40,10 @@ export function createCachedQuery<A extends readonly unknown[], R>(
         tags: [...cfg.tags(...args)],
         revalidate: cfg.ttl,
       }) as (...innerArgs: A) => Promise<R>;
-      cachedQueryWrappers.set(key, cached as (...args: never[]) => Promise<unknown>);
+      cachedQueryWrappers.set(
+        key,
+        cached as unknown as (...args: unknown[]) => Promise<unknown>
+      );
     }
 
     return cached(...args);

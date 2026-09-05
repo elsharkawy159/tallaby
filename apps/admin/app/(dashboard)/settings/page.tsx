@@ -106,10 +106,6 @@ export default function SettingsPage() {
 
   return (
     <>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-      </div>
-
       <Tabs defaultValue="general" className="space-y-6">
         <TabsList className="grid w-full grid-cols-5 lg:w-auto">
           <TabsTrigger value="general" className="flex items-center">

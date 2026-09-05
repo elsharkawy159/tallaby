@@ -27,4 +27,5 @@ export {
 export {
   COD_MAX_SHIPPING_COST,
   isCodEligibleForShipping,
+  isWalletEligibleForTotal,
 } from './payment.lib'

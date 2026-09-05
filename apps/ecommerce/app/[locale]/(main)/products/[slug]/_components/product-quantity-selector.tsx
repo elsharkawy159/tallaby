@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@workspace/ui/components/button";
 import { Minus, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 interface ProductQuantitySelectorProps {
   initialQuantity?: number;
@@ -22,6 +23,7 @@ export const ProductQuantitySelector = ({
   onQuantityChange,
   className,
 }: ProductQuantitySelectorProps) => {
+  const t = useTranslations("common");
   const [quantity, setQuantity] = useState(initialQuantity);
 
   useEffect(() => {
@@ -50,7 +52,7 @@ export const ProductQuantitySelector = ({
         disabled={disabled || quantity <= min}
         className="h-10 w-10 rounded-r-none ltr:border-r rtl:border-l rounded-none border-gray-300 hover:bg-gray-100 duration-100"
         onClick={() => handleQuantityChange(-1)}
-        aria-label="Decrease quantity"
+        aria-label={t("decreaseQuantity")}
       >
         <Minus className="h-4 w-4" />
       </Button>
@@ -63,7 +65,7 @@ export const ProductQuantitySelector = ({
         disabled={disabled || (max !== undefined && quantity >= max)}
         className="h-10 w-10 rounded-l-none ltr:border-l rtl:border-r rounded-none border-gray-300 hover:bg-gray-100 duration-100"
         onClick={() => handleQuantityChange(1)}
-        aria-label="Increase quantity"
+        aria-label={t("increaseQuantity")}
       >
         <Plus className="h-4 w-4" />
       </Button>

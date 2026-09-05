@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const addressFormSchema = z.object({
   addressType: z.enum(["shipping", "billing", "both"], {
-    required_error: "Please select an address type",
+    message: "Please select an address type",
   }),
   fullName: z
     .string()

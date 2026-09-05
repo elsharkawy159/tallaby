@@ -30,6 +30,8 @@ export const CategoryShowcaseData = async ({
       nameAr: category.nameAr ?? null,
       slug: category.slug!,
       productCount: category.productCount,
+      fallbackImageUrl: category.fallbackImageUrl ?? null,
+      imageUrl: category.imageUrl ?? null,
     }))
     .slice(0, limit);
 

@@ -24,7 +24,7 @@ export default async function ShopByBrand({
   className = "",
 }: ShopByBrandProps) {
   const result = await getPopularBrands();
-  const brands = result.success ? result.data.slice(0, limit) : [];
+  const brands = result.success ? (result.data ?? []).slice(0, limit) : [];
 
   if (!brands.length) {
     return null;

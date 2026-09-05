@@ -14,6 +14,7 @@ import { getCurrentUserId } from "@/lib/get-current-user-id";
 import { validateCoupon } from "./coupons";
 import { calculateOrderShippingCost } from "@/lib/shipping";
 import type { CheckoutSummary } from "@/lib/coupon-utils";
+import { getUserWalletSummary } from "@workspace/db/wallet";
 
 const cartWithShippingItems = {
   cartItems: {
@@ -193,6 +194,8 @@ export async function getCheckoutData() {
 
     const summary = buildBaseSummary(cart.cartItems, shippingCost);
 
+    const walletSummary = await getUserWalletSummary(db, userId);
+
     return {
       success: true,
       data: {
@@ -201,6 +204,8 @@ export async function getCheckoutData() {
         paymentMethods: paymentMethodsList,
         itemsBySeller,
         summary,
+        walletAvailableBalance: walletSummary?.availableBalance ?? null,
+        walletCurrency: walletSummary?.currency ?? null,
       },
     };
   } catch (error) {

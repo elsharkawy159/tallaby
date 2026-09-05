@@ -4,38 +4,23 @@ import { getTranslations } from "next-intl/server";
 import { ContactFormWrapper } from "./contact-form-wrapper.client";
 import { ContactMethodCard } from "./contact-method-card";
 import { Mail, MessageCircle } from "lucide-react";
+import { generateStaticPageMetadata, type SeoLocale } from "@/lib/metadata";
 
-export const metadata: Metadata = {
-  title: "Contact Us | Tallaby.com",
-  description:
-    "Get in touch with Tallaby.com customer support. We're here to help with orders, products, returns, and any questions. Multiple contact methods available.",
-  openGraph: {
-    title: "Contact Us | Tallaby.com",
-    description:
-      "Get in touch with Tallaby.com customer support. We're here to help with orders, products, returns, and any questions. Multiple contact methods available.",
-    url: "https://www.tallaby.com/contact",
-    siteName: "Tallaby.com",
-    images: [
-      {
-        url: "/og-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: "Contact Tallaby.com",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Contact Us | Tallaby.com",
-    description:
-      "Get in touch with Tallaby.com customer support. We're here to help with orders, products, returns, and any questions.",
-    images: ["/og-image.jpg"],
-    site: "@tallaby",
-  },
-  alternates: {
-    canonical: "https://www.tallaby.com/contact",
-  },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations("pages.contact");
+
+  return generateStaticPageMetadata({
+    locale: locale as SeoLocale,
+    path: "/contact",
+    title: t("title"),
+    description: t("description"),
+  });
+}
 
 export default async function Contact() {
   const t = await getTranslations("pages.contactPage");

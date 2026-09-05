@@ -3,7 +3,7 @@ import { z } from "zod";
 export const sellerActionSchema = z.object({
   sellerId: z.string().uuid("Seller ID must be a valid UUID"),
   action: z.enum(["approve", "suspend", "reactivate", "reject"], {
-    required_error: "Action is required",
+    error: "Action is required",
   }),
   reason: z.string().optional(),
 });

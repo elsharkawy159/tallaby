@@ -216,8 +216,6 @@ export function ExternalOrdersClient() {
       <div className="space-y-6">
         <div className="no-print">
           <PageHeader
-            title="External Orders"
-            description="Order placed successfully."
             actions={
               <div className="flex gap-2">
                 <Button
@@ -243,11 +241,6 @@ export function ExternalOrdersClient() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="External Orders"
-        description="Create orders for customers from social media, WhatsApp, phone, and other offline channels."
-      />
-
       <FormProvider {...form}>
         <Form {...form}>
           <form

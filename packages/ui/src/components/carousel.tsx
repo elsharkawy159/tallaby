@@ -304,7 +304,6 @@ function CarouselDots({
             currentIndex === index && primaryColor && "bg-primary",
             dotClassName
           )}
-          {...props}
         >
           <span className="sr-only">Go to slide {index + 1}</span>
         </Button>

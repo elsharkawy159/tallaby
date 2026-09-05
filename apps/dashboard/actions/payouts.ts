@@ -81,8 +81,12 @@ export async function getPayoutDetails(payoutId: string) {
               with: {
                 product: {
                   columns: {
-                    title: true,
                     sku: true,
+                  },
+                  with: {
+                    productTranslations: {
+                      columns: { title: true, slug: true },
+                    },
                   },
                 },
               },
@@ -317,9 +321,13 @@ export async function getDashboardAnalytics() {
       where: eq(products.sellerId, session.user.id),
       columns: {
         id: true,
-        title: true,
         reviewCount: true,
         averageRating: true,
+      },
+      with: {
+        productTranslations: {
+          columns: { title: true },
+        },
       },
       orderBy: [desc(products.reviewCount)],
       limit: 10,

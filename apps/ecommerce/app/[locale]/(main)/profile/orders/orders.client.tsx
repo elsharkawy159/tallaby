@@ -50,11 +50,11 @@ interface StoreSeller {
 interface Order {
   id: string;
   orderNumber: string;
-  status: string;
-  paymentStatus: string;
-  totalAmount: string;
-  currency: string;
-  createdAt: string;
+  status: string | null;
+  paymentStatus: string | null;
+  totalAmount: string | null;
+  currency: string | null;
+  createdAt: string | null;
   deliveredAt?: string | null;
   orderItems: OrderItem[];
   storeSellers?: StoreSeller[];
@@ -152,8 +152,8 @@ export function OrdersClient({
                           {tOrders("datePlaced")}
                         </dt>
                         <dd className="mt-1 text-gray-500 dark:text-gray-400">
-                          <time dateTime={order.createdAt}>
-                            {formatDate(order.createdAt)}
+                          <time dateTime={order.createdAt ?? undefined}>
+                            {formatDate(order.createdAt ?? "")}
                           </time>
                         </dd>
                       </div>
@@ -175,7 +175,7 @@ export function OrdersClient({
 
                     <div className="hidden sm:flex items-center gap-2">
                       <Badge variant="secondary" className="capitalize">
-                        {order.status.replace(/_/g, " ")}
+                        {(order.status ?? "").replace(/_/g, " ")}
                       </Badge>
                     </div>
 
@@ -192,7 +192,7 @@ export function OrdersClient({
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          {!isCancelled(order.status) && (
+                          {!isCancelled(order.status ?? "") && (
                             <DropdownMenuItem asChild>
                               <Link
                                 href={`/orders/${order.id}#order-status-tracking`}
@@ -211,7 +211,7 @@ export function OrdersClient({
                     </div>
 
                     <div className="hidden lg:col-span-2 lg:flex lg:items-center lg:justify-end lg:gap-2">
-                      {!isCancelled(order.status) && (
+                      {!isCancelled(order.status ?? "") && (
                         <Button
                           size="sm"
                           variant="outline"

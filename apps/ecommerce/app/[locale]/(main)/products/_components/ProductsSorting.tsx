@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import { useTranslations } from "next-intl";
 import { useUrlParams } from "@/hooks/use-url-params";
 import {
   Select,
@@ -12,14 +13,15 @@ import {
 } from "@workspace/ui/components/select";
 
 const SORT_OPTIONS = [
-  { value: "popularity", label: "Most Popular" },
-  { value: "price-low", label: "Price: Low to High" },
-  { value: "price-high", label: "Price: High to Low" },
-  { value: "newest", label: "Newest First" },
-  { value: "rating", label: "Highest Rated" },
-];
+  { value: "popularity", labelKey: "sortMostPopular" },
+  { value: "price-low", labelKey: "sortPriceLowToHigh" },
+  { value: "price-high", labelKey: "sortPriceHighToLow" },
+  { value: "newest", labelKey: "sortNewest" },
+  { value: "rating", labelKey: "sortHighestRated" },
+] as const;
 
 const ProductsSorting: React.FC = () => {
+  const t = useTranslations("search");
   const { params, updateParams } = useUrlParams();
   const currentSort = params.sort || "popularity";
 
@@ -34,16 +36,16 @@ const ProductsSorting: React.FC = () => {
   };
 
   return (
-    <Select value={currentSort} onValueChange={handleSortChange} >
+    <Select value={currentSort} onValueChange={handleSortChange}>
       <SelectTrigger className="md:w-[220px]">
-        <SelectValue placeholder="Sort by" />
+        <SelectValue placeholder={t("sortBy")} />
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
-          <SelectLabel>Sort by</SelectLabel>
+          <SelectLabel>{t("sortBy")}</SelectLabel>
           {SORT_OPTIONS.map((opt) => (
             <SelectItem key={opt.value} value={opt.value}>
-              {opt.label}
+              {t(opt.labelKey)}
             </SelectItem>
           ))}
         </SelectGroup>

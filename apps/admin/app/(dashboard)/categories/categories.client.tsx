@@ -68,13 +68,7 @@ export function CategoriesContent({
 
   return (
     <>
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Categories</h1>
-          <p className="text-muted-foreground">
-            Manage your product categories and structure
-          </p>
-        </div>
+      <div className="flex items-center justify-end mb-6">
         <div className="flex gap-2">
           <Button
             variant="outline"

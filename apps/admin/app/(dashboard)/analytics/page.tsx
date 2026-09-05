@@ -13,13 +13,7 @@ import { AnalyticsDashboard } from './analytics.client'
 export default function AnalyticsPage () {
   return (
     <>
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Analytics</h1>
-          <p className="text-muted-foreground">
-            Live commerce data from orders, plus PostHog storefront traffic
-          </p>
-        </div>
+      <div className="mb-6 flex items-center justify-end">
         <AnalyticsRefreshButton />
       </div>
       <Suspense fallback={<AnalyticsSkeleton />}>

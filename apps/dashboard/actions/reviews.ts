@@ -37,16 +37,18 @@ export async function getSellerReviews(params?: {
       with: {
         user: {
           columns: {
-            firstName: true,
-            lastName: true,
+            fullName: true,
             email: true,
-            avatar: true,
+            avatarUrl: true,
           },
         },
         product: {
+          with: {
+            productTranslations: {
+              columns: { title: true, slug: true },
+            },
+          },
           columns: {
-            title: true,
-            slug: true,
             images: true,
           },
         },
@@ -106,9 +108,8 @@ export async function getProductReviews(productId: string) {
       with: {
         user: {
           columns: {
-            firstName: true,
-            lastName: true,
-            avatar: true,
+            fullName: true,
+            avatarUrl: true,
           },
         },
         reviewComments: {
@@ -239,15 +240,15 @@ export async function getUnrepliedReviews() {
       with: {
         user: {
           columns: {
-            firstName: true,
-            lastName: true,
+            fullName: true,
             email: true,
           },
         },
         product: {
-          columns: {
-            title: true,
-            slug: true,
+          with: {
+            productTranslations: {
+              columns: { title: true, slug: true },
+            },
           },
         },
       },

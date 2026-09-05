@@ -12,39 +12,39 @@ export async function WishlistItemsData() {
   const transformedProducts: TransformedProduct[] = wishlistItems.map(
     (item) => {
       const product = item.product;
-      let price = product.price;
+      let rawPrice: unknown = product.price;
 
       // Parse JSON string if needed
-      if (typeof price === "string") {
+      if (typeof rawPrice === "string") {
         try {
-          price = JSON.parse(price);
+          rawPrice = JSON.parse(rawPrice);
         } catch {
-          // If parsing fails, treat as number string
-          const numPrice = parseFloat(price);
-          price = isNaN(numPrice) ? null : numPrice;
+          const numPrice = parseFloat(rawPrice as string);
+          rawPrice = isNaN(numPrice) ? null : numPrice;
         }
       }
 
       // Handle price transformation
       let priceData: ProductCardProps["price"] = null;
       if (
-        typeof price === "object" &&
-        price !== null &&
-        !Array.isArray(price)
+        typeof rawPrice === "object" &&
+        rawPrice !== null &&
+        !Array.isArray(rawPrice)
       ) {
+        const p = rawPrice as Record<string, unknown>;
         priceData = {
-          base: typeof price.base === "number" ? price.base : null,
-          list: typeof price.list === "number" ? price.list : null,
-          final: typeof price.final === "number" ? price.final : null,
+          base: typeof p.base === "number" ? p.base : null,
+          list: typeof p.list === "number" ? p.list : null,
+          final: typeof p.final === "number" ? p.final : null,
           discountType:
-            typeof price.discountType === "string" ? price.discountType : null,
+            typeof p.discountType === "string" ? p.discountType : null,
           discountValue:
-            typeof price.discountValue === "number"
-              ? price.discountValue
+            typeof p.discountValue === "number"
+              ? p.discountValue
               : null,
         };
-      } else if (typeof price === "number") {
-        priceData = price;
+      } else if (typeof rawPrice === "number") {
+        priceData = rawPrice;
       }
 
       // Handle images transformation
@@ -55,13 +55,16 @@ export async function WishlistItemsData() {
         images = [product.images];
       }
 
+      // Access localized fields from MergedProduct
+      const mergedProduct = product as Record<string, unknown>;
+
       return {
         id: product.id,
-        title: product.title,
-        slug: product.slug,
+        title: (mergedProduct.title as string) ?? "",
+        slug: (mergedProduct.slug as string) ?? "",
         images,
         price: priceData,
-        quantity: item.quantity || 1,
+        quantity: (item as Record<string, unknown>).quantity as number || 1,
         averageRating: product.averageRating ?? null,
         reviewCount: product.reviewCount ?? 0,
         wishlistItemId: item.id,

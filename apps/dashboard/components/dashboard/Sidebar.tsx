@@ -86,7 +86,7 @@ export const Sidebar = ({ counts, isOpen, onToggle }: SidebarProps) => {
           afterProductsItems={afterProductsItems}
           isCollapsed={isCollapsed}
           onToggleCollapse={toggleCollapse}
-          seller={seller.data}
+          seller={seller.data ?? null}
         />
       </aside>
 
@@ -122,7 +122,7 @@ export const Sidebar = ({ counts, isOpen, onToggle }: SidebarProps) => {
           topNavItems={topNavItems}
           afterProductsItems={afterProductsItems}
           isCollapsed={false}
-          seller={seller.data}
+          seller={seller.data ?? null}
           onToggle={onToggle}
         />
       </aside>
@@ -146,10 +146,12 @@ interface SidebarContentProps {
   }[];
   isCollapsed: boolean;
   onToggleCollapse?: () => void;
+  onToggle?: () => void;
   seller: {
-    logoUrl?: string;
-    businessName?: string;
-    approvedCategories?: string[];
+    logoUrl?: string | null;
+    businessName?: string | null;
+    approvedCategories?: unknown;
+    [key: string]: unknown;
   } | null;
 }
 

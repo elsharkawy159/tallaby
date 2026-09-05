@@ -131,7 +131,7 @@ export function CartPageClient({ initialCartData }: CartPageClientProps) {
                           cartItemId={item.id}
                           initialQuantity={item.quantity}
                           productStock={
-                            variant ? (variant.stock ?? p.quantity) : p.quantity
+                            variant ? (variant.stock ?? (p as Record<string, unknown>).quantity as number) : (p as Record<string, unknown>).quantity as number
                           }
                         />
                       </div>

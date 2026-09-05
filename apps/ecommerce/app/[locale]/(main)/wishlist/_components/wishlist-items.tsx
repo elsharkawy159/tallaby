@@ -6,8 +6,10 @@ import { Link } from "@/i18n/navigation";
 import ProductCard from "../../products/[slug]/_components/ProductCard";
 import { useWishlist } from "@/providers/wishlist-provider";
 import type { WishlistItem } from "@/types/wishlist";
+import { useTranslations } from "next-intl";
 
 export const WishlistItems = () => {
+  const t = useTranslations("wishlist");
   const { wishlistItems } = useWishlist();
 
   if (wishlistItems.length === 0) {
@@ -15,13 +17,13 @@ export const WishlistItems = () => {
       <div className="text-center py-16">
         <Heart className="h-16 w-16 text-gray-300 mx-auto mb-4" />
         <h2 className="text-2xl font-semibold text-gray-600 mb-2">
-          Your wishlist is empty
+          {t("wishlistEmpty")}
         </h2>
         <p className="text-gray-500 mb-8">
-          Save items you love to your wishlist
+          {t("saveItemsToWishlist")}
         </p>
         <Link href="/products">
-          <Button>Start Shopping</Button>
+          <Button>{t("startShopping")}</Button>
         </Link>
       </div>
     );

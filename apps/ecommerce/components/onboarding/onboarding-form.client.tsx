@@ -38,15 +38,15 @@ import {
   sellerApplicationSchema,
   sellerApplicationDefaults,
   type SellerApplicationFormData,
-} from "@/app/[locale]/(main)/become-seller/_components/become-seller.dto";
+} from "./become-seller.dto";
 import {
   checkBusinessNameAvailability,
   submitSellerApplication,
-} from "@/app/[locale]/(main)/become-seller/_components/become-seller.server";
+} from "./become-seller.server";
 import {
   BUSINESS_TYPE_OPTIONS,
   COUNTRY_OPTIONS,
-} from "@/app/[locale]/(main)/become-seller/_components/become-seller.types";
+} from "./become-seller.types";
 import { useAuthDialog } from "@/hooks/use-auth-dialog";
 import { useDebounce } from "@/hooks/use-debounce";
 import { Input } from "@workspace/ui/components";

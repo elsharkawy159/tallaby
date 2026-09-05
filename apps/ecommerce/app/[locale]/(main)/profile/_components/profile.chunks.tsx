@@ -114,7 +114,7 @@ export function ProfileSidebar({
       : "";
 
   // Check if user is verified (Supabase auth user structure)
-  const isVerified = !isGuest && user?.user_metadata?.email_verified ? true : false;
+  const isVerified = !isGuest && (user?.user_metadata as Record<string, unknown>)?.email_verified ? true : false;
 
   return (
     <div className="space-y-6">
@@ -140,7 +140,7 @@ export function ProfileSidebar({
                   )}
 
                   {isVerified && (
-                    <span title="Verified">
+                    <span title={t("verified")}>
                       {/* Blue star icon for verified */}
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -448,19 +448,20 @@ export function ProfileForm({
     if (user.user_metadata) {
       const metadata = user.user_metadata;
       // Support multiple OAuth provider formats
+      const md = metadata as Record<string, unknown>;
       const fullName =
-        metadata.fullName ||
-        metadata.full_name ||
-        metadata.name ||
-        (metadata.firstName && metadata.lastName
-          ? `${metadata.firstName} ${metadata.lastName}`
+        (md.fullName as string) ||
+        (md.full_name as string) ||
+        (md.name as string) ||
+        ((md.firstName && md.lastName)
+          ? `${md.firstName} ${md.lastName}`
           : "") ||
         "";
 
       return {
         fullName,
-        phone: user.phone || metadata.phone || "",
-        timezone: metadata.timezone || "Africa/Cairo",
+        phone: user.phone || (metadata.phone as string) || "",
+        timezone: (md.timezone as string) || "Africa/Cairo",
         preferredLanguage: metadata.preferredLanguage || locale, // Use current locale as fallback
         defaultCurrency: metadata.defaultCurrency || "EGP",
         receiveMarketingEmails: metadata.receiveMarketingEmails ?? true,
@@ -596,10 +597,10 @@ export function ProfileForm({
                   name="timezone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Timezone</FormLabel>
+                      <FormLabel>{t("timezone")}</FormLabel>
                       <FormControl>
                         <SelectInput
-                          placeholder="Select your timezone"
+                          placeholder={t("selectYourTimezone")}
                           options={timezoneOptions}
                           {...field}
                         />
@@ -679,7 +680,7 @@ export function ReferralSection({
   user,
   referredBy,
 }: {
-  user: User | null;
+  user: User | ProfileDisplayUser | null;
   referredBy?: string | null;
 }) {
   const t = useTranslations("profile");
@@ -905,17 +906,18 @@ interface AddressCardProps {
 export function AddressCard({ address, onEdit, onDelete }: AddressCardProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const tToast = useTranslations("toast");
+  const tAddresses = useTranslations("addresses");
 
   const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this address?")) return;
+    if (!confirm(tAddresses("confirmDeleteAddress"))) return;
 
     setIsDeleting(true);
     try {
       const result = await deleteAddress(address.id);
       if (result.success) {
-        toast.success(result.message);
+        toast.success(tAddresses("addressDeleted"));
       } else {
-        toast.error(result.message);
+        toast.error(tAddresses("failedToDeleteAddress"));
       }
     } catch (error) {
       toast.error(tToast("failedToDeleteAddress"));
@@ -1003,6 +1005,7 @@ export function AddressForm({
   onCancel,
 }: AddressFormProps) {
   const t = useTranslations("addresses");
+  const tProfile = useTranslations("profile");
   const tToast = useTranslations("toast");
   const [isPending, startTransition] = useTransition();
   const isEditing = !!address;
@@ -1037,10 +1040,12 @@ export function AddressForm({
           : await createAddress(data);
 
         if (result.success) {
-          toast.success(result.message);
+          toast.success(
+            isEditing ? t("addressUpdated") : t("addressAdded")
+          );
           onSuccess();
         } else {
-          toast.error(result.message);
+          toast.error(t("failedToSaveAddress"));
 
           if (result.errors) {
             Object.entries(result.errors).forEach(([field, messages]) => {
@@ -1078,14 +1083,20 @@ export function AddressForm({
               name="addressType"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Address Type</FormLabel>
+                  <FormLabel>{tProfile("addressType")}</FormLabel>
                   <FormControl>
                     <SelectInput
-                      placeholder="Select address type"
+                      placeholder={tProfile("selectAddressType")}
                       options={[
-                        { value: "billing", label: "Billing Address" },
-                        { value: "shipping", label: "Shipping Address" },
-                        { value: "both", label: "Billing & Shipping" },
+                        {
+                          value: "billing",
+                          label: tProfile("addressTypeBilling"),
+                        },
+                        {
+                          value: "shipping",
+                          label: tProfile("addressTypeShipping"),
+                        },
+                        { value: "both", label: tProfile("addressTypeBoth") },
                       ]}
                       {...field}
                     />
@@ -1180,9 +1191,9 @@ export function AddressForm({
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                     <div className="space-y-0.5">
-                      <FormLabel>Default Address</FormLabel>
+                      <FormLabel>{tProfile("defaultAddress")}</FormLabel>
                       <FormDescription>
-                        Use this as your default address for orders
+                        {tProfile("defaultAddressDescription")}
                       </FormDescription>
                     </div>
                     <FormControl>
@@ -1201,9 +1212,9 @@ export function AddressForm({
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                     <div className="space-y-0.5">
-                      <FormLabel>Business Address</FormLabel>
+                      <FormLabel>{tProfile("businessAddress")}</FormLabel>
                       <FormDescription>
-                        This is a business or commercial address
+                        {tProfile("businessAddressDescription")}
                       </FormDescription>
                     </div>
                     <FormControl>
@@ -1239,6 +1250,7 @@ export function AddressForm({
 // Security Form Component
 
 export function SecurityForm({ user }: { user: User | null }) {
+  const t = useTranslations("profile");
   const [isPending, startTransition] = useTransition();
 
   // Extract security-related user data with proper fallbacks
@@ -1300,10 +1312,8 @@ export function SecurityForm({ user }: { user: User | null }) {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Change Password</CardTitle>
-          <CardDescription>
-            Update your password to keep your account secure
-          </CardDescription>
+          <CardTitle>{t("changePassword")}</CardTitle>
+          <CardDescription>{t("changePasswordDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -1316,10 +1326,10 @@ export function SecurityForm({ user }: { user: User | null }) {
                 name="currentPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Current Password</FormLabel>
+                    <FormLabel>{t("currentPassword")}</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Enter your current password"
+                        placeholder={t("enterCurrentPassword")}
                         {...field}
                       />
                     </FormControl>
@@ -1333,13 +1343,12 @@ export function SecurityForm({ user }: { user: User | null }) {
                 name="newPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>New Password</FormLabel>
+                    <FormLabel>{t("newPassword")}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter your new password" {...field} />
+                      <Input placeholder={t("enterNewPassword")} {...field} />
                     </FormControl>
                     <FormDescription>
-                      Password must be at least 8 characters with uppercase,
-                      lowercase, number, and special character
+                      {t("passwordRequirements")}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -1351,10 +1360,10 @@ export function SecurityForm({ user }: { user: User | null }) {
                 name="confirmPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Confirm New Password</FormLabel>
+                    <FormLabel>{t("confirmNewPassword")}</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Confirm your new password"
+                        placeholder={t("confirmNewPasswordPlaceholder")}
                         {...field}
                       />
                     </FormControl>
@@ -1364,7 +1373,7 @@ export function SecurityForm({ user }: { user: User | null }) {
               />
 
               <Button type="submit" disabled={isPending}>
-                {isPending ? "Updating Password..." : "Update Password"}
+                {isPending ? t("updating") : t("changePassword")}
               </Button>
             </form>
           </Form>
@@ -1373,10 +1382,8 @@ export function SecurityForm({ user }: { user: User | null }) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Two-Factor Authentication</CardTitle>
-          <CardDescription>
-            Add an extra layer of security to your account
-          </CardDescription>
+          <CardTitle>{t("twoFactorAuth")}</CardTitle>
+          <CardDescription>{t("twoFactorAuthDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -1387,9 +1394,9 @@ export function SecurityForm({ user }: { user: User | null }) {
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                     <div className="space-y-0.5">
-                      <FormLabel>Enable Two-Factor Authentication</FormLabel>
+                      <FormLabel>{t("enableTwoFactorAuth")}</FormLabel>
                       <FormDescription>
-                        Require a second form of authentication when signing in
+                        {t("enableTwoFactorAuthDescription")}
                       </FormDescription>
                     </div>
                     <FormControl>
@@ -1408,7 +1415,7 @@ export function SecurityForm({ user }: { user: User | null }) {
                   name="twoFactorMethod"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Authentication Method</FormLabel>
+                      <FormLabel>{t("authenticationMethod")}</FormLabel>
                       <FormControl>
                         <Select
                           value={field.value}
@@ -1416,7 +1423,7 @@ export function SecurityForm({ user }: { user: User | null }) {
                         >
                           {twoFactorMethodOptions.map((option) => (
                             <SelectItem key={option.value} value={option.value}>
-                              {option.label}
+                              {t(option.labelKey)}
                             </SelectItem>
                           ))}
                         </Select>

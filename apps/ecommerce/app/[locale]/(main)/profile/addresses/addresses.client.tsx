@@ -16,6 +16,7 @@ import {
 } from "@/components/shared/address-dialog";
 import type { AddressData } from "@/components/address/address.schema";
 import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 
 // Add Address Button Component
 function AddAddressButton({
@@ -48,6 +49,7 @@ interface AddressesClientProps {
 export function AddressesClient({ initialAddresses }: AddressesClientProps) {
   const [addresses, setAddresses] = useState(initialAddresses);
   const router = useRouter();
+  const t = useTranslations("addresses");
 
   const refreshAddresses = () => {
     router.refresh();
@@ -60,9 +62,9 @@ export function AddressesClient({ initialAddresses }: AddressesClientProps) {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Delivery Addresses</CardTitle>
+              <CardTitle>{t("deliveryAddresses")}</CardTitle>
               <CardDescription>
-                Manage your shipping and billing addresses
+                {t("manageShippingBillingAddresses")}
               </CardDescription>
             </div>
             <AddAddressButton onSuccess={refreshAddresses} />
@@ -115,9 +117,11 @@ export function AddressesClient({ initialAddresses }: AddressesClientProps) {
                 <Plus className="h-8 w-8 text-gray-400" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold">No addresses yet</h3>
+                <h3 className="text-lg font-semibold">
+                  {t("noAddressesYetTitle")}
+                </h3>
                 <p className="text-muted-foreground">
-                  Add your first delivery address to start shopping
+                  {t("addFirstDeliveryAddress")}
                 </p>
               </div>
               <AddAddressButton onSuccess={refreshAddresses} />

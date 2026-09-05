@@ -40,7 +40,7 @@ export interface CartSummary {
     createdAt?: string | null;
     updatedAt?: string | null;
     lastActivity?: string | null;
-  };
+  } | null;
   items: CartItem[];
   subtotal: number;
   itemCount: number;

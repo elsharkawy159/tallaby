@@ -76,11 +76,11 @@ export function splitFullName(fullName: string): { firstName: string; lastName: 
 
   const parts = trimmed.split(/\s+/)
   if (parts.length === 1) {
-    return { firstName: parts[0], lastName: parts[0] }
+    return { firstName: parts[0]!, lastName: parts[0]! }
   }
 
   return {
-    firstName: parts[0],
+    firstName: parts[0]!,
     lastName: parts.slice(1).join(' '),
   }
 }

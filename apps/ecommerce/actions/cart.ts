@@ -165,7 +165,7 @@ export const getCartItems = async () => {
 
       nextItem = {
         ...item,
-        product: localizedProduct,
+        product: localizedProduct as unknown as typeof item.product,
       };
     }
 
@@ -190,7 +190,12 @@ export const getCartItems = async () => {
 
   return {
     success: true,
-    data: { cart, items: itemsWithFixedPrices, subtotal, itemCount },
+    data: {
+      cart,
+      items: itemsWithFixedPrices as Array<(typeof itemsWithFixedPrices)[number] & { product: { id: string; title: string; slug: string; images: unknown; sellerId: string } }>,
+      subtotal,
+      itemCount,
+    },
   };
 };
 

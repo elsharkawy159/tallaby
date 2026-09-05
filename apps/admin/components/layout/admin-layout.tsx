@@ -3,6 +3,7 @@
 import { ReactNode } from "react";
 import Sidebar from "@/app/(dashboard)/_components/layout/sidebar";
 import Header from "@/app/(dashboard)/_components/layout/header";
+import { EMPTY_SIDEBAR_COUNTS } from "@/app/(dashboard)/_components/layout/sidebar.types";
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -11,7 +12,7 @@ interface AdminLayoutProps {
 export function AdminLayout({ children }: AdminLayoutProps) {
   return (
     <div className="min-h-screen bg-gray-50">
-      <Sidebar />
+      <Sidebar counts={EMPTY_SIDEBAR_COUNTS} />
       <div className="lg:pl-64">
         <Header />
         <main className="py-6">

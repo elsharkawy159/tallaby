@@ -108,9 +108,9 @@ export function AreaChart({
             }}
           />
           <Tooltip
-            formatter={(value: number, name: string) => [
-              formatCurrency(value),
-              name.charAt(0).toUpperCase() + name.slice(1),
+            formatter={(value: number | undefined, name: string | undefined) => [
+              formatCurrency(value ?? 0),
+              (name ?? "").charAt(0).toUpperCase() + (name ?? "").slice(1),
             ]}
             labelFormatter={(label) => formatDate(label)}
             contentStyle={{

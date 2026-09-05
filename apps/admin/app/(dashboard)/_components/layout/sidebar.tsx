@@ -9,6 +9,7 @@ import { Badge } from "@workspace/ui/components/badge";
 import { ScrollArea } from "@workspace/ui/components/scroll-area";
 import {
   ShoppingCart,
+  ShoppingBag,
   Users,
   Package,
   Tag,
@@ -50,6 +51,12 @@ const sidebarLinks: SidebarLink[] = [
     href: "/customers",
     icon: Users,
     countKey: "customers",
+  },
+  {
+    title: "Pending Carts",
+    href: "/pending-carts",
+    icon: ShoppingBag,
+    countKey: "pendingCarts",
   },
   {
     title: "Orders",
@@ -114,14 +121,14 @@ export default function Sidebar({ counts }: SidebarProps) {
     <div
       className={cn(
         "flex flex-col h-screen border-r border-border transition-all duration-300 bg-white dark:bg-gray-950",
-        expanded ? "w-64" : "w-16"
+        expanded ? "w-64" : "w-16",
       )}
     >
-      <div className="flex items-center justify-between p-4 border-b border-border">
+      <div className="flex items-center justify-between p-4 py-3.5 border-b border-border">
         {expanded ? (
-          <h1 className="text-xl font-bold text-primary">Admin Panel</h1>
+          <h1 className="text-xl font-bold text-primary">Admin</h1>
         ) : (
-          <h1 className="text-xl font-bold text-primary mx-auto">AP</h1>
+          <h1 className="text-xl font-bold text-primary mx-auto">A</h1>
         )}
         <Button
           variant="ghost"
@@ -145,7 +152,7 @@ export default function Sidebar({ counts }: SidebarProps) {
                         "flex items-center justify-between w-full px-3 py-2 text-sm rounded-md",
                         "hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors",
                         pathname.startsWith(link.href) &&
-                          "bg-gray-100 dark:bg-gray-800"
+                          "bg-gray-100 dark:bg-gray-800",
                       )}
                     >
                       <span className="flex items-center min-w-0">
@@ -159,7 +166,7 @@ export default function Sidebar({ counts }: SidebarProps) {
                           size={16}
                           className={cn(
                             "transition-transform shrink-0",
-                            openSubmenus[link.title] && "transform rotate-90"
+                            openSubmenus[link.title] && "transform rotate-90",
                           )}
                         />
                       )}
@@ -174,17 +181,19 @@ export default function Sidebar({ counts }: SidebarProps) {
                                 "flex items-center justify-between px-3 py-2 text-sm rounded-md",
                                 "hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors",
                                 pathname === sublink.href &&
-                                  "bg-gray-100 dark:bg-gray-800 font-medium"
+                                  "bg-gray-100 dark:bg-gray-800 font-medium",
                               )}
                             >
                               <span className="flex items-center min-w-0">
                                 <sublink.icon className="h-4 w-4 mr-2 shrink-0 text-gray-500" />
-                                <span className="truncate">{sublink.title}</span>
+                                <span className="truncate">
+                                  {sublink.title}
+                                </span>
                               </span>
                               {sublink.countKey &&
                                 counts[sublink.countKey] > 0 && (
                                   <Badge
-                                    variant="secondary"
+                                    variant="outline"
                                     className={SIDEBAR_COUNT_BADGE_CLASS}
                                   >
                                     {counts[sublink.countKey].toLocaleString()}
@@ -201,17 +210,17 @@ export default function Sidebar({ counts }: SidebarProps) {
                     href={link.href}
                     className={cn(
                       "flex items-center px-3 py-2 text-sm rounded-md",
-                      "hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors",
+                      "hover:bg-primary/10 dark:hover:bg-gray-800 transition-colors",
                       expanded && "justify-between",
                       pathname === link.href &&
-                        "bg-gray-100 dark:bg-gray-800 font-medium"
+                        "bg-primary dark:bg-gray-800 font-medium hover:bg-primary text-white [&_svg]:text-white",
                     )}
                   >
                     <span className="flex items-center min-w-0">
                       <link.icon
                         className={cn(
                           "h-5 w-5 shrink-0 text-gray-500",
-                          expanded ? "mr-2" : "mx-auto"
+                          expanded ? "mr-2" : "mx-auto",
                         )}
                       />
                       {expanded && (
