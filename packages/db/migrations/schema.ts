@@ -104,6 +104,7 @@ export const categories = pgTable("categories", {
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	imageUrl: text("image_url"),
 	nameAr: text("name_ar"),
+	productCount: integer("product_count").default(0).notNull(),
 }, (table) => [
 	foreignKey({
 			columns: [table.parentId],

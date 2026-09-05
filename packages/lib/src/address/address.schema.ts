@@ -54,9 +54,12 @@ export const addressSchema = z
 
     postalCode: z
       .string()
-      .min(1, 'Postal code is required')
-      .min(3, 'Postal code must be at least 3 characters')
-      .max(20, 'Postal code must be less than 20 characters'),
+      .max(20, 'Postal code must be less than 20 characters')
+      .refine((val) => !val || val.length >= 3, {
+        message: 'Postal code must be at least 3 characters',
+      })
+      .optional()
+      .default(''),
 
     country: z.string().default('Egypt'),
 

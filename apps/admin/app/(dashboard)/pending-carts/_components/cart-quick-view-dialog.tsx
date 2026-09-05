@@ -39,12 +39,14 @@ import {
 interface CartQuickViewDialogProps {
   cart: PendingCart | null;
   open: boolean;
+  isLoadingItems?: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
 export function CartQuickViewDialog({
   cart,
   open,
+  isLoadingItems = false,
   onOpenChange,
 }: CartQuickViewDialogProps) {
   if (!open || !cart) return null;
@@ -193,11 +195,13 @@ export function CartQuickViewDialog({
             <div className="flex items-center gap-2">
               <Package className="h-4 w-4" />
               <h4 className="font-semibold text-sm">
-                Cart items ({cart.items.length})
+                Cart items ({isLoadingItems ? "…" : cart.items.length})
               </h4>
             </div>
 
-            {cart.items.length === 0 ? (
+            {isLoadingItems ? (
+              <p className="text-sm text-muted-foreground">Loading items…</p>
+            ) : cart.items.length === 0 ? (
               <p className="text-sm text-muted-foreground">This cart is empty.</p>
             ) : (
               <div className="space-y-3">

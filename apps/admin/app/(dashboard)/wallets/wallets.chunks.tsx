@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { Banknote, Lock, Wallet as WalletIcon } from "lucide-react";
+import { ArrowDownToLine, Banknote, Lock, Wallet as WalletIcon } from "lucide-react";
 
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
@@ -23,19 +23,24 @@ import { TableCell, TableRow } from "@workspace/ui/components/table";
 import {
   approvePayoutRequest,
   completePayoutRequest,
+  confirmTopUpRequest,
   getWalletTransactions,
   markPayoutProcessing,
   rejectPayoutRequest,
+  rejectTopUpRequest,
 } from "./wallets.server";
 import {
   describeDestination,
   formatDateTime,
+  formatTopUpProvider,
   money,
   payoutStatusVariant,
+  topUpStatusVariant,
   walletStatusVariant,
 } from "./wallets.lib";
 import type {
   PayoutRequestRow,
+  TopUpRequestRow,
   WalletRow,
   WalletStats,
   WalletTransactionRow,
@@ -55,10 +60,15 @@ export function WalletStatsCards({ stats }: { stats: WalletStats }) {
       value: `${stats.pendingPayouts} · ${money(stats.pendingPayoutAmount)}`,
       icon: Banknote,
     },
+    {
+      label: "Open top-ups",
+      value: `${stats.pendingTopUps} · ${money(stats.pendingTopUpAmount)}`,
+      icon: ArrowDownToLine,
+    },
   ];
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
       {tiles.map((tile) => (
         <Card key={tile.label}>
           <CardContent className="flex items-center gap-3 p-4">
@@ -325,6 +335,197 @@ export function PayoutRequestRowView({
                   rejectPayoutRequest({
                     payoutRequestId: request.id,
                     rejectionReason: reason,
+                  })
+                )
+              }
+            >
+              Reject
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Top-up requests                                                            */
+/* -------------------------------------------------------------------------- */
+
+type TopUpAction = "confirm" | "reject";
+
+export function TopUpRequestRowView({
+  request,
+  onChanged,
+}: {
+  request: TopUpRequestRow;
+  onChanged: () => void;
+}) {
+  const [isPending, startTransition] = useTransition();
+  const [dialog, setDialog] = useState<TopUpAction | null>(null);
+  const [reason, setReason] = useState("");
+  const [reference, setReference] = useState("");
+
+  const run = (action: () => Promise<{ success: boolean; error?: string }>) => {
+    startTransition(async () => {
+      const result = await action();
+      if (!result.success) {
+        toast.error(result.error ?? "Something went wrong");
+        return;
+      }
+      toast.success("Top-up request updated");
+      setDialog(null);
+      setReason("");
+      setReference("");
+      onChanged();
+    });
+  };
+
+  const canAction =
+    request.status === "pending" || request.status === "processing";
+
+  return (
+    <>
+      <TableRow>
+        <TableCell>
+          <div className="font-medium">{request.userName ?? "—"}</div>
+          <div className="text-xs text-muted-foreground">
+            {request.userEmail ?? "—"} · {request.userRole ?? "—"}
+          </div>
+        </TableCell>
+        <TableCell className="font-semibold">{money(request.amount)}</TableCell>
+        <TableCell>
+          <div className="text-sm">{formatTopUpProvider(request.provider)}</div>
+          {request.paymentSelfReported ? (
+            <div className="text-xs text-emerald-600">
+              Self-reported
+              {request.paymentSelfReportedAt
+                ? ` · ${formatDateTime(request.paymentSelfReportedAt)}`
+                : ""}
+            </div>
+          ) : (
+            <div className="text-xs text-muted-foreground">Awaiting transfer</div>
+          )}
+        </TableCell>
+        <TableCell>
+          <div className="text-sm">{money(request.walletBalance)}</div>
+          <div className="text-xs text-muted-foreground">
+            reserved {money(request.walletReservedBalance)}
+          </div>
+        </TableCell>
+        <TableCell>
+          <Badge variant={topUpStatusVariant(request.status)}>
+            {request.status}
+          </Badge>
+          {request.failureReason ? (
+            <div className="mt-1 max-w-40 truncate text-xs text-muted-foreground">
+              {request.failureReason}
+            </div>
+          ) : null}
+        </TableCell>
+        <TableCell className="text-xs text-muted-foreground">
+          {formatDateTime(request.createdAt)}
+        </TableCell>
+        <TableCell className="text-right">
+          {canAction ? (
+            <div className="flex flex-wrap justify-end gap-1">
+              <Button
+                size="sm"
+                disabled={isPending}
+                onClick={() => setDialog("confirm")}
+              >
+                Confirm
+              </Button>
+              <Button
+                size="sm"
+                variant="destructive"
+                disabled={isPending}
+                onClick={() => setDialog("reject")}
+              >
+                Reject
+              </Button>
+            </div>
+          ) : (
+            <span className="text-xs text-muted-foreground">—</span>
+          )}
+        </TableCell>
+      </TableRow>
+
+      <Dialog
+        open={dialog === "confirm"}
+        onOpenChange={(open) => !open && setDialog(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm top-up</DialogTitle>
+            <DialogDescription>
+              Only confirm after you verify the {money(request.amount)} transfer
+              arrived. This credits the customer wallet and writes a permanent
+              ledger entry.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="topup-reference">Transfer reference (optional)</Label>
+            <Input
+              id="topup-reference"
+              value={reference}
+              onChange={(event) => setReference(event.target.value)}
+              placeholder="Bank, InstaPay, or wallet reference"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setDialog(null)}>
+              Cancel
+            </Button>
+            <Button
+              disabled={isPending}
+              onClick={() =>
+                run(() =>
+                  confirmTopUpRequest({
+                    topUpId: request.id,
+                    externalReference: reference.trim() || undefined,
+                  })
+                )
+              }
+            >
+              Credit wallet
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={dialog === "reject"}
+        onOpenChange={(open) => !open && setDialog(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reject top-up</DialogTitle>
+            <DialogDescription>
+              Use this when the transfer was not received or could not be
+              verified. No balance change occurs.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="topup-reject-reason">Reason</Label>
+            <Textarea
+              id="topup-reject-reason"
+              value={reason}
+              onChange={(event) => setReason(event.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setDialog(null)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={isPending || reason.trim().length < 3}
+              onClick={() =>
+                run(() =>
+                  rejectTopUpRequest({
+                    topUpId: request.id,
+                    reason,
                   })
                 )
               }

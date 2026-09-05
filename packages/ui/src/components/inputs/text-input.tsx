@@ -86,7 +86,7 @@ export function TextInput<TFieldValues extends FieldValues>({
           <FormControl>
             <div className="relative">
               {inputIcon && (
-                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 flex items-center gap-1">
+                <div className="absolute start-3 top-1/2 transform -translate-y-1/2 text-gray-500 flex items-center gap-1">
                   {inputIcon}
                 </div>
               )}
@@ -97,7 +97,7 @@ export function TextInput<TFieldValues extends FieldValues>({
                 type={inputType}
                 className={cn(
                   "h-11 rounded-lg",
-                  inputIcon && "pl-10",
+                  inputIcon && "ps-10",
                   type === "password" && "pe-9",
                   className
                 )}

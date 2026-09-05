@@ -62,7 +62,7 @@ export const BaseField = React.forwardRef<HTMLDivElement, BaseFieldProps>(
           <div className="flex items-center justify-between">
             <Label htmlFor={name} className="text-sm font-medium">
               {label}
-              {required && <span className="text-red-500 ml-0.5">*</span>}
+              {required && <span className="text-red-500 ms-0.5">*</span>}
             </Label>
             {showCharacterCount && maxLength && (
               <span

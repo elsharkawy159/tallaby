@@ -9,8 +9,10 @@ import {
   desc,
   sql,
   isNull,
+  isNotNull,
   asc,
   inArray,
+  gt,
 } from "@workspace/db";
 import { unstable_cache } from "next/cache";
 import { categoryTags } from "@workspace/cache";
@@ -140,7 +142,6 @@ export const getAllCategorySlugs = unstable_cache(
 export const getTopCategories = unstable_cache(
   async () => {
     try {
-      // Get categories with most products
       const topCategories = await db
         .select({
           id: categories.id,
@@ -148,18 +149,17 @@ export const getTopCategories = unstable_cache(
           nameAr: categories.nameAr,
           slug: categories.slug,
           imageUrl: categories.imageUrl,
-          productCount: sql<number>`count(${products.id})`,
+          productCount: categories.productCount,
         })
         .from(categories)
-        .leftJoin(
-          products,
+        .where(
           and(
-            eq(products.categoryId, categories.id),
-            eq(products.status, "active"),
+            gt(categories.productCount, 0),
+            isNotNull(categories.name),
+            isNotNull(categories.slug),
           ),
         )
-        .groupBy(categories.id)
-        .orderBy(desc(sql`count(${products.id})`))
+        .orderBy(desc(categories.productCount))
         .limit(12);
 
       // For categories without image, fetch first product image as fallback

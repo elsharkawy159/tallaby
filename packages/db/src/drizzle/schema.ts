@@ -125,10 +125,13 @@ export const categories = pgTable("categories", {
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	imageUrl: text("image_url"),
 	nameAr: text("name_ar"),
+	/** Denormalized count of storefront-visible (status = active) products. */
+	productCount: integer("product_count").default(0).notNull(),
 }, (table) => [
 	// This table had no indexes at all.
 	index("category_slug_idx").using("btree", table.slug.asc().nullsLast().op("text_ops")),
 	index("category_parent_id_idx").using("btree", table.parentId.asc().nullsLast().op("uuid_ops")),
+	index("category_product_count_idx").using("btree", table.productCount.desc().nullsLast().op("int4_ops")).where(sql`product_count > 0`),
 	foreignKey({
 			columns: [table.parentId],
 			foreignColumns: [table.id],

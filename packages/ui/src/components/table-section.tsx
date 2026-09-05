@@ -332,7 +332,7 @@ export function TableSection<TData extends { id: string }>(
           {table.getSelectedRowModel().rows.length > 0 && onDeleteSelected && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button className="ml-auto" variant="destructive">
+                <Button className="ms-auto" variant="destructive">
                   <TrashIcon
                     className="-ms-1 opacity-60"
                     size={16}

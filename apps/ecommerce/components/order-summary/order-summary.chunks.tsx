@@ -8,7 +8,7 @@ import { Input } from '@workspace/ui/components/input'
 import { Separator } from '@workspace/ui/components/separator'
 import { formatPrice, FREE_DELIVERY_MIN_SUBTOTAL } from '@workspace/lib'
 import { useLocale, useTranslations } from 'next-intl'
-import { Ticket, X, Loader2, LogIn, Truck } from 'lucide-react'
+import { Ticket, X, Loader2, LogIn, Truck, Sparkles, PartyPopper } from 'lucide-react'
 import { applyCouponToCart, removeCouponFromCart } from '@/actions/coupons'
 import { toast } from 'sonner'
 import { formatVariantTitle } from '@/lib/variant-utils'
@@ -34,6 +34,7 @@ export function OrderSummaryLineItems ({ items }: OrderSummaryLineItemsProps) {
       {items.map((item) => {
         const unit = Number(item.price) || 0
         const lineTotal = unit * item.quantity
+        const productTitle = item.product?.title?.trim() || null
         const variantTitle = item.variant
           ? formatVariantTitle(item.variant)
           : null
@@ -44,9 +45,11 @@ export function OrderSummaryLineItems ({ items }: OrderSummaryLineItemsProps) {
             className='flex items-start justify-between gap-2 md:gap-4 py-2 md:py-3 border-b border-gray-100 last:border-0'
           >
             <div className='flex-1 min-w-0'>
-              <p className='text-xs md:text-sm font-medium text-gray-900 truncate'>
-                {item.product.title}
-              </p>
+              {productTitle && (
+                <p className='text-xs md:text-sm font-medium text-gray-900 line-clamp-2'>
+                  {productTitle}
+                </p>
+              )}
               {variantTitle && (
                 <p className='text-xs text-muted-foreground mt-0.5'>
                   {variantTitle}
@@ -92,27 +95,65 @@ export function FreeDeliveryProgress ({ subtotal }: FreeDeliveryProgressProps) {
   return (
     <div
       className={cn(
-        'rounded-lg border px-3 py-2.5 md:px-3.5 md:py-3 transition-colors duration-300',
+        'relative overflow-hidden rounded-lg border px-3 py-2.5 md:px-3.5 md:py-3 transition-all duration-500',
         isUnlocked
-          ? 'border-primary/30 bg-primary/5'
+          ? 'free-delivery-unlocked-card border-primary/40 bg-gradient-to-br from-primary/10 via-primary/5 to-amber-50/80 shadow-[0_0_0_1px_color-mix(in_oklab,var(--primary)_12%,transparent)]'
           : 'border-gray-200 bg-gray-50/80',
       )}
     >
-      <div className='mb-1.5 flex items-center justify-between gap-2'>
+      {isUnlocked && (
+        <div
+          className='free-delivery-confetti pointer-events-none absolute inset-x-0 top-2 h-6'
+          aria-hidden
+        >
+          <span />
+          <span />
+          <span />
+          <span />
+          <span />
+        </div>
+      )}
+
+      <div className='mb-2 flex items-center justify-between gap-2'>
         {isUnlocked ? (
           <p className='free-delivery-celebrate flex items-center gap-1.5 text-xs font-semibold text-primary md:text-sm'>
-            <Truck className='h-3.5 w-3.5 shrink-0' aria-hidden />
+            <span className='relative flex h-6 w-6 items-center justify-center rounded-full bg-primary/15'>
+              <Truck
+                className='free-delivery-truck h-3.5 w-3.5 shrink-0'
+                aria-hidden
+              />
+            </span>
             {t('freeDeliveryUnlocked')}
+            <PartyPopper
+              className='free-delivery-sparkle h-3.5 w-3.5 text-amber-500'
+              aria-hidden
+            />
+            <Sparkles
+              className='free-delivery-sparkle h-3 w-3 text-primary/70'
+              aria-hidden
+              style={{ animationDelay: '0.35s' }}
+            />
           </p>
         ) : (
-          <p className='text-[11px] text-muted-foreground md:text-xs'>
+          <p className='flex items-center gap-1.5 text-[11px] text-muted-foreground md:text-xs'>
+            <Truck className='h-3.5 w-3.5 shrink-0 text-muted-foreground/80' aria-hidden />
             {t('addAmountForFreeDelivery', { amount: remainingLabel })}
           </p>
         )}
+        <span
+          className={cn(
+            'shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums md:text-[11px]',
+            isUnlocked
+              ? 'bg-primary/15 text-primary'
+              : 'bg-white text-muted-foreground ring-1 ring-gray-200',
+          )}
+        >
+          {Math.round(progress)}%
+        </span>
       </div>
 
       <div
-        className='relative h-2 w-full overflow-hidden rounded-full bg-gray-200'
+        className='free-delivery-bar-track relative h-2.5 w-full overflow-hidden rounded-full bg-gray-200/90'
         role='progressbar'
         aria-valuemin={0}
         aria-valuemax={threshold}
@@ -125,16 +166,27 @@ export function FreeDeliveryProgress ({ subtotal }: FreeDeliveryProgressProps) {
       >
         <div
           className={cn(
-            'h-full rounded-full bg-primary transition-[width] duration-500 ease-out',
-            isUnlocked && 'free-delivery-bar-shimmer',
+            'relative h-full rounded-full transition-[width] duration-700 ease-out',
+            progress > 0 && 'free-delivery-bar-fill',
+            isUnlocked && 'free-delivery-bar-unlocked',
+            progress === 0 && 'bg-transparent',
           )}
           style={{ width: `${progress}%` }}
-        />
+        >
+          {progress > 0 && <div className='free-delivery-bar-shine' />}
+        </div>
       </div>
 
-      <div className='mt-1 flex items-center justify-between text-[10px] tabular-nums text-muted-foreground md:text-[11px]'>
+      <div className='mt-1.5 flex items-center justify-between text-[10px] tabular-nums text-muted-foreground md:text-[11px]'>
         <span>{t('freeDeliveryProgressStart')}</span>
-        <span>{t('freeDeliveryProgressEnd')}</span>
+        <span
+          className={cn(
+            'transition-colors duration-300',
+            isUnlocked && 'font-semibold text-primary',
+          )}
+        >
+          {t('freeDeliveryProgressEnd')}
+        </span>
       </div>
     </div>
   )

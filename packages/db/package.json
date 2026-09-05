@@ -40,6 +40,11 @@
       "types": "./src/reviews/index.ts",
       "import": "./src/reviews/index.ts",
       "require": "./src/reviews/index.ts"
+    },
+    "./categories": {
+      "types": "./src/categories/index.ts",
+      "import": "./src/categories/index.ts",
+      "require": "./src/categories/index.ts"
     }
   },
   "scripts": {

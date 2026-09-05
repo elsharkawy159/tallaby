@@ -269,14 +269,14 @@ export const CheckoutData = ({
       });
     }
 
-    groups.push({
-      id: "online_payment",
-      value: "online_payment",
-      title: t("payByCard"),
-      description: t("payByCardDescription"),
-      enabled: false,
-      disabledLabel: t("cardPaymentTemporarilyUnavailable"),
-    });
+    // groups.push({
+    //   id: "online_payment",
+    //   value: "online_payment",
+    //   title: t("payByCard"),
+    //   description: t("payByCardDescription"),
+    //   enabled: false,
+    //   disabledLabel: t("cardPaymentTemporarilyUnavailable"),
+    // });
 
     return groups;
   }, [isCodEligible, hasWallet, isWalletEligible, t]);
@@ -412,14 +412,14 @@ export const CheckoutData = ({
                           <RadioGroup
                             value={selectedGroup}
                             onValueChange={handleGroupChange}
-                            className="flex items-stretch gap-5 w-full md:flex-row rtl:md:flex-row-reverse flex-col"
+                            className="flex flex-col items-stretch gap-3 w-full"
                           >
                             {paymentGroups.map((method) => (
-                              <FieldLabel
-                                key={method.id}
-                                htmlFor={method.id}
-                                className={`
-                              rounded-xl border-2 flex-1 p-4 transition-all duration-200
+                              <div key={method.id} className="space-y-2">
+                                <FieldLabel
+                                  htmlFor={method.id}
+                                  className={`
+                              rounded-xl border-2 w-full p-4 transition-all duration-200
                               ${
                                 method.enabled
                                   ? `cursor-pointer ${
@@ -430,75 +430,73 @@ export const CheckoutData = ({
                                   : "cursor-not-allowed opacity-50 border-gray-200 bg-gray-50"
                               }
                             `}
-                              >
-                                <Field orientation="horizontal">
-                                  <RadioGroupItem
-                                    value={method.value}
-                                    id={method.id}
-                                    disabled={!method.enabled}
-                                  />
-                                  <FieldContent>
-                                    <FieldTitle className="text-xs md:text-sm">
-                                      {method.title}
-                                      {!method.enabled && method.disabledLabel && (
-                                        <span className="ml-2 text-xs text-orange-600 font-normal">
-                                          ({method.disabledLabel})
-                                        </span>
-                                      )}
-                                    </FieldTitle>
-                                    <FieldDescription className="text-xs">
-                                      {method.description}
-                                    </FieldDescription>
-                                  </FieldContent>
-                                </Field>
-                              </FieldLabel>
-                            ))}
-                          </RadioGroup>
-                        </FieldSet>
-                      </FieldGroup>
-
-                      {selectedGroup === "online_manual" && (
-                        <FieldGroup>
-                          <FieldSet>
-                            <RadioGroup
-                              value={field.value}
-                              onValueChange={field.onChange}
-                              className="flex items-stretch gap-3 w-full md:flex-row rtl:md:flex-row-reverse flex-col pl-0 md:pl-4"
-                            >
-                              {MANUAL_PAYMENT_METHODS.map((method) => (
-                                <FieldLabel
-                                  key={method.value}
-                                  htmlFor={`payment-${method.value}`}
-                                  className={`rounded-lg border-2 flex-1 p-3 cursor-pointer transition-all duration-200 ${
-                                    field.value === method.value
-                                      ? "ring-2 ring-primary bg-primary/5 border-primary shadow-sm"
-                                      : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                                  }`}
                                 >
                                   <Field orientation="horizontal">
                                     <RadioGroupItem
                                       value={method.value}
-                                      id={`payment-${method.value}`}
-                                    />
-                                    <Image
-                                      src={method.logo}
-                                      alt={t(method.titleKey as any)}
-                                      width={28}
-                                      height={28}
-                                      className="h-7 w-7 object-contain shrink-0"
+                                      id={method.id}
+                                      disabled={!method.enabled}
                                     />
                                     <FieldContent>
                                       <FieldTitle className="text-xs md:text-sm">
-                                        {t(method.titleKey as any)}
+                                        {method.title}
+                                        {!method.enabled && method.disabledLabel && (
+                                          <span className="ml-2 text-xs text-orange-600 font-normal">
+                                            ({method.disabledLabel})
+                                          </span>
+                                        )}
                                       </FieldTitle>
+                                      <FieldDescription className="text-xs">
+                                        {method.description}
+                                      </FieldDescription>
                                     </FieldContent>
                                   </Field>
                                 </FieldLabel>
-                              ))}
-                            </RadioGroup>
-                          </FieldSet>
-                        </FieldGroup>
-                      )}
+
+                                {method.id === "online_manual" &&
+                                  selectedGroup === "online_manual" && (
+                                    <RadioGroup
+                                      value={field.value}
+                                      onValueChange={field.onChange}
+                                      className="ms-4 flex flex-col gap-2 border-s-2 border-primary/20 ps-3"
+                                    >
+                                      {MANUAL_PAYMENT_METHODS.map((child) => (
+                                        <FieldLabel
+                                          key={child.value}
+                                          htmlFor={`payment-${child.value}`}
+                                          className={`rounded-lg border-2 w-full p-3 cursor-pointer transition-all duration-200 ${
+                                            field.value === child.value
+                                              ? "ring-2 ring-primary bg-primary/5 border-primary shadow-sm"
+                                              : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                                          }`}
+                                        >
+                                          <Field orientation="horizontal">
+                                            <RadioGroupItem
+                                              value={child.value}
+                                              id={`payment-${child.value}`}
+                                            />
+                                            <Image
+                                              src={child.logo}
+                                              alt={t(child.titleKey as any)}
+                                              width={28}
+                                              height={28}
+                                              className="h-7 w-7 object-contain shrink-0"
+                                            />
+                                            <FieldContent>
+                                              <FieldTitle className="text-xs md:text-sm">
+                                                {t(child.titleKey as any)}
+                                              </FieldTitle>
+                                            </FieldContent>
+                                          </Field>
+                                        </FieldLabel>
+                                      ))}
+                                    </RadioGroup>
+                                  )}
+                              </div>
+                            ))}
+                          </RadioGroup>
+                        </FieldSet>
+                      </FieldGroup>
 
                       {form.formState.errors.paymentMethod && (
                         <p className="text-xs md:text-sm text-red-500 mt-2">

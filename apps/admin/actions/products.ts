@@ -17,6 +17,11 @@ import {
   type ProductCacheSnapshot,
 } from "@workspace/cache";
 import { syncProductRating, syncSellerRating } from "@workspace/db/reviews";
+import {
+  syncCategoryProductCountForProductChange,
+  syncCategoryProductCountForProductMutation,
+  syncCategoryProductCountOnDelete,
+} from "@workspace/db/categories";
 
 /** Builds the cache-invalidation snapshot for a product from its current DB state. */
 async function toSnapshot(productId: string): Promise<ProductCacheSnapshot | null> {
@@ -512,6 +517,14 @@ export async function updateProduct(productId: string, data: UpdateProductInput)
     }
 
     const after = await toSnapshot(productId);
+    if (after?.categoryId && before.categoryId) {
+      await syncCategoryProductCountForProductMutation({
+        previousCategoryId: before.categoryId,
+        nextCategoryId: after.categoryId,
+        previousStatus: before.status,
+        nextStatus: after.status,
+      });
+    }
     await applyInvalidation(invalidateProduct(before, after), {
       from: "admin",
       mode: "action",
@@ -556,6 +569,14 @@ export async function updateProductStatus(
       throw new Error("Product not found");
     }
 
+    if (before.categoryId) {
+      await syncCategoryProductCountForProductChange({
+        categoryId: before.categoryId,
+        previousStatus: before.status,
+        nextStatus: status,
+      });
+    }
+
     const after = await toSnapshot(productId);
     await applyInvalidation(invalidateProduct(before, after), {
       from: "admin",
@@ -582,6 +603,20 @@ export async function deleteProducts(productIds: string[]) {
       .delete(products)
       .where(sql`${products.id} = ANY(${productIds})`)
       .returning();
+
+    await Promise.all(
+      beforeSnapshots
+        .filter(
+          (s): s is ProductCacheSnapshot & { categoryId: string } =>
+            s !== null && typeof s.categoryId === "string"
+        )
+        .map((snapshot) =>
+          syncCategoryProductCountOnDelete({
+            categoryId: snapshot.categoryId,
+            status: snapshot.status,
+          })
+        )
+    );
 
     const invalidation = mergeInvalidations(
       ...beforeSnapshots

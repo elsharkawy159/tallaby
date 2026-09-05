@@ -16,13 +16,11 @@ export const CategoryShowcaseData = async ({
     return null;
   }
 
-  // Filter categories with products, valid names/slugs, and limit the results
+  // Query already returns product_count > 0; keep name/slug guards and limit
   const categories: CategoryWithRequiredFields[] = result.data
     .filter(
       (category): category is CategoryWithRequiredFields =>
-        category.productCount > 0 &&
-        category.name !== null &&
-        category.slug !== null
+        category.name !== null && category.slug !== null
     )
     .map((category) => ({
       id: category.id,

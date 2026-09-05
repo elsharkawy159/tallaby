@@ -84,14 +84,14 @@ export const DateInput = React.forwardRef<HTMLDivElement, DateInputProps>(
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-start text-left font-normal flex-1",
+                      "w-full justify-start text-start font-normal flex-1",
                       !field.value && "text-muted-foreground",
                       fieldError && "border-red-500 focus:border-red-500"
                     )}
                     disabled={disabled}
                     type="button"
                   >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    <CalendarIcon className="me-2 h-4 w-4" />
                     {field.value ? (
                       format(field.value, dateFormat)
                     ) : (

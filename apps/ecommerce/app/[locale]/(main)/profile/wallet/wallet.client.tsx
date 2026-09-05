@@ -40,10 +40,8 @@ export function WalletClient({ overview }: { overview: WalletOverview }) {
   }, [overview.transactions]);
 
   /**
-   * Paymob sends the buyer back here after checkout. The redirect proves
-   * nothing about the payment — the wallet is credited by the HMAC-verified
-   * webhook — so this only tells the user we are waiting, and refreshes to pick
-   * the credit up once it lands.
+   * Legacy Paymob redirect lands here with ?topup=. Manual top-ups no longer
+   * use this; kept so a late card-payment return still shows a waiting toast.
    */
   const topUpId = searchParams.get("topup");
   useEffect(() => {

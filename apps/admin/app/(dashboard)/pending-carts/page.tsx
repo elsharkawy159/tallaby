@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import { PendingCartsClientWrapper } from "./pending-carts.client";
 import { PendingCartsDataWrapper } from "./pending-carts.data";
 import { PendingCartsSkeleton } from "./pending-carts.skeleton";
 
@@ -11,8 +10,6 @@ export default function PendingCartsPage() {
       <Suspense fallback={<PendingCartsSkeleton />}>
         <PendingCartsDataWrapper />
       </Suspense>
-
-      <PendingCartsClientWrapper />
     </div>
   );
 }

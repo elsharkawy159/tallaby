@@ -53,26 +53,70 @@ describe("canRequestPayout", () => {
 });
 
 describe("top-up amount validation", () => {
+  const valid = { amount: 100, paymentMethod: "instapay" as const };
+
   it("accepts an amount inside the configured bounds", () => {
-    expect(topUpFormSchema.safeParse({ amount: 100 }).success).toBe(true);
-    expect(topUpFormSchema.safeParse({ amount: WALLET_TOP_UP_MIN }).success).toBe(
-      true
-    );
-    expect(topUpFormSchema.safeParse({ amount: WALLET_TOP_UP_MAX }).success).toBe(
-      true
-    );
+    expect(topUpFormSchema.safeParse(valid).success).toBe(true);
+    expect(
+      topUpFormSchema.safeParse({
+        ...valid,
+        amount: WALLET_TOP_UP_MIN,
+      }).success
+    ).toBe(true);
+    expect(
+      topUpFormSchema.safeParse({
+        ...valid,
+        amount: WALLET_TOP_UP_MAX,
+      }).success
+    ).toBe(true);
   });
 
   it("rejects amounts outside the bounds and sub-cent precision", () => {
     expect(
-      topUpFormSchema.safeParse({ amount: WALLET_TOP_UP_MIN - 1 }).success
+      topUpFormSchema.safeParse({
+        ...valid,
+        amount: WALLET_TOP_UP_MIN - 1,
+      }).success
     ).toBe(false);
     expect(
-      topUpFormSchema.safeParse({ amount: WALLET_TOP_UP_MAX + 1 }).success
+      topUpFormSchema.safeParse({
+        ...valid,
+        amount: WALLET_TOP_UP_MAX + 1,
+      }).success
     ).toBe(false);
-    expect(topUpFormSchema.safeParse({ amount: 10.005 }).success).toBe(false);
-    expect(topUpFormSchema.safeParse({ amount: -50 }).success).toBe(false);
-    expect(topUpFormSchema.safeParse({ amount: Number.NaN }).success).toBe(false);
+    expect(
+      topUpFormSchema.safeParse({ ...valid, amount: 10.005 }).success
+    ).toBe(false);
+    expect(topUpFormSchema.safeParse({ ...valid, amount: -50 }).success).toBe(
+      false
+    );
+    expect(
+      topUpFormSchema.safeParse({ ...valid, amount: Number.NaN }).success
+    ).toBe(false);
+  });
+
+  it("requires a supported manual payment method", () => {
+    expect(
+      topUpFormSchema.safeParse({ amount: 100, paymentMethod: "instapay" })
+        .success
+    ).toBe(true);
+    expect(
+      topUpFormSchema.safeParse({
+        amount: 100,
+        paymentMethod: "vodafone_cash",
+      }).success
+    ).toBe(true);
+    expect(
+      topUpFormSchema.safeParse({ amount: 100, paymentMethod: "e_cash" })
+        .success
+    ).toBe(true);
+    expect(
+      topUpFormSchema.safeParse({
+        amount: 100,
+        paymentMethod: "online_payment",
+      }).success
+    ).toBe(false);
+    expect(topUpFormSchema.safeParse({ amount: 100 }).success).toBe(false);
   });
 });
 

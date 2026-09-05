@@ -1,9 +1,12 @@
 import { z } from "zod";
 
+import { DEFAULT_MANUAL_PAYMENT_METHOD } from "@/lib/manual-payment-methods";
+
 import {
   WALLET_PAYOUT_METHODS,
   WALLET_PAYOUT_MIN,
   WALLET_TOP_UP_MAX,
+  WALLET_TOP_UP_METHODS,
   WALLET_TOP_UP_MIN,
 } from "./wallet.lib";
 
@@ -23,6 +26,7 @@ export const topUpFormSchema = z.object({
   amount: amountField
     .min(WALLET_TOP_UP_MIN, `Minimum top up is ${WALLET_TOP_UP_MIN} EGP`)
     .max(WALLET_TOP_UP_MAX, `Maximum top up is ${WALLET_TOP_UP_MAX} EGP`),
+  paymentMethod: z.enum(WALLET_TOP_UP_METHODS),
 });
 
 export const payoutFormSchema = z.object({
@@ -51,7 +55,12 @@ export type PayoutFormData = z.infer<typeof payoutFormSchema>;
 
 export const topUpFormDefaults: TopUpFormData = {
   amount: WALLET_TOP_UP_MIN,
+  paymentMethod: DEFAULT_MANUAL_PAYMENT_METHOD,
 };
+
+export const reportManualTopUpSchema = z.object({
+  topUpId: z.string().uuid(),
+});
 
 export const payoutFormDefaults: PayoutFormData = {
   amount: WALLET_PAYOUT_MIN,

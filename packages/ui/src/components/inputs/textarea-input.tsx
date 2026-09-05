@@ -121,7 +121,7 @@ export function TextareaInput<TFieldValues extends FieldValues>({
                   }
                 />
                 {showCharacterCount && validation?.maxLength && (
-                  <div className="absolute bottom-2 right-2 text-xs text-gray-400 bg-white px-1">
+                  <div className="absolute bottom-2 end-2 text-xs text-gray-400 bg-white px-1">
                     {characterCount}/{validation.maxLength}
                   </div>
                 )}

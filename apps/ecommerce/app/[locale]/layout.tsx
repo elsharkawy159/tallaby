@@ -8,6 +8,7 @@ import NextTopLoader from "nextjs-toploader";
 import { Scripts } from "@/components/layout/structured-data";
 import { getMessages, getTranslations } from "next-intl/server";
 import { Toaster } from "@workspace/ui/components/sonner";
+import { DirectionProvider } from "@workspace/ui/components/direction";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { BASE_URL } from "@/lib/constants";
@@ -114,9 +115,10 @@ export default async function RootLayout({
   }
 
   const messages = await getMessages();
+  const direction = locale === "ar" ? "rtl" : "ltr";
 
   return (
-    <html lang={locale} dir={locale === "ar" ? "rtl" : "ltr"}>
+    <html lang={locale} dir={direction}>
       <head>
         <Scripts />
       </head>
@@ -134,8 +136,10 @@ export default async function RootLayout({
           speed={200}
         />
         <NextIntlClientProvider messages={messages}>
-          <Providers>{children}</Providers>
-          <Toaster />
+          <DirectionProvider direction={direction}>
+            <Providers>{children}</Providers>
+            <Toaster />
+          </DirectionProvider>
         </NextIntlClientProvider>
       </body>
     </html>

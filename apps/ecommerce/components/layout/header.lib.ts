@@ -1,4 +1,4 @@
-import { Home, Compass, ShoppingCart, Store } from "lucide-react";
+import { Home, ShoppingCart, Store } from "lucide-react";
 import type { NavigationItem } from "./header.types";
 import { getTranslations } from "next-intl/server";
 

@@ -115,7 +115,7 @@ export const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
                         <Badge
                           key={value}
                           variant={badgeVariant}
-                          className="gap-1 pr-1"
+                          className="gap-1 pe-1"
                         >
                           <span>{option?.label || value}</span>
                           <Button
@@ -137,12 +137,12 @@ export const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
                 {/* Search Input (if searchable) */}
                 {searchable && (
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Search className="absolute start-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       placeholder={searchPlaceholder}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-9"
+                      className="ps-9"
                       disabled={disabled}
                     />
                   </div>
@@ -202,7 +202,7 @@ export const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
 
                 {/* Items Count */}
                 {maxItems && (
-                  <div className="text-xs text-muted-foreground text-right">
+                  <div className="text-xs text-muted-foreground text-end">
                     {selectedValues.length}/{maxItems} items selected
                   </div>
                 )}

@@ -62,7 +62,7 @@ export default async function CheckoutPaymentPage({
     return (
       <div className="min-h-screen flex flex-col bg-linear-to-b from-gray-50 to-white">
         <DynamicBreadcrumb />
-        <main className="container flex-1 py-4 md:py-6 pb-12 md:pb-16">
+        <main className="flex-1 py-4 md:py-6 pb-12 md:pb-16 max-w-4xl px-4 mx-auto">
           <div className="mb-4 md:mb-6">
             <h1 className="text-lg md:text-2xl font-bold tracking-tight">
               {t("paymentInstructions")}

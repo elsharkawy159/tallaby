@@ -2,7 +2,7 @@
 
 import { db } from "@workspace/db";
 import { carts, cartItems } from "@workspace/db";
-import { eq, and, desc, sql } from "drizzle-orm";
+import { eq, and, desc, inArray, sql } from "drizzle-orm";
 import { getAdminUser } from "./auth";
 
 const ABANDONED_DAYS = 7;
@@ -36,26 +36,31 @@ function getProductImage(images: unknown): string | null {
   return null;
 }
 
-function mapCartRow(cart: {
+function mapUser(user: {
   id: string;
-  userId: string;
-  sessionId: string | null;
-  status: string | null;
-  currency: string | null;
-  createdAt: string | null;
-  updatedAt: string | null;
-  lastActivity: string | null;
-  user: {
-    id: string;
-    fullName: string | null;
-    email: string | null;
-    phone: string | null;
-    avatarUrl: string | null;
-    isGuest: boolean;
-    receiveMarketingEmails: boolean | null;
-    preferredLanguage: string | null;
-  } | null;
-  cartItems: Array<{
+  fullName: string | null;
+  email: string | null;
+  phone: string | null;
+  avatarUrl: string | null;
+  isGuest: boolean;
+  receiveMarketingEmails: boolean | null;
+  preferredLanguage: string | null;
+} | null) {
+  if (!user) return null;
+  return {
+    id: user.id,
+    fullName: user.fullName,
+    email: user.email,
+    phone: user.phone,
+    avatarUrl: user.avatarUrl,
+    isGuest: user.isGuest,
+    receiveMarketingEmails: user.receiveMarketingEmails ?? true,
+    preferredLanguage: user.preferredLanguage,
+  };
+}
+
+function mapCartItems(
+  cartItemsRows: Array<{
     id: string;
     productId: string;
     sellerId: string;
@@ -69,16 +74,20 @@ function mapCartRow(cart: {
       id: string;
       sku: string | null;
       images: unknown;
-      productTranslations?: Array<{ locale: string; title: string; slug: string | null }>;
+      productTranslations?: Array<{
+        locale: string;
+        title: string;
+        slug: string | null;
+      }>;
     } | null;
     seller: {
       id: string;
       displayName: string;
       businessName?: string | null;
     } | null;
-  }>;
-}) {
-  const items = (cart.cartItems ?? []).map((item) => {
+  }>
+) {
+  return cartItemsRows.map((item) => {
     const price = Number(item.price) || 0;
     const quantity = item.quantity || 0;
     return {
@@ -106,44 +115,21 @@ function mapCartRow(cart: {
         "Unknown seller",
     };
   });
-
-  const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
-  const totalValue = items.reduce((sum, item) => sum + item.lineTotal, 0);
-  const lastActivity = cart.lastActivity ?? cart.updatedAt ?? cart.createdAt;
-  const isAbandoned =
-    itemCount > 0 &&
-    !!lastActivity &&
-    new Date(lastActivity).getTime() < Date.now() - ABANDONED_DAYS * 24 * 60 * 60 * 1000;
-
-  return {
-    id: cart.id,
-    userId: cart.userId,
-    sessionId: cart.sessionId,
-    status: cart.status ?? "active",
-    currency: cart.currency ?? "EGP",
-    createdAt: cart.createdAt,
-    updatedAt: cart.updatedAt,
-    lastActivity,
-    itemCount,
-    totalValue,
-    isAbandoned,
-    user: cart.user
-      ? {
-          id: cart.user.id,
-          fullName: cart.user.fullName,
-          email: cart.user.email,
-          phone: cart.user.phone,
-          avatarUrl: cart.user.avatarUrl,
-          isGuest: cart.user.isGuest,
-          receiveMarketingEmails: cart.user.receiveMarketingEmails ?? true,
-          preferredLanguage: cart.user.preferredLanguage,
-        }
-      : null,
-    items,
-  };
 }
 
-const cartWithRelations = {
+function isAbandonedCart(
+  itemCount: number,
+  lastActivity: string | null
+): boolean {
+  return (
+    itemCount > 0 &&
+    !!lastActivity &&
+    new Date(lastActivity).getTime() <
+      Date.now() - ABANDONED_DAYS * 24 * 60 * 60 * 1000
+  );
+}
+
+const cartListRelations = {
   user: {
     columns: {
       id: true,
@@ -156,6 +142,10 @@ const cartWithRelations = {
       preferredLanguage: true,
     },
   },
+} as const;
+
+const cartDetailRelations = {
+  ...cartListRelations,
   cartItems: {
     with: {
       product: {
@@ -185,6 +175,7 @@ const cartWithRelations = {
   },
 } as const;
 
+/** Lightweight list: cart + user + item aggregates (no nested products). */
 export async function getPendingCarts(params?: {
   limit?: number;
   offset?: number;
@@ -192,23 +183,75 @@ export async function getPendingCarts(params?: {
   try {
     await getAdminUser();
 
+    const limit = params?.limit || 200;
+    const offset = params?.offset || 0;
+
     const cartsList = await db.query.carts.findMany({
       where: eq(carts.status, "active"),
-      with: cartWithRelations,
+      with: cartListRelations,
       orderBy: [desc(carts.lastActivity)],
-      limit: params?.limit || 200,
-      offset: params?.offset || 0,
+      limit,
+      offset,
     });
 
-    const totalCount = await db
+    const cartIds = cartsList.map((cart) => cart.id);
+    const aggregates =
+      cartIds.length === 0
+        ? []
+        : await db
+            .select({
+              cartId: cartItems.cartId,
+              itemCount: sql<number>`coalesce(sum(${cartItems.quantity}), 0)::int`,
+              totalValue: sql<number>`coalesce(sum(${cartItems.quantity} * ${cartItems.price}::numeric), 0)::float`,
+            })
+            .from(cartItems)
+            .where(inArray(cartItems.cartId, cartIds))
+            .groupBy(cartItems.cartId);
+
+    const aggregatesByCartId = new Map(
+      aggregates.map((row) => [
+        row.cartId,
+        {
+          itemCount: Number(row.itemCount ?? 0),
+          totalValue: Number(row.totalValue ?? 0),
+        },
+      ])
+    );
+
+    const [totalCountRow] = await db
       .select({ count: sql<number>`count(*)` })
       .from(carts)
       .where(eq(carts.status, "active"));
 
+    const data = cartsList.map((cart) => {
+      const lastActivity =
+        cart.lastActivity ?? cart.updatedAt ?? cart.createdAt;
+      const { itemCount, totalValue } = aggregatesByCartId.get(cart.id) ?? {
+        itemCount: 0,
+        totalValue: 0,
+      };
+
+      return {
+        id: cart.id,
+        userId: cart.userId,
+        sessionId: cart.sessionId,
+        status: cart.status ?? "active",
+        currency: cart.currency ?? "EGP",
+        createdAt: cart.createdAt,
+        updatedAt: cart.updatedAt,
+        lastActivity,
+        itemCount,
+        totalValue,
+        isAbandoned: isAbandonedCart(itemCount, lastActivity),
+        user: mapUser(cart.user),
+        items: [] as ReturnType<typeof mapCartItems>,
+      };
+    });
+
     return {
       success: true,
-      data: cartsList.map(mapCartRow),
-      totalCount: Number(totalCount[0]?.count ?? 0),
+      data,
+      totalCount: Number(totalCountRow?.count ?? 0),
     };
   } catch (error) {
     console.error("Error fetching pending carts:", error);
@@ -219,22 +262,43 @@ export async function getPendingCarts(params?: {
   }
 }
 
+/** Full cart detail for quick-view (includes nested product/seller). */
 export async function getPendingCartById(cartId: string) {
   try {
     await getAdminUser();
 
     const cart = await db.query.carts.findFirst({
       where: and(eq(carts.id, cartId), eq(carts.status, "active")),
-      with: cartWithRelations,
+      with: cartDetailRelations,
     });
 
     if (!cart) {
       return { success: false, error: "Cart not found" };
     }
 
+    const items = mapCartItems(cart.cartItems ?? []);
+    const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+    const totalValue = items.reduce((sum, item) => sum + item.lineTotal, 0);
+    const lastActivity =
+      cart.lastActivity ?? cart.updatedAt ?? cart.createdAt;
+
     return {
       success: true,
-      data: mapCartRow(cart),
+      data: {
+        id: cart.id,
+        userId: cart.userId,
+        sessionId: cart.sessionId,
+        status: cart.status ?? "active",
+        currency: cart.currency ?? "EGP",
+        createdAt: cart.createdAt,
+        updatedAt: cart.updatedAt,
+        lastActivity,
+        itemCount,
+        totalValue,
+        isAbandoned: isAbandonedCart(itemCount, lastActivity),
+        user: mapUser(cart.user),
+        items,
+      },
     };
   } catch (error) {
     console.error("Error fetching pending cart:", error);

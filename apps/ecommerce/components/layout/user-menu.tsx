@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Link } from "@/i18n/navigation";
 import {
   Heart,
@@ -8,9 +9,13 @@ import {
   UserCircle,
   Package,
   MapPin,
+  Wallet,
 } from "lucide-react";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
+import { useLocale, useTranslations } from "next-intl";
+import posthog from "posthog-js";
 
+import { formatPricePlain } from "@workspace/lib";
 import {
   Popover,
   PopoverContent,
@@ -19,14 +24,13 @@ import {
 import { Button } from "@workspace/ui/components/button";
 import { Separator } from "@workspace/ui/components/separator";
 
-import { cn } from "@/lib/utils";
+import { getWalletSummaryCardData } from "@/app/[locale]/(main)/profile/wallet/_components/wallet.server";
 import { AddressManagerDialog } from "@/components/shared/address-dialog";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import type { AddressData } from "@/components/address/address.schema";
 import type { AuthenticatedUserDisplay } from "@/lib/auth/auth-user.types";
 import { useAuthUser } from "@/lib/auth/use-auth-user";
-import posthog from "posthog-js";
-import { useTranslations } from "next-intl";
+import { cn } from "@/lib/utils";
 
 interface UserMenuProps {
   variant?: "desktop" | "mobile";
@@ -46,10 +50,38 @@ export function UserMenu({
   // Hooks run before any early return — `t` used to be read after
   // `if (!user) return null`, which is a conditional hook call.
   const t = useTranslations("profile");
+  const tWallet = useTranslations("wallet");
+  const locale = useLocale();
   const { applyUser } = useAuthUser();
+  const [walletBalance, setWalletBalance] = useState<string | null>(null);
 
   const userName = user?.name || user?.email || "";
   const isSeller = user?.isSeller ?? false;
+
+  useEffect(() => {
+    if (!user?.id) {
+      setWalletBalance(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    getWalletSummaryCardData()
+      .then((summary) => {
+        if (cancelled) return;
+        const available = Number(summary?.availableBalance ?? 0);
+        setWalletBalance(
+          summary && available > 0 ? summary.availableBalance : null
+        );
+      })
+      .catch(() => {
+        if (!cancelled) setWalletBalance(null);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
 
   const handleLogout = async () => {
     // #region agent log
@@ -107,7 +139,7 @@ export function UserMenu({
             user={user}
             size="sm"
             className={cn(
-              "size-4.5 md:size-6 border-2",
+              "size-6 border-2",
               variant === "desktop" ? "border-white" : "border-gray-300"
             )}
             fallbackClassName="text-[10px] md:text-xs"
@@ -147,6 +179,21 @@ export function UserMenu({
               <UserCircle className="size-5 text-gray-500" />
               {t("myProfile")}
             </Link>
+
+            {walletBalance != null && (
+              <Link
+                href="/profile/wallet"
+                className="w-full h-9 px-3 gap-2.5 font-medium flex items-center justify-between hover:bg-gray-100 rounded-md"
+              >
+                <span className="flex items-center gap-2.5 min-w-0">
+                  <Wallet className="size-4.5 shrink-0 text-gray-500" />
+                  <span className="truncate">{tWallet("myWallet")}</span>
+                </span>
+                <span className="shrink-0 text-xs font-semibold text-primary tabular-nums">
+                  {formatPricePlain(Number(walletBalance), locale)}
+                </span>
+              </Link>
+            )}
 
             <Link
               href="/profile/orders"

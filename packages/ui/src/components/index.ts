@@ -1,5 +1,6 @@
 export * from "./badge";
 export * from "./button";
+export * from "./direction";
 export * from "./dropdown-menu";
 export * from "./field";
 export * from "./sonner";

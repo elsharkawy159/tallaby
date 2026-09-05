@@ -60,6 +60,40 @@ export const getStatusLabel = (status: string): string => {
   return status.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
 };
 
+/** Manual transfer / card methods admins can mark as paid after collecting funds. */
+export const ADMIN_EDITABLE_PAYMENT_METHODS = [
+  "instapay",
+  "vodafone_cash",
+  "e_cash",
+  "online_payment",
+  "online", // legacy
+] as const;
+
+export type AdminEditablePaymentMethod =
+  (typeof ADMIN_EDITABLE_PAYMENT_METHODS)[number];
+
+export const isAdminEditablePaymentMethod = (method: string): boolean => {
+  return (ADMIN_EDITABLE_PAYMENT_METHODS as readonly string[]).includes(method);
+};
+
+const PAYMENT_METHOD_LABELS: Record<string, string> = {
+  instapay: "InstaPay",
+  vodafone_cash: "Vodafone Cash",
+  e_cash: "E& Cash",
+  online_payment: "Online Payment",
+  online: "Online Payment",
+  cash_on_delivery: "Cash on Delivery",
+  wallet: "Wallet",
+  cash: "Cash",
+};
+
+export const formatPaymentMethodLabel = (method: string): string => {
+  if (PAYMENT_METHOD_LABELS[method]) {
+    return PAYMENT_METHOD_LABELS[method];
+  }
+  return method.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+};
+
 export const getCustomerName = (order: Order): string => {
   if (!order.user) return "Unknown Customer";
   return order.user.fullName || "Unknown Customer";

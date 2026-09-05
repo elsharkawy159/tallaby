@@ -55,7 +55,9 @@ function stockStatus (quantity: number) {
 }
 
 export function AnalyticsDashboard ({ data }: { data: AdminAnalyticsPayload }) {
-  const { commerce, posthog } = data
+  const { commerce } = data
+  // PostHog UI temporarily disabled — see analytics.server.ts
+  // const { posthog } = data
 
   return (
     <>
@@ -106,6 +108,7 @@ export function AnalyticsDashboard ({ data }: { data: AdminAnalyticsPayload }) {
         </Card>
       </div>
 
+      {/* Temporarily disabled — PostHog storefront traffic card
       <Card className="mb-6">
         <CardHeader>
           <CardTitle>Storefront traffic (PostHog)</CardTitle>
@@ -146,6 +149,7 @@ export function AnalyticsDashboard ({ data }: { data: AdminAnalyticsPayload }) {
           </div>
         </CardContent>
       </Card>
+      */}
 
       <Tabs defaultValue="sales">
         <TabsList>
