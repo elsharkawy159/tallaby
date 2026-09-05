@@ -144,14 +144,12 @@ interface OrderSummaryCostRowsProps {
   summary: OrderSummaryTotals
   showShipping?: boolean
   isRecalculatingShipping?: boolean
-  showProductFreeDeliveryMessage?: boolean
 }
 
 export function OrderSummaryCostRows ({
   summary,
   showShipping = false,
   isRecalculatingShipping = false,
-  showProductFreeDeliveryMessage = false,
 }: OrderSummaryCostRowsProps) {
   const locale = useLocale()
   const t = useTranslations('checkout')
@@ -189,20 +187,6 @@ export function OrderSummaryCostRows ({
             )}
           </div>
         )}
-
-      {showShipping && showProductFreeDeliveryMessage && (
-        <div className='flex items-center justify-between text-xs md:text-sm'>
-          <span className='text-green-600'>
-            {t('freeDeliveryAllItemsQualify')}
-          </span>
-          <span
-            className='font-medium text-green-600'
-            dangerouslySetInnerHTML={{
-              __html: formatPrice(0, locale),
-            }}
-          />
-        </div>
-      )}
 
       {tax > 0 && (
         <div className='flex items-center justify-between text-xs md:text-sm'>

@@ -3,6 +3,8 @@
  * Handles discount computation for various coupon types
  */
 
+import { getThresholdShippingDiscount } from '@workspace/lib/shipping'
+
 export interface CouponData {
   id: string
   sellerId: string | null
@@ -286,7 +288,9 @@ export function calculateCouponDiscount(
 }
 
 /**
- * Build updated checkout summary with coupon applied
+ * Build updated checkout summary with coupon applied.
+ * Cart threshold free shipping (>= FREE_DELIVERY_MIN_SUBTOTAL) is always
+ * merged in, same as a free_shipping promocode.
  */
 export function buildSummaryWithCoupon(
   baseSummary: {
@@ -299,17 +303,31 @@ export function buildSummaryWithCoupon(
   coupon: CouponData | null,
   calculationResult: CouponCalculationResult | null
 ): CheckoutSummary {
+  const shippingCost = baseSummary.shippingCost ?? 0
+  const thresholdShippingDiscount = getThresholdShippingDiscount(
+    baseSummary.subtotal,
+    baseSummary.shippingCost
+  )
+
   if (!coupon || !calculationResult) {
+    const totalAfterDiscount = Math.max(
+      0,
+      baseSummary.total - thresholdShippingDiscount
+    )
+
     return {
       ...baseSummary,
       discountAmount: 0,
-      shippingDiscount: 0,
-      totalAfterDiscount: baseSummary.total,
+      shippingDiscount: thresholdShippingDiscount,
+      totalAfterDiscount,
       appliedCoupon: null
     }
   }
 
-  const shippingCost = baseSummary.shippingCost ?? 0
+  const shippingDiscount = Math.max(
+    thresholdShippingDiscount,
+    calculationResult.shippingDiscount
+  )
 
   const totalAfterDiscount = Math.max(
     0,
@@ -317,13 +335,13 @@ export function buildSummaryWithCoupon(
       baseSummary.tax +
       shippingCost -
       calculationResult.discountAmount -
-      calculationResult.shippingDiscount
+      shippingDiscount
   )
 
   return {
     ...baseSummary,
     discountAmount: calculationResult.discountAmount,
-    shippingDiscount: calculationResult.shippingDiscount,
+    shippingDiscount,
     totalAfterDiscount,
     appliedCoupon: {
       code: coupon.code,

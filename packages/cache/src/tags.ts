@@ -38,6 +38,8 @@ export const categoryTags = {
   detail: (id: string) => `category:id:${id}`,
   slug: (slug: string) => `category:slug:${slug}`,
   tree: () => "category:tree",
+  /** Homepage / showcase ranking by active product count (ecommerce getTopCategories). */
+  top: () => "category:top",
 } as const;
 
 export const brandTags = {

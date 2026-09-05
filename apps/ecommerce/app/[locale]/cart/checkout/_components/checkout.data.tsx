@@ -1,5 +1,6 @@
 "use client";
 import { useTransition, useEffect, useState, useMemo, useCallback } from "react";
+import Image from "next/image";
 import { Link, useRouter } from "@/i18n/navigation";
 import {
   Card,
@@ -34,12 +35,11 @@ import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import type { AddressData } from "@/components/address/address.schema";
 import { ShippingInformation } from "./shipping-information";
-import { CreditCard, ArrowLeft } from "lucide-react";
+import { CreditCard, ArrowLeft, Info } from "lucide-react";
 import { OrderSummary } from "@/components/order-summary";
 import { Button } from "@workspace/ui/components/button";
 import { Label } from "@workspace/ui/components/label";
 import { Textarea } from "@workspace/ui/components/textarea";
-import { Info } from "lucide-react";
 import type { CheckoutSummary } from "@/lib/coupon-utils";
 import { useCart } from "@/providers/cart-provider";
 import {
@@ -70,10 +70,15 @@ export const CheckoutData = ({
   const [selectedAddress, setSelectedAddress] = useState<any>(null);
   const [summary, setSummary] = useState<CheckoutSummary>({
     ...initialSummary,
-    discountAmount: 0,
-    shippingDiscount: 0,
-    totalAfterDiscount: initialSummary.total,
-    appliedCoupon: null,
+    discountAmount: initialSummary.discountAmount ?? 0,
+    shippingDiscount: initialSummary.shippingDiscount ?? 0,
+    totalAfterDiscount:
+      initialSummary.totalAfterDiscount ??
+      Math.max(
+        0,
+        (initialSummary.total ?? 0) - (initialSummary.shippingDiscount ?? 0),
+      ),
+    appliedCoupon: initialSummary.appliedCoupon ?? null,
   });
   const [appliedCoupon, setAppliedCoupon] = useState<{
     code: string;
@@ -138,12 +143,13 @@ export const CheckoutData = ({
         const total = prev.subtotal + prev.tax + billedShipping;
         const totalAfterDiscount = Math.max(
           0,
-          total - (prev.discountAmount ?? 0) - (prev.shippingDiscount ?? 0),
+          total - (prev.discountAmount ?? 0),
         );
 
         return {
           ...prev,
           shippingCost: null,
+          shippingDiscount: 0,
           total,
           totalAfterDiscount,
         };
@@ -188,7 +194,13 @@ export const CheckoutData = ({
     };
   }, [shippingAddressId, activeAddress?.id, appliedCoupon?.code, form]);
 
-  const isCodEligible = isCodEligibleForShipping(summary.shippingCost);
+  const billedShipping = Math.max(
+    0,
+    (summary.shippingCost ?? 0) - (summary.shippingDiscount ?? 0),
+  );
+  const isCodEligible = isCodEligibleForShipping(
+    summary.shippingCost == null ? null : billedShipping,
+  );
 
   const walletAvailableBalance =
     checkoutData.walletAvailableBalance != null
@@ -217,6 +229,15 @@ export const CheckoutData = ({
       });
     }
   }, [isWalletEligible, form]);
+
+  useEffect(() => {
+    if (form.getValues("paymentMethod") === "online_payment") {
+      form.setValue("paymentMethod", DEFAULT_MANUAL_PAYMENT_METHOD, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+    }
+  }, [form]);
 
   const paymentGroups = useMemo(() => {
     const groups = [
@@ -253,7 +274,8 @@ export const CheckoutData = ({
       value: "online_payment",
       title: t("payByCard"),
       description: t("payByCardDescription"),
-      enabled: true,
+      enabled: false,
+      disabledLabel: t("cardPaymentTemporarilyUnavailable"),
     });
 
     return groups;
@@ -443,33 +465,36 @@ export const CheckoutData = ({
                               onValueChange={field.onChange}
                               className="flex items-stretch gap-3 w-full md:flex-row rtl:md:flex-row-reverse flex-col pl-0 md:pl-4"
                             >
-                              {MANUAL_PAYMENT_METHODS.map((method) => {
-                                const Icon = method.icon;
-                                return (
-                                  <FieldLabel
-                                    key={method.value}
-                                    htmlFor={`payment-${method.value}`}
-                                    className={`rounded-lg border-2 flex-1 p-3 cursor-pointer transition-all duration-200 ${
-                                      field.value === method.value
-                                        ? "ring-2 ring-primary bg-primary/5 border-primary shadow-sm"
-                                        : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                                    }`}
-                                  >
-                                    <Field orientation="horizontal">
-                                      <RadioGroupItem
-                                        value={method.value}
-                                        id={`payment-${method.value}`}
-                                      />
-                                      <Icon className="h-4 w-4 text-gray-500 shrink-0" />
-                                      <FieldContent>
-                                        <FieldTitle className="text-xs md:text-sm">
-                                          {t(method.titleKey as any)}
-                                        </FieldTitle>
-                                      </FieldContent>
-                                    </Field>
-                                  </FieldLabel>
-                                );
-                              })}
+                              {MANUAL_PAYMENT_METHODS.map((method) => (
+                                <FieldLabel
+                                  key={method.value}
+                                  htmlFor={`payment-${method.value}`}
+                                  className={`rounded-lg border-2 flex-1 p-3 cursor-pointer transition-all duration-200 ${
+                                    field.value === method.value
+                                      ? "ring-2 ring-primary bg-primary/5 border-primary shadow-sm"
+                                      : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                                  }`}
+                                >
+                                  <Field orientation="horizontal">
+                                    <RadioGroupItem
+                                      value={method.value}
+                                      id={`payment-${method.value}`}
+                                    />
+                                    <Image
+                                      src={method.logo}
+                                      alt={t(method.titleKey as any)}
+                                      width={28}
+                                      height={28}
+                                      className="h-7 w-7 object-contain shrink-0"
+                                    />
+                                    <FieldContent>
+                                      <FieldTitle className="text-xs md:text-sm">
+                                        {t(method.titleKey as any)}
+                                      </FieldTitle>
+                                    </FieldContent>
+                                  </Field>
+                                </FieldLabel>
+                              ))}
                             </RadioGroup>
                           </FieldSet>
                         </FieldGroup>

@@ -36,7 +36,7 @@ function assertNoForbiddenTags(tags: string[]) {
 }
 
 describe("invalidateProduct", () => {
-  it("create: tags detail, slug, seller, listing, filterOptions, all, newArrivals", () => {
+  it("create: tags detail, slug, seller, listing, filterOptions, all, newArrivals + category taxonomy", () => {
     const after = snapshot();
     const { tags } = invalidateProduct(null, after);
     expect(tags).toEqual(
@@ -50,12 +50,15 @@ describe("invalidateProduct", () => {
         productTags.filterOptions(),
         productTags.all(),
         productTags.newArrivals(),
+        categoryTags.all(),
+        categoryTags.tree(),
+        categoryTags.top(),
       ])
     );
     assertNoForbiddenTags(tags);
   });
 
-  it("delete: tags detail, slug, seller, listing, filterOptions, all from the captured before-snapshot", () => {
+  it("delete: tags detail, slug, seller, listing, filterOptions, all + category taxonomy from the captured before-snapshot", () => {
     const before = snapshot();
     const { tags } = invalidateProduct(before, null);
     expect(tags).toEqual(
@@ -65,32 +68,60 @@ describe("invalidateProduct", () => {
         productTags.listing(),
         productTags.filterOptions(),
         productTags.all(),
+        categoryTags.all(),
+        categoryTags.tree(),
+        categoryTags.top(),
       ])
     );
   });
 
-  it("deactivate (active -> draft): bumps listing/filterOptions/all", () => {
+  it("deactivate (active -> draft): bumps listing/filterOptions/all + category taxonomy", () => {
     const before = snapshot({ status: "active" });
     const after = snapshot({ status: "draft" });
     const { tags } = invalidateProduct(before, after);
-    expect(tags).toEqual(expect.arrayContaining([productTags.listing(), productTags.filterOptions(), productTags.all()]));
+    expect(tags).toEqual(
+      expect.arrayContaining([
+        productTags.listing(),
+        productTags.filterOptions(),
+        productTags.all(),
+        categoryTags.all(),
+        categoryTags.tree(),
+        categoryTags.top(),
+      ])
+    );
   });
 
-  it("verify/unverify via status pending<->active: bumps listing/filterOptions/all", () => {
+  it("verify/unverify via status pending<->active: bumps listing/filterOptions/all + category:top", () => {
     const before = snapshot({ status: "pending" });
     const after = snapshot({ status: "active" });
     const { tags } = invalidateProduct(before, after);
-    expect(tags).toEqual(expect.arrayContaining([productTags.listing(), productTags.filterOptions(), productTags.all()]));
+    expect(tags).toEqual(
+      expect.arrayContaining([
+        productTags.listing(),
+        productTags.filterOptions(),
+        productTags.all(),
+        categoryTags.all(),
+        categoryTags.tree(),
+        categoryTags.top(),
+      ])
+    );
   });
 
-  it("publish/unpublish (rejected -> active): bumps listing/filterOptions/all", () => {
+  it("publish/unpublish (rejected -> active): bumps listing + category taxonomy including top", () => {
     const before = snapshot({ status: "rejected" });
     const after = snapshot({ status: "active" });
     const { tags } = invalidateProduct(before, after);
-    expect(tags).toEqual(expect.arrayContaining([productTags.listing()]));
+    expect(tags).toEqual(
+      expect.arrayContaining([
+        productTags.listing(),
+        categoryTags.all(),
+        categoryTags.tree(),
+        categoryTags.top(),
+      ])
+    );
   });
 
-  it("price change: bumps listing + both category and brand, not filterOptions/all", () => {
+  it("price change: bumps listing + both category and brand, not filterOptions/all or category:top", () => {
     const before = snapshot({ priceKey: '{"final":10}' });
     const after = snapshot({ priceKey: '{"final":20}' });
     const { tags } = invalidateProduct(before, after);
@@ -99,16 +130,28 @@ describe("invalidateProduct", () => {
     );
     expect(tags).not.toContain(productTags.filterOptions());
     expect(tags).not.toContain(productTags.all());
+    expect(tags).not.toContain(categoryTags.top());
   });
 
-  it("category A -> B: invalidates BOTH categories", () => {
+  it("category A -> B for an active product: invalidates BOTH product categories + category:top", () => {
     const before = snapshot({ categoryId: "cat-A" });
     const after = snapshot({ categoryId: "cat-B" });
     const { tags } = invalidateProduct(before, after);
     expect(tags).toContain(productTags.category("cat-A"));
     expect(tags).toContain(productTags.category("cat-B"));
+    expect(tags).toContain(categoryTags.top());
+    expect(tags).toContain(categoryTags.all());
+    expect(tags).toContain(categoryTags.tree());
   });
 
+  it("category A -> B for a draft product: does not bump category:top", () => {
+    const before = snapshot({ categoryId: "cat-A", status: "draft" });
+    const after = snapshot({ categoryId: "cat-B", status: "draft" });
+    const { tags } = invalidateProduct(before, after);
+    expect(tags).toContain(productTags.category("cat-A"));
+    expect(tags).toContain(productTags.category("cat-B"));
+    expect(tags).not.toContain(categoryTags.top());
+  });
   it("brand change: invalidates BOTH brands", () => {
     const before = snapshot({ brandId: "brand-A" });
     const after = snapshot({ brandId: "brand-B" });
@@ -236,7 +279,7 @@ describe("invalidateAllCategories", () => {
   it("emits the shared taxonomy tags used by ecommerce and dashboard", () => {
     const { tags } = invalidateAllCategories();
     expect(tags).toEqual(
-      expect.arrayContaining([categoryTags.all(), categoryTags.tree()])
+      expect.arrayContaining([categoryTags.all(), categoryTags.tree(), categoryTags.top()])
     );
     assertNoForbiddenTags(tags);
   });

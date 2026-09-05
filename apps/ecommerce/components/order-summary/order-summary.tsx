@@ -1,10 +1,7 @@
 'use client'
 
 import { useTranslations } from 'next-intl'
-import {
-  cartHasFreeDeliveryOffer,
-  cartQualifiesForProductFreeDelivery,
-} from '@/lib/shipping'
+import { cartHasPhysicalItems } from '@/lib/shipping'
 import {
   FreeDeliveryProgress,
   OrderSummaryCoupon,
@@ -32,14 +29,7 @@ export function OrderSummary ({
   const t = useTranslations('checkout')
 
   const subtotal = summary.subtotal ?? 0
-  const showFreeDeliveryProgress = cartHasFreeDeliveryOffer(items)
-  const qualifiesForProductFreeDelivery =
-    showShipping && cartQualifiesForProductFreeDelivery(items, subtotal)
-  const showProductFreeDeliveryMessage =
-    showShipping &&
-    summary.shippingCost === 0 &&
-    (summary.shippingDiscount ?? 0) === 0 &&
-    qualifiesForProductFreeDelivery
+  const showFreeDeliveryProgress = cartHasPhysicalItems(items)
 
   const displayTotal = summary.totalAfterDiscount ?? summary.total ?? 0
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0)
@@ -64,7 +54,6 @@ export function OrderSummary ({
             summary={summary}
             showShipping={showShipping}
             isRecalculatingShipping={isRecalculatingShipping}
-            showProductFreeDeliveryMessage={showProductFreeDeliveryMessage}
           />
 
           {enableCoupons && onCouponApplied && (

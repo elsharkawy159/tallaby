@@ -7,6 +7,7 @@ import {
   calculateLocationShippingCost,
   calculateRawShippingAmount,
   cartQualifiesForProductFreeDelivery,
+  getThresholdShippingDiscount,
   getWeightExtraCharge,
 } from './shipping.lib'
 
@@ -125,7 +126,7 @@ describe('calculateLocationShippingCost', () => {
     ).toBe(0)
   })
 
-  it('returns 0 when all physical items qualify for free delivery and subtotal meets threshold', () => {
+  it('always calculates shipping even when product freeDelivery is true', () => {
     expect(
       calculateLocationShippingCost({
         items: [
@@ -135,16 +136,17 @@ describe('calculateLocationShippingCost', () => {
             product: {
               productType: 'physical',
               freeDelivery: true,
+              dimensions: { weight: 1, weightUnit: 'kg' },
             },
           },
         ],
-        destinationState: 'Cairo',
+        destinationState: 'Giza',
         cartSubtotal: 250,
       }),
-    ).toBe(0)
+    ).toBe(65)
   })
 
-  it('charges shipping when free-delivery items are below the 200 EGP threshold', () => {
+  it('calculates shipping below the 200 EGP threshold', () => {
     expect(
       calculateLocationShippingCost({
         items: [
@@ -164,10 +166,10 @@ describe('calculateLocationShippingCost', () => {
     ).toBe(65)
   })
 
-  it('waives seller free_delivery only when cart subtotal is at least 200 EGP', () => {
+  it('still calculates shipping when seller free_delivery is true (discount applied at checkout)', () => {
     const freeSellerItem = {
       quantity: 1,
-      price: 150,
+      price: 200,
       sellerId: 'seller-free',
       product: {
         productType: 'physical' as const,
@@ -182,17 +184,9 @@ describe('calculateLocationShippingCost', () => {
       calculateLocationShippingCost({
         items: [freeSellerItem],
         destinationState: 'Giza',
-        cartSubtotal: 150,
-      }),
-    ).toBe(65)
-
-    expect(
-      calculateLocationShippingCost({
-        items: [{ ...freeSellerItem, price: 200 }],
-        destinationState: 'Giza',
         cartSubtotal: 200,
       }),
-    ).toBe(0)
+    ).toBe(65)
   })
 
   it('calculates location-based shipping for Cairo to Giza', () => {
@@ -245,99 +239,63 @@ describe('calculateLocationShippingCost', () => {
     ).toBeNull()
   })
 
-  it('waives shipping only for the seller whose free_delivery flag is true', () => {
-    const freeSellerItem = {
+  it('sums per-seller shipping for multi-seller carts', () => {
+    const sellerA = {
       quantity: 1,
       price: 150,
-      sellerId: 'seller-free',
+      sellerId: 'seller-a',
       product: {
         productType: 'physical' as const,
         freeDelivery: false,
         dimensions: { weight: 1, weightUnit: 'kg' },
-        sellerId: 'seller-free',
-        seller: { freeDelivery: true },
+        sellerId: 'seller-a',
+        seller: { freeDelivery: false },
       },
     }
-    const paidSellerItem = {
+    const sellerB = {
       quantity: 1,
       price: 150,
-      sellerId: 'seller-paid',
+      sellerId: 'seller-b',
       product: {
         productType: 'physical' as const,
         freeDelivery: false,
         dimensions: { weight: 1, weightUnit: 'kg' },
-        sellerId: 'seller-paid',
+        sellerId: 'seller-b',
         seller: { freeDelivery: false },
       },
     }
 
-    // Only the non-free seller's shipping is billed (cart ≥ 200)
     expect(
       calculateLocationShippingCost({
-        items: [freeSellerItem, paidSellerItem],
+        items: [sellerA, sellerB],
         destinationState: 'Giza',
         cartSubtotal: 300,
       }),
-    ).toBe(65)
+    ).toBe(130)
+  })
+})
 
-    // Both sellers free -> whole order ships free
-    expect(
-      calculateLocationShippingCost({
-        items: [
-          freeSellerItem,
-          {
-            ...paidSellerItem,
-            sellerId: 'seller-free-2',
-            product: {
-              ...paidSellerItem.product,
-              sellerId: 'seller-free-2',
-              seller: { freeDelivery: true },
-            },
-          },
-        ],
-        destinationState: 'Giza',
-        cartSubtotal: 300,
-      }),
-    ).toBe(0)
+describe('getThresholdShippingDiscount', () => {
+  it('returns 0 below the 200 EGP threshold', () => {
+    expect(getThresholdShippingDiscount(199, 65)).toBe(0)
   })
 
-  it('does not require a destination when the only billable seller is unknown but every seller present is free', () => {
-    expect(
-      calculateLocationShippingCost({
-        items: [
-          {
-            quantity: 1,
-            price: 250,
-            sellerId: 'seller-free',
-            product: {
-              productType: 'physical',
-              freeDelivery: false,
-              sellerId: 'seller-free',
-              seller: { freeDelivery: true },
-            },
-          },
-        ],
-        destinationState: null,
-        cartSubtotal: 250,
-      }),
-    ).toBe(0)
+  it('waives full shipping at or above 200 EGP', () => {
+    expect(getThresholdShippingDiscount(200, 65)).toBe(65)
+    expect(getThresholdShippingDiscount(350, 130)).toBe(130)
+  })
+
+  it('returns 0 when shipping is unknown or zero', () => {
+    expect(getThresholdShippingDiscount(250, null)).toBe(0)
+    expect(getThresholdShippingDiscount(250, 0)).toBe(0)
   })
 })
 
 describe('cartQualifiesForProductFreeDelivery', () => {
-  it('is false when one seller in a multi-seller cart is not free delivery', () => {
+  it('is true for any physical cart at or above the threshold', () => {
     expect(
       cartQualifiesForProductFreeDelivery(
         [
-          {
-            quantity: 1,
-            sellerId: 'seller-free',
-            product: {
-              productType: 'physical',
-              sellerId: 'seller-free',
-              seller: { freeDelivery: true },
-            },
-          },
           {
             quantity: 1,
             sellerId: 'seller-paid',
@@ -349,41 +307,12 @@ describe('cartQualifiesForProductFreeDelivery', () => {
             },
           },
         ],
-        300,
-      ),
-    ).toBe(false)
-  })
-
-  it('is true when every seller in the cart is free delivery and threshold is met', () => {
-    expect(
-      cartQualifiesForProductFreeDelivery(
-        [
-          {
-            quantity: 1,
-            sellerId: 'seller-a',
-            product: {
-              productType: 'physical',
-              sellerId: 'seller-a',
-              seller: { freeDelivery: true },
-            },
-          },
-          {
-            quantity: 1,
-            sellerId: 'seller-b',
-            product: {
-              productType: 'physical',
-              freeDelivery: true,
-              sellerId: 'seller-b',
-              seller: { freeDelivery: false },
-            },
-          },
-        ],
         200,
       ),
     ).toBe(true)
   })
 
-  it('is false when free-delivery sellers are below the 200 EGP threshold', () => {
+  it('is false below the 200 EGP threshold', () => {
     expect(
       cartQualifiesForProductFreeDelivery(
         [
@@ -398,6 +327,15 @@ describe('cartQualifiesForProductFreeDelivery', () => {
           },
         ],
         100,
+      ),
+    ).toBe(false)
+  })
+
+  it('is false for digital-only carts', () => {
+    expect(
+      cartQualifiesForProductFreeDelivery(
+        [{ quantity: 1, product: { productType: 'digital' } }],
+        500,
       ),
     ).toBe(false)
   })

@@ -21,6 +21,7 @@ import { getServiceClient } from '@workspace/db/supabase/service'
 import { resolveGovernorateSelectValue } from '@workspace/lib/address'
 import {
   calculateLocationShippingCost,
+  getThresholdShippingDiscount,
   normalizeEgyptianMobile,
 } from '@workspace/lib/shipping'
 import { placeOrderFromCart } from '@workspace/lib/orders'
@@ -432,6 +433,7 @@ export async function previewExternalOrderTotals(input: unknown) {
         cartSubtotal: subtotal,
       }) ?? 0
 
+    const shippingDiscount = getThresholdShippingDiscount(subtotal, shippingCost)
     const itemCount = linesResult.data.reduce(
       (sum, line) => sum + line.quantity,
       0,
@@ -442,8 +444,8 @@ export async function previewExternalOrderTotals(input: unknown) {
       data: {
         subtotal,
         shippingCost,
-        discountAmount: 0,
-        total: subtotal + shippingCost,
+        discountAmount: shippingDiscount,
+        total: subtotal + shippingCost - shippingDiscount,
         itemCount,
       },
     }
