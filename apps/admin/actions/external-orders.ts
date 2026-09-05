@@ -31,6 +31,7 @@ import {
   invalidateProductInventory,
 } from '@workspace/cache'
 import { getAdminUser } from './auth'
+import { parsePriceJson } from '@workspace/lib'
 import {
   externalOrderFormSchema,
   externalOrderPreviewSchema,
@@ -207,7 +208,7 @@ async function resolveLineItems(
         }
       }
 
-      price = Number(variant.price ?? 0)
+      price = parsePriceJson(variant.price).final
       variantData = {
         id: variant.id,
         title: variant.title,
@@ -375,7 +376,7 @@ export async function searchProductsForExternalOrder(query: string) {
           label:
             v.title ||
             [v.option1, v.option2, v.option3].filter(Boolean).join(', '),
-          price: Number(v.price ?? 0),
+          price: parsePriceJson(v.price).final,
           stock: Number(v.stock ?? 0),
           sku: v.sku,
           imageUrl: v.imageUrl,

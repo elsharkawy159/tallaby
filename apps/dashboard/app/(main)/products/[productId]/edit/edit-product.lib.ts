@@ -1,9 +1,6 @@
 import { defaultLocalizedFields } from "../../add/add-product.schema";
 import type { AddProductFormData } from "../../add/add-product.schema";
-import {
-  calculateDiscountFromFinalPrice,
-  type SellerPricingSettings,
-} from "@/lib/utils/product-pricing.lib";
+import { parsePriceJson } from "@workspace/lib";
 import {
   reconstructVariantTypesFromVariants,
   type VariantLocalizedMap,
@@ -59,8 +56,7 @@ const safeNum = (v: unknown): number | undefined =>
   v != null && typeof v === "number" && Number.isFinite(v) ? v : undefined;
 
 export function buildEditDefaultValues(
-  product: ProductForEdit,
-  sellerPricing?: SellerPricingSettings
+  product: ProductForEdit
 ): AddProductFormData {
   const priceObj =
     product.price && typeof product.price === "object"
@@ -95,8 +91,11 @@ export function buildEditDefaultValues(
 
   const variants = rawVariants.map((v) => {
     const isDefault = v.isDefault === true;
-    const variantFinal =
-      typeof v.price === "number" ? v.price : Number(v.price) || 0;
+    const variantPrice = parsePriceJson(v.price);
+    const variantFinal = variantPrice.final;
+    const variantListPrice = variantPrice.list ?? variantFinal;
+    const variantDiscountValue = variantPrice.discountValue ?? 0;
+    const variantDiscountType = variantPrice.discountType ?? discountType;
     const variantImages = isDefault
       ? images
       : Array.isArray(v.images)
@@ -106,15 +105,6 @@ export function buildEditDefaultValues(
         : v.imageUrl
           ? [v.imageUrl]
           : [];
-    const inferredDiscount =
-      sellerPricing && !isDefault && variantFinal > 0
-        ? calculateDiscountFromFinalPrice(
-            list,
-            variantFinal,
-            discountType,
-            sellerPricing
-          )
-        : discountValue ?? 0;
 
     const localized =
       v.localized && typeof v.localized === "object" && !Array.isArray(v.localized)
@@ -137,9 +127,9 @@ export function buildEditDefaultValues(
     return {
       title: (localized.en.title || v.title) ?? "",
       sku: v.sku ?? "",
-      listPrice: list,
-      discountValue: isDefault ? discountValue ?? 0 : inferredDiscount,
-      discountType,
+      listPrice: variantListPrice,
+      discountValue: variantDiscountValue,
+      discountType: variantDiscountType,
       price: variantFinal,
       discountEndsAt: parseDateOrNull(v.discountEndsAt),
       stock: isDefault

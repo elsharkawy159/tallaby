@@ -287,8 +287,12 @@ function mapVariantFormToDb(v: any, index: number) {
 
   return {
     title: englishFields?.title ?? v.title,
-    price: v.price as any,
-    discountEndsAt: toIsoStringOrNull(v.discountEndsAt),
+    price: buildPriceObject({
+      list: v.listPrice ?? v.price,
+      final: v.price,
+      discountType: v.discountType,
+      discountValue: v.discountValue,
+    }),
     stock: v.stock ?? 0,
     sku: v.sku,
     imageUrl,
@@ -1060,6 +1064,9 @@ type CreateProductLegacy = {
     title: string;
     sku: string;
     price: number;
+    listPrice?: number;
+    discountValue?: number;
+    discountType?: "amount" | "percent";
     stock?: number;
     imageUrl?: string;
     isDefault?: boolean;
@@ -1323,6 +1330,9 @@ export async function updateProduct(
       title: string;
       sku: string;
       price: number;
+      listPrice?: number;
+      discountValue?: number;
+      discountType?: "amount" | "percent";
       stock?: number;
       images?: string[];
       imageUrl?: string;

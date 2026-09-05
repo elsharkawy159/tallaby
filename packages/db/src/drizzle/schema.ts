@@ -254,7 +254,7 @@ export const productVariants = pgTable("product_variants", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	productId: uuid("product_id"),
 	title: varchar(),
-	price: numeric(),
+	price: jsonb(),
 	stock: integer().default(0),
 	sku: varchar(),
 	imageUrl: varchar("image_url"),

@@ -21,6 +21,7 @@ import {
   pickTranslationFromArray,
   type ProductLocale,
 } from "@/lib/product-translations";
+import { parsePriceJson } from "@workspace/lib";
 
 type ProductPrice = {
   base: number;
@@ -287,7 +288,7 @@ export async function addToCart(
 
   // Determine price - use variant price if available, otherwise product price
   const price = variant
-    ? Number(variant.price ?? 0)
+    ? parsePriceJson(variant.price).final
     : Number((product.price as ProductPrice)?.final) || 0;
 
   // Check for existing cart item - fetch all items with same productId and filter by variant
