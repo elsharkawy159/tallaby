@@ -108,10 +108,10 @@ export function UserMenu({
           variant="ghost"
           size="icon"
           className={cn(
-            "cursor-pointer flex flex-col  items-center",
+            "cursor-pointer flex flex-col rtl:flex-col items-center justify-center",
             variant === "desktop"
               ? "text-white hover:text-gray-200"
-              : "text-gray-600 hover:text-primary",
+              : "h-auto flex-1 gap-1 py-2 text-gray-500 hover:text-primary",
             className
           )}
           title={t("welcome", { name: userName })}
@@ -125,7 +125,9 @@ export function UserMenu({
             )}
             fallbackClassName="text-[10px] md:text-xs"
           />
-          <span className="text-xs md:hidden">{t("myProfile")}</span>
+          <span className="text-[11px] leading-none md:hidden">
+            {t("myProfile")}
+          </span>
         </Button>
       </PopoverTrigger>
 
