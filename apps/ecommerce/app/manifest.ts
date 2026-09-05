@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { routing } from "@/i18n/routing";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
@@ -41,8 +42,8 @@ export default function manifest(): MetadataRoute.Manifest {
     categories: ["shopping", "ecommerce", "marketplace"],
     // The manifest is served once at /manifest.webmanifest, outside the
     // `[locale]` segment, so it can only describe the default locale.
-    lang: "en",
-    dir: "ltr",
+    lang: routing.defaultLocale,
+    dir: routing.defaultLocale === "ar" ? "rtl" : "ltr",
     scope: "/",
   };
 }
