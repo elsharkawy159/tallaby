@@ -42,7 +42,8 @@ async function runHogql (query: string, name: string): Promise<unknown[][]> {
         query: { kind: 'HogQLQuery', query },
         name
       }),
-      cache: 'no-store'
+      cache: 'no-store',
+      signal: AbortSignal.timeout(8000)
     }
   )
 

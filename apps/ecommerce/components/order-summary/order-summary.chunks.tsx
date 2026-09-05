@@ -185,7 +185,7 @@ export function FreeDeliveryProgress ({ subtotal }: FreeDeliveryProgressProps) {
             isUnlocked && 'font-semibold text-primary',
           )}
         >
-          {t('freeDeliveryProgressEnd')}
+          {threshold}
         </span>
       </div>
     </div>

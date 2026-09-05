@@ -38,7 +38,7 @@ import {
   pickProductTitle,
 } from './place-order.lib'
 import { sendOrderConfirmationEmail } from './notify'
-import { isCodEligibleForShipping } from './payment.lib'
+import { isCodEligibleForShipping, parseWalletPartialPaymentMethod } from './payment.lib'
 
 /** Internal control-flow signal: coupon lost a concurrent usage-limit race. */
 class CouponClaimFailedError extends Error {}
@@ -383,6 +383,47 @@ export async function placeOrderFromCart(
         }
       }
 
+      const walletPartialRemainder =
+        parseWalletPartialPaymentMethod(resolvedPaymentMethod)
+
+      let insertPaymentMethod = resolvedPaymentMethod
+      let insertMetadata: Record<string, unknown> | null = null
+      let partialWalletAmount: string | null = null
+      let upgradeToFullWallet = false
+      let walletForPayment: Awaited<
+        ReturnType<typeof getOrCreateUserWallet>
+      > | null = null
+
+      if (walletPartialRemainder) {
+        walletForPayment = await getOrCreateUserWallet(tx, userId)
+        if (walletForPayment.status !== 'active') {
+          throw new WalletNotActiveError(
+            walletForPayment.id,
+            walletForPayment.status,
+          )
+        }
+
+        const available =
+          Number(walletForPayment.balance) -
+          Number(walletForPayment.reservedBalance)
+
+        if (available <= 0) {
+          throw new InsufficientWalletBalanceError(walletForPayment.id)
+        }
+
+        if (available >= totalAmount) {
+          upgradeToFullWallet = true
+          insertPaymentMethod = 'wallet'
+        } else {
+          partialWalletAmount = formatDecimal(available)
+          insertPaymentMethod = walletPartialRemainder
+          insertMetadata = {
+            walletPaidAmount: partialWalletAmount,
+            paymentMix: 'wallet_partial',
+          }
+        }
+      }
+
       ;[newOrder] = await tx
         .insert(orders)
         .values({
@@ -397,7 +438,7 @@ export async function placeOrderFromCart(
           currency: cart.currency || 'EGP',
           status: resolvedStatus,
           paymentStatus: resolvedPaymentStatus,
-          paymentMethod: resolvedPaymentMethod,
+          paymentMethod: insertPaymentMethod,
           shippingAddressId: shippingAddressId || null,
           billingAddressId: billingAddressId || shippingAddressId || null,
           isGift: isGift || false,
@@ -408,6 +449,7 @@ export async function placeOrderFromCart(
           isDigitalOnly: isDigitalOnlyCart,
           orderSource,
           paidAt: paymentOverrides?.paidAt ?? null,
+          metadata: insertMetadata,
         })
         .returning()
 
@@ -444,8 +486,9 @@ export async function placeOrderFromCart(
         }
       }
 
-      if (resolvedPaymentMethod === 'wallet') {
-        const wallet = await getOrCreateUserWallet(tx, userId)
+      if (resolvedPaymentMethod === 'wallet' || upgradeToFullWallet) {
+        const wallet =
+          walletForPayment ?? (await getOrCreateUserWallet(tx, userId))
         await postWalletTransaction(tx, {
           walletId: wallet.id,
           userId,
@@ -465,6 +508,8 @@ export async function placeOrderFromCart(
             paymentStatus: 'paid',
             paidAt: paidNow,
             updatedAt: paidNow,
+            paymentMethod: 'wallet',
+            metadata: null,
           })
           .where(eq(orders.id, newOrder!.id))
           .returning()
@@ -476,6 +521,27 @@ export async function placeOrderFromCart(
           currency: cart.currency || 'EGP',
           status: 'paid',
           capturedAt: paidNow,
+        })
+      } else if (partialWalletAmount != null && walletForPayment) {
+        await postWalletTransaction(tx, {
+          walletId: walletForPayment.id,
+          userId,
+          type: 'order_payment',
+          amount: partialWalletAmount,
+          direction: 'debit',
+          referenceType: WALLET_REFERENCE_TYPES.order,
+          referenceId: newOrder!.id,
+          description: `Order ${orderNumber} (partial wallet)`,
+        })
+
+        const capturedAt = new Date().toISOString()
+        await tx.insert(payments).values({
+          orderId: newOrder!.id,
+          amount: partialWalletAmount,
+          method: 'wallet',
+          currency: cart.currency || 'EGP',
+          status: 'paid',
+          capturedAt,
         })
       }
 

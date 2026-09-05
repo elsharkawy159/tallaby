@@ -9,6 +9,8 @@ import {
   returnItems,
   reviews,
   deliveries,
+  payments,
+  userWalletTransactions,
   eq,
   and,
   desc,
@@ -20,6 +22,11 @@ import {
   type StockLine,
 } from "@workspace/db/inventory";
 import { cancelPendingAffiliateCommission } from "@workspace/db/affiliates";
+import {
+  DuplicateWalletTransactionError,
+  postWalletTransaction,
+  WALLET_REFERENCE_TYPES,
+} from "@workspace/db/wallet";
 import { placeOrderFromCart } from "@workspace/lib/orders";
 import {
   applyInvalidation,
@@ -407,6 +414,61 @@ export async function cancelOrder(orderId: string, reason?: string) {
         stockResults = await restoreStock(tx, stockLines);
 
         await cancelPendingAffiliateCommission(tx, orderId);
+
+        const orderPaymentDebit =
+          await tx.query.userWalletTransactions.findFirst({
+            where: and(
+              eq(
+                userWalletTransactions.referenceType,
+                WALLET_REFERENCE_TYPES.order,
+              ),
+              eq(userWalletTransactions.referenceId, orderId),
+              eq(userWalletTransactions.type, "order_payment"),
+              eq(userWalletTransactions.status, "completed"),
+            ),
+            columns: {
+              id: true,
+              walletId: true,
+              userId: true,
+              amount: true,
+            },
+          });
+
+        if (orderPaymentDebit) {
+          const refundAmount = Math.abs(Number(orderPaymentDebit.amount));
+          if (refundAmount > 0) {
+            try {
+              await postWalletTransaction(tx, {
+                walletId: orderPaymentDebit.walletId,
+                userId: orderPaymentDebit.userId,
+                type: "refund",
+                amount: formatDecimal(refundAmount),
+                direction: "credit",
+                referenceType: WALLET_REFERENCE_TYPES.order,
+                referenceId: orderId,
+                description: `Refund for cancelled order`,
+              });
+            } catch (err) {
+              if (!(err instanceof DuplicateWalletTransactionError)) {
+                throw err;
+              }
+            }
+
+            await tx
+              .update(payments)
+              .set({
+                status: "refunded",
+                updatedAt: new Date().toISOString(),
+              })
+              .where(
+                and(
+                  eq(payments.orderId, orderId),
+                  eq(payments.method, "wallet"),
+                  eq(payments.status, "paid"),
+                ),
+              );
+          }
+        }
       });
     } catch (err) {
       if (err instanceof OrderAlreadyTransitionedError) {

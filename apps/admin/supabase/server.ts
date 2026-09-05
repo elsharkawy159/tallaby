@@ -4,6 +4,7 @@ import {
   getAdminAuthCookieOptions,
   mergeAdminAuthCookieOptions,
 } from "./auth-cookie-options";
+import { createTimeoutFetch } from "./fetch-with-timeout";
 
 export const createClient = async () => {
   const cookieStore = await cookies();
@@ -13,6 +14,7 @@ export const createClient = async () => {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookieOptions: getAdminAuthCookieOptions(),
+      global: { fetch: createTimeoutFetch() },
       cookies: {
         getAll() {
           return cookieStore.getAll();

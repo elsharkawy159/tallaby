@@ -4,6 +4,7 @@ import {
   getAdminAuthCookieOptions,
   mergeAdminAuthCookieOptions,
 } from "./auth-cookie-options";
+import { createTimeoutFetch } from "./fetch-with-timeout";
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -15,6 +16,7 @@ export async function updateSession(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookieOptions: getAdminAuthCookieOptions(),
+      global: { fetch: createTimeoutFetch() },
       cookies: {
         getAll() {
           return request.cookies.getAll();
@@ -44,14 +46,24 @@ export async function updateSession(request: NextRequest) {
 
   // IMPORTANT: DO NOT REMOVE auth.getUser()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
   const isPublicPath =
     request.nextUrl.pathname.startsWith("/login") ||
     request.nextUrl.pathname.startsWith("/auth") ||
     request.nextUrl.pathname.startsWith("/error");
+
+  // Both Supabase calls below are bounded by createTimeoutFetch, but a
+  // timeout still rejects the promise — without this try/catch, an
+  // unreachable/slow Supabase project turned every navigation into an
+  // uncaught rejection (Next's generic error page) instead of a redirect.
+  // Fail closed: any auth-check failure is treated like "no session".
+  let user: Awaited<ReturnType<typeof supabase.auth.getUser>>["data"]["user"] =
+    null;
+  try {
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  } catch (error) {
+    console.error("[admin-auth] auth.getUser() failed:", error);
+  }
 
   if (!user && !isPublicPath) {
     // no user, potentially respond by redirecting the user to the login page
@@ -67,19 +79,25 @@ export async function updateSession(request: NextRequest) {
   // (rather than imported) because middleware/proxy cannot use Drizzle —
   // it runs the lightweight supabase-js client only.
   if (user && !isPublicPath) {
-    // PostgREST queries the literal column name — the real column is
-    // is_verified (snake_case), not isVerified. The unaliased select
-    // matched nothing, so `profile.isVerified` was always undefined and
-    // every login (including a real admin) was redirected as forbidden.
-    const { data: profile } = await supabase
-      .from("users")
-      .select("role, isVerified:is_verified")
-      .eq("id", user.id)
-      .single();
+    let isAdmin = false;
+    try {
+      // PostgREST queries the literal column name — the real column is
+      // is_verified (snake_case), not isVerified. The unaliased select
+      // matched nothing, so `profile.isVerified` was always undefined and
+      // every login (including a real admin) was redirected as forbidden.
+      const { data: profile } = await supabase
+        .from("users")
+        .select("role, isVerified:is_verified")
+        .eq("id", user.id)
+        .single();
 
-    const adminRoles = ["admin", "super_admin", "moderator"];
-    const isAdmin =
-      profile && adminRoles.includes(profile.role) && profile.isVerified;
+      const adminRoles = ["admin", "super_admin", "moderator"];
+      isAdmin = Boolean(
+        profile && adminRoles.includes(profile.role) && profile.isVerified,
+      );
+    } catch (error) {
+      console.error("[admin-auth] admin profile lookup failed:", error);
+    }
 
     if (!isAdmin) {
       const url = request.nextUrl.clone();

@@ -14,13 +14,22 @@ import { getAdminPermissions, hasPermission } from "./middleware-utils";
  * read, so it has to be memoized rather than repeated per guard.
  */
 export const getAuthUser = cache(async () => {
-  const supabase = await createClient();
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
 
-  return error ? null : user;
+    return error ? null : user;
+  } catch (error) {
+    // A timed-out/unreachable Supabase Auth call throws rather than
+    // resolving with `error` set — treat it the same as "no user" so a
+    // network blip fails closed instead of throwing out of every one of
+    // this function's ~65 call sites.
+    console.error("[admin-auth] getAuthUser failed:", error);
+    return null;
+  }
 });
 
 /**

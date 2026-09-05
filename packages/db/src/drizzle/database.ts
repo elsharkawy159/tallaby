@@ -44,6 +44,14 @@ const client = postgres(connectionString, {
    * is the other operation observed to wedge under the transaction pooler.
    */
   fetch_types: false,
+  /**
+   * Without this, a runaway query (lock contention, a bad plan on an
+   * unindexed filter, ...) blocks its request forever — nothing else in the
+   * stack imposes a ceiling on how long a single statement can run. 30s is
+   * generously above the slowest legitimate admin aggregate (the trailing
+   * 12-month `getMonthlySeries` scan) but still bounded.
+   */
+  connection: { statement_timeout: 30_000 },
 });
 
 // Instantiate Drizzle client with pg driver and schema.

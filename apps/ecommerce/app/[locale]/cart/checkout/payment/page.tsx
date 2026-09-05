@@ -13,6 +13,7 @@ import { PaymentOrderSummary } from "./_components/payment-order-summary";
 import { PaymobIframe } from "./_components/paymob-iframe";
 import { ManualPaymentInstructions } from "./_components/manual-payment-instructions";
 import { isManualPaymentMethod } from "@/lib/manual-payment-methods";
+import { computeManualRemainderAmount } from "@workspace/lib/orders/payment";
 
 export const metadata: Metadata = generateNoIndexMetadata();
 export const dynamic = "force-dynamic";
@@ -59,6 +60,11 @@ export default async function CheckoutPaymentPage({
   }
 
   if (isManualPaymentMethod(order.paymentMethod)) {
+    const remainderAmount = computeManualRemainderAmount(
+      order.totalAmount,
+      order.metadata,
+    );
+
     return (
       <div className="min-h-screen flex flex-col bg-linear-to-b from-gray-50 to-white">
         <DynamicBreadcrumb />
@@ -73,7 +79,7 @@ export default async function CheckoutPaymentPage({
             <ManualPaymentInstructions
               orderId={order.id}
               method={order.paymentMethod}
-              amount={order.totalAmount}
+              amount={remainderAmount.toFixed(2)}
               currency={order.currency || "EGP"}
             />
           </div>
@@ -92,7 +98,7 @@ export default async function CheckoutPaymentPage({
     return (
       <div className="min-h-screen flex flex-col bg-linear-to-b from-gray-50 to-white">
         <DynamicBreadcrumb />
-        <main className="flex-1 container flex items-center justify-center py-12">
+        <main className="container flex items-center justify-center py-12">
           <div className="text-center max-w-md">
             <h1 className="text-xl md:text-2xl font-bold mb-2">
               {t("paymentFailed")}

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { getTranslations } from 'next-intl/server'
 
 import { localizedUrl, buildLanguageAlternates, type SeoLocale } from '@/lib/metadata'
 import { routing } from '@/i18n/routing'
@@ -12,8 +13,9 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>
 }): Promise<Metadata> {
   const { locale } = await params
-  const title = 'Tallaby Affiliate Program | Share, Save, Earn'
-  const description = 'Share Tallaby with your community. Give customers 10% off and earn 10% when their order is delivered.'
+  const t = await getTranslations({ locale, namespace: 'affiliateLanding.meta' })
+  const title = t('title')
+  const description = t('description')
   const affiliateUrl = localizedUrl(locale as SeoLocale, '/affiliate')
   const languages = buildLanguageAlternates(
     Object.fromEntries(
@@ -24,7 +26,7 @@ export async function generateMetadata({
   return {
     title,
     description,
-    keywords: ['Tallaby affiliate program', 'affiliate marketing Egypt', '10% discount', 'earn online Egypt'],
+    keywords: t('keywords').split(',').map((keyword) => keyword.trim()),
     openGraph: { title, description, type: 'website', url: affiliateUrl },
     alternates: { canonical: affiliateUrl, languages },
   }

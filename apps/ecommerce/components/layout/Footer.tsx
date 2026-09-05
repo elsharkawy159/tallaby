@@ -78,6 +78,7 @@ const Footer = async () => {
                 { href: "/contact", label: t("contactUs") },
                 { href: "/stores", label: t("storeLocator") },
                 { href: "/careers", label: t("careers") },
+                { href: "/affiliate", label: t("affiliateProgram") },
               ].map((link) => (
                 <li key={link.href}>
                   <Link

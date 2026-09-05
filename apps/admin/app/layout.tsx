@@ -1,6 +1,5 @@
 import { Montserrat, Noto_Kufi_Arabic } from "next/font/google";
 import { ThemeProvider } from "next-themes";
-import { AdminProvider } from "@/contexts/admin-context";
 import { QueryProvider } from "@/providers/query-provider";
 import { DirectionProvider } from "@workspace/ui/components/direction";
 import "./globals.css";
@@ -56,9 +55,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <QueryProvider>
-              <AdminProvider>{children}</AdminProvider>
-            </QueryProvider>
+            <QueryProvider>{children}</QueryProvider>
             <Toaster />
           </ThemeProvider>
         </DirectionProvider>

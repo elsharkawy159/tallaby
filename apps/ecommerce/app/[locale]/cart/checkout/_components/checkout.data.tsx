@@ -32,7 +32,7 @@ import { createOrder } from "@/actions/order";
 import posthog from "posthog-js";
 import { recalculateCheckoutSummary } from "@/actions/checkout";
 import { toast } from "sonner";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import type { AddressData } from "@/components/address/address.schema";
 import { ShippingInformation } from "./shipping-information";
 import { CreditCard, ArrowLeft, Info } from "lucide-react";
@@ -42,9 +42,13 @@ import { Label } from "@workspace/ui/components/label";
 import { Textarea } from "@workspace/ui/components/textarea";
 import type { CheckoutSummary } from "@/lib/coupon-utils";
 import { useCart } from "@/providers/cart-provider";
+import { formatPricePlain } from "@workspace/lib";
 import {
+  getPaymentGroupForMethod,
   isCodEligibleForShipping,
   isWalletEligibleForTotal,
+  isWalletPartialPaymentMethod,
+  toWalletPartialPaymentMethod,
 } from "@workspace/lib/orders/payment";
 import {
   MANUAL_PAYMENT_METHODS,
@@ -97,6 +101,7 @@ export const CheckoutData = ({
 
   const t = useTranslations("checkout");
   const tToast = useTranslations("toast");
+  const locale = useLocale();
 
   const checkoutFormSchema = useMemo(
     () => createCheckoutFormSchema((key: string) => t(key as any)),
@@ -222,13 +227,22 @@ export const CheckoutData = ({
   }, [isCodEligible, form]);
 
   useEffect(() => {
-    if (form.getValues("paymentMethod") === "wallet" && !isWalletEligible) {
-      form.setValue("paymentMethod", DEFAULT_MANUAL_PAYMENT_METHOD, {
+    const current = form.getValues("paymentMethod");
+    if (current === "wallet" && !isWalletEligible && hasWallet) {
+      form.setValue(
+        "paymentMethod",
+        toWalletPartialPaymentMethod(DEFAULT_MANUAL_PAYMENT_METHOD),
+        { shouldValidate: true, shouldDirty: true },
+      );
+      return;
+    }
+    if (isWalletPartialPaymentMethod(current) && isWalletEligible) {
+      form.setValue("paymentMethod", "wallet", {
         shouldValidate: true,
         shouldDirty: true,
       });
     }
-  }, [isWalletEligible, form]);
+  }, [isWalletEligible, hasWallet, form]);
 
   useEffect(() => {
     if (form.getValues("paymentMethod") === "online_payment") {
@@ -238,6 +252,11 @@ export const CheckoutData = ({
       });
     }
   }, [form]);
+
+  const walletBalanceLabel =
+    walletAvailableBalance != null
+      ? formatPricePlain(walletAvailableBalance, locale)
+      : "";
 
   const paymentGroups = useMemo(() => {
     const groups = [
@@ -263,30 +282,23 @@ export const CheckoutData = ({
         id: "wallet",
         value: "wallet",
         title: t("walletBalance"),
-        description: t("walletBalanceDescription"),
-        enabled: isWalletEligible,
-        disabledLabel: isWalletEligible ? undefined : t("walletInsufficientBalance"),
+        description: isWalletEligible
+          ? t("walletBalanceDescription")
+          : t("walletPartialPaymentDescription", { amount: walletBalanceLabel }),
+        enabled: true,
       });
     }
 
-    // groups.push({
-    //   id: "online_payment",
-    //   value: "online_payment",
-    //   title: t("payByCard"),
-    //   description: t("payByCardDescription"),
-    //   enabled: false,
-    //   disabledLabel: t("cardPaymentTemporarilyUnavailable"),
-    // });
-
     return groups;
-  }, [isCodEligible, hasWallet, isWalletEligible, t]);
+  }, [
+    isCodEligible,
+    hasWallet,
+    isWalletEligible,
+    walletBalanceLabel,
+    t,
+  ]);
 
-  const getGroupForPaymentMethod = useCallback((value: string) => {
-    if (isManualPaymentMethod(value)) return "online_manual";
-    return value;
-  }, []);
-
-  const selectedGroup = getGroupForPaymentMethod(paymentMethod);
+  const selectedGroup = getPaymentGroupForMethod(paymentMethod);
 
   const handleGroupChange = (group: string) => {
     if (group === "online_manual") {
@@ -294,12 +306,24 @@ export const CheckoutData = ({
         shouldValidate: true,
         shouldDirty: true,
       });
-    } else {
-      form.setValue("paymentMethod", group, {
-        shouldValidate: true,
-        shouldDirty: true,
-      });
+      return;
     }
+
+    if (group === "wallet") {
+      form.setValue(
+        "paymentMethod",
+        isWalletEligible
+          ? "wallet"
+          : toWalletPartialPaymentMethod(DEFAULT_MANUAL_PAYMENT_METHOD),
+        { shouldValidate: true, shouldDirty: true },
+      );
+      return;
+    }
+
+    form.setValue("paymentMethod", group, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
   };
 
   const handleSubmit = (data: CheckoutFormData) => {
@@ -329,7 +353,8 @@ export const CheckoutData = ({
 
           if (
             data.paymentMethod === "online_payment" ||
-            isManualPaymentMethod(data.paymentMethod)
+            isManualPaymentMethod(data.paymentMethod) ||
+            isWalletPartialPaymentMethod(data.paymentMethod)
           ) {
             router.push(`/cart/checkout/payment?orderId=${result.data?.order?.id}`);
             return;
@@ -490,6 +515,53 @@ export const CheckoutData = ({
                                           </Field>
                                         </FieldLabel>
                                       ))}
+                                    </RadioGroup>
+                                  )}
+
+                                {method.id === "wallet" &&
+                                  selectedGroup === "wallet" &&
+                                  !isWalletEligible && (
+                                    <RadioGroup
+                                      value={field.value}
+                                      onValueChange={field.onChange}
+                                      className="ms-4 flex flex-col gap-2 border-s-2 border-primary/20 ps-3"
+                                    >
+                                      {MANUAL_PAYMENT_METHODS.map((child) => {
+                                        const childValue =
+                                          toWalletPartialPaymentMethod(
+                                            child.value,
+                                          );
+                                        return (
+                                          <FieldLabel
+                                            key={childValue}
+                                            htmlFor={`payment-${childValue}`}
+                                            className={`rounded-lg border-2 w-full p-3 cursor-pointer transition-all duration-200 ${
+                                              field.value === childValue
+                                                ? "ring-2 ring-primary bg-primary/5 border-primary shadow-sm"
+                                                : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                                            }`}
+                                          >
+                                            <Field orientation="horizontal">
+                                              <RadioGroupItem
+                                                value={childValue}
+                                                id={`payment-${childValue}`}
+                                              />
+                                              <Image
+                                                src={child.logo}
+                                                alt={t(child.titleKey as any)}
+                                                width={28}
+                                                height={28}
+                                                className="h-7 w-7 object-contain shrink-0"
+                                              />
+                                              <FieldContent>
+                                                <FieldTitle className="text-xs md:text-sm">
+                                                  {t(child.titleKey as any)}
+                                                </FieldTitle>
+                                              </FieldContent>
+                                            </Field>
+                                          </FieldLabel>
+                                        );
+                                      })}
                                     </RadioGroup>
                                   )}
                               </div>

@@ -3,8 +3,9 @@
 import { usePathname } from 'next/navigation'
 import { UserNav } from './user-nav'
 import { getPageTitleFromPathname } from './header.lib'
+import type { AdminUser } from '@/lib/auth/middleware-types'
 
-export default function Header() {
+export default function Header({ user }: { user: AdminUser }) {
   const pathname = usePathname()
   const pageTitle = getPageTitleFromPathname(pathname)
 
@@ -14,7 +15,7 @@ export default function Header() {
         <h1 className="text-xl font-semibold tracking-tight truncate">
           {pageTitle}
         </h1>
-        <UserNav />
+        <UserNav user={user} />
       </div>
     </header>
   )

@@ -1,7 +1,7 @@
 /**
  * Affiliate promo code generation.
  *
- * Format: {NORMALIZED_FIRST_NAME}{rate}{3-char random suffix}, e.g. OMAR10EQH.
+ * Format: {NORMALIZED_FIRST_NAME}{rate}{3-char random suffix}, e.g. YOUR_CODE.
  * Recognizable (the affiliate's own name), encodes the discount rate, and the
  * random suffix makes collisions negligible even before the database's own
  * unique constraint on coupons.code is checked.

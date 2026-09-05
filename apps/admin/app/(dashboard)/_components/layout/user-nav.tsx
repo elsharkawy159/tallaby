@@ -25,7 +25,7 @@ import {
 import { Separator } from '@workspace/ui/components/separator'
 import { cn } from '@workspace/ui/lib/utils'
 import { logout } from '@/actions/auth'
-import { useAdminAuth } from '@/hooks/use-admin-auth'
+import type { AdminUser } from '@/lib/auth/middleware-types'
 
 const ROLE_LABELS: Record<string, string> = {
   super_admin: 'Super Admin',
@@ -51,15 +51,14 @@ function getInitials(name?: string, email?: string): string {
   return 'AD'
 }
 
-export function UserNav() {
+export function UserNav({ user }: { user: AdminUser }) {
   const [open, setOpen] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
-  const { user, isLoading } = useAdminAuth()
 
-  const displayName = user?.fullName?.trim() || user?.email?.split('@')[0] || 'Admin'
-  const email = user?.email || ''
-  const roleLabel = user?.role ? ROLE_LABELS[user.role] || user.role : 'Account'
-  const initials = getInitials(user?.fullName, user?.email)
+  const displayName = user.fullName?.trim() || user.email?.split('@')[0] || 'Admin'
+  const email = user.email || ''
+  const roleLabel = ROLE_LABELS[user.role] || user.role
+  const initials = getInitials(user.fullName, user.email)
 
   const handleLogout = async () => {
     try {
@@ -88,13 +87,8 @@ export function UserNav() {
         >
           <Avatar className="size-9">
             <AvatarImage src="" alt={`${displayName} avatar`} />
-            <AvatarFallback
-              className={cn(
-                'bg-primary text-primary-foreground text-sm font-semibold',
-                isLoading && 'animate-pulse',
-              )}
-            >
-              {isLoading ? '' : initials}
+            <AvatarFallback className="bg-primary text-primary-foreground text-sm font-semibold">
+              {initials}
             </AvatarFallback>
           </Avatar>
         </Button>

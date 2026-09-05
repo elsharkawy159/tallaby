@@ -1,4 +1,8 @@
 import { formatPrice } from "@workspace/lib";
+import {
+  computeManualRemainderAmount,
+  getWalletPaidAmountFromMetadata,
+} from "@workspace/lib/orders/payment";
 import { getLocale, getTranslations } from "next-intl/server";
 import type { getPaymobPaymentOrder } from "@/actions/paymob";
 
@@ -55,6 +59,11 @@ export async function PaymentOrderSummary({ order }: PaymentOrderSummaryProps) {
   const tax = Number(order.tax ?? 0);
   const subtotal = Number(order.subtotal ?? 0);
   const totalAmount = Number(order.totalAmount ?? 0);
+  const walletPaidAmount = getWalletPaidAmountFromMetadata(order.metadata);
+  const remainingAmount =
+    walletPaidAmount > 0
+      ? computeManualRemainderAmount(order.totalAmount, order.metadata)
+      : null;
 
   return (
     <section
@@ -82,6 +91,12 @@ export async function PaymentOrderSummary({ order }: PaymentOrderSummaryProps) {
               {tCheckout(
                 (PAYMENT_METHOD_LABEL_KEYS[order.paymentMethod] ??
                   "onlinePayment") as any
+              )}
+              {walletPaidAmount > 0 && (
+                <span className="text-muted-foreground">
+                  {" "}
+                  + {tCheckout("walletBalance")}
+                </span>
               )}
             </p>
             {order.couponCode && (
@@ -231,6 +246,17 @@ export async function PaymentOrderSummary({ order }: PaymentOrderSummaryProps) {
             />
           </span>
         )}
+        {walletPaidAmount > 0 && (
+          <span className="text-green-600">
+            {tCheckout("walletAppliedAmount")}:{" "}
+            <span
+              className="font-medium"
+              dangerouslySetInnerHTML={{
+                __html: `-${formatPrice(walletPaidAmount, locale)}`,
+              }}
+            />
+          </span>
+        )}
         <span className="text-sm font-bold text-primary">
           {tCheckout("total")}:{" "}
           <span
@@ -239,6 +265,16 @@ export async function PaymentOrderSummary({ order }: PaymentOrderSummaryProps) {
             }}
           />
         </span>
+        {remainingAmount != null && (
+          <span className="text-sm font-bold text-primary">
+            {tCheckout("remainingToPay")}:{" "}
+            <span
+              dangerouslySetInnerHTML={{
+                __html: formatPrice(remainingAmount, locale),
+              }}
+            />
+          </span>
+        )}
       </div>
     </section>
   );
