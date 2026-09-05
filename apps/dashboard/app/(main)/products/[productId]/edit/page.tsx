@@ -57,6 +57,7 @@ export default async function EditProductPage({
       sellerPricing={{
         commissionRate: seller?.commissionRate ?? DEFAULT_COMMISSION_RATE,
         isCommissionExempt: seller?.isCommissionExempt ?? false,
+        sellerFreeDelivery: seller?.freeDelivery ?? false,
       }}
     />
   );

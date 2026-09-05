@@ -1,6 +1,7 @@
 export interface SellerPricingSettings {
   commissionRate: number
   isCommissionExempt: boolean
+  sellerFreeDelivery?: boolean
 }
 
 export const DEFAULT_COMMISSION_RATE = 10

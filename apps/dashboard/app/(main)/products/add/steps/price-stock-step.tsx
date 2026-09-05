@@ -280,12 +280,14 @@ export function PriceStockStep({
           />
         </div>
 
-        <SwitchInput
-          name="freeDelivery"
-          label="Free delivery on this product"
-          labelPosition="right"
-          className="rounded-lg border border-gray-200 p-4"
-        />
+        {!sellerPricing.sellerFreeDelivery && (
+          <SwitchInput
+            name="freeDelivery"
+            label="Free delivery on this product"
+            labelPosition="right"
+            className="rounded-lg border border-gray-200 p-4"
+          />
+        )}
 
         <div className="space-y-3 rounded-lg border border-gray-200 p-4">
           <div>
@@ -624,7 +626,11 @@ function VariantsSection({
             sellerPricing
           )
         : 0;
-    const hasExistingDefault = fields.some(
+    // useFieldArray's `fields` snapshot only updates on append/remove/replace,
+    // not on form.setValue calls (image uploads, stock edits, etc.), so read
+    // the live values here to avoid discarding those edits when rebuilding.
+    const currentVariants = form.getValues("variants") ?? [];
+    const hasExistingDefault = currentVariants.some(
       (variant) => (variant as { isDefault?: boolean }).isDefault
     );
 
@@ -640,7 +646,7 @@ function VariantsSection({
         .join("-");
       const sku = `${baseSku}-${comboSlug}`.toUpperCase();
 
-      const existingVariant = fields.find((variant) => {
+      const existingVariant = currentVariants.find((variant) => {
         const existingIndexes = getVariantValueIndexes(
           validTypes,
           variant as {
