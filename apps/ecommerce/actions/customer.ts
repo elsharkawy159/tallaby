@@ -62,7 +62,7 @@ export async function addAddress(data: {
   addressLine2?: string;
   city: string;
   state: string;
-  postalCode: string;
+  postalCode?: string;
   country: string;
   isDefault?: boolean;
   deliveryInstructions?: string;
@@ -91,6 +91,7 @@ export async function addAddress(data: {
         .insert(userAddresses)
         .values({
           ...data,
+          postalCode: data.postalCode || "",
           userId,
           addressType: data.addressType || "both",
           isDefault: data.isDefault || false,

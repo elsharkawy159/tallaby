@@ -7,6 +7,13 @@ export type WalletPayoutStatus =
   | "cancelled"
   | "failed";
 
+export type WalletTopUpStatus =
+  | "pending"
+  | "processing"
+  | "succeeded"
+  | "failed"
+  | "cancelled";
+
 export type WalletStatus = "active" | "frozen" | "closed";
 
 export type WalletTransactionType =
@@ -38,6 +45,26 @@ export interface PayoutRequestRow {
   processedAt: string | null;
   createdAt: string;
   /** Wallet figures at read time, so a reviewer can sanity-check the request. */
+  walletBalance: string;
+  walletReservedBalance: string;
+}
+
+export interface TopUpRequestRow {
+  id: string;
+  walletId: string;
+  userId: string;
+  userName: string | null;
+  userEmail: string | null;
+  userRole: string | null;
+  amount: string;
+  currency: string;
+  status: WalletTopUpStatus;
+  provider: string;
+  providerReference: string | null;
+  failureReason: string | null;
+  paymentSelfReported: boolean;
+  paymentSelfReportedAt: string | null;
+  createdAt: string;
   walletBalance: string;
   walletReservedBalance: string;
 }
@@ -80,10 +107,17 @@ export interface WalletStats {
   totalReserved: string;
   pendingPayouts: number;
   pendingPayoutAmount: string;
+  pendingTopUps: number;
+  pendingTopUpAmount: string;
 }
 
 export interface PayoutRequestFilters {
   status?: WalletPayoutStatus;
+  search?: string;
+}
+
+export interface TopUpRequestFilters {
+  status?: WalletTopUpStatus;
   search?: string;
 }
 

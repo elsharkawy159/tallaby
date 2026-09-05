@@ -14,10 +14,7 @@ const CategoryShowcase = async (props: CategoryShowcaseProps) => {
   }
 
   const categories = (result.data as CategoryWithRequiredFields[]).filter(
-    (category) =>
-      Number(category.productCount) > 0 &&
-      category.name !== null &&
-      category.slug !== null,
+    (category) => category.name !== null && category.slug !== null,
   );
 
   if (categories.length === 0) {

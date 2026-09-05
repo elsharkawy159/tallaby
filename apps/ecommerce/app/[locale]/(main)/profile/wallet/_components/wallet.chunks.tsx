@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocale, useTranslations } from "next-intl";
@@ -10,12 +11,13 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   Banknote,
+  CreditCard,
   Lock,
   Plus,
   Wallet as WalletIcon,
 } from "lucide-react";
 
-import { formatPricePlain } from "@workspace/lib";
+import { formatPrice, formatPricePlain } from "@workspace/lib";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -33,13 +35,31 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@workspace/ui/components/dialog";
-import { Form } from "@workspace/ui/components/form";
+import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+  FieldSet,
+  FieldTitle,
+} from "@workspace/ui/components/field";
+import { Form, FormField } from "@workspace/ui/components/form";
 import { CurrencyInput } from "@workspace/ui/components/inputs/currency-input";
 import { SelectInput } from "@workspace/ui/components/inputs/select-input";
 import { TextInput } from "@workspace/ui/components/inputs/text-input";
 import { TextareaInput } from "@workspace/ui/components/inputs/textarea-input";
+import {
+  RadioGroup,
+  RadioGroupItem,
+} from "@workspace/ui/components/radio-group";
 
 import { Link } from "@/i18n/navigation";
+import {
+  MANUAL_PAYMENT_METHODS,
+  getManualPaymentMethodConfig,
+  type ManualPaymentMethod,
+} from "@/lib/manual-payment-methods";
 import { cn } from "@/lib/utils";
 
 import {
@@ -51,6 +71,7 @@ import {
   type TopUpFormData,
 } from "./wallet.dto";
 import {
+  WALLET_PAYMOB_TOP_UP_ENABLED,
   WALLET_PAYOUT_METHODS,
   WALLET_TOP_UP_PRESETS,
   payoutStatusBadgeVariant,
@@ -60,6 +81,7 @@ import {
   cancelPayoutRequest,
   createPayoutRequest,
   createWalletTopUp,
+  reportManualTopUpSent,
 } from "./wallet.server";
 import type {
   WalletBalance,
@@ -179,16 +201,33 @@ export function WalletSummaryCard({
 /* Top up                                                                     */
 /* -------------------------------------------------------------------------- */
 
+interface PendingTopUp {
+  topUpId: string;
+  amount: string;
+  paymentMethod: ManualPaymentMethod;
+}
+
 export function TopUpDialog({ disabled }: { disabled?: boolean }) {
   const t = useTranslations("wallet");
+  const tCheckout = useTranslations("checkout");
   const tToast = useTranslations("toast");
+  const locale = useLocale();
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [pendingTopUp, setPendingTopUp] = useState<PendingTopUp | null>(null);
 
   const form = useForm<TopUpFormData>({
     resolver: zodResolver(topUpFormSchema),
     defaultValues: topUpFormDefaults,
   });
+
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    if (!open) {
+      setPendingTopUp(null);
+      form.reset(topUpFormDefaults);
+    }
+  };
 
   const handleSubmit = (data: TopUpFormData) => {
     startTransition(async () => {
@@ -199,65 +238,265 @@ export function TopUpDialog({ disabled }: { disabled?: boolean }) {
         return;
       }
 
-      posthog.capture("wallet_top_up_started", { amount: data.amount });
-      // Hand off to the provider. The wallet is credited by the webhook, not
-      // by anything that happens after this navigation.
-      window.location.href = result.data.checkoutUrl;
+      posthog.capture("wallet_top_up_started", {
+        amount: data.amount,
+        payment_method: data.paymentMethod,
+      });
+      setPendingTopUp(result.data);
     });
   };
 
+  const handleConfirmSent = () => {
+    if (!pendingTopUp) return;
+
+    startTransition(async () => {
+      const result = await reportManualTopUpSent(pendingTopUp.topUpId);
+      if (!result.success) {
+        toast.error(result.error || tToast("somethingWentWrong"));
+        return;
+      }
+
+      toast.success(t("topUpSubmitted"));
+      handleOpenChange(false);
+    });
+  };
+
+  const methodConfig = pendingTopUp
+    ? getManualPaymentMethodConfig(pendingTopUp.paymentMethod)
+    : undefined;
+
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button disabled={disabled} className="gap-2">
           <Plus className="h-4 w-4" />
           {t("topUp")}
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{t("topUpTitle")}</DialogTitle>
-          <DialogDescription>{t("topUpDescription")}</DialogDescription>
+          <DialogTitle>
+            {pendingTopUp ? t("topUpInstructionsTitle") : t("topUpTitle")}
+          </DialogTitle>
+          <DialogDescription>
+            {pendingTopUp
+              ? t("topUpInstructionsDescription")
+              : t("topUpDescription")}
+          </DialogDescription>
         </DialogHeader>
 
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-4"
-          >
-            <div className="flex flex-wrap gap-2">
-              {WALLET_TOP_UP_PRESETS.map((preset) => (
-                <Button
-                  key={preset}
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    form.setValue("amount", preset, { shouldValidate: true })
-                  }
-                >
-                  {preset}
-                </Button>
-              ))}
+        {pendingTopUp && methodConfig ? (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Image
+                src={methodConfig.logo}
+                alt={tCheckout(methodConfig.titleKey as "instapay")}
+                width={32}
+                height={32}
+                className="h-8 w-8 object-contain"
+              />
+              <span className="font-semibold">
+                {tCheckout(methodConfig.titleKey as "instapay")}
+              </span>
             </div>
 
-            <CurrencyInput name="amount" label={t("amount")} required />
+            <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
+              <p className="text-xs text-muted-foreground">
+                {tCheckout("amountToSend")}
+              </p>
+              <p
+                className="text-xl font-bold text-primary"
+                dangerouslySetInnerHTML={{
+                  __html: formatPrice(Number(pendingTopUp.amount), locale, "lg"),
+                }}
+              />
+            </div>
+
+            {methodConfig.qrImage && (
+              <div className="flex justify-center">
+                <Image
+                  src={methodConfig.qrImage}
+                  alt={tCheckout(methodConfig.titleKey as "instapay")}
+                  width={200}
+                  height={200}
+                  className="rounded-lg border"
+                />
+              </div>
+            )}
+
+            {methodConfig.isPlaceholder ? (
+              <p className="text-sm text-muted-foreground">
+                {tCheckout("eCashPlaceholder")}
+              </p>
+            ) : (
+              <div className="space-y-2 text-sm">
+                {methodConfig.accountLabel && (
+                  <p>
+                    <span className="font-medium text-muted-foreground">
+                      {pendingTopUp.paymentMethod === "instapay"
+                        ? tCheckout("instapayAccount")
+                        : tCheckout("vodafoneCashNumber")}
+                      :
+                    </span>{" "}
+                    <span className="font-mono">
+                      {methodConfig.accountLabel}
+                    </span>
+                  </p>
+                )}
+                {methodConfig.paymentLink && (
+                  <p>
+                    <span className="font-medium text-muted-foreground">
+                      {tCheckout("instapayLink")}:
+                    </span>{" "}
+                    <a
+                      href={methodConfig.paymentLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary underline break-all"
+                    >
+                      {methodConfig.paymentLink}
+                    </a>
+                  </p>
+                )}
+              </div>
+            )}
+
+            <p className="text-xs text-muted-foreground">
+              {tCheckout("paymentInstructionsHint")}
+            </p>
 
             <div className="flex justify-end gap-2">
               <Button
                 type="button"
                 variant="ghost"
-                onClick={() => setIsOpen(false)}
+                onClick={() => handleOpenChange(false)}
                 disabled={isPending}
               >
                 {t("cancel")}
               </Button>
-              <Button type="submit" disabled={isPending}>
-                {isPending ? t("redirecting") : t("continueToPayment")}
+              <Button
+                type="button"
+                onClick={handleConfirmSent}
+                disabled={isPending}
+              >
+                {isPending ? t("submitting") : t("iSentThePayment")}
               </Button>
             </div>
-          </form>
-        </Form>
+          </div>
+        ) : (
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(handleSubmit)}
+              className="space-y-4"
+            >
+              <div className="flex flex-wrap gap-2">
+                {WALLET_TOP_UP_PRESETS.map((preset) => (
+                  <Button
+                    key={preset}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      form.setValue("amount", preset, { shouldValidate: true })
+                    }
+                  >
+                    {preset}
+                  </Button>
+                ))}
+              </div>
+
+              <CurrencyInput name="amount" label={t("amount")} required />
+
+              <FormField
+                control={form.control}
+                name="paymentMethod"
+                render={({ field }) => (
+                  <FieldGroup>
+                    <FieldSet>
+                      <FieldTitle className="text-sm font-medium">
+                        {t("paymentMethod")}
+                      </FieldTitle>
+                      <RadioGroup
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        className="grid gap-2"
+                      >
+                        {MANUAL_PAYMENT_METHODS.map((method) => (
+                          <FieldLabel
+                            key={method.value}
+                            htmlFor={`wallet-topup-${method.value}`}
+                            className={cn(
+                              "cursor-pointer rounded-lg border-2 p-3 transition-all",
+                              field.value === method.value
+                                ? "border-primary bg-primary/5 ring-2 ring-primary"
+                                : "border-border hover:border-muted-foreground/40"
+                            )}
+                          >
+                            <Field orientation="horizontal">
+                              <RadioGroupItem
+                                value={method.value}
+                                id={`wallet-topup-${method.value}`}
+                              />
+                              <Image
+                                src={method.logo}
+                                alt={tCheckout(method.titleKey as "instapay")}
+                                width={28}
+                                height={28}
+                                className="h-7 w-7 shrink-0 object-contain"
+                              />
+                              <FieldContent>
+                                <FieldTitle className="text-sm">
+                                  {tCheckout(method.titleKey as "instapay")}
+                                </FieldTitle>
+                                <FieldDescription className="text-xs">
+                                  {tCheckout(
+                                    method.descriptionKey as "instapayDescription"
+                                  )}
+                                </FieldDescription>
+                              </FieldContent>
+                            </Field>
+                          </FieldLabel>
+                        ))}
+
+                        {!WALLET_PAYMOB_TOP_UP_ENABLED && (
+                          <div
+                            aria-disabled="true"
+                            className="flex items-start gap-3 rounded-lg border-2 border-dashed border-border p-3 opacity-60"
+                          >
+                            <div className="mt-0.5 size-4 shrink-0 rounded-full border border-muted-foreground/40" />
+                            <CreditCard className="h-7 w-7 shrink-0 text-muted-foreground" />
+                            <div className="space-y-0.5">
+                              <p className="text-sm font-medium leading-none">
+                                {tCheckout("payByCard")}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {tCheckout("cardPaymentTemporarilyUnavailable")}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </RadioGroup>
+                    </FieldSet>
+                  </FieldGroup>
+                )}
+              />
+
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => handleOpenChange(false)}
+                  disabled={isPending}
+                >
+                  {t("cancel")}
+                </Button>
+                <Button type="submit" disabled={isPending}>
+                  {isPending ? t("submitting") : t("continueToPayment")}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        )}
       </DialogContent>
     </Dialog>
   );

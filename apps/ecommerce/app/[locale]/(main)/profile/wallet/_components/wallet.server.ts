@@ -1,14 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getLocale } from "next-intl/server";
 
 import {
   and,
   db,
   desc,
   eq,
-  userAddresses,
   userWalletTransactions,
   users,
   walletPayoutRequests,
@@ -22,20 +20,14 @@ import {
   reservePayoutAmount,
   toWalletAmount,
 } from "@workspace/db/wallet";
-import {
-  amountToCents,
-  buildBillingData,
-  buildPaymobCheckoutUrl,
-  createPaymobIntention,
-  getPaymobConfig,
-  isPaymobConfigured,
-} from "@workspace/lib/paymob";
 
 import { getAuthUser } from "@/lib/auth/current-user";
+import { isManualPaymentMethod } from "@/lib/manual-payment-methods";
 
 import {
   cancelPayoutRequestSchema,
   payoutFormSchema,
+  reportManualTopUpSchema,
   topUpFormSchema,
   walletTransactionsPageSchema,
   type PayoutFormData,
@@ -44,8 +36,8 @@ import {
 import {
   WALLET_TRANSACTIONS_PAGE_SIZE,
   WALLET_UNAUTHENTICATED_ERROR,
-  buildTopUpReference,
   canRequestPayout,
+  type WalletTopUpMethod,
 } from "./wallet.lib";
 import type {
   WalletActionResult,
@@ -67,9 +59,10 @@ import type {
  *     getAuthUser() returns null and every action refuses.
  *   - Payout eligibility is re-read from `users.role` on the server for every
  *     payout write. Hiding the button is presentation, not a control.
- *   - Nothing here credits a wallet. The only credit path is the
- *     signature-verified Paymob webhook in apps/backend. A user cannot assert
- *     their own top-up succeeded.
+ *   - Nothing here credits a wallet. Manual transfer top-ups stay pending for
+ *     staff review — a user cannot assert their own top-up succeeded. Paymob
+ *     card top-ups remain disabled (WALLET_PAYMOB_TOP_UP_ENABLED); when
+ *     restored they are credited only by the HMAC-verified webhook.
  *
  * Wallet data is per-user and therefore never cached — see
  * docs/caching-and-data-fetching.md §3. Mutations use revalidatePath only;
@@ -264,16 +257,24 @@ export async function getWalletTransactions(input: {
   }
 }
 
+export interface CreateWalletTopUpResult {
+  topUpId: string;
+  amount: string;
+  paymentMethod: WalletTopUpMethod;
+}
+
 /**
- * Starts a top-up: records the intent, then hands back a Paymob checkout URL.
+ * Starts a top-up via a manual transfer method (InstaPay / Vodafone Cash /
+ * E& Cash). Records a pending intent and returns the details needed to show
+ * payment instructions.
  *
- * This does NOT move any money. The wallet is credited only when Paymob calls
- * the HMAC-verified webhook in apps/backend, which matches the payment back to
- * the row created here via `special_reference`.
+ * This does NOT move any money. The wallet is credited only after staff
+ * confirm the transfer (or, when card top-ups are restored via
+ * WALLET_PAYMOB_TOP_UP_ENABLED, via the HMAC-verified Paymob webhook).
  */
 export async function createWalletTopUp(
   data: TopUpFormData
-): Promise<WalletActionResult<{ checkoutUrl: string; topUpId: string }>> {
+): Promise<WalletActionResult<CreateWalletTopUpResult>> {
   try {
     const actor = await getWalletActor();
     if (!actor) return { success: false, error: UNAUTHENTICATED };
@@ -286,12 +287,8 @@ export async function createWalletTopUp(
       };
     }
 
-    if (!isPaymobConfigured()) {
-      return { success: false, error: "Payments are not available right now" };
-    }
-    const config = getPaymobConfig();
-    if (!config) {
-      return { success: false, error: "Payments are not available right now" };
+    if (!isManualPaymentMethod(parsed.data.paymentMethod)) {
+      return { success: false, error: "Invalid payment method" };
     }
 
     const wallet = await getOrCreateUserWallet(db, actor.userId);
@@ -299,19 +296,8 @@ export async function createWalletTopUp(
       return { success: false, error: "Your wallet is not active" };
     }
 
-    // Normalized through the same helper the ledger uses, so the figure stored
-    // here is exactly the figure the webhook will later compare against.
     const amount = toWalletAmount(parsed.data.amount);
-
-    const dbUser = await db.query.users.findFirst({
-      where: eq(users.id, actor.userId),
-      columns: { fullName: true, email: true, phone: true },
-    });
-
-    const address = await db.query.userAddresses.findFirst({
-      where: eq(userAddresses.userId, actor.userId),
-      orderBy: [desc(userAddresses.isDefault), desc(userAddresses.createdAt)],
-    });
+    const paymentMethod = parsed.data.paymentMethod;
 
     const [topUp] = await db
       .insert(walletTopUps)
@@ -321,7 +307,8 @@ export async function createWalletTopUp(
         amount,
         currency: "EGP",
         status: "pending",
-        provider: "paymob",
+        provider: paymentMethod,
+        metadata: { paymentMethod, channel: "manual_transfer" },
       })
       .returning({ id: walletTopUps.id });
 
@@ -329,81 +316,78 @@ export async function createWalletTopUp(
       return { success: false, error: "Failed to start top up" };
     }
 
-    const reference = buildTopUpReference(topUp.id);
-    const locale = await getLocale();
-    const siteUrl =
-      process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-      "http://localhost:3000";
-    // localePrefix is "as-needed", so only non-default locales carry a prefix.
-    const localePath = locale === "en" ? "" : `/${locale}`;
+    revalidatePath("/profile/wallet");
 
-    const billingData = buildBillingData({
-      fullName: address?.fullName || dbUser?.fullName || "Customer",
-      phone: address?.phone || dbUser?.phone || "+201000000000",
-      email: dbUser?.email || "customer@tallaby.com",
-      addressLine1: address?.addressLine1 || "NA",
-      addressLine2: address?.addressLine2,
-      city: address?.city || "Cairo",
-      state: address?.state || "Cairo",
-      country: address?.country,
-      postalCode: address?.postalCode,
-    });
+    return {
+      success: true,
+      data: {
+        topUpId: topUp.id,
+        amount,
+        paymentMethod,
+      },
+    };
+  } catch (error) {
+    console.error("createWalletTopUp error:", error);
+    return { success: false, error: "Failed to start top up" };
+  }
+}
 
-    let checkoutUrl: string;
-    try {
-      const intention = await createPaymobIntention({
-        amount: amountToCents(amount),
-        currency: "EGP",
-        paymentMethods: [config.cardIntegrationId],
-        items: [
-          {
-            name: "Wallet top up",
-            amount: amountToCents(amount),
-            description: "Tallaby wallet top up",
-            quantity: 1,
-          },
-        ],
-        billingData,
-        specialReference: reference,
-        notificationUrl: config.webhookUrl,
-        redirectionUrl: `${siteUrl}${localePath}/profile/wallet?topup=${topUp.id}`,
-      });
+/**
+ * Buyer self-reports that they sent the manual transfer. Does not credit the
+ * wallet — only stamps metadata so ops can verify, matching checkout orders.
+ */
+export async function reportManualTopUpSent(
+  topUpId: string
+): Promise<WalletActionResult<{ topUpId: string }>> {
+  try {
+    const actor = await getWalletActor();
+    if (!actor) return { success: false, error: UNAUTHENTICATED };
 
-      checkoutUrl = buildPaymobCheckoutUrl(
-        config.publicKey,
-        intention.client_secret
-      );
-    } catch (error) {
-      // The provider never accepted this intent, so close the row out rather
-      // than leaving a pending top-up that can never be paid.
-      console.error("createWalletTopUp intention error:", error);
-      await db
-        .update(walletTopUps)
-        .set({
-          status: "failed",
-          failureReason: "Failed to create payment intention",
-          updatedAt: new Date().toISOString(),
-        })
-        .where(eq(walletTopUps.id, topUp.id));
-
-      return { success: false, error: "Failed to start top up" };
+    const parsed = reportManualTopUpSchema.safeParse({ topUpId });
+    if (!parsed.success) {
+      return { success: false, error: "Invalid top up" };
     }
 
+    const topUp = await db.query.walletTopUps.findFirst({
+      where: and(
+        eq(walletTopUps.id, parsed.data.topUpId),
+        eq(walletTopUps.userId, actor.userId)
+      ),
+      columns: { id: true, status: true, provider: true, metadata: true },
+    });
+
+    if (!topUp) {
+      return { success: false, error: "Top up not found" };
+    }
+
+    if (!isManualPaymentMethod(topUp.provider)) {
+      return { success: false, error: "Top up is not a manual transfer" };
+    }
+
+    if (topUp.status !== "pending" && topUp.status !== "processing") {
+      return { success: false, error: "Top up can no longer be updated" };
+    }
+
+    const now = new Date().toISOString();
     await db
       .update(walletTopUps)
       .set({
         status: "processing",
-        providerReference: reference,
-        updatedAt: new Date().toISOString(),
+        metadata: {
+          ...((topUp.metadata as Record<string, unknown> | null) ?? {}),
+          paymentSelfReported: true,
+          paymentSelfReportedAt: now,
+        },
+        updatedAt: now,
       })
       .where(eq(walletTopUps.id, topUp.id));
 
     revalidatePath("/profile/wallet");
 
-    return { success: true, data: { checkoutUrl, topUpId: topUp.id } };
+    return { success: true, data: { topUpId: topUp.id } };
   } catch (error) {
-    console.error("createWalletTopUp error:", error);
-    return { success: false, error: "Failed to start top up" };
+    console.error("reportManualTopUpSent error:", error);
+    return { success: false, error: "Failed to update top up" };
   }
 }
 

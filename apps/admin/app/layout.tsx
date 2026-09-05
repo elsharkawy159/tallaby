@@ -2,6 +2,7 @@ import { Montserrat, Noto_Kufi_Arabic } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { AdminProvider } from "@/contexts/admin-context";
 import { QueryProvider } from "@/providers/query-provider";
+import { DirectionProvider } from "@workspace/ui/components/direction";
 import "./globals.css";
 import "@workspace/ui/globals.css";
 import { Toaster } from "@workspace/ui/components/sonner";
@@ -42,23 +43,25 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" dir="ltr" suppressHydrationWarning>
       <head>
         <meta name="robots" content="noindex, nofollow" />
       </head>
       <body
         className={`${montserrat.variable} ${notoKufiArabic.variable} font-montserrat bg-background text-foreground`}
       >
-        <ThemeProvider
-          defaultTheme="light"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <QueryProvider>
-            <AdminProvider>{children}</AdminProvider>
-          </QueryProvider>
-          <Toaster />
-        </ThemeProvider>
+        <DirectionProvider direction="ltr">
+          <ThemeProvider
+            defaultTheme="light"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <QueryProvider>
+              <AdminProvider>{children}</AdminProvider>
+            </QueryProvider>
+            <Toaster />
+          </ThemeProvider>
+        </DirectionProvider>
       </body>
     </html>
   );

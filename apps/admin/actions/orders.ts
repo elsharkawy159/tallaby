@@ -5,6 +5,7 @@ import { orders, orderItems, users, products, sellers } from "@workspace/db";
 import { eq, and, desc, sql, gte, lte, like, or } from "drizzle-orm";
 import { fulfillDigitalOrderItems } from "@workspace/lib/digital";
 import { getAdminUser } from "./auth";
+import { isAdminEditablePaymentMethod } from "@/app/(dashboard)/orders/orders.lib";
 
 export async function getAllOrders(params?: {
   status?: string;
@@ -213,8 +214,20 @@ export async function updateOrderPaymentStatus(
 
     const previousOrder = await db.query.orders.findFirst({
       where: eq(orders.id, orderId),
-      columns: { paymentStatus: true },
+      columns: { paymentStatus: true, paymentMethod: true },
     });
+
+    if (!previousOrder) {
+      throw new Error("Order not found");
+    }
+
+    if (!isAdminEditablePaymentMethod(previousOrder.paymentMethod)) {
+      return {
+        success: false,
+        error:
+          "Payment status can only be changed for online / transfer payments",
+      };
+    }
 
     const updatedOrder = await db
       .update(orders)
@@ -234,7 +247,7 @@ export async function updateOrderPaymentStatus(
 
     // Grant digital access the moment payment is confirmed. Idempotent, so a
     // re-save of an already-paid order never double-fulfills.
-    if (paymentStatus === "paid" && previousOrder?.paymentStatus !== "paid") {
+    if (paymentStatus === "paid" && previousOrder.paymentStatus !== "paid") {
       const fulfillment = await fulfillDigitalOrderItems(orderId, {
         actorUserId: adminUser.user?.id,
       });

@@ -4,6 +4,7 @@ import { Button } from "@workspace/ui/components/button";
 import {
   Carousel,
   CarouselContent,
+  CarouselDots,
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
@@ -76,8 +77,9 @@ export const SimilarProducts = ({
               );
             })}
           </CarouselContent>
-          <CarouselPrevious className="absolute start-0 top-1/2 -translate-y-1/2 z-10" />
-          <CarouselNext className="absolute end-0 top-1/2 -translate-y-1/2 z-10" />
+          {/* <CarouselPrevious className="absolute start-0 top-1/2 -translate-y-1/2 z-10" />
+          <CarouselNext className="absolute end-0 top-1/2 -translate-y-1/2 z-10" /> */}
+          <CarouselDots />
         </Carousel>
       </div>
     </section>

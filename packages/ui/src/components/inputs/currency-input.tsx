@@ -69,7 +69,7 @@ export const CurrencyInput = React.forwardRef<
           control={control}
           render={({ field }) => (
             <div className="relative">
-              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
+              <div className="absolute start-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
                 <span className="text-xs font-medium">{EGP_SYMBOL}</span>
               </div>
 
@@ -83,7 +83,7 @@ export const CurrencyInput = React.forwardRef<
                   value ?? (typeof field.value === "number" ? field.value : "")
                 }
                 className={cn(
-                  "pl-12",
+                  "ps-12 rtl:pe-12 rtl:text-start",
                   fieldError && "border-red-500 focus:border-red-500"
                 )}
                 onChange={(e) => {

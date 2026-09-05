@@ -1,6 +1,10 @@
 import { formatCurrency } from "@workspace/lib";
 
-import type { WalletPayoutStatus, WalletStatus } from "./wallets.types";
+import type {
+  WalletPayoutStatus,
+  WalletStatus,
+  WalletTopUpStatus,
+} from "./wallets.types";
 
 type BadgeVariant = "default" | "secondary" | "destructive" | "outline";
 
@@ -9,6 +13,19 @@ export function payoutStatusVariant(status: WalletPayoutStatus): BadgeVariant {
     case "completed":
       return "default";
     case "rejected":
+    case "failed":
+      return "destructive";
+    case "cancelled":
+      return "outline";
+    default:
+      return "secondary";
+  }
+}
+
+export function topUpStatusVariant(status: WalletTopUpStatus): BadgeVariant {
+  switch (status) {
+    case "succeeded":
+      return "default";
     case "failed":
       return "destructive";
     case "cancelled":
@@ -52,11 +69,33 @@ export const PAYOUT_STATUS_OPTIONS: {
   { value: "failed", label: "Failed" },
 ];
 
+export const TOP_UP_STATUS_OPTIONS: {
+  value: WalletTopUpStatus;
+  label: string;
+}[] = [
+  { value: "pending", label: "Pending" },
+  { value: "processing", label: "Processing" },
+  { value: "succeeded", label: "Succeeded" },
+  { value: "failed", label: "Failed" },
+  { value: "cancelled", label: "Cancelled" },
+];
+
 export const WALLET_STATUS_OPTIONS: { value: WalletStatus; label: string }[] = [
   { value: "active", label: "Active" },
   { value: "frozen", label: "Frozen" },
   { value: "closed", label: "Closed" },
 ];
+
+const PROVIDER_LABELS: Record<string, string> = {
+  instapay: "InstaPay",
+  vodafone_cash: "Vodafone Cash",
+  e_cash: "e& Cash",
+  paymob: "Paymob",
+};
+
+export function formatTopUpProvider(provider: string): string {
+  return PROVIDER_LABELS[provider] ?? provider;
+}
 
 /** Renders the free-form destination jsonb without assuming a fixed shape. */
 export function describeDestination(destination: unknown): string {

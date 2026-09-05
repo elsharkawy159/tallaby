@@ -21,6 +21,11 @@ import {
   invalidateProduct,
   type ProductCacheSnapshot,
 } from "@workspace/cache";
+import {
+  syncCategoryProductCountForProductChange,
+  syncCategoryProductCountForProductMutation,
+  syncCategoryProductCountOnDelete,
+} from "@workspace/db/categories";
 
 function normalizeRichTextContent(html?: string | null): string | null {
   if (!html?.trim()) return null;
@@ -1506,6 +1511,14 @@ export async function updateProduct(
     revalidatePath(`/products/${productId}`);
 
     const after = await toSnapshot(productId);
+    if (before.categoryId && after?.categoryId) {
+      await syncCategoryProductCountForProductMutation({
+        previousCategoryId: before.categoryId,
+        nextCategoryId: after.categoryId,
+        previousStatus: before.status,
+        nextStatus: after.status,
+      });
+    }
     await applyInvalidation(invalidateProduct(before, after), {
       from: "dashboard",
       mode: "action",
@@ -1558,6 +1571,14 @@ export async function toggleProductStatus(productId: string) {
       })
       .where(eq(products.id, productId))
       .returning();
+
+    if (before?.categoryId) {
+      await syncCategoryProductCountForProductChange({
+        categoryId: before.categoryId,
+        previousStatus: before.status,
+        nextStatus,
+      });
+    }
 
     const after = await toSnapshot(productId);
     await applyInvalidation(invalidateProduct(before, after), {
@@ -1789,6 +1810,13 @@ export async function deleteProduct(productId: string) {
       .where(
         and(eq(products.id, productId), eq(products.sellerId, session.user.id))
       );
+
+    if (before?.categoryId) {
+      await syncCategoryProductCountOnDelete({
+        categoryId: before.categoryId,
+        status: before.status,
+      });
+    }
 
     if (before) {
       await applyInvalidation(invalidateProduct(before, null), {

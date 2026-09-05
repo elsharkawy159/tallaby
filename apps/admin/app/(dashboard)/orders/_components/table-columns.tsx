@@ -26,6 +26,7 @@ import {
   getCustomerName,
   getCustomerEmail,
   getItemsCount,
+  isAdminEditablePaymentMethod,
 } from "../orders.lib";
 
 const ORDER_STATUSES = [
@@ -181,7 +182,7 @@ export function getOrdersColumns(
                 </DropdownMenuSubContent>
               </DropdownMenuSub>
 
-              {order.paymentMethod === "online" &&
+              {isAdminEditablePaymentMethod(order.paymentMethod) &&
                 order.paymentStatus !== "paid" &&
                 onPaymentStatusChange && (
                   <>

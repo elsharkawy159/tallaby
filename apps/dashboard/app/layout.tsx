@@ -5,6 +5,7 @@ import { getLocale } from "next-intl/server";
 import { NextIntlClientProvider } from "next-intl";
 // import { ThemeProvider } from "next-themes";
 import { Toaster } from "@workspace/ui/components/sonner";
+import { DirectionProvider } from "@workspace/ui/components/direction";
 import { getSiteData } from "@/actions/site-data";
 import { SiteDataProvider } from "@/providers/site-data";
 
@@ -37,25 +38,28 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const locale = await getLocale();
+  const direction = locale === "ar" ? "rtl" : "ltr";
 
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html lang={locale} dir={direction} suppressHydrationWarning>
       <head>
         <meta name="robots" content="noindex, nofollow" />
       </head>
       <body className={`${montserrat.variable} antialiased`}>
-        <SiteDataProvider promise={getSiteData()}>
-          <NextIntlClientProvider>
-            {/* <ThemeProvider
-              attribute="class"
-              defaultTheme="light"
-              disableTransitionOnChange
-            > */}
-              {children}
-              <Toaster position="top-center" />
-            {/* </ThemeProvider> */}
-          </NextIntlClientProvider>
-        </SiteDataProvider>
+        <DirectionProvider direction={direction}>
+          <SiteDataProvider promise={getSiteData()}>
+            <NextIntlClientProvider>
+              {/* <ThemeProvider
+                attribute="class"
+                defaultTheme="light"
+                disableTransitionOnChange
+              > */}
+                {children}
+                <Toaster position="top-center" />
+              {/* </ThemeProvider> */}
+            </NextIntlClientProvider>
+          </SiteDataProvider>
+        </DirectionProvider>
       </body>
     </html>
   );

@@ -10,7 +10,13 @@ import {
   and,
   desc,
 } from "@workspace/db";
+import { getLocale } from "next-intl/server";
 import { getCurrentUserId } from "@/lib/get-current-user-id";
+import {
+  mergeProductWithTranslation,
+  pickTranslationFromArray,
+  type ProductLocale,
+} from "@/lib/product-translations";
 import { validateCoupon } from "./coupons";
 import { calculateOrderShippingCost, getThresholdShippingDiscount } from "@/lib/shipping";
 import type { CheckoutSummary } from "@/lib/coupon-utils";
@@ -23,13 +29,19 @@ const cartWithShippingItems = {
       product: {
         columns: {
           id: true,
-          title: true,
           sellerId: true,
           productType: true,
           freeDelivery: true,
           dimensions: true,
         },
         with: {
+          productTranslations: {
+            columns: {
+              locale: true,
+              title: true,
+              slug: true,
+            },
+          },
           seller: {
             columns: {
               displayName: true,
@@ -43,6 +55,36 @@ const cartWithShippingItems = {
     },
   },
 } as const;
+
+function localizeCartItems<
+  T extends {
+    product: Record<string, unknown> & {
+      productTranslations?: Array<{
+        locale: string
+        title: string
+        slug?: string | null
+      }>
+    }
+  },
+>(items: T[], locale: ProductLocale): T[] {
+  return items.map((item) => {
+    const product = item.product
+    if (!product) return item
+
+    const translation = pickTranslationFromArray(
+      product.productTranslations ?? [],
+      locale,
+    )
+    const mergedProduct = mergeProductWithTranslation(product, translation)
+    const { productTranslations: _translations, ...localizedProduct } =
+      mergedProduct
+
+    return {
+      ...item,
+      product: localizedProduct as unknown as T["product"],
+    }
+  })
+}
 
 async function getDestinationState(
   userId: string,
@@ -156,6 +198,10 @@ export async function getCheckoutData() {
       return { success: false, error: "Cart is empty" };
     }
 
+    const locale = (await getLocale()) as ProductLocale;
+    const localizedCartItems = localizeCartItems(cart.cartItems, locale);
+    const localizedCart = { ...cart, cartItems: localizedCartItems };
+
     const addresses = await db.query.userAddresses.findMany({
       where: eq(userAddresses.userId, userId),
       orderBy: [desc(userAddresses.isDefault)],
@@ -166,7 +212,7 @@ export async function getCheckoutData() {
       orderBy: [desc(paymentMethods.isDefault)],
     });
 
-    const itemsBySeller = cart.cartItems.reduce(
+    const itemsBySeller = localizedCartItems.reduce(
       (acc, item) => {
         const sellerId = item.product.sellerId;
         if (!acc[sellerId]) {
@@ -186,18 +232,18 @@ export async function getCheckoutData() {
     const defaultAddress =
       addresses.find((address) => address.isDefault) ?? addresses[0] ?? null;
 
-    const shippingCost = calculateOrderShippingCost(cart.cartItems, {
+    const shippingCost = calculateOrderShippingCost(localizedCartItems, {
       destinationState: defaultAddress?.state,
     });
 
-    const summary = buildBaseSummary(cart.cartItems, shippingCost);
+    const summary = buildBaseSummary(localizedCartItems, shippingCost);
 
     const walletSummary = await getUserWalletSummary(db, userId);
 
     return {
       success: true,
       data: {
-        cart,
+        cart: localizedCart,
         addresses,
         paymentMethods: paymentMethodsList,
         itemsBySeller,

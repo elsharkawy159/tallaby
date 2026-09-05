@@ -54,7 +54,7 @@ export const SwitchInput = React.forwardRef<HTMLDivElement, SwitchInputProps>(
                 >
                   {label}
                   {baseProps.required && (
-                    <span className="text-red-500 ml-0.5">*</span>
+                    <span className="text-red-500 ms-0.5">*</span>
                   )}
                 </label>
               )}
@@ -79,7 +79,7 @@ export const SwitchInput = React.forwardRef<HTMLDivElement, SwitchInputProps>(
                 >
                   {label}
                   {baseProps.required && (
-                    <span className="text-red-500 ml-0.5">*</span>
+                    <span className="text-red-500 ms-0.5">*</span>
                   )}
                 </label>
               )}

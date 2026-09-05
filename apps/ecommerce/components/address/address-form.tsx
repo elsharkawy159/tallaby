@@ -231,7 +231,6 @@ export const AddressForm = ({
                   name="postalCode"
                   label="Postal Code"
                   placeholder="Enter postal code"
-                  required
                 />
               </div>
 

@@ -148,24 +148,6 @@ export function ManualPaymentInstructions({
             >
               {t("completed")}
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={isPending}
-              onClick={handleConfirm}
-              className="flex-1"
-            >
-              {t("orderAmountSent")}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={isPending}
-              onClick={handleConfirm}
-              className="flex-1"
-            >
-              {t("sentSuccessfully")}
-            </Button>
           </div>
         </div>
       </CardContent>

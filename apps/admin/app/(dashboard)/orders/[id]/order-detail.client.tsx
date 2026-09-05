@@ -37,9 +37,18 @@ import {
   updateOrderStatus,
   updateOrderPaymentStatus,
 } from "@/actions/orders";
-import { formatCurrency, formatDate, getStatusColor, getPaymentStatusColor, getStatusLabel } from "../orders.lib";
+import {
+  formatCurrency,
+  formatDate,
+  getStatusColor,
+  getPaymentStatusColor,
+  getStatusLabel,
+  isAdminEditablePaymentMethod,
+  formatPaymentMethodLabel,
+} from "../orders.lib";
+import { parseProductImages } from "../../products/products.lib";
 import Image from "next/image";
-import { getPublicUrl } from "@workspace/ui/lib/utils";
+import { getPublicUrl } from "@/lib/utils";
 
 const ORDER_STATUSES = [
   "pending",
@@ -196,10 +205,19 @@ export function OrderDetailContent({ order }: OrderDetailContentProps) {
                 {getStatusLabel(paymentStatus)}
               </Badge>
             </div>
+            <div className="text-sm">
+              <span className="text-muted-foreground">Method: </span>
+              <span className="font-medium">
+                {formatPaymentMethodLabel(order.paymentMethod)}
+              </span>
+            </div>
             <Select
               value={paymentStatus}
               onValueChange={handlePaymentStatusChange}
-              disabled={isUpdating || order.paymentMethod !== "online"}
+              disabled={
+                isUpdating ||
+                !isAdminEditablePaymentMethod(order.paymentMethod)
+              }
             >
               <SelectTrigger>
                 <SelectValue />
@@ -212,9 +230,10 @@ export function OrderDetailContent({ order }: OrderDetailContentProps) {
                 ))}
               </SelectContent>
             </Select>
-            {order.paymentMethod !== "online" && (
+            {!isAdminEditablePaymentMethod(order.paymentMethod) && (
               <p className="text-xs text-muted-foreground">
-                Payment status can only be changed for online payments
+                Payment status can only be changed for online / transfer
+                payments
               </p>
             )}
           </CardContent>
@@ -239,11 +258,16 @@ export function OrderDetailContent({ order }: OrderDetailContentProps) {
             <CardContent>
               <div className="space-y-4">
                 {order.orderItems.map((item) => {
-                  const imageUrl =
-                    item.productVariant?.imageUrl ||
-                    (item.product?.images && item.product.images.length > 0
-                      ? item.product.images[0]
-                      : null);
+                  const rawImage =
+                    item.productVariant?.imageUrl?.trim() ||
+                    parseProductImages(item.product?.images)[0] ||
+                    null;
+                  const imageSrc = rawImage
+                    ? rawImage.startsWith("http://") ||
+                      rawImage.startsWith("https://")
+                      ? rawImage
+                      : getPublicUrl(rawImage, "products")
+                    : null;
 
                   return (
                     <div
@@ -251,9 +275,9 @@ export function OrderDetailContent({ order }: OrderDetailContentProps) {
                       className="flex gap-4 p-4 border rounded-lg"
                     >
                       <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-gray-100 shrink-0">
-                        {imageUrl ? (
+                        {imageSrc ? (
                           <Image
-                            src={getPublicUrl(imageUrl, "products")}
+                            src={imageSrc}
                             alt={item.productName}
                             fill
                             className="object-cover"

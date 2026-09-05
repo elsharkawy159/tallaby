@@ -148,7 +148,7 @@ export const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
                 {index < steps.length - 1 && (
                   <div
                     className={cn(
-                      "absolute left-5 top-10 w-0.5 transition-colors duration-200",
+                      "absolute start-5 top-10 w-0.5 transition-colors duration-200",
                       size === "sm" && "top-8",
                       size === "md" && "top-10",
                       size === "lg" && "top-12",

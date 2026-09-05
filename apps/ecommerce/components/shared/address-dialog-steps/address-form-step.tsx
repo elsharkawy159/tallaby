@@ -231,7 +231,6 @@ export const AddressFormStep = forwardRef<
                   name="postalCode"
                   label={t("postalCode")}
                   placeholder={t("enterPostalCode")}
-                  required
                 />
               </div>
             </div>

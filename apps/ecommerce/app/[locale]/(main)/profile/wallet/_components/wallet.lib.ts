@@ -32,6 +32,21 @@ export const WALLET_TOP_UP_MIN = 10;
 export const WALLET_TOP_UP_MAX = 50_000;
 export const WALLET_PAYOUT_MIN = 50;
 
+/**
+ * Card (Paymob) top-ups are temporarily off. Flip to true once Paymob is fixed;
+ * the UI already has a disabled card option ready to re-enable.
+ */
+export const WALLET_PAYMOB_TOP_UP_ENABLED = false;
+
+/** Manual transfer methods available for wallet top-up (same as checkout). */
+export const WALLET_TOP_UP_METHODS = [
+  "instapay",
+  "vodafone_cash",
+  "e_cash",
+] as const;
+
+export type WalletTopUpMethod = (typeof WALLET_TOP_UP_METHODS)[number];
+
 /** Preset amounts offered as one-tap buttons in the top-up dialog. */
 export const WALLET_TOP_UP_PRESETS = [50, 100, 250, 500] as const;
 
