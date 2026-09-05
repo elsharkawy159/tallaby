@@ -19,6 +19,7 @@ import {
   restoreStock,
   type StockLine,
 } from "@workspace/db/inventory";
+import { cancelPendingAffiliateCommission } from "@workspace/db/affiliates";
 import { placeOrderFromCart } from "@workspace/lib/orders";
 import {
   applyInvalidation,
@@ -404,6 +405,8 @@ export async function cancelOrder(orderId: string, reason?: string) {
             : { kind: "product" as const, id: item.productId, quantity: item.quantity }
         );
         stockResults = await restoreStock(tx, stockLines);
+
+        await cancelPendingAffiliateCommission(tx, orderId);
       });
     } catch (err) {
       if (err instanceof OrderAlreadyTransitionedError) {

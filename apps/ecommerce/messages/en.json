@@ -1379,7 +1379,8 @@
       "order_payment": "Order payment",
       "refund": "Refund",
       "adjustment": "Adjustment",
-      "bonus": "Bonus"
+      "bonus": "Bonus",
+      "commission_reversal": "Commission reversal"
     },
     "payoutStatus": {
       "pending": "Pending",
@@ -1394,6 +1395,57 @@
       "bank_transfer": "Bank transfer",
       "instapay": "InstaPay",
       "mobile_wallet": "Mobile wallet"
+    }
+  },
+  "affiliate": {
+    "navLabel": "Affiliate",
+    "signInTitle": "Sign in to join the affiliate program",
+    "signInDescription": "Sign in to your Tallaby account to activate your affiliate code and start earning.",
+    "signIn": "Sign in",
+    "joinPromptTitle": "Become a Tallaby affiliate",
+    "joinPromptDescription": "Get a permanent promo code to share. Customers get 10% off, and you earn 10% when their order is delivered.",
+    "joinCta": "Join the Affiliate Program",
+    "joining": "Joining…",
+    "joinSuccess": "You're an affiliate! Your code is {code}.",
+    "joinFailed": "Could not activate the affiliate program right now. Please try again.",
+    "unavailableTitle": "Affiliate program unavailable",
+    "unavailableDescription": "We could not load your affiliate account right now. Please try again in a moment.",
+    "yourCode": "Your affiliate code",
+    "yourCodeDescription": "Share this code — it's permanent and reusable across unlimited orders.",
+    "inactive": "Inactive",
+    "copyCode": "Copy code",
+    "share": "Share",
+    "codeCopied": "Code copied to clipboard",
+    "copyFailed": "Could not copy — please copy it manually",
+    "shareText": "Save 10% at Tallaby with my code {code}",
+    "shareCopied": "Share message copied to clipboard",
+    "totalOrders": "Total Orders",
+    "deliveredOrders": "Delivered",
+    "pendingProfit": "Pending Profit",
+    "totalProfit": "Total Profit",
+    "walletBalance": "Wallet Balance",
+    "viewWallet": "View wallet",
+    "referredOrders": "Referred Orders",
+    "referredOrdersDescription": "Orders placed with your code. Customer details are never shown here.",
+    "noOrdersYet": "No orders yet. Share your code to start earning.",
+    "orderReference": "Order",
+    "orderStatus": "Status",
+    "orderAmount": "Order amount",
+    "yourProfit": "Your Profit",
+    "pending": "Pending",
+    "reversed": "Reversed",
+    "orderStatuses": {
+      "pending": "Pending",
+      "payment_processing": "Payment processing",
+      "confirmed": "Confirmed",
+      "shipping_soon": "Shipping soon",
+      "shipped": "Shipped",
+      "out_for_delivery": "Out for delivery",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled",
+      "refund_requested": "Refund requested",
+      "refunded": "Refunded",
+      "returned": "Returned"
     }
   }
 }

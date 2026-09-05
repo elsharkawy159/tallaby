@@ -1,5 +1,10 @@
 import { and, db, deliveries, eq, orderItems, orders, payments, shipments } from "@workspace/db";
 import { creditSellerOnDelivery } from "@workspace/db/wallet";
+import {
+  earnAffiliateCommission,
+  reverseAffiliateCommission,
+  cancelPendingAffiliateCommission,
+} from "@workspace/db/affiliates";
 
 import type { CollectionMethod } from "./shipping-status";
 import type { ShippingStatus } from "./shipping-status";
@@ -199,6 +204,11 @@ export async function applyShipmentStatus({
 
     if (status === "delivered") {
       await creditSellerOnDelivery(tx, orderId);
+      await earnAffiliateCommission(tx, orderId);
+    } else if (status === "returned") {
+      await reverseAffiliateCommission(tx, orderId);
+    } else if (status === "cancelled") {
+      await cancelPendingAffiliateCommission(tx, orderId);
     }
   });
 }

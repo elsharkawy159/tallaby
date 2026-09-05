@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { users, deliveries, shipments, orders, payments, paymentMethods, carts, categories, sellers, coupons, notifications, contacts, userAddresses, products, productVariants, refunds, returns, orderItems, shipmentItems, productQuestions, shippingAddresses, couponUsage, cartItems, reviews, returnItems, reviewVotes, searchLogs, sellerDocuments, sellerPayoutItems, sellerPayouts, reviewComments, userDevices, wishlistItems, wishlists, brands, productAnswers, userRewards, productTranslations, digitalProducts, digitalOrders, sellerCategories, sellerWallet, walletTransactions, digitalFiles, licenseKeys, digitalBundleItems, digitalAccessLogs, shippingProviders, shipmentBatches, shipmentBatchItems, userWallets, userWalletTransactions, walletTopUps, walletPayoutRequests } from "./schema";
+import { users, deliveries, shipments, orders, payments, paymentMethods, carts, categories, sellers, coupons, notifications, contacts, userAddresses, products, productVariants, refunds, returns, orderItems, shipmentItems, productQuestions, shippingAddresses, couponUsage, cartItems, reviews, returnItems, reviewVotes, searchLogs, sellerDocuments, sellerPayoutItems, sellerPayouts, reviewComments, userDevices, wishlistItems, wishlists, brands, productAnswers, userRewards, productTranslations, digitalProducts, digitalOrders, sellerCategories, sellerWallet, walletTransactions, digitalFiles, licenseKeys, digitalBundleItems, digitalAccessLogs, shippingProviders, shipmentBatches, shipmentBatchItems, userWallets, userWalletTransactions, walletTopUps, walletPayoutRequests, affiliates, affiliateCommissions } from "./schema";
 
 export const deliveriesRelations = relations(deliveries, ({one}) => ({
 	user: one(users, {
@@ -735,6 +735,51 @@ export const walletPayoutRequestsRelations = relations(walletPayoutRequests, ({o
 	}),
 	transaction: one(userWalletTransactions, {
 		fields: [walletPayoutRequests.transactionId],
+		references: [userWalletTransactions.id]
+	}),
+}));
+
+/* Affiliate program (migration 0029). */
+
+export const affiliatesRelations = relations(affiliates, ({one, many}) => ({
+	user: one(users, {
+		fields: [affiliates.userId],
+		references: [users.id]
+	}),
+	coupon: one(coupons, {
+		fields: [affiliates.couponId],
+		references: [coupons.id]
+	}),
+	commissions: many(affiliateCommissions),
+}));
+
+export const affiliateCommissionsRelations = relations(affiliateCommissions, ({one, many}) => ({
+	affiliate: one(affiliates, {
+		fields: [affiliateCommissions.affiliateId],
+		references: [affiliates.id]
+	}),
+	user: one(users, {
+		fields: [affiliateCommissions.userId],
+		references: [users.id]
+	}),
+	order: one(orders, {
+		fields: [affiliateCommissions.orderId],
+		references: [orders.id]
+	}),
+	coupon: one(coupons, {
+		fields: [affiliateCommissions.couponId],
+		references: [coupons.id]
+	}),
+	parentCommission: one(affiliateCommissions, {
+		fields: [affiliateCommissions.parentCommissionId],
+		references: [affiliateCommissions.id],
+		relationName: "affiliateCommissions_parentCommissionId_affiliateCommissions_id"
+	}),
+	reversals: many(affiliateCommissions, {
+		relationName: "affiliateCommissions_parentCommissionId_affiliateCommissions_id"
+	}),
+	walletTransaction: one(userWalletTransactions, {
+		fields: [affiliateCommissions.walletTransactionId],
 		references: [userWalletTransactions.id]
 	}),
 }));

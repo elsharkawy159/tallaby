@@ -1,4 +1,3 @@
-import { Home, ShoppingCart, Store } from "lucide-react";
 import type { NavigationItem } from "./header.types";
 import { getTranslations } from "next-intl/server";
 
@@ -26,17 +25,17 @@ export const getBottomNavigationItems = async (): Promise<NavigationItem[]> => {
     {
       href: "/",
       label: t("home"),
-      icon: Home,
+      icon: "home",
     },
     {
       href: "/products",
       label: t("shopping"),
-      icon: Store,
+      icon: "shopping",
     },
     {
       href: "/cart",
       label: t("cart"),
-      icon: ShoppingCart,
+      icon: "cart",
     },
   ];
 };

@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
-import Link from 'next/link'
+import { useEffect, useState, useTransition } from 'react'
+import { toast } from 'sonner'
+import posthog from 'posthog-js'
 import {
   ArrowRight,
   Check,
@@ -22,7 +23,16 @@ import { Badge } from '@workspace/ui/components/badge'
 import { Button } from '@workspace/ui/components/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@workspace/ui/components/card'
 
-const CODE = 'OMAR10EQH'
+import { Link, useRouter } from '@/i18n/navigation'
+import { joinAffiliateProgramAction } from '@/actions/affiliate'
+
+/** Shown to a guest, or an authenticated customer who hasn't joined yet — never a real code. */
+const PREVIEW_CODE = 'OMAR10EQH'
+
+export interface AffiliatePageAccount {
+  code: string
+  status: 'active' | 'inactive'
+}
 
 const benefits = [
   { icon: TrendingUp, title: 'Earn 10%', text: 'Earn 10% of eligible delivered order value, excluding shipping.' },
@@ -33,7 +43,7 @@ const benefits = [
 
 const steps = [
   { number: '01', icon: Users, title: 'Join', text: 'Sign up for the Tallaby Affiliate Program.' },
-  { number: '02', icon: Sparkles, title: 'Get your code', text: 'We generate a unique personal promo code for you.', code: CODE },
+  { number: '02', icon: Sparkles, title: 'Get your code', text: 'We generate a unique personal promo code for you.', code: PREVIEW_CODE },
   { number: '03', icon: Link2, title: 'Share', text: 'Share your code with friends, followers, or your community.' },
   { number: '04', icon: Wallet, title: 'Earn', text: 'When an order is delivered, 10% goes to your Tallaby wallet.' },
 ]
@@ -48,13 +58,74 @@ const faqs = [
   ["Can I see the customer's personal information?", 'No. Affiliate order information is limited to what is necessary to track your referral and earnings while protecting customer privacy.'],
 ]
 
-export function AffiliatePageContent() {
+export function AffiliatePageContent({
+  account,
+  isAuthenticated,
+}: {
+  account: AffiliatePageAccount | null
+  isAuthenticated: boolean
+}) {
   const [copied, setCopied] = useState(false)
+  const [isJoining, startJoining] = useTransition()
+  const router = useRouter()
+
+  const isJoined = Boolean(account)
+  const displayCode = account?.code ?? PREVIEW_CODE
+
+  useEffect(() => {
+    posthog.capture('affiliate_program_view')
+    // Fires once per page load, regardless of prop changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   async function copyCode() {
-    await navigator.clipboard.writeText(CODE)
+    await navigator.clipboard.writeText(displayCode)
     setCopied(true)
+    if (isJoined) posthog.capture('affiliate_code_copied')
     window.setTimeout(() => setCopied(false), 1800)
+  }
+
+  function handleJoin() {
+    startJoining(async () => {
+      const result = await joinAffiliateProgramAction()
+      if (result.success) {
+        posthog.capture('affiliate_signup')
+        toast.success(`You're an affiliate! Your code is ${result.data.code}.`)
+        router.push('/profile/affiliate')
+      } else {
+        toast.error('Could not activate the affiliate program right now.')
+      }
+    })
+  }
+
+  // A plain function, not a nested component — it closes over isJoined/
+  // isAuthenticated/handleJoin and is invoked as {renderAffiliateCta(...)},
+  // never rendered as a JSX tag, so it never risks the "new component
+  // identity every render" pitfall a capitalized nested component would have.
+  function renderAffiliateCta(className = '') {
+    if (isJoined) {
+      return (
+        <Button asChild size="lg" className={className}>
+          <Link href="/profile/affiliate">
+            Go to your dashboard <ArrowRight data-icon="inline-end" />
+          </Link>
+        </Button>
+      )
+    }
+    if (isAuthenticated) {
+      return (
+        <Button size="lg" className={className} onClick={handleJoin} disabled={isJoining}>
+          {isJoining ? 'Joining…' : 'Join the Affiliate Program'} <ArrowRight data-icon="inline-end" />
+        </Button>
+      )
+    }
+    return (
+      <Button asChild size="lg" className={className}>
+        <Link href="/auth?redirect=/affiliate">
+          Join the Affiliate Program <ArrowRight data-icon="inline-end" />
+        </Link>
+      </Button>
+    )
   }
 
   return (
@@ -71,9 +142,7 @@ export function AffiliatePageContent() {
                 Turn your recommendations into rewards. Your community saves 10% on their orders, and you earn 10% when their order is delivered.
               </p>
               <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row lg:justify-start">
-                <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
-                  <Link href="/auth/sign-up">Join the Affiliate Program <ArrowRight data-icon="inline-end" /></Link>
-                </Button>
+                {renderAffiliateCta('bg-accent text-accent-foreground hover:bg-accent/90')}
                 <Button asChild size="lg" variant="outline" className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground">
                   <Link href="#how-it-works">How It Works</Link>
                 </Button>
@@ -91,7 +160,7 @@ export function AffiliatePageContent() {
                 </div>
                 <div className="mt-4 rounded-2xl bg-background p-5 text-foreground shadow-xl">
                   <div className="flex items-center justify-between gap-4">
-                    <span className="font-mono text-2xl font-bold tracking-[0.18em] text-primary sm:text-3xl">{CODE}</span>
+                    <span className="font-mono text-2xl font-bold tracking-[0.18em] text-primary sm:text-3xl">{displayCode}</span>
                     <Button type="button" size="icon" variant="outline" aria-label="Copy affiliate code" onClick={copyCode}>
                       {copied ? <Check data-icon="inline-start" /> : <Copy data-icon="inline-start" />}
                     </Button>
@@ -120,14 +189,14 @@ export function AffiliatePageContent() {
 
         <section className="container py-16 md:py-24"><div className="grid items-center gap-10 lg:grid-cols-[.85fr_1.15fr]"><div><p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">See how it works</p><h2 className="mt-3 text-balance text-3xl font-bold tracking-tight md:text-4xl">The math is clear. Your audience saves, you earn.</h2><p className="mt-5 leading-relaxed text-muted-foreground">Shipping charges are excluded from affiliate commission calculations, so the reward always reflects the eligible product value.</p></div><div className="grid gap-4 sm:grid-cols-2"><Card className="bg-muted/40"><CardHeader><CardDescription>Customer pays</CardDescription><CardTitle className="text-2xl text-primary">EGP 900 <span className="text-base font-normal text-muted-foreground">+ shipping</span></CardTitle></CardHeader><CardContent className="text-sm text-muted-foreground"><p>Products subtotal: EGP 1,000</p><p className="mt-2 text-accent">10% discount: − EGP 100</p></CardContent></Card><Card className="border-accent/40 bg-accent/10"><CardHeader><CardDescription>Affiliate earns</CardDescription><CardTitle className="text-2xl text-primary">EGP 100</CardTitle></CardHeader><CardContent className="text-sm text-muted-foreground"><p>10% of eligible order value</p><p className="mt-2 inline-flex items-center gap-1 font-medium text-primary"><Wallet className="size-4" /> Added after delivery</p></CardContent></Card></div></div></section>
 
-        <section className="bg-primary py-16 text-primary-foreground md:py-24"><div className="container"><div className="grid items-start gap-8 lg:grid-cols-[.7fr_1.3fr]"><div><p className="text-sm font-semibold uppercase tracking-[0.18em] text-accent">Your affiliate dashboard</p><h2 className="mt-3 text-balance text-3xl font-bold tracking-tight md:text-4xl">Everything you need, at a glance.</h2><p className="mt-5 leading-relaxed text-primary-foreground/75">Track referrals, delivered earnings, and wallet balance without exposing customer personal information.</p><p className="mt-6 inline-flex items-center gap-2 text-sm text-primary-foreground/75"><ShieldCheck className="size-4 text-accent" /> Privacy-safe order tracking</p></div><div className="rounded-3xl bg-background p-4 text-foreground shadow-2xl sm:p-6"><div className="flex flex-wrap items-start justify-between gap-4"><div><p className="text-sm text-muted-foreground">Your Affiliate Code</p><p className="mt-1 font-mono text-xl font-bold tracking-wider text-primary">{CODE}</p></div><Button size="sm" variant="outline" onClick={copyCode}>{copied ? 'Copied' : 'Copy code'} <Clipboard data-icon="inline-end" /></Button></div><div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">{[['Orders', '24'], ['Delivered', '19'], ['Pending Profit', 'EGP 420'], ['Total Profit', 'EGP 1,850']].map(([label, value]) => <div key={label} className="rounded-xl bg-muted/60 p-3"><p className="text-xs text-muted-foreground">{label}</p><p className="mt-2 font-semibold text-primary">{value}</p></div>)}</div><div className="mt-3 rounded-xl border border-accent/30 bg-accent/10 p-4"><p className="text-xs text-muted-foreground">Wallet Balance</p><p className="mt-1 text-2xl font-bold text-primary">EGP 1,850</p></div><div className="mt-5"><p className="text-sm font-semibold">Recent activity</p><div className="mt-3 flex flex-col gap-3">{[['#TLB-10294', 'Delivered', 'EGP 120'], ['#TLB-10281', 'On the way', 'Pending'], ['#TLB-10270', 'Delivered', 'EGP 85']].map(([order, status, profit]) => <div key={order} className="flex items-center justify-between gap-3 border-b pb-3 text-sm last:border-0 last:pb-0"><div><p className="font-medium">Order {order}</p><p className="text-xs text-muted-foreground">{status}</p></div><span className={status === 'Delivered' ? 'font-semibold text-primary' : 'text-muted-foreground'}>{profit}</span></div>)}</div></div><p className="mt-5 text-xs text-muted-foreground">Your earnings become available when the order is successfully delivered.</p></div></div></div></section>
+        <section className="bg-primary py-16 text-primary-foreground md:py-24"><div className="container"><div className="grid items-start gap-8 lg:grid-cols-[.7fr_1.3fr]"><div><p className="text-sm font-semibold uppercase tracking-[0.18em] text-accent">Your affiliate dashboard</p><h2 className="mt-3 text-balance text-3xl font-bold tracking-tight md:text-4xl">Everything you need, at a glance.</h2><p className="mt-5 leading-relaxed text-primary-foreground/75">Track referrals, delivered earnings, and wallet balance without exposing customer personal information.</p><p className="mt-6 inline-flex items-center gap-2 text-sm text-primary-foreground/75"><ShieldCheck className="size-4 text-accent" /> Privacy-safe order tracking</p></div><div className="rounded-3xl bg-background p-4 text-foreground shadow-2xl sm:p-6"><div className="flex flex-wrap items-start justify-between gap-4"><div><p className="text-sm text-muted-foreground">Your Affiliate Code</p><p className="mt-1 font-mono text-xl font-bold tracking-wider text-primary">{displayCode}</p></div><Button size="sm" variant="outline" onClick={copyCode}>{copied ? 'Copied' : 'Copy code'} <Clipboard data-icon="inline-end" /></Button></div><div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">{[['Orders', '24'], ['Delivered', '19'], ['Pending Profit', 'EGP 420'], ['Total Profit', 'EGP 1,850']].map(([label, value]) => <div key={label} className="rounded-xl bg-muted/60 p-3"><p className="text-xs text-muted-foreground">{label}</p><p className="mt-2 font-semibold text-primary">{value}</p></div>)}</div><div className="mt-3 rounded-xl border border-accent/30 bg-accent/10 p-4"><p className="text-xs text-muted-foreground">Wallet Balance</p><p className="mt-1 text-2xl font-bold text-primary">EGP 1,850</p></div><div className="mt-5"><p className="text-sm font-semibold">Recent activity</p><div className="mt-3 flex flex-col gap-3">{[['#TLB-10294', 'Delivered', 'EGP 120'], ['#TLB-10281', 'On the way', 'Pending'], ['#TLB-10270', 'Delivered', 'EGP 85']].map(([order, status, profit]) => <div key={order} className="flex items-center justify-between gap-3 border-b pb-3 text-sm last:border-0 last:pb-0"><div><p className="font-medium">Order {order}</p><p className="text-xs text-muted-foreground">{status}</p></div><span className={status === 'Delivered' ? 'font-semibold text-primary' : 'text-muted-foreground'}>{profit}</span></div>)}</div></div><p className="mt-5 text-xs text-muted-foreground">Your earnings become available when the order is successfully delivered.</p></div></div></div></section>
 
         <section className="container py-16 md:py-24"><div className="grid gap-10 lg:grid-cols-[.8fr_1.2fr]"><div><p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">Built for sharing</p><h2 className="mt-3 text-balance text-3xl font-bold tracking-tight md:text-4xl">Why become a Tallaby affiliate?</h2><p className="mt-5 leading-relaxed text-muted-foreground">A thoughtful recommendation should be easy to share and easy to follow through.</p></div><div className="grid gap-3 sm:grid-cols-2">{['No complicated setup', 'Personal promo code', 'Unlimited code usage', '10% customer discount', '10% affiliate commission', 'Automatic wallet credit', 'Transparent order tracking', 'Works across Tallaby products', 'Easy to share on social media'].map(item => <div key={item} className="flex items-center gap-3 rounded-xl border bg-card p-4 text-sm"><span className="flex size-6 items-center justify-center rounded-full bg-primary/10 text-primary"><Check className="size-4" /></span>{item}</div>)}</div></div></section>
 
         <section className="bg-muted/50 py-16 md:py-24"><div className="container max-w-3xl"><div className="text-center"><p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">Questions, answered</p><h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">Affiliate program FAQ</h2></div><Accordion type="single" collapsible className="mt-10 flex flex-col gap-3">{faqs.map(([question, answer], index) => <AccordionItem key={question} value={`faq-${index}`}><AccordionTrigger>{question}</AccordionTrigger><AccordionContent className="text-muted-foreground leading-relaxed">{answer}</AccordionContent></AccordionItem>)}</Accordion></div></section>
       </main>
 
-      <section className="bg-primary py-16 text-center text-primary-foreground md:py-20"><div className="container"><h2 className="text-balance text-3xl font-bold md:text-4xl">Ready to start earning with Tallaby?</h2><p className="mx-auto mt-4 max-w-xl text-lg text-primary-foreground/75">Share your code. Help people save. Earn when they shop.</p><Button asChild size="lg" className="mt-8 bg-accent text-accent-foreground hover:bg-accent/90"><Link href="/auth/sign-up">Join the Tallaby Affiliate Program <ArrowRight data-icon="inline-end" /></Link></Button></div></section>
+      <section className="bg-primary py-16 text-center text-primary-foreground md:py-20"><div className="container"><h2 className="text-balance text-3xl font-bold md:text-4xl">Ready to start earning with Tallaby?</h2><p className="mx-auto mt-4 max-w-xl text-lg text-primary-foreground/75">Share your code. Help people save. Earn when they shop.</p><div className="mt-8 flex justify-center">{renderAffiliateCta('bg-accent text-accent-foreground hover:bg-accent/90')}</div></div></section>
     </div>
   )
 }

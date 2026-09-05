@@ -97,25 +97,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const requestId = ++requestIdRef.current;
     lastRefreshAtRef.current = Date.now();
 
-    // #region agent log
-    fetch("http://127.0.0.1:7624/ingest/6c4132ee-ad2b-461c-81f7-d283121d1f71", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Debug-Session-Id": "7135eb",
-      },
-      body: JSON.stringify({
-        sessionId: "7135eb",
-        runId: "post-fix",
-        hypothesisId: "F",
-        location: "auth-provider.tsx:refresh:start",
-        message: "AuthProvider refresh started",
-        data: { requestId, via: "api/auth/me" },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
-
     try {
       const nextUser = await Promise.race([
         fetchCurrentUserDisplay(),
@@ -126,55 +107,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           );
         }),
       ]);
-      // #region agent log
-      fetch("http://127.0.0.1:7624/ingest/6c4132ee-ad2b-461c-81f7-d283121d1f71", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Debug-Session-Id": "7135eb",
-        },
-        body: JSON.stringify({
-          sessionId: "7135eb",
-          runId: "post-fix",
-          hypothesisId: "F",
-          location: "auth-provider.tsx:refresh:result",
-          message: "AuthProvider refresh result",
-          data: {
-            requestId,
-            hasUser: Boolean(nextUser),
-            userIdPrefix: nextUser?.id?.slice(0, 8) ?? null,
-            isStale: requestId !== requestIdRef.current,
-          },
-          timestamp: Date.now(),
-        }),
-      }).catch(() => {});
-      // #endregion
       if (requestId !== requestIdRef.current) return;
       setUser(nextUser);
     } catch (error) {
-      // #region agent log
-      fetch("http://127.0.0.1:7624/ingest/6c4132ee-ad2b-461c-81f7-d283121d1f71", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Debug-Session-Id": "7135eb",
-        },
-        body: JSON.stringify({
-          sessionId: "7135eb",
-          runId: "post-fix",
-          hypothesisId: "F",
-          location: "auth-provider.tsx:refresh:error",
-          message: "AuthProvider refresh threw",
-          data: {
-            requestId,
-            errorName: error instanceof Error ? error.name : "unknown",
-            errorMessage:
-              error instanceof Error ? error.message.slice(0, 120) : "unknown",
-          },
-          timestamp: Date.now(),
-        }),
-      }).catch(() => {});
-      // #endregion
       if (requestId !== requestIdRef.current) return;
       console.error("Failed to resolve current user:", error);
       // Keep the current viewer on transient failures (timeout / network).
@@ -188,24 +123,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     void refresh();
 
     const handleAuthChanged = () => {
-      // #region agent log
-      fetch("http://127.0.0.1:7624/ingest/6c4132ee-ad2b-461c-81f7-d283121d1f71", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Debug-Session-Id": "7135eb",
-        },
-        body: JSON.stringify({
-          sessionId: "7135eb",
-          runId: "post-fix",
-          hypothesisId: "B",
-          location: "auth-provider.tsx:auth-changed",
-          message: "AUTH_CHANGED_EVENT received",
-          data: {},
-          timestamp: Date.now(),
-        }),
-      }).catch(() => {});
-      // #endregion
       void refresh();
     };
 

@@ -49,7 +49,8 @@ export type WalletTransactionType =
   | "order_payment"
   | "refund"
   | "adjustment"
-  | "bonus";
+  | "bonus"
+  | "commission_reversal";
 
 export type WalletStatus = "active" | "frozen" | "closed";
 
@@ -420,6 +421,8 @@ export const WALLET_REFERENCE_TYPES = {
   payoutRequest: "wallet_payout_request",
   order: "order",
   adminAdjustment: "admin_adjustment",
+  /** referenceId is the affiliate_commissions row id (the commission or reversal row), not the order id — see packages/db/src/affiliates/commission.ts. */
+  affiliateCommission: "affiliate_commission",
 } as const;
 
 /** Payout request statuses that hold a reservation on the wallet. */

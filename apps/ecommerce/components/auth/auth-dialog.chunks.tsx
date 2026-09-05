@@ -70,29 +70,6 @@ export function SignInForm({
           posthog.capture("sign_in_completed");
           // Paint the navbar from the user returned by the same request that
           // set the session cookies, then broadcast so other mounts refresh.
-          // #region agent log
-          fetch("http://127.0.0.1:7624/ingest/6c4132ee-ad2b-461c-81f7-d283121d1f71", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-Debug-Session-Id": "7135eb",
-            },
-            body: JSON.stringify({
-              sessionId: "7135eb",
-              runId: "post-fix",
-              hypothesisId: "D",
-              location: "auth-dialog.chunks.tsx:signIn:success",
-              message: "Applying signed-in user to AuthProvider",
-              data: {
-                hasRedirectTo: Boolean(redirectTo),
-                hasOnSuccess: Boolean(onSuccess),
-                hasUser: Boolean(result.user),
-                userIdPrefix: result.user?.id?.slice(0, 8) ?? null,
-              },
-              timestamp: Date.now(),
-            }),
-          }).catch(() => {});
-          // #endregion
           if (result.user) {
             applyUser(result.user);
           } else {
@@ -105,24 +82,6 @@ export function SignInForm({
             router.push(redirectTo || "/");
           }
         } else {
-          // #region agent log
-          fetch("http://127.0.0.1:7624/ingest/6c4132ee-ad2b-461c-81f7-d283121d1f71", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-Debug-Session-Id": "7135eb",
-            },
-            body: JSON.stringify({
-              sessionId: "7135eb",
-              runId: "post-fix",
-              hypothesisId: "D",
-              location: "auth-dialog.chunks.tsx:signIn:failed",
-              message: "Client received failed sign-in result",
-              data: {},
-              timestamp: Date.now(),
-            }),
-          }).catch(() => {});
-          // #endregion
           setErrorMessage(result.message || t("signInFailed"));
         }
       } catch (error) {

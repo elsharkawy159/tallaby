@@ -1,14 +1,24 @@
 "use client";
 
+import { Home, ShoppingCart, Store } from "lucide-react";
 import { Link, usePathname } from "@/i18n/navigation";
 import { Button } from "@workspace/ui/components/button";
 import { cn } from "@/lib/utils";
 import { CartCountClient } from "./cart-count.client";
-import type { NavigationItem } from "./header.types";
+import type { BottomNavIcon, NavigationItem } from "./header.types";
 
 interface BottomNavClientProps {
   items: NavigationItem[];
 }
+
+const iconMap: Record<
+  BottomNavIcon,
+  React.ComponentType<{ className?: string }>
+> = {
+  home: Home,
+  shopping: Store,
+  cart: ShoppingCart,
+};
 
 const isNavItemActive = (pathname: string, href: string): boolean => {
   if (href === "/") {
@@ -24,7 +34,7 @@ export const BottomNavClient = ({ items }: BottomNavClientProps) => {
   return (
     <>
       {items.map((item) => {
-        const IconComponent = item.icon;
+        const IconComponent = item.icon ? iconMap[item.icon] : null;
         const isActive = isNavItemActive(pathname, item.href);
         const isCart = item.href === "/cart";
 

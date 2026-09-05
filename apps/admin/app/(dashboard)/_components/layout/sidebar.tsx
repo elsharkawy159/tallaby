@@ -21,6 +21,7 @@ import {
   LineChart,
   Phone,
   Wallet,
+  Handshake,
 } from "lucide-react";
 import type { SidebarCounts, SidebarProps } from "./sidebar.types";
 import { SIDEBAR_COUNT_BADGE_CLASS } from "./sidebar.types";
@@ -102,6 +103,11 @@ const sidebarLinks: SidebarLink[] = [
     title: "Wallets",
     href: "/wallets",
     icon: Wallet,
+  },
+  {
+    title: "Affiliates",
+    href: "/affiliate",
+    icon: Handshake,
   },
 ];
 

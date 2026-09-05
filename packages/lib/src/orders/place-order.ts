@@ -26,6 +26,10 @@ import {
   WalletNotActiveError,
   WalletNotFoundError,
 } from '@workspace/db/wallet'
+import {
+  resolveAffiliateForCoupon,
+  createPendingAffiliateCommission,
+} from '@workspace/db/affiliates'
 import { calculateLocationShippingCost, getThresholdShippingDiscount } from '../shipping/shipping.lib'
 import {
   formatDecimal,
@@ -424,6 +428,20 @@ export async function placeOrderFromCart(
           orderId: newOrder!.id,
           discountAmount: formatDecimal(totalDiscount),
         })
+
+        // Affiliate attribution is resolved and snapshotted here, inside the
+        // order's own transaction, rather than left to be inferred later from
+        // the coupon table — see packages/db/src/affiliates/commission.ts for
+        // why the commission is based on the pre-discount `subtotal`.
+        const affiliate = await resolveAffiliateForCoupon(tx, appliedCoupon.id, userId)
+        if (affiliate) {
+          await createPendingAffiliateCommission(tx, {
+            affiliate,
+            orderId: newOrder!.id,
+            orderEligibleAmount: formatDecimal(subtotal),
+            shippingAmount: formatDecimal(shippingCost),
+          })
+        }
       }
 
       if (resolvedPaymentMethod === 'wallet') {

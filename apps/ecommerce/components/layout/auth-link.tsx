@@ -26,40 +26,6 @@ export const AuthLink = ({ variant = "desktop", className }: AuthLinkProps) => {
     setHasGuestSession(Boolean(getGuestUidFromCookie()));
   }, []);
 
-  useEffect(() => {
-    // #region agent log
-    fetch("http://127.0.0.1:7624/ingest/6c4132ee-ad2b-461c-81f7-d283121d1f71", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Debug-Session-Id": "7135eb",
-      },
-      body: JSON.stringify({
-        sessionId: "7135eb",
-        runId: "post-fix",
-        hypothesisId: "C",
-        location: "auth-link.tsx:state",
-        message: "AuthLink state",
-        data: {
-          variant,
-          isLoading,
-          hasUser: Boolean(user),
-          userIdPrefix: user?.id?.slice(0, 8) ?? null,
-          hasGuestSession,
-          branch: isLoading
-            ? "loading"
-            : user
-              ? "user"
-              : hasGuestSession
-                ? "guest"
-                : "signed-out",
-        },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
-  }, [variant, isLoading, user, hasGuestSession]);
-
   if (isLoading) {
     return null;
   }

@@ -19,10 +19,12 @@ export interface SearchBarProps {
   variant?: "mobile" | "desktop";
 }
 
+export type BottomNavIcon = "home" | "shopping" | "cart";
+
 export interface NavigationItem {
   href: string;
   label: string;
-  icon?: React.ComponentType<{ className?: string }>;
+  icon?: BottomNavIcon;
 }
 
 export interface MobileNavigationProps {

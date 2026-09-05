@@ -88,6 +88,7 @@ export default async function ProfileLayout({
 }) {
   const t = await getTranslations("profile");
   const tWallet = await getTranslations("wallet");
+  const tAffiliate = await getTranslations("affiliate");
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Breadcrumbs */}
@@ -95,6 +96,7 @@ export default async function ProfileLayout({
         customLabels={{
           orders: t("myOrders"),
           wallet: tWallet("myWallet"),
+          affiliate: tAffiliate("navLabel"),
           addresses: t("myAddresses"),
           wishlist: t("myWishlist"),
           security: t("securitySettings"),

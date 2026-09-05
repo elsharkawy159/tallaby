@@ -42,15 +42,9 @@ export async function getUser() {
 export async function getCurrentUserDisplay(): Promise<AuthenticatedUserDisplay | null> {
   try {
     const display = await getAuthUserDisplay();
-    // #region agent log
-    fetch('http://127.0.0.1:7624/ingest/6c4132ee-ad2b-461c-81f7-d283121d1f71',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7135eb'},body:JSON.stringify({sessionId:'7135eb',runId:'pre-fix',hypothesisId:'A',location:'actions/auth.ts:getCurrentUserDisplay',message:'getCurrentUserDisplay resolved',data:{hasUser:Boolean(display),userIdPrefix:display?.id?.slice(0,8)??null,hasAvatar:Boolean(display?.avatarUrl),isSeller:display?.isSeller??false},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
     return display;
   } catch (error) {
     console.error("getCurrentUserDisplay error:", error);
-    // #region agent log
-    fetch('http://127.0.0.1:7624/ingest/6c4132ee-ad2b-461c-81f7-d283121d1f71',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7135eb'},body:JSON.stringify({sessionId:'7135eb',runId:'pre-fix',hypothesisId:'A',location:'actions/auth.ts:getCurrentUserDisplay:error',message:'getCurrentUserDisplay threw',data:{errorName:error instanceof Error?error.name:'unknown'},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
     return null;
   }
 }
@@ -117,11 +111,8 @@ export async function signInAction({
   password: string;
 }) {
   const supabase = await createClient();
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) {
-    // #region agent log
-    fetch('http://127.0.0.1:7624/ingest/6c4132ee-ad2b-461c-81f7-d283121d1f71',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7135eb'},body:JSON.stringify({sessionId:'7135eb',runId:'pre-fix',hypothesisId:'D',location:'actions/auth.ts:signInAction:error',message:'signInAction failed',data:{errorCode:error.code??null},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
     return { success: false, message: error.message };
   }
 
@@ -138,29 +129,6 @@ export async function signInAction({
   // cookies, so the client can paint the navbar immediately without waiting
   // for a follow-up /api/auth/me round-trip that might still miss cookies.
   const displayUser = await getAuthUserDisplay();
-
-  // #region agent log
-  fetch("http://127.0.0.1:7624/ingest/6c4132ee-ad2b-461c-81f7-d283121d1f71", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Debug-Session-Id": "7135eb",
-    },
-    body: JSON.stringify({
-      sessionId: "7135eb",
-      runId: "post-fix",
-      hypothesisId: "D",
-      location: "actions/auth.ts:signInAction:success",
-      message: "signInAction succeeded",
-      data: {
-        hasSession: Boolean(data.session),
-        userIdPrefix: data.user?.id?.slice(0, 8) ?? null,
-        hasDisplayUser: Boolean(displayUser),
-      },
-      timestamp: Date.now(),
-    }),
-  }).catch(() => {});
-  // #endregion
 
   return {
     success: true,

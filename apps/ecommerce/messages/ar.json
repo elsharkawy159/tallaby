@@ -1379,7 +1379,8 @@
       "order_payment": "دفع طلب",
       "refund": "استرداد",
       "adjustment": "تسوية",
-      "bonus": "مكافأة"
+      "bonus": "مكافأة",
+      "commission_reversal": "عكس عمولة"
     },
     "payoutStatus": {
       "pending": "قيد الانتظار",
@@ -1394,6 +1395,57 @@
       "bank_transfer": "تحويل بنكي",
       "instapay": "إنستا باي",
       "mobile_wallet": "محفظة إلكترونية"
+    }
+  },
+  "affiliate": {
+    "navLabel": "برنامج الأفلييت",
+    "signInTitle": "سجّل الدخول للانضمام إلى برنامج الأفلييت",
+    "signInDescription": "سجّل الدخول إلى حسابك في طلبي لتفعيل كود الأفلييت الخاص بك والبدء في الربح.",
+    "signIn": "تسجيل الدخول",
+    "joinPromptTitle": "انضم إلى برنامج أفلييت طلبي",
+    "joinPromptDescription": "احصل على كود خصم دائم لمشاركته. يحصل العملاء على خصم 10%، وتربح أنت 10% عند تسليم طلبهم.",
+    "joinCta": "انضم إلى برنامج الأفلييت",
+    "joining": "جارٍ الانضمام…",
+    "joinSuccess": "أصبحت أفلييت! كودك هو {code}.",
+    "joinFailed": "تعذّر تفعيل برنامج الأفلييت الآن. برجاء المحاولة مرة أخرى.",
+    "unavailableTitle": "برنامج الأفلييت غير متاح",
+    "unavailableDescription": "تعذّر تحميل حساب الأفلييت الخاص بك حاليًا. برجاء المحاولة بعد قليل.",
+    "yourCode": "كود الأفلييت الخاص بك",
+    "yourCodeDescription": "شارك هذا الكود — إنه دائم وقابل لإعادة الاستخدام في عدد غير محدود من الطلبات.",
+    "inactive": "غير نشط",
+    "copyCode": "نسخ الكود",
+    "share": "مشاركة",
+    "codeCopied": "تم نسخ الكود",
+    "copyFailed": "تعذّر النسخ — برجاء نسخه يدويًا",
+    "shareText": "وفّر 10% في طلبي باستخدام كودي {code}",
+    "shareCopied": "تم نسخ رسالة المشاركة",
+    "totalOrders": "إجمالي الطلبات",
+    "deliveredOrders": "تم التسليم",
+    "pendingProfit": "أرباح معلّقة",
+    "totalProfit": "إجمالي الأرباح",
+    "walletBalance": "رصيد المحفظة",
+    "viewWallet": "عرض المحفظة",
+    "referredOrders": "الطلبات المُحالة",
+    "referredOrdersDescription": "الطلبات التي استُخدم فيها كودك. لا تُعرض بيانات العميل هنا أبدًا.",
+    "noOrdersYet": "لا توجد طلبات بعد. شارك كودك لتبدأ الربح.",
+    "orderReference": "الطلب",
+    "orderStatus": "الحالة",
+    "orderAmount": "قيمة الطلب",
+    "yourProfit": "ربحك",
+    "pending": "قيد الانتظار",
+    "reversed": "تم العكس",
+    "orderStatuses": {
+      "pending": "قيد الانتظار",
+      "payment_processing": "جارٍ معالجة الدفع",
+      "confirmed": "مؤكد",
+      "shipping_soon": "الشحن قريبًا",
+      "shipped": "تم الشحن",
+      "out_for_delivery": "خارج للتوصيل",
+      "delivered": "تم التسليم",
+      "cancelled": "ملغي",
+      "refund_requested": "طلب استرداد",
+      "refunded": "تم الاسترداد",
+      "returned": "تم الإرجاع"
     }
   }
 }

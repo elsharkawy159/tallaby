@@ -1,0 +1,11 @@
+-- Admin affiliate management: one composite index.
+--
+-- affiliates.user_id/coupon_id/status and affiliate_commissions.affiliate_id/
+-- user_id/order_id/status are all already indexed by 0029_affiliate_program.sql.
+-- coupons.code already carries coupon_code_idx. The one query pattern the
+-- admin affiliate detail page adds that isn't already served is "this
+-- affiliate's commissions/orders, newest first, paginated" (both the order
+-- history table and the commission ledger) — affiliate_id alone still forces
+-- a sort over every matching row. This composite lets Postgres walk the index
+-- in the exact order the query needs.
+CREATE INDEX IF NOT EXISTS "affiliate_commissions_affiliate_id_created_at_idx" ON "affiliate_commissions" USING btree ("affiliate_id", "created_at" DESC);

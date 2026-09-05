@@ -1,28 +1,11 @@
 import { cn } from "@/lib/utils";
 import { BottomNavClient } from "./bottom-navigation.client";
 import { AuthLink } from "./auth-link";
-import { Home, ShoppingCart, Store } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { getBottomNavigationItems } from "./header.lib";
 
 export const BottomNavigation = async () => {
-  const t = useTranslations("navigation");
-  const items = [
-    {
-      href: "/",
-      label: t("home"),
-      icon: Home,
-    },
-    {
-      href: "/products",
-      label: t("shopping"),
-      icon: Store,
-    },
-    {
-      href: "/cart",
-      label: t("cart"),
-      icon: ShoppingCart,
-    },
-  ];
+  const items = await getBottomNavigationItems();
+
   return (
     <div
       className={cn(

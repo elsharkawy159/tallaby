@@ -1,4 +1,4 @@
-import { User as UserIcon, Package, Heart, MapPin, Wallet } from "lucide-react";
+import { User as UserIcon, Package, Heart, MapPin, Wallet, Users } from "lucide-react";
 
 import {
   getAvatarDisplayName,
@@ -28,6 +28,12 @@ export const profileTabs: ProfileTabType[] = [
     label: "Wallet",
     icon: Wallet,
     href: "/profile/wallet",
+  },
+  {
+    id: "affiliate",
+    label: "Affiliate",
+    icon: Users,
+    href: "/profile/affiliate",
   },
   {
     id: "addresses",

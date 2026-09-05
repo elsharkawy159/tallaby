@@ -8,7 +8,7 @@ export const ROUND_TO = 5
 export const FALLBACK_BASE_RATE = 110
 
 /** Cart subtotal (EGP) at/above which shipping is fully discounted (free shipping) */
-export const FREE_DELIVERY_MIN_SUBTOTAL = 200
+export const FREE_DELIVERY_MIN_SUBTOTAL = 500
 
 /** Base rates from Cairo for the first 1 kg, keyed by canonical governorate name */
 export const CAIRO_ORIGIN_RATES: Record<string, number> = {

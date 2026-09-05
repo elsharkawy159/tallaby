@@ -84,25 +84,6 @@ export function UserMenu({
   }, [user?.id]);
 
   const handleLogout = async () => {
-    // #region agent log
-    fetch("http://127.0.0.1:7624/ingest/6c4132ee-ad2b-461c-81f7-d283121d1f71", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Debug-Session-Id": "7135eb",
-      },
-      body: JSON.stringify({
-        sessionId: "7135eb",
-        runId: "post-fix",
-        hypothesisId: "G",
-        location: "user-menu.tsx:handleLogout",
-        message: "Logout clicked",
-        data: { userIdPrefix: user?.id?.slice(0, 8) ?? null },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
-
     posthog.reset();
     // Clear the shared navbar state immediately — do not re-fetch, or a
     // hung /api/auth/me can leave a stale signed-in avatar on screen.

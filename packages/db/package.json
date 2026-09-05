@@ -45,6 +45,11 @@
       "types": "./src/categories/index.ts",
       "import": "./src/categories/index.ts",
       "require": "./src/categories/index.ts"
+    },
+    "./affiliates": {
+      "types": "./src/affiliates/index.ts",
+      "import": "./src/affiliates/index.ts",
+      "require": "./src/affiliates/index.ts"
     }
   },
   "scripts": {

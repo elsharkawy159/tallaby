@@ -183,7 +183,7 @@ export interface SecurityFormData {
 
 // UI State types
 export interface ProfileTabType {
-  id: "profile" | "orders" | "wallet" | "addresses" | "wishlist" | "security";
+  id: "profile" | "orders" | "wallet" | "affiliate" | "addresses" | "wishlist" | "security";
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   href: string;

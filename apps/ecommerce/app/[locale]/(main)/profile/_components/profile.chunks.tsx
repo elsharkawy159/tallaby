@@ -101,6 +101,7 @@ export function ProfileSidebar({
 }) {
   const t = useTranslations("profile");
   const tWallet = useTranslations("wallet");
+  const tAffiliate = useTranslations("affiliate");
   const pathname = usePathname();
   const { percentage, missingFields } = calculateProfileCompletion(
     user,
@@ -220,6 +221,8 @@ export function ProfileSidebar({
                     return t("orders");
                   case "wallet":
                     return tWallet("wallet");
+                  case "affiliate":
+                    return tAffiliate("navLabel");
                   case "addresses":
                     return t("addresses");
                   case "wishlist":

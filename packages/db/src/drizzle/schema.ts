@@ -31,10 +31,20 @@ export const shipmentStatus = pgEnum("shipment_status", ['pending', 'assigned', 
  * and is deliberately left untouched.
  */
 export const walletStatus = pgEnum("wallet_status", ['active', 'frozen', 'closed'])
-export const walletTransactionType = pgEnum("wallet_transaction_type", ['top_up', 'payout', 'commission', 'order_payment', 'refund', 'adjustment', 'bonus'])
+export const walletTransactionType = pgEnum("wallet_transaction_type", ['top_up', 'payout', 'commission', 'order_payment', 'refund', 'adjustment', 'bonus', 'commission_reversal'])
 export const walletTransactionStatus = pgEnum("wallet_transaction_status", ['pending', 'completed', 'failed', 'reversed'])
 export const walletTopUpStatus = pgEnum("wallet_top_up_status", ['pending', 'processing', 'succeeded', 'failed', 'cancelled'])
 export const walletPayoutStatus = pgEnum("wallet_payout_status", ['pending', 'approved', 'processing', 'completed', 'rejected', 'cancelled', 'failed'])
+
+/**
+ * Affiliate program (migration 0029). `commission` on `walletTransactionType`
+ * above already covers the earn side (reserved for exactly this by 0025's
+ * comment); `commission_reversal` is the one additive value this phase adds,
+ * for the debit side of a reversed/returned order.
+ */
+export const affiliateStatus = pgEnum("affiliate_status", ['active', 'inactive'])
+export const affiliateCommissionType = pgEnum("affiliate_commission_type", ['commission', 'reversal'])
+export const affiliateCommissionStatus = pgEnum("affiliate_commission_status", ['pending', 'earned', 'reversed', 'cancelled'])
 
 
 export const deliveries = pgTable("deliveries", {
@@ -1877,4 +1887,116 @@ export const walletPayoutRequests = pgTable("wallet_payout_requests", {
 	pgPolicy("Users can read their own payout requests", { as: "permissive", for: "select", to: ["authenticated"], using: sql`user_id = (SELECT auth.uid())` }),
 	check("wallet_payout_requests_amount_positive", sql`amount > 0`),
 	check("wallet_payout_requests_currency_egp", sql`currency = 'EGP'`),
+]);
+
+/* --------------------------------------------------------------------------
+ * Affiliate program (migration 0029).
+ *
+ * One affiliate per user, one permanent reusable coupon per affiliate. Order
+ * attribution and the eligible-amount/commission figures are captured on
+ * `affiliate_commissions` at order-creation time (status 'pending'), so a
+ * later change to the coupon or affiliate can never rewrite a historical
+ * commission — the same reasoning `order_items.commission_amount` already
+ * applies to seller commission.
+ * ------------------------------------------------------------------------ */
+
+export const affiliates = pgTable("affiliates", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	userId: uuid("user_id").notNull(),
+	couponId: uuid("coupon_id").notNull(),
+	status: affiliateStatus().default('active').notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("affiliates_status_idx").using("btree", table.status.asc().nullsLast().op("enum_ops")),
+	foreignKey({
+		columns: [table.userId],
+		foreignColumns: [users.id],
+		name: "affiliates_user_id_users_id_fk"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.couponId],
+		foreignColumns: [coupons.id],
+		name: "affiliates_coupon_id_coupons_id_fk"
+	}),
+	// One affiliate account per user, one coupon per affiliate — both directions
+	// of "prevent the same user from creating multiple affiliate accounts".
+	unique("affiliates_user_id_unique").on(table.userId),
+	unique("affiliates_coupon_id_unique").on(table.couponId),
+	pgPolicy("Users can read their own affiliate account", { as: "permissive", for: "select", to: ["authenticated"], using: sql`user_id = (SELECT auth.uid())` }),
+]);
+
+export const affiliateCommissions = pgTable("affiliate_commissions", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	affiliateId: uuid("affiliate_id").notNull(),
+	/** Denormalized from affiliates.userId — same reasoning as user_wallet_transactions.userId: RLS and per-user history need no join. */
+	userId: uuid("user_id").notNull(),
+	orderId: uuid("order_id").notNull(),
+	/** Immutable snapshot of which coupon earned this — never re-derived from the coupon table. */
+	couponId: uuid("coupon_id").notNull(),
+	type: affiliateCommissionType().default('commission').notNull(),
+	status: affiliateCommissionStatus().default('pending').notNull(),
+	/** Eligible merchandise subtotal the 10% is computed on (excludes shipping), snapshotted at order time. See packages/lib/src/orders/place-order.ts for the pre- vs post-discount decision. */
+	orderEligibleAmount: numeric("order_eligible_amount", { precision: 10, scale: 2 }).notNull(),
+	/** Audit-only: the order's shipping cost. Never part of commissionAmount. */
+	shippingAmount: numeric("shipping_amount", { precision: 10, scale: 2 }).default('0').notNull(),
+	commissionRate: real("commission_rate").default(0.1).notNull(),
+	/** Always a positive magnitude; `type` (commission/reversal) carries the direction, matching how the wallet ledger's signed amount is derived from direction there but kept unsigned here since a row never mutates. */
+	commissionAmount: numeric("commission_amount", { precision: 10, scale: 2 }).notNull(),
+	/** Set only on a `type = 'reversal'` row: the earned commission it reverses. */
+	parentCommissionId: uuid("parent_commission_id"),
+	/** The user_wallet_transactions row this commission/reversal produced, once posted. */
+	walletTransactionId: uuid("wallet_transaction_id"),
+	notes: text(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("affiliate_commissions_affiliate_id_idx").using("btree", table.affiliateId.asc().nullsLast().op("uuid_ops")),
+	index("affiliate_commissions_user_id_idx").using("btree", table.userId.asc().nullsLast().op("uuid_ops")),
+	index("affiliate_commissions_order_id_idx").using("btree", table.orderId.asc().nullsLast().op("uuid_ops")),
+	index("affiliate_commissions_status_idx").using("btree", table.status.asc().nullsLast().op("enum_ops")),
+	foreignKey({
+		columns: [table.affiliateId],
+		foreignColumns: [affiliates.id],
+		name: "affiliate_commissions_affiliate_id_affiliates_id_fk"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.userId],
+		foreignColumns: [users.id],
+		name: "affiliate_commissions_user_id_users_id_fk"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.orderId],
+		foreignColumns: [orders.id],
+		name: "affiliate_commissions_order_id_orders_id_fk"
+	}),
+	foreignKey({
+		columns: [table.couponId],
+		foreignColumns: [coupons.id],
+		name: "affiliate_commissions_coupon_id_coupons_id_fk"
+	}),
+	foreignKey({
+		columns: [table.parentCommissionId],
+		foreignColumns: [table.id],
+		name: "affiliate_commissions_parent_commission_id_fk"
+	}),
+	foreignKey({
+		columns: [table.walletTransactionId],
+		foreignColumns: [userWalletTransactions.id],
+		name: "affiliate_commissions_wallet_transaction_id_fk"
+	}).onDelete("set null"),
+	// Idempotency (invariant: "an order must never generate affiliate commission
+	// more than once"): at most one 'commission' row per order...
+	uniqueIndex("affiliate_commissions_order_commission_idx").using("btree", table.orderId.asc().nullsLast().op("uuid_ops")).where(sql`type = 'commission'`),
+	// ...and at most one reversal per commission being reversed (MVP: full
+	// reversal only; a partial-refund reversal amount is computed proportionally
+	// but still posts as a single reversal row per parent).
+	uniqueIndex("affiliate_commissions_reversal_parent_idx").using("btree", table.parentCommissionId.asc().nullsLast().op("uuid_ops")).where(sql`type = 'reversal'`),
+	pgPolicy("Users can read their own affiliate commissions", { as: "permissive", for: "select", to: ["authenticated"], using: sql`user_id = (SELECT auth.uid())` }),
+	check("affiliate_commissions_amount_positive", sql`commission_amount > 0`),
+	check("affiliate_commissions_order_amount_non_negative", sql`order_eligible_amount >= 0`),
+	check("affiliate_commissions_shipping_non_negative", sql`shipping_amount >= 0`),
+	// A reversal must reference the commission it reverses; a commission row
+	// must not — keeps the two kinds from being confused at the data level.
+	check("affiliate_commissions_reversal_has_parent", sql`(type = 'reversal') = (parent_commission_id IS NOT NULL)`),
 ]);

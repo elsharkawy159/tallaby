@@ -18,9 +18,6 @@ import type { AuthenticatedUserDisplay } from "@/lib/auth/auth-user.types";
 export const getAuthUser = cache(async () => {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getUser();
-  // #region agent log
-  fetch('http://127.0.0.1:7624/ingest/6c4132ee-ad2b-461c-81f7-d283121d1f71',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7135eb'},body:JSON.stringify({sessionId:'7135eb',runId:'pre-fix',hypothesisId:'E',location:'current-user.ts:getAuthUser',message:'getAuthUser cookie session check',data:{hasUser:Boolean(data?.user),userIdPrefix:data?.user?.id?.slice(0,8)??null,errorName:error?.name??null,errorStatus:(error as {status?:number}|null)?.status??null},timestamp:Date.now()})}).catch(()=>{});
-  // #endregion
   if (error) return null;
   return data?.user ?? null;
 });

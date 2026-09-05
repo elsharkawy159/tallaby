@@ -4,6 +4,11 @@ import { db } from "@workspace/db";
 import { orders, orderItems, users, products, sellers } from "@workspace/db";
 import { eq, and, desc, sql, gte, lte, like, or } from "drizzle-orm";
 import { fulfillDigitalOrderItems } from "@workspace/lib/digital";
+import {
+  earnAffiliateCommission,
+  reverseAffiliateCommission,
+  cancelPendingAffiliateCommission,
+} from "@workspace/db/affiliates";
 import { getAdminUser } from "./auth";
 import { isAdminEditablePaymentMethod } from "@/app/(dashboard)/orders/orders.lib";
 
@@ -167,29 +172,46 @@ export async function updateOrderStatus(
   try {
     await getAdminUser(); // Verify admin access
 
-    const updatedOrder = await db
-      .update(orders)
-      .set({
-        status,
-        updatedAt: new Date().toISOString(),
-        ...(status === "cancelled"
-          ? { cancelledAt: new Date().toISOString() }
-          : {}),
-        ...(status === "delivered"
-          ? { deliveredAt: new Date().toISOString() }
-          : {}),
-        ...(status === "shipped"
-          ? { shippedAt: new Date().toISOString() }
-          : {}),
-      })
-      .where(eq(orders.id, orderId))
-      .returning();
+    // Wrapped in a transaction so the order row and the affiliate-commission
+    // side effect (earn/reverse/cancel) commit or roll back together — this
+    // is the same status field the shipping app's applyShipmentStatus writes,
+    // so it gets the same affiliate hooks, keeping "admin changes" from being
+    // a path that can silently skip or duplicate a commission.
+    const updatedOrder = await db.transaction(async (tx) => {
+      const [row] = await tx
+        .update(orders)
+        .set({
+          status,
+          updatedAt: new Date().toISOString(),
+          ...(status === "cancelled"
+            ? { cancelledAt: new Date().toISOString() }
+            : {}),
+          ...(status === "delivered"
+            ? { deliveredAt: new Date().toISOString() }
+            : {}),
+          ...(status === "shipped"
+            ? { shippedAt: new Date().toISOString() }
+            : {}),
+        })
+        .where(eq(orders.id, orderId))
+        .returning();
 
-    if (!updatedOrder.length) {
-      throw new Error("Order not found");
-    }
+      if (!row) {
+        throw new Error("Order not found");
+      }
 
-    return { success: true, data: updatedOrder[0] };
+      if (status === "delivered") {
+        await earnAffiliateCommission(tx, orderId);
+      } else if (status === "returned" || status === "refunded") {
+        await reverseAffiliateCommission(tx, orderId);
+      } else if (status === "cancelled") {
+        await cancelPendingAffiliateCommission(tx, orderId);
+      }
+
+      return row;
+    });
+
+    return { success: true, data: updatedOrder };
   } catch (error) {
     console.error("Error updating order status:", error);
     return {

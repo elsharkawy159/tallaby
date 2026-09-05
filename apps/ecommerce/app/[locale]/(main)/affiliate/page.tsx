@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 
 import { localizedUrl, buildLanguageAlternates, type SeoLocale } from '@/lib/metadata'
 import { routing } from '@/i18n/routing'
+import { getMyAffiliateAccount } from '@/actions/affiliate'
+import { getUser } from '@/actions/auth'
 import { AffiliatePageContent } from './affiliate.chunks'
 
 export async function generateMetadata({
@@ -28,6 +30,12 @@ export async function generateMetadata({
   }
 }
 
-export default function AffiliatePage() {
-  return <AffiliatePageContent />
+export default async function AffiliatePage() {
+  const [account, session] = await Promise.all([
+    getMyAffiliateAccount(),
+    getUser(),
+  ])
+  return (
+    <AffiliatePageContent account={account} isAuthenticated={Boolean(session)} />
+  )
 }
