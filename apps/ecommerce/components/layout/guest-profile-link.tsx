@@ -27,7 +27,7 @@ export function GuestProfileLink({
       className={cn(
         "text-white hover:text-gray-200 hover:bg-transparent cursor-pointer transition-colors",
         variant === "mobile" &&
-          "flex flex-col items-center text-gray-600 hover:text-primary transition-colors",
+          "h-auto flex-1 flex flex-col rtl:flex-col items-center justify-center gap-1 py-2 text-gray-500 hover:text-primary transition-colors",
         className
       )}
       title={displayName ? t("welcome", { name: displayName }) : t("myProfile")}
@@ -35,7 +35,7 @@ export function GuestProfileLink({
       <Link href="/profile">
         <UserIcon className="md:size-6 size-4.5" />
         {variant === "mobile" && (
-          <span className="text-xs">{t("myProfile")}</span>
+          <span className="text-[11px] leading-none">{t("myProfile")}</span>
         )}
       </Link>
     </Button>

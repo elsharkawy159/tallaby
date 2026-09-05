@@ -44,22 +44,42 @@ export const BottomNavClient = ({ items }: BottomNavClientProps) => {
             key={item.href}
             variant="ghost"
             className={cn(
-              "h-auto w-auto flex flex-col items-center justify-center gap-0.5 rounded-none px-2 py-1",
-              "text-gray-600 hover:bg-transparent hover:text-primary transition-colors",
-              isActive && "text-primary font-semibold"
+              "relative h-auto flex-1 flex flex-col rtl:flex-col items-center justify-center gap-1 rounded-none px-2 py-2",
+              "text-gray-500 hover:bg-transparent hover:text-primary transition-colors",
+              isActive && "text-primary"
             )}
             aria-current={isActive ? "page" : undefined}
           >
             <Link href={item.href}>
-              <span className="relative inline-flex">
+              <span
+                className={cn(
+                  "absolute inset-x-5 -top-2 h-1 origin-center rounded-full bg-primary transition-transform duration-200 ease-out",
+                  isActive ? "scale-x-100" : "scale-x-0"
+                )}
+                aria-hidden="true"
+              />
+              <span
+                className={cn(
+                  "relative inline-flex items-center justify-center rounded-full p-1.5 transition-colors duration-200",
+                  isActive && "bg-primary/10"
+                )}
+              >
                 {IconComponent && (
                   <IconComponent
-                    className={cn("size-5", isActive && "text-primary")}
+                    className={cn(
+                      "size-5 transition-colors",
+                      isActive && "text-primary"
+                    )}
                   />
                 )}
                 {isCart && <CartCountClient />}
               </span>
-              <span className={cn("text-xs", isActive && "text-primary")}>
+              <span
+                className={cn(
+                  "text-[11px] leading-none transition-colors",
+                  isActive && "text-primary font-semibold"
+                )}
+              >
                 {item.label}
               </span>
             </Link>
