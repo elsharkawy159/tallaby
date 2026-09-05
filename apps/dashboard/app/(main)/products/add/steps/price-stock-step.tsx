@@ -48,6 +48,7 @@ import {
   DefaultVariantImagesDisplay,
 } from "./variant-pricing-fields";
 import { Badge } from "@workspace/ui/components/badge";
+import { DiscountExpiryField } from "./discount-expiry-field";
 
 interface PriceStockStepProps {
   sellerPricing: SellerPricingSettings;
@@ -221,6 +222,8 @@ export function PriceStockStep({
             onBlurValue={(value) => applyNearestNineRounding("price.final", value)}
           />
         </div>
+
+        <DiscountExpiryField name="price.discountEndsAt" />
       </div>
 
       {/* Inventory Section */}
@@ -694,6 +697,9 @@ function VariantsSection({
           (existingVariant as { price?: number })?.price ||
           baseFinal ||
           numericMainList,
+        discountEndsAt:
+          (existingVariant as { discountEndsAt?: Date | null })?.discountEndsAt ??
+          null,
         stock: (existingVariant as { stock?: number })?.stock || 0,
         isDefault,
         images,

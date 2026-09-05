@@ -3,6 +3,7 @@ export * from "./textarea-input";
 export * from "./select-input";
 export * from "./currency-input";
 export * from "./date-input";
+export * from "./date-time-input";
 export * from "./switch-input";
 export * from "./array-input";
 export * from "./multi-select";
