@@ -1,6 +1,6 @@
 "use client";
 
-import { Truck, RotateCcw, Globe, DollarSign } from "lucide-react";
+import { Truck, RotateCcw, Globe, DollarSign, Check } from "lucide-react";
 import { Badge } from "@workspace/ui/components/badge";
 import { ProductActions } from "./ProductActions";
 import type { Product } from "./product-page.types";
@@ -222,7 +222,7 @@ export const ProductDetails = ({
             <label className="block text-sm font-medium text-gray-900 mb-3">
               {variantOptionLabel}
             </label>
-            <div className="grid lg:grid-cols-2 grid-cols-1 gap-2">
+            <div className="flex flex-wrap gap-3">
               {product.productVariants?.map((variant) => {
                 const display = getVariantDisplayFields(variant, locale);
                 const isSelected = selectedVariantId === variant.id;
@@ -233,6 +233,7 @@ export const ProductDetails = ({
                 if (display.option1) optionParts.push(display.option1);
                 if (display.option2) optionParts.push(display.option2);
                 if (display.option3) optionParts.push(display.option3);
+                const variantLabel = display.title || variant.title;
                 const variantDescription = optionParts.join(" • ");
                 const variantThumbnail = getVariantImageUrls(variant)[0];
 
@@ -241,43 +242,93 @@ export const ProductDetails = ({
                     key={variant.id}
                     onClick={() => setSelectedVariantId(variant.id)}
                     disabled={!isAvailable}
-                    className={`p-2.5 border-2 cursor-pointer rounded-lg text-left transition-all ${
+                    title={variantDescription || variantLabel}
+                    aria-pressed={isSelected}
+                    aria-label={
+                      isAvailable
+                        ? variantLabel
+                        : `${variantLabel} (${t("outOfStock")})`
+                    }
+                    className={`group relative flex h-28 w-28 flex-col items-stretch overflow-hidden rounded-2xl border-2 text-left transition-all duration-200 ease-out ${
                       isSelected
-                        ? "border-primary bg-primary/10"
+                        ? "border-primary shadow-lg shadow-primary/20 ring-2 ring-primary/25"
                         : isAvailable
-                          ? "border-gray-300 hover:border-gray-400 bg-white"
-                          : "border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed opacity-60"
+                          ? "border-gray-200 bg-white hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md"
+                          : "cursor-not-allowed border-gray-100 bg-gray-50"
                     }`}
                   >
-                    <div className="flex items-center gap-2 justify-between">
-                      {variantThumbnail && (
+                    {/* Visual: thumbnail image or a soft gradient placeholder */}
+                    <div className="relative flex-1 overflow-hidden">
+                      {variantThumbnail ? (
                         <Image
                           src={getPublicUrl(variantThumbnail, "products")}
-                          alt={`${variant.title} image`}
-                          width={100}
-                          height={100}
-                          className="w-10"
+                          alt={variantLabel}
+                          fill
+                          sizes="112px"
+                          className={`object-cover transition-transform duration-300 ${
+                            isAvailable
+                              ? "group-hover:scale-105"
+                              : "opacity-40 grayscale"
+                          }`}
                         />
-                      )}
-                      <div className="flex-1">
-                        <p
-                          className={`text-sm font-medium ${
-                            isSelected ? "text-gray-900" : "text-gray-700"
+                      ) : (
+                        <div
+                          className={`flex h-full w-full items-center justify-center bg-gradient-to-br ${
+                            isSelected
+                              ? "from-primary/15 to-primary/5"
+                              : "from-gray-50 to-gray-100"
                           }`}
                         >
-                          {display.title || variant.title}
-                        </p>
-                        {isDefaultVariant && (
-                          <p className="text-[10px] text-primary font-medium">
-                            Default
-                          </p>
-                        )}
-                      </div>
-                      <div className="text-right ml-4">
+                          <span
+                            className={`text-2xl font-bold ${
+                              isSelected ? "text-primary/60" : "text-gray-300"
+                            }`}
+                          >
+                            {variantLabel.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Default badge */}
+                      {isDefaultVariant && (
+                        <span className="absolute left-1.5 top-1.5 rounded-full bg-primary px-1.5 py-0.5 text-[9px] font-semibold leading-none text-white shadow-sm">
+                          Default
+                        </span>
+                      )}
+
+                      {/* Selected checkmark */}
+                      {isSelected && (
+                        <span className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-white shadow-sm">
+                          <Check className="h-3 w-3" strokeWidth={3} />
+                        </span>
+                      )}
+
+                      {/* Out of stock: dim overlay + diagonal strike */}
+                      {!isAvailable && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-white/10">
+                          <span className="h-px w-[140%] -rotate-[22deg] bg-gray-400/80" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Label strip */}
+                    <div
+                      className={`shrink-0 border-t px-1.5 py-1.5 ${
+                        isSelected
+                          ? "border-primary/20 bg-primary/5"
+                          : "border-gray-100 bg-white"
+                      }`}
+                    >
+                      <p
+                        className={`truncate text-[11px] font-semibold leading-tight ${
+                          isSelected ? "text-primary" : "text-gray-900"
+                        }`}
+                      >
+                        {variantLabel}
+                      </p>
+                      {isAvailable ? (
                         <p
-                          className={`text-sm font-semibold ${
-                            isSelected ? "text-gray-900" : "text-gray-700"
-                          }`}
+                          className="truncate text-[10px] font-medium leading-tight text-gray-500"
                           dangerouslySetInnerHTML={{
                             __html: formatPrice(
                               Number(variant.price ?? 0),
@@ -286,16 +337,11 @@ export const ProductDetails = ({
                             ),
                           }}
                         />
-                        <p
-                          className={`text-xs mt-1 ${
-                            isAvailable ? "text-green-600" : "text-red-500"
-                          }`}
-                        >
-                          {isAvailable
-                            ? t("inStockCount", { count: variantStock })
-                            : t("outOfStock")}
+                      ) : (
+                        <p className="truncate text-[10px] font-medium leading-tight text-red-500">
+                          {t("outOfStock")}
                         </p>
-                      </div>
+                      )}
                     </div>
                   </button>
                 );
