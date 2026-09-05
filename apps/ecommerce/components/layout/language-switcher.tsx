@@ -7,6 +7,7 @@ import { useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Globe } from "lucide-react";
 import { resolveProductSlugForLocale } from "@/actions/i18n";
+import { updatePreferences } from "@/actions/customer";
 import type { ProductLocale } from "@/lib/product-translations";
 
 interface LanguageSwitcherProps {
@@ -28,6 +29,11 @@ export function LanguageSwitcher({
 
   function switchLocale(targetLocale: ProductLocale) {
     if (targetLocale === locale || isPending) return;
+
+    // Best-effort: persists the choice for signed-in users so it survives to
+    // their next session (e.g. transactional emails). No-ops silently for
+    // guests, who have no profile row to update.
+    updatePreferences({ preferredLanguage: targetLocale }).catch(() => {});
 
     const productMatch = pathname.match(PRODUCT_PATH);
     if (productMatch) {
