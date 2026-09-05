@@ -26,7 +26,7 @@ import {
   WalletNotActiveError,
   WalletNotFoundError,
 } from '@workspace/db/wallet'
-import { calculateLocationShippingCost } from '../shipping/shipping.lib'
+import { calculateLocationShippingCost, getThresholdShippingDiscount } from '../shipping/shipping.lib'
 import {
   formatDecimal,
   formatVariantTitleFromCart,
@@ -271,7 +271,7 @@ export async function placeOrderFromCart(
   })
 
   let discountAmount = 0
-  let shippingDiscount = 0
+  let shippingDiscount = getThresholdShippingDiscount(subtotal, shippingCost)
   let appliedCoupon: typeof coupons.$inferSelect | null = null
 
   if (!skipCoupons && couponCode) {
@@ -310,7 +310,7 @@ export async function placeOrderFromCart(
       } else if (coupon.discountType === 'fixed_amount') {
         discountAmount = Number(coupon.discountValue)
       } else if (coupon.discountType === 'free_shipping') {
-        shippingDiscount = shippingCost
+        shippingDiscount = Math.max(shippingDiscount, shippingCost)
       }
 
       if (
@@ -345,9 +345,11 @@ export async function placeOrderFromCart(
   const resolvedPaymentMethod =
     paymentOverrides?.paymentMethod ?? paymentMethod
 
+  const billedShipping = Math.max(0, shippingCost - shippingDiscount)
+
   if (
     resolvedPaymentMethod === 'cash_on_delivery' &&
-    !isCodEligibleForShipping(shippingCost)
+    !isCodEligibleForShipping(billedShipping)
   ) {
     return {
       success: false,

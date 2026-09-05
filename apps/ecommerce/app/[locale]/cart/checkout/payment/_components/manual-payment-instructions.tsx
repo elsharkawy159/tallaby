@@ -51,7 +51,14 @@ export function ManualPaymentInstructions({
   return (
     <Card className="rounded-xl md:rounded-2xl border border-gray-200 overflow-hidden pt-0">
       <div className="bg-linear-to-r from-gray-50 to-gray-100 px-4 md:px-6 py-3 md:py-5 border-b border-gray-200">
-        <CardTitle className="text-sm md:text-xl font-bold text-gray-900">
+        <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-gray-900">
+          <Image
+            src={config.logo}
+            alt={t(config.titleKey as any)}
+            width={32}
+            height={32}
+            className="h-8 w-8 object-contain"
+          />
           {t(config.titleKey as any)}
         </CardTitle>
       </div>

@@ -33,9 +33,11 @@ export function CheckoutSection({
   isLoadingPreview,
 }: CheckoutSectionProps) {
   const form = useFormContext<ExternalOrderFormData>()
-  const isCodEligible = preview
-    ? isCodEligibleForShipping(preview.shippingCost)
-    : true
+  const billedShipping = preview
+    ? Math.max(0, preview.shippingCost - preview.discountAmount)
+    : null
+  const isCodEligible =
+    billedShipping == null ? true : isCodEligibleForShipping(billedShipping)
 
   useEffect(() => {
     if (!isCodEligible && form.getValues('paymentType') === 'cod') {
@@ -105,7 +107,7 @@ export function CheckoutSection({
               </div>
               {preview.discountAmount > 0 && (
                 <div className="flex justify-between text-green-600">
-                  <span>Discount</span>
+                  <span>Free shipping</span>
                   <span>
                     -{formatPricePlain(preview.discountAmount, 'en')} EGP
                   </span>

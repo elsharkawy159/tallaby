@@ -166,6 +166,7 @@
     "payWithCard": "Pay with Card",
     "payByCard": "Pay by Card",
     "payByCardDescription": "Pay securely with card using Paymob.",
+    "cardPaymentTemporarilyUnavailable": "Temporarily unavailable",
     "instapay": "InstaPay",
     "instapayDescription": "Transfer via InstaPay",
     "vodafoneCash": "Vodafone Cash",

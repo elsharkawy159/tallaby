@@ -114,6 +114,16 @@ export function invalidateProduct(
     before !== null && after !== null && isVisible(before) !== isVisible(after);
   const priceChanged =
     before !== null && after !== null && before.priceKey !== after.priceKey;
+  const categoryChanged =
+    before !== null &&
+    after !== null &&
+    before.categoryId !== after.categoryId;
+  // Active product counts drive category:top / taxonomy caches on ecommerce.
+  const categoryCountsChanged =
+    created ||
+    deleted ||
+    visibilityChanged ||
+    (categoryChanged && (isVisible(before!) || isVisible(after!)));
 
   // Structural change: the product entered/left the catalog, or its
   // visibility flipped. Listings, filter facets and the "all" bump are only
@@ -122,6 +132,15 @@ export function invalidateProduct(
     tags.add(productTags.listing());
     tags.add(productTags.filterOptions());
     tags.add(productTags.all());
+  }
+
+  // Ecommerce category queries cache active product counts (top categories,
+  // showcase empty-state filters, breadcrumb counts). Purge on approval
+  // (pending→active), delete, create, or moving a visible product A→B.
+  if (categoryCountsChanged) {
+    tags.add(categoryTags.all());
+    tags.add(categoryTags.tree());
+    tags.add(categoryTags.top());
   }
 
   // Price drives sorted ("price_asc"/"price_desc") and filtered
@@ -186,14 +205,19 @@ export function invalidateSellerProducts(sellerId: string): CacheInvalidation {
 }
 
 export function invalidateCategory(id: string, slug?: string): CacheInvalidation {
-  const tags = [categoryTags.detail(id), categoryTags.all(), categoryTags.tree()];
+  const tags = [
+    categoryTags.detail(id),
+    categoryTags.all(),
+    categoryTags.tree(),
+    categoryTags.top(),
+  ];
   if (slug) tags.push(categoryTags.slug(slug));
   return inv(tags);
 }
 
 /** Full taxonomy purge — used by admin's manual "Refresh" control. */
 export function invalidateAllCategories(): CacheInvalidation {
-  return inv([categoryTags.all(), categoryTags.tree()]);
+  return inv([categoryTags.all(), categoryTags.tree(), categoryTags.top()]);
 }
 
 export function invalidateBrand(id: string, slug?: string): CacheInvalidation {

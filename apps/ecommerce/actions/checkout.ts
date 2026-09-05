@@ -12,7 +12,7 @@ import {
 } from "@workspace/db";
 import { getCurrentUserId } from "@/lib/get-current-user-id";
 import { validateCoupon } from "./coupons";
-import { calculateOrderShippingCost } from "@/lib/shipping";
+import { calculateOrderShippingCost, getThresholdShippingDiscount } from "@/lib/shipping";
 import type { CheckoutSummary } from "@/lib/coupon-utils";
 import { getUserWalletSummary } from "@workspace/db/wallet";
 
@@ -66,14 +66,16 @@ async function getDestinationState(
 function buildBaseSummary(
   cartItems: Array<{ quantity: number; price: string | number }>,
   shippingCost: number | null,
-) {
+): CheckoutSummary {
   const subtotal = cartItems.reduce(
     (sum, item) => sum + Number(item.price) * item.quantity,
     0,
   );
   const tax = 0;
   const billedShipping = shippingCost ?? 0;
+  const shippingDiscount = getThresholdShippingDiscount(subtotal, shippingCost);
   const total = subtotal + tax + billedShipping;
+  const totalAfterDiscount = Math.max(0, total - shippingDiscount);
 
   return {
     subtotal,
@@ -81,6 +83,10 @@ function buildBaseSummary(
     shippingCost,
     total,
     itemCount: cartItems.reduce((sum, item) => sum + item.quantity, 0),
+    discountAmount: 0,
+    shippingDiscount,
+    totalAfterDiscount,
+    appliedCoupon: null,
   };
 }
 
@@ -127,15 +133,7 @@ export async function recalculateCheckoutSummary(data: {
       }
     }
 
-    const summary: CheckoutSummary = {
-      ...baseSummary,
-      discountAmount: 0,
-      shippingDiscount: 0,
-      totalAfterDiscount: baseSummary.total,
-      appliedCoupon: null,
-    };
-
-    return { success: true, data: { summary } };
+    return { success: true, data: { summary: baseSummary } };
   } catch (error) {
     console.error("Error recalculating checkout summary:", error);
     return { success: false, error: "Failed to recalculate checkout summary" };

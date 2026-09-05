@@ -44,6 +44,14 @@ export function OrderSummarySidebar({
               <span className="text-muted-foreground">Shipping</span>
               <span>{formatPricePlain(preview.shippingCost, 'en')} EGP</span>
             </div>
+            {preview.discountAmount > 0 && (
+              <div className="flex justify-between text-green-600">
+                <span>Free shipping</span>
+                <span>
+                  -{formatPricePlain(preview.discountAmount, 'en')} EGP
+                </span>
+              </div>
+            )}
             <div className="flex justify-between border-t pt-2 text-base font-semibold">
               <span>Total</span>
               <span>{formatPricePlain(preview.total, 'en')} EGP</span>

@@ -205,7 +205,7 @@ export const getTopCategories = unstable_cache(
   },
   ["top-categories"],
   {
-    tags: [categoryTags.all(), categoryTags.tree()],
+    tags: [categoryTags.all(), categoryTags.tree(), categoryTags.top()],
     revalidate: 60 * 60 * 24, // 1 day
   },
 );

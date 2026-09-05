@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import Hero from "@/components/home/hero/hero";
-import { FeaturesSection, ProductsGrid, ProductSection } from "@/components/home";
+import { ProductsGrid, ProductSection } from "@/components/home";
 import { ProductsGridSkeleton } from "@/components/home/products-grid.skeleton";
 import { generateHomeMetadata } from "@/lib/metadata";
 import type { SeoLocale } from "@/lib/metadata";
@@ -50,7 +50,7 @@ const HomePage = async ({
     <div className="min-h-screen">
       <Hero locale={locale} />
 
-      <FeaturesSection locale={locale} />
+      {/* <FeaturesSection locale={locale} /> */}
 
       {/* <Suspense fallback={<SectionSkeleton className="bg-amber-50/40" />}>
         <DealOfTheDay

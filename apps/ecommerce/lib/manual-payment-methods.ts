@@ -1,12 +1,11 @@
-import { Smartphone, type LucideIcon } from "lucide-react";
-
 export type ManualPaymentMethod = "instapay" | "vodafone_cash" | "e_cash";
 
 export interface ManualPaymentMethodConfig {
   value: ManualPaymentMethod;
   titleKey: string;
   descriptionKey: string;
-  icon: LucideIcon;
+  /** public/ path to the brand logo shown on checkout. */
+  logo: string;
   /** public/ path to the QR image. InstaPay only today. */
   qrImage?: string;
   /** Account handle / wallet number to display. */
@@ -22,7 +21,7 @@ export const MANUAL_PAYMENT_METHODS: ManualPaymentMethodConfig[] = [
     value: "instapay",
     titleKey: "instapay",
     descriptionKey: "instapayDescription",
-    icon: Smartphone,
+    logo: "/payment-method/Instapay_logo.png",
     qrImage: "/payment-method/instapay-qr-code.jpeg",
     accountLabel: "elsharkawy159@instapay",
     paymentLink: "https://ipn.eg/S/elsharkawy159/instapay/7w6JSs",
@@ -31,14 +30,14 @@ export const MANUAL_PAYMENT_METHODS: ManualPaymentMethodConfig[] = [
     value: "vodafone_cash",
     titleKey: "vodafoneCash",
     descriptionKey: "vodafoneCashDescription",
-    icon: Smartphone,
+    logo: "/payment-method/Vodafone_logo.png",
     accountLabel: "01003272830",
   },
   {
     value: "e_cash",
     titleKey: "eCash",
     descriptionKey: "eCashDescription",
-    icon: Smartphone,
+    logo: "/payment-method/Eand_logo.png",
     isPlaceholder: true,
   },
 ];

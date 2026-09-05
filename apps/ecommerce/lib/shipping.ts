@@ -1,15 +1,21 @@
 import {
   calculateLocationShippingCost,
   cartHasFreeDeliveryOffer,
+  cartHasPhysicalItems,
   cartQualifiesForProductFreeDelivery,
+  cartQualifiesForThresholdFreeShipping,
   FREE_DELIVERY_MIN_SUBTOTAL,
+  getThresholdShippingDiscount,
   resolveCartSubtotal,
 } from '@workspace/lib/shipping'
 
 export {
   cartHasFreeDeliveryOffer,
+  cartHasPhysicalItems,
   cartQualifiesForProductFreeDelivery,
+  cartQualifiesForThresholdFreeShipping,
   FREE_DELIVERY_MIN_SUBTOTAL,
+  getThresholdShippingDiscount,
 }
 
 export function getFlatShippingCost (): number {

@@ -7,7 +7,7 @@ export const ROUND_TO = 5
 /** Fallback base rate (before fees) when governorate cannot be matched */
 export const FALLBACK_BASE_RATE = 110
 
-/** Minimum cart subtotal (EGP) required before seller/product free delivery applies */
+/** Cart subtotal (EGP) at/above which shipping is fully discounted (free shipping) */
 export const FREE_DELIVERY_MIN_SUBTOTAL = 200
 
 /** Base rates from Cairo for the first 1 kg, keyed by canonical governorate name */
