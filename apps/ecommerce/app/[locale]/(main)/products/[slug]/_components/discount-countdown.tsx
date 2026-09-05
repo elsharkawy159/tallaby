@@ -1,11 +1,12 @@
 "use client"
 
-import { useState, useEffect, useCallback, useRef } from "react"
+import { useState, useEffect } from "react"
 import { Clock } from "lucide-react"
 import { useTranslations } from "next-intl"
 
 interface DiscountCountdownProps {
-  daysFromNow?: number
+  /** The vendor-set discount expiry moment. Once reached, the countdown hides itself. */
+  endDate: Date
 }
 
 interface TimeLeft {
@@ -13,13 +14,6 @@ interface TimeLeft {
   hours: number
   minutes: number
   seconds: number
-}
-
-const getNextEndDate = (daysFromNow: number): Date => {
-  const date = new Date()
-  date.setDate(date.getDate() + daysFromNow)
-  date.setHours(23, 59, 59, 999)
-  return date
 }
 
 const calculateTimeLeft = (endDate: Date): TimeLeft => {
@@ -39,40 +33,40 @@ const calculateTimeLeft = (endDate: Date): TimeLeft => {
 }
 
 const isExpired = (timeLeft: TimeLeft): boolean => {
-  return timeLeft.days === 0 && timeLeft.hours === 0 && 
+  return timeLeft.days === 0 && timeLeft.hours === 0 &&
          timeLeft.minutes === 0 && timeLeft.seconds === 0
 }
 
 const INITIAL_TIME_LEFT: TimeLeft = { days: 0, hours: 0, minutes: 0, seconds: 0 }
 
-export const DiscountCountdown = ({ daysFromNow = 2 }: DiscountCountdownProps) => {
+export const DiscountCountdown = ({ endDate }: DiscountCountdownProps) => {
   const t = useTranslations("product")
-  const endDateRef = useRef<Date | null>(null)
+  // Seeded with zeros (not endDate math) so server and client render the same
+  // markup on first paint; the real countdown is filled in once mounted.
   const [timeLeft, setTimeLeft] = useState<TimeLeft>(INITIAL_TIME_LEFT)
-
-  const resetCountdown = useCallback(() => {
-    const newEndDate = getNextEndDate(daysFromNow)
-    endDateRef.current = newEndDate
-    setTimeLeft(calculateTimeLeft(newEndDate))
-  }, [daysFromNow])
+  const [expired, setExpired] = useState<boolean>(false)
 
   useEffect(() => {
-    resetCountdown()
+    const initial = calculateTimeLeft(endDate)
+    setTimeLeft(initial)
+    setExpired(isExpired(initial))
+
+    if (isExpired(initial)) return
 
     const timer = setInterval(() => {
-      if (!endDateRef.current) return
-
-      const newTimeLeft = calculateTimeLeft(endDateRef.current)
+      const newTimeLeft = calculateTimeLeft(endDate)
+      setTimeLeft(newTimeLeft)
 
       if (isExpired(newTimeLeft)) {
-        resetCountdown()
-      } else {
-        setTimeLeft(newTimeLeft)
+        setExpired(true)
+        clearInterval(timer)
       }
     }, 1000)
 
     return () => clearInterval(timer)
-  }, [resetCountdown])
+  }, [endDate])
+
+  if (expired) return null
 
   const timeBlocks = [
     { value: timeLeft.days, label: t("days") },

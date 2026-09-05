@@ -269,6 +269,8 @@ export const productVariants = pgTable("product_variants", {
 	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow(),
 	barCode: varchar("bar_code"),
 	locale: text().default('en'),
+	/** Vendor-set discount expiry for this variant's own price; null = no expiry (toggle off in the dashboard). */
+	discountEndsAt: timestamp("discount_ends_at", { withTimezone: true, mode: 'string' }),
 }, (table) => [
 	// No index existed on this FK — every variant lookup by product was a seq scan.
 	index("product_variants_product_id_idx").using("btree", table.productId.asc().nullsLast().op("uuid_ops")),

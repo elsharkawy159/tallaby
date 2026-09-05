@@ -13,6 +13,7 @@ import { getPublicUrl } from "@/lib/utils";
 import { CurrencyInput, Toggle } from "@workspace/ui/components";
 import { FormLabel } from "@workspace/ui/components/form";
 import type { AddProductFormData } from "../add-product.schema";
+import { DiscountExpiryField } from "./discount-expiry-field";
 
 interface DefaultVariantPriceDisplayProps {
   finalPrice: number;
@@ -224,6 +225,10 @@ export function VariantPricingFields({
         onBlurValue={(value) =>
           applyNearestNineRounding(`variants.${index}.price`, value)
         }
+      />
+      <DiscountExpiryField
+        name={`variants.${index}.discountEndsAt`}
+        label="Discount expiry"
       />
     </div>
   );

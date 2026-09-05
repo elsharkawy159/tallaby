@@ -271,6 +271,12 @@ function applyDefaultVariantProductImages<
   });
 }
 
+function toIsoStringOrNull(value: unknown): string | null {
+  if (!value) return null;
+  const date = value instanceof Date ? value : new Date(value as string);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
 function mapVariantFormToDb(v: any, index: number) {
   const { images, imageUrl } = normalizeVariantImageFields(v);
   const localized = v.localized ?? null;
@@ -282,6 +288,7 @@ function mapVariantFormToDb(v: any, index: number) {
   return {
     title: englishFields?.title ?? v.title,
     price: v.price as any,
+    discountEndsAt: toIsoStringOrNull(v.discountEndsAt),
     stock: v.stock ?? 0,
     sku: v.sku,
     imageUrl,
@@ -1146,6 +1153,13 @@ export async function createProduct(
       status: (rest as CreateProductLegacy).status ?? ("pending" as const),
     } as any;
 
+    if (productPayload.price && typeof productPayload.price === "object") {
+      productPayload.price = {
+        ...productPayload.price,
+        discountEndsAt: toIsoStringOrNull(productPayload.price.discountEndsAt),
+      };
+    }
+
     const slugsForSnapshot: { locale: string; slug: string | null }[] = [];
 
     const createdProduct = await db.transaction(async (tx) => {
@@ -1378,6 +1392,13 @@ export async function updateProduct(
       notes: _notes,
       ...productData
     } = data as typeof data & FormOnly;
+
+    if (productData.price && typeof productData.price === "object") {
+      (productData as any).price = {
+        ...(productData.price as any),
+        discountEndsAt: toIsoStringOrNull((productData.price as any).discountEndsAt),
+      };
+    }
 
     const updatedProduct = await db.transaction(async (tx) => {
       // Update the main product (shared fields only). Any seller edit sends
