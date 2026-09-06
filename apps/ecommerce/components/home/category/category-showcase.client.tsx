@@ -68,7 +68,11 @@ export const CategoryShowcaseClient = ({
     return categories
       .map((category) => ({
         id: category.id,
-        name:
+        // The canonical English name is what /products?categories= filters
+        // match against in the DB, so it must stay in the URL regardless of
+        // locale — only the on-screen label switches to Arabic.
+        name: category.name!,
+        displayName:
           locale === "ar" ? category.nameAr || category.name! : category.name!,
         slug: category.slug!,
         imageUrl: category.imageUrl ?? null,
@@ -101,6 +105,7 @@ function CategoryCarousel({
   categories: Array<{
     id: string;
     name: string;
+    displayName: string;
     slug: string;
     imageUrl: string | null;
     fallbackImageUrl: string | null;
@@ -122,20 +127,20 @@ function CategoryCarousel({
         {categories.map((category) => (
           <CarouselItem key={category.id} className="basis-auto">
             <Link
-              href={`/products?categories=${category.name}`}
+              href={`/products?${new URLSearchParams({ categories: category.name }).toString()}`}
               className="group block"
             >
               <div className="md:w-[108px] w-21">
                 <div className="relative overflow-hidden rounded-full md:size-[100px] size-22 mx-auto mb-2.5 bg-muted/40 shadow-sm group-hover:shadow-md transition-all duration-300">
                   <CategoryImage
-                    name={category.name}
+                    name={category.displayName}
                     imageUrl={category.imageUrl}
                     fallbackImageUrl={category.fallbackImageUrl}
                     productCount={category.productCount}
                   />
                 </div>
                 <h3 className="md:text-sm text-xs font-medium text-center group-hover:text-primary transition-colors line-clamp-2">
-                  {category.name}
+                  {category.displayName}
                 </h3>
               </div>
             </Link>

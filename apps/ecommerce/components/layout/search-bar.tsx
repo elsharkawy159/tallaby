@@ -111,7 +111,7 @@ export const SearchBar = ({
       <Input
         type="text"
         placeholder={searchPlaceholder}
-        className="pl-11 rounded-full"
+        className="pl-11 rounded-full text-white placeholder:text-gray-300"
         value={searchQuery}
         onChange={handleInputChange}
         onFocus={handleInputFocus}

@@ -53,8 +53,12 @@ export function useUrlParams() {
     categories:
       searchParams.get("categories")?.split(",").filter(Boolean) || [],
     brands: searchParams.get("brands")?.split(",").filter(Boolean) || [],
-    priceMin: Number(searchParams.get("priceMin")) || 0,
-    priceMax: Number(searchParams.get("priceMax")) || 500,
+    priceMin: searchParams.get("priceMin")
+      ? Number(searchParams.get("priceMin"))
+      : undefined,
+    priceMax: searchParams.get("priceMax")
+      ? Number(searchParams.get("priceMax"))
+      : undefined,
     sort: searchParams.get("sort") || "popularity",
     page: Number(searchParams.get("page")) || 1,
     pageSize: Number(searchParams.get("pageSize")) || 20,
@@ -80,11 +84,11 @@ export function useUrlParams() {
           params.set("brands", updated.brands.join(","));
         else params.delete("brands");
 
-        if (updated.priceMin !== undefined && updated.priceMin !== 0)
+        if (updated.priceMin !== undefined && Number.isFinite(updated.priceMin))
           params.set("priceMin", String(updated.priceMin));
         else params.delete("priceMin");
 
-        if (updated.priceMax !== undefined && updated.priceMax !== 500)
+        if (updated.priceMax !== undefined && Number.isFinite(updated.priceMax))
           params.set("priceMax", String(updated.priceMax));
         else params.delete("priceMax");
 
@@ -117,8 +121,12 @@ export function useUrlParams() {
       categories:
         searchParams.get("categories")?.split(",").filter(Boolean) || [],
       brands: searchParams.get("brands")?.split(",").filter(Boolean) || [],
-      priceMin: Number(searchParams.get("priceMin")) || 0,
-      priceMax: Number(searchParams.get("priceMax")) || 500,
+      priceMin: searchParams.get("priceMin")
+        ? Number(searchParams.get("priceMin"))
+        : undefined,
+      priceMax: searchParams.get("priceMax")
+        ? Number(searchParams.get("priceMax"))
+        : undefined,
       sort: searchParams.get("sort") || "popularity",
       page: Number(searchParams.get("page")) || 1,
       pageSize: Number(searchParams.get("pageSize")) || 20,

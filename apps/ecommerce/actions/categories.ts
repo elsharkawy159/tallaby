@@ -142,7 +142,12 @@ export const getAllCategorySlugs = unstable_cache(
 export const getTopCategories = unstable_cache(
   async () => {
     try {
-      const topCategories = await db
+      // Category names aren't unique (duplicate rows with the same
+      // name/nameAr exist across parents), which showed up as the same
+      // category appearing twice in the homepage carousel. Fetch extra
+      // rows and collapse by name so a full page of 12 distinct names
+      // survives the merge.
+      const rawTopCategories = await db
         .select({
           id: categories.id,
           name: categories.name,
@@ -160,7 +165,24 @@ export const getTopCategories = unstable_cache(
           ),
         )
         .orderBy(desc(categories.productCount))
-        .limit(12);
+        .limit(40);
+
+      const dedupedByName = new Map<string, (typeof rawTopCategories)[number]>();
+      for (const category of rawTopCategories) {
+        const key = `${category.name}|${category.nameAr ?? ""}`
+          .trim()
+          .toLowerCase();
+        const existing = dedupedByName.get(key);
+        if (existing) {
+          existing.productCount += category.productCount;
+        } else {
+          dedupedByName.set(key, { ...category });
+        }
+      }
+
+      const topCategories = Array.from(dedupedByName.values())
+        .sort((a, b) => b.productCount - a.productCount)
+        .slice(0, 12);
 
       // For categories without image, fetch first product image as fallback
       const needFallback = topCategories.filter((c) => !c.imageUrl);

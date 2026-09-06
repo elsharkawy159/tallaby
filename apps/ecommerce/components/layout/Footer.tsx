@@ -10,7 +10,7 @@ import { PaymentMethodIcons } from "./payment-method-icons";
 const Footer = async () => {
   const t = await getTranslations("footer");
   return (
-    <footer className="relative bg-primary text-white overflow-hidden">
+    <footer className="relative bg-primary text-white overflow-hidden mt-24">
       {/* Gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/80 to-primary" />
 

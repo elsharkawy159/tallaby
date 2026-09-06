@@ -20,6 +20,7 @@ import {
   desc,
   asc,
   isNotNull,
+  inArray,
 } from "@workspace/db"
 import {
   getProductIdBySlug,
@@ -81,8 +82,13 @@ export const getProducts = createCachedQuery({
       }
 
       if (filters.categoryName) {
-        const [cat] = await db.select({ id: categories.id }).from(categories).where(eq(categories.name, filters.categoryName!)).limit(1)
-        if (cat) conditions.push(eq(products.categoryId, cat.id))
+        // Category names aren't unique in the DB (duplicate rows with the
+        // same name exist across parents), so match every id sharing the
+        // name rather than an arbitrary single row via .limit(1).
+        const matchingCategories = await db.select({ id: categories.id }).from(categories).where(eq(categories.name, filters.categoryName!))
+        if (matchingCategories.length > 0) {
+          conditions.push(inArray(products.categoryId, matchingCategories.map((c) => c.id)))
+        }
       }
 
       if (filters.brandId) {
@@ -763,13 +769,17 @@ export async function getFilterOptions() {
   return unstable_cache(
     async () => {
       try {
-        // Get all available categories that have products
+        // Get all available categories that have products. Category names
+        // aren't unique (duplicate rows with the same name/nameAr exist
+        // across parents) — group by name so the filter list shows one
+        // checkbox per name with a combined product count, matching how
+        // getProducts resolves a categoryName filter to every id sharing it.
         const categoriesWithProducts = await db
           .select({
-            id: categories.id,
+            id: sql<string>`MIN(${categories.id})`.as("id"),
             name: categories.name,
             nameAr: categories.nameAr,
-            slug: categories.slug,
+            slug: sql<string>`MIN(${categories.slug})`.as("slug"),
             productCount: sql<number>`COUNT(${products.id})`,
           })
           .from(categories)
@@ -780,7 +790,8 @@ export async function getFilterOptions() {
               eq(products.status, "active")
             )
           )
-          .groupBy(categories.id, categories.name, categories.nameAr, categories.slug)
+          .where(isNotNull(categories.name))
+          .groupBy(categories.name, categories.nameAr)
           .having(sql`COUNT(${products.id}) > 0`)
           .orderBy(categories.name);
 
@@ -819,8 +830,10 @@ export async function getFilterOptions() {
             categories: categoriesWithProducts,
             brands: brandsWithProducts,
             priceRange: {
-              min: priceRange[0]?.minPrice || 0,
-              max: priceRange[0]?.maxPrice || 1000,
+              // Postgres numeric aggregates can come back as strings over
+              // the driver; coerce so the slider always gets real numbers.
+              min: Number(priceRange[0]?.minPrice ?? 0),
+              max: Number(priceRange[0]?.maxPrice ?? 1000),
             },
           },
         };

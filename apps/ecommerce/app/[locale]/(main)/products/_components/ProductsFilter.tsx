@@ -54,9 +54,16 @@ export function ProductsFilter({ filterOptions }: ProductsFilterProps) {
 
   useEffect(() => {
     if (filterOptions?.data?.priceRange) {
-      const currentMin = params.priceMin || filterOptions.data.priceRange.min;
-      const currentMax = params.priceMax || filterOptions.data.priceRange.max;
-      setPrice([currentMin, currentMax]);
+      const { min: rangeMin, max: rangeMax } = filterOptions.data.priceRange;
+      const currentMin = params.priceMin ?? rangeMin;
+      const currentMax = params.priceMax ?? rangeMax;
+      // Clamp so a stale/out-of-range URL value can never exceed the
+      // slider's actual min/max (that mismatch is what causes the thumb
+      // to jam and onValueChange to emit NaN).
+      setPrice([
+        Math.min(Math.max(currentMin, rangeMin), rangeMax),
+        Math.min(Math.max(currentMax, rangeMin), rangeMax),
+      ]);
     }
   }, [filterOptions, params.priceMin, params.priceMax]);
 
@@ -96,10 +103,21 @@ export function ProductsFilter({ filterOptions }: ProductsFilterProps) {
   // Price filter handler
   const handlePriceChange = (val: number[]) => {
     setPrice(val);
+    const rangeMin = filterOptions?.data?.priceRange?.min;
+    const rangeMax = filterOptions?.data?.priceRange?.max;
+    // Dragging back to the full range should clear the params rather than
+    // pin them to the range's exact edges (keeps the URL/"active filter"
+    // state clean and matches clearAllFilters below).
+    const isFullRange =
+      rangeMin !== undefined &&
+      rangeMax !== undefined &&
+      val[0] === rangeMin &&
+      val[1] === rangeMax;
+
     updateParams(
       {
-        priceMin: val[0],
-        priceMax: val[1],
+        priceMin: isFullRange ? undefined : val[0],
+        priceMax: isFullRange ? undefined : val[1],
         page: 1,
       },
       { scroll: false }
@@ -107,15 +125,15 @@ export function ProductsFilter({ filterOptions }: ProductsFilterProps) {
   };
 
   const clearAllFilters = () => {
-    const minPrice = filterOptions?.data?.priceRange?.min || 0;
-    const maxPrice = filterOptions?.data?.priceRange?.max || 1000;
+    const minPrice = filterOptions?.data?.priceRange?.min ?? 0;
+    const maxPrice = filterOptions?.data?.priceRange?.max ?? 1000;
 
     updateParams(
       {
         categories: [],
         brands: [],
-        priceMin: minPrice,
-        priceMax: maxPrice,
+        priceMin: undefined,
+        priceMax: undefined,
         page: 1,
       },
       { scroll: false }
@@ -124,16 +142,13 @@ export function ProductsFilter({ filterOptions }: ProductsFilterProps) {
   };
 
   const hasActiveFilters = useMemo(() => {
-    const defaultMin = filterOptions?.data?.priceRange?.min || 0;
-    const defaultMax = filterOptions?.data?.priceRange?.max || 1000;
-
     return (
       (params.categories?.length || 0) > 0 ||
       (params.brands?.length || 0) > 0 ||
-      params.priceMin !== defaultMin ||
-      params.priceMax !== defaultMax
+      params.priceMin !== undefined ||
+      params.priceMax !== undefined
     );
-  }, [params, filterOptions]);
+  }, [params]);
 
   // Filter section renderer (for reuse)
   const renderFilters = (isMobile = false) => {
@@ -286,10 +301,7 @@ export function ProductsFilter({ filterOptions }: ProductsFilterProps) {
                 params.categories?.length || 0,
                 params.brands?.length || 0,
               ].reduce((a, b) => a + b, 0) +
-                (params.priceMin !==
-                  (filterOptions?.data?.priceRange?.min || 0) ||
-                params.priceMax !==
-                  (filterOptions?.data?.priceRange?.max || 1000)
+                (params.priceMin !== undefined || params.priceMax !== undefined
                   ? 1
                   : 0)}
             </span>
