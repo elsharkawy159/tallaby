@@ -11,7 +11,7 @@ import {
   type CartItemForCoupon,
   type CheckoutSummary
 } from "@/lib/coupon-utils"
-import { calculateOrderShippingCost, getThresholdShippingDiscount } from "@/lib/shipping"
+import { calculateOrderShippingCost } from "@/lib/shipping"
 
 interface ValidationResult {
   success: boolean
@@ -173,7 +173,8 @@ export async function validateCoupon(
             appliedCoupon: {
               code: coupon.code,
               name: coupon.name,
-              discountType: coupon.discountType
+              discountType: coupon.discountType,
+              discountValue: coupon.discountValue,
             }
           }
         }
@@ -387,20 +388,19 @@ export async function removeCouponFromCart(data?: {
       destinationState,
     })
     const billedShipping = shippingCost ?? 0
-    const shippingDiscount = getThresholdShippingDiscount(subtotal, shippingCost)
     const total = subtotal + tax + billedShipping
 
-    const summary: CheckoutSummary = {
-      subtotal,
-      tax,
-      shippingCost,
-      total,
-      itemCount: cart.cartItems.reduce((sum, i) => sum + i.quantity, 0),
-      discountAmount: 0,
-      shippingDiscount,
-      totalAfterDiscount: Math.max(0, total - shippingDiscount),
-      appliedCoupon: null
-    }
+    const summary = buildSummaryWithCoupon(
+      {
+        subtotal,
+        tax,
+        shippingCost,
+        total,
+        itemCount: cart.cartItems.reduce((sum, i) => sum + i.quantity, 0),
+      },
+      null,
+      null,
+    )
 
     revalidateTag("checkout", "max")
 

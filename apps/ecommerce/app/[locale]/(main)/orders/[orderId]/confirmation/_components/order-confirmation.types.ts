@@ -59,6 +59,12 @@ export interface OrderConfirmationData {
     tax: number;
     shippingCost: number;
     discountAmount: number;
+    discounts: Array<{
+      type: string;
+      label: string;
+      amount: string;
+      code?: string;
+    }>;
     totalAmount: number;
     itemCount: number;
   };

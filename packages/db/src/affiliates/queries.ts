@@ -12,7 +12,7 @@ export interface AffiliateOverview {
   status: "active" | "inactive";
   totals: {
     totalOrders: number;
-    /** Orders whose commission has reached (or passed through) 'earned' — i.e. the order was Delivered at least once. */
+    /** Orders delivered at least once — earned, reversed, or still in the return-window hold (pending + eligibleAt). */
     deliveredOrders: number;
     pendingProfit: string;
     /** Currently-earned, not-since-reversed commission — matches the wallet credit those orders produced. */
@@ -33,6 +33,7 @@ export async function getAffiliateOverview(
     .select({
       status: affiliateCommissions.status,
       commissionAmount: affiliateCommissions.commissionAmount,
+      eligibleAt: affiliateCommissions.eligibleAt,
     })
     .from(affiliateCommissions)
     .where(
@@ -47,7 +48,13 @@ export async function getAffiliateOverview(
   let totalProfit = 0;
 
   for (const row of rows) {
-    if (row.status === "earned" || row.status === "reversed") deliveredOrders++;
+    if (
+      row.status === "earned" ||
+      row.status === "reversed" ||
+      (row.status === "pending" && row.eligibleAt != null)
+    ) {
+      deliveredOrders++;
+    }
     if (row.status === "pending") pendingProfit += Number(row.commissionAmount);
     if (row.status === "earned") totalProfit += Number(row.commissionAmount);
   }

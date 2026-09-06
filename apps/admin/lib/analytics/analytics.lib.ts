@@ -63,13 +63,16 @@ export function fillCustomerSeries (
  *
  * The postgres-js pool deadlocks — permanently, not slowly — once noticeably
  * more queries are queued than it has connections (see packages/db's pool
- * config). A per-call batch size cannot prevent that, because several requests
- * render concurrently and each would get its own budget. This counter is
- * module-level, so it bounds the whole process no matter how many dashboards
- * are being rendered, and leaves the pool plenty of headroom for everything
- * else (Server Actions, transactions, the sidebar).
+ * config). Against Supabase's transaction pooler (:6543) that stall shows up
+ * as Suspense skeletons that never resolve ("infinite loading").
+ *
+ * Keep this strictly below the pool `max` (4 on serverless, 20 locally) and
+ * leave headroom for auth, layout, and Server Actions that also hit the DB.
+ * A per-call batch size cannot prevent oversubscription, because several
+ * Suspense sections render concurrently — this counter is module-level so it
+ * bounds the whole process.
  */
-const MAX_QUERIES_IN_FLIGHT = 6
+const MAX_QUERIES_IN_FLIGHT = 3
 
 let inFlight = 0
 const waiting: Array<() => void> = []
@@ -80,13 +83,21 @@ async function acquireSlot (): Promise<void> {
     return
   }
 
+  // Waiter inherits an existing slot from releaseSlot — do not increment again.
   await new Promise<void>((resolve) => waiting.push(resolve))
-  inFlight += 1
 }
 
 function releaseSlot (): void {
+  const next = waiting.shift()
+  if (next) {
+    // Transfer the slot to the next waiter without dipping inFlight.
+    // The previous acquire/release race could briefly push inFlight above
+    // MAX and wedge the :6543 pooler.
+    next()
+    return
+  }
+
   inFlight -= 1
-  waiting.shift()?.()
 }
 
 /**

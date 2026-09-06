@@ -1,23 +1,25 @@
 import posthog from "posthog-js";
 
-const projectToken = process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN;
-const host = process.env.NEXT_PUBLIC_POSTHOG_HOST;
+// Skip on localhost / `next dev` — only live traffic should hit analytics & replays.
+// capture/identify/reset elsewhere are safe no-ops when PostHog is uninitialized.
+if (process.env.NODE_ENV !== "development") {
+  const projectToken = process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN;
+  const host = process.env.NEXT_PUBLIC_POSTHOG_HOST;
 
-if (!projectToken || !host) {
-  if (process.env.NODE_ENV === "development") {
+  if (!projectToken || !host) {
     const missingVariable = !projectToken
       ? "NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN"
       : "NEXT_PUBLIC_POSTHOG_HOST";
 
-    throw new Error(
-      `${missingVariable} variable required by PostHog is missing or un-configured, this causes events to be silently missed. This error stops appearing once ${missingVariable} is configured`,
+    console.error(
+      `${missingVariable} is required for PostHog in production; events will be missed until it is configured.`,
     );
+  } else {
+    posthog.init(projectToken, {
+      api_host: host,
+      defaults: "2026-01-30",
+      capture_exceptions: true,
+      debug: false,
+    });
   }
-} else {
-  posthog.init(projectToken, {
-    api_host: host,
-    defaults: "2026-01-30",
-    capture_exceptions: true,
-    debug: process.env.NODE_ENV === "development",
-  });
 }

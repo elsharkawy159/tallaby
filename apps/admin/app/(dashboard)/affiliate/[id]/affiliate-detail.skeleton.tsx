@@ -9,7 +9,7 @@ export function AffiliateDetailSkeleton() {
       </div>
 
       <Card>
-        <CardContent className="pt-6">
+        <CardContent>
           <div className="flex items-start gap-4">
             <Skeleton className="h-20 w-20 rounded-full" />
             <div className="flex-1 space-y-2">

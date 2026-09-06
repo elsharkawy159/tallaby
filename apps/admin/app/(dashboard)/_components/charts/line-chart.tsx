@@ -1,16 +1,17 @@
 'use client'
 
+import { useRef } from 'react'
 import { formatCurrency } from '@workspace/lib'
 import {
   CartesianGrid,
   Line,
   LineChart as RechartsLineChart,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis
 } from 'recharts'
 import { format } from 'date-fns'
+import { useContainerSize } from './use-container-size'
 
 interface DataPoint {
   date: string
@@ -28,6 +29,9 @@ export function LineChart ({
   className,
   valueKind = 'currency'
 }: LineChartProps) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const size = useContainerSize(containerRef, [data.length])
+
   if (data.length === 0) {
     return (
       <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
@@ -42,9 +46,14 @@ export function LineChart ({
       : new Intl.NumberFormat('en-EG').format(value)
 
   return (
-    <div className={`h-full w-full ${className ?? ''}`}>
-      <ResponsiveContainer width="100%" height="100%">
-        <RechartsLineChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+    <div ref={containerRef} className={`h-full w-full ${className ?? ''}`}>
+      {size ? (
+        <RechartsLineChart
+          width={size.width}
+          height={size.height}
+          data={data}
+          margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+        >
           <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.4} vertical={false} />
           <XAxis
             dataKey="date"
@@ -72,7 +81,7 @@ export function LineChart ({
           />
           <Line type="monotone" dataKey="value" stroke="#6366f1" strokeWidth={2} dot={false} />
         </RechartsLineChart>
-      </ResponsiveContainer>
+      ) : null}
     </div>
   )
 }

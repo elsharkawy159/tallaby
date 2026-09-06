@@ -2,6 +2,7 @@
 
 import { db, eq, and } from "@workspace/db";
 import { orders, reviews } from "@workspace/db";
+import { parseOrderDiscountLines } from "@workspace/lib/orders";
 import type { OrderConfirmationData } from "./order-confirmation.types";
 import { getCurrentUserId } from "@/lib/get-current-user-id";
 import { getLocale } from "next-intl/server";
@@ -67,6 +68,7 @@ export async function getOrderConfirmationData(orderId: string): Promise<{
     const tax = Number(order.tax) || 0;
     const shippingCost = Number(order.shippingCost) || 0;
     const discountAmount = Number(order.discountAmount) || 0;
+    const discounts = parseOrderDiscountLines(order.discounts);
     const totalAmount = Number(order.totalAmount);
     const itemCount = order.orderItems.reduce(
       (sum, item) => sum + item.quantity,
@@ -156,6 +158,7 @@ export async function getOrderConfirmationData(orderId: string): Promise<{
         tax,
         shippingCost,
         discountAmount,
+        discounts,
         totalAmount,
         itemCount,
       },

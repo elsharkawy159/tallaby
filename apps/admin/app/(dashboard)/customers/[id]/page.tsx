@@ -1,8 +1,10 @@
 import { CustomerProfileData } from "./customer-profile.data";
 import type { CustomerProfilePageProps } from "./customer-profile.types";
 
-export default function CustomerProfilePage({
+export default async function CustomerProfilePage({
   params,
 }: CustomerProfilePageProps) {
-  return <CustomerProfileData customerId={params.id} />;
+  const { id } = await params;
+
+  return <CustomerProfileData customerId={id} />;
 }

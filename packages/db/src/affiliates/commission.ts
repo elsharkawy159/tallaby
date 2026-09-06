@@ -1,16 +1,25 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNotNull, isNull, lte } from "drizzle-orm";
 
 import type { db as dbType } from "../drizzle/database";
-import { affiliateCommissions, affiliates, notifications } from "../drizzle/schema";
+import {
+  affiliateCommissions,
+  affiliates,
+  notifications,
+  orders,
+} from "../drizzle/schema";
 import {
   getOrCreateUserWallet,
   getUserWalletSummary,
   postWalletTransaction,
   WALLET_REFERENCE_TYPES,
 } from "../wallet/user-wallet";
-import { AFFILIATE_COMMISSION_RATE } from "./constants";
+import {
+  AFFILIATE_COMMISSION_RATE,
+  computeAffiliateCommissionEligibleAt,
+} from "./constants";
 
 type Tx = Parameters<Parameters<typeof dbType.transaction>[0]>[0];
+type Queryable = typeof dbType;
 
 export interface AffiliateAttribution {
   affiliateId: string;
@@ -100,34 +109,73 @@ export async function createPendingAffiliateCommission(
 }
 
 /**
- * Order reached Delivered: turns a pending commission into earned money in
- * the affiliate's wallet.
+ * Order reached Delivered: schedules wallet release after RETURN_WINDOW_DAYS.
+ * Does NOT credit the wallet — that happens via earnAffiliateCommission once
+ * eligibleAt has elapsed (typically the release cron).
+ *
+ * Idempotent: only sets eligibleAt when it is still null, so a duplicate
+ * delivery event cannot extend or reset the hold window.
+ */
+export async function scheduleAffiliateCommissionRelease(
+  tx: Tx,
+  orderId: string
+): Promise<void> {
+  const now = new Date();
+  const eligibleAt = computeAffiliateCommissionEligibleAt(now);
+
+  await tx
+    .update(affiliateCommissions)
+    .set({ eligibleAt, updatedAt: now.toISOString() })
+    .where(
+      and(
+        eq(affiliateCommissions.orderId, orderId),
+        eq(affiliateCommissions.type, "commission"),
+        eq(affiliateCommissions.status, "pending"),
+        isNull(affiliateCommissions.eligibleAt)
+      )
+    );
+}
+
+/**
+ * Credits the affiliate wallet once the return-window hold has elapsed.
  *
  * Idempotent by construction, two layers deep:
- *   1. The UPDATE below only ever claims a row that is still 'pending'. A
- *      duplicate call (retried webhook, admin re-save, a second delivery
- *      event) finds zero matching rows and returns — exactly the guard
- *      creditSellerOnDelivery uses for order_items.status.
+ *   1. The UPDATE below only ever claims a row that is still 'pending' with
+ *      eligibleAt <= now. Duplicate calls find zero matching rows and return.
  *   2. Even if that guard were somehow bypassed, postWalletTransaction's own
  *      (type, reference_type, reference_id) unique index — keyed on this
  *      commission row's id — would reject a second credit for the same row.
  *
- * A no-op (not an error) when the order has no affiliate attribution at all.
+ * Also requires the order to still be 'delivered'. If the order was returned
+ * or cancelled during the hold, cancelPendingAffiliateCommission should have
+ * already cleared the pending row; this is a second safety check.
+ *
+ * A no-op when there is no due pending commission for the order.
  */
 export async function earnAffiliateCommission(
   tx: Tx,
   orderId: string
 ): Promise<void> {
-  const now = new Date().toISOString();
+  const now = new Date();
+  const nowIso = now.toISOString();
+
+  const order = await tx.query.orders.findFirst({
+    where: eq(orders.id, orderId),
+    columns: { status: true },
+  });
+
+  if (!order || order.status !== "delivered") return;
 
   const [claimed] = await tx
     .update(affiliateCommissions)
-    .set({ status: "earned", updatedAt: now })
+    .set({ status: "earned", updatedAt: nowIso })
     .where(
       and(
         eq(affiliateCommissions.orderId, orderId),
         eq(affiliateCommissions.type, "commission"),
-        eq(affiliateCommissions.status, "pending")
+        eq(affiliateCommissions.status, "pending"),
+        isNotNull(affiliateCommissions.eligibleAt),
+        lte(affiliateCommissions.eligibleAt, nowIso)
       )
     )
     .returning({
@@ -147,13 +195,13 @@ export async function earnAffiliateCommission(
     direction: "credit",
     referenceType: WALLET_REFERENCE_TYPES.affiliateCommission,
     referenceId: claimed.id,
-    description: "Affiliate commission — order delivered",
+    description: "Affiliate commission — return window elapsed",
     metadata: { orderId, affiliateCommissionId: claimed.id },
   });
 
   await tx
     .update(affiliateCommissions)
-    .set({ walletTransactionId: walletTx.id, updatedAt: now })
+    .set({ walletTransactionId: walletTx.id, updatedAt: nowIso })
     .where(eq(affiliateCommissions.id, claimed.id));
 
   // Reuses the existing notifications table/type — no new notification
@@ -168,12 +216,74 @@ export async function earnAffiliateCommission(
   });
 }
 
+export interface ReleaseDueAffiliateCommissionsResult {
+  released: number;
+  skipped: number;
+}
+
+/**
+ * Cron/batch entry: finds pending commissions whose eligibleAt has elapsed
+ * and credits each wallet. Each order is earned in its own transaction so a
+ * single failure cannot roll back the whole batch.
+ */
+export async function releaseDueAffiliateCommissions(
+  db: Queryable
+): Promise<ReleaseDueAffiliateCommissionsResult> {
+  const nowIso = new Date().toISOString();
+
+  const due = await db
+    .select({ orderId: affiliateCommissions.orderId })
+    .from(affiliateCommissions)
+    .where(
+      and(
+        eq(affiliateCommissions.type, "commission"),
+        eq(affiliateCommissions.status, "pending"),
+        isNotNull(affiliateCommissions.eligibleAt),
+        lte(affiliateCommissions.eligibleAt, nowIso)
+      )
+    );
+
+  let released = 0;
+  let skipped = 0;
+
+  for (const row of due) {
+    const before = await db.query.affiliateCommissions.findFirst({
+      where: and(
+        eq(affiliateCommissions.orderId, row.orderId),
+        eq(affiliateCommissions.type, "commission")
+      ),
+      columns: { status: true },
+    });
+
+    await db.transaction((tx) => earnAffiliateCommission(tx, row.orderId));
+
+    const after = await db.query.affiliateCommissions.findFirst({
+      where: and(
+        eq(affiliateCommissions.orderId, row.orderId),
+        eq(affiliateCommissions.type, "commission")
+      ),
+      columns: { status: true },
+    });
+
+    if (before?.status === "pending" && after?.status === "earned") {
+      released++;
+    } else {
+      skipped++;
+    }
+  }
+
+  return { released, skipped };
+}
+
 /**
  * Order was cancelled (or otherwise failed) before delivery: the pending
  * commission never becomes real money. No-op if there is nothing pending
- * (no attribution, or the order already reached Delivered — a cancellation
- * arriving after delivery must never touch an already-earned commission; use
- * reverseAffiliateCommission for that case instead).
+ * (no attribution, or the order already reached Delivered and was earned —
+ * a cancellation arriving after earn must never touch an already-earned
+ * commission; use reverseAffiliateCommission for that case instead).
+ *
+ * Also used when an order is returned/refunded during the return-window hold
+ * (still pending with eligibleAt set) so the cron cannot later credit it.
  */
 export async function cancelPendingAffiliateCommission(
   tx: Tx,

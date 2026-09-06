@@ -5,7 +5,7 @@ import { orders, orderItems, users, products, sellers } from "@workspace/db";
 import { eq, and, desc, sql, gte, lte, like, or } from "drizzle-orm";
 import { fulfillDigitalOrderItems } from "@workspace/lib/digital";
 import {
-  earnAffiliateCommission,
+  scheduleAffiliateCommissionRelease,
   reverseAffiliateCommission,
   cancelPendingAffiliateCommission,
 } from "@workspace/db/affiliates";
@@ -201,9 +201,10 @@ export async function updateOrderStatus(
       }
 
       if (status === "delivered") {
-        await earnAffiliateCommission(tx, orderId);
+        await scheduleAffiliateCommissionRelease(tx, orderId);
       } else if (status === "returned" || status === "refunded") {
         await reverseAffiliateCommission(tx, orderId);
+        await cancelPendingAffiliateCommission(tx, orderId);
       } else if (status === "cancelled") {
         await cancelPendingAffiliateCommission(tx, orderId);
       }

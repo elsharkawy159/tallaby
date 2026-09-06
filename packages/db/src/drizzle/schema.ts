@@ -46,6 +46,26 @@ export const affiliateStatus = pgEnum("affiliate_status", ['active', 'inactive']
 export const affiliateCommissionType = pgEnum("affiliate_commission_type", ['commission', 'reversal'])
 export const affiliateCommissionStatus = pgEnum("affiliate_commission_status", ['pending', 'earned', 'reversed', 'cancelled'])
 
+/** Order-level discount line stored on orders.discounts (jsonb). */
+export type OrderDiscountType =
+	| 'coupon'
+	| 'free_shipping_coupon'
+	| 'threshold_free_shipping'
+
+export type OrderCouponDiscountType =
+	| 'percentage'
+	| 'fixed_amount'
+	| 'buy_x_get_y'
+	| 'free_shipping'
+
+export interface OrderDiscountLine {
+	type: OrderDiscountType
+	label: string
+	amount: string
+	code?: string
+	couponId?: string
+	couponDiscountType?: OrderCouponDiscountType
+}
 
 export const deliveries = pgTable("deliveries", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
@@ -269,7 +289,7 @@ export const productVariants = pgTable("product_variants", {
 	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow(),
 	barCode: varchar("bar_code"),
 	locale: text().default('en'),
-	/** Vendor-set discount expiry for this variant's own price; null = no expiry (toggle off in the dashboard). */
+/** Vendor-set discount expiry for this variant's own price; null = no expiry (toggle off in the dashboard). */
 	discountEndsAt: timestamp("discount_ends_at", { withTimezone: true, mode: 'string' }),
 }, (table) => [
 	// No index existed on this FK — every variant lookup by product was a seq scan.
@@ -1290,6 +1310,8 @@ export const orders = pgTable("orders", {
 	shippingCost: numeric("shipping_cost", { precision: 10, scale:  2 }).default('0'),
 	tax: numeric({ precision: 10, scale:  2 }).default('0'),
 	discountAmount: numeric("discount_amount", { precision: 10, scale:  2 }).default('0'),
+	/** Breakdown of each order-level discount; sum of amounts equals discount_amount. */
+	discounts: jsonb().$type<OrderDiscountLine[]>().default([]).notNull(),
 	giftWrapCost: numeric("gift_wrap_cost", { precision: 10, scale:  2 }).default('0'),
 	totalAmount: numeric("total_amount", { precision: 10, scale:  2 }).notNull(),
 	currency: text().default('EGP'),
@@ -1949,6 +1971,11 @@ export const affiliateCommissions = pgTable("affiliate_commissions", {
 	parentCommissionId: uuid("parent_commission_id"),
 	/** The user_wallet_transactions row this commission/reversal produced, once posted. */
 	walletTransactionId: uuid("wallet_transaction_id"),
+	/**
+	 * Set on delivery to deliveredAt + RETURN_WINDOW_DAYS. Null until delivered.
+	 * Wallet credit (earn) only runs once eligible_at <= now and the order is still delivered.
+	 */
+	eligibleAt: timestamp("eligible_at", { withTimezone: true, mode: 'string' }),
 	notes: text(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
@@ -1957,6 +1984,7 @@ export const affiliateCommissions = pgTable("affiliate_commissions", {
 	index("affiliate_commissions_user_id_idx").using("btree", table.userId.asc().nullsLast().op("uuid_ops")),
 	index("affiliate_commissions_order_id_idx").using("btree", table.orderId.asc().nullsLast().op("uuid_ops")),
 	index("affiliate_commissions_status_idx").using("btree", table.status.asc().nullsLast().op("enum_ops")),
+	index("affiliate_commissions_pending_eligible_at_idx").using("btree", table.status.asc().nullsLast().op("enum_ops"), table.eligibleAt.asc().nullsLast().op("timestamptz_ops")).where(sql`type = 'commission' AND status = 'pending'`),
 	foreignKey({
 		columns: [table.affiliateId],
 		foreignColumns: [affiliates.id],

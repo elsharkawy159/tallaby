@@ -88,6 +88,7 @@ export const CheckoutData = ({
     code: string;
     name: string;
     discountType: string;
+    discountValue?: string | number;
   } | null>(null);
   const [isRecalculatingShipping, setIsRecalculatingShipping] = useState(false);
 
@@ -383,7 +384,12 @@ export const CheckoutData = ({
 
   const handleCouponApplied = useCallback(
     (data: {
-      coupon: { code: string; name: string; discountType: string };
+      coupon: {
+        code: string;
+        name: string;
+        discountType: string;
+        discountValue?: string | number;
+      };
       summary: CheckoutSummary;
     }) => {
       setAppliedCoupon(data.coupon);

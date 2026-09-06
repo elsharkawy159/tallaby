@@ -121,6 +121,7 @@ Use this format when pasting product data into **Dashboard → Products → Add 
 | `quantity` | `quantity` | No | Integer ≥ 0 |
 | `images` | `images` | No* | *Required before save; max 8 URLs |
 | `variantTypes` | `variantTypes` | No | Max 3 dimensions |
+| `variants[].price` | variant pricing | No | Same jsonb shape as product `price` (`base`, `list`, `final`, `discountType`, `discountValue`) |
 | `dimensions.*` | `dimensions.*` | No | `length`, `width`, `height`, `weight`, `unit`, `weightUnit` |
 | `fulfillmentType` | `fulfillmentType` | No | `platform_fulfilled`, `seller_fulfilled`, `fba`, `digital` |
 | `freeDelivery` | `freeDelivery` | No | Boolean |

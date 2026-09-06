@@ -17,10 +17,19 @@ import {
   Wallet as WalletIcon,
 } from "lucide-react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@workspace/ui/components/avatar";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@workspace/ui/components/avatar";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@workspace/ui/components/card";
 import {
   Dialog,
   DialogContent,
@@ -68,9 +77,9 @@ export function AffiliateDetailContent({
 }) {
   const [status, setStatus] = useState(detail.status);
   const [copied, setCopied] = useState(false);
-  const [confirmAction, setConfirmAction] = useState<"activate" | "disable" | null>(
-    null
-  );
+  const [confirmAction, setConfirmAction] = useState<
+    "activate" | "disable" | null
+  >(null);
   const [isPending, startTransition] = useTransition();
 
   const handleCopy = async () => {
@@ -102,7 +111,7 @@ export function AffiliateDetailContent({
       toast.success(
         nextStatus === "active"
           ? "Affiliate enabled — their code can be used again."
-          : "Affiliate disabled — their code can no longer be used."
+          : "Affiliate disabled — their code can no longer be used.",
       );
     });
   };
@@ -136,12 +145,15 @@ export function AffiliateDetailContent({
       </div>
 
       <Card>
-        <CardContent className="pt-6">
+        <CardContent>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex items-start gap-4">
               <Avatar className="h-20 w-20">
                 {detail.avatarUrl && (
-                  <AvatarImage src={detail.avatarUrl} alt={detail.fullName ?? ""} />
+                  <AvatarImage
+                    src={detail.avatarUrl}
+                    alt={detail.fullName ?? ""}
+                  />
                 )}
                 <AvatarFallback className="bg-primary text-lg text-primary-foreground">
                   {initialsFor(detail)}
@@ -152,7 +164,10 @@ export function AffiliateDetailContent({
                   <h1 className="text-3xl font-semibold">
                     {detail.fullName || "—"}
                   </h1>
-                  <Badge variant={affiliateStatusVariant(status)} className="capitalize">
+                  <Badge
+                    variant={affiliateStatusVariant(status)}
+                    className="capitalize"
+                  >
                     {status}
                   </Badge>
                 </div>
@@ -173,7 +188,11 @@ export function AffiliateDetailContent({
             </div>
             <div className="flex shrink-0 gap-2">
               <Button variant="outline" size="sm" onClick={handleCopy}>
-                {copied ? <Check className="mr-2 h-4 w-4" /> : <Copy className="mr-2 h-4 w-4" />}
+                {copied ? (
+                  <Check className="mr-2 h-4 w-4" />
+                ) : (
+                  <Copy className="mr-2 h-4 w-4" />
+                )}
                 Copy code
               </Button>
               {status === "active" ? (
@@ -233,7 +252,9 @@ export function AffiliateDetailContent({
               <span className="font-medium">{detail.discountPercent}%</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Affiliate Commission</span>
+              <span className="text-muted-foreground">
+                Affiliate Commission
+              </span>
               <span className="font-medium">
                 {(detail.commissionRate * 100).toFixed(0)}%
               </span>
@@ -254,7 +275,9 @@ export function AffiliateDetailContent({
             </div>
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Created</span>
-              <span className="font-medium">{formatDate(detail.couponCreatedAt)}</span>
+              <span className="font-medium">
+                {formatDate(detail.couponCreatedAt)}
+              </span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Status</span>
@@ -273,15 +296,21 @@ export function AffiliateDetailContent({
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Current Wallet Balance</span>
-              <span className="font-semibold">{money(detail.wallet?.balance ?? 0)}</span>
+              <span className="text-muted-foreground">
+                Current Wallet Balance
+              </span>
+              <span className="font-semibold">
+                {money(detail.wallet?.balance ?? 0)}
+              </span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Total Earned</span>
               <span className="font-medium">{money(detail.totalProfit)}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Total Withdrawn / Paid Out</span>
+              <span className="text-muted-foreground">
+                Total Withdrawn / Paid Out
+              </span>
               <span className="font-medium">
                 {money(detail.wallet?.totalWithdrawn ?? 0)}
               </span>
@@ -301,7 +330,7 @@ export function AffiliateDetailContent({
       </div>
 
       <Card>
-        <CardContent className="pt-6">
+        <CardContent>
           <Tabs defaultValue="orders">
             <TabsList>
               <TabsTrigger value="orders">Order History</TabsTrigger>
@@ -332,7 +361,9 @@ export function AffiliateDetailContent({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {confirmAction === "activate" ? "Enable affiliate" : "Disable affiliate"}
+              {confirmAction === "activate"
+                ? "Enable affiliate"
+                : "Disable affiliate"}
             </DialogTitle>
             <DialogDescription>
               {confirmAction === "activate"
@@ -349,8 +380,12 @@ export function AffiliateDetailContent({
               disabled={isPending}
               onClick={handleToggleStatus}
             >
-              {isPending && <RefreshCcw className="mr-2 h-4 w-4 animate-spin" />}
-              {confirmAction === "activate" ? "Enable Affiliate" : "Disable Affiliate"}
+              {isPending && (
+                <RefreshCcw className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              {confirmAction === "activate"
+                ? "Enable Affiliate"
+                : "Disable Affiliate"}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -4,7 +4,13 @@ import { Truck, RotateCcw, Globe, DollarSign, Check } from "lucide-react";
 import { Badge } from "@workspace/ui/components/badge";
 import { ProductActions } from "./ProductActions";
 import type { Product } from "./product-page.types";
-import { formatPrice, formatPricePlain, parsePriceJson } from "@workspace/lib";
+import {
+  formatPrice,
+  formatPricePlain,
+  getPriceFinal,
+  getPriceList,
+  parsePriceJson,
+} from "@workspace/lib";
 import { useLocale, useTranslations } from "next-intl";
 import {
   FREE_SHIPPING_THRESHOLD,
@@ -66,15 +72,22 @@ export const ProductDetails = ({
   // Calculate price and stock based on selected variant or base product
   const { price, listPrice, stock, discountEndsAt } = useMemo(() => {
     if (selectedVariant) {
-      const variantPriceData = parsePriceJson(selectedVariant.price);
+      const parsed = parsePriceJson(selectedVariant.price);
+      const variantPrice = parsed.final;
       const variantStock = Number(selectedVariant.stock ?? 0);
+      const variantList = parsed.list;
+      const productList = getPriceList(product.price);
+      const listCandidate =
+        variantList != null && variantList > variantPrice
+          ? variantList
+          : productList != null && productList > variantPrice
+            ? productList
+            : null;
+      const isDefaultVariant = selectedVariant.isDefault === true;
 
       return {
-        price: variantPriceData.final,
-        listPrice:
-          variantPriceData.list && variantPriceData.list > variantPriceData.final
-            ? variantPriceData.list
-            : null,
+        price: variantPrice,
+        listPrice: listCandidate,
         stock: variantStock,
         // The default variant mirrors the main product's discount, so its
         // expiry lives in `product.price`; other variants carry their own.
@@ -84,15 +97,13 @@ export const ProductDetails = ({
       };
     }
 
-    const basePriceData = parsePriceJson(product.price);
+    const parsed = parsePriceJson(product.price);
     const baseStock = product.quantity ? Number(product.quantity) : 0;
 
     return {
-      price: basePriceData.final,
+      price: parsed.final,
       listPrice:
-        basePriceData.list && basePriceData.list > basePriceData.final
-          ? basePriceData.list
-          : null,
+        parsed.list != null && parsed.list > parsed.final ? parsed.list : null,
       stock: baseStock,
       discountEndsAt: (product.price as any)?.discountEndsAt ?? null,
     };
@@ -339,7 +350,7 @@ export const ProductDetails = ({
                           className="truncate text-[10px] font-medium leading-tight text-gray-500"
                           dangerouslySetInnerHTML={{
                             __html: formatPrice(
-                              parsePriceJson(variant.price).final,
+                              getPriceFinal(variant.price),
                               locale,
                               "sm",
                             ),

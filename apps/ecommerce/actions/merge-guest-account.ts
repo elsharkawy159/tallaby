@@ -66,124 +66,158 @@ export async function mergeGuestAccount(): Promise<{
       };
     }
 
+    // Guest can never merge into itself (defensive: shouldn't happen since
+    // an authenticated session id is always a real, non-guest user id).
+    if (guestUser.id === authenticatedUserId) {
+      await clearGuestUID();
+      return {
+        success: true,
+        merged: { cartItems: 0, orders: 0, addresses: 0 },
+      };
+    }
+
     const guestUserId = guestUser.id;
-    let mergedCartItems = 0;
-    let mergedOrders = 0;
-    let mergedAddresses = 0;
 
-    // 1. Merge cart items
-    const guestCart = await db.query.carts.findFirst({
-      where: and(eq(carts.userId, guestUserId), eq(carts.status, "active")),
-      with: {
-        cartItems: true,
-      },
-    });
+    const merged = await db.transaction(async (tx) => {
+      let mergedCartItems = 0;
+      let mergedOrders = 0;
+      let mergedAddresses = 0;
 
-    if (guestCart && guestCart.cartItems.length > 0) {
-      // Get or create authenticated user's cart
-      let authCart = await db.query.carts.findFirst({
-        where: and(
-          eq(carts.userId, authenticatedUserId),
-          eq(carts.status, "active")
-        ),
+      // 1. Merge cart items
+      const guestCart = await tx.query.carts.findFirst({
+        where: and(eq(carts.userId, guestUserId), eq(carts.status, "active")),
+        with: {
+          cartItems: true,
+        },
       });
 
-      if (!authCart) {
-        [authCart] = await db
-          .insert(carts)
-          .values({
-            userId: authenticatedUserId,
-            status: "active",
-            currency: guestCart.currency || "EGP",
-          })
-          .returning();
-      }
-
-      // Merge cart items
-      for (const guestItem of guestCart.cartItems) {
-        // Check if item already exists in auth cart
-        const existingItem = await db.query.cartItems.findFirst({
+      if (guestCart && guestCart.cartItems.length > 0) {
+        // Get or create authenticated user's cart
+        let authCart = await tx.query.carts.findFirst({
           where: and(
-            eq(cartItems.cartId, authCart!.id),
-            eq(cartItems.productId, guestItem.productId)
+            eq(carts.userId, authenticatedUserId),
+            eq(carts.status, "active")
           ),
         });
 
-        if (existingItem) {
-          // Merge quantities
-          await db
-            .update(cartItems)
-            .set({
-              quantity: existingItem.quantity + guestItem.quantity,
-              updatedAt: new Date().toISOString(),
+        if (!authCart) {
+          [authCart] = await tx
+            .insert(carts)
+            .values({
+              userId: authenticatedUserId,
+              status: "active",
+              currency: guestCart.currency || "EGP",
             })
-            .where(eq(cartItems.id, existingItem.id));
-        } else {
-          // Add new item to auth cart
-          await db.insert(cartItems).values({
-            cartId: authCart!.id,
-            productId: guestItem.productId,
-            sellerId: guestItem.sellerId,
-            quantity: guestItem.quantity,
-            price: guestItem.price,
-            variant: guestItem.variant,
-          } as any);
+            .returning();
         }
-        mergedCartItems++;
+
+        // Cart items with the same product but a different variant are
+        // distinct line items (mirrors the matching rule addToCart uses in
+        // actions/cart.ts) - only fold quantities together when the variant
+        // (or lack of one) also matches, otherwise the guest's variant would
+        // silently vanish into whatever line the auth cart happened to have.
+        const authItems = await tx.query.cartItems.findMany({
+          where: eq(cartItems.cartId, authCart!.id),
+        });
+
+        for (const guestItem of guestCart.cartItems) {
+          const guestVariantId = (guestItem.variant as any)?.id ?? null;
+          const existingItem = authItems.find((item) => {
+            const itemVariantId = (item.variant as any)?.id ?? null;
+            return (
+              item.productId === guestItem.productId &&
+              itemVariantId === guestVariantId
+            );
+          });
+
+          if (existingItem) {
+            // Merge quantities
+            await tx
+              .update(cartItems)
+              .set({
+                quantity: existingItem.quantity + guestItem.quantity,
+                updatedAt: new Date().toISOString(),
+              })
+              .where(eq(cartItems.id, existingItem.id));
+          } else {
+            // Add new item to auth cart
+            const [inserted] = await tx
+              .insert(cartItems)
+              .values({
+                cartId: authCart!.id,
+                productId: guestItem.productId,
+                sellerId: guestItem.sellerId,
+                quantity: guestItem.quantity,
+                price: guestItem.price,
+                variant: guestItem.variant,
+              } as any)
+              .returning();
+            // Newly inserted items must also be visible to subsequent guest
+            // items in this same loop, otherwise two guest lines for the
+            // same product+variant would both fall into the "no existing
+            // item" branch and create duplicate rows instead of merging.
+            if (inserted) authItems.push(inserted);
+          }
+          mergedCartItems++;
+        }
+
+        // Delete guest cart items
+        await tx.delete(cartItems).where(eq(cartItems.cartId, guestCart.id));
       }
 
-      // Delete guest cart items
-      await db.delete(cartItems).where(eq(cartItems.cartId, guestCart.id));
-    }
+      // 2. Reassign orders to authenticated user
+      const guestOrders = await tx.query.orders.findMany({
+        where: eq(orders.userId, guestUserId),
+      });
 
-    // 2. Reassign orders to authenticated user
-    const guestOrders = await db.query.orders.findMany({
-      where: eq(orders.userId, guestUserId),
+      if (guestOrders.length > 0) {
+        await tx
+          .update(orders)
+          .set({
+            userId: authenticatedUserId,
+            updatedAt: new Date().toISOString(),
+          })
+          .where(eq(orders.userId, guestUserId));
+
+        mergedOrders = guestOrders.length;
+      }
+
+      // 3. Reassign addresses to authenticated user
+      const guestAddresses = await tx.query.userAddresses.findMany({
+        where: eq(userAddresses.userId, guestUserId),
+      });
+
+      if (guestAddresses.length > 0) {
+        await tx
+          .update(userAddresses)
+          .set({
+            userId: authenticatedUserId,
+            updatedAt: new Date().toISOString(),
+          })
+          .where(eq(userAddresses.userId, guestUserId));
+
+        mergedAddresses = guestAddresses.length;
+      }
+
+      // 4. Delete the guest user now that everything of value has been
+      // transferred. Any remaining guest-only rows (e.g. its now-empty
+      // cart) cascade-delete with it, keeping the database free of
+      // abandoned guest accounts.
+      await tx.delete(users).where(eq(users.id, guestUserId));
+
+      return {
+        cartItems: mergedCartItems,
+        orders: mergedOrders,
+        addresses: mergedAddresses,
+      };
     });
-
-    if (guestOrders.length > 0) {
-      await db
-        .update(orders)
-        .set({
-          userId: authenticatedUserId,
-          updatedAt: new Date().toISOString(),
-        })
-        .where(eq(orders.userId, guestUserId));
-
-      mergedOrders = guestOrders.length;
-    }
-
-    // 3. Reassign addresses to authenticated user
-    const guestAddresses = await db.query.userAddresses.findMany({
-      where: eq(userAddresses.userId, guestUserId),
-    });
-
-    if (guestAddresses.length > 0) {
-      await db
-        .update(userAddresses)
-        .set({
-          userId: authenticatedUserId,
-          updatedAt: new Date().toISOString(),
-        })
-        .where(eq(userAddresses.userId, guestUserId));
-
-      mergedAddresses = guestAddresses.length;
-    }
-
-    // 4. Delete or disable guest user
-    // We'll delete the guest user since all data has been transferred
-    await db.delete(users).where(eq(users.id, guestUserId));
 
     // 5. Clear guest UID cookie
     await clearGuestUID();
 
     return {
       success: true,
-      merged: {
-        cartItems: mergedCartItems,
-        orders: mergedOrders,
-        addresses: mergedAddresses,
-      },
+      merged,
     };
   } catch (error) {
     console.error("Error merging guest account:", error);

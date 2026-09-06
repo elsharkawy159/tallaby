@@ -1,5 +1,5 @@
 export interface CustomerProfilePageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export interface CustomerOrder {

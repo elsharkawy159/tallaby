@@ -71,17 +71,20 @@ export function DataTableToolbar<TData>({
         )}
 
         {filterableColumns.length > 0 &&
-          filterableColumns.map(
-            (column) =>
-              table.getColumn(column.id) && (
-                <DataTableFacetedFilter
-                  key={column.id}
-                  column={table.getColumn(column.id)}
-                  title={column.title}
-                  options={column.options}
-                />
-              )
-          )}
+          filterableColumns.map((column) => {
+            const tableColumn = table
+              .getAllColumns()
+              .find((c) => c.id === column.id);
+            if (!tableColumn) return null;
+            return (
+              <DataTableFacetedFilter
+                key={column.id}
+                column={tableColumn}
+                title={column.title}
+                options={column.options}
+              />
+            );
+          })}
 
         {isFiltered && (
           <Button

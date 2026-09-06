@@ -100,6 +100,13 @@ export async function getAllCustomers(params?: {
 
 export async function getCustomerById(customerId: string) {
   try {
+    if (!customerId) {
+      return {
+        success: false,
+        error: "Customer ID is required",
+      };
+    }
+
     await getAdminUser(); // Verify admin access
 
     const customer = await db.query.users.findFirst({

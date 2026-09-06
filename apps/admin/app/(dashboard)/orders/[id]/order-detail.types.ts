@@ -11,6 +11,14 @@ export interface OrderDetailWithRelations {
   shippingCost: string;
   tax: string;
   discountAmount: string;
+  discounts: Array<{
+    type: string;
+    label: string;
+    amount: string;
+    code?: string;
+    couponId?: string;
+    couponDiscountType?: string;
+  }> | null;
   giftWrapCost: string;
   totalAmount: string;
   currency: string | null;

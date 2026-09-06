@@ -1,4 +1,4 @@
-import { formatCurrency, parsePriceJson } from "@workspace/lib";
+import { formatCurrency, getPriceFinal, parsePriceJson } from "@workspace/lib";
 import type { z } from "zod";
 
 import type { productSchema } from "../_lib/validations/product-schema";
@@ -32,31 +32,8 @@ export function getEnTranslation(
 }
 
 export function parseProductPrice(price: unknown): ParsedProductPrice {
-  const priceData = price as
-    | {
-        base?: number | string;
-        list?: number | string;
-        final?: number | string;
-      }
-    | number
-    | null
-    | undefined;
-
-  if (typeof priceData === "number") {
-    return { base: priceData, list: null, final: priceData };
-  }
-
-  if (!priceData || typeof priceData !== "object") {
-    return { base: 0, list: null, final: 0 };
-  }
-
-  const base = priceData.base ? parseFloat(String(priceData.base)) : 0;
-  const list = priceData.list ? parseFloat(String(priceData.list)) : null;
-  const final = priceData.final
-    ? parseFloat(String(priceData.final))
-    : list ?? base;
-
-  return { base, list, final };
+  const parsed = parsePriceJson(price);
+  return { base: parsed.base, list: parsed.list, final: parsed.final };
 }
 
 export function parseProductImages(images: unknown): string[] {
@@ -86,7 +63,7 @@ export function mapVariants(raw: ProductRaw): ProductVariantRow[] {
     id: String(variant.id),
     sku: (variant.sku as string | null) ?? null,
     title: (variant.title as string | null) ?? null,
-    price: parsePriceJson(variant.price).final,
+    price: getPriceFinal(variant.price),
     stock: variant.stock ? parseInt(String(variant.stock), 10) : 0,
     imageUrl: (variant.imageUrl as string | null) ?? null,
     option1: (variant.option1 as string | null) ?? null,
@@ -358,7 +335,7 @@ export function transformProductForForm(product: ProductRaw): Partial<ProductFor
     id: variant.id,
     title: variant.title ?? "",
     sku: variant.sku ?? "",
-    price: parsePriceJson(variant.price).final,
+    price: getPriceFinal(variant.price),
     stock: variant.stock ?? 0,
     imageUrl: variant.imageUrl ?? undefined,
     option1: variant.option1 ?? undefined,

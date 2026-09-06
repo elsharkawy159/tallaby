@@ -79,120 +79,119 @@ export function CategoryItem({
     onRefresh();
   }, [category.id, category.parentId, locale, onRefresh]);
 
-  const CategoryContent = (
-    <div className="flex items-center gap-3 group w-full">
-      {/* Category Image - same reusable component as products row */}
-      <ImageUploadCell
-        value={category.imageUrl}
-        bucket="categories"
-        onSave={(path) => updateCategory(category.id, { imageUrl: path })}
-        onSuccess={handleRefresh}
-        alt={category.name || "Category"}
-        size="sm"
-      />
-
-      {/* Category Info */}
-      <div className="flex-1 text-left min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-medium truncate">
-            {category.name || "Unnamed"}
-          </span>
-          {category.level === 1 && (
-            <Badge variant="outline" className="text-xs shrink-0">
-              Main
-            </Badge>
-          )}
-          <Badge variant="secondary" className="text-xs shrink-0">
-            {category.productCount} products
+  const CategoryInfo = (
+    <div className="flex-1 text-left min-w-0">
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="font-medium truncate">
+          {category.name || "Unnamed"}
+        </span>
+        {category.level === 1 && (
+          <Badge variant="outline" className="text-xs shrink-0">
+            Main
           </Badge>
-          {hasChildren && (
-            <Badge
-              variant="outline"
-              className="text-xs shrink-0 bg-blue-50 text-blue-700 border-blue-200"
-            >
-              {category.childrenCount}{" "}
-              {category.childrenCount === 1 ? "child" : "children"}
-            </Badge>
-          )}
-        </div>
-        <div className="text-xs text-muted-foreground truncate">
-          {category.slug || "—"}
-        </div>
+        )}
+        <Badge variant="secondary" className="text-xs shrink-0">
+          {category.productCount} products
+        </Badge>
+        {hasChildren && (
+          <Badge
+            variant="outline"
+            className="text-xs shrink-0 bg-blue-50 text-blue-700 border-blue-200"
+          >
+            {category.childrenCount}{" "}
+            {category.childrenCount === 1 ? "child" : "children"}
+          </Badge>
+        )}
       </div>
+      <div className="text-xs text-muted-foreground truncate">
+        {category.slug || "—"}
+      </div>
+    </div>
+  );
 
-      {/* Action Buttons */}
-      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsAddOpen(true);
-          }}
-          title="Add subcategory"
-        >
-          <Plus className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsEditOpen(true);
-          }}
-          title="Edit category"
-        >
-          <Edit className="h-4 w-4" />
-        </Button>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link
-                href={`/withAuth/categories/${category.id}`}
-                className="cursor-pointer"
-              >
-                View details
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => setIsAddOpen(true)}
+  const CategoryImage = (
+    <ImageUploadCell
+      value={category.imageUrl}
+      bucket="categories"
+      onSave={(path) => updateCategory(category.id, { imageUrl: path })}
+      onSuccess={handleRefresh}
+      alt={category.name || "Category"}
+      size="sm"
+    />
+  );
+
+  const CategoryActions = (
+    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8"
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsAddOpen(true);
+        }}
+        title="Add subcategory"
+      >
+        <Plus className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8"
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsEditOpen(true);
+        }}
+        title="Edit category"
+      >
+        <Edit className="h-4 w-4" />
+      </Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <MoreVertical className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem asChild>
+            <Link
+              href={`/withAuth/categories/${category.id}`}
               className="cursor-pointer"
             >
-              <Plus className="mr-2 h-4 w-4" />
-              Add subcategory
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => setIsEditOpen(true)}
-              className="cursor-pointer"
-            >
-              <Edit className="mr-2 h-4 w-4" />
-              Edit category
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => setIsDeleteOpen(true)}
-              className="cursor-pointer text-red-600"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete category
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+              View details
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => setIsAddOpen(true)}
+            className="cursor-pointer"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Add subcategory
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={() => setIsEditOpen(true)}
+            className="cursor-pointer"
+          >
+            <Edit className="mr-2 h-4 w-4" />
+            Edit category
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => setIsDeleteOpen(true)}
+            className="cursor-pointer text-red-600"
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Delete category
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 
@@ -205,14 +204,16 @@ export function CategoryItem({
             ref={rowRef}
             data-category-id={category.id}
             className={cn(
-              "flex items-center gap-3 transition-colors",
+              "group flex items-center gap-2 transition-colors",
               isScrollTarget &&
                 "rounded-lg bg-primary/5 ring-1 ring-primary/20",
             )}
           >
+            <div className="pl-3 shrink-0">{CategoryImage}</div>
             <AccordionTrigger className="flex-1 hover:no-underline py-2 px-3 rounded-lg hover:bg-gray-50">
-              {CategoryContent}
+              {CategoryInfo}
             </AccordionTrigger>
+            {CategoryActions}
           </div>
 
           <AccordionContent className="pl-8 pt-2">
@@ -280,11 +281,13 @@ export function CategoryItem({
         ref={rowRef}
         data-category-id={category.id}
         className={cn(
-          "flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-gray-50 group transition-colors",
+          "flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-gray-50 group transition-colors",
           isScrollTarget && "bg-primary/5 ring-1 ring-primary/20",
         )}
       >
-        {CategoryContent}
+        {CategoryImage}
+        {CategoryInfo}
+        {CategoryActions}
       </div>
 
       {/* Dialogs */}

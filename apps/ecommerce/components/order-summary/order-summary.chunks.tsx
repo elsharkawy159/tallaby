@@ -21,6 +21,20 @@ import type {
 } from './order-summary.types'
 import type { CheckoutSummary } from '@/lib/coupon-utils'
 
+function formatCouponCodeBadge (
+  code: string,
+  discountType?: string,
+  discountValue?: string | number,
+): string {
+  if (discountType === 'percentage' && discountValue != null && discountValue !== '') {
+    const value = Number(discountValue)
+    if (!Number.isNaN(value)) {
+      return `${code} (${value}%)`
+    }
+  }
+  return code
+}
+
 interface OrderSummaryLineItemsProps {
   items: OrderSummaryItem[]
 }
@@ -209,6 +223,7 @@ export function OrderSummaryCostRows ({
   const tax = summary.tax ?? 0
   const discountAmount = summary.discountAmount ?? 0
   const shippingDiscount = summary.shippingDiscount ?? 0
+  const discountLines = summary.discounts ?? []
 
   return (
     <>
@@ -252,40 +267,92 @@ export function OrderSummaryCostRows ({
         </div>
       )}
 
-      {discountAmount > 0 && (
-        <div className='flex items-center justify-between text-xs md:text-sm'>
-          <span className='text-green-600 flex items-center gap-1'>
-            <Ticket className='h-3 w-3' />
-            {t('discount')}
-            {summary.appliedCoupon && (
-              <Badge
-                variant='secondary'
-                className='bg-green-100 text-green-700 font-mono text-[10px] px-1 py-0'
-              >
-                {summary.appliedCoupon.code}
-              </Badge>
+      {discountLines.length > 0
+        ? discountLines.map((line, index) => (
+            <div
+              key={`${line.type}-${line.code ?? line.label}-${index}`}
+              className='flex items-center justify-between text-xs md:text-sm'
+            >
+              <span className='text-green-600 flex items-center gap-1'>
+                {(line.type === 'coupon' ||
+                  line.type === 'free_shipping_coupon') && (
+                  <Ticket className='h-3 w-3' />
+                )}
+                {line.type === 'coupon' || line.type === 'free_shipping_coupon'
+                  ? (
+                    <>
+                      {t(
+                        line.type === 'free_shipping_coupon'
+                          ? 'freeShipping'
+                          : 'discount',
+                      )}
+                      {line.code && (
+                        <Badge
+                          variant='secondary'
+                          className='bg-green-100 text-green-700 font-mono text-[10px] px-1 py-0'
+                        >
+                          {formatCouponCodeBadge(
+                            line.code,
+                            line.couponDiscountType ??
+                              summary.appliedCoupon?.discountType,
+                            summary.appliedCoupon?.discountValue,
+                          )}
+                        </Badge>
+                      )}
+                    </>
+                  )
+                  : line.label}
+              </span>
+              <span
+                className='font-medium text-green-600'
+                dangerouslySetInnerHTML={{
+                  __html: `-${formatPrice(Number(line.amount), locale)}`,
+                }}
+              />
+            </div>
+          ))
+        : (
+          <>
+            {discountAmount > 0 && (
+              <div className='flex items-center justify-between text-xs md:text-sm'>
+                <span className='text-green-600 flex items-center gap-1'>
+                  <Ticket className='h-3 w-3' />
+                  {t('discount')}
+                  {summary.appliedCoupon && (
+                    <Badge
+                      variant='secondary'
+                      className='bg-green-100 text-green-700 font-mono text-[10px] px-1 py-0'
+                    >
+                      {formatCouponCodeBadge(
+                        summary.appliedCoupon.code,
+                        summary.appliedCoupon.discountType,
+                        summary.appliedCoupon.discountValue,
+                      )}
+                    </Badge>
+                  )}
+                </span>
+                <span
+                  className='font-medium text-green-600'
+                  dangerouslySetInnerHTML={{
+                    __html: `-${formatPrice(discountAmount, locale)}`,
+                  }}
+                />
+              </div>
             )}
-          </span>
-          <span
-            className='font-medium text-green-600'
-            dangerouslySetInnerHTML={{
-              __html: `-${formatPrice(discountAmount, locale)}`,
-            }}
-          />
-        </div>
-      )}
 
-      {shippingDiscount > 0 && (
-        <div className='flex items-center justify-between text-xs md:text-sm'>
-          <span className='text-green-600'>{t('freeShipping')}</span>
-          <span
-            className='font-medium text-green-600'
-            dangerouslySetInnerHTML={{
-              __html: `-${formatPrice(shippingDiscount, locale)}`,
-            }}
-          />
-        </div>
-      )}
+            {shippingDiscount > 0 && (
+              <div className='flex items-center justify-between text-xs md:text-sm'>
+                <span className='text-green-600'>{t('freeShipping')}</span>
+                <span
+                  className='font-medium text-green-600'
+                  dangerouslySetInnerHTML={{
+                    __html: `-${formatPrice(shippingDiscount, locale)}`,
+                  }}
+                />
+              </div>
+            )}
+          </>
+        )}
     </>
   )
 }
@@ -430,7 +497,11 @@ export function OrderSummaryCoupon ({
             variant='secondary'
             className='bg-green-100 text-green-700 font-mono text-[10px] px-1.5 py-0'
           >
-            {appliedCoupon.code}
+            {formatCouponCodeBadge(
+              appliedCoupon.code,
+              appliedCoupon.discountType,
+              appliedCoupon.discountValue,
+            )}
           </Badge>
         </div>
         <Button

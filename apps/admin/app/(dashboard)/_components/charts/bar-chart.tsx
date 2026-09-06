@@ -1,8 +1,8 @@
 "use client";
 
+import { useRef } from "react";
 import { formatCurrency } from "@workspace/lib";
 import {
-  ResponsiveContainer,
   BarChart as RechartsBarChart,
   Bar,
   XAxis,
@@ -11,6 +11,7 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
+import { useContainerSize } from "./use-container-size";
 
 interface DataPoint {
   name: string;
@@ -29,26 +30,29 @@ export function BarChart({
   isMultiple = false,
   className,
 }: BarChartProps) {
-  // Get data keys for multiple series
+  const containerRef = useRef<HTMLDivElement>(null);
+  const size = useContainerSize(containerRef, [data.length]);
+
   if (data.length === 0) {
     return (
       <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
         No data for this period
       </div>
-    )
+    );
   }
 
   const dataKeys = isMultiple
     ? Object.keys(data[0]).filter((key) => key !== "name")
     : ["value"];
 
-  // Define colors for multiple series
   const colors = ["#6366f1", "#10b981", "#f59e0b", "#ef4444", "#3b82f6"];
 
   return (
-    <div className={`w-full h-full ${className}`}>
-      <ResponsiveContainer width="100%" height="100%">
+    <div ref={containerRef} className={`w-full h-full ${className ?? ""}`}>
+      {size ? (
         <RechartsBarChart
+          width={size.width}
+          height={size.height}
           data={data}
           margin={{ top: 10, right: 30, left: 0, bottom: 5 }}
         >
@@ -91,7 +95,7 @@ export function BarChart({
             />
           ))}
         </RechartsBarChart>
-      </ResponsiveContainer>
+      ) : null}
     </div>
   );
 }

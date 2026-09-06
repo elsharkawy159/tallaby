@@ -1,8 +1,8 @@
 "use client";
 
+import { useRef } from "react";
 import { formatCurrency } from "@workspace/lib";
 import {
-  ResponsiveContainer,
   AreaChart as RechartsAreaChart,
   Area,
   XAxis,
@@ -12,6 +12,7 @@ import {
   Legend,
 } from "recharts";
 import { format } from "date-fns";
+import { useContainerSize } from "./use-container-size";
 
 interface DataPoint {
   date: string;
@@ -30,32 +31,34 @@ export function AreaChart({
   isMultiple = false,
   className,
 }: AreaChartProps) {
-  // Format date for tooltip
+  const containerRef = useRef<HTMLDivElement>(null);
+  const size = useContainerSize(containerRef, [data.length]);
+
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return format(date, "MMM dd, yyyy");
   };
 
-  // Get data keys for multiple series
   if (data.length === 0) {
     return (
       <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
         No data for this period
       </div>
-    )
+    );
   }
 
   const dataKeys = isMultiple
     ? Object.keys(data[0]).filter((key) => key !== "date")
     : ["value"];
 
-  // Define colors for multiple series
   const colors = ["#6366f1", "#10b981", "#f59e0b", "#ef4444", "#3b82f6"];
 
   return (
-    <div className={`w-full h-full ${className}`}>
-      <ResponsiveContainer width="100%" height="100%">
+    <div ref={containerRef} className={`w-full h-full ${className ?? ""}`}>
+      {size ? (
         <RechartsAreaChart
+          width={size.width}
+          height={size.height}
           data={data}
           margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
         >
@@ -133,7 +136,7 @@ export function AreaChart({
             />
           ))}
         </RechartsAreaChart>
-      </ResponsiveContainer>
+      ) : null}
     </div>
   );
 }

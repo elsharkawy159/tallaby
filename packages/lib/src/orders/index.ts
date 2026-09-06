@@ -25,6 +25,17 @@ export {
 } from './place-order.lib'
 
 export {
+  buildOrderDiscountLines,
+  parseOrderDiscountLines,
+  type BuildOrderDiscountCouponInput,
+  type BuildOrderDiscountLinesInput,
+  type BuildOrderDiscountLinesResult,
+  type OrderCouponDiscountType,
+  type OrderDiscountLine,
+  type OrderDiscountType,
+} from './order-discounts'
+
+export {
   COD_MAX_SHIPPING_COST,
   MANUAL_PAYMENT_METHOD_VALUES,
   computeManualRemainderAmount,

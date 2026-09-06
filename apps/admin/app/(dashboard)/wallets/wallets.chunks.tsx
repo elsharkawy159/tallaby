@@ -498,7 +498,7 @@ export function TopUpRequestRowView({
         open={dialog === "reject"}
         onOpenChange={(open) => !open && setDialog(null)}
       >
-        <DialogContent>
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Reject top-up</DialogTitle>
             <DialogDescription>

@@ -21,7 +21,7 @@ import {
   pickTranslationFromArray,
   type ProductLocale,
 } from "@/lib/product-translations";
-import { parsePriceJson } from "@workspace/lib";
+import { getPriceFinal } from "@workspace/lib";
 
 type ProductPrice = {
   base: number;
@@ -170,11 +170,22 @@ export const getCartItems = async () => {
       };
     }
 
-    if (Number(nextItem.price) === 0 && productPrice?.final) {
-      return {
-        ...nextItem,
-        price: Number(productPrice.final).toString(),
-      };
+    if (Number(nextItem.price) === 0) {
+      const variantFinal = getPriceFinal(
+        (nextItem.variant as { price?: unknown } | null)?.price
+      );
+      const fallback =
+        variantFinal > 0
+          ? variantFinal
+          : productPrice?.final
+            ? Number(productPrice.final)
+            : 0;
+      if (fallback > 0) {
+        return {
+          ...nextItem,
+          price: fallback.toString(),
+        };
+      }
     }
 
     return nextItem;
@@ -288,7 +299,7 @@ export async function addToCart(
 
   // Determine price - use variant price if available, otherwise product price
   const price = variant
-    ? parsePriceJson(variant.price).final
+    ? getPriceFinal(variant.price)
     : Number((product.price as ProductPrice)?.final) || 0;
 
   // Check for existing cart item - fetch all items with same productId and filter by variant

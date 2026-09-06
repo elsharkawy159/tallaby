@@ -40,8 +40,14 @@ export default async function EditProductPage({
   const categories = (categoriesRes.data || []) as CategoryOption[];
   const brands = (brandsRes.data || []) as BrandOption[];
   const seller = sellerProfile.success ? sellerProfile.data : null;
+  const sellerPricing = {
+    commissionRate: seller?.commissionRate ?? DEFAULT_COMMISSION_RATE,
+    isCommissionExempt: seller?.isCommissionExempt ?? false,
+    sellerFreeDelivery: seller?.freeDelivery ?? false,
+  };
   const defaultValues = buildEditDefaultValues(
-    product as Parameters<typeof buildEditDefaultValues>[0]
+    product as Parameters<typeof buildEditDefaultValues>[0],
+    sellerPricing
   );
 
   return (
@@ -50,11 +56,7 @@ export default async function EditProductPage({
       defaultValues={defaultValues}
       categories={categories}
       brands={brands}
-      sellerPricing={{
-        commissionRate: seller?.commissionRate ?? DEFAULT_COMMISSION_RATE,
-        isCommissionExempt: seller?.isCommissionExempt ?? false,
-        sellerFreeDelivery: seller?.freeDelivery ?? false,
-      }}
+      sellerPricing={sellerPricing}
     />
   );
 }

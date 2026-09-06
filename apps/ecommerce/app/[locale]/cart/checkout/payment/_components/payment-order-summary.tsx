@@ -3,6 +3,7 @@ import {
   computeManualRemainderAmount,
   getWalletPaidAmountFromMetadata,
 } from "@workspace/lib/orders/payment";
+import { parseOrderDiscountLines } from "@workspace/lib/orders";
 import { getLocale, getTranslations } from "next-intl/server";
 import type { getPaymobPaymentOrder } from "@/actions/paymob";
 
@@ -55,6 +56,9 @@ export async function PaymentOrderSummary({ order }: PaymentOrderSummaryProps) {
   const contactEmail = order.user?.email || null;
   const addressLines = formatAddressLines(shippingAddress);
   const discountAmount = Number(order.discountAmount ?? 0);
+  const discountLines = parseOrderDiscountLines(
+    (order as { discounts?: unknown }).discounts,
+  );
   const shippingCost = Number(order.shippingCost ?? 0);
   const tax = Number(order.tax ?? 0);
   const subtotal = Number(order.subtotal ?? 0);
@@ -235,17 +239,32 @@ export async function PaymentOrderSummary({ order }: PaymentOrderSummaryProps) {
             />
           </span>
         )}
-        {discountAmount > 0 && (
-          <span className="text-green-600">
-            {tCheckout("discount")}:{" "}
-            <span
-              className="font-medium"
-              dangerouslySetInnerHTML={{
-                __html: `-${formatPrice(discountAmount, locale)}`,
-              }}
-            />
-          </span>
-        )}
+        {discountLines.length > 0
+          ? discountLines.map((line, index) => (
+              <span
+                key={`${line.type}-${line.code ?? line.label}-${index}`}
+                className="text-green-600"
+              >
+                {line.label}:{" "}
+                <span
+                  className="font-medium"
+                  dangerouslySetInnerHTML={{
+                    __html: `-${formatPrice(Number(line.amount), locale)}`,
+                  }}
+                />
+              </span>
+            ))
+          : discountAmount > 0 && (
+              <span className="text-green-600">
+                {tCheckout("discount")}:{" "}
+                <span
+                  className="font-medium"
+                  dangerouslySetInnerHTML={{
+                    __html: `-${formatPrice(discountAmount, locale)}`,
+                  }}
+                />
+              </span>
+            )}
         {walletPaidAmount > 0 && (
           <span className="text-green-600">
             {tCheckout("walletAppliedAmount")}:{" "}

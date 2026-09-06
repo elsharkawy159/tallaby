@@ -22,6 +22,7 @@ function PostHogIdentity() {
   const identifiedIdRef = useRef<string | null>(null);
 
   useEffect(() => {
+    if (process.env.NODE_ENV === "development") return;
     if (isLoading) return;
 
     if (!user) {

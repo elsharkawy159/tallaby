@@ -55,7 +55,9 @@ export interface CustomerWithDetails extends Customer {
     orderNumber: string;
     totalAmount: string | number;
     status: string | null;
+    paymentStatus?: string | null;
     createdAt: string | null;
+    updatedAt?: string | null;
     [key: string]: unknown;
   }>;
   stats?: {

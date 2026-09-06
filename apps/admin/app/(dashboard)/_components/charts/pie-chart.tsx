@@ -1,13 +1,14 @@
 "use client";
 
+import { useRef } from "react";
 import {
-  ResponsiveContainer,
   PieChart as RechartsPieChart,
   Pie,
   Cell,
   Tooltip,
   Legend,
 } from "recharts";
+import { useContainerSize } from "./use-container-size";
 
 interface DataPoint {
   name: string;
@@ -22,15 +23,17 @@ interface PieChartProps {
 }
 
 export function PieChart({ data, className }: PieChartProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const size = useContainerSize(containerRef, [data.length]);
+
   if (data.length === 0) {
     return (
       <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
         No data for this period
       </div>
-    )
+    );
   }
 
-  // Default colors if not provided
   const defaultColors = [
     "#6366f1",
     "#10b981",
@@ -41,7 +44,6 @@ export function PieChart({ data, className }: PieChartProps) {
     "#8b5cf6",
   ];
 
-  // Custom render for label
   const renderCustomizedLabel = ({
     cx,
     cy,
@@ -84,9 +86,9 @@ export function PieChart({ data, className }: PieChartProps) {
   };
 
   return (
-    <div className={`w-full h-full ${className}`}>
-      <ResponsiveContainer width="100%" height="100%">
-        <RechartsPieChart>
+    <div ref={containerRef} className={`w-full h-full ${className ?? ""}`}>
+      {size ? (
+        <RechartsPieChart width={size.width} height={size.height}>
           <Pie
             data={data}
             cx="50%"
@@ -120,7 +122,7 @@ export function PieChart({ data, className }: PieChartProps) {
           />
           <Legend />
         </RechartsPieChart>
-      </ResponsiveContainer>
+      ) : null}
     </div>
   );
 }

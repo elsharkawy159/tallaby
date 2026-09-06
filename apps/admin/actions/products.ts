@@ -492,25 +492,28 @@ export async function updateProduct(productId: string, data: UpdateProductInput)
 
         if (data.variants.length > 0) {
           await tx.insert(productVariants).values(
-            data.variants.map((variant, index) => ({
-              productId,
-              title: variant.title,
-              price: {
-                base: variant.price,
-                list: variant.price,
-                final: variant.price,
-                discountType: null,
-                discountValue: null,
-              },
-              stock: variant.stock ?? 0,
-              sku: variant.sku,
-              imageUrl: variant.imageUrl ?? null,
-              option1: variant.option1 ?? null,
-              option2: variant.option2 ?? null,
-              option3: variant.option3 ?? null,
-              barCode: variant.barCode ?? null,
-              position: variant.position ?? index + 1,
-            }))
+            data.variants.map((variant, index) => {
+              const finalPrice = Number(variant.price ?? 0);
+              return {
+                productId,
+                title: variant.title,
+                price: {
+                  base: finalPrice,
+                  list: finalPrice,
+                  final: finalPrice,
+                  discountType: null,
+                  discountValue: null,
+                },
+                stock: variant.stock ?? 0,
+                sku: variant.sku,
+                imageUrl: variant.imageUrl ?? null,
+                option1: variant.option1 ?? null,
+                option2: variant.option2 ?? null,
+                option3: variant.option3 ?? null,
+                barCode: variant.barCode ?? null,
+                position: variant.position ?? index + 1,
+              };
+            })
           );
         }
       }

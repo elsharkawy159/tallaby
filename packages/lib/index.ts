@@ -4,10 +4,24 @@ export {
   formatPrice,
   formatPricePlain,
   parseCurrencyAmount,
-  parsePriceJson,
 } from "./src/utils/formatPrice";
 
-export type { ParsedPrice, PriceJson } from "./src/utils/formatPrice";
+export {
+  getPriceFinal,
+  getPriceList,
+  parsePriceJson,
+} from "./src/utils/parse-price-json";
+
+export type {
+  ParsedPriceJson,
+  PriceDiscountType,
+  PriceJsonObject,
+} from "./src/utils/parse-price-json";
+
+/** @deprecated Use ParsedPriceJson */
+export type { ParsedPriceJson as ParsedPrice } from "./src/utils/parse-price-json";
+/** @deprecated Use PriceJsonObject */
+export type { PriceJsonObject as PriceJson } from "./src/utils/parse-price-json";
 
 export {
   CAIRO_ORIGIN_RATES,

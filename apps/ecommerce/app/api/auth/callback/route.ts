@@ -1,6 +1,16 @@
 import { revalidatePath } from "next/cache";
 import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/supabase/server";
+import { mergeGuestAccount } from "@/actions/merge-guest-account";
+
+async function mergeGuestAccountSafely() {
+  try {
+    await mergeGuestAccount();
+  } catch (mergeError) {
+    // Log but don't fail the auth callback if merge fails
+    console.error("Failed to merge guest account:", mergeError);
+  }
+}
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
@@ -21,6 +31,11 @@ export async function GET(request: NextRequest) {
     if (error) {
       return NextResponse.redirect(`${origin}/auth`);
     }
+
+    // OAuth (and magic-link) sign-ins land here with a freshly established
+    // session - merge any guest cart/address/order data the same way the
+    // password sign-in path does.
+    await mergeGuestAccountSafely();
 
     revalidatePath("/", "layout");
     return NextResponse.redirect(`${origin}${next}`);
@@ -54,6 +69,9 @@ export async function GET(request: NextRequest) {
 
     // If we have a session or user, verification was successful
     if (session || user) {
+      if (session) {
+        await mergeGuestAccountSafely();
+      }
       revalidatePath("/", "layout");
       return NextResponse.redirect(`${origin}${next}`);
     }

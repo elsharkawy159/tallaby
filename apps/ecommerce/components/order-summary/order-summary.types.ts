@@ -31,10 +31,18 @@ export interface OrderSummaryTotals {
   discountAmount?: number
   shippingDiscount?: number
   totalAfterDiscount?: number
+  discounts?: Array<{
+    type: string
+    label: string
+    amount: string
+    code?: string
+    couponDiscountType?: string
+  }>
   appliedCoupon?: {
     code: string
     name: string
     discountType: string
+    discountValue?: string | number
   } | null
 }
 
@@ -42,6 +50,7 @@ export interface AppliedCouponInfo {
   code: string
   name: string
   discountType: string
+  discountValue?: string | number
 }
 
 export interface OrderSummaryProps {

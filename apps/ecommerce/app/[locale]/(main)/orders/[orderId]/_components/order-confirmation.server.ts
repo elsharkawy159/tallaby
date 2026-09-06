@@ -2,6 +2,7 @@
 
 import { db, eq, and } from "@workspace/db";
 import { orders, reviews } from "@workspace/db";
+import { parseOrderDiscountLines } from "@workspace/lib/orders";
 import type {
   OrderConfirmationData,
   OrderItemReview,
@@ -92,6 +93,7 @@ export async function getOrderConfirmationData(
     const tax = Number(order.tax) || 0;
     const shippingCost = Number(order.shippingCost) || 0;
     const discountAmount = Number(order.discountAmount) || 0;
+    const discounts = parseOrderDiscountLines(order.discounts);
     const totalAmount = Number(order.totalAmount);
     const itemCount = order.orderItems.reduce(
       (sum, item) => sum + item.quantity,
@@ -238,6 +240,7 @@ export async function getOrderConfirmationData(
         tax,
         shippingCost,
         discountAmount,
+        discounts,
         totalAmount,
         itemCount,
       },

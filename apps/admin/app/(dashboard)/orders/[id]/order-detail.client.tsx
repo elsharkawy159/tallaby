@@ -48,6 +48,34 @@ import {
 } from "../orders.lib";
 import { parseProductImages } from "../../products/products.lib";
 import Image from "next/image";
+
+function getDiscountTypeLabel(type: string): string {
+  switch (type) {
+    case "coupon":
+      return "Coupon";
+    case "free_shipping_coupon":
+      return "Free shipping coupon";
+    case "threshold_free_shipping":
+      return "Free delivery";
+    default:
+      return "Discount";
+  }
+}
+
+function getCouponDiscountTypeLabel(type?: string): string | null {
+  switch (type) {
+    case "percentage":
+      return "Percentage";
+    case "fixed_amount":
+      return "Fixed amount";
+    case "free_shipping":
+      return "Free shipping";
+    case "buy_x_get_y":
+      return "Buy X get Y";
+    default:
+      return null;
+  }
+}
 import { getPublicUrl } from "@/lib/utils";
 
 const ORDER_STATUSES = [
@@ -142,6 +170,7 @@ export function OrderDetailContent({ order }: OrderDetailContentProps) {
   const shippingCost = Number(order.shippingCost);
   const tax = Number(order.tax);
   const discountAmount = Number(order.discountAmount);
+  const discountLines = Array.isArray(order.discounts) ? order.discounts : [];
   const totalAmount = Number(order.totalAmount);
 
   return (
@@ -335,11 +364,68 @@ export function OrderDetailContent({ order }: OrderDetailContentProps) {
                     <span>{formatCurrency(tax)}</span>
                   </div>
                 )}
-                {discountAmount > 0 && (
-                  <div className="flex justify-between text-sm text-green-600">
-                    <span>Discount</span>
-                    <span>-{formatCurrency(discountAmount)}</span>
+                {discountLines.length > 0 ? (
+                  <div className="space-y-2 pt-1">
+                    <div className="flex justify-between text-sm font-medium text-green-700">
+                      <span>
+                        Discounts
+                        {discountLines.length > 1
+                          ? ` (${discountLines.length})`
+                          : ""}
+                      </span>
+                      <span>-{formatCurrency(discountAmount)}</span>
+                    </div>
+                    <div className="space-y-1.5 rounded-md border border-green-100 bg-green-50/60 p-2">
+                      {discountLines.map((line, index) => {
+                        const couponTypeLabel = getCouponDiscountTypeLabel(
+                          line.couponDiscountType,
+                        );
+                        return (
+                          <div
+                            key={`${line.type}-${line.code ?? line.label}-${index}`}
+                            className="flex items-start justify-between gap-3 text-sm text-green-700"
+                          >
+                            <div className="min-w-0 space-y-0.5">
+                              <div className="flex flex-wrap items-center gap-1.5">
+                                {/* <Badge
+                                  variant="outline"
+                                  className="border-green-200 bg-white text-[10px] text-green-700"
+                                >
+                                  {getDiscountTypeLabel(line.type)}
+                                </Badge> */}
+                                {couponTypeLabel && (
+                                  <Badge
+                                    variant="secondary"
+                                    className="bg-green-100 text-[10px] text-green-800"
+                                  >
+                                    {couponTypeLabel}
+                                  </Badge>
+                                )}
+                                {line.code && (
+                                  <span className="font-mono text-xs">
+                                    {line.code}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xs text-green-800/80">
+                                {line.label}
+                              </p>
+                            </div>
+                            <span className="shrink-0 font-medium">
+                              -{formatCurrency(Number(line.amount))}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
+                ) : (
+                  discountAmount > 0 && (
+                    <div className="flex justify-between text-sm text-green-600">
+                      <span>Discount</span>
+                      <span>-{formatCurrency(discountAmount)}</span>
+                    </div>
+                  )
                 )}
                 <div className="flex justify-between pt-2 border-t font-semibold text-lg">
                   <span>Total</span>

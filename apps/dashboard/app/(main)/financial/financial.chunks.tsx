@@ -97,7 +97,7 @@ export function FinancialDashboardContent({
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <Card>
-          <CardContent className="pt-6">
+          <CardContent>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">This Month Sales</p>
@@ -119,7 +119,7 @@ export function FinancialDashboardContent({
         </Card>
 
         <Card>
-          <CardContent className="pt-6">
+          <CardContent>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Paid Out</p>
@@ -138,7 +138,7 @@ export function FinancialDashboardContent({
         </Card>
 
         <Card>
-          <CardContent className="pt-6">
+          <CardContent>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Pending Earnings</p>
@@ -157,7 +157,7 @@ export function FinancialDashboardContent({
         </Card>
 
         <Card>
-          <CardContent className="pt-6">
+          <CardContent>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Wallet Balance</p>
@@ -203,9 +203,7 @@ export function FinancialDashboardContent({
                   transactions.map((tx) => (
                     <TableRow key={tx.id}>
                       <TableCell className="capitalize">{tx.type}</TableCell>
-                      <TableCell>
-                        {tx.order?.orderNumber ?? "—"}
-                      </TableCell>
+                      <TableCell>{tx.order?.orderNumber ?? "—"}</TableCell>
                       <TableCell className="font-semibold text-green-600">
                         {formatCurrency(tx.amount)}
                       </TableCell>
@@ -270,7 +268,7 @@ export function FinancialDashboardContent({
                       <TableCell>
                         {(payout.processedAt ?? payout.createdAt)
                           ? new Date(
-                              payout.processedAt ?? payout.createdAt!
+                              payout.processedAt ?? payout.createdAt!,
                             ).toLocaleDateString()
                           : "—"}
                       </TableCell>

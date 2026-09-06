@@ -5,16 +5,19 @@ import { eq, and, sql } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import * as DB_SCHEMA from "../drizzle/schema";
 import * as DB_RELATIONS from "../drizzle/relations";
-import { joinAffiliateProgram, getAffiliateAccount } from "./join";
+import { joinAffiliateProgram } from "./join";
 import { resolveAffiliateForCoupon } from "./commission";
 import {
   createPendingAffiliateCommission,
+  scheduleAffiliateCommissionRelease,
   earnAffiliateCommission,
   cancelPendingAffiliateCommission,
   reverseAffiliateCommission,
+  releaseDueAffiliateCommissions,
 } from "./commission";
 import { getAffiliateOverview } from "./queries";
 import { getUserWalletSummary } from "../wallet/user-wallet";
+import { RETURN_WINDOW_DAYS } from "./constants";
 
 // Mirrors packages/db/src/drizzle/database.ts's schema merge — see
 // user-wallet.integration.test.ts for why this is built locally rather than
@@ -25,8 +28,8 @@ const schema = { ...DB_SCHEMA, ...DB_RELATIONS };
  * Integration tests for the affiliate program's financial core, against a
  * REAL Postgres instance — skipped entirely when TEST_DATABASE_URL is not
  * set. See user-wallet.integration.test.ts for how to point this at a
- * scratch database; this suite additionally needs migration
- * 0029_affiliate_program.sql applied.
+ * scratch database; this suite additionally needs migrations
+ * 0029_affiliate_program.sql and 0031_affiliate_commission_eligible_at.sql.
  */
 const TEST_DATABASE_URL = process.env.TEST_DATABASE_URL;
 
@@ -48,7 +51,13 @@ describe.skipIf(!TEST_DATABASE_URL)("affiliate commissions (integration)", () =>
     return id;
   }
 
-  async function makeOrder(userId: string, subtotal: number, shippingCost = 0) {
+  async function makeOrder(
+    userId: string,
+    subtotal: number,
+    shippingCost = 0,
+    status: "pending" | "delivered" = "pending"
+  ) {
+    const now = new Date().toISOString();
     const [order] = await db
       .insert(schema.orders)
       .values({
@@ -57,6 +66,8 @@ describe.skipIf(!TEST_DATABASE_URL)("affiliate commissions (integration)", () =>
         subtotal: subtotal.toFixed(2),
         shippingCost: shippingCost.toFixed(2),
         totalAmount: (subtotal + shippingCost).toFixed(2),
+        status,
+        ...(status === "delivered" ? { deliveredAt: now } : {}),
       })
       .returning({ id: schema.orders.id });
     if (!order) throw new Error("order insert returned no row");
@@ -76,6 +87,31 @@ describe.skipIf(!TEST_DATABASE_URL)("affiliate commissions (integration)", () =>
     return rows.length;
   }
 
+  async function readCommission(orderId: string) {
+    return db.query.affiliateCommissions.findFirst({
+      where: and(
+        eq(schema.affiliateCommissions.orderId, orderId),
+        eq(schema.affiliateCommissions.type, "commission")
+      ),
+    });
+  }
+
+  /** Schedule release then backdate eligibleAt so earn/cron can run immediately. */
+  async function scheduleAndMakeDue(orderId: string) {
+    await db.transaction((tx) => scheduleAffiliateCommissionRelease(tx, orderId));
+    const past = new Date();
+    past.setDate(past.getDate() - RETURN_WINDOW_DAYS - 1);
+    await db
+      .update(schema.affiliateCommissions)
+      .set({ eligibleAt: past.toISOString() })
+      .where(
+        and(
+          eq(schema.affiliateCommissions.orderId, orderId),
+          eq(schema.affiliateCommissions.type, "commission")
+        )
+      );
+  }
+
   beforeAll(async () => {
     const [applied] = await db.execute<{ exists: boolean }>(
       sql`select to_regclass('public.affiliate_commissions') is not null as exists`
@@ -83,6 +119,18 @@ describe.skipIf(!TEST_DATABASE_URL)("affiliate commissions (integration)", () =>
     if (!applied?.exists) {
       throw new Error(
         "TEST_DATABASE_URL is missing migration 0029_affiliate_program.sql"
+      );
+    }
+
+    const [col] = await db.execute<{ exists: boolean }>(
+      sql`select exists (
+        select 1 from information_schema.columns
+        where table_name = 'affiliate_commissions' and column_name = 'eligible_at'
+      ) as exists`
+    );
+    if (!col?.exists) {
+      throw new Error(
+        "TEST_DATABASE_URL is missing migration 0031_affiliate_commission_eligible_at.sql"
       );
     }
   });
@@ -150,7 +198,7 @@ describe.skipIf(!TEST_DATABASE_URL)("affiliate commissions (integration)", () =>
   });
 
   // -------------------------------------------------------------------------
-  // Earning — the core "when is commission earned" invariant
+  // Earning — hold until RETURN_WINDOW_DAYS after delivery
   // -------------------------------------------------------------------------
 
   it("excludes shipping: commission is 10% of the eligible amount only", async () => {
@@ -169,24 +217,20 @@ describe.skipIf(!TEST_DATABASE_URL)("affiliate commissions (integration)", () =>
       })
     );
 
-    const row = await db.query.affiliateCommissions.findFirst({
-      where: and(
-        eq(schema.affiliateCommissions.orderId, orderId),
-        eq(schema.affiliateCommissions.type, "commission")
-      ),
-    });
+    const row = await readCommission(orderId);
 
     expect(row?.status).toBe("pending");
+    expect(row?.eligibleAt).toBeNull();
     expect(Number(row?.commissionAmount)).toBe(100); // 10% of 1000, not of 1080
   });
 
-  it("is NOT earned at order creation or shipped — only at delivered, and delivers exactly one wallet credit even under duplicate events", async () => {
+  it("delivery only schedules eligibleAt — no wallet credit until the return window elapses", async () => {
     const affiliateUserId = await makeUser();
     const buyerUserId = await makeUser();
     const account = await joinAffiliateProgram(db, { userId: affiliateUserId, fullName: "Referrer" });
     const attribution = { affiliateId: account.affiliateId, affiliateUserId, couponId: account.couponId };
 
-    const orderId = await makeOrder(buyerUserId, 500, 50);
+    const orderId = await makeOrder(buyerUserId, 500, 50, "delivered");
     await db.transaction((tx) =>
       createPendingAffiliateCommission(tx, {
         affiliate: attribution,
@@ -196,18 +240,56 @@ describe.skipIf(!TEST_DATABASE_URL)("affiliate commissions (integration)", () =>
       })
     );
 
-    const balanceAtCreation = await readWalletBalance(affiliateUserId);
-    expect(balanceAtCreation).toBe(0);
+    await db.transaction((tx) => scheduleAffiliateCommissionRelease(tx, orderId));
 
-    // Simulates the order moving through shipped/out_for_delivery — nothing
-    // in this suite calls earnAffiliateCommission for those, so the pending
-    // row (and the wallet) stay untouched. Delivered is the only trigger:
+    expect(await readWalletBalance(affiliateUserId)).toBe(0);
+
+    const scheduled = await readCommission(orderId);
+    expect(scheduled?.status).toBe("pending");
+    expect(scheduled?.eligibleAt).toBeTruthy();
+
+    const eligibleAt = new Date(scheduled!.eligibleAt!);
+    const expectedMin = new Date();
+    expectedMin.setDate(expectedMin.getDate() + RETURN_WINDOW_DAYS - 1);
+    expect(eligibleAt.getTime()).toBeGreaterThan(expectedMin.getTime());
+
+    // Earn before eligibleAt must be a no-op.
     await db.transaction((tx) => earnAffiliateCommission(tx, orderId));
+    expect(await readWalletBalance(affiliateUserId)).toBe(0);
+    expect((await readCommission(orderId))?.status).toBe("pending");
 
-    expect(await readWalletBalance(affiliateUserId)).toBe(50); // 10% of 500
+    // Duplicate schedule must not reset eligibleAt.
+    const firstEligibleAt = scheduled!.eligibleAt;
+    await db.transaction((tx) => scheduleAffiliateCommissionRelease(tx, orderId));
+    expect((await readCommission(orderId))?.eligibleAt).toBe(firstEligibleAt);
 
-    // A retried webhook / duplicate delivery event / admin re-save must not
-    // double-credit.
+    const overview = await getAffiliateOverview(db, affiliateUserId);
+    expect(overview?.totals.deliveredOrders).toBe(1);
+    expect(overview?.totals.pendingProfit).toBe("50.00");
+    expect(overview?.totals.totalProfit).toBe("0.00");
+  });
+
+  it("credits the wallet once after eligibleAt, idempotently under duplicate earn events", async () => {
+    const affiliateUserId = await makeUser();
+    const buyerUserId = await makeUser();
+    const account = await joinAffiliateProgram(db, { userId: affiliateUserId, fullName: "Referrer" });
+    const attribution = { affiliateId: account.affiliateId, affiliateUserId, couponId: account.couponId };
+
+    const orderId = await makeOrder(buyerUserId, 500, 50, "delivered");
+    await db.transaction((tx) =>
+      createPendingAffiliateCommission(tx, {
+        affiliate: attribution,
+        orderId,
+        orderEligibleAmount: "500.00",
+        shippingAmount: "50.00",
+      })
+    );
+
+    await scheduleAndMakeDue(orderId);
+
+    await db.transaction((tx) => earnAffiliateCommission(tx, orderId));
+    expect(await readWalletBalance(affiliateUserId)).toBe(50);
+
     await db.transaction((tx) => earnAffiliateCommission(tx, orderId));
     await db.transaction((tx) => earnAffiliateCommission(tx, orderId));
 
@@ -220,13 +302,36 @@ describe.skipIf(!TEST_DATABASE_URL)("affiliate commissions (integration)", () =>
     expect(overview?.totals.deliveredOrders).toBe(1);
   });
 
+  it("batch releaseDueAffiliateCommissions earns due pending rows", async () => {
+    const affiliateUserId = await makeUser();
+    const buyerUserId = await makeUser();
+    const account = await joinAffiliateProgram(db, { userId: affiliateUserId, fullName: "Referrer" });
+    const attribution = { affiliateId: account.affiliateId, affiliateUserId, couponId: account.couponId };
+
+    const orderId = await makeOrder(buyerUserId, 200, 0, "delivered");
+    await db.transaction((tx) =>
+      createPendingAffiliateCommission(tx, {
+        affiliate: attribution,
+        orderId,
+        orderEligibleAmount: "200.00",
+        shippingAmount: "0.00",
+      })
+    );
+    await scheduleAndMakeDue(orderId);
+
+    const result = await releaseDueAffiliateCommissions(db);
+    expect(result.released).toBeGreaterThanOrEqual(1);
+    expect(await readWalletBalance(affiliateUserId)).toBe(20);
+    expect((await readCommission(orderId))?.status).toBe("earned");
+  });
+
   it("cancelled orders never earn commission", async () => {
     const affiliateUserId = await makeUser();
     const buyerUserId = await makeUser();
     const account = await joinAffiliateProgram(db, { userId: affiliateUserId, fullName: "Referrer" });
     const attribution = { affiliateId: account.affiliateId, affiliateUserId, couponId: account.couponId };
 
-    const orderId = await makeOrder(buyerUserId, 200, 20);
+    const orderId = await makeOrder(buyerUserId, 200, 20, "delivered");
     await db.transaction((tx) =>
       createPendingAffiliateCommission(tx, {
         affiliate: attribution,
@@ -237,15 +342,54 @@ describe.skipIf(!TEST_DATABASE_URL)("affiliate commissions (integration)", () =>
     );
 
     await db.transaction((tx) => cancelPendingAffiliateCommission(tx, orderId));
-    // A cancellation racing after a delivery must not undo the earn.
+    await scheduleAndMakeDue(orderId);
     await db.transaction((tx) => earnAffiliateCommission(tx, orderId));
 
     expect(await readWalletBalance(affiliateUserId)).toBe(0);
+    expect((await readCommission(orderId))?.status).toBe("cancelled");
+  });
 
-    const row = await db.query.affiliateCommissions.findFirst({
-      where: eq(schema.affiliateCommissions.orderId, orderId),
+  it("return during the hold cancels pending — cron must not pay later", async () => {
+    const affiliateUserId = await makeUser();
+    const buyerUserId = await makeUser();
+    const account = await joinAffiliateProgram(db, { userId: affiliateUserId, fullName: "Referrer" });
+    const attribution = { affiliateId: account.affiliateId, affiliateUserId, couponId: account.couponId };
+
+    const orderId = await makeOrder(buyerUserId, 800, 0, "delivered");
+    await db.transaction((tx) =>
+      createPendingAffiliateCommission(tx, {
+        affiliate: attribution,
+        orderId,
+        orderEligibleAmount: "800.00",
+        shippingAmount: "0.00",
+      })
+    );
+
+    await db.transaction((tx) => scheduleAffiliateCommissionRelease(tx, orderId));
+    expect(await readWalletBalance(affiliateUserId)).toBe(0);
+
+    // Simulate return during hold: reverse (no-op for pending) + cancel.
+    await db.transaction(async (tx) => {
+      await reverseAffiliateCommission(tx, orderId);
+      await cancelPendingAffiliateCommission(tx, orderId);
     });
-    expect(row?.status).toBe("cancelled");
+
+    expect((await readCommission(orderId))?.status).toBe("cancelled");
+    expect(await readWalletBalance(affiliateUserId)).toBe(0);
+
+    // Even if someone backdates eligibleAt, cancelled rows must not earn.
+    const past = new Date();
+    past.setDate(past.getDate() - RETURN_WINDOW_DAYS - 1);
+    await db
+      .update(schema.affiliateCommissions)
+      .set({ eligibleAt: past.toISOString() })
+      .where(eq(schema.affiliateCommissions.orderId, orderId));
+
+    await db.transaction((tx) => earnAffiliateCommission(tx, orderId));
+    await releaseDueAffiliateCommissions(db);
+
+    expect(await readWalletBalance(affiliateUserId)).toBe(0);
+    expect((await readCommission(orderId))?.status).toBe("cancelled");
   });
 
   // -------------------------------------------------------------------------
@@ -258,7 +402,7 @@ describe.skipIf(!TEST_DATABASE_URL)("affiliate commissions (integration)", () =>
     const account = await joinAffiliateProgram(db, { userId: affiliateUserId, fullName: "Referrer" });
     const attribution = { affiliateId: account.affiliateId, affiliateUserId, couponId: account.couponId };
 
-    const orderId = await makeOrder(buyerUserId, 1000, 0);
+    const orderId = await makeOrder(buyerUserId, 1000, 0, "delivered");
     await db.transaction((tx) =>
       createPendingAffiliateCommission(tx, {
         affiliate: attribution,
@@ -267,6 +411,7 @@ describe.skipIf(!TEST_DATABASE_URL)("affiliate commissions (integration)", () =>
         shippingAmount: "0.00",
       })
     );
+    await scheduleAndMakeDue(orderId);
     await db.transaction((tx) => earnAffiliateCommission(tx, orderId));
     expect(await readWalletBalance(affiliateUserId)).toBe(100);
 
@@ -294,7 +439,7 @@ describe.skipIf(!TEST_DATABASE_URL)("affiliate commissions (integration)", () =>
     const account = await joinAffiliateProgram(db, { userId: affiliateUserId, fullName: "Referrer" });
     const attribution = { affiliateId: account.affiliateId, affiliateUserId, couponId: account.couponId };
 
-    const orderId = await makeOrder(buyerUserId, 1000, 0);
+    const orderId = await makeOrder(buyerUserId, 1000, 0, "delivered");
     await db.transaction((tx) =>
       createPendingAffiliateCommission(tx, {
         affiliate: attribution,
@@ -303,6 +448,7 @@ describe.skipIf(!TEST_DATABASE_URL)("affiliate commissions (integration)", () =>
         shippingAmount: "0.00",
       })
     );
+    await scheduleAndMakeDue(orderId);
     await db.transaction((tx) => earnAffiliateCommission(tx, orderId));
     expect(await readWalletBalance(affiliateUserId)).toBe(100);
 

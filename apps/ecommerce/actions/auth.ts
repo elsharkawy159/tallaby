@@ -313,6 +313,18 @@ export async function signUpUser(data: {
       return { success: false, error: error.message };
     }
 
+    // With email confirmation disabled, Supabase signs the new account in
+    // immediately (a session is returned) - merge any guest data now, the
+    // same way signInAction does for the password sign-in path.
+    if (signUpData.session) {
+      try {
+        const { mergeGuestAccount } = await import("./merge-guest-account");
+        await mergeGuestAccount();
+      } catch (mergeError) {
+        console.error("Failed to merge guest account:", mergeError);
+      }
+    }
+
     return { success: true, data: signUpData.user };
   } catch (error) {
     console.error("Error creating user with Supabase:", error);

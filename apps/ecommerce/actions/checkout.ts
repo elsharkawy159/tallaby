@@ -18,8 +18,11 @@ import {
   type ProductLocale,
 } from "@/lib/product-translations";
 import { validateCoupon } from "./coupons";
-import { calculateOrderShippingCost, getThresholdShippingDiscount } from "@/lib/shipping";
-import type { CheckoutSummary } from "@/lib/coupon-utils";
+import { calculateOrderShippingCost } from "@/lib/shipping";
+import {
+  buildSummaryWithCoupon,
+  type CheckoutSummary,
+} from "@/lib/coupon-utils";
 import { getUserWalletSummary } from "@workspace/db/wallet";
 
 const cartWithShippingItems = {
@@ -115,21 +118,19 @@ function buildBaseSummary(
   );
   const tax = 0;
   const billedShipping = shippingCost ?? 0;
-  const shippingDiscount = getThresholdShippingDiscount(subtotal, shippingCost);
   const total = subtotal + tax + billedShipping;
-  const totalAfterDiscount = Math.max(0, total - shippingDiscount);
 
-  return {
-    subtotal,
-    tax,
-    shippingCost,
-    total,
-    itemCount: cartItems.reduce((sum, item) => sum + item.quantity, 0),
-    discountAmount: 0,
-    shippingDiscount,
-    totalAfterDiscount,
-    appliedCoupon: null,
-  };
+  return buildSummaryWithCoupon(
+    {
+      subtotal,
+      tax,
+      shippingCost,
+      total,
+      itemCount: cartItems.reduce((sum, item) => sum + item.quantity, 0),
+    },
+    null,
+    null,
+  );
 }
 
 export async function recalculateCheckoutSummary(data: {

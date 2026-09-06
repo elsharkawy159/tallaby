@@ -285,13 +285,20 @@ function mapVariantFormToDb(v: any, index: number) {
       ? (localized as { en?: { title?: string; option1?: string; option2?: string; option3?: string } }).en
       : null;
 
+  const finalPrice = Number(v.price ?? 0);
+  const listPrice =
+    v.listPrice != null && Number.isFinite(Number(v.listPrice))
+      ? Number(v.listPrice)
+      : finalPrice;
+
   return {
     title: englishFields?.title ?? v.title,
     price: buildPriceObject({
-      list: v.listPrice ?? v.price,
-      final: v.price,
-      discountType: v.discountType,
-      discountValue: v.discountValue,
+      base: listPrice,
+      list: listPrice,
+      final: finalPrice,
+      discountType: v.discountType ?? null,
+      discountValue: v.discountValue ?? null,
     }),
     stock: v.stock ?? 0,
     sku: v.sku,
@@ -1656,9 +1663,26 @@ export async function createProductVariant(data: {
       throw new Error("Product not found or unauthorized");
     }
 
+    const finalPrice = Number(data.price);
+    const price = buildPriceObject({
+      base: finalPrice,
+      list: finalPrice,
+      final: finalPrice,
+    });
+
     const newVariant = await db
       .insert(productVariants)
-      .values(data)
+      .values({
+        productId: data.productId,
+        title: data.title,
+        price,
+        stock: data.stock,
+        sku: data.sku,
+        option1: data.option1,
+        option2: data.option2,
+        option3: data.option3,
+        imageUrl: data.imageUrl,
+      })
       .returning();
 
     return { success: true, data: newVariant[0] };

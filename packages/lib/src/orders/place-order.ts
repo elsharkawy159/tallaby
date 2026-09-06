@@ -37,6 +37,7 @@ import {
   generateOrderNumber,
   pickProductTitle,
 } from './place-order.lib'
+import { buildOrderDiscountLines } from './order-discounts'
 import { sendOrderConfirmationEmail } from './notify'
 import { isCodEligibleForShipping, parseWalletPartialPaymentMethod } from './payment.lib'
 
@@ -274,8 +275,12 @@ export async function placeOrderFromCart(
     }
   })
 
-  let discountAmount = 0
-  let shippingDiscount = getThresholdShippingDiscount(subtotal, shippingCost)
+  let merchandiseDiscount = 0
+  const thresholdShippingDiscount = getThresholdShippingDiscount(
+    subtotal,
+    shippingCost,
+  )
+  let shippingDiscount = thresholdShippingDiscount
   let appliedCoupon: typeof coupons.$inferSelect | null = null
 
   if (!skipCoupons && couponCode) {
@@ -310,29 +315,47 @@ export async function placeOrderFromCart(
       }
 
       if (coupon.discountType === 'percentage') {
-        discountAmount = subtotal * (Number(coupon.discountValue) / 100)
+        merchandiseDiscount = subtotal * (Number(coupon.discountValue) / 100)
       } else if (coupon.discountType === 'fixed_amount') {
-        discountAmount = Number(coupon.discountValue)
+        merchandiseDiscount = Number(coupon.discountValue)
       } else if (coupon.discountType === 'free_shipping') {
         shippingDiscount = Math.max(shippingDiscount, shippingCost)
       }
 
       if (
         coupon.maximumDiscount &&
-        discountAmount > Number(coupon.maximumDiscount)
+        merchandiseDiscount > Number(coupon.maximumDiscount)
       ) {
-        discountAmount = Number(coupon.maximumDiscount)
+        merchandiseDiscount = Number(coupon.maximumDiscount)
       }
 
-      if (discountAmount > subtotal) {
-        discountAmount = subtotal
+      if (merchandiseDiscount > subtotal) {
+        merchandiseDiscount = subtotal
       }
 
       appliedCoupon = coupon
     }
   }
 
-  const totalDiscount = discountAmount + shippingDiscount
+  const {
+    lines: discountLines,
+    totalDiscount,
+    couponContribution,
+  } = buildOrderDiscountLines({
+    merchandiseDiscount,
+    shippingDiscount,
+    thresholdShippingDiscount,
+    coupon: appliedCoupon
+      ? {
+          id: appliedCoupon.id,
+          code: appliedCoupon.code,
+          name: appliedCoupon.name,
+          discountType: appliedCoupon.discountType,
+          discountValue: appliedCoupon.discountValue,
+        }
+      : null,
+  })
+
   const totalAmount = subtotal + shippingCost + tax - totalDiscount
   const orderNumber = generateOrderNumber()
 
@@ -434,6 +457,7 @@ export async function placeOrderFromCart(
           shippingCost: formatDecimal(shippingCost),
           tax: formatDecimal(tax),
           discountAmount: formatDecimal(totalDiscount),
+          discounts: discountLines,
           totalAmount: formatDecimal(totalAmount),
           currency: cart.currency || 'EGP',
           status: resolvedStatus,
@@ -468,7 +492,7 @@ export async function placeOrderFromCart(
           couponId: appliedCoupon.id,
           userId,
           orderId: newOrder!.id,
-          discountAmount: formatDecimal(totalDiscount),
+          discountAmount: formatDecimal(couponContribution),
         })
 
         // Affiliate attribution is resolved and snapshotted here, inside the

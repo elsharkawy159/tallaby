@@ -26,12 +26,12 @@ import {
 } from '@workspace/lib/shipping'
 import { placeOrderFromCart } from '@workspace/lib/orders'
 import { fulfillDigitalOrderItems } from '@workspace/lib/digital'
+import { getPriceFinal } from '@workspace/lib'
 import {
   applyInvalidation,
   invalidateProductInventory,
 } from '@workspace/cache'
 import { getAdminUser } from './auth'
-import { parsePriceJson } from '@workspace/lib'
 import {
   externalOrderFormSchema,
   externalOrderPreviewSchema,
@@ -208,7 +208,7 @@ async function resolveLineItems(
         }
       }
 
-      price = parsePriceJson(variant.price).final
+      price = getPriceFinal(variant.price)
       variantData = {
         id: variant.id,
         title: variant.title,
@@ -376,7 +376,7 @@ export async function searchProductsForExternalOrder(query: string) {
           label:
             v.title ||
             [v.option1, v.option2, v.option3].filter(Boolean).join(', '),
-          price: parsePriceJson(v.price).final,
+          price: getPriceFinal(v.price),
           stock: Number(v.stock ?? 0),
           sku: v.sku,
           imageUrl: v.imageUrl,

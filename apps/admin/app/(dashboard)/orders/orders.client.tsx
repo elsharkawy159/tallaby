@@ -14,6 +14,7 @@ import {
   getAllOrders,
   deleteOrders,
   updateOrderStatus,
+  updateOrderPaymentStatus,
   exportOrders,
 } from "@/actions/orders";
 import { Order } from "./orders.types";
@@ -164,7 +165,7 @@ export const OrdersClientWrapper = ({ filters }: OrdersClientWrapperProps) => {
     paymentStatus: string
   ) => {
     try {
-      const result = await updateOrderStatus(
+      const result = await updateOrderPaymentStatus(
         orderId,
         paymentStatus as any
       );

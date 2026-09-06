@@ -322,17 +322,32 @@ export async function OrderConfirmationContent({
                 </div>
               )}
 
-              {summary.discountAmount > 0 && (
-                <div className="flex justify-between text-xs md:text-sm">
-                  <span className="text-gray-600">{t("discount")}:</span>
-                  <span
-                    className="text-green-600 font-medium"
-                    dangerouslySetInnerHTML={{
-                      __html: `-${formatPrice(summary.discountAmount, locale)}`,
-                    }}
-                  />
-                </div>
-              )}
+              {summary.discounts.length > 0
+                ? summary.discounts.map((line, index) => (
+                    <div
+                      key={`${line.type}-${line.code ?? line.label}-${index}`}
+                      className="flex justify-between text-xs md:text-sm"
+                    >
+                      <span className="text-gray-600">{line.label}:</span>
+                      <span
+                        className="text-green-600 font-medium"
+                        dangerouslySetInnerHTML={{
+                          __html: `-${formatPrice(Number(line.amount), locale)}`,
+                        }}
+                      />
+                    </div>
+                  ))
+                : summary.discountAmount > 0 && (
+                    <div className="flex justify-between text-xs md:text-sm">
+                      <span className="text-gray-600">{t("discount")}:</span>
+                      <span
+                        className="text-green-600 font-medium"
+                        dangerouslySetInnerHTML={{
+                          __html: `-${formatPrice(summary.discountAmount, locale)}`,
+                        }}
+                      />
+                    </div>
+                  )}
 
               <div className="flex justify-between pt-2 md:pt-3 border-t">
                 <span className="text-sm md:text-base font-semibold text-gray-900">

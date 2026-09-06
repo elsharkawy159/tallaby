@@ -85,6 +85,20 @@
       "when": 1798486400000,
       "tag": "0017_shipment_batches",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1799000000000,
+      "tag": "0032_backfill_digital_products_extended",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1799100000000,
+      "tag": "0033_variant_price_jsonb",
+      "breakpoints": true
     }
   ]
 }

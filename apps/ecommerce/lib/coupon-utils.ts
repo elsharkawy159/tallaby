@@ -4,6 +4,10 @@
  */
 
 import { getThresholdShippingDiscount } from '@workspace/lib/shipping'
+import {
+  buildOrderDiscountLines,
+  type OrderDiscountLine,
+} from '@workspace/lib/orders'
 
 export interface CouponData {
   id: string
@@ -65,11 +69,13 @@ export interface CheckoutSummary {
   discountAmount?: number
   shippingDiscount?: number
   totalAfterDiscount?: number
+  discounts?: OrderDiscountLine[]
   itemCount: number
   appliedCoupon?: {
     code: string
     name: string
     discountType: string
+    discountValue?: string | number
   } | null
 }
 
@@ -310,9 +316,18 @@ export function buildSummaryWithCoupon(
   )
 
   if (!coupon || !calculationResult) {
+    const {
+      lines,
+      totalDiscount,
+    } = buildOrderDiscountLines({
+      merchandiseDiscount: 0,
+      shippingDiscount: thresholdShippingDiscount,
+      thresholdShippingDiscount,
+      coupon: null,
+    })
     const totalAfterDiscount = Math.max(
       0,
-      baseSummary.total - thresholdShippingDiscount
+      baseSummary.total - totalDiscount
     )
 
     return {
@@ -320,6 +335,7 @@ export function buildSummaryWithCoupon(
       discountAmount: 0,
       shippingDiscount: thresholdShippingDiscount,
       totalAfterDiscount,
+      discounts: lines,
       appliedCoupon: null
     }
   }
@@ -329,13 +345,25 @@ export function buildSummaryWithCoupon(
     calculationResult.shippingDiscount
   )
 
+  const { lines, totalDiscount } = buildOrderDiscountLines({
+    merchandiseDiscount: calculationResult.discountAmount,
+    shippingDiscount,
+    thresholdShippingDiscount,
+    coupon: {
+      id: coupon.id,
+      code: coupon.code,
+      name: coupon.name,
+      discountType: coupon.discountType,
+      discountValue: coupon.discountValue,
+    },
+  })
+
   const totalAfterDiscount = Math.max(
     0,
     baseSummary.subtotal +
       baseSummary.tax +
       shippingCost -
-      calculationResult.discountAmount -
-      shippingDiscount
+      totalDiscount
   )
 
   return {
@@ -343,10 +371,12 @@ export function buildSummaryWithCoupon(
     discountAmount: calculationResult.discountAmount,
     shippingDiscount,
     totalAfterDiscount,
+    discounts: lines,
     appliedCoupon: {
       code: coupon.code,
       name: coupon.name,
-      discountType: coupon.discountType
+      discountType: coupon.discountType,
+      discountValue: coupon.discountValue,
     }
   }
 }

@@ -183,6 +183,48 @@ export function getBrandsColumns({
       },
     },
     {
+      accessorKey: "isVerified",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Verified" />
+      ),
+      cell: ({ row }) => {
+        return row.original.isVerified === true ? (
+          <Badge
+            variant="outline"
+            className="bg-green-50 text-green-700 border-green-200"
+          >
+            Verified
+          </Badge>
+        ) : (
+          <span className="text-gray-400 text-sm">Unverified</span>
+        );
+      },
+      filterFn: (row, id, value: string[]) => {
+        return value.includes(String(row.getValue(id) === true));
+      },
+    },
+    {
+      accessorKey: "isOfficial",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Official" />
+      ),
+      cell: ({ row }) => {
+        return row.original.isOfficial === true ? (
+          <Badge
+            variant="outline"
+            className="bg-blue-50 text-blue-700 border-blue-200"
+          >
+            Official
+          </Badge>
+        ) : (
+          <span className="text-gray-400 text-sm">—</span>
+        );
+      },
+      filterFn: (row, id, value: string[]) => {
+        return value.includes(String(row.getValue(id) === true));
+      },
+    },
+    {
       id: "actions",
       cell: ({ row }) => {
         const brand = row.original;
