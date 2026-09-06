@@ -44,7 +44,7 @@ export const BottomNavClient = ({ items }: BottomNavClientProps) => {
             key={item.href}
             variant="ghost"
             className={cn(
-              "relative h-auto flex-1 flex flex-col rtl:flex-col items-center justify-center gap-1 rounded-none px-2 py-2",
+              "relative h-auto min-w-0 flex-1 basis-0 shrink flex flex-col rtl:flex-col items-center justify-center gap-1 rounded-none px-2 py-2",
               "text-gray-500 hover:bg-transparent hover:text-primary transition-colors",
               isActive && "text-primary"
             )}
@@ -76,7 +76,7 @@ export const BottomNavClient = ({ items }: BottomNavClientProps) => {
               </span>
               <span
                 className={cn(
-                  "text-[11px] leading-none transition-colors",
+                  "w-full truncate text-center text-[11px] leading-none transition-colors",
                   isActive && "text-primary font-semibold"
                 )}
               >

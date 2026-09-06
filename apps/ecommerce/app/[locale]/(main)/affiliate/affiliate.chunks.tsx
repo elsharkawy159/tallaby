@@ -177,7 +177,7 @@ export function AffiliatePageContent({
               <Badge className="mb-5 bg-accent text-accent-foreground">
                 {t("badge")}
               </Badge>
-              <h1 className="text-balance text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+              <h1 className="text-balance text-4xl font-bold leading-snug tracking-tight sm:text-5xl sm:leading-snug lg:text-6xl lg:leading-tight">
                 {t("heroTitleStart")}{" "}
                 <span className="text-accent">{t("heroTitleHighlight")}</span>{" "}
                 {t("heroTitleEnd")}
@@ -248,16 +248,16 @@ export function AffiliatePageContent({
                     </p>
                   )}
                 </div>
-                <div className="mt-6 grid grid-cols-4 items-center gap-2 text-center text-xs text-primary-foreground/75">
+                <div className="mt-6 grid grid-cols-4 items-start gap-2 text-center text-xs leading-snug text-primary-foreground/75">
                   {flowSteps.map((label, index) => (
                     <div
                       key={label}
-                      className="flex flex-col items-center gap-2"
+                      className="flex flex-col items-center gap-2.5"
                     >
                       <span className="flex size-9 items-center justify-center rounded-full bg-accent font-bold text-accent-foreground">
                         {index + 1}
                       </span>
-                      <span>{label}</span>
+                      <span className="text-balance">{label}</span>
                     </div>
                   ))}
                 </div>
@@ -273,7 +273,7 @@ export function AffiliatePageContent({
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
               {t("whyEyebrow")}
             </p>
-            <h2 className="mt-3 text-balance text-3xl font-bold tracking-tight md:text-4xl">
+            <h2 className="mt-3 text-balance text-3xl font-bold leading-snug tracking-tight md:text-4xl md:leading-snug">
               {t("whyHeading")}
             </h2>
           </div>
@@ -289,7 +289,7 @@ export function AffiliatePageContent({
                     <div className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
                       <Icon className="size-5" />
                     </div>
-                    <CardTitle className="pt-3 text-lg">{title}</CardTitle>
+                    <CardTitle className="pt-3 text-lg leading-snug">{title}</CardTitle>
                     <CardDescription className="leading-relaxed">
                       {text}
                     </CardDescription>
@@ -309,7 +309,7 @@ export function AffiliatePageContent({
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
                 {t("howEyebrow")}
               </p>
-              <h2 className="mt-3 text-balance text-3xl font-bold tracking-tight md:text-4xl">
+              <h2 className="mt-3 text-balance text-3xl font-bold leading-snug tracking-tight md:text-4xl md:leading-snug">
                 {t("howHeading")}
               </h2>
             </div>
@@ -325,7 +325,7 @@ export function AffiliatePageContent({
                       </span>
                       <div className="mt-0 lg:mt-5">
                         <Icon className="hidden size-5 text-accent lg:block" />
-                        <h3 className="mt-0 font-semibold lg:mt-3">{title}</h3>
+                        <h3 className="mt-0 font-semibold leading-snug lg:mt-3">{title}</h3>
                       </div>
                     </div>
                     <p className="ml-16 mt-3 text-sm leading-relaxed text-muted-foreground lg:ml-0">
@@ -352,7 +352,7 @@ export function AffiliatePageContent({
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
                 {t("mathEyebrow")}
               </p>
-              <h2 className="mt-3 text-balance text-3xl font-bold tracking-tight md:text-4xl">
+              <h2 className="mt-3 text-balance text-3xl font-bold leading-snug tracking-tight md:text-4xl md:leading-snug">
                 {t("mathHeading")}
               </h2>
               <p className="mt-5 leading-relaxed text-muted-foreground">
@@ -363,7 +363,7 @@ export function AffiliatePageContent({
               <Card className="bg-muted/40">
                 <CardHeader>
                   <CardDescription>{t("customerPays")}</CardDescription>
-                  <CardTitle className="text-2xl text-primary">
+                  <CardTitle className="text-2xl leading-snug text-primary">
                     {t("customerPaysAmount")}{" "}
                     <span className="text-base font-normal text-muted-foreground">
                       {t("plusShipping")}
@@ -378,7 +378,7 @@ export function AffiliatePageContent({
               <Card className="border-accent/40 bg-accent/10">
                 <CardHeader>
                   <CardDescription>{t("affiliateEarns")}</CardDescription>
-                  <CardTitle className="text-2xl text-primary">
+                  <CardTitle className="text-2xl leading-snug text-primary">
                     {t("affiliateEarnsAmount")}
                   </CardTitle>
                 </CardHeader>
@@ -400,7 +400,7 @@ export function AffiliatePageContent({
                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-accent">
                   {t("dashboardEyebrow")}
                 </p>
-                <h2 className="mt-3 text-balance text-3xl font-bold tracking-tight md:text-4xl">
+                <h2 className="mt-3 text-balance text-3xl font-bold leading-snug tracking-tight md:text-4xl md:leading-snug">
                   {t("dashboardHeading")}
                 </h2>
                 <p className="mt-5 leading-relaxed text-primary-foreground/75">
@@ -490,7 +490,7 @@ export function AffiliatePageContent({
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
                 {t("sharingEyebrow")}
               </p>
-              <h2 className="mt-3 text-balance text-3xl font-bold tracking-tight md:text-4xl">
+              <h2 className="mt-3 text-balance text-3xl font-bold leading-snug tracking-tight md:text-4xl md:leading-snug">
                 {t("sharingHeading")}
               </h2>
               <p className="mt-5 leading-relaxed text-muted-foreground">
@@ -519,7 +519,7 @@ export function AffiliatePageContent({
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
                 {t("faqEyebrow")}
               </p>
-              <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
+              <h2 className="mt-3 text-3xl font-bold leading-snug tracking-tight md:text-4xl md:leading-snug">
                 {t("faqHeading")}
               </h2>
             </div>
@@ -543,7 +543,7 @@ export function AffiliatePageContent({
 
       <section className="bg-primary py-16 text-center text-primary-foreground md:py-20">
         <div className="container">
-          <h2 className="text-balance text-3xl font-bold md:text-4xl">
+          <h2 className="text-balance text-3xl font-bold leading-snug md:text-4xl md:leading-snug">
             {t("finalHeading")}
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-lg text-primary-foreground/75">

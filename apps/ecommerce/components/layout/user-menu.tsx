@@ -106,26 +106,35 @@ export function UserMenu({
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
-          size="icon"
+          size={variant === "mobile" ? undefined : "icon"}
           className={cn(
             "cursor-pointer flex flex-col rtl:flex-col items-center justify-center",
             variant === "desktop"
               ? "text-white hover:text-gray-200"
-              : "h-auto flex-1 gap-1 py-2 text-gray-500 hover:text-primary",
+              : "relative h-auto min-w-0 flex-1 basis-0 shrink gap-1 rounded-none px-2 py-2 text-gray-500 hover:bg-transparent hover:text-primary",
             className
           )}
           title={t("welcome", { name: userName })}
         >
-          <UserAvatar
-            user={user}
-            size="sm"
+          <span
             className={cn(
-              "size-6 border-2",
-              variant === "desktop" ? "border-white" : "border-gray-300"
+              variant === "mobile" &&
+                "relative inline-flex items-center justify-center rounded-full p-1.5"
             )}
-            fallbackClassName="text-[10px] md:text-xs"
-          />
-          <span className="text-[11px] leading-none md:hidden">
+          >
+            <UserAvatar
+              user={user}
+              size="sm"
+              className={cn(
+                "border-2",
+                variant === "desktop"
+                  ? "size-6 border-white"
+                  : "size-5 border-gray-300"
+              )}
+              fallbackClassName="text-[10px] md:text-xs"
+            />
+          </span>
+          <span className="w-full truncate text-center text-[11px] leading-none md:hidden">
             {t("myProfile")}
           </span>
         </Button>

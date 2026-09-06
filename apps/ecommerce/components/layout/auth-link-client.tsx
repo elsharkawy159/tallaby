@@ -17,6 +17,7 @@ export function AuthLinkClient({
 }: AuthLinkClientProps) {
   const pathname = usePathname();
   const t = useTranslations("auth");
+  const isMobile = variant === "mobile";
 
   // Don't add redirect if already on login page
   const loginUrl =
@@ -28,19 +29,27 @@ export function AuthLinkClient({
     <Button
       asChild
       variant="ghost"
-      size="icon"
+      size={isMobile ? undefined : "icon"}
       className={cn(
-        "text-white hover:text-gray-200 hover:bg-transparent cursor-pointer transition-colors",
-        variant === "mobile" &&
-          "h-auto flex-1 flex flex-col rtl:flex-col items-center justify-center gap-1 py-2 text-gray-500 hover:text-primary transition-colors",
+        isMobile
+          ? "relative h-auto min-w-0 flex-1 basis-0 shrink flex flex-col rtl:flex-col items-center justify-center gap-1 rounded-none px-2 py-2 text-gray-500 hover:bg-transparent hover:text-primary transition-colors"
+          : "text-white hover:text-gray-200 hover:bg-transparent cursor-pointer transition-colors",
         className
       )}
       title={t("signInToYourAccount")}
     >
       <Link href={loginUrl}>
-        <UserIcon className={"md:size-6 size-4.5"} />
-        {variant === "mobile" && (
-          <span className="text-[11px] leading-none">{t("signIn")}</span>
+        {isMobile ? (
+          <>
+            <span className="relative inline-flex items-center justify-center rounded-full p-1.5">
+              <UserIcon className="size-5" />
+            </span>
+            <span className="w-full truncate text-center text-[11px] leading-none">
+              {t("signIn")}
+            </span>
+          </>
+        ) : (
+          <UserIcon className="size-6" />
         )}
       </Link>
     </Button>

@@ -13,7 +13,7 @@ export const BottomNavigation = async () => {
       )}
     >
       <div className="container mx-auto">
-        <nav className="flex items-center justify-around py-2">
+        <nav className="flex items-stretch py-2">
           <BottomNavClient items={items} />
           <AuthLink variant="mobile" />
         </nav>
