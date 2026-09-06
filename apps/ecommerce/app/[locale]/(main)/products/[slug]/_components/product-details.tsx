@@ -12,10 +12,7 @@ import {
   parsePriceJson,
 } from "@workspace/lib";
 import { useLocale, useTranslations } from "next-intl";
-import {
-  FREE_SHIPPING_THRESHOLD,
-  RETURN_WINDOW_DAYS,
-} from "@/lib/constants";
+import { FREE_SHIPPING_THRESHOLD, RETURN_WINDOW_DAYS } from "@/lib/constants";
 import { useState, useMemo } from "react";
 import {
   Accordion,
@@ -125,9 +122,9 @@ export const ProductDetails = ({
       getDiscountPercent(
         listPrice,
         price,
-        selectedVariant?.price ?? product.price
+        selectedVariant?.price ?? product.price,
       ),
-    [listPrice, price, selectedVariant?.price, product.price]
+    [listPrice, price, selectedVariant?.price, product.price],
   );
 
   const hasVariants =
@@ -167,24 +164,24 @@ export const ProductDetails = ({
   );
 
   return (
-    <div className="space-y-6 w-full">
+    <div className="w-full space-y-5 md:space-y-6">
       {/* Product Title */}
       <div>
-        <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-4">
+        <h1 className="mb-3 text-xl font-bold leading-snug text-gray-900 md:mb-4 md:text-2xl lg:text-3xl">
           {product.title}
         </h1>
 
         {/* Price */}
-        <div className="mb-4 flex flex-wrap items-baseline gap-x-3 gap-y-2">
+        <div className="mb-3 flex flex-wrap items-center gap-x-2.5 gap-y-2 md:mb-4 md:gap-x-3">
           <span
-            className="text-3xl lg:text-4xl font-bold text-primary"
+            className="text-2xl font-bold text-primary md:text-3xl lg:text-4xl"
             dangerouslySetInnerHTML={{
               __html: formatPrice(price, locale, "lg"),
             }}
           />
           {listPrice && listPrice > price && (
             <span className="text-sm text-gray-500">
-              {t("insteadOf")}{" "}
+              <span className="hidden sm:inline">{t("insteadOf")} </span>
               <span
                 className="font-medium text-red-400 line-through"
                 dangerouslySetInnerHTML={{
@@ -196,7 +193,7 @@ export const ProductDetails = ({
           {discountPercent != null && (
             <DiscountPercentBadge
               percent={discountPercent}
-              className="self-center text-xs md:px-2.5 md:py-1 md:text-sm"
+              className="shrink-0 text-xs md:px-2.5 md:py-1 md:text-sm"
             />
           )}
         </div>
@@ -450,7 +447,7 @@ export const ProductDetails = ({
         )}
 
         {/* Quantity and Add to Cart */}
-        <div className="md:mb-6 md:relative fixed md:bg-transparent md:border-0 bg-white md:p-0 px-4 py-2.5 border border-gray-200 md:bottom-0 bottom-15 md:z-auto z-50 left-0 right-0">
+        <div className="fixed right-0 bottom-[79px] left-0 z-50 border-t border-gray-200 bg-white px-3 py-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] md:relative md:bottom-0 md:z-auto md:mb-6 md:border-0 md:bg-transparent md:p-0 md:shadow-none">
           <ProductActions
             product={{
               ...product,
@@ -461,7 +458,6 @@ export const ProductDetails = ({
               } as any,
             }}
             selectedVariantId={selectedVariantId}
-            className="flex gap-4 items-center"
             isInCart={isInCart}
             cartItemQuantity={cartItemQuantity}
           />

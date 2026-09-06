@@ -42,32 +42,34 @@ export const ProductQuantitySelector = ({
   return (
     <div
       className={cn(
-        "flex items-center border border-gray-300 overflow-hidden rounded-lg w-fit",
+        "inline-flex h-10.5 shrink-0 items-center overflow-hidden rounded-lg border border-gray-300",
         className
       )}
     >
       <Button
+        type="button"
         variant="ghost"
-        size="sm"
+        size="icon"
         disabled={disabled || quantity <= min}
-        className="h-10 w-10 rounded-r-none ltr:border-r rtl:border-l rounded-none border-gray-300 hover:bg-gray-100 duration-100"
+        className="size-10.5 shrink-0 rounded-none border-0 hover:bg-gray-100"
         onClick={() => handleQuantityChange(-1)}
         aria-label={t("decreaseQuantity")}
       >
-        <Minus className="h-4 w-4" />
+        <Minus className="size-4 shrink-0" />
       </Button>
-      <span className="px-6 py-2 text-center min-w-[4rem] font-medium text-base">
+      <span className="flex h-full min-w-10 shrink-0 items-center justify-center border-x border-gray-300 px-3 text-center text-base font-medium tabular-nums">
         {quantity}
       </span>
       <Button
+        type="button"
         variant="ghost"
-        size="sm"
+        size="icon"
         disabled={disabled || (max !== undefined && quantity >= max)}
-        className="h-10 w-10 rounded-l-none ltr:border-l rtl:border-r rounded-none border-gray-300 hover:bg-gray-100 duration-100"
+        className="size-10.5 shrink-0 rounded-none border-0 hover:bg-gray-100"
         onClick={() => handleQuantityChange(1)}
         aria-label={t("increaseQuantity")}
       >
-        <Plus className="h-4 w-4" />
+        <Plus className="size-4 shrink-0" />
       </Button>
     </div>
   );

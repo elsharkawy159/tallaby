@@ -32,7 +32,7 @@ export function AuthLinkClient({
       size={isMobile ? undefined : "icon"}
       className={cn(
         isMobile
-          ? "relative h-auto min-w-0 flex-1 basis-0 shrink flex flex-col rtl:flex-col items-center justify-center gap-1 rounded-none px-2 py-2 text-gray-500 hover:bg-transparent hover:text-primary transition-colors"
+          ? "relative h-auto min-w-0 flex-1 basis-0 shrink flex flex-col rtl:flex-col items-center justify-center gap-1 rounded-none px-1 py-2 text-gray-500 hover:bg-transparent hover:text-primary transition-colors sm:px-2"
           : "text-white hover:text-gray-200 hover:bg-transparent cursor-pointer transition-colors",
         className
       )}

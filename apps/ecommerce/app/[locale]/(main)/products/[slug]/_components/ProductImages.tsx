@@ -4,13 +4,19 @@ import { useState, useRef, useEffect } from "react";
 import { MobileImageCarousel } from "./mobile-image-carousel";
 import { ImageWithFallback } from "@/components/shared/image-with-fallback";
 import { PRODUCT_IMAGE_FALLBACK } from "@/lib/utils";
+import { ShareProductPopover } from "@/components/product";
 
 interface ProductImagesProps {
   images: string[];
   productName: string;
+  productId?: string;
 }
 
-export const ProductImages = ({ images, productName }: ProductImagesProps) => {
+export const ProductImages = ({
+  images,
+  productName,
+  productId,
+}: ProductImagesProps) => {
   const [selectedImage, setSelectedImage] = useState(images[0]);
   const [hoveredImage, setHoveredImage] = useState<string | null>(null);
   const [showZoom, setShowZoom] = useState(false);
@@ -41,14 +47,25 @@ export const ProductImages = ({ images, productName }: ProductImagesProps) => {
   // Get the currently active image (hovered or selected)
   const activeImage = hoveredImage || selectedImage;
 
+  const shareImage = activeImage
+    ? getPublicUrl(activeImage, "products")
+    : undefined;
+
   return (
     <>
       {/* Mobile Carousel */}
-      <div className="block lg:hidden">
+      <div className="relative block lg:hidden">
         <MobileImageCarousel
           key={images.join("|")}
           images={images}
           productName={productName}
+        />
+
+        <ShareProductPopover
+          title={productName}
+          image={shareImage}
+          productId={productId}
+          className="absolute top-2.5 end-2.5 z-20"
         />
       </div>
 
@@ -118,6 +135,14 @@ export const ProductImages = ({ images, productName }: ProductImagesProps) => {
               />
             </div>
           )}
+
+          {/* Share — sits above the zoom overlay so it stays clickable */}
+          <ShareProductPopover
+            title={productName}
+            image={shareImage}
+            productId={productId}
+            className="absolute top-3 end-3 z-[1000]"
+          />
         </div>
       </div>
     </>

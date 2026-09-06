@@ -37,55 +37,52 @@ export const ProductActions = ({
   };
 
   return (
-    <div className={cn(className)}>
-      {/* Quantity Selector */}
+    <div className={cn("flex min-w-0 items-center gap-3", className)}>
       <ProductQuantitySelector
         initialQuantity={quantity}
         min={1}
         max={stockCount > 0 ? stockCount : undefined}
         disabled={!hasStock}
         onQuantityChange={handleQuantityChange}
+        className="shrink-0"
       />
 
       {!hasStock && (
-        <div className="text-center p-3 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-600 font-medium text-sm">
+        <div className="flex-1 rounded-lg border border-red-200 bg-red-50 p-3 text-center">
+          <p className="text-sm font-medium text-red-600">
             {t("currentlyOutOfStock")}
           </p>
-          <p className="text-red-500 text-xs">{t("notifyWhenBack")}</p>
+          <p className="text-xs text-red-500">{t("notifyWhenBack")}</p>
         </div>
       )}
 
-      {/* Action Buttons */}
-      <div className="flex-1">
-        {isInCartStatus ? (
-          <Button asChild className="w-full h-10.5 text-base rounded-lg md:rounded-full bg-primary text-white hover:bg-primary/90" size="lg">
-            <Link href="/cart">
-              {t("goToCart")}{" "}
-              <ChevronRight className="h-4 w-4 rtl:rotate-180" />
-            </Link>
-          </Button>
-        ) : (
-          <AddToCartButton
-            productId={product.id}
-            quantity={quantity}
-            variantId={selectedVariantId ?? undefined}
-            className="w-full h-10.5 rounded-lg md:rounded-full text-base"
-            variant="default"
-            showIcon={true}
-            showText={true}
-            stock={stockCount}
-          />
-        )}
-
-        {/* <WishlistButton
-          productId={product.id}
-          className="w-full h-12 text-base"
-          size="lg"
-          variant="outline"
-          showText={true}
-        /> */}
-      </div>
+      {hasStock && (
+        <div className="min-w-0 flex-1">
+          {isInCartStatus ? (
+            <Button
+              asChild
+              className="h-10.5 w-full rounded-lg bg-primary text-base text-white hover:bg-primary/90 md:rounded-full"
+              size="lg"
+            >
+              <Link href="/cart">
+                {t("goToCart")}{" "}
+                <ChevronRight className="h-4 w-4 shrink-0 rtl:rotate-180" />
+              </Link>
+            </Button>
+          ) : (
+            <AddToCartButton
+              productId={product.id}
+              quantity={quantity}
+              variantId={selectedVariantId ?? undefined}
+              className="h-10.5 w-full rounded-lg text-base md:rounded-full"
+              variant="default"
+              showIcon={true}
+              showText={true}
+              stock={stockCount}
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 };

@@ -18,7 +18,7 @@ export const Logo = ({ className, logoClassName, color = "white" }: LogoProps) =
         alt="Tallaby"
         width={150}
         height={150}
-        className={cn("h-10 w-auto object-contain", logoClassName)}
+        className={cn("h-8 w-auto object-contain md:h-10", logoClassName)}
       />
     </Link>
   );

@@ -8,6 +8,7 @@ export { ProductCardImage } from "./product-card-image";
 export { ProductCardInfo } from "./product-card-info";
 export { ProductCardMedia } from "./product-card-media";
 export { ProductCardSwatches } from "./product-card-swatches";
+export { ShareProductPopover } from "./share-product-popover";
 export type {
   ProductCardProps,
   AddToCartButtonProps,

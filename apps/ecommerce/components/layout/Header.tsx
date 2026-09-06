@@ -13,10 +13,10 @@ const MainHeader = () => {
     <div className={cn("bg-primary shadow-xs h-full w-full")}>
       <div className="py-2.5 container">
         {/* Mobile top section */}
-        <div className="flex items-center md:hidden justify-between">
-          <Logo />
+        <div className="flex items-center justify-between gap-2 md:hidden">
+          <Logo className="shrink-0" />
           <LanguageSwitcher />
-          <BecomeSellerButton />
+          <BecomeSellerButton className="shrink-0 px-3 text-xs" />
         </div>
 
         <div className="md:mt-0 mt-3 md:hidden">

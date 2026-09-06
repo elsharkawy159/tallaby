@@ -111,7 +111,7 @@ export function UserMenu({
             "cursor-pointer flex flex-col rtl:flex-col items-center justify-center",
             variant === "desktop"
               ? "text-white hover:text-gray-200"
-              : "relative h-auto min-w-0 flex-1 basis-0 shrink gap-1 rounded-none px-2 py-2 text-gray-500 hover:bg-transparent hover:text-primary",
+              : "relative h-auto min-w-0 flex-1 basis-0 shrink gap-1 rounded-none px-1 py-2 text-gray-500 hover:bg-transparent hover:text-primary sm:px-2",
             className
           )}
           title={t("welcome", { name: userName })}

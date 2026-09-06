@@ -331,7 +331,19 @@
     "days": "Days",
     "hours": "Hours",
     "minutes": "Minutes",
-    "seconds": "Seconds"
+    "seconds": "Seconds",
+    "share": {
+      "share": "Share",
+      "shareTitle": "Share this product",
+      "shareText": "Check out {title} on Tallaby",
+      "copyLink": "Copy",
+      "copied": "Copied",
+      "linkCopied": "Link copied to clipboard",
+      "copyFailed": "Couldn't copy the link",
+      "instagramHint": "Link copied — paste it in your Instagram story or bio",
+      "email": "Email",
+      "more": "More"
+    }
   },
   "profile": {
     "myProfile": "My Profile",

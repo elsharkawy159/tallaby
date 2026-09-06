@@ -71,7 +71,7 @@ export function LanguageSwitcher({
           disabled={isPending}
           onClick={() => switchLocale(l.code)}
           className={cn(
-            "h-8 px-3 text-xs rounded-md font-medium transition-all duration-200",
+            "h-8 shrink-0 px-2.5 text-xs rounded-md font-medium transition-all duration-200",
             isHeader ? "bg-gray-50/15" : "bg-gray-100",
             l.code === locale
               ? isHeader

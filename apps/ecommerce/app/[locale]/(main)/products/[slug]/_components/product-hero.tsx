@@ -35,7 +35,11 @@ export const ProductHero = ({
 
   return (
     <div className="w-full lg:sticky lg:top-5 h-full">
-      <ProductImages images={images} productName={product.title} />
+      <ProductImages
+        images={images}
+        productName={product.title}
+        productId={product.id}
+      />
     </div>
   );
 };

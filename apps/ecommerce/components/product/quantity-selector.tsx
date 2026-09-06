@@ -80,26 +80,34 @@ export const QuantitySelector = ({
 
   return (
     <div
-      className={`flex items-center border border-gray-300 rounded-lg ${className}`}
+      className={cn(
+        "inline-flex shrink-0 items-center overflow-hidden rounded-lg border border-gray-300",
+        className
+      )}
     >
       <Button
         variant="ghost"
-        size="sm"
-        className={cn(`rounded-none `, styles.button)}
+        size="icon"
+        className={cn("shrink-0 rounded-none p-0", styles.button)}
         onClick={() => handleQuantityChange(quantity - 1)}
         disabled={isLoading}
         aria-label={t("decreaseQuantity")}
       >
         {quantity === 1 && showRemoveButton ? (
-          <Trash className={cn(styles.icon, "size-4")} />
+          <Trash className={cn(styles.icon, "size-4 shrink-0")} />
         ) : (
-          <Minus className={cn(styles.icon, "size-4")} />
+          <Minus className={cn(styles.icon, "size-4 shrink-0")} />
         )}
       </Button>
 
-      <span className={`text-center font-medium ${styles.text}`}>
+      <span
+        className={cn(
+          "shrink-0 text-center font-medium tabular-nums",
+          styles.text
+        )}
+      >
         {isLoading ? (
-          <Loader2 className={`${styles.loader} animate-spin mx-auto`} />
+          <Loader2 className={`${styles.loader} mx-auto animate-spin`} />
         ) : (
           quantity
         )}
@@ -107,8 +115,8 @@ export const QuantitySelector = ({
 
       <Button
         variant="ghost"
-        size="sm"
-        className={cn(`rounded-none `, styles.button)}
+        size="icon"
+        className={cn("shrink-0 rounded-none p-0", styles.button)}
         onClick={() => handleQuantityChange(quantity + 1)}
         disabled={
           isLoading ||
@@ -118,7 +126,7 @@ export const QuantitySelector = ({
         }
         aria-label={t("increaseQuantity")}
       >
-        <Plus className={cn(styles.icon, "size-4")} />
+        <Plus className={cn(styles.icon, "size-4 shrink-0")} />
       </Button>
     </div>
   );

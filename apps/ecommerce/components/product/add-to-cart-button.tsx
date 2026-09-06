@@ -9,19 +9,16 @@ import posthog from "posthog-js";
 
 const sizeStyles = {
   sm: {
-    icon: "h-3 w-3 md:h-4 md:w-4",
-    loader: "h-3 w-3 md:h-4 md:w-4",
-    gap: "ml-1 md:ml-2",
+    icon: "size-3.5 shrink-0 md:size-4",
+    loader: "size-3.5 shrink-0 md:size-4",
   },
   default: {
-    icon: "h-4 w-4 md:h-5 md:w-5",
-    loader: "h-4 w-4 md:h-5 md:w-5",
-    gap: "ml-2 md:ml-3",
+    icon: "size-4 shrink-0 md:size-5",
+    loader: "size-4 shrink-0 md:size-5",
   },
   lg: {
-    icon: "h-4 w-4 md:h-6 md:w-6",
-    loader: "h-5 w-5 md:h-6 md:w-6",
-    gap: "ml-3 md:ml-4",
+    icon: "size-4 shrink-0 md:size-6",
+    loader: "size-5 shrink-0 md:size-6",
   },
 } as const;
 
@@ -76,7 +73,7 @@ export const AddToCartButton = ({
         showIcon && <ShoppingCart className={styles.icon} />
       )}
       {showText && (
-        <span className={showIcon ? styles.gap : ""}>
+        <span>
           {isLoading ? tProduct("adding") : tProduct("addToCart")}
         </span>
       )}

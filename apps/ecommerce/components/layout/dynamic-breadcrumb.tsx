@@ -153,11 +153,11 @@ export function DynamicBreadcrumb({
 
   return (
     <nav className={cn(className)}>
-      <div className="container py-2.5 lg:py-5">
+      <div className="container py-2 lg:py-5">
         <Breadcrumb>
-          <BreadcrumbList className="text-xs lg:text-sm">
+          <BreadcrumbList className="flex-nowrap gap-1 overflow-hidden text-xs sm:gap-1.5 lg:text-sm">
             {/* Home item */}
-            <BreadcrumbItem className={itemClassName}>
+            <BreadcrumbItem className={cn("shrink-0", itemClassName)}>
               <BreadcrumbLink asChild>
                 <Link
                   href="/"
@@ -168,7 +168,11 @@ export function DynamicBreadcrumb({
                 >
                   {showHomeIcon && (
                     <>
-                      <HomeIcon size={16} aria-hidden="true" className="mr-1" />
+                      <HomeIcon
+                        size={16}
+                        aria-hidden="true"
+                        className="shrink-0"
+                      />
                       <span className="sr-only">{t("home")}</span>
                     </>
                   )}
@@ -178,17 +182,24 @@ export function DynamicBreadcrumb({
             </BreadcrumbItem>
 
             {displayBreadcrumbs.length > 0 && (
-              <BreadcrumbSeparator>{separator}</BreadcrumbSeparator>
+              <BreadcrumbSeparator className="shrink-0">
+                {separator}
+              </BreadcrumbSeparator>
             )}
 
             {/* Dynamic breadcrumb items */}
             {displayBreadcrumbs.map((breadcrumb, index) => (
               <React.Fragment key={breadcrumb.href}>
-                <BreadcrumbItem className={itemClassName}>
+                <BreadcrumbItem
+                  className={cn(
+                    breadcrumb.isLast ? "min-w-0 flex-1" : "shrink-0",
+                    itemClassName
+                  )}
+                >
                   {breadcrumb.isLast ? (
                     <BreadcrumbPage
                       className={cn(
-                        "text-primary font-medium truncate max-w-[300px]",
+                        "block truncate font-medium text-primary",
                         pageClassName
                       )}
                     >
@@ -199,7 +210,7 @@ export function DynamicBreadcrumb({
                       <Link
                         href={breadcrumb.href}
                         className={cn(
-                          "hover:text-primary truncate max-w-[300px] transition-colors whitespace-nowrap",
+                          "max-w-20 truncate whitespace-nowrap transition-colors hover:text-primary sm:max-w-40",
                           linkClassName
                         )}
                       >
@@ -210,7 +221,9 @@ export function DynamicBreadcrumb({
                 </BreadcrumbItem>
 
                 {!breadcrumb.isLast && (
-                  <BreadcrumbSeparator>{separator}</BreadcrumbSeparator>
+                  <BreadcrumbSeparator className="shrink-0">
+                    {separator}
+                  </BreadcrumbSeparator>
                 )}
               </React.Fragment>
             ))}
