@@ -131,7 +131,14 @@ function CategoryCarousel({
               className="group block"
             >
               <div className="md:w-[108px] w-21">
-                <div className="relative overflow-hidden rounded-full md:size-[100px] size-22 mx-auto mb-2.5 bg-muted/40 shadow-sm group-hover:shadow-md transition-all duration-300">
+                <div
+                  className={cn(
+                    "relative overflow-hidden rounded-full md:size-[100px] size-22 mx-auto mb-2.5 shadow-sm group-hover:shadow-md transition-all duration-300",
+                    category.imageUrl || category.fallbackImageUrl
+                      ? "bg-white"
+                      : "bg-muted/40",
+                  )}
+                >
                   <CategoryImage
                     name={category.displayName}
                     imageUrl={category.imageUrl}
