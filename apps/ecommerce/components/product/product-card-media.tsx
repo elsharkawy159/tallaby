@@ -5,10 +5,11 @@ import { useLocale } from "next-intl";
 import { ProductCardImage } from "./product-card-image";
 import { ProductCardSwatches } from "./product-card-swatches";
 import { ProductCardActions } from "./product-card-actions";
+import { ProductCardDiscountBadge } from "./product-card-discount-badge";
 import { WishlistButton } from "./wishlist-button";
 import type { ProductCardProps } from "./product-card.types";
 import { getProductColorSwatches } from "@/lib/variant-colors";
-import { cn } from "@/lib/utils";
+import { cn, resolveDiscountPercent } from "@/lib/utils";
 
 interface ProductCardMediaProps {
   product: ProductCardProps;
@@ -32,10 +33,18 @@ export const ProductCardMedia = ({
     () => getProductColorSwatches(product.productVariants, locale),
     [product.productVariants, locale]
   );
+  const discountPercent = resolveDiscountPercent(product);
 
   return (
     <div className={cn("relative", className)}>
       <ProductCardImage product={product} hoverImage={hoverImage} />
+
+      {discountPercent != null && (
+        <ProductCardDiscountBadge
+          percent={discountPercent}
+          className="md:top-2 md:start-2"
+        />
+      )}
 
       <WishlistButton
         productId={productId}

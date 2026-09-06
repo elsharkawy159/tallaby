@@ -1,5 +1,5 @@
 import { ProductCardProps } from "@/components/product";
-import { getPriceFinal } from "@workspace/lib";
+import { getPriceFinal, getPriceList, parsePriceJson } from "@workspace/lib";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -42,6 +42,48 @@ export function resolvePrice(product: ProductCardProps) {
   if (typeof product?.base_price === "number")
     return product.base_price as number;
   return 0;
+}
+
+/** List / compare-at price when it is higher than the selling price. */
+export function resolveListPrice(product: ProductCardProps): number | null {
+  if (product?.price != null) {
+    const list = getPriceList(product.price);
+    const final = getPriceFinal(product.price);
+    if (list != null && list > final) return list;
+  }
+
+  if (
+    typeof product?.base_price === "number" &&
+    typeof product?.sale_price === "number" &&
+    product.base_price > product.sale_price
+  ) {
+    return product.base_price;
+  }
+
+  return null;
+}
+
+/** Whole-number discount percent for badges, or null when not on sale. */
+export function resolveDiscountPercent(
+  product: ProductCardProps
+): number | null {
+  const final = resolvePrice(product);
+  const list = resolveListPrice(product);
+  if (list == null || list <= 0 || final >= list) return null;
+
+  if (product.price != null && typeof product.price === "object") {
+    const parsed = parsePriceJson(product.price);
+    if (
+      parsed.discountType === "percent" &&
+      parsed.discountValue != null &&
+      parsed.discountValue > 0
+    ) {
+      return Math.min(99, Math.round(parsed.discountValue));
+    }
+  }
+
+  const percent = Math.round(((list - final) / list) * 100);
+  return percent > 0 ? Math.min(99, percent) : null;
 }
 
 type ProductCardSource = Record<string, unknown> & {

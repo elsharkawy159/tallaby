@@ -326,6 +326,7 @@
     "user": "مستخدم",
     "videoNotSupported": "متصفحك لا يدعم علامة الفيديو.",
     "insteadOf": "بدلاً من",
+    "discountPercentOff": "خصم {percent}%",
     "discountAvailableUntil": "الخصم متاح حتى:",
     "days": "أيام",
     "hours": "ساعات",

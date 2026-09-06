@@ -326,6 +326,7 @@
     "user": "User",
     "videoNotSupported": "Your browser does not support the video tag.",
     "insteadOf": "instead of",
+    "discountPercentOff": "{percent}% off",
     "discountAvailableUntil": "Discount available until:",
     "days": "Days",
     "hours": "Hours",
