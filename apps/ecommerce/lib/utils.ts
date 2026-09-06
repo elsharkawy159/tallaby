@@ -63,16 +63,16 @@ export function resolveListPrice(product: ProductCardProps): number | null {
   return null;
 }
 
-/** Whole-number discount percent for badges, or null when not on sale. */
-export function resolveDiscountPercent(
-  product: ProductCardProps
+/** Whole-number discount percent from list vs final, or null when not on sale. */
+export function getDiscountPercent(
+  list: number | null | undefined,
+  final: number,
+  priceJson?: unknown
 ): number | null {
-  const final = resolvePrice(product);
-  const list = resolveListPrice(product);
   if (list == null || list <= 0 || final >= list) return null;
 
-  if (product.price != null && typeof product.price === "object") {
-    const parsed = parsePriceJson(product.price);
+  if (priceJson != null && typeof priceJson === "object") {
+    const parsed = parsePriceJson(priceJson);
     if (
       parsed.discountType === "percent" &&
       parsed.discountValue != null &&
@@ -84,6 +84,17 @@ export function resolveDiscountPercent(
 
   const percent = Math.round(((list - final) / list) * 100);
   return percent > 0 ? Math.min(99, percent) : null;
+}
+
+/** Whole-number discount percent for badges, or null when not on sale. */
+export function resolveDiscountPercent(
+  product: ProductCardProps
+): number | null {
+  return getDiscountPercent(
+    resolveListPrice(product),
+    resolvePrice(product),
+    product.price
+  );
 }
 
 type ProductCardSource = Record<string, unknown> & {

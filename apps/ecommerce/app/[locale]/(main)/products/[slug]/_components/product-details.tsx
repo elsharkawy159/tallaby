@@ -34,6 +34,8 @@ import type { ProductLocale } from "@/lib/product-translations";
 import { SellerInfo } from "./SellerInfo";
 import { Star } from "lucide-react";
 import { DiscountCountdown } from "./discount-countdown";
+import { DiscountPercentBadge } from "@/components/product";
+import { getDiscountPercent } from "@/lib/utils";
 
 interface ProductDetailsProps {
   product: Product;
@@ -118,6 +120,16 @@ export const ProductDetails = ({
     return parsed;
   }, [discountEndsAt]);
 
+  const discountPercent = useMemo(
+    () =>
+      getDiscountPercent(
+        listPrice,
+        price,
+        selectedVariant?.price ?? product.price
+      ),
+    [listPrice, price, selectedVariant?.price, product.price]
+  );
+
   const hasVariants =
     product.productVariants && product.productVariants.length > 0;
 
@@ -163,7 +175,7 @@ export const ProductDetails = ({
         </h1>
 
         {/* Price */}
-        <div className="mb-4">
+        <div className="mb-4 flex flex-wrap items-baseline gap-x-3 gap-y-2">
           <span
             className="text-3xl lg:text-4xl font-bold text-primary"
             dangerouslySetInnerHTML={{
@@ -171,12 +183,21 @@ export const ProductDetails = ({
             }}
           />
           {listPrice && listPrice > price && (
-            <span className="mx-3 text-sm text-gray-500">
+            <span className="text-sm text-gray-500">
               {t("insteadOf")}{" "}
-              <span className="font-medium text-red-400 line-through">
-                {listPrice}
-              </span>
+              <span
+                className="font-medium text-red-400 line-through"
+                dangerouslySetInnerHTML={{
+                  __html: formatPrice(listPrice, locale, "sm"),
+                }}
+              />
             </span>
+          )}
+          {discountPercent != null && (
+            <DiscountPercentBadge
+              percent={discountPercent}
+              className="self-center text-xs md:px-2.5 md:py-1 md:text-sm"
+            />
           )}
         </div>
 
