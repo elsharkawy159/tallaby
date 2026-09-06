@@ -87,7 +87,7 @@ export function DataTable<TData, TValue>({
         filterableColumns={filterableColumns}
         searchableColumns={searchableColumns}
       />
-      <div className="rounded-md border bg-white/95 dark:bg-gray-950 shadow-sm">
+      <div className="rounded-md border border-border bg-card shadow-sm">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (

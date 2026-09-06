@@ -3,9 +3,13 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Button } from "@workspace/ui/components/button";
-import { Plus, RefreshCw } from "lucide-react";
+import { CheckCheck, Plus, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
-import { getAllProducts, updateProductStatus } from "@/actions/products";
+import {
+  approveAllPendingProducts,
+  getAllProducts,
+  updateProductStatus,
+} from "@/actions/products";
 import { getProductsColumns } from "./_components/table-columns";
 import { DataTable } from "../_components/data-table/data-table";
 
@@ -47,6 +51,7 @@ const statusSortOrder: Record<Product["status"], number> = {
 export function ProductsClient() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isApprovingAll, setIsApprovingAll] = useState(false);
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
 
   const loadProducts = useCallback(async () => {
@@ -121,6 +126,54 @@ export function ProductsClient() {
     []
   );
 
+  const pendingCount = products.filter(
+    (product) => product.status === "pending"
+  ).length;
+
+  const handleApproveAll = useCallback(async () => {
+    if (pendingCount === 0) {
+      toast.info("No pending products to approve");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Approve all ${pendingCount} pending product${pendingCount === 1 ? "" : "s"}?`
+    );
+    if (!confirmed) return;
+
+    setIsApprovingAll(true);
+
+    try {
+      const result = await approveAllPendingProducts();
+
+      if (result.success && result.data) {
+        if (result.data.count === 0) {
+          toast.info("No pending products to approve");
+          return;
+        }
+
+        setProducts((prev) =>
+          prev.map((product) =>
+            product.status === "pending"
+              ? { ...product, status: "active" }
+              : product
+          )
+        );
+        toast.success(
+          `Approved ${result.data.count} product${result.data.count === 1 ? "" : "s"}`
+        );
+        return;
+      }
+
+      toast.error(result.error || "Failed to approve pending products");
+    } catch (error) {
+      console.error("Error approving all pending products:", error);
+      toast.error("Failed to approve pending products");
+    } finally {
+      setIsApprovingAll(false);
+    }
+  }, [pendingCount]);
+
   const columns = getProductsColumns({
     onStatusChange: handleStatusChange,
     isStatusUpdating: (productId) => updatingIds.has(productId),
@@ -154,6 +207,21 @@ export function ProductsClient() {
     <div className="space-y-4">
       <div className="flex items-center justify-end">
         <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleApproveAll}
+            disabled={isApprovingAll || pendingCount === 0}
+            className="text-green-700 border-green-200 hover:bg-green-50"
+          >
+            {isApprovingAll ? (
+              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <CheckCheck className="h-4 w-4 mr-2" />
+            )}
+            Approve All
+            {pendingCount > 0 ? ` (${pendingCount})` : ""}
+          </Button>
           <Button variant="outline" size="sm" onClick={loadProducts}>
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh

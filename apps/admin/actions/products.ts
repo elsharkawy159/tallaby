@@ -18,6 +18,7 @@ import {
 } from "@workspace/cache";
 import { syncProductRating, syncSellerRating } from "@workspace/db/reviews";
 import {
+  adjustCategoryProductCount,
   syncCategoryProductCountForProductChange,
   syncCategoryProductCountForProductMutation,
   syncCategoryProductCountOnDelete,
@@ -595,6 +596,88 @@ export async function updateProductStatus(
     return { success: true, data: updatedProduct };
   } catch (error) {
     console.error("Error updating product status:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+export async function approveAllPendingProducts() {
+  try {
+    await getAdminUser();
+
+    const pendingProducts = await db.query.products.findMany({
+      where: eq(products.status, "pending"),
+      with: {
+        productTranslations: { columns: { locale: true, slug: true } },
+      },
+    });
+
+    if (pendingProducts.length === 0) {
+      return { success: true, data: { count: 0 } };
+    }
+
+    const beforeSnapshots: ProductCacheSnapshot[] = pendingProducts.map(
+      (product) => ({
+        id: product.id,
+        sellerId: product.sellerId,
+        categoryId: product.categoryId,
+        brandId: product.brandId,
+        slugs: product.productTranslations.map((t) => ({
+          locale: t.locale,
+          slug: t.slug,
+        })),
+        status: product.status,
+        isFeatured: product.isFeatured ?? false,
+        isTrending: product.isTrending ?? false,
+        isSeasonal: product.isSeasonal ?? false,
+        isMostSelling: product.isMostSelling ?? false,
+        isPlatformChoice: product.isPlatformChoice ?? false,
+        priceKey: JSON.stringify(product.price ?? null),
+      })
+    );
+
+    const productIds = pendingProducts.map((product) => product.id);
+
+    await db
+      .update(products)
+      .set({
+        status: "active",
+        updatedAt: new Date().toISOString(),
+      })
+      .where(sql`${products.id} = ANY(${productIds})`);
+
+    const categoryDeltas = new Map<string, number>();
+    for (const snapshot of beforeSnapshots) {
+      if (!snapshot.categoryId) continue;
+      categoryDeltas.set(
+        snapshot.categoryId,
+        (categoryDeltas.get(snapshot.categoryId) ?? 0) + 1
+      );
+    }
+
+    await Promise.all(
+      [...categoryDeltas.entries()].map(([categoryId, delta]) =>
+        adjustCategoryProductCount(categoryId, delta)
+      )
+    );
+
+    const afterSnapshots = beforeSnapshots.map((snapshot) => ({
+      ...snapshot,
+      status: "active" as const,
+    }));
+
+    const invalidation = mergeInvalidations(
+      ...beforeSnapshots.map((before, index) =>
+        invalidateProduct(before, afterSnapshots[index] ?? null)
+      )
+    );
+    await applyInvalidation(invalidation, { from: "admin", mode: "action" });
+
+    return { success: true, data: { count: pendingProducts.length } };
+  } catch (error) {
+    console.error("Error approving all pending products:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",

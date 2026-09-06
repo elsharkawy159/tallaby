@@ -8,8 +8,8 @@ const metricCardVariants = cva("transition-all", {
   variants: {
     trend: {
       positive: "text-green-600 dark:text-green-500",
-      negative: "text-red-600 dark:text-red-500",
-      neutral: "text-gray-600 dark:text-gray-400",
+      negative: "text-destructive",
+      neutral: "text-muted-foreground",
     },
   },
   defaultVariants: {
@@ -38,10 +38,10 @@ export function MetricCard({
   valueClassName,
 }: MetricCardProps) {
   const getTrendIcon = () => {
-    if (percentageChange === 0) return <MinusIcon className="h-4 w-4" />;
+    if (percentageChange === 0) return <MinusIcon className="size-4" />;
     if (percentageChange && percentageChange > 0)
-      return <ArrowUpIcon className="h-4 w-4" />;
-    return <ArrowDownIcon className="h-4 w-4" />;
+      return <ArrowUpIcon className="size-4" />;
+    return <ArrowDownIcon className="size-4" />;
   };
 
   const getTrendFromPercentage = () => {
@@ -57,33 +57,36 @@ export function MetricCard({
   return (
     <Card className={cn("overflow-hidden", className)}>
       <CardContent>
-        <div className="flex justify-between items-start">
-          <div>
-            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-              {title}
-            </p>
-            <h3 className={cn("text-2xl font-bold mt-1", valueClassName)}>
+        <div className="flex justify-between items-start gap-3">
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-muted-foreground">{title}</p>
+            <h3
+              className={cn(
+                "mt-1 text-2xl font-bold tracking-tight text-card-foreground",
+                valueClassName,
+              )}
+            >
               {value}
             </h3>
           </div>
-          {icon && <div className="text-gray-400">{icon}</div>}
+          {icon && (
+            <div className="shrink-0 text-muted-foreground">{icon}</div>
+          )}
         </div>
 
         {percentageChange !== undefined && (
-          <div className="flex items-center mt-3">
+          <div className="mt-3 flex items-center gap-2">
             <div
               className={cn(
-                "flex items-center text-sm font-medium",
-                metricCardVariants({ trend: currentTrend })
+                "flex items-center gap-1 text-sm font-medium",
+                metricCardVariants({ trend: currentTrend }),
               )}
             >
               {getTrendIcon()}
-              <span className="ml-1">{Math.abs(percentageChange)}%</span>
+              <span>{Math.abs(percentageChange)}%</span>
             </div>
             {helpText && (
-              <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
-                {helpText}
-              </span>
+              <span className="text-xs text-muted-foreground">{helpText}</span>
             )}
           </div>
         )}

@@ -387,7 +387,7 @@ export function TableSection<TData extends { id: string }>(
         </div>
       </div>
 
-      <div className="bg-white overflow-hidden rounded-md border">
+      <div className="bg-card overflow-hidden rounded-md border border-border">
         <Table className="">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (

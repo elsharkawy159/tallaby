@@ -51,7 +51,8 @@ export default function RootLayout({
       >
         <DirectionProvider direction="ltr">
           <ThemeProvider
-            defaultTheme="light"
+            attribute="class"
+            defaultTheme="system"
             enableSystem
             disableTransitionOnChange
           >

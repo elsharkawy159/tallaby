@@ -1,6 +1,6 @@
 @layer components {
   .rich-text-editor .ProseMirror {
-    @apply min-h-[280px] px-4 py-3 text-base leading-7 text-gray-700 focus:outline-none;
+    @apply min-h-[280px] px-4 py-3 text-base leading-7 text-foreground focus:outline-none;
   }
 
   .rich-text-editor .ProseMirror > * + * {
@@ -8,15 +8,15 @@
   }
 
   .rich-text-editor .ProseMirror h1 {
-    @apply text-2xl font-bold text-gray-900 tracking-tight;
+    @apply text-2xl font-bold tracking-tight text-foreground;
   }
 
   .rich-text-editor .ProseMirror h2 {
-    @apply text-xl font-semibold text-gray-900 tracking-tight;
+    @apply text-xl font-semibold tracking-tight text-foreground;
   }
 
   .rich-text-editor .ProseMirror h3 {
-    @apply text-lg font-semibold text-gray-900;
+    @apply text-lg font-semibold text-foreground;
   }
 
   .rich-text-editor .ProseMirror img,
@@ -34,7 +34,7 @@
   }
 
   .rich-text-content {
-    @apply text-base leading-7 text-gray-700;
+    @apply text-base leading-7 text-foreground;
   }
 
   .rich-text-content > * + * {
@@ -42,32 +42,32 @@
   }
 
   .rich-text-content h1 {
-    @apply text-3xl md:text-4xl font-bold text-primary tracking-tight mt-10 mb-4 first:mt-0;
+    @apply mt-10 mb-4 text-3xl font-bold tracking-tight text-primary first:mt-0 md:text-4xl;
   }
 
   .rich-text-content h2 {
-    @apply text-2xl md:text-3xl font-semibold text-primary tracking-tight mt-8 mb-3 first:mt-0;
+    @apply mt-8 mb-3 text-2xl font-semibold tracking-tight text-primary first:mt-0 md:text-3xl;
   }
 
   .rich-text-content h3 {
-    @apply text-xl md:text-2xl font-semibold text-gray-900 mt-6 mb-2 first:mt-0;
+    @apply mt-6 mb-2 text-xl font-semibold text-foreground first:mt-0 md:text-2xl;
   }
 
   .rich-text-content h4 {
-    @apply text-lg font-semibold text-gray-900 mt-5 mb-2 first:mt-0;
+    @apply mt-5 mb-2 text-lg font-semibold text-foreground first:mt-0;
   }
 
   .rich-text-content p {
-    @apply text-gray-700 leading-7;
+    @apply leading-7 text-foreground;
   }
 
   .rich-text-content a {
-    @apply text-primary font-medium underline underline-offset-4 transition-opacity hover:opacity-80;
+    @apply font-medium text-primary underline underline-offset-4 transition-opacity hover:opacity-80;
   }
 
   .rich-text-content strong,
   .rich-text-content b {
-    @apply font-semibold text-gray-900;
+    @apply font-semibold text-foreground;
   }
 
   .rich-text-content em,
@@ -80,15 +80,15 @@
   }
 
   .rich-text-content ul {
-    @apply list-disc ps-6 space-y-2;
+    @apply list-disc space-y-2 ps-6;
   }
 
   .rich-text-content ol {
-    @apply list-decimal ps-6 space-y-2;
+    @apply list-decimal space-y-2 ps-6;
   }
 
   .rich-text-content li {
-    @apply text-gray-700;
+    @apply text-foreground;
   }
 
   .rich-text-content li::marker {
@@ -96,11 +96,11 @@
   }
 
   .rich-text-content blockquote {
-    @apply border-s-4 border-primary/30 bg-primary/5 rounded-e-lg px-5 py-4 text-gray-800 italic;
+    @apply rounded-e-lg border-s-4 border-primary/30 bg-primary/5 px-5 py-4 text-foreground italic;
   }
 
   .rich-text-content hr {
-    @apply my-8 border-gray-200;
+    @apply my-8 border-border;
   }
 
   .rich-text-content mark {

@@ -454,11 +454,11 @@ export default function ShippingPage() {
         </Card>
       </div>
 
-      <div className="bg-white rounded-lg border p-4 mb-6">
+      <div className="mb-6 rounded-lg border border-border bg-card p-4 text-card-foreground">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
             <h2 className="text-lg font-medium">Shipment Tracking</h2>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted-foreground">
               Track shipments by tracking number or order ID
             </p>
           </div>

@@ -126,15 +126,15 @@ export default function Sidebar({ counts }: SidebarProps) {
   return (
     <div
       className={cn(
-        "flex flex-col h-screen border-r border-border transition-all duration-300 bg-white dark:bg-gray-950",
+        "flex h-screen flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-all duration-300",
         expanded ? "w-64" : "w-16",
       )}
     >
-      <div className="flex items-center justify-between p-4 py-3.5 border-b border-border">
+      <div className="flex items-center justify-between border-b border-sidebar-border p-4 py-3.5">
         {expanded ? (
           <h1 className="text-xl font-bold text-primary">Admin</h1>
         ) : (
-          <h1 className="text-xl font-bold text-primary mx-auto">A</h1>
+          <h1 className="mx-auto text-xl font-bold text-primary">A</h1>
         )}
         <Button
           variant="ghost"
@@ -147,7 +147,7 @@ export default function Sidebar({ counts }: SidebarProps) {
       </div>
       <ScrollArea className="flex-1">
         <nav className="p-2">
-          <ul className="space-y-1">
+          <ul className="flex flex-col gap-1">
             {sidebarLinks.map((link) => (
               <li key={link.title}>
                 {link.submenu ? (
@@ -155,14 +155,13 @@ export default function Sidebar({ counts }: SidebarProps) {
                     <button
                       onClick={() => toggleSubmenu(link.title)}
                       className={cn(
-                        "flex items-center justify-between w-full px-3 py-2 text-sm rounded-md",
-                        "hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors",
-                        pathname.startsWith(link.href) &&
-                          "bg-gray-100 dark:bg-gray-800",
+                        "flex w-full items-center justify-between rounded-md px-3 py-2 text-sm",
+                        "transition-colors hover:bg-sidebar-accent",
+                        pathname.startsWith(link.href) && "bg-sidebar-accent",
                       )}
                     >
-                      <span className="flex items-center min-w-0">
-                        <link.icon className="h-5 w-5 mr-2 shrink-0 text-gray-500" />
+                      <span className="flex min-w-0 items-center">
+                        <link.icon className="mr-2 size-5 shrink-0 text-muted-foreground" />
                         {expanded && (
                           <span className="truncate">{link.title}</span>
                         )}
@@ -171,27 +170,27 @@ export default function Sidebar({ counts }: SidebarProps) {
                         <ChevronRight
                           size={16}
                           className={cn(
-                            "transition-transform shrink-0",
-                            openSubmenus[link.title] && "transform rotate-90",
+                            "shrink-0 transition-transform",
+                            openSubmenus[link.title] && "rotate-90",
                           )}
                         />
                       )}
                     </button>
                     {expanded && openSubmenus[link.title] && (
-                      <ul className="mt-1 ml-6 space-y-1">
+                      <ul className="mt-1 ml-6 flex flex-col gap-1">
                         {link.submenu.map((sublink) => (
                           <li key={sublink.title}>
                             <Link
                               href={sublink.href}
                               className={cn(
-                                "flex items-center justify-between px-3 py-2 text-sm rounded-md",
-                                "hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors",
+                                "flex items-center justify-between rounded-md px-3 py-2 text-sm",
+                                "transition-colors hover:bg-sidebar-accent",
                                 pathname === sublink.href &&
-                                  "bg-gray-100 dark:bg-gray-800 font-medium",
+                                  "bg-sidebar-accent font-medium",
                               )}
                             >
-                              <span className="flex items-center min-w-0">
-                                <sublink.icon className="h-4 w-4 mr-2 shrink-0 text-gray-500" />
+                              <span className="flex min-w-0 items-center">
+                                <sublink.icon className="mr-2 size-4 shrink-0 text-muted-foreground" />
                                 <span className="truncate">
                                   {sublink.title}
                                 </span>
@@ -215,17 +214,17 @@ export default function Sidebar({ counts }: SidebarProps) {
                   <Link
                     href={link.href}
                     className={cn(
-                      "flex items-center px-3 py-2 text-sm rounded-md",
-                      "hover:bg-primary/10 dark:hover:bg-gray-800 transition-colors",
+                      "flex items-center rounded-md px-3 py-2 text-sm",
+                      "transition-colors hover:bg-sidebar-accent",
                       expanded && "justify-between",
                       pathname === link.href &&
-                        "bg-primary dark:bg-gray-800 font-medium hover:bg-primary text-white [&_svg]:text-white",
+                        "bg-primary font-medium text-primary-foreground hover:bg-primary [&_svg]:text-primary-foreground",
                     )}
                   >
-                    <span className="flex items-center min-w-0">
+                    <span className="flex min-w-0 items-center">
                       <link.icon
                         className={cn(
-                          "h-5 w-5 shrink-0 text-gray-500",
+                          "size-5 shrink-0 text-muted-foreground",
                           expanded ? "mr-2" : "mx-auto",
                         )}
                       />
@@ -248,15 +247,15 @@ export default function Sidebar({ counts }: SidebarProps) {
           </ul>
         </nav>
       </ScrollArea>
-      <div className="p-4 border-t border-border">
+      <div className="border-t border-sidebar-border p-4">
         <div className="flex items-center">
-          <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-semibold">
+          <div className="flex size-8 items-center justify-center rounded-full bg-primary font-semibold text-primary-foreground">
             A
           </div>
           {expanded && (
             <div className="ml-3">
               <p className="text-sm font-medium">Admin User</p>
-              <p className="text-xs text-gray-500">admin@example.com</p>
+              <p className="text-xs text-muted-foreground">admin@example.com</p>
             </div>
           )}
         </div>

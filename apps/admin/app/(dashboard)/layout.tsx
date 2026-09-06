@@ -38,7 +38,7 @@ export default async function DashboardLayout({ children }: DashboardShellProps)
       <div className="flex-1 overflow-hidden">
         <Header user={user} />
         <ScrollArea className="h-[calc(100vh-64px)]">
-          <main className="bg-gray-50 dark:bg-gray-900 p-4 md:p-6 min-h-[calc(100vh-65px)]">
+          <main className="bg-muted/40 p-4 md:p-6 min-h-[calc(100vh-65px)]">
             {children}
           </main>
         </ScrollArea>

@@ -104,7 +104,7 @@ export function TextareaInput<TFieldValues extends FieldValues>({
                   }}
                   onFocus={onFocus}
                   className={cn(
-                    "h-auto rounded-lg bg-white",
+                    "h-auto rounded-lg bg-transparent dark:bg-input/30",
                     resizeClass,
                     showCharacterCount && validation?.maxLength && "pb-6",
                     readOnly && "cursor-not-allowed bg-gray-100",
@@ -121,7 +121,7 @@ export function TextareaInput<TFieldValues extends FieldValues>({
                   }
                 />
                 {showCharacterCount && validation?.maxLength && (
-                  <div className="absolute bottom-2 end-2 text-xs text-gray-400 bg-white px-1">
+                  <div className="absolute bottom-2 end-2 bg-card px-1 text-xs text-muted-foreground">
                     {characterCount}/{validation.maxLength}
                   </div>
                 )}
