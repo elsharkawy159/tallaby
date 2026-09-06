@@ -26,7 +26,12 @@ function SectionSkeleton({ className = "" }: { className?: string }) {
       aria-hidden
     >
       <div className="mb-6 h-8 w-48 rounded-md bg-muted" />
-      <div className="flex gap-4 overflow-hidden">
+      <div className="grid grid-cols-2 gap-2 md:hidden">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="h-72 rounded-lg bg-muted" />
+        ))}
+      </div>
+      <div className="hidden gap-4 overflow-hidden md:flex">
         {Array.from({ length: 5 }).map((_, i) => (
           <div
             key={i}
@@ -72,6 +77,17 @@ const HomePage = async ({
           }}
         />
       </Suspense> */}
+          <Suspense fallback={<SectionSkeleton />}>
+            <ProductSection
+              title={t("seasonal")}
+              description={t("seasonalDescription")}
+              filters={{
+                isSeasonal: true,
+                sortBy: "newest",
+                limit: 12,
+              }}
+            />
+          </Suspense>
 
       <Suspense fallback={<SectionSkeleton />}>
         <ProductSection
@@ -80,18 +96,6 @@ const HomePage = async ({
           filters={{
             isTrending: true,
             sortBy: "popular",
-            limit: 12,
-          }}
-        />
-      </Suspense>
-
-      <Suspense fallback={<SectionSkeleton />}>
-        <ProductSection
-          title={t("seasonal")}
-          description={t("seasonalDescription")}
-          filters={{
-            isSeasonal: true,
-            sortBy: "newest",
             limit: 12,
           }}
         />

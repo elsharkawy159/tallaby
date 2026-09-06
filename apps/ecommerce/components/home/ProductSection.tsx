@@ -47,22 +47,20 @@ const ProductSection = async ({
     return null;
   }
 
+  const productCards = products.data.map((product) => (
+    <ProductCard
+      key={product.id as string}
+      {...(product as ProductCardProps)}
+    />
+  ));
+
   return (
     <section className="lg:py-8 py-5 items-container mx-auto">
-      <Carousel
-        opts={{
-          align: "start",
-          dragFree: true,
-          direction: locale === "ar" ? "rtl" : "ltr",
-        }}
-        className="md:flex flex-row items-center md:mb-8 gap-5"
-      >
-        {/* Left Text Block */}
-        <div className="md:w-[230px] w-full shrink-0">
+      {/* Mobile: 2-column grid */}
+      <div className="md:hidden">
+        <div className="mb-3">
           <div className="flex items-center justify-between">
-            <h2 className="md:text-2xl text-xl font-bold text-gray-900 md:mb-2">
-              {title}
-            </h2>
+            <h2 className="text-xl font-bold text-gray-900">{title}</h2>
             <Button asChild className="p-0 gap-1 hidden" variant="link">
               <Link href="/products">
                 View More
@@ -71,23 +69,50 @@ const ProductSection = async ({
             </Button>
           </div>
           {description && (
-            <p className="md:text-lg text-xs text-gray-600 md:mb-6 mb-1 leading-relaxed">
+            <p className="text-xs text-gray-600 mb-1 leading-relaxed">
+              {description}
+            </p>
+          )}
+        </div>
+        <div className="grid grid-cols-2 gap-2">{productCards}</div>
+      </div>
+
+      {/* Desktop: carousel */}
+      <Carousel
+        opts={{
+          align: "start",
+          dragFree: true,
+          direction: locale === "ar" ? "rtl" : "ltr",
+        }}
+        className="hidden md:flex flex-row items-center md:mb-8 gap-5"
+      >
+        <div className="w-[230px] shrink-0">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">{title}</h2>
+            <Button asChild className="p-0 gap-1 hidden" variant="link">
+              <Link href="/products">
+                View More
+                <ChevronRight className="size-4" />
+              </Link>
+            </Button>
+          </div>
+          {description && (
+            <p className="text-lg text-gray-600 mb-6 leading-relaxed">
               {description}
             </p>
           )}
 
-          <div className="md:flex gap-5 items-center mt-12 ms-8 hidden">
+          <div className="flex gap-5 items-center mt-12 ms-8">
             <CarouselPrevious className="relative left-0" />
             <CarouselNext className="relative right-0" />
           </div>
         </div>
 
-        {/* Carousel Section */}
         <CarouselContent className="p-1.5">
           {products.data.map((product) => (
             <CarouselItem
               key={product.id as string}
-              className="basis-auto md:ps-4 ps-2 md:max-w-[312px] max-w-[50vw]"
+              className="basis-auto ps-4 max-w-[312px]"
             >
               <ProductCard
                 key={product.id as string}

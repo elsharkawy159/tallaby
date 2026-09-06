@@ -79,26 +79,26 @@ export function getCategoriesColumns(): ColumnDef<Category>[] {
                 </AvatarFallback>
               </Avatar>
             ) : (
-              <div className="h-9 w-9 rounded-full bg-gray-100 flex items-center justify-center">
-                <FolderTree className="h-4 w-4 text-gray-500" />
+              <div className="flex size-9 items-center justify-center rounded-full bg-muted">
+                <FolderTree className="size-4 text-muted-foreground" />
               </div>
             )}
             <div>
               <Link
                 href={`/withAuth/categories/${category.id}`}
-                className="font-medium hover:underline flex items-center"
+                className="flex items-center font-medium hover:underline"
               >
                 {category.name || "Unnamed Category"}
                 {category.level === 1 && (
                   <Badge
                     variant="outline"
-                    className="ml-2 bg-blue-50 text-blue-700 border-blue-200 text-xs"
+                    className="ml-2 border-primary/20 bg-primary/10 text-xs text-primary"
                   >
                     Main
                   </Badge>
                 )}
               </Link>
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-muted-foreground">
                 {category.slug || "—"}
               </div>
             </div>
@@ -133,7 +133,7 @@ export function getCategoriesColumns(): ColumnDef<Category>[] {
         const parentId = row.getValue("parentId");
 
         if (!parentId) {
-          return <div className="text-gray-500">—</div>;
+          return <div className="text-muted-foreground">—</div>;
         }
 
         // This would require looking up the parent category from your data
@@ -144,7 +144,7 @@ export function getCategoriesColumns(): ColumnDef<Category>[] {
             return (
               <Link
                 href={`/withAuth/categories/${parentId}`}
-                className="text-blue-600 hover:underline"
+                className="text-primary hover:underline"
               >
                 {parent.name}
               </Link>
@@ -155,7 +155,7 @@ export function getCategoriesColumns(): ColumnDef<Category>[] {
         return (
           <Link
             href={`/withAuth/categories/${parentId}`}
-            className="text-blue-600 hover:underline"
+            className="text-primary hover:underline"
           >
             View Parent
           </Link>

@@ -96,7 +96,7 @@ export function CategoryItem({
         {hasChildren && (
           <Badge
             variant="outline"
-            className="text-xs shrink-0 bg-blue-50 text-blue-700 border-blue-200"
+            className="shrink-0 border-primary/20 bg-primary/10 text-xs text-primary"
           >
             {category.childrenCount}{" "}
             {category.childrenCount === 1 ? "child" : "children"}
@@ -185,7 +185,7 @@ export function CategoryItem({
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => setIsDeleteOpen(true)}
-            className="cursor-pointer text-red-600"
+            className="cursor-pointer text-destructive"
           >
             <Trash2 className="mr-2 h-4 w-4" />
             Delete category
@@ -210,7 +210,7 @@ export function CategoryItem({
             )}
           >
             <div className="pl-3 shrink-0">{CategoryImage}</div>
-            <AccordionTrigger className="flex-1 hover:no-underline py-2 px-3 rounded-lg hover:bg-gray-50">
+            <AccordionTrigger className="flex-1 rounded-lg bg-transparent px-3 py-2 hover:bg-muted hover:no-underline">
               {CategoryInfo}
             </AccordionTrigger>
             {CategoryActions}
@@ -281,11 +281,10 @@ export function CategoryItem({
         ref={rowRef}
         data-category-id={category.id}
         className={cn(
-          "flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-gray-50 group transition-colors",
+          "flex items-center gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-muted group",
           isScrollTarget && "bg-primary/5 ring-1 ring-primary/20",
         )}
-      >
-        {CategoryImage}
+      >        {CategoryImage}
         {CategoryInfo}
         {CategoryActions}
       </div>
