@@ -27,11 +27,11 @@ export interface OrderConfirmationCopy {
   shippingTo: string;
   estimatedDelivery: string;
   payment: string;
-    needHelp: string;
-    helpReply: string;
-    helpTrack: string;
-    orderPage: string;
-    disclaimer: string;
+  needHelp: string;
+  helpReply: string;
+  helpTrack: string;
+  orderPage: string;
+  disclaimer: string;
 }
 
 export interface WelcomeCopy {
@@ -161,7 +161,7 @@ const en: EmailMessages = {
 
 const ar: EmailMessages = {
   common: {
-    copyright: "© {year} تلابي. جميع الحقوق محفوظة.",
+    copyright: "© {year} طلبي. جميع الحقوق محفوظة.",
     privacy: "الخصوصية",
     terms: "الشروط",
     contactPrefix: "لديك سؤال؟ تواصل معنا عبر",
@@ -196,13 +196,13 @@ const ar: EmailMessages = {
   },
   welcome: {
     preview:
-      "مرحبًا بك في تلابي! اكتشف مجموعات مختارة واستفد من عرض الترحيب على طلبك الأول.",
-    subject: "مرحبًا بك في تلابي",
-    heroHeading: "مرحبًا بك في تلابي",
+      "مرحبًا بك في طلبي! اكتشف مجموعات مختارة واستفد من عرض الترحيب على طلبك الأول.",
+    subject: "مرحبًا بك في طلبي",
+    heroHeading: "مرحبًا بك في طلبي",
     heroSubheading: "اكتشف مجموعات مختارة بعناية",
     greeting: "مرحبًا {name}،",
     body1:
-      "يسعدنا انضمامك إلى مجتمع تلابي. من القطع الأساسية الخالدة إلى القطع المميزة، نختار مجموعات تحتفي بأسلوبك.",
+      "يسعدنا انضمامك إلى مجتمع طلبي. من القطع الأساسية الخالدة إلى القطع المميزة، نختار مجموعات تحتفي بأسلوبك.",
     body2: "سواء كنت تبحث عن أساسيات يومية أو قطعة مميزة، ستجد ما يناسبك.",
     offerLabel: "عرض حصري لأول طلب",
     offerDescription: "على مشترياتك الأولى",
@@ -248,7 +248,7 @@ export function getEmailMessages(locale: EmailLocale): EmailMessages {
 
 export function formatPaymentMethodLabel(
   method: string | null | undefined,
-  locale: EmailLocale
+  locale: EmailLocale,
 ): string | null {
   if (!method) return null;
   const messages = getEmailMessages(locale);
