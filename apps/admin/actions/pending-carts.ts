@@ -315,52 +315,45 @@ export async function getPendingCartStats() {
 
     const cutoff = abandonedCutoffIso();
 
-    const [activeResult, withItemsResult, valueResult, abandonedResult] =
-      await Promise.all([
-        db
-          .select({ count: sql<number>`count(*)::int` })
-          .from(carts)
-          .where(eq(carts.status, "active")),
-        db.execute(sql`
-          SELECT count(DISTINCT ${carts.id})::int AS count
+    // One round-trip. A 4-way Promise.all here oversubscribed the serverless
+    // postgres-js pool (max:4 on Vercel + sidebar layout queries) and wedged
+    // forever against the :6543 transaction pooler — Suspense never resolved.
+    const result = await db.execute(sql`
+      SELECT
+        (SELECT count(*)::int FROM ${carts} WHERE ${carts.status} = 'active') AS active_carts,
+        (
+          SELECT count(DISTINCT ${carts.id})::int
           FROM ${carts}
           INNER JOIN ${cartItems} ON ${cartItems.cartId} = ${carts.id}
           WHERE ${carts.status} = 'active'
-        `),
-        db.execute(sql`
-          SELECT coalesce(sum(${cartItems.quantity} * ${cartItems.price}::numeric), 0)::float AS total
+        ) AS with_items,
+        (
+          SELECT coalesce(sum(${cartItems.quantity} * ${cartItems.price}::numeric), 0)::float
           FROM ${cartItems}
           INNER JOIN ${carts} ON ${carts.id} = ${cartItems.cartId}
           WHERE ${carts.status} = 'active'
-        `),
-        db.execute(sql`
-          SELECT count(DISTINCT ${carts.id})::int AS count
+        ) AS cart_value,
+        (
+          SELECT count(DISTINCT ${carts.id})::int
           FROM ${carts}
           INNER JOIN ${cartItems} ON ${cartItems.cartId} = ${carts.id}
           WHERE ${carts.status} = 'active'
             AND ${carts.lastActivity} < ${cutoff}
-        `),
-      ]);
+        ) AS abandoned
+    `);
 
-    const withItemsRows = Array.isArray(withItemsResult)
-      ? withItemsResult
-      : ((withItemsResult as { rows?: Array<Record<string, unknown>> }).rows ??
-        []);
-    const valueRows = Array.isArray(valueResult)
-      ? valueResult
-      : ((valueResult as { rows?: Array<Record<string, unknown>> }).rows ?? []);
-    const abandonedRows = Array.isArray(abandonedResult)
-      ? abandonedResult
-      : ((abandonedResult as { rows?: Array<Record<string, unknown>> }).rows ??
-        []);
+    const rows = Array.isArray(result)
+      ? result
+      : ((result as { rows?: Array<Record<string, unknown>> }).rows ?? []);
+    const row = (rows[0] ?? {}) as Record<string, unknown>;
 
     return {
       success: true,
       data: {
-        activeCarts: Number(activeResult[0]?.count ?? 0),
-        withItems: Number((withItemsRows[0] as { count?: number })?.count ?? 0),
-        cartValue: Number((valueRows[0] as { total?: number })?.total ?? 0),
-        abandoned: Number((abandonedRows[0] as { count?: number })?.count ?? 0),
+        activeCarts: Number(row.active_carts ?? 0),
+        withItems: Number(row.with_items ?? 0),
+        cartValue: Number(row.cart_value ?? 0),
+        abandoned: Number(row.abandoned ?? 0),
         abandonedDays: ABANDONED_DAYS,
       },
     };

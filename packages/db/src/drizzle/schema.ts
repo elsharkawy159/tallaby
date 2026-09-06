@@ -138,6 +138,7 @@ export const carts = pgTable("carts", {
 }, (table) => [
 	index("cart_session_id_idx").using("btree", table.sessionId.asc().nullsLast().op("text_ops")),
 	index("cart_user_id_idx").using("btree", table.userId.asc().nullsLast().op("uuid_ops")),
+	index("carts_status_last_activity_idx").using("btree", table.status.asc().nullsLast().op("text_ops"), table.lastActivity.desc().nullsLast().op("timestamptz_ops")),
 	foreignKey({
 			columns: [table.userId],
 			foreignColumns: [users.id],

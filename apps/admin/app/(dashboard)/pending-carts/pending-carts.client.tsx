@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@workspace/ui/components/button";
 import { TableSection } from "@workspace/ui/components/table-section";
 import {
@@ -59,7 +59,7 @@ export function PendingCartsClientWrapper({
     loadCarts();
   };
 
-  const handleQuickView = async (cart: PendingCart) => {
+  const handleQuickView = useCallback(async (cart: PendingCart) => {
     setSelectedCart(cart);
     setIsLoadingDetail(true);
 
@@ -75,9 +75,9 @@ export function PendingCartsClientWrapper({
     } finally {
       setIsLoadingDetail(false);
     }
-  };
+  }, []);
 
-  const getFilteredCarts = () => {
+  const filteredCarts = useMemo(() => {
     switch (activeTab) {
       case "with-items":
         return carts.filter((cart) => cart.itemCount > 0);
@@ -86,10 +86,21 @@ export function PendingCartsClientWrapper({
       default:
         return carts;
     }
-  };
+  }, [activeTab, carts]);
 
-  const filteredCarts = getFilteredCarts();
-  const columns = getPendingCartsColumns(handleQuickView);
+  const columns = useMemo(
+    () => getPendingCartsColumns(handleQuickView),
+    [handleQuickView]
+  );
+
+  const withItemsCount = useMemo(
+    () => carts.filter((c) => c.itemCount > 0).length,
+    [carts]
+  );
+  const abandonedCount = useMemo(
+    () => carts.filter((c) => c.isAbandoned).length,
+    [carts]
+  );
 
   const actionButtons = (
     <div className="flex gap-2">
@@ -118,10 +129,10 @@ export function PendingCartsClientWrapper({
         <TabsList>
           <TabsTrigger value="all">All ({carts.length})</TabsTrigger>
           <TabsTrigger value="with-items">
-            With items ({carts.filter((c) => c.itemCount > 0).length})
+            With items ({withItemsCount})
           </TabsTrigger>
           <TabsTrigger value="abandoned">
-            Abandoned ({carts.filter((c) => c.isAbandoned).length})
+            Abandoned ({abandonedCount})
           </TabsTrigger>
         </TabsList>
 
