@@ -98,12 +98,45 @@ export async function createOrder(data: {
 
     revalidateCartCheckout();
 
+    const metaEventId = order.id;
+    try {
+      const { sendMetaCapiEvent } = await import("@/lib/meta/meta.server");
+      const { getMetaCapiUserData } = await import("@/lib/meta/meta.user");
+      const { toMetaContentIds } = await import("@/lib/meta/meta.product");
+      const { DEFAULT_CURRENCY } = await import("@/lib/constants");
+
+      const productIds = createdOrderItems.map((item) => item.productId);
+      const numItems = createdOrderItems.reduce(
+        (sum, item) => sum + Number(item.quantity || 0),
+        0
+      );
+      const { userData, eventSourceUrl } = await getMetaCapiUserData();
+
+      await sendMetaCapiEvent({
+        eventName: "Purchase",
+        eventId: metaEventId,
+        eventSourceUrl: eventSourceUrl ?? undefined,
+        userData,
+        customData: {
+          content_ids: toMetaContentIds(productIds),
+          content_type: "product",
+          value: Number(order.totalAmount),
+          currency: order.currency || DEFAULT_CURRENCY,
+          num_items: numItems,
+          order_id: order.id,
+        },
+      });
+    } catch (metaError) {
+      console.error("Meta CAPI Purchase failed:", metaError);
+    }
+
     return {
       success: true,
       data: {
         order,
         orderItems: createdOrderItems,
         orderPagePath: buildOrderPagePath(order.id),
+        metaEventId,
       },
     };
   } catch (error) {

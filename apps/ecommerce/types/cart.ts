@@ -56,7 +56,12 @@ export interface CartState {
     productId: string;
     quantity: number;
     variantId?: string;
-  }) => Promise<{ success: boolean; message?: string }>;
+  }) => Promise<{
+    success: boolean;
+    message?: string;
+    data?: CartItem | null;
+    metaEventId?: string;
+  }>;
   updateQuantity: (
     itemId: string,
     quantity: number

@@ -6,6 +6,9 @@ import type { AddToCartButtonProps } from "./product-card.types";
 import { useTranslations } from "next-intl";
 import { useCart } from "@/providers/cart-provider";
 import posthog from "posthog-js";
+import { trackMetaEvent } from "@/lib/meta/meta.client";
+import { toMetaContentIds } from "@/lib/meta/meta.product";
+import { DEFAULT_CURRENCY } from "@/lib/constants";
 
 const sizeStyles = {
   sm: {
@@ -51,6 +54,20 @@ export const AddToCartButton = ({
         quantity,
         has_variant: Boolean(variantId),
       });
+
+      const unitPrice = Number(result.data?.price ?? 0);
+      const value = unitPrice * quantity;
+
+      trackMetaEvent(
+        "AddToCart",
+        {
+          content_ids: toMetaContentIds([productId]),
+          content_type: "product",
+          value,
+          currency: DEFAULT_CURRENCY,
+        },
+        result.metaEventId ? { eventId: result.metaEventId } : undefined
+      );
     }
   };
 

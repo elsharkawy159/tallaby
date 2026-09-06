@@ -30,6 +30,7 @@ import { OrderStoreReviewCard } from "./order-store-review-card";
 import { OrderCancelButton } from "./order-cancel-button";
 import { cn } from "@/lib/utils";
 import { getTranslations } from "next-intl/server";
+import { MetaPurchase } from "@/components/meta/meta-purchase.client";
 
 interface OrderConfirmationContentProps {
   data: OrderConfirmationData;
@@ -46,6 +47,7 @@ export async function OrderConfirmationContent({
 }: OrderConfirmationContentProps) {
   const t = await getTranslations("orders");
   const { order, orderItems, storeSellers, shipments, shippingAddress, summary } = data;
+  const metaProductIds = orderItems.map((item) => item.productId);
 
   const getStatusLabel = (status: string): string => {
     // Map status to translation key format
@@ -106,6 +108,13 @@ export async function OrderConfirmationContent({
 
   return (
     <div className="space-y-4 md:space-y-8 px-4 max-w-6xl mx-auto">
+      <MetaPurchase
+        orderId={order.id}
+        productIds={metaProductIds}
+        value={summary.totalAmount}
+        numItems={summary.itemCount}
+        currency={order.currency}
+      />
       {/* Success Header */}
       <div className="text-center space-y-3 md:space-y-4">
         <div className="flex justify-center">

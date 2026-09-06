@@ -33,6 +33,7 @@ import { Star } from "lucide-react";
 import { DiscountCountdown } from "./discount-countdown";
 import { DiscountPercentBadge } from "@/components/product";
 import { getDiscountPercent } from "@/lib/utils";
+import { MetaViewContent } from "@/components/meta/meta-view-content.client";
 
 interface ProductDetailsProps {
   product: Product;
@@ -165,6 +166,7 @@ export const ProductDetails = ({
 
   return (
     <div className="w-full space-y-5 md:space-y-6">
+      <MetaViewContent productId={product.id} value={price} />
       {/* Product Title */}
       <div>
         <h1 className="mb-3 text-xl font-bold leading-snug text-gray-900 md:mb-4 md:text-2xl lg:text-3xl">

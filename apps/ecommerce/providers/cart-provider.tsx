@@ -96,14 +96,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
         await queryClient.invalidateQueries({ queryKey: ["cart"] });
         await refreshCart();
         if (successMsg) toast.success(successMsg);
-        return { success: true };
+        return {
+          success: true as const,
+          data: result.data,
+          metaEventId: result.metaEventId as string | undefined,
+        };
       }
       toast.error(result.error || errorMsg);
-      return { success: false, message: result.error };
+      return { success: false as const, message: result.error };
     } catch (err) {
       console.error(errorMsg, err);
       toast.error(errorMsg);
-      return { success: false, message: "An error occurred" };
+      return { success: false as const, message: "An error occurred" };
     } finally {
       if (loadingKey && setLoading) {
         setLoading(loadingKey, false);

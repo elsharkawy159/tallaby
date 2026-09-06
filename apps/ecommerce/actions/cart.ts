@@ -342,9 +342,43 @@ export async function addToCart(
         } as any)
         .returning();
 
+  const cartItem = result[0];
+  const metaEventId = cartItem?.id
+    ? `${cartItem.id}_${Date.now()}`
+    : undefined;
+
+  if (metaEventId) {
+    try {
+      const { sendMetaCapiEvent } = await import("@/lib/meta/meta.server");
+      const { getMetaCapiUserData } = await import("@/lib/meta/meta.user");
+      const { toMetaContentIds } = await import("@/lib/meta/meta.product");
+      const { DEFAULT_CURRENCY } = await import("@/lib/constants");
+
+      const { userData, eventSourceUrl } = await getMetaCapiUserData();
+
+      await sendMetaCapiEvent({
+        eventName: "AddToCart",
+        eventId: metaEventId,
+        eventSourceUrl: eventSourceUrl ?? undefined,
+        userData,
+        customData: {
+          content_ids: toMetaContentIds([productId]),
+          content_type: "product",
+          value: price * qty,
+          currency: cart.currency || DEFAULT_CURRENCY,
+          num_items: qty,
+          contents: [{ id: productId, quantity: qty, item_price: price }],
+        },
+      });
+    } catch (metaError) {
+      console.error("Meta CAPI AddToCart failed:", metaError);
+    }
+  }
+
   return {
     success: true,
-    data: result[0],
+    data: cartItem,
+    metaEventId,
     message: existing ? "Cart updated" : "Added to cart",
   };
 }

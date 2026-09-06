@@ -6,6 +6,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 import NextTopLoader from "nextjs-toploader";
 import { Scripts } from "@/components/layout/structured-data";
+import { MetaPixel } from "@/components/meta/meta-pixel";
 import { getMessages, getTranslations } from "next-intl/server";
 import { Toaster } from "@workspace/ui/components/sonner";
 import { DirectionProvider } from "@workspace/ui/components/direction";
@@ -127,6 +128,7 @@ export default async function RootLayout({
           locale === "ar" ? notoKufiArabic.variable : montserrat.variable
         } antialiased`}
       >
+        <MetaPixel />
         <NextTopLoader
           color="var(--accent)"
           crawlSpeed={200}
