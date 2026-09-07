@@ -26,6 +26,8 @@ import {
   Package,
   User,
 } from "lucide-react";
+import { getPublicUrl } from "@/lib/utils";
+import { getStorefrontProductUrl } from "../../products/products.lib";
 import type { PendingCart } from "../pending-carts.types";
 import {
   formatCurrency,
@@ -35,6 +37,14 @@ import {
   getCustomerInitials,
   getCustomerName,
 } from "../pending-carts.lib";
+
+function resolveProductImageUrl(image: string | null): string | null {
+  if (!image) return null;
+  if (image.startsWith("http://") || image.startsWith("https://")) {
+    return image;
+  }
+  return getPublicUrl(image, "products");
+}
 
 interface CartQuickViewDialogProps {
   cart: PendingCart | null;
@@ -207,32 +217,61 @@ export function CartQuickViewDialog({
               <div className="space-y-3">
                 {cart.items.map((item) => {
                   const variantLabel = formatVariant(item.variant);
+                  const imageSrc = resolveProductImageUrl(item.productImage);
+                  const storefrontUrl = getStorefrontProductUrl(
+                    item.productSlug
+                  );
+                  const thumbnail = imageSrc ? (
+                    <Image
+                      src={imageSrc}
+                      alt={item.productTitle}
+                      fill
+                      className="object-cover"
+                      sizes="56px"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center">
+                      <Package className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                  );
+
                   return (
                     <div
                       key={item.id}
                       className="flex gap-3 p-3 border rounded-lg"
                     >
                       <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded bg-muted">
-                        {item.productImage ? (
-                          <Image
-                            src={item.productImage}
-                            alt={item.productTitle}
-                            fill
-                            className="object-cover"
-                            sizes="56px"
-                          />
+                        {storefrontUrl ? (
+                          <Link
+                            href={storefrontUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="relative block h-full w-full"
+                            aria-label={`View ${item.productTitle} on storefront`}
+                          >
+                            {thumbnail}
+                          </Link>
                         ) : (
-                          <div className="flex h-full w-full items-center justify-center">
-                            <Package className="h-5 w-5 text-muted-foreground" />
-                          </div>
+                          thumbnail
                         )}
                       </div>
                       <div className="flex-1 min-w-0 space-y-1">
                         <div className="flex items-start justify-between gap-2">
                           <div className="min-w-0">
-                            <p className="font-medium truncate">
-                              {item.productTitle}
-                            </p>
+                            {storefrontUrl ? (
+                              <Link
+                                href={storefrontUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-medium truncate block hover:underline"
+                              >
+                                {item.productTitle}
+                              </Link>
+                            ) : (
+                              <p className="font-medium truncate">
+                                {item.productTitle}
+                              </p>
+                            )}
                             <p className="text-xs text-muted-foreground">
                               {item.sellerName}
                               {item.productSku ? ` · SKU ${item.productSku}` : ""}
