@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import Hero from "@/components/home/hero/hero";
-import { ProductsGrid, ProductSection } from "@/components/home";
+import { ProductsGrid } from "@/components/home";
 import { ProductsGridSkeleton } from "@/components/home/products-grid.skeleton";
 import { generateHomeMetadata } from "@/lib/metadata";
 import type { SeoLocale } from "@/lib/metadata";
@@ -18,30 +18,6 @@ export async function generateMetadata({
 
 // Keep homepage data fresh; avoids stale client-router payloads with empty sections.
 export const revalidate = 60;
-
-function SectionSkeleton({ className = "" }: { className?: string }) {
-  return (
-    <div
-      className={`container mx-auto animate-pulse py-8 ${className}`}
-      aria-hidden
-    >
-      <div className="mb-6 h-8 w-48 rounded-md bg-muted" />
-      <div className="grid grid-cols-2 gap-2 md:hidden">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-72 rounded-lg bg-muted" />
-        ))}
-      </div>
-      <div className="hidden gap-4 overflow-hidden md:flex">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <div
-            key={i}
-            className="h-72 w-44 shrink-0 rounded-lg bg-muted"
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
 
 const HomePage = async ({
   params,
@@ -67,8 +43,8 @@ const HomePage = async ({
         />
       </Suspense> */}
 
-      {/* <Suspense fallback={<SectionSkeleton />}>
-        <ProductSection
+      {/* <Suspense fallback={<ProductsGridSkeleton />}>
+        <ProductsGrid
           title={t("newArrivals")}
           description={t("newArrivalsDescription")}
           filters={{
@@ -77,22 +53,22 @@ const HomePage = async ({
           }}
         />
       </Suspense> */}
-          <Suspense fallback={<SectionSkeleton />}>
-            <ProductSection
-              title={t("seasonal")}
-              description={t("seasonalDescription")}
-              filters={{
-                isSeasonal: true,
-                sortBy: "newest",
-                limit: 12,
-              }}
-            />
-          </Suspense>
+      <Suspense fallback={<ProductsGridSkeleton />}>
+        <ProductsGrid
+          title={t("seasonal")}
+          // description={t("seasonalDescription")}
+          filters={{
+            isSeasonal: true,
+            sortBy: "newest",
+            limit: 12,
+          }}
+        />
+      </Suspense>
 
-      <Suspense fallback={<SectionSkeleton />}>
-        <ProductSection
+      <Suspense fallback={<ProductsGridSkeleton />}>
+        <ProductsGrid
           title={t("trending")}
-          description={t("trendingDescription")}
+          // description={t("trendingDescription")}
           filters={{
             isTrending: true,
             sortBy: "popular",

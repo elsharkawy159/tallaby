@@ -52,8 +52,8 @@ const ProductsGrid = async ({
           </h2>
           <Button asChild className="p-0 gap-1" variant="link">
             <Link href="/products">
-              {t("viewMore")}
               <ChevronRight className="size-4 rtl:rotate-180" />
+              {t("viewMore")}
             </Link>
           </Button>
         </div>
@@ -67,7 +67,10 @@ const ProductsGrid = async ({
       {/* Products Grid */}
       <div className="grid md:gap-4 gap-2 grid-cols-2 md:grid-cols-3 h-full lg:grid-cols-4 xl:grid-cols-5">
         {products.data.map((product) => (
-          <ProductCard key={String(product.id)} {...(product as ProductCardProps)} />
+          <ProductCard
+            key={String(product.id)}
+            {...(product as ProductCardProps)}
+          />
         ))}
       </div>
     </section>
