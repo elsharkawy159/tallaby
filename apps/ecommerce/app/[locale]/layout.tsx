@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import { Montserrat, Noto_Kufi_Arabic } from "next/font/google";
 import "@workspace/ui/globals.css";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
@@ -8,7 +7,6 @@ import { Providers } from "./providers";
 import NextTopLoader from "nextjs-toploader";
 import { Scripts } from "@/components/layout/structured-data";
 import { MetaPixel } from "@/components/meta/meta-pixel";
-import { AffiliateCouponCapture } from "@/components/layout/affiliate-coupon-capture.client";
 import { getMessages, getTranslations } from "next-intl/server";
 import { Toaster } from "@workspace/ui/components/sonner";
 import { DirectionProvider } from "@workspace/ui/components/direction";
@@ -131,9 +129,6 @@ export default async function RootLayout({
         } antialiased`}
       >
         <MetaPixel />
-        <Suspense fallback={null}>
-          <AffiliateCouponCapture />
-        </Suspense>
         <NextTopLoader
           color="var(--accent)"
           crawlSpeed={200}

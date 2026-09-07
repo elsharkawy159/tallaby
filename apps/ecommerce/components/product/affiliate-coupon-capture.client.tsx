@@ -11,9 +11,7 @@ import { normalizeCouponCode } from '@/lib/affiliate-coupon.lib'
  * then strips the param from the address bar so the session cookie becomes
  * the source of truth (avoids re-capturing / duplicating on navigation).
  *
- * Mounted once in the root layout so any URL on the site — the homepage
- * (`/?coupon=...`), a product page, a category page, etc. — can carry a
- * coupon. Safe to mount on ISR pages — cookie writes go through a server
+ * Safe to mount on ISR product pages — cookie writes go through a server
  * action; this component never reads cookies() during render.
  */
 export function AffiliateCouponCapture () {
