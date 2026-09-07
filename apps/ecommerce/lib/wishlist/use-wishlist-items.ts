@@ -6,7 +6,7 @@ import { getWishlistItems } from "@/actions/wishlist";
 
 export const WISHLIST_ITEMS_QUERY_KEY = ["wishlist-items"] as const;
 
-interface WishlistLookupEntry {
+export interface WishlistLookupEntry {
   id: string;
   productId: string;
 }
@@ -26,7 +26,7 @@ interface WishlistLookupEntry {
 export function useWishlistItems() {
   const queryClient = useQueryClient();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isFetched } = useQuery({
     queryKey: WISHLIST_ITEMS_QUERY_KEY,
     queryFn: async () => {
       const result = await getWishlistItems();
@@ -47,10 +47,46 @@ export function useWishlistItems() {
     [items]
   );
 
-  const invalidate = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: WISHLIST_ITEMS_QUERY_KEY });
-    queryClient.invalidateQueries({ queryKey: ["wishlists"] });
+  const invalidate = useCallback(async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: WISHLIST_ITEMS_QUERY_KEY }),
+      queryClient.invalidateQueries({ queryKey: ["wishlists"] }),
+    ]);
   }, [queryClient]);
 
-  return { items, isLoading, findByProductId, invalidate };
+  const addOptimistic = useCallback(
+    (entry: WishlistLookupEntry) => {
+      queryClient.setQueryData<WishlistLookupEntry[]>(
+        WISHLIST_ITEMS_QUERY_KEY,
+        (prev) => {
+          const current = prev ?? [];
+          if (current.some((item) => item.productId === entry.productId)) {
+            return current;
+          }
+          return [...current, entry];
+        }
+      );
+    },
+    [queryClient]
+  );
+
+  const removeOptimistic = useCallback(
+    (itemId: string) => {
+      queryClient.setQueryData<WishlistLookupEntry[]>(
+        WISHLIST_ITEMS_QUERY_KEY,
+        (prev) => (prev ?? []).filter((item) => item.id !== itemId)
+      );
+    },
+    [queryClient]
+  );
+
+  return {
+    items,
+    isLoading,
+    isFetched,
+    findByProductId,
+    invalidate,
+    addOptimistic,
+    removeOptimistic,
+  };
 }

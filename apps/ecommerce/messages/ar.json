@@ -1255,7 +1255,9 @@
       "heading": "تسوق حسب الفئة",
       "intro": "اكتشف فئات Tallaby عشان تلاقي اللي بتدور عليه.",
       "noCategories": "لا توجد فئات لعرضها حاليًا.",
-      "productsCount": "{count} منتج"
+      "noProducts": "لا توجد منتجات في هذا القسم حاليًا.",
+      "productsCount": "{count} منتج",
+      "viewAll": "عرض الكل"
     }
   },
   "category": {
@@ -1269,6 +1271,7 @@
     "legal": "قانوني",
     "aboutUs": "من نحن",
     "contactUs": "اتصل بنا",
+    "categories": "الفئات",
     "storeLocator": "المتاجر",
     "careers": "الوظائف",
     "affiliateProgram": "برنامج التسويق بالعمولة",

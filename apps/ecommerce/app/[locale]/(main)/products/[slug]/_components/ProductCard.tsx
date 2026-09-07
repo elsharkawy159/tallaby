@@ -14,7 +14,9 @@ interface ProductCardWithStatusProps extends ProductCardProps {
 }
 
 const ProductCard = ({
-  isInWishlist = false,
+  // Leave undefined so WishlistButton owns membership via the shared
+  // client query. Defaulting to `false` pinned every heart to "not saved".
+  isInWishlist,
   wishlistItemId,
   ...product
 }: ProductCardWithStatusProps) => {

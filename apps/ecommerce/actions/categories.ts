@@ -4,8 +4,10 @@ import { db } from "@workspace/db";
 import {
   categories,
   products,
+  productVariants,
   eq,
   and,
+  or,
   desc,
   sql,
   isNull,
@@ -15,7 +17,12 @@ import {
   gt,
 } from "@workspace/db";
 import { unstable_cache } from "next/cache";
-import { categoryTags } from "@workspace/cache";
+import { categoryTags, productTags } from "@workspace/cache";
+import {
+  mergeProductWithTranslation,
+  pickTranslationFromArray,
+  type ProductLocale,
+} from "@/lib/product-translations";
 
 export const getAllCategories = unstable_cache(
   async () => {
@@ -160,8 +167,8 @@ export const getTopCategories = unstable_cache(
         .where(
           and(
             gt(categories.productCount, 0),
-            isNotNull(categories.name),
             isNotNull(categories.slug),
+            or(isNotNull(categories.name), isNotNull(categories.nameAr)),
           ),
         )
         .orderBy(desc(categories.productCount))
@@ -278,6 +285,228 @@ export const getCategoriesWithProducts = unstable_cache(
     revalidate: 60 * 60 * 24, // 1 day
   },
 );
+
+export interface CategoryPageSection {
+  id: string;
+  name: string | null;
+  nameAr: string | null;
+  slug: string;
+  imageUrl: string | null;
+  productCount: number;
+  products: Array<Record<string, unknown>>;
+}
+
+const PRODUCTS_PER_CATEGORY = 8;
+
+/** Postgres drivers often return array_agg as `{uuid}` / `{a,b}` strings. */
+function normalizeCategoryIds(
+  value: unknown,
+  fallbackId?: string | null,
+): string[] {
+  let ids: string[] = [];
+
+  if (Array.isArray(value)) {
+    ids = value.filter((id): id is string => typeof id === "string" && id.length > 0);
+  } else if (typeof value === "string" && value.length > 0) {
+    const inner = value.replace(/^\{|\}$/g, "").trim();
+    if (inner) {
+      ids = inner
+        .split(",")
+        .map((part) => part.trim().replace(/^"|"$/g, ""))
+        .filter(Boolean);
+    }
+  }
+
+  if (ids.length === 0 && fallbackId) {
+    ids = [fallbackId];
+  }
+
+  return [...new Set(ids)];
+}
+
+async function getSampleProductsForCategoryIds(
+  categoryIds: string[],
+  locale: ProductLocale,
+  limit: number,
+) {
+  const ids = normalizeCategoryIds(categoryIds);
+  if (ids.length === 0) return [];
+
+  const categoryCondition =
+    ids.length === 1
+      ? eq(products.categoryId, ids[0]!)
+      : inArray(products.categoryId, ids);
+
+  const productsListRaw = await db.query.products.findMany({
+    where: and(categoryCondition, eq(products.status, "active")),
+    with: {
+      brand: true,
+      category: true,
+      productTranslations: true,
+      productVariants: {
+        columns: {
+          id: true,
+          localized: true,
+          option1: true,
+          option2: true,
+          option3: true,
+          images: true,
+          imageUrl: true,
+          position: true,
+        },
+        orderBy: [asc(productVariants.position)],
+      },
+    },
+    orderBy: [desc(products.reviewCount), desc(products.averageRating)],
+    limit,
+  });
+
+  return productsListRaw.map((product) => {
+    const translation = pickTranslationFromArray(
+      product.productTranslations ?? [],
+      locale,
+    );
+    return mergeProductWithTranslation(product, translation);
+  });
+}
+
+/**
+ * Storefront /categories page: distinct category names that have active
+ * products, each with a sample product grid. Falls back to the full
+ * category catalog (no products) when none are linked yet.
+ */
+export async function getCategoriesPageData(
+  locale: ProductLocale,
+  productsPerCategory: number = PRODUCTS_PER_CATEGORY,
+) {
+  return unstable_cache(
+    async (): Promise<
+      | { success: true; data: CategoryPageSection[] }
+      | { success: false; error: string }
+    > => {
+      try {
+        const withProducts = await db
+          .select({
+            id: sql<string>`(array_agg(${categories.id} ORDER BY ${categories.productCount} DESC NULLS LAST))[1]`.as(
+              "id",
+            ),
+            name: categories.name,
+            nameAr: categories.nameAr,
+            slug: sql<string>`(array_agg(${categories.slug} ORDER BY ${categories.productCount} DESC NULLS LAST))[1]`.as(
+              "slug",
+            ),
+            imageUrl: sql<
+              string | null
+            >`(array_agg(${categories.imageUrl} ORDER BY ${categories.productCount} DESC NULLS LAST))[1]`.as(
+              "image_url",
+            ),
+            categoryIds: sql<string[]>`array_agg(DISTINCT ${categories.id})`.as(
+              "category_ids",
+            ),
+            productCount: sql<number>`COUNT(${products.id})`.as("product_count"),
+          })
+          .from(categories)
+          .innerJoin(
+            products,
+            and(
+              eq(products.categoryId, categories.id),
+              eq(products.status, "active"),
+            ),
+          )
+          .where(
+            and(
+              isNotNull(categories.slug),
+              or(isNotNull(categories.name), isNotNull(categories.nameAr)),
+            ),
+          )
+          .groupBy(categories.name, categories.nameAr)
+          .orderBy(desc(sql`COUNT(${products.id})`));
+
+        let sections: CategoryPageSection[];
+
+        if (withProducts.length > 0) {
+          sections = await Promise.all(
+            withProducts.map(async (category) => {
+              const sampleProducts = await getSampleProductsForCategoryIds(
+                normalizeCategoryIds(category.categoryIds, category.id),
+                locale,
+                productsPerCategory,
+              );
+
+              return {
+                id: category.id,
+                name: category.name,
+                nameAr: category.nameAr,
+                slug: category.slug,
+                imageUrl: category.imageUrl,
+                productCount: Number(category.productCount) || 0,
+                products: sampleProducts,
+              };
+            }),
+          );
+        } else {
+          // No active products linked — still list the catalog so the page
+          // isn't blank while inventory/category assignments catch up.
+          const allCategories = await db
+            .select({
+              id: categories.id,
+              name: categories.name,
+              nameAr: categories.nameAr,
+              slug: categories.slug,
+              imageUrl: categories.imageUrl,
+              productCount: categories.productCount,
+            })
+            .from(categories)
+            .where(
+              and(
+                isNotNull(categories.slug),
+                or(isNotNull(categories.name), isNotNull(categories.nameAr)),
+              ),
+            )
+            .orderBy(asc(categories.level), asc(categories.name));
+
+          const deduped = new Map<string, (typeof allCategories)[number]>();
+          for (const category of allCategories) {
+            if (!category.slug) continue;
+            const key = `${category.name ?? ""}|${category.nameAr ?? ""}`
+              .trim()
+              .toLowerCase();
+            const existing = deduped.get(key);
+            if (!existing || category.productCount > existing.productCount) {
+              deduped.set(key, category);
+            }
+          }
+
+          sections = Array.from(deduped.values()).map((category) => ({
+            id: category.id,
+            name: category.name,
+            nameAr: category.nameAr,
+            slug: category.slug!,
+            imageUrl: category.imageUrl,
+            productCount: category.productCount ?? 0,
+            products: [],
+          }));
+        }
+
+        return { success: true, data: sections };
+      } catch (error) {
+        console.error("Error fetching categories page data:", error);
+        return { success: false, error: "Failed to fetch categories" };
+      }
+    },
+    [`categories-page-${locale}-${productsPerCategory}`],
+    {
+      tags: [
+        categoryTags.all(),
+        categoryTags.tree(),
+        categoryTags.top(),
+        productTags.listing(),
+        productTags.filterOptions(),
+      ],
+      revalidate: 600,
+    },
+  )();
+}
 
 const buildCategoryTree = unstable_cache(
   async (categories: any[]) => {

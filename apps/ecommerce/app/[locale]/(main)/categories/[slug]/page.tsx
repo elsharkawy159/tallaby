@@ -2,8 +2,8 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { hasLocale } from "next-intl";
-import { getCategoryBySlug } from "@/actions/categories";
-import { getProducts, getFilterOptions } from "@/actions/products";
+import { getCategoryBySlug, getAllCategorySlugs } from "@/actions/categories";
+import { getProducts } from "@/actions/products";
 import { generateCategoryMetadata } from "@/lib/metadata";
 import { generateCategoryStructuredData } from "@/lib/structured-data";
 import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
@@ -23,10 +23,10 @@ export const revalidate = 3600;
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
-  const result = await getFilterOptions();
+  const result = await getAllCategorySlugs();
   if (!result.success || !result.data) return [];
 
-  return result.data.categories.map((category) => ({ slug: category.slug }));
+  return result.data.map((slug) => ({ slug }));
 }
 
 async function resolveCategory(locale: string, slug: string) {
@@ -78,7 +78,9 @@ export default async function CategoryPage({
 
   const page = Number(resolvedSearchParams.page) || 1;
   const productsResult = await getProducts({
-    categoryId: category.id,
+    ...(category.name
+      ? { categoryName: category.name }
+      : { categoryId: category.id }),
     locale: locale as ProductLocale,
     limit: PAGE_SIZE,
     offset: (page - 1) * PAGE_SIZE,
@@ -88,6 +90,7 @@ export default async function CategoryPage({
   const totalCount = productsResult.success ? productsResult.totalCount : 0;
   const totalPages = Math.ceil((totalCount || 0) / PAGE_SIZE);
   const displayName = localizedCategoryName(category, locale as ProductLocale);
+  const displayCount = totalCount || category.productCount || 0;
 
   return (
     <main className="min-h-screen">
@@ -113,7 +116,7 @@ export default async function CategoryPage({
       <section className="container py-6">
         <h1 className="text-2xl lg:text-3xl font-bold mb-1">{displayName}</h1>
         <p className="text-muted-foreground mb-6">
-          {category.productCount ?? 0}{" "}
+          {displayCount}{" "}
           {locale === "ar" ? "منتج" : "products"}
         </p>
 

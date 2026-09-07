@@ -21,6 +21,10 @@ import {
   PopoverTrigger,
 } from "@workspace/ui/components/popover";
 import { cn } from "@/lib/utils";
+import {
+  buildProductShareUrl,
+  buildProductShareUrlFromPath,
+} from "@/lib/affiliate-coupon.lib";
 
 interface ShareProductPopoverProps {
   /** Product title, used for the share text and the popover subtitle. */
@@ -32,6 +36,16 @@ interface ShareProductPopoverProps {
    * resolved after mount so the markup stays prerenderable.
    */
   url?: string;
+  /**
+   * Active affiliate coupon for the signed-in sharer. When set, appended as
+   * `?coupon=` on the share URL. Never accept another user's code here.
+   */
+  coupon?: string | null;
+  /**
+   * False while auth/affiliate status is still loading so we do not briefly
+   * share a non-affiliate URL and then swap it.
+   */
+  isUrlReady?: boolean;
   productId?: string;
   className?: string;
 }
@@ -71,22 +85,45 @@ export const ShareProductPopover = ({
   title,
   image,
   url,
+  coupon = null,
+  isUrlReady = true,
   productId,
   className,
 }: ShareProductPopoverProps) => {
   const t = useTranslations("product.share");
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [resolvedUrl, setResolvedUrl] = useState(url ?? "");
+  const [resolvedUrl, setResolvedUrl] = useState("");
   const [canNativeShare, setCanNativeShare] = useState(false);
 
   useEffect(() => {
-    if (url) {
-      setResolvedUrl(url);
-    } else if (typeof window !== "undefined") {
-      setResolvedUrl(`${window.location.origin}${window.location.pathname}`);
+    if (!isUrlReady) {
+      setResolvedUrl("");
+      return;
     }
-  }, [url]);
+
+    if (url) {
+      try {
+        const parsed = new URL(url);
+        parsed.search = "";
+        parsed.hash = "";
+        setResolvedUrl(buildProductShareUrl(parsed.toString(), coupon));
+      } catch {
+        setResolvedUrl(url);
+      }
+      return;
+    }
+
+    if (typeof window !== "undefined") {
+      setResolvedUrl(
+        buildProductShareUrlFromPath({
+          origin: window.location.origin,
+          pathname: window.location.pathname,
+          coupon,
+        })
+      );
+    }
+  }, [url, coupon, isUrlReady]);
 
   useEffect(() => {
     setCanNativeShare(
@@ -232,9 +269,12 @@ export const ShareProductPopover = ({
           type="button"
           aria-label={t("share")}
           title={t("share")}
+          disabled={!isUrlReady}
+          aria-busy={!isUrlReady}
           className={cn(
             "flex size-9 cursor-pointer items-center justify-center rounded-full bg-white/90 text-gray-700 shadow-sm ring-1 ring-black/5 backdrop-blur-sm transition-all duration-200 hover:scale-105 hover:bg-white hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 md:size-10",
             open && "bg-white text-primary",
+            !isUrlReady && "pointer-events-none opacity-70",
             className
           )}
         >

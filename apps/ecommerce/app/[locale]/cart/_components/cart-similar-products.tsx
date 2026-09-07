@@ -3,7 +3,6 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { SimilarProducts } from "@/app/[locale]/(main)/products/[slug]/_components/similar-products";
 import { SimilarProductsSkeleton } from "@/app/[locale]/(main)/products/[slug]/_components/similar-products.skeleton";
 import { getCartRecommendations } from "@/actions/recommendations";
-import { getWishlistItems } from "@/actions/wishlist";
 import type { ProductLocale } from "@/lib/product-translations";
 
 interface CartSimilarProductsProps {
@@ -15,16 +14,13 @@ async function CartSimilarProductsContent({
 }: CartSimilarProductsProps) {
   const locale = (await getLocale()) as ProductLocale;
   const t = await getTranslations("cart");
-  const [recommendationsResult, wishlistResult] = await Promise.all([
-    getCartRecommendations(cartProductIds, locale),
-    getWishlistItems(),
-  ]);
+  const recommendationsResult = await getCartRecommendations(
+    cartProductIds,
+    locale
+  );
 
   const products = recommendationsResult.success
     ? (recommendationsResult.data ?? [])
-    : [];
-  const wishlistItems = wishlistResult.success
-    ? (wishlistResult.data ?? [])
     : [];
 
   if (products.length === 0) {
@@ -32,11 +28,7 @@ async function CartSimilarProductsContent({
   }
 
   return (
-    <SimilarProducts
-      products={products}
-      wishlistItems={wishlistItems}
-      title={t("similarItems")}
-    />
+    <SimilarProducts products={products} title={t("similarItems")} />
   );
 }
 

@@ -1162,7 +1162,9 @@
       "heading": "Shop by Category",
       "intro": "Explore Tallaby's categories to find what you're looking for.",
       "noCategories": "No categories to show yet.",
-      "productsCount": "{count} products"
+      "noProducts": "No products in this category yet.",
+      "productsCount": "{count} products",
+      "viewAll": "View all"
     }
   },
   "category": {
@@ -1176,6 +1178,7 @@
     "legal": "Legal",
     "aboutUs": "About Us",
     "contactUs": "Contact Us",
+    "categories": "Categories",
     "storeLocator": "Stores",
     "careers": "Careers",
     "affiliateProgram": "Affiliate Program",

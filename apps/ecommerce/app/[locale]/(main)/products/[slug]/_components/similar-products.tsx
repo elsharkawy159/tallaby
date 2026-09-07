@@ -16,13 +16,11 @@ import { toProductCardProps } from "@/lib/utils";
 
 interface SimilarProductsProps {
   products?: Array<Record<string, unknown>>;
-  wishlistItems?: Array<{ productId: string; id: string }>;
   title?: string;
 }
 
 export const SimilarProducts = ({
   products,
-  wishlistItems = [],
   title,
 }: SimilarProductsProps) => {
   const t = useTranslations("product");
@@ -31,10 +29,6 @@ export const SimilarProducts = ({
 
   if (!products || products.length === 0) return null;
   const sectionTitle = title ?? t("relatedProducts");
-
-  const wishlistMap = new Map(
-    wishlistItems.map((item) => [item.productId, item])
-  );
 
   return (
     <section className="py-8 lg:py-12" dir={isRtl ? "rtl" : "ltr"}>
@@ -59,20 +53,13 @@ export const SimilarProducts = ({
           <CarouselContent>
             {products.map((product) => {
               const cardProduct = toProductCardProps(product);
-              const wishlistItem = cardProduct.id
-                ? wishlistMap.get(cardProduct.id)
-                : undefined;
 
               return (
                 <CarouselItem
                   key={cardProduct.id}
                   className="basis-auto max-w-80 ps-2 md:ps-4"
                 >
-                  <ProductCard
-                    {...cardProduct}
-                    isInWishlist={!!wishlistItem}
-                    wishlistItemId={wishlistItem?.id}
-                  />
+                  <ProductCard {...cardProduct} />
                 </CarouselItem>
               );
             })}

@@ -89,7 +89,7 @@ export const CheckoutData = ({
     name: string;
     discountType: string;
     discountValue?: string | number;
-  } | null>(null);
+  } | null>(initialSummary.appliedCoupon ?? null);
   const [isRecalculatingShipping, setIsRecalculatingShipping] = useState(false);
 
   const addresses = initialAddresses;
@@ -116,6 +116,7 @@ export const CheckoutData = ({
       ...checkoutFormDefaults,
       shippingAddressId: activeAddress?.id || "",
       paymentMethod: DEFAULT_MANUAL_PAYMENT_METHOD,
+      couponCode: initialSummary.appliedCoupon?.code ?? "",
     },
   });
 

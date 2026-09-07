@@ -5,6 +5,7 @@ import { MobileImageCarousel } from "./mobile-image-carousel";
 import { ImageWithFallback } from "@/components/shared/image-with-fallback";
 import { PRODUCT_IMAGE_FALLBACK } from "@/lib/utils";
 import { ShareProductPopover } from "@/components/product";
+import { useAffiliateShareCoupon } from "@/hooks/use-affiliate-share-coupon";
 
 interface ProductImagesProps {
   images: string[];
@@ -22,6 +23,8 @@ export const ProductImages = ({
   const [showZoom, setShowZoom] = useState(false);
   const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
   const mainImageRef = useRef<HTMLDivElement>(null);
+  const { coupon: affiliateCoupon, isReady: isShareUrlReady } =
+    useAffiliateShareCoupon();
 
   // Auto-select the first image when images array changes (e.g. variant switch)
   useEffect(() => {
@@ -65,6 +68,8 @@ export const ProductImages = ({
           title={productName}
           image={shareImage}
           productId={productId}
+          coupon={affiliateCoupon}
+          isUrlReady={isShareUrlReady}
           className="absolute top-2.5 end-2.5 z-20"
         />
       </div>
@@ -77,7 +82,6 @@ export const ProductImages = ({
               key={index}
               onClick={() => setSelectedImage(image)}
               onMouseEnter={() => setSelectedImage(image)}
-              // onMouseLeave={() => setHoveredImage(null)}
               className={`aspect-square relative bg-white p-1 rounded overflow-hidden border transition-all duration-200 ${
                 activeImage === image
                   ? "border-primary"
@@ -141,6 +145,8 @@ export const ProductImages = ({
             title={productName}
             image={shareImage}
             productId={productId}
+            coupon={affiliateCoupon}
+            isUrlReady={isShareUrlReady}
             className="absolute top-3 end-3 z-[1000]"
           />
         </div>

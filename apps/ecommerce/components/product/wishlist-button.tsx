@@ -57,12 +57,24 @@ export const WishlistButton = ({
 
   // Membership is resolved on the client so the surrounding page markup stays
   // user-agnostic and prerenderable. Callers that already know the answer
-  // (e.g. the wishlist page itself) can still pass it in.
-  const { findByProductId, invalidate } = useWishlistItems();
+  // (e.g. the wishlist page itself) can still pass it in — but only as a
+  // pre-fetch hint. Once the shared query has resolved, it is the source of
+  // truth so a stale `false` prop cannot pin the heart forever.
+  const {
+    findByProductId,
+    invalidate,
+    isFetched,
+    addOptimistic,
+    removeOptimistic,
+  } = useWishlistItems();
   const entry = productId ? findByProductId(productId) : undefined;
 
-  const isWishlisted = isInWishlistOverride ?? Boolean(entry);
-  const wishlistItemId = wishlistItemIdOverride ?? entry?.id;
+  const isWishlisted = isFetched
+    ? Boolean(entry)
+    : (isInWishlistOverride ?? false);
+  const wishlistItemId = isFetched
+    ? entry?.id
+    : (wishlistItemIdOverride ?? entry?.id);
 
   const toggleWishlist = async () => {
     if (disabled || !productId || isLoading) return;
@@ -73,7 +85,8 @@ export const WishlistButton = ({
         const result = await removeFromWishlistAction(wishlistItemId);
         if (result.success) {
           posthog.capture("wishlist_item_removed", { product_id: productId });
-          invalidate();
+          removeOptimistic(wishlistItemId);
+          await invalidate();
           toast.success(tToast("removedFromWishlist"));
         } else {
           toast.error(result.error || tToast("failedToRemoveFromWishlist"));
@@ -82,7 +95,11 @@ export const WishlistButton = ({
         const result = await addToWishlistAction({ productId });
         if (result.success) {
           posthog.capture("wishlist_item_added", { product_id: productId });
-          invalidate();
+          const newItem = result.data as { id?: string } | undefined;
+          if (newItem?.id) {
+            addOptimistic({ id: newItem.id, productId });
+          }
+          await invalidate();
           toast.success(tToast("addedToWishlist"));
         } else {
           toast.error(result.error || tToast("failedToAddToWishlist"));
@@ -106,14 +123,16 @@ export const WishlistButton = ({
       size={size}
       variant={variant}
       aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+      aria-pressed={isWishlisted}
     >
       {isLoading ? (
         <Loader2 className={`${styles.loader} animate-spin`} />
       ) : (
         <Heart
-          className={`${styles.icon} ${
-            isWishlisted ? "fill-current text-red-500" : ""
-          }`}
+          className={cn(
+            styles.icon,
+            isWishlisted && "fill-current text-red-500"
+          )}
         />
       )}
       {showText && (

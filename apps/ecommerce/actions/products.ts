@@ -790,7 +790,9 @@ export async function getFilterOptions() {
               eq(products.status, "active")
             )
           )
-          .where(isNotNull(categories.name))
+          .where(
+            or(isNotNull(categories.name), isNotNull(categories.nameAr))
+          )
           .groupBy(categories.name, categories.nameAr)
           .having(sql`COUNT(${products.id}) > 0`)
           .orderBy(categories.name);

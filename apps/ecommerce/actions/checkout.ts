@@ -24,6 +24,7 @@ import {
   type CheckoutSummary,
 } from "@/lib/coupon-utils";
 import { getUserWalletSummary } from "@workspace/db/wallet";
+import { getPendingCouponCode } from "@/lib/affiliate-coupon-cookie";
 
 const cartWithShippingItems = {
   cartItems: {
@@ -237,7 +238,26 @@ export async function getCheckoutData() {
       destinationState: defaultAddress?.state,
     });
 
-    const summary = buildBaseSummary(localizedCartItems, shippingCost);
+    let summary = buildBaseSummary(localizedCartItems, shippingCost);
+
+    // Auto-apply a pending coupon captured from `?coupon=` (affiliate share)
+    // or a prior explicit apply. Server validation remains authoritative —
+    // an invalid/ineligible code simply leaves the base summary unchanged.
+    const pendingCouponCode = await getPendingCouponCode();
+    if (pendingCouponCode) {
+      try {
+        const couponValidation = await validateCoupon(
+          pendingCouponCode,
+          cart,
+          { shippingAddressId: defaultAddress?.id },
+        );
+        if (couponValidation.success && couponValidation.data?.summary) {
+          summary = couponValidation.data.summary;
+        }
+      } catch (error) {
+        console.error("Pending coupon auto-apply failed:", error);
+      }
+    }
 
     const walletSummary = await getUserWalletSummary(db, userId);
 
@@ -249,6 +269,7 @@ export async function getCheckoutData() {
         paymentMethods: paymentMethodsList,
         itemsBySeller,
         summary,
+        pendingCouponCode,
         walletAvailableBalance: walletSummary?.availableBalance ?? null,
         walletCurrency: walletSummary?.currency ?? null,
       },
