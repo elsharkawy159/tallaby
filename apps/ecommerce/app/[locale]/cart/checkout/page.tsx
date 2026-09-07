@@ -65,31 +65,6 @@ export default async function Checkout() {
   const cartId: string = checkoutData.cart?.id ?? "";
   const currency = checkoutData.cart?.currency || DEFAULT_CURRENCY;
 
-  if (cartId && productIds.length > 0) {
-    try {
-      const { sendMetaCapiEvent } = await import("@/lib/meta/meta.server");
-      const { getMetaCapiUserData } = await import("@/lib/meta/meta.user");
-      const { toMetaContentIds } = await import("@/lib/meta/meta.product");
-      const { userData, eventSourceUrl } = await getMetaCapiUserData();
-
-      await sendMetaCapiEvent({
-        eventName: "InitiateCheckout",
-        eventId: cartId,
-        eventSourceUrl: eventSourceUrl ?? undefined,
-        userData,
-        customData: {
-          content_ids: toMetaContentIds(productIds),
-          content_type: "product",
-          value: checkoutValue,
-          currency,
-          num_items: numItems,
-        },
-      });
-    } catch (metaError) {
-      console.error("Meta CAPI InitiateCheckout failed:", metaError);
-    }
-  }
-
   return (
     <div className="min-h-screen flex flex-col bg-linear-to-b from-gray-50 to-white">
       <DynamicBreadcrumb />

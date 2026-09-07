@@ -272,6 +272,7 @@ export function CartSheet({
                 <Button asChild className="w-full" size="lg">
                   <Link
                     href="/cart/checkout"
+                    prefetch={false}
                     onClick={() => onOpenChange(false)}
                   >
                     {t("proceedToCheckout")}

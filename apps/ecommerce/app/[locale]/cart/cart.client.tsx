@@ -266,7 +266,7 @@ export default function CartClient({ initialCartData }: CartClientProps) {
                 </div>
               </div>
             </div>
-            <Link href="/cart/checkout" className="block">
+            <Link href="/cart/checkout" prefetch={false} className="block">
               <Button
                 className="w-full"
                 size="lg"

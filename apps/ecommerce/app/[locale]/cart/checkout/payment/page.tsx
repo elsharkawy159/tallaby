@@ -46,7 +46,7 @@ export default async function CheckoutPaymentPage({
             {result.error || t("pleaseSignIn")}
           </p>
           <Button asChild>
-            <Link href="/cart/checkout">{t("backToCart")}</Link>
+            <Link href="/cart/checkout" prefetch={false}>{t("backToCart")}</Link>
           </Button>
         </div>
       </div>
@@ -107,7 +107,7 @@ export default async function CheckoutPaymentPage({
               {checkout.error || t("paymentFailed")}
             </p>
             <Button asChild>
-              <Link href="/cart/checkout">{t("backToCart")}</Link>
+              <Link href="/cart/checkout" prefetch={false}>{t("backToCart")}</Link>
             </Button>
           </div>
         </main>

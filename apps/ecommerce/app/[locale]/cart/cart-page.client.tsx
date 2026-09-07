@@ -179,6 +179,7 @@ export function CartPageClient({ initialCartData }: CartPageClientProps) {
           >
             <Link
               href="/cart/checkout"
+              prefetch={false}
               className="block"
               onClick={() =>
                 posthog.capture("checkout_started", {
