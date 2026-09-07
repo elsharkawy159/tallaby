@@ -24,7 +24,7 @@ import {
   type CheckoutSummary,
 } from "@/lib/coupon-utils";
 import { getUserWalletSummary } from "@workspace/db/wallet";
-import { getPendingCouponCode } from "@/lib/affiliate-coupon-session";
+import { getPendingCouponCode } from "@/lib/affiliate-coupon-cookie";
 
 const cartWithShippingItems = {
   cartItems: {
@@ -240,9 +240,8 @@ export async function getCheckoutData() {
 
     let summary = buildBaseSummary(localizedCartItems, shippingCost);
 
-    // Auto-apply a pending coupon captured from `?coupon=` onto the customer
-    // session (affiliate share) or a prior explicit apply. Server validation
-    // remains authoritative —
+    // Auto-apply a pending coupon captured from `?coupon=` (affiliate share)
+    // or a prior explicit apply. Server validation remains authoritative —
     // an invalid/ineligible code simply leaves the base summary unchanged.
     const pendingCouponCode = await getPendingCouponCode();
     if (pendingCouponCode) {

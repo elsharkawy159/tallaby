@@ -27,6 +27,7 @@ import {
   getProductSlugForLocaleStrict,
   type ProductLocale,
 } from "@/lib/product-translations";
+import { AffiliateCouponCapture } from "@/components/product/affiliate-coupon-capture.client";
 
 // ISR: pre-render product pages at build time, revalidate every 10 minutes
 export const revalidate = 600;
@@ -132,6 +133,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   return (
     <main className="min-h-screen">
+      <Suspense fallback={null}>
+        <AffiliateCouponCapture />
+      </Suspense>
       <ProductStructuredData
         product={productWithCategory}
         locale={locale as ProductLocale}

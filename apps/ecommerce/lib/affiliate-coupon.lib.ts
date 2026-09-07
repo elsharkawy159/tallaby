@@ -1,8 +1,14 @@
 /**
  * Pure helpers for affiliate product-share URLs and coupon query capture.
- * Session I/O and server validation live elsewhere — this module stays
+ * Cookie I/O and server validation live elsewhere — this module stays
  * isomorphic so Vitest and client components can share one implementation.
  */
+
+/** Cookie / query value for a pending checkout coupon. */
+export const PENDING_COUPON_COOKIE_NAME = 'pending_coupon'
+
+/** Max age for the pending-coupon cookie (30 days). */
+export const PENDING_COUPON_COOKIE_MAX_AGE = 60 * 60 * 24 * 30
 
 /**
  * Normalize a coupon string from a URL or form.

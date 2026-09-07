@@ -36,7 +36,7 @@ import { getCurrentUserId } from "@/lib/get-current-user-id";
 import { buildOrderPagePath } from "@/lib/order-access-token";
 import { getUser } from "./auth";
 import { revalidateCartCheckout } from "@/lib/revalidate-cart-checkout";
-import { clearPendingCouponCode } from "@/lib/affiliate-coupon-session";
+import { clearPendingCouponCode } from "@/lib/affiliate-coupon-cookie";
 
 /** Internal control-flow signal: a concurrent request already transitioned this order (cancel idempotency guard). */
 class OrderAlreadyTransitionedError extends Error {}
