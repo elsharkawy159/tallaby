@@ -33,12 +33,21 @@ export const ProductHero = ({
     return baseImages;
   }, [product.images, selectedVariant]);
 
+  const bulletPoints = useMemo(() => {
+    if (!Array.isArray(product.bulletPoints)) return [];
+    return product.bulletPoints.filter(
+      (point): point is string => typeof point === "string" && point.trim().length > 0
+    );
+  }, [product.bulletPoints]);
+
   return (
     <div className="w-full lg:sticky lg:top-5 h-full">
       <ProductImages
         images={images}
         productName={product.title}
         productId={product.id}
+        description={product.description}
+        bulletPoints={bulletPoints}
       />
     </div>
   );

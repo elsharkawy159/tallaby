@@ -25,6 +25,7 @@ import {
   buildProductShareUrl,
   buildProductShareUrlFromPath,
 } from "@/lib/affiliate-coupon.lib";
+import { buildPinterestAdDescription } from "@/lib/pinterest-ad-share.lib";
 
 interface ShareProductPopoverProps {
   /** Product title, used for the share text and the popover subtitle. */
@@ -36,6 +37,10 @@ interface ShareProductPopoverProps {
    * resolved after mount so the markup stays prerenderable.
    */
   url?: string;
+  /** Product description — used for Pinterest ad copy when bullets are absent. */
+  description?: string | null;
+  /** Product bullet points — preferred body copy for Pinterest ad pins. */
+  bulletPoints?: string[];
   /**
    * Active affiliate coupon for the signed-in sharer. When set, appended as
    * `?coupon=` on the share URL. Never accept another user's code here.
@@ -85,6 +90,8 @@ export const ShareProductPopover = ({
   title,
   image,
   url,
+  description,
+  bulletPoints,
   coupon = null,
   isUrlReady = true,
   productId,
@@ -133,6 +140,17 @@ export const ShareProductPopover = ({
 
   const shareText = useMemo(() => t("shareText", { title }), [t, title]);
 
+  const pinterestText = useMemo(
+    () =>
+      buildPinterestAdDescription({
+        adTitle: t("pinterestAdTitle", { title }),
+        bulletPoints,
+        description,
+        productUrl: resolvedUrl,
+      }),
+    [bulletPoints, description, resolvedUrl, t, title]
+  );
+
   const track = useCallback(
     (channel: string) => {
       posthog.capture("product_shared", {
@@ -177,6 +195,7 @@ export const ShareProductPopover = ({
   const channels = useMemo<ShareChannel[]>(() => {
     const encodedUrl = encodeURIComponent(resolvedUrl);
     const encodedText = encodeURIComponent(shareText);
+    const encodedPinterestText = encodeURIComponent(pinterestText);
 
     const list: ShareChannel[] = [
       {
@@ -205,7 +224,7 @@ export const ShareProductPopover = ({
         label: "Pinterest",
         className: "bg-[#BD081C]",
         render: (c) => <BrandIcon icon={siPinterest} className={c} />,
-        href: `https://www.pinterest.com/pin/create/button/?url=${encodedUrl}&description=${encodedText}${
+        href: `https://www.pinterest.com/pin/create/button/?url=${encodedUrl}&description=${encodedPinterestText}${
           image ? `&media=${encodeURIComponent(image)}` : ""
         }`,
       },
@@ -257,6 +276,7 @@ export const ShareProductPopover = ({
     copyLink,
     image,
     nativeShare,
+    pinterestText,
     resolvedUrl,
     shareText,
     t,

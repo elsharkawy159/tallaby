@@ -336,6 +336,7 @@
       "share": "Share",
       "shareTitle": "Share this product",
       "shareText": "Check out {title} on Tallaby",
+      "pinterestAdTitle": "Shop now — {title}",
       "copyLink": "Copy",
       "copied": "Copied",
       "linkCopied": "Link copied to clipboard",

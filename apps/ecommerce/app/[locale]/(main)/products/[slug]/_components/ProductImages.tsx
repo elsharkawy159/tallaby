@@ -11,12 +11,16 @@ interface ProductImagesProps {
   images: string[];
   productName: string;
   productId?: string;
+  description?: string | null;
+  bulletPoints?: string[];
 }
 
 export const ProductImages = ({
   images,
   productName,
   productId,
+  description,
+  bulletPoints,
 }: ProductImagesProps) => {
   const [selectedImage, setSelectedImage] = useState(images[0]);
   const [hoveredImage, setHoveredImage] = useState<string | null>(null);
@@ -68,6 +72,8 @@ export const ProductImages = ({
           title={productName}
           image={shareImage}
           productId={productId}
+          description={description}
+          bulletPoints={bulletPoints}
           coupon={affiliateCoupon}
           isUrlReady={isShareUrlReady}
           className="absolute top-2.5 end-2.5 z-20"
@@ -145,6 +151,8 @@ export const ProductImages = ({
             title={productName}
             image={shareImage}
             productId={productId}
+            description={description}
+            bulletPoints={bulletPoints}
             coupon={affiliateCoupon}
             isUrlReady={isShareUrlReady}
             className="absolute top-3 end-3 z-[1000]"
