@@ -15,7 +15,7 @@ import { calculateOrderShippingCost } from "@/lib/shipping"
 import {
   clearPendingCouponCode,
   setPendingCouponCode,
-} from "@/lib/affiliate-coupon-cookie"
+} from "@/lib/affiliate-coupon-session"
 
 interface ValidationResult {
   success: boolean
@@ -320,7 +320,7 @@ export async function applyCouponToCart(data: {
     }
 
     // Persist the customer's explicit choice so a refresh / login keeps it
-    // (and so an inbound affiliate cookie does not silently re-apply after).
+    // (and so an inbound affiliate session code does not silently re-apply after).
     await setPendingCouponCode(normalizedCode)
 
     // Store the applied coupon code in cart metadata
@@ -410,7 +410,7 @@ export async function removeCouponFromCart(data?: {
       null,
     )
 
-    // Explicit remove must clear the pending cookie so checkout does not
+    // Explicit remove must clear the pending session code so checkout does not
     // auto-reapply the affiliate (or prior) code on the next load.
     await clearPendingCouponCode()
 

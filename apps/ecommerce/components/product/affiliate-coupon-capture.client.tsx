@@ -7,11 +7,11 @@ import { persistPendingCouponAction } from '@/actions/affiliate-coupon'
 import { normalizeCouponCode } from '@/lib/affiliate-coupon.lib'
 
 /**
- * Captures `?coupon=` from the current URL into the pending-coupon cookie,
- * then strips the param from the address bar so the session cookie becomes
+ * Captures `?coupon=` from the current URL into the customer session,
+ * then strips the param from the address bar so the session becomes
  * the source of truth (avoids re-capturing / duplicating on navigation).
  *
- * Safe to mount on ISR product pages — cookie writes go through a server
+ * Safe to mount on ISR pages — session writes go through a server
  * action; this component never reads cookies() during render.
  */
 export function AffiliateCouponCapture () {

@@ -126,6 +126,17 @@ export const payments = pgTable("payments", {
 		}),
 ]);
 
+/**
+ * Shopping session keyed by the `session_id` cookie.
+ * Holds session-only state such as a pending coupon — not a second cookie.
+ */
+export const customerSessions = pgTable("customer_sessions", {
+	id: text().primaryKey().notNull(),
+	couponCode: text("coupon_code"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+});
+
 export const carts = pgTable("carts", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	userId: uuid("user_id").notNull(),

@@ -4,12 +4,12 @@ import {
   clearPendingCouponCode,
   getPendingCouponCode,
   setPendingCouponCode,
-} from '@/lib/affiliate-coupon-cookie'
+} from '@/lib/affiliate-coupon-session'
 import { normalizeCouponCode } from '@/lib/affiliate-coupon.lib'
 
 /**
  * Persist a coupon captured from `?coupon=` (or a manual apply) into the
- * pending-coupon cookie. Does not validate eligibility — that happens when
+ * customer session. Does not validate eligibility — that happens when
  * checkout / place-order applies the code.
  */
 export async function persistPendingCouponAction (
