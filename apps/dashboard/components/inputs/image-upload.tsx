@@ -68,7 +68,7 @@ export function ImageUpload({
       progress: 0,
       liveSource: file,
       isUploaded: true,
-    }))
+    })),
   );
 
   // Keep local state in sync when form value changes externally
@@ -91,7 +91,7 @@ export function ImageUpload({
         progress: 0,
         liveSource: file,
         isUploaded: true,
-      }))
+      })),
     );
   }, [value]);
 
@@ -134,7 +134,7 @@ export function ImageUpload({
         onChange(updatedValue);
       }
     },
-    [onChange, value]
+    [onChange, value],
   );
 
   const handleFileUpload = useCallback(
@@ -153,20 +153,20 @@ export function ImageUpload({
           prev.map((item) =>
             item.file?.name === file.name
               ? { ...item, liveSource: data.path, isUploaded: true }
-              : item
-          )
+              : item,
+          ),
         );
 
         return data.path;
       } catch (error) {
         setFilesToUpload((prev) =>
-          prev.filter((item) => item.file?.name !== file.name)
+          prev.filter((item) => item.file?.name !== file.name),
         );
         toast.error(tToast("uploadError", { fileName: file.name }));
         return null;
       }
     },
-    [supabase, tToast]
+    [supabase, tToast],
   );
 
   const onDrop = useCallback(
@@ -189,7 +189,7 @@ export function ImageUpload({
           tToast("onlyMoreImagesAllowed", {
             available: availableSlots,
             skipped: exceededFiles.length,
-          })
+          }),
         );
       }
 
@@ -201,7 +201,7 @@ export function ImageUpload({
           } catch (error) {
             return { file, isValid: false, error };
           }
-        })
+        }),
       ).then((results) =>
         results.reduce(
           (acc, { file, isValid, error }) => {
@@ -212,13 +212,13 @@ export function ImageUpload({
               toast.error(
                 error instanceof Error
                   ? error.message
-                  : "An unknown error occurred"
+                  : "An unknown error occurred",
               );
             }
             return acc;
           },
-          { validFiles: [] as File[], invalidFiles: [] as File[] }
-        )
+          { validFiles: [] as File[], invalidFiles: [] as File[] },
+        ),
       );
 
       if (validFiles.length === 0) return;
@@ -235,12 +235,19 @@ export function ImageUpload({
 
       const uploadedPaths = await Promise.all(validFiles.map(handleFileUpload));
       const successfulUploads = uploadedPaths.filter(
-        (path): path is string => path !== null
+        (path): path is string => path !== null,
       );
 
       onChange([...value, ...successfulUploads]);
     },
-    [handleFileUpload, onChange, value, filesToUpload.length, maxImages, tToast]
+    [
+      handleFileUpload,
+      onChange,
+      value,
+      filesToUpload.length,
+      maxImages,
+      tToast,
+    ],
   );
 
   const isMaxReached = filesToUpload.length >= maxImages;
@@ -268,11 +275,11 @@ export function ImageUpload({
         onChange(
           items
             .map((item) => item.liveSource)
-            .filter((source): source is string => source !== null)
+            .filter((source): source is string => source !== null),
         );
       }
     },
-    [filesToUpload, onChange]
+    [filesToUpload, onChange],
   );
 
   return (
@@ -570,7 +577,7 @@ const FilePreview = React.memo(
         </AspectRatio>
       </div>
     );
-  }
+  },
 );
 
 FilePreview.displayName = "FilePreview";

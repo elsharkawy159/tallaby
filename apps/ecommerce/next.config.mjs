@@ -1,4 +1,4 @@
-import createNextIntlPlugin from 'next-intl/plugin';
+import createNextIntlPlugin from "next-intl/plugin";
 const withNextIntl = createNextIntlPlugin();
 
 const nextConfig = {
@@ -14,13 +14,15 @@ const nextConfig = {
   async redirects() {
     return [
       {
-        source: '/become-seller',
-        destination: '/sell',
+        source: "/become-seller",
+        destination: "/sell",
         permanent: true,
       },
-    ]
+    ];
   },
   images: {
+    // Vercel Image Optimization returns 402 once the included quota is used.
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: "https",

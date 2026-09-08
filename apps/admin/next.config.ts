@@ -6,6 +6,8 @@ const nextConfig: NextConfig = {
   // Linting runs via the `lint` script instead.
   typescript: { ignoreBuildErrors: true },
   images: {
+    // Vercel Image Optimization returns 402 once the included quota is used.
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: "https",
