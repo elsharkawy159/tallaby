@@ -143,6 +143,8 @@
     "couldNotCopyImageUrl": "Could not copy image URL",
     "productStatusUpdated": "Product status updated successfully",
     "productHiddenDraft": "Product hidden (draft)",
+    "productPublished": "Product published",
+    "productUnpublished": "Product unpublished",
     "productSubmittedForReview": "Product submitted for review",
     "failedToUpdateProductStatus": "Failed to update product status",
     "productUpdatedSuccessfully": "Product updated successfully!",

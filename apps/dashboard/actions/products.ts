@@ -1634,6 +1634,83 @@ export async function toggleProductStatus(productId: string) {
   }
 }
 
+function hasProductImage(images: unknown): boolean {
+  return Array.isArray(images) && images.length > 0;
+}
+
+export async function setProductPublished(productId: string, published: boolean) {
+  try {
+    const session = await getUser();
+    if (!session?.user?.id) {
+      throw new Error("Unauthorized");
+    }
+
+    const product = await db.query.products.findFirst({
+      where: and(
+        eq(products.id, productId),
+        eq(products.sellerId, session.user.id)
+      ),
+    });
+
+    if (!product) {
+      throw new Error("Product not found");
+    }
+
+    const nextStatus = published ? "active" : "draft";
+
+    if (product.status === nextStatus) {
+      return { success: true, data: product };
+    }
+
+    if (product.status !== "active" && product.status !== "draft") {
+      return {
+        success: false,
+        error: `Cannot publish or unpublish a product with status "${product.status}"`,
+      };
+    }
+
+    if (published && !hasProductImage(product.images)) {
+      return {
+        success: false,
+        error: "Add at least one image before publishing",
+      };
+    }
+
+    const before = await toSnapshot(productId);
+
+    const updatedProduct = await db
+      .update(products)
+      .set({
+        status: nextStatus,
+        updatedAt: new Date().toISOString(),
+      })
+      .where(eq(products.id, productId))
+      .returning();
+
+    if (before?.categoryId) {
+      await syncCategoryProductCountForProductChange({
+        categoryId: before.categoryId,
+        previousStatus: before.status,
+        nextStatus,
+      });
+    }
+
+    const after = await toSnapshot(productId);
+    await applyInvalidation(invalidateProduct(before, after), {
+      from: "dashboard",
+      mode: "action",
+    });
+
+    return { success: true, data: updatedProduct[0] };
+  } catch (error) {
+    console.error("Error setting product published state:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
 export async function createProductVariant(data: {
   productId: string;
   title: string;

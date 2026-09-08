@@ -29,6 +29,7 @@ import {
 import { ImportExportButton } from "./import-export-button.client";
 import { ManageColumnsDialog } from "./manage-columns-dialog.client";
 import { ProductImageUpload } from "./product-image-upload";
+import { ProductStatusCell } from "./product-publish-toggle.client";
 
 export type VendorProduct = {
   id: string;
@@ -227,21 +228,13 @@ export function VendorProductsSection({
         accessorKey: "status",
         header: "Status",
         meta: { label: "Status" },
-        cell: ({ row }) => {
-          const status = row.original.status;
-          const styles: Record<string, string> = {
-            draft: "bg-gray-100 text-gray-800",
-            pending: "bg-amber-100 text-amber-800",
-            active: "bg-green-100 text-green-800",
-            rejected: "bg-red-100 text-red-800",
-          };
-          return (
-            <Badge className={styles[status] ?? "bg-gray-100 text-gray-800"}>
-              {status}
-            </Badge>
-          );
-        },
-        size: 80,
+        cell: ({ row }) => (
+          <ProductStatusCell
+            productId={row.original.id}
+            status={row.original.status}
+          />
+        ),
+        size: 140,
       },
       {
         id: "actions",

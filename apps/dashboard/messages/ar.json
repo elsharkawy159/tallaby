@@ -143,6 +143,8 @@
     "couldNotCopyImageUrl": "تعذر نسخ رابط الصورة",
     "productStatusUpdated": "تم تحديث حالة المنتج بنجاح",
     "productHiddenDraft": "تم إخفاء المنتج (مسودة)",
+    "productPublished": "تم نشر المنتج",
+    "productUnpublished": "تم إلغاء نشر المنتج",
     "productSubmittedForReview": "تم إرسال المنتج للمراجعة",
     "failedToUpdateProductStatus": "فشل تحديث حالة المنتج",
     "productUpdatedSuccessfully": "تم تحديث المنتج بنجاح!",
