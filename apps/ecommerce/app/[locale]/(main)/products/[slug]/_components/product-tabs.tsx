@@ -988,3 +988,4 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
     </>
   );
 };
+
