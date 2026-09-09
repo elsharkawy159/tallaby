@@ -22,7 +22,7 @@ const nextConfig = {
   },
   images: {
     // Vercel Image Optimization returns 402 once the included quota is used.
-    unoptimized: true,
+    // unoptimized: true,
     remotePatterns: [
       {
         protocol: "https",

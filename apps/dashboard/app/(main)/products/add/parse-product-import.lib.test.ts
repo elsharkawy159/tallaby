@@ -171,6 +171,123 @@ describe("parseProductImportJson", () => {
     const result = parseProductImportJson("{ invalid");
     expect(result.success).toBe(false);
   });
+
+  it("parses variant rows with stock, sku and price", () => {
+    const result = parseProductImportJson(
+      JSON.stringify({
+        localized: { en: { title: "Tee" } },
+        variantTypes: [
+          {
+            kind: "color",
+            swatches: ["#ff0000", "#000000"],
+            localized: {
+              en: { name: "Color", values: ["Red", "Black"] },
+              ar: { name: "اللون", values: ["أحمر", "أسود"] },
+            },
+          },
+        ],
+        variants: [
+          {
+            options: { en: ["Red"], ar: ["أحمر"] },
+            sku: "TEE-RED",
+            stock: 12,
+            price: { list: 300, final: 199 },
+            isDefault: true,
+          },
+          { options: { en: ["Black"], ar: ["أسود"] }, stock: 4 },
+        ],
+      })
+    );
+
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+
+    expect(result.data.variantTypes?.[0]?.kind).toBe("color");
+    expect(result.data.variantTypes?.[0]?.swatches).toEqual([
+      "#ff0000",
+      "#000000",
+    ]);
+    expect(result.data.variants).toHaveLength(2);
+    expect(result.data.variants?.[0]).toMatchObject({
+      sku: "TEE-RED",
+      stock: 12,
+      isDefault: true,
+    });
+    expect(result.data.variants?.[0]?.price?.final).toBe(199);
+    expect(result.data.variants?.[1]?.stock).toBe(4);
+  });
+
+  it("fails when a variant does not cover every variant type", () => {
+    const result = parseProductImportJson(
+      JSON.stringify({
+        localized: { en: { title: "Tee" } },
+        variantTypes: [
+          {
+            localized: {
+              en: { name: "Color", values: ["Red"] },
+              ar: { name: "اللون", values: ["أحمر"] },
+            },
+          },
+          {
+            localized: {
+              en: { name: "Size", values: ["S", "M"] },
+              ar: { name: "المقاس", values: ["S", "M"] },
+            },
+          },
+        ],
+        variants: [{ options: { en: ["Red"], ar: ["أحمر"] }, stock: 3 }],
+      })
+    );
+
+    expect(result.success).toBe(false);
+  });
+
+  it("reads shipping options from a nested shipping block", () => {
+    const result = parseProductImportJson(
+      JSON.stringify({
+        localized: { en: { title: "Tee" } },
+        shipping: {
+          fulfillmentType: "platform_fulfilled",
+          freeDelivery: true,
+          handlingTime: 2,
+          weight: 0.4,
+          weightUnit: "kg",
+          length: 20,
+          width: 15,
+          height: 3,
+          unit: "cm",
+        },
+      })
+    );
+
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+
+    expect(result.data.fulfillmentType).toBe("platform_fulfilled");
+    expect(result.data.freeDelivery).toBe(true);
+    expect(result.data.handlingTime).toBe(2);
+    expect(result.data.dimensions).toMatchObject({
+      weight: 0.4,
+      weightUnit: "kg",
+      length: 20,
+      unit: "cm",
+    });
+  });
+
+  it("still accepts legacy option definitions under `variants`", () => {
+    const result = parseProductImportJson(
+      JSON.stringify({
+        localized: { en: { title: "Tee" } },
+        variants: [{ name: "Color", values: ["Red", "Black"] }],
+      })
+    );
+
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+
+    expect(result.data.variantTypes?.[0]?.localized.en.name).toBe("Color");
+    expect(result.data.variants).toBeUndefined();
+  });
 });
 
 describe("parseProductImportText", () => {

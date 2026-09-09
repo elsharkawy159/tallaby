@@ -4,6 +4,7 @@ import {
   type LocalizedImportFields,
   type ParseProductImportOutput,
   type ParsedProductImport,
+  type VariantTypeImport,
 } from "./parse-product-import.types";
 
 const TEXT_SECTION_MARKERS =
@@ -147,23 +148,47 @@ function normalizeJsonImport(raw: unknown): ParsedProductImport {
   const obj = raw as Record<string, unknown>;
   const localized = normalizeLocalizedFromJson(obj);
 
+  // `shipping` is the canonical block for fulfillment/dimensions, but the same
+  // keys are still accepted at the top level (scrapes + older pastes).
+  const shipping =
+    obj.shipping && typeof obj.shipping === "object" && !Array.isArray(obj.shipping)
+      ? (obj.shipping as Record<string, unknown>)
+      : {};
+  const flat = { ...shipping, ...obj };
+
+  // `variants` used to carry option *definitions*; it now carries concrete rows.
+  const legacyTypesInVariants = looksLikeVariantTypeList(obj.variants);
+  const variantTypesRaw =
+    obj.variantTypes ?? obj.options ?? (legacyTypesInVariants ? obj.variants : undefined);
+  const variantRowsRaw = legacyTypesInVariants ? undefined : obj.variants;
+
   return {
     version: typeof obj.version === "string" ? obj.version : "1",
     localized,
     price: normalizePriceFromJson(obj.price ?? obj.pricing),
     sku: pickString(obj, ["sku", "SKU"]),
     quantity: pickNumber(obj, ["quantity", "stock", "qty"]),
+    maxOrderQuantity: pickNumber(obj, ["maxOrderQuantity", "max_order_quantity"]),
     images: normalizeImages(obj.images ?? obj.imageUrls ?? obj.image),
-    variantTypes: normalizeVariantTypesFromJson(obj.variantTypes ?? obj.variants),
-    dimensions: normalizeDimensionsFromJson(obj.dimensions),
-    fulfillmentType: pickEnum(obj, ["fulfillmentType", "fulfillment"], [
+    variantTypes: normalizeVariantTypesFromJson(variantTypesRaw),
+    variants: normalizeVariantsFromJson(variantRowsRaw),
+    dimensions: normalizeDimensionsFromJson(
+      obj.dimensions ?? shipping.dimensions ?? shipping
+    ),
+    fulfillmentType: pickEnum(flat, ["fulfillmentType", "fulfillment"], [
       "seller_fulfilled",
       "platform_fulfilled",
       "fba",
       "digital",
     ]) as ParsedProductImport["fulfillmentType"],
-    freeDelivery: pickBoolean(obj, ["freeDelivery", "free_delivery"]),
-    handlingTime: pickNumber(obj, ["handlingTime", "handling_time"]),
+    freeDelivery: pickBoolean(flat, ["freeDelivery", "free_delivery"]),
+    handlingTime: pickNumber(flat, ["handlingTime", "handling_time"]),
+    taxClass: pickEnum(flat, ["taxClass", "tax_class"], [
+      "standard",
+      "reduced",
+      "zero",
+      "exempt",
+    ]) as ParsedProductImport["taxClass"],
     condition: pickEnum(obj, ["condition"], [
       "new",
       "renewed",
@@ -173,6 +198,10 @@ function normalizeJsonImport(raw: unknown): ParsedProductImport {
       "used_good",
       "used_acceptable",
     ]) as ParsedProductImport["condition"],
+    conditionDescription: pickString(obj, [
+      "conditionDescription",
+      "condition_description",
+    ]),
     isTrending: pickBoolean(obj, ["isTrending", "trending"]),
     isSeasonal: pickBoolean(obj, ["isSeasonal", "seasonal"]),
     isFeatured: pickBoolean(obj, ["isFeatured", "featured"]),
@@ -268,6 +297,29 @@ function normalizePriceFromJson(raw: unknown): ParsedProductImport["price"] {
   };
 }
 
+const VARIANT_KINDS = [
+  "color",
+  "size",
+  "weight",
+  "material",
+  "style",
+  "custom",
+] as const;
+
+/** True when `variants` holds option definitions (legacy) rather than rows. */
+function looksLikeVariantTypeList(raw: unknown): boolean {
+  if (!Array.isArray(raw) || raw.length === 0) return false;
+
+  return raw.every((item) => {
+    if (!item || typeof item !== "object" || Array.isArray(item)) return false;
+    const obj = item as Record<string, unknown>;
+    const localized = obj.localized as Record<string, unknown> | undefined;
+    const en = localized?.en as Record<string, unknown> | undefined;
+    const values = obj.values ?? obj.options ?? en?.values ?? en?.options;
+    return Array.isArray(values) && values.every((v) => typeof v === "string");
+  });
+}
+
 function normalizeVariantTypesFromJson(
   raw: unknown
 ): ParsedProductImport["variantTypes"] {
@@ -281,11 +333,22 @@ function normalizeVariantTypesFromJson(
 
       const obj = item as Record<string, unknown>;
       const localized = obj.localized as Record<string, unknown> | undefined;
+      const kind = pickEnum(obj, ["kind"], [
+        ...VARIANT_KINDS,
+      ]) as VariantTypeImport["kind"];
+      const unit = pickString(obj, ["unit"]);
+      const swatches = normalizeStringArray(obj.swatches);
+      const shared = {
+        ...(kind ? { kind } : {}),
+        ...(unit ? { unit } : {}),
+        ...(swatches.length > 0 ? { swatches } : {}),
+      };
 
       if (localized && typeof localized === "object") {
         const en = localized.en as Record<string, unknown> | undefined;
         const ar = localized.ar as Record<string, unknown> | undefined;
         return {
+          ...shared,
           localized: {
             en: {
               name: pickString(en ?? {}, ["name"]) ?? "",
@@ -307,6 +370,7 @@ function normalizeVariantTypesFromJson(
       if (!name && values.length === 0) return null;
 
       return {
+        ...shared,
         localized: {
           en: { name, values },
           ar: { name: "", values: values.map(() => "") },
@@ -316,6 +380,55 @@ function normalizeVariantTypesFromJson(
     .filter(Boolean);
 
   return types.length > 0 ? (types as NonNullable<ParsedProductImport["variantTypes"]>) : undefined;
+}
+
+function normalizeVariantsFromJson(
+  raw: unknown
+): ParsedProductImport["variants"] {
+  if (!Array.isArray(raw)) return undefined;
+
+  const variants = raw
+    .map((item) => {
+      if (!item || typeof item !== "object" || Array.isArray(item)) return null;
+
+      const obj = item as Record<string, unknown>;
+      const optionsRaw = obj.options ?? obj.optionValues ?? obj.values;
+
+      let en: string[] = [];
+      let ar: string[] = [];
+
+      if (
+        optionsRaw &&
+        typeof optionsRaw === "object" &&
+        !Array.isArray(optionsRaw)
+      ) {
+        const optionsObj = optionsRaw as Record<string, unknown>;
+        en = normalizeStringArray(optionsObj.en);
+        ar = normalizeStringArray(optionsObj.ar);
+      } else {
+        en = normalizeStringArray(optionsRaw);
+        ar = normalizeStringArray(obj.optionsAr ?? obj.options_ar);
+      }
+
+      if (en.length === 0) return null;
+
+      const image = pickString(obj, ["image", "imageUrl", "image_url"]);
+
+      return {
+        options: { en, ar },
+        sku: pickString(obj, ["sku", "SKU"]),
+        barCode: pickString(obj, ["barCode", "barcode", "bar_code"]),
+        stock: pickNumber(obj, ["stock", "quantity", "qty"]),
+        price: normalizePriceFromJson(obj.price ?? obj.pricing),
+        image: image && /^https?:\/\//i.test(image) ? image : undefined,
+        isDefault: pickBoolean(obj, ["isDefault", "is_default", "default"]),
+      };
+    })
+    .filter(Boolean);
+
+  return variants.length > 0
+    ? (variants as NonNullable<ParsedProductImport["variants"]>)
+    : undefined;
 }
 
 function normalizeDimensionsFromJson(

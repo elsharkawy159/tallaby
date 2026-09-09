@@ -12,6 +12,9 @@ export type ImportFormat = (typeof IMPORT_FORMATS)[number];
 /** Max URLs accepted in one bulk paste. */
 export const MAX_BULK_IMPORT_URLS = 25;
 
+/** Max generated variant rows accepted in one import. */
+export const MAX_IMPORT_VARIANTS = 60;
+
 const localizedImportSchema = z.object({
   title: z.string().optional(),
   description: z.string().optional(),
@@ -26,11 +29,49 @@ const variantTypeLocalizedSchema = z.object({
   values: z.array(z.string()).default([]),
 });
 
+const variantOptionKindSchema = z.enum([
+  "color",
+  "size",
+  "weight",
+  "material",
+  "style",
+  "custom",
+]);
+
 const variantTypeImportSchema = z.object({
+  kind: variantOptionKindSchema.optional(),
+  /** Unit appended to values when `kind` is `weight` (e.g. `ml`). */
+  unit: z.string().optional(),
+  /** Hex swatches, index-aligned with `localized.en.values`. */
+  swatches: z.array(z.string()).optional(),
   localized: z.object({
     en: variantTypeLocalizedSchema,
     ar: variantTypeLocalizedSchema,
   }),
+});
+
+const priceImportSchema = z.object({
+  list: z.number().positive().optional(),
+  final: z.number().positive().optional(),
+  discountType: z.enum(["amount", "percent"]).optional(),
+  discountValue: z.number().min(0).optional(),
+});
+
+/**
+ * One concrete variant row. `options.en` holds one value per entry in
+ * `variantTypes`, in the same order (e.g. `["Red", "L"]`).
+ */
+const variantImportSchema = z.object({
+  options: z.object({
+    en: z.array(z.string()).default([]),
+    ar: z.array(z.string()).default([]),
+  }),
+  sku: z.string().optional(),
+  barCode: z.string().optional(),
+  stock: z.number().int().min(0).optional(),
+  price: priceImportSchema.optional(),
+  image: z.string().url().optional(),
+  isDefault: z.boolean().optional(),
 });
 
 const dimensionsImportSchema = z.object({
@@ -40,13 +81,6 @@ const dimensionsImportSchema = z.object({
   weight: z.number().optional(),
   unit: z.enum(["cm", "in"]).optional(),
   weightUnit: z.enum(["kg", "g", "lb"]).optional(),
-});
-
-const priceImportSchema = z.object({
-  list: z.number().positive().optional(),
-  final: z.number().positive().optional(),
-  discountType: z.enum(["amount", "percent"]).optional(),
-  discountValue: z.number().min(0).optional(),
 });
 
 export const parsedProductImportSchema = z
@@ -61,14 +95,17 @@ export const parsedProductImportSchema = z
     price: priceImportSchema.optional(),
     sku: z.string().optional(),
     quantity: z.number().int().min(0).optional(),
+    maxOrderQuantity: z.number().int().min(1).optional(),
     images: z.array(z.string().url()).max(8).optional(),
     variantTypes: z.array(variantTypeImportSchema).max(3).optional(),
+    variants: z.array(variantImportSchema).max(MAX_IMPORT_VARIANTS).optional(),
     dimensions: dimensionsImportSchema.optional(),
     fulfillmentType: z
       .enum(["seller_fulfilled", "platform_fulfilled", "fba", "digital"])
       .optional(),
     freeDelivery: z.boolean().optional(),
     handlingTime: z.number().int().min(1).optional(),
+    taxClass: z.enum(["standard", "reduced", "zero", "exempt"]).optional(),
     condition: z
       .enum([
         "new",
@@ -80,6 +117,7 @@ export const parsedProductImportSchema = z
         "used_acceptable",
       ])
       .optional(),
+    conditionDescription: z.string().optional(),
     isTrending: z.boolean().optional(),
     isSeasonal: z.boolean().optional(),
     isFeatured: z.boolean().optional(),
@@ -98,11 +136,37 @@ export const parsedProductImportSchema = z
         path: ["localized", "en", "title"],
       });
     }
+
+    const variants = data.variants ?? [];
+    const variantTypes = data.variantTypes ?? [];
+
+    if (variants.length > 0 && variantTypes.length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "`variants` requires `variantTypes` to be provided",
+        path: ["variantTypes"],
+      });
+      return;
+    }
+
+    variants.forEach((variant, index) => {
+      if (variant.options.en.length !== variantTypes.length) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Variant ${index + 1} must list exactly ${variantTypes.length} option value(s), one per variant type`,
+          path: ["variants", index, "options", "en"],
+        });
+      }
+    });
   });
 
 export type ParsedProductImport = z.infer<typeof parsedProductImportSchema>;
 
 export type LocalizedImportFields = z.infer<typeof localizedImportSchema>;
+
+export type VariantTypeImport = z.infer<typeof variantTypeImportSchema>;
+
+export type VariantImport = z.infer<typeof variantImportSchema>;
 
 export interface ParseProductImportResult {
   success: true;

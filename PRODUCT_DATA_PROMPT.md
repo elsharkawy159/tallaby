@@ -138,16 +138,17 @@ Handling time: ... day(s)
 - `bulletPoints`: array of strings, max 10 per locale
 - `price.list` و `price.final` بالجنيه المصري (أرقام فقط، بدون رمز العملة)
 - `images`: مصفوفة URLs عامة `https://...` فقط — إذا لا يوجد URL بعد توليد ال، اترك `"images": []` وسأرفع ال يدويًا
-- `variantTypes`: max 3 أبعاد (مثل Color, Size)
+- `content`: HTML غني لكل لغة (`<h3>`, `<p>`, `<ul>`, `<table>`) بالأقسام: Overview، Key Features، Specifications، What's in the Box، Care/Usage — بدون styles أو scripts أو صور
+- `variantTypes`: max 3 أبعاد (مثل Color, Size) — أضف `kind` (`color` | `size` | `weight` | `material` | `style`) و `swatches` (ألوان hex) مع الألوان
+- `variants`: 'صف لكل تركيبة' مع `options.en` (قيمة لكل بُعد بنفس الترتيب) + `sku` + `stock` + `price` — وواحد فقط `"isDefault": true`
 - `brand` و `category`: أسماء نصية للمطابقة التلقائية
-- **Shipping (مهم):** إذا وُجدت في بيانات المنتج → املأها في JSON دائمًا
-  - `dimensions.weight` + `dimensions.weightUnit` (`g` أو `kg`) — **مطلوب إذا الوزن معروف**؛ لا تتركه `0`
-  - `dimensions.length`, `width`, `height` + `dimensions.unit` (`cm`) — إذا متوفرة
+- **Shipping (مهم):** كتلة `shipping` — املأها دائمًا إذا وُجدت البيانات
+  - `weight` + `weightUnit` (`g` أو `kg`) — **مطلوب إذا الوزن معروف**؛ لا تتركه `0`
+  - `length`, `width`, `height` + `unit` (`cm`) — إذا متوفرة
   - `fulfillmentType`: `platform_fulfilled` (افتراضي) أو `seller_fulfilled`
   - `freeDelivery`: boolean
   - `handlingTime`: أيام التجهيز (افتراضي `1`)
-- `dimensions`: metric فقط (`weightUnit`: `kg` | `g` | `lb`, `unit`: `cm` | `in`) — prefer `kg`/`g` and `cm`
-- `fulfillmentType`: `platform_fulfilled` (افتراضي) أو `seller_fulfilled`
+- metric فقط (`weightUnit`: `kg` | `g` | `lb`, `unit`: `cm` | `in`) — prefer `kg`/`g` and `cm`
 - لا تضع Voice Over أو Social Caption داخل الـJSON
 
 ### JSON template (املأ كل حقل من بيانات المنتج)
@@ -181,16 +182,32 @@ Handling time: ... day(s)
   },
   "sku": "",
   "quantity": 0,
+  "maxOrderQuantity": 0,
   "images": [],
   "variantTypes": [
     {
+      "kind": "color",
+      "swatches": [],
       "localized": {
         "en": { "name": "Color", "values": [] },
         "ar": { "name": "اللون", "values": [] }
       }
     }
   ],
-  "dimensions": {
+  "variants": [
+    {
+      "options": { "en": [], "ar": [] },
+      "sku": "",
+      "stock": 0,
+      "price": { "list": 0, "final": 0 },
+      "image": "",
+      "isDefault": true
+    }
+  ],
+  "shipping": {
+    "fulfillmentType": "platform_fulfilled",
+    "freeDelivery": false,
+    "handlingTime": 1,
     "weight": 0,
     "weightUnit": "kg",
     "length": 0,
@@ -198,10 +215,8 @@ Handling time: ... day(s)
     "height": 0,
     "unit": "cm"
   },
-  "fulfillmentType": "platform_fulfilled",
-  "freeDelivery": false,
-  "handlingTime": 1,
   "condition": "new",
+  "taxClass": "standard",
   "isTrending": false,
   "isSeasonal": false,
   "brand": "",
@@ -209,9 +224,11 @@ Handling time: ... day(s)
 }
 ```
 
-'احذف' `variantTypes` بالكامل إذا لا يوجد variants.
+'احذف' `variantTypes` و `variants` بالكامل إذا لا يوجد variants. وإذا وُجدت: كل صف في `variants` لازم يحتوي قيمة لكل بُعد في `variantTypes` بنفس الترتيب — وإلا الاستيراد يُرفض.
 
-**`dimensions`:** لا تحذفها إذا الوزن معروف — `weight` مطلوب في JSON عندما تتوفر بيانات الوزن. احذف `length`/`width`/`height` فقط إذا غير متوفرة (يمكن إبقاء الوزن وحده). احذف كائن `dimensions` بالكامل فقط إذا لا يوجد أي بيانات شحن على الإطلاق.
+**`shipping`:** لا تحذفها إذا الوزن معروف — `weight` مطلوب عندما تتوفر بيانات الوزن. احذف `length`/`width`/`height` فقط إذا غير متوفرة (يمكن إبقاء الوزن وحده). احذف الكتلة بالكامل فقط إذا لا يوجد أي بيانات شحن على الإطلاق.
+
+'المرجع الكامل للحقول:' `PRODUCT_DATA_FORMAT.md` في جذر المشروع.
 
 ---
 
