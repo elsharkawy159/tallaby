@@ -59,6 +59,9 @@ interface BasicInformationStepProps {
   hideImport?: boolean;
   /** Called when paste/import detects 2+ product URLs. */
   onBulkUrls?: (urls: string[]) => void;
+  /** Controlled open state for the import accordion (open after save, closed after paste). */
+  importSectionOpen?: boolean;
+  onImportSectionOpenChange?: (open: boolean) => void;
 }
 
 export function BasicInformationStep({
@@ -68,12 +71,25 @@ export function BasicInformationStep({
   activeLocale,
   hideImport = false,
   onBulkUrls,
+  importSectionOpen,
+  onImportSectionOpenChange,
 }: BasicInformationStepProps) {
   const form = useFormContext<AddProductFormData>();
   const tToast = useTranslations("toast");
   const supabase = createClient();
   const [isFetching, setIsFetching] = useState(false);
-  const [importAccordion, setImportAccordion] = useState<string>("import");
+  const [uncontrolledImportOpen, setUncontrolledImportOpen] = useState(true);
+
+  const isImportOpen =
+    importSectionOpen !== undefined ? importSectionOpen : uncontrolledImportOpen;
+
+  const setImportOpen = (open: boolean) => {
+    if (onImportSectionOpenChange) {
+      onImportSectionOpenChange(open);
+      return;
+    }
+    setUncontrolledImportOpen(open);
+  };
 
   const handleContentImageUpload = useCallback(
     async (file: File) => {
@@ -187,7 +203,7 @@ export function BasicInformationStep({
         }
 
         toast.success(tToast("productDetailsFetchedEnAr"));
-        setImportAccordion("");
+        setImportOpen(false);
         return;
       }
 
@@ -211,7 +227,7 @@ export function BasicInformationStep({
       }
 
       toast.success(tToast("importedFromStructuredData"));
-      setImportAccordion("");
+      setImportOpen(false);
     } catch (error) {
       console.error("Import product error:", error);
       toast.error(tToast("somethingWentWrongWhileFetching"));
@@ -229,6 +245,7 @@ export function BasicInformationStep({
 
     e.preventDefault();
     form.setValue("productUrl", pasted, { shouldDirty: true });
+    setImportOpen(false);
     handleImportProduct(pasted);
   };
 
@@ -241,20 +258,25 @@ export function BasicInformationStep({
 
   return (
     <div className="space-y-6">
-      {/* Product Import — collapsed after a successful import so JSON does not dominate the form */}
+      {/* Product Import — collapse on paste/import; parent re-opens after save */}
       {!hideImport && (
         <Accordion
           type="single"
           collapsible
-          value={importAccordion}
-          onValueChange={setImportAccordion}
+          value={isImportOpen ? "import" : ""}
+          onValueChange={(value) => setImportOpen(value === "import")}
           className="bg-white rounded-lg border border-gray-200 shadow-sm"
         >
           <AccordionItem value="import" className="border-0">
             <AccordionTrigger className="px-4 py-3 text-sm font-medium hover:no-underline">
               <span className="flex flex-col items-start gap-0.5 text-left">
                 <span>Import product (URL or data)</span>
-                {importAccordion !== "import" && productUrl ? (
+                {!isImportOpen && isFetching ? (
+                  <span className="text-xs font-normal text-muted-foreground inline-flex items-center gap-1.5">
+                    <LoaderCircle className="h-3 w-3 animate-spin" />
+                    Importing…
+                  </span>
+                ) : !isImportOpen && productUrl ? (
                   <span className="text-xs font-normal text-muted-foreground">
                     Data imported — expand to edit or re-import
                   </span>

@@ -50,6 +50,7 @@ export default function AddProduct ({
   const [activeLocale, setActiveLocale] = useState<SupportedLocale>("en")
   const [mode, setMode] = useState<"single" | "bulk">("single")
   const [bulkUrls, setBulkUrls] = useState<string[]>([])
+  const [importSectionOpen, setImportSectionOpen] = useState(true)
   const router = useRouter()
   const tToast = useTranslations("toast")
 
@@ -80,6 +81,8 @@ export default function AddProduct ({
         if (result.success) {
           toast.success(tToast("productCreatedSuccessfully"))
           form.reset(defaultValues as any)
+          setImportSectionOpen(true)
+          window.scrollTo({ top: 0, behavior: "smooth" })
           // router.push("/products")
         } else {
           toast.error(result.error || tToast("failedToCreateProduct"))
@@ -214,6 +217,8 @@ export default function AddProduct ({
                   sellerPricing={sellerPricing}
                   activeLocale={activeLocale}
                   onBulkUrls={handleEnterBulk}
+                  importSectionOpen={importSectionOpen}
+                  onImportSectionOpenChange={setImportSectionOpen}
                 />
               </section>
 
