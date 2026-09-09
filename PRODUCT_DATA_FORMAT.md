@@ -172,7 +172,7 @@ Every supported field, in the shape the importer expects.
 | `localized.ar.*` | No | Same shape as `en`; AR title becomes required once any AR field is filled. |
 | `price.list` | Before save | Pre-discount price in EGP. |
 | `price.final` | Before save | Sale price; the discount is derived from `list` + `final`. |
-| `price.discountType` / `discountValue` | No | `amount` \| `percent`; overrides the derived discount. |
+| `price.discountType` / `discountValue` | No | `amount` \| `percent` (alias: `percentage`); overrides the derived discount. |
 | `sku` | No | Auto-generated on save when empty. |
 | `quantity` | No | Stock of the simple product / default variant. |
 | `maxOrderQuantity` | No | Per-order cap. |

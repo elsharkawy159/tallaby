@@ -359,6 +359,32 @@ describe("parseProductImport", () => {
     expect(result.success).toBe(true);
     expect(result.format).toBe("text");
   });
+
+  it("maps discountType percentage to percent", () => {
+    const result = parseProductImportJson(
+      JSON.stringify({
+        version: "1",
+        localized: {
+          en: { title: "Discounted Product" },
+          ar: { title: "منتج مخفض" },
+        },
+        price: {
+          list: 369,
+          final: 339,
+          discountType: "percentage",
+          discountValue: 8,
+        },
+        shipping: { weight: 200, weightUnit: "g" },
+      })
+    );
+
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.data.price?.discountType).toBe("percent");
+    expect(result.data.price?.discountValue).toBe(8);
+    expect(result.data.price?.list).toBe(369);
+    expect(result.data.price?.final).toBe(339);
+  });
 });
 
 describe("buildParsedImportFromScrape", () => {

@@ -8,6 +8,12 @@ import {
   ArrayInput,
   CategoryPopover,
 } from "@workspace/ui/components";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@workspace/ui/components/accordion";
 import { Button } from "@workspace/ui/components/button";
 import { Textarea } from "@workspace/ui/components/textarea";
 import { BrandSearchInput } from "@/components/inputs/brand-search-input";
@@ -67,6 +73,7 @@ export function BasicInformationStep({
   const tToast = useTranslations("toast");
   const supabase = createClient();
   const [isFetching, setIsFetching] = useState(false);
+  const [importAccordion, setImportAccordion] = useState<string>("import");
 
   const handleContentImageUpload = useCallback(
     async (file: File) => {
@@ -180,6 +187,7 @@ export function BasicInformationStep({
         }
 
         toast.success(tToast("productDetailsFetchedEnAr"));
+        setImportAccordion("");
         return;
       }
 
@@ -203,6 +211,7 @@ export function BasicInformationStep({
       }
 
       toast.success(tToast("importedFromStructuredData"));
+      setImportAccordion("");
     } catch (error) {
       console.error("Import product error:", error);
       toast.error(tToast("somethingWentWrongWhileFetching"));
@@ -232,51 +241,66 @@ export function BasicInformationStep({
 
   return (
     <div className="space-y-6">
-      {/* Product Import */}
+      {/* Product Import — collapsed after a successful import so JSON does not dominate the form */}
       {!hideImport && (
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 space-y-3">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex-1">
-            <FormLabel className="text-sm">Import product (URL or data)</FormLabel>
-            <div className="mt-2 flex flex-col sm:flex-row gap-2">
-              <Textarea
-                value={productUrl || ""}
-                onChange={(e) =>
-                  form.setValue("productUrl", e.target.value, {
-                    shouldDirty: true,
-                  })
-                }
-                onPaste={handlePaste}
-                onKeyDown={handleKeyDown}
-                placeholder="Paste one product URL, many URLs (one per line), JSON, or formatted product data"
-                className="text-sm min-h-[100px] flex-1 resize-y"
-                rows={4}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleImportProduct()}
-                disabled={isFetching}
-                className="text-sm h-10 sm:self-start"
-              >
-                {isFetching ? (
-                  <span className="flex items-center gap-2">
-                    <LoaderCircle className="h-4 w-4 animate-spin" />
-                    Importing...
+        <Accordion
+          type="single"
+          collapsible
+          value={importAccordion}
+          onValueChange={setImportAccordion}
+          className="bg-white rounded-lg border border-gray-200 shadow-sm"
+        >
+          <AccordionItem value="import" className="border-0">
+            <AccordionTrigger className="px-4 py-3 text-sm font-medium hover:no-underline">
+              <span className="flex flex-col items-start gap-0.5 text-left">
+                <span>Import product (URL or data)</span>
+                {importAccordion !== "import" && productUrl ? (
+                  <span className="text-xs font-normal text-muted-foreground">
+                    Data imported — expand to edit or re-import
                   </span>
-                ) : (
-                  "Import Product"
-                )}
-              </Button>
-            </div>
-            <p className="text-xs text-gray-500 mt-2">
-              Paste one URL, or many URLs (one per line) for bulk import. JSON
-              and formatted text also work. See PRODUCT_DATA_FORMAT.md for the
-              text format spec.
-            </p>
-          </div>
-        </div>
-      </div>
+                ) : null}
+              </span>
+            </AccordionTrigger>
+            <AccordionContent className="px-4 pb-4">
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Textarea
+                  value={productUrl || ""}
+                  onChange={(e) =>
+                    form.setValue("productUrl", e.target.value, {
+                      shouldDirty: true,
+                    })
+                  }
+                  onPaste={handlePaste}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Paste one product URL, many URLs (one per line), JSON, or formatted product data"
+                  className="text-sm min-h-[100px] max-h-48 flex-1 resize-y"
+                  rows={4}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => handleImportProduct()}
+                  disabled={isFetching}
+                  className="text-sm h-10 sm:self-start"
+                >
+                  {isFetching ? (
+                    <span className="flex items-center gap-2">
+                      <LoaderCircle className="h-4 w-4 animate-spin" />
+                      Importing...
+                    </span>
+                  ) : (
+                    "Import Product"
+                  )}
+                </Button>
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                Paste one URL, or many URLs (one per line) for bulk import. JSON
+                and formatted text also work. See PRODUCT_DATA_FORMAT.md for the
+                text format spec.
+              </p>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       )}
 
       {/* Media */}

@@ -179,9 +179,9 @@ export function PriceStockStep({
             <Controller
               name="price.discountType"
               control={form.control}
-              defaultValue="amount"
+              defaultValue="percent"
               render={({ field }) => {
-                const currentValue = field.value || "amount";
+                const currentValue = field.value || "percent";
                 const isAmount = currentValue === "amount";
                 const isPercent = currentValue === "percent";
                 return (

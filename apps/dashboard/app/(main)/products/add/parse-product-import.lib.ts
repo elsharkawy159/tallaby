@@ -273,6 +273,30 @@ function normalizeLocaleFields(raw: unknown): LocalizedImportFields {
   };
 }
 
+/**
+ * Map import aliases onto the form enum (`amount` | `percent`).
+ * Accepts `percentage` / `%` → percent and `fixed` / `fixed_amount` → amount.
+ */
+export function normalizeDiscountType (
+  raw: unknown
+): "amount" | "percent" | undefined {
+  if (typeof raw !== "string") return undefined;
+
+  const value = raw.trim().toLowerCase().replace(/[\s_-]+/g, "");
+  if (
+    value === "percent" ||
+    value === "percentage" ||
+    value === "%"
+  ) {
+    return "percent";
+  }
+  if (value === "amount" || value === "fixed" || value === "fixedamount") {
+    return "amount";
+  }
+
+  return undefined;
+}
+
 function normalizePriceFromJson(raw: unknown): ParsedProductImport["price"] {
   if (!raw) return undefined;
 
@@ -285,14 +309,12 @@ function normalizePriceFromJson(raw: unknown): ParsedProductImport["price"] {
   }
 
   const obj = raw as Record<string, unknown>;
+  const discountTypeRaw = obj.discountType ?? obj.discount_type;
 
   return {
     list: pickNumber(obj, ["list", "listPrice", "productPrice", "base"]),
     final: pickNumber(obj, ["final", "finalPrice", "salePrice"]),
-    discountType: pickEnum(obj, ["discountType", "discount_type"], [
-      "amount",
-      "percent",
-    ]) as "amount" | "percent",
+    discountType: normalizeDiscountType(discountTypeRaw),
     discountValue: pickNumber(obj, ["discountValue", "discount_value"]),
   };
 }
@@ -735,9 +757,8 @@ function applyPricingLines(
     } else if (/final/.test(key) && num !== undefined) {
       price.final = num;
     } else if (/discount\s*type/.test(key)) {
-      const v = kv.value.toLowerCase();
-      if (v.includes("percent") || v === "%") price.discountType = "percent";
-      else if (v.includes("amount")) price.discountType = "amount";
+      const normalized = normalizeDiscountType(kv.value);
+      if (normalized) price.discountType = normalized;
     } else if (/discount/.test(key) && num !== undefined) {
       price.discountValue = num;
     }

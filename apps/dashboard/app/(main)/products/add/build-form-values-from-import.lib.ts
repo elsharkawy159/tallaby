@@ -322,13 +322,15 @@ export async function buildFormValuesFromImport (
     values.price.list = listPrice
     values.price.base = listPrice
 
+    // Prefer the type from JSON (`percent` / `percentage` → percent).
     const discountType = data.price.discountType ?? "amount"
+
+    values.price.discountType = discountType
 
     if (data.price.final) {
       values.price.final = data.price.final
       if (data.price.discountValue !== undefined) {
         values.price.discountValue = data.price.discountValue
-        values.price.discountType = discountType
       } else {
         values.price.discountValue = calculateDiscountFromFinalPrice(
           listPrice,
@@ -336,11 +338,9 @@ export async function buildFormValuesFromImport (
           discountType,
           ctx.sellerPricing
         )
-        values.price.discountType = discountType
       }
     } else if (data.price.discountValue !== undefined) {
       values.price.discountValue = data.price.discountValue
-      values.price.discountType = discountType
       values.price.final = calculateProductFinalPrice(
         listPrice,
         data.price.discountValue,

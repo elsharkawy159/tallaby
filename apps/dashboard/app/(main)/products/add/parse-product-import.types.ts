@@ -50,10 +50,19 @@ const variantTypeImportSchema = z.object({
   }),
 });
 
+/** Accept common aliases (`percentage`, `fixed`) and coerce to form enums. */
+const discountTypeImportSchema = z.preprocess((val) => {
+  if (typeof val !== "string") return val;
+  const value = val.trim().toLowerCase().replace(/[\s_-]+/g, "");
+  if (value === "percentage" || value === "%") return "percent";
+  if (value === "fixed" || value === "fixedamount") return "amount";
+  return value === "percent" || value === "amount" ? value : val;
+}, z.enum(["amount", "percent"]).optional());
+
 const priceImportSchema = z.object({
   list: z.number().positive().optional(),
   final: z.number().positive().optional(),
-  discountType: z.enum(["amount", "percent"]).optional(),
+  discountType: discountTypeImportSchema,
   discountValue: z.number().min(0).optional(),
 });
 
