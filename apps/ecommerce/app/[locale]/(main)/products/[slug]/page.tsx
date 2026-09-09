@@ -69,7 +69,8 @@ async function resolveProduct(locale: string, slug: string) {
     }
   }
 
-  notFound();
+  // Unknown / deleted product slug — send shoppers to the catalog instead of 404
+  redirect({ href: "/products", locale: locale as ProductLocale });
 }
 
 export async function generateMetadata({
