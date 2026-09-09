@@ -359,7 +359,7 @@ export function BulkUrlImport ({
         result.failed === 0 &&
         invalidIds.length === 0
       ) {
-        router.push("/products")
+        // router.push("/products")
       }
     })
   }

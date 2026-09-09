@@ -80,7 +80,7 @@ export default function AddProduct ({
         if (result.success) {
           toast.success(tToast("productCreatedSuccessfully"))
           form.reset(defaultValues as any)
-          router.push("/products")
+          // router.push("/products")
         } else {
           toast.error(result.error || tToast("failedToCreateProduct"))
         }

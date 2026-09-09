@@ -30,11 +30,11 @@ Anything missing is fine — see **Rule 3** for what to do about it.
 
 Tallaby always buys in packs of 12 (دستة).
 
-| Supplier wording | Per-piece cost |
-|---|---|
-| `سعر القطعة 120ج` · `120 للقطعة` | **120** |
-| `سعر الدستة 1440ج` · `الدستة 1440` | **1440 ÷ 12 = 120** |
-| `السعر فـ الدست 220ج` · `في الدست 220` | **220** — this is the per-piece price *when buying a dozen*. Do **not** divide by 12. |
+| Supplier wording                       | Per-piece cost                                                                        |
+| -------------------------------------- | ------------------------------------------------------------------------------------- |
+| `سعر القطعة 120ج` · `120 للقطعة`       | **120**                                                                               |
+| `سعر الدستة 1440ج` · `الدستة 1440`     | **1440 ÷ 12 = 120**                                                                   |
+| `السعر فـ الدست 220ج` · `في الدست 220` | **220** — this is the per-piece price _when buying a dozen_. Do **not** divide by 12. |
 
 Ignore every other number: carton count (`عدد الكرتونة`), carton price, old price, promo price,
 suggested retail. Never treat one of these as the purchase cost.
@@ -66,10 +66,10 @@ Never round below the computed price.
 
 ### Worked examples
 
-| Supplier text | Per piece | Cost basis | ÷ 0.70 | Final |
-|---|---|---|---|---|
-| `سعر الدستة ١٤٤٠ج` | 120 | 163 | 232.86 | **239** |
-| `السعر فـ الدست ٢٢٠ج` | 220 | 263 | 375.71 | **379** |
+| Supplier text         | Per piece | Cost basis | ÷ 0.70 | Final   |
+| --------------------- | --------- | ---------- | ------ | ------- |
+| `سعر الدستة ١٤٤٠ج`    | 120       | 163        | 232.86 | **239** |
+| `السعر فـ الدست ٢٢٠ج` | 220       | 263        | 375.71 | **379** |
 
 ### Where the price goes
 
@@ -144,10 +144,29 @@ No markdown inside it. No voice over or caption inside it.
 {
   "version": "1",
   "localized": {
-    "en": { "title": "", "description": "", "content": "", "bulletPoints": [], "metaTitle": "", "metaDescription": "" },
-    "ar": { "title": "", "description": "", "content": "", "bulletPoints": [], "metaTitle": "", "metaDescription": "" }
+    "en": {
+      "title": "",
+      "description": "",
+      "content": "",
+      "bulletPoints": [],
+      "metaTitle": "",
+      "metaDescription": ""
+    },
+    "ar": {
+      "title": "",
+      "description": "",
+      "content": "",
+      "bulletPoints": [],
+      "metaTitle": "",
+      "metaDescription": ""
+    }
   },
-  "price": { "list": 0, "final": 0, "discountType": "amount", "discountValue": 0 },
+  "price": {
+    "list": 0,
+    "final": 0,
+    "discountType": "amount",
+    "discountValue": 0
+  },
   "sku": "",
   "quantity": 0,
   "maxOrderQuantity": 0,
@@ -198,7 +217,7 @@ Full field reference: `PRODUCT_DATA_FORMAT.md` in the project root.
 
 ## HARD RULES
 
-1. **Never invent a spec.** Only what is visible in the photos or stated in the input. Uncertain → leave it out of the copy *and* the JSON. The one exception is `shipping.weight`, which must be estimated when unknown.
+1. **Never invent a spec.** Only what is visible in the photos or stated in the input. Uncertain → leave it out of the copy _and_ the JSON. The one exception is `shipping.weight`, which must be estimated when unknown.
 2. **Three distinct voices.** Voice over = Egyptian dialect ad. Caption = short social promo. Store content = calm, informative, bilingual. Never let one read like another.
 3. **Missing data ≠ guessing.** No supplier price / SKU / quantity → leave those fields `0` or empty.
 4. **Metric only** — جرام، كيلو، مللي، لتر، سنتيمتر، متر. Never oz, lb, or inches.
