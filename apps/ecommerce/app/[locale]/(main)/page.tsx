@@ -53,7 +53,7 @@ const HomePage = async ({
           }}
         />
       </Suspense> */}
-      <Suspense fallback={<ProductsGridSkeleton />}>
+      {/* <Suspense fallback={<ProductsGridSkeleton />}>
         <ProductsGrid
           title={t("seasonal")}
           // description={t("seasonalDescription")}
@@ -75,9 +75,9 @@ const HomePage = async ({
             limit: 12,
           }}
         />
-      </Suspense>
+      </Suspense> */}
 
-      <Suspense fallback={<ProductsGridSkeleton />}>
+      {/* <Suspense fallback={<ProductsGridSkeleton />}> */}
         <ProductsGrid
           title={t("featuredProducts")}
           filters={{
@@ -87,7 +87,7 @@ const HomePage = async ({
             isSeasonal: false,
           }}
         />
-      </Suspense>
+      {/* </Suspense> */}
     </div>
   );
 };
