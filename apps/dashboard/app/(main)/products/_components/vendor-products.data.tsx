@@ -1,8 +1,6 @@
 import { getSellerProducts } from "@/actions/products";
+import { parsePriceJson } from "@workspace/lib";
 import { VendorProductsSection, type VendorProduct } from "./vendor-products.section";
-
-/** `products.price` is a jsonb column, so it comes back as `unknown`. */
-type ProductPrice = { base?: number; final?: number } | null;
 
 export async function VendorProductsData() {
   const { data, totalCount } = await getSellerProducts({
@@ -17,7 +15,9 @@ export async function VendorProductsData() {
     // Carried for the Excel export, not rendered as a column.
     const description =
       enTranslation?.description ?? arTranslation?.description ?? null;
-    const price = (p.price ?? null) as ProductPrice;
+    // `products.price` is a jsonb column, so it comes back as `unknown`;
+    // parsePriceJson also applies the nearest-5 rounding the storefront shows.
+    const price = parsePriceJson(p.price);
 
     return {
       id: p.id,
@@ -33,8 +33,8 @@ export async function VendorProductsData() {
         typeof p.quantity === "string"
           ? parseInt(p.quantity, 10)
           : (p.quantity ?? 0),
-      basePrice: price?.base ?? null,
-      salePrice: price?.final ?? null,
+      basePrice: price.base,
+      salePrice: price.final,
       brand: p.brand ? { name: p.brand.name } : null,
       category: p.category
         ? { name: p.category.name ?? p.category.nameAr ?? null }

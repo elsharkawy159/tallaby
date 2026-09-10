@@ -128,7 +128,7 @@ If the supplier price is `سعر الدستة ١٤٤٠ج`:
 1. 1440 ÷ 12 = **120 EGP purchase cost per piece**
 2. 120 + 40 shipping allocation + 3 packaging = **163 EGP cost basis**
 3. At 30% profit margin: 163 ÷ 0.70 = **232.86 EGP**
-4. Recommended selling price: **239 EGP** (round to a commercially attractive price)
+4. Recommended selling price: **235 EGP** (round up to the next multiple of 5)
 
 ### 6. SECOND EXAMPLE
 
@@ -137,7 +137,7 @@ If the supplier says `السعر فـ الدست ٢٢٠ج`:
 1. **220 EGP = purchase cost per piece** (Do NOT divide by 12)
 2. 220 + 40 + 3 = **263 EGP cost basis**
 3. At 30% margin: 263 ÷ 0.70 = **375.71 EGP**
-4. Recommended selling price: **379 EGP**
+4. Recommended selling price: **380 EGP**
 
 ### 7. IF BOTH PRICES ARE PROVIDED
 
@@ -213,13 +213,14 @@ Tallaby's customer shipping should be calculated separately at the **order/shipm
 
 ### 11. ROUNDING
 
-After calculating the recommended selling price, round it to a practical ecommerce price.
+After calculating the recommended selling price, round it **up** to the next multiple of **5 EGP**.
 
-Prefer prices such as: 149, 159, 179, 199, 229, 239, 249, 279, 299, 329, 349, 379, 399, 449, 499
+Prices such as: 150, 160, 180, 200, 230, 235, 250, 280, 300, 330, 350, 380, 400, 450, 500
 
-Choose the closest sensible price while maintaining approximately the intended **25–30% profit margin**.
+Never round down — rounding up keeps the actual margin at or above the intended **25–30% profit margin**.
 
-Do not round down so aggressively that the actual margin falls materially below the target.
+This is the same rule the dashboard applies on save, so a price that is already
+on the 5 EGP step will be stored exactly as written.
 
 ### 12. PRICING PRIORITY
 

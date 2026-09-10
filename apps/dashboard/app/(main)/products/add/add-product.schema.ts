@@ -1,8 +1,17 @@
 import { z } from "zod";
-import { roundPriceToNearestNine } from "@/lib/utils/product-pricing.lib";
+import { roundPriceUpToNearestFive } from "@/lib/utils/product-pricing.lib";
 
 export const SUPPORTED_LOCALES = ["en", "ar"] as const
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number]
+
+/**
+ * Quantises any positive price the seller typed to the next multiple of 5 EGP
+ * before validation, so what is persisted always matches what the storefront
+ * shows. Non-numeric / non-positive input falls through untouched so the
+ * "must be greater than 0" messages still fire.
+ */
+const roundPositivePriceInput = (val: unknown) =>
+  typeof val === "number" && val > 0 ? roundPriceUpToNearestFive(val) : val
 
 const localizedFieldsSchema = z.object({
   title: z.string().max(255),
@@ -82,24 +91,18 @@ export const addProductFormSchema = z
     maxOrderQuantity: z.number().int().optional(),
     images: z.array(z.string()).min(1, "At least one product image is required"),
     price: z.object({
-      base: z
-        .preprocess(
-          (val) =>
-            typeof val === "number" && val > 0
-              ? roundPriceToNearestNine(val)
-              : val,
-          z.number().min(0.01, "Base price must be greater than 0").optional()
-        ),
+      base: z.preprocess(
+        roundPositivePriceInput,
+        z.number().min(0.01, "Base price must be greater than 0").optional()
+      ),
       list: z.preprocess(
-        (val) =>
-          typeof val === "number" && val > 0 ? roundPriceToNearestNine(val) : val,
+        roundPositivePriceInput,
         z.number().min(0.01, "List price must be greater than 0")
       ),
       discountValue: z.number().optional(),
       discountType: z.enum(["amount", "percent"]).default("amount").optional(),
       final: z.preprocess(
-        (val) =>
-          typeof val === "number" && val > 0 ? roundPriceToNearestNine(val) : val,
+        roundPositivePriceInput,
         z.number().min(0.01, "Final price must be greater than 0")
       ),
       discountEndsAt: z.date().optional().nullable(),
@@ -145,10 +148,16 @@ export const addProductFormSchema = z
         z.object({
           title: z.string().min(1, "Variant title is required").max(255),
           sku: z.string().min(1, "Variant SKU is required").max(100),
-          listPrice: z.number().min(0.01, "List price must be greater than 0").optional(),
+          listPrice: z.preprocess(
+            roundPositivePriceInput,
+            z.number().min(0.01, "List price must be greater than 0").optional()
+          ),
           discountValue: z.number().optional(),
           discountType: z.enum(["amount", "percent"]).default("percent").optional(),
-          price: z.number().min(0.01, "Final price must be greater than 0"),
+          price: z.preprocess(
+            roundPositivePriceInput,
+            z.number().min(0.01, "Final price must be greater than 0")
+          ),
           discountEndsAt: z.date().optional().nullable(),
           stock: z.number().int().min(0).default(0),
           isDefault: z.boolean().default(false).optional(),

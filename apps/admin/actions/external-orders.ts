@@ -37,12 +37,6 @@ import {
   externalOrderPreviewSchema,
 } from '@/app/(dashboard)/external-orders/external-orders.schema'
 
-type ProductPrice = {
-  base: number
-  list: number
-  final: number
-}
-
 function syntheticEmailForPhone(normalizedPhone: string): string {
   return `external+${normalizedPhone.replace(/\D/g, '')}@orders.tallaby.local`
 }
@@ -187,7 +181,7 @@ async function resolveLineItems(
 
     let variant = null
     let variantData: Record<string, unknown> | null = null
-    let price = Number((product.price as ProductPrice)?.final) || 0
+    let price = getPriceFinal(product.price)
 
     if (item.variantId) {
       variant = await db.query.productVariants.findFirst({
@@ -359,7 +353,7 @@ export async function searchProductsForExternalOrder(query: string) {
         product.sku ??
         'Product'
 
-      const price = Number((product.price as ProductPrice)?.final) || 0
+      const price = getPriceFinal(product.price)
       const images = (product.images as string[] | null) ?? []
 
       return {

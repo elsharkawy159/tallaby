@@ -28,6 +28,7 @@ import {
   type ProductLocale,
 } from "@/lib/product-translations";
 import { AffiliateCouponCapture } from "@/components/product/affiliate-coupon-capture.client";
+import { parsePriceJson } from "@workspace/lib";
 
 // ISR: pre-render product pages at build time, revalidate every 10 minutes
 export const revalidate = 600;
@@ -80,7 +81,7 @@ export async function generateMetadata({
   const t = await getTranslations("product");
   const { product } = await resolveProduct(locale, slug);
 
-  const price = (product.price as any) || {};
+  const price = parsePriceJson(product.price);
   const category = (product as any).category;
   const categoryName = category
     ? locale === "ar"
@@ -103,8 +104,8 @@ export async function generateMetadata({
       slug: product.slug,
       description: product.description ?? "",
       price: {
-        final: Number(price.final ?? price.current ?? price.list ?? 0),
-        list: Number(price.list ?? price.current ?? price.final ?? 0),
+        final: price.final,
+        list: price.list ?? price.final,
       },
       images: Array.isArray(product.images) ? (product.images as string[]) : [],
       brand: {

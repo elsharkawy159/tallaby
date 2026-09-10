@@ -6,7 +6,7 @@ import {
   calculateDiscountFromFinalPrice,
   calculateProductFinalPrice,
   getFinalPriceHelpText,
-  roundPriceToNearestNine,
+  roundPriceUpToNearestFive,
   type SellerPricingSettings,
 } from "@/lib/utils/product-pricing.lib";
 import { ImageUpload } from "@/components/inputs/image-upload";
@@ -61,13 +61,13 @@ export function PriceStockStep({
 }: PriceStockStepProps) {
   const form = useFormContext<AddProductFormData>();
 
-  const applyNearestNineRounding = useCallback(
+  const applyNearestFiveRounding = useCallback(
     (field: "price.list" | "price.final", value: number) => {
       if (value <= 0) {
         return;
       }
 
-      const rounded = roundPriceToNearestNine(value);
+      const rounded = roundPriceUpToNearestFive(value);
 
       if (rounded !== value) {
         form.setValue(field, rounded, {
@@ -163,7 +163,7 @@ export function PriceStockStep({
               placeholder="0.00"
               className="text-sm"
               required
-              onBlurValue={(value) => applyNearestNineRounding("price.list", value)}
+              onBlurValue={(value) => applyNearestFiveRounding("price.list", value)}
             />
           </div>
 
@@ -219,7 +219,7 @@ export function PriceStockStep({
             placeholder="0.00"
             helpText={getFinalPriceHelpText(sellerPricing)}
             className="text-sm"
-            onBlurValue={(value) => applyNearestNineRounding("price.final", value)}
+            onBlurValue={(value) => applyNearestFiveRounding("price.final", value)}
           />
         </div>
 

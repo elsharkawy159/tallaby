@@ -26,6 +26,7 @@ import {
   syncCategoryProductCountForProductMutation,
   syncCategoryProductCountOnDelete,
 } from "@workspace/db/categories";
+import { roundPriceUpToNearestFive } from "@workspace/lib";
 
 function normalizeRichTextContent(html?: string | null): string | null {
   if (!html?.trim()) return null;
@@ -271,6 +272,32 @@ function applyDefaultVariantProductImages<
   });
 }
 
+/**
+ * Server-side guard for the products.price jsonb: normalises the discount
+ * expiry and re-applies the nearest-5 rounding, so a price that reached the
+ * action from outside the seller form (imports, scripts, older clients) is
+ * stored on the same step the storefront renders.
+ */
+function normalizeProductPricePayload(price: unknown) {
+  if (!price || typeof price !== "object" || Array.isArray(price)) {
+    return price;
+  }
+
+  const obj = price as Record<string, unknown>;
+  const roundField = (value: unknown) =>
+    typeof value === "number" && Number.isFinite(value) && value > 0
+      ? roundPriceUpToNearestFive(value)
+      : value;
+
+  return {
+    ...obj,
+    base: roundField(obj.base),
+    list: roundField(obj.list),
+    final: roundField(obj.final),
+    discountEndsAt: toIsoStringOrNull(obj.discountEndsAt),
+  };
+}
+
 function toIsoStringOrNull(value: unknown): string | null {
   if (!value) return null;
   const date = value instanceof Date ? value : new Date(value as string);
@@ -330,20 +357,28 @@ function buildPriceObject(input: {
   if (!Number.isFinite(base)) base = 0;
   if (!Number.isFinite(list)) list = 0;
 
+  base = roundPriceUpToNearestFive(base);
+  list = roundPriceUpToNearestFive(list);
+
   let discountType: "percent" | "amount" | null =
     (input.discountType as any) || null;
   let discountValue: number | null =
     input.discountValue != null ? Number(input.discountValue) : null;
   let finalPrice = input.final != null ? Number(input.final) : null;
 
-  if (discountType === "percent" && discountValue != null) {
+  if (finalPrice != null && Number.isFinite(finalPrice) && finalPrice > 0) {
+    // An explicit final price already carries the platform commission and the
+    // seller's rounding — recomputing it from list/discount here would silently
+    // drop the commission and undercharge on variants. Only derive the discount
+    // when the caller did not send one.
+    if (discountValue == null) {
+      discountType = "amount";
+      discountValue = Number((list - finalPrice).toFixed(2));
+    }
+  } else if (discountType === "percent" && discountValue != null) {
     finalPrice = Number((list * (1 - discountValue / 100)).toFixed(2));
   } else if (discountType === "amount" && discountValue != null) {
     finalPrice = Number((list - discountValue).toFixed(2));
-  } else if (finalPrice != null && Number.isFinite(finalPrice)) {
-    const amount = list - finalPrice;
-    discountType = "amount";
-    discountValue = Number(amount.toFixed(2));
   } else {
     finalPrice = list;
     discountType = null;
@@ -355,7 +390,7 @@ function buildPriceObject(input: {
   return {
     base,
     list,
-    final: finalPrice,
+    final: roundPriceUpToNearestFive(finalPrice as number),
     discountType,
     discountValue,
   };
@@ -1167,11 +1202,8 @@ export async function createProduct(
       status: (rest as CreateProductLegacy).status ?? ("pending" as const),
     } as any;
 
-    if (productPayload.price && typeof productPayload.price === "object") {
-      productPayload.price = {
-        ...productPayload.price,
-        discountEndsAt: toIsoStringOrNull(productPayload.price.discountEndsAt),
-      };
+    if (productPayload.price != null) {
+      productPayload.price = normalizeProductPricePayload(productPayload.price);
     }
 
     const slugsForSnapshot: { locale: string; slug: string | null }[] = [];
@@ -1410,11 +1442,10 @@ export async function updateProduct(
       ...productData
     } = data as typeof data & FormOnly;
 
-    if (productData.price && typeof productData.price === "object") {
-      (productData as any).price = {
-        ...(productData.price as any),
-        discountEndsAt: toIsoStringOrNull((productData.price as any).discountEndsAt),
-      };
+    if (productData.price != null) {
+      (productData as any).price = normalizeProductPricePayload(
+        productData.price
+      );
     }
 
     const updatedProduct = await db.transaction(async (tx) => {

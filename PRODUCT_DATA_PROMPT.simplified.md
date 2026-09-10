@@ -59,17 +59,17 @@ selling price = cost basis ÷ 0.70
 
 Use `÷ 0.75` (25%) only when explicitly told to. This is a margin, not a markup.
 
-### Step 4 — Round **up** to the next price ending in 9
+### Step 4 — Round **up** to the next multiple of 5
 
-149 · 159 · 179 · 199 · 229 · 249 · 279 · 299 · 329 · 349 · 379 · 399 · 449 · 499 …
+150 · 160 · 180 · 200 · 230 · 235 · 250 · 280 · 300 · 330 · 350 · 380 · 400 · 450 · 500 …
 Never round below the computed price.
 
 ### Worked examples
 
 | Supplier text         | Per piece | Cost basis | ÷ 0.70 | Final   |
 | --------------------- | --------- | ---------- | ------ | ------- |
-| `سعر الدستة ١٤٤٠ج`    | 120       | 163        | 232.86 | **239** |
-| `السعر فـ الدست ٢٢٠ج` | 220       | 263        | 375.71 | **379** |
+| `سعر الدستة ١٤٤٠ج`    | 120       | 163        | 232.86 | **235** |
+| `السعر فـ الدست ٢٢٠ج` | 220       | 263        | 375.71 | **380** |
 
 ### Where the price goes
 

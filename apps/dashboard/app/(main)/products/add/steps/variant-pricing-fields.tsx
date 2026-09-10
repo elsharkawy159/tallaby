@@ -6,7 +6,7 @@ import { Controller, useFormContext } from "react-hook-form";
 import {
   calculateDiscountFromFinalPrice,
   calculateProductFinalPrice,
-  roundPriceToNearestNine,
+  roundPriceUpToNearestFive,
   type SellerPricingSettings,
 } from "@/lib/utils/product-pricing.lib";
 import { getPublicUrl } from "@/lib/utils";
@@ -142,7 +142,7 @@ export function VariantPricingFields({
     }
   }, [listPrice, discountValue, discountType, finalPrice, form, index, sellerPricing]);
 
-  const applyNearestNineRounding = (
+  const applyNearestFiveRounding = (
     field: `variants.${number}.listPrice` | `variants.${number}.price`,
     value: number
   ) => {
@@ -150,7 +150,7 @@ export function VariantPricingFields({
       return;
     }
 
-    const rounded = roundPriceToNearestNine(value);
+    const rounded = roundPriceUpToNearestFive(value);
 
     if (rounded !== value) {
       form.setValue(field, rounded, {
@@ -168,7 +168,7 @@ export function VariantPricingFields({
         placeholder="0.00"
         className="text-sm"
         onBlurValue={(value) =>
-          applyNearestNineRounding(`variants.${index}.listPrice`, value)
+          applyNearestFiveRounding(`variants.${index}.listPrice`, value)
         }
       />
       <div className="flex gap-2 items-end">
@@ -223,7 +223,7 @@ export function VariantPricingFields({
         placeholder="0.00"
         className="text-sm"
         onBlurValue={(value) =>
-          applyNearestNineRounding(`variants.${index}.price`, value)
+          applyNearestFiveRounding(`variants.${index}.price`, value)
         }
       />
       <DiscountExpiryField

@@ -67,9 +67,12 @@ export function buildEditDefaultValues(
     product.price && typeof product.price === "object"
       ? (product.price as Record<string, unknown>)
       : {};
-  const list = safeNum(priceObj.list ?? priceObj.base) ?? 1;
-  const final = safeNum(priceObj.final) ?? list;
-  const base = safeNum(priceObj.base) ?? list;
+  // parsePriceJson also applies the nearest-5 rounding, so re-opening a legacy
+  // product in the editor shows the same price the storefront renders.
+  const parsedPrice = parsePriceJson(product.price);
+  const list = parsedPrice.list ?? (parsedPrice.base > 0 ? parsedPrice.base : 1);
+  const final = parsedPrice.final > 0 ? parsedPrice.final : list;
+  const base = parsedPrice.base > 0 ? parsedPrice.base : list;
   const discountValue = safeNum(priceObj.discountValue);
   const discountType =
     (priceObj.discountType as "amount" | "percent") ?? "percent";

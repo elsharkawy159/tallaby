@@ -12,6 +12,12 @@ export {
   parsePriceJson,
 } from "./src/utils/parse-price-json";
 
+export {
+  PRICE_ROUNDING_STEP,
+  roundNullablePriceUpToNearestFive,
+  roundPriceUpToNearestFive,
+} from "./src/utils/round-price";
+
 export type {
   ParsedPriceJson,
   PriceDiscountType,

@@ -3,7 +3,6 @@
 import { useState, useTransition } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { useTranslations } from "next-intl"
 import { Button } from "@workspace/ui/components/button"
@@ -51,7 +50,6 @@ export default function AddProduct ({
   const [mode, setMode] = useState<"single" | "bulk">("single")
   const [bulkUrls, setBulkUrls] = useState<string[]>([])
   const [importSectionOpen, setImportSectionOpen] = useState(true)
-  const router = useRouter()
   const tToast = useTranslations("toast")
 
   const form = useForm<AddProductFormData>({
@@ -80,10 +78,8 @@ export default function AddProduct ({
 
         if (result.success) {
           toast.success(tToast("productCreatedSuccessfully"))
-          form.reset(defaultValues as any)
-          setImportSectionOpen(true)
-          window.scrollTo({ top: 0, behavior: "smooth" })
-          // router.push("/products")
+          // Full reload clears stuck pending UI and resets the form cleanly
+          window.location.reload()
         } else {
           toast.error(result.error || tToast("failedToCreateProduct"))
         }

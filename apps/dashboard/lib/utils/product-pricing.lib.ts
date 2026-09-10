@@ -1,3 +1,7 @@
+import { roundPriceUpToNearestFive } from '@workspace/lib'
+
+export { roundPriceUpToNearestFive }
+
 export interface SellerPricingSettings {
   commissionRate: number
   isCommissionExempt: boolean
@@ -5,31 +9,6 @@ export interface SellerPricingSettings {
 }
 
 export const DEFAULT_COMMISSION_RATE = 10
-
-/**
- * Rounds a price to end in 9 (e.g. 155 → 159, 94 → 99, 100 → 99).
- * Ones digit < 5: below 100 rounds up to 9, 100+ rounds down to 9.
- * Ones digit >= 5: rounds up to the next 9.
- */
-export function roundPriceToNearestNine(price: number): number {
-  if (!Number.isFinite(price) || price <= 0) {
-    return 0
-  }
-
-  const rounded = Math.round(price)
-  const onesDigit = rounded % 10
-  const tensBase = rounded - onesDigit
-
-  if (onesDigit < 5) {
-    if (rounded < 100) {
-      return tensBase + 9
-    }
-
-    return tensBase - 1
-  }
-
-  return tensBase + 9
-}
 
 export function getEffectiveCommissionRate(
   settings: SellerPricingSettings
@@ -62,7 +41,7 @@ export function calculateProductFinalPrice(
   const commissionRate = getEffectiveCommissionRate(settings)
   const withCommission = discountedPrice * (1 + commissionRate)
 
-  return roundPriceToNearestNine(withCommission)
+  return roundPriceUpToNearestFive(withCommission)
 }
 
 function applyDiscount(

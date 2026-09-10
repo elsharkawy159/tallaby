@@ -59,7 +59,7 @@ interface BasicInformationStepProps {
   hideImport?: boolean;
   /** Called when paste/import detects 2+ product URLs. */
   onBulkUrls?: (urls: string[]) => void;
-  /** Controlled open state for the import accordion (open after save, closed after paste). */
+  /** Controlled open state for the import accordion (closed after paste/import). */
   importSectionOpen?: boolean;
   onImportSectionOpenChange?: (open: boolean) => void;
 }
@@ -258,7 +258,7 @@ export function BasicInformationStep({
 
   return (
     <div className="space-y-6">
-      {/* Product Import — collapse on paste/import; parent re-opens after save */}
+      {/* Product Import — collapse on paste/import */}
       {!hideImport && (
         <Accordion
           type="single"

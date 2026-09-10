@@ -175,11 +175,7 @@ export const getCartItems = async () => {
         (nextItem.variant as { price?: unknown } | null)?.price
       );
       const fallback =
-        variantFinal > 0
-          ? variantFinal
-          : productPrice?.final
-            ? Number(productPrice.final)
-            : 0;
+        variantFinal > 0 ? variantFinal : getPriceFinal(productPrice);
       if (fallback > 0) {
         return {
           ...nextItem,
@@ -298,9 +294,11 @@ export async function addToCart(
   }
 
   // Determine price - use variant price if available, otherwise product price
+  // getPriceFinal applies the nearest-5 rounding, so the snapshot written to
+  // cart_items always matches the price shown on the product page.
   const price = variant
     ? getPriceFinal(variant.price)
-    : Number((product.price as ProductPrice)?.final) || 0;
+    : getPriceFinal(product.price);
 
   // Check for existing cart item - fetch all items with same productId and filter by variant
   const allItems = await db.query.cartItems.findMany({

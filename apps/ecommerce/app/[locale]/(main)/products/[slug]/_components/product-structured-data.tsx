@@ -1,4 +1,5 @@
 import { generateProductStructuredData } from "@/lib/structured-data";
+import { parsePriceJson } from "@workspace/lib";
 import type { Product } from "./product-page.types";
 import type { ProductLocale } from "@/lib/product-translations";
 
@@ -11,7 +12,7 @@ export function ProductStructuredData({
   product,
   locale,
 }: ProductStructuredDataProps) {
-  const price = (product.price as any) || {};
+  const price = parsePriceJson(product.price);
   const stockCount = product.quantity ? Number(product.quantity) : undefined;
   const categoryName =
     product.category
@@ -26,8 +27,8 @@ export function ProductStructuredData({
     slug: product.slug,
     description: product.description ?? "",
     price: {
-      final: Number(price.final ?? price.current ?? price.list ?? 0),
-      list: Number(price.list ?? price.current ?? price.final ?? 0),
+      final: price.final,
+      list: price.list ?? price.final,
     },
     images: Array.isArray(product.images) ? (product.images as string[]) : [],
     ...(product.brand

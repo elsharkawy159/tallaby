@@ -23,6 +23,10 @@ import {
   syncCategoryProductCountForProductMutation,
   syncCategoryProductCountOnDelete,
 } from "@workspace/db/categories";
+import {
+  roundNullablePriceUpToNearestFive,
+  roundPriceUpToNearestFive,
+} from "@workspace/lib";
 
 /** Builds the cache-invalidation snapshot for a product from its current DB state. */
 async function toSnapshot(productId: string): Promise<ProductCacheSnapshot | null> {
@@ -423,16 +427,23 @@ export async function updateProduct(productId: string, data: UpdateProductInput)
           final?: number;
         } | null) || {};
 
+      // Every stored price is quantised to a 5 EGP step (rounding up), the same
+      // rule the seller dashboard and the storefront apply.
       productUpdate.price = {
         ...currentPrice,
-        base: data.basePrice ?? currentPrice.base ?? 0,
-        list: data.listPrice ?? currentPrice.list ?? null,
-        final:
+        base: roundPriceUpToNearestFive(
+          data.basePrice ?? currentPrice.base ?? 0
+        ),
+        list: roundNullablePriceUpToNearestFive(
+          data.listPrice ?? currentPrice.list ?? null
+        ),
+        final: roundPriceUpToNearestFive(
           data.finalPrice ??
-          data.basePrice ??
-          currentPrice.final ??
-          currentPrice.base ??
-          0,
+            data.basePrice ??
+            currentPrice.final ??
+            currentPrice.base ??
+            0
+        ),
       };
     }
 
@@ -494,7 +505,9 @@ export async function updateProduct(productId: string, data: UpdateProductInput)
         if (data.variants.length > 0) {
           await tx.insert(productVariants).values(
             data.variants.map((variant, index) => {
-              const finalPrice = Number(variant.price ?? 0);
+              const finalPrice = roundPriceUpToNearestFive(
+                Number(variant.price ?? 0)
+              );
               return {
                 productId,
                 title: variant.title,
