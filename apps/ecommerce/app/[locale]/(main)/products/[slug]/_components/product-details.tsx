@@ -26,6 +26,7 @@ import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { getVariantImageUrls } from "@/lib/variant-images";
 import { getDefaultProductVariantId } from "@/lib/product-variants";
 import { getVariantDisplayFields } from "@/lib/variant-localized";
+import { getVariantColor, withAlpha } from "@/lib/variant-colors";
 import { splitBulletPoint } from "@/lib/bullet-points";
 import type { ProductLocale } from "@/lib/product-translations";
 import { SellerInfo } from "./SellerInfo";
@@ -275,6 +276,24 @@ export const ProductDetails = ({
                 const variantLabel = display.title || variant.title;
                 const variantDescription = optionParts.join(" • ");
                 const variantThumbnail = getVariantImageUrls(variant)[0];
+                // Color variants get outlined in their own color instead of
+                // the generic primary border.
+                const colorHex = isAvailable
+                  ? (getVariantColor(variant, locale)?.hex ?? null)
+                  : null;
+                // The inset hairline keeps pale colors (white, beige) readable
+                // as an outline against the white card.
+                const colorStyle = colorHex
+                  ? isSelected
+                    ? {
+                        borderColor: colorHex,
+                        boxShadow: `0 0 0 3px ${withAlpha(colorHex, 0.3)}, inset 0 0 0 1px rgba(0,0,0,0.08)`,
+                      }
+                    : {
+                        borderColor: withAlpha(colorHex, 0.55),
+                        boxShadow: "inset 0 0 0 1px rgba(0,0,0,0.06)",
+                      }
+                  : undefined;
 
                 return (
                   <button
@@ -288,11 +307,16 @@ export const ProductDetails = ({
                         ? variantLabel
                         : `${variantLabel} (${t("outOfStock")})`
                     }
+                    style={colorStyle}
                     className={`group relative flex h-28 w-28 flex-col items-stretch overflow-hidden rounded-2xl border-2 text-left transition-all duration-200 ease-out ${
                       isSelected
-                        ? "border-primary shadow-lg shadow-primary/20 ring-2 ring-primary/25"
+                        ? colorHex
+                          ? "bg-white shadow-lg"
+                          : "border-primary shadow-lg shadow-primary/20 ring-2 ring-primary/25"
                         : isAvailable
-                          ? "border-gray-200 bg-white hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md"
+                          ? colorHex
+                            ? "bg-white hover:-translate-y-0.5"
+                            : "border-gray-200 bg-white hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md"
                           : "cursor-not-allowed border-gray-100 bg-gray-50"
                     }`}
                   >
@@ -303,8 +327,8 @@ export const ProductDetails = ({
                           src={getPublicUrl(variantThumbnail, "products")}
                           alt={variantLabel}
                           fill
-                          sizes="112px"
-                          className={`object-cover transition-transform duration-300 ${
+                          sizes="96px"
+                          className={`object-contain transition-transform duration-300 ${
                             isAvailable
                               ? "group-hover:scale-105"
                               : "opacity-40 grayscale"
@@ -352,7 +376,7 @@ export const ProductDetails = ({
 
                     {/* Label strip */}
                     <div
-                      className={`shrink-0 border-t px-1.5 py-1.5 ${
+                      className={`shrink-0 border-t rtl:text-right px-1.5 py-1.5 ${
                         isSelected
                           ? "border-primary/20 bg-primary/5"
                           : "border-gray-100 bg-white"

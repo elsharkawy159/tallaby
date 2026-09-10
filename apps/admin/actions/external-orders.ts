@@ -21,6 +21,7 @@ import { getServiceClient } from '@workspace/db/supabase/service'
 import { resolveGovernorateSelectValue } from '@workspace/lib/address'
 import {
   calculateLocationShippingCost,
+  calculateSellerFreeDeliveryDiscount,
   getThresholdShippingDiscount,
   normalizeEgyptianMobile,
 } from '@workspace/lib/shipping'
@@ -410,25 +411,29 @@ export async function previewExternalOrderTotals(input: unknown) {
       0,
     )
 
-    const shippingCost =
-      calculateLocationShippingCost({
-        items: linesResult.data.map((line) => ({
-          quantity: line.quantity,
-          price: line.price,
-          sellerId: line.sellerId,
-          product: {
-            productType: line.product.productType,
-            freeDelivery: line.product.freeDelivery,
-            dimensions: line.product.dimensions,
-            sellerId: line.product.sellerId,
-            seller: { freeDelivery: line.product.sellerFreeDelivery },
-          },
-        })),
-        destinationState: parsed.data.destinationState,
-        cartSubtotal: subtotal,
-      }) ?? 0
+    const shippingOptions = {
+      items: linesResult.data.map((line) => ({
+        quantity: line.quantity,
+        price: line.price,
+        sellerId: line.sellerId,
+        product: {
+          productType: line.product.productType,
+          freeDelivery: line.product.freeDelivery,
+          dimensions: line.product.dimensions,
+          sellerId: line.product.sellerId,
+          seller: { freeDelivery: line.product.sellerFreeDelivery },
+        },
+      })),
+      destinationState: parsed.data.destinationState,
+      cartSubtotal: subtotal,
+    }
 
-    const shippingDiscount = getThresholdShippingDiscount(subtotal, shippingCost)
+    const shippingCost = calculateLocationShippingCost(shippingOptions) ?? 0
+
+    const shippingDiscount = Math.max(
+      getThresholdShippingDiscount(subtotal, shippingCost),
+      calculateSellerFreeDeliveryDiscount(shippingOptions),
+    )
     const itemCount = linesResult.data.reduce(
       (sum, line) => sum + line.quantity,
       0,

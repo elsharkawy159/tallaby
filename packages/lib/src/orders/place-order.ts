@@ -30,7 +30,11 @@ import {
   resolveAffiliateForCoupon,
   createPendingAffiliateCommission,
 } from '@workspace/db/affiliates'
-import { calculateLocationShippingCost, getThresholdShippingDiscount } from '../shipping/shipping.lib'
+import {
+  calculateLocationShippingCost,
+  calculateSellerFreeDeliveryDiscount,
+  getThresholdShippingDiscount,
+} from '../shipping/shipping.lib'
 import {
   formatDecimal,
   formatVariantTitleFromCart,
@@ -212,20 +216,24 @@ export async function placeOrderFromCart(
     0,
   )
 
-  const computedShippingCost = calculateLocationShippingCost({
+  // Address is required at place-order time; if state is missing, bill fallback rate
+  const destinationState = shippingAddress?.state?.trim()
+    ? shippingAddress.state
+    : '__missing_state__'
+
+  const shippingCost = calculateLocationShippingCost({
     items: shippingItems,
-    destinationState: shippingAddress?.state,
+    destinationState,
+    cartSubtotal,
+  })!
+
+  // sellers.free_delivery waives that seller's shipment entirely — recorded as
+  // a discount so the order still stores the real shipping cost.
+  const sellerFreeDeliveryDiscount = calculateSellerFreeDeliveryDiscount({
+    items: shippingItems,
+    destinationState,
     cartSubtotal,
   })
-
-  // Address is required at place-order time; if state is missing, bill fallback rate
-  const shippingCost =
-    computedShippingCost ??
-    calculateLocationShippingCost({
-      items: shippingItems,
-      destinationState: '__missing_state__',
-      cartSubtotal,
-    })!
 
   const orderItemsData = cart.cartItems.map((item) => {
     const itemSubtotal = Number(item.price) * item.quantity
@@ -280,7 +288,10 @@ export async function placeOrderFromCart(
     subtotal,
     shippingCost,
   )
-  let shippingDiscount = thresholdShippingDiscount
+  let shippingDiscount = Math.max(
+    thresholdShippingDiscount,
+    sellerFreeDeliveryDiscount,
+  )
   let appliedCoupon: typeof coupons.$inferSelect | null = null
 
   if (!skipCoupons && couponCode) {
@@ -345,6 +356,7 @@ export async function placeOrderFromCart(
     merchandiseDiscount,
     shippingDiscount,
     thresholdShippingDiscount,
+    sellerFreeDeliveryDiscount,
     coupon: appliedCoupon
       ? {
           id: appliedCoupon.id,

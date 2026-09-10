@@ -51,6 +51,7 @@ export type OrderDiscountType =
 	| 'coupon'
 	| 'free_shipping_coupon'
 	| 'threshold_free_shipping'
+	| 'seller_free_shipping'
 
 export type OrderCouponDiscountType =
 	| 'percentage'

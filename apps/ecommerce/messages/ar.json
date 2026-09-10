@@ -279,7 +279,7 @@
     "relatedProducts": "منتجات ذات صلة",
     "similarProducts": "منتجات مشابهة",
     "viewAllProducts": "عرض جميع المنتجات",
-    "inStockAvailable": "متوفر ({count} متاح)",
+    "inStockAvailable": "متوفر ({count} قطعة)",
     "available": "متاح",
     "inStockCount": "{count} متوفر",
     "currentlyOutOfStock": "غير متوفر حاليًا",

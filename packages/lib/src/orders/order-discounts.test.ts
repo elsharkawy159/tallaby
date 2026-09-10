@@ -78,6 +78,36 @@ describe('buildOrderDiscountLines', () => {
     expect(result.couponContribution).toBe(20)
   })
 
+  it('records a seller free-delivery waiver', () => {
+    const result = buildOrderDiscountLines({
+      merchandiseDiscount: 0,
+      shippingDiscount: 65,
+      thresholdShippingDiscount: 0,
+      sellerFreeDeliveryDiscount: 65,
+      coupon: null,
+    })
+    expect(result.lines).toEqual([
+      {
+        type: 'seller_free_shipping',
+        label: 'Free delivery (seller offer)',
+        amount: '65.00',
+      },
+    ])
+    expect(result.totalDiscount).toBe(65)
+  })
+
+  it('prefers threshold attribution when it covers at least as much', () => {
+    const result = buildOrderDiscountLines({
+      merchandiseDiscount: 0,
+      shippingDiscount: 130,
+      thresholdShippingDiscount: 130,
+      sellerFreeDeliveryDiscount: 65,
+      coupon: null,
+    })
+    expect(result.lines[0]?.type).toBe('threshold_free_shipping')
+    expect(result.lines[0]?.amount).toBe('130.00')
+  })
+
   it('attributes shipping waiver to free_shipping coupon over threshold', () => {
     const result = buildOrderDiscountLines({
       merchandiseDiscount: 0,

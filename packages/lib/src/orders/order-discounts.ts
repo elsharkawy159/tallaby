@@ -32,6 +32,11 @@ export interface BuildOrderDiscountLinesInput {
    * (before free_shipping coupon max).
    */
   thresholdShippingDiscount: number
+  /**
+   * Shipping waived because the seller(s) are flagged sellers.free_delivery.
+   * Attribution only — the amount actually applied is shippingDiscount.
+   */
+  sellerFreeDeliveryDiscount?: number
   coupon: BuildOrderDiscountCouponInput | null
 }
 
@@ -71,6 +76,11 @@ export function buildOrderDiscountLines (
   const lines: OrderDiscountLine[] = []
   const merchandiseDiscount = Math.max(0, input.merchandiseDiscount)
   const shippingDiscount = Math.max(0, input.shippingDiscount)
+  const thresholdShippingDiscount = Math.max(0, input.thresholdShippingDiscount)
+  const sellerFreeDeliveryDiscount = Math.max(
+    0,
+    input.sellerFreeDeliveryDiscount ?? 0,
+  )
   const coupon = input.coupon
 
   if (merchandiseDiscount > 0 && coupon) {
@@ -96,6 +106,12 @@ export function buildOrderDiscountLines (
         code: coupon.code.trim().toUpperCase(),
         couponId: coupon.id,
         couponDiscountType: 'free_shipping',
+      })
+    } else if (sellerFreeDeliveryDiscount > thresholdShippingDiscount) {
+      lines.push({
+        type: 'seller_free_shipping',
+        label: 'Free delivery (seller offer)',
+        amount: formatDecimal(shippingDiscount),
       })
     } else {
       lines.push({

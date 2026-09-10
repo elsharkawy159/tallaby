@@ -279,7 +279,7 @@
     "relatedProducts": "Related Products",
     "similarProducts": "Similar Products",
     "viewAllProducts": "View All Products",
-    "inStockAvailable": "In stock ({count} available)",
+    "inStockAvailable": "In stock ({count} pieces)",
     "available": "available",
     "inStockCount": "{count} in stock",
     "currentlyOutOfStock": "Currently Out of Stock",

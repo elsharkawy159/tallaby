@@ -60,6 +60,7 @@ export const ProductCardMedia = ({
         {swatches.length > 0 && (
           <ProductCardSwatches
             swatches={swatches}
+            productSlug={product.slug}
             overflow={overflow}
             onHover={setHoverImage}
             className="pointer-events-auto min-w-0 max-w-[65%] sm:max-w-[70%]"

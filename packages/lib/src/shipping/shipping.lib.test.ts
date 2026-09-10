@@ -6,6 +6,7 @@ import {
   calculateCartWeightGrams,
   calculateLocationShippingCost,
   calculateRawShippingAmount,
+  calculateSellerFreeDeliveryDiscount,
   cartQualifiesForProductFreeDelivery,
   getThresholdShippingDiscount,
   getWeightExtraCharge,
@@ -272,6 +273,119 @@ describe('calculateLocationShippingCost', () => {
         cartSubtotal: 300,
       }),
     ).toBe(130)
+  })
+})
+
+describe('calculateSellerFreeDeliveryDiscount', () => {
+  const flaggedSeller = {
+    quantity: 1,
+    price: 100,
+    sellerId: 'seller-free',
+    product: {
+      productType: 'physical' as const,
+      freeDelivery: false,
+      dimensions: { weight: 1, weightUnit: 'kg' },
+      sellerId: 'seller-free',
+      seller: { freeDelivery: true },
+    },
+  }
+  const payingSeller = {
+    quantity: 1,
+    price: 100,
+    sellerId: 'seller-paid',
+    product: {
+      productType: 'physical' as const,
+      freeDelivery: false,
+      dimensions: { weight: 1, weightUnit: 'kg' },
+      sellerId: 'seller-paid',
+      seller: { freeDelivery: false },
+    },
+  }
+
+  it('waives the whole shipment when the only seller has free delivery', () => {
+    const options = {
+      items: [flaggedSeller],
+      destinationState: 'Giza',
+      cartSubtotal: 100,
+    }
+
+    expect(calculateLocationShippingCost(options)).toBe(65)
+    expect(calculateSellerFreeDeliveryDiscount(options)).toBe(65)
+  })
+
+  it('waives only the flagged seller in a mixed cart', () => {
+    const options = {
+      items: [flaggedSeller, payingSeller],
+      destinationState: 'Giza',
+      cartSubtotal: 200,
+    }
+
+    expect(calculateLocationShippingCost(options)).toBe(130)
+    expect(calculateSellerFreeDeliveryDiscount(options)).toBe(65)
+  })
+
+  it('covers the seller weight surcharge, not just the base rate', () => {
+    expect(
+      calculateSellerFreeDeliveryDiscount({
+        items: [
+          {
+            ...flaggedSeller,
+            product: {
+              ...flaggedSeller.product,
+              dimensions: { weight: 2.3, weightUnit: 'kg' },
+            },
+          },
+        ],
+        destinationState: 'Giza',
+        cartSubtotal: 100,
+      }),
+    ).toBe(80)
+  })
+
+  it('returns 0 when no seller is flagged', () => {
+    expect(
+      calculateSellerFreeDeliveryDiscount({
+        items: [payingSeller],
+        destinationState: 'Giza',
+        cartSubtotal: 100,
+      }),
+    ).toBe(0)
+  })
+
+  it('ignores product-level freeDelivery — only the seller flag waives', () => {
+    expect(
+      calculateSellerFreeDeliveryDiscount({
+        items: [
+          {
+            ...payingSeller,
+            product: { ...payingSeller.product, freeDelivery: true },
+          },
+        ],
+        destinationState: 'Giza',
+        cartSubtotal: 100,
+      }),
+    ).toBe(0)
+  })
+
+  it('returns 0 when the destination is unknown or the cart is digital-only', () => {
+    expect(
+      calculateSellerFreeDeliveryDiscount({
+        items: [flaggedSeller],
+        destinationState: null,
+      }),
+    ).toBe(0)
+
+    expect(
+      calculateSellerFreeDeliveryDiscount({
+        items: [
+          {
+            ...flaggedSeller,
+            product: { ...flaggedSeller.product, productType: 'digital' },
+          },
+        ],
+        destinationState: 'Giza',
+      }),
+    ).toBe(0)
   })
 })
 

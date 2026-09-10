@@ -1,9 +1,7 @@
-import { Suspense } from "react";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import Hero from "@/components/home/hero/hero";
 import { ProductsGrid } from "@/components/home";
-import { ProductsGridSkeleton } from "@/components/home/products-grid.skeleton";
 import { generateHomeMetadata } from "@/lib/metadata";
 import type { SeoLocale } from "@/lib/metadata";
 
@@ -53,40 +51,41 @@ const HomePage = async ({
           }}
         />
       </Suspense> */}
-      {/* <Suspense fallback={<ProductsGridSkeleton />}>
-        <ProductsGrid
-          title={t("seasonal")}
-          // description={t("seasonalDescription")}
-          filters={{
-            isSeasonal: true,
-            sortBy: "newest",
-            limit: 12,
-          }}
-        />
-      </Suspense>
-
-      <Suspense fallback={<ProductsGridSkeleton />}>
-        <ProductsGrid
-          title={t("trending")}
-          // description={t("trendingDescription")}
-          filters={{
-            isTrending: true,
-            sortBy: "popular",
-            limit: 12,
-          }}
-        />
-      </Suspense> */}
 
       {/* <Suspense fallback={<ProductsGridSkeleton />}> */}
-        <ProductsGrid
-          title={t("featuredProducts")}
-          filters={{
-            sortBy: "popular",
-            limit: 30,
-            isTrending: false,
-            isSeasonal: false,
-          }}
-        />
+      <ProductsGrid
+        title={t("trending")}
+        // description={t("trendingDescription")}
+        filters={{
+          isTrending: true,
+          sortBy: "popular",
+          limit: 12,
+        }}
+      />
+      {/* </Suspense> */}
+
+      {/* <Suspense fallback={<ProductsGridSkeleton />}> */}
+      <ProductsGrid
+        title={t("seasonal")}
+        // description={t("seasonalDescription")}
+        filters={{
+          isSeasonal: true,
+          sortBy: "newest",
+          limit: 12,
+        }}
+      />
+      {/* </Suspense> */}
+
+      {/* <Suspense fallback={<ProductsGridSkeleton />}> */}
+      <ProductsGrid
+        title={t("featuredProducts")}
+        filters={{
+          sortBy: "popular",
+          limit: 30,
+          isTrending: false,
+          isSeasonal: false,
+        }}
+      />
       {/* </Suspense> */}
     </div>
   );

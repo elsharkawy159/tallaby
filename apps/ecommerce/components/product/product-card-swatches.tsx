@@ -1,10 +1,12 @@
 "use client";
 
+import { Link } from "@/i18n/navigation";
 import type { ProductColorSwatch } from "@/lib/variant-colors";
 import { cn } from "@/lib/utils";
 
 interface ProductCardSwatchesProps {
   swatches: ProductColorSwatch[];
+  productSlug?: string;
   overflow?: number;
   onHover?: (image: string | null) => void;
   className?: string;
@@ -12,11 +14,14 @@ interface ProductCardSwatchesProps {
 
 export const ProductCardSwatches = ({
   swatches,
+  productSlug,
   overflow = 0,
   onHover,
   className,
 }: ProductCardSwatchesProps) => {
   if (!swatches.length) return null;
+
+  const slug = productSlug || "unknown-product";
 
   return (
     <div
@@ -27,13 +32,14 @@ export const ProductCardSwatches = ({
       onClick={(event) => event.stopPropagation()}
     >
       {swatches.map((swatch) => (
-        <span
+        <Link
           key={swatch.value}
-          role="img"
-          tabIndex={0}
+          // Deep link: the product page preselects this color client-side, so
+          // the page itself stays statically rendered (ISR).
+          href={`/products/${slug}?variant=${encodeURIComponent(swatch.slug)}`}
           aria-label={swatch.label}
           title={swatch.label}
-          className="size-3.5 shrink-0 rounded-full ring-1 ring-black/15 md:size-4"
+          className="size-3.5 shrink-0 rounded-full ring-1 ring-black/15 transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary md:size-4"
           style={{ backgroundColor: swatch.hex }}
           onMouseEnter={() => onHover?.(swatch.image ?? null)}
           onMouseLeave={() => onHover?.(null)}

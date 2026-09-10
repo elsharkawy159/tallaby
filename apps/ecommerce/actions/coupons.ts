@@ -11,7 +11,10 @@ import {
   type CartItemForCoupon,
   type CheckoutSummary
 } from "@/lib/coupon-utils"
-import { calculateOrderShippingCost } from "@/lib/shipping"
+import {
+  calculateOrderSellerFreeDeliveryDiscount,
+  calculateOrderShippingCost,
+} from "@/lib/shipping"
 import {
   clearPendingCouponCode,
   setPendingCouponCode,
@@ -221,6 +224,10 @@ export async function validateCoupon(
     const shippingCost = calculateOrderShippingCost(cart.cartItems, {
       destinationState,
     })
+    const sellerFreeDeliveryDiscount = calculateOrderSellerFreeDeliveryDiscount(
+      cart.cartItems,
+      { destinationState },
+    )
     const calculationResult = calculateCouponDiscount(
       coupon as CouponData,
       cartItemsForCoupon,
@@ -239,7 +246,8 @@ export async function validateCoupon(
       tax,
       shippingCost,
       total: subtotal + tax + billedShipping,
-      itemCount: cart.cartItems.reduce((sum, i) => sum + i.quantity, 0)
+      itemCount: cart.cartItems.reduce((sum, i) => sum + i.quantity, 0),
+      sellerFreeDeliveryDiscount,
     }
 
     const summary = buildSummaryWithCoupon(
@@ -395,6 +403,10 @@ export async function removeCouponFromCart(data?: {
     const shippingCost = calculateOrderShippingCost(cart.cartItems, {
       destinationState,
     })
+    const sellerFreeDeliveryDiscount = calculateOrderSellerFreeDeliveryDiscount(
+      cart.cartItems,
+      { destinationState },
+    )
     const billedShipping = shippingCost ?? 0
     const total = subtotal + tax + billedShipping
 
@@ -405,6 +417,7 @@ export async function removeCouponFromCart(data?: {
         shippingCost,
         total,
         itemCount: cart.cartItems.reduce((sum, i) => sum + i.quantity, 0),
+        sellerFreeDeliveryDiscount,
       },
       null,
       null,

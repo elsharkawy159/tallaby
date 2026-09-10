@@ -42,6 +42,10 @@ const ProductsGrid = async ({
     throw new Error("Failed to load products");
   }
 
+  if (products.data.length === 0) {
+    return null;
+  }
+
   return (
     <section className="lg:py-8 py-5 container">
       {/* Header Section */}

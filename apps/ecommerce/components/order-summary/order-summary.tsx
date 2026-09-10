@@ -1,7 +1,10 @@
 'use client'
 
 import { useTranslations } from 'next-intl'
-import { cartHasPhysicalItems } from '@/lib/shipping'
+import {
+  cartFullyCoveredBySellerFreeDelivery,
+  cartHasPhysicalItems,
+} from '@/lib/shipping'
 import {
   FreeDeliveryProgress,
   OrderSummaryCoupon,
@@ -29,7 +32,10 @@ export function OrderSummary ({
   const t = useTranslations('checkout')
 
   const subtotal = summary.subtotal ?? 0
-  const showFreeDeliveryProgress = cartHasPhysicalItems(items)
+  // Sellers flagged free_delivery already waive shipping in full, so the
+  // "spend more to unlock" nudge would contradict the totals below it.
+  const showFreeDeliveryProgress =
+    cartHasPhysicalItems(items) && !cartFullyCoveredBySellerFreeDelivery(items)
 
   const displayTotal = summary.totalAfterDiscount ?? summary.total ?? 0
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0)

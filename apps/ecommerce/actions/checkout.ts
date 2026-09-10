@@ -18,7 +18,10 @@ import {
   type ProductLocale,
 } from "@/lib/product-translations";
 import { validateCoupon } from "./coupons";
-import { calculateOrderShippingCost } from "@/lib/shipping";
+import {
+  calculateOrderSellerFreeDeliveryDiscount,
+  calculateOrderShippingCost,
+} from "@/lib/shipping";
 import {
   buildSummaryWithCoupon,
   type CheckoutSummary,
@@ -112,6 +115,7 @@ async function getDestinationState(
 function buildBaseSummary(
   cartItems: Array<{ quantity: number; price: string | number }>,
   shippingCost: number | null,
+  sellerFreeDeliveryDiscount = 0,
 ): CheckoutSummary {
   const subtotal = cartItems.reduce(
     (sum, item) => sum + Number(item.price) * item.quantity,
@@ -128,6 +132,7 @@ function buildBaseSummary(
       shippingCost,
       total,
       itemCount: cartItems.reduce((sum, item) => sum + item.quantity, 0),
+      sellerFreeDeliveryDiscount,
     },
     null,
     null,
@@ -161,8 +166,16 @@ export async function recalculateCheckoutSummary(data: {
     const shippingCost = calculateOrderShippingCost(cart.cartItems, {
       destinationState,
     });
+    const sellerFreeDeliveryDiscount =
+      calculateOrderSellerFreeDeliveryDiscount(cart.cartItems, {
+        destinationState,
+      });
 
-    const baseSummary = buildBaseSummary(cart.cartItems, shippingCost);
+    const baseSummary = buildBaseSummary(
+      cart.cartItems,
+      shippingCost,
+      sellerFreeDeliveryDiscount,
+    );
 
     if (data.couponCode?.trim()) {
       const couponValidation = await validateCoupon(data.couponCode, cart, {
@@ -237,8 +250,16 @@ export async function getCheckoutData() {
     const shippingCost = calculateOrderShippingCost(localizedCartItems, {
       destinationState: defaultAddress?.state,
     });
+    const sellerFreeDeliveryDiscount =
+      calculateOrderSellerFreeDeliveryDiscount(localizedCartItems, {
+        destinationState: defaultAddress?.state,
+      });
 
-    let summary = buildBaseSummary(localizedCartItems, shippingCost);
+    let summary = buildBaseSummary(
+      localizedCartItems,
+      shippingCost,
+      sellerFreeDeliveryDiscount,
+    );
 
     // Auto-apply a pending coupon captured from `?coupon=` (affiliate share)
     // or a prior explicit apply. Server validation remains authoritative —

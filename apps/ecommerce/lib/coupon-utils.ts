@@ -68,6 +68,8 @@ export interface CheckoutSummary {
   total: number
   discountAmount?: number
   shippingDiscount?: number
+  /** Portion of shipping waived by sellers flagged sellers.free_delivery. */
+  sellerFreeDeliveryDiscount?: number
   totalAfterDiscount?: number
   discounts?: OrderDiscountLine[]
   itemCount: number
@@ -305,6 +307,8 @@ export function buildSummaryWithCoupon(
     shippingCost: number | null
     total: number
     itemCount: number
+    /** Shipping waived by sellers flagged sellers.free_delivery. */
+    sellerFreeDeliveryDiscount?: number
   },
   coupon: CouponData | null,
   calculationResult: CouponCalculationResult | null
@@ -314,15 +318,24 @@ export function buildSummaryWithCoupon(
     baseSummary.subtotal,
     baseSummary.shippingCost
   )
+  const sellerFreeDeliveryDiscount = Math.min(
+    Math.max(0, baseSummary.sellerFreeDeliveryDiscount ?? 0),
+    shippingCost
+  )
 
   if (!coupon || !calculationResult) {
+    const baseShippingDiscount = Math.max(
+      thresholdShippingDiscount,
+      sellerFreeDeliveryDiscount
+    )
     const {
       lines,
       totalDiscount,
     } = buildOrderDiscountLines({
       merchandiseDiscount: 0,
-      shippingDiscount: thresholdShippingDiscount,
+      shippingDiscount: baseShippingDiscount,
       thresholdShippingDiscount,
+      sellerFreeDeliveryDiscount,
       coupon: null,
     })
     const totalAfterDiscount = Math.max(
@@ -333,7 +346,7 @@ export function buildSummaryWithCoupon(
     return {
       ...baseSummary,
       discountAmount: 0,
-      shippingDiscount: thresholdShippingDiscount,
+      shippingDiscount: baseShippingDiscount,
       totalAfterDiscount,
       discounts: lines,
       appliedCoupon: null
@@ -342,6 +355,7 @@ export function buildSummaryWithCoupon(
 
   const shippingDiscount = Math.max(
     thresholdShippingDiscount,
+    sellerFreeDeliveryDiscount,
     calculationResult.shippingDiscount
   )
 
@@ -349,6 +363,7 @@ export function buildSummaryWithCoupon(
     merchandiseDiscount: calculationResult.discountAmount,
     shippingDiscount,
     thresholdShippingDiscount,
+    sellerFreeDeliveryDiscount,
     coupon: {
       id: coupon.id,
       code: coupon.code,

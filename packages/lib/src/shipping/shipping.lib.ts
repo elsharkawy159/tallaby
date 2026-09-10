@@ -230,14 +230,48 @@ export function calculateRawShippingAmount(
 }
 
 /**
- * Shipping cost is computed per seller (weight/rate per shipment) and summed.
- * Free shipping at FREE_DELIVERY_MIN_SUBTOTAL is applied separately as a
- * shippingDiscount (see getThresholdShippingDiscount) — this always returns
- * the calculated rate so checkout can show cost + discount.
+ * True when every physical item ships free because its seller is flagged
+ * sellers.free_delivery — nothing in the cart has shipping left to bill.
  */
-export function calculateLocationShippingCost (
+export function cartFullyCoveredBySellerFreeDelivery (
+  items: ShippingCartItem[],
+): boolean {
+  const physicalItems = items.filter(
+    (item) => item.product?.productType !== 'digital',
+  )
+
+  if (physicalItems.length === 0) {
+    return false
+  }
+
+  return physicalItems.every(
+    (item) => item.product?.seller?.freeDelivery === true,
+  )
+}
+
+/** True when the seller owning these items has sellers.free_delivery = true. */
+export function sellerGroupHasSellerFreeDelivery (
+  items: ShippingCartItem[],
+): boolean {
+  return items.some((item) => item.product?.seller?.freeDelivery === true)
+}
+
+export interface SellerShippingBreakdown {
+  sellerId: string
+  /** Calculated shipping for this seller's shipment (fees applied + rounded). */
+  shippingCost: number
+  /** Seller is flagged sellers.free_delivery — this shipment is fully waived. */
+  hasSellerFreeDelivery: boolean
+}
+
+/**
+ * Per-seller shipping breakdown — one shipment (rate + weight tiers) per seller.
+ * Returns [] for digital-only carts and null when the destination is unknown,
+ * matching calculateLocationShippingCost.
+ */
+export function calculateShippingBySeller (
   options: LocationShippingOptions,
-): number | null {
+): SellerShippingBreakdown[] | null {
   const {
     items,
     destinationState,
@@ -249,7 +283,7 @@ export function calculateLocationShippingCost (
   )
 
   if (physicalItems.length === 0) {
-    return 0
+    return []
   }
 
   const hasDestination =
@@ -259,10 +293,9 @@ export function calculateLocationShippingCost (
     return null
   }
 
-  const sellerGroups = groupShippingItemsBySeller(items)
-  let total = 0
+  const breakdown: SellerShippingBreakdown[] = []
 
-  for (const groupItems of sellerGroups.values()) {
+  for (const [sellerId, groupItems] of groupShippingItemsBySeller(items)) {
     const groupPhysicalItems = groupItems.filter(
       (item) => item.product?.productType !== 'digital',
     )
@@ -277,8 +310,56 @@ export function calculateLocationShippingCost (
       totalGrams,
       fallbackBaseRate,
     )
-    total += applyShippingFeesAndRound(rawAmount)
+
+    breakdown.push({
+      sellerId,
+      shippingCost: applyShippingFeesAndRound(rawAmount),
+      hasSellerFreeDelivery: sellerGroupHasSellerFreeDelivery(
+        groupPhysicalItems,
+      ),
+    })
   }
 
-  return total
+  return breakdown
+}
+
+/**
+ * Shipping cost is computed per seller (weight/rate per shipment) and summed.
+ * Waivers — the FREE_DELIVERY_MIN_SUBTOTAL threshold and sellers flagged
+ * sellers.free_delivery — are applied separately as a shippingDiscount (see
+ * getThresholdShippingDiscount / calculateSellerFreeDeliveryDiscount), so this
+ * always returns the calculated rate and checkout can show cost + discount.
+ */
+export function calculateLocationShippingCost (
+  options: LocationShippingOptions,
+): number | null {
+  const breakdown = calculateShippingBySeller(options)
+
+  if (breakdown === null) {
+    return null
+  }
+
+  return breakdown.reduce((total, group) => total + group.shippingCost, 0)
+}
+
+/**
+ * Shipping waived for sellers flagged sellers.free_delivery = true — the buyer
+ * pays only for the products. Returned as a discount (like a free-shipping
+ * promocode) so checkout keeps showing the shipping line next to its waiver.
+ * Only that seller's shipment is covered; other sellers still bill normally.
+ */
+export function calculateSellerFreeDeliveryDiscount (
+  options: LocationShippingOptions,
+): number {
+  const breakdown = calculateShippingBySeller(options)
+
+  if (breakdown === null) {
+    return 0
+  }
+
+  return breakdown.reduce(
+    (total, group) =>
+      group.hasSellerFreeDelivery ? total + group.shippingCost : total,
+    0,
+  )
 }

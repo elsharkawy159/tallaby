@@ -35,6 +35,9 @@ export {
   calculateCartWeightGrams,
   calculateLocationShippingCost,
   calculateRawShippingAmount,
+  calculateSellerFreeDeliveryDiscount,
+  calculateShippingBySeller,
+  cartFullyCoveredBySellerFreeDelivery,
   cartHasFreeDeliveryOffer,
   cartHasPhysicalItems,
   cartQualifiesForProductFreeDelivery,
@@ -45,7 +48,10 @@ export {
   groupShippingItemsBySeller,
   resolveCartSubtotal,
   sellerGroupHasFreeDeliveryOffer,
+  sellerGroupHasSellerFreeDelivery,
   sellerGroupQualifiesForFreeDelivery,
 } from './shipping.lib'
+
+export type { SellerShippingBreakdown } from './shipping.lib'
 
 export type { LocationShippingOptions, ShippingCartItem } from './shipping.types'
