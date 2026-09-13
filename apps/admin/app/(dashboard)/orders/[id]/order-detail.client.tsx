@@ -30,6 +30,8 @@ import {
   Calendar,
   Truck,
   FileText,
+  Pencil,
+  Receipt,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { OrderDetailWithRelations } from "./order-detail.types";
@@ -57,6 +59,8 @@ function getDiscountTypeLabel(type: string): string {
       return "Free shipping coupon";
     case "threshold_free_shipping":
       return "Free delivery";
+    case "manual_adjustment":
+      return "Manual adjustment";
     default:
       return "Discount";
   }
@@ -190,6 +194,20 @@ export function OrderDetailContent({ order }: OrderDetailContentProps) {
               Created on {formatDate(order.createdAt)}
             </p>
           </div>
+        </div>
+        <div className="flex gap-2">
+          <Link href={`/orders/${order.id}/invoice`}>
+            <Button variant="outline" size="sm">
+              <Receipt className="h-4 w-4 mr-2" />
+              Invoice
+            </Button>
+          </Link>
+          <Link href={`/orders/${order.id}/edit`}>
+            <Button size="sm">
+              <Pencil className="h-4 w-4 mr-2" />
+              Edit prices
+            </Button>
+          </Link>
         </div>
       </div>
 

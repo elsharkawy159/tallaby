@@ -52,12 +52,11 @@ export const addressSchema = z
       .min(2, 'State/Province must be at least 2 characters')
       .max(100, 'State/Province must be less than 100 characters'),
 
+    // Postal codes are not used for Egyptian delivery, so this is never
+    // required and carries no length floor — any value (including none) passes.
     postalCode: z
       .string()
       .max(20, 'Postal code must be less than 20 characters')
-      .refine((val) => !val || val.length >= 3, {
-        message: 'Postal code must be at least 3 characters',
-      })
       .optional()
       .default(''),
 

@@ -41,7 +41,10 @@ import {
   generateOrderNumber,
   pickProductTitle,
 } from './place-order.lib'
-import { buildOrderDiscountLines } from './order-discounts'
+import {
+  buildOrderDiscountLines,
+  type OrderDiscountLine,
+} from './order-discounts'
 import { sendOrderConfirmationEmail } from './notify'
 import { isCodEligibleForShipping, parseWalletPartialPaymentMethod } from './payment.lib'
 
@@ -70,6 +73,18 @@ export interface PaymentOverrides {
   recordPayment?: boolean
 }
 
+/**
+ * Admin-entered replacements for the automatically calculated money fields.
+ * Used by the external-order desk, where the operator agrees a shipping fee or
+ * a discount with the customer by phone that the rate table cannot know about.
+ */
+export interface OrderPricingOverrides {
+  /** Replaces the calculated shipping cost (EGP). */
+  shippingCost?: number
+  /** Replaces the total order discount (EGP); recorded as a manual line. */
+  discountAmount?: number
+}
+
 export interface PlaceOrderFromCartInput {
   userId: string
   cartId: string
@@ -82,6 +97,7 @@ export interface PlaceOrderFromCartInput {
   giftMessage?: string
   orderSource?: OrderSource
   paymentOverrides?: PaymentOverrides
+  pricingOverrides?: OrderPricingOverrides
   locale?: string
   skipCoupons?: boolean
   /**
@@ -116,6 +132,51 @@ export type PlaceOrderFromCartResult =
       minimumPurchase?: number
     }
 
+/**
+ * Forces the order's discount total to an admin-entered amount.
+ *
+ * Coupon-attributed lines are kept untouched so coupon_usage and affiliate
+ * auditing still reconcile; the difference is carried by a single manual line,
+ * which keeps the stored invariant "sum of discounts.amount == discount_amount"
+ * true no matter what the operator typed.
+ */
+function applyDiscountOverride(
+  lines: OrderDiscountLine[],
+  totalDiscount: number,
+  override: number | undefined,
+  maxDiscount: number,
+): { lines: OrderDiscountLine[]; totalDiscount: number } {
+  if (override == null) return { lines, totalDiscount }
+
+  const couponLines = lines.filter(
+    (line) => line.type === 'coupon' || line.type === 'free_shipping_coupon',
+  )
+  const couponTotal = couponLines.reduce(
+    (sum, line) => sum + Number(line.amount),
+    0,
+  )
+
+  const target = Math.min(
+    Math.max(override, couponTotal),
+    Math.max(maxDiscount, couponTotal),
+  )
+  const manualAmount = target - couponTotal
+
+  const nextLines = [...couponLines]
+  if (manualAmount > 0.004) {
+    nextLines.push({
+      type: 'manual_adjustment',
+      label: 'Discount (set by admin)',
+      amount: formatDecimal(manualAmount),
+    })
+  }
+
+  return {
+    lines: nextLines,
+    totalDiscount: nextLines.reduce((sum, line) => sum + Number(line.amount), 0),
+  }
+}
+
 export async function placeOrderFromCart(
   input: PlaceOrderFromCartInput,
 ): Promise<PlaceOrderFromCartResult> {
@@ -131,6 +192,7 @@ export async function placeOrderFromCart(
     giftMessage,
     orderSource = 'website',
     paymentOverrides,
+    pricingOverrides,
     locale = 'en',
     skipCoupons = false,
     sendConfirmationEmail = true,
@@ -221,19 +283,30 @@ export async function placeOrderFromCart(
     ? shippingAddress.state
     : '__missing_state__'
 
-  const shippingCost = calculateLocationShippingCost({
+  const calculatedShippingCost = calculateLocationShippingCost({
     items: shippingItems,
     destinationState,
     cartSubtotal,
   })!
 
+  // An admin-entered shipping fee replaces the rate table outright, and every
+  // downstream waiver (threshold / seller free delivery) is then measured
+  // against it so a discount can never exceed what is actually billed.
+  const shippingCost =
+    pricingOverrides?.shippingCost != null
+      ? Math.max(0, pricingOverrides.shippingCost)
+      : calculatedShippingCost
+
   // sellers.free_delivery waives that seller's shipment entirely — recorded as
   // a discount so the order still stores the real shipping cost.
-  const sellerFreeDeliveryDiscount = calculateSellerFreeDeliveryDiscount({
-    items: shippingItems,
-    destinationState,
-    cartSubtotal,
-  })
+  const sellerFreeDeliveryDiscount = Math.min(
+    shippingCost,
+    calculateSellerFreeDeliveryDiscount({
+      items: shippingItems,
+      destinationState,
+      cartSubtotal,
+    }),
+  )
 
   const orderItemsData = cart.cartItems.map((item) => {
     const itemSubtotal = Number(item.price) * item.quantity
@@ -349,8 +422,8 @@ export async function placeOrderFromCart(
   }
 
   const {
-    lines: discountLines,
-    totalDiscount,
+    lines: builtDiscountLines,
+    totalDiscount: builtTotalDiscount,
     couponContribution,
   } = buildOrderDiscountLines({
     merchandiseDiscount,
@@ -368,6 +441,13 @@ export async function placeOrderFromCart(
       : null,
   })
 
+  const { lines: discountLines, totalDiscount } = applyDiscountOverride(
+    builtDiscountLines,
+    builtTotalDiscount,
+    pricingOverrides?.discountAmount,
+    subtotal + shippingCost,
+  )
+
   const totalAmount = subtotal + shippingCost + tax - totalDiscount
   const orderNumber = generateOrderNumber()
 
@@ -384,7 +464,14 @@ export async function placeOrderFromCart(
   const resolvedPaymentMethod =
     paymentOverrides?.paymentMethod ?? paymentMethod
 
-  const billedShipping = Math.max(0, shippingCost - shippingDiscount)
+  // A discount override can be smaller than the waiver the rate rules found,
+  // in which case shipping really is billed again — so COD eligibility is
+  // judged on the discount that actually made it onto the order.
+  const effectiveShippingDiscount =
+    pricingOverrides?.discountAmount != null
+      ? Math.min(shippingDiscount, totalDiscount)
+      : shippingDiscount
+  const billedShipping = Math.max(0, shippingCost - effectiveShippingDiscount)
 
   if (
     resolvedPaymentMethod === 'cash_on_delivery' &&

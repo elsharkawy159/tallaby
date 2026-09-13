@@ -19,7 +19,10 @@ export interface ExternalOrderCartLine extends ExternalOrderLineItem {
   key: string
   title: string
   image: string | null
+  /** Price actually charged — the catalogue price until an admin edits it. */
   unitPrice: number
+  /** Catalogue price, kept so an edited line can be reset. */
+  catalogPrice: number
   variantLabel?: string
 }
 
@@ -29,6 +32,10 @@ export interface ExternalOrderPreview {
   discountAmount: number
   total: number
   itemCount: number
+  /** Rate-table shipping before any admin override, for the "reset" hint. */
+  calculatedShippingCost: number
+  /** Automatic discount before any admin override. */
+  calculatedDiscountAmount: number
 }
 
 export interface PlacedExternalOrderResult {

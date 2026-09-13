@@ -52,6 +52,8 @@ export type OrderDiscountType =
 	| 'free_shipping_coupon'
 	| 'threshold_free_shipping'
 	| 'seller_free_shipping'
+	/** Admin-entered discount (external-order pricing, or an order price edit). */
+	| 'manual_adjustment'
 
 export type OrderCouponDiscountType =
 	| 'percentage'

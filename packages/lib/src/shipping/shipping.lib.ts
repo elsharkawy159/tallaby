@@ -103,7 +103,7 @@ export function cartQualifiesForThresholdFreeShipping (
 
 export function applyShippingFeesAndRound(amount: number): number {
   const withFees = amount * FEE_MULTIPLIER
-  return Math.ceil(withFees / ROUND_TO) * ROUND_TO
+  return Math.floor(withFees / ROUND_TO) * ROUND_TO
 }
 
 export function getBaseRateForGovernorate(governorate: string): number | null {

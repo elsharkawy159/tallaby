@@ -59,8 +59,9 @@ export const userAddressSchema = z.object({
     .max(100, "State must be less than 100 characters"),
   postalCode: z
     .string()
-    .min(1, "Postal code is required")
-    .max(20, "Postal code must be less than 20 characters"),
+    .max(20, "Postal code must be less than 20 characters")
+    .optional()
+    .default(""),
   country: z
     .string()
     .min(1, "Country is required")
@@ -102,7 +103,7 @@ export const sellerSchema = z.object({
     addressLine2: z.string().optional(),
     city: z.string().min(1, "City is required"),
     state: z.string().min(1, "State is required"),
-    postalCode: z.string().min(1, "Postal code is required"),
+    postalCode: z.string().optional().default(""),
     country: z.string().min(1, "Country is required"),
   }),
   status: z

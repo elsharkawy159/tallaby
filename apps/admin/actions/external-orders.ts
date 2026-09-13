@@ -151,7 +151,12 @@ type ResolvedLine = {
 }
 
 async function resolveLineItems(
-  items: Array<{ productId: string; variantId?: string; quantity: number }>,
+  items: Array<{
+    productId: string
+    variantId?: string
+    quantity: number
+    unitPrice?: number
+  }>,
 ): Promise<
   | { success: true; data: ResolvedLine[] }
   | { success: false; error: string }
@@ -204,6 +209,7 @@ async function resolveLineItems(
       }
 
       price = getPriceFinal(variant.price)
+
       variantData = {
         id: variant.id,
         title: variant.title,
@@ -219,6 +225,12 @@ async function resolveLineItems(
         success: false,
         error: `Insufficient stock for ${product.sku ?? product.id}`,
       }
+    }
+
+    // An admin-entered unit price wins over the catalogue price: the external
+    // desk regularly agrees a different figure with the customer by phone.
+    if (item.unitPrice != null) {
+      price = Math.max(0, item.unitPrice)
     }
 
     resolved.push({
@@ -428,25 +440,43 @@ export async function previewExternalOrderTotals(input: unknown) {
       cartSubtotal: subtotal,
     }
 
-    const shippingCost = calculateLocationShippingCost(shippingOptions) ?? 0
+    const calculatedShippingCost =
+      calculateLocationShippingCost(shippingOptions) ?? 0
 
-    const shippingDiscount = Math.max(
-      getThresholdShippingDiscount(subtotal, shippingCost),
-      calculateSellerFreeDeliveryDiscount(shippingOptions),
-    )
     const itemCount = linesResult.data.reduce(
       (sum, line) => sum + line.quantity,
       0,
     )
+
+    // Mirrors the override rules placeOrderFromCart applies, so the totals the
+    // admin reviews here are the ones the order is actually created with —
+    // including the waivers, which are measured against the shipping fee that
+    // ends up on the order rather than the one the rate table produced.
+    const override = parsed.data.pricing
+    const shippingCost =
+      override?.shippingCost != null
+        ? Math.max(0, override.shippingCost)
+        : calculatedShippingCost
+
+    const autoDiscount = Math.max(
+      getThresholdShippingDiscount(subtotal, shippingCost),
+      Math.min(shippingCost, calculateSellerFreeDeliveryDiscount(shippingOptions)),
+    )
+    const discountAmount =
+      override?.discountAmount != null
+        ? Math.min(Math.max(0, override.discountAmount), subtotal + shippingCost)
+        : autoDiscount
 
     return {
       success: true,
       data: {
         subtotal,
         shippingCost,
-        discountAmount: shippingDiscount,
-        total: subtotal + shippingCost - shippingDiscount,
+        discountAmount,
+        total: subtotal + shippingCost - discountAmount,
         itemCount,
+        calculatedShippingCost,
+        calculatedDiscountAmount: autoDiscount,
       },
     }
   } catch (error) {
@@ -470,8 +500,15 @@ export async function placeExternalOrder(input: unknown) {
       }
     }
 
-    const { customer, address, savedAddressId, items, paymentType, notes } =
-      parsed.data
+    const {
+      customer,
+      address,
+      savedAddressId,
+      items,
+      paymentType,
+      pricing,
+      notes,
+    } = parsed.data
 
     const customerResult = await resolveCustomer(customer)
     if (!customerResult.success) {
@@ -597,6 +634,7 @@ export async function placeExternalOrder(input: unknown) {
       skipCoupons: true,
       locale: 'ar',
       paymentOverrides,
+      pricingOverrides: pricing,
     })
 
     if (!orderResult.success) {

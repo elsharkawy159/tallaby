@@ -11,6 +11,8 @@ import {
 } from '@workspace/ui/components/form'
 import { RadioGroup, RadioGroupItem } from '@workspace/ui/components/radio-group'
 import { Label } from '@workspace/ui/components/label'
+import { Input } from '@workspace/ui/components/input'
+import { Button } from '@workspace/ui/components/button'
 import {
   Card,
   CardContent,
@@ -20,17 +22,32 @@ import {
 } from '@workspace/ui/components/card'
 import { formatPricePlain } from '@workspace/lib'
 import { isCodEligibleForShipping } from '@workspace/lib/orders/payment'
-import type { ExternalOrderFormData } from '../external-orders.schema'
+import type {
+  ExternalOrderFormData,
+  ExternalOrderPricing,
+} from '../external-orders.schema'
 import type { ExternalOrderPreview } from '../external-orders.types'
 
 interface CheckoutSectionProps {
   preview: ExternalOrderPreview | null
   isLoadingPreview: boolean
+  pricing: ExternalOrderPricing
+  onPricingChange: (pricing: ExternalOrderPricing) => void
+}
+
+/** Blank input means "no override" — not zero. */
+function parseOverride(raw: string): number | undefined {
+  if (raw.trim() === '') return undefined
+  const value = Number(raw)
+  if (Number.isNaN(value) || value < 0) return undefined
+  return value
 }
 
 export function CheckoutSection({
   preview,
   isLoadingPreview,
+  pricing,
+  onPricingChange,
 }: CheckoutSectionProps) {
   const form = useFormContext<ExternalOrderFormData>()
   const billedShipping = preview
@@ -92,7 +109,7 @@ export function CheckoutSection({
           )}
         />
 
-        <div className="rounded-lg border bg-muted/40 p-4 space-y-2 text-sm">
+        <div className="rounded-lg border bg-muted/40 p-4 space-y-3 text-sm">
           {isLoadingPreview ? (
             <p className="text-muted-foreground">Calculating totals…</p>
           ) : preview ? (
@@ -101,18 +118,76 @@ export function CheckoutSection({
                 <span>Subtotal</span>
                 <span>{formatPricePlain(preview.subtotal, 'en')} EGP</span>
               </div>
-              <div className="flex justify-between">
+
+              <div className="flex items-center justify-between gap-3">
                 <span>Shipping</span>
-                <span>{formatPricePlain(preview.shippingCost, 'en')} EGP</span>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    className="h-8 w-28 bg-background"
+                    placeholder={formatPricePlain(
+                      preview.calculatedShippingCost,
+                      'en',
+                    )}
+                    value={pricing.shippingCost ?? ''}
+                    onChange={(e) =>
+                      onPricingChange({
+                        ...pricing,
+                        shippingCost: parseOverride(e.target.value),
+                      })
+                    }
+                  />
+                  <span className="text-xs text-muted-foreground">EGP</span>
+                </div>
               </div>
-              {preview.discountAmount > 0 && (
-                <div className="flex justify-between text-green-600">
-                  <span>Free shipping</span>
+
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-green-700">Discount</span>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    className="h-8 w-28 bg-background"
+                    placeholder={formatPricePlain(
+                      preview.calculatedDiscountAmount,
+                      'en',
+                    )}
+                    value={pricing.discountAmount ?? ''}
+                    onChange={(e) =>
+                      onPricingChange({
+                        ...pricing,
+                        discountAmount: parseOverride(e.target.value),
+                      })
+                    }
+                  />
+                  <span className="text-xs text-muted-foreground">EGP</span>
+                </div>
+              </div>
+
+              {(pricing.shippingCost != null ||
+                pricing.discountAmount != null) && (
+                <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
                   <span>
-                    -{formatPricePlain(preview.discountAmount, 'en')} EGP
+                    Manual pricing — calculated shipping{' '}
+                    {formatPricePlain(preview.calculatedShippingCost, 'en')} EGP,
+                    discount{' '}
+                    {formatPricePlain(preview.calculatedDiscountAmount, 'en')} EGP
                   </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7"
+                    onClick={() => onPricingChange({})}
+                  >
+                    Reset
+                  </Button>
                 </div>
               )}
+
               <div className="flex justify-between border-t pt-2 text-base font-semibold">
                 <span>Total</span>
                 <span>{formatPricePlain(preview.total, 'en')} EGP</span>

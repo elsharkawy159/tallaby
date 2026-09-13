@@ -1,6 +1,7 @@
 export {
   placeOrderFromCart,
   InsufficientStockError,
+  type OrderPricingOverrides,
   type OrderSource,
   type PaymentOverrides,
   type PlaceOrderFromCartInput,

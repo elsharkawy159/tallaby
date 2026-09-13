@@ -50,10 +50,10 @@ describe('normalizeGovernorate', () => {
 })
 
 describe('applyShippingFeesAndRound', () => {
-  it('applies 14% fees and rounds up to the nearest 5', () => {
-    expect(applyShippingFeesAndRound(55)).toBe(65)
-    expect(applyShippingFeesAndRound(110)).toBe(130)
-    expect(applyShippingFeesAndRound(69)).toBe(80)
+  it('applies 14% fees and rounds down to the nearest 5', () => {
+    expect(applyShippingFeesAndRound(55)).toBe(60)
+    expect(applyShippingFeesAndRound(110)).toBe(125)
+    expect(applyShippingFeesAndRound(69)).toBe(75)
   })
 })
 
@@ -145,7 +145,7 @@ describe('calculateLocationShippingCost', () => {
         destinationState: 'Giza',
         cartSubtotal: 250,
       }),
-    ).toBe(65)
+    ).toBe(60)
   })
 
   it('calculates shipping below the 200 EGP threshold', () => {
@@ -165,7 +165,7 @@ describe('calculateLocationShippingCost', () => {
         destinationState: 'Giza',
         cartSubtotal: 100,
       }),
-    ).toBe(65)
+    ).toBe(60)
   })
 
   it('still calculates shipping when seller free_delivery is true (discount applied at checkout)', () => {
@@ -188,7 +188,7 @@ describe('calculateLocationShippingCost', () => {
         destinationState: 'Giza',
         cartSubtotal: 200,
       }),
-    ).toBe(65)
+    ).toBe(60)
   })
 
   it('calculates location-based shipping for Cairo to Giza', () => {
@@ -197,7 +197,7 @@ describe('calculateLocationShippingCost', () => {
         items: [physicalItem],
         destinationState: 'Giza',
       }),
-    ).toBe(65)
+    ).toBe(60)
   })
 
   it('includes weight surcharge in the final amount', () => {
@@ -215,7 +215,7 @@ describe('calculateLocationShippingCost', () => {
         ],
         destinationState: 'Giza',
       }),
-    ).toBe(80)
+    ).toBe(75)
   })
 
   it('returns null when destination address is not set yet', () => {
@@ -273,7 +273,7 @@ describe('calculateLocationShippingCost', () => {
         destinationState: 'Giza',
         cartSubtotal: 300,
       }),
-    ).toBe(130)
+    ).toBe(120)
   })
 })
 
@@ -310,8 +310,8 @@ describe('calculateSellerFreeDeliveryDiscount', () => {
       cartSubtotal: 100,
     }
 
-    expect(calculateLocationShippingCost(options)).toBe(65)
-    expect(calculateSellerFreeDeliveryDiscount(options)).toBe(65)
+    expect(calculateLocationShippingCost(options)).toBe(60)
+    expect(calculateSellerFreeDeliveryDiscount(options)).toBe(60)
   })
 
   it('waives only the flagged seller in a mixed cart', () => {
@@ -321,8 +321,8 @@ describe('calculateSellerFreeDeliveryDiscount', () => {
       cartSubtotal: 200,
     }
 
-    expect(calculateLocationShippingCost(options)).toBe(130)
-    expect(calculateSellerFreeDeliveryDiscount(options)).toBe(65)
+    expect(calculateLocationShippingCost(options)).toBe(120)
+    expect(calculateSellerFreeDeliveryDiscount(options)).toBe(60)
   })
 
   it('covers the seller weight surcharge, not just the base rate', () => {
@@ -340,7 +340,7 @@ describe('calculateSellerFreeDeliveryDiscount', () => {
         destinationState: 'Giza',
         cartSubtotal: 100,
       }),
-    ).toBe(80)
+    ).toBe(75)
   })
 
   it('returns 0 when no seller is flagged', () => {

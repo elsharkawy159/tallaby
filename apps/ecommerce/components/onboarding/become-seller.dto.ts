@@ -87,7 +87,7 @@ export const createSellerSchema = z.object({
     street: z.string(),
     city: z.string(),
     state: z.string(),
-    postalCode: z.string(),
+    postalCode: z.string().optional().default(""),
     country: z.string(),
   }),
   supportEmail: z.string().email(),

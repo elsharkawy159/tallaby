@@ -2,6 +2,7 @@ export const SHIPPING_ORIGIN = 'CAIRO' as const
 
 export const FEE_MULTIPLIER = 1.14
 export const EXTRA_KG_RATE = 7
+/** Customer-facing shipping is floored to this step after the 14% fee. */
 export const ROUND_TO = 5
 
 /** Fallback base rate (before fees) when governorate cannot be matched */

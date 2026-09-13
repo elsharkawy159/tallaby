@@ -37,12 +37,10 @@ export const addressFormSchema = z.object({
     .min(2, "State/Province must be at least 2 characters")
     .max(100, "State/Province must be less than 100 characters"),
 
+  // Never required, no length floor — see packages/lib address schema.
   postalCode: z
     .string()
     .max(20, "Postal code must be less than 20 characters")
-    .refine((val) => !val || val.length >= 3, {
-      message: "Postal code must be at least 3 characters",
-    })
     .optional()
     .default(""),
 

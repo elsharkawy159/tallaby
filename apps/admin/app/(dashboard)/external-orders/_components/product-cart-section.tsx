@@ -73,6 +73,9 @@ export function ProductCartSection({
   const [selectedProductId, setSelectedProductId] = useState<string>('')
   const [selectedVariantId, setSelectedVariantId] = useState<string>('')
   const [addQty, setAddQty] = useState(1)
+  // Price fields keep their own text while being typed, so backspacing to an
+  // empty box does not immediately snap the value back.
+  const [priceDrafts, setPriceDrafts] = useState<Record<string, string>>({})
   const [isSearching, startSearch] = useTransition()
 
   const selectedProduct = results.find((p) => p.id === selectedProductId)
@@ -128,6 +131,7 @@ export function ProductCartSection({
           title: selectedProduct.title,
           variantLabel: variant?.label,
           unitPrice,
+          catalogPrice: unitPrice,
           image: imageUrl,
         },
       ])
@@ -151,6 +155,49 @@ export function ProductCartSection({
 
   const removeLine = (key: string) => {
     onLinesChange(lines.filter((l) => l.key !== key))
+  }
+
+  const setLinePrice = (key: string, unitPrice: number) => {
+    onLinesChange(
+      lines.map((l) => (l.key === key ? { ...l, unitPrice } : l)),
+    )
+  }
+
+  const handlePriceChange = (key: string, raw: string) => {
+    setPriceDrafts((drafts) => ({ ...drafts, [key]: raw }))
+
+    const parsed = Number(raw)
+    if (raw.trim() !== '' && Number.isFinite(parsed) && parsed >= 0) {
+      setLinePrice(key, parsed)
+    }
+  }
+
+  const clearPriceDraft = (key: string) => {
+    setPriceDrafts((drafts) => {
+      const next = { ...drafts }
+      delete next[key]
+      return next
+    })
+  }
+
+  /** A field left blank or invalid falls back to the catalogue price. */
+  const handlePriceBlur = (key: string) => {
+    const draft = priceDrafts[key]
+    const parsed = Number(draft)
+    if (
+      draft != null &&
+      (draft.trim() === '' || !Number.isFinite(parsed) || parsed < 0)
+    ) {
+      const line = lines.find((l) => l.key === key)
+      if (line) setLinePrice(key, line.catalogPrice)
+    }
+    clearPriceDraft(key)
+  }
+
+  const resetPrice = (key: string) => {
+    clearPriceDraft(key)
+    const line = lines.find((l) => l.key === key)
+    if (line) setLinePrice(key, line.catalogPrice)
   }
 
   return (
@@ -270,9 +317,32 @@ export function ProductCartSection({
                       {line.variantLabel}
                     </p>
                   )}
-                  <p className="text-sm text-muted-foreground">
-                    {formatPricePlain(line.unitPrice, 'en')} EGP each
-                  </p>
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
+                    <label className="text-xs text-muted-foreground">
+                      Unit price
+                    </label>
+                    <Input
+                      type="number"
+                      min={0}
+                      step="0.01"
+                      className="h-8 w-28"
+                      value={priceDrafts[line.key] ?? String(line.unitPrice)}
+                      onChange={(e) =>
+                        handlePriceChange(line.key, e.target.value)
+                      }
+                      onBlur={() => handlePriceBlur(line.key)}
+                    />
+                    <span className="text-xs text-muted-foreground">EGP</span>
+                    {line.unitPrice !== line.catalogPrice && (
+                      <button
+                        type="button"
+                        onClick={() => resetPrice(line.key)}
+                        className="text-xs font-medium text-primary underline-offset-2 hover:underline"
+                      >
+                        Reset to {formatPricePlain(line.catalogPrice, 'en')}
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <div className="flex items-center gap-1">
                   <Button

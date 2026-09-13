@@ -242,7 +242,7 @@ export function AddressSection({ savedAddresses }: AddressSectionProps) {
           name="address.postalCode"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Postal code *</FormLabel>
+              <FormLabel>Postal code</FormLabel>
               <FormControl>
                 <Input {...field} />
               </FormControl>

@@ -25,6 +25,7 @@ import {
 import {
   externalOrderFormSchema,
   type ExternalOrderFormData,
+  type ExternalOrderPricing,
 } from './external-orders.schema'
 import {
   type CustomerLookupData,
@@ -58,11 +59,13 @@ const defaultValues: ExternalOrderFormData = {
   } as ExternalOrderFormData['address'],
   items: [],
   paymentType: 'cod',
+  pricing: {},
   notes: '',
 }
 
 export function ExternalOrdersClient() {
   const [cartLines, setCartLines] = useState<ExternalOrderCartLine[]>([])
+  const [pricing, setPricing] = useState<ExternalOrderPricing>({})
   const [preview, setPreview] = useState<ExternalOrderPreview | null>(null)
   const [isPreviewLoading, startPreview] = useTransition()
   const [isSubmitting, startSubmit] = useTransition()
@@ -123,13 +126,18 @@ export function ExternalOrdersClient() {
   useEffect(() => {
     form.setValue(
       'items',
-      cartLines.map(({ productId, variantId, quantity }) => ({
+      cartLines.map(({ productId, variantId, quantity, unitPrice }) => ({
         productId,
         variantId,
         quantity,
+        unitPrice,
       })),
     )
   }, [cartLines, form])
+
+  useEffect(() => {
+    form.setValue('pricing', pricing)
+  }, [pricing, form])
 
   useEffect(() => {
     if (cartLines.length === 0) {
@@ -139,19 +147,21 @@ export function ExternalOrdersClient() {
 
     startPreview(async () => {
       const result = await previewExternalOrderTotals({
-        items: cartLines.map(({ productId, variantId, quantity }) => ({
+        items: cartLines.map(({ productId, variantId, quantity, unitPrice }) => ({
           productId,
           variantId,
           quantity,
+          unitPrice,
         })),
         destinationState: destinationState || undefined,
+        pricing,
       })
 
       if (result.success && result.data) {
         setPreview(result.data)
       }
     })
-  }, [cartLines, destinationState])
+  }, [cartLines, destinationState, pricing])
 
   const handleSubmit = (values: ExternalOrderFormData) => {
     if (cartLines.length === 0) {
@@ -206,6 +216,7 @@ export function ExternalOrdersClient() {
 
       form.reset(defaultValues)
       setCartLines([])
+      setPricing({})
       setPreview(null)
       setResolvedCustomer(null)
     })
@@ -259,6 +270,8 @@ export function ExternalOrdersClient() {
               <CheckoutSection
                 preview={preview}
                 isLoadingPreview={isPreviewLoading}
+                pricing={pricing}
+                onPricingChange={setPricing}
               />
 
               <Card>
