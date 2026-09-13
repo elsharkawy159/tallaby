@@ -7,6 +7,7 @@ import {
   cartQualifiesForProductFreeDelivery,
   cartQualifiesForThresholdFreeShipping,
   FREE_DELIVERY_MIN_SUBTOTAL,
+  FREE_DELIVERY_THRESHOLD_ENABLED,
   getThresholdShippingDiscount,
   resolveCartSubtotal,
 } from '@workspace/lib/shipping'
@@ -19,6 +20,7 @@ export {
   cartQualifiesForProductFreeDelivery,
   cartQualifiesForThresholdFreeShipping,
   FREE_DELIVERY_MIN_SUBTOTAL,
+  FREE_DELIVERY_THRESHOLD_ENABLED,
   getThresholdShippingDiscount,
 }
 

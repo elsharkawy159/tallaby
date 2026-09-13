@@ -1,9 +1,11 @@
-import { FREE_DELIVERY_MIN_SUBTOTAL } from "@workspace/lib/shipping";
+import { FREE_DELIVERY_MIN_SUBTOTAL, FREE_DELIVERY_THRESHOLD_ENABLED } from "@workspace/lib/shipping";
 import { RETURN_WINDOW_DAYS as AFFILIATE_RETURN_WINDOW_DAYS } from "@workspace/db/affiliates";
 
 export const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "";
 export const SHIPPING_COST = process.env.NEXT_PUBLIC_SHIPPING_COST || 50;
 export const FREE_SHIPPING_THRESHOLD = FREE_DELIVERY_MIN_SUBTOTAL;
+/** When false, cart-threshold free shipping is off site-wide. */
+export const FREE_SHIPPING_ENABLED = FREE_DELIVERY_THRESHOLD_ENABLED;
 export const DEFAULT_CURRENCY = "EGP";
 
 /** Days from delivery within which a return can be requested (and affiliate commission is held). */

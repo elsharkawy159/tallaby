@@ -5,11 +5,12 @@ import {
   FALLBACK_BASE_RATE,
   FEE_MULTIPLIER,
   FREE_DELIVERY_MIN_SUBTOTAL,
+  FREE_DELIVERY_THRESHOLD_ENABLED,
   ROUND_TO,
 } from './shipping-rates'
 import type { LocationShippingOptions, ShippingCartItem } from './shipping.types'
 
-export { FREE_DELIVERY_MIN_SUBTOTAL }
+export { FREE_DELIVERY_MIN_SUBTOTAL, FREE_DELIVERY_THRESHOLD_ENABLED }
 
 const DEFAULT_ITEM_WEIGHT_GRAMS = 1000
 
@@ -67,13 +68,18 @@ export function cartHasFreeDeliveryOffer (items: ShippingCartItem[]): boolean {
 }
 
 /**
- * Shipping discount applied when cart subtotal meets FREE_DELIVERY_MIN_SUBTOTAL.
- * Mirrors a free-shipping promocode: shipping cost stays visible, discount waives it.
+ * Shipping discount applied when cart subtotal meets FREE_DELIVERY_MIN_SUBTOTAL
+ * and FREE_DELIVERY_THRESHOLD_ENABLED is on. Mirrors a free-shipping promocode:
+ * shipping cost stays visible, discount waives it.
  */
 export function getThresholdShippingDiscount (
   cartSubtotal: number,
   shippingCost: number | null | undefined,
 ): number {
+  if (!FREE_DELIVERY_THRESHOLD_ENABLED) {
+    return 0
+  }
+
   if (shippingCost == null || shippingCost <= 0) {
     return 0
   }
@@ -88,6 +94,10 @@ export function getThresholdShippingDiscount (
 export function cartQualifiesForThresholdFreeShipping (
   cartSubtotal: number,
 ): boolean {
+  if (!FREE_DELIVERY_THRESHOLD_ENABLED) {
+    return false
+  }
+
   return cartSubtotal >= FREE_DELIVERY_MIN_SUBTOTAL
 }
 

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { normalizeGovernorate } from './governorate.lib'
+import { FREE_DELIVERY_MIN_SUBTOTAL } from './shipping-rates'
 import {
   applyShippingFeesAndRound,
   calculateCartWeightGrams,
@@ -390,23 +391,20 @@ describe('calculateSellerFreeDeliveryDiscount', () => {
 })
 
 describe('getThresholdShippingDiscount', () => {
-  it('returns 0 below the 200 EGP threshold', () => {
+  it('returns 0 while the free-delivery threshold is disabled', () => {
     expect(getThresholdShippingDiscount(199, 65)).toBe(0)
-  })
-
-  it('waives full shipping at or above 200 EGP', () => {
-    expect(getThresholdShippingDiscount(200, 65)).toBe(65)
-    expect(getThresholdShippingDiscount(350, 130)).toBe(130)
+    expect(getThresholdShippingDiscount(FREE_DELIVERY_MIN_SUBTOTAL, 65)).toBe(0)
+    expect(getThresholdShippingDiscount(FREE_DELIVERY_MIN_SUBTOTAL + 100, 130)).toBe(0)
   })
 
   it('returns 0 when shipping is unknown or zero', () => {
-    expect(getThresholdShippingDiscount(250, null)).toBe(0)
-    expect(getThresholdShippingDiscount(250, 0)).toBe(0)
+    expect(getThresholdShippingDiscount(FREE_DELIVERY_MIN_SUBTOTAL + 50, null)).toBe(0)
+    expect(getThresholdShippingDiscount(FREE_DELIVERY_MIN_SUBTOTAL + 50, 0)).toBe(0)
   })
 })
 
 describe('cartQualifiesForProductFreeDelivery', () => {
-  it('is true for any physical cart at or above the threshold', () => {
+  it('is false while the free-delivery threshold is disabled', () => {
     expect(
       cartQualifiesForProductFreeDelivery(
         [
@@ -421,12 +419,12 @@ describe('cartQualifiesForProductFreeDelivery', () => {
             },
           },
         ],
-        200,
+        FREE_DELIVERY_MIN_SUBTOTAL + 100,
       ),
-    ).toBe(true)
+    ).toBe(false)
   })
 
-  it('is false below the 200 EGP threshold', () => {
+  it('is false below the threshold even when sellers offer free delivery', () => {
     expect(
       cartQualifiesForProductFreeDelivery(
         [
@@ -449,7 +447,7 @@ describe('cartQualifiesForProductFreeDelivery', () => {
     expect(
       cartQualifiesForProductFreeDelivery(
         [{ quantity: 1, product: { productType: 'digital' } }],
-        500,
+        FREE_DELIVERY_MIN_SUBTOTAL,
       ),
     ).toBe(false)
   })

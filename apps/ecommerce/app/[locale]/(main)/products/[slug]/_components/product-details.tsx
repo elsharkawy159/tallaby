@@ -12,7 +12,7 @@ import {
   parsePriceJson,
 } from "@workspace/lib";
 import { useLocale, useTranslations } from "next-intl";
-import { FREE_SHIPPING_THRESHOLD, RETURN_WINDOW_DAYS } from "@/lib/constants";
+import { FREE_SHIPPING_ENABLED, FREE_SHIPPING_THRESHOLD, RETURN_WINDOW_DAYS } from "@/lib/constants";
 import { useState, useMemo } from "react";
 import {
   Accordion,
@@ -553,14 +553,18 @@ export const ProductDetails = ({
               <p className="font-medium text-gray-900 text-sm mb-1">
                 {hasFreeDelivery
                   ? t("freeDeliveryOnProduct")
-                  : t("freeShipping")}
+                  : FREE_SHIPPING_ENABLED
+                    ? t("freeShipping")
+                    : t("nationwideDelivery")}
               </p>
               <p className="text-xs text-gray-600">
                 {hasFreeDelivery
                   ? t("freeDeliveryOnProductDescription")
-                  : t("ordersOverAmount", {
-                      amount: freeShippingThresholdLabel,
-                    })}
+                  : FREE_SHIPPING_ENABLED
+                    ? t("ordersOverAmount", {
+                        amount: freeShippingThresholdLabel,
+                      })
+                    : t("fastDeliveryNationwide")}
               </p>
             </div>
           </div>
