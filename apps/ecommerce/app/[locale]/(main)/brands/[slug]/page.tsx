@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { hasLocale } from "next-intl";
-import { getBrandBySlug, getAllBrands } from "@/actions/brands";
+import { getBrandBySlug } from "@/actions/brands";
 import { getProducts } from "@/actions/products";
 import { generateBrandMetadata } from "@/lib/metadata";
 import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
@@ -22,11 +22,11 @@ interface BrandPageProps {
 export const revalidate = 3600;
 export const dynamicParams = true;
 
+// Rendered on demand + cached via ISR instead of pre-rendering every
+// brand at build time (keeps SEO/discoverability intact via the sitemap
+// while cutting Vercel Build CPU usage).
 export async function generateStaticParams() {
-  const result = await getAllBrands({ limit: 1000 });
-  if (!result.success || !result.data) return [];
-
-  return result.data.map((brand) => ({ slug: brand.slug }));
+  return [];
 }
 
 async function resolveBrand(locale: string, slug: string) {

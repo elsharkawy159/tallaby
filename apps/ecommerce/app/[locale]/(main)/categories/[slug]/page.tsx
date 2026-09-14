@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { hasLocale } from "next-intl";
-import { getCategoryBySlug, getAllCategorySlugs } from "@/actions/categories";
+import { getCategoryBySlug } from "@/actions/categories";
 import { getProducts } from "@/actions/products";
 import { generateCategoryMetadata } from "@/lib/metadata";
 import { generateCategoryStructuredData } from "@/lib/structured-data";
@@ -22,11 +22,11 @@ interface CategoryPageProps {
 export const revalidate = 3600;
 export const dynamicParams = true;
 
+// Rendered on demand + cached via ISR instead of pre-rendering every
+// category at build time (keeps SEO/discoverability intact via the
+// sitemap while cutting Vercel Build CPU usage).
 export async function generateStaticParams() {
-  const result = await getAllCategorySlugs();
-  if (!result.success || !result.data) return [];
-
-  return result.data.map((slug) => ({ slug }));
+  return [];
 }
 
 async function resolveCategory(locale: string, slug: string) {

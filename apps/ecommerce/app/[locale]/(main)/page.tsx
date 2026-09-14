@@ -15,7 +15,7 @@ export async function generateMetadata({
 }
 
 // Keep homepage data fresh; avoids stale client-router payloads with empty sections.
-export const revalidate = 60;
+export const revalidate = 3600; // 1 hour
 
 const HomePage = async ({
   params,

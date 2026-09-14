@@ -1,8 +1,5 @@
 import { Suspense } from "react";
-import {
-  getProductBySlug,
-  getAllProductTranslationSlugs,
-} from "@/actions/products";
+import { getProductBySlug } from "@/actions/products";
 import { ProductTabsWrapper } from "./_components/product-tabs-wrapper.client";
 import { SimilarProducts } from "./_components/similar-products";
 import { SimilarProductsSkeleton } from "./_components/similar-products.skeleton";
@@ -30,23 +27,21 @@ import {
 import { AffiliateCouponCapture } from "@/components/product/affiliate-coupon-capture.client";
 import { parsePriceJson } from "@workspace/lib";
 
-// ISR: pre-render product pages at build time, revalidate every 10 minutes
+// ISR: render product pages on first request, cache for 10 minutes
 export const revalidate = 600;
 
-// On-demand ISR for products not in the build-time set
+// All product pages are generated on demand (see generateStaticParams below)
+// and cached per dynamicParams, instead of at build time.
 export const dynamicParams = true;
 
+// Pre-rendering every product x locale at build time doesn't scale with the
+// catalog and dominates Vercel Build CPU minutes. Rely on dynamicParams +
+// ISR instead: the first request (including a crawler) renders and caches
+// the page, so SEO/discoverability is unaffected (products remain in the
+// sitemap via getAllProductTranslationSlugs), but the build itself no
+// longer has to render every product.
 export async function generateStaticParams() {
-  const slugsResult = await getAllProductTranslationSlugs();
-
-  if (!slugsResult.success || !slugsResult.data) {
-    return [];
-  }
-
-  return slugsResult.data.map(({ locale, slug }) => ({
-    locale,
-    slug,
-  }));
+  return [];
 }
 
 /** locale is validated + the product resolved once, then reused by page/metadata. */
