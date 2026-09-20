@@ -7,8 +7,9 @@ import {
   reviews,
   coupons,
   sellerPayouts,
+  shipments,
 } from "@workspace/db";
-import { eq, sql } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { getUser } from "@/actions/auth";
 import {
   EMPTY_SIDEBAR_COUNTS,
@@ -30,6 +31,7 @@ export async function getSidebarCounts(): Promise<SidebarCounts> {
       reviewCountResult,
       couponCountResult,
       payoutCountResult,
+      shippingCountResult,
     ] = await Promise.all([
       db
         .select({ count: sql<number>`count(*)` })
@@ -51,6 +53,16 @@ export async function getSidebarCounts(): Promise<SidebarCounts> {
         .select({ count: sql<number>`count(*)` })
         .from(sellerPayouts)
         .where(eq(sellerPayouts.sellerId, sellerId)),
+      // Deliveries the seller still has to see through (rider assigned or on the road).
+      db
+        .select({ count: sql<number>`count(*)` })
+        .from(shipments)
+        .where(
+          and(
+            eq(shipments.sellerId, sellerId),
+            inArray(shipments.status, ["assigned", "out_for_delivery"])
+          )
+        ),
     ]);
 
     const orderCount = Number(orderCountResult[0]?.count ?? 0);
@@ -58,6 +70,7 @@ export async function getSidebarCounts(): Promise<SidebarCounts> {
     return {
       dashboard: orderCount,
       orders: orderCount,
+      shipping: Number(shippingCountResult[0]?.count ?? 0),
       products: Number(productCountResult[0]?.count ?? 0),
       reviews: Number(reviewCountResult[0]?.count ?? 0),
       promotions: Number(couponCountResult[0]?.count ?? 0),

@@ -16,6 +16,7 @@ import {
   ChevronDown,
   LogOut,
   MessageSquare,
+  Truck,
 } from "lucide-react";
 import { cn, getPublicUrl } from "@/lib/utils";
 import { Button } from "@workspace/ui/components/button";
@@ -62,6 +63,7 @@ export const Sidebar = ({ counts, isOpen, onToggle }: SidebarProps) => {
   const topNavItems = [
     { name: t("nav.dashboard"), icon: BarChart3, href: "/", countKey: "dashboard" as const },
     { name: t("nav.orders"), icon: ShoppingBag, href: "/orders", countKey: "orders" as const },
+    { name: t("nav.shipping"), icon: Truck, href: "/shipping", countKey: "shipping" as const },
   ];
 
   const afterProductsItems = [

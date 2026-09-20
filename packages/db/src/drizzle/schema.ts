@@ -707,6 +707,30 @@ export const shipments = pgTable("shipments", {
 	unique("shipments_order_id_unique").on(table.orderId),
 ]);
 
+/**
+ * Links a rider (`users.role = 'driver'`) to the seller who manages them from
+ * the seller dashboard. `rider_id` is unique — a rider serves one seller.
+ */
+export const sellerRiders = pgTable("seller_riders", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	riderId: uuid("rider_id").notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("seller_riders_seller_id_idx").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.sellerId],
+			foreignColumns: [sellers.id],
+			name: "seller_riders_seller_id_sellers_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.riderId],
+			foreignColumns: [users.id],
+			name: "seller_riders_rider_id_users_id_fk"
+		}).onDelete("cascade"),
+	unique("seller_riders_rider_id_unique").on(table.riderId),
+]);
+
 export const returns = pgTable("returns", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	orderId: uuid("order_id").notNull(),
