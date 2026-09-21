@@ -1,3 +1,5 @@
+import { isKashierConfigured } from '../kashier/kashier'
+
 export type PaymentProvider = 'paymob' | 'kashier'
 
 export const DEFAULT_PAYMENT_PROVIDER: PaymentProvider = 'kashier'
@@ -15,4 +17,14 @@ export function getPaymentProvider(
     return normalized
   }
   return DEFAULT_PAYMENT_PROVIDER
+}
+
+/**
+ * Whether checkout should offer card payment (`online_payment`). Only the
+ * active provider matters, and only when its credentials are present, so an
+ * unconfigured gateway never appears as a payable option. Paymob card
+ * checkout stays hidden in the storefront, as before.
+ */
+export function isOnlineCardPaymentEnabled(): boolean {
+  return getPaymentProvider() === 'kashier' && isKashierConfigured()
 }

@@ -2,6 +2,7 @@
 "use server";
 
 import { db } from "@workspace/db";
+import { isOnlineCardPaymentEnabled } from "@workspace/lib/payments";
 import {
   orders,
   orderItems,
@@ -63,6 +64,13 @@ export async function createOrder(data: {
     const userId = await getCurrentUserId();
     if (!userId) {
       return { success: false, error: "Unable to get user ID" };
+    }
+
+    if (
+      data.paymentMethod === "online_payment" &&
+      !isOnlineCardPaymentEnabled()
+    ) {
+      return { success: false, error: "Online card payment is unavailable" };
     }
 
     const result = await placeOrderFromCart({

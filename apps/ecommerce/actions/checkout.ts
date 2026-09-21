@@ -18,6 +18,7 @@ import {
   type ProductLocale,
 } from "@/lib/product-translations";
 import { validateCoupon } from "./coupons";
+import { isOnlineCardPaymentEnabled } from "@workspace/lib/payments";
 import {
   calculateOrderSellerFreeDeliveryDiscount,
   calculateOrderShippingCost,
@@ -293,6 +294,7 @@ export async function getCheckoutData() {
         pendingCouponCode,
         walletAvailableBalance: walletSummary?.availableBalance ?? null,
         walletCurrency: walletSummary?.currency ?? null,
+        onlineCardPaymentEnabled: isOnlineCardPaymentEnabled(),
       },
     };
   } catch (error) {

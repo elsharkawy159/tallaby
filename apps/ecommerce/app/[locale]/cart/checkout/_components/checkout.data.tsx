@@ -246,14 +246,21 @@ export const CheckoutData = ({
     }
   }, [isWalletEligible, hasWallet, form]);
 
+  const onlineCardPaymentEnabled = Boolean(
+    checkoutData.onlineCardPaymentEnabled,
+  );
+
   useEffect(() => {
-    if (form.getValues("paymentMethod") === "online_payment") {
+    if (
+      !onlineCardPaymentEnabled &&
+      form.getValues("paymentMethod") === "online_payment"
+    ) {
       form.setValue("paymentMethod", DEFAULT_MANUAL_PAYMENT_METHOD, {
         shouldValidate: true,
         shouldDirty: true,
       });
     }
-  }, [form]);
+  }, [onlineCardPaymentEnabled, form]);
 
   const walletBalanceLabel =
     walletAvailableBalance != null
@@ -262,6 +269,17 @@ export const CheckoutData = ({
 
   const paymentGroups = useMemo(() => {
     const groups = [
+      ...(onlineCardPaymentEnabled
+        ? [
+            {
+              id: "online_payment",
+              value: "online_payment",
+              title: t("payByCard"),
+              description: t("payByCardDescription"),
+              enabled: true,
+            },
+          ]
+        : []),
       {
         id: "online_manual",
         value: "online_manual",
@@ -293,6 +311,7 @@ export const CheckoutData = ({
 
     return groups;
   }, [
+    onlineCardPaymentEnabled,
     isCodEligible,
     hasWallet,
     isWalletEligible,
