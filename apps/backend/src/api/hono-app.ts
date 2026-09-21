@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import emails from "../routes/emails";
 import paymobRoutes from "../routes/paymob";
+import kashierRoutes from "../routes/kashier";
 import webhookRoutes from "../routes/webhooks";
 import { internalApiAuth } from "../lib/middleware";
 
@@ -21,7 +22,11 @@ app.get("/", (c) => {
  * includes the `/api` base path, hence matching on the full route.
  */
 const PUBLIC_PATHS = ["/api", "/api/"];
-const PUBLIC_PATH_PREFIXES = ["/api/paymob/webhook", "/api/webhooks/"];
+const PUBLIC_PATH_PREFIXES = [
+  "/api/paymob/webhook",
+  "/api/kashier/webhook",
+  "/api/webhooks/",
+];
 
 // Apply internal API auth middleware to all routes except the homepage and
 // signature-verified provider webhooks.
@@ -40,4 +45,5 @@ app.use("*", async (c, next) => {
 
 app.route("/emails", emails);
 app.route("/paymob", paymobRoutes);
+app.route("/kashier", kashierRoutes);
 app.route("/webhooks", webhookRoutes);

@@ -41,6 +41,14 @@
       "types": "./src/paymob/index.ts",
       "default": "./src/paymob/index.ts"
     },
+    "./kashier": {
+      "types": "./src/kashier/index.ts",
+      "default": "./src/kashier/index.ts"
+    },
+    "./payments": {
+      "types": "./src/payments/index.ts",
+      "default": "./src/payments/index.ts"
+    },
     "./orders": {
       "types": "./src/orders/index.ts",
       "default": "./src/orders/index.ts"

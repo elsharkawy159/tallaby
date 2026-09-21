@@ -10,6 +10,7 @@ import {
   desc, 
   db
 } from "@workspace/db";
+import { RETURN_WINDOW_DAYS } from "@/lib/constants";
 import { getUser } from "./auth";
 import { createNotification } from "./notifications";
 
@@ -136,7 +137,7 @@ export async function initiateReturn(data: {
       return { success: false, error: "Order not found" };
     }
 
-    // Check if order is eligible (delivered within 30 days)
+    // Check if order is eligible (delivered within the return window)
     if (order.status !== "delivered") {
       return {
         success: false,
@@ -144,11 +145,11 @@ export async function initiateReturn(data: {
       };
     }
 
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const windowStart = new Date();
+    windowStart.setDate(windowStart.getDate() - RETURN_WINDOW_DAYS);
 
-    if (order.deliveredAt && new Date(order.deliveredAt) < thirtyDaysAgo) {
-      return { success: false, error: "Return period has expired (30 days)" };
+    if (order.deliveredAt && new Date(order.deliveredAt) < windowStart) {
+      return { success: false, error: `Return period has expired (${RETURN_WINDOW_DAYS} days)` };
     }
 
     // Validate items

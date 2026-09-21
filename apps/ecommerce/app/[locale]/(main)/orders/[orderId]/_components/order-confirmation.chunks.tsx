@@ -606,7 +606,7 @@ export async function OrderConfirmationContent({
           <CardContent>
             <p className="text-sm text-purple-700">
               {isOrderEligibleForReturn(order.createdAt)
-                ? "You have 7 days from delivery to return items if needed."
+                ? "You have 14 days from purchase to cancel or return items if needed."
                 : "Return period has expired for this order."}
             </p>
           </CardContent>

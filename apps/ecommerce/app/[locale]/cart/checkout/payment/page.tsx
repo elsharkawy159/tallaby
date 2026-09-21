@@ -2,10 +2,11 @@ import { Link, redirect } from "@/i18n/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import { Button } from "@workspace/ui/components/button";
+import { redirect as redirectExternal } from "next/navigation";
 import {
-  createPaymobCheckoutUrl,
-  getPaymobPaymentOrder,
-} from "@/actions/paymob";
+  createPaymentCheckoutUrl,
+  getPaymentOrder,
+} from "@/actions/payment";
 import { buildOrderPagePath } from "@/lib/order-access-token";
 import { generateNoIndexMetadata } from "@/lib/metadata";
 import type { Metadata } from "next";
@@ -33,7 +34,7 @@ export default async function CheckoutPaymentPage({
     redirect({ href: "/cart/checkout", locale });
   }
 
-  const result = await getPaymobPaymentOrder(orderId as string);
+  const result = await getPaymentOrder(orderId as string);
 
   if (!result.success || !result.data) {
     return (
@@ -92,7 +93,7 @@ export default async function CheckoutPaymentPage({
     redirect({ href: buildOrderPagePath(order.id), locale });
   }
 
-  const checkout = await createPaymobCheckoutUrl(order.id);
+  const checkout = await createPaymentCheckoutUrl(order.id);
 
   if (!checkout.success || !checkout.data?.checkoutUrl) {
     return (
@@ -113,6 +114,10 @@ export default async function CheckoutPaymentPage({
         </main>
       </div>
     );
+  }
+
+  if (checkout.data.presentation === "redirect") {
+    redirectExternal(checkout.data.checkoutUrl);
   }
 
   return (

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Button } from "@workspace/ui/components/button";
-import { CheckCheck, Plus, RefreshCw } from "lucide-react";
+import { CheckCheck, Plus, RefreshCw, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   approveAllPendingProducts,
@@ -36,10 +36,14 @@ interface Product {
   } | null;
   seller: {
     id: string;
+    slug?: string | null;
     businessName: string | null;
     displayName: string | null;
   } | null;
 }
+
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const statusSortOrder: Record<Product["status"], number> = {
   pending: 0,
@@ -48,7 +52,7 @@ const statusSortOrder: Record<Product["status"], number> = {
   active: 3,
 };
 
-export function ProductsClient() {
+export function ProductsClient({ seller }: { seller?: string }) {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isApprovingAll, setIsApprovingAll] = useState(false);
@@ -58,6 +62,11 @@ export function ProductsClient() {
     try {
       const result = await getAllProducts({
         limit: 1000,
+        ...(seller
+          ? UUID_RE.test(seller)
+            ? { sellerId: seller }
+            : { sellerSlug: seller }
+          : {}),
       });
 
       if (result.success && result.data) {
@@ -82,7 +91,7 @@ export function ProductsClient() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [seller]);
 
   useEffect(() => {
     loadProducts();
@@ -195,6 +204,20 @@ export function ProductsClient() {
     )
   ).map((name) => ({ label: name, value: name }));
 
+  const sellerNames = Array.from(
+    new Set(
+      products
+        .map((p) => p.seller?.businessName || p.seller?.displayName)
+        .filter((name): name is string => Boolean(name))
+    )
+  ).map((name) => ({ label: name, value: name }));
+
+  // When filtered by ?seller=, label the banner with the seller's name.
+  const filteredSellerName =
+    products[0]?.seller?.businessName ||
+    products[0]?.seller?.displayName ||
+    seller;
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -205,7 +228,24 @@ export function ProductsClient() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-between gap-2">
+        {seller ? (
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-muted-foreground">Seller:</span>
+            <span className="font-medium">{filteredSellerName}</span>
+            <span className="text-muted-foreground">
+              ({products.length} product{products.length === 1 ? "" : "s"})
+            </span>
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/products">
+                <X className="h-4 w-4 mr-1" />
+                Clear
+              </Link>
+            </Button>
+          </div>
+        ) : (
+          <div />
+        )}
         <div className="flex gap-2">
           <Button
             variant="outline"
@@ -258,6 +298,11 @@ export function ProductsClient() {
             id: "brand",
             title: "Brand",
             options: brands,
+          },
+          {
+            id: "seller",
+            title: "Seller",
+            options: sellerNames,
           },
         ]}
       />

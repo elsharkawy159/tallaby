@@ -209,7 +209,12 @@ export const SellerCard = ({ seller, onAction }: SellerCardProps) => {
 
         <div className="text-right">
           <div className="text-sm font-medium">
-            {seller.productCount} products
+            <Link
+              href={`/products?seller=${encodeURIComponent(seller.slug)}`}
+              className="hover:underline"
+            >
+              {seller.productCount} products
+            </Link>
           </div>
           <div className="text-xs text-gray-500">
             {formatCurrency(seller.walletBalance)} balance
@@ -237,7 +242,7 @@ export const SellerCard = ({ seller, onAction }: SellerCardProps) => {
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link href={`/sellers/${seller.id}/products`} className="w-full">
+              <Link href={`/products?seller=${encodeURIComponent(seller.slug)}`} className="w-full">
                 View products
               </Link>
             </DropdownMenuItem>
@@ -325,7 +330,14 @@ export const SellerRow = ({ seller, onAction }: SellerRowProps) => {
         <StatusBadge status={seller.status || "pending"} />
       </td>
 
-      <td className="py-4 px-4 text-center">{seller.productCount}</td>
+      <td className="py-4 px-4 text-center">
+        <Link
+          href={`/products?seller=${encodeURIComponent(seller.slug)}`}
+          className="hover:underline"
+        >
+          {seller.productCount}
+        </Link>
+      </td>
 
       <td className="py-4 px-4 text-center">
         <div className="flex flex-col items-center">
@@ -399,7 +411,7 @@ export const SellerRow = ({ seller, onAction }: SellerRowProps) => {
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
                 <Link
-                  href={`/sellers/${seller.id}/products`}
+                  href={`/products?seller=${encodeURIComponent(seller.slug)}`}
                   className="w-full"
                 >
                   View products

@@ -46,6 +46,7 @@ interface Product {
   } | null;
   seller: {
     id: string;
+    slug?: string | null;
     businessName: string | null;
     displayName: string | null;
   } | null;
@@ -144,6 +145,27 @@ export function getProductsColumns(
       filterFn: (row, id, value) => {
         const brand = row.original.brand;
         return brand?.name === value;
+      },
+    },
+    {
+      id: "seller",
+      accessorFn: (row) => row.seller?.businessName ?? row.seller?.displayName ?? "",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Seller" />
+      ),
+      cell: ({ row }) => {
+        const seller = row.original.seller;
+        if (!seller) return <div>—</div>;
+        const name = seller.businessName || seller.displayName || "—";
+        return (
+          <Link
+            href={`/sellers/${seller.id}`}
+            className="max-w-40 truncate block hover:underline"
+            title={name}
+          >
+            {name}
+          </Link>
+        );
       },
     },
     {

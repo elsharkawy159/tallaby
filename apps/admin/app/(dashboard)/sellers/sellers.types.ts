@@ -78,3 +78,65 @@ export interface SellersPageProps {
     limit?: string;
   }>;
 }
+
+export interface SellerProductCounts {
+  total: number;
+  active: number;
+  pending: number;
+  draft: number;
+  rejected: number;
+}
+
+export interface SellerSalesMetrics {
+  orders: number;
+  customers: number;
+  itemsSold: number;
+  grossSales: number;
+  commission: number;
+  earnings: number;
+  refundedItems: number;
+  averageOrderValue: number;
+}
+
+export interface SellerCustomerRow {
+  id: string;
+  fullName: string | null;
+  email: string | null;
+  orders: number;
+  totalSpent: number;
+  lastOrderAt: string | null;
+}
+
+export interface SellerTopProductRow {
+  productId: string;
+  name: string;
+  unitsSold: number;
+  revenue: number;
+}
+
+export interface SellerRecentOrderRow {
+  id: string;
+  orderNumber: string;
+  customerName: string | null;
+  status: string | null;
+  total: number;
+  createdAt: string | null;
+}
+
+export interface SellerDetail {
+  seller: Seller;
+  owner: {
+    id: string;
+    fullName: string | null;
+    email: string | null;
+    phone: string | null;
+    isSuspended: boolean | null;
+    lastLoginAt: string | null;
+    createdAt: string | null;
+  } | null;
+  products: SellerProductCounts;
+  sales: SellerSalesMetrics;
+  topCustomers: SellerCustomerRow[];
+  topProducts: SellerTopProductRow[];
+  recentOrders: SellerRecentOrderRow[];
+}

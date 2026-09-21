@@ -13,7 +13,7 @@ export const AFFILIATE_COMMISSION_RATE = 0.1;
  * before affiliate commission is credited to the wallet. Single source of
  * truth for both storefront copy and commission release timing.
  */
-export const RETURN_WINDOW_DAYS = 7;
+export const RETURN_WINDOW_DAYS = 14;
 
 /** Affiliate coupons never expire in the normal sense — "permanent" per the business rules. Represented as a far-future date since coupons.expiresAt is NOT NULL. */
 export function buildAffiliateCouponExpiry(): string {

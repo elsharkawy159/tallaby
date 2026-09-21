@@ -7,6 +7,7 @@ import {
   productVariants,
   reviews,
   orderItems,
+  sellers,
 } from "@workspace/db";
 import { eq, and, desc, sql, gte, like, or } from "drizzle-orm";
 import { getAdminUser } from "./auth";
@@ -59,6 +60,7 @@ export async function getAllProducts(params?: {
   categoryId?: string;
   brandId?: string;
   sellerId?: string;
+  sellerSlug?: string;
   search?: string;
   limit?: number;
   offset?: number;
@@ -84,6 +86,16 @@ export async function getAllProducts(params?: {
       conditions.push(eq(products.sellerId, params.sellerId));
     }
 
+    if (params?.sellerSlug) {
+      const [seller] = await db
+        .select({ id: sellers.id })
+        .from(sellers)
+        .where(eq(sellers.slug, params.sellerSlug))
+        .limit(1);
+      // Unknown slug -> empty result rather than an unfiltered list.
+      conditions.push(seller ? eq(products.sellerId, seller.id) : sql`false`);
+    }
+
     if (params?.search) {
       const pattern = `%${params.search}%`;
       conditions.push(
@@ -107,6 +119,8 @@ export async function getAllProducts(params?: {
         productTranslations: true,
         seller: {
           columns: {
+            id: true,
+            slug: true,
             businessName: true,
             displayName: true,
           },
