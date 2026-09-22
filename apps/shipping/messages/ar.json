@@ -225,7 +225,7 @@
     "autoConfirm": "التأكيد التلقائي",
     "autoConfirmHint": "تأكيد الطلبات الجديدة قيد الانتظار تلقائيًا فور وصولها.",
     "autoAssign": "التعيين التلقائي",
-    "autoAssignHint": "تعيين الطلبات المؤكدة تلقائيًا لمندوبي تالابي بالتناوب.",
+    "autoAssignHint": "تعيين الطلبات المؤكدة تلقائيًا لمندوبي طلبي بالتناوب.",
     "automationOn": "تم تفعيل {name}",
     "automationOff": "تم إيقاف {name}",
     "autoConfirmSweep": "تم تفعيل {name} — تم تأكيد {count} طلب",

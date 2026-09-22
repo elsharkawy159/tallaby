@@ -1,84 +1,40 @@
 import { Suspense } from "react";
-import { getAllCustomers, getCustomerStats } from "@/actions/customers";
-import type {
-  Customer,
-  CustomerStats,
-  CustomersPageProps
-} from "./customers.types";
+import {
+  getAdminCustomers,
+  getCustomerListStats,
+} from "@/actions/customers-list";
+import type { Customer, CustomersPageProps } from "./customers.types";
 import { CustomersContent } from "./customers.client";
+import { parseCustomersParams } from "./customers.params";
 import { CustomersSkeleton } from "./customers.skeleton";
 
-type CustomersDataProps = CustomersPageProps;
-
-async function CustomersDataContent({ searchParams }: CustomersDataProps) {
+async function CustomersDataContent({ searchParams }: CustomersPageProps) {
   // Awaited here, inside the Suspense boundary, rather than in the page — so
   // the skeleton still shows immediately instead of the route blocking on it.
-  const params = await searchParams;
+  const query = parseCustomersParams(await searchParams);
 
-  const limit = params?.limit ? parseInt(params.limit) : 1000;
-  const offset = params?.page ? (parseInt(params.page) - 1) * limit : 0;
-
-  const [customersResult, statsResult] = await Promise.all([
-    getAllCustomers({
-      role: params?.role,
-      isVerified:
-        params?.isVerified !== undefined
-          ? params.isVerified === "true"
-          : undefined,
-      isSuspended:
-        params?.isSuspended !== undefined
-          ? params.isSuspended === "true"
-          : undefined,
-      search: params?.search,
-      limit,
-      offset,
-    }),
-    getCustomerStats(),
-  ]);
+  // Sequential to stay within the serverless DB pool.
+  const statsResult = await getCustomerListStats();
+  const customersResult = await getAdminCustomers(query);
 
   if (!customersResult.success || !statsResult.success) {
     throw new Error(
-      customersResult.error || statsResult.error || "Failed to fetch customers"
+      (!customersResult.success && customersResult.error) ||
+        (!statsResult.success && statsResult.error) ||
+        "Failed to fetch customers"
     );
   }
 
-  const customers = (customersResult.data || []) as Customer[];
-  const stats = statsResult.data;
-
-  // Calculate additional stats from customers data
-  const now = new Date();
-  const newCustomersThisMonth = customers.filter((c) => {
-    if (!c.createdAt) return false;
-    const createdDate = new Date(c.createdAt);
-    return (
-      createdDate.getMonth() === now.getMonth() &&
-      createdDate.getFullYear() === now.getFullYear()
-    );
-  }).length;
-
-  const totalRevenue = customers.reduce(
-    (sum, customer) => sum + (Number(customer.totalSpent) || 0),
-    0
+  return (
+    <CustomersContent
+      customers={customersResult.data as Customer[]}
+      totalCount={customersResult.totalCount}
+      stats={statsResult.data}
+    />
   );
-  const totalOrders = customers.reduce(
-    (sum, customer) => sum + (Number(customer.totalOrders) || 0),
-    0
-  );
-
-  const customerStats: CustomerStats = {
-    totalCustomers: stats?.verification?.total || customers.length,
-    verifiedCustomers: stats?.verification?.verified || 0,
-    newCustomersThisMonth,
-    totalRevenue,
-    averageSpendPerCustomer:
-      customers.length > 0 ? totalRevenue / customers.length : 0,
-    averageOrderValue: totalOrders > 0 ? totalRevenue / totalOrders : 0,
-  };
-
-  return <CustomersContent customers={customers} stats={customerStats} />;
 }
 
-export function CustomersData({ searchParams }: CustomersDataProps) {
+export function CustomersData({ searchParams }: CustomersPageProps) {
   return (
     <Suspense fallback={<CustomersSkeleton />}>
       <CustomersDataContent searchParams={searchParams} />

@@ -1,11 +1,44 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { db } from "@workspace/db";
-import { carts, cartItems } from "@workspace/db";
-import { eq, and, desc, inArray, sql } from "drizzle-orm";
+import { carts, cartItems, userAddresses, users } from "@workspace/db";
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  ilike,
+  isNotNull,
+  isNull,
+  or,
+  sql,
+  type SQL,
+} from "drizzle-orm";
 import { getAdminUser } from "./auth";
 
 const ABANDONED_DAYS = 7;
+
+export type PendingCartsView = "all" | "with-items" | "abandoned";
+export type PendingCartsSortId =
+  | "lastActivity"
+  | "createdAt"
+  | "itemCount"
+  | "totalValue";
+
+export interface PendingCartsQuery {
+  limit?: number;
+  offset?: number;
+  view?: PendingCartsView;
+  search?: string;
+  /** "reminded" | "not-reminded" */
+  reminder?: string[];
+  /** "guest" | "registered" */
+  customer?: string[];
+  /** "opted-in" | "opted-out" */
+  marketing?: string[];
+  sort?: { id: PendingCartsSortId; desc: boolean } | null;
+}
 
 function abandonedCutoffIso(): string {
   const date = new Date();
@@ -34,6 +67,35 @@ function getProductImage(images: unknown): string | null {
     }
   }
   return null;
+}
+
+function nonEmptyString(value: unknown): string | null {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+/**
+ * `cart_items.variant` is a snapshot written by the storefront's addToCart:
+ * { id, title, price (jsonb), option1-3, sku, imageUrl }. Pick out the
+ * display fields; price comes from `cart_items.price` instead.
+ */
+function parseVariantSnapshot(variant: unknown) {
+  if (!variant || typeof variant !== "object") {
+    return {
+      variantTitle: nonEmptyString(variant),
+      variantOptions: [] as string[],
+      variantSku: null,
+      variantImage: null,
+    };
+  }
+  const snapshot = variant as Record<string, unknown>;
+  return {
+    variantTitle: nonEmptyString(snapshot.title),
+    variantOptions: [snapshot.option1, snapshot.option2, snapshot.option3]
+      .map(nonEmptyString)
+      .filter((option): option is string => option !== null),
+    variantSku: nonEmptyString(snapshot.sku),
+    variantImage: nonEmptyString(snapshot.imageUrl),
+  };
 }
 
 function mapUser(user: {
@@ -90,6 +152,7 @@ function mapCartItems(
   return cartItemsRows.map((item) => {
     const price = Number(item.price) || 0;
     const quantity = item.quantity || 0;
+    const variant = parseVariantSnapshot(item.variant);
     return {
       id: item.id,
       productId: item.productId,
@@ -98,12 +161,13 @@ function mapCartItems(
       price,
       lineTotal: price * quantity,
       savedForLater: item.savedForLater ?? false,
-      variant: item.variant,
+      ...variant,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
       productTitle: getProductTitle(item.product?.productTranslations),
       productSku: item.product?.sku ?? null,
-      productImage: getProductImage(item.product?.images),
+      productImage:
+        variant.variantImage ?? getProductImage(item.product?.images),
       productSlug:
         item.product?.productTranslations?.find((t) => t.locale === "en")
           ?.slug ??
@@ -129,7 +193,7 @@ function isAbandonedCart(
   );
 }
 
-const cartListRelations = {
+const cartDetailRelations = {
   user: {
     columns: {
       id: true,
@@ -142,10 +206,6 @@ const cartListRelations = {
       preferredLanguage: true,
     },
   },
-} as const;
-
-const cartDetailRelations = {
-  ...cartListRelations,
   cartItems: {
     with: {
       product: {
@@ -175,75 +235,148 @@ const cartDetailRelations = {
   },
 } as const;
 
-/** Lightweight list: cart + user + item aggregates (no nested products). */
-export async function getPendingCarts(params?: {
-  limit?: number;
-  offset?: number;
-}) {
+/** Per-cart item aggregates, joined into the list query. */
+function cartItemAggregates() {
+  return db
+    .select({
+      cartId: cartItems.cartId,
+      itemCount:
+        sql<number>`coalesce(sum(${cartItems.quantity}), 0)::int`.as(
+          "item_count"
+        ),
+      totalValue:
+        sql<number>`coalesce(sum(${cartItems.quantity} * ${cartItems.price}::numeric), 0)::float`.as(
+          "total_value"
+        ),
+    })
+    .from(cartItems)
+    .groupBy(cartItems.cartId)
+    .as("cart_item_agg");
+}
+
+/** Server-side filtered, sorted and paginated list (no nested items). */
+export async function getPendingCarts(params: PendingCartsQuery = {}) {
   try {
     await getAdminUser();
 
-    const limit = params?.limit || 200;
-    const offset = params?.offset || 0;
+    const limit = Math.min(params.limit || 20, 100);
+    const offset = params.offset || 0;
+    const agg = cartItemAggregates();
+    const itemCount = sql<number>`coalesce(${agg.itemCount}, 0)`;
+    const totalValue = sql<number>`coalesce(${agg.totalValue}, 0)`;
+    const lastActivity = sql<string>`coalesce(${carts.lastActivity}, ${carts.updatedAt}, ${carts.createdAt})`;
 
-    const cartsList = await db.query.carts.findMany({
-      where: eq(carts.status, "active"),
-      with: cartListRelations,
-      orderBy: [desc(carts.lastActivity)],
-      limit,
-      offset,
-    });
+    const conditions: SQL[] = [eq(carts.status, "active")];
 
-    const cartIds = cartsList.map((cart) => cart.id);
-    const aggregates =
-      cartIds.length === 0
-        ? []
-        : await db
-            .select({
-              cartId: cartItems.cartId,
-              itemCount: sql<number>`coalesce(sum(${cartItems.quantity}), 0)::int`,
-              totalValue: sql<number>`coalesce(sum(${cartItems.quantity} * ${cartItems.price}::numeric), 0)::float`,
-            })
-            .from(cartItems)
-            .where(inArray(cartItems.cartId, cartIds))
-            .groupBy(cartItems.cartId);
+    if (params.view === "with-items" || params.view === "abandoned") {
+      conditions.push(sql`${itemCount} > 0`);
+    }
+    if (params.view === "abandoned") {
+      conditions.push(sql`${lastActivity} < ${abandonedCutoffIso()}`);
+    }
 
-    const aggregatesByCartId = new Map(
-      aggregates.map((row) => [
-        row.cartId,
-        {
-          itemCount: Number(row.itemCount ?? 0),
-          totalValue: Number(row.totalValue ?? 0),
-        },
-      ])
-    );
+    const reminder = new Set(params.reminder ?? []);
+    if (reminder.size === 1) {
+      conditions.push(
+        reminder.has("reminded")
+          ? isNotNull(carts.reminderSentAt)
+          : isNull(carts.reminderSentAt)
+      );
+    }
 
-    const [totalCountRow] = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(carts)
-      .where(eq(carts.status, "active"));
+    const customer = new Set(params.customer ?? []);
+    if (customer.size === 1) {
+      conditions.push(eq(users.isGuest, customer.has("guest")));
+    }
 
-    const data = cartsList.map((cart) => {
-      const lastActivity =
-        cart.lastActivity ?? cart.updatedAt ?? cart.createdAt;
-      const { itemCount, totalValue } = aggregatesByCartId.get(cart.id) ?? {
-        itemCount: 0,
-        totalValue: 0,
-      };
+    const marketing = new Set(params.marketing ?? []);
+    if (marketing.size === 1) {
+      conditions.push(
+        marketing.has("opted-in")
+          ? sql`coalesce(${users.receiveMarketingEmails}, true) = true`
+          : sql`${users.receiveMarketingEmails} = false`
+      );
+    }
 
-      return {
-        id: cart.id,
-        userId: cart.userId,
-        sessionId: cart.sessionId,
-        status: cart.status ?? "active",
-        currency: cart.currency ?? "EGP",
-        createdAt: cart.createdAt,
-        updatedAt: cart.updatedAt,
+    const search = params.search?.trim();
+    if (search) {
+      const pattern = `%${search}%`;
+      conditions.push(
+        or(
+          ilike(users.fullName, pattern),
+          ilike(users.email, pattern),
+          ilike(users.phone, pattern),
+          sql`${carts.id}::text ilike ${pattern}`
+        )!
+      );
+    }
+
+    const where = and(...conditions);
+    const sortColumn = {
+      lastActivity,
+      createdAt: carts.createdAt,
+      itemCount,
+      totalValue,
+    }[params.sort?.id ?? "lastActivity"];
+    const direction = params.sort?.desc === false ? asc : desc;
+
+    // Sequential on purpose — see getPendingCartStats for the pool deadlock.
+    const rows = await db
+      .select({
+        id: carts.id,
+        userId: carts.userId,
+        sessionId: carts.sessionId,
+        status: carts.status,
+        currency: carts.currency,
+        createdAt: carts.createdAt,
+        updatedAt: carts.updatedAt,
         lastActivity,
+        reminderSentAt: carts.reminderSentAt,
         itemCount,
         totalValue,
-        isAbandoned: isAbandonedCart(itemCount, lastActivity),
-        user: mapUser(cart.user),
+        user: {
+          id: users.id,
+          fullName: users.fullName,
+          email: users.email,
+          phone: users.phone,
+          avatarUrl: users.avatarUrl,
+          isGuest: users.isGuest,
+          receiveMarketingEmails: users.receiveMarketingEmails,
+          preferredLanguage: users.preferredLanguage,
+        },
+      })
+      .from(carts)
+      .leftJoin(users, eq(users.id, carts.userId))
+      .leftJoin(agg, eq(agg.cartId, carts.id))
+      .where(where)
+      .orderBy(sql`${direction(sortColumn)} nulls last`, desc(carts.id))
+      .limit(limit)
+      .offset(offset);
+
+    const [countRow] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(carts)
+      .leftJoin(users, eq(users.id, carts.userId))
+      .leftJoin(agg, eq(agg.cartId, carts.id))
+      .where(where);
+
+    const data = rows.map((row) => {
+      const count = Number(row.itemCount ?? 0);
+      return {
+        id: row.id,
+        userId: row.userId,
+        sessionId: row.sessionId,
+        status: row.status ?? "active",
+        currency: row.currency ?? "EGP",
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+        lastActivity: row.lastActivity,
+        reminderSentAt: row.reminderSentAt,
+        itemCount: count,
+        totalValue: Number(row.totalValue ?? 0),
+        isAbandoned: isAbandonedCart(count, row.lastActivity),
+        user: row.user?.id ? mapUser(row.user) : null,
+        fallbackPhone: null as string | null,
         items: [] as ReturnType<typeof mapCartItems>,
       };
     });
@@ -251,7 +384,7 @@ export async function getPendingCarts(params?: {
     return {
       success: true,
       data,
-      totalCount: Number(totalCountRow?.count ?? 0),
+      totalCount: Number(countRow?.count ?? 0),
     };
   } catch (error) {
     console.error("Error fetching pending carts:", error);
@@ -276,6 +409,16 @@ export async function getPendingCartById(cartId: string) {
       return { success: false, error: "Cart not found" };
     }
 
+    // WhatsApp fallback when the account itself has no phone on file.
+    const [address] = cart.user?.phone
+      ? []
+      : await db
+          .select({ phone: userAddresses.phone })
+          .from(userAddresses)
+          .where(eq(userAddresses.userId, cart.userId))
+          .orderBy(desc(userAddresses.isDefault), desc(userAddresses.createdAt))
+          .limit(1);
+
     const items = mapCartItems(cart.cartItems ?? []);
     const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
     const totalValue = items.reduce((sum, item) => sum + item.lineTotal, 0);
@@ -293,15 +436,61 @@ export async function getPendingCartById(cartId: string) {
         createdAt: cart.createdAt,
         updatedAt: cart.updatedAt,
         lastActivity,
+        reminderSentAt: cart.reminderSentAt,
         itemCount,
         totalValue,
         isAbandoned: isAbandonedCart(itemCount, lastActivity),
         user: mapUser(cart.user),
+        fallbackPhone: address?.phone ?? null,
         items,
       },
     };
   } catch (error) {
     console.error("Error fetching pending cart:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+/**
+ * Record that a WhatsApp reminder was sent. Only the first call wins, so two
+ * admins can't both remind the same customer.
+ */
+export async function markCartReminded(cartId: string) {
+  try {
+    const { user } = await getAdminUser();
+
+    const [updated] = await db
+      .update(carts)
+      .set({
+        reminderSentAt: sql`now()`,
+        // The auth id may not have a public.users row; keep the FK valid.
+        reminderSentBy: sql`(select ${users.id} from ${users} where ${users.id} = ${user.id})`,
+      })
+      .where(and(eq(carts.id, cartId), isNull(carts.reminderSentAt)))
+      .returning({ reminderSentAt: carts.reminderSentAt });
+
+    if (!updated) {
+      const [existing] = await db
+        .select({ reminderSentAt: carts.reminderSentAt })
+        .from(carts)
+        .where(eq(carts.id, cartId))
+        .limit(1);
+      if (!existing) return { success: false, error: "Cart not found" };
+      return {
+        success: false,
+        alreadyReminded: true,
+        reminderSentAt: existing.reminderSentAt,
+        error: "A reminder was already sent for this cart",
+      };
+    }
+
+    revalidatePath("/pending-carts");
+    return { success: true, reminderSentAt: updated.reminderSentAt };
+  } catch (error) {
+    console.error("Error marking cart reminded:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
@@ -338,8 +527,12 @@ export async function getPendingCartStats() {
           FROM ${carts}
           INNER JOIN ${cartItems} ON ${cartItems.cartId} = ${carts.id}
           WHERE ${carts.status} = 'active'
-            AND ${carts.lastActivity} < ${cutoff}
-        ) AS abandoned
+            AND coalesce(${carts.lastActivity}, ${carts.updatedAt}, ${carts.createdAt}) < ${cutoff}
+        ) AS abandoned,
+        (
+          SELECT count(*)::int FROM ${carts}
+          WHERE ${carts.status} = 'active' AND ${carts.reminderSentAt} IS NOT NULL
+        ) AS reminded
     `);
 
     const rows = Array.isArray(result)
@@ -354,6 +547,7 @@ export async function getPendingCartStats() {
         withItems: Number(row.with_items ?? 0),
         cartValue: Number(row.cart_value ?? 0),
         abandoned: Number(row.abandoned ?? 0),
+        reminded: Number(row.reminded ?? 0),
         abandonedDays: ABANDONED_DAYS,
       },
     };

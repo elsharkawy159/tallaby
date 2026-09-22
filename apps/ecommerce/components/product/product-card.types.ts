@@ -46,6 +46,8 @@ export interface AddToCartButtonProps {
   showIcon?: boolean;
   showText?: boolean;
   stock: number | string;
+  /** Label the button "Buy Now" and go straight to checkout after adding. */
+  buyNow?: boolean;
 }
 
 export interface WishlistButtonProps {

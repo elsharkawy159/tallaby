@@ -5,10 +5,5 @@ export type {
 } from "@/actions/affiliates";
 
 export interface AffiliatesPageProps {
-  searchParams?: Promise<{
-    status?: string;
-    performance?: string;
-    earnings?: string;
-    search?: string;
-  }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }

@@ -16,6 +16,9 @@ import {
   DropdownMenuSubTrigger,
 } from "@workspace/ui/components/dropdown-menu";
 import Link from "next/link";
+import { DataTableColumnHeader } from "../../_components/data-table/data-table-column-header";
+import { getSelectColumn } from "../../_components/data-table/data-table-select-column";
+import type { DataTableFilter } from "../../_components/data-table/data-table.types";
 import { Order } from "../orders.types";
 import {
   formatCurrency,
@@ -27,9 +30,10 @@ import {
   getCustomerEmail,
   getItemsCount,
   isAdminEditablePaymentMethod,
+  formatPaymentMethodLabel,
 } from "../orders.lib";
 
-const ORDER_STATUSES = [
+export const ORDER_STATUSES = [
   "pending",
   "payment_processing",
   "confirmed",
@@ -43,14 +47,68 @@ const ORDER_STATUSES = [
   "returned",
 ] as const;
 
+const PAYMENT_STATUSES = [
+  "pending",
+  "authorized",
+  "paid",
+  "collected",
+  "failed",
+  "refunded",
+  "partially_refunded",
+] as const;
+
+/** Server-side filters (URL params) for the orders table. */
+export function getOrdersFilters(paymentMethods: string[]): DataTableFilter[] {
+  return [
+    {
+      id: "status",
+      title: "Status",
+      options: ORDER_STATUSES.map((value) => ({
+        value,
+        label: getStatusLabel(value),
+      })),
+    },
+    {
+      id: "paymentStatus",
+      title: "Payment",
+      options: PAYMENT_STATUSES.map((value) => ({
+        value,
+        label: getStatusLabel(value),
+      })),
+    },
+    {
+      id: "paymentMethod",
+      title: "Method",
+      options: paymentMethods.map((value) => ({
+        value,
+        label: formatPaymentMethodLabel(value),
+      })),
+    },
+    {
+      id: "source",
+      title: "Source",
+      options: [
+        { value: "website", label: "Website" },
+        { value: "external", label: "External" },
+      ],
+    },
+    { id: "created", title: "Date", type: "dateRange" },
+  ];
+}
+
 export function getOrdersColumns(
   onAction?: (orderId: string, action: string) => void,
   onPaymentStatusChange?: (orderId: string, paymentStatus: string) => void
 ): ColumnDef<Order>[] {
   return [
+    getSelectColumn<Order>(),
     {
       accessorKey: "orderNumber",
-      header: "Order Number",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Order" />
+      ),
+      enableHiding: false,
+      meta: { label: "Order" },
       cell: ({ row }) => {
         const order = row.original;
         return (
@@ -61,14 +119,19 @@ export function getOrdersColumns(
             >
               {order.orderNumber}
             </Link>
-            <div className="text-xs text-gray-500">{order.id}</div>
+            <div className="max-w-40 truncate font-mono text-xs text-muted-foreground" title={order.id}>
+              {order.id}
+            </div>
           </div>
         );
       },
     },
     {
-      accessorKey: "customer",
+      id: "customer",
+      accessorFn: (order) => getCustomerName(order),
       header: "Customer",
+      enableSorting: false,
+      meta: { label: "Customer" },
       cell: ({ row }) => {
         const order = row.original;
         const customerName = getCustomerName(order);
@@ -84,15 +147,21 @@ export function getOrdersColumns(
     },
     {
       accessorKey: "totalAmount",
-      header: "Total",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Total" />
+      ),
+      meta: { label: "Total" },
       cell: ({ row }) => {
         const amount = row.original.totalAmount;
         return <div className="font-medium">{formatCurrency(amount)}</div>;
       },
     },
     {
-      accessorKey: "items",
+      id: "items",
+      accessorFn: (order) => getItemsCount(order),
       header: "Items",
+      enableSorting: false,
+      meta: { label: "Items" },
       cell: ({ row }) => {
         const order = row.original;
         const itemsCount = getItemsCount(order);
@@ -107,6 +176,8 @@ export function getOrdersColumns(
     {
       accessorKey: "status",
       header: "Status",
+      enableSorting: false,
+      meta: { label: "Status" },
       cell: ({ row }) => {
         const status = row.original.status;
         return (
@@ -119,18 +190,30 @@ export function getOrdersColumns(
     {
       accessorKey: "paymentStatus",
       header: "Payment",
+      enableSorting: false,
+      meta: { label: "Payment" },
       cell: ({ row }) => {
-        const status = row.original.paymentStatus;
+        const { paymentStatus, paymentMethod } = row.original;
         return (
-          <Badge className={getPaymentStatusColor(status)}>
-            {getStatusLabel(status)}
-          </Badge>
+          <div className="flex flex-col items-start gap-1">
+            <Badge className={getPaymentStatusColor(paymentStatus)}>
+              {getStatusLabel(paymentStatus)}
+            </Badge>
+            {paymentMethod && (
+              <span className="text-xs text-muted-foreground">
+                {formatPaymentMethodLabel(paymentMethod)}
+              </span>
+            )}
+          </div>
         );
       },
     },
     {
       accessorKey: "createdAt",
-      header: "Date",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Date" />
+      ),
+      meta: { label: "Date" },
       cell: ({ row }) => {
         const date = row.original.createdAt;
         return <div>{formatDate(date)}</div>;
@@ -139,6 +222,7 @@ export function getOrdersColumns(
     {
       id: "actions",
       header: "Actions",
+      enableHiding: false,
       cell: ({ row }) => {
         const order = row.original;
 

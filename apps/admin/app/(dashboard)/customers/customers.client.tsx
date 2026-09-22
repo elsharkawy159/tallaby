@@ -1,59 +1,48 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@workspace/ui/components/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@workspace/ui/components/tabs";
 import { Users } from "lucide-react";
-import { getCustomersColumns } from "./_components/table-columns";
+import {
+  customersFilters,
+  getCustomersColumns,
+} from "./_components/table-columns";
 import { DataTable } from "../_components/data-table/data-table";
+import { useTableUrlState } from "../_components/data-table/use-table-url-state";
+import {
+  CUSTOMERS_DEFAULT_SORT,
+  CUSTOMERS_VIEW_PARAM,
+} from "./customers.params";
 import type { Customer, CustomerStats } from "./customers.types";
 import { formatCurrency } from "./customers.lib";
 import { CustomerQuickViewDialog } from "./_components/customer-quick-view-dialog";
 
 interface CustomersContentProps {
   customers: Customer[];
+  totalCount: number;
   stats: CustomerStats;
 }
 
-export function CustomersContent({ customers, stats }: CustomersContentProps) {
+export function CustomersContent({
+  customers,
+  totalCount,
+  stats,
+}: CustomersContentProps) {
+  const url = useTableUrlState();
+  const activeView = url.get(CUSTOMERS_VIEW_PARAM) || "all";
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
     null
   );
 
-  const handleQuickView = (customer: Customer) => {
-    setSelectedCustomer(customer);
-  };
-
-  const columns = getCustomersColumns({ onQuickView: handleQuickView });
-
-  // Filter customers for different tabs
-  const highValueCustomers = customers.filter(
-    (customer) => Number(customer.totalSpent) > 1000
-  );
-
-  const recentCustomers = [...customers]
-    .sort(
-      (a, b) =>
-        new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
-    )
-    .slice(0, 10);
-
-  const unverifiedCustomers = customers.filter(
-    (customer) => !customer.isVerified
-  );
-
-  const suspendedCustomers = customers.filter(
-    (customer) => customer.isSuspended
+  const columns = useMemo(
+    () => getCustomersColumns({ onQuickView: setSelectedCustomer }),
+    []
   );
 
   return (
@@ -103,7 +92,9 @@ export function CustomersContent({ customers, stats }: CustomersContentProps) {
             <div className="text-2xl font-bold">
               {formatCurrency(stats.averageSpendPerCustomer)}
             </div>
-            <p className="text-xs text-muted-foreground">Lifetime value</p>
+            <p className="text-xs text-muted-foreground">
+              Lifetime value per buying customer
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -121,116 +112,47 @@ export function CustomersContent({ customers, stats }: CustomersContentProps) {
         </Card>
       </div>
 
-      {/* Tabs */}
-      <Tabs defaultValue="all-customers">
-        <TabsList>
-          <TabsTrigger value="all-customers">All Customers</TabsTrigger>
-          <TabsTrigger value="high-value">High Value</TabsTrigger>
-          <TabsTrigger value="recent">Recent</TabsTrigger>
-          <TabsTrigger value="unverified">Unverified</TabsTrigger>
-          <TabsTrigger value="suspended">Suspended</TabsTrigger>
+      <Tabs
+        value={activeView}
+        onValueChange={(value) =>
+          url.setParams({
+            [CUSTOMERS_VIEW_PARAM]: value === "all" ? null : value,
+          })
+        }
+      >
+        <TabsList className="h-auto flex-wrap">
+          <TabsTrigger value="all">
+            All Customers ({stats.totalCustomers.toLocaleString()})
+          </TabsTrigger>
+          <TabsTrigger value="high-value">
+            High Value ({stats.highValueCustomers.toLocaleString()})
+          </TabsTrigger>
+          <TabsTrigger value="new">
+            New · 30 days ({stats.newCustomersRecent.toLocaleString()})
+          </TabsTrigger>
+          <TabsTrigger value="unverified">
+            Unverified ({stats.unverifiedCustomers.toLocaleString()})
+          </TabsTrigger>
+          <TabsTrigger value="suspended">
+            Suspended ({stats.suspendedCustomers.toLocaleString()})
+          </TabsTrigger>
         </TabsList>
-        <TabsContent value="all-customers" className="p-0 mt-4">
-          <DataTable
-            columns={columns}
-            data={customers}
-            filterableColumns={[
-              {
-                id: "role",
-                title: "Role",
-                options: [
-                  { label: "Customer", value: "customer" },
-                  { label: "Seller", value: "seller" },
-                  { label: "Admin", value: "admin" },
-                  { label: "Support", value: "support" },
-                ],
-              },
-              {
-                id: "isVerified",
-                title: "Status",
-                options: [
-                  { label: "Verified", value: "true" },
-                  { label: "Unverified", value: "false" },
-                ],
-              },
-            ]}
-            searchableColumns={[
-              {
-                id: "fullName",
-                title: "Name",
-              },
-              {
-                id: "email",
-                title: "Email",
-              },
-            ]}
-          />
-        </TabsContent>
-        <TabsContent value="high-value" className="p-0 mt-4">
-          <DataTable
-            columns={columns}
-            data={highValueCustomers}
-            searchableColumns={[
-              {
-                id: "fullName",
-                title: "Name",
-              },
-              {
-                id: "email",
-                title: "Email",
-              },
-            ]}
-          />
-        </TabsContent>
-        <TabsContent value="recent" className="p-0 mt-4">
-          <DataTable
-            columns={columns}
-            data={recentCustomers}
-            searchableColumns={[
-              {
-                id: "fullName",
-                title: "Name",
-              },
-              {
-                id: "email",
-                title: "Email",
-              },
-            ]}
-          />
-        </TabsContent>
-        <TabsContent value="unverified" className="p-0 mt-4">
-          <DataTable
-            columns={columns}
-            data={unverifiedCustomers}
-            searchableColumns={[
-              {
-                id: "fullName",
-                title: "Name",
-              },
-              {
-                id: "email",
-                title: "Email",
-              },
-            ]}
-          />
-        </TabsContent>
-        <TabsContent value="suspended" className="p-0 mt-4">
-          <DataTable
-            columns={columns}
-            data={suspendedCustomers}
-            searchableColumns={[
-              {
-                id: "fullName",
-                title: "Name",
-              },
-              {
-                id: "email",
-                title: "Email",
-              },
-            ]}
-          />
-        </TabsContent>
       </Tabs>
+
+      <div className="mt-4">
+        <DataTable
+          columns={columns}
+          data={customers}
+          getRowId={(customer) => customer.id}
+          filterableColumns={customersFilters}
+          emptyMessage="No customers match these filters."
+          serverSide={{
+            rowCount: totalCount,
+            defaultSort: CUSTOMERS_DEFAULT_SORT,
+            searchPlaceholder: "Search name, email or phone…",
+          }}
+        />
+      </div>
 
       {/* Quick View Dialog */}
       <CustomerQuickViewDialog

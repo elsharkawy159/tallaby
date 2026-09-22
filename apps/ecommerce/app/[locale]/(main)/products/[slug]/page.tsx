@@ -138,7 +138,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
         locale={locale as ProductLocale}
       />
       <section className="bg-white">
-        <DynamicBreadcrumb />
+        {/* Label the slug segment with the localized product title (the
+            pathname segment may arrive percent-encoded for Arabic slugs). */}
+        <DynamicBreadcrumb
+          customLabels={{
+            [decodeURIComponent(slug)]: product.title,
+            [encodeURIComponent(decodeURIComponent(slug))]: product.title,
+          }}
+        />
       </section>
 
       <section className="bg-white py-5 pb-10">

@@ -2,7 +2,12 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { ArrowDownToLine, Banknote, Lock, Wallet as WalletIcon } from "lucide-react";
+import {
+  ArrowDownToLine,
+  Banknote,
+  Lock,
+  Wallet as WalletIcon,
+} from "lucide-react";
 
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
@@ -18,7 +23,6 @@ import {
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { Textarea } from "@workspace/ui/components/textarea";
-import { TableCell, TableRow } from "@workspace/ui/components/table";
 
 import {
   approvePayoutRequest,
@@ -53,7 +57,11 @@ export function WalletStatsCards({ stats }: { stats: WalletStats }) {
       value: stats.totalWallets.toLocaleString(),
       icon: WalletIcon,
     },
-    { label: "Total balance", value: money(stats.totalBalance), icon: Banknote },
+    {
+      label: "Total balance",
+      value: money(stats.totalBalance),
+      icon: Banknote,
+    },
     { label: "Reserved", value: money(stats.totalReserved), icon: Lock },
     {
       label: "Open payouts",
@@ -92,7 +100,7 @@ export function WalletStatsCards({ stats }: { stats: WalletStats }) {
 
 type PayoutAction = "approve" | "reject" | "complete";
 
-export function PayoutRequestRowView({
+export function PayoutRequestActions({
   request,
   onChanged,
 }: {
@@ -131,82 +139,49 @@ export function PayoutRequestRowView({
 
   return (
     <>
-      <TableRow>
-        <TableCell>
-          <div className="font-medium">{request.userName ?? "—"}</div>
-          <div className="text-xs text-muted-foreground">
-            {request.userEmail ?? "—"} · {request.userRole ?? "—"}
-          </div>
-        </TableCell>
-        <TableCell className="font-semibold">{money(request.amount)}</TableCell>
-        <TableCell>
-          <div className="text-sm">{request.method}</div>
-          <div className="text-xs text-muted-foreground">
-            {describeDestination(request.destination)}
-          </div>
-        </TableCell>
-        <TableCell>
-          <div className="text-sm">{money(request.walletBalance)}</div>
-          <div className="text-xs text-muted-foreground">
-            reserved {money(request.walletReservedBalance)}
-          </div>
-        </TableCell>
-        <TableCell>
-          <Badge variant={payoutStatusVariant(request.status)}>
-            {request.status}
-          </Badge>
-        </TableCell>
-        <TableCell className="text-xs text-muted-foreground">
-          {formatDateTime(request.createdAt)}
-        </TableCell>
-        <TableCell className="text-right">
-          <div className="flex flex-wrap justify-end gap-1">
-            {canApprove && (
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={isPending}
-                onClick={() => setDialog("approve")}
-              >
-                Approve
-              </Button>
-            )}
-            {canProcess && (
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={isPending}
-                onClick={() =>
-                  run(() =>
-                    markPayoutProcessing({ payoutRequestId: request.id })
-                  )
-                }
-              >
-                Processing
-              </Button>
-            )}
-            {canComplete && (
-              <Button
-                size="sm"
-                disabled={isPending}
-                onClick={() => setDialog("complete")}
-              >
-                Complete
-              </Button>
-            )}
-            {canReject && (
-              <Button
-                size="sm"
-                variant="destructive"
-                disabled={isPending}
-                onClick={() => setDialog("reject")}
-              >
-                Reject
-              </Button>
-            )}
-          </div>
-        </TableCell>
-      </TableRow>
+      <div className="flex flex-wrap justify-end gap-1">
+        {canApprove && (
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={isPending}
+            onClick={() => setDialog("approve")}
+          >
+            Approve
+          </Button>
+        )}
+        {canProcess && (
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={isPending}
+            onClick={() =>
+              run(() => markPayoutProcessing({ payoutRequestId: request.id }))
+            }
+          >
+            Processing
+          </Button>
+        )}
+        {canComplete && (
+          <Button
+            size="sm"
+            disabled={isPending}
+            onClick={() => setDialog("complete")}
+          >
+            Complete
+          </Button>
+        )}
+        {canReject && (
+          <Button
+            size="sm"
+            variant="destructive"
+            disabled={isPending}
+            onClick={() => setDialog("reject")}
+          >
+            Reject
+          </Button>
+        )}
+      </div>
 
       <Dialog
         open={dialog === "approve"}
@@ -354,7 +329,7 @@ export function PayoutRequestRowView({
 
 type TopUpAction = "confirm" | "reject";
 
-export function TopUpRequestRowView({
+export function TopUpRequestActions({
   request,
   onChanged,
 }: {
@@ -386,70 +361,27 @@ export function TopUpRequestRowView({
 
   return (
     <>
-      <TableRow>
-        <TableCell>
-          <div className="font-medium">{request.userName ?? "—"}</div>
-          <div className="text-xs text-muted-foreground">
-            {request.userEmail ?? "—"} · {request.userRole ?? "—"}
-          </div>
-        </TableCell>
-        <TableCell className="font-semibold">{money(request.amount)}</TableCell>
-        <TableCell>
-          <div className="text-sm">{formatTopUpProvider(request.provider)}</div>
-          {request.paymentSelfReported ? (
-            <div className="text-xs text-emerald-600">
-              Self-reported
-              {request.paymentSelfReportedAt
-                ? ` · ${formatDateTime(request.paymentSelfReportedAt)}`
-                : ""}
-            </div>
-          ) : (
-            <div className="text-xs text-muted-foreground">Awaiting transfer</div>
-          )}
-        </TableCell>
-        <TableCell>
-          <div className="text-sm">{money(request.walletBalance)}</div>
-          <div className="text-xs text-muted-foreground">
-            reserved {money(request.walletReservedBalance)}
-          </div>
-        </TableCell>
-        <TableCell>
-          <Badge variant={topUpStatusVariant(request.status)}>
-            {request.status}
-          </Badge>
-          {request.failureReason ? (
-            <div className="mt-1 max-w-40 truncate text-xs text-muted-foreground">
-              {request.failureReason}
-            </div>
-          ) : null}
-        </TableCell>
-        <TableCell className="text-xs text-muted-foreground">
-          {formatDateTime(request.createdAt)}
-        </TableCell>
-        <TableCell className="text-right">
-          {canAction ? (
-            <div className="flex flex-wrap justify-end gap-1">
-              <Button
-                size="sm"
-                disabled={isPending}
-                onClick={() => setDialog("confirm")}
-              >
-                Confirm
-              </Button>
-              <Button
-                size="sm"
-                variant="destructive"
-                disabled={isPending}
-                onClick={() => setDialog("reject")}
-              >
-                Reject
-              </Button>
-            </div>
-          ) : (
-            <span className="text-xs text-muted-foreground">—</span>
-          )}
-        </TableCell>
-      </TableRow>
+      {canAction ? (
+        <div className="flex flex-wrap justify-end gap-1">
+          <Button
+            size="sm"
+            disabled={isPending}
+            onClick={() => setDialog("confirm")}
+          >
+            Confirm
+          </Button>
+          <Button
+            size="sm"
+            variant="destructive"
+            disabled={isPending}
+            onClick={() => setDialog("reject")}
+          >
+            Reject
+          </Button>
+        </div>
+      ) : (
+        <span className="text-xs text-muted-foreground">—</span>
+      )}
 
       <Dialog
         open={dialog === "confirm"}
@@ -465,7 +397,9 @@ export function TopUpRequestRowView({
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
-            <Label htmlFor="topup-reference">Transfer reference (optional)</Label>
+            <Label htmlFor="topup-reference">
+              Transfer reference (optional)
+            </Label>
             <Input
               id="topup-reference"
               value={reference}
@@ -543,7 +477,7 @@ export function TopUpRequestRowView({
 /* Wallets                                                                    */
 /* -------------------------------------------------------------------------- */
 
-export function WalletRowView({ wallet }: { wallet: WalletRow }) {
+export function WalletLedgerButton({ wallet }: { wallet: WalletRow }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [transactions, setTransactions] = useState<WalletTransactionRow[]>([]);
@@ -562,29 +496,9 @@ export function WalletRowView({ wallet }: { wallet: WalletRow }) {
 
   return (
     <>
-      <TableRow>
-        <TableCell>
-          <div className="font-medium">{wallet.userName ?? "—"}</div>
-          <div className="text-xs text-muted-foreground">
-            {wallet.userEmail ?? "—"} · {wallet.userRole ?? "—"}
-          </div>
-        </TableCell>
-        <TableCell className="font-semibold">
-          {money(wallet.availableBalance)}
-        </TableCell>
-        <TableCell>{money(wallet.balance)}</TableCell>
-        <TableCell>{money(wallet.reservedBalance)}</TableCell>
-        <TableCell>
-          <Badge variant={walletStatusVariant(wallet.status)}>
-            {wallet.status}
-          </Badge>
-        </TableCell>
-        <TableCell className="text-right">
-          <Button size="sm" variant="outline" onClick={openLedger}>
-            Ledger
-          </Button>
-        </TableCell>
-      </TableRow>
+      <Button size="sm" variant="outline" onClick={openLedger}>
+        Ledger
+      </Button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="max-w-3xl">

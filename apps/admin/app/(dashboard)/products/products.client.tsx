@@ -1,115 +1,59 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@workspace/ui/components/button";
 import { CheckCheck, Plus, RefreshCw, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   approveAllPendingProducts,
-  getAllProducts,
   updateProductStatus,
 } from "@/actions/products";
-import { getProductsColumns } from "./_components/table-columns";
+import {
+  getProductsColumns,
+  getProductsFilters,
+} from "./_components/table-columns";
 import { DataTable } from "../_components/data-table/data-table";
+import { useTableUrlState } from "../_components/data-table/use-table-url-state";
+import { PRODUCTS_DEFAULT_SORT } from "./products.params";
+import type {
+  AdminProductListItem,
+  ProductFilterOptions,
+  ProductStatus,
+} from "./products.types";
 
-interface Product {
-  id: string;
-  title: string;
-  slug: string;
-  description: string | null;
-  sku: string;
-  status: "draft" | "pending" | "active" | "rejected";
-  averageRating: number | null;
-  reviewCount: number | null;
-  quantity: string | number;
-  price: any;
-  createdAt: string;
-  updatedAt: string;
-  brand: {
-    id: string;
-    name: string;
-  } | null;
-  category: {
-    id: string;
-    name: string;
-  } | null;
-  seller: {
-    id: string;
-    slug?: string | null;
-    businessName: string | null;
-    displayName: string | null;
-  } | null;
+interface ProductsClientProps {
+  products: AdminProductListItem[];
+  totalCount: number;
+  pendingCount: number;
+  filterOptions: ProductFilterOptions;
 }
 
-const UUID_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-const statusSortOrder: Record<Product["status"], number> = {
-  pending: 0,
-  rejected: 1,
-  draft: 2,
-  active: 3,
-};
-
-export function ProductsClient({ seller }: { seller?: string }) {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export function ProductsClient({
+  products,
+  totalCount,
+  pendingCount,
+  filterOptions,
+}: ProductsClientProps) {
+  const router = useRouter();
+  const url = useTableUrlState();
+  const [isRefreshing, startRefresh] = useTransition();
   const [isApprovingAll, setIsApprovingAll] = useState(false);
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
 
-  const loadProducts = useCallback(async () => {
-    try {
-      const result = await getAllProducts({
-        limit: 1000,
-        ...(seller
-          ? UUID_RE.test(seller)
-            ? { sellerId: seller }
-            : { sellerSlug: seller }
-          : {}),
-      });
-
-      if (result.success && result.data) {
-        const sortedProducts = [...result.data].sort((a, b) => {
-          const statusDiff =
-            statusSortOrder[a.status as Product["status"]] -
-            statusSortOrder[b.status as Product["status"]];
-          if (statusDiff !== 0) return statusDiff;
-          return (
-            new Date(b.createdAt || "").getTime() -
-            new Date(a.createdAt || "").getTime()
-          );
-        });
-
-        setProducts(sortedProducts as unknown as Product[]);
-      } else {
-        toast.error(result.error || "Failed to load products");
-      }
-    } catch (error) {
-      console.error("Error fetching products:", error);
-      toast.error("Failed to load products");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [seller]);
-
-  useEffect(() => {
-    loadProducts();
-  }, [loadProducts]);
+  const refresh = useCallback(() => {
+    startRefresh(() => router.refresh());
+  }, [router]);
 
   const handleStatusChange = useCallback(
-    async (productId: string, status: Product["status"]) => {
+    async (productId: string, status: ProductStatus) => {
       setUpdatingIds((prev) => new Set(prev).add(productId));
 
       try {
         const result = await updateProductStatus(productId, status);
 
         if (result.success) {
-          setProducts((prev) =>
-            prev.map((product) =>
-              product.id === productId ? { ...product, status } : product
-            )
-          );
           toast.success(
             status === "active"
               ? "Product approved"
@@ -117,6 +61,8 @@ export function ProductsClient({ seller }: { seller?: string }) {
                 ? "Product rejected"
                 : "Product status updated"
           );
+          // Re-fetch the current page; URL (page, filters) is untouched.
+          refresh();
           return;
         }
 
@@ -132,12 +78,8 @@ export function ProductsClient({ seller }: { seller?: string }) {
         });
       }
     },
-    []
+    [refresh]
   );
-
-  const pendingCount = products.filter(
-    (product) => product.status === "pending"
-  ).length;
 
   const handleApproveAll = useCallback(async () => {
     if (pendingCount === 0) {
@@ -160,17 +102,10 @@ export function ProductsClient({ seller }: { seller?: string }) {
           toast.info("No pending products to approve");
           return;
         }
-
-        setProducts((prev) =>
-          prev.map((product) =>
-            product.status === "pending"
-              ? { ...product, status: "active" }
-              : product
-          )
-        );
         toast.success(
           `Approved ${result.data.count} product${result.data.count === 1 ? "" : "s"}`
         );
+        refresh();
         return;
       }
 
@@ -181,72 +116,65 @@ export function ProductsClient({ seller }: { seller?: string }) {
     } finally {
       setIsApprovingAll(false);
     }
-  }, [pendingCount]);
+  }, [pendingCount, refresh]);
 
-  const columns = getProductsColumns({
-    onStatusChange: handleStatusChange,
-    isStatusUpdating: (productId) => updatingIds.has(productId),
-  });
+  const columns = useMemo(
+    () =>
+      getProductsColumns({
+        onStatusChange: handleStatusChange,
+        isStatusUpdating: (productId) => updatingIds.has(productId),
+      }),
+    [handleStatusChange, updatingIds]
+  );
 
-  const categories = Array.from(
-    new Set(
-      products
-        .map((p) => p.category?.name)
-        .filter((name): name is string => Boolean(name))
-    )
-  ).map((name) => ({ label: name, value: name }));
+  const filters = useMemo(
+    () => getProductsFilters(filterOptions),
+    [filterOptions]
+  );
 
-  const brands = Array.from(
-    new Set(
-      products
-        .map((p) => p.brand?.name)
-        .filter((name): name is string => Boolean(name))
-    )
-  ).map((name) => ({ label: name, value: name }));
-
-  const sellerNames = Array.from(
-    new Set(
-      products
-        .map((p) => p.seller?.businessName || p.seller?.displayName)
-        .filter((name): name is string => Boolean(name))
-    )
-  ).map((name) => ({ label: name, value: name }));
-
-  // When filtered by ?seller=, label the banner with the seller's name.
-  const filteredSellerName =
-    products[0]?.seller?.businessName ||
-    products[0]?.seller?.displayName ||
-    seller;
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
+  // A single ?seller= (id or slug, e.g. from the sellers page) gets a banner.
+  const sellerParam = url.getList("seller");
+  const singleSeller =
+    sellerParam.length === 1
+      ? filterOptions.sellers.find(
+          (seller) =>
+            seller.value === sellerParam[0] || seller.slug === sellerParam[0]
+        )
+      : undefined;
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-2">
-        {seller ? (
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        {singleSeller ? (
           <div className="flex items-center gap-2 text-sm">
             <span className="text-muted-foreground">Seller:</span>
-            <span className="font-medium">{filteredSellerName}</span>
+            <span className="font-medium">{singleSeller.label}</span>
             <span className="text-muted-foreground">
-              ({products.length} product{products.length === 1 ? "" : "s"})
+              ({totalCount.toLocaleString()} product
+              {totalCount === 1 ? "" : "s"})
             </span>
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/products">
-                <X className="h-4 w-4 mr-1" />
-                Clear
-              </Link>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => url.setParams({ seller: null })}
+            >
+              <X className="h-4 w-4 mr-1" />
+              Clear
             </Button>
           </div>
         ) : (
           <div />
         )}
         <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => url.setParams({ status: ["pending"] })}
+            disabled={pendingCount === 0}
+          >
+            Review pending
+            {pendingCount > 0 ? ` (${pendingCount})` : ""}
+          </Button>
           <Button
             variant="outline"
             size="sm"
@@ -262,8 +190,15 @@ export function ProductsClient({ seller }: { seller?: string }) {
             Approve All
             {pendingCount > 0 ? ` (${pendingCount})` : ""}
           </Button>
-          <Button variant="outline" size="sm" onClick={loadProducts}>
-            <RefreshCw className="h-4 w-4 mr-2" />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={refresh}
+            disabled={isRefreshing}
+          >
+            <RefreshCw
+              className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`}
+            />
             Refresh
           </Button>
           <Button asChild size="sm">
@@ -278,33 +213,15 @@ export function ProductsClient({ seller }: { seller?: string }) {
       <DataTable
         columns={columns}
         data={products}
-        filterableColumns={[
-          {
-            id: "status",
-            title: "Status",
-            options: [
-              { label: "Draft", value: "draft" },
-              { label: "Pending", value: "pending" },
-              { label: "Active", value: "active" },
-              { label: "Rejected", value: "rejected" },
-            ],
-          },
-          {
-            id: "category",
-            title: "Category",
-            options: categories,
-          },
-          {
-            id: "brand",
-            title: "Brand",
-            options: brands,
-          },
-          {
-            id: "seller",
-            title: "Seller",
-            options: sellerNames,
-          },
-        ]}
+        getRowId={(product) => product.id}
+        filterableColumns={filters}
+        emptyMessage="No products match these filters."
+        isLoading={isRefreshing}
+        serverSide={{
+          rowCount: totalCount,
+          defaultSort: PRODUCTS_DEFAULT_SORT,
+          searchPlaceholder: "Search title, SKU or product ID…",
+        }}
       />
     </div>
   );

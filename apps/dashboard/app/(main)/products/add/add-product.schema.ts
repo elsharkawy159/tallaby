@@ -146,6 +146,9 @@ export const addProductFormSchema = z
     variants: z
       .array(
         z.object({
+          // Existing variant's DB id (edit only) — lets the update keep the
+          // row instead of re-creating it under a new id.
+          id: z.string().uuid().optional(),
           title: z.string().min(1, "Variant title is required").max(255),
           sku: z.string().min(1, "Variant SKU is required").max(100),
           listPrice: z.preprocess(

@@ -10,7 +10,6 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
-import { Checkbox } from "@workspace/ui/components/checkbox";
 import { Badge } from "@workspace/ui/components/badge";
 import {
   DropdownMenu,
@@ -28,6 +27,8 @@ import {
 } from "@workspace/ui/components/avatar";
 import { cn } from "@workspace/ui/lib/utils";
 import { DataTableColumnHeader } from "@/app/(dashboard)/_components/data-table/data-table-column-header";
+import { getSelectColumn } from "@/app/(dashboard)/_components/data-table/data-table-select-column";
+import type { DataTableFilter } from "@/app/(dashboard)/_components/data-table/data-table.types";
 import { Eye } from "lucide-react";
 import type { Customer } from "../customers.types";
 import {
@@ -35,6 +36,47 @@ import {
   getCustomerDisplayName,
   getCustomerDisplayPhone,
 } from "../customers.lib";
+
+/** Server-side filters (URL params) for the customers table. */
+export const customersFilters: DataTableFilter[] = [
+  {
+    id: "role",
+    title: "Role",
+    options: [
+      { label: "Customer", value: "customer" },
+      { label: "Seller", value: "seller" },
+      { label: "Admin", value: "admin" },
+      { label: "Support", value: "support" },
+      { label: "Driver", value: "driver" },
+      { label: "Marketing", value: "marketing" },
+    ],
+  },
+  {
+    id: "verification",
+    title: "Verification",
+    options: [
+      { label: "Verified", value: "verified" },
+      { label: "Unverified", value: "unverified" },
+    ],
+  },
+  {
+    id: "accountStatus",
+    title: "Status",
+    options: [
+      { label: "Active", value: "active" },
+      { label: "Suspended", value: "suspended" },
+    ],
+  },
+  {
+    id: "account",
+    title: "Account",
+    options: [
+      { label: "Registered", value: "registered" },
+      { label: "Guest", value: "guest" },
+    ],
+  },
+  { id: "created", title: "Joined", type: "dateRange" },
+];
 
 interface GetCustomersColumnsProps {
   onQuickView?: (customer: Customer) => void;
@@ -44,33 +86,14 @@ export function getCustomersColumns({
   onQuickView,
 }: GetCustomersColumnsProps = {}): ColumnDef<Customer>[] {
   return [
-    {
-      id: "select",
-      header: ({ table }) => (
-        <Checkbox
-          checked={
-            table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
-          }
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      ),
-      enableSorting: false,
-      enableHiding: false,
-    },
+    getSelectColumn<Customer>(),
     {
       accessorKey: "fullName",
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Name" />
       ),
+      enableHiding: false,
+      meta: { label: "Name" },
       cell: ({ row }) => {
         const customer = row.original;
         const displayName = getCustomerDisplayName(customer);
@@ -110,9 +133,9 @@ export function getCustomersColumns({
     },
     {
       accessorKey: "phone",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Phone" />
-      ),
+      header: "Phone",
+      enableSorting: false,
+      meta: { label: "Phone" },
       cell: ({ row }) => {
         const customer = row.original;
         const phone = getCustomerDisplayPhone(customer);
@@ -121,9 +144,9 @@ export function getCustomersColumns({
     },
     {
       accessorKey: "role",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Role" />
-      ),
+      header: "Role",
+      enableSorting: false,
+      meta: { label: "Role" },
       cell: ({ row }) => {
         const role = row.getValue("role") as string;
 
@@ -148,9 +171,9 @@ export function getCustomersColumns({
     },
     {
       accessorKey: "isVerified",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Verified" />
-      ),
+      header: "Verified",
+      enableSorting: false,
+      meta: { label: "Verified" },
       cell: ({ row }) => {
         const isVerified = row.getValue("isVerified") as boolean;
 
@@ -166,6 +189,7 @@ export function getCustomersColumns({
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Orders" />
       ),
+      meta: { label: "Orders" },
       cell: ({ row }) => {
         const orders = Number(row.getValue("totalOrders")) || 0;
         return (
@@ -181,6 +205,7 @@ export function getCustomersColumns({
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Total Spent" />
       ),
+      meta: { label: "Total spent" },
       cell: ({ row }) => {
         const amount = Number(row.getValue("totalSpent")) || 0;
         const formatted = new Intl.NumberFormat("en-EG", {
@@ -202,6 +227,7 @@ export function getCustomersColumns({
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Last Order" />
       ),
+      meta: { label: "Last order" },
       cell: ({ row }) => {
         const date = row.getValue("lastOrderDate");
 
@@ -221,6 +247,7 @@ export function getCustomersColumns({
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Last Login" />
       ),
+      meta: { label: "Last login" },
       cell: ({ row }) => {
         const customer = row.original;
         const date = customer.lastLoginAt;
@@ -238,7 +265,26 @@ export function getCustomersColumns({
       },
     },
     {
+      accessorKey: "createdAt",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Joined" />
+      ),
+      meta: { label: "Joined" },
+      cell: ({ row }) => {
+        const date = row.original.createdAt;
+        if (!date) return <div className="text-gray-400">—</div>;
+        return (
+          <div className="whitespace-nowrap">
+            {new Intl.DateTimeFormat("en-US", { dateStyle: "medium" }).format(
+              new Date(date)
+            )}
+          </div>
+        );
+      },
+    },
+    {
       id: "actions",
+      enableHiding: false,
       cell: ({ row }) => {
         const customer = row.original;
 
@@ -263,7 +309,13 @@ export function getCustomersColumns({
                   View profile
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>Send email</DropdownMenuItem>
+              {customer.email && (
+                <DropdownMenuItem asChild>
+                  <a href={`mailto:${customer.email}`} className="w-full">
+                    Send email
+                  </a>
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
               {customer.isVerified ? (
                 <DropdownMenuItem className="text-amber-600">

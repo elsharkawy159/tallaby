@@ -138,6 +138,8 @@ export const carts = pgTable("carts", {
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	lastActivity: timestamp("last_activity", { withTimezone: true, mode: 'string' }).defaultNow(),
+	reminderSentAt: timestamp("reminder_sent_at", { withTimezone: true, mode: 'string' }),
+	reminderSentBy: uuid("reminder_sent_by"),
 }, (table) => [
 	index("cart_session_id_idx").using("btree", table.sessionId.asc().nullsLast().op("text_ops")),
 	index("cart_user_id_idx").using("btree", table.userId.asc().nullsLast().op("uuid_ops")),
@@ -147,6 +149,11 @@ export const carts = pgTable("carts", {
 			foreignColumns: [users.id],
 			name: "carts_user_id_users_id_fk"
 		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.reminderSentBy],
+			foreignColumns: [users.id],
+			name: "carts_reminder_sent_by_fkey"
+		}).onDelete("set null"),
 ]);
 
 export const categories = pgTable("categories", {
@@ -1081,7 +1088,7 @@ export const wishlistItems = pgTable("wishlist_items", {
 			columns: [table.variantId],
 			foreignColumns: [productVariants.id],
 			name: "wishlist_items_variant_id_fkey"
-		}),
+		}).onDelete("set null"),
 	foreignKey({
 			columns: [table.wishlistId],
 			foreignColumns: [wishlists.id],
@@ -1167,7 +1174,7 @@ export const orderItems = pgTable("order_items", {
 			columns: [table.variantId],
 			foreignColumns: [productVariants.id],
 			name: "order_items_variant_id_fkey"
-		}).onDelete("cascade"),
+		}).onDelete("set null"),
 ]);
 
 export const brands = pgTable("brands", {
@@ -1258,6 +1265,8 @@ export const products = pgTable("products", {
 	isTrending: boolean("is_trending").default(false).notNull(),
 	isSeasonal: boolean("is_seasonal").default(false).notNull(),
 	freeDelivery: boolean("free_delivery").default(false).notNull(),
+	/** Ad landing pages: product page shows "Buy Now" and goes straight to checkout. */
+	directCheckout: boolean("direct_checkout").default(false).notNull(),
 	dimensions: jsonb(),
 	price: jsonb(),
 	productType: productType("product_type").default('physical'),

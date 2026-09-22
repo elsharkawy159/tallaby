@@ -274,6 +274,7 @@
     "quantity": "Quantity",
     "selectVariant": "Select Variant",
     "selectOption": "Select {option}",
+    "defaultVariant": "Default",
     "specifications": "Specifications",
     "features": "Features",
     "relatedProducts": "Related Products",

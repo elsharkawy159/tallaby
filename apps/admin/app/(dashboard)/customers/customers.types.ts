@@ -71,7 +71,11 @@ export interface CustomerWithDetails extends Customer {
 export interface CustomerStats {
   totalCustomers: number;
   verifiedCustomers: number;
+  unverifiedCustomers: number;
+  suspendedCustomers: number;
   newCustomersThisMonth: number;
+  newCustomersRecent: number;
+  highValueCustomers: number;
   totalRevenue: number;
   averageSpendPerCustomer: number;
   averageOrderValue: number;
@@ -79,12 +83,5 @@ export interface CustomerStats {
 
 export interface CustomersPageProps {
   /** Next.js 16 passes searchParams as a Promise; it must be awaited. */
-  searchParams?: Promise<{
-    role?: string;
-    isVerified?: string;
-    isSuspended?: string;
-    search?: string;
-    page?: string;
-    limit?: string;
-  }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }

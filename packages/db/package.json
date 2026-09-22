@@ -50,6 +50,11 @@
       "types": "./src/affiliates/index.ts",
       "import": "./src/affiliates/index.ts",
       "require": "./src/affiliates/index.ts"
+    },
+    "./products": {
+      "types": "./src/products/index.ts",
+      "import": "./src/products/index.ts",
+      "require": "./src/products/index.ts"
     }
   },
   "scripts": {

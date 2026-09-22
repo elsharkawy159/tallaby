@@ -26,6 +26,7 @@ import {
   syncCategoryProductCountForProductMutation,
   syncCategoryProductCountOnDelete,
 } from "@workspace/db/categories";
+import { syncProductVariants } from "@workspace/db/products";
 import { roundPriceUpToNearestFive } from "@workspace/lib";
 
 function normalizeRichTextContent(html?: string | null): string | null {
@@ -327,6 +328,7 @@ function mapVariantFormToDb(v: any, index: number) {
       discountType: v.discountType ?? null,
       discountValue: v.discountValue ?? null,
     }),
+    discountEndsAt: toIsoStringOrNull(v.discountEndsAt),
     stock: v.stock ?? 0,
     sku: v.sku,
     imageUrl,
@@ -1540,15 +1542,13 @@ export async function updateProduct(
         }
       }
 
-      // Handle variants if provided
+      // Handle variants if provided. Reconciled in place (not delete +
+      // re-insert) so variant ids stay stable for carts, orders and cached
+      // storefront pages.
       if (variants && Array.isArray(variants)) {
-        // First, delete existing variants
-        await tx
-          .delete(productVariants)
-          .where(eq(productVariants.productId, productId));
-
-        // Then insert new variants if any
-        if (variants.length > 0) {
+        if (variants.length === 0) {
+          await syncProductVariants(tx, productId, []);
+        } else {
           const productImages = Array.isArray(productData.images)
             ? productData.images.filter(
                 (image): image is string =>
@@ -1565,11 +1565,11 @@ export async function updateProduct(
             productImages
           );
           const variantValues = normalizedVariants.map((v, index) => ({
-            productId,
+            id: (v as { id?: string }).id,
             ...mapVariantFormToDb(v, index),
           }));
 
-          await tx.insert(productVariants).values(variantValues);
+          await syncProductVariants(tx, productId, variantValues);
         }
       }
 

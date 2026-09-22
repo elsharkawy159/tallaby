@@ -43,6 +43,7 @@ import {
 } from "../products.lib";
 import { ProductDetailSkeleton } from "./product-detail.skeleton";
 import { ProductStatusActions } from "../_components/product-status-actions.client";
+import { ProductDirectCheckoutToggle } from "../_components/product-direct-checkout-toggle.client";
 
 interface ProductDetailDataProps {
   productId: string;
@@ -220,12 +221,24 @@ async function ProductDetailContent({ productId }: ProductDetailDataProps) {
                 Free Delivery
               </Badge>
             )}
+            {product.directCheckout && (
+              <Badge
+                variant="outline"
+                className="bg-orange-50 text-orange-700 border-orange-200"
+              >
+                Direct Checkout
+              </Badge>
+            )}
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
           <ProductStatusActions
             productId={product.id}
             status={product.status}
+          />
+          <ProductDirectCheckoutToggle
+            productId={product.id}
+            directCheckout={product.directCheckout}
           />
           <Link href={`/products/${product.id}/edit`}>
             <Button variant="outline">

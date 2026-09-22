@@ -17,13 +17,6 @@ import {
   TabsList,
   TabsTrigger,
 } from "@workspace/ui/components/tabs";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@workspace/ui/components/select";
 import { Input } from "@workspace/ui/components/input";
 import {
   Plus,
@@ -484,50 +477,6 @@ export default function ShippingPage() {
           <TabsTrigger value="exceptions">Exceptions</TabsTrigger>
         </TabsList>
         <TabsContent value="all-shipments" className="p-0 mt-4">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="flex-1">
-              <Select defaultValue="all">
-                <SelectTrigger className="w-full md:w-[200px]">
-                  <SelectValue placeholder="All Carriers" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Carriers</SelectItem>
-                  <SelectItem value="fedex">FedEx</SelectItem>
-                  <SelectItem value="ups">UPS</SelectItem>
-                  <SelectItem value="usps">USPS</SelectItem>
-                  <SelectItem value="dhl">DHL</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex-1">
-              <Select defaultValue="all">
-                <SelectTrigger className="w-full md:w-[200px]">
-                  <SelectValue placeholder="All Service Levels" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Service Levels</SelectItem>
-                  <SelectItem value="express">Express</SelectItem>
-                  <SelectItem value="priority">Priority</SelectItem>
-                  <SelectItem value="ground">Ground</SelectItem>
-                  <SelectItem value="standard">Standard</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex-1">
-              <Select defaultValue="date-desc">
-                <SelectTrigger className="w-full md:w-[200px]">
-                  <SelectValue placeholder="Sort By" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="date-desc">Newest First</SelectItem>
-                  <SelectItem value="date-asc">Oldest First</SelectItem>
-                  <SelectItem value="delivery-date">Delivery Date</SelectItem>
-                  <SelectItem value="status">Status</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
           <DataTable
             columns={columns}
             data={shipments}

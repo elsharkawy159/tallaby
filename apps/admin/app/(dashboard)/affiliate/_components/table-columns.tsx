@@ -23,6 +23,9 @@ export function getAffiliateColumns(): ColumnDef<AffiliateListRow>[] {
   return [
     {
       accessorKey: "fullName",
+      enableSorting: false,
+      enableHiding: false,
+      meta: { label: "Affiliate" },
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Affiliate" />
       ),
@@ -56,6 +59,8 @@ export function getAffiliateColumns(): ColumnDef<AffiliateListRow>[] {
     },
     {
       accessorKey: "code",
+      enableSorting: false,
+      meta: { label: "Affiliate code" },
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Affiliate Code" />
       ),
@@ -67,6 +72,8 @@ export function getAffiliateColumns(): ColumnDef<AffiliateListRow>[] {
     },
     {
       accessorKey: "status",
+      enableSorting: false,
+      meta: { label: "Status" },
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Status" />
       ),
@@ -78,6 +85,7 @@ export function getAffiliateColumns(): ColumnDef<AffiliateListRow>[] {
     },
     {
       accessorKey: "createdAt",
+      meta: { label: "Created" },
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Created" />
       ),
@@ -85,6 +93,7 @@ export function getAffiliateColumns(): ColumnDef<AffiliateListRow>[] {
     },
     {
       accessorKey: "totalOrders",
+      meta: { label: "Total orders" },
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Total Orders" />
       ),
@@ -94,6 +103,7 @@ export function getAffiliateColumns(): ColumnDef<AffiliateListRow>[] {
     },
     {
       accessorKey: "deliveredOrders",
+      meta: { label: "Delivered" },
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Delivered" />
       ),
@@ -103,6 +113,7 @@ export function getAffiliateColumns(): ColumnDef<AffiliateListRow>[] {
     },
     {
       accessorKey: "pendingProfit",
+      meta: { label: "Pending profit" },
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Pending Profit" />
       ),
@@ -110,6 +121,7 @@ export function getAffiliateColumns(): ColumnDef<AffiliateListRow>[] {
     },
     {
       accessorKey: "totalProfit",
+      meta: { label: "Total profit" },
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Total Profit" />
       ),
@@ -119,6 +131,7 @@ export function getAffiliateColumns(): ColumnDef<AffiliateListRow>[] {
     },
     {
       accessorKey: "walletBalance",
+      meta: { label: "Wallet" },
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Wallet" />
       ),

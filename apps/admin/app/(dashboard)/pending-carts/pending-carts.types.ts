@@ -17,11 +17,17 @@ export interface PendingCartItem {
   price: number;
   lineTotal: number;
   savedForLater: boolean;
-  variant: unknown;
+  /** Variant display name from the cart snapshot, e.g. "Lemon (Cute Print)". */
+  variantTitle: string | null;
+  /** Non-empty option1-3 values, e.g. ["Design: Lemon (Cute Print)"]. */
+  variantOptions: string[];
+  variantSku: string | null;
+  variantImage: string | null;
   createdAt: string | null;
   updatedAt: string | null;
   productTitle: string;
   productSku: string | null;
+  /** Variant image when present, otherwise the product's first image. */
   productImage: string | null;
   productSlug: string | null;
   sellerName: string;
@@ -36,10 +42,14 @@ export interface PendingCart {
   createdAt: string | null;
   updatedAt: string | null;
   lastActivity: string | null;
+  /** Set once an admin sends the WhatsApp reminder. */
+  reminderSentAt: string | null;
   itemCount: number;
   totalValue: number;
   isAbandoned: boolean;
   user: PendingCartUser | null;
+  /** Default address phone, used when the account has no phone (detail only). */
+  fallbackPhone: string | null;
   items: PendingCartItem[];
 }
 
@@ -48,7 +58,8 @@ export interface PendingCartStats {
   withItems: number;
   cartValue: number;
   abandoned: number;
+  reminded: number;
   abandonedDays: number;
 }
 
-export type PendingCartsTab = "all" | "with-items" | "abandoned";
+export type { PendingCartsView as PendingCartsTab } from "@/actions/pending-carts";

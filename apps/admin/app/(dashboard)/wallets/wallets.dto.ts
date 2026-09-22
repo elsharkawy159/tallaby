@@ -18,19 +18,32 @@ const topUpStatuses = [
   "cancelled",
 ] as const;
 
-export const payoutRequestFiltersSchema = z.object({
-  status: z.enum(payoutStatuses).optional(),
+const pageSchema = {
   search: z.string().trim().max(120).optional(),
+  limit: z.number().int().min(1).max(100).optional(),
+  offset: z.number().int().min(0).optional(),
+};
+
+function sortSchema<T extends readonly [string, ...string[]]>(ids: T) {
+  return z.object({ id: z.enum(ids), desc: z.boolean() }).nullable().optional();
+}
+
+export const payoutRequestFiltersSchema = z.object({
+  status: z.array(z.enum(payoutStatuses)).optional(),
+  sort: sortSchema(["createdAt", "amount"] as const),
+  ...pageSchema,
 });
 
 export const topUpRequestFiltersSchema = z.object({
-  status: z.enum(topUpStatuses).optional(),
-  search: z.string().trim().max(120).optional(),
+  status: z.array(z.enum(topUpStatuses)).optional(),
+  sort: sortSchema(["createdAt", "amount"] as const),
+  ...pageSchema,
 });
 
 export const walletFiltersSchema = z.object({
-  status: z.enum(["active", "frozen", "closed"]).optional(),
-  search: z.string().trim().max(120).optional(),
+  status: z.array(z.enum(["active", "frozen", "closed"])).optional(),
+  sort: sortSchema(["availableBalance", "balance", "createdAt"] as const),
+  ...pageSchema,
 });
 
 export const payoutIdSchema = z.object({

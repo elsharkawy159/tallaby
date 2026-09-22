@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card";
-import { Package, RefreshCw, DownloadIcon, FilterIcon } from "lucide-react";
+import { Package, RefreshCw, DownloadIcon } from "lucide-react";
 import Link from "next/link";
 import { Order, OrderStats } from "./orders.types";
 import {
@@ -146,23 +146,17 @@ export const OrderRow = ({ order }: OrderRowProps) => {
 interface OrdersHeaderProps {
   onRefresh: () => void;
   onExport: () => void;
-  onFilter: () => void;
   isRefreshing?: boolean;
 }
 
 export const OrdersHeader = ({
   onRefresh,
   onExport,
-  onFilter,
   isRefreshing = false,
 }: OrdersHeaderProps) => {
   return (
     <div className="flex items-center justify-end mb-6">
       <div className="flex gap-2">
-        <Button variant="outline" size="sm" onClick={onFilter}>
-          <FilterIcon className="h-4 w-4 mr-2" />
-          Filter
-        </Button>
         <Button variant="outline" size="sm" onClick={onExport}>
           <DownloadIcon className="h-4 w-4 mr-2" />
           Export

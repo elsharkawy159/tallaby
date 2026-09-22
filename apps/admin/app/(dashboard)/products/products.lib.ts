@@ -20,7 +20,7 @@ import type {
 type ProductFormData = z.infer<typeof productSchema>;
 
 const DEFAULT_LOCALE = "en";
-const LOW_STOCK_THRESHOLD = 10;
+export const LOW_STOCK_THRESHOLD = 10;
 
 export function getEnTranslation(
   product: ProductRaw
@@ -41,15 +41,19 @@ export function parseProductImages(images: unknown): string[] {
   return images.filter((img): img is string => typeof img === "string" && img.length > 0);
 }
 
-export function getStorefrontProductUrl(slug: string | null | undefined): string | null {
-  if (!slug) return null;
+export function getStorefrontBaseUrl(): string {
   const baseUrl =
     process.env.NEXT_PUBLIC_ECOMMERCE_URL ??
     process.env.NEXT_PUBLIC_ECOMMERCE_DOMAIN ??
     process.env.ECOMMERCE_URL ??
     process.env.ECOMMERCE_DOMAIN ??
     "http://localhost:3000";
-  return `${baseUrl.replace(/\/$/, "")}/products/${slug}`;
+  return baseUrl.replace(/\/$/, "");
+}
+
+export function getStorefrontProductUrl(slug: string | null | undefined): string | null {
+  if (!slug) return null;
+  return `${getStorefrontBaseUrl()}/products/${slug}`;
 }
 
 export function formatProductPrice(amount: number): string {
@@ -308,6 +312,7 @@ export function transformProductForDetail(
     isTrending: product.isTrending ?? false,
     isSeasonal: product.isSeasonal ?? false,
     freeDelivery: product.freeDelivery ?? false,
+    directCheckout: product.directCheckout,
     metaTitle: enTranslation?.metaTitle ?? null,
     metaDescription: enTranslation?.metaDescription ?? null,
     images: parseProductImages(product.images),

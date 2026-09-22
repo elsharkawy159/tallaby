@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import {
   and,
+  asc,
   db,
   desc,
   eq,
@@ -40,6 +41,7 @@ import {
 } from "./wallets.dto";
 import type {
   AdminWalletResult,
+  PagedRows,
   PayoutRequestFilters,
   PayoutRequestRow,
   TopUpRequestFilters,
@@ -63,8 +65,24 @@ import type {
  * a double-click or two admins acting at once cannot apply a transition twice.
  */
 
-const ROW_LIMIT = 100;
+const DEFAULT_PAGE_SIZE = 20;
+const LEDGER_ROW_LIMIT = 100;
 const OPEN_TOP_UP_STATUSES = ["pending", "processing"] as const;
+
+/** `ORDER BY <column> <dir> NULLS LAST` for a whitelisted sort. */
+function orderByClause(
+  column: Parameters<typeof asc>[0],
+  sort: { desc: boolean } | null | undefined,
+  defaultDesc = true
+) {
+  const direction = (sort ? sort.desc : defaultDesc) ? desc : asc;
+  return sql`${direction(column)} nulls last`;
+}
+
+async function countRows(query: Promise<Array<{ count: number }>>) {
+  const [row] = await query;
+  return Number(row?.count ?? 0);
+}
 
 function failure(error: string): AdminWalletResult<never> {
   return { success: false, error };
@@ -158,7 +176,7 @@ export async function getWalletStats(): Promise<AdminWalletResult<WalletStats>> 
 
 export async function getPayoutRequests(
   filters: PayoutRequestFilters = {}
-): Promise<AdminWalletResult<PayoutRequestRow[]>> {
+): Promise<AdminWalletResult<PagedRows<PayoutRequestRow>>> {
   try {
     await getCurrentAdminUser();
 
@@ -166,13 +184,14 @@ export async function getPayoutRequests(
     if (!parsed.success) return failure("Invalid filters");
 
     const conditions = [];
-    if (parsed.data.status) {
-      conditions.push(eq(walletPayoutRequests.status, parsed.data.status));
+    if (parsed.data.status?.length) {
+      conditions.push(inArray(walletPayoutRequests.status, parsed.data.status));
     }
     if (parsed.data.search) {
       const term = `%${parsed.data.search}%`;
       conditions.push(or(ilike(users.fullName, term), ilike(users.email, term)));
     }
+    const where = conditions.length > 0 ? and(...conditions) : undefined;
 
     const rows = await db
       .select({
@@ -200,11 +219,31 @@ export async function getPayoutRequests(
       .from(walletPayoutRequests)
       .innerJoin(users, eq(users.id, walletPayoutRequests.userId))
       .innerJoin(userWallets, eq(userWallets.id, walletPayoutRequests.walletId))
-      .where(conditions.length > 0 ? and(...conditions) : undefined)
-      .orderBy(desc(walletPayoutRequests.createdAt))
-      .limit(ROW_LIMIT);
+      .where(where)
+      .orderBy(
+        orderByClause(
+          parsed.data.sort?.id === "amount"
+            ? walletPayoutRequests.amount
+            : walletPayoutRequests.createdAt,
+          parsed.data.sort
+        ),
+        desc(walletPayoutRequests.id)
+      )
+      .limit(parsed.data.limit ?? DEFAULT_PAGE_SIZE)
+      .offset(parsed.data.offset ?? 0);
 
-    return { success: true, data: rows as PayoutRequestRow[] };
+    const totalCount = await countRows(
+      db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(walletPayoutRequests)
+        .innerJoin(users, eq(users.id, walletPayoutRequests.userId))
+        .where(where)
+    );
+
+    return {
+      success: true,
+      data: { rows: rows as PayoutRequestRow[], totalCount },
+    };
   } catch (error) {
     return handleError("load payout requests", error);
   }
@@ -212,7 +251,7 @@ export async function getPayoutRequests(
 
 export async function getTopUpRequests(
   filters: TopUpRequestFilters = {}
-): Promise<AdminWalletResult<TopUpRequestRow[]>> {
+): Promise<AdminWalletResult<PagedRows<TopUpRequestRow>>> {
   try {
     await getCurrentAdminUser();
 
@@ -220,13 +259,14 @@ export async function getTopUpRequests(
     if (!parsed.success) return failure("Invalid filters");
 
     const conditions = [];
-    if (parsed.data.status) {
-      conditions.push(eq(walletTopUps.status, parsed.data.status));
+    if (parsed.data.status?.length) {
+      conditions.push(inArray(walletTopUps.status, parsed.data.status));
     }
     if (parsed.data.search) {
       const term = `%${parsed.data.search}%`;
       conditions.push(or(ilike(users.fullName, term), ilike(users.email, term)));
     }
+    const where = conditions.length > 0 ? and(...conditions) : undefined;
 
     const rows = await db
       .select({
@@ -250,9 +290,26 @@ export async function getTopUpRequests(
       .from(walletTopUps)
       .innerJoin(users, eq(users.id, walletTopUps.userId))
       .innerJoin(userWallets, eq(userWallets.id, walletTopUps.walletId))
-      .where(conditions.length > 0 ? and(...conditions) : undefined)
-      .orderBy(desc(walletTopUps.createdAt))
-      .limit(ROW_LIMIT);
+      .where(where)
+      .orderBy(
+        orderByClause(
+          parsed.data.sort?.id === "amount"
+            ? walletTopUps.amount
+            : walletTopUps.createdAt,
+          parsed.data.sort
+        ),
+        desc(walletTopUps.id)
+      )
+      .limit(parsed.data.limit ?? DEFAULT_PAGE_SIZE)
+      .offset(parsed.data.offset ?? 0);
+
+    const totalCount = await countRows(
+      db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(walletTopUps)
+        .innerJoin(users, eq(users.id, walletTopUps.userId))
+        .where(where)
+    );
 
     const mapped: TopUpRequestRow[] = rows.map((row) => {
       const selfReport = readTopUpSelfReport(row.metadata);
@@ -277,7 +334,7 @@ export async function getTopUpRequests(
       };
     });
 
-    return { success: true, data: mapped };
+    return { success: true, data: { rows: mapped, totalCount } };
   } catch (error) {
     return handleError("load top-up requests", error);
   }
@@ -285,7 +342,7 @@ export async function getTopUpRequests(
 
 export async function getWallets(
   filters: WalletFilters = {}
-): Promise<AdminWalletResult<WalletRow[]>> {
+): Promise<AdminWalletResult<PagedRows<WalletRow>>> {
   try {
     await getCurrentAdminUser();
 
@@ -293,13 +350,14 @@ export async function getWallets(
     if (!parsed.success) return failure("Invalid filters");
 
     const conditions = [];
-    if (parsed.data.status) {
-      conditions.push(eq(userWallets.status, parsed.data.status));
+    if (parsed.data.status?.length) {
+      conditions.push(inArray(userWallets.status, parsed.data.status));
     }
     if (parsed.data.search) {
       const term = `%${parsed.data.search}%`;
       conditions.push(or(ilike(users.fullName, term), ilike(users.email, term)));
     }
+    const where = conditions.length > 0 ? and(...conditions) : undefined;
 
     const rows = await db
       .select({
@@ -318,11 +376,30 @@ export async function getWallets(
       })
       .from(userWallets)
       .innerJoin(users, eq(users.id, userWallets.userId))
-      .where(conditions.length > 0 ? and(...conditions) : undefined)
-      .orderBy(desc(userWallets.balance))
-      .limit(ROW_LIMIT);
+      .where(where)
+      .orderBy(
+        orderByClause(
+          parsed.data.sort?.id === "createdAt"
+            ? userWallets.createdAt
+            : parsed.data.sort?.id === "availableBalance"
+              ? sql`(${userWallets.balance} - ${userWallets.reservedBalance})`
+              : userWallets.balance,
+          parsed.data.sort
+        ),
+        desc(userWallets.id)
+      )
+      .limit(parsed.data.limit ?? DEFAULT_PAGE_SIZE)
+      .offset(parsed.data.offset ?? 0);
 
-    return { success: true, data: rows as WalletRow[] };
+    const totalCount = await countRows(
+      db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(userWallets)
+        .innerJoin(users, eq(users.id, userWallets.userId))
+        .where(where)
+    );
+
+    return { success: true, data: { rows: rows as WalletRow[], totalCount } };
   } catch (error) {
     return handleError("load wallets", error);
   }
@@ -358,7 +435,7 @@ export async function getWalletTransactions(
       .innerJoin(users, eq(users.id, userWalletTransactions.userId))
       .where(eq(userWalletTransactions.walletId, parsed.data.walletId))
       .orderBy(desc(userWalletTransactions.createdAt))
-      .limit(ROW_LIMIT);
+      .limit(LEDGER_ROW_LIMIT);
 
     return { success: true, data: rows as WalletTransactionRow[] };
   } catch (error) {

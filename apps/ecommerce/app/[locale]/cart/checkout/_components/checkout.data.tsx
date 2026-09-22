@@ -115,7 +115,7 @@ export const CheckoutData = ({
     defaultValues: {
       ...checkoutFormDefaults,
       shippingAddressId: activeAddress?.id || "",
-      paymentMethod: DEFAULT_MANUAL_PAYMENT_METHOD,
+      paymentMethod: "cash_on_delivery",
       couponCode: initialSummary.appliedCoupon?.code ?? "",
     },
   });
@@ -269,6 +269,14 @@ export const CheckoutData = ({
 
   const paymentGroups = useMemo(() => {
     const groups = [
+      {
+        id: "cash_on_delivery",
+        value: "cash_on_delivery",
+        title: t("cashOnDelivery"),
+        description: t("cashOnDeliveryDescription"),
+        enabled: isCodEligible,
+        disabledLabel: isCodEligible ? undefined : t("codUnavailableHighShipping"),
+      },
       ...(onlineCardPaymentEnabled
         ? [
             {
@@ -286,14 +294,6 @@ export const CheckoutData = ({
         title: t("onlinePayment"),
         description: t("onlinePaymentDescription"),
         enabled: true,
-      },
-      {
-        id: "cash_on_delivery",
-        value: "cash_on_delivery",
-        title: t("cashOnDelivery"),
-        description: t("cashOnDeliveryDescription"),
-        enabled: isCodEligible,
-        disabledLabel: isCodEligible ? undefined : t("codUnavailableHighShipping"),
       },
     ];
 

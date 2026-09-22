@@ -24,6 +24,10 @@ import {
   ne,
   sql,
   sum,
+  ilike,
+  inArray,
+  lt,
+  type SQL,
 } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -38,52 +42,105 @@ import type {
   Seller,
   SellerDetail,
   SellerStats,
-  SellerFilters,
+  SellerStatus,
 } from "./sellers.types";
 
-export async function getSellers(filters: SellerFilters = {}) {
+const SELLER_STATUSES = ["pending", "approved", "suspended", "restricted"] as const;
+
+export type SellersSortId =
+  | "joinDate"
+  | "businessName"
+  | "productCount"
+  | "storeRating"
+  | "walletBalance";
+
+export interface SellersQuery {
+  limit?: number;
+  offset?: number;
+  search?: string;
+  status?: string[];
+  businessType?: string[];
+  /** "verified" | "unverified" */
+  verification?: string[];
+  /** "exempt" | "charged" */
+  commission?: string[];
+  /** "free" | "paid" */
+  delivery?: string[];
+  joinedFrom?: string;
+  joinedTo?: string;
+  sort?: { id: SellersSortId; desc: boolean } | null;
+}
+
+/** Server-side filtered, sorted and paginated sellers list. */
+export async function getSellers(query: SellersQuery = {}) {
   try {
     await getCurrentAdminUser();
 
-    const conditions = [];
+    const limit = Math.min(query.limit || 20, 100);
+    const offset = query.offset || 0;
+    const conditions: SQL[] = [];
 
-    // Status filter
-    if (filters.status) {
-      conditions.push(eq(sellers.status, filters.status));
+    const statuses = (query.status ?? []).filter((value) =>
+      (SELLER_STATUSES as readonly string[]).includes(value)
+    ) as SellerStatus[];
+    if (statuses.length) conditions.push(inArray(sellers.status, statuses));
+
+    if (query.businessType?.length) {
+      conditions.push(inArray(sellers.businessType, query.businessType));
     }
 
-    // Business type filter
-    if (filters.businessType) {
-      conditions.push(eq(sellers.businessType, filters.businessType));
-    }
+    const booleanFilter = (
+      values: string[] | undefined,
+      column:
+        | typeof sellers.isVerified
+        | typeof sellers.isCommissionExempt
+        | typeof sellers.freeDelivery,
+      trueValue: string
+    ) => {
+      const set = new Set(values ?? []);
+      if (set.size !== 1) return;
+      conditions.push(
+        set.has(trueValue)
+          ? eq(column, true)
+          : sql`coalesce(${column}, false) = false`
+      );
+    };
+    booleanFilter(query.verification, sellers.isVerified, "verified");
+    booleanFilter(query.commission, sellers.isCommissionExempt, "exempt");
+    booleanFilter(query.delivery, sellers.freeDelivery, "free");
 
-    // Verification filter
-    if (filters.isVerified !== undefined) {
-      conditions.push(eq(sellers.isVerified, filters.isVerified));
-    }
+    if (query.joinedFrom) conditions.push(gte(sellers.joinDate, query.joinedFrom));
+    if (query.joinedTo) conditions.push(lt(sellers.joinDate, query.joinedTo));
 
-    // Search filter
-    if (filters.search) {
+    const search = query.search?.trim();
+    if (search) {
+      const pattern = `%${search}%`;
       conditions.push(
         or(
-          like(sellers.businessName, `%${filters.search}%`),
-          like(sellers.displayName, `%${filters.search}%`),
-          like(sellers.slug, `%${filters.search}%`)
-        )
-      );
-    }
-
-    // Date range filter
-    if (filters.dateRange) {
-      conditions.push(
-        and(
-          gte(sellers.joinDate, filters.dateRange.from.toISOString()),
-          lte(sellers.joinDate, filters.dateRange.to.toISOString())
-        )
+          ilike(sellers.businessName, pattern),
+          ilike(sellers.displayName, pattern),
+          ilike(sellers.slug, pattern),
+          ilike(sellers.supportEmail, pattern),
+          ilike(sellers.supportPhone, pattern)
+        )!
       );
     }
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+    // sellers.productCount is a denormalized counter that drifts; count the
+    // real products instead.
+    const realProductCount = sql<number>`(
+      select count(*)::int from ${products} where ${products.sellerId} = ${sellers.id}
+    )`;
+    const sortColumn = {
+      joinDate: sellers.joinDate,
+      businessName: sellers.businessName,
+      productCount: realProductCount,
+      storeRating: sellers.storeRating,
+      walletBalance: sellers.walletBalance,
+    }[query.sort?.id ?? "joinDate"];
+    const direction = query.sort?.desc === false ? asc : desc;
 
     const sellersData = await db
       .select({
@@ -115,7 +172,7 @@ export async function getSellers(filters: SellerFilters = {}) {
         storeRating: sellers.storeRating,
         positiveRatingPercent: sellers.positiveRatingPercent,
         totalRatings: sellers.totalRatings,
-        productCount: sellers.productCount,
+        productCount: realProductCount,
         fulfillmentOptions: sellers.fulfillmentOptions,
         payoutSchedule: sellers.payoutSchedule,
         lastPayoutDate: sellers.lastPayoutDate,
@@ -131,17 +188,14 @@ export async function getSellers(filters: SellerFilters = {}) {
       })
       .from(sellers)
       .where(whereClause)
-      .orderBy(desc(sellers.joinDate));
+      .orderBy(sql`${direction(sortColumn)} nulls last`, asc(sellers.id))
+      .limit(limit)
+      .offset(offset);
 
-    // sellers.productCount is a denormalized counter that drifts; count the
-    // real products instead.
-    const productCounts = await db
-      .select({ sellerId: products.sellerId, total: count() })
-      .from(products)
-      .groupBy(products.sellerId);
-    const productCountBySeller = new Map(
-      productCounts.map((row) => [row.sellerId, row.total])
-    );
+    const [countRow] = await db
+      .select({ count: count() })
+      .from(sellers)
+      .where(whereClause);
 
     // Cast the JSON fields to proper types
     const typedSellersData = sellersData.map((seller) => ({
@@ -159,7 +213,7 @@ export async function getSellers(filters: SellerFilters = {}) {
       storeRating: seller.storeRating ?? 0,
       positiveRatingPercent: seller.positiveRatingPercent ?? 0,
       totalRatings: seller.totalRatings ?? 0,
-      productCount: productCountBySeller.get(seller.id) ?? 0,
+      productCount: Number(seller.productCount ?? 0),
       commissionRate: seller.commissionRate ?? 15,
       isCommissionExempt: seller.isCommissionExempt ?? false,
       freeDelivery: seller.freeDelivery ?? false,
@@ -171,7 +225,11 @@ export async function getSellers(filters: SellerFilters = {}) {
       updatedAt: seller.updatedAt ?? new Date().toISOString(),
     }));
 
-    return { success: true, data: typedSellersData };
+    return {
+      success: true,
+      data: typedSellersData,
+      totalCount: Number(countRow?.count ?? 0),
+    };
   } catch (error) {
     console.error("Error fetching sellers:", error);
     return { success: false, error: "Failed to fetch sellers" };

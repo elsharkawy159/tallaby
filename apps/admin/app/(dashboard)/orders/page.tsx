@@ -1,36 +1,20 @@
 import { Suspense } from "react";
-import { OrdersClientWrapper } from "./orders.client";
-import { OrdersDataWrapper } from "./orders.data";
+import type { RawSearchParams } from "../_components/data-table/search-params";
+import { OrdersPageData } from "./orders.data";
 import { OrdersSkeleton } from "./orders.skeleton";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 interface OrdersPageProps {
-  searchParams?: Promise<{
-    status?: string;
-    paymentStatus?: string;
-    search?: string;
-    page?: string;
-    limit?: string;
-  }>;
+  searchParams: Promise<RawSearchParams>;
 }
 
-export default async function OrdersPage({ searchParams }: OrdersPageProps) {
-  const params = await searchParams;
-
-  const filters = {
-    status: params?.status,
-    paymentStatus: params?.paymentStatus,
-    search: params?.search,
-  };
-
+export default function OrdersPage({ searchParams }: OrdersPageProps) {
   return (
     <div className="space-y-6">
       <Suspense fallback={<OrdersSkeleton />}>
-        <OrdersDataWrapper filters={filters} />
+        <OrdersPageData searchParams={searchParams} />
       </Suspense>
-
-      <OrdersClientWrapper filters={filters} />
     </div>
   );
 }

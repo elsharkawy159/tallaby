@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import {
   getPayoutRequests,
   getTopUpRequests,
@@ -5,7 +6,16 @@ import {
   getWallets,
 } from "./wallets.server";
 import { WalletsClientWrapper } from "./wallets.client";
-import type { WalletsPageProps } from "./wallets.types";
+import { parseWalletsParams } from "./wallets.params";
+import { WalletsTableSkeleton } from "./wallets.skeleton";
+import type {
+  PayoutRequestFilters,
+  TopUpRequestFilters,
+  WalletFilters,
+  WalletsPageProps,
+} from "./wallets.types";
+
+export const dynamic = "force-dynamic";
 
 const EMPTY_STATS = {
   totalWallets: 0,
@@ -17,30 +27,61 @@ const EMPTY_STATS = {
   pendingTopUpAmount: "0",
 };
 
-function resolveInitialTab(tab: string | undefined): string {
-  if (tab === "wallets") return "wallets";
-  if (tab === "topups") return "topups";
-  return "payouts";
+async function WalletsPageData({ searchParams }: WalletsPageProps) {
+  const { tab, query } = parseWalletsParams(await searchParams);
+  // Only the visible tab's table is loaded; sequential for the DB pool.
+  const statsResult = await getWalletStats();
+  const stats = statsResult.success ? statsResult.data : EMPTY_STATS;
+
+  if (tab === "wallets") {
+    const result = await getWallets(query as WalletFilters);
+    return (
+      <>
+        {!result.success && <LoadError message={result.error} />}
+        <WalletsClientWrapper
+          stats={stats}
+          data={{ tab, rows: result.success ? result.data.rows : [] }}
+          totalCount={result.success ? result.data.totalCount : 0}
+        />
+      </>
+    );
+  }
+
+  if (tab === "topups") {
+    const result = await getTopUpRequests(query as TopUpRequestFilters);
+    return (
+      <>
+        {!result.success && <LoadError message={result.error} />}
+        <WalletsClientWrapper
+          stats={stats}
+          data={{ tab, rows: result.success ? result.data.rows : [] }}
+          totalCount={result.success ? result.data.totalCount : 0}
+        />
+      </>
+    );
+  }
+
+  const result = await getPayoutRequests(query as PayoutRequestFilters);
+  return (
+    <>
+      {!result.success && <LoadError message={result.error} />}
+      <WalletsClientWrapper
+        stats={stats}
+        data={{ tab, rows: result.success ? result.data.rows : [] }}
+        totalCount={result.success ? result.data.totalCount : 0}
+      />
+    </>
+  );
 }
 
-export default async function WalletsPage({ searchParams }: WalletsPageProps) {
-  const resolved = await searchParams;
+function LoadError({ message }: { message: string }) {
+  return <p className="text-center text-red-600">{message}</p>;
+}
 
-  const [statsResult, payoutsResult, topUpsResult, walletsResult] =
-    await Promise.all([
-      getWalletStats(),
-      getPayoutRequests({}),
-      getTopUpRequests({}),
-      getWallets({}),
-    ]);
-
+export default function WalletsPage({ searchParams }: WalletsPageProps) {
   return (
-    <WalletsClientWrapper
-      initialStats={statsResult.success ? statsResult.data : EMPTY_STATS}
-      initialPayoutRequests={payoutsResult.success ? payoutsResult.data : []}
-      initialTopUpRequests={topUpsResult.success ? topUpsResult.data : []}
-      initialWallets={walletsResult.success ? walletsResult.data : []}
-      initialTab={resolveInitialTab(resolved?.tab)}
-    />
+    <Suspense fallback={<WalletsTableSkeleton />}>
+      <WalletsPageData searchParams={searchParams} />
+    </Suspense>
   );
 }

@@ -1,63 +1,56 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Button } from "@workspace/ui/components/button";
-import { TableSection } from "@workspace/ui/components/table-section";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@workspace/ui/components/tabs";
-import {
-  getPendingCartById,
-  getPendingCarts,
-} from "@/actions/pending-carts";
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { Tabs, TabsList, TabsTrigger } from "@workspace/ui/components/tabs";
+import { getPendingCartById } from "@/actions/pending-carts";
 import { toast } from "sonner";
-import type { PendingCart, PendingCartsTab } from "./pending-carts.types";
+import { DataTable } from "../_components/data-table/data-table";
+import { useTableUrlState } from "../_components/data-table/use-table-url-state";
+import type {
+  PendingCart,
+  PendingCartStats,
+  PendingCartsTab,
+} from "./pending-carts.types";
 import { PendingCartsHeader } from "./pending-carts.chunks";
-import { getPendingCartsColumns } from "./_components/table-columns";
+import {
+  getPendingCartsColumns,
+  pendingCartsFilters,
+} from "./_components/table-columns";
 import { CartQuickViewDialog } from "./_components/cart-quick-view-dialog";
+import {
+  PENDING_CARTS_DEFAULT_SORT,
+  PENDING_CARTS_VIEW_PARAM,
+} from "./pending-carts.params";
+
+const AUTO_REFRESH_MS = 10 * 60 * 1000;
 
 export function PendingCartsClientWrapper({
-  initialCarts = [],
+  carts,
+  totalCount,
+  stats,
 }: {
-  initialCarts?: PendingCart[];
+  carts: PendingCart[];
+  totalCount: number;
+  stats: PendingCartStats | null;
 }) {
-  const [carts, setCarts] = useState<PendingCart[]>(initialCarts);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [activeTab, setActiveTab] = useState<PendingCartsTab>("all");
+  const router = useRouter();
+  const url = useTableUrlState();
+  const [isRefreshing, startRefresh] = useTransition();
   const [selectedCart, setSelectedCart] = useState<PendingCart | null>(null);
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
 
-  const loadCarts = useCallback(async () => {
-    try {
-      setIsRefreshing(true);
-      const result = await getPendingCarts({ limit: 200 });
+  const activeTab = (url.get(PENDING_CARTS_VIEW_PARAM) ||
+    "all") as PendingCartsTab;
 
-      if (result.success) {
-        setCarts((result.data || []) as PendingCart[]);
-      } else {
-        toast.error(result.error || "Failed to load pending carts");
-      }
-    } catch {
-      toast.error("Failed to load pending carts");
-    } finally {
-      setIsRefreshing(false);
-    }
-  }, []);
+  const refresh = useCallback(() => {
+    startRefresh(() => router.refresh());
+  }, [router]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      loadCarts();
-    }, 10 * 60 * 1000);
-
+    const interval = setInterval(refresh, AUTO_REFRESH_MS);
     return () => clearInterval(interval);
-  }, [loadCarts]);
-
-  const handleRefresh = () => {
-    loadCarts();
-  };
+  }, [refresh]);
 
   const handleQuickView = useCallback(async (cart: PendingCart) => {
     setSelectedCart(cart);
@@ -77,81 +70,69 @@ export function PendingCartsClientWrapper({
     }
   }, []);
 
-  const filteredCarts = useMemo(() => {
-    switch (activeTab) {
-      case "with-items":
-        return carts.filter((cart) => cart.itemCount > 0);
-      case "abandoned":
-        return carts.filter((cart) => cart.isAbandoned);
-      default:
-        return carts;
-    }
-  }, [activeTab, carts]);
+  const handleReminded = useCallback(
+    (cartId: string, reminderSentAt: string | null) => {
+      setSelectedCart((current) =>
+        current?.id === cartId
+          ? { ...current, reminderSentAt: reminderSentAt ?? current.reminderSentAt ?? new Date().toISOString() }
+          : current
+      );
+      refresh();
+    },
+    [refresh]
+  );
 
   const columns = useMemo(
     () => getPendingCartsColumns(handleQuickView),
     [handleQuickView]
   );
 
-  const withItemsCount = useMemo(
-    () => carts.filter((c) => c.itemCount > 0).length,
-    [carts]
-  );
-  const abandonedCount = useMemo(
-    () => carts.filter((c) => c.isAbandoned).length,
-    [carts]
-  );
-
-  const actionButtons = (
-    <div className="flex gap-2">
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={handleRefresh}
-        disabled={isRefreshing}
-      >
-        {isRefreshing ? "Refreshing..." : "Refresh"}
-      </Button>
-    </div>
-  );
-
   return (
     <div className="space-y-6">
-      <PendingCartsHeader
-        onRefresh={handleRefresh}
-        isRefreshing={isRefreshing}
-      />
+      <PendingCartsHeader onRefresh={refresh} isRefreshing={isRefreshing} />
 
       <Tabs
         value={activeTab}
-        onValueChange={(value) => setActiveTab(value as PendingCartsTab)}
+        onValueChange={(value) =>
+          url.setParams({
+            [PENDING_CARTS_VIEW_PARAM]: value === "all" ? null : value,
+          })
+        }
       >
         <TabsList>
-          <TabsTrigger value="all">All ({carts.length})</TabsTrigger>
+          <TabsTrigger value="all">
+            All{stats ? ` (${stats.activeCarts.toLocaleString()})` : ""}
+          </TabsTrigger>
           <TabsTrigger value="with-items">
-            With items ({withItemsCount})
+            With items{stats ? ` (${stats.withItems.toLocaleString()})` : ""}
           </TabsTrigger>
           <TabsTrigger value="abandoned">
-            Abandoned ({abandonedCount})
+            Abandoned{stats ? ` (${stats.abandoned.toLocaleString()})` : ""}
           </TabsTrigger>
         </TabsList>
-
-        <TabsContent value={activeTab} className="p-0 mt-4">
-          <TableSection
-            rows={filteredCarts}
-            columns={columns}
-            buttons={actionButtons}
-            searchColumnId="id"
-            pageSizeOptions={[10, 25, 50, 100]}
-          />
-        </TabsContent>
       </Tabs>
+
+      <DataTable
+        columns={columns}
+        data={carts}
+        getRowId={(cart) => cart.id}
+        filterableColumns={pendingCartsFilters}
+        enableRowSelection={false}
+        emptyMessage="No pending carts match these filters."
+        isLoading={url.isPending}
+        serverSide={{
+          rowCount: totalCount,
+          defaultSort: PENDING_CARTS_DEFAULT_SORT,
+          searchPlaceholder: "Search name, email, phone or cart ID…",
+        }}
+      />
 
       <CartQuickViewDialog
         cart={selectedCart}
         open={!!selectedCart}
         isLoadingItems={isLoadingDetail}
         onOpenChange={() => setSelectedCart(null)}
+        onReminded={handleReminded}
       />
     </div>
   );

@@ -67,6 +67,7 @@ export function getBrandsColumns({
     },
     {
       accessorKey: "name",
+      meta: { label: "Name" },
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Brand Name" />
       ),
@@ -106,6 +107,8 @@ export function getBrandsColumns({
     },
     {
       accessorKey: "description",
+      enableSorting: false,
+      meta: { label: "Description" },
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Description" />
       ),
@@ -120,6 +123,8 @@ export function getBrandsColumns({
     },
     {
       accessorKey: "website",
+      enableSorting: false,
+      meta: { label: "Website" },
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Website" />
       ),
@@ -141,6 +146,7 @@ export function getBrandsColumns({
     },
     {
       accessorKey: "productCount",
+      meta: { label: "Products" },
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Products" />
       ),
@@ -155,6 +161,7 @@ export function getBrandsColumns({
     },
     {
       accessorKey: "averageRating",
+      meta: { label: "Rating" },
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Rating" />
       ),
@@ -175,6 +182,7 @@ export function getBrandsColumns({
     },
     {
       accessorKey: "createdAt",
+      meta: { label: "Created" },
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Created" />
       ),
@@ -184,6 +192,8 @@ export function getBrandsColumns({
     },
     {
       accessorKey: "isVerified",
+      enableSorting: false,
+      meta: { label: "Verified" },
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Verified" />
       ),
@@ -205,6 +215,8 @@ export function getBrandsColumns({
     },
     {
       accessorKey: "isOfficial",
+      enableSorting: false,
+      meta: { label: "Official" },
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Official" />
       ),

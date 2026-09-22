@@ -1,48 +1,65 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@workspace/ui/components/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@workspace/ui/components/tabs";
 import { CheckCircle, ShoppingBag, Star, Package } from "lucide-react";
 import { DataTable } from "../_components/data-table/data-table";
+import type { DataTableFilter } from "../_components/data-table/data-table.types";
+import { useTableUrlState } from "../_components/data-table/use-table-url-state";
+import { BRANDS_DEFAULT_SORT } from "./brands.params";
 import { getBrandsColumns } from "./_components/table-columns";
 import type { Brand, BrandStats, Locale } from "./brands.types";
 import { BrandDialog } from "./_components/brands.chunks";
 import { toast } from "sonner";
 import { updateBrandStatus } from "@/actions/brands";
 
+const BRAND_FILTERS: DataTableFilter[] = [
+  {
+    id: "verification",
+    title: "Verification",
+    options: [
+      { label: "Verified", value: "verified" },
+      { label: "Unverified", value: "unverified" },
+    ],
+  },
+  {
+    id: "official",
+    title: "Official",
+    options: [
+      { label: "Official", value: "official" },
+      { label: "Not official", value: "not-official" },
+    ],
+  },
+  {
+    id: "language",
+    title: "Language",
+    options: [
+      { label: "English", value: "en" },
+      { label: "Arabic", value: "ar" },
+    ],
+  },
+];
+
 interface BrandsContentProps {
   brands: Brand[];
+  totalCount: number;
   stats: BrandStats;
-  locale: Locale;
 }
 
 export function BrandsContent({
   brands,
+  totalCount,
   stats,
-  locale: initialLocale,
 }: BrandsContentProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const [currentLocale, setCurrentLocale] = useState<Locale>(initialLocale);
-
-  const handleLocaleChange = (newLocale: Locale) => {
-    setCurrentLocale(newLocale);
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("locale", newLocale);
-    router.push(`?${params.toString()}`);
-  };
+  const url = useTableUrlState();
+  const currentLocale: Locale = url.get("locale") === "ar" ? "ar" : "en";
 
   const handleStatusUpdate = async (
     brandId: string,
@@ -70,12 +87,6 @@ export function BrandsContent({
     locale: currentLocale,
     onStatusUpdate: handleStatusUpdate,
   });
-
-  // Filter brands by locale (client-side filtering until schema is updated)
-  // Note: Once locale column is added to schema, this can be moved to server-side
-  // For now, show all brands since locale column doesn't exist yet
-  const filteredBrands = brands;
-  // Once schema is updated, uncomment: .filter((brand) => !brand.locale || brand.locale === currentLocale)
 
   return (
     <>
@@ -145,84 +156,33 @@ export function BrandsContent({
         </Card>
       </div>
 
-      {/* Tabs for Locale */}
+      {/* Display language for names/descriptions */}
       <Tabs
         value={currentLocale}
-        onValueChange={(value) => handleLocaleChange(value as Locale)}
+        onValueChange={(value) =>
+          url.setParams({ locale: value === "en" ? null : value }, { resetPage: false })
+        }
       >
         <TabsList>
           <TabsTrigger value="en">English</TabsTrigger>
           <TabsTrigger value="ar">Arabic</TabsTrigger>
         </TabsList>
-        <TabsContent value="en" className="p-0 mt-4">
-          <DataTable
-            columns={columns}
-            data={filteredBrands}
-            searchableColumns={[
-              {
-                id: "name",
-                title: "Brand Name",
-              },
-              {
-                id: "description",
-                title: "Description",
-              },
-            ]}
-            filterableColumns={[
-              {
-                id: "isVerified",
-                title: "Status",
-                options: [
-                  { label: "Verified", value: "true" },
-                  { label: "Unverified", value: "false" },
-                ],
-              },
-              {
-                id: "isOfficial",
-                title: "Official",
-                options: [
-                  { label: "Official", value: "true" },
-                  { label: "Not Official", value: "false" },
-                ],
-              },
-            ]}
-          />
-        </TabsContent>
-        <TabsContent value="ar" className="p-0 mt-4">
-          <DataTable
-            columns={columns}
-            data={filteredBrands}
-            searchableColumns={[
-              {
-                id: "name",
-                title: "Brand Name",
-              },
-              {
-                id: "description",
-                title: "Description",
-              },
-            ]}
-            filterableColumns={[
-              {
-                id: "isVerified",
-                title: "Status",
-                options: [
-                  { label: "Verified", value: "true" },
-                  { label: "Unverified", value: "false" },
-                ],
-              },
-              {
-                id: "isOfficial",
-                title: "Official",
-                options: [
-                  { label: "Official", value: "true" },
-                  { label: "Not Official", value: "false" },
-                ],
-              },
-            ]}
-          />
-        </TabsContent>
       </Tabs>
+
+      <div className="mt-4">
+        <DataTable
+          columns={columns}
+          data={brands}
+          getRowId={(brand) => brand.id}
+          filterableColumns={BRAND_FILTERS}
+          emptyMessage="No brands match these filters."
+          serverSide={{
+            rowCount: totalCount,
+            defaultSort: BRANDS_DEFAULT_SORT,
+            searchPlaceholder: "Search name, slug, description or website…",
+          }}
+        />
+      </div>
     </>
   );
 }

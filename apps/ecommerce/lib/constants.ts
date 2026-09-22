@@ -7,6 +7,8 @@ export const FREE_SHIPPING_THRESHOLD = FREE_DELIVERY_MIN_SUBTOTAL;
 /** When false, cart-threshold free shipping is off site-wide. */
 export const FREE_SHIPPING_ENABLED = FREE_DELIVERY_THRESHOLD_ENABLED;
 export const DEFAULT_CURRENCY = "EGP";
+/** When false, card payment (Kashier/Paymob) is off at checkout even if the gateway is configured. */
+export const ONLINE_CARD_PAYMENT_ENABLED = false;
 
 /** Days from delivery within which a return can be requested (and affiliate commission is held). */
 export const RETURN_WINDOW_DAYS = AFFILIATE_RETURN_WINDOW_DAYS;

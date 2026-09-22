@@ -1,242 +1,28 @@
 "use client";
 
-import { useState, useTransition, useEffect, useCallback } from "react";
+import { useCallback, useMemo, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@workspace/ui/components/button";
-import { Input } from "@workspace/ui/components/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@workspace/ui/components/select";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@workspace/ui/components/tabs";
-import { Filter, Download, Plus, Search, X } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@workspace/ui/components/tabs";
+import { Download, Plus } from "lucide-react";
 import { toast } from "sonner";
-import { getSellers, getSellerStats, updateSellerStatus } from "./sellers.server";
-import { getStatusOptions, getBusinessTypeOptions } from "./sellers.lib";
-import { SellerStatsCards, SellerRow } from "./sellers.chunks";
-import type { Seller, SellerFilters, SellerStats, SellerStatus } from "./sellers.types";
-import { SellersTableSkeleton } from "./sellers.skeleton";
+import { updateSellerStatus } from "./sellers.server";
+import { SellerStatsCards } from "./sellers.chunks";
+import type { Seller, SellerStats, SellerStatus } from "./sellers.types";
+import { DataTable } from "../_components/data-table/data-table";
+import { useTableUrlState } from "../_components/data-table/use-table-url-state";
+import { getSellersColumns, sellersFilters } from "./_components/table-columns";
+import { SELLERS_DEFAULT_SORT } from "./sellers.params";
 
-interface SellersFiltersProps {
-  filters: SellerFilters;
-  onFiltersChange: (filters: SellerFilters) => void;
-}
+const TAB_STATUSES = ["approved", "pending", "suspended"] as const;
 
-export const SellersFilters = ({
-  filters,
-  onFiltersChange,
-}: SellersFiltersProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const handleFilterChange = (
-    key: keyof SellerFilters,
-    value: string | boolean | undefined
-  ) => {
-    onFiltersChange({
-      ...filters,
-      [key]: value,
-    });
-  };
-
-  const clearFilters = () => {
-    onFiltersChange({});
-  };
-
-  const hasActiveFilters = Object.keys(filters).length > 0;
-
-  return (
-    <div className="space-y-4">
-      {/* Search Bar */}
-      <div className="flex gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Search sellers..."
-            value={filters.search || ""}
-            onChange={(e) => handleFilterChange("search", e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        <Button variant="outline" size="sm" onClick={() => setIsOpen(!isOpen)}>
-          <Filter className="h-4 w-4 mr-2" />
-          Filters
-          {hasActiveFilters && (
-            <span className="ml-2 h-2 w-2 bg-blue-500 rounded-full" />
-          )}
-        </Button>
-        {hasActiveFilters && (
-          <Button variant="outline" size="sm" onClick={clearFilters}>
-            <X className="h-4 w-4 mr-2" />
-            Clear
-          </Button>
-        )}
-      </div>
-
-      {/* Advanced Filters */}
-      {isOpen && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Status</label>
-            <Select
-              value={filters.status || ""}
-              onValueChange={(value) =>
-                handleFilterChange("status", value || undefined)
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="All statuses" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">All statuses</SelectItem>
-                {getStatusOptions().map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Business Type</label>
-            <Select
-              value={filters.businessType || ""}
-              onValueChange={(value) =>
-                handleFilterChange("businessType", value || undefined)
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="All types" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">All types</SelectItem>
-                {getBusinessTypeOptions().map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Verification</label>
-            <Select
-              value={filters.isVerified?.toString() || ""}
-              onValueChange={(value) =>
-                handleFilterChange(
-                  "isVerified",
-                  value === "true"
-                    ? true
-                    : value === "false"
-                      ? false
-                      : undefined
-                )
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="All sellers" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">All sellers</SelectItem>
-                <SelectItem value="true">Verified only</SelectItem>
-                <SelectItem value="false">Unverified only</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+const ACTION_STATUS: Record<string, SellerStatus> = {
+  approve: "approved",
+  suspend: "suspended",
+  reactivate: "approved",
 };
 
-interface SellersActionsProps {
-  onAction: (sellerId: string, action: string) => void;
-}
-
-export const SellersActions = ({ onAction }: SellersActionsProps) => {
-  const [isPending, startTransition] = useTransition();
-
-  const handleAction = (sellerId: string, action: string) => {
-    startTransition(async () => {
-      try {
-        let status: SellerStatus;
-        switch (action) {
-          case "approve":
-            status = "approved";
-            break;
-          case "suspend":
-            status = "suspended";
-            break;
-          case "reactivate":
-            status = "approved";
-            break;
-          default:
-            toast.error("Invalid action");
-            return;
-        }
-
-        const result = await updateSellerStatus(sellerId, status);
-
-        if (result.success) {
-          toast.success(result.message);
-          onAction(sellerId, action);
-        } else {
-          toast.error(result.error || "Failed to update seller status");
-        }
-      } catch (error) {
-        console.error("Error updating seller status:", error);
-        toast.error("Something went wrong");
-      }
-    });
-  };
-
-  return { handleAction, isPending };
-};
-
-interface SellersTabsProps {
-  activeTab: string;
-  onTabChange: (tab: string) => void;
-  stats: SellerStats;
-}
-
-export const SellersTabs = ({
-  activeTab,
-  onTabChange,
-  stats,
-}: SellersTabsProps) => {
-  return (
-    <Tabs value={activeTab} onValueChange={onTabChange}>
-      <TabsList>
-        <TabsTrigger value="all">
-          All Sellers ({stats.totalSellers})
-        </TabsTrigger>
-        <TabsTrigger value="approved">
-          Approved ({stats.activeSellers})
-        </TabsTrigger>
-        <TabsTrigger value="pending">
-          Pending ({stats.pendingSellers})
-        </TabsTrigger>
-        <TabsTrigger value="suspended">
-          Suspended ({stats.suspendedSellers})
-        </TabsTrigger>
-      </TabsList>
-    </Tabs>
-  );
-};
-
-interface SellersHeaderProps {
-  onFiltersChange: (filters: SellerFilters) => void;
-}
-
-export const SellersHeader = ({ onFiltersChange }: SellersHeaderProps) => {
+export const SellersHeader = () => {
   return (
     <div className="flex items-center justify-end mb-6">
       <div className="flex gap-2">
@@ -253,174 +39,96 @@ export const SellersHeader = ({ onFiltersChange }: SellersHeaderProps) => {
   );
 };
 
-// Client wrapper component to handle state management
 interface SellersClientWrapperProps {
-  initialFilters: SellerFilters;
-  initialStats: SellerStats;
+  sellers: Seller[];
+  totalCount: number;
+  stats: SellerStats;
 }
 
 export const SellersClientWrapper = ({
-  initialFilters,
-  initialStats,
+  sellers,
+  totalCount,
+  stats,
 }: SellersClientWrapperProps) => {
-  const [filters, setFilters] = useState<SellerFilters>(initialFilters);
-  const [activeTab, setActiveTab] = useState("all");
-  const [stats, setStats] = useState(initialStats);
-  const [sellersList, setSellersList] = useState<Seller[]>([]);
-  const [isLoadingSellers, setIsLoadingSellers] = useState(true);
-  const [sellersError, setSellersError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+  const url = useTableUrlState();
+  const [isUpdating, startTransition] = useTransition();
 
-  // This used to render <SellersDataWrapper> (an async Server Component,
-  // from sellers.data.tsx) directly inside this Client Component's JSX.
-  // React does not support async function components on the client, so
-  // that <Suspense> boundary could never resolve — this page was stuck on
-  // its skeleton forever. Fetching client-side instead, matching the
-  // pattern every other admin list page (orders, customers, brands,
-  // categories) already uses.
-  const loadSellers = useCallback(async (currentFilters: SellerFilters) => {
-    setIsLoadingSellers(true);
-    setSellersError(null);
-    try {
-      const [sellersResult, statsResult] = await Promise.all([
-        getSellers(currentFilters),
-        getSellerStats(),
-      ]);
+  // Tabs are presets over the `status` filter; a custom mix highlights none.
+  const statusParam = url.getList("status");
+  const activeTab =
+    statusParam.length === 0
+      ? "all"
+      : statusParam.length === 1 &&
+          (TAB_STATUSES as readonly string[]).includes(statusParam[0]!)
+        ? statusParam[0]!
+        : "";
 
-      if (sellersResult.success) {
-        setSellersList(sellersResult.data ?? []);
-      } else {
-        setSellersError(sellersResult.error || "Failed to fetch sellers");
+  const handleAction = useCallback(
+    (sellerId: string, action: string) => {
+      const status = ACTION_STATUS[action];
+      if (!status) {
+        toast.error("Invalid action");
+        return;
       }
-
-      if (statsResult.success && statsResult.data) {
-        setStats(statsResult.data);
-      }
-    } catch (error) {
-      console.error("Error loading sellers:", error);
-      setSellersError("Failed to fetch sellers");
-    } finally {
-      setIsLoadingSellers(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadSellers(filters);
-  }, [filters, loadSellers]);
-
-  const handleFiltersChange = (newFilters: SellerFilters) => {
-    setFilters(newFilters);
-    // Update URL params here if needed
-  };
-
-  const handleTabChange = (tab: string) => {
-    setActiveTab(tab);
-    // Update filters based on tab
-    const tabFilters: SellerFilters = {};
-    if (tab === "approved") tabFilters.status = "approved";
-    else if (tab === "pending") tabFilters.status = "pending";
-    else if (tab === "suspended") tabFilters.status = "suspended";
-
-    setFilters({ ...filters, ...tabFilters });
-  };
-
-  const handleAction = (sellerId: string, action: string) => {
-    startTransition(async () => {
-      try {
-        let status: SellerStatus;
-        switch (action) {
-          case "approve":
-            status = "approved";
-            break;
-          case "suspend":
-            status = "suspended";
-            break;
-          case "reactivate":
-            status = "approved";
-            break;
-          default:
-            toast.error("Invalid action");
-            return;
+      startTransition(async () => {
+        try {
+          const result = await updateSellerStatus(sellerId, status);
+          if (result.success) {
+            toast.success(result.message);
+            router.refresh();
+          } else {
+            toast.error(result.error || "Failed to update seller status");
+          }
+        } catch (error) {
+          console.error("Error updating seller status:", error);
+          toast.error("Something went wrong");
         }
+      });
+    },
+    [router]
+  );
 
-        const result = await updateSellerStatus(sellerId, status);
-
-        if (result.success) {
-          toast.success(result.message);
-          // Refetch in place instead of a full page reload.
-          await loadSellers(filters);
-        } else {
-          toast.error(result.error || "Failed to update seller status");
-        }
-      } catch (error) {
-        console.error("Error updating seller status:", error);
-        toast.error("Something went wrong");
-      }
-    });
-  };
+  const columns = useMemo(() => getSellersColumns(handleAction), [handleAction]);
 
   return (
     <div className="space-y-6">
-      <SellersHeader onFiltersChange={handleFiltersChange} />
+      <SellersHeader />
 
-      <SellersFilters filters={filters} onFiltersChange={handleFiltersChange} />
+      <SellerStatsCards stats={stats} />
 
-      <SellersTabs
-        activeTab={activeTab}
-        onTabChange={handleTabChange}
-        stats={stats}
+      <Tabs
+        value={activeTab}
+        onValueChange={(value) =>
+          url.setParams({ status: value === "all" ? null : [value] })
+        }
+      >
+        <TabsList>
+          <TabsTrigger value="all">All Sellers ({stats.totalSellers})</TabsTrigger>
+          <TabsTrigger value="approved">
+            Approved ({stats.activeSellers})
+          </TabsTrigger>
+          <TabsTrigger value="pending">Pending ({stats.pendingSellers})</TabsTrigger>
+          <TabsTrigger value="suspended">
+            Suspended ({stats.suspendedSellers})
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+      <DataTable
+        columns={columns}
+        data={sellers}
+        getRowId={(seller) => seller.id}
+        filterableColumns={sellersFilters}
+        enableRowSelection={false}
+        emptyMessage="No sellers match these filters."
+        isLoading={isUpdating}
+        serverSide={{
+          rowCount: totalCount,
+          defaultSort: SELLERS_DEFAULT_SORT,
+          searchPlaceholder: "Search name, slug, email or phone…",
+        }}
       />
-
-      {isLoadingSellers ? (
-        <SellersTableSkeleton />
-      ) : sellersError ? (
-        <div className="text-center py-8">
-          <p className="text-red-600">{sellersError}</p>
-        </div>
-      ) : (
-        <>
-          <SellerStatsCards stats={stats} />
-
-          <div className="rounded-md border">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b bg-gray-50 dark:bg-gray-800">
-                  <th className="py-4 px-4 text-left text-sm font-medium">
-                    Seller
-                  </th>
-                  <th className="py-4 px-4 text-center text-sm font-medium">
-                    Status
-                  </th>
-                  <th className="py-4 px-4 text-center text-sm font-medium">
-                    Products
-                  </th>
-                  <th className="py-4 px-4 text-center text-sm font-medium">
-                    Rating
-                  </th>
-                  <th className="py-4 px-4 text-center text-sm font-medium">
-                    Commission
-                  </th>
-                  <th className="py-4 px-4 text-center text-sm font-medium">
-                    Fee Exempt
-                  </th>
-                  <th className="py-4 px-4 text-center text-sm font-medium">
-                    Free Delivery
-                  </th>
-                  <th className="py-4 px-4 text-right text-sm font-medium">
-                    Balance
-                  </th>
-                  <th className="py-4 px-4"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {sellersList.map((seller) => (
-                  <SellerRow key={seller.id} seller={seller} onAction={handleAction} />
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </>
-      )}
     </div>
   );
 };

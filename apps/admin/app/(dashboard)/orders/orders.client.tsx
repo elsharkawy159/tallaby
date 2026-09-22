@@ -1,94 +1,63 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useEffect, useMemo, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@workspace/ui/components/button";
-import { TableSection } from "@workspace/ui/components/table-section";
+import { Tabs, TabsList, TabsTrigger } from "@workspace/ui/components/tabs";
+import { Trash2 } from "lucide-react";
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@workspace/ui/components/tabs";
-import {
-  getAllOrders,
   deleteOrders,
   updateOrderStatus,
   updateOrderPaymentStatus,
   exportOrders,
 } from "@/actions/orders";
+import { DataTable } from "../_components/data-table/data-table";
+import { useTableUrlState } from "../_components/data-table/use-table-url-state";
 import { Order } from "./orders.types";
 import { OrdersHeader } from "./orders.chunks";
-import { getOrdersColumns } from "./_components/table-columns";
+import { getOrdersColumns, getOrdersFilters } from "./_components/table-columns";
+import { ORDERS_DEFAULT_SORT, ORDER_TABS } from "./orders.params";
 import { toast } from "sonner";
 
+const AUTO_REFRESH_MS = 10 * 60 * 1000;
+
 interface OrdersClientWrapperProps {
-  filters?: {
-    status?: string;
-    paymentStatus?: string;
-    search?: string;
-  };
+  orders: Order[];
+  totalCount: number;
+  paymentMethods: string[];
 }
 
-export const OrdersClientWrapper = ({ filters }: OrdersClientWrapperProps) => {
+function sameSet(a: readonly string[], b: readonly string[]) {
+  return a.length === b.length && a.every((value) => b.includes(value));
+}
+
+export const OrdersClientWrapper = ({
+  orders,
+  totalCount,
+  paymentMethods,
+}: OrdersClientWrapperProps) => {
   const router = useRouter();
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("all-orders");
+  const url = useTableUrlState();
+  const [isRefreshing, startRefresh] = useTransition();
 
-  const loadOrders = useCallback(async () => {
-    try {
-      setIsRefreshing(true);
-      const result = await getAllOrders({
-        ...filters,
-        status: activeTab === "all-orders" ? undefined : activeTab,
-        limit: 100,
-      });
+  const refresh = useCallback(() => {
+    startRefresh(() => router.refresh());
+  }, [router]);
 
-      if (result.success) {
-        const ordersData = (result.data || []).map((order: any) => ({
-          ...order,
-          totalAmount:
-            typeof order.totalAmount === "string"
-              ? parseFloat(order.totalAmount)
-              : order.totalAmount,
-        }));
-        setOrders(ordersData as Order[]);
-      } else {
-        toast.error(result.error || "Failed to load orders");
-      }
-    } catch (error) {
-      toast.error("Failed to load orders");
-    } finally {
-      setIsRefreshing(false);
-      setIsLoading(false);
-    }
-  }, [filters, activeTab]);
-
-  // Auto-refresh every 10 minutes
   useEffect(() => {
-    loadOrders();
-
-    const interval = setInterval(
-      () => {
-        loadOrders();
-      },
-      10 * 60 * 1000
-    ); // 10 minutes
-
+    const interval = setInterval(refresh, AUTO_REFRESH_MS);
     return () => clearInterval(interval);
-  }, [loadOrders]);
+  }, [refresh]);
 
-  const handleRefresh = () => {
-    loadOrders();
-  };
+  // A custom status mix (from the Status filter) highlights no tab.
+  const statusParam = url.getList("status");
+  const activeTab =
+    ORDER_TABS.find((tab) => sameSet(tab.statuses, statusParam))?.value ?? "";
 
   const handleExport = async () => {
     try {
       const result = await exportOrders("csv");
       if (result.success) {
-        // Create and download CSV
         const csvContent = [
           "Order Number,Customer Name,Customer Email,Total Amount,Status,Payment Status,Items Count,Created At",
           ...(result.data || []).map(
@@ -98,181 +67,155 @@ export const OrdersClientWrapper = ({ filters }: OrdersClientWrapperProps) => {
         ].join("\n");
 
         const blob = new Blob([csvContent], { type: "text/csv" });
-        const url = window.URL.createObjectURL(blob);
+        const href = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
-        a.href = url;
+        a.href = href;
         a.download = `orders-${new Date().toISOString().split("T")[0]}.csv`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
+        window.URL.revokeObjectURL(href);
 
         toast.success("Orders exported to CSV successfully");
       } else {
         toast.error(result.error || "Failed to export orders");
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to export orders");
     }
   };
 
-  const handleFilter = () => {
-    // TODO: Implement filter modal
-    toast.info("Coming Soon");
-  };
+  const handleDeleteSelected = async (
+    selected: Order[],
+    clearSelection: () => void
+  ) => {
+    const confirmed = window.confirm(
+      `Delete ${selected.length} order${selected.length === 1 ? "" : "s"}? This cannot be undone.`
+    );
+    if (!confirmed) return;
 
-  const handleDeleteSelected = async (orderIds: string[]) => {
     try {
-      const result = await deleteOrders(orderIds);
+      const result = await deleteOrders(selected.map((order) => order.id));
       if (result.success) {
-        toast.success(`${orderIds.length} orders deleted successfully`);
-        loadOrders(); // Refresh the list
+        toast.success(`${selected.length} orders deleted successfully`);
+        clearSelection();
+        refresh();
       } else {
         toast.error(result.error || "Failed to delete orders");
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete orders");
     }
   };
 
-  const handleOrderAction = async (orderId: string, action: string) => {
-    try {
-      // Check if action is a status (not a legacy action like "confirm", "ship", etc.)
-      const statusMap: Record<string, string> = {
-        confirm: "confirmed",
-        ship: "shipped",
-        deliver: "delivered",
-        cancel: "cancelled",
-      };
+  const handleOrderAction = useCallback(
+    async (orderId: string, action: string) => {
+      try {
+        const statusMap: Record<string, string> = {
+          confirm: "confirmed",
+          ship: "shipped",
+          deliver: "delivered",
+          cancel: "cancelled",
+        };
+        const status = statusMap[action] || action;
 
-      const status = statusMap[action] || action;
+        const result = await updateOrderStatus(
+          orderId,
+          status as Parameters<typeof updateOrderStatus>[1]
+        );
 
-      const result = await updateOrderStatus(orderId, status as any);
-
-      if (result.success) {
-        toast.success(`Order status updated to ${status.replace(/_/g, " ")}`);
-        loadOrders(); // Refresh the list
-      } else {
-        toast.error(result.error || `Failed to update order status`);
+        if (result.success) {
+          toast.success(`Order status updated to ${status.replace(/_/g, " ")}`);
+          refresh();
+        } else {
+          toast.error(result.error || `Failed to update order status`);
+        }
+      } catch {
+        toast.error(`Failed to update order status`);
       }
-    } catch (error) {
-      toast.error(`Failed to update order status`);
-    }
-  };
-
-  const handlePaymentStatusChange = async (
-    orderId: string,
-    paymentStatus: string
-  ) => {
-    try {
-      const result = await updateOrderPaymentStatus(
-        orderId,
-        paymentStatus as any
-      );
-
-      if (result.success) {
-        toast.success(
-          `Payment status updated to ${paymentStatus.replace(/_/g, " ")}`
-        );
-        loadOrders(); // Refresh the list
-      } else {
-        toast.error(result.error || `Failed to update payment status`);
-      }
-    } catch (error) {
-      toast.error(`Failed to update payment status`);
-    }
-  };
-
-  const columns = getOrdersColumns(handleOrderAction, handlePaymentStatusChange);
-
-  const getFilteredOrders = () => {
-    switch (activeTab) {
-      case "pending":
-        return orders.filter((order) => order.status === "pending");
-      case "processing":
-        return orders.filter((order) =>
-          ["confirmed", "shipping_soon"].includes(order.status)
-        );
-      case "shipped":
-        return orders.filter((order) =>
-          ["shipped", "out_for_delivery"].includes(order.status)
-        );
-      case "delivered":
-        return orders.filter((order) => order.status === "delivered");
-      case "cancelled":
-        return orders.filter((order) => order.status === "cancelled");
-      default:
-        return orders;
-    }
-  };
-
-  const filteredOrders = getFilteredOrders();
-
-  const actionButtons = (
-    <div className="flex gap-2">
-      <Button variant="outline" size="sm" onClick={handleFilter}>
-        Filter
-      </Button>
-      <Button variant="outline" size="sm" onClick={handleExport}>
-        Export
-      </Button>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={handleRefresh}
-        disabled={isRefreshing}
-      >
-        {isRefreshing ? "Refreshing..." : "Refresh"}
-      </Button>
-    </div>
+    },
+    [refresh]
   );
 
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <OrdersHeader
-          onRefresh={handleRefresh}
-          onExport={handleExport}
-          onFilter={handleFilter}
-          isRefreshing={isRefreshing}
-        />
-        <div className="text-center py-8">
-          <p>Loading orders...</p>
-        </div>
-      </div>
-    );
-  }
+  const handlePaymentStatusChange = useCallback(
+    async (orderId: string, paymentStatus: string) => {
+      try {
+        const result = await updateOrderPaymentStatus(
+          orderId,
+          paymentStatus as Parameters<typeof updateOrderPaymentStatus>[1]
+        );
+
+        if (result.success) {
+          toast.success(
+            `Payment status updated to ${paymentStatus.replace(/_/g, " ")}`
+          );
+          refresh();
+        } else {
+          toast.error(result.error || `Failed to update payment status`);
+        }
+      } catch {
+        toast.error(`Failed to update payment status`);
+      }
+    },
+    [refresh]
+  );
+
+  const columns = useMemo(
+    () => getOrdersColumns(handleOrderAction, handlePaymentStatusChange),
+    [handleOrderAction, handlePaymentStatusChange]
+  );
+  const filters = useMemo(
+    () => getOrdersFilters(paymentMethods),
+    [paymentMethods]
+  );
 
   return (
     <div className="space-y-6">
       <OrdersHeader
-        onRefresh={handleRefresh}
+        onRefresh={refresh}
         onExport={handleExport}
-        onFilter={handleFilter}
         isRefreshing={isRefreshing}
       />
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
-          <TabsTrigger value="all-orders">All Orders</TabsTrigger>
-          <TabsTrigger value="pending">Pending</TabsTrigger>
-          <TabsTrigger value="processing">Processing</TabsTrigger>
-          <TabsTrigger value="shipped">Shipped</TabsTrigger>
-          <TabsTrigger value="delivered">Delivered</TabsTrigger>
-          <TabsTrigger value="cancelled">Cancelled</TabsTrigger>
+      <Tabs
+        value={activeTab}
+        onValueChange={(value) => {
+          const tab = ORDER_TABS.find((item) => item.value === value);
+          url.setParams({ status: tab ? tab.statuses : null });
+        }}
+      >
+        <TabsList className="h-auto flex-wrap">
+          {ORDER_TABS.map((tab) => (
+            <TabsTrigger key={tab.value} value={tab.value}>
+              {tab.label}
+            </TabsTrigger>
+          ))}
         </TabsList>
-
-        <TabsContent value={activeTab} className="p-0 mt-4">
-          <TableSection
-            rows={filteredOrders}
-            columns={columns}
-            buttons={actionButtons}
-            onDeleteSelected={handleDeleteSelected}
-            searchColumnId="orderNumber"
-            pageSizeOptions={[10, 25, 50, 100]}
-          />
-        </TabsContent>
       </Tabs>
+
+      <DataTable
+        columns={columns}
+        data={orders}
+        getRowId={(order) => order.id}
+        filterableColumns={filters}
+        emptyMessage="No orders match these filters."
+        isLoading={isRefreshing}
+        serverSide={{
+          rowCount: totalCount,
+          defaultSort: ORDERS_DEFAULT_SORT,
+          searchPlaceholder: "Search order #, customer name, email or phone…",
+        }}
+        bulkActions={(selected, clearSelection) => (
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => handleDeleteSelected(selected, clearSelection)}
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Delete selected
+          </Button>
+        )}
+      />
     </div>
   );
 };

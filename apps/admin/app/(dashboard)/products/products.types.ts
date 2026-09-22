@@ -1,4 +1,5 @@
 import type { getProductById } from "@/actions/products";
+import type { getAdminProducts } from "@/actions/products-list";
 
 export type ProductStatus = "draft" | "pending" | "active" | "rejected";
 
@@ -123,6 +124,7 @@ export interface ProductDetailView {
   isTrending: boolean;
   isSeasonal: boolean;
   freeDelivery: boolean;
+  directCheckout: boolean;
   metaTitle: string | null;
   metaDescription: string | null;
   images: string[];
@@ -134,4 +136,15 @@ export interface ProductDetailView {
   createdAt: string;
   updatedAt: string;
   storefrontUrl: string | null;
+}
+
+export type AdminProductListItem = Extract<
+  Awaited<ReturnType<typeof getAdminProducts>>,
+  { success: true }
+>["data"][number];
+
+export interface ProductFilterOptions {
+  categories: { value: string; label: string }[];
+  brands: { value: string; label: string }[];
+  sellers: { value: string; label: string; slug: string }[];
 }

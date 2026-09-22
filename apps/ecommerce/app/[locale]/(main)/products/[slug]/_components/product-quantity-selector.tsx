@@ -39,6 +39,15 @@ export const ProductQuantitySelector = ({
     onQuantityChange?.(newQuantity);
   };
 
+  const canDecrease = !disabled && quantity > min;
+  const canIncrease = !disabled && (max === undefined || quantity < max);
+
+  const stepButtonClassName = (enabled: boolean) =>
+    cn(
+      "size-10.5 shrink-0 rounded-none border-0",
+      enabled && "bg-primary text-white hover:bg-primary/90 hover:text-white"
+    );
+
   return (
     <div
       className={cn(
@@ -50,8 +59,8 @@ export const ProductQuantitySelector = ({
         type="button"
         variant="ghost"
         size="icon"
-        disabled={disabled || quantity <= min}
-        className="size-10.5 shrink-0 rounded-none border-0 hover:bg-gray-100"
+        disabled={!canDecrease}
+        className={stepButtonClassName(canDecrease)}
         onClick={() => handleQuantityChange(-1)}
         aria-label={t("decreaseQuantity")}
       >
@@ -64,8 +73,8 @@ export const ProductQuantitySelector = ({
         type="button"
         variant="ghost"
         size="icon"
-        disabled={disabled || (max !== undefined && quantity >= max)}
-        className="size-10.5 shrink-0 rounded-none border-0 hover:bg-gray-100"
+        disabled={!canIncrease}
+        className={stepButtonClassName(canIncrease)}
         onClick={() => handleQuantityChange(1)}
         aria-label={t("increaseQuantity")}
       >

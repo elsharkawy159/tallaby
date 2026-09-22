@@ -1,27 +1,16 @@
 import { Suspense } from "react";
 import { getAffiliates, getAffiliateStats } from "@/actions/affiliates";
 import { AffiliateClientWrapper } from "./affiliate.client";
+import { parseAffiliateParams } from "./affiliate.params";
 import { AffiliateSkeleton } from "./affiliate.skeleton";
 import type { AffiliatesPageProps } from "./affiliate.types";
 
-type AffiliateDataProps = AffiliatesPageProps;
+async function AffiliateDataContent({ searchParams }: AffiliatesPageProps) {
+  const filters = parseAffiliateParams(await searchParams);
 
-async function AffiliateDataContent({ searchParams }: AffiliateDataProps) {
-  const params = await searchParams;
-
-  const [statsResult, listResult] = await Promise.all([
-    getAffiliateStats(),
-    getAffiliates({
-      status: params?.status as "active" | "inactive" | undefined,
-      performance: params?.performance as
-        | "has_orders"
-        | "no_orders"
-        | "has_delivered"
-        | undefined,
-      earnings: params?.earnings as "has_pending" | "has_earned" | undefined,
-      search: params?.search,
-    }),
-  ]);
+  // Sequential to stay within the serverless DB pool.
+  const statsResult = await getAffiliateStats();
+  const listResult = await getAffiliates(filters);
 
   if (!statsResult.success || !listResult.success) {
     throw new Error(
@@ -33,14 +22,14 @@ async function AffiliateDataContent({ searchParams }: AffiliateDataProps) {
 
   return (
     <AffiliateClientWrapper
-      initialStats={statsResult.data}
-      initialRows={listResult.data.rows}
-      initialTruncated={listResult.data.truncated}
+      stats={statsResult.data}
+      rows={listResult.data.rows}
+      totalCount={listResult.data.totalCount}
     />
   );
 }
 
-export function AffiliateData({ searchParams }: AffiliateDataProps) {
+export function AffiliateData({ searchParams }: AffiliatesPageProps) {
   return (
     <Suspense fallback={<AffiliateSkeleton />}>
       <AffiliateDataContent searchParams={searchParams} />

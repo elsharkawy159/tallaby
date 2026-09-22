@@ -1,4 +1,4 @@
-import type { Customer, CustomerStats } from "./customers.types";
+import type { Customer } from "./customers.types";
 import { formatCurrency as formatCurrencyValue } from "@workspace/lib";
 
 export function formatCurrency(amount: number): string {
@@ -60,43 +60,6 @@ export function getCustomerDisplayPhone(customer: Customer): string | null {
   // Otherwise, use address phone as fallback
   const address = customer.addresses?.[0];
   return address?.phone || null;
-}
-
-export function calculateCustomerStats(customers: Customer[]): CustomerStats {
-  const totalCustomers = customers.length;
-  const verifiedCustomers = customers.filter((c) => c.isVerified).length;
-
-  const now = new Date();
-  const newCustomersThisMonth = customers.filter((c) => {
-    if (!c.createdAt) return false;
-    const createdDate = new Date(c.createdAt);
-    return (
-      createdDate.getMonth() === now.getMonth() &&
-      createdDate.getFullYear() === now.getFullYear()
-    );
-  }).length;
-
-  const totalRevenue = customers.reduce(
-    (sum, customer) => sum + (customer.totalSpent || 0),
-    0
-  );
-  const totalOrders = customers.reduce(
-    (sum, customer) => sum + (customer.totalOrders || 0),
-    0
-  );
-
-  const averageSpendPerCustomer =
-    totalCustomers > 0 ? totalRevenue / totalCustomers : 0;
-  const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
-
-  return {
-    totalCustomers,
-    verifiedCustomers,
-    newCustomersThisMonth,
-    totalRevenue,
-    averageSpendPerCustomer,
-    averageOrderValue,
-  };
 }
 
 export function getRoleBadgeVariant(

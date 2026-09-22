@@ -43,12 +43,5 @@ export interface BrandFormData {
 
 export interface BrandsPageProps {
   /** Next.js 16 passes searchParams as a Promise; it must be awaited. */
-  searchParams?: Promise<{
-    locale?: Locale;
-    verified?: string;
-    official?: string;
-    search?: string;
-    page?: string;
-    limit?: string;
-  }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }

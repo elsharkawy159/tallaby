@@ -3,6 +3,7 @@
 
 import { db } from "@workspace/db";
 import { isOnlineCardPaymentEnabled } from "@workspace/lib/payments";
+import { ONLINE_CARD_PAYMENT_ENABLED } from "@/lib/constants";
 import {
   orders,
   orderItems,
@@ -68,7 +69,7 @@ export async function createOrder(data: {
 
     if (
       data.paymentMethod === "online_payment" &&
-      !isOnlineCardPaymentEnabled()
+      !(ONLINE_CARD_PAYMENT_ENABLED && isOnlineCardPaymentEnabled())
     ) {
       return { success: false, error: "Online card payment is unavailable" };
     }

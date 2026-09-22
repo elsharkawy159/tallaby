@@ -1,59 +1,41 @@
-import { Suspense } from "react";
-import { getAllOrders, getOrderStats } from "@/actions/orders";
+import { getOrderStats } from "@/actions/orders";
+import { getAdminOrders, getOrderPaymentMethods } from "@/actions/orders-list";
+import type { RawSearchParams } from "../_components/data-table/search-params";
 import { OrderStatsCards } from "./orders.chunks";
-import { OrdersSkeleton } from "./orders.skeleton";
+import { OrdersClientWrapper } from "./orders.client";
+import { parseOrdersParams } from "./orders.params";
+import type { Order } from "./orders.types";
 
-interface OrdersDataProps {
-  filters?: {
-    status?: string;
-    paymentStatus?: string;
-    dateFrom?: Date;
-    dateTo?: Date;
-    search?: string;
-  };
-}
+/** Stats + list, loaded sequentially to stay within the serverless DB pool. */
+export async function OrdersPageData({
+  searchParams,
+}: {
+  searchParams: Promise<RawSearchParams>;
+}) {
+  const query = parseOrdersParams(await searchParams);
+  const statsResult = await getOrderStats();
+  const ordersResult = await getAdminOrders(query);
+  const methodsResult = await getOrderPaymentMethods();
 
-export const OrdersData = async ({ filters }: OrdersDataProps) => {
-  const [ordersResult, statsResult] = await Promise.all([
-    getAllOrders(filters),
-    getOrderStats(),
-  ]);
-
-  if (!ordersResult.success || !statsResult.success) {
-    return (
-      <div className="text-center py-8">
-        <p className="text-red-600">
-          {ordersResult.error || statsResult.error || "Failed to load orders"}
+  return (
+    <div className="space-y-6">
+      {statsResult.success && statsResult.data ? (
+        <OrderStatsCards stats={statsResult.data} />
+      ) : (
+        <p className="text-center text-red-600">
+          {statsResult.error || "Failed to load order stats"}
         </p>
-      </div>
-    );
-  }
-
-  return (
-    <>
-      {statsResult.data && <OrderStatsCards stats={statsResult.data} />}
-      <div className="text-sm text-gray-600 mb-4">
-        Showing {ordersResult.data?.length || 0} of{" "}
-        {ordersResult.totalCount || 0} orders
-      </div>
-    </>
+      )}
+      {!ordersResult.success && (
+        <p className="text-center text-red-600">
+          {ordersResult.error || "Failed to load orders"}
+        </p>
+      )}
+      <OrdersClientWrapper
+        orders={(ordersResult.success ? ordersResult.data : []) as Order[]}
+        totalCount={ordersResult.success ? ordersResult.totalCount : 0}
+        paymentMethods={methodsResult.data}
+      />
+    </div>
   );
-};
-
-interface OrdersDataWrapperProps {
-  filters?: {
-    status?: string;
-    paymentStatus?: string;
-    dateFrom?: Date;
-    dateTo?: Date;
-    search?: string;
-  };
 }
-
-export const OrdersDataWrapper = ({ filters }: OrdersDataWrapperProps) => {
-  return (
-    <Suspense fallback={<OrdersSkeleton />}>
-      <OrdersData filters={filters} />
-    </Suspense>
-  );
-};

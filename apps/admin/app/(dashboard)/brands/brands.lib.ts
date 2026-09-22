@@ -1,4 +1,4 @@
-import type { Brand, BrandStats, Locale } from "./brands.types";
+import type { Brand, Locale } from "./brands.types";
 
 export function formatDate(date: string | null | undefined): string {
   if (!date) return "N/A";
@@ -42,23 +42,6 @@ export function getBrandDisplayDescription(
     return brand.descriptionAr;
   }
   return brand.description || null;
-}
-
-export function calculateBrandStats(brands: Brand[]): BrandStats {
-  const total = brands.length;
-  const verified = brands.filter((b) => b.isVerified === true).length;
-  const official = brands.filter((b) => b.isOfficial === true).length;
-  const avgRating =
-    brands.length > 0
-      ? brands.reduce((sum, b) => sum + (b.averageRating || 0), 0) / total
-      : 0;
-
-  return {
-    total,
-    verified,
-    official,
-    avgRating,
-  };
 }
 
 export function generateSlug(name: string): string {

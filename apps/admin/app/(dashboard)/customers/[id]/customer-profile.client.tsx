@@ -15,6 +15,11 @@ import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import { MapsLinkButton } from "@workspace/ui/components/maps-link-button";
 import {
+  CallButton,
+  EmailButton,
+  WhatsAppButton,
+} from "@workspace/ui/components/contact-buttons";
+import {
   Mail,
   Phone,
   Calendar,
@@ -372,7 +377,18 @@ export function CustomerProfileContent({
                             {address.company}
                           </div>
                         )}
-                        <div>{address.phone}</div>
+                        {address.phone && (
+                          <div className="flex items-center gap-1.5">
+                            <Phone className="h-3.5 w-3.5" />
+                            <a
+                              href={`tel:${address.phone}`}
+                              className="hover:underline"
+                              dir="ltr"
+                            >
+                              {address.phone}
+                            </a>
+                          </div>
+                        )}
                         <div>
                           {address.addressLine1}
                           {address.addressLine2 && `, ${address.addressLine2}`}
@@ -401,11 +417,25 @@ export function CustomerProfileContent({
                         )}
                       </div>
                     </div>
-                    <MapsLinkButton
-                      type="location"
-                      latitude={address.latitude}
-                      longitude={address.longitude}
-                    />
+                    <div className="flex flex-wrap justify-end gap-2">
+                      <WhatsAppButton
+                        phone={address.phone}
+                        aria-label={`WhatsApp ${address.fullName}`}
+                      />
+                      <CallButton
+                        phone={address.phone}
+                        aria-label={`Call ${address.fullName}`}
+                      />
+                      <EmailButton
+                        email={customer.email}
+                        aria-label={`Email ${address.fullName}`}
+                      />
+                      <MapsLinkButton
+                        type="location"
+                        latitude={address.latitude}
+                        longitude={address.longitude}
+                      />
+                    </div>
                   </div>
                 </div>
               ))}

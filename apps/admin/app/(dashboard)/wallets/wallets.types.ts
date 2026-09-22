@@ -111,19 +111,32 @@ export interface WalletStats {
   pendingTopUpAmount: string;
 }
 
-export interface PayoutRequestFilters {
-  status?: WalletPayoutStatus;
+interface PageQuery<TSort extends string> {
   search?: string;
+  limit?: number;
+  offset?: number;
+  sort?: { id: TSort; desc: boolean } | null;
 }
 
-export interface TopUpRequestFilters {
-  status?: WalletTopUpStatus;
-  search?: string;
+export type PayoutRequestSortId = "createdAt" | "amount";
+export type TopUpRequestSortId = "createdAt" | "amount";
+export type WalletSortId = "availableBalance" | "balance" | "createdAt";
+
+export interface PayoutRequestFilters extends PageQuery<PayoutRequestSortId> {
+  status?: WalletPayoutStatus[];
 }
 
-export interface WalletFilters {
-  status?: WalletStatus;
-  search?: string;
+export interface TopUpRequestFilters extends PageQuery<TopUpRequestSortId> {
+  status?: WalletTopUpStatus[];
+}
+
+export interface WalletFilters extends PageQuery<WalletSortId> {
+  status?: WalletStatus[];
+}
+
+export interface PagedRows<T> {
+  rows: T[];
+  totalCount: number;
 }
 
 export type AdminWalletResult<T = undefined> =
@@ -131,5 +144,5 @@ export type AdminWalletResult<T = undefined> =
   | { success: false; error: string };
 
 export interface WalletsPageProps {
-  searchParams?: Promise<{ status?: string; search?: string; tab?: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }

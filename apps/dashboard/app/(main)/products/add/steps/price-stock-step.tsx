@@ -682,6 +682,7 @@ function VariantsSection({
             : [];
 
       return {
+        id: (existingVariant as { id?: string })?.id,
         title: englishTitle,
         sku: (existingVariant as { sku?: string })?.sku || sku,
         listPrice:

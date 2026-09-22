@@ -33,6 +33,7 @@ type ProductForEdit = {
   dimensions: unknown;
   localized: AddProductFormData["localized"];
   productVariants?: Array<{
+    id: string;
     title: string;
     sku: string;
     price: unknown;
@@ -143,6 +144,7 @@ export function buildEditDefaultValues(
           };
 
     return {
+      id: v.id,
       title: (localized.en.title || v.title) ?? "",
       sku: v.sku ?? "",
       listPrice: isDefault ? list : variantList,

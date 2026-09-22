@@ -1,7 +1,14 @@
 "use client";
 
-import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, Star, SquareArrowOutUpRight } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import type { ColumnDef } from "@tanstack/react-table";
+import {
+  MoreHorizontal,
+  Package,
+  Star,
+  SquareArrowOutUpRight,
+} from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
 import { Checkbox } from "@workspace/ui/components/checkbox";
 import { Badge } from "@workspace/ui/components/badge";
@@ -13,56 +20,98 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu";
-import Link from "next/link";
 import { DataTableColumnHeader } from "@/app/(dashboard)/_components/data-table/data-table-column-header";
+import type { DataTableFilter } from "@/app/(dashboard)/_components/data-table/data-table.types";
+import { getPublicUrl } from "@/lib/utils";
 import {
+  LOW_STOCK_THRESHOLD,
   canApproveProduct,
   canRejectProduct,
   formatProductPrice,
   getStorefrontProductUrl,
   parseProductPrice,
 } from "../products.lib";
-
-interface Product {
-  id: string;
-  title: string;
-  slug: string;
-  description: string | null;
-  sku: string;
-  status: "draft" | "pending" | "active" | "rejected";
-  averageRating: number | null;
-  reviewCount: number | null;
-  quantity: string | number;
-  price: any;
-  createdAt: string;
-  updatedAt: string;
-  brand: {
-    id: string;
-    name: string;
-  } | null;
-  category: {
-    id: string;
-    name: string;
-  } | null;
-  seller: {
-    id: string;
-    slug?: string | null;
-    businessName: string | null;
-    displayName: string | null;
-  } | null;
-}
+import type {
+  AdminProductListItem,
+  ProductFilterOptions,
+  ProductStatus,
+} from "../products.types";
 
 interface ProductsColumnsOptions {
   onStatusChange?: (
     productId: string,
-    status: Product["status"]
+    status: ProductStatus
   ) => void | Promise<void>;
   isStatusUpdating?: (productId: string) => boolean;
 }
 
+const STATUS_STYLES: Record<ProductStatus, string> = {
+  draft: "bg-gray-600",
+  pending: "bg-amber-600",
+  active: "bg-green-700",
+  rejected: "bg-red-600",
+};
+
+const FLAG_LABELS = [
+  ["isFeatured", "Featured"],
+  ["isTrending", "Trending"],
+  ["isSeasonal", "Seasonal"],
+  ["isPlatformChoice", "Platform choice"],
+  ["isMostSelling", "Most selling"],
+  ["freeDelivery", "Free delivery"],
+] as const;
+
+/** Server-side filters (URL params) for the products table. */
+export function getProductsFilters(
+  options: ProductFilterOptions
+): DataTableFilter[] {
+  return [
+    {
+      id: "status",
+      title: "Status",
+      options: [
+        { label: "Pending", value: "pending" },
+        { label: "Active", value: "active" },
+        { label: "Rejected", value: "rejected" },
+        { label: "Draft", value: "draft" },
+      ],
+    },
+    { id: "categoryId", title: "Category", options: options.categories },
+    { id: "brandId", title: "Brand", options: options.brands },
+    { id: "seller", title: "Seller", options: options.sellers },
+    {
+      id: "stock",
+      title: "Stock",
+      options: [
+        { label: `In stock (≥ ${LOW_STOCK_THRESHOLD})`, value: "in-stock" },
+        { label: `Low stock (< ${LOW_STOCK_THRESHOLD})`, value: "low-stock" },
+        { label: "Out of stock", value: "out-of-stock" },
+      ],
+    },
+    {
+      id: "flags",
+      title: "Highlights",
+      options: [
+        { label: "Featured", value: "featured" },
+        { label: "Trending", value: "trending" },
+        { label: "Seasonal", value: "seasonal" },
+        { label: "Platform choice", value: "platform-choice" },
+        { label: "Most selling", value: "most-selling" },
+        { label: "Free delivery", value: "free-delivery" },
+      ],
+    },
+    { id: "created", title: "Created", type: "dateRange" },
+  ];
+}
+
+function resolveImage(image: string | null): string | null {
+  if (!image) return null;
+  return /^https?:\/\//.test(image) ? image : getPublicUrl(image, "products");
+}
+
 export function getProductsColumns(
   options?: ProductsColumnsOptions
-): ColumnDef<Product>[] {
+): ColumnDef<AdminProductListItem>[] {
   const { onStatusChange, isStatusUpdating } = options ?? {};
   return [
     {
@@ -88,36 +137,60 @@ export function getProductsColumns(
       enableHiding: false,
     },
     {
-      accessorKey: "id",
-      header: "ID",
-      enableSorting: false,
-      enableHiding: true,
-      cell: ({ row }) => (
-        <div className="text-xs text-gray-500 max-w-10 truncate">
-          {row.getValue("id")}
-        </div>
-      ),
-    },
-    {
       accessorKey: "title",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Product Title" />
+        <DataTableColumnHeader column={column} title="Product" />
       ),
+      enableHiding: false,
+      meta: { label: "Product" },
       cell: ({ row }) => {
+        const product = row.original;
+        const image = resolveImage(product.image);
+        const flags = FLAG_LABELS.filter(([key]) => product[key]);
         return (
-          <div className="flex flex-col">
-            <Link
-              href={`/products/${row.original.id}`}
-              className="font-medium hover:underline max-w-50 truncate"
-              title={row.original.title}
-            >
-              {row.getValue("title")}
-            </Link>
-            <div
-              className="text-xs text-gray-500 max-w-50 truncate"
-              title={row.original.slug}
-            >
-              {row.original.slug}
+          <div className="flex items-center gap-3">
+            <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-md border bg-muted">
+              {image ? (
+                <Image
+                  src={image}
+                  alt={product.title}
+                  fill
+                  sizes="40px"
+                  className="object-cover"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center">
+                  <Package className="h-4 w-4 text-muted-foreground" />
+                </div>
+              )}
+            </div>
+            <div className="flex min-w-0 flex-col">
+              <Link
+                href={`/products/${product.id}`}
+                className="max-w-60 truncate font-medium hover:underline"
+                title={product.title}
+              >
+                {product.title}
+              </Link>
+              <span
+                className="max-w-60 truncate font-mono text-xs text-muted-foreground"
+                title={product.sku ?? undefined}
+              >
+                {product.sku || "No SKU"}
+              </span>
+              {flags.length > 0 && (
+                <div className="mt-1 flex flex-wrap gap-1">
+                  {flags.map(([key, label]) => (
+                    <Badge
+                      key={key}
+                      variant="outline"
+                      className="px-1.5 py-0 text-[10px] font-normal"
+                    >
+                      {label}
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         );
@@ -128,31 +201,40 @@ export function getProductsColumns(
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Price" />
       ),
+      meta: { label: "Price" },
       cell: ({ row }) => {
-        const { final } = parseProductPrice(row.getValue("price"));
-        return <div>{formatProductPrice(final)}</div>;
+        const { final, list } = parseProductPrice(row.original.price);
+        return (
+          <div className="whitespace-nowrap">
+            <div className="font-medium">{formatProductPrice(final)}</div>
+            {list && list > final && (
+              <div className="text-xs text-muted-foreground line-through">
+                {formatProductPrice(list)}
+              </div>
+            )}
+          </div>
+        );
       },
     },
     {
-      accessorKey: "brand",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Brand" />
+      id: "brand",
+      accessorFn: (product) => product.brand?.name ?? "",
+      header: "Brand",
+      enableSorting: false,
+      meta: { label: "Brand" },
+      cell: ({ row }) => (
+        <div className="max-w-32 truncate" title={row.original.brand?.name}>
+          {row.original.brand?.name || "—"}
+        </div>
       ),
-      cell: ({ row }) => {
-        const brand = row.original.brand;
-        return <div>{brand?.name || "—"}</div>;
-      },
-      filterFn: (row, id, value) => {
-        const brand = row.original.brand;
-        return brand?.name === value;
-      },
     },
     {
       id: "seller",
-      accessorFn: (row) => row.seller?.businessName ?? row.seller?.displayName ?? "",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Seller" />
-      ),
+      accessorFn: (product) =>
+        product.seller?.businessName || product.seller?.displayName || "",
+      header: "Seller",
+      enableSorting: false,
+      meta: { label: "Seller" },
       cell: ({ row }) => {
         const seller = row.original.seller;
         if (!seller) return <div>—</div>;
@@ -169,21 +251,18 @@ export function getProductsColumns(
       },
     },
     {
-      accessorKey: "category",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Category" />
-      ),
+      id: "category",
+      accessorFn: (product) => product.category?.name ?? "",
+      header: "Category",
+      enableSorting: false,
+      meta: { label: "Category" },
       cell: ({ row }) => {
-        const category = row.original.category;
+        const name = row.original.category?.name || "—";
         return (
-          <div className="max-w-40 truncate" title={category?.name || "—"}>
-            {category?.name || "—"}
+          <div className="max-w-40 truncate" title={name}>
+            {name}
           </div>
         );
-      },
-      filterFn: (row, id, value) => {
-        const category = row.original.category;
-        return category?.name === value;
       },
     },
     {
@@ -191,19 +270,22 @@ export function getProductsColumns(
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Rating" />
       ),
+      meta: { label: "Rating" },
       cell: ({ row }) => {
         const rating = row.original.averageRating;
         const reviewCount = row.original.reviewCount || 0;
 
         if (!rating) {
-          return <div className="text-gray-400 text-sm">-</div>;
+          return <div className="text-muted-foreground text-sm">—</div>;
         }
 
         return (
           <div className="flex items-center">
             <Star className="h-4 w-4 mr-1 text-yellow-500 fill-yellow-500" />
             <span>{rating.toFixed(1)}</span>
-            <span className="text-gray-500 text-xs ml-1">({reviewCount})</span>
+            <span className="text-muted-foreground text-xs ml-1">
+              ({reviewCount})
+            </span>
           </div>
         );
       },
@@ -213,59 +295,53 @@ export function getProductsColumns(
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Inventory" />
       ),
+      meta: { label: "Inventory" },
       cell: ({ row }) => {
-        const quantity = row.original.quantity;
-        const inventory =
-          typeof quantity === "string" ? parseFloat(quantity) : quantity;
-
-        let color = "text-green-600";
-        if (inventory === 0) {
-          color = "text-red-600";
-        } else if (inventory < 20) {
-          color = "text-amber-600";
-        }
-
-        return <div className={color}>{inventory}</div>;
+        const inventory = row.original.quantity;
+        const color =
+          inventory <= 0
+            ? "text-red-600"
+            : inventory < LOW_STOCK_THRESHOLD
+              ? "text-amber-600"
+              : "text-green-600";
+        return <div className={`font-medium ${color}`}>{inventory}</div>;
       },
     },
     {
       accessorKey: "status",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Status" />
-      ),
+      header: "Status",
+      enableSorting: false,
+      meta: { label: "Status" },
       cell: ({ row }) => {
         const status = row.original.status;
-        const styles: Record<string, string> = {
-          draft: "bg-gray-600",
-          pending: "bg-amber-600",
-          active: "bg-green-700",
-          rejected: "bg-red-600",
-        };
-
         return (
-          <Badge className={styles[status] ?? "bg-gray-600"}>{status}</Badge>
+          <Badge className={`capitalize ${STATUS_STYLES[status] ?? "bg-gray-600"}`}>
+            {status}
+          </Badge>
         );
-      },
-      filterFn: (row, id, value) => {
-        return row.original.status === value;
       },
     },
     {
       accessorKey: "createdAt",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Created At" />
+        <DataTableColumnHeader column={column} title="Created" />
       ),
+      meta: { label: "Created" },
       cell: ({ row }) => {
-        const date = new Date(row.getValue("createdAt"));
-        const formatted = new Intl.DateTimeFormat("en-US", {
-          dateStyle: "medium",
-        }).format(date);
-
-        return <div>{formatted}</div>;
+        const value = row.original.createdAt;
+        if (!value) return <div>—</div>;
+        return (
+          <div className="whitespace-nowrap">
+            {new Intl.DateTimeFormat("en-US", { dateStyle: "medium" }).format(
+              new Date(value)
+            )}
+          </div>
+        );
       },
     },
     {
       id: "actions",
+      enableHiding: false,
       cell: ({ row }) => {
         const product = row.original;
         const storefrontUrl = getStorefrontProductUrl(product.slug);
@@ -339,13 +415,6 @@ export function getProductsColumns(
                     </DropdownMenuItem>
                   </>
                 )}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>View variants</DropdownMenuItem>
-                <DropdownMenuItem>Manage inventory</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-red-600">
-                  Delete product
-                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

@@ -6,6 +6,7 @@ import {
   affiliateCommissions,
   affiliates,
   and,
+  asc,
   coupons,
   count,
   db,
@@ -13,6 +14,7 @@ import {
   eq,
   gte,
   ilike,
+  inArray,
   lte,
   or,
   orders,
@@ -42,7 +44,7 @@ import { getAdminUser } from "./auth";
  * so historical orders/commissions stay exactly as they were earned.
  */
 
-const LIST_ROW_LIMIT = 200;
+const LIST_PAGE_SIZE = 20;
 const ORDERS_PAGE_SIZE = 20;
 const LEDGER_PAGE_SIZE = 20;
 
@@ -145,15 +147,31 @@ export async function getAffiliateStats(): Promise<
 /* Affiliate list                                                             */
 /* -------------------------------------------------------------------------- */
 
+const AFFILIATE_SORT_IDS = [
+  "createdAt",
+  "totalOrders",
+  "deliveredOrders",
+  "pendingProfit",
+  "totalProfit",
+  "walletBalance",
+] as const;
+
 const affiliateFiltersSchema = z.object({
-  status: z.enum(["active", "inactive"]).optional(),
+  status: z.array(z.enum(["active", "inactive"])).optional(),
   performance: z.enum(["has_orders", "no_orders", "has_delivered"]).optional(),
   earnings: z.enum(["has_pending", "has_earned"]).optional(),
   search: z.string().trim().max(120).optional(),
   createdFrom: z.string().optional(),
   createdTo: z.string().optional(),
+  limit: z.number().int().min(1).max(100).optional(),
+  offset: z.number().int().min(0).optional(),
+  sort: z
+    .object({ id: z.enum(AFFILIATE_SORT_IDS), desc: z.boolean() })
+    .nullable()
+    .optional(),
 });
 
+export type AffiliateSortId = (typeof AFFILIATE_SORT_IDS)[number];
 export type AffiliateFilters = z.infer<typeof affiliateFiltersSchema>;
 
 export interface AffiliateListRow {
@@ -175,8 +193,8 @@ export interface AffiliateListRow {
 
 export interface AffiliateListResult {
   rows: AffiliateListRow[];
-  /** True when the row cap was hit — filters should be narrowed rather than assuming this is everything. */
-  truncated: boolean;
+  /** Affiliates matching the filters (all pages). */
+  totalCount: number;
 }
 
 export async function getAffiliates(
@@ -190,7 +208,7 @@ export async function getAffiliates(
     const f = parsed.data;
 
     const conditions = [];
-    if (f.status) conditions.push(eq(affiliates.status, f.status));
+    if (f.status?.length) conditions.push(inArray(affiliates.status, f.status));
     if (f.createdFrom) conditions.push(gte(affiliates.createdAt, f.createdFrom));
     if (f.createdTo) conditions.push(lte(affiliates.createdAt, f.createdTo));
     if (f.search) {
@@ -228,7 +246,23 @@ export async function getAffiliates(
       );
     }
 
-    const rows = await db
+    const totalOrders = sql<string>`count(${affiliateCommissions.id}) filter (where ${affiliateCommissions.type} = 'commission')`;
+    const deliveredOrders = sql<string>`count(${affiliateCommissions.id}) filter (where ${affiliateCommissions.type} = 'commission' and ${affiliateCommissions.status} in ('earned', 'reversed'))`;
+    const pendingProfit = sql<string>`coalesce(sum(${affiliateCommissions.commissionAmount}) filter (where ${affiliateCommissions.type} = 'commission' and ${affiliateCommissions.status} = 'pending'), 0)`;
+    const totalProfit = sql<string>`coalesce(sum(${affiliateCommissions.commissionAmount}) filter (where ${affiliateCommissions.type} = 'commission' and ${affiliateCommissions.status} = 'earned'), 0)`;
+    const walletBalance = sql<string>`coalesce(${userWallets.balance}, 0)`;
+
+    const sortColumn = {
+      createdAt: affiliates.createdAt,
+      totalOrders,
+      deliveredOrders,
+      pendingProfit,
+      totalProfit,
+      walletBalance,
+    }[f.sort?.id ?? "createdAt"];
+    const direction = f.sort?.desc === false ? asc : desc;
+
+    const listQuery = db
       .select({
         affiliateId: affiliates.id,
         userId: affiliates.userId,
@@ -239,11 +273,11 @@ export async function getAffiliates(
         couponActive: coupons.isActive,
         status: affiliates.status,
         createdAt: affiliates.createdAt,
-        walletBalance: sql<string>`coalesce(${userWallets.balance}, 0)`,
-        totalOrders: sql<string>`count(${affiliateCommissions.id}) filter (where ${affiliateCommissions.type} = 'commission')`,
-        deliveredOrders: sql<string>`count(${affiliateCommissions.id}) filter (where ${affiliateCommissions.type} = 'commission' and ${affiliateCommissions.status} in ('earned', 'reversed'))`,
-        pendingProfit: sql<string>`coalesce(sum(${affiliateCommissions.commissionAmount}) filter (where ${affiliateCommissions.type} = 'commission' and ${affiliateCommissions.status} = 'pending'), 0)`,
-        totalProfit: sql<string>`coalesce(sum(${affiliateCommissions.commissionAmount}) filter (where ${affiliateCommissions.type} = 'commission' and ${affiliateCommissions.status} = 'earned'), 0)`,
+        walletBalance,
+        totalOrders,
+        deliveredOrders,
+        pendingProfit,
+        totalProfit,
       })
       .from(affiliates)
       .innerJoin(users, eq(users.id, affiliates.userId))
@@ -255,12 +289,17 @@ export async function getAffiliates(
       )
       .where(conditions.length > 0 ? and(...conditions) : undefined)
       .groupBy(affiliates.id, users.id, coupons.id, userWallets.id)
-      .having(havingConditions.length > 0 ? and(...havingConditions) : undefined)
-      .orderBy(desc(affiliates.createdAt))
-      .limit(LIST_ROW_LIMIT + 1);
+      .having(havingConditions.length > 0 ? and(...havingConditions) : undefined);
 
-    const truncated = rows.length > LIST_ROW_LIMIT;
-    const page = truncated ? rows.slice(0, LIST_ROW_LIMIT) : rows;
+    const page = await listQuery
+      .orderBy(sql`${direction(sortColumn)} nulls last`, desc(affiliates.id))
+      .limit(f.limit ?? LIST_PAGE_SIZE)
+      .offset(f.offset ?? 0);
+
+    // HAVING filters apply per group, so count the grouped rows.
+    const [countRow] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(listQuery.as("affiliate_list"));
 
     return {
       success: true,
@@ -270,7 +309,7 @@ export async function getAffiliates(
           totalOrders: Number(row.totalOrders),
           deliveredOrders: Number(row.deliveredOrders),
         })) as AffiliateListRow[],
-        truncated,
+        totalCount: Number(countRow?.count ?? 0),
       },
     };
   } catch (error) {

@@ -104,7 +104,11 @@ export const getCustomerEmail = (order: Order): string => {
 };
 
 export const getItemsCount = (order: Order): number => {
-  return order.orderItems.reduce((total, item) => total + item.quantity, 0);
+  if (typeof order.itemsCount === "number") return order.itemsCount;
+  return (order.orderItems ?? []).reduce(
+    (total, item) => total + item.quantity,
+    0
+  );
 };
 
 export const getOrderActions = (order: Order) => {

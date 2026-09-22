@@ -16,13 +16,6 @@ import {
   TabsList,
   TabsTrigger,
 } from "@workspace/ui/components/tabs";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@workspace/ui/components/select";
 import { Input } from "@workspace/ui/components/input";
 import {
   Filter,
@@ -708,55 +701,6 @@ export default function PaymentsPage() {
           <TabsTrigger value="refunds">Refunds</TabsTrigger>
         </TabsList>
         <TabsContent value="all-payments" className="p-0 mt-4">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="flex-1">
-              <Select defaultValue="all">
-                <SelectTrigger className="w-full md:w-[200px]">
-                  <SelectValue placeholder="All Payment Methods" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Payment Methods</SelectItem>
-                  <SelectItem value="card">Credit Card</SelectItem>
-                  <SelectItem value="paypal">PayPal</SelectItem>
-                  <SelectItem value="apple-pay">Apple Pay</SelectItem>
-                  <SelectItem value="google-pay">Google Pay</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex-1">
-              <Select defaultValue="all">
-                <SelectTrigger className="w-full md:w-[200px]">
-                  <SelectValue placeholder="All Statuses" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="paid">Paid</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="authorized">Authorized</SelectItem>
-                  <SelectItem value="failed">Failed</SelectItem>
-                  <SelectItem value="refunded">Refunded</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex-1">
-              <Select defaultValue="date-desc">
-                <SelectTrigger className="w-full md:w-[200px]">
-                  <SelectValue placeholder="Sort By" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="date-desc">Newest First</SelectItem>
-                  <SelectItem value="date-asc">Oldest First</SelectItem>
-                  <SelectItem value="amount-desc">
-                    Amount (High to Low)
-                  </SelectItem>
-                  <SelectItem value="amount-asc">
-                    Amount (Low to High)
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
           <DataTable
             columns={columns}
             data={payments}

@@ -31,6 +31,7 @@ export const ProductActions = ({
   const [quantity, setQuantity] = useState(cartItemQuantity || 1);
   const stockCount = product.quantity ? Number(product.quantity) : 0;
   const hasStock = product.status === "active" && stockCount > 0;
+  const buyNow = product.directCheckout;
 
   const handleQuantityChange = (newQuantity: number) => {
     setQuantity(newQuantity);
@@ -64,9 +65,9 @@ export const ProductActions = ({
               className="h-10.5 w-full rounded-lg bg-primary text-base text-white hover:bg-primary/90 md:rounded-full"
               size="lg"
             >
-              <Link href="/cart">
-                {t("goToCart")}{" "}
+              <Link href={buyNow ? "/cart/checkout" : "/cart"}>
                 <ChevronRight className="h-4 w-4 shrink-0 rtl:rotate-180" />
+                {buyNow ? t("buyNow") : t("goToCart")}{" "}
               </Link>
             </Button>
           ) : (
@@ -79,6 +80,7 @@ export const ProductActions = ({
               showIcon={true}
               showText={true}
               stock={stockCount}
+              buyNow={buyNow}
             />
           )}
         </div>

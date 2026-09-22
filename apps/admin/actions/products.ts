@@ -24,6 +24,7 @@ import {
   syncCategoryProductCountForProductMutation,
   syncCategoryProductCountOnDelete,
 } from "@workspace/db/categories";
+import { syncProductVariants } from "@workspace/db/products";
 import {
   roundNullablePriceUpToNearestFive,
   roundPriceUpToNearestFive,
@@ -385,6 +386,36 @@ type UpdateProductInput = {
   }>;
 };
 
+/**
+ * The admin form edits only a variant's final price. Keep the stored price
+ * object (list price, discount type) when the final price is unchanged, and
+ * when it changes re-derive the discount against the existing list price.
+ */
+function mergeVariantPrice(existing: unknown, finalPrice: number) {
+  const current =
+    existing && typeof existing === "object" && !Array.isArray(existing)
+      ? (existing as Record<string, unknown>)
+      : null;
+  if (current && Number(current.final) === finalPrice) return current;
+
+  const list = Number(current?.list);
+  if (!Number.isFinite(list) || list <= finalPrice) {
+    return {
+      base: finalPrice,
+      list: finalPrice,
+      final: finalPrice,
+      discountType: null,
+      discountValue: null,
+    };
+  }
+  return {
+    ...current,
+    final: finalPrice,
+    discountType: "amount",
+    discountValue: list - finalPrice,
+  };
+}
+
 export async function updateProduct(productId: string, data: UpdateProductInput) {
   try {
     await getAdminUser();
@@ -512,38 +543,44 @@ export async function updateProduct(productId: string, data: UpdateProductInput)
       }
 
       if (data.variants !== undefined) {
-        await tx
-          .delete(productVariants)
-          .where(eq(productVariants.productId, productId));
+        // The admin form only edits a subset of variant fields, so existing
+        // variants are updated in place (stable ids) and the columns this form
+        // doesn't manage — images, localized, isDefault, discount expiry — are
+        // left as the seller set them.
+        const existingPrices = new Map(
+          (
+            await tx
+              .select({ id: productVariants.id, price: productVariants.price })
+              .from(productVariants)
+              .where(eq(productVariants.productId, productId))
+          ).map((row) => [row.id, row.price])
+        );
 
-        if (data.variants.length > 0) {
-          await tx.insert(productVariants).values(
-            data.variants.map((variant, index) => {
-              const finalPrice = roundPriceUpToNearestFive(
-                Number(variant.price ?? 0)
-              );
-              return {
-                productId,
-                title: variant.title,
-                price: {
-                  base: finalPrice,
-                  list: finalPrice,
-                  final: finalPrice,
-                  discountType: null,
-                  discountValue: null,
-                },
-                stock: variant.stock ?? 0,
-                sku: variant.sku,
-                imageUrl: variant.imageUrl ?? null,
-                option1: variant.option1 ?? null,
-                option2: variant.option2 ?? null,
-                option3: variant.option3 ?? null,
-                barCode: variant.barCode ?? null,
-                position: variant.position ?? index + 1,
-              };
-            })
-          );
-        }
+        await syncProductVariants(
+          tx,
+          productId,
+          data.variants.map((variant, index) => {
+            const finalPrice = roundPriceUpToNearestFive(
+              Number(variant.price ?? 0)
+            );
+            return {
+              id: variant.id,
+              title: variant.title,
+              price: mergeVariantPrice(
+                variant.id ? existingPrices.get(variant.id) : undefined,
+                finalPrice
+              ),
+              stock: variant.stock ?? 0,
+              sku: variant.sku,
+              imageUrl: variant.imageUrl ?? null,
+              option1: variant.option1 ?? null,
+              option2: variant.option2 ?? null,
+              option3: variant.option3 ?? null,
+              barCode: variant.barCode ?? null,
+              position: variant.position ?? index + 1,
+            };
+          })
+        );
       }
 
       return true;
@@ -623,6 +660,40 @@ export async function updateProductStatus(
     return { success: true, data: updatedProduct };
   } catch (error) {
     console.error("Error updating product status:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+export async function updateProductDirectCheckout(
+  productId: string,
+  directCheckout: boolean
+) {
+  try {
+    await getAdminUser();
+
+    const before = await toSnapshot(productId);
+    if (!before) {
+      return { success: false, error: "Product not found" };
+    }
+
+    await db
+      .update(products)
+      .set({ directCheckout, updatedAt: new Date().toISOString() })
+      .where(eq(products.id, productId));
+
+    // Purges the storefront product page cache so the button flips immediately.
+    const after = await toSnapshot(productId);
+    await applyInvalidation(invalidateProduct(before, after), {
+      from: "admin",
+      mode: "action",
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating product direct checkout:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",

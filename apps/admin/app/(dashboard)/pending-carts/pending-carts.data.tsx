@@ -3,8 +3,10 @@ import {
   getPendingCartStats,
   getPendingCarts,
 } from "@/actions/pending-carts";
+import type { RawSearchParams } from "../_components/data-table/search-params";
 import { CartStatsCards } from "./pending-carts.chunks";
 import { PendingCartsClientWrapper } from "./pending-carts.client";
+import { parsePendingCartsParams } from "./pending-carts.params";
 import { PendingCartsSkeleton } from "./pending-carts.skeleton";
 import type { PendingCart, PendingCartStats } from "./pending-carts.types";
 
@@ -14,13 +16,18 @@ import type { PendingCart, PendingCartStats } from "./pending-carts.types";
  * layout sidebar count query they oversubscribed the serverless pool (max:4)
  * and wedged against Supabase's :6543 transaction pooler.
  */
-export async function PendingCartsPageData() {
+async function PendingCartsPageData({
+  searchParams,
+}: {
+  searchParams: Promise<RawSearchParams>;
+}) {
+  const query = parsePendingCartsParams(await searchParams);
   const statsResult = await getPendingCartStats();
-  const cartsResult = await getPendingCarts({ limit: 200 });
+  const cartsResult = await getPendingCarts(query);
 
   const stats: PendingCartStats | null =
     statsResult.success && statsResult.data ? statsResult.data : null;
-  const initialCarts = (
+  const carts = (
     cartsResult.success ? cartsResult.data || [] : []
   ) as PendingCart[];
 
@@ -40,15 +47,23 @@ export async function PendingCartsPageData() {
         </p>
       )}
 
-      <PendingCartsClientWrapper initialCarts={initialCarts} />
+      <PendingCartsClientWrapper
+        carts={carts}
+        totalCount={cartsResult.success ? (cartsResult.totalCount ?? 0) : 0}
+        stats={stats}
+      />
     </div>
   );
 }
 
-export function PendingCartsDataWrapper() {
+export function PendingCartsDataWrapper({
+  searchParams,
+}: {
+  searchParams: Promise<RawSearchParams>;
+}) {
   return (
     <Suspense fallback={<PendingCartsSkeleton />}>
-      <PendingCartsPageData />
+      <PendingCartsPageData searchParams={searchParams} />
     </Suspense>
   );
 }

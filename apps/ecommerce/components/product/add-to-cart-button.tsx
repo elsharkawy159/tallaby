@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@workspace/ui/components/button";
-import { ShoppingCart, Loader2 } from "lucide-react";
+import { ShoppingCart, Loader2, Zap } from "lucide-react";
 import type { AddToCartButtonProps } from "./product-card.types";
 import { useTranslations } from "next-intl";
 import { useCart } from "@/providers/cart-provider";
@@ -9,6 +9,7 @@ import posthog from "posthog-js";
 import { trackMetaEvent } from "@/lib/meta/meta.client";
 import { toMetaContentIds } from "@/lib/meta/meta.product";
 import { DEFAULT_CURRENCY } from "@/lib/constants";
+import { useRouter } from "@/i18n/navigation";
 
 const sizeStyles = {
   sm: {
@@ -36,8 +37,10 @@ export const AddToCartButton = ({
   showIcon = true,
   showText = true,
   stock = 1,
+  buyNow = false,
 }: AddToCartButtonProps) => {
   const { addToCart, isProductLoading } = useCart();
+  const router = useRouter();
   const tProduct = useTranslations("product");
   const isLoading = isProductLoading(productId);
 
@@ -68,6 +71,8 @@ export const AddToCartButton = ({
         },
         result.metaEventId ? { eventId: result.metaEventId } : undefined
       );
+
+      if (buyNow) router.push("/cart/checkout");
     }
   };
 
@@ -87,11 +92,18 @@ export const AddToCartButton = ({
       {isLoading ? (
         <Loader2 className={`${styles.loader} animate-spin`} />
       ) : (
-        showIcon && <ShoppingCart className={styles.icon} />
+        showIcon &&
+        (buyNow ? (
+          <Zap className={styles.icon} />
+        ) : (
+          <ShoppingCart className={styles.icon} />
+        ))
       )}
       {showText && (
         <span>
-          {isLoading ? tProduct("adding") : tProduct("addToCart")}
+          {isLoading
+            ? tProduct("adding")
+            : tProduct(buyNow ? "buyNow" : "addToCart")}
         </span>
       )}
     </Button>

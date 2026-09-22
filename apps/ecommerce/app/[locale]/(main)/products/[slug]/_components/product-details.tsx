@@ -1,6 +1,6 @@
 "use client";
 
-import { Truck, RotateCcw, Globe, DollarSign, Check } from "lucide-react";
+import { Truck, RotateCcw, Globe, Banknote, Check } from "lucide-react";
 import { Badge } from "@workspace/ui/components/badge";
 import { ProductActions } from "./ProductActions";
 import { HideBottomNavOnScroll } from "@/components/layout/hide-bottom-nav-on-scroll.client";
@@ -21,6 +21,11 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@workspace/ui/components";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from "@workspace/ui/components/carousel";
 import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
@@ -79,13 +84,15 @@ export const ProductDetails = ({
       const variantStock = Number(selectedVariant.stock ?? 0);
       const variantList = parsed.list;
       const productList = getPriceList(product.price);
-      const listCandidate =
-        variantList != null && variantList > variantPrice
-          ? variantList
-          : productList != null && productList > variantPrice
-            ? productList
-            : null;
+      const hasOwnDiscount = variantList != null && variantList > variantPrice;
+      const listCandidate = hasOwnDiscount
+        ? variantList
+        : productList != null && productList > variantPrice
+          ? productList
+          : null;
       const isDefaultVariant = selectedVariant.isDefault === true;
+      const productDiscountEndsAt =
+        (product.price as any)?.discountEndsAt ?? null;
 
       return {
         price: variantPrice,
@@ -93,9 +100,14 @@ export const ProductDetails = ({
         stock: variantStock,
         // The default variant mirrors the main product's discount, so its
         // expiry lives in `product.price`; other variants carry their own.
+        // A variant with no own discount that is shown against the product's
+        // list price is showing the product's discount, so it gets that expiry.
         discountEndsAt: isDefaultVariant
-          ? ((product.price as any)?.discountEndsAt ?? null)
-          : ((selectedVariant as any)?.discountEndsAt ?? null),
+          ? productDiscountEndsAt
+          : ((selectedVariant as any)?.discountEndsAt ??
+            (!hasOwnDiscount && listCandidate != null
+              ? productDiscountEndsAt
+              : null)),
       };
     }
 
@@ -133,6 +145,17 @@ export const ProductDetails = ({
   const hasVariants =
     product.productVariants && product.productVariants.length > 0;
 
+  // In-stock variants first; the sort is stable, so the original order is
+  // kept within each group.
+  const sortedVariants = useMemo(
+    () =>
+      [...(product.productVariants ?? [])].sort(
+        (a, b) =>
+          Number(Number(b.stock ?? 0) > 0) - Number(Number(a.stock ?? 0) > 0),
+      ),
+    [product.productVariants],
+  );
+
   const variantOptionLabel = useMemo(() => {
     if (!product.productVariants?.length) return t("selectVariant");
 
@@ -165,6 +188,155 @@ export const ProductDetails = ({
     FREE_SHIPPING_THRESHOLD,
     locale,
   );
+
+  const renderVariantButton = (
+    variant: NonNullable<Product["productVariants"]>[number],
+  ) => {
+    const display = getVariantDisplayFields(variant, locale);
+    const isSelected = selectedVariantId === variant.id;
+    const variantStock = Number(variant.stock ?? 0);
+    const isAvailable = variantStock > 0;
+    const isDefaultVariant = variant.isDefault === true;
+    const optionParts: string[] = [];
+    if (display.option1) optionParts.push(display.option1);
+    if (display.option2) optionParts.push(display.option2);
+    if (display.option3) optionParts.push(display.option3);
+    const variantLabel = display.title || variant.title;
+    const variantDescription = optionParts.join(" • ");
+    const variantThumbnail = getVariantImageUrls(variant)[0];
+    // Color variants get outlined in their own color instead of
+    // the generic primary border.
+    const colorHex = isAvailable
+      ? (getVariantColor(variant, locale)?.hex ?? null)
+      : null;
+    // The inset hairline keeps pale colors (white, beige) readable
+    // as an outline against the white card.
+    const colorStyle = colorHex
+      ? isSelected
+        ? {
+            borderColor: colorHex,
+            boxShadow: `0 0 0 3px ${withAlpha(colorHex, 0.3)}, inset 0 0 0 1px rgba(0,0,0,0.08)`,
+          }
+        : {
+            borderColor: withAlpha(colorHex, 0.55),
+            boxShadow: "inset 0 0 0 1px rgba(0,0,0,0.06)",
+          }
+      : undefined;
+
+    return (
+      <button
+        key={variant.id}
+        onClick={() => setSelectedVariantId(variant.id)}
+        disabled={!isAvailable}
+        title={variantDescription || variantLabel}
+        aria-pressed={isSelected}
+        aria-label={
+          isAvailable
+            ? variantLabel
+            : `${variantLabel} (${t("outOfStock")})`
+        }
+        style={colorStyle}
+        className={`group relative flex h-28 w-28 flex-col items-stretch overflow-hidden rounded-2xl border-2 text-left transition-all duration-200 ease-out ${
+          isSelected
+            ? colorHex
+              ? "bg-white shadow-lg"
+              : "border-primary shadow-lg shadow-primary/20 ring-2 ring-primary/25"
+            : isAvailable
+              ? colorHex
+                ? "bg-white hover:-translate-y-0.5"
+                : "border-gray-200 bg-white hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md"
+              : "cursor-not-allowed border-gray-100 bg-gray-50"
+        }`}
+      >
+        {/* Visual: thumbnail image or a soft gradient placeholder */}
+        <div className="relative flex-1 overflow-hidden">
+          {variantThumbnail ? (
+            <Image
+              src={getPublicUrl(variantThumbnail, "products")}
+              alt={variantLabel}
+              fill
+              sizes="96px"
+              className={`object-contain transition-transform duration-300 ${
+                isAvailable
+                  ? "group-hover:scale-105"
+                  : "opacity-40 grayscale"
+              }`}
+            />
+          ) : (
+            <div
+              className={`flex h-full w-full items-center justify-center bg-gradient-to-br ${
+                isSelected
+                  ? "from-primary/15 to-primary/5"
+                  : "from-gray-50 to-gray-100"
+              }`}
+            >
+              <span
+                className={`text-2xl font-bold ${
+                  isSelected ? "text-primary/60" : "text-gray-300"
+                }`}
+              >
+                {variantLabel.charAt(0).toUpperCase()}
+              </span>
+            </div>
+          )}
+
+          {/* Default badge */}
+          {isDefaultVariant && (
+            <span className="absolute left-1.5 top-1.5 rounded-full bg-primary px-1.5 py-0.5 text-[9px] font-semibold leading-none text-white shadow-sm">
+              {t("defaultVariant")}
+            </span>
+          )}
+
+          {/* Selected checkmark */}
+          {isSelected && (
+            <span className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-white shadow-sm">
+              <Check className="h-3 w-3" strokeWidth={3} />
+            </span>
+          )}
+
+          {/* Out of stock: dim overlay + diagonal strike */}
+          {!isAvailable && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white/10">
+              <span className="h-px w-[140%] -rotate-[22deg] bg-gray-400/80" />
+            </div>
+          )}
+        </div>
+
+        {/* Label strip */}
+        <div
+          className={`shrink-0 border-t rtl:text-right px-1.5 py-1.5 ${
+            isSelected
+              ? "border-primary/20 bg-primary/5"
+              : "border-gray-100 bg-white"
+          }`}
+        >
+          <p
+            className={`truncate text-[11px] font-semibold leading-tight ${
+              isSelected ? "text-primary" : "text-gray-900"
+            }`}
+          >
+            {variantLabel}
+          </p>
+          {isAvailable ? (
+            <p
+              className="truncate text-[10px] font-medium leading-tight text-gray-500"
+              dangerouslySetInnerHTML={{
+                __html: formatPrice(
+                  getPriceFinal(variant.price),
+                  locale,
+                  "sm",
+                ),
+              }}
+            />
+          ) : (
+            <p className="truncate text-[10px] font-medium leading-tight text-red-500">
+              {t("outOfStock")}
+            </p>
+          )}
+        </div>
+      </button>
+    );
+  };
 
   return (
     <div className="w-full space-y-5 md:space-y-6">
@@ -263,153 +435,27 @@ export const ProductDetails = ({
             <label className="block text-sm font-medium text-gray-900 mb-3">
               {variantOptionLabel}
             </label>
-            <div className="flex flex-wrap gap-3">
-              {product.productVariants?.map((variant) => {
-                const display = getVariantDisplayFields(variant, locale);
-                const isSelected = selectedVariantId === variant.id;
-                const variantStock = Number(variant.stock ?? 0);
-                const isAvailable = variantStock > 0;
-                const isDefaultVariant = variant.isDefault === true;
-                const optionParts: string[] = [];
-                if (display.option1) optionParts.push(display.option1);
-                if (display.option2) optionParts.push(display.option2);
-                if (display.option3) optionParts.push(display.option3);
-                const variantLabel = display.title || variant.title;
-                const variantDescription = optionParts.join(" • ");
-                const variantThumbnail = getVariantImageUrls(variant)[0];
-                // Color variants get outlined in their own color instead of
-                // the generic primary border.
-                const colorHex = isAvailable
-                  ? (getVariantColor(variant, locale)?.hex ?? null)
-                  : null;
-                // The inset hairline keeps pale colors (white, beige) readable
-                // as an outline against the white card.
-                const colorStyle = colorHex
-                  ? isSelected
-                    ? {
-                        borderColor: colorHex,
-                        boxShadow: `0 0 0 3px ${withAlpha(colorHex, 0.3)}, inset 0 0 0 1px rgba(0,0,0,0.08)`,
-                      }
-                    : {
-                        borderColor: withAlpha(colorHex, 0.55),
-                        boxShadow: "inset 0 0 0 1px rgba(0,0,0,0.06)",
-                      }
-                  : undefined;
+            {/* Mobile: free-drag carousel */}
+            <Carousel
+              opts={{
+                align: "start",
+                dragFree: true,
+                direction: locale === "ar" ? "rtl" : "ltr",
+              }}
+              className="md:hidden"
+            >
+              <CarouselContent className="-ms-3 py-2">
+                {sortedVariants.map((variant) => (
+                  <CarouselItem key={variant.id} className="basis-auto ps-3">
+                    {renderVariantButton(variant)}
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </Carousel>
 
-                return (
-                  <button
-                    key={variant.id}
-                    onClick={() => setSelectedVariantId(variant.id)}
-                    disabled={!isAvailable}
-                    title={variantDescription || variantLabel}
-                    aria-pressed={isSelected}
-                    aria-label={
-                      isAvailable
-                        ? variantLabel
-                        : `${variantLabel} (${t("outOfStock")})`
-                    }
-                    style={colorStyle}
-                    className={`group relative flex h-28 w-28 flex-col items-stretch overflow-hidden rounded-2xl border-2 text-left transition-all duration-200 ease-out ${
-                      isSelected
-                        ? colorHex
-                          ? "bg-white shadow-lg"
-                          : "border-primary shadow-lg shadow-primary/20 ring-2 ring-primary/25"
-                        : isAvailable
-                          ? colorHex
-                            ? "bg-white hover:-translate-y-0.5"
-                            : "border-gray-200 bg-white hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md"
-                          : "cursor-not-allowed border-gray-100 bg-gray-50"
-                    }`}
-                  >
-                    {/* Visual: thumbnail image or a soft gradient placeholder */}
-                    <div className="relative flex-1 overflow-hidden">
-                      {variantThumbnail ? (
-                        <Image
-                          src={getPublicUrl(variantThumbnail, "products")}
-                          alt={variantLabel}
-                          fill
-                          sizes="96px"
-                          className={`object-contain transition-transform duration-300 ${
-                            isAvailable
-                              ? "group-hover:scale-105"
-                              : "opacity-40 grayscale"
-                          }`}
-                        />
-                      ) : (
-                        <div
-                          className={`flex h-full w-full items-center justify-center bg-gradient-to-br ${
-                            isSelected
-                              ? "from-primary/15 to-primary/5"
-                              : "from-gray-50 to-gray-100"
-                          }`}
-                        >
-                          <span
-                            className={`text-2xl font-bold ${
-                              isSelected ? "text-primary/60" : "text-gray-300"
-                            }`}
-                          >
-                            {variantLabel.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                      )}
-
-                      {/* Default badge */}
-                      {isDefaultVariant && (
-                        <span className="absolute left-1.5 top-1.5 rounded-full bg-primary px-1.5 py-0.5 text-[9px] font-semibold leading-none text-white shadow-sm">
-                          Default
-                        </span>
-                      )}
-
-                      {/* Selected checkmark */}
-                      {isSelected && (
-                        <span className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-white shadow-sm">
-                          <Check className="h-3 w-3" strokeWidth={3} />
-                        </span>
-                      )}
-
-                      {/* Out of stock: dim overlay + diagonal strike */}
-                      {!isAvailable && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-white/10">
-                          <span className="h-px w-[140%] -rotate-[22deg] bg-gray-400/80" />
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Label strip */}
-                    <div
-                      className={`shrink-0 border-t rtl:text-right px-1.5 py-1.5 ${
-                        isSelected
-                          ? "border-primary/20 bg-primary/5"
-                          : "border-gray-100 bg-white"
-                      }`}
-                    >
-                      <p
-                        className={`truncate text-[11px] font-semibold leading-tight ${
-                          isSelected ? "text-primary" : "text-gray-900"
-                        }`}
-                      >
-                        {variantLabel}
-                      </p>
-                      {isAvailable ? (
-                        <p
-                          className="truncate text-[10px] font-medium leading-tight text-gray-500"
-                          dangerouslySetInnerHTML={{
-                            __html: formatPrice(
-                              getPriceFinal(variant.price),
-                              locale,
-                              "sm",
-                            ),
-                          }}
-                        />
-                      ) : (
-                        <p className="truncate text-[10px] font-medium leading-tight text-red-500">
-                          {t("outOfStock")}
-                        </p>
-                      )}
-                    </div>
-                  </button>
-                );
-              })}
+            {/* Desktop: wrapping grid */}
+            <div className="hidden flex-wrap gap-3 md:flex">
+              {sortedVariants.map(renderVariantButton)}
             </div>
           </div>
         )}
@@ -546,71 +592,83 @@ export const ProductDetails = ({
         </Accordion>
 
         {/* Shipping and Returns Information */}
-        <div className="grid grid-cols-2 gap-4 pt-4">
-          <div className="flex items-start gap-3 p-4 border border-gray-200 rounded-lg">
-            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-              <Truck className="h-5 w-5 text-blue-600" />
-            </div>
-            <div>
-              <p className="font-medium text-gray-900 text-sm mb-1">
-                {hasFreeDelivery
-                  ? t("freeDeliveryOnProduct")
-                  : FREE_SHIPPING_ENABLED
-                    ? t("freeShipping")
-                    : t("nationwideDelivery")}
-              </p>
-              <p className="text-xs text-gray-600">
-                {hasFreeDelivery
-                  ? t("freeDeliveryOnProductDescription")
-                  : FREE_SHIPPING_ENABLED
-                    ? t("ordersOverAmount", {
-                        amount: freeShippingThresholdLabel,
-                      })
-                    : t("fastDeliveryNationwide")}
-              </p>
-            </div>
-          </div>
+        {(() => {
+          const showsNationwideFirst = !hasFreeDelivery && !FREE_SHIPPING_ENABLED;
+          const perks = [
+            {
+              key: "delivery",
+              icon: Truck,
+              tone: "bg-sky-50 text-sky-600 ring-sky-100",
+              title: hasFreeDelivery
+                ? t("freeDeliveryOnProduct")
+                : FREE_SHIPPING_ENABLED
+                  ? t("freeShipping")
+                  : t("nationwideDelivery"),
+              description: hasFreeDelivery
+                ? t("freeDeliveryOnProductDescription")
+                : FREE_SHIPPING_ENABLED
+                  ? t("ordersOverAmount", { amount: freeShippingThresholdLabel })
+                  : t("fastDeliveryNationwide"),
+            },
+            {
+              key: "returns",
+              icon: RotateCcw,
+              tone: "bg-emerald-50 text-emerald-600 ring-emerald-100",
+              title: t("veryEasyToReturn"),
+              description: t("justPhoneNumber"),
+            },
+            // Skip when the delivery card above already says the same thing.
+            ...(showsNationwideFirst
+              ? []
+              : [
+                  {
+                    key: "nationwide",
+                    icon: Globe,
+                    tone: "bg-violet-50 text-violet-600 ring-violet-100",
+                    title: t("nationwideDelivery"),
+                    description: t("fastDeliveryNationwide"),
+                  },
+                ]),
+            {
+              key: "refunds",
+              icon: Banknote,
+              tone: "bg-amber-50 text-amber-600 ring-amber-100",
+              title: t("refundsPolicy"),
+              description: t("returnWindow", { days: String(RETURN_WINDOW_DAYS) }),
+            },
+          ];
 
-          <div className="flex items-start gap-3 p-4 border border-gray-200 rounded-lg">
-            <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-              <RotateCcw className="h-5 w-5 text-green-600" />
+          return (
+            <div className="mt-4 overflow-hidden rounded-2xl border border-gray-200 bg-gray-200">
+              <ul className="grid grid-cols-1 gap-px sm:grid-cols-2">
+                {perks.map(({ key, icon: Icon, tone, title, description }, index) => (
+                  <li
+                    key={key}
+                    className={`flex items-center gap-3 bg-white p-4 transition-colors hover:bg-gray-50 ${
+                      perks.length % 2 === 1 && index === perks.length - 1
+                        ? "sm:col-span-2"
+                        : ""
+                    }`}
+                  >
+                    <span
+                      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ring-1 ring-inset ${tone}`}
+                    >
+                      <Icon className="h-5 w-5" strokeWidth={1.75} />
+                    </span>
+                    <div className="min-w-0 text-start">
+                      <p className="text-sm font-semibold leading-snug text-gray-900">
+                        {title}
+                      </p>
+                      <p className="mt-0.5 text-xs leading-relaxed text-gray-500">
+                        {description}
+                      </p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             </div>
-            <div>
-              <p className="font-medium text-gray-900 text-sm mb-1">
-                {t("veryEasyToReturn")}
-              </p>
-              <p className="text-xs text-gray-600">{t("justPhoneNumber")}</p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3 p-4 border border-gray-200 rounded-lg">
-            <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
-              <Globe className="h-5 w-5 text-purple-600" />
-            </div>
-            <div>
-              <p className="font-medium text-gray-900 text-sm mb-1">
-                {t("nationwideDelivery")}
-              </p>
-              <p className="text-xs text-gray-600">
-                {t("fastDeliveryNationwide")}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3 p-4 border border-gray-200 rounded-lg">
-            <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
-              <DollarSign className="h-5 w-5 text-orange-600" />
-            </div>
-            <div>
-              <p className="font-medium text-gray-900 text-sm mb-1">
-                {t("refundsPolicy")}
-              </p>
-              <p className="text-xs text-gray-600">
-                {t("returnWindow", { days: String(RETURN_WINDOW_DAYS) })}
-              </p>
-            </div>
-          </div>
-        </div>
+          );
+        })()}
       </div>
     </div>
   );
