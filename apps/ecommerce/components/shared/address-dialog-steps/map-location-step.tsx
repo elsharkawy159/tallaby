@@ -403,12 +403,12 @@ export const MapLocationStep = ({
                   searchLocation(searchQuery);
                 }
               }}
-              className="flex-1 shadow-md"
+              className="flex-1 shadow-md bg-white"
             />
             <Button
               onClick={() => searchLocation(searchQuery)}
               disabled={isSearching || !searchQuery.trim()}
-              className="gap-2 h-8 absolute rounded-md rtl:left-1 ltr:right-1 top-1"
+              className="gap-2 h-8 absolute rounded-md rtl:left-1 ltr:right-1 top-1.5"
               type="button"
               size="sm"
             >
