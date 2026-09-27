@@ -274,7 +274,7 @@ export function ProductReviewsTable({ reviews: initialReviews }: ProductReviewsT
       />
 
       <Dialog open={isReviewDetailOpen} onOpenChange={setIsReviewDetailOpen}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="sm:max-w-3xl">
           <DialogHeader>
             <DialogTitle>Review Details</DialogTitle>
             <DialogDescription>View and manage this customer review.</DialogDescription>

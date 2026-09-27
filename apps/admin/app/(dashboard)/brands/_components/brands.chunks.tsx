@@ -404,7 +404,7 @@ export const BrandDialog = ({
       <DialogTrigger asChild>
         {trigger || (defaultTrigger as any)}
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {mode === "create"

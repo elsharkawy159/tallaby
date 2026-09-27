@@ -58,7 +58,7 @@ export const GuidanceWidget = ({
     <>
       {/* Guidance Panel */}
       {isOpen && (
-        <div className="fixed bottom-20 right-6 z-50 w-80">
+        <div className="fixed bottom-20 right-4 z-50 w-80 max-w-[calc(100vw-2rem)] sm:right-6">
           <Card className="bg-white shadow-xl border border-gray-200 p-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-gray-900">{title}</h3>

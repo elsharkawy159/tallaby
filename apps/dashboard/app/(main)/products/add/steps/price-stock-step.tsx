@@ -239,7 +239,7 @@ export function PriceStockStep({
       {/* Inventory Section */}
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 space-y-4">
         <h3 className="text-sm font-semibold">{t("inventory")}</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <TextInput
             form={form}
             name="sku"
@@ -353,7 +353,7 @@ export function PriceStockStep({
 
         <div className="space-y-2">
           <FormLabel className="text-sm">{t("dimensions")}</FormLabel>
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <TextInput
               form={form}
               name="dimensions.length"

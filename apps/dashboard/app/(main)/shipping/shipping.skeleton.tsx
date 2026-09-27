@@ -12,7 +12,7 @@ export function ShippingSkeleton() {
           <Skeleton key={i} className="h-24 w-full rounded-xl" />
         ))}
       </div>
-      <Skeleton className="h-10 w-80" />
+      <Skeleton className="h-10 w-80 max-w-full" />
       <div className="space-y-2 rounded-lg border p-4">
         {Array.from({ length: 6 }).map((_, i) => (
           <Skeleton key={i} className="h-12 w-full" />

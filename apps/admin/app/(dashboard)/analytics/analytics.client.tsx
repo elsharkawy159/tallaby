@@ -269,31 +269,33 @@ export function AnalyticsDashboard({ data }: { data: AdminAnalyticsPayload }) {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="pb-3 text-left font-medium">Product</th>
-                      <th className="pb-3 text-right font-medium">Revenue</th>
-                      <th className="pb-3 text-right font-medium">Orders</th>
-                      <th className="pb-3 text-right font-medium">Units</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {commerce.topProducts.map((product) => (
-                      <tr
-                        key={product.productId}
-                        className="border-b last:border-0"
-                      >
-                        <td className="py-3">{product.name}</td>
-                        <td className="py-3 text-right">
-                          {formatCurrency(product.revenue)}
-                        </td>
-                        <td className="py-3 text-right">{product.orders}</td>
-                        <td className="py-3 text-right">{product.units}</td>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="pb-3 text-left font-medium">Product</th>
+                        <th className="pb-3 text-right font-medium">Revenue</th>
+                        <th className="pb-3 text-right font-medium">Orders</th>
+                        <th className="pb-3 text-right font-medium">Units</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {commerce.topProducts.map((product) => (
+                        <tr
+                          key={product.productId}
+                          className="border-b last:border-0"
+                        >
+                          <td className="py-3">{product.name}</td>
+                          <td className="py-3 text-right">
+                            {formatCurrency(product.revenue)}
+                          </td>
+                          <td className="py-3 text-right">{product.orders}</td>
+                          <td className="py-3 text-right">{product.units}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -303,36 +305,38 @@ export function AnalyticsDashboard({ data }: { data: AdminAnalyticsPayload }) {
               <CardDescription>Stock levels for top products</CardDescription>
             </CardHeader>
             <CardContent>
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="pb-3 text-left font-medium">Product</th>
-                    <th className="pb-3 text-right font-medium">In Stock</th>
-                    <th className="pb-3 text-right font-medium">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {commerce.topProducts.map((product) => {
-                    const status = stockStatus(product.quantity);
-                    return (
-                      <tr
-                        key={product.productId}
-                        className="border-b last:border-0"
-                      >
-                        <td className="py-3">{product.name}</td>
-                        <td className="py-3 text-right">{product.quantity}</td>
-                        <td className="py-3 text-right">
-                          <span
-                            className={`rounded px-2.5 py-0.5 text-xs font-medium ${status.className}`}
-                          >
-                            {status.label}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="pb-3 text-left font-medium">Product</th>
+                      <th className="pb-3 text-right font-medium">In Stock</th>
+                      <th className="pb-3 text-right font-medium">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {commerce.topProducts.map((product) => {
+                      const status = stockStatus(product.quantity);
+                      return (
+                        <tr
+                          key={product.productId}
+                          className="border-b last:border-0"
+                        >
+                          <td className="py-3">{product.name}</td>
+                          <td className="py-3 text-right">{product.quantity}</td>
+                          <td className="py-3 text-right">
+                            <span
+                              className={`rounded px-2.5 py-0.5 text-xs font-medium ${status.className}`}
+                            >
+                              {status.label}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -358,33 +362,35 @@ export function AnalyticsDashboard({ data }: { data: AdminAnalyticsPayload }) {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="pb-3 text-left font-medium">Category</th>
-                      <th className="pb-3 text-right font-medium">Revenue</th>
-                      <th className="pb-3 text-right font-medium">Products</th>
-                      <th className="pb-3 text-right font-medium">Growth</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {commerce.categories.map((category) => (
-                      <tr
-                        key={category.categoryId}
-                        className="border-b last:border-0"
-                      >
-                        <td className="py-3">{category.name}</td>
-                        <td className="py-3 text-right">
-                          {formatCurrency(category.revenue)}
-                        </td>
-                        <td className="py-3 text-right">{category.products}</td>
-                        <td className="py-3 text-right">
-                          {category.growthPercent}%
-                        </td>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="pb-3 text-left font-medium">Category</th>
+                        <th className="pb-3 text-right font-medium">Revenue</th>
+                        <th className="pb-3 text-right font-medium">Products</th>
+                        <th className="pb-3 text-right font-medium">Growth</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {commerce.categories.map((category) => (
+                        <tr
+                          key={category.categoryId}
+                          className="border-b last:border-0"
+                        >
+                          <td className="py-3">{category.name}</td>
+                          <td className="py-3 text-right">
+                            {formatCurrency(category.revenue)}
+                          </td>
+                          <td className="py-3 text-right">{category.products}</td>
+                          <td className="py-3 text-right">
+                            {category.growthPercent}%
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </CardContent>
             </Card>
           </div>

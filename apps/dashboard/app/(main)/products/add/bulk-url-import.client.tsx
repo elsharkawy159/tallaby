@@ -368,7 +368,7 @@ export function BulkUrlImport ({
 
   return (
     <div className="min-h-screen bg-gray-50/30 pb-24">
-      <div className="sticky top-0 z-20 bg-white border-b border-gray-200 shadow-sm">
+      <div className="sticky top-14 z-20 bg-white border-b border-gray-200 shadow-sm lg:top-0">
         <div className="container px-6 py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-lg font-semibold text-gray-900">

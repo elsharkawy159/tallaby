@@ -380,7 +380,7 @@ function DataTableShell<TData>({
   const visibleColumnCount = table.getVisibleLeafColumns().length || 1;
 
   return (
-    <div className="space-y-4">
+    <div className="min-w-0 space-y-4">
       {toolbar}
       {bulkActions && selectedRows.length > 0 && (
         <div className="flex flex-wrap items-center gap-2 rounded-md border bg-muted/50 px-3 py-2 text-sm">
@@ -395,7 +395,7 @@ function DataTableShell<TData>({
       )}
       <div
         className={cn(
-          "rounded-md border border-border bg-card shadow-sm transition-opacity",
+          "min-w-0 overflow-hidden rounded-md border border-border bg-card shadow-sm transition-opacity",
           isLoading && "pointer-events-none opacity-60"
         )}
         aria-busy={isLoading || undefined}

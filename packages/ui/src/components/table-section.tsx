@@ -298,14 +298,14 @@ export function TableSection<TData extends { id: string }>(
   }, [table, searchColumnId]);
 
   return (
-    <div className="space-y-4">
+    <div className="min-w-0 space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="relative">
+        <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
+          <div className="relative w-full sm:w-auto">
             <Input
               id={`${id}-input`}
               ref={inputRef}
-              className="peer min-w-60 ps-9"
+              className="peer w-full ps-9 sm:w-auto sm:min-w-60"
               value={
                 (primarySearchColumnId
                   ? (table
@@ -384,7 +384,7 @@ export function TableSection<TData extends { id: string }>(
           )}
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           {table.getSelectedRowModel().rows.length > 0 && onDeleteSelected && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
@@ -438,8 +438,8 @@ export function TableSection<TData extends { id: string }>(
         </div>
       </div>
 
-      <div className="bg-card overflow-hidden rounded-md border border-border">
-        <Table className="">
+      <div className="bg-card min-w-0 overflow-hidden rounded-md border border-border">
+        <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="hover:bg-transparent">
@@ -531,7 +531,7 @@ export function TableSection<TData extends { id: string }>(
       </div>
 
       {/* Pagination controls */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center md:justify-between">
         {/* Rows per page selector */}
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">
@@ -570,10 +570,11 @@ export function TableSection<TData extends { id: string }>(
         </div>
 
         {/* Pager */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             variant="outline"
             size="sm"
+            className="hidden sm:inline-flex"
             onClick={() => table.firstPage()}
             disabled={!table.getCanPreviousPage()}
           >
@@ -587,7 +588,7 @@ export function TableSection<TData extends { id: string }>(
           >
             {labels.previous}
           </Button>
-          <div className="text-sm text-muted-foreground px-2">
+          <div className="text-sm text-muted-foreground px-2 whitespace-nowrap">
             {labels.page(
               table.getState().pagination.pageIndex + 1,
               table.getPageCount() || 1
@@ -604,6 +605,7 @@ export function TableSection<TData extends { id: string }>(
           <Button
             variant="outline"
             size="sm"
+            className="hidden sm:inline-flex"
             onClick={() => table.lastPage()}
             disabled={!table.getCanNextPage()}
           >

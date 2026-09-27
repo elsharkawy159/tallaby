@@ -607,7 +607,7 @@ export function PricingCalculatorClient() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                   {result.scenarioList.map((scenario) => (
                     <ScenarioColumn
                       key={scenario.key}
@@ -636,7 +636,7 @@ export function PricingCalculatorClient() {
                       : "Enter a market price to project profit."}
                   </p>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                     {FIXED_PROJECTION_QUANTITIES.map((quantity) => (
                       <ProjectionTile
                         key={quantity}

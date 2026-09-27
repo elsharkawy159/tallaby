@@ -6,7 +6,7 @@ import { VendorDashboardData } from "./_components/vendor-dashboard.data";
 
 export default function VendorDashboardPage() {
   return (
-    <div className="min-h-screen p-6">
+    <div className="min-h-screen p-4 sm:p-6">
       <Suspense fallback={<VendorDashboardSkeleton />}>
         <VendorDashboardData />
       </Suspense>

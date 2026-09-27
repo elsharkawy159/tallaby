@@ -25,7 +25,7 @@ export const SellersTableSkeleton = () => {
       </div>
 
       {/* Table Skeleton */}
-      <div className="rounded-md border">
+      <div className="overflow-x-auto rounded-md border">
         <table className="w-full">
           <thead>
             <tr className="border-b bg-gray-50 dark:bg-gray-800">

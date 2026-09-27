@@ -6,7 +6,7 @@ import { VendorProductsSkeleton } from "./_components/vendor-products.skeleton";
 
 export default function ProductsPage() {
   return (
-    <section className="p-6">
+    <section className="p-4 sm:p-6">
       <Suspense fallback={<VendorProductsSkeleton />}>
         <VendorProductsData />
       </Suspense>

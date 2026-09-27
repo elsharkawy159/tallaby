@@ -4,7 +4,7 @@ import { VendorReviewsSkeleton } from "./reviews.chunks";
 
 export default function ReviewsPage() {
   return (
-    <div className="min-h-screen p-6">
+    <div className="min-h-screen p-4 sm:p-6">
       <Suspense fallback={<VendorReviewsSkeleton />}>
         <VendorReviewsData />
       </Suspense>

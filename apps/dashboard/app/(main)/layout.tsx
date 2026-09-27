@@ -27,7 +27,7 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen flex w-full bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen flex w-full overflow-x-clip bg-gray-50 dark:bg-gray-900">
       <SidebarData />
 
       {/* Main Content Area */}
@@ -38,7 +38,7 @@ export default async function DashboardLayout({
             {t("sellerStatus.restricted.message")}
           </div>
         )}
-        <main>{children}</main>
+        <main className="min-w-0">{children}</main>
       </MainContentWrapper>
     </div>
   );

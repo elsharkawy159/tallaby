@@ -83,10 +83,10 @@ export function FinancialDashboardContent({
     lastMonth > 0 ? ((thisMonth - lastMonth) / lastMonth) * 100 : 0;
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-4 sm:p-6">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
             Financial Dashboard
           </h1>
           <p className="text-gray-600 mt-1">
