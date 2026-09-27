@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import AddProduct from "./add-product";
 import { getAllCategories } from "@/actions/categories";
 import { getAllBrands } from "@/actions/brands";
@@ -31,8 +33,7 @@ export default async function AddProductPage() {
   );
 }
 
-// Metadata for the page
-export const metadata = {
-  title: "Add New Product | Dashboard",
-  description: "Create a new product listing for your store",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("meta.addProduct");
+  return { title: t("title"), description: t("description") };
+}

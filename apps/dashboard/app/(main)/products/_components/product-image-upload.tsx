@@ -25,6 +25,7 @@ export function ProductImageUpload({
   const [isUploading, setIsUploading] = useState(false);
   const supabase = createClient();
   const tToast = useTranslations("toast");
+  const t = useTranslations("products.imageUpload");
 
   const handleFileUpload = useCallback(
     async (file: File): Promise<string | null> => {
@@ -124,7 +125,7 @@ export function ProductImageUpload({
             ? "border-blue-500 bg-blue-50"
             : "border-gray-300 hover:border-gray-400"
         } ${isUploading ? "opacity-50 cursor-not-allowed" : ""}`}
-        title="Drag and drop images here"
+        title={t("dropHere")}
       >
         <input {...getInputProps()} />
         {isUploading ? (
@@ -142,7 +143,7 @@ export function ProductImageUpload({
       <div
         {...getRootProps()}
         className="h-16 w-16 overflow-hidden rounded bg-gray-100 cursor-pointer hover:opacity-80 transition-opacity"
-        title="Drag and drop to add more images"
+        title={t("dropMore")}
       >
         <input {...getInputProps()} />
         <Image
@@ -170,7 +171,7 @@ export function ProductImageUpload({
 
       {/* Image count badge */}
       {images.length > 1 && (
-        <div className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+        <div className="absolute -top-1 -end-1 bg-blue-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
           {images.length - 1}
         </div>
       )}

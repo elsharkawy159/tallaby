@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { translateStatus } from "@/lib/i18n/status";
 import { toast } from "sonner";
 import { Badge } from "@workspace/ui/components/badge";
 import { Switch } from "@workspace/ui/components/switch";
@@ -34,6 +35,8 @@ export function ProductStatusCell({
 }: ProductStatusCellProps) {
   const router = useRouter();
   const tToast = useTranslations("toast");
+  const t = useTranslations("products.publish");
+  const tStatus = useTranslations("status");
   const [isPending, startTransition] = useTransition();
   const [currentStatus, setCurrentStatus] = useState(status);
 
@@ -76,21 +79,21 @@ export function ProductStatusCell({
                 checked={isPublished}
                 onCheckedChange={handleCheckedChange}
                 disabled={!canToggle || isPending}
-                aria-label={isPublished ? "Unpublish product" : "Publish product"}
+                aria-label={isPublished ? t("unpublishProduct") : t("publishProduct")}
               />
             </span>
           </TooltipTrigger>
           <TooltipContent>
             {canToggle
               ? isPublished
-                ? "Unpublish"
-                : "Publish"
-              : "Only published or draft products can be toggled"}
+                ? t("unpublish")
+                : t("publish")
+              : t("onlyToggleable")}
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
       <Badge className={statusStyles[currentStatus]}>
-        {currentStatus}
+        {translateStatus(tStatus, "product", currentStatus)}
       </Badge>
     </div>
   );

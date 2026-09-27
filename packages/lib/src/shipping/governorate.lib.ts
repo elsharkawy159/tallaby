@@ -240,3 +240,46 @@ export function normalizeGovernorate(raw: string | null | undefined): string | n
 
   return null
 }
+
+/** Arabic display names for canonical governorate keys. */
+export const GOVERNORATE_AR_NAMES: Record<string, string> = {
+  CAIRO: 'القاهرة',
+  GIZA: 'الجيزة',
+  QALIUBIA: 'القليوبية',
+  'KAFR EL SHEIKH': 'كفر الشيخ',
+  SHARKIA: 'الشرقية',
+  ALEXANDRIA: 'الإسكندرية',
+  BEHEIRA: 'البحيرة',
+  GHARBIA: 'الغربية',
+  MONUFIA: 'المنوفية',
+  DAMIETTA: 'دمياط',
+  DAKAHLIA: 'الدقهلية',
+  ISMAILIA: 'الإسماعيلية',
+  SUEZ: 'السويس',
+  'PORT SAID': 'بورسعيد',
+  FAYOUM: 'الفيوم',
+  'BENI SUEF': 'بني سويف',
+  MINYA: 'المنيا',
+  ASSIUT: 'أسيوط',
+  SOHAG: 'سوهاج',
+  QENA: 'قنا',
+  ASWAN: 'أسوان',
+  LUXOR: 'الأقصر',
+  'RED SEA': 'البحر الأحمر',
+  'MARSA MATROUH': 'مرسى مطروح',
+  'NEW VALLEY': 'الوادي الجديد',
+  'NORTH SINAI': 'شمال سيناء',
+  'SOUTH SINAI': 'جنوب سيناء',
+}
+
+/** Localized label for a canonical governorate key ("KAFR EL SHEIKH" -> "Kafr El Sheikh" / "كفر الشيخ"). */
+export function getGovernorateLabel(code: string, locale: string): string {
+  if (locale.startsWith('ar') && GOVERNORATE_AR_NAMES[code]) return GOVERNORATE_AR_NAMES[code]
+  return code
+    .split(' ')
+    .map((word) => word.charAt(0) + word.slice(1).toLowerCase())
+    .join(' ')
+}
+
+/** Canonical governorate keys, in rate-table order. */
+export const EGYPT_GOVERNORATES = CANONICAL_GOVERNORATES

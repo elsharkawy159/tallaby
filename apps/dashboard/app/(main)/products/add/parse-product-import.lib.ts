@@ -1135,7 +1135,7 @@ export function buildParsedImportFromScrape(
     quantity: 25,
     // Fill shipping options from scraped product data; weight is required.
     dimensions,
-    fulfillmentType: "platform_fulfilled",
+    fulfillmentType: "seller_fulfilled",
     handlingTime: 1,
     freeDelivery: false,
   };

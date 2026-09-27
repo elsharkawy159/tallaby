@@ -1,4 +1,4 @@
-import { Link } from "@/i18n/navigation";
+import { Link, redirect } from "@/i18n/navigation";
 import { Suspense } from "react";
 import { Logo } from "@/components/logo";
 import { Separator } from "@workspace/ui/components";
@@ -6,7 +6,9 @@ import { OAuth } from "@/components/auth/o-auth";
 import { OnboardingFormClient } from "@/components/onboarding/onboarding-form.client";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { createClient } from "@/supabase/server";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
+import { db, eq, sellers } from "@workspace/db";
+import { getOnboardingCatalog } from "@/components/onboarding/become-seller.server";
 
 // Reads the signed-in seller applicant from the session cookie.
 export const dynamic = "force-dynamic";
@@ -20,12 +22,26 @@ export default async function OnboardingPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Already a seller: show their setup status instead of a second application.
+  if (user) {
+    const [existing] = await db
+      .select({ id: sellers.id })
+      .from(sellers)
+      .where(eq(sellers.id, user.id))
+      .limit(1);
+    if (existing) {
+      redirect({ href: "/onboarding/success", locale: await getLocale() });
+    }
+  }
+
+  const plans = user ? await getOnboardingCatalog() : [];
+
   return (
     <div className="flex items-center justify-center min-h-screen relative">
       <div className="absolute rtl:right-4 ltr:left-4 top-4 z-10 flex items-center gap-2">
         <LanguageSwitcher variant="default" />
       </div>
-      <div className="mx-auto w-full max-w-2xl">
+      <div className="mx-auto w-full max-w-2xl pt-10">
         <Logo color="primary" logoClassName="mx-auto" />
         <h2 className="mt-4 text-2xl/9 font-bold tracking-tight text-gray-900 text-center">
           {t("becomeSeller")}
@@ -43,7 +59,7 @@ export default async function OnboardingPage() {
         </p>
         <div className="mt-8">
           <Suspense fallback={<div>{tCommon("loading")}</div>}>
-            <OnboardingFormClient user={user} />
+            <OnboardingFormClient user={user ? { id: user.id } : null} plans={plans} />
           </Suspense>
 
           {!user && (

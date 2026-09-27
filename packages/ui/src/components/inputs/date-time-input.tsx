@@ -13,7 +13,7 @@ import {
 import { BaseField, type BaseFieldProps } from "./base-field";
 import { Controller, useFormContext } from "react-hook-form";
 import { CalendarIcon, Clock, X } from "lucide-react";
-import { format } from "date-fns";
+import { format, type Locale } from "date-fns";
 
 export interface DateTimeInputProps extends Omit<BaseFieldProps, "children"> {
   placeholder?: string;
@@ -22,6 +22,9 @@ export interface DateTimeInputProps extends Omit<BaseFieldProps, "children"> {
   minDate?: Date;
   maxDate?: Date;
   onChange?: (date: Date | undefined) => void;
+  /** date-fns locale for the trigger label and the calendar. */
+  locale?: Locale;
+  clearLabel?: string;
 }
 
 function combineDateAndTime(date: Date, time: string): Date {
@@ -47,6 +50,8 @@ export const DateTimeInput = React.forwardRef<HTMLDivElement, DateTimeInputProps
       maxDate,
       onChange,
       disabled = false,
+      locale,
+      clearLabel = "Clear date",
       ...baseProps
     },
     ref
@@ -57,6 +62,7 @@ export const DateTimeInput = React.forwardRef<HTMLDivElement, DateTimeInputProps
     } = useFormContext();
 
     const [isOpen, setIsOpen] = React.useState(false);
+    const isRtl = Boolean(locale?.code?.startsWith("ar"));
     const fieldError = errors[name]?.message as string;
 
     const isDateDisabled = React.useCallback(
@@ -118,7 +124,7 @@ export const DateTimeInput = React.forwardRef<HTMLDivElement, DateTimeInputProps
                     >
                       <CalendarIcon className="me-2 h-4 w-4 shrink-0" />
                       {currentValue ? (
-                        format(currentValue, dateFormat)
+                        format(currentValue, dateFormat, { locale })
                       ) : (
                         <span>{placeholder}</span>
                       )}
@@ -130,6 +136,8 @@ export const DateTimeInput = React.forwardRef<HTMLDivElement, DateTimeInputProps
                       selected={currentValue}
                       onSelect={handleDateSelect}
                       disabled={(date: Date) => Boolean(disabled) || isDateDisabled(date)}
+                      locale={locale}
+                      dir={isRtl ? "rtl" : undefined}
                       autoFocus
                     />
                   </PopoverContent>
@@ -143,6 +151,7 @@ export const DateTimeInput = React.forwardRef<HTMLDivElement, DateTimeInputProps
                     onChange={(e) => handleTimeChange(e.target.value)}
                     disabled={disabled || !currentValue}
                     className={cn("ps-8", fieldError && "border-red-500")}
+                    dir="ltr"
                   />
                 </div>
 
@@ -157,7 +166,8 @@ export const DateTimeInput = React.forwardRef<HTMLDivElement, DateTimeInputProps
                     }}
                     disabled={disabled}
                     className="px-2"
-                    title="Clear date"
+                    title={clearLabel}
+                    aria-label={clearLabel}
                   >
                     <X className="h-4 w-4" />
                   </Button>

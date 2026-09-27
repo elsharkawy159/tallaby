@@ -56,14 +56,14 @@ async function scrapeOneUrl (
     throw new Error(
       typeof dataEn?.error === "string"
         ? dataEn.error
-        : "Failed to fetch product data"
+        : "fetchDataFailed"
     )
   }
 
   const parsed = buildParsedImportFromScrape(dataEn, dataAr)
   const title = (parsed.localized?.en?.title || "").trim()
   if (!title) {
-    throw new Error("No product title found on page")
+    throw new Error("noTitle")
   }
 
   const { values } = await buildFormValuesFromImport(parsed, ctx)
@@ -117,7 +117,7 @@ export async function scrapeBulkUrls (
         onUpdate({
           ...item,
           status: "error",
-          error: err instanceof Error ? err.message : "Failed to fetch product",
+          error: err instanceof Error ? err.message : "fetchFailed",
           values: undefined,
           title: undefined,
           thumbnail: undefined,
@@ -151,7 +151,7 @@ export async function retryBulkItem (
     return {
       ...item,
       status: "error",
-      error: err instanceof Error ? err.message : "Failed to fetch product",
+      error: err instanceof Error ? err.message : "fetchFailed",
       values: undefined,
       title: undefined,
       thumbnail: undefined,

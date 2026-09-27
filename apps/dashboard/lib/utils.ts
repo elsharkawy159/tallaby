@@ -58,9 +58,10 @@ const VALID_FORMATS = ["image/jpeg", "image/png"];
 export const validateImage = (file: any) => {
   return new Promise((resolve, reject: any) => {
     if (!VALID_FORMATS.includes(file.type)) {
-      reject(new Error("File format must be jpg or png"));
+      // Message is a "toast" namespace key; callers translate it.
+      reject(new Error("imageFormatInvalid"));
     } else if (file.size > MAX_SIZE) {
-      reject(new Error("File size must not exceed 2 MB"));
+      reject(new Error("imageTooLarge"));
     } else {
       resolve(true);
     }

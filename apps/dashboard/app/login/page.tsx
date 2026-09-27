@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
@@ -23,8 +23,8 @@ import { TextInput } from "@workspace/ui/components/inputs/text-input";
 
 import { login, resetPassword } from "@/actions/auth";
 import {
-  signInSchema,
-  resetPasswordSchema,
+  createSignInSchema,
+  createResetPasswordSchema,
   type SignInFormData,
   type ResetPasswordFormData,
 } from "@/lib/validations/vendor-schemas";
@@ -37,6 +37,13 @@ export default function AuthPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const tToast = useTranslations("toast");
+  const t = useTranslations("auth");
+  const tValidation = useTranslations("validation");
+  const signInSchema = useMemo(() => createSignInSchema(tValidation), [tValidation]);
+  const resetPasswordSchema = useMemo(
+    () => createResetPasswordSchema(tValidation),
+    [tValidation]
+  );
 
   // Check if user returned from password reset email
   useEffect(() => {
@@ -97,31 +104,22 @@ export default function AuthPage() {
       <div className="relative min-h-screen flex items-center justify-center from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4">
         <Image
           src="https://images.unsplash.com/photo-1496917756835-20cb06e75b4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1908&q=80"
-          alt="Background"
+          alt=""
           fill
           priority
           sizes="100vw"
           className="object-cover -z-10"
         />
-        <div className="absolute top-0 left-0 w-full h-full z-[-1] bg-gradient-to-b from-black/30 to-black from-70%" />
+        <div className="absolute inset-0 w-full h-full z-[-1] bg-gradient-to-b from-black/30 to-black from-70%" />
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl font-bold text-center">
-              {resetSuccess ? "Check Your Email" : "Reset Password"}
+              {resetSuccess ? t("checkEmailTitle") : t("resetPasswordTitle")}
             </CardTitle>
             <CardDescription className="text-center">
-              {resetSuccess ? (
-                <>
-                  We've sent a password reset link to your email address. Please
-                  check your inbox and follow the instructions to reset your
-                  password.
-                </>
-              ) : (
-                <>
-                  Enter your email address and we'll send you a link to reset
-                  your password
-                </>
-              )}
+              {resetSuccess
+                ? t("checkEmailDescription")
+                : t("resetPasswordDescription")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -144,8 +142,7 @@ export default function AuthPage() {
                     </svg>
                   </div>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Didn't receive the email? Check your spam folder or try
-                    again.
+                    {t("didntReceiveEmail")}
                   </p>
                 </div>
                 <div className="space-y-2">
@@ -158,7 +155,7 @@ export default function AuthPage() {
                       setShowResetForm(false);
                     }}
                   >
-                    Back to Sign In
+                    {t("backToSignIn")}
                   </Button>
                   <Button
                     type="button"
@@ -166,7 +163,7 @@ export default function AuthPage() {
                     className="w-full"
                     onClick={() => setResetSuccess(false)}
                   >
-                    Try Another Email
+                    {t("tryAnotherEmail")}
                   </Button>
                 </div>
               </div>
@@ -179,9 +176,9 @@ export default function AuthPage() {
                   <TextInput
                     form={resetForm}
                     name="resetEmail"
-                    label="Email"
+                    label={t("email")}
                     type="email"
-                    placeholder="Enter your email"
+                    placeholder={t("emailPlaceholder")}
                     disabled={isPending}
                     required
                   />
@@ -194,7 +191,7 @@ export default function AuthPage() {
                       {isPending && (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       )}
-                      Send Reset Link
+                      {t("sendResetLink")}
                     </Button>
                     <Button
                       type="button"
@@ -203,8 +200,8 @@ export default function AuthPage() {
                       onClick={() => setShowResetForm(false)}
                       disabled={isPending}
                     >
-                      <ArrowLeft className="h-4 w-4" />
-                      Back to Sign In
+                      <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
+                      {t("backToSignIn")}
                     </Button>
                   </div>
                 </form>
@@ -220,20 +217,20 @@ export default function AuthPage() {
     <div className="relative min-h-screen flex items-center justify-center from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4">
       <Image
         src="https://images.unsplash.com/photo-1496917756835-20cb06e75b4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1908&q=80"
-        alt="Background"
+        alt=""
         fill
         priority
         sizes="100vw"
         className="object-cover -z-10"
       />
-      <div className="absolute top-0 left-0 w-full h-full z-[-1] bg-gradient-to-b from-black/30 to-black from-70%" />
+      <div className="absolute inset-0 w-full h-full z-[-1] bg-gradient-to-b from-black/30 to-black from-70%" />
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">
-            Vendor Dashboard
+            {t("title")}
           </CardTitle>
           <CardDescription className="text-center">
-            Access your seller account to manage products and orders
+            {t("subtitle")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -245,28 +242,28 @@ export default function AuthPage() {
               <TextInput
                 form={signInForm}
                 name="email"
-                label="Email"
+                label={t("email")}
                 type="email"
-                placeholder="Enter your email"
+                placeholder={t("emailPlaceholder")}
                 disabled={isPending}
                 required
               />
               <TextInput
                 form={signInForm}
                 name="password"
-                label="Password"
+                label={t("password")}
                 type="password"
-                placeholder="Enter your password"
+                placeholder={t("passwordPlaceholder")}
                 disabled={isPending}
                 required
               />
               <div className="space-y-2">
                 <Button type="submit" className="w-full" disabled={isPending}>
                   {isPending && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin" />
                   )}
-                  Sign In
-                  <ArrowRight className="h-4 w-4" />
+                  {t("signIn")}
+                  <ArrowRight className="h-4 w-4 rtl:rotate-180" />
                 </Button>
                 <Button
                   type="button"
@@ -275,7 +272,7 @@ export default function AuthPage() {
                   onClick={() => setShowResetForm(true)}
                   disabled={isPending}
                 >
-                  Forgot your password?
+                  {t("forgotPassword")}
                 </Button>
               </div>
               <OAuth next={"/"} />
@@ -285,14 +282,18 @@ export default function AuthPage() {
           <Separator className="my-4" />
 
           <div className="text-center text-sm text-muted-foreground">
-            By continuing, you agree to our{" "}
-            <Button variant="link" className="p-0 h-auto font-normal text-sm">
-              Terms of Service
-            </Button>{" "}
-            and{" "}
-            <Button variant="link" className="p-0 h-auto font-normal text-sm">
-              Privacy Policy
-            </Button>
+            {t.rich("legal", {
+              terms: (chunks) => (
+                <Button variant="link" className="p-0 h-auto font-normal text-sm">
+                  {chunks}
+                </Button>
+              ),
+              privacy: (chunks) => (
+                <Button variant="link" className="p-0 h-auto font-normal text-sm">
+                  {chunks}
+                </Button>
+              ),
+            })}
           </div>
         </CardContent>
       </Card>

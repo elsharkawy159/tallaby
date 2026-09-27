@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { Camera, ImageIcon, LoaderCircle, Trash2, Upload } from 'lucide-react'
 import { useDropzone } from 'react-dropzone'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 
 import { createClient } from '@/supabase/client'
 import { cn, generateImageName, getPublicUrl } from '@/lib/utils'
@@ -40,6 +41,7 @@ export function SellerImageUpload ({
   quiet = false,
 }: SellerImageUploadProps) {
   const supabase = createClient()
+  const t = useTranslations('inputs.sellerImage')
   const [isUploading, setIsUploading] = useState(false)
   const [preview, setPreview] = useState<string | null>(null)
   const previewRef = useRef<string | null>(null)
@@ -76,11 +78,11 @@ export function SellerImageUpload ({
   const uploadFile = useCallback(
     async (file: File) => {
       if (!file.type.startsWith('image/')) {
-        toast.error('Please select an image file (PNG, JPG, or WebP)')
+        toast.error(t('notAnImage'))
         return
       }
       if (file.size > MAX_SIZE) {
-        toast.error('Image must be 5MB or smaller')
+        toast.error(t('tooLarge'))
         return
       }
 
@@ -119,18 +121,18 @@ export function SellerImageUpload ({
         }
         if (!quiet) {
           toast.success(
-            variant === 'document' ? 'Document uploaded' : 'Image uploaded'
+            variant === 'document' ? t('documentUploaded') : t('imageUploaded')
           )
         }
       } catch (error) {
         console.error('Seller image upload failed:', error)
-        toast.error('Failed to upload image')
+        toast.error(t('uploadFailed'))
         clearPreview()
       } finally {
         setIsUploading(false)
       }
     },
-    [bucket, onChange, quiet, supabase, variant]
+    [bucket, onChange, quiet, supabase, variant, t]
   )
 
   const onDrop = useCallback(
@@ -204,7 +206,7 @@ export function SellerImageUpload ({
                 )}
               >
                 <Camera className='size-5 text-white' />
-                <span className='text-xs font-medium text-white'>Change</span>
+                <span className='text-xs font-medium text-white'>{t('change')}</span>
               </div>
             )}
             {!disabled && (
@@ -212,9 +214,9 @@ export function SellerImageUpload ({
                 type='button'
                 variant='destructive'
                 size='icon'
-                className='absolute top-1.5 right-1.5 size-7 rounded-full opacity-90 shadow-sm'
+                className='absolute top-1.5 end-1.5 size-7 rounded-full opacity-90 shadow-sm'
                 onClick={handleRemove}
-                aria-label='Remove image'
+                aria-label={t('remove')}
               >
                 <Trash2 className='size-3.5' />
               </Button>
@@ -234,10 +236,10 @@ export function SellerImageUpload ({
                   <Upload className='size-6 text-muted-foreground' />
                 )}
                 <span className='text-xs font-medium text-muted-foreground'>
-                  {isDragActive ? 'Drop image' : 'Upload'}
+                  {isDragActive ? t('drop') : t('upload')}
                 </span>
                 <span className='text-[10px] text-muted-foreground/80'>
-                  PNG, JPG, WebP · max 5MB
+                  {t('formats')}
                 </span>
               </>
             )}

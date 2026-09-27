@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { cn } from "@workspace/ui/lib/utils";
 import type { CategoryOption } from "./add-product.schema";
 import { searchCategoriesByProductName } from "./add-product.lib";
+import { useLocale, useTranslations } from "next-intl";
 
 function isArabicText(value: string): boolean {
   return /[\u0600-\u06FF]/.test(value)
@@ -24,10 +25,12 @@ export function CategorySuggestions({
   onSelect,
   className,
 }: CategorySuggestionsProps) {
+  const t = useTranslations("productForm.categories");
+  const locale = useLocale();
   const matchedCategories = useMemo(() => {
     return searchCategoriesByProductName(categories, productName, 8);
   }, [categories, productName]);
-  const shouldUseArabic = isArabicText(productName);
+  const shouldUseArabic = isArabicText(productName) || locale === "ar";
 
   if (
     !productName ||
@@ -39,7 +42,7 @@ export function CategorySuggestions({
 
   return (
     <div className={cn("space-y-2", className)}>
-      <p className="text-xs text-gray-600 font-medium">Suggested categories:</p>
+      <p className="text-xs text-gray-600 font-medium">{t("suggested")}</p>
       <div className="flex flex-wrap gap-2">
         {matchedCategories.map((category) => {
           const isSelected = selectedCategoryId === category.id;
@@ -60,7 +63,7 @@ export function CategorySuggestions({
                 "focus:ring-primary"
               )}
               aria-pressed={isSelected}
-              aria-label={`Select category ${categoryLabel}`}
+              aria-label={t("select", { name: categoryLabel })}
             >
               {categoryLabel}
             </button>

@@ -1,22 +1,17 @@
 import { getTranslations } from "next-intl/server";
 import Image from "next/image";
+import { Truck } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@workspace/ui/components/button";
 import { contentParams } from "@/lib/content-params";
+import { cn } from "@/lib/utils";
 
-const HERO_PRODUCT_IMAGES = [
-  {
-    src: "/accessories.jpg",
-    alt: "Accessories",
-  },
-  {
-    src: "/cosmetics.jpg",
-    alt: "Personal care",
-  },
-  {
-    src: "/fashion.png",
-    alt: "Fashion",
-  },
+// Three arched "shop windows". The middle one stands taller, like the main
+// door of an arcade; the amber outline behind the first gives the row depth.
+const HERO_WINDOWS = [
+  { src: "/accessories.jpg", frame: "h-40 sm:h-56 lg:h-72 xl:h-80", outlined: true },
+  { src: "/fashion.png", frame: "h-48 sm:h-68 lg:h-88 xl:h-96", outlined: false },
+  { src: "/cosmetics.jpg", frame: "h-40 sm:h-56 lg:h-72 xl:h-80", outlined: false },
 ] as const;
 
 export default async function HeroBanner({ locale }: { locale: string }) {
@@ -24,93 +19,101 @@ export default async function HeroBanner({ locale }: { locale: string }) {
   const values = contentParams(locale);
 
   return (
-    <div className="relative isolate bg-white">
-      {/* Grid background */}
-      <svg
+    <div className="relative isolate overflow-hidden bg-primary text-primary-foreground">
+      {/* A quiet arch echo in the background, same shape as the windows. */}
+      <div
         aria-hidden
-        className="absolute inset-x-0 top-0 -z-10 h-[32rem] w-full stroke-gray-200 [mask-image:radial-gradient(32rem_32rem_at_center,white,transparent)]"
-      >
-        <defs>
-          <pattern
-            id="hero-grid"
-            x="50%"
-            y={-1}
-            width={200}
-            height={200}
-            patternUnits="userSpaceOnUse"
-          >
-            <path d="M.5 200V.5H200" fill="none" />
-          </pattern>
-        </defs>
-        <svg x="50%" y={-1} className="overflow-visible fill-gray-50">
-          <path
-            d="M-200 0h201v201h-201Z M600 0h201v201h-201Z M-400 600h201v201h-201Z M200 800h201v201h-201Z"
-            strokeWidth={0}
-          />
-        </svg>
-        <rect
-          fill="url(#hero-grid)"
-          width="100%"
-          height="100%"
-          strokeWidth={0}
-        />
-      </svg>
+        className="pointer-events-none absolute -bottom-40 -start-32 -z-10 h-[28rem] w-80 rounded-t-full border-[40px] border-primary-foreground/[0.04] lg:h-[36rem] lg:w-[26rem]"
+      />
 
-      <div className="overflow-hidden">
-        <div className="mx-auto max-w-7xl px-6 pb-38 pt-18 sm:pt-60 lg:px-8 lg:pt-32">
-          <div className="mx-auto max-w-2xl gap-x-14 lg:mx-0 lg:flex lg:max-w-none lg:items-center">
-            <div className="relative w-full shrink-0 lg:max-w-xl xl:max-w-2xl">
-              <h1 className="text-balance text-2xl font-semibold text-gray-900 sm:text-6xl lg:leading-18">
-                {t("heroHeadline")}
-              </h1>
-              <p className="md:mt-8 mt-4 max-w-md font-medium leading-relaxed text-gray-500 sm:max-w-md sm:text-xl lg:max-w-none">
-                {t("heroDescription", values)}
-              </p>
-              <div className="mt-8">
-                <Button asChild>
-                  <Link href="/products">{t("heroCtaPrimary")}</Link>
-                </Button>
-              </div>
+      <div className="container pb-32 pt-10 sm:pb-40 sm:pt-14 lg:pb-44 lg:pt-16">
+        <div className="grid items-end gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-16">
+          <div className="max-w-xl lg:self-center">
+            <h1 className="text-balance text-4xl font-bold leading-[1.15] sm:text-5xl lg:text-6xl">
+              {t("heroHeadline")}
+            </h1>
+            <p className="mt-5 max-w-md text-base leading-relaxed text-primary-foreground/80 sm:text-lg">
+              {t("heroDescription", values)}
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Button
+                asChild
+                size="lg"
+                className="bg-accent text-accent-foreground hover:bg-accent/90"
+              >
+                <Link href="/products">{t("heroCtaPrimary")}</Link>
+              </Button>
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
+              >
+                <Link href="/categories">{t("heroCtaBrowse")}</Link>
+              </Button>
             </div>
-            {/* Product images – 3 columns, items-center, middle -mt-2 */}
-            <div className="mt-14 hidden flex-row items-center justify-center gap-4 sm:pl-20 lg:mt-0 lg:flex lg:flex-1 lg:justify-start lg:pl-0">
-              <div className="w-44 flex-none">
-                <div className="relative aspect-[2/3] w-full overflow-hidden rounded-xl bg-gray-100 shadow-lg ring-1 ring-gray-900/10">
-                  <Image
-                    src={HERO_PRODUCT_IMAGES[0].src}
-                    alt={HERO_PRODUCT_IMAGES[0].alt}
-                    fill
-                    className="object-cover"
-                    sizes="176px"
-                  />
+          </div>
+
+          <div aria-hidden className="relative mx-auto w-full max-w-md lg:max-w-none">
+            <div className="flex items-end justify-center gap-3 sm:gap-4 lg:gap-5">
+              {HERO_WINDOWS.map((item) => (
+                <div key={item.src} className="relative w-[30%] max-w-48">
+                  {item.outlined && (
+                    <span className="absolute -start-2.5 -top-2.5 h-full w-full rounded-t-full rounded-b-2xl border-2 border-accent sm:-start-3.5 sm:-top-3.5" />
+                  )}
+                  <div
+                    className={cn(
+                      "relative w-full overflow-hidden rounded-t-full rounded-b-2xl bg-primary-foreground/10 shadow-2xl shadow-black/25 ring-1 ring-primary-foreground/15",
+                      item.frame,
+                    )}
+                  >
+                    <Image
+                      src={item.src}
+                      alt=""
+                      fill
+                      priority
+                      className="object-cover"
+                      sizes="(min-width: 1024px) 192px, 30vw"
+                    />
+                  </div>
                 </div>
-              </div>
-              <div className="w-44 flex-none -mt-10">
-                <div className="relative aspect-[2/3] w-full overflow-hidden rounded-xl bg-gray-100 shadow-lg ring-1 ring-gray-900/10">
-                  <Image
-                    src={HERO_PRODUCT_IMAGES[1].src}
-                    alt={HERO_PRODUCT_IMAGES[1].alt}
-                    fill
-                    className="object-cover"
-                    sizes="176px"
-                  />
-                </div>
-              </div>
-              <div className="w-44 flex-none">
-                <div className="relative aspect-[2/3] w-full overflow-hidden rounded-xl bg-gray-100 shadow-lg ring-1 ring-gray-900/10">
-                  <Image
-                    src={HERO_PRODUCT_IMAGES[2].src}
-                    alt={HERO_PRODUCT_IMAGES[2].alt}
-                    fill
-                    className="object-cover"
-                    sizes="176px"
-                  />
-                </div>
-              </div>
+              ))}
             </div>
+
+            <DeliveryStamp text={t("heroStamp", values)} />
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+// Circular text badge that turns slowly — the hero's single moving element.
+function DeliveryStamp({ text }: { text: string }) {
+  return (
+    <div className="absolute -top-6 end-0 h-24 w-24 sm:-top-8 sm:h-32 sm:w-32 lg:-end-4 lg:-top-6 lg:h-36 lg:w-36">
+      <svg
+        viewBox="0 0 200 200"
+        // LTR base so an RTL run starts on the path instead of running off it.
+        direction="ltr"
+        className="h-full w-full animate-[spin_28s_linear_infinite] motion-reduce:animate-none"
+      >
+        <circle cx="100" cy="100" r="98" className="fill-accent" />
+        <defs>
+          <path
+            id="hero-stamp-path"
+            d="M100,100 m-74,0 a74,74 0 1,1 148,0 a74,74 0 1,1 -148,0"
+          />
+        </defs>
+        <text className="fill-accent-foreground text-[15px] font-bold">
+          <textPath href="#hero-stamp-path" textLength="462" lengthAdjust="spacingAndGlyphs">
+            {text}
+          </textPath>
+        </text>
+      </svg>
+      <span className="absolute inset-0 m-auto flex h-11 w-11 items-center justify-center rounded-full bg-primary text-primary-foreground sm:h-14 sm:w-14 lg:h-16 lg:w-16">
+        <Truck className="h-5 w-5 sm:h-6 sm:w-6 lg:h-7 lg:w-7" />
+      </span>
     </div>
   );
 }

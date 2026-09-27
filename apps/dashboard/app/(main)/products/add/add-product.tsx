@@ -28,6 +28,7 @@ import { BulkUrlImport } from "./bulk-url-import.client"
 import type { CategoryOption, BrandOption } from "./add-product.schema"
 import type { SellerPricingSettings } from "@/lib/utils/product-pricing.lib"
 import { cn } from "@/lib/utils"
+import { useLocalizedResolver } from "@/lib/i18n/localized-resolver"
 
 interface AddProductProps {
   categories: CategoryOption[]
@@ -51,9 +52,11 @@ export default function AddProduct ({
   const [bulkUrls, setBulkUrls] = useState<string[]>([])
   const [importSectionOpen, setImportSectionOpen] = useState(true)
   const tToast = useTranslations("toast")
+  const t = useTranslations("productForm")
+  const resolver = useLocalizedResolver(zodResolver(addProductFormSchema) as any)
 
   const form = useForm<AddProductFormData>({
-    resolver: zodResolver(addProductFormSchema) as any,
+    resolver: resolver as any,
     defaultValues: defaultValues as any,
     mode: "onChange",
     shouldUnregister: false,
@@ -107,10 +110,10 @@ export default function AddProduct ({
       {/* Header */}
       <div className="sticky top-0 z-20 bg-white border-b border-gray-200 shadow-sm">
         <div className="container px-6 py-4 flex items-center justify-between gap-4">
-          <h1 className="text-lg font-semibold text-gray-900">Add Product</h1>
+          <h1 className="text-lg font-semibold text-gray-900">{t("addTitle")}</h1>
           <div className="flex items-center gap-3">
             <span className="text-sm font-medium text-gray-700 hidden sm:inline">
-              Content language
+              {t("contentLanguage")}
             </span>
             <div className="flex items-center gap-1">
               {(["en", "ar"] as const).map((loc) => (
@@ -148,7 +151,7 @@ export default function AddProduct ({
                       type="button"
                       onClick={() => scrollToStepSection(step.key)}
                       className={cn(
-                        "flex items-center gap-3 text-left py-2",
+                        "flex items-center gap-3 text-start py-2",
                         status === "valid" && "text-gray-600",
                         status === "error" && "text-red-600",
                         status === "default" && "text-gray-400"
@@ -183,12 +186,12 @@ export default function AddProduct ({
                           step.id
                         )}
                       </div>
-                      <span className="text-sm font-medium">{step.title}</span>
+                      <span className="text-sm font-medium">{t(`steps.${step.title}`)}</span>
                     </button>
                     {index < ADD_PRODUCT_STEPS.length - 1 && (
                       <div
                         className={cn(
-                          "ml-4 w-0.5 h-6",
+                          "ms-4 w-0.5 h-6",
                           status === "valid" ? "bg-gray-600" : "bg-gray-300"
                         )}
                       />
@@ -238,7 +241,7 @@ export default function AddProduct ({
       </div>
 
       {/* Fixed bottom save bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-10 border-t border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+      <div className="fixed bottom-0 inset-x-0 z-10 border-t border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
         <div className="px-6 py-4 flex items-center justify-end container">
           <Button
             type="submit"
@@ -248,10 +251,10 @@ export default function AddProduct ({
             {isPending ? (
               <span className="flex items-center gap-2">
                 <LoaderCircle className="size-4 animate-spin" />
-                Saving...
+                {t("saving")}
               </span>
             ) : (
-              "Save Product"
+              t("save")
             )}
           </Button>
         </div>

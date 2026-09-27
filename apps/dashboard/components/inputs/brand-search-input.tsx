@@ -47,14 +47,15 @@ interface BrandSearchInputProps {
 
 export function BrandSearchInput({
   name,
-  label = 'Brand',
-  placeholder = 'Search for a brand...',
+  label,
+  placeholder,
   disabled = false,
   className,
   selectedBrands = [],
 }: BrandSearchInputProps) {
   const form = useFormContext()
   const tToast = useTranslations('toast')
+  const t = useTranslations('inputs.brand')
   const [open, setOpen] = React.useState(false)
   const [query, setQuery] = React.useState('')
   const [results, setResults] = React.useState<BrandOption[]>([])
@@ -144,7 +145,7 @@ export function BrandSearchInput({
       name={name}
       render={() => (
         <FormItem className={className}>
-          {label && <FormLabel className="text-sm">{label}</FormLabel>}
+          <FormLabel className="text-sm">{label ?? t('label')}</FormLabel>
           <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
               <FormControl>
@@ -154,21 +155,21 @@ export function BrandSearchInput({
                   role="combobox"
                   disabled={disabled}
                   className={cn(
-                    'justify-between gap-2 pl-3 w-full truncate rounded-lg bg-white h-11.5 hover:bg-gray-50 transition-colors text-gray-800 font-medium',
+                    'justify-between gap-2 ps-3 w-full truncate rounded-lg bg-white h-11.5 hover:bg-gray-50 transition-colors text-gray-800 font-medium',
                     !selectedBrand && 'text-muted-foreground'
                   )}
                 >
                   <span className="truncate">
-                    {selectedBrand ? selectedBrand.name : placeholder}
+                    {selectedBrand ? selectedBrand.name : (placeholder ?? t('placeholder'))}
                   </span>
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  <ChevronsUpDown className="ms-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </FormControl>
             </PopoverTrigger>
             <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
               <Command shouldFilter={false}>
                 <CommandInput
-                  placeholder="Search by brand name..."
+                  placeholder={t('searchPlaceholder')}
                   value={query}
                   onValueChange={setQuery}
                 />
@@ -180,11 +181,11 @@ export function BrandSearchInput({
                   )}
                   {!isSearching && query.length < 2 && (
                     <div className="py-6 text-center text-sm text-muted-foreground">
-                      Type at least 2 characters to search
+                      {t('minChars')}
                     </div>
                   )}
                   {!isSearching && query.length >= 2 && results.length === 0 && !showAddButton && (
-                    <CommandEmpty>No brands found.</CommandEmpty>
+                    <CommandEmpty>{t('empty')}</CommandEmpty>
                   )}
                   {!isSearching &&
                     results.map((brand) => (
@@ -196,7 +197,7 @@ export function BrandSearchInput({
                       >
                         <Check
                           className={cn(
-                            'mr-2 h-4 w-4',
+                            'me-2 h-4 w-4',
                             selectedId === brand.id ? 'opacity-100' : 'opacity-0'
                           )}
                         />
@@ -214,11 +215,11 @@ export function BrandSearchInput({
                         disabled={isCreating}
                       >
                         {isCreating ? (
-                          <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                          <LoaderCircle className="me-2 h-4 w-4 animate-spin" />
                         ) : (
                           <Plus className="h-4 w-4" />
                         )}
-                        Add &quot;{query.trim()}&quot; as new brand
+                        {t('addNew', { name: query.trim() })}
                       </Button>
                     </div>
                   )}

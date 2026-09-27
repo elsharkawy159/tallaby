@@ -197,7 +197,7 @@ export function buildEditDefaultValues(
     conditionDescription: product.conditionDescription ?? "",
     fulfillmentType:
       (product.fulfillmentType as AddProductFormData["fulfillmentType"]) ??
-      "platform_fulfilled",
+      "seller_fulfilled",
     handlingTime:
       typeof product.handlingTime === "string"
         ? parseInt(product.handlingTime, 10) || 1

@@ -1,22 +1,21 @@
 import type { LucideIcon } from 'lucide-react'
 
-export interface SellSection {
-  id: string
-  navKey: string
-}
+export type SellServiceId =
+  | 'storage'
+  | 'packaging'
+  | 'delivery'
+  | 'customer_service'
+  | 'returns'
 
-export interface SellFeatureItem {
+export type SellHandler = 'seller' | 'tallaby'
+
+export interface SellService {
+  id: SellServiceId
   icon: LucideIcon
-  titleKey: string
-  descriptionKey: string
+  planKeys: string[]
 }
 
-export interface SellChecklistItem {
-  key: string
-}
-
-export interface SellProductPagePart {
-  number: number
+export interface SellStep {
   titleKey: string
   descriptionKey: string
 }

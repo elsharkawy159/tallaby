@@ -1,252 +1,203 @@
 "use server";
 
-import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/supabase/server";
-import { db, sellers, eq } from "@workspace/db";
+import { db, sellers, users, eq, and, or, isNull } from "@workspace/db";
 import {
-  sellerApplicationSchema,
-  createSellerSchema,
-  type SellerApplicationFormData,
-  type CreateSellerData,
+  collectCatalogIssues,
+  fulfillmentRequestSchema,
+  plansForService,
+  type FulfillmentPlanView,
+} from "@workspace/lib/fulfillment";
+import {
+  createSellerFulfillmentSetup,
+  listFulfillmentPlans,
+  uniqueViolationConstraint,
+} from "@workspace/lib/fulfillment/server";
+import {
+  businessInfoSchema,
+  legalAddressSchema,
+  type OnboardingSubmission,
 } from "./become-seller.dto";
 import type { SellerApplicationResult } from "./become-seller.types";
 import { createDisplayName, generateSlug } from "./become-seller.lib";
 
-export const submitSellerApplication = async (
-  formData: SellerApplicationFormData
-): Promise<SellerApplicationResult> => {
-  try {
-    // 1. Validate form data on server (double validation)
-    const validatedData = sellerApplicationSchema.parse(formData);
+/** Active catalog for the wizard. Plans are admin-managed; nothing is hard-coded in the UI. */
+export async function getOnboardingCatalog(): Promise<FulfillmentPlanView[]> {
+  return listFulfillmentPlans({ activeOnly: true });
+}
 
-    // 2. Get authenticated user
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+type IssueList = { path: PropertyKey[]; message: string }[];
 
-    if (authError || !user) {
-      return {
-        success: false,
-        message: "You must be logged in to submit a seller application",
-      };
-    }
-
-    // 3. Check if user is already a seller
-    const existingSeller = await db
-      .select()
-      .from(sellers)
-      .where(eq(sellers.id, user.id))
-      .limit(1);
-
-    if (existingSeller.length > 0) {
-      return {
-        success: false,
-        message:
-          "You already have a seller account. Please check your dashboard.",
-      };
-    }
-
-    // 4. Generate unique slug for business
-    const baseSlug = generateSlug(validatedData.businessName);
-    let uniqueSlug = baseSlug;
-    let counter = 1;
-
-    // Check for slug uniqueness
-    while (true) {
-      const existingSlugSeller = await db
-        .select()
-        .from(sellers)
-        .where(eq(sellers.slug, uniqueSlug))
-        .limit(1);
-
-      if (existingSlugSeller.length === 0) break;
-
-      uniqueSlug = `${baseSlug}-${counter}`;
-      counter++;
-    }
-
-    // 5. Create seller profile
-    const displayName = createDisplayName(validatedData.businessName);
-
-    const sellerData: CreateSellerData = {
-      userId: user.id,
-      businessName: validatedData.businessName,
-      displayName,
-      slug: uniqueSlug,
-      businessType: validatedData.businessType,
-      description: validatedData.description?.trim() || undefined,
-      logoUrl: validatedData.logoUrl?.trim() || undefined,
-      legalAddress: {
-        street: validatedData.legalAddress.street,
-        city: validatedData.legalAddress.city,
-        state: validatedData.legalAddress.state,
-        postalCode: validatedData.legalAddress.postalCode || "",
-        country: validatedData.legalAddress.country,
-      },
-      supportEmail: validatedData.supportEmail,
-      supportPhone: validatedData.supportPhone?.trim() || undefined,
-      // registrationNumber: validatedData.registrationNumber?.trim() || undefined,
-      // taxId: validatedData.taxId?.trim() || undefined,
-    };
-
-    // Validate seller data before insertion
-    const validatedSellerData = createSellerSchema.parse(sellerData);
-
-    // Insert seller record
-    const newSeller = await db
-      .insert(sellers)
-      .values({
-        id: user.id, // Foreign key to users.id
-        businessName: validatedSellerData.businessName,
-        displayName: validatedSellerData.displayName,
-        slug: validatedSellerData.slug,
-        businessType: validatedSellerData.businessType,
-        description: validatedSellerData.description,
-        logoUrl: validatedSellerData.logoUrl,
-        legalAddress: validatedSellerData.legalAddress,
-        supportEmail: validatedSellerData.supportEmail,
-        supportPhone: validatedSellerData.supportPhone,
-        status: "approved", //Auto Approve vendors for now
-
-        // registrationNumber: validatedSellerData.registrationNumber,
-        // taxId: validatedSellerData.taxId,
-        // All other fields will use defaults or null
-      })
-      .returning({ id: sellers.id });
-
-    // 6. Revalidate relevant paths
-    revalidatePath("/dashboard");
-    revalidatePath("/onboarding");
-
-    // 7. Return success response
-    const successResponse = {
-      success: true,
-      message: "🎉 Seller account created successfully.",
-      data: {
-        sellerId: newSeller[0]?.id || user.id,
-      },
-    };
-
-    return successResponse;
-  } catch (error) {
-    // Handle Zod validation errors
-    if (error instanceof z.ZodError) {
-      const fieldErrors: Record<string, string[]> = {};
-
-      const zodIssues = error.issues || [];
-      zodIssues.forEach((err: z.ZodIssue) => {
-        const field = err.path.join(".");
-        if (!fieldErrors[field]) fieldErrors[field] = [];
-        fieldErrors[field].push(err.message);
-      });
-
-      const zodErrorResponse = {
-        success: false,
-        message: "Please fix the validation errors and try again",
-        errors: fieldErrors,
-      };
-
-      return zodErrorResponse;
-    }
-
-    // Handle database constraint errors
-    if (error instanceof Error) {
-      if (error.message.includes("unique constraint")) {
-        if (error.message.includes("slug")) {
-          const slugErrorResponse = {
-            success: false,
-            message:
-              "A business with this name already exists. Please choose a different business name.",
-          };
-          return slugErrorResponse;
-        }
-        if (error.message.includes("email")) {
-          const emailErrorResponse = {
-            success: false,
-            message:
-              "This email is already associated with another seller account.",
-          };
-          return emailErrorResponse;
-        }
-      }
-    }
-
-    // Generic error fallback
-    const genericErrorResponse = {
-      success: false,
-      message:
-        "Something went wrong while processing your application. Please try again later.",
-    };
-
-    return genericErrorResponse;
+const toErrorMap = (issues: IssueList, prefix: string, target: Record<string, string>) => {
+  for (const issue of issues) {
+    const path = [prefix, ...issue.path.map(String)].filter(Boolean).join(".");
+    target[path] ??= issue.message;
   }
 };
 
+export const submitSellerApplication = async (
+  submission: OnboardingSubmission
+): Promise<SellerApplicationResult> => {
+  // 1. Authenticate
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return { success: false, messageKey: "submitErrors.notSignedIn" };
+  }
+
+  // 2. Validate everything server-side; the wizard's step checks are UX only.
+  const errors: Record<string, string> = {};
+
+  const business = businessInfoSchema.safeParse(submission?.business);
+  if (!business.success) toErrorMap(business.error.issues, "", errors);
+
+  const legalAddress = legalAddressSchema.safeParse(submission?.legalAddress);
+  if (!legalAddress.success) toErrorMap(legalAddress.error.issues, "legalAddress", errors);
+
+  const fulfillment = fulfillmentRequestSchema.safeParse(submission?.fulfillment);
+  if (!fulfillment.success) toErrorMap(fulfillment.error.issues, "", errors);
+
+  if (submission?.acceptTerms !== true) errors.acceptTerms = "terms_required";
+
+  if (fulfillment.success) {
+    const catalog = await listFulfillmentPlans({ activeOnly: true });
+    toErrorMap(collectCatalogIssues(fulfillment.data.services, catalog), "", errors);
+
+    // A model of "Tallaby handles it" must be backed by a plan in every service.
+    if (fulfillment.data.model === "tallaby_fulfillment") {
+      for (const type of ["storage", "packaging", "delivery", "customer_service", "returns"] as const) {
+        if (plansForService(catalog, type).length === 0) {
+          errors[`services.${type}.planId`] ??= "plan_unavailable";
+        }
+      }
+    }
+  }
+
+  if (!business.success || !legalAddress.success || !fulfillment.success || Object.keys(errors).length) {
+    return { success: false, messageKey: "submitErrors.validation", errors };
+  }
+
+  // 3. One seller per user
+  const [existingSeller] = await db
+    .select({ id: sellers.id })
+    .from(sellers)
+    .where(eq(sellers.id, user.id))
+    .limit(1);
+  if (existingSeller) {
+    return { success: false, messageKey: "submitErrors.alreadySeller" };
+  }
+
+  // 4. Unique slug. Arabic-only names slugify to "", so fall back to an id-based one.
+  const baseSlug =
+    generateSlug(business.data.businessName) || `seller-${user.id.slice(0, 8)}`;
+  let uniqueSlug = baseSlug;
+  for (let counter = 1; ; counter++) {
+    const [taken] = await db
+      .select({ id: sellers.id })
+      .from(sellers)
+      .where(eq(sellers.slug, uniqueSlug))
+      .limit(1);
+    if (!taken) break;
+    uniqueSlug = `${baseSlug}-${counter}`;
+  }
+
+  const now = new Date().toISOString();
+
+  try {
+    // 5. Seller + role + fulfillment request, atomically.
+    await db.transaction(async (tx) => {
+      await tx.insert(sellers).values({
+        id: user.id,
+        businessName: business.data.businessName,
+        displayName: createDisplayName(business.data.businessName),
+        slug: uniqueSlug,
+        businessType: business.data.businessType,
+        description: business.data.description || undefined,
+        logoUrl: business.data.logoUrl || undefined,
+        legalAddress: {
+          ...legalAddress.data,
+          postalCode: legalAddress.data.postalCode ?? "",
+        },
+        supportEmail: business.data.supportEmail,
+        supportPhone: business.data.supportPhone || undefined,
+        // Sellers can start selling right away. Fulfillment services they
+        // requested stay "requested" until Tallaby activates them, and until
+        // then orders run exactly as they do today.
+        status: "approved",
+        onboardingStep: 7,
+        onboardingComplete: true,
+      });
+
+      // Promote plain customers only (same rule as the 0041 backfill). Any
+      // other role - admin, support, and especially driver, which the shipping
+      // app matches on - is kept; seller access is decided by the sellers row.
+      await tx
+        .update(users)
+        .set({ role: "seller", updatedAt: now })
+        .where(and(eq(users.id, user.id), or(isNull(users.role), eq(users.role, "customer"))));
+
+      await createSellerFulfillmentSetup(tx, {
+        sellerId: user.id,
+        request: fulfillment.data,
+        termsAcceptedAt: now,
+      });
+    });
+  } catch (error) {
+    console.error("[onboarding] seller creation failed", error);
+    const constraint = uniqueViolationConstraint(error);
+    if (constraint?.includes("slug")) {
+      return { success: false, messageKey: "submitErrors.nameTaken", errors: { businessName: "business_name_taken" } };
+    }
+    if (constraint?.startsWith("sellers_pkey")) {
+      return { success: false, messageKey: "submitErrors.alreadySeller" };
+    }
+    return { success: false, messageKey: "submitErrors.generic" };
+  }
+
+  // 6. user_metadata.is_seller is a fast-path cache for the storefront
+  // middleware. Nothing depends on it for authorization (authorization reads
+  // the sellers row), so it is set through the user's own session - no
+  // service-role key needed - and a failure is logged, not surfaced.
+  const { error: metadataError } = await supabase.auth.updateUser({
+    data: { is_seller: true },
+  });
+  if (metadataError) {
+    console.error("[onboarding] failed to set is_seller metadata", metadataError);
+  }
+
+  revalidatePath("/onboarding");
+  return { success: true, messageKey: "submitSuccess" };
+};
+
 /**
- * Checks if a business name slug is available
- * @param businessName - The business name to check
- * @returns Promise<boolean>
+ * Checks if a business name slug is available.
+ * Returns null when the check itself failed, so the UI can stay neutral
+ * instead of reporting the name as taken.
  */
 export const checkBusinessNameAvailability = async (
   businessName: string
-): Promise<boolean> => {
+): Promise<boolean | null> => {
   try {
     if (!businessName.trim()) return false;
 
     const slug = generateSlug(businessName);
+    // Arabic-only names get an id-based slug at submit time, so they never collide.
+    if (!slug) return true;
+
     const existingSeller = await db
-      .select()
+      .select({ id: sellers.id })
       .from(sellers)
       .where(eq(sellers.slug, slug))
       .limit(1);
 
     return existingSeller.length === 0;
   } catch (error) {
-    return false;
-  }
-};
-
-/**
- * Gets seller application status for current user
- * @returns Promise<{ exists: boolean; status?: string; businessName?: string }>
- */
-export const getSellerApplicationStatus = async () => {
-  try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return { exists: false, user: null };
-    }
-
-    const seller = await db
-      .select({
-        status: sellers.status,
-        businessName: sellers.businessName,
-      })
-      .from(sellers)
-      .where(eq(sellers.id, user.id))
-      .limit(1);
-
-    if (seller.length === 0) {
-      return { exists: false, user: true };
-    }
-
-    const statusResult = {
-      exists: true,
-      status: seller[0]?.status,
-      businessName: seller[0]?.businessName,
-      user: user,
-    };
-
-    return statusResult;
-  } catch (error) {
-    return { exists: false };
+    console.error("[onboarding] business name check failed", error);
+    return null;
   }
 };

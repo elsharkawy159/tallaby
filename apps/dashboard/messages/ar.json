@@ -1,4 +1,3 @@
-
 {
   "nav": {
     "dashboard": "لوحة التحكم",
@@ -12,6 +11,7 @@
     "accountStatements": "كشوف الحساب",
     "coupons": "الكوبونات والخصومات",
     "settings": "إعدادات الملف الشخصي",
+    "fulfillment": "إعدادات تنفيذ الطلبات",
     "financial": "اللوحة المالية",
     "marketing": "التسويق والعروض الترويجية",
     "shipping": "الشحن واللوجستيات",
@@ -20,7 +20,12 @@
     "search": "البحث في المنتجات والطلبات والعملاء...",
     "profile": "حسابي",
     "logout": "تسجيل الخروج",
-    "giveFeedback": "أعطنا رأيك!"
+    "giveFeedback": "أعطنا رأيك!",
+    "closeMenu": "إغلاق القائمة",
+    "expandSidebar": "توسيع الشريط الجانبي",
+    "collapseSidebar": "طي الشريط الجانبي",
+    "vendor": "البائع",
+    "logoAlt": "شعار {name}"
   },
   "common": {
     "loading": "جاري التحميل...",
@@ -170,6 +175,550 @@
     "failedToDownloadCategorizedFile": "فشل تنزيل الملف المصنف",
     "pleaseWriteAnswerFirst": "يرجى كتابة إجابة أولاً",
     "answerSubmitted": "تم إرسال الإجابة",
-    "failedToSubmitAnswer": "فشل إرسال الإجابة"
+    "failedToSubmitAnswer": "فشل إرسال الإجابة",
+    "imageFormatInvalid": "يجب أن تكون الصورة بصيغة JPG أو PNG",
+    "imageTooLarge": "يجب ألا يتجاوز حجم الملف 2 ميجابايت"
+  },
+  "fulfillment": {
+    "title": "إعدادات تنفيذ الطلبات",
+    "description": "من يتولى كل جزء من عملياتك. تصبح خدمات Tallaby فعّالة بعد أن يؤكدها فريقنا معك.",
+    "service": {
+      "storage": "التخزين",
+      "packaging": "التغليف",
+      "delivery": "التوصيل",
+      "customer_service": "خدمة العملاء",
+      "returns": "المرتجعات"
+    },
+    "provider": {
+      "seller": "أنت",
+      "tallaby": "Tallaby"
+    },
+    "status": {
+      "requested": "مطلوبة",
+      "under_review": "قيد المراجعة",
+      "awaiting_agreement": "بانتظار الاتفاق",
+      "active": "فعّالة",
+      "paused": "متوقفة مؤقتًا",
+      "rejected": "لم تتم الموافقة"
+    },
+    "awaitingSetup": "بانتظار الإعداد",
+    "current": "حاليًا",
+    "requested": "المطلوب",
+    "ownRiders": "مندوبيك",
+    "externalCourier": "شركة شحن خارجية",
+    "pendingNotice": "بعض الخدمات المطلوبة بانتظار الإعداد. سيتواصل معك فريقنا لتأكيد التفاصيل والأسعار. حتى ذلك الحين تستمر طلباتك في العمل كما هي الآن.",
+    "noSetup": "لا توجد إعدادات تنفيذ طلبات مسجلة لمتجرك بعد. يرجى التواصل مع دعم Tallaby.",
+    "changeNote": "تحتاج إلى تغيير شيء؟ تواصل مع فريقنا. تتم مراجعة التغييرات أولًا حتى لا تتأثر طلباتك الحالية.",
+    "pricingDiscussed": "سيتم الاتفاق على الأسعار مع فريقنا.",
+    "agreementTitle": "الشروط المتفق عليها",
+    "agreementStatus": {
+      "proposed": "مقترحة",
+      "accepted": "مقبولة",
+      "active": "سارية"
+    },
+    "fee": {
+      "storage": "رسوم التخزين",
+      "packaging": "رسوم التغليف",
+      "delivery": "رسوم التوصيل",
+      "return": "رسوم المرتجعات",
+      "customer_service": "رسوم خدمة العملاء",
+      "inbound_receiving": "رسوم استلام المخزون",
+      "special_handling": "رسوم المناولة الخاصة",
+      "other": "رسوم أخرى"
+    },
+    "period": {
+      "day": "يوم",
+      "week": "أسبوع",
+      "month": "شهر",
+      "quarter": "ربع سنة",
+      "year": "سنة"
+    },
+    "rateAmount": "{amount} ج.م",
+    "noRates": "لم يتم تحديد الأسعار بعد",
+    "openEnded": "مفتوحة المدة",
+    "notStarted": "سيتم تأكيد تاريخ البدء"
+  },
+  "meta": {
+    "title": "لوحة تحكم البائع",
+    "description": "لوحة تحكم البائع في Tallaby",
+    "editProduct": {
+      "title": "تعديل المنتج | لوحة التحكم",
+      "description": "عدّل بيانات منتجك"
+    },
+    "addProduct": {
+      "title": "إضافة منتج جديد | لوحة التحكم",
+      "description": "أنشئ منتجًا جديدًا في متجرك"
+    }
+  },
+  "sellerAccess": {
+    "noSellerTitle": "لا يوجد حساب بائع",
+    "noSellerMessage": "هذا الحساب غير مسجل كبائع بعد. أكمل التسجيل كبائع على Tallaby لفتح لوحة التحكم.",
+    "becomeSeller": "سجّل كبائع",
+    "signOut": "تسجيل الخروج"
+  },
+  "sellerStatus": {
+    "pending": {
+      "title": "الحساب قيد المراجعة",
+      "message": "حساب البائع الخاص بك قيد المراجعة حاليًا. ستصلك رسالة بالبريد الإلكتروني فور الموافقة عليه."
+    },
+    "approved": {
+      "title": "تمت الموافقة على الحساب",
+      "message": "حساب البائع الخاص بك مفعّل وجاهز للاستخدام."
+    },
+    "suspended": {
+      "title": "الحساب موقوف",
+      "message": "تم إيقاف حساب البائع الخاص بك. يرجى التواصل مع الدعم للمساعدة."
+    },
+    "restricted": {
+      "title": "الحساب مقيّد",
+      "message": "حساب البائع الخاص بك لديه صلاحيات محدودة. يرجى التواصل مع الدعم لمزيد من المعلومات."
+    },
+    "unknown": {
+      "title": "حالة غير معروفة",
+      "message": "يرجى التواصل مع الدعم لمعرفة حالة حسابك."
+    }
+  },
+  "auth": {
+    "title": "لوحة تحكم البائع",
+    "subtitle": "ادخل إلى حساب البائع لإدارة منتجاتك وطلباتك",
+    "email": "البريد الإلكتروني",
+    "emailPlaceholder": "أدخل بريدك الإلكتروني",
+    "password": "كلمة المرور",
+    "passwordPlaceholder": "أدخل كلمة المرور",
+    "signIn": "تسجيل الدخول",
+    "forgotPassword": "نسيت كلمة المرور؟",
+    "legal": "بالمتابعة، أنت توافق على <terms>شروط الخدمة</terms> و<privacy>سياسة الخصوصية</privacy>",
+    "checkEmailTitle": "تحقق من بريدك الإلكتروني",
+    "resetPasswordTitle": "إعادة تعيين كلمة المرور",
+    "checkEmailDescription": "أرسلنا رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني. يرجى مراجعة صندوق الوارد واتباع التعليمات لإعادة تعيين كلمة المرور.",
+    "resetPasswordDescription": "أدخل بريدك الإلكتروني وسنرسل لك رابطًا لإعادة تعيين كلمة المرور",
+    "didntReceiveEmail": "لم تصلك الرسالة؟ تحقق من مجلد الرسائل غير المرغوب فيها أو حاول مرة أخرى.",
+    "backToSignIn": "العودة لتسجيل الدخول",
+    "tryAnotherEmail": "جرّب بريدًا آخر",
+    "sendResetLink": "إرسال رابط إعادة التعيين",
+    "continueWithGoogle": "المتابعة باستخدام Google",
+    "errors": {
+      "invalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
+      "emailNotConfirmed": "يرجى تأكيد بريدك الإلكتروني قبل تسجيل الدخول.",
+      "userNotFound": "فشل تسجيل الدخول: المستخدم غير موجود.",
+      "noSellerAccount": "تم رفض الدخول: لا يوجد حساب بائع مرتبط بهذا البريد الإلكتروني. يرجى إكمال التسجيل كبائع أولًا.",
+      "invalidEmail": "يرجى إدخال بريد إلكتروني صحيح",
+      "rateLimited": "طلبات كثيرة جدًا. يرجى الانتظار قليلًا ثم المحاولة مرة أخرى",
+      "accountNotFound": "لا يوجد حساب مرتبط بهذا البريد الإلكتروني"
+    }
+  },
+  "validation": {
+    "invalidEmail": "يرجى إدخال بريد إلكتروني صحيح",
+    "passwordRequired": "كلمة المرور مطلوبة",
+    "product": {
+      "categoryRequired": "الفئة الرئيسية مطلوبة",
+      "imageRequired": "صورة واحدة على الأقل للمنتج مطلوبة",
+      "basePricePositive": "يجب أن يكون السعر الأساسي أكبر من 0",
+      "listPricePositive": "يجب أن يكون سعر القائمة أكبر من 0",
+      "finalPricePositive": "يجب أن يكون السعر النهائي أكبر من 0",
+      "variantTitleRequired": "اسم المتغير مطلوب",
+      "variantSkuRequired": "رمز SKU للمتغير مطلوب",
+      "enTitleRequired": "اسم المنتج (بالإنجليزية) مطلوب",
+      "enSlugRequired": "الرابط المختصر للمنتج (بالإنجليزية) مطلوب",
+      "arTitleRequired": "العنوان العربي مطلوب عند إضافة محتوى عربي",
+      "weightRequired": "وزن المنتج مطلوب"
+    }
+  },
+  "status": {
+    "order": {
+      "pending": "قيد الانتظار",
+      "payment_processing": "جارٍ معالجة الدفع",
+      "confirmed": "مؤكد",
+      "shipping_soon": "سيُشحن قريبًا",
+      "shipped": "تم الشحن",
+      "assigned": "مُسند للمندوب",
+      "out_for_delivery": "خرج للتوصيل",
+      "delivered": "تم التوصيل",
+      "failed": "فشل التوصيل",
+      "cancelled": "ملغي",
+      "refund_requested": "طلب استرداد",
+      "refunded": "تم الاسترداد",
+      "returned": "مرتجع"
+    },
+    "shipping": {
+      "pending": "جاهز للشحن",
+      "assigned": "مُسند",
+      "out_for_delivery": "خرج للتوصيل",
+      "delivered": "تم التوصيل",
+      "failed": "محاولة فاشلة",
+      "returned": "مرتجع",
+      "cancelled": "ملغي"
+    },
+    "payment": {
+      "pending": "قيد الانتظار",
+      "authorized": "مُصرّح",
+      "paid": "مدفوع",
+      "failed": "فشل",
+      "refunded": "مُسترد",
+      "partially_refunded": "مُسترد جزئيًا",
+      "collected": "تم التحصيل"
+    },
+    "product": {
+      "draft": "مسودة",
+      "pending": "قيد المراجعة",
+      "active": "نشط",
+      "rejected": "مرفوض"
+    }
+  },
+  "home": {
+    "walletBalance": "رصيد المحفظة",
+    "products": "المنتجات",
+    "storeRating": "تقييم المتجر",
+    "storeRatingValue": "{rating}/5 ({count, plural, zero {لا تقييمات} one {تقييم واحد} two {تقييمان} few {# تقييمات} many {# تقييمًا} other {# تقييم}})",
+    "positiveRating": "التقييمات الإيجابية",
+    "quickLinks": {
+      "title": "روابط سريعة",
+      "addProduct": "إضافة منتج",
+      "addProductDescription": "اعرض منتجًا جديدًا",
+      "orders": "الطلبات",
+      "ordersDescription": "إدارة الطلبات الأخيرة",
+      "shipping": "الشحن",
+      "shippingDescription": "اشحن وتتبّع",
+      "promotions": "العروض",
+      "promotionsDescription": "أنشئ كوبون خصم",
+      "analytics": "التحليلات",
+      "analyticsDescription": "نظرة عامة على الأداء",
+      "settings": "الإعدادات",
+      "settingsDescription": "تفضيلات المتجر"
+    },
+    "latestOrders": "أحدث الطلبات",
+    "viewAll": "عرض الكل",
+    "table": {
+      "order": "الطلب",
+      "customer": "العميل",
+      "product": "المنتج",
+      "date": "التاريخ",
+      "status": "الحالة",
+      "total": "الإجمالي"
+    },
+    "noRecentOrders": "لا توجد طلبات حديثة",
+    "customer": "عميل",
+    "questions": {
+      "emptyTitle": "أسئلة المنتجات غير المُجاب عنها",
+      "empty": "لا توجد أسئلة معلّقة حاليًا.",
+      "title": "أسئلة غير مُجاب عنها",
+      "sku": "رمز المنتج (SKU)",
+      "notAvailable": "غير متوفر",
+      "questionPrefix": "س:",
+      "answerPlaceholder": "اكتب إجابتك...",
+      "send": "إرسال"
+    }
+  },
+  "table": {
+    "selectAll": "تحديد الكل",
+    "selectRow": "تحديد الصف",
+    "search": "بحث",
+    "searchPlaceholder": "بحث...",
+    "clearFilter": "مسح البحث",
+    "view": "عرض",
+    "toggleColumns": "إظهار/إخفاء الأعمدة",
+    "delete": "حذف",
+    "confirmTitle": "هل أنت متأكد تمامًا؟",
+    "confirmDescription": "لا يمكن التراجع عن هذا الإجراء. سيتم حذف {count, plural, one {الصف المحدد} two {الصفين المحددين} few {# صفوف محددة} many {# صفًا محددًا} other {# صف محدد}} نهائيًا.",
+    "cancel": "إلغاء",
+    "sortAscending": "ترتيب تصاعدي",
+    "sortDescending": "ترتيب تنازلي",
+    "clearSort": "إلغاء الترتيب",
+    "noResults": "لا توجد نتائج.",
+    "rowsPerPage": "عدد الصفوف في الصفحة",
+    "range": "{start}-{end} من {total}",
+    "first": "الأولى",
+    "previous": "السابق",
+    "page": "صفحة {page} من {pageCount}",
+    "next": "التالي",
+    "last": "الأخيرة"
+  },
+  "products": {
+    "list": {
+      "copied": "تم النسخ!",
+      "copy": "نسخ",
+      "sku": "رمز المنتج",
+      "notAvailable": "غير متوفر",
+      "sale": "تخفيض",
+      "columns": {
+        "image": "الصورة",
+        "title": "اسم المنتج",
+        "category": "الفئة",
+        "brand": "العلامة التجارية",
+        "price": "السعر",
+        "rating": "التقييم",
+        "stock": "المخزون",
+        "status": "الحالة",
+        "actions": "الإجراءات"
+      },
+      "openRowActions": "فتح إجراءات الصف",
+      "view": "عرض",
+      "edit": "تعديل",
+      "delete": "حذف",
+      "addNew": "إضافة منتج جديد"
+    },
+    "columnsDialog": {
+      "trigger": "إدارة الأعمدة",
+      "title": "إدارة الأعمدة",
+      "description": "أظهر الأعمدة أو أخفها، واسحبها لتغيير ترتيبها في الجدول.",
+      "reorder": "إعادة ترتيب {column}",
+      "reset": "استعادة الإعدادات الافتراضية",
+      "done": "تم"
+    },
+    "publish": {
+      "publishProduct": "نشر المنتج",
+      "unpublishProduct": "إلغاء نشر المنتج",
+      "publish": "نشر",
+      "unpublish": "إلغاء النشر",
+      "onlyToggleable": "يمكن تبديل حالة المنتجات المنشورة أو المسودات فقط"
+    },
+    "imageUpload": {
+      "dropHere": "اسحب الصور وأفلتها هنا",
+      "dropMore": "اسحب الصور وأفلتها لإضافة المزيد"
+    },
+    "importExport": {
+      "trigger": "استيراد / تصدير",
+      "import": "استيراد المنتجات",
+      "export": "تصدير المنتجات",
+      "downloadTemplate": "تنزيل النموذج",
+      "inserted": "تمت إضافة {inserted, plural, one {منتج واحد} two {منتجين} few {# منتجات} many {# منتجًا} other {# منتج}}",
+      "insertedWithFailures": "تمت إضافة {inserted, plural, one {منتج واحد} two {منتجين} few {# منتجات} many {# منتجًا} other {# منتج}}، وفشل {failed}",
+      "nothingToExport": "لا توجد منتجات لتصديرها.",
+      "exported": "تم تصدير {count, plural, one {منتج واحد} two {منتجين} few {# منتجات} many {# منتجًا} other {# منتج}}",
+      "exportFailed": "تعذّر تصدير ملف المنتجات.",
+      "templateFailed": "تعذّر تنزيل النموذج.",
+      "previewTitle": "معاينة الرفع الجماعي",
+      "valid": "صالحة",
+      "invalid": "غير صالحة",
+      "columns": {
+        "row": "الصف",
+        "title": "اسم المنتج",
+        "sku": "رمز المنتج",
+        "categoryId": "معرّف الفئة",
+        "price": "السعر",
+        "variants": "المتغيرات"
+      },
+      "invalidRows": "صفوف غير صالحة",
+      "rowError": "الصف {row}: {message}",
+      "more": "+{count} أخرى…",
+      "cancel": "إلغاء",
+      "insert": "إضافة"
+    }
+  },
+  "inputs": {
+    "brand": {
+      "label": "العلامة التجارية",
+      "placeholder": "ابحث عن علامة تجارية...",
+      "searchPlaceholder": "ابحث باسم العلامة التجارية...",
+      "minChars": "اكتب حرفين على الأقل للبحث",
+      "empty": "لم يتم العثور على علامات تجارية.",
+      "addNew": "إضافة \"{name}\" كعلامة تجارية جديدة"
+    },
+    "imageUpload": {
+      "unknownError": "حدث خطأ غير معروف",
+      "selectedPreview": "معاينة الصورة المحددة",
+      "noImageSelected": "لم يتم اختيار صورة",
+      "maxReached": "تم الوصول للحد الأقصى ({max} صور)",
+      "dropHere": "أفلت الصور هنا",
+      "clickOrDrag": "انقر للرفع أو اسحب وأفلت",
+      "formats": "PNG أو JPG أو WebP (بحد أقصى 2 ميجابايت للملف)",
+      "dragDrop": "اسحب وأفلت",
+      "clickBrowse": "انقر للتصفح",
+      "progress": "تم رفع {count} من {max} صور"
+    },
+    "sellerImage": {
+      "notAnImage": "يرجى اختيار ملف صورة (PNG أو JPG أو WebP)",
+      "tooLarge": "يجب ألا يتجاوز حجم الصورة 5 ميجابايت",
+      "documentUploaded": "تم رفع المستند",
+      "imageUploaded": "تم رفع الصورة",
+      "uploadFailed": "فشل رفع الصورة",
+      "change": "تغيير",
+      "remove": "إزالة الصورة",
+      "drop": "أفلت الصورة",
+      "upload": "رفع",
+      "formats": "PNG أو JPG أو WebP · حد أقصى 5 ميجابايت"
+    }
+  },
+  "productForm": {
+    "addTitle": "إضافة منتج",
+    "contentLanguage": "لغة المحتوى",
+    "saving": "جارٍ الحفظ...",
+    "save": "حفظ المنتج",
+    "steps": {
+      "basic": "المعلومات الأساسية",
+      "priceStock": "السعر والمخزون",
+      "seo": "محركات البحث"
+    },
+    "fulfillment": {
+      "seller_fulfilled": "يتولاه البائع",
+      "platform_fulfilled": "تتولاه المنصة"
+    },
+    "categories": {
+      "suggested": "فئات مقترحة:",
+      "select": "اختيار الفئة {name}"
+    },
+    "seo": {
+      "title": "الظهور في محركات البحث",
+      "description": "أضف عنوانًا ووصفًا لترى كيف قد يظهر هذا المنتج في نتائج محركات البحث",
+      "metaTitle": "عنوان الميتا",
+      "metaTitlePlaceholder": "عنوان مناسب لمحركات البحث",
+      "metaTitleHint": "المقترح: 50-60 حرفًا",
+      "metaDescription": "وصف الميتا",
+      "metaDescriptionPlaceholder": "وصف مختصر لمحركات البحث",
+      "metaDescriptionHint": "المقترح: 150-160 حرفًا"
+    },
+    "discountExpiry": {
+      "label": "انتهاء الخصم",
+      "placeholder": "اختر تاريخ ووقت الانتهاء"
+    },
+    "variantPricing": {
+      "usesMainPrice": "يستخدم سعر المنتج الرئيسي",
+      "usesMainImages": "يستخدم صور المنتج الرئيسية",
+      "addImagesHint": "أضف الصور في قسم المعلومات الأساسية",
+      "list": "سعر القائمة",
+      "discount": "الخصم",
+      "type": "النوع",
+      "amount": "مبلغ",
+      "amountType": "خصم بمبلغ ثابت",
+      "percentType": "خصم بنسبة مئوية",
+      "final": "النهائي"
+    },
+    "basic": {
+      "onlyFirstUrls": "سيتم استيراد أول {max} روابط فقط",
+      "bulkUnavailable": "الاستيراد الجماعي بالروابط غير متاح هنا",
+      "importTitle": "استيراد منتج (رابط أو بيانات)",
+      "importing": "جارٍ الاستيراد…",
+      "imported": "تم استيراد البيانات — وسّع القسم للتعديل أو إعادة الاستيراد",
+      "importPlaceholder": "الصق رابط منتج، أو عدة روابط (رابط في كل سطر)، أو JSON، أو بيانات منتج منسّقة",
+      "importButton": "استيراد المنتج",
+      "importHelp": "الصق رابطًا واحدًا، أو عدة روابط (رابط في كل سطر) للاستيراد الجماعي. يمكنك أيضًا استخدام JSON أو نص منسّق. راجع PRODUCT_DATA_FORMAT.md لمعرفة صيغة النص.",
+      "media": "الوسائط",
+      "mediaHint": "يقبل الصور أو الفيديوهات أو النماذج ثلاثية الأبعاد",
+      "title": "الاسم",
+      "slug": "الرابط المختصر (Slug)",
+      "description": "الوصف",
+      "descriptionPlaceholder": "وصف المنتج...",
+      "content": "محتوى المنتج",
+      "contentPlaceholder": "اكتب محتوى تفصيليًا للمنتج بعناوين وقوائم ونقاط مميزة...",
+      "category": "الفئة",
+      "keyFeatures": "المميزات الرئيسية (حد أقصى 10)",
+      "addFeature": "إضافة ميزة",
+      "featurePlaceholder": "أدخل ميزة رئيسية...",
+      "remove": "إزالة",
+      "noFeatures": "لم تتم إضافة عناصر بعد",
+      "pasteHint": "(الصق القائمة هنا)"
+    },
+    "categoryPicker": {
+      "placeholder": "اختر الفئة",
+      "back": "رجوع",
+      "atRoot": "في المستوى الأعلى",
+      "goToRoot": "الذهاب إلى المستوى الأعلى",
+      "all": "الكل",
+      "goTo": "الذهاب إلى {name}",
+      "search": "ابحث في الفئات...",
+      "empty": "لا توجد نتائج."
+    },
+    "price": {
+      "title": "السعر",
+      "productPrice": "سعر المنتج",
+      "discount": "الخصم",
+      "discountType": "نوع الخصم",
+      "amount": "مبلغ",
+      "amountType": "خصم بمبلغ ثابت",
+      "percent": "نسبة %",
+      "percentType": "خصم بنسبة مئوية",
+      "finalPrice": "السعر النهائي",
+      "finalHelpExempt": "سعر عرض المنتج (بدون عمولة المنصة)",
+      "finalHelp": "سعر عرض المنتج (سعر القائمة + عمولة {rate}%)",
+      "inventory": "المخزون",
+      "sku": "رمز المنتج (SKU)",
+      "quantity": "الكمية",
+      "shippingOptions": "خيارات الشحن",
+      "fulfillmentMethod": "طريقة التنفيذ",
+      "selectFulfillment": "اختر طريقة التنفيذ",
+      "handlingTime": "مدة التجهيز (بالأيام)",
+      "freeDelivery": "توصيل مجاني لهذا المنتج",
+      "merchandising": "الترويج",
+      "merchandisingHint": "طريقة ترويج هذا المنتج — مستقلة عن فئته.",
+      "trending": "رائج الآن",
+      "seasonal": "موسمي",
+      "productWeight": "وزن المنتج",
+      "weight": "الوزن",
+      "unit": "الوحدة",
+      "selectUnit": "اختر الوحدة",
+      "dimensions": "الأبعاد",
+      "length": "الطول",
+      "width": "العرض",
+      "height": "الارتفاع",
+      "units": {
+        "kg": "كجم",
+        "g": "جم",
+        "lb": "رطل",
+        "cm": "سم",
+        "in": "بوصة"
+      }
+    },
+    "variants": {
+      "title": "أنواع المنتج والخيارات الفرعية",
+      "description": "أضف خصائص مثل الألوان والمقاسات. استخدم تبويبات لغة المحتوى بالأعلى لإدخال التسميات بالإنجليزية والعربية.",
+      "addType": "+ إضافة نوع فرعي",
+      "empty": "لم تتم إضافة أنواع متغيرات. استخدم الزر بالأعلى لإضافة نوع.",
+      "typeLabel": "نوع الخيار الفرعي",
+      "other": "أخرى",
+      "remove": "إزالة",
+      "valueLabel": "القيمة أو الخاصية",
+      "swatch": "لون العينة",
+      "unit": "الوحدة",
+      "addValue": "+ إضافة قيمة أخرى",
+      "combinations": "تركيبات المنتج",
+      "columns": {
+        "combination": "التركيبة",
+        "images": "الصور",
+        "pricing": "التسعير",
+        "stock": "المخزون",
+        "barcode": "الباركود"
+      },
+      "setDefault": "تعيين {name} كمتغير افتراضي",
+      "default": "افتراضي"
+    },
+    "bulk": {
+      "status": {
+        "pending": "في الانتظار",
+        "fetching": "جارٍ الجلب",
+        "ready": "جاهز",
+        "error": "خطأ",
+        "saving": "جارٍ الحفظ",
+        "saved": "تم الحفظ"
+      },
+      "errors": {
+        "fetchDataFailed": "فشل جلب بيانات المنتج",
+        "noTitle": "لم يتم العثور على اسم المنتج في الصفحة",
+        "fetchFailed": "فشل جلب المنتج",
+        "urlFailed": "فشل جلب هذا الرابط."
+      },
+      "fetched": "تم جلب المنتج بنجاح",
+      "noneReady": "لا توجد منتجات جاهزة للحفظ",
+      "needFixes": "{count, plural, one {منتج واحد يحتاج} two {منتجان يحتاجان} few {# منتجات تحتاج} many {# منتجًا يحتاج} other {# منتج يحتاج}} إلى تصحيح قبل الحفظ",
+      "createManyFailed": "فشل إنشاء المنتجات",
+      "createFailed": "فشل إنشاء المنتج",
+      "created": "تم إنشاء {inserted} من أصل {total, plural, one {منتج واحد} two {منتجين} few {# منتجات} many {# منتجًا} other {# منتج}}",
+      "title": "استيراد جماعي بالروابط",
+      "fetchingProgress": "جارٍ الجلب {done}/{total}…",
+      "summary": "{ready} جاهز · {failed} فشل · {total} الإجمالي",
+      "back": "رجوع",
+      "emptyList": "لم تتبقَّ منتجات. ارجع للصق الروابط مرة أخرى.",
+      "productN": "منتج {n}",
+      "noImage": "لا صورة",
+      "retry": "إعادة المحاولة",
+      "remove": "إزالة المنتج",
+      "retryOrRemove": "أعد المحاولة أو أزل هذا العنصر.",
+      "fetchingDetails": "جارٍ جلب تفاصيل المنتج…",
+      "footerHint": "يتم تخطي الروابط الفاشلة. يتم حفظ المنتجات الجاهزة فقط.",
+      "saving": "جارٍ الحفظ…",
+      "saveAll": "حفظ الكل ({count})"
+    },
+    "previous": "السابق",
+    "next": "التالي",
+    "saveChanges": "حفظ التغييرات"
   }
 }

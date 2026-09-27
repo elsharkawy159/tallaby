@@ -28,6 +28,8 @@ export async function generateMetadata({
       'Tallaby vendor',
       'start online store',
       'ecommerce seller',
+      'fulfillment Egypt',
+      'warehouse storage Egypt',
     ],
     openGraph: {
       title: t('title'),

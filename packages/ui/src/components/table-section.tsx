@@ -77,6 +77,58 @@ export function columnLabel<TData>(column: Column<TData, unknown>): string {
   return typeof header === "string" && header ? header : column.id;
 }
 
+/** UI copy for TableSection; English defaults, override per locale. */
+export type TableSectionLabels = {
+  selectAll: string;
+  selectRow: string;
+  search: string;
+  searchPlaceholder: string;
+  clearFilter: string;
+  view: string;
+  toggleColumns: string;
+  delete: string;
+  confirmTitle: string;
+  confirmDescription: (count: number) => string;
+  cancel: string;
+  sortAscending: string;
+  sortDescending: string;
+  clearSort: string;
+  noResults: string;
+  rowsPerPage: string;
+  range: (start: number, end: number, total: number) => string;
+  first: string;
+  previous: string;
+  page: (page: number, pageCount: number) => string;
+  next: string;
+  last: string;
+};
+
+export const defaultTableSectionLabels: TableSectionLabels = {
+  selectAll: "Select all",
+  selectRow: "Select row",
+  search: "Search",
+  searchPlaceholder: "Search...",
+  clearFilter: "Clear filter",
+  view: "View",
+  toggleColumns: "Toggle columns",
+  delete: "Delete",
+  confirmTitle: "Are you absolutely sure?",
+  confirmDescription: (count) =>
+    `This action cannot be undone. This will permanently delete ${count} selected ${count === 1 ? "row" : "rows"}.`,
+  cancel: "Cancel",
+  sortAscending: "Sort ascending",
+  sortDescending: "Sort descending",
+  clearSort: "Clear sort",
+  noResults: "No results.",
+  rowsPerPage: "Rows per page",
+  range: (start, end, total) => `${start}-${end} of ${total}`,
+  first: "First",
+  previous: "Previous",
+  page: (page, pageCount) => `Page ${page} of ${pageCount}`,
+  next: "Next",
+  last: "Last",
+};
+
 export type TableSectionProps<TData extends { id: string }> = {
   rows: TData[];
   columns: ColumnDef<TData, any>[];
@@ -97,6 +149,8 @@ export type TableSectionProps<TData extends { id: string }> = {
   onColumnOrderChange?: (order: string[]) => void;
   /** Hide the built-in "View" popover when the page provides its own column UI. */
   hideViewOptions?: boolean;
+  /** Localized UI copy; any label left out keeps its English default. */
+  labels?: Partial<TableSectionLabels>;
 };
 
 export function TableSection<TData extends { id: string }>(
@@ -115,6 +169,7 @@ export function TableSection<TData extends { id: string }>(
     onColumnOrderChange,
     hideViewOptions = false,
   } = props;
+  const labels = { ...defaultTableSectionLabels, ...props.labels };
 
   const id = useId();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -183,14 +238,14 @@ export function TableSection<TData extends { id: string }>(
     size: 30,
     header: ({ table }) => (
       <Checkbox
-        aria-label="Select all"
+        aria-label={labels.selectAll}
         checked={table.getIsAllPageRowsSelected()}
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
       />
     ),
     cell: ({ row }) => (
       <Checkbox
-        aria-label="Select row"
+        aria-label={labels.selectRow}
         checked={row.getIsSelected()}
         disabled={!row.getCanSelect()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
@@ -208,7 +263,8 @@ export function TableSection<TData extends { id: string }>(
       (c) => (c as any).id !== "__index__" && (c as any).id !== "__select__"
     );
     return [indexColumn, selectColumn, ...cleaned];
-  }, [userColumns]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userColumns, labels.selectAll, labels.selectRow]);
 
   const table = useReactTable({
     data,
@@ -263,9 +319,9 @@ export function TableSection<TData extends { id: string }>(
                   .getColumn(primarySearchColumnId)
                   ?.setFilterValue(e.target.value)
               }
-              placeholder="Search..."
+              placeholder={labels.searchPlaceholder}
               type="text"
-              aria-label="Search"
+              aria-label={labels.search}
             />
             <div className="text-muted-foreground/80 pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3">
               <ListFilterIcon size={16} aria-hidden="true" />
@@ -276,7 +332,7 @@ export function TableSection<TData extends { id: string }>(
             ) && (
               <button
                 className="text-muted-foreground/80 hover:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-md outline-none focus:z-10 focus-visible:ring-[3px]"
-                aria-label="Clear filter"
+                aria-label={labels.clearFilter}
                 onClick={() => {
                   primarySearchColumnId &&
                     table.getColumn(primarySearchColumnId)?.setFilterValue("");
@@ -297,13 +353,13 @@ export function TableSection<TData extends { id: string }>(
                     size={16}
                     aria-hidden="true"
                   />
-                  View
+                  {labels.view}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto min-w-36 p-3" align="start">
                 <div className="space-y-2">
                   <div className="text-muted-foreground text-xs font-medium">
-                    Toggle columns
+                    {labels.toggleColumns}
                   </div>
                   <div className="space-y-2">
                     {table
@@ -338,7 +394,7 @@ export function TableSection<TData extends { id: string }>(
                     size={16}
                     aria-hidden="true"
                   />
-                  Delete
+                  {labels.delete}
                   <span className="bg-background text-muted-foreground/70 -me-1 inline-flex h-5 max-h-full items-center rounded border px-1 font-[inherit] text-[0.625rem] font-medium">
                     {table.getSelectedRowModel().rows.length}
                   </span>
@@ -353,21 +409,16 @@ export function TableSection<TData extends { id: string }>(
                     <CircleAlertIcon className="opacity-80" size={16} />
                   </div>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>
-                      Are you absolutely sure?
-                    </AlertDialogTitle>
+                    <AlertDialogTitle>{labels.confirmTitle}</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete{" "}
-                      {table.getSelectedRowModel().rows.length} selected{" "}
-                      {table.getSelectedRowModel().rows.length === 1
-                        ? "row"
-                        : "rows"}
-                      .
+                      {labels.confirmDescription(
+                        table.getSelectedRowModel().rows.length
+                      )}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                 </div>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogCancel>{labels.cancel}</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={async () => {
                       const ids = table
@@ -377,7 +428,7 @@ export function TableSection<TData extends { id: string }>(
                       table.resetRowSelection();
                     }}
                   >
-                    Delete
+                    {labels.delete}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -412,10 +463,10 @@ export function TableSection<TData extends { id: string }>(
                         className="flex h-full w-full items-center gap-2 select-none"
                         title={
                           header.column.getIsSorted() === "asc"
-                            ? "Sort descending"
+                            ? labels.sortDescending
                             : header.column.getIsSorted() === "desc"
-                              ? "Clear sort"
-                              : "Sort ascending"
+                              ? labels.clearSort
+                              : labels.sortAscending
                         }
                       >
                         <span className="inline-flex items-center gap-1">
@@ -471,7 +522,7 @@ export function TableSection<TData extends { id: string }>(
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No results.
+                  {labels.noResults}
                 </TableCell>
               </TableRow>
             )}
@@ -483,7 +534,9 @@ export function TableSection<TData extends { id: string }>(
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         {/* Rows per page selector */}
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Rows per page</span>
+          <span className="text-sm text-muted-foreground">
+            {labels.rowsPerPage}
+          </span>
           <Select
             value={String(table.getState().pagination.pageSize)}
             onValueChange={(value) => table.setPageSize(Number(value))}
@@ -506,13 +559,13 @@ export function TableSection<TData extends { id: string }>(
           {(() => {
             const { pageIndex, pageSize } = table.getState().pagination;
             const totalRows = table.getFilteredRowModel().rows.length;
-            if (totalRows === 0) return "0 of 0";
+            if (totalRows === 0) return labels.range(0, 0, 0);
             const start = pageIndex * pageSize + 1;
             const end = Math.min(
               start + table.getRowModel().rows.length - 1,
               totalRows
             );
-            return `${start}-${end} of ${totalRows}`;
+            return labels.range(start, end, totalRows);
           })()}
         </div>
 
@@ -524,7 +577,7 @@ export function TableSection<TData extends { id: string }>(
             onClick={() => table.firstPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            First
+            {labels.first}
           </Button>
           <Button
             variant="outline"
@@ -532,11 +585,13 @@ export function TableSection<TData extends { id: string }>(
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            Previous
+            {labels.previous}
           </Button>
           <div className="text-sm text-muted-foreground px-2">
-            Page {table.getState().pagination.pageIndex + 1} of{" "}
-            {table.getPageCount() || 1}
+            {labels.page(
+              table.getState().pagination.pageIndex + 1,
+              table.getPageCount() || 1
+            )}
           </div>
           <Button
             variant="outline"
@@ -544,7 +599,7 @@ export function TableSection<TData extends { id: string }>(
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            Next
+            {labels.next}
           </Button>
           <Button
             variant="outline"
@@ -552,7 +607,7 @@ export function TableSection<TData extends { id: string }>(
             onClick={() => table.lastPage()}
             disabled={!table.getCanNextPage()}
           >
-            Last
+            {labels.last}
           </Button>
         </div>
       </div>

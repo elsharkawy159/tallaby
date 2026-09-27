@@ -48,8 +48,10 @@ export const getAuthUserDisplay =
           ? metadata.picture
           : null;
 
-    // A claimed seller still has to have an approved seller row before the UI
-    // offers dashboard links, matching checkIfSeller()'s rule.
+    // user_metadata.is_seller is a cheap pre-filter (set at onboarding, and
+    // backfilled for existing sellers by migration 0041) so customers don't pay
+    // for a sellers query on every render. The claim is then confirmed against
+    // an approved sellers row, matching checkIfSeller()'s rule.
     const claimsSeller = metadata.is_seller === true;
 
     try {

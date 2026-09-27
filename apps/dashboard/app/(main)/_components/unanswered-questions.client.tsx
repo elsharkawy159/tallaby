@@ -36,6 +36,7 @@ export function UnansweredQuestionsClient({
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [isPending, startTransition] = useTransition();
   const tToast = useTranslations("toast");
+  const t = useTranslations("home.questions");
 
   const handleChange = (id: string, v: string) => {
     setAnswers((s) => ({ ...s, [id]: v }));
@@ -64,13 +65,12 @@ export function UnansweredQuestionsClient({
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="flex items-center gap-2">
-            <MessageCircleQuestion className="h-5 w-5" /> Unanswered Product
-            Questions
+            <MessageCircleQuestion className="h-5 w-5" /> {t("emptyTitle")}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            No pending questions right now.
+            {t("empty")}
           </p>
         </CardContent>
       </Card>
@@ -81,7 +81,7 @@ export function UnansweredQuestionsClient({
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="flex items-center gap-2">
-          <MessageCircleQuestion className="h-5 w-5" /> Unanswered Questions
+          <MessageCircleQuestion className="h-5 w-5" /> {t("title")}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -102,14 +102,16 @@ export function UnansweredQuestionsClient({
                   {q.productTitle}
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  SKU: {q.productSku ?? "N/A"}
+                  {t("sku")}: <span dir="ltr">{q.productSku ?? t("notAvailable")}</span>
                 </div>
-                <div className="text-sm mt-2">Q: {q.question}</div>
+                <div className="text-sm mt-2">
+                  {t("questionPrefix")} {q.question}
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <Input
-                placeholder="Type your answer..."
+                placeholder={t("answerPlaceholder")}
                 value={answers[q.id] ?? ""}
                 onChange={(e) => handleChange(q.id, e.target.value)}
               />
@@ -117,8 +119,8 @@ export function UnansweredQuestionsClient({
                 onClick={() => handleSubmit(q.id)}
                 disabled={isPending || !answers[q.id]?.trim()}
               >
-                <Send className="h-4 w-4 mr-1" />
-                Send
+                <Send className="h-4 w-4 me-1 rtl:-scale-x-100" />
+                {t("send")}
               </Button>
             </div>
             <Separator />

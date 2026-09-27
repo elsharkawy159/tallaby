@@ -34,7 +34,28 @@ export interface CategoryPopoverProps {
   triggerClassName?: string;
   contentClassName?: string;
   form?: any;
+  labels?: Partial<CategoryPopoverLabels>;
 }
+
+export interface CategoryPopoverLabels {
+  back: string;
+  atRoot: string;
+  goToRoot: string;
+  all: string;
+  goTo: (name: string) => string;
+  search: string;
+  empty: string;
+}
+
+const defaultCategoryPopoverLabels: CategoryPopoverLabels = {
+  back: "Go back",
+  atRoot: "At root",
+  goToRoot: "Go to root",
+  all: "All",
+  goTo: (name) => `Go to ${name}`,
+  search: "Search categories...",
+  empty: "No results found.",
+};
 
 function findCategoryPathById(
   categories: CategoryNode[],
@@ -87,7 +108,9 @@ function CategoryPopover({
   triggerClassName,
   contentClassName,
   form,
+  labels: labelOverrides,
 }: CategoryPopoverProps) {
+  const labels = { ...defaultCategoryPopoverLabels, ...labelOverrides };
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState("");
   const [path, setPath] = React.useState<CategoryNode[]>([]);
@@ -205,27 +228,27 @@ function CategoryPopover({
             className="h-8 px-2"
             onClick={hasBack ? handleBack : undefined}
             disabled={!hasBack}
-            aria-label={hasBack ? "Go back" : "At root"}
+            aria-label={hasBack ? labels.back : labels.atRoot}
           >
-            <ChevronLeft className="size-4" />
+            <ChevronLeft className="size-4 rtl:rotate-180" />
           </Button>
           <div className="flex min-w-0 items-center gap-1 text-xs text-gray-600 font-medium">
             <button
               type="button"
               className="hover:text-foreground"
               onClick={() => handleCrumbClick(-1)}
-              aria-label="Go to root"
+              aria-label={labels.goToRoot}
             >
-              All
+              {labels.all}
             </button>
             {path.map((seg, i) => (
               <React.Fragment key={seg.id}>
-                <ChevronRight className="size-3 shrink-0 opacity-80" />
+                <ChevronRight className="size-3 shrink-0 opacity-80 rtl:rotate-180" />
                 <button
                   type="button"
                   className="truncate hover:text-foreground"
                   onClick={() => handleCrumbClick(i)}
-                  aria-label={`Go to ${seg.name}`}
+                  aria-label={labels.goTo(seg.name)}
                 >
                   {seg.name}
                 </button>
@@ -235,12 +258,12 @@ function CategoryPopover({
         </div>
         <Command shouldFilter={false}>
           <CommandInput
-            placeholder="Search categories..."
+            placeholder={labels.search}
             value={query}
             onValueChange={setQuery}
           />
           <CommandList className="p-1">
-            <CommandEmpty>No results found.</CommandEmpty>
+            <CommandEmpty>{labels.empty}</CommandEmpty>
             {query
               ? globalSearchResults.map((item) => {
                   const label = item.path.map((p) => p.name).join(" / ");
@@ -258,7 +281,7 @@ function CategoryPopover({
                           <Check className="size-4" />
                         ) : null
                       ) : (
-                        <ChevronRight className="size-4 opacity-60" />
+                        <ChevronRight className="size-4 opacity-60 rtl:rotate-180" />
                       )}
                     </CommandItem>
                   );
@@ -279,7 +302,7 @@ function CategoryPopover({
                           <Check className="size-4" />
                         ) : null
                       ) : (
-                        <ChevronRight className="size-4 opacity-60" />
+                        <ChevronRight className="size-4 opacity-60 rtl:rotate-180" />
                       )}
                     </CommandItem>
                   );

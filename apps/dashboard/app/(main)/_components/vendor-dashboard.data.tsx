@@ -5,6 +5,9 @@ import {
   resolveVendorOrderStatus,
 } from "../orders/orders.lib";
 import { UnansweredQuestionsData } from "./unanswered-questions.data";
+import { getLocale, getTranslations } from "next-intl/server";
+import { formatDate, formatMoney, formatNumber } from "@/lib/i18n/format";
+import { translateStatus } from "@/lib/i18n/status";
 
 import {
   Card,
@@ -36,20 +39,16 @@ import {
   BarChart3,
 } from "lucide-react";
 
-const formatCurrency = (value?: string | number | null) => {
-  const num =
-    value == null ? 0 : typeof value === "string" ? parseFloat(value) : value;
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "EGP",
-  }).format(num);
-};
-
 export async function VendorDashboardData() {
-  const [metricsRes, ordersRes] = await Promise.all([
+  const [metricsRes, ordersRes, t, tStatus, locale] = await Promise.all([
     getSellerMetrics(),
     getSellerOrders({ limit: 5, offset: 0 }),
+    getTranslations("home"),
+    getTranslations("status"),
+    getLocale(),
   ]);
+  const formatCurrency = (value?: string | number | null) =>
+    formatMoney(value, locale);
 
   const metrics = metricsRes?.data ?? ({} as any);
   const latest = Array.isArray(ordersRes?.data)
@@ -58,26 +57,35 @@ export async function VendorDashboardData() {
 
   const metricCards = [
     {
-      title: "Wallet Balance",
+      title: t("walletBalance"),
       value: formatCurrency(metrics.walletBalance ?? 0),
       icon: Wallet,
       href: "/financial",
     },
     {
-      title: "Products",
-      value: String(metrics.productCount ?? 0),
+      title: t("products"),
+      value: formatNumber(metrics.productCount ?? 0, locale),
       icon: Package,
       href: "/products",
     },
     {
-      title: "Store Rating",
-      value: `${metrics.storeRating ? metrics.storeRating.toFixed(1) : "0"}/5 (${metrics.totalRatings ?? 0} ratings)`,
+      title: t("storeRating"),
+      value: t("storeRatingValue", {
+        rating: formatNumber(metrics.storeRating ?? 0, locale, {
+          minimumFractionDigits: 1,
+          maximumFractionDigits: 1,
+        }),
+        count: metrics.totalRatings ?? 0,
+      }),
       icon: Star,
       href: "/reviews",
     },
     {
-      title: "Positive Rating",
-      value: `${metrics.positiveRatingPercent ? Math.round(metrics.positiveRatingPercent) : 0}%`,
+      title: t("positiveRating"),
+      value: formatNumber((metrics.positiveRatingPercent ?? 0) / 100, locale, {
+        style: "percent",
+        maximumFractionDigits: 0,
+      }),
       icon: ThumbsUp,
       href: "/reviews",
     },
@@ -90,38 +98,38 @@ export async function VendorDashboardData() {
     icon: React.ComponentType<any>;
   }[] = [
     {
-      title: "Add Product",
-      description: "List a new item",
+      title: t("quickLinks.addProduct"),
+      description: t("quickLinks.addProductDescription"),
       href: "/products/add",
       icon: PlusCircle,
     },
     {
-      title: "Orders",
-      description: "Manage recent orders",
+      title: t("quickLinks.orders"),
+      description: t("quickLinks.ordersDescription"),
       href: "/orders",
       icon: ShoppingBag,
     },
     {
-      title: "Shipping",
-      description: "Ship & track",
+      title: t("quickLinks.shipping"),
+      description: t("quickLinks.shippingDescription"),
       href: "/shipping",
       icon: Truck,
     },
     {
-      title: "Promotions",
-      description: "Create a coupon",
+      title: t("quickLinks.promotions"),
+      description: t("quickLinks.promotionsDescription"),
       href: "/marketing",
       icon: Percent,
     },
     {
-      title: "Analytics",
-      description: "Performance overview",
+      title: t("quickLinks.analytics"),
+      description: t("quickLinks.analyticsDescription"),
       href: "/reports",
       icon: BarChart3,
     },
     {
-      title: "Settings",
-      description: "Store preferences",
+      title: t("quickLinks.settings"),
+      description: t("quickLinks.settingsDescription"),
       href: "/settings",
       icon: Settings,
     },
@@ -151,7 +159,7 @@ export async function VendorDashboardData() {
         {/* Quick Links */}
         <Card className="lg:col-span-1">
           <CardHeader>
-            <CardTitle>Quick Links</CardTitle>
+            <CardTitle>{t("quickLinks.title")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -178,9 +186,9 @@ export async function VendorDashboardData() {
         <Card className="lg:col-span-2">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>Latest Orders</CardTitle>
+              <CardTitle>{t("latestOrders")}</CardTitle>
               <Button asChild variant="outline" size="sm">
-                <Link href="/orders">View all</Link>
+                <Link href="/orders">{t("viewAll")}</Link>
               </Button>
             </div>
           </CardHeader>
@@ -189,14 +197,16 @@ export async function VendorDashboardData() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[120px]">Order</TableHead>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Product</TableHead>
-                    <TableHead className="hidden lg:table-cell">Date</TableHead>
-                    <TableHead className="hidden sm:table-cell">
-                      Status
+                    <TableHead className="w-[120px]">{t("table.order")}</TableHead>
+                    <TableHead>{t("table.customer")}</TableHead>
+                    <TableHead>{t("table.product")}</TableHead>
+                    <TableHead className="hidden lg:table-cell">
+                      {t("table.date")}
                     </TableHead>
-                    <TableHead className="text-right">Total</TableHead>
+                    <TableHead className="hidden sm:table-cell">
+                      {t("table.status")}
+                    </TableHead>
+                    <TableHead className="text-end">{t("table.total")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -206,7 +216,7 @@ export async function VendorDashboardData() {
                         colSpan={6}
                         className="text-center text-sm text-muted-foreground py-8"
                       >
-                        No recent orders
+                        {t("noRecentOrders")}
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -221,12 +231,10 @@ export async function VendorDashboardData() {
                           .filter(Boolean)
                           .join(" ") ||
                         item.order?.user?.email ||
-                        "Customer";
+                        t("customer");
                       const product =
                         item.product?.title ?? item.productName ?? "—";
-                      const when = item.createdAt
-                        ? new Date(item.createdAt).toLocaleDateString()
-                        : "—";
+                      const when = formatDate(item.createdAt, locale);
                       const total = formatCurrency(item.total);
                       return (
                         <TableRow key={item.id}>
@@ -234,6 +242,7 @@ export async function VendorDashboardData() {
                             <Link
                               href={`/orders/${item.orderId ?? item.order?.id ?? ""}`}
                               className="underline underline-offset-2"
+                              dir="ltr"
                             >
                               {orderNo}
                             </Link>
@@ -246,13 +255,17 @@ export async function VendorDashboardData() {
                             {when}
                           </TableCell>
                           <TableCell className="hidden sm:table-cell">
-                            <Badge variant="secondary" className="capitalize">
-                              {String(
+                            <Badge variant="secondary">
+                              {translateStatus(
+                                tStatus,
+                                "order",
                                 resolveVendorOrderStatus(item)
-                              ).replaceAll("_", " ")}
+                              )}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-right">{total}</TableCell>
+                          <TableCell className="text-end" dir="ltr">
+                            {total}
+                          </TableCell>
                         </TableRow>
                       );
                     })

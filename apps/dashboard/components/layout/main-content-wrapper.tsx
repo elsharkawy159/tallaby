@@ -14,7 +14,7 @@ export function MainContentWrapper({ children }: MainContentWrapperProps) {
     <main
       className={cn(
         "flex-1 transition-all duration-300 ease-in-out",
-        isCollapsed ? "lg:ml-20" : "lg:ml-[280px]"
+        isCollapsed ? "lg:ms-20" : "lg:ms-[280px]"
       )}
     >
       {children}

@@ -60,11 +60,20 @@
     "./address": {
       "types": "./src/address/index.ts",
       "default": "./src/address/index.ts"
+    },
+    "./fulfillment": {
+      "types": "./src/fulfillment/index.ts",
+      "default": "./src/fulfillment/index.ts"
+    },
+    "./fulfillment/server": {
+      "types": "./src/fulfillment/server.ts",
+      "default": "./src/fulfillment/server.ts"
     }
   },
   "devDependencies": {
     "@types/node": "^25.0.3",
     "@workspace/typescript-config": "workspace:^",
+    "postgres": "^3.4.7",
     "vitest": "^3.2.4"
   }
 }

@@ -75,31 +75,26 @@ export const DiscountCountdown = ({ endDate }: DiscountCountdownProps) => {
     { value: timeLeft.seconds, label: t("seconds") },
   ]
 
+  // Compact, single row: sits in the price ticket's stub.
   return (
-    <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-lg p-4 mb-4">
-      <div className="flex items-center gap-2 mb-3">
-        <Clock className="h-4 w-4 text-red-600" />
-        <span className="text-sm font-medium text-red-700">
-          {t("discountAvailableUntil")}
-        </span>
-      </div>
-      <div className="flex gap-2 justify-center">
-        {timeBlocks.map((block, index) => (
-          <div key={block.label} className="flex items-center gap-2">
-            <div className="flex flex-col items-center">
-              <div className="bg-white border border-red-200 rounded-md px-3 py-2 min-w-[50px] text-center shadow-sm">
-                <span className="text-xl font-bold text-gray-900">
-                  {String(block.value).padStart(2, "0")}
-                </span>
-              </div>
-              <span className="text-xs text-gray-600 mt-1">{block.label}</span>
-            </div>
-            {index < timeBlocks.length - 1 && (
-              <span className="text-xl font-bold text-red-400 mb-5">:</span>
-            )}
-          </div>
+    <div className="flex flex-wrap items-center gap-x-2.5 gap-y-2 text-sm">
+      <span className="flex items-center gap-1.5 font-semibold text-[#9a5800]">
+        <Clock className="h-4 w-4 shrink-0" aria-hidden />
+        {t("discountEndsIn")}
+      </span>
+      <span className="flex items-center gap-1" role="timer">
+        {timeBlocks.map((block) => (
+          <span
+            key={block.label}
+            className="flex items-baseline gap-0.5 rounded-md bg-white px-1.5 py-1 shadow-sm"
+          >
+            <span className="font-bold tabular-nums text-gray-900">
+              {String(block.value).padStart(2, "0")}
+            </span>
+            <span className="text-[10px] text-gray-500">{block.label}</span>
+          </span>
         ))}
-      </div>
+      </span>
     </div>
   )
 }

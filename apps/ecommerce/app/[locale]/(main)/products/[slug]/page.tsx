@@ -148,7 +148,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         />
       </section>
 
-      <section className="bg-white py-5 pb-10">
+      <section className="bg-white pb-10 lg:pt-5">
         <div className="container">
           <ProductDisplay product={productWithCategory} />
         </div>

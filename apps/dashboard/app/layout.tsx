@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
-import { Montserrat } from "next/font/google";
+import { Montserrat, Noto_Kufi_Arabic } from "next/font/google";
 import "@workspace/ui/globals.css";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { NextIntlClientProvider } from "next-intl";
 // import { ThemeProvider } from "next-themes";
 import { Toaster } from "@workspace/ui/components/sonner";
 import { DirectionProvider } from "@workspace/ui/components/direction";
 import { getSiteData } from "@/actions/site-data";
 import { SiteDataProvider } from "@/providers/site-data";
+import { ZodLocale } from "@/lib/i18n/zod-locale.client";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -15,18 +16,27 @@ const montserrat = Montserrat({
   weight: ["400", "500", "600", "700"],
 });
 
-export const metadata: Metadata = {
-  title: "Vendor Dashboard",
-  description: "Vendor Dashboard",
-  robots: {
-    index: false,
-    follow: false,
-    googleBot: {
+const notoKufiArabic = Noto_Kufi_Arabic({
+  subsets: ["arabic"],
+  variable: "--font-noto-kufi-arabic",
+  weight: ["400", "500", "600", "700"],
+});
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("meta");
+  return {
+    title: t("title"),
+    description: t("description"),
+    robots: {
       index: false,
       follow: false,
+      googleBot: {
+        index: false,
+        follow: false,
+      },
     },
-  },
-};
+  };
+}
 
 // Not needed as a blanket declaration: this layout reads getLocale() (cookie-
 // driven), which already forces dynamic rendering. Individual private routes
@@ -45,10 +55,13 @@ export default async function RootLayout({
       <head>
         <meta name="robots" content="noindex, nofollow" />
       </head>
-      <body className={`${montserrat.variable} antialiased`}>
-        <DirectionProvider direction={direction}>
+      <body
+        className={`${locale === "ar" ? notoKufiArabic.variable : montserrat.variable} antialiased`}
+      >
+        <DirectionProvider dir={direction}>
           <SiteDataProvider promise={getSiteData()}>
             <NextIntlClientProvider>
+              <ZodLocale />
               {/* <ThemeProvider
                 attribute="class"
                 defaultTheme="light"

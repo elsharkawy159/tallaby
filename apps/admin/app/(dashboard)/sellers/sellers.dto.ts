@@ -8,6 +8,12 @@ export const sellerActionSchema = z.object({
   reason: z.string().optional(),
 });
 
+export const sellerStatusUpdateSchema = z.object({
+  sellerId: z.string().uuid("Seller ID must be a valid UUID"),
+  status: z.enum(["pending", "approved", "suspended", "restricted"]),
+  reason: z.string().optional(),
+});
+
 export const sellerFiltersSchema = z.object({
   status: z.enum(["pending", "approved", "suspended", "restricted"]).optional(),
   businessType: z.string().optional(),

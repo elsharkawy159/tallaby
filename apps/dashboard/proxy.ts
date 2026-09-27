@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/supabase/middleware";
+import { LOCALE_COOKIE, defaultLocale, resolveLocale } from "@/i18n/config";
 
 export async function proxy(request: NextRequest) {
   // Run your session logic first
@@ -13,18 +14,11 @@ export async function proxy(request: NextRequest) {
 
   const response = await updateSession(request);
 
-  // Try to get locale from cookie or header
-  const localeFromCookie = request.cookies.get("locale")?.value;
-  const localeFromHeader = request.headers
-    .get("accept-language")
-    ?.split(",")[0]
-    ?.split("-")[0];
-
-  const locale = localeFromCookie || localeFromHeader || "en";
-
-  // Set the locale cookie if it's not already set
-  if (!localeFromCookie) {
-    response.cookies.set("locale", locale, {
+  // Arabic is the default; only an explicit choice (the language switcher)
+  // changes it. Missing or unknown values are reset to the default.
+  const localeFromCookie = request.cookies.get(LOCALE_COOKIE)?.value;
+  if (resolveLocale(localeFromCookie) !== localeFromCookie) {
+    response.cookies.set(LOCALE_COOKIE, defaultLocale, {
       path: "/",
       maxAge: 60 * 60 * 24 * 365, // 1 year
     });

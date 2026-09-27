@@ -34,7 +34,7 @@ import { redirect } from "next/navigation";
 import { getCurrentAdminUser } from "@/lib/auth/admin-auth";
 import { applyInvalidation, invalidateSeller } from "@workspace/cache";
 import {
-  sellerActionSchema,
+  sellerStatusUpdateSchema,
   sellerFiltersSchema,
   sellerUpdateSchema,
 } from "./sellers.dto";
@@ -314,26 +314,18 @@ export async function updateSellerStatus(
   try {
     await getCurrentAdminUser();
 
-    const validatedData = sellerActionSchema.parse({
+    const validatedData = sellerStatusUpdateSchema.parse({
       sellerId,
-      action:
-        status === "approved"
-          ? "approve"
-          : status === "suspended"
-            ? "suspend"
-            : "reactivate",
+      status,
       reason,
     });
 
+    // Persist the requested status as-is. The previous action mapping sent
+    // anything other than approved/suspended (e.g. "restricted") to approved.
     await db
       .update(sellers)
       .set({
-        status:
-          validatedData.action === "approve"
-            ? "approved"
-            : validatedData.action === "suspend"
-              ? "suspended"
-              : "approved",
+        status: validatedData.status,
         updatedAt: new Date().toISOString(),
       })
       .where(eq(sellers.id, validatedData.sellerId));
@@ -345,7 +337,7 @@ export async function updateSellerStatus(
     });
     return {
       success: true,
-      message: `Seller ${validatedData.action}d successfully`,
+      message: `Seller status set to ${validatedData.status}`,
     };
   } catch (error) {
     console.error("Error updating seller status:", error);

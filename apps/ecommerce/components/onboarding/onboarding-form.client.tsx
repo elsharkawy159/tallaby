@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
-import { useForm, FormProvider } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useForm, type FieldPath } from "react-hook-form";
 import { toast } from "sonner";
-import { Link, useRouter } from "@/i18n/navigation";
-import { Check, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
 import { useTranslations } from "next-intl";
+import posthog from "posthog-js";
 
+import { Link, useRouter } from "@/i18n/navigation";
+import { useDebounce } from "@/hooks/use-debounce";
 import { Button } from "@workspace/ui/components/button";
 import {
   Card,
@@ -17,179 +18,168 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card";
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from "@workspace/ui/components/form";
-import {
-  TextInput,
-  TextareaInput,
-  SelectInput,
-} from "@workspace/ui/components/inputs";
+import { Form } from "@workspace/ui/components/form";
 import { Progress } from "@workspace/ui/components/progress";
 import { Spinner } from "@workspace/ui/components/spinner";
-import { LogoUploader } from "./logo-uploader";
+import type { FulfillmentPlanView } from "@workspace/lib/fulfillment";
 
 import {
-  sellerApplicationSchema,
-  sellerApplicationDefaults,
-  type SellerApplicationFormData,
+  ONBOARDING_STEPS,
+  onboardingDefaults,
+  stepForPath,
+  toFormPath,
+  toSubmission,
+  validateStep,
+  type FieldIssue,
+  type OnboardingFormValues,
+  type OnboardingStep,
 } from "./become-seller.dto";
 import {
   checkBusinessNameAvailability,
   submitSellerApplication,
 } from "./become-seller.server";
-import {
-  BUSINESS_TYPE_OPTIONS,
-  COUNTRY_OPTIONS,
-} from "./become-seller.types";
-import { useAuthDialog } from "@/hooks/use-auth-dialog";
-import { useDebounce } from "@/hooks/use-debounce";
-import { Input } from "@workspace/ui/components";
-import posthog from "posthog-js";
+import { useOnboardingDraft } from "./use-onboarding-draft";
+import { recommendedDefaults } from "./fulfillment-choices.lib";
+import { BusinessStep, type BusinessNameCheck } from "./steps/business-step";
+import { LegalAddressStep } from "./steps/legal-address-step";
+import { ModelStep } from "./steps/model-step";
+import { ServicesStep } from "./steps/services-step";
+import { DetailsStep } from "./steps/details-step";
+import { ReviewStep } from "./steps/review-step";
+import { TermsStep } from "./steps/terms-step";
 
 interface OnboardingFormClientProps {
-  user: any;
+  user: { id: string } | null;
+  plans: FulfillmentPlanView[];
 }
 
-export function OnboardingFormClient({ user }: OnboardingFormClientProps) {
+export function OnboardingFormClient({ user, plans }: OnboardingFormClientProps) {
   const t = useTranslations("onboarding");
   const tToast = useTranslations("toast");
-  const [isPending, startTransition] = useTransition();
-  const [currentStep, setCurrentStep] = useState(0);
-  const [businessNameCheck, setBusinessNameCheck] = useState<
-    "idle" | "checking" | "available" | "taken"
-  >("idle");
   const router = useRouter();
-  const { open: openAuthDialog } = useAuthDialog();
+  const [isPending, startTransition] = useTransition();
+  const [stepIndex, setStepIndex] = useState(0);
+  const [nameCheck, setNameCheck] = useState<BusinessNameCheck>("idle");
+  const topRef = useRef<HTMLDivElement>(null);
 
-  const steps = [
-    {
-      title: t("businessInformation"),
-      description: t("tellUsAboutBusiness"),
-      fields: [
-        "businessName",
-        "businessType",
-        "description",
-        "logoUrl",
-        "supportEmail",
-        "supportPhone",
-      ],
-    },
-    {
-      title: t("legalContactDetails"),
-      description: t("provideBusinessLegalAddress"),
-      fields: [
-        "legalAddress.street",
-        "legalAddress.city",
-        "legalAddress.state",
-        "legalAddress.postalCode",
-        "legalAddress.country",
-      ],
-    },
-  ];
+  // Start from the recommended setup (Tallaby handles fulfillment).
+  const initialValues = useMemo(() => recommendedDefaults(plans, onboardingDefaults), [plans]);
+  const form = useForm<OnboardingFormValues>({ defaultValues: initialValues });
+  const step = ONBOARDING_STEPS[stepIndex]!;
+  const isLastStep = stepIndex === ONBOARDING_STEPS.length - 1;
+  const progress = ((stepIndex + 1) / ONBOARDING_STEPS.length) * 100;
 
-  const currentForm = steps[currentStep];
-  const isLastStep = currentStep === steps.length - 1;
-  const progress = ((currentStep + 1) / steps.length) * 100;
-
-  const form = useForm<SellerApplicationFormData>({
-    resolver: zodResolver(sellerApplicationSchema),
-    defaultValues: sellerApplicationDefaults,
-    mode: "onChange",
-  });
-
-  const businessName = form.watch("businessName");
-  const debouncedBusinessName = useDebounce(businessName?.trim() ?? "", 400);
-  const checkInFlightRef = useRef<string | null>(null);
+  const draft = useOnboardingDraft(user?.id, form, stepIndex, setStepIndex);
 
   useEffect(() => {
-    if (debouncedBusinessName.length < 2) {
-      setBusinessNameCheck("idle");
-      if (form.formState.errors.businessName?.type === "manual") {
-        form.clearErrors("businessName");
-      }
+    if (draft.restored) {
+      toast.info(t("draftRestored"));
+    }
+  }, [draft.restored, t]);
+
+  // Live business-name availability (same slug rule as the server).
+  const businessName = form.watch("businessName");
+  const debouncedName = useDebounce(businessName?.trim() ?? "", 400);
+  useEffect(() => {
+    if (debouncedName.length < 2) {
+      setNameCheck("idle");
       return;
     }
-
     let cancelled = false;
-    checkInFlightRef.current = debouncedBusinessName;
-    setBusinessNameCheck("checking");
-
-    checkBusinessNameAvailability(debouncedBusinessName).then((available) => {
-      if (cancelled || checkInFlightRef.current !== debouncedBusinessName)
-        return;
-      checkInFlightRef.current = null;
-      setBusinessNameCheck(available ? "available" : "taken");
-      if (!available) {
-        form.setError("businessName", {
-          type: "manual",
-          message: t("businessNameTaken"),
-        });
-      } else {
-        form.clearErrors("businessName");
-      }
-    });
-
+    setNameCheck("checking");
+    checkBusinessNameAvailability(debouncedName)
+      .then((available) => {
+        if (cancelled) return;
+        // null = the check failed; stay neutral rather than block the seller.
+        if (available === null) {
+          setNameCheck("idle");
+          return;
+        }
+        setNameCheck(available ? "available" : "taken");
+        if (!available) {
+          form.setError("businessName", { type: "manual", message: t("businessNameTaken") });
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setNameCheck("idle");
+      });
     return () => {
       cancelled = true;
     };
-  }, [debouncedBusinessName, t, form]);
+  }, [debouncedName, form, t]);
 
-  const handleNext = async (e?: React.MouseEvent<HTMLButtonElement>) => {
-    e?.preventDefault();
-    e?.stopPropagation();
+  const errorMessage = (code: string) =>
+    t.has(`errors.${code}`) ? t(`errors.${code}`) : t("errors.invalid");
 
-    const currentFields = steps[currentStep]?.fields as string[];
-    const isValid = await form.trigger(currentFields as any);
-
-    if (isValid && !isLastStep) {
-      setCurrentStep((prev) => prev + 1);
+  const applyIssues = (issues: FieldIssue[]) => {
+    for (const issue of issues) {
+      form.setError(issue.path as FieldPath<OnboardingFormValues>, {
+        type: "manual",
+        message: errorMessage(issue.code),
+      });
     }
   };
 
-  const handleBack = (e?: React.MouseEvent<HTMLButtonElement>) => {
-    e?.preventDefault();
-    e?.stopPropagation();
-
-    if (currentStep > 0) {
-      setCurrentStep((prev) => prev - 1);
-    }
+  const goTo = (target: number) => {
+    setStepIndex(target);
+    topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const handleSubmit = (data: SellerApplicationFormData) => {
-    if (!user) {
-      toast.error(t("youMustBeLoggedIn"));
-      openAuthDialog("signin");
+  const handleNext = () => {
+    const values = form.getValues();
+    form.clearErrors();
+    const issues = validateStep(step, values);
+    if (step === "business" && nameCheck === "taken") {
+      issues.push({ path: "businessName", code: "business_name_taken" });
+    }
+    if (issues.length) {
+      applyIssues(issues);
+      // Review re-validates earlier steps (e.g. a stale draft): jump to the first problem.
+      if (step === "review") goTo(ONBOARDING_STEPS.indexOf(stepForPath(issues[0]!.path)));
+      return;
+    }
+    goTo(stepIndex + 1);
+  };
+
+  const handleBack = () => {
+    if (stepIndex > 0) goTo(stepIndex - 1);
+  };
+
+  const handleSubmit = () => {
+    const values = form.getValues();
+    form.clearErrors();
+    const issues = [...validateStep("review", values), ...validateStep("terms", values)];
+    if (issues.length) {
+      applyIssues(issues);
+      goTo(ONBOARDING_STEPS.indexOf(stepForPath(issues[0]!.path)));
       return;
     }
 
     startTransition(async () => {
       try {
-        const result = await submitSellerApplication(data);
+        const result = await submitSellerApplication(toSubmission(values));
 
         if (result.success) {
           posthog.capture("seller_application_submitted", {
-            business_type: data.businessType,
+            business_type: values.businessType,
+            fulfillment_model: values.model,
           });
-          toast.success(result.message);
-          form.reset();
-          router.push("/");
+          draft.clear();
+          toast.success(t(result.messageKey));
+          router.push("/onboarding/success");
           router.refresh();
-        } else {
-          toast.error(result.message);
+          return;
+        }
 
-          if (result.errors) {
-            Object.entries(result.errors).forEach(([field, messages]) => {
-              form.setError(field as keyof SellerApplicationFormData, {
-                type: "server",
-                message: messages[0],
-              });
-            });
+        toast.error(t(result.messageKey));
+        if (result.errors) {
+          const serverIssues = Object.entries(result.errors).map(([path, code]) => ({
+            path: toFormPath(path, values),
+            code,
+          }));
+          applyIssues(serverIssues);
+          if (serverIssues[0]) {
+            goTo(ONBOARDING_STEPS.indexOf(stepForPath(serverIssues[0].path)));
           }
         }
       } catch (error) {
@@ -197,6 +187,13 @@ export function OnboardingFormClient({ user }: OnboardingFormClientProps) {
         toast.error(tToast("unexpectedError"));
       }
     });
+  };
+
+  const startOver = () => {
+    draft.clear();
+    draft.dismissRestored();
+    form.reset(initialValues);
+    goTo(0);
   };
 
   if (!user) {
@@ -209,11 +206,9 @@ export function OnboardingFormClient({ user }: OnboardingFormClientProps) {
         <CardContent>
           <div className="flex flex-col gap-4">
             <Button className="w-full" asChild>
-              <Link href="/auth?redirect=/onboarding">
-                {t("signInToContinue")}
-              </Link>
+              <Link href="/auth?redirect=/onboarding">{t("signInToContinue")}</Link>
             </Button>
-            <p className="text-sm text-center text-gray-600">
+            <p className="text-center text-sm text-gray-600">
               {t("dontHaveAccount")}{" "}
               <Link
                 href="/auth?redirect=/onboarding"
@@ -228,262 +223,89 @@ export function OnboardingFormClient({ user }: OnboardingFormClientProps) {
     );
   }
 
-  const renderCurrentStepContent = () => {
-    switch (currentStep) {
-      case 0: {
+  const renderStep = (current: OnboardingStep) => {
+    switch (current) {
+      case "business":
         return (
-          <div className="md:space-y-6 space-y-4">
-            <FormField
-              control={form.control}
-              name="logoUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("businessLogo")}</FormLabel>
-                  <FormControl>
-                    <LogoUploader
-                      value={field.value}
-                      onChange={field.onChange}
-                      disabled={isPending}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="businessName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("businessName")}</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input
-                          type="text"
-                          placeholder={t("enterBusinessName")}
-                          required
-                          className="ltr:pr-9 rtl:pl-9"
-                          {...field}
-                          onChange={(e) => {
-                            field.onChange(e);
-                            setBusinessNameCheck("idle");
-                            if (
-                              form.formState.errors.businessName?.type ===
-                              "manual"
-                            ) {
-                              form.clearErrors("businessName");
-                            }
-                          }}
-                        />
-                        <span className="pointer-events-none absolute ltr:right-3 rtl:left-3 top-1/2 -translate-y-1/2">
-                          {businessNameCheck === "checking" && (
-                            <Spinner className="h-4 w-4 text-muted-foreground" />
-                          )}
-                          {businessNameCheck === "available" && (
-                            <Check className="h-4 w-4 text-green-600" />
-                          )}
-                          {businessNameCheck === "taken" && (
-                            <X className="h-4 w-4 text-destructive" />
-                          )}
-                        </span>
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <SelectInput
-                name="businessType"
-                label={t("businessType")}
-                placeholder={t("selectBusinessType")}
-                options={BUSINESS_TYPE_OPTIONS.map((opt) => ({
-                  value: opt.value,
-                  label: t(
-                    `businessType_${opt.value}` as "businessType_individual"
-                  ),
-                }))}
-                required
-              />
-            </div>
-
-            {/* <TextInput
-              form={form}
-              name="displayName"
-              label="Display Name"
-              placeholder="How your store appears to customers (optional)"
-              description="Leave empty to use business name"
-            /> */}
-
-            <TextareaInput
-              form={form}
-              name="description"
-              label={t("businessDescription")}
-              placeholder={t("tellCustomersAboutBusiness")}
-              rows={4}
-              validation={{ maxLength: 1000 }}
-              showCharacterCount
-            />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <TextInput
-                form={form}
-                name="supportEmail"
-                label={t("supportEmail")}
-                type="email"
-                placeholder={t("enterBusinessEmail")}
-                required
-              />
-
-              <TextInput
-                form={form}
-                name="supportPhone"
-                label={t("supportPhone")}
-                type="tel"
-                placeholder={t("enterSupportPhone")}
-              />
-            </div>
-          </div>
+          <BusinessStep
+            nameCheck={nameCheck}
+            onNameEdited={() => setNameCheck("idle")}
+            disabled={isPending}
+          />
         );
-      }
-
-      case 1: {
-        return (
-          <div className="space-y-6">
-            <TextInput
-              form={form}
-              name="legalAddress.street"
-              label={t("streetAddress")}
-              placeholder={t("streetAddressPlaceholder")}
-              required
-            />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <TextInput
-                form={form}
-                name="legalAddress.city"
-                label={t("city")}
-                placeholder={t("enterCity")}
-                required
-              />
-
-              <TextInput
-                form={form}
-                name="legalAddress.state"
-                label={t("stateProvince")}
-                placeholder={t("enterStateProvince")}
-                required
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <TextInput
-                form={form}
-                name="legalAddress.postalCode"
-                label={t("postalZipCode")}
-                placeholder={t("enterPostalCode")}
-              />
-
-              <div className="w-full">
-                <SelectInput
-                  name="legalAddress.country"
-                  label={t("country")}
-                  placeholder={t("selectCountry")}
-                  disabled
-                  options={COUNTRY_OPTIONS.map((opt) => ({
-                    value: opt.value,
-                    label: opt.label,
-                  }))}
-                  required
-                />
-              </div>
-            </div>
-
-            {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <TextInput
-                form={form}
-                name="registrationNumber"
-                label="Registration Number"
-                placeholder="Business registration number (optional)"
-              />
-
-              <TextInput
-                form={form}
-                name="taxId"
-                label="Tax ID"
-                placeholder="Tax identification number (optional)"
-              />
-            </div> */}
-          </div>
-        );
-      }
-
-      default: {
-        return null;
-      }
+      case "legal":
+        return <LegalAddressStep />;
+      case "model":
+        return <ModelStep plans={plans} />;
+      case "services":
+        return <ServicesStep plans={plans} />;
+      case "details":
+        return <DetailsStep />;
+      case "review":
+        return <ReviewStep plans={plans} onEdit={(s) => goTo(ONBOARDING_STEPS.indexOf(s))} />;
+      case "terms":
+        return <TermsStep />;
     }
   };
 
   return (
-    <Card>
+    <Card ref={topRef} className="scroll-mt-4">
       <CardHeader className="space-y-4">
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <CardTitle>{currentForm?.title}</CardTitle>
-            <p className="text-muted-foreground text-xs">
-              {t("stepOf", {
-                current: currentStep + 1,
-                total: steps.length,
-              })}
+          <div className="flex items-center justify-between gap-2">
+            <CardTitle>{t(`steps.${step}.title`)}</CardTitle>
+            <p className="shrink-0 text-xs text-muted-foreground">
+              {t("stepOf", { current: stepIndex + 1, total: ONBOARDING_STEPS.length })}
             </p>
           </div>
-          <CardDescription>{currentForm?.description}</CardDescription>
+          <CardDescription>{t(`steps.${step}.description`)}</CardDescription>
         </div>
         <Progress value={progress} />
       </CardHeader>
       <CardContent>
-        <FormProvider {...form}>
-          <Form {...form}>
-            <form
-              id="onboarding-form"
-              onSubmit={form.handleSubmit(handleSubmit)}
-              className="md:space-y-6 space-y-4"
-            >
-              {renderCurrentStepContent()}
-            </form>
-          </Form>
-        </FormProvider>
-      </CardContent>
-      <CardFooter className="flex justify-between">
-        {currentStep > 0 ? (
-          <Button type="button" variant="ghost" onClick={handleBack}>
-            <ChevronLeft className="h-4 w-4" />
-            {t("back")}
-          </Button>
-        ) : (
-          <div />
-        )}
-        {!isLastStep ? (
-          <Button type="button" onClick={handleNext}>
-            {t("next")}
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        ) : (
-          <Button
-            type="submit"
-            form="onboarding-form"
-            disabled={isPending}
-            size="lg"
+        <Form {...form}>
+          <form
+            id="onboarding-form"
+            noValidate
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (isLastStep) handleSubmit();
+              else handleNext();
+            }}
           >
+            {renderStep(step)}
+          </form>
+        </Form>
+      </CardContent>
+      <CardFooter className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-1">
+          {stepIndex > 0 && (
+            <Button type="button" variant="outline" onClick={handleBack} disabled={isPending}>
+              {t("back")}
+              <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
+            </Button>
+          )}
+          {draft.restored && stepIndex === 0 && (
+            <Button type="button" variant="ghost" size="sm" onClick={startOver}>
+              <RotateCcw className="h-3.5 w-3.5" />
+              {t("startOver")}
+            </Button>
+          )}
+        </div>
+        {!isLastStep ? (
+          <Button type="submit" form="onboarding-form">
+            <ChevronRight className="h-4 w-4 rtl:rotate-180" />
+            {t("next")}
+          </Button>
+        ) : (
+          <Button type="submit" form="onboarding-form" disabled={isPending} size="lg">
             {isPending ? (
               <>
                 <Spinner className="h-4 w-4" />
-                {t("creatingSellerAccount")}
+                {t("submitting")}
               </>
             ) : (
-              t("createSellerAccount")
+              t("submit")
             )}
           </Button>
         )}

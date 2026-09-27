@@ -22,6 +22,7 @@ import {
   Phone,
   Wallet,
   Handshake,
+  Warehouse,
 } from "lucide-react";
 import type { SidebarCounts, SidebarProps } from "./sidebar.types";
 import { SIDEBAR_COUNT_BADGE_CLASS } from "./sidebar.types";
@@ -98,6 +99,11 @@ const sidebarLinks: SidebarLink[] = [
     href: "/sellers",
     icon: Store,
     countKey: "sellers",
+  },
+  {
+    title: "Fulfillment",
+    href: "/fulfillment",
+    icon: Warehouse,
   },
   {
     title: "Wallets",

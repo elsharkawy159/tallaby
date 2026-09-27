@@ -1,5 +1,9 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+import { contentDirClass } from "@/lib/i18n/content-dir";
+import { cn } from "@/lib/utils";
+
 import { useEffect, useCallback, useRef } from "react";
 import { useFormContext, useFieldArray, Controller } from "react-hook-form";
 import {
@@ -60,6 +64,12 @@ export function PriceStockStep({
   activeLocale,
 }: PriceStockStepProps) {
   const form = useFormContext<AddProductFormData>();
+  const t = useTranslations("productForm.price");
+  const tFulfillment = useTranslations("productForm.fulfillment");
+  const localizedFulfillmentOptions = fulfillmentOptions.map((option) => ({
+    ...option,
+    label: tFulfillment(option.label),
+  }));
 
   const applyNearestFiveRounding = useCallback(
     (field: "price.list" | "price.final", value: number) => {
@@ -154,12 +164,12 @@ export function PriceStockStep({
     <div className="space-y-6">
       {/* Pricing Section */}
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 space-y-4">
-        <h3 className="text-sm font-semibold">Price</h3>
+        <h3 className="text-sm font-semibold">{t("title")}</h3>
         <div className="flex flex-wrap gap-4">
           <div className="flex-1">
             <CurrencyInput
               name="price.list"
-              label="Product price"
+              label={t("productPrice")}
               placeholder="0.00"
               className="text-sm"
               required
@@ -169,13 +179,13 @@ export function PriceStockStep({
 
           <CurrencyInput
             name="price.discountValue"
-            label="Discount"
+            label={t("discount")}
             placeholder="0.00"
             // helpText="Discount amount or percentage"
             className="text-sm"
           />
           <div className="flex flex-col gap-2">
-            <FormLabel className="text-sm">Discount Type</FormLabel>
+            <FormLabel className="text-sm">{t("discountType")}</FormLabel>
             <Controller
               name="price.discountType"
               control={form.control}
@@ -192,10 +202,10 @@ export function PriceStockStep({
                         field.onChange("amount");
                       }}
                       variant="outline"
-                      className="flex-1 text-xs rounded-r-none h-10 px-3 min-w-20"
-                      aria-label="Amount discount type"
+                      className="flex-1 text-xs rounded-e-none h-10 px-3 min-w-20"
+                      aria-label={t("amountType")}
                     >
-                      Amount
+                      {t("amount")}
                     </Toggle>
                     <Toggle
                       pressed={isPercent}
@@ -203,10 +213,10 @@ export function PriceStockStep({
                         field.onChange("percent");
                       }}
                       variant="outline"
-                      className="flex-1 text-xs rounded-l-none border-l-0 h-10 min-w-20"
-                      aria-label="Percent discount type"
+                      className="flex-1 text-xs rounded-s-none border-s-0 h-10 min-w-20"
+                      aria-label={t("percentType")}
                     >
-                      Percent %
+                      {t("percent")}
                     </Toggle>
                   </div>
                 );
@@ -215,9 +225,9 @@ export function PriceStockStep({
           </div>
           <CurrencyInput
             name="price.final"
-            label="Final Price"
+            label={t("finalPrice")}
             placeholder="0.00"
-            helpText={getFinalPriceHelpText(sellerPricing)}
+            helpText={getFinalPriceHelpText(sellerPricing, t)}
             className="text-sm"
             onBlurValue={(value) => applyNearestFiveRounding("price.final", value)}
           />
@@ -228,19 +238,19 @@ export function PriceStockStep({
 
       {/* Inventory Section */}
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 space-y-4">
-        <h3 className="text-sm font-semibold">Inventory</h3>
+        <h3 className="text-sm font-semibold">{t("inventory")}</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <TextInput
             form={form}
             name="sku"
-            label="SKU"
+            label={t("sku")}
             placeholder="PROD-12345"
-            className="text-sm"
+            className={cn("text-sm", contentDirClass("en"))}
           />
           <TextInput
             form={form}
             name="quantity"
-            label="Quantity"
+            label={t("quantity")}
             type="number"
             placeholder="0"
             required
@@ -262,20 +272,20 @@ export function PriceStockStep({
 
       {/* Shipping Options */}
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 space-y-4">
-        <h3 className="text-sm font-semibold">Shipping Options</h3>
+        <h3 className="text-sm font-semibold">{t("shippingOptions")}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <SelectInput
             name="fulfillmentType"
-            label="Fulfillment Method"
-            placeholder="Select fulfillment"
-            options={fulfillmentOptions}
+            label={t("fulfillmentMethod")}
+            placeholder={t("selectFulfillment")}
+            options={localizedFulfillmentOptions}
             required
             className="text-sm"
           />
           <TextInput
             form={form}
             name="handlingTime"
-            label="Handling Time (days)"
+            label={t("handlingTime")}
             type="number"
             placeholder="1"
             required
@@ -286,7 +296,7 @@ export function PriceStockStep({
         {!sellerPricing.sellerFreeDelivery && (
           <SwitchInput
             name="freeDelivery"
-            label="Free delivery on this product"
+            label={t("freeDelivery")}
             labelPosition="right"
             className="rounded-lg border border-gray-200 p-4"
           />
@@ -294,20 +304,20 @@ export function PriceStockStep({
 
         <div className="space-y-3 rounded-lg border border-gray-200 p-4">
           <div>
-            <p className="text-sm font-medium">Merchandising</p>
+            <p className="text-sm font-medium">{t("merchandising")}</p>
             <p className="text-xs text-muted-foreground">
-              How this product is promoted — separate from its category.
+              {t("merchandisingHint")}
             </p>
           </div>
           <div className="space-y-3">
             <SwitchInput
               name="isTrending"
-              label="Trending Now"
+              label={t("trending")}
               labelPosition="right"
             />
             <SwitchInput
               name="isSeasonal"
-              label="Seasonal"
+              label={t("seasonal")}
               labelPosition="right"
             />
           </div>
@@ -315,13 +325,13 @@ export function PriceStockStep({
 
         <div className="space-y-2">
           <FormLabel className="text-sm">
-            Product Weight <span className="text-red-600">*</span>
+            {t("productWeight")} <span className="text-red-600">*</span>
           </FormLabel>
           <div className="grid grid-cols-2 gap-4">
             <TextInput
               form={form}
               name="dimensions.weight"
-              label="Weight"
+              label={t("weight")}
               type="number"
               placeholder="0.0"
               required
@@ -329,12 +339,12 @@ export function PriceStockStep({
             />
             <SelectInput
               name="dimensions.weightUnit"
-              label="Unit"
-              placeholder="Select unit"
+              label={t("unit")}
+              placeholder={t("selectUnit")}
               options={[
-                { value: "kg", label: "kg" },
-                { value: "g", label: "g" },
-                { value: "lb", label: "lb" },
+                { value: "kg", label: t("units.kg") },
+                { value: "g", label: t("units.g") },
+                { value: "lb", label: t("units.lb") },
               ]}
               className="text-sm"
             />
@@ -342,12 +352,12 @@ export function PriceStockStep({
         </div>
 
         <div className="space-y-2">
-          <FormLabel className="text-sm">Dimensions</FormLabel>
+          <FormLabel className="text-sm">{t("dimensions")}</FormLabel>
           <div className="grid grid-cols-4 gap-4">
             <TextInput
               form={form}
               name="dimensions.length"
-              label="Length"
+              label={t("length")}
               type="number"
               placeholder="0"
               className="text-sm"
@@ -355,7 +365,7 @@ export function PriceStockStep({
             <TextInput
               form={form}
               name="dimensions.width"
-              label="Width"
+              label={t("width")}
               type="number"
               placeholder="0"
               className="text-sm"
@@ -363,18 +373,18 @@ export function PriceStockStep({
             <TextInput
               form={form}
               name="dimensions.height"
-              label="Height"
+              label={t("height")}
               type="number"
               placeholder="0"
               className="text-sm"
             />
             <SelectInput
               name="dimensions.unit"
-              label="Unit"
-              placeholder="Select unit"
+              label={t("unit")}
+              placeholder={t("selectUnit")}
               options={[
-                { value: "cm", label: "cm" },
-                { value: "in", label: "in" },
+                { value: "cm", label: t("units.cm") },
+                { value: "in", label: t("units.in") },
               ]}
               className="text-sm"
             />
@@ -409,6 +419,7 @@ function VariantsSection({
   activeLocale: SupportedLocale;
 }) {
   const form = useFormContext<AddProductFormData>();
+  const t = useTranslations("productForm.variants");
   const { fields, replace } = useFieldArray({
     control: form.control,
     name: "variants",
@@ -885,13 +896,8 @@ function VariantsSection({
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 space-y-4">
         <div className="flex justify-between items-center">
           <div>
-            <h3 className="text-sm font-semibold">
-              Product Types and Sub-options
-            </h3>
-            <p className="text-xs text-gray-500 mt-1">
-              Add characteristics such as colors and sizes. Use the content
-              language tabs above to enter English and Arabic labels.
-            </p>
+            <h3 className="text-sm font-semibold">{t("title")}</h3>
+            <p className="text-xs text-gray-500 mt-1">{t("description")}</p>
           </div>
           <Button
             type="button"
@@ -900,13 +906,13 @@ function VariantsSection({
             onClick={handleAddVariantType}
             className="text-xs"
           >
-            + Add Sub-type
+            {t("addType")}
           </Button>
         </div>
 
         {variantTypes.length === 0 ? (
           <p className="text-xs text-gray-500 text-center py-4">
-            No variant types added. Use the button above to add one.
+            {t("empty")}
           </p>
         ) : (
           <div className="space-y-4">
@@ -919,7 +925,7 @@ function VariantsSection({
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex-1 space-y-2">
                       <label className="text-xs font-medium text-gray-700 block">
-                        Sub-option Type
+                        {t("typeLabel")}
                       </label>
                       <Select
                         value={type.kind}
@@ -939,9 +945,7 @@ function VariantsSection({
                               {activeLocale === "en" ? preset.en : preset.ar}
                             </SelectItem>
                           ))}
-                          <SelectItem value="custom">
-                            {activeLocale === "en" ? "Other" : "أخرى"}
-                          </SelectItem>
+                          <SelectItem value="custom">{t("other")}</SelectItem>
                         </SelectContent>
                       </Select>
                       {type.kind === "custom" && (
@@ -955,7 +959,7 @@ function VariantsSection({
                               ? "e.g., Fabric, Fit"
                               : "مثال: القماش، القصة"
                           }
-                          className="text-sm h-9"
+                          className={cn("text-sm h-9", contentDirClass(activeLocale))}
                         />
                       )}
                     </div>
@@ -966,13 +970,13 @@ function VariantsSection({
                       onClick={() => handleRemoveVariantType(type.id)}
                       className="text-xs text-destructive hover:text-destructive mt-6"
                     >
-                      Remove
+                      {t("remove")}
                     </Button>
                   </div>
 
                   <div className="space-y-2">
                     <label className="text-xs font-medium text-gray-700 block">
-                      Value or Property
+                      {t("valueLabel")}
                     </label>
                     <div className="space-y-2">
                       {type.localized[activeLocale].values.map(
@@ -990,11 +994,7 @@ function VariantsSection({
                                 )
                               }
                               className="size-9 shrink-0 cursor-pointer rounded-md border border-gray-200 p-0.5"
-                              aria-label={
-                                activeLocale === "en"
-                                  ? "Swatch color"
-                                  : "لون العينة"
-                              }
+                              aria-label={t("swatch")}
                             />
                           )}
                           <Input
@@ -1010,7 +1010,7 @@ function VariantsSection({
                               type.kind,
                               activeLocale
                             )}
-                            className="text-sm h-9 flex-1"
+                            className={cn("text-sm h-9 flex-1", contentDirClass(activeLocale))}
                           />
                           {type.kind === "weight" && (
                             <Select
@@ -1021,9 +1021,7 @@ function VariantsSection({
                             >
                               <SelectTrigger className="h-9 text-sm w-24 shrink-0">
                                 <SelectValue
-                                  placeholder={
-                                    activeLocale === "en" ? "Unit" : "الوحدة"
-                                  }
+                                  placeholder={t("unit")}
                                 />
                               </SelectTrigger>
                               <SelectContent>
@@ -1044,7 +1042,7 @@ function VariantsSection({
                             }
                             className="text-destructive hover:text-destructive"
                           >
-                            Remove
+                            {t("remove")}
                           </Button>
                         </div>
                       ))}
@@ -1055,7 +1053,7 @@ function VariantsSection({
                         onClick={() => handleAddValue(type.id)}
                         className="text-xs w-full"
                       >
-                        + Add another value
+                        {t("addValue")}
                       </Button>
                     </div>
                   </div>
@@ -1069,25 +1067,25 @@ function VariantsSection({
       {/* Variant Combinations Table */}
       {fields.length > 0 && (
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 space-y-4">
-          <h3 className="text-sm font-semibold">Product Combinations</h3>
+          <h3 className="text-sm font-semibold">{t("combinations")}</h3>
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
                 <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 text-xs font-medium text-gray-700">
-                    Combination
+                  <th className="text-start py-3 px-4 text-xs font-medium text-gray-700">
+                    {t("columns.combination")}
                   </th>
-                  <th className="text-left py-3 px-4 text-xs font-medium text-gray-700 min-w-[140px]">
-                    Images
+                  <th className="text-start py-3 px-4 text-xs font-medium text-gray-700 min-w-[140px]">
+                    {t("columns.images")}
                   </th>
-                  <th className="text-left py-3 px-4 text-xs font-medium text-gray-700 min-w-[300px]">
-                    Pricing
+                  <th className="text-start py-3 px-4 text-xs font-medium text-gray-700 min-w-[300px]">
+                    {t("columns.pricing")}
                   </th>
-                  <th className="text-left py-3 px-4 text-xs font-medium text-gray-700">
-                    Stock
+                  <th className="text-start py-3 px-4 text-xs font-medium text-gray-700">
+                    {t("columns.stock")}
                   </th>
-                  <th className="text-left py-3 px-4 text-xs font-medium text-gray-700">
-                    Barcode
+                  <th className="text-start py-3 px-4 text-xs font-medium text-gray-700">
+                    {t("columns.barcode")}
                   </th>
                 </tr>
               </thead>
@@ -1121,11 +1119,11 @@ function VariantsSection({
                               checked={isDefaultVariant}
                               onChange={() => handleSetDefaultVariant(index)}
                               className="h-4 w-4"
-                              aria-label={`Set ${displayTitle} as default variant`}
+                              aria-label={t("setDefault", { name: displayTitle })}
                             />
                             {isDefaultVariant && (
                               <Badge variant="secondary" className="text-[10px]">
-                                Default
+                                {t("default")}
                               </Badge>
                             )}
                           </div>
@@ -1196,8 +1194,8 @@ function VariantsSection({
                         <TextInput
                           form={form}
                           name={`variants.${index}.barCode`}
-                          placeholder="Barcode"
-                          className="text-sm w-full"
+                          placeholder={t("columns.barcode")}
+                          className={cn("text-sm w-full", contentDirClass("en"))}
                         />
                       </td>
                     </tr>

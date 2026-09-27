@@ -1,8 +1,9 @@
 "use server";
 
 import { createClient } from "@/supabase/server";
-import { db, users, eq, sellers } from "@workspace/db";
+import { getSellerAccess } from "@/lib/auth/seller-access";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 export const getUser = async () => {
   const supabase = await createClient();
@@ -14,79 +15,38 @@ export const getUser = async () => {
   return data;
 };
 
-// Check if user is eligible to access seller dashboard before authentication
-export const checkUserEligibility = async (email: string) => {
-  // First, find user by email in the users table
-  const userProfile = await db.query.users.findFirst({
-    where: eq(users.email, email),
-    select: {
-      id: true,
-      role: true,
-      email: true,
-    },
-  } as any);
-
-  if (!userProfile) {
-    throw new Error("No account found with this email address");
-  }
-
-  // Check if user has seller role
-  if (userProfile.role !== "seller") {
-    throw new Error("Access denied: Only sellers can access the dashboard");
-  }
-
-  // Check if seller profile exists
-  const sellerProfile = await db.query.sellers.findFirst({
-    where: eq(sellers.id, userProfile.id),
-    select: {
-      id: true,
-    },
-  } as any);
-
-  if (!sellerProfile) {
-    throw new Error(
-      "Seller profile not found. Please complete your seller registration."
-    );
-  }
-
-  switch (sellerProfile.status) {
-    case "pending":
-      throw new Error("Seller profile is pending. Please wait for approval.");
-    case "suspended":
-      throw new Error(
-        "Seller profile is suspended. Please contact support for assistance."
-      );
-    case "restricted":
-      throw new Error(
-        "Seller profile is restricted. Please contact support for more information."
-      );
-    // You can add more cases if needed
-  }
-
-  return { userProfile, sellerProfile };
-};
-
 export const login = async (email: string, password: string) => {
   // Proceed with authentication
   const supabase = await createClient();
+  const t = await getTranslations("auth.errors");
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
 
   if (error) {
+    if (error.message.includes("Invalid login credentials")) {
+      throw new Error(t("invalidCredentials"));
+    }
+    if (error.message.includes("Email not confirmed")) {
+      throw new Error(t("emailNotConfirmed"));
+    }
     throw new Error(error.message);
   }
 
   // Verify user exists in response
   const user = data.user;
   if (!user) {
-    throw new Error("Authentication failed: user not found.");
+    throw new Error(t("userNotFound"));
   }
 
-  // Check if user is a seller
-  if (!user.user_metadata || user.user_metadata.is_seller !== true) {
-    throw new Error("Access denied: Only sellers can access the dashboard.");
+  // Access is decided by the sellers row (see lib/auth/seller-access.ts), not
+  // by user_metadata.is_seller. Pending/suspended sellers may sign in; the
+  // dashboard layout shows them a status screen instead of the dashboard.
+  const access = await getSellerAccess(user.id);
+  if (!access.allowed && access.reason === "no_seller") {
+    await supabase.auth.signOut();
+    throw new Error(t("noSellerAccount"));
   }
 
   return data;
@@ -94,6 +54,7 @@ export const login = async (email: string, password: string) => {
 
 export const resetPassword = async (email: string) => {
   const supabase = await createClient();
+  const t = await getTranslations("auth.errors");
 
   // Add custom redirect URL for password reset
   const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -103,13 +64,11 @@ export const resetPassword = async (email: string) => {
   if (error) {
     // Provide more specific error messages
     if (error.message.includes("Invalid email")) {
-      throw new Error("Please enter a valid email address");
+      throw new Error(t("invalidEmail"));
     } else if (error.message.includes("rate limit")) {
-      throw new Error(
-        "Too many requests. Please wait a moment before trying again"
-      );
+      throw new Error(t("rateLimited"));
     } else if (error.message.includes("not found")) {
-      throw new Error("No account found with this email address");
+      throw new Error(t("accountNotFound"));
     } else {
       throw new Error(error.message);
     }

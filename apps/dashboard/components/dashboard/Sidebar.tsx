@@ -17,6 +17,7 @@ import {
   LogOut,
   MessageSquare,
   Truck,
+  Warehouse,
 } from "lucide-react";
 import { cn, getPublicUrl } from "@/lib/utils";
 import { Button } from "@workspace/ui/components/button";
@@ -24,7 +25,7 @@ import { Badge } from "@workspace/ui/components/badge";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { useTranslations } from "next-intl";
+import { useFormatter, useTranslations } from "next-intl";
 import { ScrollArea, ScrollBar } from "@workspace/ui/components/scroll-area";
 import {
   Accordion,
@@ -43,6 +44,7 @@ import { useSidebarStore } from "@/stores";
 import { logout } from "@/actions/auth";
 import type { SidebarCounts } from "./sidebar.types";
 import { SIDEBAR_COUNT_BADGE_CLASS } from "./sidebar.types";
+import { LanguageSwitcher } from "@/components/layout/language-switcher.client";
 
 interface SidebarProps {
   counts: SidebarCounts;
@@ -78,7 +80,7 @@ export const Sidebar = ({ counts, isOpen, onToggle }: SidebarProps) => {
       {/* Desktop Sidebar */}
       <aside
         className={cn(
-          "hidden lg:flex max-w-72 lg:flex-col lg:fixed lg:inset-y-0 bg-white border-r border-gray-200 z-50 h-screen transition-all duration-300",
+          "hidden lg:flex max-w-72 lg:flex-col lg:fixed lg:inset-y-0 lg:start-0 bg-white border-e border-gray-200 z-50 h-screen transition-all duration-300",
           isCollapsed ? "lg:w-20" : "lg:w-280"
         )}
       >
@@ -95,8 +97,8 @@ export const Sidebar = ({ counts, isOpen, onToggle }: SidebarProps) => {
       {/* Mobile Sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 w-280 bg-white border-r border-gray-200 z-50 transform transition-transform duration-300 ease-in-out lg:hidden",
-          isOpen ? "translate-x-0" : "-translate-x-full"
+          "fixed inset-y-0 start-0 w-280 bg-white border-e border-gray-200 z-50 transform transition-transform duration-300 ease-in-out lg:hidden",
+          isOpen ? "translate-x-0" : "-translate-x-full rtl:translate-x-full"
         )}
       >
         <div className="flex items-center justify-between gap-2 p-4 border-b border-gray-200">
@@ -106,7 +108,7 @@ export const Sidebar = ({ counts, isOpen, onToggle }: SidebarProps) => {
               alt="Tallaby"
               width={120}
               height={32}
-              className="object-contain object-left"
+              className="object-contain object-left rtl:object-right"
             />
           </Link>
           <Button
@@ -115,8 +117,8 @@ export const Sidebar = ({ counts, isOpen, onToggle }: SidebarProps) => {
             size="icon"
             className="shrink-0 text-gray-700 hover:text-gray-900 hover:bg-gray-100"
           >
-            <span className="sr-only">Close menu</span>
-            <ChevronLeft size={24} />
+            <span className="sr-only">{t("nav.closeMenu")}</span>
+            <ChevronLeft size={24} className="rtl:rotate-180" />
           </Button>
         </div>
         <SidebarContent
@@ -167,6 +169,8 @@ const SidebarContent = ({
 }: SidebarContentProps) => {
   const pathname = usePathname();
   const t = useTranslations();
+  const format = useFormatter();
+  const formatNumber = (value: number) => format.number(value);
   const [profileOpen, setProfileOpen] = useState(false);
 
   const handleLogout = async () => {
@@ -189,7 +193,7 @@ const SidebarContent = ({
                 alt="Tallaby"
                 width={32}
                 height={32}
-                className="object-contain object-left"
+                className="object-contain object-left rtl:object-right"
               />
             ) : (
               <Image
@@ -197,19 +201,21 @@ const SidebarContent = ({
                 alt="Tallaby"
                 width={120}
                 height={32}
-                className="object-contain object-left"
+                className="object-contain object-left rtl:object-right"
               />
             )}
           </Link>
           <button
             onClick={onToggleCollapse}
             className="shrink-0 text-gray-600 hover:text-gray-900 transition-colors p-1 rounded hover:bg-gray-100"
-            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-label={
+              isCollapsed ? t("nav.expandSidebar") : t("nav.collapseSidebar")
+            }
           >
             {isCollapsed ? (
-              <ChevronRight size={20} />
+              <ChevronRight size={20} className="rtl:rotate-180" />
             ) : (
-              <ChevronLeft size={20} />
+              <ChevronLeft size={20} className="rtl:rotate-180" />
             )}
           </button>
         </div>
@@ -238,14 +244,14 @@ const SidebarContent = ({
                         className={cn(
                           SIDEBAR_ICON,
                           isActive && "text-gray-900",
-                          !isCollapsed && "mr-3"
+                          !isCollapsed && "me-3"
                         )}
                       />
                       {!isCollapsed && <span className="truncate">{item.name}</span>}
                     </span>
                     {!isCollapsed && counts[item.countKey] > 0 && (
                       <Badge variant="secondary" className={SIDEBAR_COUNT_BADGE_CLASS}>
-                        {counts[item.countKey].toLocaleString()}
+                        {formatNumber(counts[item.countKey])}
                       </Badge>
                     )}
                   </Link>
@@ -271,18 +277,18 @@ const SidebarContent = ({
                     <AccordionTrigger className="bg-transparent py-3 px-4 hover:no-underline hover:bg-gray-100 rounded-lg [&[data-state=open]]:bg-transparent [&[data-state=open]]:hover:bg-gray-100 [&>svg]:hidden">
                       <span className="flex w-full items-center justify-between">
                         <span className="flex items-center min-w-0 text-sm font-medium text-gray-700">
-                          <Package className={cn(SIDEBAR_ICON, "mr-3")} />
+                          <Package className={cn(SIDEBAR_ICON, "me-3")} />
                           {t("nav.products")}
                         </span>
                         {counts.products > 0 && (
                         <Badge variant="secondary" className={SIDEBAR_COUNT_BADGE_CLASS}>
-                          {counts.products.toLocaleString()}
+                          {formatNumber(counts.products)}
                         </Badge>
                         )}
                       </span>
                     </AccordionTrigger>
                     <AccordionContent className="pt-0 pb-2">
-                      <ul className="space-y-1 pl-4 border-l border-gray-200 ml-5">
+                      <ul className="space-y-1 ps-4 border-s border-gray-200 ms-5">
                         <li>
                           <Link
                             href="/products"
@@ -344,14 +350,14 @@ const SidebarContent = ({
                         className={cn(
                           SIDEBAR_ICON,
                           isActive && "text-gray-900",
-                          !isCollapsed && "mr-3"
+                          !isCollapsed && "me-3"
                         )}
                       />
                       {!isCollapsed && <span className="truncate">{item.name}</span>}
                     </span>
                     {!isCollapsed && counts[item.countKey] > 0 && (
                       <Badge variant="secondary" className={SIDEBAR_COUNT_BADGE_CLASS}>
-                        {counts[item.countKey].toLocaleString()}
+                        {formatNumber(counts[item.countKey])}
                       </Badge>
                     )}
                   </Link>
@@ -364,10 +370,11 @@ const SidebarContent = ({
 
       {/* Profile accordion at bottom */}
       <div className="mt-auto border-t border-gray-200 px-4 py-2">
+        <LanguageSwitcher compact={isCollapsed} className="mb-1" />
         <Collapsible open={profileOpen} onOpenChange={setProfileOpen}>
           <CollapsibleTrigger
             className={cn(
-              "flex w-full items-center justify-between rounded-lg py-2 px-3 text-left transition-colors hover:bg-gray-100",
+              "flex w-full items-center justify-between rounded-lg py-2 px-3 text-start transition-colors hover:bg-gray-100",
               isCollapsed && "justify-center px-2"
             )}
           >
@@ -386,8 +393,8 @@ const SidebarContent = ({
                   }
                   alt={
                     seller?.businessName
-                      ? `${seller.businessName} logo`
-                      : "Vendor"
+                      ? t("nav.logoAlt", { name: seller.businessName })
+                      : t("nav.vendor")
                   }
                 />
                 <AvatarFallback className="bg-gray-200 text-gray-700 font-semibold text-sm">
@@ -398,7 +405,7 @@ const SidebarContent = ({
               </Avatar>
               {!isCollapsed && (
                 <span className="truncate text-sm font-medium text-gray-700">
-                  {seller?.businessName ?? "Vendor"}
+                  {seller?.businessName ?? t("nav.vendor")}
                 </span>
               )}
             </div>
@@ -413,7 +420,7 @@ const SidebarContent = ({
           </CollapsibleTrigger>
           <CollapsibleContent>
             {!isCollapsed && (
-              <ul className="mt-2 space-y-1 pl-4 border-l border-gray-200 ml-5">
+              <ul className="mt-2 space-y-1 ps-4 border-s border-gray-200 ms-5">
                 <li>
                   <Link
                     href="#"
@@ -430,6 +437,15 @@ const SidebarContent = ({
                   >
                     <Settings className="h-4 w-4 shrink-0" />
                     {t("nav.settings")}
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/settings/fulfillment"
+                    className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                  >
+                    <Warehouse className="h-4 w-4 shrink-0" />
+                    {t("nav.fulfillment")}
                   </Link>
                 </li>
                 <li>

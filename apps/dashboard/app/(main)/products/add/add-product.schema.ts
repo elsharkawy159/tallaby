@@ -84,26 +84,26 @@ export const addProductFormSchema = z
     ),
 
     // shared fields
-    categoryId: z.string().min(1, "Main category is required"),
+    categoryId: z.string().min(1, "product.categoryRequired"),
     brandId: z.string().optional(),
     sku: z.string().optional(),
     quantity: z.number().int().min(0).default(0),
     maxOrderQuantity: z.number().int().optional(),
-    images: z.array(z.string()).min(1, "At least one product image is required"),
+    images: z.array(z.string()).min(1, "product.imageRequired"),
     price: z.object({
       base: z.preprocess(
         roundPositivePriceInput,
-        z.number().min(0.01, "Base price must be greater than 0").optional()
+        z.number().min(0.01, "product.basePricePositive").optional()
       ),
       list: z.preprocess(
         roundPositivePriceInput,
-        z.number().min(0.01, "List price must be greater than 0")
+        z.number().min(0.01, "product.listPricePositive")
       ),
       discountValue: z.number().optional(),
       discountType: z.enum(["amount", "percent"]).default("amount").optional(),
       final: z.preprocess(
         roundPositivePriceInput,
-        z.number().min(0.01, "Final price must be greater than 0")
+        z.number().min(0.01, "product.finalPricePositive")
       ),
       discountEndsAt: z.date().optional().nullable(),
     }),
@@ -149,17 +149,17 @@ export const addProductFormSchema = z
           // Existing variant's DB id (edit only) — lets the update keep the
           // row instead of re-creating it under a new id.
           id: z.string().uuid().optional(),
-          title: z.string().min(1, "Variant title is required").max(255),
-          sku: z.string().min(1, "Variant SKU is required").max(100),
+          title: z.string().min(1, "product.variantTitleRequired").max(255),
+          sku: z.string().min(1, "product.variantSkuRequired").max(100),
           listPrice: z.preprocess(
             roundPositivePriceInput,
-            z.number().min(0.01, "List price must be greater than 0").optional()
+            z.number().min(0.01, "product.listPricePositive").optional()
           ),
           discountValue: z.number().optional(),
           discountType: z.enum(["amount", "percent"]).default("percent").optional(),
           price: z.preprocess(
             roundPositivePriceInput,
-            z.number().min(0.01, "Final price must be greater than 0")
+            z.number().min(0.01, "product.finalPricePositive")
           ),
           discountEndsAt: z.date().optional().nullable(),
           stock: z.number().int().min(0).default(0),
@@ -190,7 +190,7 @@ export const addProductFormSchema = z
     if (!enTitle) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Product name (EN) is required",
+        message: "product.enTitleRequired",
         path: ["localized", "en", "title"],
       })
     }
@@ -200,7 +200,7 @@ export const addProductFormSchema = z
     if (enTitle && !enSlug) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Product slug (EN) is required",
+        message: "product.enSlugRequired",
         path: ["localized", "en", "slug"],
       })
     }
@@ -219,7 +219,7 @@ export const addProductFormSchema = z
     if (arHasContent && !(ar.title ?? "").trim()) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Arabic title is required when Arabic content is provided",
+        message: "product.arTitleRequired",
         path: ["localized", "ar", "title"],
       })
     }
@@ -228,7 +228,7 @@ export const addProductFormSchema = z
     if (weight === undefined || weight === null || weight <= 0) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Product weight is required",
+        message: "product.weightRequired",
         path: ["dimensions", "weight"],
       })
     }
@@ -269,7 +269,7 @@ export const defaultValues = {
   },
   condition: "new" as const,
   conditionDescription: "",
-  fulfillmentType: "platform_fulfilled" as const,
+  fulfillmentType: "seller_fulfilled" as const,
   handlingTime: 1,
   isPlatformChoice: false,
   isMostSelling: false,
@@ -343,8 +343,9 @@ export const conditionOptions = [
 ]
 
 export const fulfillmentOptions = [
-  { value: "platform_fulfilled", label: "Platform Fulfilled" },
-  { value: "seller_fulfilled", label: "Seller Fulfilled" },
+  // label is a "productForm.fulfillment" key
+  { value: "seller_fulfilled", label: "seller_fulfilled" },
+  { value: "platform_fulfilled", label: "platform_fulfilled" },
 ]
 
 export const taxClassOptions = [

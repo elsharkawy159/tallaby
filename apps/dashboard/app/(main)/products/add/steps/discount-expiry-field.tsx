@@ -1,5 +1,8 @@
 "use client";
 
+import { useLocale, useTranslations } from "next-intl";
+import { ar as arLocale } from "date-fns/locale";
+
 import { useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { Switch } from "@workspace/ui/components/switch";
@@ -20,9 +23,11 @@ function defaultExpiry(): Date {
 
 export function DiscountExpiryField({
   name,
-  label = "Discount expiry",
+  label,
 }: DiscountExpiryFieldProps) {
   const form = useFormContext<AddProductFormData>();
+  const t = useTranslations("productForm.discountExpiry");
+  const locale = useLocale();
   const value = form.watch(name as any) as Date | null | undefined;
   const [enabled, setEnabled] = useState<boolean>(!!value);
 
@@ -53,16 +58,17 @@ export function DiscountExpiryField({
           htmlFor={`${name}-toggle`}
           className="text-sm font-medium cursor-pointer"
         >
-          {label}
+          {label ?? t("label")}
         </label>
       </div>
 
       {enabled && (
         <DateTimeInput
           name={name}
-          placeholder="Select expiry date & time"
+          placeholder={t("placeholder")}
           minDate={new Date()}
           showClearButton={false}
+          locale={locale === "ar" ? arLocale : undefined}
         />
       )}
     </div>

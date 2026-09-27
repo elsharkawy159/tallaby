@@ -30,6 +30,9 @@ import { ImportExportButton } from "./import-export-button.client";
 import { ManageColumnsDialog } from "./manage-columns-dialog.client";
 import { ProductImageUpload } from "./product-image-upload";
 import { ProductStatusCell } from "./product-publish-toggle.client";
+import { useLocale, useTranslations } from "next-intl";
+import { formatMoney, formatNumber } from "@/lib/i18n/format";
+import { useTableSectionLabels } from "@/lib/i18n/table-labels";
 
 export type VendorProduct = {
   id: string;
@@ -50,21 +53,9 @@ export type VendorProduct = {
   reviewCount?: number | null;
 };
 
-const formatCurrency = (amount?: string | number | null) => {
-  const value =
-    amount == null
-      ? 0
-      : typeof amount === "string"
-        ? parseFloat(amount)
-        : amount;
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "EGP",
-  }).format(value);
-};
-
 const CopyableTitle = ({ title }: { title: string }) => {
   const [copied, setCopied] = useState(false);
+  const t = useTranslations("products.list");
 
   const handleCopy = async () => {
     try {
@@ -88,7 +79,7 @@ const CopyableTitle = ({ title }: { title: string }) => {
           </div>
         </TooltipTrigger>
         <TooltipContent>
-          <p>{copied ? "Copied!" : "Copy"}</p>
+          <p>{copied ? t("copied") : t("copy")}</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
@@ -103,6 +94,11 @@ export function VendorProductsSection({
 }) {
   const { visibility, order, setVisibility, setOrder } =
     useProductColumnsStore();
+  const t = useTranslations("products.list");
+  const locale = useLocale();
+  const tableLabels = useTableSectionLabels();
+  const formatCurrency = (amount?: string | number | null) =>
+    formatMoney(amount, locale);
 
   // The store persists with `skipHydration`, so read localStorage only after
   // mount — otherwise the first client render would disagree with the server.
@@ -117,7 +113,7 @@ export function VendorProductsSection({
       {
         id: "image",
         header: "",
-        meta: { label: "Image" },
+        meta: { label: t("columns.image") },
         cell: ({ row }) => (
           <ProductImageUpload
             productId={row.original.id}
@@ -130,13 +126,13 @@ export function VendorProductsSection({
       {
         id: "title",
         accessorKey: "title",
-        header: "Title",
-        meta: { label: "Title" },
+        header: t("columns.title"),
+        meta: { label: t("columns.title") },
         cell: ({ row }) => (
           <div className="min-w-0">
             <CopyableTitle title={row.original.title} />
             <div className="text-xs text-gray-500">
-              SKU: {row.original.sku || "N/A"}
+              {t("sku")}: <span dir="ltr">{row.original.sku || t("notAvailable")}</span>
             </div>
           </div>
         ),
@@ -144,8 +140,8 @@ export function VendorProductsSection({
       },
       {
         id: "category",
-        header: "Category",
-        meta: { label: "Category" },
+        header: t("columns.category"),
+        meta: { label: t("columns.category") },
         cell: ({ row }) => (
           <span className="text-sm text-gray-700">
             {row.original.category?.name || "-"}
@@ -155,8 +151,8 @@ export function VendorProductsSection({
       },
       {
         id: "brand",
-        header: "Brand",
-        meta: { label: "Brand" },
+        header: t("columns.brand"),
+        meta: { label: t("columns.brand") },
         cell: ({ row }) => (
           <span className="text-sm text-gray-700">
             {row.original.brand?.name || "-"}
@@ -166,8 +162,8 @@ export function VendorProductsSection({
       },
       {
         id: "price",
-        header: "Price",
-        meta: { label: "Price" },
+        header: t("columns.price"),
+        meta: { label: t("columns.price") },
         cell: ({ row }) => {
           const base = row.original.basePrice;
           const sale = row.original.salePrice;
@@ -184,7 +180,7 @@ export function VendorProductsSection({
               )}
               {isOnSale && (
                 <Badge variant="destructive" className="text-xs px-1 py-0">
-                  Sale
+                  {t("sale")}
                 </Badge>
               )}
             </div>
@@ -194,8 +190,8 @@ export function VendorProductsSection({
       },
       {
         id: "rating",
-        header: "Rating",
-        meta: { label: "Rating" },
+        header: t("columns.rating"),
+        meta: { label: t("columns.rating") },
         cell: ({ row }) => {
           const rating = row.original.averageRating ?? 0;
           const count = row.original.reviewCount ?? 0;
@@ -204,8 +200,17 @@ export function VendorProductsSection({
               <Star
                 className={`h-4 w-4 ${rating > 0 ? "text-yellow-500 fill-yellow-500" : "text-gray-300"}`}
               />
-              <span>{rating > 0 ? rating.toFixed(1) : "—"}</span>
-              <span className="text-xs text-muted-foreground">({count})</span>
+              <span>
+                {rating > 0
+                  ? formatNumber(rating, locale, {
+                      minimumFractionDigits: 1,
+                      maximumFractionDigits: 1,
+                    })
+                  : "—"}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                ({formatNumber(count, locale)})
+              </span>
             </div>
           );
         },
@@ -214,11 +219,11 @@ export function VendorProductsSection({
       {
         id: "quantity",
         accessorKey: "quantity",
-        header: "Stock",
-        meta: { label: "Stock" },
+        header: t("columns.stock"),
+        meta: { label: t("columns.stock") },
         cell: ({ row }) => (
           <span className="text-sm text-gray-700">
-            {row.original.quantity ?? 0}
+            {formatNumber(row.original.quantity ?? 0, locale)}
           </span>
         ),
         size: 80,
@@ -226,8 +231,8 @@ export function VendorProductsSection({
       {
         id: "status",
         accessorKey: "status",
-        header: "Status",
-        meta: { label: "Status" },
+        header: t("columns.status"),
+        meta: { label: t("columns.status") },
         cell: ({ row }) => (
           <ProductStatusCell
             productId={row.original.id}
@@ -238,8 +243,8 @@ export function VendorProductsSection({
       },
       {
         id: "actions",
-        header: () => <span className="sr-only">Actions</span>,
-        meta: { label: "Actions" },
+        header: () => <span className="sr-only">{t("columns.actions")}</span>,
+        meta: { label: t("columns.actions") },
         cell: ({ row }) => (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -247,7 +252,7 @@ export function VendorProductsSection({
                 variant="ghost"
                 size="icon"
                 className="flex h-8 w-8 p-0"
-                aria-label="Open row actions"
+                aria-label={t("openRowActions")}
               >
                 <MoreVertical size={16} />
               </Button>
@@ -262,7 +267,7 @@ export function VendorProductsSection({
                     className="w-full h-full block"
                     tabIndex={0}
                   >
-                    View
+                    {t("view")}
                   </a>
                 </DropdownMenuItem>
               )}
@@ -272,7 +277,7 @@ export function VendorProductsSection({
                   className="w-full h-full block"
                   tabIndex={0}
                 >
-                  Edit
+                  {t("edit")}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -283,7 +288,7 @@ export function VendorProductsSection({
                   // alert(`Delete ${row.original.id}`);
                 }}
               >
-                Delete
+                {t("delete")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -292,7 +297,8 @@ export function VendorProductsSection({
         enableHiding: false,
       },
     ],
-    []
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [t, locale]
   );
 
   const columnOrder = useMemo(
@@ -314,7 +320,7 @@ export function VendorProductsSection({
       onColumnOrderChange={setOrder}
       hideViewOptions
       buttons={(table) => (
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ms-auto flex flex-wrap items-center gap-2">
           <ManageColumnsDialog table={table} />
           <ImportExportButton table={table} />
           <Button asChild variant="outline">
@@ -324,7 +330,7 @@ export function VendorProductsSection({
                 size={16}
                 aria-hidden="true"
               />
-              Add new product
+              {t("addNew")}
             </Link>
           </Button>
         </div>
@@ -333,6 +339,7 @@ export function VendorProductsSection({
         await Promise.all(ids.map((id) => deleteProduct(id)));
       }}
       searchColumnId="title"
+      labels={tableLabels}
     />
   );
 }

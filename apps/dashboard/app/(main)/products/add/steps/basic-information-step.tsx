@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import {
   TextInput,
@@ -30,7 +30,8 @@ import slugify from "slugify";
 import { useDebounce } from "@/hooks/use-debounce";
 import { CategorySuggestions } from "../category-suggestions";
 import { toast } from "sonner";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { contentDirClass } from "@/lib/i18n/content-dir";
 import { cn, generateImageName, getPublicUrl, validateImage } from "@/lib/utils";
 import { createClient } from "@/supabase/client";
 import { RichTextEditor } from "@workspace/tiptap/editor";
@@ -76,7 +77,37 @@ export function BasicInformationStep({
 }: BasicInformationStepProps) {
   const form = useFormContext<AddProductFormData>();
   const tToast = useTranslations("toast");
+  const t = useTranslations("productForm.basic");
+  const tCategory = useTranslations("productForm.categoryPicker");
+  const uiLocale = useLocale();
   const supabase = createClient();
+
+  // The picker shows Arabic names in the Arabic UI; suggestions keep the raw
+  // options because they match against either language.
+  const pickerCategories = useMemo(() => {
+    if (uiLocale !== "ar") return categories;
+    type Node = CategoryOption & { categories?: Node[] };
+    const localize = (nodes: Node[]): Node[] =>
+      nodes.map((node) => ({
+        ...node,
+        name: node.nameAr || node.name,
+        categories: node.categories ? localize(node.categories) : undefined,
+      }));
+    return localize(categories as Node[]);
+  }, [categories, uiLocale]);
+
+  const categoryLabels = useMemo(
+    () => ({
+      back: tCategory("back"),
+      atRoot: tCategory("atRoot"),
+      goToRoot: tCategory("goToRoot"),
+      all: tCategory("all"),
+      goTo: (name: string) => tCategory("goTo", { name }),
+      search: tCategory("search"),
+      empty: tCategory("empty"),
+    }),
+    [tCategory]
+  );
   const [isFetching, setIsFetching] = useState(false);
   const [uncontrolledImportOpen, setUncontrolledImportOpen] = useState(true);
 
@@ -97,7 +128,9 @@ export function BasicInformationStep({
         await validateImage(file);
       } catch (error) {
         toast.error(
-          error instanceof Error ? error.message : tToast("uploadError", { fileName: file.name })
+          error instanceof Error && tToast.has(error.message)
+            ? tToast(error.message)
+            : tToast("uploadError", { fileName: file.name })
         );
         return null;
       }
@@ -150,15 +183,13 @@ export function BasicInformationStep({
         return;
       }
       if (extractProductUrls(input).length > MAX_BULK_IMPORT_URLS) {
-        toast.message(
-          `Only the first ${MAX_BULK_IMPORT_URLS} URLs will be imported`
-        );
+        toast.message(t("onlyFirstUrls", { max: MAX_BULK_IMPORT_URLS }));
       }
       if (onBulkUrls) {
         onBulkUrls(urls);
         return;
       }
-      toast.error("Bulk URL import is not available here");
+      toast.error(t("bulkUnavailable"));
       return;
     }
 
@@ -269,16 +300,16 @@ export function BasicInformationStep({
         >
           <AccordionItem value="import" className="border-0">
             <AccordionTrigger className="px-4 py-3 text-sm font-medium hover:no-underline">
-              <span className="flex flex-col items-start gap-0.5 text-left">
-                <span>Import product (URL or data)</span>
+              <span className="flex flex-col items-start gap-0.5 text-start">
+                <span>{t("importTitle")}</span>
                 {!isImportOpen && isFetching ? (
                   <span className="text-xs font-normal text-muted-foreground inline-flex items-center gap-1.5">
                     <LoaderCircle className="h-3 w-3 animate-spin" />
-                    Importing…
+                    {t("importing")}
                   </span>
                 ) : !isImportOpen && productUrl ? (
                   <span className="text-xs font-normal text-muted-foreground">
-                    Data imported — expand to edit or re-import
+                    {t("imported")}
                   </span>
                 ) : null}
               </span>
@@ -294,7 +325,8 @@ export function BasicInformationStep({
                   }
                   onPaste={handlePaste}
                   onKeyDown={handleKeyDown}
-                  placeholder="Paste one product URL, many URLs (one per line), JSON, or formatted product data"
+                  placeholder={t("importPlaceholder")}
+                  dir="ltr"
                   className="text-sm min-h-[100px] max-h-48 flex-1 resize-y"
                   rows={4}
                 />
@@ -308,17 +340,15 @@ export function BasicInformationStep({
                   {isFetching ? (
                     <span className="flex items-center gap-2">
                       <LoaderCircle className="h-4 w-4 animate-spin" />
-                      Importing...
+                      {t("importing")}
                     </span>
                   ) : (
-                    "Import Product"
+                    t("importButton")
                   )}
                 </Button>
               </div>
               <p className="text-xs text-gray-500 mt-2">
-                Paste one URL, or many URLs (one per line) for bulk import. JSON
-                and formatted text also work. See PRODUCT_DATA_FORMAT.md for the
-                text format spec.
+                {t("importHelp")}
               </p>
             </AccordionContent>
           </AccordionItem>
@@ -332,7 +362,7 @@ export function BasicInformationStep({
         render={({ field }) => (
           <FormItem>
             <FormLabel className="text-sm">
-              Media <span className="text-red-600">*</span>
+              {t("media")} <span className="text-red-600">*</span>
             </FormLabel>
             <FormControl>
               <ImageUpload
@@ -344,7 +374,7 @@ export function BasicInformationStep({
               />
             </FormControl>
             <p className="text-xs text-gray-500 mt-1">
-              Accepts images, videos, or 3D models
+              {t("mediaHint")}
             </p>
             <FormMessage />
           </FormItem>
@@ -356,12 +386,13 @@ export function BasicInformationStep({
         <div
           key={loc}
           className={cn("space-y-4", activeLocale !== loc && "hidden")}
+          lang={loc}
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <TextInput
               form={form}
               name={`localized.${loc}.title`}
-              label="Title"
+              label={t("title")}
               placeholder={
                 loc === "en" ? "Short sleeve t-shirt" : "قميص قصير الأكمام"
               }
@@ -375,15 +406,15 @@ export function BasicInformationStep({
                   );
                 }
               }}
-              className={cn("text-sm", loc === "ar" && "text-right")}
+              className={cn("text-sm", contentDirClass(loc))}
             />
             <TextInput
               form={form}
               name={`localized.${loc}.slug`}
-              label="Slug"
+              label={t("slug")}
               placeholder="short-sleeve-t-shirt"
               disabled
-              className={cn("text-sm", loc === "ar" && "text-right")}
+              className={cn("text-sm", contentDirClass("en"))}
             />
           </div>
 
@@ -393,11 +424,11 @@ export function BasicInformationStep({
             render={({ field }) => (
               <TextareaInput
                 {...field}
-                label="Description"
+                label={t("description")}
                 form={form}
-                placeholder="Product description..."
+                placeholder={t("descriptionPlaceholder")}
                 rows={6}
-                className={cn("text-sm", loc === "ar" && "text-right")}
+                className={cn("text-sm", contentDirClass(loc))}
               />
             )}
           />
@@ -407,12 +438,12 @@ export function BasicInformationStep({
             name={`localized.${loc}.content`}
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm">Product Content</FormLabel>
+                <FormLabel className="text-sm">{t("content")}</FormLabel>
                 <FormControl>
                   <RichTextEditor
                     value={field.value ?? ""}
                     onChange={field.onChange}
-                    placeholder="Write detailed product content with headings, lists, and highlights..."
+                    placeholder={t("contentPlaceholder")}
                     dir={loc === "ar" ? "rtl" : "ltr"}
                     onImageUpload={handleContentImageUpload}
                   />
@@ -434,15 +465,17 @@ export function BasicInformationStep({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-sm">
-                    Category <span className="text-red-600">*</span>
+                    {t("category")} <span className="text-red-600">*</span>
                   </FormLabel>
                   <FormControl>
                     <div className="space-y-3">
                       <CategoryPopover
-                        categories={categories}
+                        categories={pickerCategories}
                         value={field.value}
                         onChange={field.onChange}
                         form={form}
+                        placeholder={tCategory("placeholder")}
+                        labels={categoryLabels}
                       />
                       <CategorySuggestions
                         categories={categories}
@@ -459,8 +492,6 @@ export function BasicInformationStep({
           )}
           <BrandSearchInput
             name="brandId"
-            label="Brand"
-            placeholder="Search for a brand..."
             selectedBrands={brands ?? []}
           />
         </div>
@@ -471,7 +502,9 @@ export function BasicInformationStep({
               key={loc}
               className={cn(
                 activeLocale !== loc && "hidden",
-                loc === "ar" && "[&_input]:text-right [&_textarea]:text-right"
+                loc === "ar"
+                  ? "[&_input]:[direction:rtl] [&_input]:!text-right"
+                  : "[&_input]:[direction:ltr] [&_input]:!text-left"
               )}
             >
               <FormField
@@ -480,9 +513,12 @@ export function BasicInformationStep({
                 render={({ field }) => (
                   <ArrayInput
                     {...field}
-                    label="Key Features (max 10)"
-                    addButtonText="Add Feature"
-                    itemPlaceholder="Enter a key feature..."
+                    label={t("keyFeatures")}
+                    addButtonText={t("addFeature")}
+                    itemPlaceholder={t("featurePlaceholder")}
+                    removeButtonText={t("remove")}
+                    emptyStateText={t("noFeatures")}
+                    smartPasteHint={t("pasteHint")}
                     maxItems={10}
                     className="text-sm"
                   />

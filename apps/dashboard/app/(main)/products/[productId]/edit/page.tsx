@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { getProduct } from "@/actions/products";
 import { getAllCategories } from "@/actions/categories";
 import { getAllBrands } from "@/actions/brands";
@@ -11,10 +12,10 @@ import type { CategoryOption, BrandOption } from "../../add/add-product.schema";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Edit Product | Dashboard",
-  description: "Edit your product listing",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("meta.editProduct");
+  return { title: t("title"), description: t("description") };
+}
 
 type EditProductPageProps = {
   params: Promise<{ productId: string }>;

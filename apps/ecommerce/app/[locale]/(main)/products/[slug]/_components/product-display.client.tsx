@@ -111,7 +111,7 @@ export const ProductDisplay = ({ product }: ProductDisplayProps) => {
   }, [cartItems, product.id, selectedVariantId]);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 md:gap-8 gap-5">
+    <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-14 xl:gap-20">
       <Suspense fallback={null}>
         <VariantDeepLink onToken={applyVariantToken} />
       </Suspense>
@@ -120,13 +120,20 @@ export const ProductDisplay = ({ product }: ProductDisplayProps) => {
         selectedVariantId={selectedVariantId}
         selectedVariant={selectedVariant}
       />
-      <ProductDetails
-        product={product}
-        isInCart={variantCartStatus.isInCart}
-        cartItemQuantity={variantCartStatus.quantity}
-        selectedVariantId={selectedVariantId}
-        onVariantChange={handleVariantChange}
-      />
+      {/* Mobile: a sheet that rises over the pinned image. Desktop: plain column. */}
+      <div className="relative z-10 -mx-4 -mt-8 rounded-t-[28px] bg-white px-4 pb-6 pt-3 shadow-[0_-16px_32px_-16px_rgba(20,81,99,0.35)] lg:m-0 lg:rounded-none lg:p-0 lg:shadow-none">
+        <span
+          aria-hidden
+          className="mx-auto mb-4 block h-1.5 w-10 rounded-full bg-gray-200 lg:hidden"
+        />
+        <ProductDetails
+          product={product}
+          isInCart={variantCartStatus.isInCart}
+          cartItemQuantity={variantCartStatus.quantity}
+          selectedVariantId={selectedVariantId}
+          onVariantChange={handleVariantChange}
+        />
+      </div>
     </div>
   );
 };

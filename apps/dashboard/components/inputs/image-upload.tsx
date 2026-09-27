@@ -62,6 +62,7 @@ export function ImageUpload({
 }: ImageUploadProps) {
   const supabase = createClient();
   const tToast = useTranslations("toast");
+  const t = useTranslations("inputs.imageUpload");
 
   const [filesToUpload, setFilesToUpload] = useState<FileToUpload[]>(() =>
     value.map((file) => ({
@@ -211,8 +212,10 @@ export function ImageUpload({
               acc.invalidFiles.push(file);
               toast.error(
                 error instanceof Error
-                  ? error.message
-                  : "An unknown error occurred",
+                  ? tToast.has(error.message)
+                    ? tToast(error.message)
+                    : error.message
+                  : t("unknownError"),
               );
             }
             return acc;
@@ -381,14 +384,14 @@ export function ImageUpload({
                         width={600}
                         height={600}
                         className="w-full h-full object-contain rounded-lg max-w-xl"
-                        alt="Selected image preview"
+                        alt={t("selectedPreview")}
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       />
                     </div>
                   ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
                       <ImageIcon className="h-16 w-16 mb-4 opacity-50" />
-                      <p className="text-sm font-medium">No image selected</p>
+                      <p className="text-sm font-medium">{t("noImageSelected")}</p>
                       <p className="text-xs text-gray-400">
                         Choose an image from the gallery
                       </p>
@@ -449,35 +452,34 @@ export function ImageUpload({
                   }`}
                 >
                   {isMaxReached
-                    ? `Maximum ${maxImages} images reached`
+                    ? t("maxReached", { max: maxImages })
                     : isDragActive
-                      ? "Drop images here"
-                      : "Click to upload or drag and drop"}
+                      ? t("dropHere")
+                      : t("clickOrDrag")}
                 </p>
 
                 <p className="text-sm text-gray-500 leading-relaxed">
-                  PNG, JPG or WebP (MAX. 2MB per file)
+                  {t("formats")}
                 </p>
 
                 <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
                   <div className="flex items-center gap-1">
                     <div className="w-2 h-2 rounded-full bg-gray-300"></div>
-                    <span>Drag & drop</span>
+                    <span>{t("dragDrop")}</span>
                   </div>
                   <span>•</span>
                   <div className="flex items-center gap-1">
                     <div className="w-2 h-2 rounded-full bg-gray-300"></div>
-                    <span>Click to browse</span>
+                    <span>{t("clickBrowse")}</span>
                   </div>
                 </div>
               </div>
 
               {/* Progress indicator */}
               <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
-                <span className="font-medium">{filesToUpload.length}</span>
-                <span>of</span>
-                <span className="font-medium">{maxImages}</span>
-                <span>images uploaded</span>
+                <span>
+                  {t("progress", { count: filesToUpload.length, max: maxImages })}
+                </span>
               </div>
             </div>
           )}
@@ -552,7 +554,7 @@ const FilePreview = React.memo(
 
           {/* Primary image indicator */}
           {isPrimary && isUploaded && (
-            <div className="absolute top-2 left-2 bg-primary ring-1 text-white text-[10px] px-1 py-0.5 rounded-full font-semibold shadow-sm">
+            <div className="absolute top-2 start-2 bg-primary ring-1 text-white text-[10px] px-1 py-0.5 rounded-full font-semibold shadow-sm">
               Main
             </div>
           )}
@@ -569,7 +571,7 @@ const FilePreview = React.memo(
                 removeFile(sourceToRemove);
               }
             }}
-            className="absolute -top-1.5 -right-1.5 hover:text-white w-5.5 h-5.5 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center lg:opacity-80 group-hover:opacity-100 transition-all duration-300 shadow-lg hover:scale-105"
+            className="absolute -top-1.5 -end-1.5 hover:text-white w-5.5 h-5.5 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center lg:opacity-80 group-hover:opacity-100 transition-all duration-300 shadow-lg hover:scale-105"
             aria-label="Remove image"
           >
             <X className="size-3.5" />

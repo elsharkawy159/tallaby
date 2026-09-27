@@ -9,7 +9,12 @@ export {
   SHIPPING_ORIGIN,
 } from './shipping-rates'
 
-export { normalizeGovernorate } from './governorate.lib'
+export {
+  EGYPT_GOVERNORATES,
+  GOVERNORATE_AR_NAMES,
+  getGovernorateLabel,
+  normalizeGovernorate,
+} from './governorate.lib'
 
 export {
   EGYPT_POST_COLUMNS,

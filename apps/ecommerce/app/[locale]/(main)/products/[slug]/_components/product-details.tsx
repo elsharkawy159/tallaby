@@ -1,7 +1,6 @@
 "use client";
 
 import { Truck, RotateCcw, Globe, Banknote, Check } from "lucide-react";
-import { Badge } from "@workspace/ui/components/badge";
 import { ProductActions } from "./ProductActions";
 import { HideBottomNavOnScroll } from "@/components/layout/hide-bottom-nav-on-scroll.client";
 import type { Product } from "./product-page.types";
@@ -37,10 +36,12 @@ import { splitBulletPoint } from "@/lib/bullet-points";
 import type { ProductLocale } from "@/lib/product-translations";
 import { SellerInfo } from "./SellerInfo";
 import { Star } from "lucide-react";
-import { DiscountCountdown } from "./discount-countdown";
-import { DiscountPercentBadge } from "@/components/product";
+import { PriceTicket } from "./price-ticket";
 import { getDiscountPercent } from "@/lib/utils";
 import { MetaViewContent } from "@/components/meta/meta-view-content.client";
+
+// At or below this, stock reads as "Only N left" instead of a plain count.
+const LOW_STOCK_THRESHOLD = 5;
 
 interface ProductDetailsProps {
   product: Product;
@@ -180,6 +181,11 @@ export const ProductDetails = ({
     });
   }, [product.productVariants, t]);
   const hasStock = product.status === "active" && stock > 0;
+  const isLowStock = hasStock && stock <= LOW_STOCK_THRESHOLD;
+  const selectedVariantLabel = selectedVariant
+    ? getVariantDisplayFields(selectedVariant, locale).title ||
+      selectedVariant.title
+    : null;
   const isPhysicalProduct = product.productType !== "digital";
   const hasFreeDelivery =
     isPhysicalProduct &&
@@ -339,102 +345,96 @@ export const ProductDetails = ({
   };
 
   return (
-    <div className="w-full space-y-5 md:space-y-6">
+    <div className="w-full">
       <MetaViewContent productId={product.id} value={price} />
-      {/* Product Title */}
       <div>
-        <h1 className="mb-3 text-xl font-bold leading-snug text-gray-900 md:mb-4 md:text-2xl lg:text-3xl">
+        {/* Seller and stock: small context above the title */}
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+          {product.seller ? (
+            <SellerInfo
+              name={product.seller.displayName}
+              rating={product.seller.storeRating}
+              reviewCount={product.seller.totalRatings}
+            />
+          ) : (
+            <span />
+          )}
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
+              !hasStock
+                ? "bg-red-50 text-red-600"
+                : isLowStock
+                  ? "bg-[#fff4de] text-[#9a5800]"
+                  : "bg-emerald-50 text-emerald-700"
+            }`}
+          >
+            <span
+              aria-hidden
+              className={`h-1.5 w-1.5 rounded-full ${
+                !hasStock
+                  ? "bg-red-500"
+                  : isLowStock
+                    ? "bg-accent"
+                    : "bg-emerald-500"
+              }`}
+            />
+            {!hasStock
+              ? t("outOfStock")
+              : isLowStock
+                ? t("onlyLeft", { count: stock })
+                : t("inStockAvailable", { count: stock })}
+          </span>
+        </div>
+
+        <h1 className="mt-3 text-balance text-2xl font-bold leading-snug text-gray-900 lg:text-[2rem] lg:leading-tight">
           {product.title}
         </h1>
 
-        {/* Price */}
-        <div className="mb-3 flex flex-wrap items-center gap-x-2.5 gap-y-2 md:mb-4 md:gap-x-3">
-          <span
-            className="text-2xl font-bold text-primary md:text-3xl lg:text-4xl"
-            dangerouslySetInnerHTML={{
-              __html: formatPrice(price, locale, "lg"),
-            }}
-          />
-          {listPrice && listPrice > price && (
-            <span className="text-sm text-gray-500">
-              <span className="hidden sm:inline">{t("insteadOf")} </span>
-              <span
-                className="font-medium text-red-400 line-through"
-                dangerouslySetInnerHTML={{
-                  __html: formatPrice(listPrice, locale, "sm"),
-                }}
-              />
-            </span>
-          )}
-          {discountPercent != null && (
-            <DiscountPercentBadge
-              percent={discountPercent}
-              className="shrink-0 text-xs md:px-2.5 md:py-1 md:text-sm"
-            />
-          )}
-        </div>
-
-        {/* Discount Countdown — only when the seller set a discount expiry */}
-        {listPrice && listPrice > price && discountExpiryDate && (
-          <DiscountCountdown endDate={discountExpiryDate} />
-        )}
-
-        {hasFreeDelivery && (
-          <Badge
-            variant="secondary"
-            className="mb-4 bg-green-100 text-green-700 hover:bg-green-100 gap-1"
-          >
-            <Truck className="h-3 w-3" />
-            {t("freeDeliveryOnProduct")}
-          </Badge>
-        )}
-
-        {/* Rating and Stock */}
-        <div className="flex flex-wrap items-center gap-4 mb-6">
-          {(product.averageRating ?? 0) > 0 && (
-            <div className="flex items-center gap-2">
-              <div className="flex items-center">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`h-5 w-5 ${
-                      i < Math.floor(product.averageRating || 0)
-                        ? "text-yellow-400 fill-current"
-                        : "text-gray-300"
-                    }`}
-                  />
-                ))}
-              </div>
-              <span className="text-lg font-semibold text-gray-900">
-                {product.averageRating?.toFixed(1) || "0.0"}
-              </span>
-              <Link href="#reviews" className="text-sm text-gray-600 underline">
-                {product.reviewCount === 1
-                  ? t("reviewsCountOne", { count: product.reviewCount || 0 })
-                  : t("reviewsCount", { count: product.reviewCount || 0 })}
-              </Link>
+        {(product.averageRating ?? 0) > 0 && (
+          <div className="mt-2.5 flex items-center gap-2 text-sm">
+            <div className="flex items-center" aria-hidden>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star
+                  key={i}
+                  className={`h-4 w-4 ${
+                    i < Math.floor(product.averageRating || 0)
+                      ? "fill-current text-accent"
+                      : "text-gray-300"
+                  }`}
+                />
+              ))}
             </div>
-          )}
-          <div className="flex items-center gap-2">
-            <div
-              className={`w-2 h-2 rounded-full ${
-                hasStock ? "bg-green-500" : "bg-red-500"
-              }`}
-            />
-            <span className="text-sm font-medium text-gray-900">
-              {hasStock
-                ? t("inStockAvailable", { count: stock })
-                : t("outOfStock")}
+            <span className="font-semibold text-gray-900">
+              {product.averageRating?.toFixed(1) || "0.0"}
             </span>
+            <Link href="#reviews" className="text-gray-500 underline underline-offset-2">
+              {product.reviewCount === 1
+                ? t("reviewsCountOne", { count: product.reviewCount || 0 })
+                : t("reviewsCount", { count: product.reviewCount || 0 })}
+            </Link>
           </div>
+        )}
+
+        <div className="mt-5">
+          <PriceTicket
+            price={price}
+            listPrice={listPrice}
+            discountPercent={discountPercent}
+            discountExpiryDate={discountExpiryDate}
+            hasFreeDelivery={hasFreeDelivery}
+            locale={locale}
+          />
         </div>
 
         {/* Variant Selection */}
         {hasVariants && (
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-900 mb-3">
-              {variantOptionLabel}
-            </label>
+          <div className="mt-6">
+            <p className="mb-2 flex flex-wrap items-baseline gap-x-2 text-sm">
+              <span className="font-semibold text-gray-900">{variantOptionLabel}</span>
+              {selectedVariantLabel && (
+                <span className="text-gray-500">{selectedVariantLabel}</span>
+              )}
+            </p>
             {/* Mobile: free-drag carousel */}
             <Carousel
               opts={{
@@ -511,17 +511,9 @@ export const ProductDetails = ({
             </div>
           )}
 
-        {product.seller && (
-          <SellerInfo
-            name={product.seller.displayName}
-            rating={product.seller.storeRating}
-            reviewCount={product.seller.totalRatings}
-          />
-        )}
-
         {/* Quantity and Add to Cart */}
         <HideBottomNavOnScroll />
-        <div className="fixed right-0 bottom-[79px] left-0 z-50 transition-[bottom] duration-300 ease-out [html[data-bottom-nav=hidden]_&]:bottom-0 border-t border-gray-200 bg-white px-3 py-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] md:relative md:bottom-0 md:z-auto md:mb-6 md:border-0 md:bg-transparent md:p-0 md:shadow-none">
+        <div className="fixed right-0 bottom-[79px] left-0 z-50 transition-[bottom] duration-300 ease-out [html[data-bottom-nav=hidden]_&]:bottom-0 border-t border-gray-200 bg-white px-3 py-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] md:relative md:bottom-0 md:z-auto md:mb-2 md:mt-6 md:border-0 md:bg-transparent md:p-0 md:shadow-none">
           <ProductActions
             product={{
               ...product,
@@ -541,16 +533,16 @@ export const ProductDetails = ({
         <Accordion
           type="multiple"
           defaultValue={["description", "attributes"]}
-          className="w-full space-y-2"
+          className="mt-6 w-full border-t border-gray-100"
         >
           <AccordionItem
             value="description"
-            className="border-b border-gray-200"
+            className="border-b border-gray-100"
           >
-            <AccordionTrigger className="text-base font-medium text-gray-900 py-4">
+            <AccordionTrigger className="py-4 text-base font-semibold text-gray-900 hover:no-underline">
               {t("description")}
             </AccordionTrigger>
-            <AccordionContent className="text-sm text-gray-700 pb-4 whitespace-pre-wrap">
+            <AccordionContent className="whitespace-pre-wrap pb-5 text-sm leading-relaxed text-gray-700">
               {product.description}
             </AccordionContent>
           </AccordionItem>
@@ -559,27 +551,31 @@ export const ProductDetails = ({
             product.bulletPoints.length > 0 && (
               <AccordionItem
                 value="attributes"
-                className="border-b border-gray-200"
+                className="border-b border-gray-100"
               >
-                <AccordionTrigger className="text-base font-medium text-gray-900 py-4">
+                <AccordionTrigger className="py-4 text-base font-semibold text-gray-900 hover:no-underline">
                   {t("attributes")}
                 </AccordionTrigger>
-                <AccordionContent className="text-sm text-gray-700 pb-4">
-                  <ul className="list-disc list-inside space-y-2">
+                <AccordionContent className="pb-5 text-sm">
+                  {/* Label/value spec sheet; lines without a label span both columns. */}
+                  <ul className="overflow-hidden rounded-xl ring-1 ring-gray-100">
                     {product.bulletPoints.map(
                       (point: string, index: number) => {
                         const parts = splitBulletPoint(point);
                         return (
-                          <li key={index}>
+                          <li
+                            key={index}
+                            className="grid grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-3 px-3.5 py-2.5 odd:bg-gray-50"
+                          >
                             {parts ? (
                               <>
+                                <span className="text-gray-500">{parts.label}</span>
                                 <span className="font-medium text-gray-900">
-                                  {parts.label}:
-                                </span>{" "}
-                                {parts.value}
+                                  {parts.value}
+                                </span>
                               </>
                             ) : (
-                              point
+                              <span className="col-span-2 text-gray-900">{point}</span>
                             )}
                           </li>
                         );
@@ -598,7 +594,6 @@ export const ProductDetails = ({
             {
               key: "delivery",
               icon: Truck,
-              tone: "bg-sky-50 text-sky-600 ring-sky-100",
               title: hasFreeDelivery
                 ? t("freeDeliveryOnProduct")
                 : FREE_SHIPPING_ENABLED
@@ -613,7 +608,6 @@ export const ProductDetails = ({
             {
               key: "returns",
               icon: RotateCcw,
-              tone: "bg-emerald-50 text-emerald-600 ring-emerald-100",
               title: t("veryEasyToReturn"),
               description: t("justPhoneNumber"),
             },
@@ -624,7 +618,6 @@ export const ProductDetails = ({
                   {
                     key: "nationwide",
                     icon: Globe,
-                    tone: "bg-violet-50 text-violet-600 ring-violet-100",
                     title: t("nationwideDelivery"),
                     description: t("fastDeliveryNationwide"),
                   },
@@ -632,41 +625,29 @@ export const ProductDetails = ({
             {
               key: "refunds",
               icon: Banknote,
-              tone: "bg-amber-50 text-amber-600 ring-amber-100",
               title: t("refundsPolicy"),
               description: t("returnWindow", { days: String(RETURN_WINDOW_DAYS) }),
             },
           ];
 
           return (
-            <div className="mt-4 overflow-hidden rounded-2xl border border-gray-200 bg-gray-200">
-              <ul className="grid grid-cols-1 gap-px sm:grid-cols-2">
-                {perks.map(({ key, icon: Icon, tone, title, description }, index) => (
-                  <li
-                    key={key}
-                    className={`flex items-center gap-3 bg-white p-4 transition-colors hover:bg-gray-50 ${
-                      perks.length % 2 === 1 && index === perks.length - 1
-                        ? "sm:col-span-2"
-                        : ""
-                    }`}
-                  >
-                    <span
-                      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ring-1 ring-inset ${tone}`}
-                    >
-                      <Icon className="h-5 w-5" strokeWidth={1.75} />
-                    </span>
-                    <div className="min-w-0 text-start">
-                      <p className="text-sm font-semibold leading-snug text-gray-900">
-                        {title}
-                      </p>
-                      <p className="mt-0.5 text-xs leading-relaxed text-gray-500">
-                        {description}
-                      </p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <ul className="mt-6 grid grid-cols-1 gap-x-6 gap-y-4 rounded-2xl bg-gray-50 p-4 sm:grid-cols-2 md:p-5">
+              {perks.map(({ key, icon: Icon, title, description }) => (
+                <li key={key} className="flex items-start gap-3">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-primary shadow-sm ring-1 ring-gray-100">
+                    <Icon className="h-4 w-4" strokeWidth={2} aria-hidden />
+                  </span>
+                  <div className="min-w-0 text-start">
+                    <p className="text-sm font-semibold leading-snug text-gray-900">
+                      {title}
+                    </p>
+                    <p className="mt-0.5 text-xs leading-relaxed text-gray-500">
+                      {description}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ul>
           );
         })()}
       </div>

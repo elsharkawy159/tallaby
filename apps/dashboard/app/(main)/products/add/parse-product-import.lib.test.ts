@@ -411,7 +411,7 @@ describe("buildParsedImportFromScrape", () => {
     expect(parsed.quantity).toBe(25);
     expect(parsed.dimensions?.weight).toBe(999);
     expect(parsed.dimensions?.weightUnit).toBe("g");
-    expect(parsed.fulfillmentType).toBe("platform_fulfilled");
+    expect(parsed.fulfillmentType).toBe("seller_fulfilled");
     expect(parsed.handlingTime).toBe(1);
     expect(parsed.freeDelivery).toBe(false);
   });

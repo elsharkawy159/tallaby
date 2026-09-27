@@ -6,9 +6,10 @@ import type {
 import type { AddProductFormData, CategoryOption } from "./add-product.schema";
 
 export const ADD_PRODUCT_STEPS = [
-  { id: 1, title: "Basic Information", key: "basic" },
-  { id: 2, title: "Price and Stock", key: "priceStock" },
-  { id: 3, title: "Search Engine", key: "seo" },
+  // title is a "productForm.steps" key
+  { id: 1, title: "basic", key: "basic" },
+  { id: 2, title: "priceStock", key: "priceStock" },
+  { id: 3, title: "seo", key: "seo" },
 ] as const;
 
 export type AddProductStepId = (typeof ADD_PRODUCT_STEPS)[number]["id"];

@@ -41,7 +41,10 @@ export const ProductHero = ({
   }, [product.bulletPoints]);
 
   return (
-    <div className="w-full lg:sticky lg:top-5 h-full">
+    // Mobile: pinned edge to edge (cancelling the container gutter) so the
+    // details sheet can slide over it. Desktop: sticky beside the buy box.
+    <div className="sticky top-0 z-0 -mx-4 self-start lg:top-24 lg:mx-0 lg:w-full">
+
       <ProductImages
         images={images}
         productName={product.title}

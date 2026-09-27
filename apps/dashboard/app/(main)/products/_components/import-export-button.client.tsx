@@ -47,6 +47,7 @@ export function ImportExportButton({
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const tToast = useTranslations("toast");
+  const t = useTranslations("products.importExport");
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [open, setOpen] = useState(false);
@@ -97,10 +98,14 @@ export function ImportExportButton({
       try {
         const res = await bulkInsertProductsAction(preview.valid);
         if (res?.success) {
-          const msg =
-            `Inserted ${res.inserted} products` +
-            (res.failed ? `, ${res.failed} failed` : "");
-          toast.success(msg);
+          toast.success(
+            res.failed
+              ? t("insertedWithFailures", {
+                  inserted: res.inserted,
+                  failed: res.failed,
+                })
+              : t("inserted", { inserted: res.inserted })
+          );
           setOpen(false);
           setPreview(null);
           router.refresh();
@@ -122,7 +127,7 @@ export function ImportExportButton({
       .rows.map((row) => row.original);
 
     if (products.length === 0) {
-      toast.error("There are no products to export.");
+      toast.error(t("nothingToExport"));
       return;
     }
 
@@ -131,10 +136,10 @@ export function ImportExportButton({
         fileName: `vendor-products-${todayStamp()}.xlsx`,
         header: PRODUCT_EXCEL_COLUMNS,
       });
-      toast.success(`Exported ${products.length} products`);
+      toast.success(t("exported", { count: products.length }));
     } catch (err) {
       console.error(err);
-      toast.error("Could not export the products sheet.");
+      toast.error(t("exportFailed"));
     }
   };
 
@@ -147,7 +152,7 @@ export function ImportExportButton({
       });
     } catch (err) {
       console.error(err);
-      toast.error("Could not download the template.");
+      toast.error(t("templateFailed"));
     }
   };
 
@@ -173,7 +178,7 @@ export function ImportExportButton({
                 aria-hidden="true"
               />
             )}
-            Import / Export
+            {t("trigger")}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-56 p-1" align="end">
@@ -183,7 +188,7 @@ export function ImportExportButton({
             onClick={handleImportClick}
           >
             <Upload className="opacity-60" size={16} aria-hidden="true" />
-            Import Products
+            {t("import")}
           </Button>
           <Button
             variant="ghost"
@@ -191,7 +196,7 @@ export function ImportExportButton({
             onClick={handleExport}
           >
             <Download className="opacity-60" size={16} aria-hidden="true" />
-            Export Products
+            {t("export")}
           </Button>
           <Button
             variant="ghost"
@@ -203,7 +208,7 @@ export function ImportExportButton({
               size={16}
               aria-hidden="true"
             />
-            Download Template
+            {t("downloadTemplate")}
           </Button>
         </PopoverContent>
       </Popover>
@@ -211,7 +216,7 @@ export function ImportExportButton({
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-3xl">
           <DialogHeader>
-            <DialogTitle>Bulk upload preview</DialogTitle>
+            <DialogTitle>{t("previewTitle")}</DialogTitle>
           </DialogHeader>
 
           {preview && (
@@ -219,10 +224,10 @@ export function ImportExportButton({
               <div className="text-sm text-muted-foreground">
                 <div className="flex items-center gap-4">
                   <span>
-                    Valid: <strong>{preview.valid.length}</strong>
+                    {t("valid")}: <strong>{preview.valid.length}</strong>
                   </span>
                   <span>
-                    Invalid: <strong>{preview.invalid.length}</strong>
+                    {t("invalid")}: <strong>{preview.invalid.length}</strong>
                   </span>
                 </div>
               </div>
@@ -232,12 +237,12 @@ export function ImportExportButton({
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="bg-muted">
-                        <th className="text-left p-2">Row</th>
-                        <th className="text-left p-2">Title</th>
-                        <th className="text-left p-2">SKU</th>
-                        <th className="text-left p-2">CategoryId</th>
-                        <th className="text-left p-2">Price</th>
-                        <th className="text-left p-2">Variants</th>
+                        <th className="text-start p-2">{t("columns.row")}</th>
+                        <th className="text-start p-2">{t("columns.title")}</th>
+                        <th className="text-start p-2">{t("columns.sku")}</th>
+                        <th className="text-start p-2">{t("columns.categoryId")}</th>
+                        <th className="text-start p-2">{t("columns.price")}</th>
+                        <th className="text-start p-2">{t("columns.variants")}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -245,9 +250,9 @@ export function ImportExportButton({
                         <tr key={`valid-${r.row}`} className="border-t">
                           <td className="p-2">{r.row}</td>
                           <td className="p-2">{r.product.title}</td>
-                          <td className="p-2">{r.product.sku}</td>
-                          <td className="p-2">{r.product.categoryId}</td>
-                          <td className="p-2">{`{base:${r.product.price.base}, list:${r.product.price.list}, final:${r.product.price.final}}`}</td>
+                          <td className="p-2" dir="ltr">{r.product.sku}</td>
+                          <td className="p-2" dir="ltr">{r.product.categoryId}</td>
+                          <td className="p-2" dir="ltr">{`{base:${r.product.price.base}, list:${r.product.price.list}, final:${r.product.price.final}}`}</td>
                           <td className="p-2">{r.variants?.length || 0}</td>
                         </tr>
                       ))}
@@ -259,16 +264,16 @@ export function ImportExportButton({
               {preview.invalid.length > 0 && (
                 <div className="border rounded-md p-3 bg-red-50">
                   <div className="font-medium text-red-700 mb-2">
-                    Invalid rows
+                    {t("invalidRows")}
                   </div>
                   <ul className="list-disc list-inside text-red-700 text-sm space-y-1 max-h-40 overflow-auto">
                     {preview.invalid.map((e) => (
                       <li key={`err-${e.row}`}>
-                        Row {e.row}: {e.message}
+                        {t("rowError", { row: e.row, message: e.message })}
                       </li>
                     ))}
                     {preview.invalid.length > 10 && (
-                      <li>+{preview.invalid.length - 10} more…</li>
+                      <li>{t("more", { count: preview.invalid.length - 10 })}</li>
                     )}
                   </ul>
                 </div>
@@ -282,13 +287,13 @@ export function ImportExportButton({
               onClick={() => setOpen(false)}
               disabled={isPending}
             >
-              Cancel
+              {t("cancel")}
             </Button>
             <Button
               onClick={handleInsert}
               disabled={isPending || !preview || preview.valid.length === 0}
             >
-              {isPending ? <LoaderIcon className="animate-spin" /> : "Insert"}
+              {isPending ? <LoaderIcon className="animate-spin" /> : t("insert")}
             </Button>
           </DialogFooter>
         </DialogContent>

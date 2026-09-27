@@ -21,11 +21,13 @@ import { SeoStep } from "../../add/steps/seo-step";
 import type { CategoryOption, BrandOption } from "../../add/add-product.schema";
 import type { SellerPricingSettings } from "@/lib/utils/product-pricing.lib";
 import { cn } from "@/lib/utils";
+import { useLocalizedResolver } from "@/lib/i18n/localized-resolver";
 
 const STEPS = [
-  { id: 1, title: "Basic Information", key: "basic" },
-  { id: 2, title: "Price and Stock", key: "priceStock" },
-  { id: 3, title: "Search Engine", key: "seo" },
+  // title is a "productForm.steps" key
+  { id: 1, title: "basic", key: "basic" },
+  { id: 2, title: "priceStock", key: "priceStock" },
+  { id: 3, title: "seo", key: "seo" },
 ] as const;
 
 const LOCALE_LABELS: Record<SupportedLocale, string> = {
@@ -53,9 +55,11 @@ export function EditProduct({
   const [activeLocale, setActiveLocale] = useState<SupportedLocale>("en");
   const router = useRouter();
   const tToast = useTranslations("toast");
+  const t = useTranslations("productForm");
+  const resolver = useLocalizedResolver(zodResolver(addProductFormSchema) as any);
 
   const form = useForm<AddProductFormData>({
-    resolver: zodResolver(addProductFormSchema) as any,
+    resolver: resolver as any,
     defaultValues: defaultValues as any,
     mode: "onChange",
     shouldUnregister: false,
@@ -188,7 +192,9 @@ export function EditProduct({
                       step.id
                     )}
                   </div>
-                  <span className="text-sm hidden sm:inline">{step.title}</span>
+                  <span className="text-sm hidden sm:inline">
+                    {t(`steps.${step.title}`)}
+                  </span>
                 </button>
                 {index < STEPS.length - 1 && (
                   <div
@@ -202,7 +208,7 @@ export function EditProduct({
           </div>
           <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between gap-4">
             <span className="text-sm font-medium text-gray-700">
-              Content language
+              {t("contentLanguage")}
             </span>
             <div className="flex items-center gap-1">
               {(["en", "ar"] as const).map((loc) => (
@@ -248,7 +254,7 @@ export function EditProduct({
         </Form>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 z-10 border-t border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+      <div className="fixed bottom-0 inset-x-0 z-10 border-t border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
         <div className="px-6 py-4 flex items-center gap-6 justify-end container">
           <Button
             type="button"
@@ -256,13 +262,13 @@ export function EditProduct({
             onClick={handlePrevious}
             disabled={currentStep === 1}
           >
-            <ChevronLeft className="size-4" />
-            Previous
+            <ChevronLeft className="size-4 rtl:rotate-180" />
+            {t("previous")}
           </Button>
           {currentStep < STEPS.length ? (
             <Button type="button" onClick={handleNext}>
-              Next
-              <ChevronRight className="size-4" />
+              {t("next")}
+              <ChevronRight className="size-4 rtl:rotate-180" />
             </Button>
           ) : (
             <Button
@@ -273,10 +279,10 @@ export function EditProduct({
               {isPending ? (
                 <span className="flex items-center gap-2">
                   <LoaderCircle className="size-4 animate-spin" />
-                  Saving...
+                  {t("saving")}
                 </span>
               ) : (
-                "Save changes"
+                t("saveChanges")
               )}
             </Button>
           )}

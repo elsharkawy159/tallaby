@@ -4,9 +4,11 @@ import { useTransition } from "react";
 import { Button } from "@workspace/ui/components/button";
 import { createClient } from "@/supabase/client";
 import { getShareUrl } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 export function OAuth({ next }: { next?: string }) {
   const [isPending, startTransition] = useTransition();
+  const t = useTranslations("auth");
 
   const handleOAuthSignin = (provider: "google" | "twitter" | "facebook") => {
     startTransition(async () => {
@@ -33,6 +35,7 @@ export function OAuth({ next }: { next?: string }) {
         disabled={isPending}
         type="button"
         variant="outline"
+        aria-label={t("continueWithGoogle")}
       >
         <svg
           className="size-6"
@@ -64,6 +67,7 @@ export function OAuth({ next }: { next?: string }) {
             </clipPath>
           </defs>
         </svg>
+        <span>{t("continueWithGoogle")}</span>
       </Button>
       {/* <Button
         className="flex items-center justify-center py-2.5 min-h-12 border rounded-lg hover:bg-gray-50 duration-150 active:bg-gray-100 transition-colors"

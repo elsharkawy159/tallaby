@@ -1,10 +1,15 @@
 import { z } from "zod";
 
-// Authentication Schemas
-export const signInSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
-  password: z.string().min(1, "Password is required"),
-});
+type Translate = (key: string) => string;
+
+// Authentication Schemas. `t` is next-intl's translator for the
+// "validation" namespace so error messages follow the active locale.
+export const createSignInSchema = (t: Translate) =>
+  z.object({
+    email: z.string().email(t("invalidEmail")),
+    password: z.string().min(1, t("passwordRequired")),
+  });
+export const signInSchema = createSignInSchema((key) => key);
 export const orderUpdateSchema = z.object({
   orderId: z.string().uuid("Invalid order ID"),
   updates: z.object({
@@ -29,9 +34,11 @@ export const signUpSchema = z
     path: ["confirmPassword"],
   });
 
-export const resetPasswordSchema = z.object({
-  resetEmail: z.string().email("Please enter a valid email address"),
-});
+export const createResetPasswordSchema = (t: Translate) =>
+  z.object({
+    resetEmail: z.string().email(t("invalidEmail")),
+  });
+export const resetPasswordSchema = createResetPasswordSchema((key) => key);
 
 export type SignInFormData = z.infer<typeof signInSchema>;
 export type SignUpFormData = z.infer<typeof signUpSchema>;

@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useRef, useState, useTransition } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useTranslations } from "next-intl"
+import { useLocalizedResolver } from "@/lib/i18n/localized-resolver"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { LoaderCircle, RefreshCw, Trash2, X } from "lucide-react"
@@ -49,23 +51,13 @@ const LOCALE_LABELS: Record<SupportedLocale, string> = {
   ar: "العربية",
 }
 
-function statusLabel (status: BulkProductItem["status"]): string {
-  switch (status) {
-    case "pending":
-      return "Queued"
-    case "fetching":
-      return "Fetching"
-    case "ready":
-      return "Ready"
-    case "error":
-      return "Error"
-    case "saving":
-      return "Saving"
-    case "saved":
-      return "Saved"
-    default:
-      return status
-  }
+const BULK_STATUSES = ["pending", "fetching", "ready", "error", "saving", "saved"]
+
+function statusLabel (
+  status: BulkProductItem["status"],
+  t: (key: string) => string
+): string {
+  return BULK_STATUSES.includes(status) ? t(`status.${status}`) : status
 }
 
 function statusClassName (status: BulkProductItem["status"]): string {
@@ -113,8 +105,9 @@ function BulkItemForm ({
   registerForm,
   unregisterForm,
 }: BulkItemFormProps) {
+  const resolver = useLocalizedResolver(zodResolver(addProductFormSchema) as any)
   const form = useForm<AddProductFormData>({
-    resolver: zodResolver(addProductFormSchema) as any,
+    resolver: resolver as any,
     defaultValues: (item.values ?? defaultValues) as any,
     mode: "onChange",
     shouldUnregister: false,
@@ -171,6 +164,9 @@ export function BulkUrlImport ({
   onExit,
 }: BulkUrlImportProps) {
   const router = useRouter()
+  const t = useTranslations("productForm.bulk")
+  const errorText = (message: string | undefined) =>
+    message && t.has(`errors.${message}`) ? t(`errors.${message}`) : message
   const [isPending, startTransition] = useTransition()
   const [activeLocale, setActiveLocale] = useState<SupportedLocale>("en")
   const [items, setItems] = useState<BulkProductItem[]>([])
@@ -263,16 +259,16 @@ export function BulkUrlImport ({
     const result = await retryBulkItem(item, { sellerPricing, categories })
     updateItem(result)
     if (result.status === "ready") {
-      toast.success("Product fetched successfully")
+      toast.success(t("fetched"))
     } else {
-      toast.error(result.error || "Failed to fetch product")
+      toast.error(errorText(result.error) || t("errors.fetchFailed"))
     }
   }
 
   const handleSaveAll = () => {
     const readyItems = items.filter((i) => i.status === "ready")
     if (readyItems.length === 0) {
-      toast.error("No ready products to save")
+      toast.error(t("noneReady"))
       return
     }
 
@@ -308,9 +304,7 @@ export function BulkUrlImport ({
 
       if (invalidIds.length > 0) {
         setOpenIds((prev) => Array.from(new Set([...prev, ...invalidIds])))
-        toast.error(
-          `${invalidIds.length} product${invalidIds.length === 1 ? "" : "s"} need fixes before saving`
-        )
+        toast.error(t("needFixes", { count: invalidIds.length }))
       }
 
       if (validPayloads.length === 0) {
@@ -320,7 +314,7 @@ export function BulkUrlImport ({
       const result = await bulkCreateProductsAction(validPayloads as any)
 
       if (!result.success && result.inserted === 0) {
-        toast.error(result.errors[0]?.message || "Failed to create products")
+        toast.error(result.errors[0]?.message || t("createManyFailed"))
         setItems((prev) =>
           prev.map((item) =>
             item.status === "saving" ? { ...item, status: "ready" } : item
@@ -342,7 +336,7 @@ export function BulkUrlImport ({
               status: "error",
               error:
                 result.errors.find((e) => e.index === saveIndex)?.message ||
-                "Failed to create product",
+                t("createFailed"),
             }
           }
           return { ...item, status: "saved" }
@@ -351,7 +345,7 @@ export function BulkUrlImport ({
 
       const totalAttempted = validPayloads.length
       toast.success(
-        `Created ${result.inserted} of ${totalAttempted} product${totalAttempted === 1 ? "" : "s"}`
+        t("created", { inserted: result.inserted, total: totalAttempted })
       )
 
       if (
@@ -378,12 +372,12 @@ export function BulkUrlImport ({
         <div className="container px-6 py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-lg font-semibold text-gray-900">
-              Bulk URL Import
+              {t("title")}
             </h1>
             <p className="text-sm text-muted-foreground mt-0.5">
               {isFetching
-                ? `Fetching ${fetchedCount}/${items.length}…`
-                : `${readyCount} ready · ${errorCount} failed · ${items.length} total`}
+                ? t("fetchingProgress", { done: fetchedCount, total: items.length })
+                : t("summary", { ready: readyCount, failed: errorCount, total: items.length })}
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -402,8 +396,8 @@ export function BulkUrlImport ({
               ))}
             </div>
             <Button type="button" variant="ghost" size="sm" onClick={onExit}>
-              <X className="size-4 mr-1" />
-              Back
+              <X className="size-4 me-1" />
+              {t("back")}
             </Button>
           </div>
         </div>
@@ -412,7 +406,7 @@ export function BulkUrlImport ({
       <div className="container py-6 space-y-3">
         {items.length === 0 ? (
           <div className="rounded-lg border border-dashed border-gray-300 bg-white p-10 text-center text-sm text-muted-foreground">
-            No products left. Go back to paste URLs again.
+            {t("emptyList")}
           </div>
         ) : (
           <Accordion
@@ -426,7 +420,7 @@ export function BulkUrlImport ({
               const label =
                 item.title ||
                 hostname(item.url) ||
-                `Product ${index + 1}`
+                t("productN", { n: index + 1 })
 
               return (
                 <AccordionItem
@@ -436,7 +430,7 @@ export function BulkUrlImport ({
                 >
                   <div className="flex items-center gap-2">
                     <AccordionTrigger className="flex-1 hover:no-underline py-3">
-                      <div className="flex items-center gap-3 text-left min-w-0">
+                      <div className="flex items-center gap-3 text-start min-w-0">
                         <div className="size-12 rounded-md border border-gray-200 bg-gray-50 overflow-hidden shrink-0">
                           {thumb ? (
                             // eslint-disable-next-line @next/next/no-img-element
@@ -447,7 +441,7 @@ export function BulkUrlImport ({
                             />
                           ) : (
                             <div className="size-full flex items-center justify-center text-[10px] text-gray-400">
-                              {item.status === "fetching" ? "…" : "No img"}
+                              {item.status === "fetching" ? "…" : t("noImage")}
                             </div>
                           )}
                         </div>
@@ -455,18 +449,18 @@ export function BulkUrlImport ({
                           <p className="text-sm font-medium text-gray-900 truncate">
                             {label}
                           </p>
-                          <p className="text-xs text-muted-foreground truncate">
+                          <p className="text-xs text-muted-foreground truncate" dir="ltr">
                             {item.url}
                           </p>
                           {item.error && (
                             <p className="text-xs text-red-600 mt-0.5 truncate">
-                              {item.error}
+                              {errorText(item.error)}
                             </p>
                           )}
                         </div>
                         <span
                           className={cn(
-                            "ml-auto shrink-0 rounded-full border px-2 py-0.5 text-[11px] font-medium",
+                            "ms-auto shrink-0 rounded-full border px-2 py-0.5 text-[11px] font-medium",
                             statusClassName(item.status)
                           )}
                         >
@@ -474,10 +468,10 @@ export function BulkUrlImport ({
                           item.status === "saving" ? (
                             <span className="inline-flex items-center gap-1">
                               <LoaderCircle className="size-3 animate-spin" />
-                              {statusLabel(item.status)}
+                              {statusLabel(item.status, t)}
                             </span>
                           ) : (
-                            statusLabel(item.status)
+                            statusLabel(item.status, t)
                           )}
                         </span>
                       </div>
@@ -490,7 +484,7 @@ export function BulkUrlImport ({
                           size="icon"
                           className="size-8"
                           onClick={() => handleRetry(item.id)}
-                          aria-label="Retry fetch"
+                          aria-label={t("retry")}
                         >
                           <RefreshCw className="size-4" />
                         </Button>
@@ -501,7 +495,7 @@ export function BulkUrlImport ({
                         size="icon"
                         className="size-8 text-red-600"
                         onClick={() => handleRemove(item.id)}
-                        aria-label="Remove product"
+                        aria-label={t("remove")}
                       >
                         <Trash2 className="size-4" />
                       </Button>
@@ -525,13 +519,13 @@ export function BulkUrlImport ({
                       ) : null
                     ) : item.status === "error" ? (
                       <div className="py-4 text-sm text-red-600">
-                        {item.error || "Failed to fetch this URL."} Use retry
-                        or remove this item.
+                        {errorText(item.error) || t("errors.urlFailed")}{" "}
+                        {t("retryOrRemove")}
                       </div>
                     ) : (
                       <div className="py-4 text-sm text-muted-foreground flex items-center gap-2">
                         <LoaderCircle className="size-4 animate-spin" />
-                        Fetching product details…
+                        {t("fetchingDetails")}
                       </div>
                     )}
                   </AccordionContent>
@@ -542,10 +536,10 @@ export function BulkUrlImport ({
         )}
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 z-10 border-t border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+      <div className="fixed bottom-0 inset-x-0 z-10 border-t border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
         <div className="px-6 py-4 flex items-center justify-between container gap-3">
           <p className="text-sm text-muted-foreground">
-            Failed URLs are skipped. Only ready products are saved.
+            {t("footerHint")}
           </p>
           <Button
             type="button"
@@ -555,10 +549,10 @@ export function BulkUrlImport ({
             {isPending ? (
               <span className="flex items-center gap-2">
                 <LoaderCircle className="size-4 animate-spin" />
-                Saving…
+                {t("saving")}
               </span>
             ) : (
-              `Save all (${readyCount})`
+              t("saveAll", { count: readyCount })
             )}
           </Button>
         </div>

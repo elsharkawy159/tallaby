@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   DragDropContext,
   Draggable,
@@ -40,6 +41,7 @@ export function ManageColumnsDialog<TData>({
   table: Table<TData>;
 }) {
   const [open, setOpen] = useState(false);
+  const t = useTranslations("products.columnsDialog");
   const { order, visibility, setOrder, setVisibility, reset } =
     useProductColumnsStore();
 
@@ -92,17 +94,14 @@ export function ManageColumnsDialog<TData>({
             size={16}
             aria-hidden="true"
           />
-          Manage Columns
+          {t("trigger")}
         </Button>
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Manage columns</DialogTitle>
-          <DialogDescription>
-            Show or hide columns, and drag them to change their order in the
-            table.
-          </DialogDescription>
+          <DialogTitle>{t("title")}</DialogTitle>
+          <DialogDescription>{t("description")}</DialogDescription>
         </DialogHeader>
 
         <DragDropContext onDragEnd={handleDragEnd}>
@@ -132,7 +131,7 @@ export function ManageColumnsDialog<TData>({
                         <span
                           {...provided.dragHandleProps}
                           className="text-muted-foreground cursor-grab active:cursor-grabbing"
-                          aria-label={`Reorder ${columnLabel(column)}`}
+                          aria-label={t("reorder", { column: columnLabel(column) })}
                         >
                           <GripVertical size={16} />
                         </span>
@@ -161,9 +160,9 @@ export function ManageColumnsDialog<TData>({
 
         <DialogFooter>
           <Button variant="outline" onClick={reset}>
-            Reset to default
+            {t("reset")}
           </Button>
-          <Button onClick={() => setOpen(false)}>Done</Button>
+          <Button onClick={() => setOpen(false)}>{t("done")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

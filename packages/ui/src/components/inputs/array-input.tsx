@@ -23,6 +23,8 @@ export interface ArrayInputProps extends Omit<BaseFieldProps, "children"> {
   autoAddEmpty?: boolean; // Auto-add empty field when last one is filled
   enableSmartPaste?: boolean; // Enable smart paste functionality
   emptyStateText?: string;
+  /** Placeholder suffix on the first item when smart paste is on. */
+  smartPasteHint?: string;
   showItemCount?: boolean;
   showToast?: boolean; // Show toast notifications
 }
@@ -44,6 +46,7 @@ export const ArrayInput = React.forwardRef<HTMLDivElement, ArrayInputProps>(
       autoAddEmpty = true,
       enableSmartPaste = true,
       emptyStateText = "No items added yet",
+      smartPasteHint = "(paste list here)",
       showItemCount = true,
       showToast = false,
       ...baseProps
@@ -225,7 +228,7 @@ export const ArrayInput = React.forwardRef<HTMLDivElement, ArrayInputProps>(
         onBlur: handleBlur,
         placeholder:
           index === 0 && enableSmartPaste
-            ? `${itemPlaceholder} (paste list here)`
+            ? `${itemPlaceholder} ${smartPasteHint}`
             : itemPlaceholder,
         disabled: isDisabled,
         className: cn(

@@ -46,6 +46,18 @@ export const affiliateStatus = pgEnum("affiliate_status", ['active', 'inactive']
 export const affiliateCommissionType = pgEnum("affiliate_commission_type", ['commission', 'reversal'])
 export const affiliateCommissionStatus = pgEnum("affiliate_commission_status", ['pending', 'earned', 'reversed', 'cancelled'])
 
+/**
+ * Seller fulfillment (migration 0040). Service types are structural (code
+ * branches on them); only plans are admin-managed data. Mirrored as plain
+ * constants in `@workspace/lib/fulfillment` for client-safe use.
+ */
+export const fulfillmentServiceType = pgEnum("fulfillment_service_type", ['storage', 'packaging', 'delivery', 'customer_service', 'returns'])
+export const fulfillmentProvider = pgEnum("fulfillment_provider", ['seller', 'tallaby'])
+export const fulfillmentModel = pgEnum("fulfillment_model", ['seller_managed', 'tallaby_fulfillment'])
+export const fulfillmentServiceStatus = pgEnum("fulfillment_service_status", ['requested', 'under_review', 'awaiting_agreement', 'active', 'paused', 'rejected'])
+export const fulfillmentReviewStatus = pgEnum("fulfillment_review_status", ['pending_contact', 'contacted', 'configured'])
+export const fulfillmentAgreementStatus = pgEnum("fulfillment_agreement_status", ['draft', 'proposed', 'accepted', 'active', 'superseded', 'terminated'])
+
 /** Order-level discount line stored on orders.discounts (jsonb). */
 export type OrderDiscountType =
 	| 'coupon'
@@ -376,6 +388,7 @@ export const sellers = pgTable("sellers", {
 	positiveRatingPercent: real("positive_rating_percent"),
 	totalRatings: integer("total_ratings").default(0),
 	productCount: integer("product_count").default(0),
+	/** @deprecated Never written. Superseded by seller_fulfillment_profiles / seller_fulfillment_services (0040). */
 	fulfillmentOptions: jsonb("fulfillment_options"),
 	payoutSchedule: text("payout_schedule").default('biweekly'),
 	lastPayoutDate: timestamp("last_payout_date", { withTimezone: true, mode: 'string' }),
@@ -2066,4 +2079,158 @@ export const affiliateCommissions = pgTable("affiliate_commissions", {
 	// A reversal must reference the commission it reverses; a commission row
 	// must not — keeps the two kinds from being confused at the data level.
 	check("affiliate_commissions_reversal_has_parent", sql`(type = 'reversal') = (parent_commission_id IS NOT NULL)`),
+]);
+
+/**
+ * Admin-managed catalog of Tallaby fulfillment plans (migration 0040).
+ * `pricing` and `limits` are deliberately nullable: nothing is priced yet, and
+ * a null price renders as "Pricing will be discussed with our team".
+ */
+export const fulfillmentPlans = pgTable("fulfillment_plans", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	code: text().notNull(),
+	serviceType: fulfillmentServiceType("service_type").notNull(),
+	nameEn: text("name_en").notNull(),
+	nameAr: text("name_ar").notNull(),
+	descriptionEn: text("description_en"),
+	descriptionAr: text("description_ar"),
+	features: jsonb().default([]).notNull(),
+	limits: jsonb(),
+	pricing: jsonb(),
+	shippingSpeed: shippingSpeed("shipping_speed"),
+	availability: jsonb(),
+	isActive: boolean("is_active").default(true).notNull(),
+	sortOrder: integer("sort_order").default(0).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("fulfillment_plans_service_type_idx").using("btree", table.serviceType.asc().nullsLast().op("enum_ops"), table.sortOrder.asc().nullsLast().op("int4_ops")),
+	unique("fulfillment_plans_code_unique").on(table.code),
+	unique("fulfillment_plans_id_service_type_unique").on(table.id, table.serviceType),
+	check("fulfillment_plans_features_is_array", sql`jsonb_typeof(features) = 'array'`),
+]);
+
+/** One per seller: the onboarding answers that aren't per-service. */
+export const sellerFulfillmentProfiles = pgTable("seller_fulfillment_profiles", {
+	sellerId: uuid("seller_id").primaryKey().notNull(),
+	model: fulfillmentModel().notNull(),
+	operationalDetails: jsonb("operational_details").default({}).notNull(),
+	pickupAddress: jsonb("pickup_address"),
+	submittedAt: timestamp("submitted_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	termsAcceptedAt: timestamp("terms_accepted_at", { withTimezone: true, mode: 'string' }),
+	termsVersion: text("terms_version"),
+	reviewStatus: fulfillmentReviewStatus("review_status").default('pending_contact').notNull(),
+	adminNotes: text("admin_notes"),
+	reviewedBy: uuid("reviewed_by"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("seller_fulfillment_profiles_review_status_idx").using("btree", table.reviewStatus.asc().nullsLast().op("enum_ops")),
+	foreignKey({
+		columns: [table.sellerId],
+		foreignColumns: [sellers.id],
+		name: "seller_fulfillment_profiles_seller_id_fkey"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.reviewedBy],
+		foreignColumns: [users.id],
+		name: "seller_fulfillment_profiles_reviewed_by_fkey"
+	}).onDelete("set null"),
+]);
+
+/** Negotiated commercial terms for one seller service. Separate from the request. */
+export const sellerFulfillmentAgreements = pgTable("seller_fulfillment_agreements", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	serviceType: fulfillmentServiceType("service_type").notNull(),
+	planId: uuid("plan_id"),
+	rates: jsonb().default([]).notNull(),
+	effectiveFrom: date("effective_from"),
+	effectiveTo: date("effective_to"),
+	status: fulfillmentAgreementStatus().default('draft').notNull(),
+	notes: text(),
+	createdBy: uuid("created_by"),
+	approvedBy: uuid("approved_by"),
+	sellerConfirmedAt: timestamp("seller_confirmed_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("seller_fulfillment_agreements_seller_idx").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops"), table.serviceType.asc().nullsLast().op("enum_ops")),
+	foreignKey({
+		columns: [table.sellerId],
+		foreignColumns: [sellers.id],
+		name: "seller_fulfillment_agreements_seller_id_fkey"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.planId, table.serviceType],
+		foreignColumns: [fulfillmentPlans.id, fulfillmentPlans.serviceType],
+		name: "seller_fulfillment_agreements_plan_fk"
+	}),
+	foreignKey({
+		columns: [table.createdBy],
+		foreignColumns: [users.id],
+		name: "seller_fulfillment_agreements_created_by_fkey"
+	}).onDelete("set null"),
+	foreignKey({
+		columns: [table.approvedBy],
+		foreignColumns: [users.id],
+		name: "seller_fulfillment_agreements_approved_by_fkey"
+	}).onDelete("set null"),
+	check("seller_fulfillment_agreements_rates_is_array", sql`jsonb_typeof(rates) = 'array'`),
+	check("seller_fulfillment_agreements_dates_ordered", sql`effective_to IS NULL OR effective_from IS NULL OR effective_to >= effective_from`),
+]);
+
+/**
+ * One row per seller x service. `requested_*` is what the seller asked for;
+ * `active_*` is what orders run under. Only an admin activation copies
+ * requested -> active, so a pending request never changes live behavior.
+ */
+export const sellerFulfillmentServices = pgTable("seller_fulfillment_services", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	serviceType: fulfillmentServiceType("service_type").notNull(),
+	requestedProvider: fulfillmentProvider("requested_provider").notNull(),
+	requestedPlanId: uuid("requested_plan_id"),
+	requestedConfig: jsonb("requested_config").default({}).notNull(),
+	requestedAt: timestamp("requested_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	activeProvider: fulfillmentProvider("active_provider").notNull(),
+	activePlanId: uuid("active_plan_id"),
+	activeConfig: jsonb("active_config").default({}).notNull(),
+	activatedAt: timestamp("activated_at", { withTimezone: true, mode: 'string' }),
+	status: fulfillmentServiceStatus().default('requested').notNull(),
+	agreementId: uuid("agreement_id"),
+	notes: text(),
+	updatedBy: uuid("updated_by"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("seller_fulfillment_services_status_idx").using("btree", table.status.asc().nullsLast().op("enum_ops")),
+	unique("seller_fulfillment_services_seller_service_unique").on(table.sellerId, table.serviceType),
+	foreignKey({
+		columns: [table.sellerId],
+		foreignColumns: [sellers.id],
+		name: "seller_fulfillment_services_seller_id_fkey"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.requestedPlanId, table.serviceType],
+		foreignColumns: [fulfillmentPlans.id, fulfillmentPlans.serviceType],
+		name: "seller_fulfillment_services_requested_plan_fk"
+	}),
+	foreignKey({
+		columns: [table.activePlanId, table.serviceType],
+		foreignColumns: [fulfillmentPlans.id, fulfillmentPlans.serviceType],
+		name: "seller_fulfillment_services_active_plan_fk"
+	}),
+	foreignKey({
+		columns: [table.agreementId],
+		foreignColumns: [sellerFulfillmentAgreements.id],
+		name: "seller_fulfillment_services_agreement_id_fkey"
+	}).onDelete("set null"),
+	foreignKey({
+		columns: [table.updatedBy],
+		foreignColumns: [users.id],
+		name: "seller_fulfillment_services_updated_by_fkey"
+	}).onDelete("set null"),
+	check("seller_fulfillment_services_requested_seller_no_plan", sql`requested_provider = 'tallaby' OR requested_plan_id IS NULL`),
+	check("seller_fulfillment_services_active_seller_no_plan", sql`active_provider = 'tallaby' OR active_plan_id IS NULL`),
 ]);

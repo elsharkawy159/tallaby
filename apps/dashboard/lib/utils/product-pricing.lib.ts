@@ -98,13 +98,15 @@ export function calculateDiscountFromFinalPrice(
   return parseFloat(discountAmount.toFixed(2))
 }
 
+/** `t` is the "productForm.price" translator. */
 export function getFinalPriceHelpText(
-  settings: SellerPricingSettings
+  settings: SellerPricingSettings,
+  t: (key: string, values?: Record<string, number>) => string
 ): string {
   if (settings.isCommissionExempt) {
-    return 'Product display price (no platform commission applied)'
+    return t('finalHelpExempt')
   }
 
   const rate = settings.commissionRate ?? DEFAULT_COMMISSION_RATE
-  return `Product display price (List Price + ${rate}% commission)`
+  return t('finalHelp', { rate })
 }

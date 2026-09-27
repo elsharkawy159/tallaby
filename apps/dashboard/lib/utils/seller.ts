@@ -1,44 +1,20 @@
 export type SellerStatus = "pending" | "approved" | "suspended" | "restricted";
 
 /**
- * Get display message for seller status
- * @param status - The seller status
- * @returns Object with message type and text
+ * Get the display tone and translation key for a seller status.
+ * Callers resolve `sellerStatus.<key>.title` / `.message` via next-intl.
  */
 export const getSellerStatusMessage = (status: SellerStatus) => {
   switch (status) {
     case "pending":
-      return {
-        type: "warning" as const,
-        title: "Account Under Review",
-        message:
-          "Your seller account is currently being reviewed. You'll receive an email once it's approved.",
-      };
+      return { type: "warning" as const, key: "pending" as const };
     case "approved":
-      return {
-        type: "success" as const,
-        title: "Account Approved",
-        message: "Your seller account is active and ready to use.",
-      };
+      return { type: "success" as const, key: "approved" as const };
     case "suspended":
-      return {
-        type: "error" as const,
-        title: "Account Suspended",
-        message:
-          "Your seller account has been suspended. Please contact support for assistance.",
-      };
+      return { type: "error" as const, key: "suspended" as const };
     case "restricted":
-      return {
-        type: "warning" as const,
-        title: "Account Restricted",
-        message:
-          "Your seller account has limited access. Please contact support for more information.",
-      };
+      return { type: "warning" as const, key: "restricted" as const };
     default:
-      return {
-        type: "info" as const,
-        title: "Unknown Status",
-        message: "Please contact support for account status information.",
-      };
+      return { type: "info" as const, key: "unknown" as const };
   }
 };
