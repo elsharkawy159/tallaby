@@ -432,7 +432,7 @@ export function TopUpRequestActions({
         open={dialog === "reject"}
         onOpenChange={(open) => !open && setDialog(null)}
       >
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>Reject top-up</DialogTitle>
             <DialogDescription>
@@ -501,7 +501,7 @@ export function WalletLedgerButton({ wallet }: { wallet: WalletRow }) {
       </Button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="sm:max-w-3xl">
           <DialogHeader>
             <DialogTitle>
               Ledger — {wallet.userName ?? wallet.userEmail ?? wallet.id}

@@ -267,7 +267,7 @@ function ProductFormFields({
                   How this product is promoted — separate from its category.
                 </p>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                 <FormInputField
                   control={control}
                   name="isTrending"
@@ -290,7 +290,7 @@ function ProductFormFields({
                   Admin-curated storefront badges.
                 </p>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
                 <FormInputField
                   control={control}
                   name="taxClass"
@@ -334,7 +334,7 @@ function ProductFormFields({
             <CardDescription>Set pricing and stock for the product.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
               <FormInputField
                 control={control}
                 name="basePrice"

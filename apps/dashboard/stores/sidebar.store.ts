@@ -5,6 +5,9 @@ interface SidebarState {
   isCollapsed: boolean;
   toggleCollapse: () => void;
   setCollapsed: (collapsed: boolean) => void;
+  /** Mobile drawer; not persisted so it always starts closed. */
+  isMobileOpen: boolean;
+  setMobileOpen: (open: boolean) => void;
 }
 
 export const useSidebarStore = create<SidebarState>()(
@@ -14,6 +17,8 @@ export const useSidebarStore = create<SidebarState>()(
       toggleCollapse: () =>
         set((state) => ({ isCollapsed: !state.isCollapsed })),
       setCollapsed: (collapsed: boolean) => set({ isCollapsed: collapsed }),
+      isMobileOpen: false,
+      setMobileOpen: (open: boolean) => set({ isMobileOpen: open }),
     }),
     {
       name: "sidebar-storage",

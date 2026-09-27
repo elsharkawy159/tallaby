@@ -45,9 +45,9 @@ export function DataTablePagination<TData>({
         {total.toLocaleString()}
         {selectedCount > 0 && ` · ${selectedCount} selected`}
       </div>
-      <div className="flex flex-wrap items-center gap-4 lg:gap-8">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 sm:justify-end lg:gap-x-8">
         <div className="flex items-center gap-2">
-          <p className="text-sm font-medium">Rows per page</p>
+          <p className="whitespace-nowrap text-sm font-medium">Rows per page</p>
           <Select
             value={`${pageSize}`}
             onValueChange={(value) => table.setPageSize(Number(value))}
@@ -64,7 +64,7 @@ export function DataTablePagination<TData>({
             </SelectContent>
           </Select>
         </div>
-        <div className="flex min-w-[100px] items-center justify-center text-sm font-medium">
+        <div className="flex items-center justify-center whitespace-nowrap text-sm font-medium sm:min-w-[100px]">
           Page {pageIndex + 1} of {pageCount}
         </div>
         <div className="flex items-center gap-2">

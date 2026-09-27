@@ -82,11 +82,11 @@ export const MarketingDashboard = () => {
   const t = useTranslations();
 
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
             {t("marketing.title")}
           </h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">

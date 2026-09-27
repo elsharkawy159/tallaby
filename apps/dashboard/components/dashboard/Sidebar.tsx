@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   BarChart3,
   Package,
@@ -60,7 +60,16 @@ const SIDEBAR_ICON = "h-5 w-5 shrink-0 text-gray-600";
 export const Sidebar = ({ counts, isOpen, onToggle }: SidebarProps) => {
   const t = useTranslations();
   const { seller } = useSiteData();
-  const { isCollapsed, toggleCollapse } = useSidebarStore();
+  const { isCollapsed, toggleCollapse, isMobileOpen, setMobileOpen } =
+    useSidebarStore();
+  const pathname = usePathname();
+  const mobileOpen = isOpen ?? isMobileOpen;
+  const closeMobile = onToggle ?? (() => setMobileOpen(false));
+
+  // Close the mobile drawer once a link navigates away.
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname, setMobileOpen]);
 
   const topNavItems = [
     { name: t("nav.dashboard"), icon: BarChart3, href: "/", countKey: "dashboard" as const },
@@ -80,8 +89,8 @@ export const Sidebar = ({ counts, isOpen, onToggle }: SidebarProps) => {
       {/* Desktop Sidebar */}
       <aside
         className={cn(
-          "hidden lg:flex max-w-72 lg:flex-col lg:fixed lg:inset-y-0 lg:start-0 bg-white border-e border-gray-200 z-50 h-screen transition-all duration-300",
-          isCollapsed ? "lg:w-20" : "lg:w-280"
+          "hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:start-0 bg-white border-e border-gray-200 z-50 h-screen transition-all duration-300",
+          isCollapsed ? "lg:w-20" : "lg:w-[280px]"
         )}
       >
         <SidebarContent
@@ -95,10 +104,20 @@ export const Sidebar = ({ counts, isOpen, onToggle }: SidebarProps) => {
       </aside>
 
       {/* Mobile Sidebar */}
+      <div
+        aria-hidden="true"
+        onClick={closeMobile}
+        className={cn(
+          "fixed inset-0 z-40 bg-black/40 transition-opacity duration-300 lg:hidden",
+          mobileOpen ? "opacity-100" : "pointer-events-none opacity-0"
+        )}
+      />
       <aside
         className={cn(
-          "fixed inset-y-0 start-0 w-280 bg-white border-e border-gray-200 z-50 transform transition-transform duration-300 ease-in-out lg:hidden",
-          isOpen ? "translate-x-0" : "-translate-x-full rtl:translate-x-full"
+          "fixed inset-y-0 start-0 flex w-[280px] max-w-[85vw] flex-col bg-white border-e border-gray-200 z-50 transform transition-transform duration-300 ease-in-out lg:hidden",
+          mobileOpen
+            ? "translate-x-0"
+            : "-translate-x-full rtl:translate-x-full invisible"
         )}
       >
         <div className="flex items-center justify-between gap-2 p-4 border-b border-gray-200">
@@ -112,7 +131,7 @@ export const Sidebar = ({ counts, isOpen, onToggle }: SidebarProps) => {
             />
           </Link>
           <Button
-            onClick={onToggle}
+            onClick={closeMobile}
             variant="ghost"
             size="icon"
             className="shrink-0 text-gray-700 hover:text-gray-900 hover:bg-gray-100"
@@ -127,7 +146,7 @@ export const Sidebar = ({ counts, isOpen, onToggle }: SidebarProps) => {
           afterProductsItems={afterProductsItems}
           isCollapsed={false}
           seller={seller.data ?? null}
-          onToggle={onToggle}
+          onToggle={closeMobile}
         />
       </aside>
     </>

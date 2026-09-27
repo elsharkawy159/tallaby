@@ -12,7 +12,7 @@ const Settings = async () => {
   const t = await getTranslations("fulfillment");
   return (
     <>
-      <div className="px-6 pt-6">
+      <div className="px-4 pt-4 sm:px-6 sm:pt-6">
         <Link
           href="/settings/fulfillment"
           className="flex items-center justify-between gap-3 rounded-lg border bg-white p-4 transition-colors hover:bg-gray-50 dark:bg-gray-950 dark:hover:bg-gray-900"

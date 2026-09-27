@@ -93,12 +93,12 @@ const videoTutorials = [
 
 export const HelpSupport = () => {
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
         <div className="flex items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Help & Support</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Help & Support</h1>
             <p className="text-gray-600 mt-1">
               Find answers and get help with your seller dashboard
             </p>
@@ -136,7 +136,7 @@ export const HelpSupport = () => {
       </Card>
 
       {/* Quick Help Options */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-8">
         <Card className="cursor-pointer hover:shadow-lg transition-shadow">
           <CardContent className="p-6 text-center">
             <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -258,7 +258,7 @@ export const HelpSupport = () => {
           <CardTitle>Still Need Help?</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             <div className="text-center">
               <div className="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
                 <MessageSquare className="h-6 w-6 text-blue-600" />
