@@ -29,8 +29,8 @@ export function DefaultVariantPriceDisplay({
   const locale = useLocale();
   return (
     <div className="space-y-1 min-w-[140px]">
-      <p className="text-xs text-gray-500">{t("usesMainPrice")}</p>
-      <p className="text-sm font-semibold text-gray-900">
+      <p className="text-xs text-muted-foreground">{t("usesMainPrice")}</p>
+      <p className="text-sm font-semibold text-foreground">
         {finalPrice > 0 ? formatMoney(finalPrice, locale) : "—"}
       </p>
     </div>
@@ -47,13 +47,13 @@ export function DefaultVariantImagesDisplay({
   const t = useTranslations("productForm.variantPricing");
   return (
     <div className="space-y-2 min-w-[140px]">
-      <p className="text-xs text-gray-500">{t("usesMainImages")}</p>
+      <p className="text-xs text-muted-foreground">{t("usesMainImages")}</p>
       {images.length > 0 ? (
         <div className="flex flex-wrap gap-1">
           {images.slice(0, 5).map((image) => (
             <div
               key={image}
-              className="relative size-10 overflow-hidden rounded-md border border-gray-200 bg-gray-50"
+              className="relative size-10 overflow-hidden rounded-md border border-border bg-muted/50"
             >
               <Image
                 src={getPublicUrl(image, "products")}
@@ -66,7 +66,7 @@ export function DefaultVariantImagesDisplay({
           ))}
         </div>
       ) : (
-        <p className="text-xs text-gray-400">{t("addImagesHint")}</p>
+        <p className="text-xs text-muted-foreground">{t("addImagesHint")}</p>
       )}
     </div>
   );

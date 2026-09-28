@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { Button } from "@workspace/ui/components/button";
 import {
   Dialog,
@@ -24,6 +25,7 @@ interface Props {
 }
 
 export function RiderFormDialog({ open, rider, onClose }: Props) {
+  const t = useTranslations("shipping.riderForm");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -45,10 +47,10 @@ export function RiderFormDialog({ open, rider, onClose }: Props) {
         : await createSellerRider({ fullName, email, phone });
 
       if (!res.success) {
-        toast.error(res.error ?? "Could not save the rider");
+        toast.error(res.error ?? t("saveFailed"));
         return;
       }
-      toast.success(res.message ?? "Saved");
+      toast.success(res.message ?? t("saved"));
       onClose();
     });
   };
@@ -58,16 +60,14 @@ export function RiderFormDialog({ open, rider, onClose }: Props) {
       <DialogContent className="sm:max-w-md">
         <form onSubmit={submit} className="space-y-4">
           <DialogHeader>
-            <DialogTitle>{editing ? "Edit rider" : "Add a rider"}</DialogTitle>
+            <DialogTitle>{editing ? t("editTitle") : t("addTitle")}</DialogTitle>
             <DialogDescription>
-              {editing
-                ? "Update this rider's contact details."
-                : "Riders sign in to the Tallaby shipping app with this email to see and update the deliveries you assign to them."}
+              {editing ? t("editDescription") : t("addDescription")}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-2">
-            <Label htmlFor="rider-name">Full name</Label>
+            <Label htmlFor="rider-name">{t("fullName")}</Label>
             <Input
               id="rider-name"
               value={fullName}
@@ -77,10 +77,11 @@ export function RiderFormDialog({ open, rider, onClose }: Props) {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="rider-email">Email</Label>
+            <Label htmlFor="rider-email">{t("email")}</Label>
             <Input
               id="rider-email"
               type="email"
+              dir="ltr"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -89,10 +90,11 @@ export function RiderFormDialog({ open, rider, onClose }: Props) {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="rider-phone">Phone</Label>
+            <Label htmlFor="rider-phone">{t("phone")}</Label>
             <Input
               id="rider-phone"
               type="tel"
+              dir="ltr"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               required
@@ -102,10 +104,10 @@ export function RiderFormDialog({ open, rider, onClose }: Props) {
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose} disabled={isPending}>
-              Cancel
+              {t("cancel")}
             </Button>
             <Button type="submit" disabled={isPending}>
-              {isPending ? "Saving…" : editing ? "Save changes" : "Add rider"}
+              {isPending ? t("saving") : editing ? t("saveChanges") : t("add")}
             </Button>
           </DialogFooter>
         </form>

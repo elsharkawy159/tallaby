@@ -81,7 +81,7 @@ export const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
                       status === "current" &&
                         "border-primary bg-primary text-white",
                       status === "pending" &&
-                        "border-gray-300 bg-white text-gray-400",
+                        "border-border bg-card text-muted-foreground",
                       status === "error" &&
                         "border-red-500 bg-red-500 text-white"
                     )}
@@ -122,7 +122,7 @@ export const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
                         size === "lg" && "text-lg",
                         status === "completed" && "text-green-600",
                         status === "current" && "text-primary",
-                        status === "pending" && "text-gray-500",
+                        status === "pending" && "text-muted-foreground",
                         status === "error" && "text-red-600"
                       )}
                     >
@@ -135,7 +135,7 @@ export const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
                         "mt-1 text-xs transition-colors duration-200",
                         status === "completed" && "text-green-600",
                         status === "current" && "text-primary",
-                        status === "pending" && "text-gray-500",
+                        status === "pending" && "text-muted-foreground",
                         status === "error" && "text-red-600"
                       )}
                     >
@@ -152,7 +152,7 @@ export const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
                       size === "sm" && "top-8",
                       size === "md" && "top-10",
                       size === "lg" && "top-12",
-                      status === "completed" ? "bg-green-500" : "bg-gray-300"
+                      status === "completed" ? "bg-green-500" : "bg-border"
                     )}
                     style={{ height: "calc(100% + 1rem)" }}
                   />
@@ -182,7 +182,7 @@ export const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
                     size === "lg" && "h-10 w-10",
                     status === "completed" && "bg-green-500 text-white",
                     status === "current" && "bg-primary text-white",
-                    status === "pending" && "bg-gray-200 text-gray-400",
+                    status === "pending" && "bg-muted text-muted-foreground",
                     status === "error" && "bg-red-500 text-white",
                     isClickable && "cursor-pointer hover:opacity-80"
                   )}
@@ -214,7 +214,7 @@ export const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
                 {index < steps.length - 1 && (
                   <ChevronRight
                     className={cn(
-                      "text-gray-300",
+                      "text-muted-foreground/40",
                       size === "sm" && "h-4 w-4",
                       size === "md" && "h-5 w-5",
                       size === "lg" && "h-6 w-6"
@@ -250,7 +250,7 @@ export const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
                     status === "current" &&
                       "border-primary bg-primary text-white",
                     status === "pending" &&
-                      "border-gray-300 bg-white text-gray-400",
+                      "border-border bg-card text-muted-foreground",
                     status === "error" &&
                       "border-red-500 bg-red-500 text-white",
                     isClickable && "cursor-pointer hover:opacity-80"
@@ -291,7 +291,7 @@ export const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
                       size === "lg" && "text-lg",
                       status === "completed" && "text-green-600",
                       status === "current" && "text-primary",
-                      status === "pending" && "text-gray-500",
+                      status === "pending" && "text-muted-foreground",
                       status === "error" && "text-red-600"
                     )}
                   >
@@ -303,7 +303,7 @@ export const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
                         "mt-1 text-xs transition-colors duration-200",
                         status === "completed" && "text-green-600",
                         status === "current" && "text-primary",
-                        status === "pending" && "text-gray-500",
+                        status === "pending" && "text-muted-foreground",
                         status === "error" && "text-red-600"
                       )}
                     >
@@ -320,7 +320,7 @@ export const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
                       size === "sm" && "top-4",
                       size === "md" && "top-5",
                       size === "lg" && "top-6",
-                      status === "completed" ? "bg-green-500" : "bg-gray-300"
+                      status === "completed" ? "bg-green-500" : "bg-border"
                     )}
                     style={{
                       left: `calc(${((index + 1) / steps.length) * 100}% - 1rem)`,
@@ -368,7 +368,7 @@ export const ProgressStepper = React.forwardRef<
       <div ref={ref} className={cn("w-full space-y-4", className)}>
         {/* Progress bar */}
         {showProgress && (
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-muted rounded-full h-2">
             <div
               className="bg-primary h-2 rounded-full transition-all duration-300 ease-out"
               style={{ width: `${progress}%` }}
@@ -378,7 +378,7 @@ export const ProgressStepper = React.forwardRef<
 
         {/* Step labels */}
         {showStepLabels && (
-          <div className="flex justify-between text-sm text-gray-600">
+          <div className="flex justify-between text-sm text-muted-foreground">
             <span>
               Step {currentStep + 1} of {steps.length}
             </span>

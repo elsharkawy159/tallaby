@@ -77,7 +77,7 @@ export const SelectInput = React.forwardRef<HTMLDivElement, SelectInputProps>(
               <SelectContent>
                 {clearable && field.value && (
                   <SelectItem value="">
-                    <span className="text-gray-500 italic">
+                    <span className="text-muted-foreground italic">
                       Clear selection
                     </span>
                   </SelectItem>
@@ -91,7 +91,7 @@ export const SelectInput = React.forwardRef<HTMLDivElement, SelectInputProps>(
                     <div className="flex flex-col">
                       <span>{option.label}</span>
                       {option.description && (
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-muted-foreground">
                           {option.description}
                         </span>
                       )}

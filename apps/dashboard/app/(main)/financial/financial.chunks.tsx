@@ -14,15 +14,9 @@ import {
   TableRow,
 } from "@workspace/ui/components/table";
 import { Badge } from "@workspace/ui/components/badge";
-
-const formatCurrency = (value?: string | number | null) => {
-  const num =
-    value == null ? 0 : typeof value === "string" ? parseFloat(value) : value;
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "EGP",
-  }).format(num);
-};
+import { useLocale, useTranslations } from "next-intl";
+import { formatDate, formatMoney, formatNumber } from "@/lib/i18n/format";
+import { humanizeStatus, translateStatus } from "@/lib/i18n/status";
 
 interface FinancialDashboardContentProps {
   wallet: {
@@ -73,6 +67,11 @@ export function FinancialDashboardContent({
   transactions,
   analytics,
 }: FinancialDashboardContentProps) {
+  const t = useTranslations("financial");
+  const tStatus = useTranslations("status");
+  const locale = useLocale();
+  const formatCurrency = (value?: string | number | null) =>
+    formatMoney(value, locale);
   const walletBalance = wallet?.walletBalance ?? "0";
   const pendingAmount = pending?.pendingAmount ?? 0;
   const pendingCount = pending?.orderCount ?? 0;
@@ -86,12 +85,7 @@ export function FinancialDashboardContent({
     <div className="p-4 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-            Financial Dashboard
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Track your earnings and financial performance
-          </p>
+          <p className="text-muted-foreground">{t("subtitle")}</p>
         </div>
       </div>
 
@@ -100,19 +94,23 @@ export function FinancialDashboardContent({
           <CardContent>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">This Month Sales</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm text-muted-foreground">{t("thisMonthSales")}</p>
+                <p className="text-2xl font-bold text-foreground">
                   {formatCurrency(thisMonth)}
                 </p>
                 <p
-                  className={`text-sm ${growth >= 0 ? "text-green-600" : "text-red-600"}`}
+                  className={`text-sm ${growth >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}
                 >
-                  {growth >= 0 ? "+" : ""}
-                  {growth.toFixed(1)}% vs last month
+                  {t("vsLastMonth", {
+                    value: `${growth >= 0 ? "+" : ""}${formatNumber(growth, locale, {
+                      minimumFractionDigits: 1,
+                      maximumFractionDigits: 1,
+                    })}%`,
+                  })}
                 </p>
               </div>
-              <div className="bg-green-100 p-3 rounded-full">
-                <DollarSign className="h-6 w-6 text-green-600" />
+              <div className="bg-green-100 dark:bg-green-900/30 p-3 rounded-full">
+                <DollarSign className="h-6 w-6 text-green-600 dark:text-green-400" />
               </div>
             </div>
           </CardContent>
@@ -122,16 +120,16 @@ export function FinancialDashboardContent({
           <CardContent>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Total Paid Out</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm text-muted-foreground">{t("totalPaidOut")}</p>
+                <p className="text-2xl font-bold text-foreground">
                   {formatCurrency(totalPaid)}
                 </p>
-                <p className="text-sm text-gray-600">
-                  {stats?.total?.payoutCount ?? 0} payouts
+                <p className="text-sm text-muted-foreground">
+                  {t("payoutCount", { count: stats?.total?.payoutCount ?? 0 })}
                 </p>
               </div>
-              <div className="bg-blue-100 p-3 rounded-full">
-                <TrendingUp className="h-6 w-6 text-blue-600" />
+              <div className="bg-blue-100 dark:bg-blue-900/30 p-3 rounded-full">
+                <TrendingUp className="h-6 w-6 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
           </CardContent>
@@ -141,16 +139,16 @@ export function FinancialDashboardContent({
           <CardContent>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Pending Earnings</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm text-muted-foreground">{t("pendingEarnings")}</p>
+                <p className="text-2xl font-bold text-foreground">
                   {formatCurrency(pendingAmount)}
                 </p>
-                <p className="text-sm text-yellow-600">
-                  {pendingCount} delivered items
+                <p className="text-sm text-yellow-600 dark:text-yellow-400">
+                  {t("deliveredItems", { count: pendingCount })}
                 </p>
               </div>
-              <div className="bg-yellow-100 p-3 rounded-full">
-                <CreditCard className="h-6 w-6 text-yellow-600" />
+              <div className="bg-yellow-100 dark:bg-yellow-900/30 p-3 rounded-full">
+                <CreditCard className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
               </div>
             </div>
           </CardContent>
@@ -160,14 +158,14 @@ export function FinancialDashboardContent({
           <CardContent>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Wallet Balance</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm text-muted-foreground">{t("walletBalance")}</p>
+                <p className="text-2xl font-bold text-foreground">
                   {formatCurrency(walletBalance)}
                 </p>
-                <p className="text-sm text-gray-600">Available balance</p>
+                <p className="text-sm text-muted-foreground">{t("availableBalance")}</p>
               </div>
-              <div className="bg-purple-100 p-3 rounded-full">
-                <Wallet className="h-6 w-6 text-purple-600" />
+              <div className="bg-purple-100 dark:bg-purple-900/30 p-3 rounded-full">
+                <Wallet className="h-6 w-6 text-purple-600 dark:text-purple-400" />
               </div>
             </div>
           </CardContent>
@@ -177,16 +175,16 @@ export function FinancialDashboardContent({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Recent Wallet Activity</CardTitle>
+            <CardTitle>{t("recentActivity")}</CardTitle>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Order</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Date</TableHead>
+                  <TableHead>{t("columns.type")}</TableHead>
+                  <TableHead>{t("columns.order")}</TableHead>
+                  <TableHead>{t("columns.amount")}</TableHead>
+                  <TableHead>{t("columns.date")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -196,21 +194,21 @@ export function FinancialDashboardContent({
                       colSpan={4}
                       className="text-center text-muted-foreground py-8"
                     >
-                      No transactions yet
+                      {t("noTransactions")}
                     </TableCell>
                   </TableRow>
                 ) : (
                   transactions.map((tx) => (
                     <TableRow key={tx.id}>
-                      <TableCell className="capitalize">{tx.type}</TableCell>
+                      <TableCell>
+                        {translateStatus(tStatus, "transaction", tx.type)}
+                      </TableCell>
                       <TableCell>{tx.order?.orderNumber ?? "—"}</TableCell>
-                      <TableCell className="font-semibold text-green-600">
+                      <TableCell className="font-semibold text-green-600 dark:text-green-400" dir="ltr">
                         {formatCurrency(tx.amount)}
                       </TableCell>
                       <TableCell>
-                        {tx.createdAt
-                          ? new Date(tx.createdAt).toLocaleDateString()
-                          : "—"}
+                        {formatDate(tx.createdAt, locale)}
                       </TableCell>
                     </TableRow>
                   ))
@@ -222,16 +220,16 @@ export function FinancialDashboardContent({
 
         <Card>
           <CardHeader>
-            <CardTitle>Recent Payouts</CardTitle>
+            <CardTitle>{t("recentPayouts")}</CardTitle>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Method</TableHead>
-                  <TableHead>Date</TableHead>
+                  <TableHead>{t("columns.amount")}</TableHead>
+                  <TableHead>{t("columns.status")}</TableHead>
+                  <TableHead>{t("columns.method")}</TableHead>
+                  <TableHead>{t("columns.date")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -241,13 +239,13 @@ export function FinancialDashboardContent({
                       colSpan={4}
                       className="text-center text-muted-foreground py-8"
                     >
-                      No payouts yet
+                      {t("noPayouts")}
                     </TableCell>
                   </TableRow>
                 ) : (
                   payouts.map((payout) => (
                     <TableRow key={payout.id}>
-                      <TableCell className="font-semibold">
+                      <TableCell className="font-semibold" dir="ltr">
                         {formatCurrency(payout.netAmount)}
                       </TableCell>
                       <TableCell>
@@ -257,20 +255,23 @@ export function FinancialDashboardContent({
                               ? "default"
                               : "secondary"
                           }
-                          className="capitalize"
                         >
-                          {payout.status ?? "pending"}
+                          {translateStatus(
+                            tStatus,
+                            "payout",
+                            payout.status ?? "pending"
+                          )}
                         </Badge>
                       </TableCell>
-                      <TableCell className="capitalize">
-                        {payout.method?.replace(/_/g, " ") ?? "—"}
+                      <TableCell>
+                        {payout.method
+                          ? t.has(`methods.${payout.method}`)
+                            ? t(`methods.${payout.method}`)
+                            : humanizeStatus(payout.method)
+                          : "—"}
                       </TableCell>
                       <TableCell>
-                        {(payout.processedAt ?? payout.createdAt)
-                          ? new Date(
-                              payout.processedAt ?? payout.createdAt!,
-                            ).toLocaleDateString()
-                          : "—"}
+                        {formatDate(payout.processedAt ?? payout.createdAt, locale)}
                       </TableCell>
                     </TableRow>
                   ))

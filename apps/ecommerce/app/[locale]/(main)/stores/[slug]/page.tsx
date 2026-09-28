@@ -1,20 +1,16 @@
-import { Suspense } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { hasLocale } from "next-intl";
 import { getTranslations } from "next-intl/server";
-import Image from "next/image";
-import { Star, BadgeCheck } from "lucide-react";
-import { getSellerBySlug } from "@/actions/seller";
-import { getProducts } from "@/actions/products";
+import { getSellerBySlug, getSellerStoreCategories } from "@/actions/seller";
 import { generateStoreMetadata } from "@/lib/metadata";
 import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
-import ProductCard from "@/app/[locale]/(main)/products/[slug]/_components/ProductCard";
-import Pagination from "@/app/[locale]/(main)/products/_components/Pagination";
-import { ProductsGridSkeleton } from "@/components/home/products-grid.skeleton";
-import type { ProductCardProps } from "@/components/product";
+import { Link } from "@/i18n/navigation";
+import { cn } from "@workspace/ui/lib/utils";
 import { routing } from "@/i18n/routing";
 import type { ProductLocale } from "@/lib/product-translations";
+import { StoreProfile } from "./_components/store-profile";
+import { StoreProducts, storeHref, type StoreQuery } from "./_components/store-products";
 
 interface StorePageProps {
   params: Promise<{ locale: string; slug: string }>;
@@ -57,31 +53,35 @@ export async function generateMetadata({
   });
 }
 
-const PAGE_SIZE = 24;
+const one = (value: string | string[] | undefined) =>
+  (Array.isArray(value) ? value[0] : value)?.trim() || undefined;
 
 export default async function StorePage({ params, searchParams }: StorePageProps) {
   const { locale, slug } = await params;
   const t = await getTranslations("pages.stores");
-  const resolvedSearchParams = await searchParams;
+  const sp = await searchParams;
   const { seller } = await resolveStore(locale, slug);
+  const categoriesResult = await getSellerStoreCategories(seller.id);
+  const categories = categoriesResult.data;
 
-  const page = Number(resolvedSearchParams.page) || 1;
-  const productsResult = await getProducts({
-    sellerId: seller.id,
-    locale: locale as ProductLocale,
-    limit: PAGE_SIZE,
-    offset: (page - 1) * PAGE_SIZE,
-  });
+  const query: StoreQuery = {
+    category: categories.some((c) => c.key === one(sp.category)) ? one(sp.category) : undefined,
+    search: one(sp.search)?.slice(0, 100),
+    sort: one(sp.sort),
+    page: Math.max(1, Math.floor(Number(one(sp.page)) || 1)),
+  };
 
-  const products = productsResult.success ? (productsResult.data ?? []) : [];
-  const totalCount = productsResult.success ? productsResult.totalCount : 0;
-  const totalPages = Math.ceil((totalCount || 0) / PAGE_SIZE);
+  // Live count of storefront-visible products; sellers.product_count lags.
+  const productCount = categories.reduce((sum, c) => sum + c.productCount, 0);
+  const bio = seller.description || seller.storeDescription;
+  const hasAbout = Boolean(bio || seller.returnPolicy || seller.shippingPolicy);
+  const tab = hasAbout && one(sp.tab) === "about" ? "about" : "products";
 
   const storeStructuredData = {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: seller.displayName,
-    description: seller.description || undefined,
+    description: bio || undefined,
     logo: seller.logoUrl || undefined,
     ...(seller.storeRating && seller.totalRatings && seller.totalRatings > 0
       ? {
@@ -96,78 +96,99 @@ export default async function StorePage({ params, searchParams }: StorePageProps
       : {}),
   };
 
+  const tabs = [
+    { id: "products", label: t("tabProducts"), count: productCount, href: storeHref(slug, {}) },
+    ...(hasAbout
+      ? [{ id: "about", label: t("tabAbout"), count: undefined, href: storeHref(slug, { tab: "about" }) }]
+      : []),
+  ];
+
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen pb-20">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(storeStructuredData) }}
       />
-      <section className="bg-white">
-        <DynamicBreadcrumb customLabels={{ [slug]: seller.displayName }} />
-      </section>
+      <DynamicBreadcrumb customLabels={{ [slug]: seller.displayName }} />
 
-      <section className="container py-6">
-        <div className="flex items-center gap-4 mb-6">
-          {seller.logoUrl ? (
-            <Image
-              src={seller.logoUrl}
-              alt={seller.displayName}
-              width={64}
-              height={64}
-              className="rounded-full border object-cover bg-white"
-            />
-          ) : null}
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl lg:text-3xl font-bold">{seller.displayName}</h1>
-              {seller.isVerified && (
-                <span className="inline-flex items-center gap-1 text-sm text-primary">
-                  <BadgeCheck className="h-4 w-4" />
-                  {t("verifiedBadge")}
-                </span>
-              )}
-            </div>
-            <div className="flex items-center gap-3 text-muted-foreground text-sm mt-1">
-              <span>{t("productsCount", { count: seller.productCount ?? 0 })}</span>
-              {seller.storeRating != null && seller.totalRatings && seller.totalRatings > 0 && (
-                <span className="flex items-center gap-1">
-                  <Star className="h-3.5 w-3.5 fill-current text-accent" />
-                  {seller.storeRating.toFixed(1)} ({seller.totalRatings})
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
+      <div className="pt-4">
+        <StoreProfile
+          seller={seller}
+          locale={locale}
+          productCount={productCount}
+          categoryCount={categories.length}
+        />
+      </div>
 
-        {seller.description && (
-          <p className="text-muted-foreground mb-6 max-w-3xl">{seller.description}</p>
+      <div className="container">
+        {tabs.length > 1 && (
+          <nav aria-label={t("tabsLabel")} className="mt-8 border-b">
+            <ul className="-mb-px flex gap-6">
+              {tabs.map((item) => (
+                <li key={item.id}>
+                  <Link
+                    href={item.href}
+                    scroll={false}
+                    aria-current={tab === item.id ? "page" : undefined}
+                    className={cn(
+                      "flex items-center gap-2 border-b-2 px-1 pb-3 text-sm font-semibold transition-colors",
+                      tab === item.id
+                        ? "border-primary text-foreground"
+                        : "border-transparent text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    {item.label}
+                    {item.count != null && (
+                      <span className="rounded-full bg-muted px-2 py-0.5 text-xs tabular-nums">
+                        {item.count}
+                      </span>
+                    )}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
         )}
 
-        <Suspense fallback={<ProductsGridSkeleton />}>
-          {products.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">{t("noProducts")}</p>
-            </div>
-          ) : (
-            <>
-              <div className="grid gap-3 lg:gap-5 2xl:gap-6 sm:grid-cols-2 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {products.map((product: any) => (
-                  <ProductCard
-                    key={product.id}
-                    {...(product as ProductCardProps)}
-                  />
-                ))}
+        {tab === "about" ? (
+          <section className="mt-8 grid max-w-3xl gap-8">
+            {bio && (
+              <div>
+                <h2 className="mb-2 text-lg font-bold">
+                  {t("aboutStore", { store: seller.displayName })}
+                </h2>
+                <p className="whitespace-pre-line leading-relaxed text-muted-foreground">{bio}</p>
               </div>
-              <Pagination
-                page={page}
-                pageSize={PAGE_SIZE}
-                total={totalCount || 0}
-                totalPages={totalPages}
-              />
-            </>
-          )}
-        </Suspense>
-      </section>
+            )}
+            {seller.shippingPolicy && (
+              <div>
+                <h2 className="mb-2 text-lg font-bold">{t("shippingPolicy")}</h2>
+                <p className="whitespace-pre-line leading-relaxed text-muted-foreground">
+                  {seller.shippingPolicy}
+                </p>
+              </div>
+            )}
+            {seller.returnPolicy && (
+              <div>
+                <h2 className="mb-2 text-lg font-bold">{t("returnPolicy")}</h2>
+                <p className="whitespace-pre-line leading-relaxed text-muted-foreground">
+                  {seller.returnPolicy}
+                </p>
+              </div>
+            )}
+          </section>
+        ) : (
+          <StoreProducts
+            slug={slug}
+            sellerId={seller.id}
+            storeName={seller.displayName}
+            locale={locale}
+            categories={categories}
+            query={query}
+            hasProducts={productCount > 0}
+          />
+        )}
+      </div>
     </main>
   );
 }

@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { getSellerReviews } from "@/actions/reviews";
 import { getSellerQuestions } from "@/actions/products";
 import {
@@ -6,7 +7,9 @@ import {
   type VendorReviewRow,
 } from "./reviews.chunks";
 
-function mapReviewRows(reviews: any[]): VendorReviewRow[] {
+type Translate = Awaited<ReturnType<typeof getTranslations>>;
+
+function mapReviewRows(reviews: any[], t: Translate): VendorReviewRow[] {
   return reviews.map((r: any) => {
     const user = r.user || {};
     const product = r.product || {};
@@ -16,7 +19,7 @@ function mapReviewRows(reviews: any[]): VendorReviewRow[] {
       user.fullName ||
       [user.firstName, user.lastName].filter(Boolean).join(" ") ||
       user.email ||
-      "Customer";
+      t("customer");
 
     return {
       id: r.id,
@@ -27,7 +30,7 @@ function mapReviewRows(reviews: any[]): VendorReviewRow[] {
       customerName,
       customerEmail: user.email ?? null,
       customerAvatar: user.avatar ?? null,
-      productTitle: product.title ?? order.orderNumber ?? "Store review",
+      productTitle: product.title ?? order.orderNumber ?? t("storeReview"),
       productImage: product.images?.[0] ?? null,
       productSlug: product.slug ?? null,
       orderNumber: order.orderNumber ?? null,
@@ -38,10 +41,11 @@ function mapReviewRows(reviews: any[]): VendorReviewRow[] {
 }
 
 export async function VendorReviewsData() {
-  const [productRes, storeRes, qres] = await Promise.all([
+  const [productRes, storeRes, qres, t] = await Promise.all([
     getSellerReviews({ limit: 100, offset: 0, reviewType: "product" }),
     getSellerReviews({ limit: 100, offset: 0, reviewType: "store" }),
     getSellerQuestions({ limit: 100, offset: 0 }),
+    getTranslations("reviews"),
   ]);
 
   const productReviews: any[] = Array.isArray((productRes as any)?.data)
@@ -57,8 +61,8 @@ export async function VendorReviewsData() {
   return (
     <div className="space-y-6">
       <VendorReviewsTabs
-        productRows={mapReviewRows(productReviews)}
-        storeRows={mapReviewRows(storeReviews)}
+        productRows={mapReviewRows(productReviews, t)}
+        storeRows={mapReviewRows(storeReviews, t)}
       />
       <VendorQASection
         questions={questionsRaw.map((q: any) => ({

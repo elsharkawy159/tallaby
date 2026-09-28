@@ -15,6 +15,7 @@ const filled = (overrides: Partial<OnboardingFormValues> = {}): OnboardingFormVa
   businessName: "Nile Crafts",
   businessType: "individual",
   supportEmail: "hello@nilecrafts.example",
+  supportPhone: "01012345678",
   legalAddress: { street: "12 Tahrir Street", city: "Dokki", state: "GIZA", postalCode: "", country: "EG" },
   model: "seller_managed",
   services: {
@@ -47,6 +48,21 @@ describe("validateStep", () => {
     expect(paths(validateStep("business", values))).toEqual(["businessName"]);
     expect(paths(validateStep("model", values))).toEqual(["model"]);
     expect(validateStep("legal", values)).toEqual([]);
+  });
+
+  it("requires a valid Egyptian mobile support phone", () => {
+    expect(paths(validateStep("business", filled({ supportPhone: "" })))).toEqual(["supportPhone"]);
+    expect(validateStep("business", filled({ supportPhone: "12345" }))[0]?.code).toBe("phone_invalid");
+  });
+
+  it("treats the store banner as optional but rejects a malformed URL", () => {
+    expect(validateStep("business", filled({ bannerUrl: "" }))).toEqual([]);
+    expect(
+      validateStep("business", filled({ bannerUrl: "https://cdn.example/banners/1-banner.png" })),
+    ).toEqual([]);
+    expect(validateStep("business", filled({ bannerUrl: "not a url" }))).toEqual([
+      { path: "bannerUrl", code: "url_invalid" },
+    ]);
   });
 
   it("requires a governorate from the canonical list for the legal address", () => {
@@ -87,6 +103,12 @@ describe("validateStep", () => {
 });
 
 describe("toSubmission", () => {
+  it("passes the banner through, empty when the seller skipped it", () => {
+    const url = "https://cdn.example/banners/1-banner.png";
+    expect(toSubmission(filled({ bannerUrl: url })).business.bannerUrl).toBe(url);
+    expect(toSubmission(filled()).business.bannerUrl).toBe("");
+  });
+
   it("drops answers to questions that weren't asked and strips seller plans", () => {
     const values = filled({
       details: {

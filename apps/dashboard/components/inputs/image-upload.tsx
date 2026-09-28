@@ -300,10 +300,10 @@ export function ImageUpload({
           <div className={compact ? "" : "lg:col-span-1"}>
             <div className="space-y-2">
               {!compact && (
-                <h3 className="text-xs font-semibold text-gray-700 flex justify-between items-center gap-2">
+                <h3 className="text-xs font-semibold text-foreground flex justify-between items-center gap-2">
                   <ImageIcon className="size-4" />
 
-                  <span className="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                  <span className="text-xs font-normal text-muted-foreground bg-muted px-2 py-1 rounded-full">
                     {filesToUpload.length}/{maxImages}
                   </span>
                 </h3>
@@ -345,8 +345,8 @@ export function ImageUpload({
                                 compact ? "size-30" : "min-w-28"
                               } ${
                                 snapshot.isDragging
-                                  ? "bg-blue-50 border-blue-200 shadow-lg scale-105 rotate-2"
-                                  : "bg-white border-gray-200 hover:border-gray-300 hover:shadow-md"
+                                  ? "bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-900/60 shadow-lg scale-105 rotate-2"
+                                  : "bg-card border-border hover:border-muted-foreground/40 hover:shadow-md"
                               }`}
                             >
                               <FilePreview
@@ -372,7 +372,7 @@ export function ImageUpload({
           {!compact && (
             <div className="lg:col-span-2">
               <div className="space-y-4">
-                <div className="relative w-full h-[400px] bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+                <div className="relative w-full h-[400px] bg-gradient-to-br from-muted/40 to-muted rounded-xl border border-border overflow-hidden shadow-sm">
                   {filesToUpload.length > 0 ? (
                     <div className="w-full h-full flex items-center justify-center p-2">
                       <Image
@@ -389,11 +389,11 @@ export function ImageUpload({
                       />
                     </div>
                   ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
+                    <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground">
                       <ImageIcon className="h-16 w-16 mb-4 opacity-50" />
                       <p className="text-sm font-medium">{t("noImageSelected")}</p>
-                      <p className="text-xs text-gray-400">
-                        Choose an image from the gallery
+                      <p className="text-xs text-muted-foreground">
+                        {t("chooseFromGallery")}
                       </p>
                     </div>
                   )}
@@ -408,24 +408,24 @@ export function ImageUpload({
       <div className={compact ? "relative" : "relative flex-1"}>
         <label
           {...getRootProps()}
-          className={`group bg-white relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed transition-all duration-200 ease-in-out ${
+          className={`group bg-card relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed transition-all duration-200 ease-in-out ${
             compact ? "size-30" : "w-full"
           } ${
             isMaxReached
-              ? "cursor-not-allowed border-gray-200 bg-gray-50/50 opacity-60"
+              ? "cursor-not-allowed border-border bg-muted/50 opacity-60"
               : isDragActive
                 ? "cursor-pointer border-primary/60 bg-primary/5 scale-[1.02] shadow-lg"
-                : "cursor-pointer border-gray-200 bg-gray-50/30 hover:border-primary/40 hover:bg-primary/5 hover:shadow-md"
+                : "cursor-pointer border-border bg-muted/30 hover:border-primary/40 hover:bg-primary/5 hover:shadow-md"
           }`}
         >
           {compact ? (
             <div className="space-y-1 text-center px-2 py-2">
               {isMaxReached ? (
-                <ImageIcon className="mx-auto size-6 text-gray-400" />
+                <ImageIcon className="mx-auto size-6 text-muted-foreground" />
               ) : (
-                <Upload className="mx-auto size-6 text-gray-400 group-hover:text-primary transition-colors duration-200" />
+                <Upload className="mx-auto size-6 text-muted-foreground group-hover:text-primary transition-colors duration-200" />
               )}
-              <p className="text-xs font-medium text-gray-500">
+              <p className="text-xs font-medium text-muted-foreground">
                 {filesToUpload.length}/{maxImages}
               </p>
             </div>
@@ -435,9 +435,9 @@ export function ImageUpload({
                 className={`relative transition-transform duration-200 ${isDragActive ? "scale-110" : "group-hover:scale-105"}`}
               >
                 {isMaxReached ? (
-                  <ImageIcon className="mx-auto h-12 w-12 text-gray-400" />
+                  <ImageIcon className="mx-auto h-12 w-12 text-muted-foreground" />
                 ) : (
-                  <Upload className="mx-auto h-12 w-12 text-gray-400 group-hover:text-primary transition-colors duration-200" />
+                  <Upload className="mx-auto h-12 w-12 text-muted-foreground group-hover:text-primary transition-colors duration-200" />
                 )}
               </div>
 
@@ -445,10 +445,10 @@ export function ImageUpload({
                 <p
                   className={`text-lg font-semibold transition-colors duration-200 ${
                     isMaxReached
-                      ? "text-gray-500"
+                      ? "text-muted-foreground"
                       : isDragActive
                         ? "text-primary"
-                        : "text-gray-700 group-hover:text-primary"
+                        : "text-foreground group-hover:text-primary"
                   }`}
                 >
                   {isMaxReached
@@ -458,25 +458,25 @@ export function ImageUpload({
                       : t("clickOrDrag")}
                 </p>
 
-                <p className="text-sm text-gray-500 leading-relaxed">
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   {t("formats")}
                 </p>
 
-                <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
+                <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
                   <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 rounded-full bg-gray-300"></div>
+                    <div className="w-2 h-2 rounded-full bg-border"></div>
                     <span>{t("dragDrop")}</span>
                   </div>
                   <span>•</span>
                   <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 rounded-full bg-gray-300"></div>
+                    <div className="w-2 h-2 rounded-full bg-border"></div>
                     <span>{t("clickBrowse")}</span>
                   </div>
                 </div>
               </div>
 
               {/* Progress indicator */}
-              <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                 <span>
                   {t("progress", { count: filesToUpload.length, max: maxImages })}
                 </span>
@@ -485,7 +485,7 @@ export function ImageUpload({
           )}
 
           {/* Subtle background pattern */}
-          <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-transparent via-transparent to-gray-50/20 pointer-events-none" />
+          <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-transparent via-transparent to-muted/20 pointer-events-none" />
         </label>
 
         <Input
@@ -511,6 +511,7 @@ interface FilePreviewProps {
 
 const FilePreview = React.memo(
   ({ file, removeFile, idx, bucket, compact = false }: FilePreviewProps) => {
+    const t = useTranslations("inputs.imageUpload");
     // Determine the image source
     const getImageSrc = () => {
       if (file.liveSource) {
@@ -538,8 +539,8 @@ const FilePreview = React.memo(
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           ) : (
-            <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-              <ImageIcon className="h-8 w-8 text-gray-400" />
+            <div className="w-full h-full bg-muted flex items-center justify-center">
+              <ImageIcon className="h-8 w-8 text-muted-foreground" />
             </div>
           )}
 
@@ -572,7 +573,7 @@ const FilePreview = React.memo(
               }
             }}
             className="absolute -top-1.5 -end-1.5 hover:text-white w-5.5 h-5.5 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center lg:opacity-80 group-hover:opacity-100 transition-all duration-300 shadow-lg hover:scale-105"
-            aria-label="Remove image"
+            aria-label={t("removeImage")}
           >
             <X className="size-3.5" />
           </Button>

@@ -86,10 +86,7 @@ export const MarketingDashboard = () => {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-            {t("marketing.title")}
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-1">
+          <p className="text-muted-foreground">
             {t("marketing.subtitle")}
           </p>
         </div>
@@ -106,16 +103,16 @@ export const MarketingDashboard = () => {
               <CardContent>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <p className="text-sm text-muted-foreground">
                       {t("marketing.totalReach")}
                     </p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <p className="text-2xl font-bold text-foreground">
                       36,300
                     </p>
-                    <p className="text-sm text-green-600">+15.2% this month</p>
+                    <p className="text-sm text-green-600 dark:text-green-400">+15.2% this month</p>
                   </div>
                   <div className="bg-blue-100 dark:bg-blue-900 p-3 rounded-full">
-                    <Users className="h-6 w-6 text-blue-600" />
+                    <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                   </div>
                 </div>
               </CardContent>
@@ -125,16 +122,16 @@ export const MarketingDashboard = () => {
               <CardContent>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <p className="text-sm text-muted-foreground">
                       {t("marketing.conversions")}
                     </p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <p className="text-2xl font-bold text-foreground">
                       1,790
                     </p>
-                    <p className="text-sm text-green-600">+8.7% this month</p>
+                    <p className="text-sm text-green-600 dark:text-green-400">+8.7% this month</p>
                   </div>
                   <div className="bg-green-100 dark:bg-green-900 p-3 rounded-full">
-                    <Target className="h-6 w-6 text-green-600" />
+                    <Target className="h-6 w-6 text-green-600 dark:text-green-400" />
                   </div>
                 </div>
               </CardContent>
@@ -144,16 +141,16 @@ export const MarketingDashboard = () => {
               <CardContent>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <p className="text-sm text-muted-foreground">
                       {t("marketing.marketingROI")}
                     </p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <p className="text-2xl font-bold text-foreground">
                       3.2x
                     </p>
-                    <p className="text-sm text-green-600">+12.5% this month</p>
+                    <p className="text-sm text-green-600 dark:text-green-400">+12.5% this month</p>
                   </div>
                   <div className="bg-purple-100 dark:bg-purple-900 p-3 rounded-full">
-                    <TrendingUp className="h-6 w-6 text-purple-600" />
+                    <TrendingUp className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                   </div>
                 </div>
               </CardContent>
@@ -163,16 +160,16 @@ export const MarketingDashboard = () => {
               <CardContent>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <p className="text-sm text-muted-foreground">
                       {t("marketing.adSpend")}
                     </p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <p className="text-2xl font-bold text-foreground">
                       EGP 4,800
                     </p>
-                    <p className="text-sm text-orange-600">EGP 1,200 remaining</p>
+                    <p className="text-sm text-orange-600 dark:text-orange-400">EGP 1,200 remaining</p>
                   </div>
                   <div className="bg-orange-100 dark:bg-orange-900 p-3 rounded-full">
-                    <DollarSign className="h-6 w-6 text-orange-600" />
+                    <DollarSign className="h-6 w-6 text-orange-600 dark:text-orange-400" />
                   </div>
                 </div>
               </CardContent>
@@ -209,15 +206,15 @@ export const MarketingDashboard = () => {
                           {t(`marketing.${campaign.status.toLowerCase()}`)}
                         </Badge>
                       </div>
-                      <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 dark:text-gray-400">
-                        <div>Reach: {campaign.reach.toLocaleString()}</div>
-                        <div>Conversions: {campaign.conversions}</div>
-                        <div>Budget: {campaign.budget}</div>
-                        <div>Spent: {campaign.spent}</div>
+                      <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
+                        <div>{t("marketing.reachValue", { value: campaign.reach })}</div>
+                        <div>{t("marketing.conversionsValue", { value: campaign.conversions })}</div>
+                        <div>{t("marketing.budgetValue", { value: campaign.budget })}</div>
+                        <div>{t("marketing.spentValue", { value: campaign.spent })}</div>
                       </div>
                       <div className="mt-3">
-                        <div className="flex justify-between text-xs text-gray-500 mb-1">
-                          <span>Budget Used</span>
+                        <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                          <span>{t("marketing.budgetUsed")}</span>
                           <span>
                             {Math.round(
                               (parseCurrencyAmount(campaign.spent) /
@@ -259,10 +256,10 @@ export const MarketingDashboard = () => {
                     <div key={promo.code} className="border rounded-lg p-4">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded font-mono text-sm">
+                          <code className="bg-muted px-2 py-1 rounded font-mono text-sm">
                             {promo.code}
                           </code>
-                          <span className="text-green-600 font-semibold">
+                          <span className="text-green-600 dark:text-green-400 font-semibold">
                             {promo.discount}
                           </span>
                         </div>
@@ -274,15 +271,15 @@ export const MarketingDashboard = () => {
                           {t(`marketing.${promo.status.toLowerCase()}`)}
                         </Badge>
                       </div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                      <div className="text-sm text-muted-foreground mb-2">
                         <div>
-                          Uses: {promo.uses} / {promo.limit}
+                          {t("marketing.usesValue", { uses: promo.uses, limit: promo.limit })}
                         </div>
-                        <div>Expires: {promo.expires}</div>
+                        <div>{t("marketing.expiresValue", { date: promo.expires })}</div>
                       </div>
                       <div className="mt-2">
-                        <div className="flex justify-between text-xs text-gray-500 mb-1">
-                          <span>Usage</span>
+                        <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                          <span>{t("marketing.usage")}</span>
                           <span>
                             {Math.round((promo.uses / promo.limit) * 100)}%
                           </span>

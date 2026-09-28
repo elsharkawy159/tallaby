@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   collectRequestIssues,
+  EGYPT_MOBILE_REGEX,
   governorateSchema,
   operationalDetailsSchema,
   pickupAddressSchema,
@@ -31,18 +32,20 @@ export const businessInfoSchema = z.object({
   businessType: z.enum(BUSINESS_TYPES, { message: "required" }),
   description: z.string().trim().max(1000, "too_long").optional(),
   logoUrl: z.union([z.string().url("url_invalid"), z.literal("")]).optional(),
+  // Optional wide cover for the store page.
+  bannerUrl: z.union([z.string().url("url_invalid"), z.literal("")]).optional(),
   supportEmail: z
     .string()
     .trim()
     .min(1, "required")
     .email("email_invalid")
     .max(255, "too_long"),
+  // Required: the admin team reaches new sellers on WhatsApp through this number.
   supportPhone: z
     .string()
     .trim()
-    .max(20, "too_long")
-    .regex(/^[+\d\s()-]*$/, "phone_invalid")
-    .optional(),
+    .min(1, { message: "required", abort: true })
+    .regex(EGYPT_MOBILE_REGEX, "phone_invalid"),
 });
 
 /** Stored as-is in `sellers.legal_address`; `state` holds a canonical governorate key. */
@@ -65,6 +68,7 @@ export interface OnboardingFormValues {
   businessType: string;
   description: string;
   logoUrl: string;
+  bannerUrl: string;
   supportEmail: string;
   supportPhone: string;
   legalAddress: {
@@ -104,6 +108,7 @@ export const onboardingDefaults: OnboardingFormValues = {
   businessType: "",
   description: "",
   logoUrl: "",
+  bannerUrl: "",
   supportEmail: "",
   supportPhone: "",
   legalAddress: { street: "", city: "", state: "", postalCode: "", country: "EG" },
@@ -223,8 +228,9 @@ export function toSubmission(values: OnboardingFormValues) {
       businessType: values.businessType,
       description: blankToUndefined(values.description),
       logoUrl: values.logoUrl ?? "",
+      bannerUrl: values.bannerUrl ?? "",
       supportEmail: values.supportEmail,
-      supportPhone: blankToUndefined(values.supportPhone),
+      supportPhone: values.supportPhone ?? "",
     },
     legalAddress: {
       ...values.legalAddress,

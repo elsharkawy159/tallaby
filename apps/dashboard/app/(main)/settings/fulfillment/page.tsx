@@ -32,18 +32,18 @@ export const dynamic = "force-dynamic";
 const SELLER_VISIBLE_AGREEMENTS: FulfillmentAgreementStatus[] = ["active", "accepted", "proposed"];
 
 const AGREEMENT_STATUS_CLASSES: Partial<Record<FulfillmentAgreementStatus, string>> = {
-  active: "bg-green-50 text-green-800 border-green-200",
-  accepted: "bg-blue-50 text-blue-800 border-blue-200",
-  proposed: "bg-amber-50 text-amber-800 border-amber-200",
+  active: "bg-green-50 dark:bg-green-950/40 text-green-800 dark:text-green-300 border-green-200 dark:border-green-900/60",
+  accepted: "bg-blue-50 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-900/60",
+  proposed: "bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-900/60",
 };
 
 const STATUS_CLASSES: Record<FulfillmentServiceStatus, string> = {
-  requested: "bg-amber-50 text-amber-800 border-amber-200",
-  under_review: "bg-blue-50 text-blue-800 border-blue-200",
-  awaiting_agreement: "bg-violet-50 text-violet-800 border-violet-200",
-  active: "bg-green-50 text-green-800 border-green-200",
-  paused: "bg-gray-50 text-gray-700 border-gray-200",
-  rejected: "bg-red-50 text-red-800 border-red-200",
+  requested: "bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-900/60",
+  under_review: "bg-blue-50 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-900/60",
+  awaiting_agreement: "bg-violet-50 dark:bg-violet-950/40 text-violet-800 dark:text-violet-300 border-violet-200 dark:border-violet-900/60",
+  active: "bg-green-50 dark:bg-green-950/40 text-green-800 dark:text-green-300 border-green-200 dark:border-green-900/60",
+  paused: "bg-muted/50 text-foreground border-border",
+  rejected: "bg-red-50 dark:bg-red-950/40 text-red-800 dark:text-red-300 border-red-200 dark:border-red-900/60",
 };
 
 export default async function FulfillmentSetupPage() {
@@ -80,7 +80,6 @@ export default async function FulfillmentSetupPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
       <div>
-        <h1 className="text-2xl font-semibold">{t("title")}</h1>
         <p className="text-sm text-muted-foreground">{t("description")}</p>
       </div>
 

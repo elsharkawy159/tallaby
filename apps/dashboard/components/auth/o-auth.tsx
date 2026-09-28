@@ -30,7 +30,7 @@ export function OAuth({ next }: { next?: string }) {
   return (
     <div className="w-full">
       <Button
-        className="flex items-center justify-center py-2.5 min-h-12 border rounded-lg hover:bg-gray-50 duration-150 active:bg-gray-100 transition-colors w-full"
+        className="flex items-center justify-center py-2.5 min-h-12 border rounded-lg hover:bg-muted/50 duration-150 active:bg-muted transition-colors w-full"
         onClick={() => handleOAuthSignin("google")}
         disabled={isPending}
         type="button"
@@ -70,7 +70,7 @@ export function OAuth({ next }: { next?: string }) {
         <span>{t("continueWithGoogle")}</span>
       </Button>
       {/* <Button
-        className="flex items-center justify-center py-2.5 min-h-12 border rounded-lg hover:bg-gray-50 duration-150 active:bg-gray-100 transition-colors"
+        className="flex items-center justify-center py-2.5 min-h-12 border rounded-lg hover:bg-muted/50 duration-150 active:bg-muted transition-colors"
         type="button"
         onClick={() => handleOAuthSignin("twitter")}
         disabled={true} //till configuration
@@ -87,7 +87,7 @@ export function OAuth({ next }: { next?: string }) {
         </svg>
       </Button> */}
       {/* <Button
-        className="flex items-center justify-center py-2.5 min-h-12 border rounded-lg hover:bg-gray-50 duration-150 active:bg-gray-100 transition-colors"
+        className="flex items-center justify-center py-2.5 min-h-12 border rounded-lg hover:bg-muted/50 duration-150 active:bg-muted transition-colors"
         onClick={() => handleOAuthSignin("facebook")}
         disabled={true} //till configuration
         // disabled={isPending}

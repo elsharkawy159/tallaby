@@ -262,11 +262,11 @@ export function ImportExportButton({
               </div>
 
               {preview.invalid.length > 0 && (
-                <div className="border rounded-md p-3 bg-red-50">
-                  <div className="font-medium text-red-700 mb-2">
+                <div className="border rounded-md p-3 bg-red-50 dark:bg-red-950/40">
+                  <div className="font-medium text-red-700 dark:text-red-300 mb-2">
                     {t("invalidRows")}
                   </div>
-                  <ul className="list-disc list-inside text-red-700 text-sm space-y-1 max-h-40 overflow-auto">
+                  <ul className="list-disc list-inside text-red-700 dark:text-red-300 text-sm space-y-1 max-h-40 overflow-auto">
                     {preview.invalid.map((e) => (
                       <li key={`err-${e.row}`}>
                         {t("rowError", { row: e.row, message: e.message })}

@@ -119,12 +119,13 @@ export const submitSellerApplication = async (
         businessType: business.data.businessType,
         description: business.data.description || undefined,
         logoUrl: business.data.logoUrl || undefined,
+        bannerUrl: business.data.bannerUrl || undefined,
         legalAddress: {
           ...legalAddress.data,
           postalCode: legalAddress.data.postalCode ?? "",
         },
         supportEmail: business.data.supportEmail,
-        supportPhone: business.data.supportPhone || undefined,
+        supportPhone: business.data.supportPhone,
         // Sellers can start selling right away. Fulfillment services they
         // requested stay "requested" until Tallaby activates them, and until
         // then orders run exactly as they do today.

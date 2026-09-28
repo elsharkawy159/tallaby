@@ -2,9 +2,9 @@ import { Skeleton } from "@workspace/ui/components/skeleton";
 
 export function VendorProductsSkeleton() {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+    <div className="bg-card rounded-lg shadow-sm border border-border">
       {/* Table Header */}
-      <div className="px-6 py-4 border-b border-gray-200">
+      <div className="px-6 py-4 border-b border-border">
         <div className="flex items-center justify-between">
           <Skeleton className="h-6 w-32" />
           <Skeleton className="h-6 w-24" />
@@ -12,7 +12,7 @@ export function VendorProductsSkeleton() {
       </div>
 
       {/* Table Body */}
-      <div className="divide-y divide-gray-200">
+      <div className="divide-y divide-border">
         {Array.from({ length: 5 }, (_, i) => (
           <div key={i} className="px-6 py-4">
             <div className="flex items-center gap-4">
@@ -31,7 +31,7 @@ export function VendorProductsSkeleton() {
       </div>
 
       {/* Pagination */}
-      <div className="px-6 py-4 border-t border-gray-200">
+      <div className="px-6 py-4 border-t border-border">
         <div className="flex items-center justify-between">
           <Skeleton className="h-4 w-32" />
           <div className="flex gap-2">

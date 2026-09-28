@@ -163,7 +163,7 @@ export function PriceStockStep({
   return (
     <div className="space-y-6">
       {/* Pricing Section */}
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 space-y-4">
+      <div className="bg-card rounded-lg border border-border shadow-sm p-6 space-y-4">
         <h3 className="text-sm font-semibold">{t("title")}</h3>
         <div className="flex flex-wrap gap-4">
           <div className="flex-1">
@@ -237,7 +237,7 @@ export function PriceStockStep({
       </div>
 
       {/* Inventory Section */}
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 space-y-4">
+      <div className="bg-card rounded-lg border border-border shadow-sm p-6 space-y-4">
         <h3 className="text-sm font-semibold">{t("inventory")}</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <TextInput
@@ -271,7 +271,7 @@ export function PriceStockStep({
       <VariantsSection sellerPricing={sellerPricing} activeLocale={activeLocale} />
 
       {/* Shipping Options */}
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 space-y-4">
+      <div className="bg-card rounded-lg border border-border shadow-sm p-6 space-y-4">
         <h3 className="text-sm font-semibold">{t("shippingOptions")}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <SelectInput
@@ -298,11 +298,11 @@ export function PriceStockStep({
             name="freeDelivery"
             label={t("freeDelivery")}
             labelPosition="right"
-            className="rounded-lg border border-gray-200 p-4"
+            className="rounded-lg border border-border p-4"
           />
         )}
 
-        <div className="space-y-3 rounded-lg border border-gray-200 p-4">
+        <div className="space-y-3 rounded-lg border border-border p-4">
           <div>
             <p className="text-sm font-medium">{t("merchandising")}</p>
             <p className="text-xs text-muted-foreground">
@@ -325,7 +325,7 @@ export function PriceStockStep({
 
         <div className="space-y-2">
           <FormLabel className="text-sm">
-            {t("productWeight")} <span className="text-red-600">*</span>
+            {t("productWeight")} <span className="text-red-600 dark:text-red-400">*</span>
           </FormLabel>
           <div className="grid grid-cols-2 gap-4">
             <TextInput
@@ -893,11 +893,11 @@ function VariantsSection({
   return (
     <div className="space-y-6">
       {/* Variant Types Section */}
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 space-y-4">
+      <div className="bg-card rounded-lg border border-border shadow-sm p-6 space-y-4">
         <div className="flex justify-between items-center">
           <div>
             <h3 className="text-sm font-semibold">{t("title")}</h3>
-            <p className="text-xs text-gray-500 mt-1">{t("description")}</p>
+            <p className="text-xs text-muted-foreground mt-1">{t("description")}</p>
           </div>
           <Button
             type="button"
@@ -911,7 +911,7 @@ function VariantsSection({
         </div>
 
         {variantTypes.length === 0 ? (
-          <p className="text-xs text-gray-500 text-center py-4">
+          <p className="text-xs text-muted-foreground text-center py-4">
             {t("empty")}
           </p>
         ) : (
@@ -919,12 +919,12 @@ function VariantsSection({
             {variantTypes.map((type: VariantTypeFormValue) => (
               <div
                 key={type.id}
-                className="rounded-md border border-gray-200 p-4 space-y-4 bg-gray-50"
+                className="rounded-md border border-border p-4 space-y-4 bg-muted/50"
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex-1 space-y-2">
-                      <label className="text-xs font-medium text-gray-700 block">
+                      <label className="text-xs font-medium text-foreground block">
                         {t("typeLabel")}
                       </label>
                       <Select
@@ -975,7 +975,7 @@ function VariantsSection({
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs font-medium text-gray-700 block">
+                    <label className="text-xs font-medium text-foreground block">
                       {t("valueLabel")}
                     </label>
                     <div className="space-y-2">
@@ -993,7 +993,7 @@ function VariantsSection({
                                   e.target.value
                                 )
                               }
-                              className="size-9 shrink-0 cursor-pointer rounded-md border border-gray-200 p-0.5"
+                              className="size-9 shrink-0 cursor-pointer rounded-md border border-border p-0.5"
                               aria-label={t("swatch")}
                             />
                           )}
@@ -1066,25 +1066,25 @@ function VariantsSection({
 
       {/* Variant Combinations Table */}
       {fields.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 space-y-4">
+        <div className="bg-card rounded-lg border border-border shadow-sm p-6 space-y-4">
           <h3 className="text-sm font-semibold">{t("combinations")}</h3>
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-start py-3 px-4 text-xs font-medium text-gray-700">
+                <tr className="border-b border-border">
+                  <th className="text-start py-3 px-4 text-xs font-medium text-foreground">
                     {t("columns.combination")}
                   </th>
-                  <th className="text-start py-3 px-4 text-xs font-medium text-gray-700 min-w-[140px]">
+                  <th className="text-start py-3 px-4 text-xs font-medium text-foreground min-w-[140px]">
                     {t("columns.images")}
                   </th>
-                  <th className="text-start py-3 px-4 text-xs font-medium text-gray-700 min-w-[300px]">
+                  <th className="text-start py-3 px-4 text-xs font-medium text-foreground min-w-[300px]">
                     {t("columns.pricing")}
                   </th>
-                  <th className="text-start py-3 px-4 text-xs font-medium text-gray-700">
+                  <th className="text-start py-3 px-4 text-xs font-medium text-foreground">
                     {t("columns.stock")}
                   </th>
-                  <th className="text-start py-3 px-4 text-xs font-medium text-gray-700">
+                  <th className="text-start py-3 px-4 text-xs font-medium text-foreground">
                     {t("columns.barcode")}
                   </th>
                 </tr>
@@ -1110,7 +1110,7 @@ function VariantsSection({
                   ].filter(Boolean);
 
                   return (
-                    <tr key={variant.id} className="border-b border-gray-100">
+                    <tr key={variant.id} className="border-b border-border">
                       <td className="py-3 px-4">
                         <div className="space-y-2">
                           <div className="flex items-center gap-2">
@@ -1127,10 +1127,10 @@ function VariantsSection({
                               </Badge>
                             )}
                           </div>
-                          <p className="text-sm font-medium text-gray-900">
+                          <p className="text-sm font-medium text-foreground">
                             {displayTitle}
                           </p>
-                          <div className="text-xs text-gray-500 space-y-0.5">
+                          <div className="text-xs text-muted-foreground space-y-0.5">
                             {displayOptions.map((option) => (
                               <p key={option}>{option}</p>
                             ))}

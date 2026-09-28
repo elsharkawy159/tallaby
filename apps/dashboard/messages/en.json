@@ -26,7 +26,20 @@
     "expandSidebar": "Expand sidebar",
     "collapseSidebar": "Collapse sidebar",
     "vendor": "Seller",
-    "logoAlt": "{name} logo"
+    "logoAlt": "{name} logo",
+    "myStore": "My store",
+    "viewStore": "Open store in new tab",
+    "copyStoreLink": "Copy store link",
+    "shareStore": "Share store",
+    "storeLinkCopied": "Store link copied",
+    "storeLinkCopyFailed": "Couldn't copy the link",
+    "chatWithSupport": "Chat with support",
+    "chatWithSupportHint": "Reach us on WhatsApp",
+    "supportMessage": "Hi Tallaby support 👋\nI own the store \"{store}\" on Tallaby.",
+    "supportMessageNoStore": "Hi Tallaby support 👋\nI am a seller on Tallaby.",
+    "supportMessageStoreLink": "Store link: {url}",
+    "supportMessageQuestion": "I have a question about: ",
+    "editProduct": "Edit product"
   },
   "common": {
     "loading": "Loading...",
@@ -98,7 +111,15 @@
     "enterBudget": "Enter budget amount",
     "selectStartDate": "Select start date",
     "selectEndDate": "Select end date",
-    "enterTargetAudience": "Enter target audience"
+    "enterTargetAudience": "Enter target audience",
+    "reachValue": "Reach: {value, number}",
+    "conversionsValue": "Conversions: {value, number}",
+    "budgetValue": "Budget: {value}",
+    "spentValue": "Spent: {value}",
+    "budgetUsed": "Budget used",
+    "usesValue": "Uses: {uses} / {limit}",
+    "expiresValue": "Expires: {date}",
+    "usage": "Usage"
   },
   "reports": {
     "title": "Reports & Analytics",
@@ -323,6 +344,11 @@
       "enSlugRequired": "Product slug (EN) is required",
       "arTitleRequired": "Arabic title is required when Arabic content is provided",
       "weightRequired": "Product weight is required"
+    },
+    "seller": {
+      "businessNameRequired": "Business name is required",
+      "displayNameRequired": "Display name is required",
+      "invalidPhone": "Invalid phone number"
     }
   },
   "status": {
@@ -364,6 +390,28 @@
       "pending": "Pending review",
       "active": "Active",
       "rejected": "Rejected"
+    },
+    "payout": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "processing": "Processing",
+      "completed": "Completed",
+      "rejected": "Rejected",
+      "cancelled": "Cancelled",
+      "failed": "Failed"
+    },
+    "transaction": {
+      "sale": "Sale",
+      "refund": "Refund",
+      "withdrawal": "Withdrawal",
+      "fee": "Fee",
+      "top_up": "Top-up",
+      "payout": "Payout",
+      "commission": "Commission",
+      "order_payment": "Order payment",
+      "adjustment": "Adjustment",
+      "bonus": "Bonus",
+      "commission_reversal": "Commission reversal"
     }
   },
   "home": {
@@ -525,7 +573,9 @@
       "formats": "PNG, JPG or WebP (MAX. 2MB per file)",
       "dragDrop": "Drag & drop",
       "clickBrowse": "Click to browse",
-      "progress": "{count} of {max} images uploaded"
+      "progress": "{count} of {max} images uploaded",
+      "chooseFromGallery": "Choose an image from the gallery",
+      "removeImage": "Remove image"
     },
     "sellerImage": {
       "notAnImage": "Please select an image file (PNG, JPG, or WebP)",
@@ -721,5 +771,478 @@
     "previous": "Previous",
     "next": "Next",
     "saveChanges": "Save changes"
+  },
+  "settings": {
+    "title": "Store Settings",
+    "subtitle": "Changes save automatically. Update your store profile, branding, and documents.",
+    "saveFailed": "Failed to save settings",
+    "autosave": {
+      "idle": "Autosave on",
+      "saving": "Saving…",
+      "saved": "All changes saved",
+      "error": "Could not save"
+    },
+    "profile": {
+      "title": "Profile & Branding",
+      "description": "Your logo appears across the dashboard and storefront.",
+      "logoAlt": "Store logo",
+      "yourStore": "Your store",
+      "logoPreview": "Preview of how your logo appears"
+    },
+    "store": {
+      "title": "Store Information",
+      "description": "Business details, banner, and policies for your store page."
+    },
+    "fields": {
+      "displayName": "Display name",
+      "displayNamePlaceholder": "Name shown to customers",
+      "supportEmail": "Support email",
+      "supportPhone": "Support phone",
+      "businessName": "Legal business name",
+      "businessNamePlaceholder": "Registered business name",
+      "description": "Store description",
+      "descriptionPlaceholder": "Tell customers what you sell",
+      "banner": "Store banner",
+      "returnPolicy": "Return policy",
+      "returnPolicyPlaceholder": "How returns work for your store",
+      "shippingPolicy": "Shipping policy",
+      "shippingPolicyPlaceholder": "Delivery times and shipping rules"
+    },
+    "documents": {
+      "title": "Verification Documents",
+      "description": "Upload business license, tax certificates, and related documents. Uploads save immediately.",
+      "type": {
+        "general": "General document",
+        "business_license": "Business license",
+        "tax_certificate": "Tax certificate"
+      },
+      "status": {
+        "pending": "Pending review",
+        "approved": "Approved",
+        "verified": "Verified",
+        "rejected": "Rejected",
+        "expired": "Expired"
+      },
+      "uploaded": "Uploaded documents",
+      "empty": "No documents uploaded yet.",
+      "expires": "Expires {date}",
+      "uploadedOn": "Uploaded {date}"
+    },
+    "messages": {
+      "profileUpdated": "Profile updated",
+      "updateFailed": "Failed to update your profile",
+      "documentUploaded": "Document uploaded",
+      "uploadFailed": "Failed to upload the document",
+      "fixErrors": "Please fix the validation errors",
+      "somethingWentWrong": "Something went wrong"
+    }
+  },
+  "orders": {
+    "guest": "Guest",
+    "table": {
+      "order": "Order",
+      "customer": "Customer",
+      "item": "Item",
+      "qty": "Qty",
+      "total": "Total",
+      "status": "Status"
+    },
+    "details": {
+      "title": "Order #{number}",
+      "placed": "Placed {date}",
+      "loading": "Loading order details…",
+      "loadFailed": "Could not load this order.",
+      "unavailable": "This order is no longer available.",
+      "customer": "Customer",
+      "guest": "Guest",
+      "phone": "Phone",
+      "email": "Email",
+      "shippingAddress": "Shipping address",
+      "name": "Name",
+      "address": "Address",
+      "city": "City",
+      "country": "Country",
+      "instructions": "Instructions",
+      "noAddress": "No shipping address on this order.",
+      "orderNote": "Order note",
+      "giftMessage": "Gift message:",
+      "items": "Items ({count})",
+      "itemLine": "SKU: {sku} · {quantity} × {price}",
+      "summary": "Summary",
+      "paymentMethod": "Payment method",
+      "paymentMethods": {
+        "cod": "Cash on delivery",
+        "cash_on_delivery": "Cash on delivery",
+        "card": "Card",
+        "credit_card": "Credit card",
+        "wallet": "Wallet",
+        "instapay": "InstaPay",
+        "vodafone_cash": "Vodafone Cash",
+        "bank_transfer": "Bank transfer"
+      },
+      "paymentStatus": "Payment status",
+      "orderTotal": "Order total",
+      "yourItemsTotal": "Your items total",
+      "yourEarnings": "Your earnings"
+    }
+  },
+  "shipping": {
+    "title": "Shipping & Logistics",
+    "subtitle": "Assign your riders, track every delivery and keep customers' orders moving.",
+    "addRider": "Add rider",
+    "addFirstRider": "Add your first rider",
+    "noAddress": "No address",
+    "cod": "COD",
+    "collected": "Collected",
+    "paid": "Paid",
+    "unassigned": "Unassigned",
+    "columns": {
+      "order": "Order",
+      "customer": "Customer & address",
+      "items": "Items",
+      "payment": "Payment",
+      "rider": "Rider",
+      "status": "Status"
+    },
+    "stats": {
+      "ready": "Ready to ship",
+      "readyHint": "Waiting for a rider",
+      "allCaughtUp": "All caught up",
+      "inProgress": "In progress",
+      "inProgressHint": "Assigned or on the road",
+      "deliveredToday": "Delivered today",
+      "failedAttempts": "{count, plural, =0 {No failed attempts} one {# failed attempt} other {# failed attempts}}",
+      "cashWithRiders": "Cash with riders",
+      "cashHint": "COD on open deliveries"
+    },
+    "deliveries": "Deliveries ({count})",
+    "riders": "Riders ({count})",
+    "tabs": {
+      "all": "All",
+      "ready": "Ready to ship",
+      "assigned": "Assigned",
+      "out_for_delivery": "Out for delivery",
+      "delivered": "Delivered",
+      "issues": "Needs attention"
+    },
+    "assignToOrders": "Assign rider to {count, plural, one {# order} other {# orders}}",
+    "emptyDeliveries": "No deliveries yet. Confirmed orders that you fulfill yourself will appear here.",
+    "noRiders": "No riders yet",
+    "noRidersDescription": "Add the couriers who deliver your orders. You can then assign orders to them and follow each delivery.",
+    "unnamedRider": "Unnamed rider",
+    "editRiderLabel": "Edit rider {name}",
+    "riderStats": {
+      "active": "Active",
+      "delivered": "Delivered"
+    },
+    "activeAccount": "Active account",
+    "onDuty": "On duty",
+    "toast": {
+      "riderUpdateFailed": "Could not update the rider",
+      "saved": "Saved"
+    },
+    "actions": {
+      "handledByTallaby": "Handled by Tallaby",
+      "updateFailed": "Could not update the shipment",
+      "marked": {
+        "pending": "Marked ready to ship",
+        "assigned": "Marked assigned",
+        "out_for_delivery": "Marked out for delivery",
+        "delivered": "Marked delivered",
+        "failed": "Marked failed attempt",
+        "returned": "Marked returned",
+        "cancelled": "Shipment cancelled"
+      },
+      "move": {
+        "pending": "Back to ready to ship",
+        "assigned": "Return to assigned",
+        "out_for_delivery": "Mark out for delivery",
+        "delivered": "Mark delivered",
+        "failed": "Mark failed attempt",
+        "returned": "Mark returned",
+        "cancelled": "Cancel shipment"
+      },
+      "assignRider": "Assign rider",
+      "reassignRider": "Reassign rider",
+      "outForDelivery": "Out for delivery",
+      "update": "Update",
+      "failedTitle": "Failed delivery — #{number}",
+      "failedDescription": "The order stays open so you can retry with the same or another rider.",
+      "reason": "Reason",
+      "reasonPlaceholder": "e.g. Customer unavailable, wrong address…",
+      "cancel": "Cancel",
+      "saving": "Saving…",
+      "markFailed": "Mark failed"
+    },
+    "assign": {
+      "failed": "Could not assign the rider",
+      "success": "Rider assigned",
+      "title": "{count, plural, one {Assign rider} other {Assign rider to # orders}}",
+      "description": "The rider is notified in the shipping app and can start delivering right away.",
+      "noActiveRiders": "You have no active riders yet.",
+      "addFirstRider": "Add your first rider",
+      "rider": "Rider",
+      "choose": "Choose a rider",
+      "activeCount": "{count} active",
+      "offDuty": "off duty",
+      "cancel": "Cancel",
+      "assigning": "Assigning…",
+      "assign": "Assign"
+    },
+    "riderForm": {
+      "saveFailed": "Could not save the rider",
+      "saved": "Saved",
+      "editTitle": "Edit rider",
+      "addTitle": "Add a rider",
+      "editDescription": "Update this rider's contact details.",
+      "addDescription": "Riders sign in to the Tallaby shipping app with this email to see and update the deliveries you assign to them.",
+      "fullName": "Full name",
+      "email": "Email",
+      "phone": "Phone",
+      "cancel": "Cancel",
+      "saving": "Saving…",
+      "saveChanges": "Save changes",
+      "add": "Add rider"
+    },
+    "errors": {
+      "generic": "Something went wrong. Please try again.",
+      "unauthorized": "Your session has expired. Please sign in again.",
+      "orderNotFound": "Order not found",
+      "handledByTallaby": "This order is being delivered by Tallaby — you can't change it.",
+      "assignFirst": "Assign a rider before updating the delivery status.",
+      "invalidTransition": "This shipment can't be moved to that status.",
+      "reasonRequired": "Please give a reason for the failed delivery.",
+      "riderNotFound": "Rider not found",
+      "riderDeactivated": "This rider is deactivated.",
+      "notReadyToShip": "Only orders that are ready to ship can be assigned.",
+      "createRiderFailed": "Could not create the rider account. The email may already be in use."
+    },
+    "messages": {
+      "shipmentUpdated": "Shipment updated",
+      "ordersAssigned": "{count, plural, one {# order assigned} other {# orders assigned}}",
+      "riderAdded": "Rider added",
+      "riderUpdated": "Rider updated",
+      "riderActivated": "Rider activated",
+      "riderDeactivatedMessage": "Rider deactivated",
+      "saved": "Saved"
+    }
+  },
+  "reviews": {
+    "title": "Reviews",
+    "productTab": "Product Reviews ({count})",
+    "storeTab": "Store Reviews ({count})",
+    "customer": "Customer",
+    "storeReview": "Store review",
+    "orderNumber": "Order #{number}",
+    "replied": "Replied",
+    "unreplied": "Unreplied",
+    "emailCustomer": "Email customer",
+    "noEmail": "No email",
+    "columns": {
+      "date": "Date",
+      "customer": "Customer",
+      "order": "Order",
+      "product": "Product",
+      "rating": "Rating",
+      "review": "Review",
+      "status": "Status",
+      "contact": "Contact"
+    },
+    "qa": {
+      "title": "Questions & Answers",
+      "description": "Latest unanswered first",
+      "empty": "No questions found.",
+      "editAnswer": "Edit answer",
+      "updatePlaceholder": "Update your answer",
+      "writePlaceholder": "Write an answer",
+      "submitting": "Submitting...",
+      "save": "Save",
+      "submit": "Submit",
+      "cancel": "Cancel"
+    }
+  },
+  "financial": {
+    "title": "Financial Dashboard",
+    "subtitle": "Track your earnings and financial performance",
+    "thisMonthSales": "This Month Sales",
+    "vsLastMonth": "{value} vs last month",
+    "totalPaidOut": "Total Paid Out",
+    "payoutCount": "{count, plural, one {# payout} other {# payouts}}",
+    "pendingEarnings": "Pending Earnings",
+    "deliveredItems": "{count, plural, one {# delivered item} other {# delivered items}}",
+    "walletBalance": "Wallet Balance",
+    "availableBalance": "Available balance",
+    "recentActivity": "Recent Wallet Activity",
+    "recentPayouts": "Recent Payouts",
+    "noTransactions": "No transactions yet",
+    "noPayouts": "No payouts yet",
+    "columns": {
+      "type": "Type",
+      "order": "Order",
+      "amount": "Amount",
+      "date": "Date",
+      "status": "Status",
+      "method": "Method"
+    },
+    "methods": {
+      "bank_transfer": "Bank transfer",
+      "wallet": "Wallet",
+      "cash": "Cash",
+      "instapay": "InstaPay",
+      "vodafone_cash": "Vodafone Cash"
+    }
+  },
+  "coupons": {
+    "title": "Coupons Management",
+    "subtitle": "Create and manage promotional coupons and discounts",
+    "confirmDelete": "Are you sure you want to delete this coupon?",
+    "status": {
+      "inactive": "Inactive",
+      "expired": "Expired",
+      "pending": "Pending",
+      "exhausted": "Exhausted",
+      "active": "Active"
+    },
+    "type": {
+      "freeShipping": "Free Shipping",
+      "buyXGetY": "Buy X Get Y"
+    },
+    "stats": {
+      "total": "Total Coupons",
+      "active": "Active Coupons",
+      "usage": "Total Usage",
+      "expired": "Expired Coupons"
+    },
+    "searchPlaceholder": "Search coupons...",
+    "filter": "Filter",
+    "create": "Create Coupon",
+    "tableTitle": "Coupons",
+    "tableDescription": "Manage your promotional coupons and discounts",
+    "columns": {
+      "coupon": "Coupon",
+      "discount": "Discount",
+      "usage": "Usage",
+      "validity": "Validity",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "min": "Min: {amount}",
+    "max": "Max: {amount}",
+    "perUser": "{count} per user",
+    "from": "From: {date}",
+    "to": "To: {date}",
+    "edit": "Edit",
+    "copyCode": "Copy Code",
+    "delete": "Delete",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {page} of {total}",
+    "editTitle": "Edit Coupon",
+    "createTitle": "Create New Coupon",
+    "editDescription": "Update your coupon settings",
+    "createDescription": "Create a new promotional coupon",
+    "tips": {
+      "title": "Coupon Management Tips",
+      "codes": "Use clear, memorable coupon codes that are easy to type",
+      "limits": "Set reasonable usage limits to prevent abuse",
+      "monitor": "Monitor coupon performance and adjust strategies accordingly",
+      "timeLimited": "Create time-limited offers to drive urgency",
+      "test": "Test different discount types to see what works best",
+      "track": "Keep track of coupon usage and customer behavior"
+    }
+  },
+  "help": {
+    "title": "Help & Support",
+    "subtitle": "Find answers and get help with your seller dashboard",
+    "liveChat": "Live Chat",
+    "contactSupport": "Contact Support",
+    "searchTitle": "How can we help you?",
+    "searchSubtitle": "Search our knowledge base or browse common topics",
+    "searchPlaceholder": "Search for help articles, guides, or FAQs...",
+    "browseFaqs": "Browse FAQs",
+    "browseFaqsDescription": "Find quick answers to common questions",
+    "videoTutorials": "Video Tutorials",
+    "videoTutorialsDescription": "Watch step-by-step video guides",
+    "contactSupportDescription": "Get personalized help from our team",
+    "quickLinks": {
+      "title": "Quick Links",
+      "gettingStarted": {
+        "title": "Getting Started Guide",
+        "description": "Complete setup guide for new sellers"
+      },
+      "productManagement": {
+        "title": "Product Management",
+        "description": "Learn how to manage your inventory"
+      },
+      "orderProcessing": {
+        "title": "Order Processing",
+        "description": "Handle orders from start to finish"
+      },
+      "marketingTools": {
+        "title": "Marketing Tools",
+        "description": "Promote your products effectively"
+      },
+      "paymentSetup": {
+        "title": "Payment Setup",
+        "description": "Configure payment methods"
+      },
+      "shippingConfiguration": {
+        "title": "Shipping Configuration",
+        "description": "Set up shipping options"
+      }
+    },
+    "videos": {
+      "dashboardOverview": "Dashboard Overview",
+      "firstProduct": "Adding Your First Product",
+      "managingOrders": "Managing Orders",
+      "promotions": "Setting Up Promotions"
+    },
+    "views": "{count} views",
+    "faqTitle": "Frequently Asked Questions",
+    "faqs": {
+      "addProduct": {
+        "question": "How do I add a new product to my store?",
+        "answer": "To add a new product, go to Products Management, click 'Add Product', fill in the required details including title, price, description, and upload product images. Don't forget to set your inventory quantity and shipping details."
+      },
+      "trackSales": {
+        "question": "How can I track my sales performance?",
+        "answer": "Visit the Analytics Dashboard to view comprehensive sales data, including total revenue, order counts, and performance trends. You can also access detailed reports in the Reports & Analytics section."
+      },
+      "paymentMethods": {
+        "question": "What payment methods are supported?",
+        "answer": "We support all major payment methods including credit cards (Visa, MasterCard, American Express), PayPal, Apple Pay, Google Pay, and bank transfers depending on your region."
+      },
+      "shippingRates": {
+        "question": "How do I set up shipping rates?",
+        "answer": "Go to Shipping & Logistics, click 'Add Carrier' or 'Shipping Settings' to configure your shipping zones, rates, and delivery options. You can set flat rates, weight-based pricing, or free shipping thresholds."
+      },
+      "customizeStore": {
+        "question": "Can I customize my store appearance?",
+        "answer": "Yes! In Profile Settings, you can customize your store name, logo, description, and business information. For advanced customization, contact our support team for additional options."
+      }
+    },
+    "stillNeedHelp": "Still Need Help?",
+    "liveChatDescription": "Available 24/7 for instant support",
+    "startChat": "Start Chat",
+    "emailSupport": "Email Support",
+    "emailSupportDescription": "Response within 24 hours",
+    "sendEmail": "Send Email",
+    "phoneSupport": "Phone Support",
+    "phoneSupportHours": "Mon-Fri, 9AM-6PM EST",
+    "callNow": "Call Now"
+  },
+  "header": {
+    "openMenu": "Open menu",
+    "search": "Search…",
+    "searchPlaceholder": "Search pages, products, or an order number…",
+    "paletteDescription": "Jump to any page or search your products and orders",
+    "noResults": "No matches found.",
+    "searching": "Searching…",
+    "orders": "Orders",
+    "products": "Products",
+    "quickActions": "Quick actions",
+    "pages": "Pages",
+    "language": "Switch language",
+    "toggleTheme": "Toggle dark mode"
   }
 }

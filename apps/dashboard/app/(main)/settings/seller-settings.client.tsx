@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from
 import { useForm, type Resolver } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
+import { useLocale, useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import Image from 'next/image'
 import {
@@ -39,6 +40,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@workspace/ui/components/av
 import { SellerImageUpload } from '@/components/inputs/seller-image-upload'
 import { getPublicUrl } from '@/lib/utils'
 import { cn } from '@/lib/utils'
+import { useLocalizedResolver } from '@/lib/i18n/localized-resolver'
+import { formatDate } from '@/lib/i18n/format'
+import { humanizeStatus } from '@/lib/i18n/status'
 
 import type {
   SellerDocument,
@@ -62,6 +66,7 @@ interface SellerSettingsFormProps {
 const AUTOSAVE_DELAY_MS = 900
 
 export function SellerSettingsForm ({ initialData }: SellerSettingsFormProps) {
+  const t = useTranslations('settings')
   const router = useRouter()
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -83,8 +88,11 @@ export function SellerSettingsForm ({ initialData }: SellerSettingsFormProps) {
     [initialData.profile]
   )
 
+  const resolver = useLocalizedResolver(
+    zodResolver(sellerProfileSchema) as Resolver<SellerProfileForm>
+  )
   const form = useForm<SellerProfileForm>({
-    resolver: zodResolver(sellerProfileSchema) as Resolver<SellerProfileForm>,
+    resolver,
     defaultValues: defaults,
     mode: 'onChange',
   })
@@ -141,12 +149,12 @@ export function SellerSettingsForm ({ initialData }: SellerSettingsFormProps) {
         }
       } catch {
         setSaveStatus('error')
-        toast.error('Failed to save settings')
+        toast.error(t('saveFailed'))
       } finally {
         isSavingRef.current = false
       }
     },
-    [form, router]
+    [form, router, t]
   )
 
   const scheduleAutosave = useCallback(() => {
@@ -192,12 +200,8 @@ export function SellerSettingsForm ({ initialData }: SellerSettingsFormProps) {
     <div className='space-y-6 p-6'>
       <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
         <div>
-          <h1 className='text-2xl font-semibold tracking-tight text-foreground'>
-            Store Settings
-          </h1>
-          <p className='mt-1 text-sm text-muted-foreground'>
-            Changes save automatically. Update your store profile, branding, and
-            documents.
+          <p className='text-sm text-muted-foreground'>
+            {t('subtitle')}
           </p>
         </div>
         <AutosaveIndicator status={saveStatus} />
@@ -211,10 +215,10 @@ export function SellerSettingsForm ({ initialData }: SellerSettingsFormProps) {
               <CardHeader>
                 <CardTitle className='flex items-center gap-2 text-base'>
                   <Store className='size-4' />
-                  Profile & Branding
+                  {t('profile.title')}
                 </CardTitle>
                 <CardDescription>
-                  Your logo appears across the dashboard and storefront.
+                  {t('profile.description')}
                 </CardDescription>
               </CardHeader>
               <CardContent className='space-y-6'>
@@ -247,7 +251,7 @@ export function SellerSettingsForm ({ initialData }: SellerSettingsFormProps) {
                               ? getPublicUrl(logoUrl, 'sellers')
                               : undefined
                           }
-                          alt={displayName || businessName || 'Store logo'}
+                          alt={displayName || businessName || t('profile.logoAlt')}
                         />
                         <AvatarFallback className='bg-primary/10 font-semibold text-primary'>
                           {storeInitial}
@@ -255,10 +259,10 @@ export function SellerSettingsForm ({ initialData }: SellerSettingsFormProps) {
                       </Avatar>
                       <div className='min-w-0'>
                         <p className='truncate font-medium'>
-                          {displayName || businessName || 'Your store'}
+                          {displayName || businessName || t('profile.yourStore')}
                         </p>
                         <p className='text-xs text-muted-foreground'>
-                          Preview of how your logo appears
+                          {t('profile.logoPreview')}
                         </p>
                       </div>
                     </div>
@@ -270,10 +274,10 @@ export function SellerSettingsForm ({ initialData }: SellerSettingsFormProps) {
                   name='displayName'
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Display name</FormLabel>
+                      <FormLabel>{t('fields.displayName')}</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder='Name shown to customers'
+                          placeholder={t('fields.displayNamePlaceholder')}
                           {...field}
                         />
                       </FormControl>
@@ -287,7 +291,7 @@ export function SellerSettingsForm ({ initialData }: SellerSettingsFormProps) {
                   name='supportEmail'
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Support email</FormLabel>
+                      <FormLabel>{t('fields.supportEmail')}</FormLabel>
                       <FormControl>
                         <Input
                           type='email'
@@ -305,9 +309,9 @@ export function SellerSettingsForm ({ initialData }: SellerSettingsFormProps) {
                   name='supportPhone'
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Support phone</FormLabel>
+                      <FormLabel>{t('fields.supportPhone')}</FormLabel>
                       <FormControl>
-                        <Input placeholder='+20 1XX XXX XXXX' {...field} />
+                        <Input dir='ltr' placeholder='+20 1XX XXX XXXX' {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -321,10 +325,10 @@ export function SellerSettingsForm ({ initialData }: SellerSettingsFormProps) {
               <CardHeader>
                 <CardTitle className='flex items-center gap-2 text-base'>
                   <Building2 className='size-4' />
-                  Store Information
+                  {t('store.title')}
                 </CardTitle>
                 <CardDescription>
-                  Business details, banner, and policies for your store page.
+                  {t('store.description')}
                 </CardDescription>
               </CardHeader>
               <CardContent className='space-y-5'>
@@ -333,10 +337,10 @@ export function SellerSettingsForm ({ initialData }: SellerSettingsFormProps) {
                   name='businessName'
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Legal business name</FormLabel>
+                      <FormLabel>{t('fields.businessName')}</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder='Registered business name'
+                          placeholder={t('fields.businessNamePlaceholder')}
                           {...field}
                         />
                       </FormControl>
@@ -350,11 +354,11 @@ export function SellerSettingsForm ({ initialData }: SellerSettingsFormProps) {
                   name='description'
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Store description</FormLabel>
+                      <FormLabel>{t('fields.description')}</FormLabel>
                       <FormControl>
                         <Textarea
                           rows={3}
-                          placeholder='Tell customers what you sell'
+                          placeholder={t('fields.descriptionPlaceholder')}
                           {...field}
                         />
                       </FormControl>
@@ -368,7 +372,7 @@ export function SellerSettingsForm ({ initialData }: SellerSettingsFormProps) {
                   name='bannerUrl'
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Store banner</FormLabel>
+                      <FormLabel>{t('fields.banner')}</FormLabel>
                       <FormControl>
                         <SellerImageUpload
                           variant='banner'
@@ -391,11 +395,11 @@ export function SellerSettingsForm ({ initialData }: SellerSettingsFormProps) {
                     name='returnPolicy'
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Return policy</FormLabel>
+                        <FormLabel>{t('fields.returnPolicy')}</FormLabel>
                         <FormControl>
                           <Textarea
                             rows={4}
-                            placeholder='How returns work for your store'
+                            placeholder={t('fields.returnPolicyPlaceholder')}
                             {...field}
                           />
                         </FormControl>
@@ -409,11 +413,11 @@ export function SellerSettingsForm ({ initialData }: SellerSettingsFormProps) {
                     name='shippingPolicy'
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Shipping policy</FormLabel>
+                        <FormLabel>{t('fields.shippingPolicy')}</FormLabel>
                         <FormControl>
                           <Textarea
                             rows={4}
-                            placeholder='Delivery times and shipping rules'
+                            placeholder={t('fields.shippingPolicyPlaceholder')}
                             {...field}
                           />
                         </FormControl>
@@ -437,22 +441,16 @@ export function SellerSettingsForm ({ initialData }: SellerSettingsFormProps) {
 }
 
 function AutosaveIndicator ({ status }: { status: SaveStatus }) {
-  const label =
-    status === 'saving'
-      ? 'Saving…'
-      : status === 'saved'
-        ? 'All changes saved'
-        : status === 'error'
-          ? 'Could not save'
-          : 'Autosave on'
+  const t = useTranslations('settings.autosave')
+  const label = t(status)
 
   const className =
     status === 'saving'
-      ? 'text-amber-700 border-amber-200 bg-amber-50'
+      ? 'text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40'
       : status === 'saved'
-        ? 'text-emerald-700 border-emerald-200 bg-emerald-50'
+        ? 'text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-900/60 bg-emerald-50 dark:bg-emerald-950/40'
         : status === 'error'
-          ? 'text-red-700 border-red-200 bg-red-50'
+          ? 'text-red-700 dark:text-red-300 border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40'
           : 'text-muted-foreground border-border bg-background'
 
   return (
@@ -484,6 +482,8 @@ function DocumentsSection ({
   initialDocuments: SellerDocument[]
   onUploaded: () => void
 }) {
+  const t = useTranslations('settings.documents')
+  const locale = useLocale()
   const [documents, setDocuments] = useState(initialDocuments)
   const [isPending, startTransition] = useTransition()
 
@@ -510,23 +510,25 @@ function DocumentsSection ({
     })
   }
 
+  const documentTypeLabel = (type: string) =>
+    t.has(`type.${type}`) ? t(`type.${type}`) : humanizeStatus(type)
+
   return (
     <Card>
       <CardHeader>
         <CardTitle className='flex items-center gap-2 text-base'>
           <FileText className='size-4' />
-          Verification Documents
+          {t('title')}
         </CardTitle>
         <CardDescription>
-          Upload business license, tax certificates, and related documents.
-          Uploads save immediately.
+          {t('description')}
         </CardDescription>
       </CardHeader>
       <CardContent className='space-y-6'>
         <div className='grid grid-cols-1 gap-4 md:grid-cols-3'>
           <SellerImageUpload
             variant='document'
-            label='General document'
+            label={t('type.general')}
             value={null}
             quiet
             disabled={isPending}
@@ -536,7 +538,7 @@ function DocumentsSection ({
           />
           <SellerImageUpload
             variant='document'
-            label='Business license'
+            label={t('type.business_license')}
             value={null}
             quiet
             disabled={isPending}
@@ -548,7 +550,7 @@ function DocumentsSection ({
           />
           <SellerImageUpload
             variant='document'
-            label='Tax certificate'
+            label={t('type.tax_certificate')}
             value={null}
             quiet
             disabled={isPending}
@@ -563,10 +565,10 @@ function DocumentsSection ({
         <Separator />
 
         <div className='space-y-3'>
-          <h3 className='text-sm font-semibold'>Uploaded documents</h3>
+          <h3 className='text-sm font-semibold'>{t('uploaded')}</h3>
           {documents.length === 0 ? (
             <p className='text-sm text-muted-foreground'>
-              No documents uploaded yet.
+              {t('empty')}
             </p>
           ) : (
             <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
@@ -578,33 +580,36 @@ function DocumentsSection ({
                   <div className='relative h-40 bg-muted/40'>
                     <Image
                       src={getPublicUrl(doc.fileUrl, 'sellers')}
-                      alt={doc.documentType}
+                      alt={documentTypeLabel(doc.documentType)}
                       fill
                       className='object-contain p-2'
                     />
                   </div>
                   <div className='space-y-1.5 p-3'>
                     <div className='flex items-center justify-between gap-2'>
-                      <p className='truncate text-sm font-medium capitalize'>
-                        {doc.documentType.replace(/_/g, ' ')}
+                      <p className='truncate text-sm font-medium'>
+                        {documentTypeLabel(doc.documentType)}
                       </p>
-                      <Badge
-                        variant='secondary'
-                        className='shrink-0 capitalize'
-                      >
-                        {doc.status}
-                      </Badge>
+                      {doc.status ? (
+                        <Badge variant='secondary' className='shrink-0'>
+                          {t.has(`status.${doc.status}`)
+                            ? t(`status.${doc.status}`)
+                            : humanizeStatus(doc.status)}
+                        </Badge>
+                      ) : null}
                     </div>
                     {doc.expiryDate ? (
                       <p className='text-xs text-muted-foreground'>
-                        Expires{' '}
-                        {new Date(doc.expiryDate).toLocaleDateString()}
+                        {t('expires', {
+                          date: formatDate(doc.expiryDate, locale),
+                        })}
                       </p>
                     ) : null}
                     {doc.uploadedAt ? (
                       <p className='text-xs text-muted-foreground'>
-                        Uploaded{' '}
-                        {new Date(doc.uploadedAt).toLocaleDateString()}
+                        {t('uploadedOn', {
+                          date: formatDate(doc.uploadedAt, locale),
+                        })}
                       </p>
                     ) : null}
                   </div>

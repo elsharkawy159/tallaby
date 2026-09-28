@@ -59,9 +59,9 @@ export const GuidanceWidget = ({
       {/* Guidance Panel */}
       {isOpen && (
         <div className="fixed bottom-20 right-4 z-50 w-80 max-w-[calc(100vw-2rem)] sm:right-6">
-          <Card className="bg-white shadow-xl border border-gray-200 p-4">
+          <Card className="bg-card shadow-xl border border-border p-4">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-gray-900">{title}</h3>
+              <h3 className="font-semibold text-foreground">{title}</h3>
               <Button
                 variant="ghost"
                 size="icon"
@@ -77,14 +77,14 @@ export const GuidanceWidget = ({
                 <button
                   key={index}
                   onClick={() => console.log("Opening tip...")}
-                  className="w-full flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors text-left"
+                  className="w-full flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors text-left"
                 >
                   <HelpCircle className="h-5 w-5 text-primary mt-0.5" />
                   <div>
-                    <div className="font-medium text-gray-900 text-sm">
+                    <div className="font-medium text-foreground text-sm">
                       {tip}
                     </div>
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-muted-foreground">
                       {tip}
                     </div>
                   </div>

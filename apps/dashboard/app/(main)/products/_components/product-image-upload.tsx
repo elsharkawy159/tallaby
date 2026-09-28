@@ -122,16 +122,16 @@ export function ProductImageUpload({
         {...getRootProps()}
         className={`h-12 w-12 rounded border-2 border-dashed flex items-center justify-center cursor-pointer transition-colors ${
           isDragActive
-            ? "border-blue-500 bg-blue-50"
-            : "border-gray-300 hover:border-gray-400"
+            ? "border-blue-500 bg-blue-50 dark:bg-blue-950/40"
+            : "border-border hover:border-muted-foreground/50"
         } ${isUploading ? "opacity-50 cursor-not-allowed" : ""}`}
         title={t("dropHere")}
       >
         <input {...getInputProps()} />
         {isUploading ? (
-          <LoaderCircle className="h-4 w-4 animate-spin text-gray-500" />
+          <LoaderCircle className="h-4 w-4 animate-spin text-muted-foreground" />
         ) : (
-          <Upload className="h-4 w-4 text-gray-500" />
+          <Upload className="h-4 w-4 text-muted-foreground" />
         )}
       </div>
     );
@@ -142,7 +142,7 @@ export function ProductImageUpload({
     <div className="relative group">
       <div
         {...getRootProps()}
-        className="h-16 w-16 overflow-hidden rounded bg-gray-100 cursor-pointer hover:opacity-80 transition-opacity"
+        className="h-16 w-16 overflow-hidden rounded bg-muted cursor-pointer hover:opacity-80 transition-opacity"
         title={t("dropMore")}
       >
         <input {...getInputProps()} />
@@ -157,7 +157,7 @@ export function ProductImageUpload({
         {/* Upload overlay when dragging */}
         {isDragActive && (
           <div className="absolute inset-0 bg-blue-500/20 flex items-center justify-center">
-            <Upload className="h-4 w-4 text-blue-600" />
+            <Upload className="h-4 w-4 text-blue-600 dark:text-blue-400" />
           </div>
         )}
 

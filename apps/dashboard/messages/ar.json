@@ -26,7 +26,20 @@
     "expandSidebar": "توسيع الشريط الجانبي",
     "collapseSidebar": "طي الشريط الجانبي",
     "vendor": "البائع",
-    "logoAlt": "شعار {name}"
+    "logoAlt": "شعار {name}",
+    "myStore": "متجري",
+    "viewStore": "فتح المتجر في علامة تبويب جديدة",
+    "copyStoreLink": "نسخ رابط المتجر",
+    "shareStore": "مشاركة المتجر",
+    "storeLinkCopied": "تم نسخ رابط المتجر",
+    "storeLinkCopyFailed": "تعذر نسخ الرابط",
+    "chatWithSupport": "التحدث لخدمة العملاء",
+    "chatWithSupportHint": "تواصل معنا عبر واتساب",
+    "supportMessage": "مرحبًا فريق دعم طلبي 👋\nأنا صاحب متجر \"{store}\" على منصة طلبي.",
+    "supportMessageNoStore": "مرحبًا فريق دعم طلبي 👋\nأنا بائع على منصة طلبي.",
+    "supportMessageStoreLink": "رابط المتجر: {url}",
+    "supportMessageQuestion": "أريد الاستفسار عن: ",
+    "editProduct": "تعديل المنتج"
   },
   "common": {
     "loading": "جاري التحميل...",
@@ -98,7 +111,15 @@
     "enterBudget": "أدخل مبلغ الميزانية",
     "selectStartDate": "اختر تاريخ البداية",
     "selectEndDate": "اختر تاريخ النهاية",
-    "enterTargetAudience": "أدخل الجمهور المستهدف"
+    "enterTargetAudience": "أدخل الجمهور المستهدف",
+    "reachValue": "الوصول: {value, number}",
+    "conversionsValue": "التحويلات: {value, number}",
+    "budgetValue": "الميزانية: {value}",
+    "spentValue": "المُنفق: {value}",
+    "budgetUsed": "الميزانية المستخدمة",
+    "usesValue": "مرات الاستخدام: {uses} / {limit}",
+    "expiresValue": "ينتهي في: {date}",
+    "usage": "الاستخدام"
   },
   "reports": {
     "title": "التقارير والتحليلات",
@@ -323,6 +344,11 @@
       "enSlugRequired": "الرابط المختصر للمنتج (بالإنجليزية) مطلوب",
       "arTitleRequired": "العنوان العربي مطلوب عند إضافة محتوى عربي",
       "weightRequired": "وزن المنتج مطلوب"
+    },
+    "seller": {
+      "businessNameRequired": "اسم النشاط التجاري مطلوب",
+      "displayNameRequired": "الاسم المعروض مطلوب",
+      "invalidPhone": "رقم الهاتف غير صالح"
     }
   },
   "status": {
@@ -364,6 +390,28 @@
       "pending": "قيد المراجعة",
       "active": "نشط",
       "rejected": "مرفوض"
+    },
+    "payout": {
+      "pending": "قيد الانتظار",
+      "approved": "تمت الموافقة",
+      "processing": "قيد المعالجة",
+      "completed": "مكتمل",
+      "rejected": "مرفوض",
+      "cancelled": "ملغى",
+      "failed": "فشل"
+    },
+    "transaction": {
+      "sale": "بيع",
+      "refund": "استرداد",
+      "withdrawal": "سحب",
+      "fee": "رسوم",
+      "top_up": "شحن رصيد",
+      "payout": "صرف مستحقات",
+      "commission": "عمولة",
+      "order_payment": "دفع طلب",
+      "adjustment": "تسوية",
+      "bonus": "مكافأة",
+      "commission_reversal": "استرجاع عمولة"
     }
   },
   "home": {
@@ -525,7 +573,9 @@
       "formats": "PNG أو JPG أو WebP (بحد أقصى 2 ميجابايت للملف)",
       "dragDrop": "اسحب وأفلت",
       "clickBrowse": "انقر للتصفح",
-      "progress": "تم رفع {count} من {max} صور"
+      "progress": "تم رفع {count} من {max} صور",
+      "chooseFromGallery": "اختر صورة من المعرض",
+      "removeImage": "إزالة الصورة"
     },
     "sellerImage": {
       "notAnImage": "يرجى اختيار ملف صورة (PNG أو JPG أو WebP)",
@@ -721,5 +771,478 @@
     "previous": "السابق",
     "next": "التالي",
     "saveChanges": "حفظ التغييرات"
+  },
+  "settings": {
+    "title": "إعدادات المتجر",
+    "subtitle": "يتم حفظ التغييرات تلقائيًا. حدّث ملف متجرك وهويته ومستنداته.",
+    "saveFailed": "تعذّر حفظ الإعدادات",
+    "autosave": {
+      "idle": "الحفظ التلقائي مفعّل",
+      "saving": "جارٍ الحفظ…",
+      "saved": "تم حفظ جميع التغييرات",
+      "error": "تعذّر الحفظ"
+    },
+    "profile": {
+      "title": "الملف والهوية",
+      "description": "يظهر شعارك في لوحة التحكم وفي واجهة المتجر.",
+      "logoAlt": "شعار المتجر",
+      "yourStore": "متجرك",
+      "logoPreview": "معاينة لطريقة ظهور شعارك"
+    },
+    "store": {
+      "title": "معلومات المتجر",
+      "description": "بيانات النشاط التجاري والبانر والسياسات الخاصة بصفحة متجرك."
+    },
+    "fields": {
+      "displayName": "الاسم المعروض",
+      "displayNamePlaceholder": "الاسم الذي يظهر للعملاء",
+      "supportEmail": "بريد الدعم",
+      "supportPhone": "هاتف الدعم",
+      "businessName": "الاسم القانوني للنشاط التجاري",
+      "businessNamePlaceholder": "اسم النشاط التجاري المسجّل",
+      "description": "وصف المتجر",
+      "descriptionPlaceholder": "أخبر العملاء بما تبيعه",
+      "banner": "بانر المتجر",
+      "returnPolicy": "سياسة الإرجاع",
+      "returnPolicyPlaceholder": "كيف تتم عمليات الإرجاع في متجرك",
+      "shippingPolicy": "سياسة الشحن",
+      "shippingPolicyPlaceholder": "مواعيد التوصيل وقواعد الشحن"
+    },
+    "documents": {
+      "title": "مستندات التحقق",
+      "description": "ارفع الرخصة التجارية والشهادات الضريبية والمستندات ذات الصلة. يتم حفظ الملفات فور رفعها.",
+      "type": {
+        "general": "مستند عام",
+        "business_license": "الرخصة التجارية",
+        "tax_certificate": "الشهادة الضريبية"
+      },
+      "status": {
+        "pending": "قيد المراجعة",
+        "approved": "تمت الموافقة",
+        "verified": "تم التحقق",
+        "rejected": "مرفوض",
+        "expired": "منتهي الصلاحية"
+      },
+      "uploaded": "المستندات المرفوعة",
+      "empty": "لم يتم رفع أي مستندات بعد.",
+      "expires": "ينتهي في {date}",
+      "uploadedOn": "تم الرفع في {date}"
+    },
+    "messages": {
+      "profileUpdated": "تم تحديث الملف",
+      "updateFailed": "تعذّر تحديث ملفك",
+      "documentUploaded": "تم رفع المستند",
+      "uploadFailed": "تعذّر رفع المستند",
+      "fixErrors": "يرجى تصحيح أخطاء الإدخال",
+      "somethingWentWrong": "حدث خطأ ما"
+    }
+  },
+  "orders": {
+    "guest": "زائر",
+    "table": {
+      "order": "الطلب",
+      "customer": "العميل",
+      "item": "المنتج",
+      "qty": "الكمية",
+      "total": "الإجمالي",
+      "status": "الحالة"
+    },
+    "details": {
+      "title": "الطلب #{number}",
+      "placed": "تم الطلب في {date}",
+      "loading": "جارٍ تحميل تفاصيل الطلب…",
+      "loadFailed": "تعذّر تحميل هذا الطلب.",
+      "unavailable": "هذا الطلب لم يعد متاحًا.",
+      "customer": "العميل",
+      "guest": "زائر",
+      "phone": "الهاتف",
+      "email": "البريد الإلكتروني",
+      "shippingAddress": "عنوان الشحن",
+      "name": "الاسم",
+      "address": "العنوان",
+      "city": "المدينة",
+      "country": "الدولة",
+      "instructions": "تعليمات التوصيل",
+      "noAddress": "لا يوجد عنوان شحن لهذا الطلب.",
+      "orderNote": "ملاحظة الطلب",
+      "giftMessage": "رسالة الهدية:",
+      "items": "المنتجات ({count})",
+      "itemLine": "SKU: {sku} · {quantity} × {price}",
+      "summary": "الملخص",
+      "paymentMethod": "طريقة الدفع",
+      "paymentMethods": {
+        "cod": "الدفع عند الاستلام",
+        "cash_on_delivery": "الدفع عند الاستلام",
+        "card": "بطاقة",
+        "credit_card": "بطاقة ائتمان",
+        "wallet": "المحفظة",
+        "instapay": "إنستاباي",
+        "vodafone_cash": "فودافون كاش",
+        "bank_transfer": "تحويل بنكي"
+      },
+      "paymentStatus": "حالة الدفع",
+      "orderTotal": "إجمالي الطلب",
+      "yourItemsTotal": "إجمالي منتجاتك",
+      "yourEarnings": "أرباحك"
+    }
+  },
+  "shipping": {
+    "title": "الشحن والخدمات اللوجستية",
+    "subtitle": "عيّن مندوبيك وتابع كل عملية توصيل وحافظ على سير طلبات عملائك.",
+    "addRider": "إضافة مندوب",
+    "addFirstRider": "أضف أول مندوب",
+    "noAddress": "لا يوجد عنوان",
+    "cod": "دفع عند الاستلام",
+    "collected": "تم التحصيل",
+    "paid": "مدفوع",
+    "unassigned": "غير معيّن",
+    "columns": {
+      "order": "الطلب",
+      "customer": "العميل والعنوان",
+      "items": "المنتجات",
+      "payment": "الدفع",
+      "rider": "المندوب",
+      "status": "الحالة"
+    },
+    "stats": {
+      "ready": "جاهز للشحن",
+      "readyHint": "في انتظار مندوب",
+      "allCaughtUp": "لا يوجد شيء معلّق",
+      "inProgress": "قيد التنفيذ",
+      "inProgressHint": "معيّن أو في الطريق",
+      "deliveredToday": "تم التوصيل اليوم",
+      "failedAttempts": "{count, plural, =0 {لا توجد محاولات فاشلة} one {محاولة فاشلة واحدة} two {محاولتان فاشلتان} few {# محاولات فاشلة} many {# محاولة فاشلة} other {# محاولة فاشلة}}",
+      "cashWithRiders": "النقدية مع المندوبين",
+      "cashHint": "مبالغ الدفع عند الاستلام في التوصيلات الجارية"
+    },
+    "deliveries": "التوصيلات ({count})",
+    "riders": "المندوبون ({count})",
+    "tabs": {
+      "all": "الكل",
+      "ready": "جاهز للشحن",
+      "assigned": "معيّن",
+      "out_for_delivery": "خرج للتوصيل",
+      "delivered": "تم التوصيل",
+      "issues": "يحتاج إلى متابعة"
+    },
+    "assignToOrders": "تعيين مندوب لـ {count, plural, one {طلب واحد} two {طلبين} few {# طلبات} many {# طلبًا} other {# طلب}}",
+    "emptyDeliveries": "لا توجد توصيلات بعد. ستظهر هنا الطلبات المؤكدة التي تتولى توصيلها بنفسك.",
+    "noRiders": "لا يوجد مندوبون بعد",
+    "noRidersDescription": "أضف المندوبين الذين يوصلون طلباتك، ثم يمكنك تعيين الطلبات لهم ومتابعة كل عملية توصيل.",
+    "unnamedRider": "مندوب بدون اسم",
+    "editRiderLabel": "تعديل المندوب {name}",
+    "riderStats": {
+      "active": "نشطة",
+      "delivered": "تم توصيلها"
+    },
+    "activeAccount": "حساب نشط",
+    "onDuty": "في الخدمة",
+    "toast": {
+      "riderUpdateFailed": "تعذّر تحديث المندوب",
+      "saved": "تم الحفظ"
+    },
+    "actions": {
+      "handledByTallaby": "تتولاه Tallaby",
+      "updateFailed": "تعذّر تحديث الشحنة",
+      "marked": {
+        "pending": "تم تحديدها كجاهزة للشحن",
+        "assigned": "تم تحديدها كمعيّنة",
+        "out_for_delivery": "تم تحديدها كخارجة للتوصيل",
+        "delivered": "تم تحديدها كموصّلة",
+        "failed": "تم تسجيل محاولة توصيل فاشلة",
+        "returned": "تم تحديدها كمرتجعة",
+        "cancelled": "تم إلغاء الشحنة"
+      },
+      "move": {
+        "pending": "إعادة إلى جاهز للشحن",
+        "assigned": "إعادة إلى معيّن",
+        "out_for_delivery": "تحديد كخارج للتوصيل",
+        "delivered": "تحديد كتم التوصيل",
+        "failed": "تسجيل محاولة فاشلة",
+        "returned": "تحديد كمرتجع",
+        "cancelled": "إلغاء الشحنة"
+      },
+      "assignRider": "تعيين مندوب",
+      "reassignRider": "تغيير المندوب",
+      "outForDelivery": "خرج للتوصيل",
+      "update": "تحديث",
+      "failedTitle": "توصيل فاشل — #{number}",
+      "failedDescription": "يظل الطلب مفتوحًا لتتمكن من إعادة المحاولة مع نفس المندوب أو مندوب آخر.",
+      "reason": "السبب",
+      "reasonPlaceholder": "مثال: العميل غير متاح، العنوان خاطئ…",
+      "cancel": "إلغاء",
+      "saving": "جارٍ الحفظ…",
+      "markFailed": "تسجيل كفاشل"
+    },
+    "assign": {
+      "failed": "تعذّر تعيين المندوب",
+      "success": "تم تعيين المندوب",
+      "title": "{count, plural, one {تعيين مندوب} two {تعيين مندوب لطلبين} few {تعيين مندوب لـ # طلبات} many {تعيين مندوب لـ # طلبًا} other {تعيين مندوب لـ # طلب}}",
+      "description": "يتم إشعار المندوب في تطبيق الشحن ويمكنه بدء التوصيل فورًا.",
+      "noActiveRiders": "ليس لديك مندوبون نشطون بعد.",
+      "addFirstRider": "أضف أول مندوب",
+      "rider": "المندوب",
+      "choose": "اختر مندوبًا",
+      "activeCount": "{count} نشطة",
+      "offDuty": "خارج الخدمة",
+      "cancel": "إلغاء",
+      "assigning": "جارٍ التعيين…",
+      "assign": "تعيين"
+    },
+    "riderForm": {
+      "saveFailed": "تعذّر حفظ المندوب",
+      "saved": "تم الحفظ",
+      "editTitle": "تعديل المندوب",
+      "addTitle": "إضافة مندوب",
+      "editDescription": "حدّث بيانات التواصل لهذا المندوب.",
+      "addDescription": "يسجّل المندوبون الدخول إلى تطبيق Tallaby للشحن بهذا البريد الإلكتروني لعرض التوصيلات التي تعيّنها لهم وتحديثها.",
+      "fullName": "الاسم الكامل",
+      "email": "البريد الإلكتروني",
+      "phone": "الهاتف",
+      "cancel": "إلغاء",
+      "saving": "جارٍ الحفظ…",
+      "saveChanges": "حفظ التغييرات",
+      "add": "إضافة مندوب"
+    },
+    "errors": {
+      "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+      "unauthorized": "انتهت جلستك. يرجى تسجيل الدخول مرة أخرى.",
+      "orderNotFound": "الطلب غير موجود",
+      "handledByTallaby": "تتولى Tallaby توصيل هذا الطلب — لا يمكنك تعديله.",
+      "assignFirst": "عيّن مندوبًا قبل تحديث حالة التوصيل.",
+      "invalidTransition": "لا يمكن نقل هذه الشحنة إلى هذه الحالة.",
+      "reasonRequired": "يرجى ذكر سبب فشل التوصيل.",
+      "riderNotFound": "المندوب غير موجود",
+      "riderDeactivated": "هذا المندوب غير مفعّل.",
+      "notReadyToShip": "لا يمكن تعيين إلا الطلبات الجاهزة للشحن.",
+      "createRiderFailed": "تعذّر إنشاء حساب المندوب. ربما يكون البريد الإلكتروني مستخدمًا بالفعل."
+    },
+    "messages": {
+      "shipmentUpdated": "تم تحديث الشحنة",
+      "ordersAssigned": "{count, plural, one {تم تعيين طلب واحد} two {تم تعيين طلبين} few {تم تعيين # طلبات} many {تم تعيين # طلبًا} other {تم تعيين # طلب}}",
+      "riderAdded": "تمت إضافة المندوب",
+      "riderUpdated": "تم تحديث المندوب",
+      "riderActivated": "تم تفعيل المندوب",
+      "riderDeactivatedMessage": "تم إيقاف المندوب",
+      "saved": "تم الحفظ"
+    }
+  },
+  "reviews": {
+    "title": "التقييمات",
+    "productTab": "تقييمات المنتجات ({count})",
+    "storeTab": "تقييمات المتجر ({count})",
+    "customer": "عميل",
+    "storeReview": "تقييم المتجر",
+    "orderNumber": "الطلب #{number}",
+    "replied": "تم الرد",
+    "unreplied": "بدون رد",
+    "emailCustomer": "مراسلة العميل",
+    "noEmail": "لا يوجد بريد",
+    "columns": {
+      "date": "التاريخ",
+      "customer": "العميل",
+      "order": "الطلب",
+      "product": "المنتج",
+      "rating": "التقييم",
+      "review": "المراجعة",
+      "status": "الحالة",
+      "contact": "التواصل"
+    },
+    "qa": {
+      "title": "الأسئلة والأجوبة",
+      "description": "الأسئلة غير المجاب عنها أولًا",
+      "empty": "لا توجد أسئلة.",
+      "editAnswer": "تعديل الإجابة",
+      "updatePlaceholder": "حدّث إجابتك",
+      "writePlaceholder": "اكتب إجابة",
+      "submitting": "جارٍ الإرسال...",
+      "save": "حفظ",
+      "submit": "إرسال",
+      "cancel": "إلغاء"
+    }
+  },
+  "financial": {
+    "title": "اللوحة المالية",
+    "subtitle": "تابع أرباحك وأداءك المالي",
+    "thisMonthSales": "مبيعات هذا الشهر",
+    "vsLastMonth": "{value} مقارنةً بالشهر الماضي",
+    "totalPaidOut": "إجمالي المدفوعات",
+    "payoutCount": "{count, plural, =0 {لا توجد دفعات} one {دفعة واحدة} two {دفعتان} few {# دفعات} many {# دفعة} other {# دفعة}}",
+    "pendingEarnings": "الأرباح المعلّقة",
+    "deliveredItems": "{count, plural, =0 {لا توجد منتجات موصّلة} one {منتج واحد تم توصيله} two {منتجان تم توصيلهما} few {# منتجات تم توصيلها} many {# منتجًا تم توصيله} other {# منتج تم توصيله}}",
+    "walletBalance": "رصيد المحفظة",
+    "availableBalance": "الرصيد المتاح",
+    "recentActivity": "أحدث حركات المحفظة",
+    "recentPayouts": "أحدث الدفعات",
+    "noTransactions": "لا توجد معاملات بعد",
+    "noPayouts": "لا توجد دفعات بعد",
+    "columns": {
+      "type": "النوع",
+      "order": "الطلب",
+      "amount": "المبلغ",
+      "date": "التاريخ",
+      "status": "الحالة",
+      "method": "الطريقة"
+    },
+    "methods": {
+      "bank_transfer": "تحويل بنكي",
+      "wallet": "المحفظة",
+      "cash": "نقدًا",
+      "instapay": "إنستاباي",
+      "vodafone_cash": "فودافون كاش"
+    }
+  },
+  "coupons": {
+    "title": "إدارة الكوبونات",
+    "subtitle": "أنشئ الكوبونات والخصومات الترويجية وأدِرها",
+    "confirmDelete": "هل أنت متأكد من حذف هذا الكوبون؟",
+    "status": {
+      "inactive": "غير نشط",
+      "expired": "منتهي",
+      "pending": "لم يبدأ",
+      "exhausted": "مستنفد",
+      "active": "نشط"
+    },
+    "type": {
+      "freeShipping": "شحن مجاني",
+      "buyXGetY": "اشترِ X واحصل على Y"
+    },
+    "stats": {
+      "total": "إجمالي الكوبونات",
+      "active": "الكوبونات النشطة",
+      "usage": "إجمالي الاستخدام",
+      "expired": "الكوبونات المنتهية"
+    },
+    "searchPlaceholder": "ابحث في الكوبونات...",
+    "filter": "تصفية",
+    "create": "إنشاء كوبون",
+    "tableTitle": "الكوبونات",
+    "tableDescription": "أدِر كوبوناتك وخصوماتك الترويجية",
+    "columns": {
+      "coupon": "الكوبون",
+      "discount": "الخصم",
+      "usage": "الاستخدام",
+      "validity": "الصلاحية",
+      "status": "الحالة",
+      "actions": "الإجراءات"
+    },
+    "min": "الحد الأدنى: {amount}",
+    "max": "الحد الأقصى: {amount}",
+    "perUser": "{count} لكل مستخدم",
+    "from": "من: {date}",
+    "to": "إلى: {date}",
+    "edit": "تعديل",
+    "copyCode": "نسخ الكود",
+    "delete": "حذف",
+    "previous": "السابق",
+    "next": "التالي",
+    "page": "صفحة {page} من {total}",
+    "editTitle": "تعديل الكوبون",
+    "createTitle": "إنشاء كوبون جديد",
+    "editDescription": "حدّث إعدادات الكوبون",
+    "createDescription": "أنشئ كوبونًا ترويجيًا جديدًا",
+    "tips": {
+      "title": "نصائح لإدارة الكوبونات",
+      "codes": "استخدم أكوادًا واضحة وسهلة التذكر والكتابة",
+      "limits": "حدد حدودًا معقولة للاستخدام لمنع إساءة الاستخدام",
+      "monitor": "راقب أداء الكوبونات وعدّل استراتيجيتك وفقًا لذلك",
+      "timeLimited": "أنشئ عروضًا محدودة المدة لتحفيز الشراء",
+      "test": "جرّب أنواع خصم مختلفة لمعرفة الأنسب",
+      "track": "تابع استخدام الكوبونات وسلوك العملاء"
+    }
+  },
+  "help": {
+    "title": "المساعدة والدعم",
+    "subtitle": "اعثر على الإجابات واحصل على المساعدة في لوحة البائع",
+    "liveChat": "محادثة مباشرة",
+    "contactSupport": "تواصل مع الدعم",
+    "searchTitle": "كيف يمكننا مساعدتك؟",
+    "searchSubtitle": "ابحث في قاعدة المعرفة أو تصفح المواضيع الشائعة",
+    "searchPlaceholder": "ابحث عن مقالات المساعدة أو الأدلة أو الأسئلة الشائعة...",
+    "browseFaqs": "تصفح الأسئلة الشائعة",
+    "browseFaqsDescription": "إجابات سريعة عن الأسئلة المتكررة",
+    "videoTutorials": "فيديوهات تعليمية",
+    "videoTutorialsDescription": "شاهد أدلة مصورة خطوة بخطوة",
+    "contactSupportDescription": "احصل على مساعدة مخصصة من فريقنا",
+    "quickLinks": {
+      "title": "روابط سريعة",
+      "gettingStarted": {
+        "title": "دليل البدء",
+        "description": "دليل إعداد كامل للبائعين الجدد"
+      },
+      "productManagement": {
+        "title": "إدارة المنتجات",
+        "description": "تعلّم كيفية إدارة مخزونك"
+      },
+      "orderProcessing": {
+        "title": "معالجة الطلبات",
+        "description": "تعامل مع الطلبات من البداية للنهاية"
+      },
+      "marketingTools": {
+        "title": "أدوات التسويق",
+        "description": "روّج لمنتجاتك بفعالية"
+      },
+      "paymentSetup": {
+        "title": "إعداد الدفع",
+        "description": "اضبط طرق الدفع"
+      },
+      "shippingConfiguration": {
+        "title": "إعدادات الشحن",
+        "description": "اضبط خيارات الشحن"
+      }
+    },
+    "videos": {
+      "dashboardOverview": "نظرة عامة على لوحة التحكم",
+      "firstProduct": "إضافة أول منتج لك",
+      "managingOrders": "إدارة الطلبات",
+      "promotions": "إعداد العروض الترويجية"
+    },
+    "views": "{count} مشاهدة",
+    "faqTitle": "الأسئلة الشائعة",
+    "faqs": {
+      "addProduct": {
+        "question": "كيف أضيف منتجًا جديدًا إلى متجري؟",
+        "answer": "لإضافة منتج جديد، اذهب إلى إدارة المنتجات واضغط على \"إضافة منتج\"، ثم املأ البيانات المطلوبة مثل العنوان والسعر والوصف وارفع صور المنتج. لا تنسَ تحديد كمية المخزون وتفاصيل الشحن."
+      },
+      "trackSales": {
+        "question": "كيف أتابع أداء مبيعاتي؟",
+        "answer": "افتح لوحة التحليلات لعرض بيانات المبيعات الشاملة، بما في ذلك إجمالي الإيرادات وعدد الطلبات واتجاهات الأداء. يمكنك أيضًا الاطلاع على التقارير التفصيلية في قسم التقارير والتحليلات."
+      },
+      "paymentMethods": {
+        "question": "ما طرق الدفع المدعومة؟",
+        "answer": "ندعم طرق الدفع الرئيسية مثل بطاقات الائتمان (فيزا وماستركارد وأمريكان إكسبريس) وباي بال وApple Pay وGoogle Pay والتحويلات البنكية حسب منطقتك."
+      },
+      "shippingRates": {
+        "question": "كيف أضبط أسعار الشحن؟",
+        "answer": "اذهب إلى الشحن والخدمات اللوجستية واضغط على \"إضافة شركة شحن\" أو \"إعدادات الشحن\" لضبط مناطق الشحن والأسعار وخيارات التوصيل. يمكنك تحديد أسعار ثابتة أو حسب الوزن أو حد أدنى للشحن المجاني."
+      },
+      "customizeStore": {
+        "question": "هل يمكنني تخصيص مظهر متجري؟",
+        "answer": "نعم! من إعدادات الملف يمكنك تخصيص اسم متجرك وشعاره ووصفه وبيانات نشاطك التجاري. للتخصيص المتقدم، تواصل مع فريق الدعم لمعرفة الخيارات الإضافية."
+      }
+    },
+    "stillNeedHelp": "ما زلت بحاجة إلى مساعدة؟",
+    "liveChatDescription": "متاحة على مدار الساعة للدعم الفوري",
+    "startChat": "ابدأ المحادثة",
+    "emailSupport": "الدعم عبر البريد",
+    "emailSupportDescription": "الرد خلال 24 ساعة",
+    "sendEmail": "أرسل بريدًا",
+    "phoneSupport": "الدعم الهاتفي",
+    "phoneSupportHours": "من الاثنين إلى الجمعة، 9 صباحًا - 6 مساءً",
+    "callNow": "اتصل الآن"
+  },
+  "header": {
+    "openMenu": "فتح القائمة",
+    "search": "بحث…",
+    "searchPlaceholder": "ابحث عن صفحة، منتج، أو رقم طلب…",
+    "paletteDescription": "انتقل إلى أي صفحة أو ابحث في منتجاتك وطلباتك",
+    "noResults": "لا توجد نتائج مطابقة.",
+    "searching": "جارٍ البحث…",
+    "orders": "الطلبات",
+    "products": "المنتجات",
+    "quickActions": "إجراءات سريعة",
+    "pages": "الصفحات",
+    "language": "تغيير اللغة",
+    "toggleTheme": "تبديل الوضع الداكن"
   }
 }

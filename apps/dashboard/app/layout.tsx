@@ -3,12 +3,12 @@ import { Montserrat, Noto_Kufi_Arabic } from "next/font/google";
 import "@workspace/ui/globals.css";
 import { getLocale, getTranslations } from "next-intl/server";
 import { NextIntlClientProvider } from "next-intl";
-// import { ThemeProvider } from "next-themes";
 import { Toaster } from "@workspace/ui/components/sonner";
 import { DirectionProvider } from "@workspace/ui/components/direction";
 import { getSiteData } from "@/actions/site-data";
 import { SiteDataProvider } from "@/providers/site-data";
 import { ZodLocale } from "@/lib/i18n/zod-locale.client";
+import { ThemeProvider } from "@/providers/theme";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -62,14 +62,14 @@ export default async function RootLayout({
           <SiteDataProvider promise={getSiteData()}>
             <NextIntlClientProvider>
               <ZodLocale />
-              {/* <ThemeProvider
+              <ThemeProvider
                 attribute="class"
                 defaultTheme="light"
                 disableTransitionOnChange
-              > */}
+              >
                 {children}
                 <Toaster position="top-center" />
-              {/* </ThemeProvider> */}
+              </ThemeProvider>
             </NextIntlClientProvider>
           </SiteDataProvider>
         </DirectionProvider>

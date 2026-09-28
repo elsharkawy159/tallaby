@@ -72,7 +72,7 @@ const CopyableTitle = ({ title }: { title: string }) => {
       <Tooltip>
         <TooltipTrigger asChild>
           <div
-            className="text-sm font-medium text-gray-900 truncate max-w-[240px] cursor-pointer hover:text-blue-600 transition-colors"
+            className="text-sm font-medium text-foreground truncate max-w-[240px] cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
             onClick={handleCopy}
           >
             {title}
@@ -131,7 +131,7 @@ export function VendorProductsSection({
         cell: ({ row }) => (
           <div className="min-w-0">
             <CopyableTitle title={row.original.title} />
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-muted-foreground">
               {t("sku")}: <span dir="ltr">{row.original.sku || t("notAvailable")}</span>
             </div>
           </div>
@@ -143,7 +143,7 @@ export function VendorProductsSection({
         header: t("columns.category"),
         meta: { label: t("columns.category") },
         cell: ({ row }) => (
-          <span className="text-sm text-gray-700">
+          <span className="text-sm text-foreground">
             {row.original.category?.name || "-"}
           </span>
         ),
@@ -154,7 +154,7 @@ export function VendorProductsSection({
         header: t("columns.brand"),
         meta: { label: t("columns.brand") },
         cell: ({ row }) => (
-          <span className="text-sm text-gray-700">
+          <span className="text-sm text-foreground">
             {row.original.brand?.name || "-"}
           </span>
         ),
@@ -170,11 +170,11 @@ export function VendorProductsSection({
           const isOnSale = sale != null && String(sale) !== String(base);
           return (
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-900">
+              <span className="text-sm font-medium text-foreground">
                 {formatCurrency(sale ?? base)}
               </span>
               {isOnSale && (
-                <span className="text-xs text-gray-500 line-through">
+                <span className="text-xs text-muted-foreground line-through">
                   {formatCurrency(base)}
                 </span>
               )}
@@ -198,7 +198,7 @@ export function VendorProductsSection({
           return (
             <div className="flex items-center gap-1 text-sm">
               <Star
-                className={`h-4 w-4 ${rating > 0 ? "text-yellow-500 fill-yellow-500" : "text-gray-300"}`}
+                className={`h-4 w-4 ${rating > 0 ? "text-yellow-500 fill-yellow-500" : "text-muted-foreground/40"}`}
               />
               <span>
                 {rating > 0
@@ -222,7 +222,7 @@ export function VendorProductsSection({
         header: t("columns.stock"),
         meta: { label: t("columns.stock") },
         cell: ({ row }) => (
-          <span className="text-sm text-gray-700">
+          <span className="text-sm text-foreground">
             {formatNumber(row.original.quantity ?? 0, locale)}
           </span>
         ),

@@ -18,10 +18,10 @@ import { setProductPublished } from "@/actions/products";
 type ProductStatus = "draft" | "pending" | "active" | "rejected";
 
 const statusStyles: Record<ProductStatus, string> = {
-  draft: "bg-gray-100 text-gray-800",
-  pending: "bg-amber-100 text-amber-800",
-  active: "bg-green-100 text-green-800",
-  rejected: "bg-red-100 text-red-800",
+  draft: "bg-muted text-foreground",
+  pending: "bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300",
+  active: "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300",
+  rejected: "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300",
 };
 
 interface ProductStatusCellProps {

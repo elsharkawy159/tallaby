@@ -2,6 +2,7 @@
 
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 import { z } from "zod";
 import {
   and,
@@ -41,19 +42,38 @@ interface ActionResult<T = never> {
   error?: string;
 }
 
+/** An error the seller should read; `key` lives in the "shipping.errors" messages. */
+class ShippingError extends Error {
+  constructor(
+    readonly key: string,
+    readonly values?: Record<string, string>
+  ) {
+    super(key);
+  }
+}
+
 async function requireSellerId(): Promise<string> {
   const session = await getUser();
   const id = session?.user?.id;
-  if (!id) throw new Error("Unauthorized");
+  if (!id) throw new ShippingError("unauthorized");
   return id;
 }
 
-function fail(context: string, error: unknown): { success: false; error: string } {
+async function fail(
+  context: string,
+  error: unknown
+): Promise<{ success: false; error: string }> {
   console.error(`${context}:`, error);
+  const t = await getTranslations("shipping.errors");
   return {
     success: false,
-    error: error instanceof Error ? error.message : "Something went wrong",
+    error: error instanceof ShippingError ? t(error.key, error.values) : t("generic"),
   };
+}
+
+async function message(key: string, values?: Record<string, string | number>) {
+  const t = await getTranslations("shipping.messages");
+  return t(key, values);
 }
 
 function refresh() {
@@ -98,9 +118,9 @@ async function loadOwnedOrder(orderId: string, sellerId: string) {
     .where(and(eq(orders.id, orderId), ownedOrderCondition(orders.id, sellerId)))
     .limit(1);
 
-  if (!row) throw new Error("Order not found");
+  if (!row) throw new ShippingError("orderNotFound");
   if (row.shipmentId && row.shipmentSellerId !== sellerId) {
-    throw new Error("This order is being delivered by Tallaby — you can't change it.");
+    throw new ShippingError("handledByTallaby");
   }
   return row;
 }
@@ -286,16 +306,14 @@ export async function updateShipmentStatus(input: unknown): Promise<ActionResult
 
     const order = await loadOwnedOrder(orderId, sellerId);
     if (!order.shipmentId || !order.shipmentStatus) {
-      throw new Error("Assign a rider before updating the delivery status.");
+      throw new ShippingError("assignFirst");
     }
     const from = order.shipmentStatus as ShippingStatus;
     if (!canTransition(from, status)) {
-      throw new Error(
-        `Can't move a ${from.replace(/_/g, " ")} shipment to ${status.replace(/_/g, " ")}.`
-      );
+      throw new ShippingError("invalidTransition", { from, to: status });
     }
     if (status === "failed" && !failureReason) {
-      throw new Error("Please give a reason for the failed delivery.");
+      throw new ShippingError("reasonRequired");
     }
 
     await applySellerShipmentStatus({
@@ -308,7 +326,7 @@ export async function updateShipmentStatus(input: unknown): Promise<ActionResult
     });
 
     refresh();
-    return { success: true, message: "Shipment updated" };
+    return { success: true, message: await message("shipmentUpdated") };
   } catch (error) {
     return fail("updateShipmentStatus", error);
   }
@@ -334,8 +352,8 @@ export async function assignRider(
       .where(and(eq(sellerRiders.sellerId, sellerId), eq(sellerRiders.riderId, riderId)))
       .limit(1);
 
-    if (!rider) throw new Error("Rider not found");
-    if (rider.isSuspended) throw new Error("This rider is deactivated.");
+    if (!rider) throw new ShippingError("riderNotFound");
+    if (rider.isSuspended) throw new ShippingError("riderDeactivated");
 
     const loaded = await Promise.all(orderIds.map((id) => loadOwnedOrder(id, sellerId)));
 
@@ -343,7 +361,7 @@ export async function assignRider(
       const current = (o.shipmentStatus ?? "pending") as ShippingStatus;
       const readyToShip = o.status === "confirmed" || o.status === "shipping_soon";
       if (isTerminal(current) || (!o.shipmentId && !readyToShip)) {
-        throw new Error("Only orders that are ready to ship can be assigned.");
+        throw new ShippingError("notReadyToShip");
       }
     }
 
@@ -398,7 +416,7 @@ export async function assignRider(
     return {
       success: true,
       data: { assigned: orderIds.length },
-      message: `${orderIds.length} order${orderIds.length === 1 ? "" : "s"} assigned`,
+      message: await message("ordersAssigned", { count: orderIds.length }),
     };
   } catch (error) {
     return fail("assignRider", error);
@@ -429,7 +447,7 @@ async function requireOwnedRider(sellerId: string, riderId: string) {
     .from(sellerRiders)
     .where(and(eq(sellerRiders.sellerId, sellerId), eq(sellerRiders.riderId, riderId)))
     .limit(1);
-  if (!link) throw new Error("Rider not found");
+  if (!link) throw new ShippingError("riderNotFound");
 }
 
 /**
@@ -454,7 +472,7 @@ export async function createSellerRider(
     });
 
     if (error || !data.user) {
-      throw new Error(error?.message ?? "Could not create the rider account");
+      throw new ShippingError("createRiderFailed");
     }
 
     const riderId = data.user.id;
@@ -480,7 +498,7 @@ export async function createSellerRider(
     });
 
     refresh();
-    return { success: true, data: { id: riderId }, message: "Rider added" };
+    return { success: true, data: { id: riderId }, message: await message("riderAdded") };
   } catch (error) {
     return fail("createSellerRider", error);
   }
@@ -498,7 +516,7 @@ export async function updateSellerRider(input: unknown): Promise<ActionResult> {
       .where(and(eq(users.id, riderId), eq(users.role, "driver")));
 
     refresh();
-    return { success: true, message: "Rider updated" };
+    return { success: true, message: await message("riderUpdated") };
   } catch (error) {
     return fail("updateSellerRider", error);
   }
@@ -516,7 +534,10 @@ export async function setSellerRiderActive(input: unknown): Promise<ActionResult
       .where(and(eq(users.id, riderId), eq(users.role, "driver")));
 
     refresh();
-    return { success: true, message: value ? "Rider activated" : "Rider deactivated" };
+    return {
+      success: true,
+      message: await message(value ? "riderActivated" : "riderDeactivatedMessage"),
+    };
   } catch (error) {
     return fail("setSellerRiderActive", error);
   }
@@ -534,7 +555,7 @@ export async function setSellerRiderAvailable(input: unknown): Promise<ActionRes
       .where(and(eq(users.id, riderId), eq(users.role, "driver")));
 
     refresh();
-    return { success: true, message: "Saved" };
+    return { success: true, message: await message("saved") };
   } catch (error) {
     return fail("setSellerRiderAvailable", error);
   }

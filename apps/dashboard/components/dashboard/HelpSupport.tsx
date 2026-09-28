@@ -1,5 +1,5 @@
+import { useTranslations } from "next-intl";
 import {
-  Menu,
   HelpCircle,
   MessageSquare,
   FileText,
@@ -22,96 +22,48 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@workspace/ui/components/accordion";
+import { SupportChatLink } from "./support-chat-link.client";
 
-const faqs = [
-  {
-    question: "How do I add a new product to my store?",
-    answer:
-      "To add a new product, go to Products Management, click 'Add Product', fill in the required details including title, price, description, and upload product images. Don't forget to set your inventory quantity and shipping details.",
-  },
-  {
-    question: "How can I track my sales performance?",
-    answer:
-      "Visit the Analytics Dashboard to view comprehensive sales data, including total revenue, order counts, and performance trends. You can also access detailed reports in the Reports & Analytics section.",
-  },
-  {
-    question: "What payment methods are supported?",
-    answer:
-      "We support all major payment methods including credit cards (Visa, MasterCard, American Express), PayPal, Apple Pay, Google Pay, and bank transfers depending on your region.",
-  },
-  {
-    question: "How do I set up shipping rates?",
-    answer:
-      "Go to Shipping & Logistics, click 'Add Carrier' or 'Shipping Settings' to configure your shipping zones, rates, and delivery options. You can set flat rates, weight-based pricing, or free shipping thresholds.",
-  },
-  {
-    question: "Can I customize my store appearance?",
-    answer:
-      "Yes! In Profile Settings, you can customize your store name, logo, description, and business information. For advanced customization, contact our support team for additional options.",
-  },
-];
+const faqKeys = [
+  "addProduct",
+  "trackSales",
+  "paymentMethods",
+  "shippingRates",
+  "customizeStore",
+] as const;
 
-const quickLinks = [
-  {
-    title: "Getting Started Guide",
-    icon: FileText,
-    description: "Complete setup guide for new sellers",
-  },
-  {
-    title: "Product Management",
-    icon: FileText,
-    description: "Learn how to manage your inventory",
-  },
-  {
-    title: "Order Processing",
-    icon: FileText,
-    description: "Handle orders from start to finish",
-  },
-  {
-    title: "Marketing Tools",
-    icon: FileText,
-    description: "Promote your products effectively",
-  },
-  {
-    title: "Payment Setup",
-    icon: FileText,
-    description: "Configure payment methods",
-  },
-  {
-    title: "Shipping Configuration",
-    icon: FileText,
-    description: "Set up shipping options",
-  },
-];
+const quickLinkKeys = [
+  "gettingStarted",
+  "productManagement",
+  "orderProcessing",
+  "marketingTools",
+  "paymentSetup",
+  "shippingConfiguration",
+] as const;
 
 const videoTutorials = [
-  { title: "Dashboard Overview", duration: "5:30", views: "12.5k" },
-  { title: "Adding Your First Product", duration: "8:15", views: "9.8k" },
-  { title: "Managing Orders", duration: "6:45", views: "7.2k" },
-  { title: "Setting Up Promotions", duration: "4:20", views: "5.1k" },
-];
+  { key: "dashboardOverview", duration: "5:30", views: "12.5k" },
+  { key: "firstProduct", duration: "8:15", views: "9.8k" },
+  { key: "managingOrders", duration: "6:45", views: "7.2k" },
+  { key: "promotions", duration: "4:20", views: "5.1k" },
+] as const;
 
 export const HelpSupport = () => {
+  const t = useTranslations("help");
   return (
     <div className="p-4 sm:p-6">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
         <div className="flex items-center">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Help & Support</h1>
-            <p className="text-gray-600 mt-1">
-              Find answers and get help with your seller dashboard
-            </p>
+            <p className="text-muted-foreground">{t("subtitle")}</p>
           </div>
         </div>
         <div className="flex gap-2">
-          <Button className="bg-green-600 hover:bg-green-700">
-            <MessageSquare className="h-4 w-4 mr-2" />
-            Live Chat
-          </Button>
+          <SupportChatLink />
           <Button variant="outline">
-            <Mail className="h-4 w-4 mr-2" />
-            Contact Support
+            <Mail className="h-4 w-4 me-2" />
+            {t("contactSupport")}
           </Button>
         </div>
       </div>
@@ -120,16 +72,14 @@ export const HelpSupport = () => {
       <Card className="mb-8">
         <CardContent>
           <div className="text-center mb-4">
-            <h2 className="text-xl font-semibold mb-2">How can we help you?</h2>
-            <p className="text-gray-600">
-              Search our knowledge base or browse common topics
-            </p>
+            <h2 className="text-xl font-semibold mb-2">{t("searchTitle")}</h2>
+            <p className="text-muted-foreground">{t("searchSubtitle")}</p>
           </div>
           <div className="relative max-w-2xl mx-auto">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+            <Search className="absolute start-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
             <Input
-              placeholder="Search for help articles, guides, or FAQs..."
-              className="pl-10 py-3 text-lg"
+              placeholder={t("searchPlaceholder")}
+              className="ps-10 py-3 text-lg"
             />
           </div>
         </CardContent>
@@ -139,37 +89,31 @@ export const HelpSupport = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-8">
         <Card className="cursor-pointer hover:shadow-lg transition-shadow">
           <CardContent className="p-6 text-center">
-            <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <HelpCircle className="h-8 w-8 text-blue-600" />
+            <div className="bg-blue-100 dark:bg-blue-900/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <HelpCircle className="h-8 w-8 text-blue-600 dark:text-blue-400" />
             </div>
-            <h3 className="font-semibold mb-2">Browse FAQs</h3>
-            <p className="text-gray-600 text-sm">
-              Find quick answers to common questions
-            </p>
+            <h3 className="font-semibold mb-2">{t("browseFaqs")}</h3>
+            <p className="text-muted-foreground text-sm">{t("browseFaqsDescription")}</p>
           </CardContent>
         </Card>
 
         <Card className="cursor-pointer hover:shadow-lg transition-shadow">
           <CardContent className="p-6 text-center">
-            <div className="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Video className="h-8 w-8 text-purple-600" />
+            <div className="bg-purple-100 dark:bg-purple-900/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Video className="h-8 w-8 text-purple-600 dark:text-purple-400" />
             </div>
-            <h3 className="font-semibold mb-2">Video Tutorials</h3>
-            <p className="text-gray-600 text-sm">
-              Watch step-by-step video guides
-            </p>
+            <h3 className="font-semibold mb-2">{t("videoTutorials")}</h3>
+            <p className="text-muted-foreground text-sm">{t("videoTutorialsDescription")}</p>
           </CardContent>
         </Card>
 
         <Card className="cursor-pointer hover:shadow-lg transition-shadow">
           <CardContent className="p-6 text-center">
-            <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Phone className="h-8 w-8 text-green-600" />
+            <div className="bg-green-100 dark:bg-green-900/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Phone className="h-8 w-8 text-green-600 dark:text-green-400" />
             </div>
-            <h3 className="font-semibold mb-2">Contact Support</h3>
-            <p className="text-gray-600 text-sm">
-              Get personalized help from our team
-            </p>
+            <h3 className="font-semibold mb-2">{t("contactSupport")}</h3>
+            <p className="text-muted-foreground text-sm">{t("contactSupportDescription")}</p>
           </CardContent>
         </Card>
       </div>
@@ -178,19 +122,21 @@ export const HelpSupport = () => {
         {/* Quick Links */}
         <Card>
           <CardHeader>
-            <CardTitle>Quick Links</CardTitle>
+            <CardTitle>{t("quickLinks.title")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {quickLinks.map((link) => (
+              {quickLinkKeys.map((key) => (
                 <div
-                  key={link.title}
-                  className="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                  key={key}
+                  className="flex items-center p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
                 >
-                  <link.icon className="h-5 w-5 text-gray-600 mr-3" />
+                  <FileText className="h-5 w-5 text-muted-foreground me-3" />
                   <div>
-                    <p className="font-medium">{link.title}</p>
-                    <p className="text-sm text-gray-600">{link.description}</p>
+                    <p className="font-medium">{t(`quickLinks.${key}.title`)}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {t(`quickLinks.${key}.description`)}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -201,27 +147,27 @@ export const HelpSupport = () => {
         {/* Video Tutorials */}
         <Card>
           <CardHeader>
-            <CardTitle>Video Tutorials</CardTitle>
+            <CardTitle>{t("videoTutorials")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {videoTutorials.map((video) => (
                 <div
-                  key={video.title}
-                  className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                  key={video.key}
+                  className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
                 >
                   <div className="flex items-center">
-                    <div className="bg-red-100 p-2 rounded mr-3">
-                      <Video className="h-4 w-4 text-red-600" />
+                    <div className="bg-red-100 dark:bg-red-900/30 p-2 rounded me-3">
+                      <Video className="h-4 w-4 text-red-600 dark:text-red-400" />
                     </div>
                     <div>
-                      <p className="font-medium">{video.title}</p>
-                      <p className="text-sm text-gray-600">
-                        {video.views} views
+                      <p className="font-medium">{t(`videos.${video.key}`)}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {t("views", { count: video.views })}
                       </p>
                     </div>
                   </div>
-                  <span className="text-sm text-gray-500">
+                  <span className="text-sm text-muted-foreground">
                     {video.duration}
                   </span>
                 </div>
@@ -234,17 +180,17 @@ export const HelpSupport = () => {
       {/* FAQs */}
       <Card>
         <CardHeader>
-          <CardTitle>Frequently Asked Questions</CardTitle>
+          <CardTitle>{t("faqTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
           <Accordion type="single" collapsible className="w-full">
-            {faqs.map((faq, index) => (
-              <AccordionItem key={index} value={`item-${index}`}>
-                <AccordionTrigger className="text-left">
-                  {faq.question}
+            {faqKeys.map((key) => (
+              <AccordionItem key={key} value={key}>
+                <AccordionTrigger className="text-start">
+                  {t(`faqs.${key}.question`)}
                 </AccordionTrigger>
-                <AccordionContent className="text-gray-600">
-                  {faq.answer}
+                <AccordionContent className="text-muted-foreground">
+                  {t(`faqs.${key}.answer`)}
                 </AccordionContent>
               </AccordionItem>
             ))}
@@ -255,44 +201,40 @@ export const HelpSupport = () => {
       {/* Contact Information */}
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle>Still Need Help?</CardTitle>
+          <CardTitle>{t("stillNeedHelp")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             <div className="text-center">
-              <div className="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
-                <MessageSquare className="h-6 w-6 text-blue-600" />
+              <div className="bg-blue-100 dark:bg-blue-900/30 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                <MessageSquare className="h-6 w-6 text-blue-600 dark:text-blue-400" />
               </div>
-              <h4 className="font-semibold mb-2">Live Chat</h4>
-              <p className="text-gray-600 text-sm mb-3">
-                Available 24/7 for instant support
-              </p>
+              <h4 className="font-semibold mb-2">{t("liveChat")}</h4>
+              <p className="text-muted-foreground text-sm mb-3">{t("liveChatDescription")}</p>
               <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-                Start Chat
+                {t("startChat")}
               </Button>
             </div>
 
             <div className="text-center">
-              <div className="bg-green-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Mail className="h-6 w-6 text-green-600" />
+              <div className="bg-green-100 dark:bg-green-900/30 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Mail className="h-6 w-6 text-green-600 dark:text-green-400" />
               </div>
-              <h4 className="font-semibold mb-2">Email Support</h4>
-              <p className="text-gray-600 text-sm mb-3">
-                Response within 24 hours
-              </p>
+              <h4 className="font-semibold mb-2">{t("emailSupport")}</h4>
+              <p className="text-muted-foreground text-sm mb-3">{t("emailSupportDescription")}</p>
               <Button size="sm" variant="outline">
-                Send Email
+                {t("sendEmail")}
               </Button>
             </div>
 
             <div className="text-center">
-              <div className="bg-purple-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Phone className="h-6 w-6 text-purple-600" />
+              <div className="bg-purple-100 dark:bg-purple-900/30 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Phone className="h-6 w-6 text-purple-600 dark:text-purple-400" />
               </div>
-              <h4 className="font-semibold mb-2">Phone Support</h4>
-              <p className="text-gray-600 text-sm mb-3">Mon-Fri, 9AM-6PM EST</p>
+              <h4 className="font-semibold mb-2">{t("phoneSupport")}</h4>
+              <p className="text-muted-foreground text-sm mb-3">{t("phoneSupportHours")}</p>
               <Button size="sm" variant="outline">
-                Call Now
+                {t("callNow")}
               </Button>
             </div>
           </div>

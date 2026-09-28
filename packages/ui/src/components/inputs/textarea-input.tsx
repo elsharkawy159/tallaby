@@ -107,7 +107,7 @@ export function TextareaInput<TFieldValues extends FieldValues>({
                     "h-auto rounded-lg bg-transparent dark:bg-input/30",
                     resizeClass,
                     showCharacterCount && validation?.maxLength && "pb-6",
-                    readOnly && "cursor-not-allowed bg-gray-100",
+                    readOnly && "cursor-not-allowed bg-muted",
                     className
                   )}
                   onChange={(e) => {

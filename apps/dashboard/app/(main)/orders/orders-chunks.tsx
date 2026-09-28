@@ -1,12 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import type { ColumnDef } from "@tanstack/react-table";
 import { TableSection } from "@workspace/ui/components/table-section";
 import { Badge } from "@workspace/ui/components/badge";
 import { getPublicUrl } from "@/lib/utils";
 import Image from "next/image";
-import { formatOrderStatus, orderStatusVariant } from "./orders.lib";
+import { formatDateTime, formatMoney } from "@/lib/i18n/format";
+import { translateStatus } from "@/lib/i18n/status";
+import { orderStatusVariant } from "./orders.lib";
 import { OrderDetailsDialog } from "./order-details-dialog.client";
 
 export type VendorOrderRow = {
@@ -41,14 +44,25 @@ export type VendorOrderRow = {
     | string;
 };
 
-export function VendorOrdersTable({ rows }: { rows: VendorOrderRow[] }) {
-  const [openOrderId, setOpenOrderId] = useState<string | null>(null);
+export function VendorOrdersTable({
+  rows,
+  initialOrderId = null,
+}: {
+  rows: VendorOrderRow[];
+  initialOrderId?: string | null;
+}) {
+  const t = useTranslations("orders.table");
+  const tStatus = useTranslations("status");
+  const locale = useLocale();
+  const [openOrderId, setOpenOrderId] = useState<string | null>(
+    initialOrderId
+  );
 
   const columns = useMemo<ColumnDef<VendorOrderRow, any>[]>(
     () => [
       {
         id: "order",
-        header: "Order",
+        header: t("order"),
         size: 140,
         accessorFn: (row) => row.orderNumber,
         cell: ({ row }) => (
@@ -61,21 +75,21 @@ export function VendorOrdersTable({ rows }: { rows: VendorOrderRow[] }) {
               #{row.original.orderNumber}
             </button>
             <div className="text-xs text-muted-foreground">
-              {new Date(row.original.createdAt).toLocaleString()}
+              {formatDateTime(row.original.createdAt, locale)}
             </div>
           </div>
         ),
       },
       {
         id: "customer",
-        header: "Customer",
+        header: t("customer"),
         size: 160,
         accessorFn: (row) => row.customerName,
         cell: ({ row }) => <span>{row.original.customerName}</span>,
       },
       {
         id: "item",
-        header: "Item",
+        header: t("item"),
         size: 320,
         cell: ({ row }) => {
           const image = row.original.productImage
@@ -110,33 +124,35 @@ export function VendorOrdersTable({ rows }: { rows: VendorOrderRow[] }) {
       },
       {
         id: "qty",
-        header: "Qty",
+        header: t("qty"),
         size: 60,
         accessorFn: (row) => row.quantity,
         cell: ({ row }) => <span>{row.original.quantity}</span>,
       },
       {
         id: "total",
-        header: "Total",
+        header: t("total"),
         size: 100,
         accessorFn: (row) => row.total,
         cell: ({ row }) => (
-          <span className="font-medium">{row.original.total}</span>
+          <span className="font-medium" dir="ltr">
+            {formatMoney(row.original.total, locale)}
+          </span>
         ),
       },
       {
         id: "status",
-        header: "Status",
+        header: t("status"),
         size: 160,
         accessorFn: (row) => row.status,
         cell: ({ row }) => (
           <Badge variant={orderStatusVariant(row.original.status)}>
-            {formatOrderStatus(row.original.status)}
+            {translateStatus(tStatus, "order", row.original.status)}
           </Badge>
         ),
       },
     ],
-    []
+    [t, tStatus, locale]
   );
 
   return (
@@ -148,7 +164,11 @@ export function VendorOrdersTable({ rows }: { rows: VendorOrderRow[] }) {
       />
       <OrderDetailsDialog
         orderId={openOrderId}
-        onClose={() => setOpenOrderId(null)}
+        onClose={() => {
+          setOpenOrderId(null);
+          // Drop the deep-link param so a refresh doesn't reopen the dialog.
+          if (initialOrderId) window.history.replaceState(null, "", "/orders");
+        }}
       />
     </>
   );

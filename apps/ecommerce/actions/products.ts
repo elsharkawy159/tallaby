@@ -35,6 +35,8 @@ import { brandTags, cacheProfiles, categoryTags, createCachedQuery, productTags 
 
 interface ProductFilters {
   categoryId?: string;
+  /** Any of these categories, e.g. every leaf under one root. */
+  categoryIds?: string[];
   categoryName?: string;
   brandId?: string;
   brandName?: string;
@@ -79,6 +81,10 @@ export const getProducts = createCachedQuery({
 
       if (filters.categoryId) {
         conditions.push(eq(products.categoryId, filters.categoryId));
+      }
+
+      if (filters.categoryIds?.length) {
+        conditions.push(inArray(products.categoryId, filters.categoryIds));
       }
 
       if (filters.categoryName) {

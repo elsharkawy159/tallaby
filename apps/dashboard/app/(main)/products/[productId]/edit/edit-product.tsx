@@ -142,8 +142,8 @@ export function EditProduct({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50/30 pb-24">
-      <div className="sticky top-14 z-20 bg-white border-b border-gray-200 shadow-sm lg:top-0">
+    <div className="min-h-screen pb-24">
+      <div className="sticky top-16 z-20 bg-card border-b border-border shadow-sm">
         <div className="container px-6 py-4">
           <div className="flex items-center gap-4">
             {STEPS.map((step, index) => (
@@ -161,8 +161,8 @@ export function EditProduct({
                     currentStep === step.id
                       ? "text-primary font-semibold"
                       : currentStep > step.id
-                        ? "text-gray-600"
-                        : "text-gray-400"
+                        ? "text-muted-foreground"
+                        : "text-muted-foreground"
                   }`}
                 >
                   <div
@@ -170,8 +170,8 @@ export function EditProduct({
                       currentStep === step.id
                         ? "border-primary bg-primary text-white"
                         : currentStep > step.id
-                          ? "border-gray-600 bg-gray-600 text-white"
-                          : "border-gray-300 bg-white text-gray-400"
+                          ? "border-muted-foreground bg-muted-foreground text-background"
+                          : "border-border bg-card text-muted-foreground"
                     }`}
                   >
                     {currentStep > step.id ? (
@@ -199,15 +199,15 @@ export function EditProduct({
                 {index < STEPS.length - 1 && (
                   <div
                     className={`flex-1 h-0.5 ${
-                      currentStep > step.id ? "bg-gray-600" : "bg-gray-300"
+                      currentStep > step.id ? "bg-muted-foreground" : "bg-border"
                     }`}
                   />
                 )}
               </div>
             ))}
           </div>
-          <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between gap-4">
-            <span className="text-sm font-medium text-gray-700">
+          <div className="mt-4 pt-4 border-t border-border flex items-center justify-between gap-4">
+            <span className="text-sm font-medium text-foreground">
               {t("contentLanguage")}
             </span>
             <div className="flex items-center gap-1">
@@ -254,7 +254,7 @@ export function EditProduct({
         </Form>
       </div>
 
-      <div className="fixed bottom-0 inset-x-0 z-10 border-t border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+      <div className="fixed bottom-0 inset-x-0 z-10 border-t border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
         <div className="px-6 py-4 flex items-center gap-6 justify-end container">
           <Button
             type="button"

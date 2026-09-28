@@ -28,13 +28,17 @@ import {
   Users,
   Wallet,
 } from "lucide-react";
+import { WhatsAppButton } from "@workspace/ui/components/contact-buttons";
+import { toWhatsAppNumber } from "@workspace/ui/lib/contact";
 import {
+  buildSellerWelcomeMessage,
   formatCurrency,
   formatDate,
   getStatusColor,
   getStatusLabel,
 } from "../sellers.lib";
 import type { SellerDetail } from "../sellers.types";
+import { SellerInfoSections } from "./seller-info.chunks";
 
 interface MetricProps {
   label: string;
@@ -83,6 +87,10 @@ export function SellerDetailContent({ detail }: { detail: SellerDetail }) {
   } = detail;
 
   const productsHref = `/products?seller=${encodeURIComponent(seller.slug)}`;
+  // Older sellers may have no support phone; fall back to the owner account's.
+  const whatsAppPhone = [seller.supportPhone, owner?.phone].find(
+    (phone) => toWhatsAppNumber(phone) !== null
+  );
   const initials = seller.businessName
     .split(" ")
     .map((w) => w[0])
@@ -139,12 +147,26 @@ export function SellerDetailContent({ detail }: { detail: SellerDetail }) {
                 )}
               </div>
             </div>
-            <Button asChild>
-              <Link href={productsHref}>
-                <Package className="mr-2 h-4 w-4" />
-                View products ({products.total})
-              </Link>
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              {whatsAppPhone ? (
+                <WhatsAppButton
+                  phone={whatsAppPhone}
+                  text={buildSellerWelcomeMessage(seller, owner?.fullName)}
+                  label="Contact on WhatsApp"
+                  size="default"
+                />
+              ) : (
+                <Button variant="outline" disabled title="No valid phone number on file">
+                  No WhatsApp number
+                </Button>
+              )}
+              <Button asChild>
+                <Link href={productsHref}>
+                  <Package className="mr-2 h-4 w-4" />
+                  View products ({products.total})
+                </Link>
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -209,6 +231,8 @@ export function SellerDetailContent({ detail }: { detail: SellerDetail }) {
           icon={Star}
         />
       </div>
+
+      <SellerInfoSections seller={seller} ownerPhone={owner?.phone ?? null} />
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Owner */}

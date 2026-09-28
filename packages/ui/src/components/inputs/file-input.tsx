@@ -126,7 +126,7 @@ export function FileInput({
   return (
     <div className={cn("space-y-2", className)}>
       {label && (
-        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label className="text-sm font-medium text-foreground">
           {label}
         </label>
       )}
@@ -138,7 +138,7 @@ export function FileInput({
             "relative border-2 border-dashed rounded-lg p-6 transition-colors",
             dragActive
               ? "border-primary bg-primary/5"
-              : "border-gray-300 dark:border-gray-600",
+              : "border-border",
             disabled && "opacity-50 cursor-not-allowed",
             error && "border-red-500"
           )}
@@ -157,11 +157,11 @@ export function FileInput({
           />
 
           <div className="text-center">
-            <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+            <p className="text-sm text-muted-foreground">
               {placeholder}
             </p>
-            <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Max size: {Math.round(maxSize / 1024 / 1024)}MB
             </p>
           </div>
@@ -169,10 +169,10 @@ export function FileInput({
 
         {/* Current File Display */}
         {currentValue && (
-          <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+          <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
             <div className="flex items-center space-x-2">
-              <FileImage className="h-4 w-4 text-gray-500" />
-              <span className="text-sm text-gray-700 dark:text-gray-300 truncate">
+              <FileImage className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm text-foreground truncate">
                 {currentValue}
               </span>
             </div>
@@ -192,7 +192,7 @@ export function FileInput({
         {/* Preview */}
         {showPreview && previewUrl && (
           <div className={cn("space-y-2", previewClassName)}>
-            <label className="text-xs text-gray-500 dark:text-gray-400">
+            <label className="text-xs text-muted-foreground">
               Preview:
             </label>
             <div className="relative inline-block">

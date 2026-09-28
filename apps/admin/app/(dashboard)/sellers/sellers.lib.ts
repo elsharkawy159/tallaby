@@ -190,3 +190,16 @@ export const getInitials = (name: string): string => {
     .toUpperCase()
     .substring(0, 2);
 };
+
+/** Arabic WhatsApp greeting confirming we received the seller's request to join Tallaby. */
+export const buildSellerWelcomeMessage = (
+  seller: Pick<Seller, "businessName">,
+  ownerName?: string | null
+): string =>
+  [
+    `مرحباً ${ownerName?.trim() || seller.businessName}،`,
+    `لقد استلمنا طلبك للانضمام إلى طلبي كبائع باسم «${seller.businessName}».`,
+    "نتواصل معك الآن لاستكمال خطوات تفعيل متجرك، ويسعدنا الرد على أي استفسار لديك.",
+    "",
+    "فريق طلبي",
+  ].join("\n");

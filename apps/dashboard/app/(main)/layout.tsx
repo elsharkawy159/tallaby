@@ -1,4 +1,5 @@
 import { SidebarData } from "@/components/dashboard/sidebar.data";
+import { DashboardHeader } from "@/components/layout/dashboard-header.client";
 import { MainContentWrapper } from "@/components/layout/main-content-wrapper";
 import { SellerAccessBlocked } from "@/components/layout/seller-access-blocked";
 import { getSellerAccess } from "@/lib/auth/seller-access";
@@ -27,13 +28,14 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen flex w-full overflow-x-clip bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen flex w-full overflow-x-clip bg-background">
       <SidebarData />
 
       {/* Main Content Area */}
       <MainContentWrapper>
+        <DashboardHeader />
         {access.status === "restricted" && (
-          <div className="border-b border-amber-200 bg-amber-50 px-6 py-3 text-sm text-amber-900">
+          <div className="border-b border-amber-200 bg-amber-50 px-6 py-3 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-200">
             <strong>{t("sellerStatus.restricted.title")}.</strong>{" "}
             {t("sellerStatus.restricted.message")}
           </div>

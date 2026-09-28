@@ -9,3 +9,12 @@ export const STOREFRONT_URL =
 
 export const getStorefrontProductUrl = (slug: string) =>
   `${STOREFRONT_URL}/products/${slug}`;
+
+export const getStorefrontStoreUrl = (slug: string) =>
+  `${STOREFRONT_URL}/stores/${slug}`;
+
+/** Tallaby seller-support WhatsApp line (digits only, international format). */
+export const SUPPORT_WHATSAPP_NUMBER = "201003272830";
+
+export const getSupportWhatsAppUrl = (message: string) =>
+  `https://wa.me/${SUPPORT_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;

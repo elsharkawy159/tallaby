@@ -40,6 +40,13 @@ export interface Seller {
   sellerLevel: string;
   joinDate: string;
   sellerMetrics?: Record<string, unknown> | null;
+  storeDescription?: string | null;
+  stripeOnboardingComplete?: boolean | null;
+  payoutEnabled?: boolean | null;
+  identityVerified?: boolean | null;
+  identityDocsUrl?: string | null;
+  onboardingStep?: number | null;
+  onboardingComplete?: boolean | null;
   createdAt: string;
   updatedAt: string;
 }

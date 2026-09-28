@@ -1,0 +1,32 @@
+/*
+ * The cover's bottom edge is an awning valance, echoing the stalls on the
+ * stores page: a solid body plus a row of half-circle scallops, as a mask so
+ * it works on any banner image.
+ */
+.cover {
+  --scallop: 14px;
+  mask:
+    linear-gradient(#000 0 0) top / 100% calc(100% - var(--scallop) + 1px) no-repeat,
+    radial-gradient(circle at var(--scallop) 0, #000 calc(var(--scallop) - 0.5px), transparent var(--scallop))
+      bottom / calc(var(--scallop) * 2) var(--scallop) repeat-x;
+}
+
+@media (min-width: 768px) {
+  .cover {
+    --scallop: 20px;
+  }
+}
+
+/* Drop-shadow follows the mask, so pale banners still show their scallops. */
+.coverFrame {
+  filter: drop-shadow(0 1px 0 var(--border)) drop-shadow(0 6px 10px rgb(0 0 0 / 0.06));
+}
+
+/* Fallback cover for stores without a banner: the brand awning stripes. */
+.stripes {
+  background: repeating-linear-gradient(
+    90deg,
+    var(--primary) 0 calc(var(--scallop) * 2),
+    color-mix(in oklab, var(--primary) 16%, var(--card)) calc(var(--scallop) * 2) calc(var(--scallop) * 4)
+  );
+}

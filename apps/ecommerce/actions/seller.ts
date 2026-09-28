@@ -10,7 +10,10 @@ import {
   eq,
   desc,
   asc,
+  sql,
 } from "@workspace/db";
+import { categoryTags, productTags } from "@workspace/cache";
+import { normalizeGovernorate } from "@workspace/lib/shipping";
 import { getUser } from "./auth";
 
 // CACHED: Public storefront listing - only approved sellers are shown
@@ -53,6 +56,102 @@ export async function getAllSellers(params?: {
       tags: ["sellers"],
       revalidate: 3600,
     }
+  )();
+}
+
+export type SellerCategoryMix = {
+  sellerId: string;
+  categoryId: string;
+  name: string | null;
+  nameAr: string | null;
+  slug: string | null;
+  productCount: number;
+};
+
+// CACHED: What each approved seller actually sells, rolled up to root
+// categories. Derived from active products because seller_categories and
+// sellers.approved_categories are never written.
+export async function getSellerCategoryMix() {
+  return unstable_cache(
+    async () => {
+      try {
+        const rows = await db.execute(sql`
+          WITH RECURSIVE ancestry AS (
+            SELECT id, id AS root_id, parent_id FROM categories
+            UNION ALL
+            SELECT a.id, c.id, c.parent_id
+            FROM ancestry a JOIN categories c ON c.id = a.parent_id
+          )
+          SELECT p.seller_id AS "sellerId",
+                 r.id AS "categoryId",
+                 r.name, r.name_ar AS "nameAr", r.slug,
+                 count(p.id)::int AS "productCount"
+          FROM products p
+          JOIN sellers s ON s.id = p.seller_id AND s.status = 'approved'
+          JOIN ancestry a ON a.id = p.category_id AND a.parent_id IS NULL
+          JOIN categories r ON r.id = a.root_id
+          WHERE p.status = 'active'
+          GROUP BY p.seller_id, r.id, r.name, r.name_ar, r.slug
+          ORDER BY "productCount" DESC
+        `);
+        return { success: true, data: [...rows] as SellerCategoryMix[] };
+      } catch (error) {
+        console.error("Error fetching seller categories:", error);
+        return { success: false, data: [] as SellerCategoryMix[] };
+      }
+    },
+    ["seller-category-mix"],
+    {
+      tags: ["sellers", productTags.all(), categoryTags.all()],
+      revalidate: 3600,
+    },
+  )();
+}
+
+export type SellerStoreCategory = {
+  /** Root slug (or id when slugless); duplicate roots sharing a slug merge. */
+  key: string;
+  name: string | null;
+  nameAr: string | null;
+  productCount: number;
+  /** The seller's product categories under this root, for filtering. */
+  categoryIds: string[];
+};
+
+// CACHED: One seller's root categories, for the store page's filter chips.
+export async function getSellerStoreCategories(sellerId: string) {
+  return unstable_cache(
+    async () => {
+      try {
+        const rows = await db.execute(sql`
+          WITH RECURSIVE ancestry AS (
+            SELECT id, id AS root_id, parent_id FROM categories
+            UNION ALL
+            SELECT a.id, c.id, c.parent_id
+            FROM ancestry a JOIN categories c ON c.id = a.parent_id
+          )
+          SELECT coalesce(r.slug, r.id::text) AS key,
+                 min(r.name) AS name, min(r.name_ar) AS "nameAr",
+                 count(p.id)::int AS "productCount",
+                 json_agg(DISTINCT p.category_id) AS "categoryIds"
+          FROM products p
+          JOIN ancestry a ON a.id = p.category_id AND a.parent_id IS NULL
+          JOIN categories r ON r.id = a.root_id
+          WHERE p.seller_id = ${sellerId} AND p.status = 'active'
+          GROUP BY 1
+          ORDER BY "productCount" DESC, name
+        `);
+        return { success: true, data: [...rows] as SellerStoreCategory[] };
+      } catch (error) {
+        console.error("Error fetching store categories:", error);
+        return { success: false, data: [] as SellerStoreCategory[] };
+      }
+    },
+    [`seller-store-categories-${sellerId}`],
+    {
+      tags: [productTags.seller(sellerId), categoryTags.all()],
+      revalidate: 3600,
+    },
   )();
 }
 
@@ -173,6 +272,9 @@ export async function getSellerBySlug(slug: string) {
             isVerified: true,
             joinDate: true,
             status: true,
+            storeDescription: true,
+            freeDelivery: true,
+            legalAddress: true,
           },
         });
 
@@ -180,7 +282,13 @@ export async function getSellerBySlug(slug: string) {
           return { success: false, error: "Seller not found" };
         }
 
-        return { success: true, data: seller };
+        // Only the governorate is public; the rest of the legal address is not.
+        const { legalAddress, ...profile } = seller;
+        const state = (legalAddress as { state?: string } | null)?.state;
+        return {
+          success: true,
+          data: { ...profile, governorate: normalizeGovernorate(state) },
+        };
       } catch (error) {
         console.error("Error fetching seller:", error);
         return { success: false, error: "Failed to fetch seller" };

@@ -326,7 +326,7 @@ export function RichTextEditor({
 
       className={cn(
 
-        "rich-text-editor overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm",
+        "rich-text-editor overflow-hidden rounded-lg border border-border bg-card shadow-sm",
 
         disabled && "opacity-60",
 
@@ -352,7 +352,7 @@ export function RichTextEditor({
 
 
 
-      <div className="flex flex-wrap items-center gap-1 border-b border-gray-200 bg-gray-50/80 p-2">
+      <div className="flex flex-wrap items-center gap-1 border-b border-border bg-muted/80 p-2">
 
         <ToolbarButton
 
@@ -416,7 +416,7 @@ export function RichTextEditor({
 
 
 
-        <div className="mx-1 h-6 w-px bg-gray-200" />
+        <div className="mx-1 h-6 w-px bg-border" />
 
 
 
@@ -486,7 +486,7 @@ export function RichTextEditor({
 
 
 
-        <div className="mx-1 h-6 w-px bg-gray-200" />
+        <div className="mx-1 h-6 w-px bg-border" />
 
 
 
@@ -570,7 +570,7 @@ export function RichTextEditor({
 
 
 
-        <div className="mx-1 h-6 w-px bg-gray-200" />
+        <div className="mx-1 h-6 w-px bg-border" />
 
 
 
@@ -644,7 +644,7 @@ export function RichTextEditor({
 
 
 
-        <div className="mx-1 h-6 w-px bg-gray-200" />
+        <div className="mx-1 h-6 w-px bg-border" />
 
 
 

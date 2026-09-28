@@ -42,7 +42,7 @@ export function CategorySuggestions({
 
   return (
     <div className={cn("space-y-2", className)}>
-      <p className="text-xs text-gray-600 font-medium">{t("suggested")}</p>
+      <p className="text-xs text-muted-foreground font-medium">{t("suggested")}</p>
       <div className="flex flex-wrap gap-2">
         {matchedCategories.map((category) => {
           const isSelected = selectedCategoryId === category.id;
@@ -59,7 +59,7 @@ export function CategorySuggestions({
                 "border focus:outline-none",
                 isSelected
                   ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                  : "bg-white text-gray-700 border-gray-300 hover:border-primary hover:bg-primary/5",
+                  : "bg-card text-foreground border-border hover:border-primary hover:bg-primary/5",
                 "focus:ring-primary"
               )}
               aria-pressed={isSelected}

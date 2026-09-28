@@ -5,7 +5,7 @@ interface SidebarState {
   isCollapsed: boolean;
   toggleCollapse: () => void;
   setCollapsed: (collapsed: boolean) => void;
-  /** Mobile drawer; not persisted so it always starts closed. */
+  /** Off-canvas drawer below the lg breakpoint; not persisted. */
   isMobileOpen: boolean;
   setMobileOpen: (open: boolean) => void;
 }

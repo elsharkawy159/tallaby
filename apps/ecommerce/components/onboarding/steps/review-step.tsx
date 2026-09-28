@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import Image from "next/image";
 import { Pencil } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useFormContext } from "react-hook-form";
@@ -47,6 +48,16 @@ export function ReviewStep({
         />
         <Row label={t("supportEmail")} value={values.supportEmail} dir="ltr" />
         <Row label={t("supportPhone")} value={values.supportPhone || none} dir="ltr" />
+        <div className="grid gap-0.5 text-sm sm:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] sm:gap-3">
+          <span className="text-muted-foreground">{t("storeBanner")}</span>
+          {values.bannerUrl ? (
+            <span className="relative block aspect-[4/1] w-full max-w-64 overflow-hidden rounded-md bg-muted">
+              <Image src={values.bannerUrl} alt="" fill sizes="256px" className="object-cover" />
+            </span>
+          ) : (
+            <span>{none}</span>
+          )}
+        </div>
       </ReviewSection>
 
       <ReviewSection title={t("review.address")} onEdit={() => onEdit("legal")}>

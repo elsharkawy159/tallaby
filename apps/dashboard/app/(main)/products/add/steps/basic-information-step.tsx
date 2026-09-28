@@ -296,7 +296,7 @@ export function BasicInformationStep({
           collapsible
           value={isImportOpen ? "import" : ""}
           onValueChange={(value) => setImportOpen(value === "import")}
-          className="bg-white rounded-lg border border-gray-200 shadow-sm"
+          className="bg-card rounded-lg border border-border shadow-sm"
         >
           <AccordionItem value="import" className="border-0">
             <AccordionTrigger className="px-4 py-3 text-sm font-medium hover:no-underline">
@@ -347,7 +347,7 @@ export function BasicInformationStep({
                   )}
                 </Button>
               </div>
-              <p className="text-xs text-gray-500 mt-2">
+              <p className="text-xs text-muted-foreground mt-2">
                 {t("importHelp")}
               </p>
             </AccordionContent>
@@ -362,7 +362,7 @@ export function BasicInformationStep({
         render={({ field }) => (
           <FormItem>
             <FormLabel className="text-sm">
-              {t("media")} <span className="text-red-600">*</span>
+              {t("media")} <span className="text-red-600 dark:text-red-400">*</span>
             </FormLabel>
             <FormControl>
               <ImageUpload
@@ -373,7 +373,7 @@ export function BasicInformationStep({
                 maxImages={8}
               />
             </FormControl>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               {t("mediaHint")}
             </p>
             <FormMessage />
@@ -465,7 +465,7 @@ export function BasicInformationStep({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-sm">
-                    {t("category")} <span className="text-red-600">*</span>
+                    {t("category")} <span className="text-red-600 dark:text-red-400">*</span>
                   </FormLabel>
                   <FormControl>
                     <div className="space-y-3">

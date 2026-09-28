@@ -106,13 +106,12 @@ export default function AddProduct ({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50/30 pb-24">
+    <div className="min-h-screen pb-24">
       {/* Header */}
-      <div className="sticky top-14 z-20 bg-white border-b border-gray-200 shadow-sm lg:top-0">
-        <div className="container px-6 py-4 flex items-center justify-between gap-4">
-          <h1 className="text-lg font-semibold text-gray-900">{t("addTitle")}</h1>
+      <div className="sticky top-16 z-20 bg-card border-b border-border shadow-sm">
+        <div className="container px-6 py-4 flex items-center justify-end gap-4">
           <div className="flex items-center gap-3">
-            <span className="text-sm font-medium text-gray-700 hidden sm:inline">
+            <span className="text-sm font-medium text-foreground hidden sm:inline">
               {t("contentLanguage")}
             </span>
             <div className="flex items-center gap-1">
@@ -136,7 +135,7 @@ export default function AddProduct ({
       <div className="container py-6">
         <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-8">
           {/* Vertical stepper */}
-          <aside className="lg:sticky lg:top-24 lg:self-start">
+          <aside className="lg:sticky lg:top-40 lg:self-start">
             <nav className="flex flex-col">
               {ADD_PRODUCT_STEPS.map((step, index) => {
                 const status = getStepValidationStatus(
@@ -152,20 +151,20 @@ export default function AddProduct ({
                       onClick={() => scrollToStepSection(step.key)}
                       className={cn(
                         "flex items-center gap-3 text-start py-2",
-                        status === "valid" && "text-gray-600",
-                        status === "error" && "text-red-600",
-                        status === "default" && "text-gray-400"
+                        status === "valid" && "text-muted-foreground",
+                        status === "error" && "text-red-600 dark:text-red-400",
+                        status === "default" && "text-muted-foreground"
                       )}
                     >
                       <div
                         className={cn(
                           "w-8 h-8 rounded-full flex items-center justify-center border-2 shrink-0 text-sm font-medium",
                           status === "valid" &&
-                            "border-gray-600 bg-gray-600 text-white",
+                            "border-muted-foreground bg-muted-foreground text-background",
                           status === "error" &&
                             "border-red-500 bg-red-500 text-white",
                           status === "default" &&
-                            "border-gray-300 bg-white text-gray-400"
+                            "border-border bg-card text-muted-foreground"
                         )}
                       >
                         {status === "valid" ? (
@@ -192,7 +191,7 @@ export default function AddProduct ({
                       <div
                         className={cn(
                           "ms-4 w-0.5 h-6",
-                          status === "valid" ? "bg-gray-600" : "bg-gray-300"
+                          status === "valid" ? "bg-muted-foreground" : "bg-border"
                         )}
                       />
                     )}
@@ -241,7 +240,7 @@ export default function AddProduct ({
       </div>
 
       {/* Fixed bottom save bar */}
-      <div className="fixed bottom-0 inset-x-0 z-10 border-t border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+      <div className="fixed bottom-0 inset-x-0 z-10 border-t border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
         <div className="px-6 py-4 flex items-center justify-end container">
           <Button
             type="submit"

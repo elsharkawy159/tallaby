@@ -68,12 +68,15 @@ const trimmed = (value: string | null | undefined) => value?.trim() || null;
  * shipping address is the first and most reliable source of a real name.
  * Mirrors the chain used by the shipping admin (`orders/[orderId]/order-detail.data.tsx`).
  */
-export function resolveCustomerName(order: OrderCustomerSource): string {
+export function resolveCustomerName(
+  order: OrderCustomerSource,
+  fallback = "Guest"
+): string {
   return (
     trimmed(order?.userAddress_shippingAddressId?.fullName) ??
     trimmed(order?.user?.fullName) ??
     trimmed(resolveCustomerEmail(order)) ??
-    "Guest"
+    fallback
   );
 }
 

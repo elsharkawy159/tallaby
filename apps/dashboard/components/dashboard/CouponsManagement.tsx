@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import {
   Plus,
   Search,
@@ -48,6 +49,7 @@ import {
 } from "@workspace/ui/components/dialog";
 // import { CouponForm } from "@/components/forms/coupon-form";
 import { GuidanceWidget } from "@/components/layout/GuidanceWidget";
+import { formatDate, formatMoney } from "@/lib/i18n/format";
 
 interface Coupon {
   id: string;
@@ -77,6 +79,8 @@ interface Coupon {
 }
 
 export const CouponsManagement = () => {
+  const t = useTranslations("coupons");
+  const locale = useLocale();
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -131,7 +135,7 @@ export const CouponsManagement = () => {
   };
 
   const handleDeleteCoupon = async (id: string) => {
-    if (confirm("Are you sure you want to delete this coupon?")) {
+    if (confirm(t("confirmDelete"))) {
       try {
         const response = await fetch(`/api/vendor/coupons/${id}`, {
           method: "DELETE",
@@ -175,12 +179,15 @@ export const CouponsManagement = () => {
   };
 
   const getStatusBadge = (coupon: Coupon) => {
-    if (!coupon.isActive) return <Badge variant="secondary">Inactive</Badge>;
-    if (coupon.isExpired) return <Badge variant="destructive">Expired</Badge>;
-    if (coupon.isNotStarted) return <Badge variant="outline">Pending</Badge>;
+    if (!coupon.isActive)
+      return <Badge variant="secondary">{t("status.inactive")}</Badge>;
+    if (coupon.isExpired)
+      return <Badge variant="destructive">{t("status.expired")}</Badge>;
+    if (coupon.isNotStarted)
+      return <Badge variant="outline">{t("status.pending")}</Badge>;
     if (coupon.usageLimit && coupon.usageCount >= coupon.usageLimit)
-      return <Badge variant="secondary">Exhausted</Badge>;
-    return <Badge variant="default">Active</Badge>;
+      return <Badge variant="secondary">{t("status.exhausted")}</Badge>;
+    return <Badge variant="default">{t("status.active")}</Badge>;
   };
 
   const getDiscountDisplay = (coupon: Coupon) => {
@@ -196,13 +203,13 @@ export const CouponsManagement = () => {
         return (
           <div className="flex items-center gap-1">
             <DollarSign className="h-4 w-4" />
-            <span>${coupon.discountValue}</span>
+            <span dir="ltr">{formatMoney(coupon.discountValue, locale)}</span>
           </div>
         );
       case "free_shipping":
-        return <Badge variant="outline">Free Shipping</Badge>;
+        return <Badge variant="outline">{t("type.freeShipping")}</Badge>;
       case "buy_x_get_y":
-        return <Badge variant="outline">Buy X Get Y</Badge>;
+        return <Badge variant="outline">{t("type.buyXGetY")}</Badge>;
       default:
         return <span>{coupon.discountValue}</span>;
     }
@@ -212,9 +219,9 @@ export const CouponsManagement = () => {
     if (!coupon.usageLimit) return null;
     const percentage = (coupon.usageCount / coupon.usageLimit) * 100;
     return (
-      <div className="w-full bg-gray-200 rounded-full h-2">
+      <div className="w-full bg-muted rounded-full h-2">
         <div
-          className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+          className="bg-primary h-2 rounded-full transition-all duration-300"
           style={{ width: `${Math.min(percentage, 100)}%` }}
         />
       </div>
@@ -222,15 +229,10 @@ export const CouponsManagement = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       <div className="p-4 sm:p-6">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Coupons Management
-          </h1>
-          <p className="text-gray-600">
-            Create and manage promotional coupons and discounts
-          </p>
+          <p className="text-muted-foreground">{t("subtitle")}</p>
         </div>
 
         {/* Stats Cards */}
@@ -238,7 +240,7 @@ export const CouponsManagement = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Total Coupons
+                {t("stats.total")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -248,7 +250,7 @@ export const CouponsManagement = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Active Coupons
+                {t("stats.active")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -263,7 +265,9 @@ export const CouponsManagement = () => {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Usage</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                {t("stats.usage")}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
@@ -274,7 +278,7 @@ export const CouponsManagement = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Expired Coupons
+                {t("stats.expired")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -289,23 +293,23 @@ export const CouponsManagement = () => {
         <div className="flex flex-col md:flex-row gap-4 mb-6">
           <div className="flex-1">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Search className="absolute start-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
-                placeholder="Search coupons..."
+                placeholder={t("searchPlaceholder")}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="ps-10"
               />
             </div>
           </div>
           <div className="flex gap-2">
             <Button variant="outline">
-              <Filter className="h-4 w-4 mr-2" />
-              Filter
+              <Filter className="h-4 w-4 me-2" />
+              {t("filter")}
             </Button>
             <Button onClick={handleAddCoupon}>
-              <Plus className="h-4 w-4 mr-2" />
-              Create Coupon
+              <Plus className="h-4 w-4 me-2" />
+              {t("create")}
             </Button>
           </div>
         </div>
@@ -313,21 +317,19 @@ export const CouponsManagement = () => {
         {/* Coupons Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Coupons</CardTitle>
-            <CardDescription>
-              Manage your promotional coupons and discounts
-            </CardDescription>
+            <CardTitle>{t("tableTitle")}</CardTitle>
+            <CardDescription>{t("tableDescription")}</CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Coupon</TableHead>
-                  <TableHead>Discount</TableHead>
-                  <TableHead>Usage</TableHead>
-                  <TableHead>Validity</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>{t("columns.coupon")}</TableHead>
+                  <TableHead>{t("columns.discount")}</TableHead>
+                  <TableHead>{t("columns.usage")}</TableHead>
+                  <TableHead>{t("columns.validity")}</TableHead>
+                  <TableHead>{t("columns.status")}</TableHead>
+                  <TableHead>{t("columns.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -336,7 +338,7 @@ export const CouponsManagement = () => {
                     <TableCell>
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <span className="font-mono font-medium bg-gray-100 px-2 py-1 rounded text-sm">
+                          <span className="font-mono font-medium bg-muted px-2 py-1 rounded text-sm">
                             {coupon.code}
                           </span>
                           <Button
@@ -347,11 +349,11 @@ export const CouponsManagement = () => {
                             <Copy className="h-3 w-3" />
                           </Button>
                         </div>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-muted-foreground">
                           {coupon.name}
                         </div>
                         {coupon.description && (
-                          <div className="text-xs text-gray-400">
+                          <div className="text-xs text-muted-foreground">
                             {coupon.description.substring(0, 50)}...
                           </div>
                         )}
@@ -361,13 +363,17 @@ export const CouponsManagement = () => {
                       <div className="space-y-1">
                         {getDiscountDisplay(coupon)}
                         {coupon.minimumPurchase && (
-                          <div className="text-xs text-gray-500">
-                            Min: ${coupon.minimumPurchase}
+                          <div className="text-xs text-muted-foreground">
+                            {t("min", {
+                              amount: formatMoney(coupon.minimumPurchase, locale),
+                            })}
                           </div>
                         )}
                         {coupon.maximumDiscount && (
-                          <div className="text-xs text-gray-500">
-                            Max: ${coupon.maximumDiscount}
+                          <div className="text-xs text-muted-foreground">
+                            {t("max", {
+                              amount: formatMoney(coupon.maximumDiscount, locale),
+                            })}
                           </div>
                         )}
                       </div>
@@ -380,8 +386,8 @@ export const CouponsManagement = () => {
                         </div>
                         {getUsageProgress(coupon)}
                         {coupon.perUserLimit && (
-                          <div className="text-xs text-gray-500">
-                            {coupon.perUserLimit} per user
+                          <div className="text-xs text-muted-foreground">
+                            {t("perUser", { count: coupon.perUserLimit })}
                           </div>
                         )}
                       </div>
@@ -391,15 +397,13 @@ export const CouponsManagement = () => {
                         <div className="flex items-center gap-1 text-sm">
                           <Calendar className="h-3 w-3" />
                           <span>
-                            From:{" "}
-                            {new Date(coupon.startsAt).toLocaleDateString()}
+                            {t("from", { date: formatDate(coupon.startsAt, locale) })}
                           </span>
                         </div>
                         <div className="flex items-center gap-1 text-sm">
                           <Calendar className="h-3 w-3" />
                           <span>
-                            To:{" "}
-                            {new Date(coupon.expiresAt).toLocaleDateString()}
+                            {t("to", { date: formatDate(coupon.expiresAt, locale) })}
                           </span>
                         </div>
                       </div>
@@ -413,26 +417,26 @@ export const CouponsManagement = () => {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuLabel>{t("columns.actions")}</DropdownMenuLabel>
                           <DropdownMenuItem
                             onClick={() => handleEditCoupon(coupon)}
                           >
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit
+                            <Edit className="me-2 h-4 w-4" />
+                            {t("edit")}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => copyToClipboard(coupon.code)}
                           >
-                            <Copy className="mr-2 h-4 w-4" />
-                            Copy Code
+                            <Copy className="me-2 h-4 w-4" />
+                            {t("copyCode")}
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             onClick={() => handleDeleteCoupon(coupon.id)}
-                            className="text-red-600"
+                            className="text-red-600 dark:text-red-400"
                           >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
+                            <Trash2 className="me-2 h-4 w-4" />
+                            {t("delete")}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -453,10 +457,10 @@ export const CouponsManagement = () => {
                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1}
               >
-                Previous
+                {t("previous")}
               </Button>
               <span className="flex items-center px-4">
-                Page {currentPage} of {totalPages}
+                {t("page", { page: currentPage, total: totalPages })}
               </span>
               <Button
                 variant="outline"
@@ -465,7 +469,7 @@ export const CouponsManagement = () => {
                 }
                 disabled={currentPage === totalPages}
               >
-                Next
+                {t("next")}
               </Button>
             </div>
           </div>
@@ -476,12 +480,10 @@ export const CouponsManagement = () => {
           <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
-                {editingCoupon ? "Edit Coupon" : "Create New Coupon"}
+                {editingCoupon ? t("editTitle") : t("createTitle")}
               </DialogTitle>
               <DialogDescription>
-                {editingCoupon
-                  ? "Update your coupon settings"
-                  : "Create a new promotional coupon"}
+                {editingCoupon ? t("editDescription") : t("createDescription")}
               </DialogDescription>
             </DialogHeader>
             {/* <CouponForm
@@ -500,14 +502,14 @@ export const CouponsManagement = () => {
         </Dialog>
 
         <GuidanceWidget
-          title="Coupon Management Tips"
+          title={t("tips.title")}
           tips={[
-            "Use clear, memorable coupon codes that are easy to type",
-            "Set reasonable usage limits to prevent abuse",
-            "Monitor coupon performance and adjust strategies accordingly",
-            "Create time-limited offers to drive urgency",
-            "Test different discount types to see what works best",
-            "Keep track of coupon usage and customer behavior",
+            t("tips.codes"),
+            t("tips.limits"),
+            t("tips.monitor"),
+            t("tips.timeLimited"),
+            t("tips.test"),
+            t("tips.track"),
           ]}
         />
       </div>

@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { ChevronDown, Truck, UserPlus } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -22,22 +23,8 @@ import {
 import { Label } from "@workspace/ui/components/label";
 import { Textarea } from "@workspace/ui/components/textarea";
 import { updateShipmentStatus } from "@/actions/shipping";
-import {
-  nextStatuses,
-  SHIPPING_STATUS_LABEL,
-  type ShippingStatus,
-} from "@/lib/shipping/shipping-status";
+import { nextStatuses, type ShippingStatus } from "@/lib/shipping/shipping-status";
 import type { ShippingOrderRow } from "@/lib/shipping/shipping.types";
-
-const ACTION_LABEL: Partial<Record<ShippingStatus, string>> = {
-  pending: "Back to ready to ship",
-  assigned: "Return to assigned",
-  out_for_delivery: "Mark out for delivery",
-  delivered: "Mark delivered",
-  failed: "Mark failed attempt",
-  returned: "Mark returned",
-  cancelled: "Cancel shipment",
-};
 
 const DESTRUCTIVE: ShippingStatus[] = ["cancelled", "returned", "failed"];
 
@@ -48,12 +35,13 @@ interface Props {
 
 /** Per-row action menu: the moves the shipment status graph allows next. */
 export function StatusActions({ row, onAssign }: Props) {
+  const t = useTranslations("shipping.actions");
   const [failing, setFailing] = useState(false);
   const [reason, setReason] = useState("");
   const [isPending, startTransition] = useTransition();
 
   if (!row.editable) {
-    return <span className="text-xs text-muted-foreground">Handled by Tallaby</span>;
+    return <span className="text-xs text-muted-foreground">{t("handledByTallaby")}</span>;
   }
 
   const moves = row.shipmentId
@@ -72,10 +60,10 @@ export function StatusActions({ row, onAssign }: Props) {
         failureReason,
       });
       if (!res.success) {
-        toast.error(res.error ?? "Could not update the shipment");
+        toast.error(res.error ?? t("updateFailed"));
         return;
       }
-      toast.success(`Marked ${SHIPPING_STATUS_LABEL[status].toLowerCase()}`);
+      toast.success(t(`marked.${status}`));
       setFailing(false);
       setReason("");
     });
@@ -91,13 +79,13 @@ export function StatusActions({ row, onAssign }: Props) {
       <div className="flex items-center justify-end gap-1.5">
         {row.status === "pending" ? (
           <Button size="sm" onClick={() => onAssign(row)}>
-            <UserPlus className="mr-1.5 h-3.5 w-3.5" />
-            Assign rider
+            <UserPlus className="me-1.5 h-3.5 w-3.5" />
+            {t("assignRider")}
           </Button>
         ) : primary ? (
           <Button size="sm" onClick={() => apply(primary)} disabled={isPending}>
-            <Truck className="mr-1.5 h-3.5 w-3.5" />
-            Out for delivery
+            <Truck className="me-1.5 h-3.5 w-3.5" />
+            {t("outForDelivery")}
           </Button>
         ) : null}
 
@@ -105,8 +93,8 @@ export function StatusActions({ row, onAssign }: Props) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button size="sm" variant="outline" disabled={isPending}>
-                Update
-                <ChevronDown className="ml-1 h-3.5 w-3.5" />
+                {t("update")}
+                <ChevronDown className="ms-1 h-3.5 w-3.5" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -116,13 +104,13 @@ export function StatusActions({ row, onAssign }: Props) {
                   className={DESTRUCTIVE.includes(status) ? "text-destructive focus:text-destructive" : undefined}
                   onSelect={() => (status === "failed" ? setFailing(true) : apply(status))}
                 >
-                  {ACTION_LABEL[status] ?? SHIPPING_STATUS_LABEL[status]}
+                  {t(`move.${status}`)}
                 </DropdownMenuItem>
               ))}
               {canAssign && moves.length > 0 && <DropdownMenuSeparator />}
               {canAssign && (
                 <DropdownMenuItem onSelect={() => onAssign(row)}>
-                  {row.riderId ? "Reassign rider" : "Assign rider"}
+                  {row.riderId ? t("reassignRider") : t("assignRider")}
                 </DropdownMenuItem>
               )}
             </DropdownMenuContent>
@@ -133,31 +121,29 @@ export function StatusActions({ row, onAssign }: Props) {
       <Dialog open={failing} onOpenChange={(o) => !o && !isPending && setFailing(false)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Failed delivery — #{row.orderNumber}</DialogTitle>
-            <DialogDescription>
-              The order stays open so you can retry with the same or another rider.
-            </DialogDescription>
+            <DialogTitle>{t("failedTitle", { number: row.orderNumber })}</DialogTitle>
+            <DialogDescription>{t("failedDescription")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
-            <Label htmlFor={`fail-${row.id}`}>Reason</Label>
+            <Label htmlFor={`fail-${row.id}`}>{t("reason")}</Label>
             <Textarea
               id={`fail-${row.id}`}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="e.g. Customer unavailable, wrong address…"
+              placeholder={t("reasonPlaceholder")}
               rows={3}
             />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setFailing(false)} disabled={isPending}>
-              Cancel
+              {t("cancel")}
             </Button>
             <Button
               variant="destructive"
               disabled={isPending || !reason.trim()}
               onClick={() => apply("failed", reason.trim())}
             >
-              {isPending ? "Saving…" : "Mark failed"}
+              {isPending ? t("saving") : t("markFailed")}
             </Button>
           </DialogFooter>
         </DialogContent>

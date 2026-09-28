@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 import {
   getSellerDocuments,
   getSellerProfile,
@@ -24,6 +25,7 @@ export async function fetchSellerSettings() {
 }
 
 export async function handleUpdateSellerProfile(input: unknown) {
+  const t = await getTranslations("settings.messages");
   try {
     const data = sellerProfileSchema.parse(input);
     const res = await updateSellerProfile({
@@ -40,12 +42,12 @@ export async function handleUpdateSellerProfile(input: unknown) {
     if (!res.success) {
       return {
         success: false,
-        message: res.error ?? "Failed to update",
+        message: t("updateFailed"),
       } as const;
     }
     revalidatePath("/settings");
     revalidatePath("/", "layout");
-    return { success: true, message: "Profile updated" } as const;
+    return { success: true, message: t("profileUpdated") } as const;
   } catch (error) {
     if (error instanceof z.ZodError) {
       const fieldErrors: Record<string, string[]> = {};
@@ -56,11 +58,11 @@ export async function handleUpdateSellerProfile(input: unknown) {
       }
       return {
         success: false,
-        message: "Please fix the validation errors",
+        message: t("fixErrors"),
         errors: fieldErrors,
       } as const;
     }
-    return { success: false, message: "Something went wrong" } as const;
+    return { success: false, message: t("somethingWentWrong") } as const;
   }
 }
 
@@ -71,6 +73,7 @@ const uploadDocSchema = z.object({
 });
 
 export async function handleUploadDocument(input: unknown) {
+  const t = await getTranslations("settings.messages");
   try {
     const data = uploadDocSchema.parse(input);
     const res = await uploadSellerDocument({
@@ -81,13 +84,13 @@ export async function handleUploadDocument(input: unknown) {
     if (!res.success) {
       return {
         success: false,
-        message: res.error ?? "Failed to upload",
+        message: t("uploadFailed"),
       } as const;
     }
     revalidatePath("/settings");
     return {
       success: true,
-      message: "Document uploaded",
+      message: t("documentUploaded"),
       document: res.data,
     } as const;
   } catch (error) {
@@ -100,10 +103,10 @@ export async function handleUploadDocument(input: unknown) {
       }
       return {
         success: false,
-        message: "Please fix the validation errors",
+        message: t("fixErrors"),
         errors: fieldErrors,
       } as const;
     }
-    return { success: false, message: "Something went wrong" } as const;
+    return { success: false, message: t("somethingWentWrong") } as const;
   }
 }

@@ -33,11 +33,12 @@
   --chart-2: #06b6d4;
   --chart-3: #3b82f6;
   --chart-4: #84cc16;
-  --chart-5: #ab308;
+  --chart-5: #eab308;
   --radius: 0.625rem;
   --sidebar: #ffffff;
   --sidebar-foreground: #171717;
   --sidebar-primary: #145163;
+  --sidebar-primary-foreground: #fafafa;
   --sidebar-accent: #f7f7f7;
   --sidebar-accent-foreground: #171717;
   --sidebar-border: #e5e5e5;

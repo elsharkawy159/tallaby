@@ -88,7 +88,7 @@ export function UnansweredQuestionsClient({
         {rows.map((q) => (
           <div key={q.id} className="space-y-3">
             <div className="flex items-start gap-3">
-              <div className="h-12 w-12 rounded bg-gray-100 overflow-hidden flex-shrink-0">
+              <div className="h-12 w-12 rounded bg-muted overflow-hidden flex-shrink-0">
                 <Image
                   src={getPublicUrl(q.productImages?.[0] ?? "", "products")}
                   alt={q.productTitle}
@@ -98,7 +98,7 @@ export function UnansweredQuestionsClient({
                 />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-sm font-medium text-gray-900 truncate">
+                <div className="text-sm font-medium text-foreground truncate">
                   {q.productTitle}
                 </div>
                 <div className="text-xs text-muted-foreground">

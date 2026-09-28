@@ -64,14 +64,14 @@ function statusClassName (status: BulkProductItem["status"]): string {
   switch (status) {
     case "ready":
     case "saved":
-      return "bg-emerald-50 text-emerald-700 border-emerald-200"
+      return "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-900/60"
     case "error":
-      return "bg-red-50 text-red-700 border-red-200"
+      return "bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-900/60"
     case "fetching":
     case "saving":
-      return "bg-amber-50 text-amber-700 border-amber-200"
+      return "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-900/60"
     default:
-      return "bg-gray-50 text-gray-600 border-gray-200"
+      return "bg-muted/50 text-muted-foreground border-border"
   }
 }
 
@@ -367,13 +367,13 @@ export function BulkUrlImport ({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50/30 pb-24">
-      <div className="sticky top-14 z-20 bg-white border-b border-gray-200 shadow-sm lg:top-0">
+    <div className="min-h-screen pb-24">
+      <div className="sticky top-16 z-20 bg-card border-b border-border shadow-sm">
         <div className="container px-6 py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-semibold text-foreground">
               {t("title")}
-            </h1>
+            </h2>
             <p className="text-sm text-muted-foreground mt-0.5">
               {isFetching
                 ? t("fetchingProgress", { done: fetchedCount, total: items.length })
@@ -405,7 +405,7 @@ export function BulkUrlImport ({
 
       <div className="container py-6 space-y-3">
         {items.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-gray-300 bg-white p-10 text-center text-sm text-muted-foreground">
+          <div className="rounded-lg border border-dashed border-border bg-card p-10 text-center text-sm text-muted-foreground">
             {t("emptyList")}
           </div>
         ) : (
@@ -426,12 +426,12 @@ export function BulkUrlImport ({
                 <AccordionItem
                   key={item.id}
                   value={item.id}
-                  className="border border-gray-200 rounded-lg bg-white px-4 shadow-sm"
+                  className="border border-border rounded-lg bg-card px-4 shadow-sm"
                 >
                   <div className="flex items-center gap-2">
                     <AccordionTrigger className="flex-1 hover:no-underline py-3">
                       <div className="flex items-center gap-3 text-start min-w-0">
-                        <div className="size-12 rounded-md border border-gray-200 bg-gray-50 overflow-hidden shrink-0">
+                        <div className="size-12 rounded-md border border-border bg-muted/50 overflow-hidden shrink-0">
                           {thumb ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
@@ -440,20 +440,20 @@ export function BulkUrlImport ({
                               className="size-full object-cover"
                             />
                           ) : (
-                            <div className="size-full flex items-center justify-center text-[10px] text-gray-400">
+                            <div className="size-full flex items-center justify-center text-[10px] text-muted-foreground">
                               {item.status === "fetching" ? "…" : t("noImage")}
                             </div>
                           )}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">
+                          <p className="text-sm font-medium text-foreground truncate">
                             {label}
                           </p>
                           <p className="text-xs text-muted-foreground truncate" dir="ltr">
                             {item.url}
                           </p>
                           {item.error && (
-                            <p className="text-xs text-red-600 mt-0.5 truncate">
+                            <p className="text-xs text-red-600 dark:text-red-400 mt-0.5 truncate">
                               {errorText(item.error)}
                             </p>
                           )}
@@ -493,7 +493,7 @@ export function BulkUrlImport ({
                         type="button"
                         variant="ghost"
                         size="icon"
-                        className="size-8 text-red-600"
+                        className="size-8 text-red-600 dark:text-red-400"
                         onClick={() => handleRemove(item.id)}
                         aria-label={t("remove")}
                       >
@@ -518,7 +518,7 @@ export function BulkUrlImport ({
                         />
                       ) : null
                     ) : item.status === "error" ? (
-                      <div className="py-4 text-sm text-red-600">
+                      <div className="py-4 text-sm text-red-600 dark:text-red-400">
                         {errorText(item.error) || t("errors.urlFailed")}{" "}
                         {t("retryOrRemove")}
                       </div>
@@ -536,7 +536,7 @@ export function BulkUrlImport ({
         )}
       </div>
 
-      <div className="fixed bottom-0 inset-x-0 z-10 border-t border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+      <div className="fixed bottom-0 inset-x-0 z-10 border-t border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
         <div className="px-6 py-4 flex items-center justify-between container gap-3">
           <p className="text-sm text-muted-foreground">
             {t("footerHint")}

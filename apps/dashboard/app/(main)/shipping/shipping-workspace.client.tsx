@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
   AlertTriangle,
@@ -21,13 +22,10 @@ import { Card, CardContent } from "@workspace/ui/components/card";
 import { Switch } from "@workspace/ui/components/switch";
 import { TableSection } from "@workspace/ui/components/table-section";
 import { Tabs, TabsList, TabsTrigger } from "@workspace/ui/components/tabs";
-import { formatCurrency } from "@workspace/lib";
 import { setSellerRiderActive, setSellerRiderAvailable } from "@/actions/shipping";
 import { cn } from "@/lib/utils";
-import {
-  SHIPPING_STATUS_BADGE,
-  SHIPPING_STATUS_LABEL,
-} from "@/lib/shipping/shipping-status";
+import { formatDateTime, formatMoney } from "@/lib/i18n/format";
+import { SHIPPING_STATUS_BADGE } from "@/lib/shipping/shipping-status";
 import type { SellerRider, ShippingOrderRow } from "@/lib/shipping/shipping.types";
 import { AssignRiderDialog } from "./assign-rider-dialog.client";
 import { RiderFormDialog } from "./rider-form-dialog.client";
@@ -42,15 +40,6 @@ const TAB_FILTER: Record<OrderTab, (r: ShippingOrderRow) => boolean> = {
   out_for_delivery: (r) => r.status === "out_for_delivery",
   delivered: (r) => r.status === "delivered",
   issues: (r) => r.status === "failed" || r.status === "returned" || r.status === "cancelled",
-};
-
-const TAB_LABEL: Record<OrderTab, string> = {
-  all: "All",
-  ready: "Ready to ship",
-  assigned: "Assigned",
-  out_for_delivery: "Out for delivery",
-  delivered: "Delivered",
-  issues: "Needs attention",
 };
 
 const isToday = (iso: string | null) =>
@@ -92,6 +81,9 @@ export function ShippingWorkspace({
   orders: ShippingOrderRow[];
   riders: SellerRider[];
 }) {
+  const t = useTranslations("shipping");
+  const tStatus = useTranslations("status.shipping");
+  const locale = useLocale();
   const [view, setView] = useState<"orders" | "riders">("orders");
   const [tab, setTab] = useState<OrderTab>("all");
   const [assignIds, setAssignIds] = useState<string[]>([]);
@@ -134,7 +126,7 @@ export function ShippingWorkspace({
     () => [
       {
         id: "order",
-        header: "Order",
+        header: t("columns.order"),
         size: 170,
         accessorFn: (r) =>
           `${r.orderNumber} ${r.customerName} ${r.customerPhone ?? ""} ${r.city ?? ""}`,
@@ -142,14 +134,14 @@ export function ShippingWorkspace({
           <div className="space-y-0.5">
             <div className="font-medium">#{row.original.orderNumber}</div>
             <div className="text-xs text-muted-foreground">
-              {new Date(row.original.createdAt).toLocaleString()}
+              {formatDateTime(row.original.createdAt, locale)}
             </div>
           </div>
         ),
       },
       {
         id: "customer",
-        header: "Customer & address",
+        header: t("columns.customer"),
         size: 260,
         enableSorting: false,
         cell: ({ row }) => {
@@ -160,6 +152,7 @@ export function ShippingWorkspace({
               {r.customerPhone && (
                 <a
                   href={`tel:${r.customerPhone}`}
+                  dir="ltr"
                   className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
                 >
                   <Phone className="h-3 w-3" />
@@ -169,7 +162,7 @@ export function ShippingWorkspace({
               <div className="flex items-start gap-1 text-xs text-muted-foreground">
                 <MapPin className="mt-0.5 h-3 w-3 shrink-0" />
                 <span className="line-clamp-2">
-                  {[r.addressLine, r.city].filter(Boolean).join(", ") || "No address"}
+                  {[r.addressLine, r.city].filter(Boolean).join(", ") || t("noAddress")}
                 </span>
               </div>
             </div>
@@ -178,7 +171,7 @@ export function ShippingWorkspace({
       },
       {
         id: "items",
-        header: "Items",
+        header: t("columns.items"),
         size: 200,
         enableSorting: false,
         cell: ({ row }) => (
@@ -192,48 +185,48 @@ export function ShippingWorkspace({
       },
       {
         id: "payment",
-        header: "Payment",
+        header: t("columns.payment"),
         size: 130,
         accessorFn: (r) => r.codDue,
         cell: ({ row }) => {
           const r = row.original;
           return r.codDue > 0 ? (
             <div>
-              <Badge variant="outline" className="border-amber-300 bg-amber-50 text-amber-800">
-                COD
+              <Badge variant="outline" className="border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300">
+                {t("cod")}
               </Badge>
               <div className="mt-1 text-sm font-medium tabular-nums">
-                {formatCurrency(r.codDue)}
+                {formatMoney(r.codDue, locale)}
               </div>
             </div>
           ) : (
-            <Badge variant="outline" className="border-green-200 bg-green-50 text-green-800">
-              {r.paymentStatus === "collected" ? "Collected" : "Paid"}
+            <Badge variant="outline" className="border-green-200 dark:border-green-900/60 bg-green-50 dark:bg-green-950/40 text-green-800 dark:text-green-300">
+              {r.paymentStatus === "collected" ? t("collected") : t("paid")}
             </Badge>
           );
         },
       },
       {
         id: "rider",
-        header: "Rider",
+        header: t("columns.rider"),
         size: 150,
         accessorFn: (r) => r.riderName ?? "",
         cell: ({ row }) =>
           row.original.riderName ? (
             <span className="text-sm">{row.original.riderName}</span>
           ) : (
-            <span className="text-xs text-muted-foreground">Unassigned</span>
+            <span className="text-xs text-muted-foreground">{t("unassigned")}</span>
           ),
       },
       {
         id: "status",
-        header: "Status",
+        header: t("columns.status"),
         size: 150,
         accessorFn: (r) => r.status,
         cell: ({ row }) => (
           <div className="space-y-1">
             <Badge variant="outline" className={SHIPPING_STATUS_BADGE[row.original.status]}>
-              {SHIPPING_STATUS_LABEL[row.original.status]}
+              {tStatus(row.original.status)}
             </Badge>
             {row.original.status === "failed" && row.original.failureReason && (
               <div
@@ -260,7 +253,7 @@ export function ShippingWorkspace({
         ),
       },
     ],
-    []
+    [t, tStatus, locale]
   );
 
   return (
@@ -268,54 +261,51 @@ export function ShippingWorkspace({
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Shipping & Logistics</h1>
-          <p className="mt-1 text-gray-600">
-            Assign your riders, track every delivery and keep customers' orders moving.
-          </p>
+          <p className="text-muted-foreground">{t("subtitle")}</p>
         </div>
         <Button onClick={() => setRiderDialog({ open: true, rider: null })}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add rider
+          <Plus className="me-2 h-4 w-4" />
+          {t("addRider")}
         </Button>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
-          label="Ready to ship"
+          label={t("stats.ready")}
           value={stats.ready}
-          hint={stats.ready ? "Waiting for a rider" : "All caught up"}
+          hint={stats.ready ? t("stats.readyHint") : t("stats.allCaughtUp")}
           icon={PackageCheck}
-          tone="bg-yellow-100 text-yellow-700"
+          tone="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300"
         />
         <StatCard
-          label="In progress"
+          label={t("stats.inProgress")}
           value={stats.inProgress}
-          hint="Assigned or on the road"
+          hint={t("stats.inProgressHint")}
           icon={Truck}
-          tone="bg-blue-100 text-blue-700"
+          tone="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
         />
         <StatCard
-          label="Delivered today"
+          label={t("stats.deliveredToday")}
           value={stats.deliveredToday}
-          hint={stats.issues ? `${stats.issues} failed attempt${stats.issues > 1 ? "s" : ""}` : "No failed attempts"}
+          hint={t("stats.failedAttempts", { count: stats.issues })}
           icon={CheckCircle2}
-          tone="bg-green-100 text-green-700"
+          tone="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
         />
         <StatCard
-          label="Cash with riders"
-          value={formatCurrency(stats.cod)}
-          hint="COD on open deliveries"
+          label={t("stats.cashWithRiders")}
+          value={formatMoney(stats.cod, locale)}
+          hint={t("stats.cashHint")}
           icon={Banknote}
-          tone="bg-purple-100 text-purple-700"
+          tone="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
         />
       </div>
 
       {/* View switch */}
       <Tabs value={view} onValueChange={(v) => setView(v as "orders" | "riders")}>
         <TabsList>
-          <TabsTrigger value="orders">Deliveries ({orders.length})</TabsTrigger>
-          <TabsTrigger value="riders">Riders ({riders.length})</TabsTrigger>
+          <TabsTrigger value="orders">{t("deliveries", { count: orders.length })}</TabsTrigger>
+          <TabsTrigger value="riders">{t("riders", { count: riders.length })}</TabsTrigger>
         </TabsList>
       </Tabs>
 
@@ -323,13 +313,13 @@ export function ShippingWorkspace({
         <div className="space-y-4">
           <Tabs value={tab} onValueChange={(v) => setTab(v as OrderTab)}>
             <TabsList className="h-auto flex-wrap justify-start">
-              {(Object.keys(TAB_LABEL) as OrderTab[]).map((key) => (
+              {(Object.keys(TAB_FILTER) as OrderTab[]).map((key) => (
                 <TabsTrigger key={key} value={key}>
                   {key === "issues" && counts.issues > 0 && (
-                    <AlertTriangle className="mr-1 h-3.5 w-3.5 text-amber-600" />
+                    <AlertTriangle className="me-1 h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
                   )}
-                  {TAB_LABEL[key]}
-                  <span className="ml-1.5 text-xs tabular-nums text-muted-foreground">
+                  {t(`tabs.${key}`)}
+                  <span className="ms-1.5 text-xs tabular-nums text-muted-foreground">
                     {counts[key]}
                   </span>
                 </TabsTrigger>
@@ -353,8 +343,8 @@ export function ShippingWorkspace({
                   onClick={() => openAssign(selected.map((r) => r.id))}
                   className="bg-[#E9520E] hover:bg-[#D4460C]"
                 >
-                  <UserPlus className="mr-2 h-4 w-4" />
-                  Assign rider to {selected.length} order{selected.length > 1 ? "s" : ""}
+                  <UserPlus className="me-2 h-4 w-4" />
+                  {t("assignToOrders", { count: selected.length })}
                 </Button>
               );
             }}
@@ -362,7 +352,7 @@ export function ShippingWorkspace({
 
           {orders.length === 0 && (
             <p className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-              No deliveries yet. Confirmed orders that you fulfill yourself will appear here.
+              {t("emptyDeliveries")}
             </p>
           )}
         </div>
@@ -399,6 +389,7 @@ function RidersPanel({
   onAdd: () => void;
   onEdit: (rider: SellerRider) => void;
 }) {
+  const t = useTranslations("shipping");
   const [isPending, startTransition] = useTransition();
 
   const toggle = (
@@ -408,22 +399,21 @@ function RidersPanel({
   ) =>
     startTransition(async () => {
       const res = await action({ riderId, value });
-      if (!res.success) toast.error(res.error ?? "Could not update the rider");
-      else toast.success(res.message ?? "Saved");
+      if (!res.success) toast.error(res.error ?? t("toast.riderUpdateFailed"));
+      else toast.success(res.message ?? t("toast.saved"));
     });
 
   if (riders.length === 0) {
     return (
       <div className="rounded-lg border border-dashed p-10 text-center">
         <Truck className="mx-auto h-8 w-8 text-muted-foreground" />
-        <h3 className="mt-3 font-semibold">No riders yet</h3>
+        <h3 className="mt-3 font-semibold">{t("noRiders")}</h3>
         <p className="mx-auto mt-1 max-w-sm text-sm text-muted-foreground">
-          Add the couriers who deliver your orders. You can then assign orders to them and follow
-          each delivery.
+          {t("noRidersDescription")}
         </p>
         <Button className="mt-4" onClick={onAdd}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add your first rider
+          <Plus className="me-2 h-4 w-4" />
+          {t("addFirstRider")}
         </Button>
       </div>
     );
@@ -436,11 +426,12 @@ function RidersPanel({
           <CardContent className="space-y-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <div className="truncate font-semibold">{rider.fullName ?? "Unnamed rider"}</div>
+                <div className="truncate font-semibold">{rider.fullName ?? t("unnamedRider")}</div>
                 <div className="truncate text-sm text-muted-foreground">{rider.email}</div>
                 {rider.phone && (
                   <a
                     href={`tel:${rider.phone}`}
+                    dir="ltr"
                     className="mt-0.5 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
                   >
                     <Phone className="h-3.5 w-3.5" />
@@ -451,7 +442,7 @@ function RidersPanel({
               <Button
                 variant="ghost"
                 size="icon"
-                aria-label={`Edit ${rider.fullName ?? "rider"}`}
+                aria-label={t("editRiderLabel", { name: rider.fullName ?? "" })}
                 onClick={() => onEdit(rider)}
               >
                 <Pencil className="h-4 w-4" />
@@ -461,17 +452,17 @@ function RidersPanel({
             <div className="grid grid-cols-2 gap-3 text-center">
               <div className="rounded-md bg-muted/60 p-2">
                 <div className="text-lg font-bold tabular-nums">{rider.activeDeliveries}</div>
-                <div className="text-xs text-muted-foreground">Active</div>
+                <div className="text-xs text-muted-foreground">{t("riderStats.active")}</div>
               </div>
               <div className="rounded-md bg-muted/60 p-2">
                 <div className="text-lg font-bold tabular-nums">{rider.deliveredTotal}</div>
-                <div className="text-xs text-muted-foreground">Delivered</div>
+                <div className="text-xs text-muted-foreground">{t("riderStats.delivered")}</div>
               </div>
             </div>
 
             <div className="space-y-2 border-t pt-3 text-sm">
               <label className="flex items-center justify-between">
-                <span>Active account</span>
+                <span>{t("activeAccount")}</span>
                 <Switch
                   checked={rider.isActive}
                   disabled={isPending}
@@ -479,7 +470,7 @@ function RidersPanel({
                 />
               </label>
               <label className="flex items-center justify-between">
-                <span>On duty</span>
+                <span>{t("onDuty")}</span>
                 <Switch
                   checked={rider.isAvailable}
                   disabled={isPending || !rider.isActive}

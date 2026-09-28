@@ -68,7 +68,7 @@ export const BaseField = React.forwardRef<HTMLDivElement, BaseFieldProps>(
               <span
                 className={cn(
                   "text-xs",
-                  characterCount > maxLength ? "text-red-500" : "text-gray-500"
+                  characterCount > maxLength ? "text-red-500" : "text-muted-foreground"
                 )}
               >
                 {characterCount}/{maxLength}
@@ -90,14 +90,14 @@ export const BaseField = React.forwardRef<HTMLDivElement, BaseFieldProps>(
               <p className="text-sm text-yellow-600">{warningText}</p>
             )}
             {helpText && !error && !successText && !warningText && (
-              <p className="text-sm text-gray-500">{helpText}</p>
+              <p className="text-sm text-muted-foreground">{helpText}</p>
             )}
             {description &&
               !error &&
               !successText &&
               !warningText &&
               !helpText && (
-                <p className="text-sm text-gray-500">{description}</p>
+                <p className="text-sm text-muted-foreground">{description}</p>
               )}
           </div>
         </div>

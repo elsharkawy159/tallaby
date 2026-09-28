@@ -21,10 +21,10 @@ export function SeoStep({ activeLocale }: SeoStepProps) {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 space-y-4">
+      <div className="bg-card rounded-lg border border-border shadow-sm p-6 space-y-4">
         <div>
           <h3 className="text-sm font-semibold">{t("title")}</h3>
-          <p className="text-xs text-gray-500 mt-1">{t("description")}</p>
+          <p className="text-xs text-muted-foreground mt-1">{t("description")}</p>
         </div>
 
         {(["en", "ar"] as const).map((loc) => (

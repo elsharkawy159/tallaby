@@ -5,7 +5,7 @@ import { Camera, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { createClient } from "@/supabase/client";
+import { checkSellerImage, uploadSellerImage } from "./seller-image-upload";
 
 import { Button } from "@workspace/ui/components/button";
 import { cn } from "@/lib/utils";
@@ -26,7 +26,6 @@ export function LogoUploader({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(value || null);
-  const supabase = createClient();
   const t = useTranslations("onboarding");
 
   const handleLogoClick = () => {
@@ -38,15 +37,9 @@ export function LogoUploader({
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
-      toast.error(t("pleaseSelectImageFile"));
-      return;
-    }
-
-    // Validate file size (5MB max)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error(t("fileSizeMustBeLess"));
+    const check = checkSellerImage(file);
+    if (check !== "ok") {
+      toast.error(t(check === "not_image" ? "pleaseSelectImageFile" : "fileSizeMustBeLess"));
       return;
     }
 
@@ -57,37 +50,12 @@ export function LogoUploader({
       const previewUrl = URL.createObjectURL(file);
       setPreview(previewUrl);
 
-
-      // Generate unique filename
-      const fileExt = file.name.split(".").pop();
-      const fileName = `logo-${Date.now()}.${fileExt}`;
-      const filePath = `logos/${fileName}`;
-
-      // Upload file to Supabase Storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from("sellers")
-        .upload(filePath, file, {
-          cacheControl: "3600",
-          upsert: false,
-        });
-
-      if (uploadError) {
-        console.error("Error uploading file:", uploadError);
-        toast.error(t("failedToUploadLogo"));
-        setPreview(value || null);
-        return;
-      }
-
-      // Get public URL
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("sellers").getPublicUrl(filePath);
-
+      const publicUrl = await uploadSellerImage(file, "logo");
       onChange(publicUrl);
       toast.success(t("logoUploadedSuccessfully"));
     } catch (error) {
       console.error("Error uploading logo:", error);
-      toast.error(t("somethingWentWrong"));
+      toast.error(t("failedToUploadLogo"));
       setPreview(value || null);
     } finally {
       setIsUploading(false);
@@ -111,7 +79,7 @@ export function LogoUploader({
       <div
         onClick={handleLogoClick}
         className={cn(
-          "relative size-32 rounded-full border-2 border-dashed border-gray-300 dark:border-gray-700 flex items-center justify-center cursor-pointer transition-colors",
+          "relative size-32 rounded-full bg-card border-2 border-dashed border-gray-300 dark:border-gray-700 flex items-center justify-center cursor-pointer transition-colors",
           disabled || isUploading
             ? "opacity-50 cursor-not-allowed"
             : "hover:border-primary hover:bg-gray-50 dark:hover:bg-gray-800"

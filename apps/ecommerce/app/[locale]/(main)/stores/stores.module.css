@@ -1,0 +1,93 @@
+/*
+ * Market-street awnings. Each aisle sets --awning; the alternate stripe is a
+ * tint of it mixed into the card color so it works in light and dark themes.
+ */
+.awningTone {
+  --awning-alt: color-mix(in oklab, var(--awning) 16%, var(--card));
+  --stripe: 22px;
+  --scallop: 11px;
+}
+
+/* Awning palette, assigned per aisle in page order. */
+.tone0 { --awning: var(--primary); }
+.tone1 { --awning: #e0961b; }
+.tone2 { --awning: #5e7f89; }
+.tone3 { --awning: #5e7f4f; }
+.tone4 { --awning: #8c3b5a; }
+.tone5 { --awning: #34507e; }
+.toneIdle { --awning: color-mix(in oklab, var(--muted-foreground) 55%, var(--card)); }
+
+.awning {
+  position: relative;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--awning) 0 var(--stripe),
+    var(--awning-alt) var(--stripe) calc(var(--stripe) * 2)
+  );
+}
+
+/* Scalloped valance: one half-circle per stripe, in that stripe's color. */
+.awning::after {
+  content: "";
+  position: absolute;
+  /* 1px overlap hides the anti-aliasing seam between stripe and scallop. */
+  top: calc(100% - 1px);
+  inset-inline: 0;
+  height: var(--scallop);
+  background:
+    radial-gradient(circle at var(--scallop) 0, var(--awning) calc(var(--scallop) - 0.5px), transparent var(--scallop))
+      0 0 / calc(var(--stripe) * 2) var(--scallop) repeat-x,
+    radial-gradient(circle at calc(var(--stripe) + var(--scallop)) 0, var(--awning-alt) calc(var(--scallop) - 0.5px), transparent var(--scallop))
+      0 0 / calc(var(--stripe) * 2) var(--scallop) repeat-x;
+}
+
+/* The rail the awning hangs from. */
+.awning::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 4px;
+  background: color-mix(in oklab, var(--awning) 70%, black);
+}
+
+/* Hero valance is the page's one big gesture: wider stripes, deeper scallops. */
+.heroAwning {
+  --stripe: 44px;
+  --scallop: 22px;
+  height: 56px;
+}
+
+.stallAwning {
+  height: 40px;
+  transform-origin: top;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .stallAwning {
+    transition: transform 220ms cubic-bezier(0.3, 0.7, 0.4, 1.4);
+  }
+  .stall:hover .stallAwning,
+  .stall:focus-visible .stallAwning {
+    transform: scaleY(1.18);
+  }
+}
+
+/* Shop counter: the stall's base picks up its awning color. */
+.stall {
+  border-bottom: 4px solid var(--awning);
+}
+
+.swatch {
+  --stripe: 5px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--awning) 0 var(--stripe),
+    var(--awning-alt) var(--stripe) calc(var(--stripe) * 2)
+  );
+}
+
+.chip {
+  background: color-mix(in oklab, var(--awning) 12%, var(--card));
+  border-color: color-mix(in oklab, var(--awning) 35%, var(--card));
+}

@@ -32,12 +32,12 @@ export function LanguageSwitcher({ compact, className }: LanguageSwitcherProps) 
       aria-label={next === "ar" ? "العربية" : "English"}
       title={next === "ar" ? "العربية" : "English"}
       className={cn(
-        "flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 hover:text-gray-900 disabled:opacity-60",
+        "flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-60",
         compact && "justify-center px-0",
         className
       )}
     >
-      <Languages className="h-5 w-5 shrink-0 text-gray-600" />
+      <Languages className="h-5 w-5 shrink-0 text-muted-foreground" />
       {!compact && <span>{next === "ar" ? "العربية" : "English"}</span>}
     </button>
   );

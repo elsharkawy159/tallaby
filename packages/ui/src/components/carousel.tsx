@@ -299,7 +299,7 @@ function CarouselDots({
           variant="ghost"
           size="icon"
           className={cn(
-            "h-2.5 w-2.5 rounded-full border-0 bg-gray-300",
+            "h-2.5 w-2.5 rounded-full border-0 bg-border",
             currentIndex === index && "bg-primary",
             currentIndex === index && primaryColor && "bg-primary",
             dotClassName

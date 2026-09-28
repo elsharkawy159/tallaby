@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { getSellerOrders } from "@/actions/orders";
 import {
   getOrderDisplayNumber,
@@ -13,8 +14,15 @@ type SellerOrderItem = Extract<
   { data: unknown }
 >["data"][number];
 
-export async function VendorOrdersData() {
-  const res = await getSellerOrders({ limit: 100, offset: 0 });
+export async function VendorOrdersData({
+  initialOrderId = null,
+}: {
+  initialOrderId?: string | null;
+}) {
+  const [res, t] = await Promise.all([
+    getSellerOrders({ limit: 100, offset: 0 }),
+    getTranslations("orders"),
+  ]);
 
   const items: SellerOrderItem[] = res?.success ? (res.data ?? []) : [];
 
@@ -23,7 +31,7 @@ export async function VendorOrdersData() {
     orderId: item.orderId,
     orderNumber: getOrderDisplayNumber(item),
     createdAt: item.createdAt ?? new Date().toISOString(),
-    customerName: resolveCustomerName(item.order),
+    customerName: resolveCustomerName(item.order, t("guest")),
     // order_items denormalizes the product name and variant at purchase time.
     productTitle: item.productName ?? "",
     productImage:
@@ -35,5 +43,9 @@ export async function VendorOrdersData() {
     status: resolveVendorOrderStatus(item),
   }));
 
-  return <VendorOrdersTable rows={rows} />;
+  return <VendorOrdersTable
+      key={initialOrderId ?? "all"}
+      rows={rows}
+      initialOrderId={initialOrderId}
+    />;
 }

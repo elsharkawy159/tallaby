@@ -206,7 +206,7 @@ function CategoryPopover({
           variant="outline"
           disabled={disabled}
           className={cn(
-            "justify-between gap-2 ps-3 w-full truncate rounded-lg bg-white h-11.5 hover:bg-gray-50 transition-colors text-gray-800 font-medium",
+            "justify-between gap-2 ps-3 w-full truncate rounded-lg bg-card h-11.5 hover:bg-muted/50 transition-colors text-foreground font-medium",
             !selectedLabel && "text-muted-foreground",
             triggerClassName,
             className
@@ -232,7 +232,7 @@ function CategoryPopover({
           >
             <ChevronLeft className="size-4 rtl:rotate-180" />
           </Button>
-          <div className="flex min-w-0 items-center gap-1 text-xs text-gray-600 font-medium">
+          <div className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground font-medium">
             <button
               type="button"
               className="hover:text-foreground"

@@ -155,7 +155,7 @@ export function BrandSearchInput({
                   role="combobox"
                   disabled={disabled}
                   className={cn(
-                    'justify-between gap-2 ps-3 w-full truncate rounded-lg bg-white h-11.5 hover:bg-gray-50 transition-colors text-gray-800 font-medium',
+                    'justify-between gap-2 ps-3 w-full truncate rounded-lg bg-card h-11.5 hover:bg-muted/50 transition-colors text-foreground font-medium',
                     !selectedBrand && 'text-muted-foreground'
                   )}
                 >

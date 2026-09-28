@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
 import type { ColumnDef } from "@tanstack/react-table";
 import { TableSection } from "@workspace/ui/components/table-section";
@@ -17,6 +18,7 @@ import {
   AvatarImage,
 } from "@workspace/ui/components/avatar";
 import { getPublicUrl } from "@/lib/utils";
+import { formatDateTime, formatNumber } from "@/lib/i18n/format";
 import { Star } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
 import { Textarea } from "@workspace/ui/components/textarea";
@@ -50,6 +52,7 @@ export function VendorReviewsTabs({
   productRows: VendorReviewRow[];
   storeRows: VendorReviewRow[];
 }) {
+  const t = useTranslations("reviews");
   const [activeTab, setActiveTab] = useState<"product" | "store">("product");
 
   return (
@@ -60,14 +63,14 @@ export function VendorReviewsTabs({
           size="sm"
           onClick={() => setActiveTab("product")}
         >
-          Product Reviews ({productRows.length})
+          {t("productTab", { count: productRows.length })}
         </Button>
         <Button
           variant={activeTab === "store" ? "default" : "outline"}
           size="sm"
           onClick={() => setActiveTab("store")}
         >
-          Store Reviews ({storeRows.length})
+          {t("storeTab", { count: storeRows.length })}
         </Button>
       </div>
       <VendorReviewsTable
@@ -85,22 +88,24 @@ export function VendorReviewsTable({
   rows: VendorReviewRow[];
   reviewType?: "product" | "store";
 }) {
+  const t = useTranslations("reviews");
+  const locale = useLocale();
   const columns = useMemo<ColumnDef<VendorReviewRow, any>[]>(
     () => [
       {
         id: "created",
-        header: "Date",
+        header: t("columns.date"),
         size: 140,
         accessorFn: (row) => row.createdAt,
         cell: ({ row }) => (
           <div className="text-sm text-muted-foreground">
-            {new Date(row.original.createdAt).toLocaleString()}
+            {formatDateTime(row.original.createdAt, locale)}
           </div>
         ),
       },
       {
         id: "customer",
-        header: "Customer",
+        header: t("columns.customer"),
         size: 240,
         cell: ({ row }) => (
           <div className="flex items-center gap-3 min-w-0">
@@ -119,7 +124,7 @@ export function VendorReviewsTable({
               </div>
               {row.original.customerEmail && (
                 <a
-                  className="text-xs text-blue-600 hover:underline truncate"
+                  className="text-xs text-blue-600 dark:text-blue-400 hover:underline truncate"
                   href={`mailto:${row.original.customerEmail}`}
                   title={row.original.customerEmail}
                 >
@@ -132,17 +137,17 @@ export function VendorReviewsTable({
       },
       {
         id: "product",
-        header: reviewType === "store" ? "Order" : "Product",
+        header: reviewType === "store" ? t("columns.order") : t("columns.product"),
         size: 320,
         cell: ({ row }) => {
           if (reviewType === "store") {
             return (
               <div className="min-w-0">
                 <div className="truncate font-medium">
-                  Order #{row.original.orderNumber ?? "—"}
+                  {t("orderNumber", { number: row.original.orderNumber ?? "—" })}
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  Store review
+                  {t("storeReview")}
                 </div>
               </div>
             );
@@ -175,7 +180,7 @@ export function VendorReviewsTable({
       },
       {
         id: "rating",
-        header: "Rating",
+        header: t("columns.rating"),
         size: 140,
         accessorFn: (row) => row.rating,
         cell: ({ row }) => (
@@ -186,7 +191,7 @@ export function VendorReviewsTable({
                 className={
                   i < Math.round(row.original.rating)
                     ? "text-yellow-500"
-                    : "text-gray-300"
+                    : "text-muted-foreground/40"
                 }
                 size={16}
                 fill={
@@ -194,15 +199,18 @@ export function VendorReviewsTable({
                 }
               />
             ))}
-            <span className="text-xs text-muted-foreground ml-1">
-              ({row.original.rating.toFixed(1)})
+            <span className="text-xs text-muted-foreground ms-1">
+              ({formatNumber(row.original.rating, locale, {
+                minimumFractionDigits: 1,
+                maximumFractionDigits: 1,
+              })})
             </span>
           </div>
         ),
       },
       {
         id: "review",
-        header: "Review",
+        header: t("columns.review"),
         size: 420,
         cell: ({ row }) => (
           <div className="space-y-1">
@@ -219,39 +227,39 @@ export function VendorReviewsTable({
       },
       {
         id: "status",
-        header: "Status",
+        header: t("columns.status"),
         size: 120,
-        accessorFn: (row) => (row.replied ? "Replied" : "Unreplied"),
+        accessorFn: (row) => (row.replied ? t("replied") : t("unreplied")),
         cell: ({ row }) => (
           <Badge variant={row.original.replied ? "default" : "secondary"}>
-            {row.original.replied ? "Replied" : "Unreplied"}
+            {row.original.replied ? t("replied") : t("unreplied")}
           </Badge>
         ),
       },
       {
         id: "contact",
-        header: "Contact",
+        header: t("columns.contact"),
         size: 140,
         cell: ({ row }) =>
           row.original.customerEmail ? (
             <a
-              className="text-sm text-blue-600 hover:underline"
+              className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
               href={`mailto:${row.original.customerEmail}`}
             >
-              Email customer
+              {t("emailCustomer")}
             </a>
           ) : (
-            <span className="text-sm text-muted-foreground">No email</span>
+            <span className="text-sm text-muted-foreground">{t("noEmail")}</span>
           ),
       },
     ],
-    [reviewType]
+    [reviewType, t, locale]
   );
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Reviews</CardTitle>
+        <CardTitle>{t("title")}</CardTitle>
       </CardHeader>
       <CardContent>
         <TableSection<VendorReviewRow>
@@ -265,10 +273,11 @@ export function VendorReviewsTable({
 }
 
 export function VendorReviewsSkeleton() {
+  const t = useTranslations("reviews");
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Reviews</CardTitle>
+        <CardTitle>{t("title")}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-48 rounded-md border bg-muted" />
@@ -301,6 +310,8 @@ export function VendorQASection({
 }: {
   questions: VendorQuestionRow[];
 }) {
+  const t = useTranslations("reviews.qa");
+  const locale = useLocale();
   // Sort: unanswered first then latest by createdAt desc
   const sorted = useMemo(() => {
     return [...questions].sort((a, b) => {
@@ -340,13 +351,13 @@ export function VendorQASection({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Questions & Answers</CardTitle>
-        <CardDescription>Latest unanswered first</CardDescription>
+        <CardTitle>{t("title")}</CardTitle>
+        <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {sorted.length === 0 ? (
           <div className="text-sm text-muted-foreground">
-            No questions found.
+            {t("empty")}
           </div>
         ) : (
           sorted.map((q) => {
@@ -378,7 +389,7 @@ export function VendorQASection({
                     <div className="mt-2 font-medium">{q.question}</div>
                     {q.createdAt && (
                       <div className="text-xs text-muted-foreground">
-                        {new Date(q.createdAt).toLocaleString()}
+                        {formatDateTime(q.createdAt, locale)}
                       </div>
                     )}
                   </div>
@@ -391,7 +402,7 @@ export function VendorQASection({
                         setDrafts((s) => ({ ...s, [q.id]: existing.answer }));
                       }}
                     >
-                      Edit answer
+                      {t("editAnswer")}
                     </Button>
                   )}
                 </div>
@@ -404,7 +415,7 @@ export function VendorQASection({
                   <div className="space-y-2">
                     <Textarea
                       placeholder={
-                        existing ? "Update your answer" : "Write an answer"
+                        existing ? t("updatePlaceholder") : t("writePlaceholder")
                       }
                       value={drafts[q.id] ?? ""}
                       onChange={(e) =>
@@ -417,10 +428,10 @@ export function VendorQASection({
                         disabled={busy === q.id || !(drafts[q.id] ?? "").trim()}
                       >
                         {busy === q.id
-                          ? "Submitting..."
+                          ? t("submitting")
                           : existing
-                            ? "Save"
-                            : "Submit"}
+                            ? t("save")
+                            : t("submit")}
                       </Button>
                       {isEditing && (
                         <Button
@@ -431,7 +442,7 @@ export function VendorQASection({
                             setDrafts((s) => ({ ...s, [q.id]: "" }));
                           }}
                         >
-                          Cancel
+                          {t("cancel")}
                         </Button>
                       )}
                     </div>

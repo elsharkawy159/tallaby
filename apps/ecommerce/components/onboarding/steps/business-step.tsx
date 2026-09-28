@@ -13,6 +13,7 @@ import {
 } from "@workspace/ui/components/form";
 import { Input } from "@workspace/ui/components/input";
 import { Spinner } from "@workspace/ui/components/spinner";
+import { BannerUploader } from "../banner-uploader";
 import { LogoUploader } from "../logo-uploader";
 import { BUSINESS_TYPE_OPTIONS } from "../become-seller.types";
 import type { OnboardingFormValues } from "../become-seller.dto";
@@ -34,19 +35,45 @@ export function BusinessStep({
 
   return (
     <div className="space-y-4 md:space-y-6">
-      <FormField
-        control={form.control}
-        name="logoUrl"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>{t("businessLogo")}</FormLabel>
-            <FormControl>
-              <LogoUploader value={field.value} onChange={field.onChange} disabled={disabled} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      {/* Laid out like the store page header: cover banner, logo overlapping it. */}
+      <div>
+        <FormField
+          control={form.control}
+          name="bannerUrl"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>
+                {t("storeBanner")}
+                <span className="ms-1.5 font-normal text-muted-foreground">{t("optional")}</span>
+              </FormLabel>
+              <FormControl>
+                <BannerUploader value={field.value} onChange={field.onChange} disabled={disabled} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="logoUrl"
+          render={({ field }) => (
+            <FormItem className="relative -mt-12 flex items-end gap-4 ps-4 md:-mt-16 md:ps-6">
+              <FormControl>
+                <LogoUploader
+                  value={field.value}
+                  onChange={field.onChange}
+                  disabled={disabled}
+                  className="shrink-0 rounded-full ring-4 ring-background"
+                />
+              </FormControl>
+              <div className="pb-2">
+                <FormLabel>{t("businessLogo")}</FormLabel>
+                <FormMessage />
+              </div>
+            </FormItem>
+          )}
+        />
+      </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <FormField
