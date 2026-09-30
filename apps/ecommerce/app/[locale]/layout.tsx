@@ -7,6 +7,7 @@ import { Providers } from "./providers";
 import NextTopLoader from "nextjs-toploader";
 import { Scripts } from "@/components/layout/structured-data";
 import { MetaPixel } from "@/components/meta/meta-pixel";
+import { ElfsightChatbot } from "@/components/chatbot/elfsight-chatbot";
 import { getMessages, getTranslations } from "next-intl/server";
 import { Toaster } from "@workspace/ui/components/sonner";
 import { DirectionProvider } from "@workspace/ui/components/direction";
@@ -143,6 +144,7 @@ export default async function RootLayout({
             <Toaster />
           </DirectionProvider>
         </NextIntlClientProvider>
+        <ElfsightChatbot />
       </body>
     </html>
   );
