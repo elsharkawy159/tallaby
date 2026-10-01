@@ -7,8 +7,8 @@ import { Providers } from "./providers";
 import NextTopLoader from "nextjs-toploader";
 import { Scripts } from "@/components/layout/structured-data";
 import { MetaPixel } from "@/components/meta/meta-pixel";
-// import { ElfsightChatbot } from "@/components/chatbot/elfsight-chatbot";
-import { ZolaiChatbot } from "@/components/chatbot/zolai-chatbot";
+import { ElfsightChatbot } from "@/components/chatbot/elfsight-chatbot";
+// import { ZolaiChatbot } from "@/components/chatbot/zolai-chatbot";
 import { getMessages, getTranslations } from "next-intl/server";
 import { Toaster } from "@workspace/ui/components/sonner";
 import { DirectionProvider } from "@workspace/ui/components/direction";
@@ -74,7 +74,8 @@ export async function generateMetadata({
     openGraph: {
       type: "website",
       locale: locale === "ar" ? "ar_EG" : "en_US",
-      url: locale === routing.defaultLocale ? BASE_URL : `${BASE_URL}/${locale}`,
+      url:
+        locale === routing.defaultLocale ? BASE_URL : `${BASE_URL}/${locale}`,
       siteName: t("siteName"),
       title: t("ogTitle"),
       description: t("ogDescription", contentValues),
@@ -140,7 +141,7 @@ export default async function RootLayout({
           speed={200}
         />
         <NextIntlClientProvider messages={messages}>
-          <DirectionProvider direction={direction}>
+          <DirectionProvider dir={direction}>
             <Providers>{children}</Providers>
             <Toaster />
           </DirectionProvider>
