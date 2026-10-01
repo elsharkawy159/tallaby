@@ -145,8 +145,8 @@ export default async function RootLayout({
             <Toaster />
           </DirectionProvider>
         </NextIntlClientProvider>
-        {/* <ElfsightChatbot /> */}
-        <ZolaiChatbot />
+        <ElfsightChatbot />
+        {/* <ZolaiChatbot /> */}
       </body>
     </html>
   );
