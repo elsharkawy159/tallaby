@@ -8,6 +8,7 @@ export const BottomNavigation = async () => {
 
   return (
     <div
+      data-chat-avoid
       className={cn(
         "md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 transition-transform duration-300 ease-out [html[data-bottom-nav=hidden]_&]:translate-y-full",
       )}

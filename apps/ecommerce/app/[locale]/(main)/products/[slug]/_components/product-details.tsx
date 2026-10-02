@@ -513,7 +513,7 @@ export const ProductDetails = ({
 
         {/* Quantity and Add to Cart */}
         <HideBottomNavOnScroll />
-        <div className="fixed right-0 bottom-[79px] left-0 z-50 transition-[bottom] duration-300 ease-out [html[data-bottom-nav=hidden]_&]:bottom-0 border-t border-gray-200 bg-white px-3 py-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] md:relative md:bottom-0 md:z-auto md:mb-2 md:mt-6 md:border-0 md:bg-transparent md:p-0 md:shadow-none">
+        <div data-chat-avoid className="fixed right-0 bottom-[79px] left-0 z-50 transition-[bottom] duration-300 ease-out [html[data-bottom-nav=hidden]_&]:bottom-0 border-t border-gray-200 bg-white px-3 py-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] md:relative md:bottom-0 md:z-auto md:mb-2 md:mt-6 md:border-0 md:bg-transparent md:p-0 md:shadow-none">
           <ProductActions
             product={{
               ...product,
