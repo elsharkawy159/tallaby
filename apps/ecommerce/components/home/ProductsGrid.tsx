@@ -17,6 +17,7 @@ interface ProductFilters {
   isFeatured?: boolean;
   isTrending?: boolean;
   isSeasonal?: boolean;
+  isSponsored?: boolean;
   searchQuery?: string;
   sortBy?: "price_asc" | "price_desc" | "rating" | "newest" | "popular";
   limit?: number;

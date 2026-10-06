@@ -75,7 +75,7 @@ export default async function BestSellersInCategory({
           </p>
           {showViewMore && (
             <Button asChild className="!px-8 gap-1" variant="secondary">
-              <Link href={`/products?category=${category.slug}&sort=popular`}>
+              <Link href={`/categories/${category.slug}`}>
                 View More
                 <ChevronRight className="size-6" />
               </Link>

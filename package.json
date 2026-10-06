@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "build": "turbo build",
+    "build": "turbo build --concurrency=2",
     "dev": "turbo dev",
     "start": "turbo start --filter=ecommerce --filter=admin --filter=dashboard --filter=shipping",
     "lint": "turbo lint",

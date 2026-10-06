@@ -7,7 +7,6 @@ import {
   Truck,
   MapPin,
   PackageCheck,
-  Gift,
   Clock,
   BadgePercent,
   Store,
@@ -40,11 +39,6 @@ export default async function ShippingPage({
   const values = contentParams(locale);
 
   const sections = [
-    {
-      icon: Gift,
-      title: t("freeDeliveryTitle", values),
-      body: t("freeDeliveryBody", values),
-    },
     {
       icon: BadgePercent,
       title: t("sellerFreeDeliveryTitle"),

@@ -123,6 +123,7 @@ export interface ProductDetailView {
   isFeatured: boolean;
   isTrending: boolean;
   isSeasonal: boolean;
+  sponsored: boolean;
   freeDelivery: boolean;
   directCheckout: boolean;
   metaTitle: string | null;

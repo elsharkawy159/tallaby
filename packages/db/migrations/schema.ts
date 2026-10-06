@@ -1016,6 +1016,7 @@ export const products = pgTable("products", {
 	isFeatured: boolean("is_featured").default(false),
 	isTrending: boolean("is_trending").default(false).notNull(),
 	isSeasonal: boolean("is_seasonal").default(false).notNull(),
+	sponsored: boolean("sponsored").default(false).notNull(),
 	freeDelivery: boolean("free_delivery").default(false).notNull(),
 	dimensions: jsonb(),
 	price: jsonb(),

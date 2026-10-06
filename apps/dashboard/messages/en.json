@@ -1244,5 +1244,95 @@
     "pages": "Pages",
     "language": "Switch language",
     "toggleTheme": "Toggle dark mode"
+  },
+  "advertise": {
+    "intro": "Pick the package, choose a product, and pay with Vodafone Cash. Our team checks the transfer and starts your campaign.",
+    "steps": {
+      "package": "Choose a package",
+      "product": "Choose a product",
+      "payment": "Pay and confirm"
+    },
+    "package": {
+      "weekly_full": {
+        "name": "One-week ad package",
+        "summary": "A one-week ad package that includes:"
+      },
+      "days": "{count} days",
+      "total": "Total cost",
+      "currency": "EGP",
+      "select": "Choose package",
+      "selected": "Selected",
+      "timelineLabel": "Campaign plan across the week",
+      "day": "Day {day}",
+      "features": {
+        "video": "A promo video for your product that explains its features",
+        "platforms": "Your product published on all Tallaby channels",
+        "featured": "Your product placed in Featured Products, the first thing customers see on the website",
+        "meta": "A one-week sponsored ad on Meta (Facebook + Instagram)"
+      }
+    },
+    "product": {
+      "search": "Search your products",
+      "inactiveHint": "Only published products can be advertised",
+      "notActive": "Not published",
+      "hasOpenRequest": "Already requested",
+      "empty": "You have no published products yet. Publish one, then come back here.",
+      "addProduct": "Add product",
+      "noResults": "No products match that name",
+      "change": "Change"
+    },
+    "payment": {
+      "title": "Send {amount} EGP with Vodafone Cash",
+      "number": "Wallet number",
+      "copy": "Copy number",
+      "copied": "Number copied",
+      "howTo": {
+        "one": "Open the Ana Vodafone app or dial *9*7#",
+        "two": "Choose money transfer and enter {number}",
+        "three": "Send exactly {amount} EGP and keep the confirmation SMS"
+      },
+      "payerPhone": "Number you sent from",
+      "payerPhonePlaceholder": "01xxxxxxxxx",
+      "payerPhoneError": "Enter a valid 11-digit Egyptian mobile number starting with 01",
+      "reference": "Transaction ID (optional)",
+      "referencePlaceholder": "Found in the confirmation SMS",
+      "submit": "Confirm payment and send request",
+      "submitting": "Sending...",
+      "needProduct": "Choose a product first"
+    },
+    "summary": {
+      "title": "Order summary",
+      "package": "Package",
+      "product": "Product",
+      "none": "Not chosen yet",
+      "total": "Total"
+    },
+    "success": {
+      "title": "Request sent",
+      "body": "We'll check the transfer and contact you to start the campaign. Track its status in the list below.",
+      "again": "Advertise another product"
+    },
+    "requests": {
+      "title": "Your ad requests",
+      "empty": "You haven't sent an ad request yet.",
+      "submittedOn": "Sent on {date}",
+      "runs": "{start} to {end}",
+      "status": {
+        "pending": "Under review",
+        "approved": "Approved",
+        "active": "Running",
+        "completed": "Finished",
+        "rejected": "Rejected"
+      }
+    },
+    "errors": {
+      "unauthorized": "Your session ended. Sign in again.",
+      "invalid_input": "Check the details you entered and try again.",
+      "invalid_package": "This package isn't available right now.",
+      "product_not_found": "We couldn't find this product in your store.",
+      "product_not_active": "This product isn't published. Publish it, then try again.",
+      "already_requested": "This product already has an open ad request.",
+      "unknown": "Couldn't send the request. Try again."
+    }
   }
 }

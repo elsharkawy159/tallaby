@@ -34,6 +34,7 @@ export interface ProductCacheSnapshot {
   isSeasonal: boolean;
   isMostSelling: boolean;
   isPlatformChoice: boolean;
+  sponsored: boolean;
   /** Serialized price (e.g. JSON.stringify of the price jsonb column) — used only for change detection. */
   priceKey: string;
 }
@@ -157,13 +158,14 @@ export function invalidateProduct(
   const touchesCollection = (
     key: keyof Pick<
       ProductCacheSnapshot,
-      "isFeatured" | "isTrending" | "isSeasonal" | "isMostSelling" | "isPlatformChoice"
+      "isFeatured" | "isTrending" | "isSeasonal" | "isMostSelling" | "isPlatformChoice" | "sponsored"
     >
   ) => Boolean(before?.[key]) || Boolean(after?.[key]);
 
   if (touchesCollection("isFeatured")) tags.add(productTags.featured());
   if (touchesCollection("isTrending")) tags.add(productTags.trending());
   if (touchesCollection("isSeasonal")) tags.add(productTags.seasonal());
+  if (touchesCollection("sponsored")) tags.add(productTags.sponsored());
   if (touchesCollection("isMostSelling")) tags.add(productTags.bestSelling());
   if (touchesCollection("isPlatformChoice")) tags.add(productTags.deals());
   if (created) tags.add(productTags.newArrivals());

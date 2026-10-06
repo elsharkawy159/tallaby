@@ -46,7 +46,7 @@ export default async function CategoryCarousel({
             return (
             <Link
               key={category.id}
-              href={`/products?category=${category.slug}`}
+              href={`/categories/${category.slug}`}
               className="group flex-shrink-0"
             >
               <div className="flex flex-col items-center gap-2 p-4 rounded-lg hover:bg-gray-50 transition-colors min-w-[120px]">

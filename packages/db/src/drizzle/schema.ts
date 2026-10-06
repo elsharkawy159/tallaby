@@ -1277,6 +1277,7 @@ export const products = pgTable("products", {
 	isFeatured: boolean("is_featured").default(false),
 	isTrending: boolean("is_trending").default(false).notNull(),
 	isSeasonal: boolean("is_seasonal").default(false).notNull(),
+	sponsored: boolean("sponsored").default(false).notNull(),
 	freeDelivery: boolean("free_delivery").default(false).notNull(),
 	/** Ad landing pages: product page shows "Buy Now" and goes straight to checkout. */
 	directCheckout: boolean("direct_checkout").default(false).notNull(),
@@ -2233,4 +2234,43 @@ export const sellerFulfillmentServices = pgTable("seller_fulfillment_services", 
 	}).onDelete("set null"),
 	check("seller_fulfillment_services_requested_seller_no_plan", sql`requested_provider = 'tallaby' OR requested_plan_id IS NULL`),
 	check("seller_fulfillment_services_active_seller_no_plan", sql`active_provider = 'tallaby' OR active_plan_id IS NULL`),
+]);
+
+export const adRequestStatus = pgEnum("ad_request_status", ['pending', 'approved', 'active', 'completed', 'rejected'])
+
+/**
+ * A seller's request to advertise one product with a paid ad package. The
+ * package catalog lives in code; `amount` snapshots its price at submit time.
+ */
+export const adCampaignRequests = pgTable("ad_campaign_requests", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	productId: uuid("product_id").notNull(),
+	packageKey: text("package_key").notNull(),
+	amount: numeric({ precision: 10, scale: 2 }).notNull(),
+	currency: text().default('EGP').notNull(),
+	paymentMethod: text("payment_method").default('vodafone_cash').notNull(),
+	payerPhone: text("payer_phone").notNull(),
+	transferReference: text("transfer_reference"),
+	status: adRequestStatus().default('pending').notNull(),
+	adminNotes: text("admin_notes"),
+	startsAt: timestamp("starts_at", { withTimezone: true, mode: 'string' }),
+	endsAt: timestamp("ends_at", { withTimezone: true, mode: 'string' }),
+	reviewedAt: timestamp("reviewed_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("ad_campaign_requests_seller_created_idx").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops"), table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
+	index("ad_campaign_requests_status_idx").using("btree", table.status.asc().nullsLast().op("enum_ops")),
+	uniqueIndex("ad_campaign_requests_open_product_idx").using("btree", table.productId.asc().nullsLast().op("uuid_ops")).where(sql`status IN ('pending', 'approved', 'active')`),
+	foreignKey({
+		columns: [table.sellerId],
+		foreignColumns: [sellers.id],
+		name: "ad_campaign_requests_seller_id_fkey"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.productId],
+		foreignColumns: [products.id],
+		name: "ad_campaign_requests_product_id_fkey"
+	}).onDelete("cascade"),
 ]);

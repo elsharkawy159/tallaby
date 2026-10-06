@@ -65,6 +65,7 @@ async function toSnapshot(productId: string): Promise<ProductCacheSnapshot | nul
     isSeasonal: product.isSeasonal ?? false,
     isMostSelling: product.isMostSelling ?? false,
     isPlatformChoice: product.isPlatformChoice ?? false,
+    sponsored: product.sponsored ?? false,
     priceKey: JSON.stringify(product.price ?? null),
   };
 }
@@ -1329,6 +1330,7 @@ export async function createProduct(
           isSeasonal: createdProduct.isSeasonal ?? false,
           isMostSelling: createdProduct.isMostSelling ?? false,
           isPlatformChoice: createdProduct.isPlatformChoice ?? false,
+          sponsored: createdProduct.sponsored ?? false,
           priceKey: JSON.stringify(createdProduct.price ?? null),
         }),
         { from: "dashboard", mode: "action" }

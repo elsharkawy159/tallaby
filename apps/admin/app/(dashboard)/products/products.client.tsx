@@ -220,7 +220,7 @@ export function ProductsClient({
         serverSide={{
           rowCount: totalCount,
           defaultSort: PRODUCTS_DEFAULT_SORT,
-          searchPlaceholder: "Search title, SKU or product ID…",
+          searchPlaceholder: "Search name, slug, SKU, brand, seller…",
         }}
       />
     </div>

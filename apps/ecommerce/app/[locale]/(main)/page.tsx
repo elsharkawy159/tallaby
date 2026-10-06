@@ -29,6 +29,16 @@ const HomePage = async ({
     <div className="min-h-screen">
       <Hero locale={locale} />
 
+      {/* Renders nothing until at least one active product has sponsored = true. */}
+      <ProductsGrid
+        title={t("sponsored")}
+        filters={{
+          isSponsored: true,
+          sortBy: "popular",
+          limit: 12,
+        }}
+      />
+
       {/* <FeaturesSection locale={locale} /> */}
 
       {/* <Suspense fallback={<SectionSkeleton className="bg-amber-50/40" />}>

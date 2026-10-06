@@ -52,6 +52,7 @@ async function toSnapshot(productId: string): Promise<ProductCacheSnapshot | nul
     isSeasonal: product.isSeasonal ?? false,
     isMostSelling: product.isMostSelling ?? false,
     isPlatformChoice: product.isPlatformChoice ?? false,
+    sponsored: product.sponsored ?? false,
     priceKey: JSON.stringify(product.price ?? null),
   };
 }
@@ -361,6 +362,7 @@ type UpdateProductInput = {
   isFeatured?: boolean;
   isTrending?: boolean;
   isSeasonal?: boolean;
+  sponsored?: boolean;
   freeDelivery?: boolean;
   condition?: typeof products.$inferInsert.condition;
   conditionDescription?: string;
@@ -439,6 +441,7 @@ export async function updateProduct(productId: string, data: UpdateProductInput)
     if (data.isFeatured !== undefined) productUpdate.isFeatured = data.isFeatured;
     if (data.isTrending !== undefined) productUpdate.isTrending = data.isTrending;
     if (data.isSeasonal !== undefined) productUpdate.isSeasonal = data.isSeasonal;
+    if (data.sponsored !== undefined) productUpdate.sponsored = data.sponsored;
     if (data.freeDelivery !== undefined)
       productUpdate.freeDelivery = data.freeDelivery;
     if (data.taxClass !== undefined) productUpdate.taxClass = data.taxClass;
@@ -732,6 +735,7 @@ export async function approveAllPendingProducts() {
         isSeasonal: product.isSeasonal ?? false,
         isMostSelling: product.isMostSelling ?? false,
         isPlatformChoice: product.isPlatformChoice ?? false,
+        sponsored: product.sponsored ?? false,
         priceKey: JSON.stringify(product.price ?? null),
       })
     );

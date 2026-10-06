@@ -52,7 +52,7 @@ export default async function CategoryGrid({
           return (
           <Link
             key={category.id}
-            href={`/products?category=${category.slug}`}
+            href={`/categories/${category.slug}`}
             className="group"
           >
             <Card className="h-full hover:shadow-lg transition-all duration-300 group-hover:scale-105">

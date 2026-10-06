@@ -27,6 +27,7 @@ export const productTags = {
   featured: () => "product:featured",
   trending: () => "product:trending",
   seasonal: () => "product:seasonal",
+  sponsored: () => "product:sponsored",
   bestSelling: () => "product:best-selling",
   deals: () => "product:deals",
   newArrivals: () => "product:new-arrivals",

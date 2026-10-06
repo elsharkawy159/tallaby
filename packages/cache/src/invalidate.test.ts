@@ -21,6 +21,7 @@ function snapshot(overrides: Partial<ProductCacheSnapshot> = {}): ProductCacheSn
     isSeasonal: false,
     isMostSelling: false,
     isPlatformChoice: false,
+    sponsored: false,
     priceKey: '{"final":10}',
     ...overrides,
   };
@@ -205,6 +206,14 @@ describe("invalidateProduct", () => {
     const after = snapshot({ isSeasonal: true });
     const { tags } = invalidateProduct(before, after);
     expect(tags).toContain(productTags.seasonal());
+    expect(tags).not.toContain(productTags.listing());
+  });
+
+  it("sponsored toggle: tags sponsored() only", () => {
+    const before = snapshot({ sponsored: false });
+    const after = snapshot({ sponsored: true });
+    const { tags } = invalidateProduct(before, after);
+    expect(tags).toContain(productTags.sponsored());
     expect(tags).not.toContain(productTags.listing());
   });
 

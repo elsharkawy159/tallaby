@@ -8,18 +8,34 @@ interface ProductsListProps {
   searchParams: { [key: string]: string | string[] | undefined };
 }
 
+// Must match the default in useUrlParams, which omits pageSize from the URL
+// when it equals this value.
+const DEFAULT_PAGE_SIZE = 20;
+
+// useUrlParams writes multi-select filters as one comma-joined value
+// (?categories=A,B), so split it back into the individual names.
+function parseList(value: string | string[] | undefined): string[] {
+  const raw = Array.isArray(value) ? value.join(",") : value ?? "";
+  return raw.split(",").map((v) => v.trim()).filter(Boolean);
+}
+
+function parseNumber(value: string | string[] | undefined): number | undefined {
+  if (value === undefined || value === "") return undefined;
+  const n = Number(Array.isArray(value) ? value[0] : value);
+  return Number.isFinite(n) ? n : undefined;
+}
+
 const ProductsList = async ({ searchParams }: ProductsListProps) => {
+  const pageSize = parseNumber(searchParams.pageSize) || DEFAULT_PAGE_SIZE;
+  const currentPage = Math.max(1, parseNumber(searchParams.page) || 1);
+
   // Parse search parameters
   const filters = {
     searchQuery: (searchParams.search as string) || undefined,
-    categoryName: Array.isArray(searchParams.categories)
-      ? searchParams.categories[0]
-      : (searchParams.categories as string) || undefined,
-    brandName: Array.isArray(searchParams.brands)
-      ? searchParams.brands[0]
-      : (searchParams.brands as string) || undefined,
-    minPrice: searchParams.priceMin ? Number(searchParams.priceMin) : undefined,
-    maxPrice: searchParams.priceMax ? Number(searchParams.priceMax) : undefined,
+    categoryNames: parseList(searchParams.categories),
+    brandNames: parseList(searchParams.brands),
+    minPrice: parseNumber(searchParams.priceMin),
+    maxPrice: parseNumber(searchParams.priceMax),
     sortBy:
       (searchParams.sort as
         | "price_asc"
@@ -27,10 +43,8 @@ const ProductsList = async ({ searchParams }: ProductsListProps) => {
         | "rating"
         | "newest"
         | "popular") || "popular",
-    limit: searchParams.pageSize ? Number(searchParams.pageSize) : 40,
-    offset: searchParams.page
-      ? (Number(searchParams.page) - 1) * (Number(searchParams.pageSize) || 40)
-      : 0,
+    limit: pageSize,
+    offset: (currentPage - 1) * pageSize,
   };
 
   // Map sort parameter to database sort
@@ -73,8 +87,6 @@ const ProductsList = async ({ searchParams }: ProductsListProps) => {
   }
 
   const { data: products, totalCount } = result;
-  const currentPage = Number(searchParams.page) || 1;
-  const pageSize = Number(searchParams.pageSize) || 40;
   const totalPages = Math.ceil((totalCount || 0) / pageSize);
 
   return (

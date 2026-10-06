@@ -1,9 +1,13 @@
-import { MarketingDashboard } from "@/components/dashboard/MarketingDashboard";
+import { Suspense } from "react";
+import { AdvertiseData } from "./_components/advertise.data";
+import { AdvertiseSkeleton } from "./_components/advertise.skeleton";
 
-// Force dynamic rendering since this page uses cookies for authentication
-
-const Marketing = () => {
-  return <MarketingDashboard />;
-};
-
-export default Marketing;
+export default function AdvertisePage() {
+  return (
+    <section className="p-4 sm:p-6">
+      <Suspense fallback={<AdvertiseSkeleton />}>
+        <AdvertiseData />
+      </Suspense>
+    </section>
+  );
+}

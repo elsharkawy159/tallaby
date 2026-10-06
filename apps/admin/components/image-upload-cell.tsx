@@ -27,7 +27,7 @@ export interface ImageUploadCellProps {
   onSave: (path: string | null) => Promise<{ success: boolean; error?: string }>;
   onSuccess?: () => void;
   alt?: string;
-  size?: "sm" | "md";
+  size?: "sm" | "md" | "lg";
   className?: string;
 }
 
@@ -48,7 +48,8 @@ export function ImageUploadCell({
   const supabase = supabaseRef.current;
   const [isUploading, setIsUploading] = useState(false);
 
-  const sizeClasses = size === "sm" ? "size-12" : "size-16";
+  const sizeClasses =
+    size === "sm" ? "size-12" : size === "md" ? "size-16" : "size-28";
 
   const handleFileUpload = useCallback(
     async (file: File): Promise<string | null> => {
@@ -175,7 +176,7 @@ export function ImageUploadCell({
             alt={alt}
             fill
             className="object-cover"
-            sizes="64px"
+            sizes={size === "lg" ? "112px" : "64px"}
           />
           {isDragActive && (
             <div className="absolute inset-0 flex items-center justify-center bg-primary/20">

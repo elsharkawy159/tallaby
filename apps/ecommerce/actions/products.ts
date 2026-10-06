@@ -38,8 +38,12 @@ interface ProductFilters {
   /** Any of these categories, e.g. every leaf under one root. */
   categoryIds?: string[];
   categoryName?: string;
+  /** Any of these category names (multi-select filter on /products). */
+  categoryNames?: string[];
   brandId?: string;
   brandName?: string;
+  /** Any of these brand names (multi-select filter on /products). */
+  brandNames?: string[];
   minPrice?: number;
   maxPrice?: number;
   minRating?: number;
@@ -48,6 +52,7 @@ interface ProductFilters {
   isFeatured?: boolean;
   isTrending?: boolean;
   isSeasonal?: boolean;
+  isSponsored?: boolean;
   searchQuery?: string;
   sortBy?: "price_asc" | "price_desc" | "rating" | "newest" | "popular";
   limit?: number;
@@ -71,6 +76,7 @@ export const getProducts = createCachedQuery({
     if (filters.isFeatured) tags.push(productTags.featured());
     if (filters.isTrending) tags.push(productTags.trending());
     if (filters.isSeasonal) tags.push(productTags.seasonal());
+    if (filters.isSponsored) tags.push(productTags.sponsored());
     return tags;
   },
   query: async (filters: ProductFilters = {}) => {
@@ -87,23 +93,38 @@ export const getProducts = createCachedQuery({
         conditions.push(inArray(products.categoryId, filters.categoryIds));
       }
 
-      if (filters.categoryName) {
+      const categoryNames = [
+        ...(filters.categoryNames ?? []),
+        ...(filters.categoryName ? [filters.categoryName] : []),
+      ]
+      if (categoryNames.length > 0) {
         // Category names aren't unique in the DB (duplicate rows with the
         // same name exist across parents), so match every id sharing the
         // name rather than an arbitrary single row via .limit(1).
-        const matchingCategories = await db.select({ id: categories.id }).from(categories).where(eq(categories.name, filters.categoryName!))
-        if (matchingCategories.length > 0) {
-          conditions.push(inArray(products.categoryId, matchingCategories.map((c) => c.id)))
-        }
+        const matchingCategories = await db.select({ id: categories.id }).from(categories).where(inArray(categories.name, categoryNames))
+        // An unknown name must narrow to nothing, not silently drop the filter.
+        conditions.push(
+          matchingCategories.length > 0
+            ? inArray(products.categoryId, matchingCategories.map((c) => c.id))
+            : sql`false`
+        )
       }
 
       if (filters.brandId) {
         conditions.push(eq(products.brandId, filters.brandId));
       }
 
-      if (filters.brandName) {
-        const [brand] = await db.select({ id: brands.id }).from(brands).where(eq(brands.name, filters.brandName!)).limit(1)
-        if (brand) conditions.push(eq(products.brandId, brand.id))
+      const brandNames = [
+        ...(filters.brandNames ?? []),
+        ...(filters.brandName ? [filters.brandName] : []),
+      ]
+      if (brandNames.length > 0) {
+        const matchingBrands = await db.select({ id: brands.id }).from(brands).where(inArray(brands.name, brandNames))
+        conditions.push(
+          matchingBrands.length > 0
+            ? inArray(products.brandId, matchingBrands.map((b) => b.id))
+            : sql`false`
+        )
       }
 
       if (filters.minPrice !== undefined) {
@@ -140,6 +161,10 @@ export const getProducts = createCachedQuery({
 
       if (filters.isSeasonal !== undefined) {
         conditions.push(eq(products.isSeasonal, filters.isSeasonal));
+      }
+
+      if (filters.isSponsored !== undefined) {
+        conditions.push(eq(products.sponsored, filters.isSponsored));
       }
 
       if (filters.searchQuery) {
@@ -782,7 +807,8 @@ export async function getFilterOptions() {
         // getProducts resolves a categoryName filter to every id sharing it.
         const categoriesWithProducts = await db
           .select({
-            id: sql<string>`MIN(${categories.id})`.as("id"),
+            // Postgres has no MIN(uuid) — compare as text.
+            id: sql<string>`MIN(${categories.id}::text)`.as("id"),
             name: categories.name,
             nameAr: categories.nameAr,
             slug: sql<string>`MIN(${categories.slug})`.as("slug"),

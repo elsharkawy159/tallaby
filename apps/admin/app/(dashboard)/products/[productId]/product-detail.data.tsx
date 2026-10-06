@@ -213,6 +213,14 @@ async function ProductDetailContent({ productId }: ProductDetailDataProps) {
                 Seasonal
               </Badge>
             )}
+            {product.sponsored && (
+              <Badge
+                variant="outline"
+                className="bg-amber-50 text-amber-700 border-amber-200"
+              >
+                Sponsored
+              </Badge>
+            )}
             {product.freeDelivery && (
               <Badge
                 variant="outline"

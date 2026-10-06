@@ -100,8 +100,9 @@ export function ProductsFilter({ filterOptions }: ProductsFilterProps) {
     [params]
   );
 
-  // Price filter handler
-  const handlePriceChange = (val: number[]) => {
+  // Price filter: drag only moves the thumbs locally; the URL (and the
+  // products refetch) is updated once, when the drag is released.
+  const handlePriceCommit = (val: number[]) => {
     setPrice(val);
     const rangeMin = filterOptions?.data?.priceRange?.min;
     const rangeMax = filterOptions?.data?.priceRange?.max;
@@ -265,7 +266,8 @@ export function ProductsFilter({ filterOptions }: ProductsFilterProps) {
               min={filterOptions.data.priceRange.min ?? 0}
               max={filterOptions.data.priceRange.max ?? 0}
               value={price}
-              onValueChange={handlePriceChange}
+              onValueChange={setPrice}
+              onValueCommit={handlePriceCommit}
               className="w-full"
               step={1}
             />
@@ -294,7 +296,7 @@ export function ProductsFilter({ filterOptions }: ProductsFilterProps) {
           onClick={() => setMobileFiltersOpen(true)}
         >
           <PlusIcon className="size-5" />
-          Filters
+          {t("filters")}
           {hasActiveFilters && (
             <span className="ml-1 px-1.5 py-0.5 text-xs bg-primary text-primary-foreground rounded-full">
               {[

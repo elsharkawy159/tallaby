@@ -5,7 +5,6 @@ import {
   brands,
   categories,
   products,
-  productTranslations,
   sellers,
 } from "@workspace/db";
 import {
@@ -32,6 +31,7 @@ export type ProductFlag =
   | "featured"
   | "trending"
   | "seasonal"
+  | "sponsored"
   | "platform-choice"
   | "most-selling"
   | "free-delivery";
@@ -68,6 +68,7 @@ const FLAG_COLUMNS: Record<ProductFlag, SQL> = {
   featured: sql`${products.isFeatured} = true`,
   trending: sql`${products.isTrending} = true`,
   seasonal: sql`${products.isSeasonal} = true`,
+  sponsored: sql`${products.sponsored} = true`,
   "platform-choice": sql`${products.isPlatformChoice} = true`,
   "most-selling": sql`${products.isMostSelling} = true`,
   "free-delivery": sql`${products.freeDelivery} = true`,
@@ -75,12 +76,20 @@ const FLAG_COLUMNS: Record<ProductFlag, SQL> = {
 
 const quantityNumber = sql`coalesce(${products.quantity}, 0)::numeric`;
 const finalPrice = sql`coalesce((${products.price}->>'final')::numeric, 0)`;
+// Subqueries spell out other tables' columns literally: the relational
+// `findMany` rewrites every drizzle column in raw `where`/`orderBy` SQL to the
+// root `products` alias, so `${productTranslations.title}` would render as
+// `"products"."title"` and fail. Only `${products.*}` columns are safe here.
 const enTitle = sql<string>`(
-  select ${productTranslations.title} from ${productTranslations}
-  where ${productTranslations.productId} = ${products.id}
-  order by (${productTranslations.locale} = 'en') desc
+  select pt.title from product_translations pt
+  where pt.product_id = ${products.id}
+  order by (pt.locale = 'en') desc
   limit 1
 )`;
+
+function escapeLike(value: string): string {
+  return value.replace(/[\\%_]/g, (char) => `\\${char}`);
+}
 
 async function resolveSellerIds(values: string[]): Promise<string[]> {
   const ids = values.filter((value) => UUID_RE.test(value));
@@ -145,19 +154,37 @@ async function buildWhere(query: AdminProductsQuery): Promise<SQL | undefined> {
 
   const search = query.search?.trim();
   if (search) {
-    const pattern = `%${search}%`;
-    conditions.push(
-      or(
-        ilike(products.sku, pattern),
-        sql`${products.id}::text = ${search}`,
-        // Any locale, so Arabic titles are searchable too.
-        sql`exists (
-          select 1 from ${productTranslations}
-          where ${productTranslations.productId} = ${products.id}
-            and ${productTranslations.title} ilike ${pattern}
-        )`
-      )!
-    );
+    const pattern = `%${escapeLike(search)}%`;
+    const searchConditions: SQL[] = [
+      ilike(products.sku, pattern),
+      // Title or slug in any locale, so Arabic titles are searchable too.
+      sql`exists (
+        select 1 from product_translations pt
+        where pt.product_id = ${products.id}
+          and (pt.title ilike ${pattern} or pt.slug ilike ${pattern})
+      )`,
+      sql`exists (
+        select 1 from product_variants pv
+        where pv.product_id = ${products.id}
+          and (pv.sku ilike ${pattern} or pv.bar_code ilike ${pattern})
+      )`,
+      sql`exists (
+        select 1 from brands b
+        where b.id = ${products.brandId} and b.name ilike ${pattern}
+      )`,
+      sql`exists (
+        select 1 from categories c
+        where c.id = ${products.categoryId}
+          and (c.name ilike ${pattern} or c.name_ar ilike ${pattern})
+      )`,
+      sql`exists (
+        select 1 from sellers s
+        where s.id = ${products.sellerId}
+          and (s.business_name ilike ${pattern} or s.display_name ilike ${pattern})
+      )`,
+    ];
+    if (UUID_RE.test(search)) searchConditions.push(eq(products.id, search));
+    conditions.push(or(...searchConditions)!);
   }
 
   return conditions.length ? and(...conditions) : undefined;
@@ -197,6 +224,7 @@ export async function getAdminProducts(query: AdminProductsQuery = {}) {
         isFeatured: true,
         isTrending: true,
         isSeasonal: true,
+        sponsored: true,
         isPlatformChoice: true,
         isMostSelling: true,
         freeDelivery: true,
@@ -309,6 +337,89 @@ export async function getProductFilterOptions() {
     };
   } catch (error) {
     console.error("Error fetching product filter options:", error);
+    return {
+      success: false as const,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+export interface ProductFormCategoryOption {
+  id: string;
+  name: string;
+  nameAr: string | null;
+  /** Ancestors' names, root first (excludes the category itself). */
+  ancestors: string[];
+  isLeaf: boolean;
+}
+
+export interface ProductFormBrandOption {
+  id: string;
+  name: string;
+  slug: string;
+  logoUrl: string | null;
+}
+
+/** Category tree (with breadcrumb paths) and brands for the product edit pickers. */
+export async function getProductFormOptions() {
+  try {
+    await getAdminUser();
+
+    const categoryRows = await db
+      .select({
+        id: categories.id,
+        name: categories.name,
+        nameAr: categories.nameAr,
+        parentId: categories.parentId,
+      })
+      .from(categories);
+    const brandRows = await db
+      .select({
+        id: brands.id,
+        name: brands.name,
+        slug: brands.slug,
+        logoUrl: brands.logoUrl,
+      })
+      .from(brands)
+      .orderBy(asc(brands.name));
+
+    const byId = new Map(categoryRows.map((row) => [row.id, row]));
+    const parentIds = new Set(categoryRows.map((row) => row.parentId));
+
+    const ancestorsOf = (id: string): string[] => {
+      const path: string[] = [];
+      const seen = new Set<string>([id]);
+      let parentId = byId.get(id)?.parentId;
+      while (parentId && !seen.has(parentId)) {
+        seen.add(parentId);
+        const parent = byId.get(parentId);
+        if (!parent) break;
+        path.unshift(parent.name ?? "Unnamed");
+        parentId = parent.parentId;
+      }
+      return path;
+    };
+
+    const categoryOptions: ProductFormCategoryOption[] = categoryRows
+      .map((row) => ({
+        id: row.id,
+        name: row.name ?? "Unnamed",
+        nameAr: row.nameAr,
+        ancestors: ancestorsOf(row.id),
+        isLeaf: !parentIds.has(row.id),
+      }))
+      .sort((a, b) =>
+        [...a.ancestors, a.name]
+          .join(" / ")
+          .localeCompare([...b.ancestors, b.name].join(" / "))
+      );
+
+    return {
+      success: true as const,
+      data: { categories: categoryOptions, brands: brandRows },
+    };
+  } catch (error) {
+    console.error("Error fetching product form options:", error);
     return {
       success: false as const,
       error: error instanceof Error ? error.message : "Unknown error",
