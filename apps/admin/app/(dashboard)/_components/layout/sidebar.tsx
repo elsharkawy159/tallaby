@@ -29,6 +29,7 @@ import {
   Wallet,
   Handshake,
   Warehouse,
+  TicketPercent,
 } from "lucide-react";
 import type { SidebarCounts, SidebarProps } from "./sidebar.types";
 import { SIDEBAR_COUNT_BADGE_CLASS } from "./sidebar.types";
@@ -40,6 +41,8 @@ interface SidebarLink {
   icon: React.ElementType;
   /** Omitted for links that have nothing to count, such as tools. */
   countKey?: keyof SidebarCounts;
+  /** Tooltip explaining what the badge number counts. */
+  countLabel?: string;
   submenu?: SidebarLink[];
 }
 
@@ -48,7 +51,6 @@ const sidebarLinks: SidebarLink[] = [
     title: "Dashboard",
     href: "/",
     icon: Home,
-    countKey: "dashboard",
   },
   {
     title: "Analytics",
@@ -59,19 +61,22 @@ const sidebarLinks: SidebarLink[] = [
     title: "Customers",
     href: "/customers",
     icon: Users,
-    countKey: "customers",
+    countKey: "newCustomers",
+    countLabel: "New customers today",
   },
   {
     title: "Pending Carts",
     href: "/pending-carts",
     icon: ShoppingBag,
-    countKey: "pendingCarts",
+    countKey: "unremindedCarts",
+    countLabel: "Carts not reminded yet",
   },
   {
     title: "Orders",
     href: "/orders",
     icon: ShoppingCart,
-    countKey: "orders",
+    countKey: "pendingOrders",
+    countLabel: "Pending orders",
   },
   {
     title: "External Orders",
@@ -82,7 +87,8 @@ const sidebarLinks: SidebarLink[] = [
     title: "Products",
     href: "/products",
     icon: Package,
-    countKey: "products",
+    countKey: "pendingProducts",
+    countLabel: "Products awaiting approval",
   },
   {
     title: "Pricing Calculator",
@@ -93,19 +99,18 @@ const sidebarLinks: SidebarLink[] = [
     title: "Categories",
     href: "/categories",
     icon: Tag,
-    countKey: "categories",
   },
   {
     title: "Brands",
     href: "/brands",
     icon: Store,
-    countKey: "brands",
   },
   {
     title: "Sellers",
     href: "/sellers",
     icon: Store,
-    countKey: "sellers",
+    countKey: "pendingSellers",
+    countLabel: "Sellers awaiting approval",
   },
   {
     title: "Fulfillment",
@@ -121,6 +126,11 @@ const sidebarLinks: SidebarLink[] = [
     title: "Affiliates",
     href: "/affiliate",
     icon: Handshake,
+  },
+  {
+    title: "Coupons",
+    href: "/coupons",
+    icon: TicketPercent,
   },
 ];
 
@@ -251,6 +261,7 @@ function SidebarNav({
                               <Badge
                                 variant="outline"
                                 className={SIDEBAR_COUNT_BADGE_CLASS}
+                                title={sublink.countLabel}
                               >
                                 {counts[sublink.countKey].toLocaleString()}
                               </Badge>
@@ -287,6 +298,7 @@ function SidebarNav({
                   <Badge
                     variant="secondary"
                     className={SIDEBAR_COUNT_BADGE_CLASS}
+                    title={link.countLabel}
                   >
                     {counts[link.countKey].toLocaleString()}
                   </Badge>

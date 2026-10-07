@@ -1,12 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
   invalidateAllCategories,
+  invalidatePlatformCoupons,
   invalidateProduct,
   invalidateProductInventory,
   mergeInvalidations,
   type ProductCacheSnapshot,
 } from "./invalidate";
-import { categoryTags, productTags } from "./tags";
+import { categoryTags, couponTags, productTags } from "./tags";
 
 function snapshot(overrides: Partial<ProductCacheSnapshot> = {}): ProductCacheSnapshot {
   return {
@@ -291,5 +292,11 @@ describe("invalidateAllCategories", () => {
       expect.arrayContaining([categoryTags.all(), categoryTags.tree(), categoryTags.top()])
     );
     assertNoForbiddenTags(tags);
+  });
+});
+
+describe("invalidatePlatformCoupons", () => {
+  it("emits the storefront's available-coupons tag", () => {
+    expect(invalidatePlatformCoupons().tags).toEqual([couponTags.available()]);
   });
 });

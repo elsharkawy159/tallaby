@@ -1,6 +1,7 @@
 "use server"
 
 import { unstable_cache, revalidateTag } from "next/cache"
+import { couponTags } from "@workspace/cache"
 import { db, carts, cartItems, coupons, couponUsage, userAddresses, eq, and, sql, gte, lte, desc, or, isNull } from "@workspace/db"
 import { getUser } from "./auth"
 import { getCurrentUserId } from "@/lib/get-current-user-id"
@@ -499,7 +500,7 @@ export async function getAvailableCoupons() {
     },
     [cacheKey],
     {
-      tags: ["coupons", "available-coupons"],
+      tags: [couponTags.available()],
       revalidate: 1800 // 30 minutes
     }
   )()
@@ -532,7 +533,7 @@ export async function getSellerCoupons(sellerId: string) {
     },
     [`seller-coupons-${sellerId}`],
     {
-      tags: ["coupons", `seller-${sellerId}`],
+      tags: [couponTags.seller(sellerId)],
       revalidate: 1800 // 30 minutes
     }
   )()

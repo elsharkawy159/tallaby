@@ -79,7 +79,6 @@ export function getProductsFilters(
     },
     { id: "categoryId", title: "Category", options: options.categories },
     { id: "brandId", title: "Brand", options: options.brands },
-    { id: "seller", title: "Seller", options: options.sellers },
     {
       id: "stock",
       title: "Stock",

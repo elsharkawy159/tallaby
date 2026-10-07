@@ -4,7 +4,7 @@ import { useCallback, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@workspace/ui/components/button";
-import { CheckCheck, Plus, RefreshCw, X } from "lucide-react";
+import { CheckCheck, Plus, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import {
   approveAllPendingProducts,
@@ -14,6 +14,7 @@ import {
   getProductsColumns,
   getProductsFilters,
 } from "./_components/table-columns";
+import { SellerRail } from "./_components/seller-rail";
 import { DataTable } from "../_components/data-table/data-table";
 import { useTableUrlState } from "../_components/data-table/use-table-url-state";
 import { PRODUCTS_DEFAULT_SORT } from "./products.params";
@@ -132,9 +133,9 @@ export function ProductsClient({
     [filterOptions]
   );
 
-  // A single ?seller= (id or slug, e.g. from the sellers page) gets a banner.
+  // ?seller= may be an id or a slug (the sellers page links by slug).
   const sellerParam = url.getList("seller");
-  const singleSeller =
+  const selectedSeller =
     sellerParam.length === 1
       ? filterOptions.sellers.find(
           (seller) =>
@@ -142,87 +143,88 @@ export function ProductsClient({
         )
       : undefined;
 
+  const handleSellerSelect = useCallback(
+    (sellerId: string | null) => {
+      url.setParams({ seller: sellerId ? [sellerId] : null });
+    },
+    [url]
+  );
+
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        {singleSeller ? (
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-muted-foreground">Seller:</span>
-            <span className="font-medium">{singleSeller.label}</span>
-            <span className="text-muted-foreground">
-              ({totalCount.toLocaleString()} product
-              {totalCount === 1 ? "" : "s"})
-            </span>
+    <div className="grid items-start gap-4 lg:grid-cols-[15rem_minmax(0,1fr)]">
+      <SellerRail
+        sellers={filterOptions.sellers}
+        selectedId={selectedSeller?.value ?? null}
+        onSelect={handleSellerSelect}
+      />
+
+      <div className="min-w-0 space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-sm text-muted-foreground">
+            <span className="font-medium text-foreground">
+              {selectedSeller?.label ?? "All sellers"}
+            </span>{" "}
+            · {totalCount.toLocaleString()} product{totalCount === 1 ? "" : "s"}
+          </p>
+          <div className="flex flex-wrap gap-2">
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
-              onClick={() => url.setParams({ seller: null })}
+              onClick={() => url.setParams({ status: ["pending"] })}
+              disabled={pendingCount === 0}
             >
-              <X className="h-4 w-4 mr-1" />
-              Clear
+              Review pending
+              {pendingCount > 0 ? ` (${pendingCount})` : ""}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleApproveAll}
+              disabled={isApprovingAll || pendingCount === 0}
+              className="text-green-700 border-green-200 hover:bg-green-50"
+            >
+              {isApprovingAll ? (
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <CheckCheck className="h-4 w-4 mr-2" />
+              )}
+              Approve All
+              {pendingCount > 0 ? ` (${pendingCount})` : ""}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={refresh}
+              disabled={isRefreshing}
+            >
+              <RefreshCw
+                className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`}
+              />
+              Refresh
+            </Button>
+            <Button asChild size="sm">
+              <Link href="/products/new">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Product
+              </Link>
             </Button>
           </div>
-        ) : (
-          <div />
-        )}
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => url.setParams({ status: ["pending"] })}
-            disabled={pendingCount === 0}
-          >
-            Review pending
-            {pendingCount > 0 ? ` (${pendingCount})` : ""}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleApproveAll}
-            disabled={isApprovingAll || pendingCount === 0}
-            className="text-green-700 border-green-200 hover:bg-green-50"
-          >
-            {isApprovingAll ? (
-              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <CheckCheck className="h-4 w-4 mr-2" />
-            )}
-            Approve All
-            {pendingCount > 0 ? ` (${pendingCount})` : ""}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={refresh}
-            disabled={isRefreshing}
-          >
-            <RefreshCw
-              className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`}
-            />
-            Refresh
-          </Button>
-          <Button asChild size="sm">
-            <Link href="/products/new">
-              <Plus className="h-4 w-4 mr-2" />
-              Add Product
-            </Link>
-          </Button>
         </div>
-      </div>
 
-      <DataTable
-        columns={columns}
-        data={products}
-        getRowId={(product) => product.id}
-        filterableColumns={filters}
-        emptyMessage="No products match these filters."
-        isLoading={isRefreshing}
-        serverSide={{
-          rowCount: totalCount,
-          defaultSort: PRODUCTS_DEFAULT_SORT,
-          searchPlaceholder: "Search name, slug, SKU, brand, seller…",
-        }}
-      />
+        <DataTable
+          columns={columns}
+          data={products}
+          getRowId={(product) => product.id}
+          filterableColumns={filters}
+          emptyMessage="No products match these filters."
+          isLoading={isRefreshing}
+          serverSide={{
+            rowCount: totalCount,
+            defaultSort: PRODUCTS_DEFAULT_SORT,
+            searchPlaceholder: "Search name, slug, SKU, brand, seller…",
+          }}
+        />
+      </div>
     </div>
   );
 }

@@ -307,9 +307,9 @@ Rules:
 
 ## Known gaps not addressed by this refactor
 
-- `apps/ecommerce/actions/{search,recommendations,coupons,seller}.ts` still
+- `apps/ecommerce/actions/{search,recommendations,seller}.ts` still
   use `unstable_cache` directly with their original ad-hoc tag strings
-  (`"trending-products"`, `"available-coupons"`, etc.) rather than the
+  (`"trending-products"`, etc.) rather than the
   registry in `tags.ts`. They are not reachable by the cross-app broadcast
   and should be migrated following §9/§10 the next time they're touched.
 - Per-user reads (`getWishlistItems()`) still run inline inside

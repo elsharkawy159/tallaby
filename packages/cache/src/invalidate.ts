@@ -1,6 +1,7 @@
 import {
   brandTags,
   categoryTags,
+  couponTags,
   productTags,
   reviewTags,
   sellerTags,
@@ -232,6 +233,11 @@ export function invalidateSeller(id: string, slug?: string): CacheInvalidation {
   const tags = [sellerTags.detail(id), sellerTags.storefront(id)];
   if (slug) tags.push(sellerTags.slug(slug));
   return inv(tags);
+}
+
+/** Platform-wide coupons (no seller) — the storefront's "available coupons". */
+export function invalidatePlatformCoupons(): CacheInvalidation {
+  return inv([couponTags.available()]);
 }
 
 export function invalidateReviewsForProduct(

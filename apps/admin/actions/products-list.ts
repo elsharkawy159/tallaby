@@ -316,6 +316,7 @@ export async function getProductFilterOptions() {
       .select({
         id: sellers.id,
         slug: sellers.slug,
+        logoUrl: sellers.logoUrl,
         name: sql<string>`coalesce(nullif(${sellers.businessName}, ''), ${sellers.displayName})`,
       })
       .from(sellers)
@@ -332,6 +333,7 @@ export async function getProductFilterOptions() {
           value: row.id,
           label: row.name,
           slug: row.slug,
+          logoUrl: row.logoUrl,
         })),
       },
     };

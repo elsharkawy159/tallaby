@@ -147,5 +147,5 @@ export type AdminProductListItem = Extract<
 export interface ProductFilterOptions {
   categories: { value: string; label: string }[];
   brands: { value: string; label: string }[];
-  sellers: { value: string; label: string; slug: string }[];
+  sellers: { value: string; label: string; slug: string; logoUrl: string | null }[];
 }
