@@ -14,10 +14,17 @@ import {
 } from "@workspace/ui/components/sheet";
 import { useCart } from "@/providers/cart-provider";
 import { StorefrontCart } from "./storefront-cart.client";
-import { storefrontFont } from "./storefront-font";
 import s from "../storefront.module.css";
 
-export function CartSheet({ storeName }: { storeName: string }) {
+export function CartSheet({
+  storeName,
+  fontClassName,
+}: {
+  storeName: string;
+  /** The storefront font's CSS variable class. Passed in because next/font
+   *  modules can't be imported from client components (Turbopack build). */
+  fontClassName: string;
+}) {
   const t = useTranslations("storefront");
   const locale = useLocale();
   const [open, setOpen] = useState(false);
@@ -41,7 +48,7 @@ export function CartSheet({ storeName }: { storeName: string }) {
       </SheetTrigger>
       <SheetContent
         side={locale === "ar" ? "left" : "right"}
-        className={cn(storefrontFont.variable, s.tokens, "flex w-full flex-col gap-0 p-5 sm:max-w-md")}
+        className={cn(fontClassName, s.tokens, "flex w-full flex-col gap-0 p-5 sm:max-w-md")}
       >
         <SheetHeader className="p-0 pb-2 text-start">
           <SheetTitle className="text-xl font-bold">{t("cartTitle")}</SheetTitle>
