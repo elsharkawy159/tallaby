@@ -90,7 +90,14 @@
     "privacy": "Privacy",
     "stores": "Stores",
     "shopping": "Shopping",
-    "becomeSeller": "Become a Seller"
+    "becomeSeller": "Become a Seller",
+    "allCategories": "All categories",
+    "browseAllCategories": "Browse all categories",
+    "verifiedSellers": "All sellers are verified",
+    "hello": "Hello",
+    "myAccount": "My account",
+    "returns": "Returns",
+    "myOrders": "& orders"
   },
   "auth": {
     "signIn": "Sign In",
@@ -778,6 +785,73 @@
         "returnsBody": "Cancel or return any order free of charge within {days} days of purchase.",
         "sellersTitle": "Verified sellers",
         "sellersBody": "Products from independent sellers reviewed and verified by Tallaby before they can sell."
+      },
+      "slides": {
+        "newTag": "New arrivals",
+        "newHeadline": "The latest products from our sellers",
+        "newDescription": "Products just added to Tallaby. See them first.",
+        "newCta": "Shop what's new",
+        "codTag": "Cash on delivery",
+        "codHeadline": "Order now, pay when it arrives",
+        "codDescription": "Delivery to every governorate in Egypt, with the delivery fee shown before you confirm.",
+        "codCta": "Start shopping",
+        "previous": "Previous slide",
+        "next": "Next slide",
+        "goTo": "Go to slide {index}"
+      },
+      "collections": {
+        "discoverMore": "Discover more",
+        "mobile": "Everything your phone needs",
+        "powerBanks": "Power banks",
+        "chargers": "Chargers",
+        "powerBanks10000": "10000 mAh power banks",
+        "carMounts": "Car mounts",
+        "audio": "Audio for every moment",
+        "earbuds": "Wireless earbuds",
+        "headphones": "Headphones",
+        "neckbands": "Neckbands",
+        "speakers": "Speakers",
+        "mugs": "Mugs & tumblers",
+        "stanley": "Stanley",
+        "happyTime": "Happy Time",
+        "stainless": "Stainless steel",
+        "allMugs": "All mugs",
+        "watches": "Smart watches",
+        "amoled": "AMOLED display"
+      },
+      "deals": {
+        "title": "Today's deals",
+        "subtitle": "Products on discount right now",
+        "viewAll": "All deals"
+      },
+      "hub": {
+        "title": "Explore our categories",
+        "subtitle": "The best products in each category",
+        "bannerText": "{count, plural, one {# product} other {# products}} from verified sellers",
+        "shopCategory": "Shop {name}"
+      },
+      "budget": {
+        "title": "Shop by budget",
+        "under": "Products under",
+        "over": "Products over"
+      },
+      "brands": {
+        "title": "Popular brands",
+        "viewAll": "All products"
+      },
+      "picks": {
+        "title": "Picked for you",
+        "viewAll": "View all",
+        "bestSellers": "Best sellers",
+        "newest": "New arrivals",
+        "topRated": "Top rated",
+        "lowestPrice": "Lowest price"
+      },
+      "sellerBand": {
+        "title": "Have a brand? Let's grow together",
+        "description": "Show your products to shoppers across Egypt and get paid on a regular schedule.",
+        "start": "Start selling",
+        "learnMore": "Learn more"
       }
     },
     "products": {
@@ -1184,6 +1258,18 @@
       "noProducts": "No products in this category yet.",
       "productsCount": "{count} products",
       "viewAll": "View all"
+    },
+    "followUs": {
+      "title": "Follow Tallaby | Instagram, TikTok, YouTube & More",
+      "description": "Follow Tallaby on Instagram, TikTok, YouTube, Facebook, X, Threads and Pinterest for the latest promotions, discounts and new arrivals.",
+      "heading": "Follow us for <hl>promotions</hl> and <hl>discounts</hl>",
+      "subtitle": "Follow us on social media for updated promotions and discounts.",
+      "socialNavLabel": "Tallaby on social media",
+      "followOn": "Follow Tallaby on {network}",
+      "opensInNewTab": "(opens in a new tab)",
+      "visitTallaby": "Visit Tallaby",
+      "shopCta": "Shop on tallaby.com",
+      "sellCta": "Become a Seller"
     }
   },
   "category": {
@@ -1809,5 +1895,47 @@
     ],
     "finalHeading": "Ready to start earning with Tallaby?",
     "finalDescription": "Share your code. Help people save. Earn when they shop."
+  },
+  "storefront": {
+    "homeLabel": "{store} home",
+    "openCart": "Cart, {count, plural, =0 {empty} one {# item} other {# items}}",
+    "categoriesLabel": "Shop by category",
+    "allProducts": "Everything",
+    "productsHeading": "Products",
+    "inCategory": "{category}",
+    "searchPlaceholder": "Search this store",
+    "ratingSummary": "{rating} from {count, plural, one {# rating} other {# ratings}}",
+    "cartTitle": "Your cart",
+    "cartScopeNote": "This cart is only for {store}. Your tallaby.com cart stays separate.",
+    "cartEmpty": "Your cart is empty",
+    "cartEmptyHint": "Add something from {store} and it will show up here.",
+    "browseProducts": "Browse products",
+    "itemCount": "{count, plural, one {# item} other {# items}}",
+    "subtotal": "Subtotal",
+    "shippingNote": "Delivery is calculated at checkout.",
+    "checkout": "Checkout",
+    "viewCart": "View cart",
+    "continueShopping": "Continue shopping",
+    "variant": "Option: {name}",
+    "aboutHeading": "About {store}",
+    "contactHeading": "Contact",
+    "whatsapp": "WhatsApp",
+    "call": "Call",
+    "email": "Email the store",
+    "soldOn": "Sold through Tallaby",
+    "moreStores": "Shop more stores on tallaby.com",
+    "notFoundTitle": "There's no store at this address",
+    "notFoundBody": "Check the link you were sent, or find the store on Tallaby.",
+    "notFoundCta": "Browse stores on Tallaby",
+    "backToStore": "Back to {store}",
+    "previousCategories": "Previous categories",
+    "nextCategories": "Next categories",
+    "copyright": "© {year} {store}"
+  },
+  "topbar": {
+    "cashOnDelivery": "Cash on delivery available in every governorate in Egypt",
+    "freeShipping": "Free shipping on orders over {threshold}",
+    "sellOnTallaby": "Sell on Tallaby",
+    "helpCenter": "Help center"
   }
 }

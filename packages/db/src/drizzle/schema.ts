@@ -8,7 +8,7 @@ export const fulfillmentType = pgEnum("fulfillment_type", ['seller_fulfilled', '
 export const itemCondition = pgEnum("item_condition", ['new', 'renewed', 'refurbished', 'used_like_new', 'used_very_good', 'used_good', 'used_acceptable'])
 export const notificationType = pgEnum("notification_type", ['order_update', 'shipment_update', 'price_drop', 'review_response', 'marketing'])
 export const orderStatus = pgEnum("order_status", ['pending', 'payment_processing', 'confirmed', 'shipping_soon', 'shipped', 'out_for_delivery', 'delivered', 'cancelled', 'refund_requested', 'refunded', 'returned'])
-export const orderSource = pgEnum("order_source", ['website', 'external'])
+export const orderSource = pgEnum("order_source", ['website', 'external', 'storefront'])
 export const paymentStatus = pgEnum("payment_status", ['pending', 'authorized', 'paid', 'failed', 'refunded', 'partially_refunded', 'collected'])
 export const promotionType = pgEnum("promotion_type", ['percentage', 'fixed_amount', 'buy_x_get_y', 'free_shipping'])
 export const returnReason = pgEnum("return_reason", ['defective', 'damaged', 'wrong_item', 'not_as_described', 'better_price', 'no_longer_needed', 'unauthorized_purchase', 'other'])
@@ -152,6 +152,8 @@ export const carts = pgTable("carts", {
 	lastActivity: timestamp("last_activity", { withTimezone: true, mode: 'string' }).defaultNow(),
 	reminderSentAt: timestamp("reminder_sent_at", { withTimezone: true, mode: 'string' }),
 	reminderSentBy: uuid("reminder_sent_by"),
+	/** NULL = tallaby.com marketplace cart; set = that seller's storefront cart (0045). */
+	storeSellerId: uuid("store_seller_id"),
 }, (table) => [
 	index("cart_session_id_idx").using("btree", table.sessionId.asc().nullsLast().op("text_ops")),
 	index("cart_user_id_idx").using("btree", table.userId.asc().nullsLast().op("uuid_ops")),
@@ -166,6 +168,12 @@ export const carts = pgTable("carts", {
 			foreignColumns: [users.id],
 			name: "carts_reminder_sent_by_fkey"
 		}).onDelete("set null"),
+	index("carts_user_store_status_idx").using("btree", table.userId.asc().nullsLast().op("uuid_ops"), table.storeSellerId.asc().nullsLast().op("uuid_ops"), table.status.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.storeSellerId],
+			foreignColumns: [sellers.id],
+			name: "carts_store_seller_id_fkey"
+		}).onDelete("cascade"),
 ]);
 
 export const categories = pgTable("categories", {
@@ -406,9 +414,16 @@ export const sellers = pgTable("sellers", {
 	sellerLevel: text("seller_level").default('standard'),
 	joinDate: timestamp("join_date", { withTimezone: true, mode: 'string' }).defaultNow(),
 	sellerMetrics: jsonb("seller_metrics"),
+	/** Storefront at {subdomain}.tallaby.com. Leave unset on insert: a DB trigger replaces the '' default (0044). */
+	subdomain: text().default('').notNull(),
+	subdomainUpdatedAt: timestamp("subdomain_updated_at", { withTimezone: true, mode: 'string' }),
+	/** What the store sells, shown on its storefront (0046). */
+	storeCategory: text("store_category"),
+	storeCategoryAr: text("store_category_ar"),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 }, (table) => [
+	uniqueIndex("sellers_subdomain_key").using("btree", table.subdomain.asc().nullsLast().op("text_ops")),
 	index("seller_business_name_idx").using("btree", table.businessName.asc().nullsLast().op("text_ops")),
 	index("seller_display_name_idx").using("btree", table.displayName.asc().nullsLast().op("text_ops")),
 	uniqueIndex("seller_slug_idx").using("btree", table.slug.asc().nullsLast().op("text_ops")),
@@ -419,6 +434,20 @@ export const sellers = pgTable("sellers", {
 			name: "sellers_id_users_id_fk"
 		}).onDelete("cascade"),
 	unique("sellers_slug_unique").on(table.slug),
+]);
+
+/** Subdomains a seller used before; the storefront redirects them (0044). */
+export const sellerSubdomainRedirects = pgTable("seller_subdomain_redirects", {
+	subdomain: text().primaryKey().notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("seller_subdomain_redirects_seller_id_idx").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.sellerId],
+			foreignColumns: [sellers.id],
+			name: "seller_subdomain_redirects_seller_id_fkey"
+		}).onDelete("cascade"),
 ]);
 
 export const shipmentItems = pgTable("shipment_items", {

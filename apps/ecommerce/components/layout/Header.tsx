@@ -7,11 +7,13 @@ import { LanguageSwitcher } from "./language-switcher";
 import { SearchBar } from "./search-bar";
 import { BecomeSellerButton } from "./header.chunks";
 import { HeaderUserActions } from "./header-user-actions.client";
+import { TopBar } from "./top-bar";
+// import { CategoryNav } from "./category-nav";
 
 const MainHeader = () => {
   return (
     <div className={cn("bg-primary shadow-xs h-full w-full")}>
-      <div className="py-2.5 container">
+      <div className="py-2.5 md:py-0 container">
         {/* Mobile top section */}
         <div className="flex items-center justify-between gap-2 md:hidden">
           <Logo className="shrink-0" />
@@ -24,18 +26,9 @@ const MainHeader = () => {
         </div>
 
         {/* Desktop layout */}
-        <div
-          className={cn(
-            "hidden md:flex items-center justify-between gap-4 lg:gap-5 md:mt-0 mt-4"
-          )}
-        >
-          <div className="flex items-center gap-8">
-            <Logo />
-            <LanguageSwitcher />
-          </div>
-
+        <div className="hidden md:flex h-18 items-center gap-4 lg:gap-6">
+          <Logo className="shrink-0" logoClassName="md:h-8" />
           <SearchBar variant="desktop" />
-
           <HeaderUserActions />
         </div>
       </div>
@@ -46,9 +39,11 @@ const MainHeader = () => {
 const Header = ({ className }: HeaderProps) => {
   return (
     <>
-      <ScrollingHeader className={className}>
+      <TopBar />
+      {/* <ScrollingHeader className={className}> */}
         <MainHeader />
-      </ScrollingHeader>
+        {/* <CategoryNav /> */}
+      {/* </ScrollingHeader> */}
 
       {/* Mobile bottom navigation */}
       <BottomNavigation />

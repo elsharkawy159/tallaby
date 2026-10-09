@@ -65,6 +65,10 @@
       "types": "./src/fulfillment/index.ts",
       "default": "./src/fulfillment/index.ts"
     },
+    "./storefront": {
+      "types": "./src/storefront/index.ts",
+      "default": "./src/storefront/index.ts"
+    },
     "./fulfillment/server": {
       "types": "./src/fulfillment/server.ts",
       "default": "./src/fulfillment/server.ts"

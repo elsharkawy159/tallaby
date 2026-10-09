@@ -16,6 +16,7 @@ import {
   getOrCreateCurrentUserId,
 } from "@/lib/get-current-user-id";
 import { getLocale } from "next-intl/server";
+import { activeCartWhere, getCartStoreSellerId } from "@/lib/storefront.server";
 import {
   mergeProductWithTranslation,
   pickTranslationFromArray,
@@ -33,7 +34,8 @@ type ProductPrice = {
 
 /**
  * Get existing cart for current user (does not create user or cart)
- * Returns null if no cart exists
+ * Returns null if no cart exists. On a seller storefront subdomain this is
+ * that storefront's own cart, otherwise the marketplace cart.
  */
 async function getCart() {
   try {
@@ -42,8 +44,9 @@ async function getCart() {
       return null;
     }
 
+    const storeSellerId = await getCartStoreSellerId();
     const cart = await db.query.carts.findFirst({
-      where: and(eq(carts.userId, userId), eq(carts.status, "active")),
+      where: activeCartWhere(userId, storeSellerId),
     });
 
     return cart || null;
@@ -68,16 +71,17 @@ async function ensureCart() {
     }
 
     // Try to find cart, or insert if none
-    // Prevent multiple active carts per user
+    // Prevent multiple active carts per user and storefront
+    const storeSellerId = await getCartStoreSellerId();
     let cart = await db.query.carts.findFirst({
-      where: and(eq(carts.userId, userId), eq(carts.status, "active")),
+      where: activeCartWhere(userId, storeSellerId),
     });
 
     if (!cart) {
       try {
         const [newCart] = await db
           .insert(carts)
-          .values({ userId, status: "active", currency: "EGP" })
+          .values({ userId, storeSellerId, status: "active", currency: "EGP" })
           .returning();
 
         if (!newCart) {
@@ -93,7 +97,7 @@ async function ensureCart() {
         console.error("ensureCart: Error inserting cart:", insertError);
         // If insert failed, try to get cart again (race condition)
         cart = await db.query.carts.findFirst({
-          where: and(eq(carts.userId, userId), eq(carts.status, "active")),
+          where: activeCartWhere(userId, storeSellerId),
         });
 
         if (!cart) {
@@ -251,6 +255,10 @@ export async function addToCart(
     where: and(eq(products.id, productId), eq(products.status, "active")),
   });
   if (!product) return { success: false, error: "Product not found" };
+  // A storefront cart only ever holds that seller's products.
+  if (cart.storeSellerId && product.sellerId !== cart.storeSellerId) {
+    return { success: false, error: "This product isn't sold in this store" };
+  }
 
   // Fetch variant if variantId is provided
   let variant = null;
@@ -408,7 +416,9 @@ export async function removeFromCart(itemId: string) {
   const cart = await ensureCart();
   if (!cart) return { success: false, error: "No cart found" };
 
-  await db.delete(cartItems).where(eq(cartItems.id, itemId));
+  await db
+    .delete(cartItems)
+    .where(and(eq(cartItems.id, itemId), eq(cartItems.cartId, cart.id)));
 
   return { success: true, message: "Item removed" };
 }

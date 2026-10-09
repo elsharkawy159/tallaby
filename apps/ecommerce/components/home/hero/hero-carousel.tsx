@@ -1,7 +1,7 @@
 "use client";
 
-import { Link } from "@/i18n/navigation";
-import Image from "next/image";
+import { Children, useRef, type ReactNode } from "react";
+import Autoplay from "embla-carousel-autoplay";
 import {
   Carousel,
   CarouselContent,
@@ -9,77 +9,39 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@workspace/ui/components/carousel";
-import Autoplay from "embla-carousel-autoplay";
-import { useLocale } from "next-intl";
 
-const HeroCarousel = () => {
-  const locale = useLocale();
-  const banners = [
-    {
-      id: 1,
-      href: "/products",
-      image: "/banner.jpg",
-    },
-    // {
-    //   id: 2,
-    //   href: "/products",
-    //   image: "/banner2.jpg",
-    // },
-    // {
-    //   id: 3,
-    //   href: "/products",
-    //   image: "/banner3.jpg",
-    // },
-    // {
-    //   id: 5,
-    //   href: "/products",
-    //   image: "/banner5.jpg",
-    // },
-    // {
-    //   id: 6,
-    //   href: "/products",
-    //   image: "/banner6.jpg",
-    // },
-  ];
+// Arrows stay hidden until the carousel is hovered (or an arrow gets keyboard focus).
+const arrowClass =
+  "hidden size-9 border-0 bg-white/90 text-primary opacity-0 shadow-sm transition-opacity hover:bg-white focus-visible:opacity-100 group-hover/hero:opacity-100 md:inline-flex";
+
+// Slides are rendered on the server and passed in as children; this only adds
+// autoplay and the arrows.
+export default function HeroCarousel({
+  children,
+  dir,
+  labels,
+}: {
+  children: ReactNode;
+  dir: "ltr" | "rtl";
+  labels: { previous: string; next: string };
+}) {
+  const autoplay = useRef(
+    Autoplay({ delay: 6000, stopOnInteraction: false, stopOnMouseEnter: true }),
+  );
 
   return (
     <Carousel
-      plugins={[
-        Autoplay({
-          delay: 5000,
-          stopOnInteraction: true,
-          stopOnMouseEnter: true,
-        }),
-      ]}
-      className="w-full group"
-      opts={{
-        align: "start",
-        loop: true,
-        direction: locale === "ar" ? "rtl" : "ltr",
-      }}
+      plugins={[autoplay.current]}
+      opts={{ loop: true, direction: dir }}
+      className="group/hero relative w-full"
     >
-      <CarouselContent>
-        {banners.map((banner) => (
-          <CarouselItem key={banner.id} className="p-0">
-            <Link href={banner.href}>
-              <div className="relative h-[300px] sm:h-[400px] md:h-[500px] w-full overflow-hidden">
-                <Image
-                  src={banner.image}
-                  alt={banner.image}
-                  fill
-                  className="object-cover object-center md:object-top"
-                  fetchPriority="high"
-                  loading="eager"
-                />
-              </div>
-            </Link>
-          </CarouselItem>
+      <CarouselContent className="ms-0">
+        {Children.map(children, (slide) => (
+          <CarouselItem className="ps-0">{slide}</CarouselItem>
         ))}
       </CarouselContent>
-      <CarouselPrevious className="left-2 md:left-4 group-hover:opacity-100 opacity-0 bg-transparent border-none h-full rounded-none hover:bg-black/5 px-6 md:px-10 duration-200 shadow-none transition-all" />
-      <CarouselNext className="right-2 md:right-4 group-hover:opacity-100 opacity-0 bg-transparent border-none h-full rounded-none hover:bg-black/5 px-6 md:px-10 duration-200 shadow-none transition-all" />
+      <CarouselPrevious aria-label={labels.previous} className={`${arrowClass} start-4`} />
+      <CarouselNext aria-label={labels.next} className={`${arrowClass} end-4`} />
     </Carousel>
   );
-};
-
-export default HeroCarousel;
+}

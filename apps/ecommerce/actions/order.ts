@@ -35,6 +35,7 @@ import {
   invalidateProductInventory,
 } from "@workspace/cache";
 import { getCurrentUserId } from "@/lib/get-current-user-id";
+import { getCartStoreSellerId } from "@/lib/storefront.server";
 import { buildOrderPagePath } from "@/lib/order-access-token";
 import { getUser } from "./auth";
 import { revalidateCartCheckout } from "@/lib/revalidate-cart-checkout";
@@ -84,7 +85,7 @@ export async function createOrder(data: {
       notes: data.notes,
       isGift: data.isGift,
       giftMessage: data.giftMessage,
-      orderSource: "website",
+      orderSource: (await getCartStoreSellerId()) ? "storefront" : "website",
       locale: "en",
     });
 

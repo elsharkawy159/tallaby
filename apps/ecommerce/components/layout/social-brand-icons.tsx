@@ -15,7 +15,7 @@ interface SimpleBrandIconProps {
   className?: string
 }
 
-function SimpleBrandIcon({ icon, className }: SimpleBrandIconProps) {
+export function SimpleBrandIcon({ icon, className }: SimpleBrandIconProps) {
   return (
     <svg
       viewBox="0 0 24 24"

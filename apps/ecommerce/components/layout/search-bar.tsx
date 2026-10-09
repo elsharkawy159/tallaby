@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { Search } from "lucide-react";
 import { Input } from "@workspace/ui/components/input";
 import { useQuery } from "@tanstack/react-query";
@@ -46,6 +46,7 @@ export const SearchBar = ({
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const searchRef = React.useRef<HTMLDivElement>(null);
   const locale = useLocale();
+  const router = useRouter();
   const t = useTranslations("search");
 
   // Fetch search results using useQuery
@@ -104,23 +105,40 @@ export const SearchBar = ({
     }
   };
 
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const query = searchQuery.trim();
+    if (!query) return;
+    setIsOpen(false);
+    router.push(`/products?${new URLSearchParams({ search: query }).toString()}`);
+  };
+
   const searchPlaceholder = placeholder || (variant === "mobile" ? t("searchProducts") : t("searchForProducts"));
 
   return (
-    <div className={cn("relative flex-1 max-w-3xl", className)} ref={searchRef}>
-      <Input
-        type="text"
-        placeholder={searchPlaceholder}
-        className="pl-11 rounded-full text-white placeholder:text-gray-300"
-        value={searchQuery}
-        onChange={handleInputChange}
-        onFocus={handleInputFocus}
-      />
-      {isSearching ? (
-        <Spinner className="text-gray-500 size-5 absolute left-4 top-1/2 transform -translate-y-1/2" />
-      ) : (
-        <Search className="size-5 absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500" />
-      )}
+    <div className={cn("relative flex-1", className)} ref={searchRef}>
+      <form
+        role="search"
+        onSubmit={handleSubmit}
+        className="flex h-11 overflow-hidden rounded-xl bg-white focus-within:ring-2 focus-within:ring-accent/60"
+      >
+        <Input
+          type="search"
+          placeholder={searchPlaceholder}
+          aria-label={searchPlaceholder}
+          className="h-full min-w-0 flex-1 rounded-none border-0 bg-transparent px-3.5 text-sm text-neutral-900 shadow-none placeholder:text-neutral-500 focus-visible:ring-0"
+          value={searchQuery}
+          onChange={handleInputChange}
+          onFocus={handleInputFocus}
+        />
+        <button
+          type="submit"
+          aria-label={t("searchProducts")}
+          className="grid w-13 shrink-0 cursor-pointer place-items-center bg-accent text-white transition-colors hover:bg-[#e89318]"
+        >
+          {isSearching ? <Spinner className="size-5" /> : <Search className="size-5" />}
+        </button>
+      </form>
       {/* Search Results Dropdown */}
       {isOpen && searchQuery && (
         <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-50 max-h-106 overflow-y-auto">
@@ -181,7 +199,7 @@ export const SearchBar = ({
               {searchResults.length >= 5 && (
                 <li>
                   <Link
-                    href={`/products?searchQuery=${encodeURIComponent(searchQuery)}`}
+                    href={`/products?search=${encodeURIComponent(searchQuery)}`}
                     onClick={() => {
                       setSearchQuery("");
                       setIsOpen(false);

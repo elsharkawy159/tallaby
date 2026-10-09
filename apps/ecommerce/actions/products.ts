@@ -53,6 +53,8 @@ interface ProductFilters {
   isTrending?: boolean;
   isSeasonal?: boolean;
   isSponsored?: boolean;
+  /** Only products whose list price is above the selling price. */
+  onSale?: boolean;
   searchQuery?: string;
   sortBy?: "price_asc" | "price_desc" | "rating" | "newest" | "popular";
   limit?: number;
@@ -165,6 +167,12 @@ export const getProducts = createCachedQuery({
 
       if (filters.isSponsored !== undefined) {
         conditions.push(eq(products.sponsored, filters.isSponsored));
+      }
+
+      if (filters.onSale) {
+        conditions.push(
+          sql`(${products.price}->>'list')::numeric > (${products.price}->>'final')::numeric`
+        );
       }
 
       if (filters.searchQuery) {

@@ -1,0 +1,674 @@
+/*
+ * Seller storefront ({subdomain}.tallaby.com).
+ *
+ * The store is the seller's, not the marketplace's: one typeface (Readex Pro,
+ * Arabic + Latin), quiet white shelves, and a single loud moment — the store
+ * name set as a shop sign across the hero. Teal is Tallaby's, kept for
+ * actions; amber only marks the cart count and ratings.
+ */
+
+/* Tokens + type. Also applied to portaled UI (the cart sheet). */
+.tokens {
+  --sf-paper: #ffffff;
+  --sf-shelf: #f2f5f4;
+  --sf-line: #e2e8e7;
+  --sf-ink: #10242b;
+  --sf-muted: #5c6d72;
+  --sf-brand: #145163;
+  --sf-brand-ink: #ffffff;
+  --sf-sun: #fdad28;
+
+  /* Re-point the shared UI tokens so reused components match. */
+  --background: var(--sf-paper);
+  --foreground: var(--sf-ink);
+  --primary: var(--sf-brand);
+  --primary-foreground: var(--sf-brand-ink);
+  --muted-foreground: var(--sf-muted);
+  --border: var(--sf-line);
+
+  color: var(--sf-ink);
+  font-family: var(--font-storefront), system-ui, sans-serif;
+}
+
+.tokens :where(h1, h2, h3, h4) {
+  font-family: inherit;
+}
+
+.root {
+  composes: tokens;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--sf-paper);
+}
+
+.wrap {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: 16px;
+}
+
+@media (min-width: 768px) {
+  .wrap {
+    padding-inline: 32px;
+  }
+}
+
+/* ---------- Header ---------- */
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: color-mix(in oklab, var(--sf-paper) 92%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--sf-line);
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 64px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  margin-inline-end: auto;
+  font-weight: 600;
+  font-size: 1.0625rem;
+  border-radius: 8px;
+}
+
+.brand:focus-visible,
+.iconButton:focus-visible,
+.circleLink:focus-visible {
+  outline: 2px solid var(--sf-brand);
+  outline-offset: 3px;
+}
+
+.logo {
+  position: relative;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--sf-brand);
+  color: var(--sf-brand-ink);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+}
+
+.iconButton {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  min-width: 40px;
+  padding-inline: 12px;
+  border-radius: 999px;
+  border: 1px solid var(--sf-line);
+  background: var(--sf-paper);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: border-color 150ms;
+}
+
+.iconButton:hover {
+  border-color: var(--sf-ink);
+}
+
+.iconButton:disabled {
+  opacity: 0.6;
+}
+
+/* The cart button once something is in it. */
+.iconButtonFilled,
+.iconButtonFilled:hover {
+  border-color: var(--sf-brand);
+  background: var(--sf-brand);
+  color: var(--sf-brand-ink);
+}
+
+.badge {
+  min-width: 22px;
+  height: 22px;
+  padding-inline: 6px;
+  border-radius: 999px;
+  background: var(--sf-sun);
+  color: var(--sf-ink);
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: inline-grid;
+  place-items: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Hero: the shop sign ---------- */
+
+.hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--sf-brand);
+  color: #fff;
+}
+
+.heroImage {
+  z-index: -2;
+  object-fit: cover;
+}
+
+/* Legibility scrim for the sign on top of any banner photo. */
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(to top, rgb(8 22 27 / 0.82), rgb(8 22 27 / 0.25) 55%, rgb(8 22 27 / 0.1));
+}
+
+.heroPlain::after {
+  display: none;
+}
+
+.heroInner {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 20px;
+  min-height: clamp(300px, 52vw, 520px);
+  padding-block: 40px 32px;
+}
+
+.sign {
+  font-size: clamp(2.75rem, 1.6rem + 6.2vw, 7.5rem);
+  line-height: 0.95;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  max-width: 14ch;
+}
+
+/* Arabic letterforms need their ascenders and descenders; no negative tracking. */
+:global([dir="rtl"]) .sign {
+  letter-spacing: 0;
+  line-height: 1.15;
+}
+
+.heroBio {
+  max-width: 56ch;
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  color: rgb(255 255 255 / 0.88);
+}
+
+.heroFacts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  font-size: 0.9375rem;
+  color: rgb(255 255 255 / 0.88);
+}
+
+.heroFacts li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.heroButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding-inline: 18px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  background: #fff;
+  color: var(--sf-ink);
+  transition: transform 150ms;
+}
+
+.heroButtonGhost {
+  background: transparent;
+  color: #fff;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.55);
+}
+
+.heroButton:active {
+  transform: scale(0.97);
+}
+
+.heroButton:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+/* One orchestrated entrance: the sign settles in on first load. */
+@media (prefers-reduced-motion: no-preference) {
+  .sign {
+    animation: signIn 700ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+
+  @keyframes signIn {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+      filter: blur(6px);
+    }
+  }
+}
+
+/* ---------- Category circles ---------- */
+
+/* Embla carousel: the viewport clips, the track is a plain flex row. */
+.circlesCarousel {
+  position: relative;
+}
+
+.circles {
+  gap: 18px;
+  /* Room for the selected ring, which the clipping viewport would cut off. */
+  padding: 6px 6px 12px;
+}
+
+@media (min-width: 768px) {
+  .circles {
+    gap: 26px;
+  }
+}
+
+/* Sits over the row's ends; shown while the row is hovered or an arrow is focused. */
+.circleArrow {
+  top: 56px; /* centre of the 100px circle */
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--sf-line);
+  background: var(--sf-paper);
+  color: var(--sf-ink);
+  box-shadow: 0 4px 14px rgb(16 36 43 / 0.12);
+  opacity: 0;
+  transition: opacity 150ms;
+}
+
+.circlesCarousel:hover .circleArrow:not(:disabled),
+.circleArrow:focus-visible {
+  opacity: 1;
+}
+
+.circleArrow:disabled {
+  visibility: hidden;
+}
+
+.circleLink {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 84px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .circleLink {
+    width: 108px;
+  }
+}
+
+.circle {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: var(--sf-shelf);
+  overflow: hidden;
+  box-shadow: 0 0 0 2px var(--sf-paper), 0 0 0 3px var(--sf-line);
+  transition: box-shadow 200ms;
+}
+
+@media (min-width: 768px) {
+  .circle {
+    width: 100px;
+    height: 100px;
+  }
+}
+
+.circleLink:hover .circle {
+  box-shadow: 0 0 0 2px var(--sf-paper), 0 0 0 3px var(--sf-muted);
+}
+
+.circleLink[aria-current] .circle {
+  box-shadow: 0 0 0 3px var(--sf-paper), 0 0 0 5px var(--sf-brand);
+}
+
+.circleImage {
+  object-fit: contain;
+  padding: 10px;
+  mix-blend-mode: multiply;
+}
+
+.circleAll {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  color: var(--sf-brand);
+}
+
+.circleName {
+  font-size: 0.8125rem;
+  line-height: 1.3;
+  font-weight: 500;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.circleLink[aria-current] .circleName {
+  font-weight: 700;
+}
+
+.circleCount {
+  font-size: 0.75rem;
+  color: var(--sf-muted);
+  font-variant-numeric: tabular-nums;
+  margin-top: -6px;
+}
+
+/* ---------- Sections ---------- */
+
+.sectionTitle {
+  font-size: clamp(1.375rem, 1.1rem + 1vw, 1.875rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* ---------- Footer: the sign again, at the bottom ---------- */
+
+.footer {
+  margin-top: auto;
+  overflow: hidden;
+  background: var(--sf-ink);
+  color: rgb(255 255 255 / 0.72);
+}
+
+.footer h2,
+.footer h3,
+.footer summary {
+  color: #fff;
+}
+
+.footerTop {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding-block: 48px 32px;
+  border-bottom: 1px solid rgb(255 255 255 / 0.12);
+}
+
+@media (min-width: 768px) {
+  .footerTop {
+    padding-block: 64px 40px;
+  }
+}
+
+.footerFacts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  margin-top: 6px;
+  font-size: 0.9375rem;
+}
+
+.footerFacts li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.footerContact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.footerButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding-inline: 18px;
+  border-radius: 999px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #fff;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.3);
+  transition: box-shadow 150ms, transform 150ms;
+}
+
+.footerButton:hover {
+  box-shadow: inset 0 0 0 1px #fff;
+}
+
+.footerButtonSolid,
+.footerButtonSolid:hover {
+  background: #fff;
+  color: var(--sf-ink);
+  box-shadow: none;
+}
+
+.footerButton:active {
+  transform: scale(0.97);
+}
+
+.footerButton:focus-visible,
+.policy summary:focus-visible,
+.byTallaby:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+.footerBody {
+  display: grid;
+  gap: 32px;
+  padding-block: 32px 8px;
+}
+
+@media (min-width: 768px) {
+  .footerBody {
+    grid-template-columns: 1.3fr 1fr;
+    gap: 64px;
+    padding-block: 40px 8px;
+  }
+}
+
+.footerHeading {
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.policy {
+  border-bottom: 1px solid rgb(255 255 255 / 0.12);
+}
+
+.policy:first-child {
+  border-top: 1px solid rgb(255 255 255 / 0.12);
+}
+
+@media (min-width: 768px) {
+  .policy:first-child {
+    border-top: 0;
+  }
+}
+
+.policy summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-block: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+  border-radius: 4px;
+}
+
+.policy summary::-webkit-details-marker {
+  display: none;
+}
+
+.policyChevron {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  transition: transform 200ms;
+}
+
+.policy[open] .policyChevron {
+  transform: rotate(180deg);
+}
+
+/* The store name, set as large as the hero sign and barely there. */
+.footerSign {
+  padding-inline: 16px;
+  margin-bottom: -0.18em;
+  font-size: clamp(4rem, 2rem + 13vw, 13rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  white-space: nowrap;
+  text-align: center;
+  color: rgb(255 255 255 / 0.07);
+  user-select: none;
+}
+
+:global([dir="rtl"]) .footerSign {
+  letter-spacing: 0;
+  margin-bottom: -0.3em;
+}
+
+.footerBase {
+  position: relative;
+  border-top: 1px solid rgb(255 255 255 / 0.12);
+  background: var(--sf-ink);
+}
+
+/* Keep the last line clear of the fixed badge where the page is narrow. */
+@media (max-width: 1279px) {
+  .footerBase {
+    padding-bottom: 40px;
+  }
+}
+
+/* ---------- By Tallaby badge ---------- */
+
+.byTallaby {
+  position: fixed;
+  right: 16px;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  z-index: 44;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding-inline: 6px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--sf-line);
+  background: var(--sf-paper);
+  color: var(--sf-ink);
+  font-family: var(--font-storefront), system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  box-shadow: 0 4px 14px rgb(16 36 43 / 0.12);
+  transition: border-color 150ms;
+}
+
+.byTallaby:hover {
+  border-color: var(--sf-brand);
+}
+
+/* On phones, sit above the floating cart bar while it is showing. */
+@media (max-width: 767px) {
+  .root:has(.cartBar) .byTallaby {
+    bottom: calc(max(12px, env(safe-area-inset-bottom)) + 66px);
+  }
+}
+
+/* ---------- Mobile cart bar ---------- */
+
+.cartBar {
+  position: fixed;
+  inset-inline: 12px;
+  bottom: max(12px, env(safe-area-inset-bottom));
+  z-index: 45;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 56px;
+  padding-inline: 18px 8px;
+  border-radius: 999px;
+  background: var(--sf-ink);
+  color: #fff;
+  box-shadow: 0 10px 30px rgb(16 36 43 / 0.28);
+}
+
+@media (min-width: 768px) {
+  .cartBar {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cartBar {
+    animation: barIn 300ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+
+  @keyframes barIn {
+    from {
+      transform: translateY(120%);
+    }
+  }
+}
+
+.cartBarButton {
+  margin-inline-start: auto;
+  height: 42px;
+  padding-inline: 18px;
+  border-radius: 999px;
+  background: var(--sf-sun);
+  color: var(--sf-ink);
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Room so the floating bar never covers the last row on phones. */
+.barSpacer {
+  height: 84px;
+}
+
+@media (min-width: 768px) {
+  .barSpacer {
+    display: none;
+  }
+}

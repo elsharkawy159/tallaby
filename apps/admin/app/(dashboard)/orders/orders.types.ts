@@ -27,7 +27,7 @@ export interface Order {
     | "refunded"
     | "partially_refunded";
   paymentMethod: string;
-  orderSource?: "website" | "external";
+  orderSource?: "website" | "external" | "storefront";
   /** Sum of item quantities (list query computes it server-side). */
   itemsCount?: number;
   orderItems?: Array<{

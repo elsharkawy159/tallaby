@@ -260,6 +260,7 @@ export async function getSellerBySlug(slug: string) {
             id: true,
             displayName: true,
             slug: true,
+            subdomain: true,
             description: true,
             logoUrl: true,
             bannerUrl: true,
@@ -294,7 +295,8 @@ export async function getSellerBySlug(slug: string) {
         return { success: false, error: "Failed to fetch seller" };
       }
     },
-    [`seller-slug-${slug}`],
+    // v2: entries now include `subdomain`.
+    [`seller-slug-v2-${slug}`],
     {
       tags: ["sellers", `seller-${slug}`],
       revalidate: 3600, // 1 hour - seller profiles change infrequently

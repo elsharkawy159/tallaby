@@ -773,6 +773,31 @@
     "saveChanges": "Save changes"
   },
   "settings": {
+    "storeLink": {
+      "title": "Your store link",
+      "description": "Your own store website. Share it with customers on WhatsApp, Instagram or Facebook — orders placed there come only from your products.",
+      "copy": "Copy link",
+      "copied": "Store link copied",
+      "open": "Open",
+      "change": "Change",
+      "fieldLabel": "Store address",
+      "rules": "3–32 characters: lowercase letters, numbers and hyphens.",
+      "checking": "Checking…",
+      "available": "{host} is available",
+      "redirectNote": "Links you already shared keep working: your old address will send customers to the new one.",
+      "save": "Save address",
+      "cancel": "Cancel",
+      "saved": "Your store is now at {host}",
+      "errors": {
+        "tooShort": "Use at least 3 characters.",
+        "tooLong": "Use 32 characters or fewer.",
+        "invalid": "Use only lowercase letters, numbers and hyphens, and start and end with a letter or number.",
+        "reserved": "This address is reserved by Tallaby. Choose another.",
+        "taken": "Another store already uses this address. Choose another.",
+        "unauthorized": "Sign in again to change your store address.",
+        "failed": "Couldn't change the address. Try again."
+      }
+    },
     "title": "Store Settings",
     "subtitle": "Changes save automatically. Update your store profile, branding, and documents.",
     "saveFailed": "Failed to save settings",

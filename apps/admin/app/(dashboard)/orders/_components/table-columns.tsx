@@ -90,6 +90,7 @@ export function getOrdersFilters(paymentMethods: string[]): DataTableFilter[] {
       options: [
         { value: "website", label: "Website" },
         { value: "external", label: "External" },
+        { value: "storefront", label: "Seller storefront" },
       ],
     },
     { id: "created", title: "Date", type: "dateRange" },

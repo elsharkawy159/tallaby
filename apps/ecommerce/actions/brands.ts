@@ -1,7 +1,7 @@
 "use server";
 
 import { unstable_cache } from "next/cache";
-import { brandTags } from "@workspace/cache";
+import { brandTags, productTags } from "@workspace/cache";
 import { db } from "@workspace/db";
 import {
   brands,
@@ -134,6 +134,47 @@ export async function getPopularBrands() {
     {
       tags: [brandTags.all(), brandTags.popular()],
       revalidate: 3600, // 1 hour - popularity metrics change more frequently
+    }
+  )();
+}
+
+/**
+ * Brands ranked by how many active products they currently have, counted
+ * live from products (brands.product_count isn't kept in sync). Brands with
+ * no active products are left out.
+ */
+export async function getTopBrandsByProductCount(limit = 8) {
+  return unstable_cache(
+    async () => {
+      try {
+        const productCount = sql<number>`count(${products.id})::int`;
+        const topBrands = await db
+          .select({
+            id: brands.id,
+            name: brands.name,
+            slug: brands.slug,
+            logoUrl: brands.logoUrl,
+            productCount,
+          })
+          .from(brands)
+          .innerJoin(
+            products,
+            and(eq(products.brandId, brands.id), eq(products.status, "active"))
+          )
+          .groupBy(brands.id)
+          .orderBy(desc(productCount), asc(brands.name))
+          .limit(limit);
+
+        return { success: true, data: topBrands };
+      } catch (error) {
+        console.error("Error fetching top brands:", error);
+        return { success: false, error: "Failed to fetch brands" };
+      }
+    },
+    [`top-brands-by-products-${limit}`],
+    {
+      tags: [brandTags.all(), brandTags.popular(), productTags.all()],
+      revalidate: 3600, // 1 hour - counts shift as products are listed
     }
   )();
 }

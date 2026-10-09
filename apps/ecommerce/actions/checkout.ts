@@ -12,6 +12,7 @@ import {
 } from "@workspace/db";
 import { getLocale } from "next-intl/server";
 import { getCurrentUserId } from "@/lib/get-current-user-id";
+import { activeCartWhere, getCartStoreSellerId } from "@/lib/storefront.server";
 import {
   mergeProductWithTranslation,
   pickTranslationFromArray,
@@ -152,7 +153,7 @@ export async function recalculateCheckoutSummary(data: {
     }
 
     const cart = await db.query.carts.findFirst({
-      where: and(eq(carts.userId, userId), eq(carts.status, "active")),
+      where: activeCartWhere(userId, await getCartStoreSellerId()),
       with: cartWithShippingItems,
     });
 
@@ -207,7 +208,7 @@ export async function getCheckoutData() {
     }
 
     const cart = await db.query.carts.findFirst({
-      where: and(eq(carts.userId, userId), eq(carts.status, "active")),
+      where: activeCartWhere(userId, await getCartStoreSellerId()),
       with: cartWithShippingItems,
     });
 

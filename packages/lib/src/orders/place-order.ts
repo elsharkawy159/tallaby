@@ -51,7 +51,7 @@ import { isCodEligibleForShipping, parseWalletPartialPaymentMethod } from './pay
 /** Internal control-flow signal: coupon lost a concurrent usage-limit race. */
 class CouponClaimFailedError extends Error {}
 
-export type OrderSource = 'website' | 'external'
+export type OrderSource = 'website' | 'external' | 'storefront'
 
 export interface PaymentOverrides {
   paymentMethod: string

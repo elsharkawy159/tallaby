@@ -36,6 +36,8 @@ const ProductsList = async ({ searchParams }: ProductsListProps) => {
     brandNames: parseList(searchParams.brands),
     minPrice: parseNumber(searchParams.priceMin),
     maxPrice: parseNumber(searchParams.priceMax),
+    // `?sale=1` — discounted products only (the home page's deals link).
+    onSale: searchParams.sale === "1" || undefined,
     sortBy:
       (searchParams.sort as
         | "price_asc"

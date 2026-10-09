@@ -28,6 +28,7 @@ const STATIC_PATHS: Array<{
   { path: "/privacy", changeFrequency: "monthly", priority: 0.3 },
   { path: "/cookies", changeFrequency: "monthly", priority: 0.2 },
   { path: "/sell", changeFrequency: "weekly", priority: 0.7 },
+  { path: "/follow-us", changeFrequency: "monthly", priority: 0.4 },
 ];
 
 /** Every locale's URL for `path`, for a sitemap entry's alternates.languages. */

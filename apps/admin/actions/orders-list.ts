@@ -41,7 +41,7 @@ const PAYMENT_STATUSES = [
   "collected",
 ] as const;
 
-const ORDER_SOURCES = ["website", "external"] as const;
+const ORDER_SOURCES = ["website", "external", "storefront"] as const;
 
 export type AdminOrdersSortId = "createdAt" | "totalAmount" | "orderNumber";
 

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { storeUrl } from "@workspace/lib/storefront";
 import { hasLocale } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { getSellerBySlug, getSellerStoreCategories } from "@/actions/seller";
@@ -61,6 +62,20 @@ export default async function StorePage({ params, searchParams }: StorePageProps
   const t = await getTranslations("pages.stores");
   const sp = await searchParams;
   const { seller } = await resolveStore(locale, slug);
+
+  // Stores with their own subdomain live there; this page only renders for
+  // stores without one. Catalog filters carry over (the storefront has no about tab).
+  if (seller.subdomain) {
+    const forwarded = new URLSearchParams();
+    for (const key of ["category", "search", "sort", "page"]) {
+      const value = one(sp[key]);
+      if (value) forwarded.set(key, value);
+    }
+    const path = locale === routing.defaultLocale ? "" : `/${locale}`;
+    const qs = forwarded.toString();
+    redirect(`${storeUrl(seller.subdomain)}${path}${qs ? `?${qs}` : ""}`);
+  }
+
   const categoriesResult = await getSellerStoreCategories(seller.id);
   const categories = categoriesResult.data;
 

@@ -1,6 +1,7 @@
 import { fetchSellerSettings } from "./seller-settings.server";
 import type { SellerSettingsInitialData } from "./seller-settings.types";
 import { SellerSettingsForm } from "./seller-settings.client";
+import { StoreLinkCard } from "./store-link.client";
 
 export async function SellerSettingsData() {
   const { profile, documents, error } = await fetchSellerSettings();
@@ -30,5 +31,12 @@ export async function SellerSettingsData() {
       uploadedAt: doc.uploadedAt,
     })),
   }
-  return <SellerSettingsForm initialData={initial} />
+  return (
+    <>
+      <div className="px-4 pt-4 sm:px-6 sm:pt-6">
+        <StoreLinkCard initialSubdomain={profile.subdomain} />
+      </div>
+      <SellerSettingsForm initialData={initial} />
+    </>
+  )
 }

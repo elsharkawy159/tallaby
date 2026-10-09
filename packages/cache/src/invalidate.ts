@@ -235,6 +235,14 @@ export function invalidateSeller(id: string, slug?: string): CacheInvalidation {
   return inv(tags);
 }
 
+/**
+ * A seller storefront ({subdomain}.tallaby.com): its profile, plus any
+ * subdomain it just stopped (or started) answering to.
+ */
+export function invalidateStorefront(subdomains: string[]): CacheInvalidation {
+  return inv(subdomains.map((s) => sellerTags.subdomain(s)));
+}
+
 /** Platform-wide coupons (no seller) — the storefront's "available coupons". */
 export function invalidatePlatformCoupons(): CacheInvalidation {
   return inv([couponTags.available()]);

@@ -3,12 +3,14 @@ import { getFormatter, getTranslations } from "next-intl/server";
 import { BadgeCheck, CalendarDays, MapPin, Star, Truck } from "lucide-react";
 import { cn } from "@workspace/ui/lib/utils";
 import { getGovernorateLabel } from "@workspace/lib/shipping";
+import { storeUrl } from "@workspace/lib/storefront";
 import { ShareStoreButton } from "./share-store-button";
 import s from "./store.module.css";
 
 export type StoreProfileSeller = {
   displayName: string;
   slug: string;
+  subdomain: string;
   description: string | null;
   storeDescription: string | null;
   logoUrl: string | null;
@@ -107,7 +109,7 @@ export async function StoreProfile({
         </div>
 
         <div className="md:pb-2">
-          <ShareStoreButton storeName={seller.displayName} />
+          <ShareStoreButton storeName={seller.displayName} url={storeUrl(seller.subdomain)} />
         </div>
       </div>
 

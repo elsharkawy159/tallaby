@@ -2,6 +2,13 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import Hero from "@/components/home/hero/hero";
 import { ProductsGrid } from "@/components/home";
+import { CuratedCollections } from "@/components/home/sections/curated-collections";
+import { TodaysDeals } from "@/components/home/sections/todays-deals";
+import { CategoryHub } from "@/components/home/sections/category-hub";
+import { ShopByBudget } from "@/components/home/sections/shop-by-budget";
+import { PopularBrands } from "@/components/home/sections/popular-brands";
+import { PickedForYou } from "@/components/home/sections/picked-for-you";
+import { SellerBand } from "@/components/home/sections/seller-band";
 import { generateHomeMetadata } from "@/lib/metadata";
 import type { SeoLocale } from "@/lib/metadata";
 
@@ -29,74 +36,30 @@ const HomePage = async ({
     <div className="min-h-screen">
       <Hero locale={locale} />
 
-      {/* Renders nothing until at least one active product has sponsored = true. */}
+      <CuratedCollections />
+
+      {/* Renders nothing unless some active product is discounted. */}
+      <TodaysDeals />
+
+      {/* Admin-merchandised rows; each renders nothing while its flag is unused. */}
       <ProductsGrid
         title={t("sponsored")}
-        filters={{
-          isSponsored: true,
-          sortBy: "popular",
-          limit: 12,
-        }}
+        filters={{ isSponsored: true, sortBy: "popular", limit: 12 }}
       />
-
-      {/* <FeaturesSection locale={locale} /> */}
-
-      {/* <Suspense fallback={<SectionSkeleton className="bg-amber-50/40" />}>
-        <DealOfTheDay
-          title={t("dealOfTheDay")}
-          subtitle={t("dealOfTheDaySubtitle")}
-          limit={8}
-          showCountdown={true}
-          className="bg-gradient-to-b from-amber-50/80 via-orange-50/40 to-transparent"
-        />
-      </Suspense> */}
-
-      {/* <Suspense fallback={<ProductsGridSkeleton />}>
-        <ProductsGrid
-          title={t("newArrivals")}
-          description={t("newArrivalsDescription")}
-          filters={{
-            sortBy: "newest",
-            limit: 12,
-          }}
-        />
-      </Suspense> */}
-
-      {/* <Suspense fallback={<ProductsGridSkeleton />}> */}
       <ProductsGrid
         title={t("trending")}
-        // description={t("trendingDescription")}
-        filters={{
-          isTrending: true,
-          sortBy: "popular",
-          limit: 12,
-        }}
+        filters={{ isTrending: true, sortBy: "popular", limit: 12 }}
       />
-      {/* </Suspense> */}
-
-      {/* <Suspense fallback={<ProductsGridSkeleton />}> */}
       <ProductsGrid
         title={t("seasonal")}
-        // description={t("seasonalDescription")}
-        filters={{
-          isSeasonal: true,
-          sortBy: "newest",
-          limit: 12,
-        }}
+        filters={{ isSeasonal: true, sortBy: "newest", limit: 12 }}
       />
-      {/* </Suspense> */}
 
-      {/* <Suspense fallback={<ProductsGridSkeleton />}> */}
-      <ProductsGrid
-        title={t("featuredProducts")}
-        filters={{
-          sortBy: "popular",
-          limit: 30,
-          isTrending: false,
-          isSeasonal: false,
-        }}
-      />
-      {/* </Suspense> */}
+      <CategoryHub />
+      <ShopByBudget />
+      <PopularBrands />
+      <PickedForYou />
+      <SellerBand />
     </div>
   );
 };

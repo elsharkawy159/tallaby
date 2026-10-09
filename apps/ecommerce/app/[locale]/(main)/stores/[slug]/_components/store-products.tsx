@@ -27,6 +27,14 @@ export function storeHref(
   slug: string,
   params: Partial<StoreQuery> & { tab?: string },
 ) {
+  return storeQueryHref(`/stores/${slug}`, params);
+}
+
+/** `basePath` plus only the store params that differ from the defaults. */
+export function storeQueryHref(
+  basePath: string,
+  params: Partial<StoreQuery> & { tab?: string },
+) {
   const qs = new URLSearchParams();
   if (params.tab) qs.set("tab", params.tab);
   if (params.category) qs.set("category", params.category);
@@ -34,10 +42,10 @@ export function storeHref(
   if (params.sort) qs.set("sort", params.sort);
   if (params.page && params.page > 1) qs.set("page", String(params.page));
   const query = qs.toString();
-  return `/stores/${slug}${query ? `?${query}` : ""}`;
+  return `${basePath}${query ? `?${query}` : ""}`;
 }
 
-const SORT_MAP = {
+export const SORT_MAP = {
   "price-low": "price_asc",
   "price-high": "price_desc",
   rating: "rating",
@@ -246,7 +254,11 @@ async function StoreProductGrid({
         ))}
       </div>
       {totalPages > 1 && (
-        <StorePagination slug={slug} query={query} totalPages={totalPages} />
+        <StorePagination
+          basePath={`/stores/${slug}`}
+          query={query}
+          totalPages={totalPages}
+        />
       )}
     </>
   );
@@ -262,12 +274,12 @@ function pageWindow(page: number, total: number): (number | "gap")[] {
   );
 }
 
-async function StorePagination({
-  slug,
+export async function StorePagination({
+  basePath,
   query,
   totalPages,
 }: {
-  slug: string;
+  basePath: string;
   query: StoreQuery;
   totalPages: number;
 }) {
@@ -284,7 +296,7 @@ async function StorePagination({
       <div className="flex items-center gap-1.5">
         {page > 1 ? (
           <Link
-            href={storeHref(slug, { ...query, page: page - 1 })}
+            href={storeQueryHref(basePath, { ...query, page: page - 1 })}
             rel="prev"
             className={edge}
           >
@@ -305,7 +317,7 @@ async function StorePagination({
             ) : (
               <li key={p}>
                 <Link
-                  href={storeHref(slug, { ...query, page: p })}
+                  href={storeQueryHref(basePath, { ...query, page: p })}
                   aria-current={p === page ? "page" : undefined}
                   className={cn(
                     "flex h-10 min-w-10 items-center justify-center rounded-full px-3 text-sm font-semibold tabular-nums transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
@@ -322,7 +334,7 @@ async function StorePagination({
         </ol>
         {page < totalPages ? (
           <Link
-            href={storeHref(slug, { ...query, page: page + 1 })}
+            href={storeQueryHref(basePath, { ...query, page: page + 1 })}
             rel="next"
             className={edge}
           >

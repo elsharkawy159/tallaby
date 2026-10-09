@@ -5,11 +5,11 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@workspace/ui/components/button";
 
-export function ShareStoreButton({ storeName }: { storeName: string }) {
+/** Shares the store's own subdomain, e.g. https://faster.tallaby.com. */
+export function ShareStoreButton({ storeName, url }: { storeName: string; url: string }) {
   const t = useTranslations("pages.stores");
 
   const share = async () => {
-    const url = window.location.href.split("?")[0]!;
     if (navigator.share) {
       try {
         await navigator.share({ title: storeName, url });

@@ -19,6 +19,7 @@ import {
 } from "@workspace/db";
 import { getUser } from "./auth";
 import { getGuestUID, clearGuestUID } from "@/lib/guest-user";
+import { activeCartWhere } from "@/lib/storefront.server";
 
 /**
  * Merge guest account data into authenticated account
@@ -83,21 +84,21 @@ export async function mergeGuestAccount(): Promise<{
       let mergedOrders = 0;
       let mergedAddresses = 0;
 
-      // 1. Merge cart items
-      const guestCart = await tx.query.carts.findFirst({
+      // 1. Merge cart items. A guest can hold the marketplace cart plus one
+      // cart per seller storefront; each merges into the same-scope cart.
+      const guestCarts = await tx.query.carts.findMany({
         where: and(eq(carts.userId, guestUserId), eq(carts.status, "active")),
         with: {
           cartItems: true,
         },
       });
 
-      if (guestCart && guestCart.cartItems.length > 0) {
+      for (const guestCart of guestCarts) {
+        if (guestCart.cartItems.length === 0) continue;
+
         // Get or create authenticated user's cart
         let authCart = await tx.query.carts.findFirst({
-          where: and(
-            eq(carts.userId, authenticatedUserId),
-            eq(carts.status, "active")
-          ),
+          where: activeCartWhere(authenticatedUserId, guestCart.storeSellerId),
         });
 
         if (!authCart) {
@@ -105,6 +106,7 @@ export async function mergeGuestAccount(): Promise<{
             .insert(carts)
             .values({
               userId: authenticatedUserId,
+              storeSellerId: guestCart.storeSellerId,
               status: "active",
               currency: guestCart.currency || "EGP",
             })

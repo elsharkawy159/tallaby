@@ -90,7 +90,14 @@
     "privacy": "الخصوصية",
     "stores": "المتاجر",
     "shopping": "التسوق",
-    "becomeSeller": "كن بائعًا"
+    "becomeSeller": "كن بائعًا",
+    "allCategories": "كل الأقسام",
+    "browseAllCategories": "تصفح كل الأقسام",
+    "verifiedSellers": "كل البائعين موثّقين",
+    "hello": "أهلاً بيك",
+    "myAccount": "حسابي",
+    "returns": "المرتجعات",
+    "myOrders": "وطلباتي"
   },
   "auth": {
     "signIn": "تسجيل الدخول",
@@ -778,6 +785,73 @@
         "returnsBody": "ألغِ أو رجّع أي طلب مجانًا خلال {days} يومًا من الشراء.",
         "sellersTitle": "بائعون معتمدون",
         "sellersBody": "منتجات من بائعين مستقلين بتتم مراجعتهم واعتمادهم من Tallaby قبل ما يبدأوا البيع."
+      },
+      "slides": {
+        "newTag": "وصل حديثاً",
+        "newHeadline": "أحدث المنتجات من بائعينا",
+        "newDescription": "منتجات اتضافت جديد على طلبي، شوفها قبل أي حد.",
+        "newCta": "تسوق الجديد",
+        "codTag": "الدفع عند الاستلام",
+        "codHeadline": "اطلب دلوقتي وادفع لما طلبك يوصل",
+        "codDescription": "توصيل لكل محافظات مصر، وهتشوف رسوم التوصيل قبل ما تأكد طلبك.",
+        "codCta": "ابدأ التسوق",
+        "previous": "الشريحة السابقة",
+        "next": "الشريحة التالية",
+        "goTo": "اذهب للشريحة {index}"
+      },
+      "collections": {
+        "discoverMore": "اكتشف المزيد",
+        "mobile": "كل ما يحتاجه موبايلك",
+        "powerBanks": "باور بانك",
+        "chargers": "رؤوس شحن",
+        "powerBanks10000": "باور بانك 10000",
+        "carMounts": "حوامل للسيارة",
+        "audio": "سماعات لكل الأوقات",
+        "earbuds": "أذن لاسلكية",
+        "headphones": "سماعات رأس",
+        "neckbands": "سماعات رقبة",
+        "speakers": "سبيكرات",
+        "mugs": "مجات وأكواب حرارية",
+        "stanley": "ستانلي",
+        "happyTime": "هابي تايم",
+        "stainless": "استانلس ستيل",
+        "allMugs": "كل المجات",
+        "watches": "ساعات ذكية",
+        "amoled": "شاشة AMOLED"
+      },
+      "deals": {
+        "title": "عروض اليوم",
+        "subtitle": "منتجات عليها خصم دلوقتي",
+        "viewAll": "كل العروض"
+      },
+      "hub": {
+        "title": "اكتشف أقسامنا",
+        "subtitle": "أفضل المنتجات في كل قسم، اختار وشوف",
+        "bannerText": "{count, plural, one {منتج واحد} two {منتجين} few {# منتجات} many {# منتج} other {# منتج}} من بائعين معتمدين",
+        "shopCategory": "تسوق {name}"
+      },
+      "budget": {
+        "title": "تسوق حسب ميزانيتك",
+        "under": "منتجات أقل من",
+        "over": "منتجات أكتر من"
+      },
+      "brands": {
+        "title": "أشهر الماركات",
+        "viewAll": "كل المنتجات"
+      },
+      "picks": {
+        "title": "منتجات مختارة لك",
+        "viewAll": "عرض الكل",
+        "bestSellers": "الأكثر مبيعاً",
+        "newest": "وصل حديثاً",
+        "topRated": "الأعلى تقييماً",
+        "lowestPrice": "الأقل سعراً"
+      },
+      "sellerBand": {
+        "title": "عندك براند؟ خلّينا نكبر سوا",
+        "description": "اعرض منتجاتك للمتسوقين في كل مصر، واستلم أرباحك بانتظام.",
+        "start": "ابدأ البيع",
+        "learnMore": "اعرف أكتر"
       }
     },
     "products": {
@@ -1277,6 +1351,18 @@
       "noProducts": "لا توجد منتجات في هذا القسم حاليًا.",
       "productsCount": "{count} منتج",
       "viewAll": "عرض الكل"
+    },
+    "followUs": {
+      "title": "تابع Tallaby | إنستجرام وتيك توك ويوتيوب والمزيد",
+      "description": "تابع Tallaby على إنستجرام وتيك توك ويوتيوب وفيسبوك وإكس وثريدز وبينترست لتعرف أحدث العروض والخصومات والمنتجات الجديدة.",
+      "heading": "تابعنا علشان <hl>العروض</hl> و<hl>الخصومات</hl>",
+      "subtitle": "تابعنا على السوشيال ميديا علشان توصلك أحدث العروض والخصومات.",
+      "socialNavLabel": "Tallaby على السوشيال ميديا",
+      "followOn": "تابع Tallaby على {network}",
+      "opensInNewTab": "(يفتح في تبويب جديد)",
+      "visitTallaby": "زور Tallaby",
+      "shopCta": "تسوق على tallaby.com",
+      "sellCta": "ابدأ البيع"
     }
   },
   "category": {
@@ -1938,5 +2024,47 @@
     ],
     "finalHeading": "جاهز لتبدأ الربح مع طلبي؟",
     "finalDescription": "شارك كودك. ساعد الناس على التوفير. اربح عند تسوقهم."
+  },
+  "storefront": {
+    "homeLabel": "الصفحة الرئيسية لـ {store}",
+    "openCart": "السلة، {count, plural, =0 {فارغة} one {منتج واحد} two {منتجان} few {# منتجات} many {# منتجًا} other {# منتج}}",
+    "categoriesLabel": "تسوق حسب القسم",
+    "allProducts": "كل المنتجات",
+    "productsHeading": "المنتجات",
+    "inCategory": "{category}",
+    "searchPlaceholder": "ابحث في هذا المتجر",
+    "ratingSummary": "{rating} من {count, plural, one {تقييم واحد} two {تقييمين} few {# تقييمات} many {# تقييمًا} other {# تقييم}}",
+    "cartTitle": "سلتك",
+    "cartScopeNote": "هذه السلة خاصة بمتجر {store} فقط، وسلتك على tallaby.com منفصلة عنها.",
+    "cartEmpty": "سلتك فارغة",
+    "cartEmptyHint": "أضف منتجًا من {store} وسيظهر هنا.",
+    "browseProducts": "تصفح المنتجات",
+    "itemCount": "{count, plural, one {منتج واحد} two {منتجان} few {# منتجات} many {# منتجًا} other {# منتج}}",
+    "subtotal": "المجموع الفرعي",
+    "shippingNote": "تُحسب رسوم التوصيل عند إتمام الطلب.",
+    "checkout": "إتمام الطلب",
+    "viewCart": "عرض السلة",
+    "continueShopping": "متابعة التسوق",
+    "variant": "الاختيار: {name}",
+    "aboutHeading": "عن {store}",
+    "contactHeading": "تواصل معنا",
+    "whatsapp": "واتساب",
+    "call": "اتصل",
+    "email": "راسل المتجر",
+    "soldOn": "يُباع من خلال طلبي",
+    "moreStores": "تسوق من متاجر أخرى على tallaby.com",
+    "notFoundTitle": "لا يوجد متجر على هذا العنوان",
+    "notFoundBody": "تأكد من الرابط الذي وصلك، أو ابحث عن المتجر على طلبي.",
+    "notFoundCta": "تصفح المتاجر على طلبي",
+    "backToStore": "العودة إلى {store}",
+    "previousCategories": "الأقسام السابقة",
+    "nextCategories": "الأقسام التالية",
+    "copyright": "© {year} {store}"
+  },
+  "topbar": {
+    "cashOnDelivery": "الدفع عند الاستلام متاح في كل محافظات مصر",
+    "freeShipping": "شحن مجاني للطلبات فوق {threshold}",
+    "sellOnTallaby": "بيع على طلبي",
+    "helpCenter": "مركز المساعدة"
   }
 }

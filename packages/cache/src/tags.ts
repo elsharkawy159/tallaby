@@ -55,6 +55,8 @@ export const sellerTags = {
   detail: (id: string) => `seller:id:${id}`,
   slug: (slug: string) => `seller:slug:${slug}`,
   storefront: (id: string) => `seller:storefront:${id}`,
+  /** The {subdomain}.tallaby.com storefront profile, cached by subdomain. */
+  subdomain: (subdomain: string) => `seller:subdomain:${subdomain}`,
 } as const;
 
 export const reviewTags = {

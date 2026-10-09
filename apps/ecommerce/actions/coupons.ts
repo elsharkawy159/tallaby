@@ -5,6 +5,7 @@ import { couponTags } from "@workspace/cache"
 import { db, carts, cartItems, coupons, couponUsage, userAddresses, eq, and, sql, gte, lte, desc, or, isNull } from "@workspace/db"
 import { getUser } from "./auth"
 import { getCurrentUserId } from "@/lib/get-current-user-id"
+import { activeCartWhere, getCartStoreSellerId } from "@/lib/storefront.server"
 import {
   calculateCouponDiscount,
   buildSummaryWithCoupon,
@@ -290,7 +291,7 @@ export async function applyCouponToCart(data: {
 
     // Get the user's active cart with items
     const cart = await db.query.carts.findFirst({
-      where: and(eq(carts.userId, userId), eq(carts.status, "active")),
+      where: activeCartWhere(userId, await getCartStoreSellerId()),
       with: {
         cartItems: {
           where: eq(cartItems.savedForLater, false),
@@ -362,7 +363,7 @@ export async function removeCouponFromCart(data?: {
 
     // Get the user's active cart
     const cart = await db.query.carts.findFirst({
-      where: and(eq(carts.userId, userId), eq(carts.status, "active")),
+      where: activeCartWhere(userId, await getCartStoreSellerId()),
       with: {
         cartItems: {
           where: eq(cartItems.savedForLater, false),

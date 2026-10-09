@@ -12,6 +12,28 @@ import {
 } from "@/lib/seller/seller-cta.lib";
 import { useAuthUser } from "@/lib/auth/use-auth-user";
 
+/** Plain-text seller entry for the top bar; same destination as the button. */
+export const SellOnTallabyLink = ({
+  className,
+}: {
+  className?: string;
+}): ReactElement => {
+  const { user } = useAuthUser();
+  const t = useTranslations("topbar");
+  const opensInNewTab = getSellerCtaOpensInNewTab(user);
+
+  return (
+    <Link
+      href={getSellerCtaHref(user)}
+      target={opensInNewTab ? "_blank" : undefined}
+      rel={opensInNewTab ? "noopener noreferrer" : undefined}
+      className={className}
+    >
+      {t("sellOnTallaby")}
+    </Link>
+  );
+};
+
 export const BecomeSellerButton = ({
   className,
 }: {

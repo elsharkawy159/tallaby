@@ -11,7 +11,8 @@ import { updatePreferences } from "@/actions/customer";
 import type { ProductLocale } from "@/lib/product-translations";
 
 interface LanguageSwitcherProps {
-  variant?: "header" | "default";
+  /** `topbar` renders just the other locale as a plain text link. */
+  variant?: "header" | "default" | "topbar";
 }
 
 // Product slugs differ per locale, so the internal pathname alone can't be
@@ -58,6 +59,22 @@ export function LanguageSwitcher({
     { code: "ar", label: "عربي" },
     { code: "en", label: "English" },
   ];
+
+  if (variant === "topbar") {
+    const other = locales.find((l) => l.code !== locale);
+    if (!other) return null;
+    return (
+      <button
+        type="button"
+        lang={other.code}
+        disabled={isPending}
+        onClick={() => switchLocale(other.code)}
+        className="cursor-pointer whitespace-nowrap hover:text-white hover:underline disabled:opacity-60"
+      >
+        {other.label}
+      </button>
+    );
+  }
 
   const isHeader = variant === "header";
 
