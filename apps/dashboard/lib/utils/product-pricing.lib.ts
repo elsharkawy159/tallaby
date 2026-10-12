@@ -8,7 +8,7 @@ export interface SellerPricingSettings {
   sellerFreeDelivery?: boolean
 }
 
-export const DEFAULT_COMMISSION_RATE = 10
+export const DEFAULT_COMMISSION_RATE = 5
 
 export function getEffectiveCommissionRate(
   settings: SellerPricingSettings
@@ -38,10 +38,23 @@ export function calculateProductFinalPrice(
     discountValue,
     discountType
   )
-  const commissionRate = getEffectiveCommissionRate(settings)
-  const withCommission = discountedPrice * (1 + commissionRate)
 
-  return roundPriceUpToNearestFive(withCommission)
+  return roundPriceUpToNearestFive(discountedPrice)
+}
+
+/** What the seller is paid for one unit sold at `sellingPrice`, after the platform commission. */
+export function calculateSellerEarning(
+  sellingPrice: number | string | undefined,
+  settings: SellerPricingSettings
+): number {
+  const numericPrice = Number(sellingPrice) || 0
+
+  if (numericPrice <= 0) {
+    return 0
+  }
+
+  const commissionRate = getEffectiveCommissionRate(settings)
+  return parseFloat((numericPrice * (1 - commissionRate)).toFixed(2))
 }
 
 function applyDiscount(
@@ -71,7 +84,7 @@ export function calculateDiscountFromFinalPrice(
   listPrice: number,
   finalPrice: number | string | undefined,
   discountType: 'amount' | 'percent' | undefined,
-  settings: SellerPricingSettings
+  _settings: SellerPricingSettings
 ): number {
   const numericList = typeof listPrice === 'number' ? listPrice : 0
   const numericFinal =
@@ -83,9 +96,7 @@ export function calculateDiscountFromFinalPrice(
     return 0
   }
 
-  const commissionRate = getEffectiveCommissionRate(settings)
-  const discountedPrice = numericFinal / (1 + commissionRate)
-  const discountAmount = numericList - discountedPrice
+  const discountAmount = numericList - numericFinal
 
   if (discountAmount <= 0) {
     return 0
@@ -98,15 +109,3 @@ export function calculateDiscountFromFinalPrice(
   return parseFloat(discountAmount.toFixed(2))
 }
 
-/** `t` is the "productForm.price" translator. */
-export function getFinalPriceHelpText(
-  settings: SellerPricingSettings,
-  t: (key: string, values?: Record<string, number>) => string
-): string {
-  if (settings.isCommissionExempt) {
-    return t('finalHelpExempt')
-  }
-
-  const rate = settings.commissionRate ?? DEFAULT_COMMISSION_RATE
-  return t('finalHelp', { rate })
-}

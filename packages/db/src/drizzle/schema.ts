@@ -386,7 +386,7 @@ export const sellers = pgTable("sellers", {
 	approvedCategories: jsonb("approved_categories"),
 	supportEmail: text("support_email").notNull(),
 	supportPhone: text("support_phone"),
-	commissionRate: real("commission_rate").default(sql`'10'`).notNull(),
+	commissionRate: real("commission_rate").default(sql`'5'`).notNull(),
 	isCommissionExempt: boolean("is_commission_exempt").default(false).notNull(),
 	freeDelivery: boolean("free_delivery").default(false).notNull(),
 	feeStructure: jsonb("fee_structure"),
@@ -448,6 +448,43 @@ export const sellerSubdomainRedirects = pgTable("seller_subdomain_redirects", {
 			foreignColumns: [sellers.id],
 			name: "seller_subdomain_redirects_seller_id_fkey"
 		}).onDelete("cascade"),
+]);
+
+/** A seller's own domain for their storefront, e.g. faster-eg.com (0048). Apex only; www redirects in Vercel. */
+export const sellerCustomDomains = pgTable("seller_custom_domains", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	domain: text().notNull(),
+	/** pending | active | failed */
+	status: text().default('pending').notNull(),
+	/** DNS records Vercel asks for to prove ownership (TXT), when it asks. */
+	verification: jsonb(),
+	lastError: text("last_error"),
+	verifiedAt: timestamp("verified_at", { withTimezone: true, mode: 'string' }),
+	lastCheckedAt: timestamp("last_checked_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("seller_custom_domains_seller_id_key").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops")),
+	uniqueIndex("seller_custom_domains_domain_key").using("btree", table.domain.asc().nullsLast().op("text_ops")),
+	index("seller_custom_domains_status_idx").using("btree", table.status.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.sellerId],
+			foreignColumns: [sellers.id],
+			name: "seller_custom_domains_seller_id_fkey"
+		}).onDelete("cascade"),
+]);
+
+/** Single-use codes carrying a session from tallaby.com to a custom domain (0048). */
+export const authHandoffCodes = pgTable("auth_handoff_codes", {
+	codeHash: text("code_hash").primaryKey().notNull(),
+	targetOrigin: text("target_origin").notNull(),
+	accessToken: text("access_token").notNull(),
+	refreshToken: text("refresh_token").notNull(),
+	expiresAt: timestamp("expires_at", { withTimezone: true, mode: 'string' }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("auth_handoff_codes_expires_at_idx").using("btree", table.expiresAt.asc().nullsLast().op("timestamptz_ops")),
 ]);
 
 export const shipmentItems = pgTable("shipment_items", {

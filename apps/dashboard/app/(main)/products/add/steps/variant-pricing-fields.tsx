@@ -9,6 +9,7 @@ import { Controller, useFormContext } from "react-hook-form";
 import {
   calculateDiscountFromFinalPrice,
   calculateProductFinalPrice,
+  calculateSellerEarning,
   roundPriceUpToNearestFive,
   type SellerPricingSettings,
 } from "@/lib/utils/product-pricing.lib";
@@ -83,6 +84,7 @@ export function VariantPricingFields({
 }: VariantPricingFieldsProps) {
   const form = useFormContext<AddProductFormData>();
   const t = useTranslations("productForm.variantPricing");
+  const locale = useLocale();
 
   const listPrice = form.watch(`variants.${index}.listPrice`);
   const discountValue = form.watch(`variants.${index}.discountValue`);
@@ -149,6 +151,11 @@ export function VariantPricingFields({
     }
   }, [listPrice, discountValue, discountType, finalPrice, form, index, sellerPricing]);
 
+  const sellerEarning = calculateSellerEarning(
+    finalPrice || listPrice,
+    sellerPricing
+  );
+
   const applyNearestFiveRounding = (
     field: `variants.${number}.listPrice` | `variants.${number}.price`,
     value: number
@@ -173,6 +180,11 @@ export function VariantPricingFields({
         name={`variants.${index}.listPrice`}
         label={t("list")}
         placeholder="0.00"
+        helpText={
+          sellerEarning > 0
+            ? t("youReceive", { amount: formatMoney(sellerEarning, locale) })
+            : undefined
+        }
         className="text-sm"
         onBlurValue={(value) =>
           applyNearestFiveRounding(`variants.${index}.listPrice`, value)

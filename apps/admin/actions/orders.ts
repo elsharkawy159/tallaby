@@ -9,7 +9,11 @@ import {
   reverseAffiliateCommission,
   cancelPendingAffiliateCommission,
 } from "@workspace/db/affiliates";
-import { formatDecimal, type OrderDiscountLine } from "@workspace/lib/orders";
+import {
+  PLATFORM_COMMISSION_RATE,
+  formatDecimal,
+  type OrderDiscountLine,
+} from "@workspace/lib/orders";
 import { revalidatePath } from "next/cache";
 import { getAdminUser } from "./auth";
 import { isAdminEditablePaymentMethod } from "@/app/(dashboard)/orders/orders.lib";
@@ -341,7 +345,7 @@ export async function updateOrderPricing(orderId: string, input: unknown) {
     const itemUpdates = existing.orderItems.map((item) => {
       const price = priceByItemId.get(item.id) ?? Number(item.price);
       const lineSubtotal = price * item.quantity;
-      const commissionRate = Number(item.commissionRate ?? 0.1);
+      const commissionRate = Number(item.commissionRate ?? PLATFORM_COMMISSION_RATE);
 
       return {
         id: item.id,

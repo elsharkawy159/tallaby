@@ -21,7 +21,7 @@ export async function generateMetadata({
 }: StorefrontLayoutProps): Promise<Metadata> {
   const { locale, subdomain } = await params;
   const store = await resolveStorefront(subdomain);
-  const url = storeUrl(store.subdomain);
+  const url = storeUrl(store.subdomain, store.customDomain);
   const description = store.description || store.storeDescription || undefined;
   const image = store.bannerUrl || store.logoUrl;
 

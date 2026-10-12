@@ -1,3 +1,6 @@
+/** Share of each order line the platform keeps; the seller earns the rest. */
+export const PLATFORM_COMMISSION_RATE = 0.05
+
 /** Formats a variant title from option fields stored on cart item JSON. */
 export function formatVariantTitleFromCart(
   variant:

@@ -1,7 +1,8 @@
 /**
- * Request routing for seller storefronts ({subdomain}.tallaby.com), used by
- * proxy.ts. Storefront pages live under `app/[locale]/storefront/[subdomain]`
- * and are only reachable through a store host:
+ * Request routing for seller storefronts ({subdomain}.tallaby.com, or the
+ * seller's own domain such as faster-eg.com), used by proxy.ts. Storefront
+ * pages live under `app/[locale]/storefront/[subdomain]` and are only
+ * reachable through a store host:
  *
  *   faster.tallaby.com/                 → /ar/storefront/faster
  *   faster.tallaby.com/en/products/x    → /en/storefront/faster/products/x

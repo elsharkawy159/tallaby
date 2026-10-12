@@ -1,5 +1,6 @@
 /**
- * Seller storefront subdomains (`{subdomain}.tallaby.com`).
+ * Seller storefront subdomains (`{subdomain}.tallaby.com`) and custom
+ * domains (`faster-eg.com`, migration 0048).
  *
  * Edge-safe: no database or Node imports, so the ecommerce proxy can use it.
  * The same rules are enforced in SQL by migration 0044 — keep both in sync.
@@ -65,14 +66,74 @@ export function storeSubdomainFromHost(host: string | null | undefined): string 
   return null;
 }
 
-/** Public URL of a store, e.g. `https://faster.tallaby.com`. */
-export function storeUrl(subdomain: string): string {
+/**
+ * Public URL of a store, e.g. `https://faster.tallaby.com`, or its own
+ * domain (`https://faster-eg.com`) once one is active.
+ */
+export function storeUrl(subdomain: string, customDomain?: string | null): string {
+  if (customDomain) return `https://${customDomain}`;
   const root = storefrontRootDomain();
   const protocol = root.startsWith("localhost") ? "http" : "https";
   return `${protocol}://${subdomain}.${root}`;
 }
 
-/** Hostname only, for display: `faster.tallaby.com`. */
-export function storeHostname(subdomain: string): string {
-  return `${subdomain}.${storefrontRootDomain()}`;
+/** Hostname only, for display: `faster.tallaby.com` or `faster-eg.com`. */
+export function storeHostname(subdomain: string, customDomain?: string | null): string {
+  return customDomain || `${subdomain}.${storefrontRootDomain()}`;
+}
+
+/* Custom domains (faster-eg.com). Same rules as migration 0048. */
+
+export type CustomDomainProblem = "invalid" | "platform";
+
+const DOMAIN_PATTERN =
+  /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+(?:[a-z]{2,63}|xn--[a-z0-9-]{1,59})$/;
+
+/** Request host without port, lowercased: `Faster-EG.com:443` → `faster-eg.com`. */
+export function hostnameOf(host: string | null | undefined): string {
+  return (host ?? "").trim().toLowerCase().replace(/:\d+$/, "").replace(/\.$/, "");
+}
+
+/**
+ * What a seller typed, reduced to the apex we store:
+ * `https://www.Faster-EG.com/shop` → `faster-eg.com`.
+ */
+export function normalizeCustomDomain(input: string): string {
+  const host = input
+    .trim()
+    .replace(/^[a-z][a-z0-9+.-]*:\/\//i, "")
+    .replace(/[/?#].*$/, "");
+  return hostnameOf(host).replace(/^www\./, "");
+}
+
+/** tallaby.com, anything under it, and other hosts Tallaby itself answers on. */
+function isTallabyHostname(hostname: string): boolean {
+  const roots = new Set([hostnameOf(storefrontRootDomain()), "tallaby.com"]);
+  for (const root of roots) {
+    if (hostname === root || hostname.endsWith(`.${root}`)) return true;
+  }
+  return (
+    hostname === "localhost" ||
+    hostname.endsWith(".localhost") ||
+    hostname.endsWith(".vercel.app")
+  );
+}
+
+/** Returns why `domain` (already normalized) can't be used, or null when valid. */
+export function validateCustomDomain(domain: string): CustomDomainProblem | null {
+  if (domain.length > 253 || !DOMAIN_PATTERN.test(domain)) return "invalid";
+  if (isTallabyHostname(domain)) return "platform";
+  return null;
+}
+
+/**
+ * Hosts that belong to Tallaby itself: the marketplace, its store subdomains,
+ * Vercel preview URLs, localhost and bare IPs. Any other host is a seller's
+ * custom domain.
+ */
+export function isPlatformHost(host: string | null | undefined): boolean {
+  const hostname = hostnameOf(host);
+  if (!hostname) return true;
+  if (/^\d{1,3}(?:\.\d{1,3}){3}$/.test(hostname)) return true;
+  return isTallabyHostname(hostname);
 }

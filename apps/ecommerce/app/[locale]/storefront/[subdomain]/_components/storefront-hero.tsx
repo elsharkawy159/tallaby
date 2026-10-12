@@ -81,7 +81,7 @@ export async function StorefrontHero({ store }: { store: Storefront }) {
           </a>
           <ShareStore
             storeName={store.displayName}
-            url={storeUrl(store.subdomain)}
+            url={storeUrl(store.subdomain, store.customDomain)}
             className={cn(s.heroButton, s.heroButtonGhost)}
           />
         </div>

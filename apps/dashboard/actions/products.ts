@@ -370,10 +370,10 @@ function buildPriceObject(input: {
   let finalPrice = input.final != null ? Number(input.final) : null;
 
   if (finalPrice != null && Number.isFinite(finalPrice) && finalPrice > 0) {
-    // An explicit final price already carries the platform commission and the
-    // seller's rounding — recomputing it from list/discount here would silently
-    // drop the commission and undercharge on variants. Only derive the discount
-    // when the caller did not send one.
+    // An explicit final price already carries the seller's rounding and any
+    // manual override — recomputing it from list/discount here would silently
+    // change what the seller set on variants. Only derive the discount when the
+    // caller did not send one.
     if (discountValue == null) {
       discountType = "amount";
       discountValue = Number((list - finalPrice).toFixed(2));

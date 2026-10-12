@@ -1,289 +1,316 @@
 "use server";
 
-import { db } from "@workspace/db";
-import { coupons, couponUsage } from "@workspace/db";
-import { eq, and, desc, sql, gte, lte, gt, lt } from "drizzle-orm";
+import { db, coupons, couponUsage, products, sellers } from "@workspace/db";
+import { uniqueViolationConstraint } from "@workspace/lib/fulfillment/server";
+import { parsePriceJson } from "@workspace/lib";
+import {
+  COUPON_CHANNELS,
+  SELLER_COUPON_DISCOUNT_TYPES,
+  getCouponChannels,
+  getCouponProductIds,
+  type CouponChannel,
+  type SellerCouponDiscountType,
+} from "@workspace/lib/orders/coupon-scope";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
+import { getLocale } from "next-intl/server";
+import { z } from "zod";
 import { getUser } from "./auth";
 
-export async function getSellerCoupons(params?: {
-  isActive?: boolean;
-  limit?: number;
-  offset?: number;
-}) {
-  try {
-    const session = await getUser();
-    if (!session?.user?.id) {
-      throw new Error("Unauthorized");
-    }
-
-    const conditions = [eq(coupons.sellerId, session.user.id)];
-    
-    if (params?.isActive !== undefined) {
-      conditions.push(eq(coupons.isActive, params.isActive));
-    }
-
-    const couponList = await db.query.coupons.findMany({
-      where: and(...conditions),
-      with: {
-        couponUsages: {
-          limit: 5,
-          orderBy: [desc(couponUsage.createdAt)],
-        },
-      },
-      orderBy: [desc(coupons.createdAt)],
-      limit: params?.limit || 20,
-      offset: params?.offset || 0,
-    });
-
-    const totalCount = await db
-      .select({ count: sql`count(*)` })
-      .from(coupons)
-      .where(and(...conditions));
-
-    return { 
-      success: true, 
-      data: couponList,
-      totalCount: Number(totalCount[0].count)
-    };
-  } catch (error) {
-    console.error("Error fetching coupons:", error);
-    return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
-  }
-}
-
-export async function getActiveCoupons() {
-  try {
-    const session = await getUser();
-    if (!session?.user?.id) {
-      throw new Error("Unauthorized");
-    }
-
-    const now = new Date().toISOString();
-
-    const activeCoupons = await db.query.coupons.findMany({
-      where: and(
-        eq(coupons.sellerId, session.user.id),
-        eq(coupons.isActive, true),
-        lte(coupons.startsAt, now),
-        gte(coupons.expiresAt, now)
-      ),
-      orderBy: [desc(coupons.createdAt)],
-    });
-
-    return { success: true, data: activeCoupons };
-  } catch (error) {
-    console.error("Error fetching active coupons:", error);
-    return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
-  }
-}
-
-export async function getCouponDetails(couponId: string) {
-  try {
-    const session = await getUser();
-    if (!session?.user?.id) {
-      throw new Error("Unauthorized");
-    }
-
-    const coupon = await db.query.coupons.findFirst({
-      where: and(
-        eq(coupons.id, couponId),
-        eq(coupons.sellerId, session.user.id)
-      ),
-      with: {
-        couponUsages: {
-          with: {
-            order: {
-              columns: {
-                orderNumber: true,
-                totalAmount: true,
-              },
-            },
-            user: {
-              columns: {
-                fullName: true,
-                email: true,
-              },
-            },
-          },
-          orderBy: [desc(couponUsage.createdAt)],
-        },
-      },
-    });
-
-    if (!coupon) {
-      throw new Error("Coupon not found");
-    }
-
-    return { success: true, data: coupon };
-  } catch (error) {
-    console.error("Error fetching coupon details:", error);
-    return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
-  }
-}
-
-export async function createCoupon(data: {
+export type SellerCouponRow = {
+  id: string;
   code: string;
   name: string;
-  description?: string;
-  discountType: 'percentage' | 'fixed_amount' | 'buy_x_get_y' | 'free_shipping';
-  discountValue: string;
-  minimumPurchase?: string;
-  maximumDiscount?: string;
-  usageLimit?: number;
-  perUserLimit?: number;
+  discountType: SellerCouponDiscountType;
+  discountValue: number;
+  minimumPurchase: number | null;
+  maximumDiscount: number | null;
+  usageLimit: number | null;
+  usageCount: number;
+  perUserLimit: number | null;
+  productIds: string[] | null;
+  channels: CouponChannel[];
+  isActive: boolean;
   startsAt: string;
   expiresAt: string;
-  applicableTo?: any;
-  excludeItems?: any;
-}) {
-  try {
-    const session = await getUser();
-    if (!session?.user?.id) {
-      throw new Error("Unauthorized");
-    }
+  createdAt: string | null;
+  discountGiven: number;
+};
 
-    const newCoupon = await db
-      .insert(coupons)
-      .values({
-        ...data,
-        sellerId: session.user.id,
-        isActive: true,
-        usageCount: 0,
-      })
-      .returning();
+export type CouponProductOption = {
+  id: string;
+  title: string;
+  image: string | null;
+  price: number | null;
+  isActive: boolean;
+};
 
-    return { success: true, data: newCoupon[0] };
-  } catch (error) {
-    console.error("Error creating coupon:", error);
-    return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
-  }
+export type SellerCouponsPage = {
+  coupons: SellerCouponRow[];
+  products: CouponProductOption[];
+  storeHost: string | null;
+};
+
+/** Error codes the client maps to `coupons.errors.*` messages. */
+export type SaveCouponError =
+  | "unauthorized"
+  | "invalid_input"
+  | "code_taken"
+  | "invalid_dates"
+  | "invalid_products"
+  | "not_found"
+  | "unknown";
+
+const STORE_ROOT_DOMAIN = "tallaby.com";
+
+const optionalAmount = z.number().positive().max(10_000_000).nullable();
+const optionalCount = z.number().int().positive().max(1_000_000).nullable();
+
+const couponInputSchema = z
+  .object({
+    code: z
+      .string()
+      .trim()
+      .toUpperCase()
+      .regex(/^[A-Z0-9_-]{3,24}$/),
+    name: z.string().trim().min(1).max(80),
+    discountType: z.enum(SELLER_COUPON_DISCOUNT_TYPES),
+    discountValue: z.number().positive(),
+    minimumPurchase: optionalAmount,
+    maximumDiscount: optionalAmount,
+    usageLimit: optionalCount,
+    perUserLimit: optionalCount,
+    productIds: z.array(z.string().uuid()).max(500).nullable(),
+    channels: z
+      .array(z.enum(COUPON_CHANNELS as [CouponChannel, ...CouponChannel[]]))
+      .min(1),
+    startsAt: z.string().datetime({ offset: true }),
+    expiresAt: z.string().datetime({ offset: true }),
+  })
+  .refine(
+    (v) =>
+      v.discountType === "percentage"
+        ? v.discountValue <= 90
+        : v.discountValue <= 10_000_000,
+    { path: ["discountValue"] }
+  );
+
+export type SellerCouponInput = z.input<typeof couponInputSchema>;
+
+async function getSellerId() {
+  const session = await getUser().catch(() => null);
+  return session?.user?.id ?? null;
 }
 
-export async function updateCoupon(couponId: string, data: Partial<typeof coupons.$inferInsert>) {
-  try {
-    const session = await getUser();
-    if (!session?.user?.id) {
-      throw new Error("Unauthorized");
-    }
-
-    const updatedCoupon = await db
-      .update(coupons)
-      .set({
-        ...data,
-        updatedAt: new Date().toISOString(),
-      })
-      .where(
-        and(
-          eq(coupons.id, couponId),
-          eq(coupons.sellerId, session.user.id)
-        )
-      )
-      .returning();
-
-    if (!updatedCoupon.length) {
-      throw new Error("Coupon not found or unauthorized");
-    }
-
-    return { success: true, data: updatedCoupon[0] };
-  } catch (error) {
-    console.error("Error updating coupon:", error);
-    return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
-  }
+function toRow(
+  coupon: typeof coupons.$inferSelect,
+  discountGiven: number
+): SellerCouponRow {
+  return {
+    id: coupon.id,
+    code: coupon.code,
+    name: coupon.name,
+    discountType:
+      coupon.discountType === "fixed_amount" ? "fixed_amount" : "percentage",
+    discountValue: Number(coupon.discountValue),
+    minimumPurchase:
+      coupon.minimumPurchase != null ? Number(coupon.minimumPurchase) : null,
+    maximumDiscount:
+      coupon.maximumDiscount != null ? Number(coupon.maximumDiscount) : null,
+    usageLimit: coupon.usageLimit,
+    usageCount: coupon.usageCount ?? 0,
+    perUserLimit: coupon.perUserLimit,
+    productIds: getCouponProductIds(coupon.applicableTo),
+    channels: getCouponChannels(coupon.applicableTo),
+    isActive: coupon.isActive ?? false,
+    startsAt: coupon.startsAt,
+    expiresAt: coupon.expiresAt,
+    createdAt: coupon.createdAt,
+    discountGiven,
+  };
 }
 
-export async function toggleCouponStatus(couponId: string) {
-  try {
-    const session = await getUser();
-    if (!session?.user?.id) {
-      throw new Error("Unauthorized");
-    }
+/** Everything the coupons page needs, in one round trip. */
+export async function getSellerCouponsPage(): Promise<SellerCouponsPage> {
+  const sellerId = await getSellerId();
+  if (!sellerId) return { coupons: [], products: [], storeHost: null };
 
-    const coupon = await db.query.coupons.findFirst({
-      where: and(
-        eq(coupons.id, couponId),
-        eq(coupons.sellerId, session.user.id)
-      ),
-    });
+  const locale = await getLocale();
 
-    if (!coupon) {
-      throw new Error("Coupon not found");
-    }
-
-    const updatedCoupon = await db
-      .update(coupons)
-      .set({
-        isActive: !coupon.isActive,
-        updatedAt: new Date().toISOString(),
-      })
-      .where(eq(coupons.id, couponId))
-      .returning();
-
-    return { success: true, data: updatedCoupon[0] };
-  } catch (error) {
-    console.error("Error toggling coupon status:", error);
-    return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
-  }
-}
-
-export async function deleteCoupon(couponId: string) {
-  try {
-    const session = await getUser();
-    if (!session?.user?.id) {
-      throw new Error("Unauthorized");
-    }
-
-    // Check if coupon has been used
-    const usage = await db.query.couponUsage.findFirst({
-      where: eq(couponUsage.couponId, couponId),
-    });
-
-    if (usage) {
-      // If used, just deactivate instead of delete
-      return updateCoupon(couponId, { isActive: false });
-    }
-
-    const deleted = await db
-      .delete(coupons)
-      .where(
-        and(
-          eq(coupons.id, couponId),
-          eq(coupons.sellerId, session.user.id)
-        )
-      )
-      .returning();
-
-    if (!deleted.length) {
-      throw new Error("Coupon not found or unauthorized");
-    }
-
-    return { success: true, data: deleted[0] };
-  } catch (error) {
-    console.error("Error deleting coupon:", error);
-    return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
-  }
-}
-
-export async function getCouponStats() {
-  try {
-    const session = await getUser();
-    if (!session?.user?.id) {
-      throw new Error("Unauthorized");
-    }
-
-    const stats = await db
+  const [couponRows, discountRows, productRows, seller] = await Promise.all([
+    db.query.coupons.findMany({
+      where: eq(coupons.sellerId, sellerId),
+      orderBy: [desc(coupons.createdAt)],
+    }),
+    db
       .select({
-        totalCoupons: sql<number>`count(distinct ${coupons.id})`,
-        activeCoupons: sql<number>`count(distinct ${coupons.id}) filter (where ${coupons.isActive} = true)`,
-        totalUsage: sql<number>`sum(${coupons.usageCount})`,
-        totalDiscountGiven: sql<number>`coalesce(sum(${couponUsage.discountAmount}), 0)`,
+        couponId: couponUsage.couponId,
+        total: sql<string>`coalesce(sum(${couponUsage.discountAmount}), 0)`,
       })
-      .from(coupons)
-      .leftJoin(couponUsage, eq(coupons.id, couponUsage.couponId))
-      .where(eq(coupons.sellerId, session.user.id));
+      .from(couponUsage)
+      .innerJoin(coupons, eq(coupons.id, couponUsage.couponId))
+      .where(eq(coupons.sellerId, sellerId))
+      .groupBy(couponUsage.couponId),
+    db.query.products.findMany({
+      where: eq(products.sellerId, sellerId),
+      columns: { id: true, images: true, price: true, status: true },
+      with: { productTranslations: { columns: { locale: true, title: true } } },
+      orderBy: [desc(products.createdAt)],
+    }),
+    db.query.sellers.findFirst({
+      where: eq(sellers.id, sellerId),
+      columns: { subdomain: true },
+    }),
+  ]);
 
-    return { success: true, data: stats[0] };
-  } catch (error) {
-    console.error("Error fetching coupon stats:", error);
-    return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
+  const discountByCoupon = new Map(
+    discountRows.map((r) => [r.couponId, Number(r.total)])
+  );
+
+  return {
+    coupons: couponRows.map((c) => toRow(c, discountByCoupon.get(c.id) ?? 0)),
+    products: productRows.map((p) => {
+      const translations = p.productTranslations ?? [];
+      const title =
+        translations.find((t) => t.locale === locale)?.title ??
+        translations[0]?.title ??
+        "";
+      const images = Array.isArray(p.images) ? (p.images as string[]) : [];
+      return {
+        id: p.id,
+        title,
+        image: images[0] ?? null,
+        price: parsePriceJson(p.price).final ?? null,
+        isActive: p.status === "active",
+      };
+    }),
+    storeHost: seller?.subdomain
+      ? `${seller.subdomain}.${STORE_ROOT_DOMAIN}`
+      : null,
+  };
+}
+
+/** Creates a coupon, or updates one when `couponId` is given. */
+export async function saveSellerCoupon(
+  input: SellerCouponInput,
+  couponId?: string
+): Promise<
+  { success: true; data: SellerCouponRow } | { success: false; error: SaveCouponError }
+> {
+  const sellerId = await getSellerId();
+  if (!sellerId) return { success: false, error: "unauthorized" };
+
+  const parsed = couponInputSchema.safeParse(input);
+  if (!parsed.success) return { success: false, error: "invalid_input" };
+  const v = parsed.data;
+
+  if (new Date(v.expiresAt) <= new Date(v.startsAt)) {
+    return { success: false, error: "invalid_dates" };
   }
+
+  const productIds = v.productIds?.length ? [...new Set(v.productIds)] : null;
+  if (productIds) {
+    const owned = await db
+      .select({ id: products.id })
+      .from(products)
+      .where(and(eq(products.sellerId, sellerId), inArray(products.id, productIds)));
+    if (owned.length !== productIds.length) {
+      return { success: false, error: "invalid_products" };
+    }
+  }
+
+  const values = {
+    code: v.code,
+    name: v.name,
+    discountType: v.discountType,
+    discountValue: v.discountValue.toFixed(2),
+    minimumPurchase: v.minimumPurchase?.toFixed(2) ?? null,
+    // A cap only means something on a percentage off.
+    maximumDiscount:
+      v.discountType === "percentage" ? v.maximumDiscount?.toFixed(2) ?? null : null,
+    usageLimit: v.usageLimit,
+    perUserLimit: v.perUserLimit,
+    applicableTo: {
+      ...(productIds ? { productIds } : {}),
+      channels: [...new Set(v.channels)],
+    },
+    startsAt: new Date(v.startsAt).toISOString(),
+    expiresAt: new Date(v.expiresAt).toISOString(),
+  };
+
+  try {
+    const [saved] = couponId
+      ? await db
+          .update(coupons)
+          .set({ ...values, updatedAt: new Date().toISOString() })
+          .where(and(eq(coupons.id, couponId), eq(coupons.sellerId, sellerId)))
+          .returning()
+      : await db
+          .insert(coupons)
+          .values({ ...values, sellerId, isActive: true, usageCount: 0 })
+          .returning();
+
+    if (!saved) return { success: false, error: "not_found" };
+
+    revalidatePath("/coupons");
+    return { success: true, data: toRow(saved, 0) };
+  } catch (error) {
+    if (uniqueViolationConstraint(error) !== null) {
+      return { success: false, error: "code_taken" };
+    }
+    console.error("Error saving coupon:", error);
+    return { success: false, error: "unknown" };
+  }
+}
+
+export async function setSellerCouponActive(
+  couponId: string,
+  isActive: boolean
+): Promise<{ success: boolean }> {
+  const sellerId = await getSellerId();
+  if (!sellerId) return { success: false };
+
+  const updated = await db
+    .update(coupons)
+    .set({ isActive, updatedAt: new Date().toISOString() })
+    .where(and(eq(coupons.id, couponId), eq(coupons.sellerId, sellerId)))
+    .returning({ id: coupons.id });
+
+  revalidatePath("/coupons");
+  return { success: updated.length > 0 };
+}
+
+/**
+ * Deletes an unused coupon. A coupon that already discounted an order is
+ * kept for the order history and switched off instead.
+ */
+export async function deleteSellerCoupon(
+  couponId: string
+): Promise<{ success: boolean; archived?: boolean }> {
+  const sellerId = await getSellerId();
+  if (!sellerId) return { success: false };
+
+  const owned = await db.query.coupons.findFirst({
+    where: and(eq(coupons.id, couponId), eq(coupons.sellerId, sellerId)),
+    columns: { id: true },
+  });
+  if (!owned) return { success: false };
+
+  const used = await db.query.couponUsage.findFirst({
+    where: eq(couponUsage.couponId, couponId),
+    columns: { id: true },
+  });
+
+  if (used) {
+    await db
+      .update(coupons)
+      .set({ isActive: false, updatedAt: new Date().toISOString() })
+      .where(eq(coupons.id, couponId));
+    revalidatePath("/coupons");
+    return { success: true, archived: true };
+  }
+
+  await db.delete(coupons).where(eq(coupons.id, couponId));
+  revalidatePath("/coupons");
+  return { success: true };
 }

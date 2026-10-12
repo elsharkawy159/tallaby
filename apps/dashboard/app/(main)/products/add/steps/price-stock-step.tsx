@@ -1,7 +1,8 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { contentDirClass } from "@/lib/i18n/content-dir";
+import { formatMoney } from "@/lib/i18n/format";
 import { cn } from "@/lib/utils";
 
 import { useEffect, useCallback, useRef } from "react";
@@ -9,7 +10,7 @@ import { useFormContext, useFieldArray, Controller } from "react-hook-form";
 import {
   calculateDiscountFromFinalPrice,
   calculateProductFinalPrice,
-  getFinalPriceHelpText,
+  calculateSellerEarning,
   roundPriceUpToNearestFive,
   type SellerPricingSettings,
 } from "@/lib/utils/product-pricing.lib";
@@ -65,6 +66,7 @@ export function PriceStockStep({
 }: PriceStockStepProps) {
   const form = useFormContext<AddProductFormData>();
   const t = useTranslations("productForm.price");
+  const locale = useLocale();
   const tFulfillment = useTranslations("productForm.fulfillment");
   const localizedFulfillmentOptions = fulfillmentOptions.map((option) => ({
     ...option,
@@ -160,6 +162,11 @@ export function PriceStockStep({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [listPrice, discountValue, discountType, finalPrice, sellerPricing]);
 
+  const sellerEarning = calculateSellerEarning(
+    finalPrice || listPrice,
+    sellerPricing
+  );
+
   return (
     <div className="space-y-6">
       {/* Pricing Section */}
@@ -171,6 +178,11 @@ export function PriceStockStep({
               name="price.list"
               label={t("productPrice")}
               placeholder="0.00"
+              helpText={
+                sellerEarning > 0
+                  ? t("youReceive", { amount: formatMoney(sellerEarning, locale) })
+                  : undefined
+              }
               className="text-sm"
               required
               onBlurValue={(value) => applyNearestFiveRounding("price.list", value)}
@@ -227,7 +239,6 @@ export function PriceStockStep({
             name="price.final"
             label={t("finalPrice")}
             placeholder="0.00"
-            helpText={getFinalPriceHelpText(sellerPricing, t)}
             className="text-sm"
             onBlurValue={(value) => applyNearestFiveRounding("price.final", value)}
           />

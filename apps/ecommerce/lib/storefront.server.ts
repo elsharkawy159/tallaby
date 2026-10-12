@@ -1,5 +1,6 @@
 /**
- * Seller storefronts ({subdomain}.tallaby.com) on the server side.
+ * Seller storefronts ({subdomain}.tallaby.com, or the seller's own domain)
+ * on the server side.
  *
  * The request host decides which cart a shopper is using: the marketplace
  * cart on tallaby.com, or that seller's own cart on their subdomain. Every
@@ -15,19 +16,54 @@ import {
   carts,
   sellers,
   sellerSubdomainRedirects,
+  sellerCustomDomains,
   eq,
   and,
   isNull,
   sql,
 } from "@workspace/db";
 import { categoryTags, productTags, sellerTags } from "@workspace/cache";
-import { storeSubdomainFromHost, storeUrl } from "@workspace/lib/storefront";
+import {
+  hostnameOf,
+  isPlatformHost,
+  storeSubdomainFromHost,
+  storeUrl,
+} from "@workspace/lib/storefront";
+import { findSubdomainForCustomDomain } from "@workspace/lib/storefront/server";
 import { normalizeGovernorate } from "@workspace/lib/shipping";
 
-/** The storefront subdomain of the current request, or null on tallaby.com. */
+/**
+ * The storefront subdomain of the current request, or null on tallaby.com.
+ * On a seller's own domain (faster-eg.com) it is that store's subdomain.
+ */
 export async function getRequestStoreSubdomain(): Promise<string | null> {
-  const requestHeaders = await headers();
-  return storeSubdomainFromHost(requestHeaders.get("host"));
+  const host = (await headers()).get("host");
+  const subdomain = storeSubdomainFromHost(host);
+  if (subdomain || isPlatformHost(host)) return subdomain;
+  return getSubdomainForCustomDomain(hostnameOf(host));
+}
+
+/**
+ * Origin to send shoppers back to after leaving the site (payment pages):
+ * the store they bought from (faster-eg.com, faster.tallaby.com), or the
+ * marketplace. Only hosts that resolve to a store are trusted.
+ */
+export async function getRequestSiteUrl(): Promise<string> {
+  const host = (await headers()).get("host");
+  if (host && (await getRequestStoreSubdomain())) {
+    const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
+    return `${protocol}://${host}`;
+  }
+  return process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "http://localhost:3000";
+}
+
+/** Cached `faster-eg.com` → "faster" for active custom domains. */
+function getSubdomainForCustomDomain(domain: string) {
+  return unstable_cache(
+    () => findSubdomainForCustomDomain(domain),
+    [`storefront-domain-${domain}`],
+    { tags: ["sellers", sellerTags.customDomain(domain)], revalidate: 300 },
+  )();
 }
 
 export type Storefront = NonNullable<
@@ -78,13 +114,29 @@ export function getStorefrontBySubdomain(subdomain: string) {
       });
       if (!seller) return null;
 
+      const [domain] = await db
+        .select({ domain: sellerCustomDomains.domain })
+        .from(sellerCustomDomains)
+        .where(
+          and(
+            eq(sellerCustomDomains.sellerId, seller.id),
+            eq(sellerCustomDomains.status, "active"),
+          ),
+        )
+        .limit(1);
+
       // Only the governorate is public; the rest of the legal address is not.
       const { legalAddress, ...profile } = seller;
       const state = (legalAddress as { state?: string } | null)?.state;
-      return { ...profile, governorate: normalizeGovernorate(state) };
+      return {
+        ...profile,
+        governorate: normalizeGovernorate(state),
+        /** The seller's own domain once live (faster-eg.com), else null. */
+        customDomain: domain?.domain ?? null,
+      };
     },
-    // v2: adds storeCategory / storeCategoryAr.
-    [`storefront-v2-${subdomain}`],
+    // v3: adds customDomain.
+    [`storefront-v3-${subdomain}`],
     { tags: ["sellers", sellerTags.subdomain(subdomain)], revalidate: 3600 },
   )();
 }
@@ -197,6 +249,9 @@ export async function resolveStorefront(subdomain: string): Promise<Storefront> 
   if (store) return store;
 
   const renamed = await getRenamedStoreSubdomain(subdomain);
-  if (renamed) redirect(storeUrl(renamed));
+  if (renamed) {
+    const store = await getStorefrontBySubdomain(renamed);
+    redirect(storeUrl(renamed, store?.customDomain));
+  }
   notFound();
 }

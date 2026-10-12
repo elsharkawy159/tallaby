@@ -1,6 +1,7 @@
 "use server";
 
 import { getCurrentUserId } from "@/lib/get-current-user-id";
+import { getRequestSiteUrl } from "@/lib/storefront.server";
 import { db, orders, eq, and } from "@workspace/db";
 import {
   amountToCents,
@@ -112,9 +113,8 @@ export async function createPaymobCheckoutUrl(orderId: string) {
             },
           ];
 
-    const siteUrl =
-      process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-      "http://localhost:3000";
+    // Back to the store the order was placed on (its own domain or subdomain).
+    const siteUrl = await getRequestSiteUrl();
 
     const intention = await createPaymobIntention({
       amount: totalCents,

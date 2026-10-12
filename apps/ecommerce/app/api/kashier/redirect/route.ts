@@ -5,6 +5,7 @@ import {
   verifyKashierRedirectSignature,
 } from "@workspace/lib/kashier";
 import { buildOrderPagePath } from "@/lib/order-access-token";
+import { getRequestSiteUrl } from "@/lib/storefront.server";
 
 export const dynamic = "force-dynamic";
 
@@ -16,8 +17,8 @@ export const dynamic = "force-dynamic";
  * order page renders whatever state the webhook has (or has not yet) recorded.
  */
 export async function GET(request: NextRequest) {
-  const siteUrl =
-    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || request.nextUrl.origin;
+  // The store the shopper paid on (merchantRedirect points at its host).
+  const siteUrl = await getRequestSiteUrl();
   const config = getKashierConfig();
   const query = Object.fromEntries(request.nextUrl.searchParams.entries());
 

@@ -1,3 +1,8 @@
+import { formatPricePlain } from '@workspace/lib'
+import { resolveGovernorateSelectValue } from '@workspace/lib/address'
+import type { PlacedExternalOrderResult } from '../external-orders.types'
+import { GOVERNORATE_AR, normalizeMobile } from './customer-paste.lib'
+
 const ORDER_STATUS_AR: Record<string, string> = {
   pending: 'قيد الانتظار',
   payment_processing: 'قيد معالجة الدفع',
@@ -53,6 +58,61 @@ export function getOrderStatusTone(status: string): string {
     default:
       return 'bg-slate-50 text-slate-700 ring-slate-200'
   }
+}
+
+/** `01024715570` → `201024715570`, the form wa.me expects; null if invalid. */
+export function toWhatsAppNumber(phone: string | null | undefined): string | null {
+  const mobile = phone ? normalizeMobile(phone) : null
+  return mobile ? `2${mobile}` : null
+}
+
+/** Order confirmation in the desk's usual Egyptian-Arabic wording. */
+export function buildWhatsAppOrderMessage(data: PlacedExternalOrderResult): string {
+  const { order, orderItems, address } = data
+  const price = (value: string | number | null) =>
+    formatPricePlain(Number(value ?? 0), 'ar')
+
+  const items = orderItems.map((item) => {
+    const variant = item.variantName ? ` (${item.variantName})` : ''
+    return `• ${item.quantity} ${item.productName}${variant} — ${price(item.subtotal)}`
+  })
+
+  const shipping = Number(order.shippingCost ?? 0)
+  const discount = Number(order.discountAmount ?? 0)
+  const isPaid =
+    order.paymentStatus === 'paid' || order.paymentMethod === 'cash'
+
+  const totals = [
+    `المنتجات: ${price(order.subtotal)}`,
+    `الشحن: ${shipping > 0 ? price(shipping) : 'مجاني'}`,
+    discount > 0 ? `الخصم: -${price(discount)}` : '',
+    `*الإجمالي: ${price(order.totalAmount)}*${isPaid ? ' (مدفوع)' : ' (الدفع عند الاستلام)'}`,
+  ].filter(Boolean)
+
+  const addressText = address
+    ? [
+        address.addressLine1,
+        address.addressLine2,
+        address.city,
+        GOVERNORATE_AR[resolveGovernorateSelectValue(address.state)] ??
+          address.state,
+      ]
+        .filter(Boolean)
+        .join('، ')
+    : ''
+
+  return [
+    'شكراً على طلبك من tallaby.com 🌟',
+    `بأكد مع حضرتك الطلب رقم ${order.orderNumber}:`,
+    '',
+    ...items,
+    '',
+    ...totals,
+    ...(addressText ? ['', `📍 العنوان: ${addressText}`] : []),
+    ...(data.customer.phone ? [`📞 رقم التواصل: ${data.customer.phone}`] : []),
+    '',
+    'برجاء تأكيد البيانات، وشكراً لثقتك في طلبي 🙏',
+  ].join('\n')
 }
 
 const INVOICE_EXPORT_WIDTH = 900

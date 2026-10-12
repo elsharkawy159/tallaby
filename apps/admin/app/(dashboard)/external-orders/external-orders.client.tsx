@@ -33,7 +33,10 @@ import {
   type ExternalOrderPreview,
   type PlacedExternalOrderResult,
 } from './external-orders.types'
-import { CustomerSection } from './_components/customer-section'
+import {
+  CustomerSection,
+  type CustomerResolvedOptions,
+} from './_components/customer-section'
 import { AddressSection } from './_components/address-section'
 import { ProductCartSection } from './_components/product-cart-section'
 import { CheckoutSection } from './_components/checkout-section'
@@ -86,10 +89,15 @@ export function ExternalOrdersClient() {
   const customerName = form.watch('customer.fullName')
   const customerPhone = form.watch('customer.phone')
 
-  const handleCustomerResolved = (customer: CustomerLookupData | null) => {
+  const handleCustomerResolved = (
+    customer: CustomerLookupData | null,
+    options: CustomerResolvedOptions = {},
+  ) => {
     setResolvedCustomer(customer)
 
-    if (!customer) {
+    // Pasted details carry the address for this order, so a found customer
+    // only links the account; their saved addresses stay one click away.
+    if (!customer || options.keepAddress) {
       form.setValue('savedAddressId', undefined)
       return
     }

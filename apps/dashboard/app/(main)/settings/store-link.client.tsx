@@ -45,8 +45,15 @@ const CHECK_DELAY_MS = 400
  * The seller's own storefront address ({subdomain}.tallaby.com): copy it to
  * share with customers, or change it. Changing is an explicit save, not an
  * autosave like the rest of the page, because it moves a public link.
+ * Once the seller connects their own domain, that is the link to share.
  */
-export function StoreLinkCard ({ initialSubdomain }: { initialSubdomain: string }) {
+export function StoreLinkCard ({
+  initialSubdomain,
+  customDomain,
+}: {
+  initialSubdomain: string
+  customDomain?: string | null
+}) {
   const t = useTranslations('settings.storeLink')
   const router = useRouter()
   const [subdomain, setSubdomain] = useState(initialSubdomain)
@@ -55,7 +62,7 @@ export function StoreLinkCard ({ initialSubdomain }: { initialSubdomain: string 
   const [availability, setAvailability] = useState<Availability>({ state: 'idle' })
   const [isSaving, startSaving] = useTransition()
 
-  const url = storeUrl(subdomain)
+  const url = storeUrl(subdomain, customDomain)
   const normalizedDraft = normalizeSubdomain(draft)
   const unchanged = normalizedDraft === subdomain
 

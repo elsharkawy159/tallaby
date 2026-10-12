@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { routing } from "@/i18n/routing";
+import { cookieDomainForHost } from "./cookie-domain";
 
 /** Strips a leading `/ar` (or any configured non-default locale) prefix so
  * path checks below work the same under both `/onboarding` and `/ar/onboarding`. */
@@ -35,9 +36,8 @@ export async function updateSession(
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
-          const hostname = process.env.NEXT_PUBLIC_ROOT_DOMAIN;
           const isDevelopment = process.env.NODE_ENV === "development";
-          const cookieDomain = isDevelopment ? null : `.${hostname}`;
+          const cookieDomain = cookieDomainForHost(request.headers.get("host"));
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, {
               ...options,

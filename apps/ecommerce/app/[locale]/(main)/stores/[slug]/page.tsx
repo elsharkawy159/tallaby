@@ -5,6 +5,7 @@ import { hasLocale } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { getSellerBySlug, getSellerStoreCategories } from "@/actions/seller";
 import { generateStoreMetadata } from "@/lib/metadata";
+import { getStorefrontBySubdomain } from "@/lib/storefront.server";
 import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@workspace/ui/lib/utils";
@@ -73,7 +74,8 @@ export default async function StorePage({ params, searchParams }: StorePageProps
     }
     const path = locale === routing.defaultLocale ? "" : `/${locale}`;
     const qs = forwarded.toString();
-    redirect(`${storeUrl(seller.subdomain)}${path}${qs ? `?${qs}` : ""}`);
+    const store = await getStorefrontBySubdomain(seller.subdomain);
+    redirect(`${storeUrl(seller.subdomain, store?.customDomain)}${path}${qs ? `?${qs}` : ""}`);
   }
 
   const categoriesResult = await getSellerStoreCategories(seller.id);

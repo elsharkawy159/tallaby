@@ -19,6 +19,7 @@ export {
 } from './order-access'
 
 export {
+  PLATFORM_COMMISSION_RATE,
   formatDecimal,
   formatVariantTitleFromCart,
   generateOrderNumber,
@@ -52,3 +53,17 @@ export {
   toWalletPartialPaymentMethod,
   type ManualPaymentMethodValue,
 } from './payment.lib'
+
+export {
+  COUPON_CHANNELS,
+  SELLER_COUPON_DISCOUNT_TYPES,
+  allocateDiscountAcrossLines,
+  getCouponChannels,
+  getCouponProductIds,
+  isCouponAllowedOnChannel,
+  isLineEligibleForCoupon,
+  type CouponChannel,
+  type CouponScopeInput,
+  type CouponScopeLine,
+  type SellerCouponDiscountType,
+} from './coupon-scope.lib'

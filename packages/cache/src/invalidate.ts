@@ -243,6 +243,14 @@ export function invalidateStorefront(subdomains: string[]): CacheInvalidation {
   return inv(subdomains.map((s) => sellerTags.subdomain(s)));
 }
 
+/**
+ * A store's custom domain (faster-eg.com) was added, went live, broke or was
+ * removed: the store profile (which carries it) and the domain lookup.
+ */
+export function invalidateCustomDomain(subdomain: string, domain: string): CacheInvalidation {
+  return inv([sellerTags.subdomain(subdomain), sellerTags.customDomain(domain)]);
+}
+
 /** Platform-wide coupons (no seller) — the storefront's "available coupons". */
 export function invalidatePlatformCoupons(): CacheInvalidation {
   return inv([couponTags.available()]);

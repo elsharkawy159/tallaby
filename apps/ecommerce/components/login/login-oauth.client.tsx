@@ -4,6 +4,7 @@ import { useTransition } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@workspace/ui/components/button";
 import { createClient } from "@/supabase/client";
+import { oauthHandoffUrl } from "@/lib/oauth-handoff";
 import { useTranslations } from "next-intl";
 
 export function LoginOAuth() {
@@ -19,6 +20,12 @@ export function LoginOAuth() {
         typeof window !== "undefined" ? window.location.origin : "";
       if (!baseUrl) {
         console.error("Unable to determine base URL for OAuth redirect");
+        return;
+      }
+
+      const handoff = oauthHandoffUrl(provider, redirectTo);
+      if (handoff) {
+        window.location.assign(handoff);
         return;
       }
 

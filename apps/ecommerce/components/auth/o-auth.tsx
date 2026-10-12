@@ -3,6 +3,7 @@
 import { useTransition } from "react";
 import { Button } from "@workspace/ui/components/button";
 import { createClient } from "@/supabase/client";
+import { oauthHandoffUrl } from "@/lib/oauth-handoff";
 
 export function OAuth({ next }: { next?: string }) {
   const [isPending, startTransition] = useTransition();
@@ -14,6 +15,12 @@ export function OAuth({ next }: { next?: string }) {
         typeof window !== "undefined" ? window.location.origin : "";
       if (!baseUrl) {
         console.error("Unable to determine base URL for OAuth redirect");
+        return;
+      }
+
+      const handoff = oauthHandoffUrl(provider, next || "/");
+      if (handoff) {
+        window.location.assign(handoff);
         return;
       }
 

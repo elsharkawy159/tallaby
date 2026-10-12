@@ -13,7 +13,7 @@ import {
   eq,
   and,
   or,
-  like,
+  ilike,
   desc,
   sql,
 } from '@workspace/db'
@@ -315,29 +315,68 @@ export async function lookupCustomerByPhone(phone: string) {
   }
 }
 
+// Arabic letters typed interchangeably (أ/إ/آ/ٱ → ا, ة → ه, ى → ي), plus
+// tatweel and harakat, which are dropped. Applied to both the query and the
+// stored titles so "اسكندريه" finds "إسكندرية" and "باور بانك" finds "باوَر بانـك".
+const AR_FOLD_FROM =
+  'أإآٱةىـًٌٍَُِّْ'
+const AR_FOLD_TO = 'ااااهي'
+
+function foldSearchText(value: string): string {
+  let folded = value.toLowerCase()
+  for (let i = 0; i < AR_FOLD_FROM.length; i++) {
+    folded = folded.split(AR_FOLD_FROM[i]!).join(AR_FOLD_TO[i] ?? '')
+  }
+  return folded
+    .replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x0660))
+    .replace(/[۰-۹]/g, (d) => String(d.charCodeAt(0) - 0x06f0))
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function escapeLike(value: string): string {
+  return value.replace(/[\\%_]/g, (char) => `\\${char}`)
+}
+
+function foldedSql(column: ReturnType<typeof sql>) {
+  return sql`translate(lower(${column}), ${AR_FOLD_FROM}, ${AR_FOLD_TO})`
+}
+
 export async function searchProductsForExternalOrder(query: string) {
   try {
     await getAdminUser()
 
-    const trimmed = query.trim()
-    if (trimmed.length < 2) {
+    const folded = foldSearchText(query)
+    if (folded.length < 2) {
       return { success: true, data: [] }
     }
 
-    const pattern = `%${trimmed}%`
+    // Every word must match somewhere — the English or Arabic title, the
+    // product SKU, or a variant's SKU/title — so "باور 20000" or "anker white"
+    // narrow the list instead of requiring the exact title.
+    const tokens = folded.split(' ').filter(Boolean).slice(0, 6)
+    const tokenConditions = tokens.map((token) => {
+      const pattern = `%${escapeLike(token)}%`
+      return or(
+        ilike(products.sku, pattern),
+        sql`EXISTS (
+          SELECT 1 FROM product_translations pt
+          WHERE pt.product_id = ${products.id}
+          AND ${foldedSql(sql`pt.title`)} LIKE ${pattern}
+        )`,
+        sql`EXISTS (
+          SELECT 1 FROM product_variants pv
+          WHERE pv.product_id = ${products.id}
+          AND (
+            pv.sku ILIKE ${pattern}
+            OR ${foldedSql(sql`coalesce(pv.title, '')`)} LIKE ${pattern}
+          )
+        )`,
+      )
+    })
+
     const rows = await db.query.products.findMany({
-      where: and(
-        eq(products.status, 'active'),
-        or(
-          like(products.sku, pattern),
-          sql`EXISTS (
-            SELECT 1 FROM product_translations pt
-            WHERE pt.product_id = ${products.id}
-            AND pt.locale = 'en'
-            AND pt.title ILIKE ${pattern}
-          )`,
-        ),
-      ),
+      where: and(eq(products.status, 'active'), ...tokenConditions),
       with: {
         productTranslations: {
           columns: { locale: true, title: true },
@@ -356,7 +395,7 @@ export async function searchProductsForExternalOrder(query: string) {
           },
         },
       },
-      limit: 20,
+      limit: 40,
     })
 
     const data = rows.map((product) => {
@@ -365,6 +404,9 @@ export async function searchProductsForExternalOrder(query: string) {
         product.productTranslations[0]?.title ??
         product.sku ??
         'Product'
+      const arTitle =
+        product.productTranslations.find((t) => t.locale === 'ar')?.title ??
+        null
 
       const price = getPriceFinal(product.price)
       const images = (product.images as string[] | null) ?? []
@@ -372,6 +414,7 @@ export async function searchProductsForExternalOrder(query: string) {
       return {
         id: product.id,
         title: enTitle,
+        titleAr: arTitle && arTitle !== enTitle ? arTitle : null,
         sku: product.sku,
         price,
         image: images[0] ?? null,
@@ -391,7 +434,23 @@ export async function searchProductsForExternalOrder(query: string) {
       }
     })
 
-    return { success: true, data }
+    // Titles starting with the query rank first, then titles or SKUs
+    // containing the whole phrase, then word-by-word matches.
+    const rank = (item: (typeof data)[number]) => {
+      const titles = [item.title, item.titleAr ?? ''].map(foldSearchText)
+      if (titles.some((title) => title.startsWith(folded))) return 0
+      if (titles.some((title) => title.includes(folded))) return 1
+      if (item.sku && foldSearchText(item.sku).includes(folded)) return 1
+      return 2
+    }
+
+    const ranked = data
+      .map((item) => ({ item, score: rank(item) }))
+      .sort((a, b) => a.score - b.score)
+      .slice(0, 20)
+      .map(({ item }) => item)
+
+    return { success: true, data: ranked }
   } catch (error) {
     console.error('searchProductsForExternalOrder:', error)
     return {

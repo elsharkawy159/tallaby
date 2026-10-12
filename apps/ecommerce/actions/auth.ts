@@ -3,6 +3,7 @@
 import { createClient } from "@/supabase/server";
 import { db, users, sellers, eq } from "@workspace/db";
 import { cookies, headers } from "next/headers";
+import { isPlatformHost } from "@workspace/lib/storefront";
 import {
   forgotPasswordSchema,
   type ForgotPasswordFormData,
@@ -154,7 +155,11 @@ export async function forgotPasswordAction(raw: unknown) {
     const headersList = await headers();
     const host = headersList.get("host");
     const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
-    const origin = `${protocol}://${host}`;
+    // Supabase only redirects to allow-listed hosts, so on a seller's own
+    // domain the reset link goes through the marketplace.
+    const origin = isPlatformHost(host)
+      ? `${protocol}://${host}`
+      : (process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? `${protocol}://${host}`);
     const redirectTo = `${origin}/auth/reset-password`;
 
     const { error } = await supabase.auth.resetPasswordForEmail(

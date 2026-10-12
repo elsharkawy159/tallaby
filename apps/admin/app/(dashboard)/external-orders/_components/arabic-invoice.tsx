@@ -1,14 +1,18 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { Copy, Loader2, Printer } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Copy, Loader2, MessageCircle, Printer, Share2 } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
+import { Input } from "@workspace/ui/components/input";
+import { Textarea } from "@workspace/ui/components/textarea";
 import { formatPricePlain } from "@workspace/lib";
 import { getGovernorateLabel } from "@workspace/lib/address";
 import { toast } from "sonner";
 import type { PlacedExternalOrderResult } from "../external-orders.types";
 import {
+  buildWhatsAppOrderMessage,
   captureInvoiceImage,
+  toWhatsAppNumber,
   getOrderStatusTone,
   translateOrderStatus,
   translatePaymentStatus,
@@ -63,35 +67,149 @@ export function ArabicInvoice({ data }: ArabicInvoiceProps) {
   const total = Number(order.totalAmount);
   const itemCount = orderItems.reduce((sum, item) => sum + item.quantity, 0);
   const invoiceRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<Promise<Blob> | null>(null);
   const [isCopying, setIsCopying] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
+  const [whatsAppPhone, setWhatsAppPhone] = useState(customer.phone ?? "");
+  const [whatsAppMessage, setWhatsAppMessage] = useState(() =>
+    buildWhatsAppOrderMessage(data),
+  );
+  const [canShareFiles, setCanShareFiles] = useState(false);
+
+  /** The invoice never changes once placed, so one capture serves every action. */
+  const getInvoiceImage = () => {
+    const node = invoiceRef.current;
+    if (!node) return null;
+    if (!imageRef.current) {
+      imageRef.current = captureInvoiceImage(node).catch((error) => {
+        imageRef.current = null;
+        throw error;
+      });
+    }
+    return imageRef.current;
+  };
+
+  // Render the image up front so the WhatsApp button can put it on the
+  // clipboard and open the chat within the same click.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      getInvoiceImage()?.catch(() => undefined);
+    }, 300);
+    setCanShareFiles(
+      typeof navigator !== "undefined" &&
+        typeof navigator.canShare === "function" &&
+        navigator.canShare({
+          files: [new File([""], "invoice.png", { type: "image/png" })],
+        }),
+    );
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handlePrint = () => {
     window.print();
   };
 
-  const handleCopyAsImage = async () => {
-    const node = invoiceRef.current;
-    if (!node) return;
-
-    if (!navigator.clipboard?.write || typeof ClipboardItem === "undefined") {
-      toast.error("المتصفح لا يدعم نسخ الصور");
-      return;
+  const copyInvoiceImage = async () => {
+    const image = getInvoiceImage();
+    if (
+      !image ||
+      !navigator.clipboard?.write ||
+      typeof ClipboardItem === "undefined"
+    ) {
+      throw new Error("unsupported");
     }
+    // Handing ClipboardItem the promise keeps the click's user activation
+    // even if the capture is still rendering.
+    await navigator.clipboard.write([
+      new ClipboardItem({ "image/png": image }),
+    ]);
+  };
 
+  const handleCopyAsImage = async () => {
     setIsCopying(true);
 
     try {
-      const blob = await captureInvoiceImage(node);
-
-      await navigator.clipboard.write([
-        new ClipboardItem({ "image/png": blob }),
-      ]);
-
+      await copyInvoiceImage();
       toast.success("تم نسخ الفاتورة كصورة");
     } catch {
       toast.error("تعذر نسخ الفاتورة. حاول مرة أخرى.");
     } finally {
       setIsCopying(false);
+    }
+  };
+
+  const whatsAppNumber = toWhatsAppNumber(whatsAppPhone);
+  const whatsAppUrl = whatsAppNumber
+    ? `https://wa.me/${whatsAppNumber}?text=${encodeURIComponent(whatsAppMessage)}`
+    : null;
+
+  /**
+   * wa.me links can only carry text, so the invoice image is copied to the
+   * clipboard first — paste it into the chat with Ctrl+V.
+   */
+  const handleSendWhatsApp = async () => {
+    if (!whatsAppUrl) {
+      toast.error("رقم واتساب غير صحيح");
+      return;
+    }
+
+    setIsSharing(true);
+    let imageCopied = false;
+    try {
+      await copyInvoiceImage();
+      imageCopied = true;
+    } catch {
+      // Still open the chat; the image can be copied manually.
+    } finally {
+      setIsSharing(false);
+    }
+
+    // No "noopener" feature here: with it window.open always returns null,
+    // which would hide whether a popup blocker stopped the chat.
+    const opened = window.open(whatsAppUrl, "_blank");
+    if (opened) opened.opener = null;
+    const hint = imageCopied
+      ? "الفاتورة منسوخة — اضغط Ctrl+V في المحادثة لإرفاقها"
+      : "تعذر نسخ صورة الفاتورة، استخدم زر «نسخ كصورة»";
+
+    if (opened === null) {
+      toast("المتصفح منع فتح واتساب", {
+        description: hint,
+        action: {
+          label: "فتح واتساب",
+          onClick: () => window.open(whatsAppUrl, "_blank", "noopener,noreferrer"),
+        },
+      });
+    } else if (imageCopied) {
+      toast.success(hint);
+    } else {
+      toast.warning(hint);
+    }
+  };
+
+  /** Mobile/OS share sheet: sends the image and text together. */
+  const handleShareImage = async () => {
+    const image = getInvoiceImage();
+    if (!image) return;
+
+    setIsSharing(true);
+    try {
+      const blob = await image;
+      await navigator.share({
+        files: [
+          new File([blob], `invoice-${order.orderNumber}.png`, {
+            type: "image/png",
+          }),
+        ],
+        text: whatsAppMessage,
+      });
+    } catch (error) {
+      if ((error as Error)?.name !== "AbortError") {
+        toast.error("تعذرت مشاركة الفاتورة");
+      }
+    } finally {
+      setIsSharing(false);
     }
   };
 
@@ -181,6 +299,68 @@ export function ArabicInvoice({ data }: ArabicInvoiceProps) {
           طباعة الفاتورة
         </Button>
       </div>
+
+      <section
+        dir="rtl"
+        className="no-print mx-auto mb-6 max-w-3xl space-y-3 rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4 text-right"
+      >
+        <div className="flex items-center gap-2 text-sm font-bold text-emerald-800">
+          <MessageCircle className="h-4 w-4" />
+          إرسال تأكيد الطلب على واتساب
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <label htmlFor="whatsapp-phone" className="text-sm text-[#555555]">
+            رقم العميل
+          </label>
+          <Input
+            id="whatsapp-phone"
+            dir="ltr"
+            className="h-9 w-44 bg-white"
+            value={whatsAppPhone}
+            onChange={(event) => setWhatsAppPhone(event.target.value)}
+          />
+          {!whatsAppNumber && (
+            <span className="text-xs text-destructive">رقم غير صحيح</span>
+          )}
+        </div>
+        <Textarea
+          dir="rtl"
+          rows={9}
+          className="bg-white text-sm leading-6"
+          value={whatsAppMessage}
+          onChange={(event) => setWhatsAppMessage(event.target.value)}
+        />
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            onClick={handleSendWhatsApp}
+            disabled={!whatsAppUrl || isSharing}
+            className="gap-2 bg-[#25D366] text-white hover:bg-[#1ebe5b]"
+          >
+            {isSharing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <MessageCircle className="h-4 w-4" />
+            )}
+            إرسال على واتساب
+          </Button>
+          {canShareFiles && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleShareImage}
+              disabled={isSharing}
+              className="gap-2"
+            >
+              <Share2 className="h-4 w-4" />
+              مشاركة الفاتورة كصورة
+            </Button>
+          )}
+          <p className="text-xs text-[#808080]">
+            يتم نسخ صورة الفاتورة تلقائياً — الصقها في المحادثة بـ Ctrl+V
+          </p>
+        </div>
+      </section>
 
       <div
         ref={invoiceRef}

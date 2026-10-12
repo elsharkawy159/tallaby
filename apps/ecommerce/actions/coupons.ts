@@ -7,6 +7,10 @@ import { getUser } from "./auth"
 import { getCurrentUserId } from "@/lib/get-current-user-id"
 import { activeCartWhere, getCartStoreSellerId } from "@/lib/storefront.server"
 import {
+  isCouponAllowedOnChannel,
+  isLineEligibleForCoupon,
+} from "@workspace/lib/orders/coupon-scope"
+import {
   calculateCouponDiscount,
   buildSummaryWithCoupon,
   type CouponData,
@@ -205,10 +209,24 @@ export async function validateCoupon(
       0
     )
 
+    const channel = (await getCartStoreSellerId()) ? "storefront" : "marketplace"
+    if (!isCouponAllowedOnChannel(coupon, channel)) {
+      return { success: false, error: "couponNotForThisStore" }
+    }
+
+    // Seller coupons count (and discount) only that seller's products.
+    const eligibleSubtotal = cartItemsForCoupon
+      .filter(item => isLineEligibleForCoupon(coupon, item))
+      .reduce((sum, item) => sum + Number(item.price) * item.quantity, 0)
+
+    if (coupon.sellerId && eligibleSubtotal <= 0) {
+      return { success: false, error: "couponNoEligibleItems" }
+    }
+
     // Check minimum purchase requirement
     if (coupon.minimumPurchase !== null) {
       const minPurchase = Number(coupon.minimumPurchase)
-      if (subtotal < minPurchase) {
+      if (eligibleSubtotal < minPurchase) {
         return {
           success: false,
           error: "minPurchase",

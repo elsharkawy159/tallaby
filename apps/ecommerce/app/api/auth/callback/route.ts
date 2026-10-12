@@ -1,6 +1,13 @@
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
+import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@/supabase/server";
+import {
+  createHandoffCode,
+  safeNextPath,
+  trustedHandoffOrigin,
+} from "@/lib/auth-handoff.server";
 import { mergeGuestAccount } from "@/actions/merge-guest-account";
 
 async function mergeGuestAccountSafely() {
@@ -21,6 +28,30 @@ export async function GET(request: NextRequest) {
 
   // if "next" is in param, use it as the redirect URL
   const next = searchParams.get("next") ?? "/";
+
+  // OAuth started by a seller's own domain (see /api/auth/oauth): the
+  // session goes to that domain, not to tallaby.com.
+  const handoffParam = searchParams.get("handoff");
+  if (code && handoffParam) {
+    const handoff = await trustedHandoffOrigin(handoffParam);
+    if (!handoff) return NextResponse.redirect(`${origin}/auth`);
+
+    // Reads the PKCE verifier cookie but sets no session cookies here.
+    const cookieStore = await cookies();
+    const exchange = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      { cookies: { getAll: () => cookieStore.getAll(), setAll: () => {} } },
+    );
+    const { data, error } = await exchange.auth.exchangeCodeForSession(code);
+    if (error || !data.session) return NextResponse.redirect(`${handoff}/auth`);
+
+    const handoffCode = await createHandoffCode(handoff, data.session);
+    const target = new URL("/api/auth/handoff", handoff);
+    target.searchParams.set("code", handoffCode);
+    target.searchParams.set("next", safeNextPath(next));
+    return NextResponse.redirect(target);
+  }
 
   const supabase = await createClient();
 

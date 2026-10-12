@@ -53,6 +53,10 @@
       "types": "./src/orders/index.ts",
       "default": "./src/orders/index.ts"
     },
+    "./orders/coupon-scope": {
+      "types": "./src/orders/coupon-scope.lib.ts",
+      "default": "./src/orders/coupon-scope.lib.ts"
+    },
     "./orders/payment": {
       "types": "./src/orders/payment.lib.ts",
       "default": "./src/orders/payment.lib.ts"
@@ -68,6 +72,14 @@
     "./storefront": {
       "types": "./src/storefront/index.ts",
       "default": "./src/storefront/index.ts"
+    },
+    "./storefront/server": {
+      "types": "./src/storefront/custom-domains.server.ts",
+      "default": "./src/storefront/custom-domains.server.ts"
+    },
+    "./storefront/vercel-domains": {
+      "types": "./src/storefront/vercel-domains.ts",
+      "default": "./src/storefront/vercel-domains.ts"
     },
     "./fulfillment/server": {
       "types": "./src/fulfillment/server.ts",

@@ -36,6 +36,12 @@ import {
   getThresholdShippingDiscount,
 } from '../shipping/shipping.lib'
 import {
+  allocateDiscountAcrossLines,
+  isCouponAllowedOnChannel,
+  isLineEligibleForCoupon,
+} from './coupon-scope.lib'
+import {
+  PLATFORM_COMMISSION_RATE,
   formatDecimal,
   formatVariantTitleFromCart,
   generateOrderNumber,
@@ -312,8 +318,8 @@ export async function placeOrderFromCart(
     const itemSubtotal = Number(item.price) * item.quantity
     subtotal += itemSubtotal
 
-    const itemCommission = itemSubtotal * 0.1
-    const itemSellerEarning = itemSubtotal * 0.9
+    const itemCommission = itemSubtotal * PLATFORM_COMMISSION_RATE
+    const itemSellerEarning = itemSubtotal - itemCommission
 
     const variant = item.variant as {
       id?: string
@@ -346,7 +352,7 @@ export async function placeOrderFromCart(
       shippingCost: '0.00',
       total: formatDecimal(itemSubtotal),
       discountAmount: '0.00',
-      commissionRate: 0.1,
+      commissionRate: PLATFORM_COMMISSION_RATE,
       commissionAmount: formatDecimal(itemCommission),
       sellerEarning: formatDecimal(itemSellerEarning),
       currency: cart.currency || 'EGP',
@@ -387,9 +393,28 @@ export async function placeOrderFromCart(
         return { success: false, error: 'Coupon usage limit reached' }
       }
 
+      const channel = orderSource === 'storefront' ? 'storefront' : 'marketplace'
+      if (!isCouponAllowedOnChannel(coupon, channel)) {
+        return { success: false, error: 'couponNotForThisStore' }
+      }
+
+      // Seller coupons only ever touch that seller's products (and, when
+      // set, the products the seller picked); platform coupons cover all.
+      const eligibleItems = orderItemsData.filter((item) =>
+        isLineEligibleForCoupon(coupon, item),
+      )
+      const eligibleSubtotal = eligibleItems.reduce(
+        (sum, item) => sum + Number(item.subtotal),
+        0,
+      )
+
+      if (coupon.sellerId && eligibleSubtotal <= 0) {
+        return { success: false, error: 'couponNoEligibleItems' }
+      }
+
       if (
         coupon.minimumPurchase &&
-        subtotal < Number(coupon.minimumPurchase)
+        eligibleSubtotal < Number(coupon.minimumPurchase)
       ) {
         return {
           success: false,
@@ -399,10 +424,14 @@ export async function placeOrderFromCart(
       }
 
       if (coupon.discountType === 'percentage') {
-        merchandiseDiscount = subtotal * (Number(coupon.discountValue) / 100)
+        merchandiseDiscount =
+          eligibleSubtotal * (Number(coupon.discountValue) / 100)
       } else if (coupon.discountType === 'fixed_amount') {
         merchandiseDiscount = Number(coupon.discountValue)
-      } else if (coupon.discountType === 'free_shipping') {
+      } else if (
+        coupon.discountType === 'free_shipping' &&
+        !coupon.sellerId
+      ) {
         shippingDiscount = Math.max(shippingDiscount, shippingCost)
       }
 
@@ -413,8 +442,27 @@ export async function placeOrderFromCart(
         merchandiseDiscount = Number(coupon.maximumDiscount)
       }
 
-      if (merchandiseDiscount > subtotal) {
-        merchandiseDiscount = subtotal
+      if (merchandiseDiscount > eligibleSubtotal) {
+        merchandiseDiscount = eligibleSubtotal
+      }
+
+      // A seller-funded discount comes out of that seller's lines: each
+      // eligible line carries its share, and commission is taken on what the
+      // customer actually pays for it.
+      if (coupon.sellerId && merchandiseDiscount > 0) {
+        const shares = allocateDiscountAcrossLines(
+          merchandiseDiscount,
+          eligibleItems.map((item) => Number(item.subtotal)),
+        )
+        eligibleItems.forEach((item, index) => {
+          const lineDiscount = shares[index] ?? 0
+          const net = Number(item.subtotal) - lineDiscount
+          const commission = net * PLATFORM_COMMISSION_RATE
+          item.discountAmount = formatDecimal(lineDiscount)
+          item.total = formatDecimal(net)
+          item.commissionAmount = formatDecimal(commission)
+          item.sellerEarning = formatDecimal(net - commission)
+        })
       }
 
       appliedCoupon = coupon
