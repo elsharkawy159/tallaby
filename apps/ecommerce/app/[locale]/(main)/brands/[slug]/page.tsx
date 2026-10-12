@@ -22,12 +22,9 @@ interface BrandPageProps {
 export const revalidate = 3600;
 export const dynamicParams = true;
 
-// Rendered on demand + cached via ISR instead of pre-rendering every
-// brand at build time (keeps SEO/discoverability intact via the sitemap
-// while cutting Vercel Build CPU usage).
-export async function generateStaticParams() {
-  return [];
-}
+// No generateStaticParams: the page reads searchParams (?page=), so it is
+// request-time by definition — see categories/[slug]/page.tsx for why an
+// empty generateStaticParams made every production request 500.
 
 async function resolveBrand(locale: string, slug: string) {
   if (!hasLocale(routing.locales, locale)) {
@@ -115,7 +112,7 @@ export default async function BrandPage({
 
         <Suspense fallback={<ProductsGridSkeleton />}>
           {products.length === 0 ? (
-            <div className="text-center py-12">
+            <div className="text-center py-12" data-page-state="empty-listing">
               <p className="text-muted-foreground">
                 {locale === "ar"
                   ? "لا توجد منتجات لهذه العلامة التجارية حاليًا."

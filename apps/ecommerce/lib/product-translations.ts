@@ -1,5 +1,5 @@
-import { and, db, eq } from "@workspace/db";
-import { productTranslations } from "@workspace/db/schema";
+import { and, asc, db, eq } from "@workspace/db";
+import { products, productTranslations } from "@workspace/db/schema";
 import { isRichTextEmpty, hasRichTextMedia, mergeRichTextMediaFallback } from "@workspace/tiptap";
 
 export type ProductLocale = "en" | "ar";
@@ -55,31 +55,38 @@ export async function getProductIdBySlug(
   const firstLocale = locale
   const fallbackLocale = locale === "ar" ? "en" : "ar"
 
-  const [first] = await db
+  const first = await findActiveProductIdBySlug(slug, firstLocale)
+  if (first) return first
+
+  return findActiveProductIdBySlug(slug, fallbackLocale)
+}
+
+/**
+ * Slugs aren't unique in the DB, so several products can share one. Only
+ * storefront-visible products are considered (a draft must not shadow the
+ * live product holding the same slug), and ties go to the oldest product,
+ * then id — the same rule as compareSlugClaim() in lib/sitemap, so the
+ * product a sitemap URL advertises is the one the page renders.
+ */
+async function findActiveProductIdBySlug(
+  slug: string,
+  locale: ProductLocale
+): Promise<string | null> {
+  const [row] = await db
     .select({ productId: productTranslations.productId })
     .from(productTranslations)
+    .innerJoin(products, eq(products.id, productTranslations.productId))
     .where(
       and(
         eq(productTranslations.slug, slug),
-        eq(productTranslations.locale, firstLocale)
+        eq(productTranslations.locale, locale),
+        eq(products.status, "active")
       )
     )
+    .orderBy(asc(products.createdAt), asc(products.id))
     .limit(1)
 
-  if (first) return first.productId
-
-  const [fallback] = await db
-    .select({ productId: productTranslations.productId })
-    .from(productTranslations)
-    .where(
-      and(
-        eq(productTranslations.slug, slug),
-        eq(productTranslations.locale, fallbackLocale)
-      )
-    )
-    .limit(1)
-
-  return fallback?.productId ?? null
+  return row?.productId ?? null
 }
 
 /**

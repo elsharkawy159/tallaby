@@ -15,6 +15,7 @@ import { DirectionProvider } from "@workspace/ui/components/direction";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { BASE_URL } from "@/lib/constants";
+import { buildLanguageAlternates, localizedUrl } from "@/lib/metadata";
 import { contentParams } from "@/lib/content-params";
 
 const montserrat = Montserrat({
@@ -94,11 +95,11 @@ export async function generateMetadata({
     alternates: {
       canonical:
         locale === routing.defaultLocale ? BASE_URL : `${BASE_URL}/${locale}`,
-      languages: {
-        en: BASE_URL,
-        ar: `${BASE_URL}/ar`,
-        "x-default": BASE_URL,
-      },
+      // ar is the unprefixed default locale; en lives under /en.
+      languages: buildLanguageAlternates({
+        en: localizedUrl("en", ""),
+        ar: localizedUrl("ar", ""),
+      }),
     },
     category: "ecommerce",
   };

@@ -22,12 +22,11 @@ interface CategoryPageProps {
 export const revalidate = 3600;
 export const dynamicParams = true;
 
-// Rendered on demand + cached via ISR instead of pre-rendering every
-// category at build time (keeps SEO/discoverability intact via the
-// sitemap while cutting Vercel Build CPU usage).
-export async function generateStaticParams() {
-  return [];
-}
+// No generateStaticParams: the page reads searchParams (?page=), so it is
+// request-time by definition. An (empty) generateStaticParams marked the
+// route as ISR, and the runtime searchParams access then failed every
+// production request with a 500 ("static to dynamic at runtime"). Data
+// reads stay cached via unstable_cache, as on /stores/[slug].
 
 async function resolveCategory(locale: string, slug: string) {
   if (!hasLocale(routing.locales, locale)) {
@@ -122,7 +121,7 @@ export default async function CategoryPage({
 
         <Suspense fallback={<ProductsGridSkeleton />}>
           {products.length === 0 ? (
-            <div className="text-center py-12">
+            <div className="text-center py-12" data-page-state="empty-listing">
               <p className="text-muted-foreground">
                 {locale === "ar"
                   ? "لا توجد منتجات في هذا القسم حاليًا."

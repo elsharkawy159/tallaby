@@ -3,31 +3,26 @@ import { getTranslations } from "next-intl/server";
 import { BASE_URL, DEFAULT_CURRENCY } from "./constants";
 import { contentParams } from "./content-params";
 import { routing } from "@/i18n/routing";
+import { buildAlternates, buildLocalizedUrl } from "./sitemap/sitemap.lib";
 
 export type SeoLocale = (typeof routing.locales)[number];
 
 /** Builds an absolute, locale-prefixed URL ("as-needed": default locale unprefixed). */
 export function localizedUrl(locale: SeoLocale, path: string): string {
-  const prefix = locale === routing.defaultLocale ? "" : `/${locale}`;
-  return `${BASE_URL}${prefix}${path}`;
+  return buildLocalizedUrl(BASE_URL, locale, path);
 }
 
 /**
  * Builds the `alternates.languages` map for a page that exists in one or
  * both locales at `path` (or per-locale paths, for entities like products
- * whose slug differs by locale). `x-default` always points at the English
- * URL when it exists, falling back to whichever locale is available.
+ * whose slug differs by locale). `x-default` points at the default-locale
+ * (Arabic) URL when it exists, falling back to whichever locale is available.
+ * Shared with the XML sitemap so its hreflang annotations match the pages.
  */
 export function buildLanguageAlternates(
   urls: Partial<Record<SeoLocale, string>>
 ): Record<string, string> {
-  const languages: Record<string, string> = {};
-  for (const locale of routing.locales) {
-    const url = urls[locale];
-    if (url) languages[locale] = url;
-  }
-  languages["x-default"] = urls[routing.defaultLocale] ?? Object.values(languages)[0] ?? BASE_URL;
-  return languages;
+  return buildAlternates(urls, BASE_URL);
 }
 
 const OG_LOCALE: Record<SeoLocale, string> = {

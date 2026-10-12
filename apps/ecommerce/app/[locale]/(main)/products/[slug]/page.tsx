@@ -20,6 +20,7 @@ import { getTranslations } from "next-intl/server";
 import { hasLocale } from "next-intl";
 import { routing } from "@/i18n/routing";
 import {
+  getProductIdBySlug,
   getProductLocaleFromSlug,
   getProductSlugForLocaleStrict,
   type ProductLocale,
@@ -86,10 +87,18 @@ export async function generateMetadata({
   const categorySlug = category?.slug || "products";
 
   const otherLocale: ProductLocale = locale === "en" ? "ar" : "en";
-  const alternateSlug = await getProductSlugForLocaleStrict(
+  const translatedSlug = await getProductSlugForLocaleStrict(
     product.id,
     otherLocale
   );
+  // Slugs aren't unique: if another product owns that slug in the other
+  // locale, the URL renders that product, so it is not this page's
+  // translation (the sitemap applies the same rule).
+  const alternateSlug =
+    translatedSlug &&
+    (await getProductIdBySlug(translatedSlug, otherLocale)) === product.id
+      ? translatedSlug
+      : null;
 
   return generateProductMetadata({
     locale: locale as ProductLocale,

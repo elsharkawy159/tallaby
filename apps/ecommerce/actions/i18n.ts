@@ -17,8 +17,16 @@ export async function resolveProductSlugForLocale(
   slug: string,
   targetLocale: ProductLocale
 ): Promise<string | null> {
-  const productId = await getProductIdBySlug(slug);
+  // The slug belongs to the page being switched away from — the other locale.
+  const currentLocale: ProductLocale = targetLocale === "en" ? "ar" : "en";
+  const productId = await getProductIdBySlug(slug, currentLocale);
   if (!productId) return null;
 
-  return getProductSlugForLocaleStrict(productId, targetLocale);
+  const targetSlug = await getProductSlugForLocaleStrict(productId, targetLocale);
+  if (!targetSlug) return null;
+
+  // Slugs aren't unique: if another product owns targetSlug in that locale,
+  // the link would open that product instead — fall back to the listing.
+  const owner = await getProductIdBySlug(targetSlug, targetLocale);
+  return owner === productId ? targetSlug : null;
 }

@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "audit:sitemap": "node scripts/audit-sitemap.mjs"
   },
   "dependencies": {
     "@googlemaps/react-wrapper": "^1.2.0",

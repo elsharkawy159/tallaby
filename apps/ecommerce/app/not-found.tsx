@@ -5,6 +5,7 @@ export default function RootNotFound() {
     <html lang="en">
       <body>
         <main
+          data-page-state="not-found"
           style={{
             display: "grid",
             minHeight: "100vh",

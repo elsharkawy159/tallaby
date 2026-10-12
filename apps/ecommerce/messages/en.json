@@ -681,6 +681,9 @@
     "failedToSetDefault": "Failed to set default address"
   },
   "breadcrumb": {
+    "affiliate": "Affiliate Program",
+    "follow-us": "Follow Us",
+    "sitemap": "Sitemap",
     "home": "Home",
     "products": "Products",
     "categories": "Categories",
@@ -1939,5 +1942,16 @@
     "freeShipping": "Free shipping on orders over {threshold}",
     "sellOnTallaby": "Sell on Tallaby",
     "helpCenter": "Help center"
+  },
+  "sitemapPage": {
+    "title": "Sitemap | Tallaby.com",
+    "description": "Every page on Tallaby.com in one place: products, categories, brands and help pages.",
+    "heading": "Sitemap",
+    "intro": "Find any page on Tallaby.com.",
+    "pages": "Pages",
+    "categories": "Categories",
+    "brands": "Brands",
+    "stores": "Stores",
+    "products": "Products"
   }
 }

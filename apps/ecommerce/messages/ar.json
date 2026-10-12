@@ -681,6 +681,9 @@
     "failedToSetDefault": "فشل تعيين العنوان الافتراضي"
   },
   "breadcrumb": {
+    "affiliate": "برنامج التسويق بالعمولة",
+    "follow-us": "تابعنا",
+    "sitemap": "خريطة الموقع",
     "home": "الرئيسية",
     "products": "المنتجات",
     "categories": "الفئات",
@@ -2068,5 +2071,16 @@
     "freeShipping": "شحن مجاني للطلبات فوق {threshold}",
     "sellOnTallaby": "بيع على طلبي",
     "helpCenter": "مركز المساعدة"
+  },
+  "sitemapPage": {
+    "title": "خريطة الموقع | Tallaby.com",
+    "description": "كل صفحات Tallaby.com في مكان واحد: المنتجات والفئات والعلامات التجارية وصفحات المساعدة.",
+    "heading": "خريطة الموقع",
+    "intro": "اعثر على أي صفحة في Tallaby.com.",
+    "pages": "الصفحات",
+    "categories": "الفئات",
+    "brands": "العلامات التجارية",
+    "stores": "المتاجر",
+    "products": "المنتجات"
   }
 }

@@ -59,11 +59,13 @@ export const config = {
      * - api/ (route handlers under app/api/, including OAuth callback and
      *   server-to-server webhooks — locale routing must not intercept these
      *   or they 404 instead of running their handlers)
-     * - sitemap.xml, robots.txt, manifest.webmanifest (top-level metadata
-     *   route handlers outside app/[locale]/ — locale routing must not
-     *   intercept these or they 404 instead of returning their content)
+     * - sitemap.xml, sitemap.xsl (its browser stylesheet), sitemaps/
+     *   (chunked sitemap files), robots.txt,
+     *   manifest.webmanifest (top-level route handlers outside app/[locale]/
+     *   — locale routing must not intercept these or they 404 instead of
+     *   returning their content)
      * Feel free to modify this pattern to include more paths.
      */
-    "/((?!api/|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!api/|_next/static|_next/image|favicon.ico|sitemap.xml|sitemap.xsl|sitemaps/|robots.txt|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
