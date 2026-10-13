@@ -89,6 +89,7 @@ export function CartPageClient({ initialCartData }: CartPageClientProps) {
                             : image
                         }
                         alt={p.title}
+                        title={p.title}
                         fill
                         sizes="(max-width: 640px) 96px, (max-width: 768px) 96px, 160px"
                         className="object-contain"

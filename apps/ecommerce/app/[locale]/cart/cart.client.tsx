@@ -105,6 +105,7 @@ export default function CartClient({ initialCartData }: CartClientProps) {
                     <Image
                       src={image}
                       alt={p.title}
+                      title={p.title}
                       fill
                       sizes="50vw"
                       className="object-contain bg-white"

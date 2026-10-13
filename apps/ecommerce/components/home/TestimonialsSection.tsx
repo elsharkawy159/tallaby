@@ -66,6 +66,7 @@ const TestimonialsSection = () => {
                 <Image
                   src={testimonial.image}
                   alt={testimonial.name}
+                  title={testimonial.name}
                   width={48}
                   height={48}
                   className="w-12 h-12 rounded-full object-cover mr-4"

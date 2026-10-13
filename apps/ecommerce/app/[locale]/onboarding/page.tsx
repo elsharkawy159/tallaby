@@ -9,6 +9,11 @@ import { createClient } from "@/supabase/server";
 import { getLocale, getTranslations } from "next-intl/server";
 import { db, eq, sellers } from "@workspace/db";
 import { getOnboardingCatalog } from "@/components/onboarding/become-seller.server";
+import type { Metadata } from "next";
+import { generateNoIndexMetadata } from "@/lib/metadata";
+
+// Account/onboarding screens are private (also disallowed in robots.ts).
+export const metadata: Metadata = generateNoIndexMetadata();
 
 // Reads the signed-in seller applicant from the session cookie.
 export const dynamic = "force-dynamic";

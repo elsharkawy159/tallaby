@@ -349,6 +349,7 @@ export function OrderItemReviewForm({
                     <Image
                       src={preview.url}
                       alt={`Review image ${index + 1}`}
+                      title={`Review image ${index + 1}`}
                       fill
                       className="object-cover"
                     />

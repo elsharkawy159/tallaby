@@ -131,6 +131,7 @@ export function ReviewItems({
                     <Image
                       src={img}
                       alt={item.product.title}
+                      title={item.product.title}
                       fill
                       className="object-contain p-1.5"
                       sizes="(max-width: 768px) 56px, 56px"

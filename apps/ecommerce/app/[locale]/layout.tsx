@@ -88,8 +88,9 @@ export async function generateMetadata({
       title: t("twitterTitle"),
       description: t("twitterDescription", contentValues),
     },
+    // app/favicon.ico is served by the file convention; /favicon.png never existed.
     icons: {
-      icon: [{ url: "/favicon.png", sizes: "any" }],
+      apple: [{ url: "/logo/logo.png", sizes: "180x180" }],
     },
     manifest: "/manifest.webmanifest",
     alternates: {

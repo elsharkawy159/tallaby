@@ -12,6 +12,11 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@workspace
 import { db, eq, sellers } from "@workspace/db";
 import { FULFILLMENT_SERVICE_TYPES } from "@workspace/lib/fulfillment";
 import { getSellerFulfillmentOverview } from "@workspace/lib/fulfillment/server";
+import type { Metadata } from "next";
+import { generateNoIndexMetadata } from "@/lib/metadata";
+
+// Account/onboarding screens are private (also disallowed in robots.ts).
+export const metadata: Metadata = generateNoIndexMetadata();
 
 // Reads the signed-in seller's setup from the session cookie.
 export const dynamic = "force-dynamic";

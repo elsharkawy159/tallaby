@@ -264,6 +264,7 @@ export function OrdersClient({
                                   width={100}
                                   height={100}
                                   alt={item.productName}
+                                  title={item.productName}
                                   className="h-full w-full object-contain"
                                 />
                               ) : (

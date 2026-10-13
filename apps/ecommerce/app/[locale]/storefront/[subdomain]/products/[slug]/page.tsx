@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { ChevronLeft } from "lucide-react";
 import { cn } from "@workspace/ui/lib/utils";
-import { resolvePrimaryImage } from "@/lib/utils";
+import { socialShareImageUrl } from "@/lib/metadata";
 import { getProductBySlug } from "@/actions/products";
 import { Link } from "@/i18n/navigation";
 import { BASE_URL } from "@/lib/constants";
@@ -44,14 +44,18 @@ export async function generateMetadata({
 }: StorefrontProductPageProps): Promise<Metadata> {
   const { locale, subdomain, slug } = await params;
   const { product } = await resolveStoreProduct(locale, subdomain, slug);
-  const image = resolvePrimaryImage(product.images as string[] | undefined);
+  const firstImage = (product.images as string[] | undefined)?.find((i) => i?.trim());
 
   return {
     title: product.title,
     description: product.description ?? undefined,
     // The marketplace page is the canonical copy of a product.
     alternates: { canonical: marketplaceProductUrl(locale, slug) },
-    openGraph: { images: [image] },
+    ...(firstImage && {
+      openGraph: {
+        images: [{ url: socialShareImageUrl(firstImage), alt: product.title }],
+      },
+    }),
   };
 }
 

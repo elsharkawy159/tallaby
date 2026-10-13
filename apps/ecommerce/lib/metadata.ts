@@ -4,6 +4,7 @@ import { BASE_URL, DEFAULT_CURRENCY } from "./constants";
 import { contentParams } from "./content-params";
 import { routing } from "@/i18n/routing";
 import { buildAlternates, buildLocalizedUrl } from "./sitemap/sitemap.lib";
+import { getPublicUrl } from "@workspace/ui/lib/utils";
 
 export type SeoLocale = (typeof routing.locales)[number];
 
@@ -23,6 +24,59 @@ export function buildLanguageAlternates(
   urls: Partial<Record<SeoLocale, string>>
 ): Record<string, string> {
   return buildAlternates(urls, BASE_URL);
+}
+
+/**
+ * Product images are stored as bucket paths ("2026-09-10/foo.png"). Left
+ * as-is, metadataBase resolves them against the site origin (a 404), so
+ * resolve them to the public Supabase storage URL instead.
+ */
+export function absoluteProductImageUrl(image: string): string {
+  return getPublicUrl(image, "products");
+}
+
+/**
+ * Social-share preview image. Link unfurlers (notably WhatsApp) silently drop
+ * previews for large images, and seller uploads are often 1MB+ PNGs, so serve
+ * a downscaled copy through Supabase image transformations.
+ */
+export function socialShareImageUrl(image: string): string {
+  const url = absoluteProductImageUrl(image);
+  if (!url.includes(".supabase.co/storage/v1/object/public/")) return url;
+  return (
+    url.replace("/storage/v1/object/public/", "/storage/v1/render/image/public/") +
+    "?width=1200&height=630&resize=contain&quality=80"
+  );
+}
+
+/** Parses a `?page=` search param; anything missing or invalid is page 1. */
+export function parsePageParam(value: string | string[] | undefined): number {
+  const page = Math.floor(Number(Array.isArray(value) ? value[0] : value));
+  return Number.isFinite(page) && page > 1 ? page : 1;
+}
+
+/**
+ * Pages 2+ of a listing are canonical to themselves: pointing a paginated
+ * series at page 1 tells Google to drop the deeper pages (and the products
+ * only linked from them).
+ */
+function withPage(path: string, page = 1): string {
+  return page > 1 ? `${path}?page=${page}` : path;
+}
+
+/** "Phones | Buy Online…" -> "Phones - Page 2 | Buy Online…", so titles in a series differ. */
+export async function paginatedTitle(
+  locale: SeoLocale,
+  title: string,
+  page = 1
+): Promise<string> {
+  if (page <= 1) return title;
+  const t = await getTranslations({ locale, namespace: "seo" });
+  const label = t("pageLabel", { page: String(page) });
+  const brandAt = title.indexOf(" | ");
+  return brandAt === -1
+    ? `${title} - ${label}`
+    : `${title.slice(0, brandAt)} - ${label}${title.slice(brandAt)}`;
 }
 
 const OG_LOCALE: Record<SeoLocale, string> = {
@@ -51,6 +105,10 @@ interface ProductMetadataProps {
     };
     averageRating: number;
     reviewCount: number;
+    inStock?: boolean;
+    /** Seller-entered SEO overrides (dashboard "SEO" fields). */
+    metaTitle?: string | null;
+    metaDescription?: string | null;
   };
   /** Slug for the same product in the other locale, if translated. */
   alternateSlug?: string | null;
@@ -63,8 +121,11 @@ export async function generateProductMetadata({
 }: ProductMetadataProps): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: "seo" });
   const params = contentParams(locale);
-  const title = t("productTitle", { title: product.title });
+  const title = t("productTitle", {
+    title: product.metaTitle?.trim() || product.title,
+  });
   const description =
+    product.metaDescription?.trim() ||
     product.description ||
     t("productDescription", {
       ...params,
@@ -80,7 +141,10 @@ export async function generateProductMetadata({
       ? Math.round(((originalPrice - price) / originalPrice) * 100)
       : 0;
 
-  const imageUrl = product.images?.[0] || "/og-image.jpg";
+  const firstImage = product.images?.find((image) => image?.trim());
+  const shareImage = firstImage
+    ? { url: socialShareImageUrl(firstImage), alt: product.title }
+    : { url: "/og-image.jpg", width: 1200, height: 630, alt: product.title };
   const otherLocale: SeoLocale = locale === "en" ? "ar" : "en";
   const productUrl = localizedUrl(locale, `/products/${product.slug}`);
   const languages = buildLanguageAlternates({
@@ -110,31 +174,41 @@ export async function generateProductMetadata({
       siteName: "Tallaby.com",
       title,
       description,
-      images: [imageUrl],
+      images: [shareImage],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [imageUrl],
+      images: [shareImage],
       site: "@tallaby",
     },
     alternates: {
       canonical: productUrl,
       languages,
     },
-    other: {
-      "product:price:amount": price.toString(),
-      "product:price:currency": DEFAULT_CURRENCY,
-      "product:availability": "in stock",
-      "product:brand": product.brand.name,
-      "product:category": product.category.name,
-      ...(product.averageRating > 0 && {
-        "product:rating:value": product.averageRating.toString(),
-        "product:rating:scale": "5",
-        "product:rating:count": product.reviewCount.toString(),
-      }),
-    },
+  };
+}
+
+/**
+ * Open Graph product:* tags (Facebook/Pinterest). Rendered by the product page
+ * as <meta property=…>, since the Metadata API's `other` only emits name=.
+ */
+export function productOpenGraphTags(
+  product: ProductMetadataProps["product"]
+): Record<string, string> {
+  return {
+    "product:price:amount": product.price.final.toString(),
+    "product:price:currency": DEFAULT_CURRENCY,
+    "product:availability":
+      product.inStock === false ? "out of stock" : "in stock",
+    ...(product.brand.name && { "product:brand": product.brand.name }),
+    "product:category": product.category.name,
+    ...(product.averageRating > 0 && {
+      "product:rating:value": product.averageRating.toString(),
+      "product:rating:scale": "5",
+      "product:rating:count": product.reviewCount.toString(),
+    }),
   };
 }
 
@@ -146,25 +220,32 @@ interface CategoryMetadataProps {
     description?: string;
     productCount?: number;
   };
+  page?: number;
 }
 
 export async function generateCategoryMetadata({
   locale,
   category,
+  page = 1,
 }: CategoryMetadataProps): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: "seo" });
   const params = contentParams(locale);
-  const title = t("categoryTitle", { name: category.name });
+  const title = await paginatedTitle(
+    locale,
+    t("categoryTitle", { name: category.name }),
+    page
+  );
   const description =
     category.description ||
     t("categoryDescription", { ...params, name: category.name });
 
   // Categories share one slug across locales, so both language URLs exist
   // whenever the category exists at all.
-  const categoryUrl = localizedUrl(locale, `/categories/${category.slug}`);
+  const categoryPath = withPage(`/categories/${category.slug}`, page);
+  const categoryUrl = localizedUrl(locale, categoryPath);
   const languages = buildLanguageAlternates(
     Object.fromEntries(
-      routing.locales.map((l) => [l, localizedUrl(l, `/categories/${category.slug}`)])
+      routing.locales.map((l) => [l, localizedUrl(l, categoryPath)])
     ) as Partial<Record<SeoLocale, string>>
   );
 
@@ -217,25 +298,35 @@ interface BrandMetadataProps {
     logoUrl?: string | null;
     productCount?: number;
   };
+  page?: number;
 }
 
 export async function generateBrandMetadata({
   locale,
   brand,
+  page = 1,
 }: BrandMetadataProps): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: "seo" });
   const params = contentParams(locale);
-  const title = t("brandTitle", { name: brand.name });
+  const title = await paginatedTitle(
+    locale,
+    t("brandTitle", { name: brand.name }),
+    page
+  );
   const description =
     brand.description || t("brandDescription", { ...params, name: brand.name });
 
-  const brandUrl = localizedUrl(locale, `/brands/${brand.slug}`);
+  const brandPath = withPage(`/brands/${brand.slug}`, page);
+  const brandUrl = localizedUrl(locale, brandPath);
   const languages = buildLanguageAlternates(
     Object.fromEntries(
-      routing.locales.map((l) => [l, localizedUrl(l, `/brands/${brand.slug}`)])
+      routing.locales.map((l) => [l, localizedUrl(l, brandPath)])
     ) as Partial<Record<SeoLocale, string>>
   );
-  const image = brand.logoUrl || "/og-image.jpg";
+  // Logos aren't 1200x630, so only the default share image declares a size.
+  const image = brand.logoUrl
+    ? { url: brand.logoUrl, alt: brand.name }
+    : { url: "/og-image.jpg", width: 1200, height: 630, alt: brand.name };
 
   return {
     title: { absolute: title },
@@ -253,7 +344,7 @@ export async function generateBrandMetadata({
       description,
       url: brandUrl,
       siteName: "Tallaby.com",
-      images: [{ url: image, width: 1200, height: 630, alt: brand.name }],
+      images: [image],
     },
     twitter: {
       card: "summary_large_image",
@@ -275,6 +366,8 @@ interface StaticPageMetadataProps {
   path: string;
   title: string;
   description: string;
+  /** Listing page number; 2+ gets a self-referencing `?page=N` canonical. */
+  page?: number;
 }
 
 /**
@@ -287,11 +380,13 @@ export function generateStaticPageMetadata({
   path,
   title,
   description,
+  page = 1,
 }: StaticPageMetadataProps): Metadata {
-  const pageUrl = localizedUrl(locale, path);
+  const pagePath = withPage(path, page);
+  const pageUrl = localizedUrl(locale, pagePath);
   const languages = buildLanguageAlternates(
     Object.fromEntries(
-      routing.locales.map((l) => [l, localizedUrl(l, path)])
+      routing.locales.map((l) => [l, localizedUrl(l, pagePath)])
     ) as Partial<Record<SeoLocale, string>>
   );
 
@@ -332,25 +427,34 @@ interface StoreMetadataProps {
     logoUrl?: string | null;
     productCount?: number | null;
   };
+  page?: number;
 }
 
 export async function generateStoreMetadata({
   locale,
   store,
+  page = 1,
 }: StoreMetadataProps): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: "seo" });
   const params = contentParams(locale);
-  const title = t("storeTitle", { name: store.name });
+  const title = await paginatedTitle(
+    locale,
+    t("storeTitle", { name: store.name }),
+    page
+  );
   const description =
     store.description || t("storeDescription", { ...params, name: store.name });
 
-  const storeUrl = localizedUrl(locale, `/stores/${store.slug}`);
+  const storePath = withPage(`/stores/${store.slug}`, page);
+  const storeUrl = localizedUrl(locale, storePath);
   const languages = buildLanguageAlternates(
     Object.fromEntries(
-      routing.locales.map((l) => [l, localizedUrl(l, `/stores/${store.slug}`)])
+      routing.locales.map((l) => [l, localizedUrl(l, storePath)])
     ) as Partial<Record<SeoLocale, string>>
   );
-  const image = store.logoUrl || "/og-image.jpg";
+  const image = store.logoUrl
+    ? { url: store.logoUrl, alt: store.name }
+    : { url: "/og-image.jpg", width: 1200, height: 630, alt: store.name };
 
   return {
     title: { absolute: title },
@@ -362,7 +466,7 @@ export async function generateStoreMetadata({
       description,
       url: storeUrl,
       siteName: "Tallaby.com",
-      images: [{ url: image, width: 1200, height: 630, alt: store.name }],
+      images: [image],
     },
     twitter: {
       card: "summary_large_image",

@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { hasLocale } from "next-intl";
 import { getBrandBySlug } from "@/actions/brands";
 import { getProducts } from "@/actions/products";
-import { generateBrandMetadata } from "@/lib/metadata";
+import { generateBrandMetadata, parsePageParam } from "@/lib/metadata";
 import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import ProductCard from "@/app/[locale]/(main)/products/[slug]/_components/ProductCard";
 import Pagination from "@/app/[locale]/(main)/products/_components/Pagination";
@@ -41,8 +41,10 @@ async function resolveBrand(locale: string, slug: string) {
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: BrandPageProps): Promise<Metadata> {
   const { locale, slug } = await params;
+  const { page } = await searchParams;
   const { brand } = await resolveBrand(locale, slug);
 
   return generateBrandMetadata({
@@ -54,6 +56,7 @@ export async function generateMetadata({
       logoUrl: brand.logoUrl,
       productCount: brand.productCount,
     },
+    page: parsePageParam(page),
   });
 }
 
@@ -91,6 +94,7 @@ export default async function BrandPage({
             <Image
               src={brand.logoUrl}
               alt={brand.name}
+              title={brand.name}
               width={64}
               height={64}
               className="rounded-md border object-contain bg-white"

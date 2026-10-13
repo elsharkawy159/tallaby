@@ -523,6 +523,7 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
                                 "avatars"
                               )}
                               alt={review.user.fullName || "User"}
+                              title={review.user.fullName || "User"}
                               width={48}
                               height={48}
                               className="w-full h-full object-cover"
@@ -600,6 +601,7 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
                                         <Image
                                           src={fileUrl}
                                           alt={`Review ${isImage ? "image" : "media"} ${i + 1}`}
+                                          title={`Review ${isImage ? "image" : "media"} ${i + 1}`}
                                           width={150}
                                           height={150}
                                           className="w-full h-full object-cover"
@@ -851,6 +853,7 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
                     <Image
                       src={getPublicUrl(image, "products")}
                       alt={`${product.title} - Image ${index + 1}`}
+                      title={`${product.title} - Image ${index + 1}`}
                       width={150}
                       height={150}
                       className="w-full h-full object-contain bg-white"
@@ -967,6 +970,7 @@ export const ProductTabs = ({ product, user }: ProductTabsProps) => {
                         <Image
                           src={currentUrl}
                           alt={`Review media ${mediaPreview.currentIndex + 1}`}
+                          title={`Review media ${mediaPreview.currentIndex + 1}`}
                           width={1200}
                           height={1200}
                           className="max-w-full max-h-[50vh] object-contain"

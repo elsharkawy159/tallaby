@@ -58,6 +58,7 @@ export default async function ShopByBrand({
                       <Image
                         src={brand.logoUrl}
                         alt={brand.name}
+                        title={brand.name}
                         width={64}
                         height={64}
                         className="max-w-full max-h-full object-contain grayscale group-hover:grayscale-0 transition-all duration-300"
@@ -110,6 +111,7 @@ export default async function ShopByBrand({
                       <Image
                         src={brand.logoUrl}
                         alt={brand.name}
+                        title={brand.name}
                         width={64}
                         height={64}
                         className="max-w-full max-h-full object-contain grayscale group-hover:grayscale-0 transition-all duration-300"

@@ -90,6 +90,7 @@ export function LogoUploader({
             <Image
               src={preview}
               alt={t("businessLogo")}
+              title={t("businessLogo")}
               width={124}
               height={124}
               className="object-cover rounded-full w-full h-full"

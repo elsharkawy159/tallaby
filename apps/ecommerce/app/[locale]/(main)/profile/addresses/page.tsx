@@ -12,6 +12,11 @@ import { Plus, MapPin } from "lucide-react";
 import { AddressManagerDialog } from "@/components/shared/address-dialog";
 import type { AddressData } from "@/components/address/address.schema";
 import { AddressesClient } from "./addresses.client";
+import type { Metadata } from "next";
+import { generateNoIndexMetadata } from "@/lib/metadata";
+
+// Account/onboarding screens are private (also disallowed in robots.ts).
+export const metadata: Metadata = generateNoIndexMetadata();
 
 // Loading component for addresses
 function AddressesLoading() {

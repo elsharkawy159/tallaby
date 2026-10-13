@@ -291,6 +291,7 @@ export function TopUpDialog({ disabled }: { disabled?: boolean }) {
               <Image
                 src={methodConfig.logo}
                 alt={tCheckout(methodConfig.titleKey as "instapay")}
+                title={tCheckout(methodConfig.titleKey as "instapay")}
                 width={32}
                 height={32}
                 className="h-8 w-8 object-contain"
@@ -317,6 +318,7 @@ export function TopUpDialog({ disabled }: { disabled?: boolean }) {
                 <Image
                   src={methodConfig.qrImage}
                   alt={tCheckout(methodConfig.titleKey as "instapay")}
+                  title={tCheckout(methodConfig.titleKey as "instapay")}
                   width={200}
                   height={200}
                   className="rounded-lg border"
@@ -440,6 +442,7 @@ export function TopUpDialog({ disabled }: { disabled?: boolean }) {
                               <Image
                                 src={method.logo}
                                 alt={tCheckout(method.titleKey as "instapay")}
+                                title={tCheckout(method.titleKey as "instapay")}
                                 width={28}
                                 height={28}
                                 className="h-7 w-7 shrink-0 object-contain"

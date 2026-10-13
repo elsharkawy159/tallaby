@@ -10,6 +10,8 @@ import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import {
   generateNoIndexMetadata,
   generateStaticPageMetadata,
+  paginatedTitle,
+  parsePageParam,
   type SeoLocale,
 } from "@/lib/metadata";
 import { contentParams } from "@/lib/content-params";
@@ -34,12 +36,14 @@ export async function generateMetadata({
   }
 
   const t = await getTranslations("pages.products");
+  const page = parsePageParam(resolvedSearchParams.page);
 
   return generateStaticPageMetadata({
     locale: locale as SeoLocale,
     path: "/products",
-    title: t("title"),
+    title: await paginatedTitle(locale as SeoLocale, t("title"), page),
     description: t("description", contentParams(locale)),
+    page,
   });
 }
 

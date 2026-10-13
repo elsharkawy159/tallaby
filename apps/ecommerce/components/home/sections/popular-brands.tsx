@@ -31,6 +31,7 @@ export async function PopularBrands() {
                 <Image
                   src={brand.logoUrl}
                   alt={brand.name}
+                  title={brand.name}
                   width={120}
                   height={48}
                   className="max-h-12 w-auto object-contain"

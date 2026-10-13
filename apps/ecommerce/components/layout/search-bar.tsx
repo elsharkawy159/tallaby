@@ -169,6 +169,7 @@ export const SearchBar = ({
                           width={48}
                           height={48}
                           alt={product.title || "Product"}
+                          title={product.title || "Product"}
                           className="w-12 h-12 object-contain rounded"
                         />
                         <div className="flex-1 min-w-0">

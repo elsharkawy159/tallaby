@@ -1,3 +1,4 @@
+import { JsonLd } from "@/components/seo/json-ld";
 import type { Metadata, Viewport } from "next";
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
@@ -92,17 +93,14 @@ export default async function FollowUsPage({
       "@type": "Organization",
       name: "Tallaby.com",
       url: BASE_URL,
-      logo: `${BASE_URL}/logo.png`,
+      logo: `${BASE_URL}/logo/logo.png`,
       sameAs: CHANNELS.map((channel) => channel.href),
     },
   };
 
   return (
     <div className="relative isolate flex min-h-svh justify-center overflow-x-hidden bg-[#145163] px-4 pt-[max(2.5rem,env(safe-area-inset-top))] pb-[max(2rem,env(safe-area-inset-bottom))] text-white sm:items-center sm:px-5 sm:py-12">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-      />
+      <JsonLd data={structuredData} />
 
       {/* Dot grid + corner disc backdrop */}
       <div
@@ -117,6 +115,7 @@ export default async function FollowUsPage({
           <Image
             src="/logo.white.png"
             alt="Tallaby"
+            title="Tallaby"
             width={3184}
             height={810}
             fetchPriority="high"

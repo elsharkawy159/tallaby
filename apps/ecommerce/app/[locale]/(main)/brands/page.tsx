@@ -57,6 +57,7 @@ export default async function BrandsPage() {
                       <Image
                         src={brand.logoUrl}
                         alt={brand.name}
+                        title={brand.name}
                         width={56}
                         height={56}
                         className="rounded-md object-contain bg-white mb-3"

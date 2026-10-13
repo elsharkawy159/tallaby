@@ -151,6 +151,7 @@ export function CartSheet({
                         <Image
                           src={image}
                           alt={product.title}
+                          title={product.title}
                           width={100}
                           height={100}
                           className="object-contain h-20 w-20"

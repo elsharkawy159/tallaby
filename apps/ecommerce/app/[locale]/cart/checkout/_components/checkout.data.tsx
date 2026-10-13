@@ -529,6 +529,7 @@ export const CheckoutData = ({
                                             <Image
                                               src={child.logo}
                                               alt={t(child.titleKey as any)}
+                                              title={t(child.titleKey as any)}
                                               width={28}
                                               height={28}
                                               className="h-7 w-7 object-contain shrink-0"
@@ -575,6 +576,7 @@ export const CheckoutData = ({
                                               <Image
                                                 src={child.logo}
                                                 alt={t(child.titleKey as any)}
+                                                title={t(child.titleKey as any)}
                                                 width={28}
                                                 height={28}
                                                 className="h-7 w-7 object-contain shrink-0"

@@ -1,11 +1,13 @@
+import { JsonLd } from "@/components/seo/json-ld";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { hasLocale } from "next-intl";
 import { getCategoryBySlug } from "@/actions/categories";
 import { getProducts } from "@/actions/products";
-import { generateCategoryMetadata } from "@/lib/metadata";
+import { generateCategoryMetadata, parsePageParam } from "@/lib/metadata";
 import { generateCategoryStructuredData } from "@/lib/structured-data";
+import { getTranslations } from "next-intl/server";
 import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import ProductCard from "@/app/[locale]/(main)/products/[slug]/_components/ProductCard";
 import Pagination from "@/app/[locale]/(main)/products/_components/Pagination";
@@ -51,8 +53,10 @@ function localizedCategoryName(
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: CategoryPageProps): Promise<Metadata> {
   const { locale, slug } = await params;
+  const { page } = await searchParams;
   const { category } = await resolveCategory(locale, slug);
 
   return generateCategoryMetadata({
@@ -62,6 +66,7 @@ export async function generateMetadata({
       slug: category.slug ?? slug,
       productCount: category.productCount,
     },
+    page: parsePageParam(page),
   });
 }
 
@@ -74,6 +79,7 @@ export default async function CategoryPage({
   const { locale, slug } = await params;
   const resolvedSearchParams = await searchParams;
   const { category } = await resolveCategory(locale, slug);
+  const tBreadcrumb = await getTranslations("breadcrumb");
 
   const page = Number(resolvedSearchParams.page) || 1;
   const productsResult = await getProducts({
@@ -93,20 +99,16 @@ export default async function CategoryPage({
 
   return (
     <main className="min-h-screen">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(
-            generateCategoryStructuredData(
-              {
-                name: displayName,
-                slug: category.slug ?? slug,
-                productCount: category.productCount,
-              },
-              locale as ProductLocale
-            )
-          ),
-        }}
+      <JsonLd
+        data={generateCategoryStructuredData(
+          {
+            name: displayName,
+            slug: category.slug ?? slug,
+            productCount: category.productCount,
+          },
+          locale as ProductLocale,
+          { home: tBreadcrumb("home"), categories: tBreadcrumb("categories") }
+        )}
       />
       <section className="bg-white">
         <DynamicBreadcrumb customLabels={{ [slug]: displayName }} />

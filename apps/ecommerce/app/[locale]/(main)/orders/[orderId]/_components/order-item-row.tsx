@@ -51,6 +51,7 @@ export function OrderItemRow({
               <Image
                 src={getPublicUrl(imageUrl, "products")}
                 alt={item.productName}
+                title={item.productName}
                 width={64}
                 height={64}
                 className="object-contain"

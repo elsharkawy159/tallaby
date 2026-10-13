@@ -1,3 +1,4 @@
+import { JsonLd } from "@/components/seo/json-ld";
 import {
   generateWebsiteStructuredData,
   generateOrganizationStructuredData,
@@ -9,18 +10,8 @@ export function Scripts() {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(websiteData),
-        }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(organizationData),
-        }}
-      />
+      <JsonLd data={websiteData} />
+      <JsonLd data={organizationData} />
       <script
         async
         src="https://www.googletagmanager.com/gtag/js?id=G-ET1FTMXB9X"

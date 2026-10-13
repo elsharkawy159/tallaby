@@ -11,6 +11,7 @@
     "twitterDescription": "Tallaby is Egypt's multi-vendor marketplace — shop verified sellers with cash on delivery."
   },
   "seo": {
+    "pageLabel": "Page {page}",
     "productTitle": "{title} | Tallaby.com",
     "productDescription": "Buy {title} from {brand} on Tallaby — {category} from verified sellers in Egypt, with cash on delivery available.",
     "categoryTitle": "{name} | Buy Online in Egypt | Tallaby.com",

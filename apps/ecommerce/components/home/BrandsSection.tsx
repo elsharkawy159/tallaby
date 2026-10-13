@@ -108,6 +108,7 @@ const BrandsSection = () => {
                   <Image
                     src={brand.logo_url}
                     alt={brand.name}
+                    title={brand.name}
                     width={64}
                     height={48}
                     className="h-12 w-auto mx-auto mb-2 grayscale group-hover:grayscale-0 transition-all duration-300"

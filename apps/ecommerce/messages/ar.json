@@ -11,6 +11,7 @@
     "twitterDescription": "Tallaby سوق إلكتروني متعدد البائعين في مصر — تسوق من بائعين معتمدين مع الدفع عند الاستلام."
   },
   "seo": {
+    "pageLabel": "صفحة {page}",
     "productTitle": "{title} | Tallaby.com",
     "productDescription": "اشترِ {title} من {brand} على Tallaby — {category} من بائعين معتمدين في مصر، مع إمكانية الدفع عند الاستلام.",
     "categoryTitle": "{name} | شراء أونلاين في مصر | Tallaby.com",

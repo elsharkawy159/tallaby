@@ -16,6 +16,7 @@ export const Logo = ({ className, logoClassName, color = "white" }: LogoProps) =
               : "/logo.secondary.png"
         }
         alt="Tallaby"
+        title="Tallaby"
         width={150}
         height={150}
         className={cn("h-8 w-auto object-contain md:h-10", logoClassName)}

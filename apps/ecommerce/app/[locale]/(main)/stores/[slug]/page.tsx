@@ -1,10 +1,11 @@
+import { JsonLd } from "@/components/seo/json-ld";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { storeUrl } from "@workspace/lib/storefront";
 import { hasLocale } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { getSellerBySlug, getSellerStoreCategories } from "@/actions/seller";
-import { generateStoreMetadata } from "@/lib/metadata";
+import { generateStoreMetadata, parsePageParam } from "@/lib/metadata";
 import { getStorefrontBySubdomain } from "@/lib/storefront.server";
 import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
 import { Link } from "@/i18n/navigation";
@@ -39,9 +40,16 @@ async function resolveStore(locale: string, slug: string) {
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: StorePageProps): Promise<Metadata> {
   const { locale, slug } = await params;
+  const { page, search, sort, category } = await searchParams;
   const { seller } = await resolveStore(locale, slug);
+
+  // Searched/sorted/filtered views are near-duplicates of the store page.
+  if (search || sort || category) {
+    return { robots: { index: false, follow: true } };
+  }
 
   return generateStoreMetadata({
     locale: locale as ProductLocale,
@@ -52,6 +60,7 @@ export async function generateMetadata({
       logoUrl: seller.logoUrl,
       productCount: seller.productCount,
     },
+    page: parsePageParam(page),
   });
 }
 
@@ -122,10 +131,7 @@ export default async function StorePage({ params, searchParams }: StorePageProps
 
   return (
     <main className="min-h-screen pb-20">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(storeStructuredData) }}
-      />
+      <JsonLd data={storeStructuredData} />
       <DynamicBreadcrumb customLabels={{ [slug]: seller.displayName }} />
 
       <div className="pt-4">

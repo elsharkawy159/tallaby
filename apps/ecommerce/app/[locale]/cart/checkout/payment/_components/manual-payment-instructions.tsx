@@ -55,6 +55,7 @@ export function ManualPaymentInstructions({
           <Image
             src={config.logo}
             alt={t(config.titleKey as any)}
+            title={t(config.titleKey as any)}
             width={32}
             height={32}
             className="h-8 w-8 object-contain"
@@ -69,6 +70,7 @@ export function ManualPaymentInstructions({
               <Image
                 src={config.qrImage}
                 alt={t(config.titleKey as any)}
+                title={t(config.titleKey as any)}
                 width={220}
                 height={220}
                 className="rounded-lg border border-gray-200"

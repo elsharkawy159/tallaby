@@ -17,6 +17,7 @@ export function PaymentMethodIcons({ className }: { className?: string }) {
           <Image
             src={payment.src}
             alt={payment.label}
+            title={payment.label}
             width={54}
             height={36}
             className="h-9 w-auto rounded-md"

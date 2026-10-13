@@ -5,6 +5,9 @@ import { SITEMAP_BASE_URL } from "@/lib/constants";
 /** Private/transactional sections, disallowed in every locale. */
 const PRIVATE_PATHS = ["/cart", "/profile", "/onboarding", "/auth", "/wishlist", "/orders/"];
 
+/** Model-training crawlers (not search). */
+const TRAINING_CRAWLERS = ["GPTBot", "ClaudeBot", "anthropic-ai", "CCBot"] as const;
+
 // The default locale (ar) is unprefixed; every other locale lives under
 // /{locale} ("as-needed"), so those are the prefixed copies to block.
 const prefixedLocales = routing.locales.filter((l) => l !== routing.defaultLocale);
@@ -24,24 +27,12 @@ export default function robots(): MetadataRoute.Robots {
           "/private/",
         ],
       },
+      // Block crawlers that collect model-training data. AI *search* and
+      // user-triggered fetchers (OAI-SearchBot, ChatGPT-User, Claude-SearchBot,
+      // Claude-User, PerplexityBot) fall through to "*" so products can be
+      // found and recommended in AI answers, with the same private-path rules.
       {
-        userAgent: "GPTBot",
-        disallow: "/",
-      },
-      {
-        userAgent: "ChatGPT-User",
-        disallow: "/",
-      },
-      {
-        userAgent: "CCBot",
-        disallow: "/",
-      },
-      {
-        userAgent: "anthropic-ai",
-        disallow: "/",
-      },
-      {
-        userAgent: "Claude-Web",
+        userAgent: [...TRAINING_CRAWLERS],
         disallow: "/",
       },
     ],

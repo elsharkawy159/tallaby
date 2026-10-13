@@ -1,3 +1,4 @@
+import { JsonLd } from "@/components/seo/json-ld";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
@@ -64,10 +65,7 @@ export default async function FAQ({
 
   return (
     <div className="min-h-screen flex flex-col">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqStructuredData) }}
-      />
+      <JsonLd data={faqStructuredData} />
       <DynamicBreadcrumb />
       <main className="flex-1">
         <section className="bg-gradient-to-br from-primary to-primary/80 text-white py-16">

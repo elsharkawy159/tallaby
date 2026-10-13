@@ -11,9 +11,12 @@ import type {
 import { ProductDisplay } from "./_components/product-display.client";
 import { ProductContent } from "./_components/product-content";
 import { notFound } from "next/navigation";
-import { redirect } from "@/i18n/navigation";
+import { permanentRedirect } from "@/i18n/navigation";
 import { DynamicBreadcrumb } from "@/components/layout/dynamic-breadcrumb";
-import { generateProductMetadata } from "@/lib/metadata";
+import {
+  generateProductMetadata,
+  productOpenGraphTags,
+} from "@/lib/metadata";
 import type { Metadata } from "next";
 import { ProductStructuredData } from "./_components/product-structured-data";
 import { getTranslations } from "next-intl/server";
@@ -53,38 +56,74 @@ async function resolveProduct(locale: string, slug: string) {
 
   const productResult = await getProductBySlug(slug, locale as ProductLocale);
   if (productResult.success && productResult.data) {
-    return { locale: locale as ProductLocale, product: productResult.data };
+    const product = productResult.data;
+    // Reached through a non-canonical slug (the other locale's slug, or an
+    // old one): 308 to the canonical URL instead of serving a duplicate.
+    if (product.slug && product.slug !== decodeURIComponent(slug)) {
+      permanentRedirect({
+        href: `/products/${product.slug}`,
+        locale: locale as ProductLocale,
+      });
+    }
+    return { locale: locale as ProductLocale, product };
   }
 
-  // Slug might belong to the other locale — redirect to the canonical URL
-  // instead of 404ing, to avoid duplicate-content / wrong-hreflang situations.
+  // Slug might belong to the other locale — permanently redirect to the
+  // canonical URL so search engines consolidate signals there (a temporary
+  // redirect keeps the wrong URL indexed).
   const actualLocale = await getProductLocaleFromSlug(slug);
   if (actualLocale !== locale) {
     const otherResult = await getProductBySlug(slug, actualLocale);
     if (otherResult.success && otherResult.data) {
-      redirect({ href: `/products/${slug}`, locale: actualLocale });
+      permanentRedirect({ href: `/products/${slug}`, locale: actualLocale });
     }
   }
 
-  // Unknown / deleted product slug — send shoppers to the catalog instead of 404
-  redirect({ href: "/products", locale: locale as ProductLocale });
+  // Unknown / deleted product: a real 404. Redirecting to the catalog was a
+  // soft-404 to Google, which kept dead URLs around instead of dropping them.
+  notFound();
+}
+
+/** Shared SEO input for the <head> metadata and the in-page Open Graph product tags. */
+function productSeoInput(product: Product, locale: ProductLocale) {
+  const price = parsePriceJson(product.price);
+  const category = product.category;
+  const categoryName = category
+    ? locale === "ar"
+      ? category.nameAr || category.name || ""
+      : category.name || ""
+    : "Products";
+
+  return {
+    title: product.title,
+    slug: product.slug,
+    description: product.description ?? "",
+    price: {
+      final: price.final,
+      list: price.list ?? price.final,
+    },
+    images: Array.isArray(product.images) ? (product.images as string[]) : [],
+    brand: {
+      name: product.brand?.name ?? "",
+    },
+    category: {
+      name: categoryName,
+      slug: category?.slug || "products",
+    },
+    averageRating: Number(product.averageRating ?? 0),
+    reviewCount: Number(product.reviewCount ?? 0),
+    // Same rule as the JSON-LD offer availability.
+    inStock: product.status === "active" && Number(product.quantity ?? 0) > 0,
+    metaTitle: product.seo?.metaTitle,
+    metaDescription: product.seo?.metaDescription,
+  };
 }
 
 export async function generateMetadata({
   params,
 }: ProductPageProps): Promise<Metadata> {
   const { locale, slug } = await params;
-  const t = await getTranslations("product");
   const { product } = await resolveProduct(locale, slug);
-
-  const price = parsePriceJson(product.price);
-  const category = (product as any).category;
-  const categoryName = category
-    ? locale === "ar"
-      ? category.nameAr || category.name || ""
-      : category.name || ""
-    : "Products";
-  const categorySlug = category?.slug || "products";
 
   const otherLocale: ProductLocale = locale === "en" ? "ar" : "en";
   const translatedSlug = await getProductSlugForLocaleStrict(
@@ -103,36 +142,14 @@ export async function generateMetadata({
   return generateProductMetadata({
     locale: locale as ProductLocale,
     alternateSlug,
-    product: {
-      title: product.title,
-      slug: product.slug,
-      description: product.description ?? "",
-      price: {
-        final: price.final,
-        list: price.list ?? price.final,
-      },
-      images: Array.isArray(product.images) ? (product.images as string[]) : [],
-      brand: {
-        name: product.brand?.name ?? "",
-      },
-      category: category
-        ? {
-            name: categoryName,
-            slug: categorySlug,
-          }
-        : {
-            name: "Products",
-            slug: "products",
-          },
-      averageRating: Number(product.averageRating ?? 0),
-      reviewCount: Number(product.reviewCount ?? 0),
-    },
+    product: productSeoInput(product, locale as ProductLocale),
   });
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { locale, slug } = await params;
   const t = await getTranslations("product");
+  const tBreadcrumb = await getTranslations("breadcrumb");
   const { product } = await resolveProduct(locale, slug);
 
   const productWithCategory: Product = product;
@@ -145,7 +162,15 @@ export default async function ProductPage({ params }: ProductPageProps) {
       <ProductStructuredData
         product={productWithCategory}
         locale={locale as ProductLocale}
+        homeLabel={tBreadcrumb("home")}
       />
+      {/* Open Graph product:* tags need property=, which the Metadata API's
+          `other` can't emit (it renders name=); React hoists these into <head>. */}
+      {Object.entries(
+        productOpenGraphTags(productSeoInput(product, locale as ProductLocale))
+      ).map(([property, content]) => (
+        <meta key={property} property={property} content={content} />
+      ))}
       <section className="bg-white">
         {/* Label the slug segment with the localized product title (the
             pathname segment may arrive percent-encoded for Arabic slugs). */}

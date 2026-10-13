@@ -13,6 +13,7 @@ export function ImageWithFallback({
   src,
   fallbackSrc = PRODUCT_IMAGE_FALLBACK,
   alt,
+  title,
   ...props
 }: ImageWithFallbackProps) {
   const [currentSrc, setCurrentSrc] = useState(src || fallbackSrc);
@@ -28,6 +29,8 @@ export function ImageWithFallback({
       {...props}
       src={hasFailed ? fallbackSrc : currentSrc}
       alt={alt}
+      // Default the tooltip to the alt text; decorative images (alt="") get none.
+      title={title ?? (alt || undefined)}
       onError={() => {
         if (!hasFailed) {
           setHasFailed(true);

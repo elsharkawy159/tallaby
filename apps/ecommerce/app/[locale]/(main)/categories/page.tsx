@@ -102,6 +102,7 @@ export default async function CategoriesPage({
                                 <Image
                                   src={category.imageUrl}
                                   alt={name}
+                                  title={name}
                                   fill
                                   className="object-cover"
                                   sizes="48px"

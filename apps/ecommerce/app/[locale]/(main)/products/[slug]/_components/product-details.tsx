@@ -260,6 +260,7 @@ export const ProductDetails = ({
             <Image
               src={getPublicUrl(variantThumbnail, "products")}
               alt={variantLabel}
+              title={variantLabel ?? undefined}
               fill
               sizes="96px"
               className={`object-contain transition-transform duration-300 ${
