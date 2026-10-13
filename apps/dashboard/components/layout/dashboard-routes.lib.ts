@@ -31,7 +31,8 @@ export type NavKey =
   | "reports"
   | "help"
   | "settings"
-  | "fulfillment";
+  | "fulfillment"
+  | "account";
 
 export interface DashboardRoute {
   href: string;
@@ -54,7 +55,7 @@ export const DASHBOARD_ROUTES: DashboardRoute[] = [
   { href: "/marketing", title: "advertiseProducts", icon: TrendingUp },
   { href: "/financial", title: "accountStatements", icon: DollarSign },
   { href: "/reports", title: "reports", icon: FileBarChart },
-  { href: "/settings", title: "settings", icon: Settings },
+  { href: "/settings", title: "settings", parent: "account", icon: Settings },
   { href: "/settings/fulfillment", title: "fulfillment", parent: "settings", parentHref: "/settings", icon: Warehouse },
   { href: "/help", title: "help", icon: CircleHelp },
 ];

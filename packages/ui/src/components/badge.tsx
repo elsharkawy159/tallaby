@@ -17,6 +17,14 @@ const badgeVariants = cva(
           "border-transparent bg-destructive text-white [a&]:hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
         outline:
           "text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
+        // Tinted pills: status tags and nav counters.
+        warning: "border-transparent rounded-full bg-accent-soft text-accent-ink",
+        success: "border-transparent rounded-full bg-success-soft text-success",
+        info: "border-transparent rounded-full bg-primary-soft text-primary-ink",
+        danger: "border-transparent rounded-full bg-destructive-soft text-destructive",
+        muted: "rounded-full border-border bg-muted text-muted-foreground",
+        count:
+          "border-transparent rounded-full bg-accent-soft text-accent-ink h-5 min-w-[22px] px-1.5 text-[11px] font-bold leading-none tabular-nums font-montserrat",
       },
     },
     defaultVariants: {

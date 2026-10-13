@@ -1,0 +1,83 @@
+/*
+ * Seller dashboard palette. Loaded after @workspace/ui/globals.css and
+ * overrides its shared tokens for this app only: quieter neutral lines
+ * instead of the storefront's rose borders, and a teal-tinted dark mode.
+ *
+ * Both blocks set the same variables. This file's :root comes after the
+ * shared .dark block with equal specificity, so any variable set here only
+ * in :root would leak into dark mode.
+ */
+
+:root {
+  --background: #f6f7f6;
+  --foreground: #1f2a2e;
+  --card: #ffffff;
+  --card-foreground: #1f2a2e;
+  --popover: #ffffff;
+  --popover-foreground: #1f2a2e;
+  --primary: #145163;
+  --primary-foreground: #fafafa;
+  --muted: #f9faf9;
+  --muted-foreground: #66737a;
+  --accent: #fdad28;
+  --accent-foreground: #2b1d00;
+  --destructive: #c62828;
+  --border: #e7e9e8;
+  --input: #d9dddc;
+  --ring: #145163;
+
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1f2a2e;
+  --sidebar-primary: #145163;
+  --sidebar-primary-foreground: #fafafa;
+  --sidebar-accent: #f9faf9;
+  --sidebar-accent-foreground: #1f2a2e;
+  --sidebar-border: #e7e9e8;
+  --sidebar-ring: #145163;
+
+  --faint: #94a0a5;
+  --primary-soft: #eef3f4;
+  --primary-ink: #145163;
+  --accent-soft: #fff4dc;
+  --accent-ink: #8a5a00;
+  --success: #15803d;
+  --success-soft: #e5f6ea;
+  --destructive-soft: #fdecec;
+}
+
+.dark {
+  --background: #0e171a;
+  --foreground: #e3ebed;
+  --card: #142126;
+  --card-foreground: #e3ebed;
+  --popover: #142126;
+  --popover-foreground: #e3ebed;
+  --primary: #4fa3b8;
+  --primary-foreground: #0e171a;
+  --muted: #18272d;
+  --muted-foreground: #9aaab0;
+  --accent: #fdad28;
+  --accent-foreground: #2b1d00;
+  --destructive: #ef4444;
+  --border: #22343b;
+  --input: #2c434b;
+  --ring: #4fa3b8;
+
+  --sidebar: #142126;
+  --sidebar-foreground: #e3ebed;
+  --sidebar-primary: #4fa3b8;
+  --sidebar-primary-foreground: #0e171a;
+  --sidebar-accent: #18272d;
+  --sidebar-accent-foreground: #e3ebed;
+  --sidebar-border: #22343b;
+  --sidebar-ring: #4fa3b8;
+
+  --faint: #6f8389;
+  --primary-soft: #1a3038;
+  --primary-ink: #8cc9d8;
+  --accent-soft: #33290f;
+  --accent-ink: #ffcf7a;
+  --success: #4ade80;
+  --success-soft: #173226;
+  --destructive-soft: #3a1d1d;
+}

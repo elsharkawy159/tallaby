@@ -1,8 +1,10 @@
+import { Separator } from "@workspace/ui/components/separator";
+import { storeUrl } from "@workspace/lib/storefront";
 import { fetchSellerSettings } from "./seller-settings.server";
 import type { SellerSettingsInitialData } from "./seller-settings.types";
 import { SellerSettingsForm } from "./seller-settings.client";
-import { StoreLinkCard } from "./store-link.client";
-import { CustomDomainCard } from "./custom-domain.client";
+import { StoreLinkSection } from "./store-link.client";
+import { CustomDomainSection } from "./custom-domain.client";
 import { getCustomDomain } from "@/actions/custom-domain";
 
 export async function SellerSettingsData() {
@@ -14,6 +16,7 @@ export async function SellerSettingsData() {
   if (error || !profile) {
     throw new Error(error || "Failed to load seller settings");
   }
+  const liveDomain = customDomain?.status === "active" ? customDomain.domain : null;
   const initial: SellerSettingsInitialData = {
     profile: {
       id: profile.id,
@@ -38,15 +41,19 @@ export async function SellerSettingsData() {
     })),
   }
   return (
-    <>
-      <div className="space-y-4 px-4 pt-4 sm:px-6 sm:pt-6">
-        <StoreLinkCard
-          initialSubdomain={profile.subdomain}
-          customDomain={customDomain?.status === "active" ? customDomain.domain : null}
-        />
-        <CustomDomainCard initial={customDomain} />
-      </div>
-      <SellerSettingsForm initialData={initial} />
-    </>
+    <SellerSettingsForm
+      initialData={initial}
+      storeHref={storeUrl(profile.subdomain, liveDomain)}
+      linkSection={
+        <>
+          <StoreLinkSection
+            initialSubdomain={profile.subdomain}
+            customDomain={liveDomain}
+          />
+          <Separator className="my-1" />
+          <CustomDomainSection initial={customDomain} />
+        </>
+      }
+    />
   )
 }

@@ -43,6 +43,16 @@
   --sidebar-accent-foreground: #171717;
   --sidebar-border: #e5e5e5;
   --sidebar-ring: #a3a3a3;
+
+  /* Soft tints + ink for tinted surfaces (badges, active nav, status pills). */
+  --faint: #94a0a5;
+  --primary-soft: #eef3f4;
+  --primary-ink: #145163;
+  --accent-soft: #fff4dc;
+  --accent-ink: #8a5a00;
+  --success: #15803d;
+  --success-soft: #e5f6ea;
+  --destructive-soft: #fdecec;
 }
 
 .dark {
@@ -78,6 +88,14 @@
   --sidebar-accent-foreground: #fafafa;
   --sidebar-border: #2e2e2e;
   --sidebar-ring: #525252;
+  --faint: #6f8389;
+  --primary-soft: #1a3038;
+  --primary-ink: #8cc9d8;
+  --accent-soft: #33290f;
+  --accent-ink: #ffcf7a;
+  --success: #4ade80;
+  --success-soft: #173226;
+  --destructive-soft: #3a1d1d;
   color-scheme: dark;
 }
 
@@ -118,6 +136,14 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-faint: var(--faint);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-ink: var(--primary-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-ink: var(--accent-ink);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-destructive-soft: var(--destructive-soft);
 }
 
 @layer base {

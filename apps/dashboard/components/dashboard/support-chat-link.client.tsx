@@ -52,8 +52,8 @@ export const SupportChatLink = ({ isCollapsed, className }: SupportChatLinkProps
       title={isCollapsed ? t("chatWithSupport") : t("chatWithSupportHint")}
       aria-label={t("chatWithSupport")}
       className={cn(
-        "flex items-center rounded-lg bg-[#25D366] text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#1ebe5b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#25D366] focus-visible:ring-offset-2",
-        isCollapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-2.5",
+        "flex h-[42px] items-center justify-center rounded-xl bg-[#1fa855] text-sm font-medium text-white transition-colors hover:bg-[#1a9149] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1fa855] focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar",
+        isCollapsed ? "px-2" : "gap-2 px-4",
         className
       )}
     >

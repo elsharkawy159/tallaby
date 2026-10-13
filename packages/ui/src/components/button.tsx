@@ -17,6 +17,12 @@ const buttonVariants = cva(
         secondary: "bg-primary text-white shadow-xs hover:bg-primary/80",
         ghost: "hover:bg-transparent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        // Amber CTA with dark ink, readable where white-on-amber isn't.
+        accent: "bg-accent text-accent-foreground hover:bg-accent/90",
+        // Quiet bordered button on a card surface.
+        neutral:
+          "border border-input bg-card text-foreground shadow-xs hover:bg-muted",
+        soft: "text-muted-foreground hover:bg-muted hover:text-foreground",
       },
       size: {
         default:

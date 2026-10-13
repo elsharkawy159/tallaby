@@ -24,5 +24,3 @@ export const EMPTY_SIDEBAR_COUNTS: SidebarCounts = {
   financial: 0,
 };
 
-export const SIDEBAR_COUNT_BADGE_CLASS =
-  "ml-2 shrink-0 tabular-nums text-[10px] px-1.5 py-0 h-4 min-w-4 font-normal leading-none";

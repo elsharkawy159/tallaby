@@ -16,7 +16,7 @@ export function ThemeToggle({ className }: { className?: string }) {
       aria-label={t("toggleTheme")}
       title={t("toggleTheme")}
       className={cn(
-        "flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "flex size-9.5 shrink-0 items-center justify-center rounded-[10px] text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         className
       )}
     >

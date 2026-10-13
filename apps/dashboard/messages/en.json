@@ -10,7 +10,7 @@
     "advertiseProducts": "Advertise your products",
     "accountStatements": "Account Statements",
     "coupons": "Coupons & Discounts",
-    "settings": "Profile Settings",
+    "settings": "Store settings",
     "fulfillment": "Fulfillment setup",
     "financial": "Financial Dashboard",
     "marketing": "Marketing & Promotions",
@@ -39,7 +39,8 @@
     "supportMessageNoStore": "Hi Tallaby support 👋\nI am a seller on Tallaby.",
     "supportMessageStoreLink": "Store link: {url}",
     "supportMessageQuestion": "I have a question about: ",
-    "editProduct": "Edit product"
+    "editProduct": "Edit product",
+    "account": "Account"
   },
   "common": {
     "loading": "Loading...",
@@ -796,10 +797,16 @@
         "taken": "Another store already uses this address. Choose another.",
         "unauthorized": "Sign in again to change your store address.",
         "failed": "Couldn't change the address. Try again."
-      }
+      },
+      "copyFailed": "Couldn’t copy the link",
+      "shareLabel": "Quick share:",
+      "whatsapp": "WhatsApp",
+      "facebook": "Facebook",
+      "instagram": "Instagram",
+      "instagramCopied": "Link copied. Paste it in your Instagram bio or story."
     },
     "customDomain": {
-      "title": "Your own domain",
+      "title": "Custom domain",
       "description": "Use a domain you own, like yourstore.com, as your store's address. Customers see your name, not Tallaby's.",
       "fieldLabel": "Domain",
       "hint": "Enter a domain you've bought from a registrar such as GoDaddy or Namecheap.",
@@ -843,27 +850,31 @@
         "limit": "We can't connect more domains right now. Contact support.",
         "config": "Custom domains aren't available right now. Contact support.",
         "failed": "Something went wrong. Try again."
+      },
+      "optional": "Optional",
+      "steps": {
+        "buy": {
+          "title": "Buy the domain",
+          "body": "From any domain registrar."
+        },
+        "enter": {
+          "title": "Enter it here",
+          "body": "Then press Connect domain."
+        },
+        "dns": {
+          "title": "Update DNS records",
+          "body": "We’ll show you the values to copy."
+        }
       }
     },
-    "title": "Store Settings",
-    "subtitle": "Changes save automatically. Update your store profile, branding, and documents.",
+    "title": "Store settings",
+    "subtitle": "Your store as customers see it, its links, and verification documents.",
     "saveFailed": "Failed to save settings",
     "autosave": {
-      "idle": "Autosave on",
+      "idle": "Unsaved changes…",
       "saving": "Saving…",
       "saved": "All changes saved",
       "error": "Could not save"
-    },
-    "profile": {
-      "title": "Profile & Branding",
-      "description": "Your logo appears across the dashboard and storefront.",
-      "logoAlt": "Store logo",
-      "yourStore": "Your store",
-      "logoPreview": "Preview of how your logo appears"
-    },
-    "store": {
-      "title": "Store Information",
-      "description": "Business details, banner, and policies for your store page."
     },
     "fields": {
       "displayName": "Display name",
@@ -873,16 +884,18 @@
       "businessName": "Legal business name",
       "businessNamePlaceholder": "Registered business name",
       "description": "Store description",
-      "descriptionPlaceholder": "Tell customers what you sell",
+      "descriptionPlaceholder": "Tell customers what you sell, what makes your products special, and your usual delivery time.",
       "banner": "Store banner",
       "returnPolicy": "Return policy",
-      "returnPolicyPlaceholder": "How returns work for your store",
+      "returnPolicyPlaceholder": "Example: Products can be returned within 14 days of delivery in their original condition.",
       "shippingPolicy": "Shipping policy",
-      "shippingPolicyPlaceholder": "Delivery times and shipping rules"
+      "shippingPolicyPlaceholder": "Example: Delivery within 2–4 business days in Cairo and Giza.",
+      "displayNameNote": "Shown to customers",
+      "businessNameNote": "As on your commercial register"
     },
     "documents": {
       "title": "Verification Documents",
-      "description": "Upload business license, tax certificates, and related documents. Uploads save immediately.",
+      "description": "Upload your business license and tax certificate. Files save as soon as they upload.",
       "type": {
         "general": "General document",
         "business_license": "Business license",
@@ -895,10 +908,20 @@
         "rejected": "Rejected",
         "expired": "Expired"
       },
-      "uploaded": "Uploaded documents",
-      "empty": "No documents uploaded yet.",
       "expires": "Expires {date}",
-      "uploadedOn": "Uploaded {date}"
+      "uploadedOn": "Uploaded {date}",
+      "required": "Required",
+      "optional": "Optional",
+      "formats": "PNG, JPG or WebP · max 5 MB",
+      "generalHint": "Any other supporting document · max 5 MB",
+      "upload": "Upload",
+      "replace": "Replace",
+      "view": "View",
+      "tag": {
+        "required": "Required for verification",
+        "review": "Under review",
+        "verified": "Verified"
+      }
     },
     "messages": {
       "profileUpdated": "Profile updated",
@@ -907,6 +930,59 @@
       "uploadFailed": "Failed to upload the document",
       "fixErrors": "Please fix the validation errors",
       "somethingWentWrong": "Something went wrong"
+    },
+    "viewStore": "View store",
+    "nav": {
+      "identity": "Identity",
+      "info": "Business info",
+      "contact": "Contact & support",
+      "link": "Link & domain",
+      "policies": "Policies",
+      "docs": "Verification documents"
+    },
+    "progress": {
+      "title": "Profile completeness",
+      "remaining": "Remaining: {sections}",
+      "separator": ", ",
+      "complete": "Your store profile is complete.",
+      "incomplete": "Incomplete"
+    },
+    "sections": {
+      "identity": {
+        "title": "Identity",
+        "description": "The logo, name and banner shown at the top of your store page."
+      },
+      "info": {
+        "title": "Business info",
+        "description": "Your official business details and a short description for your store page."
+      },
+      "contact": {
+        "title": "Contact & support",
+        "description": "Customers reach you about their orders through these details."
+      },
+      "link": {
+        "title": "Link & domain",
+        "description": "Share your store link with customers. Your store page shows only your products.",
+        "active": "Active"
+      },
+      "policies": {
+        "title": "Policies",
+        "description": "Shown on every product page, so customers have fewer questions before buying."
+      }
+    },
+    "identity": {
+      "logo": "Store logo",
+      "logoHint": "Square, at least 512×512 px. PNG, JPG or WebP up to 5 MB.",
+      "uploadLogo": "Upload logo",
+      "changeLogo": "Change logo",
+      "remove": "Remove",
+      "preview": "Preview on your storefront",
+      "yourStore": "Your store",
+      "bannerSize": "1600×400 px recommended",
+      "bannerEmpty": "Drag an image here or click to upload",
+      "formats": "PNG, JPG or WebP up to 5 MB",
+      "changeBanner": "Change",
+      "removeBanner": "Remove banner"
     }
   },
   "orders": {

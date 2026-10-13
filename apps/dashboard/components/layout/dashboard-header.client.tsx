@@ -12,7 +12,7 @@ import { LanguageToggle } from "./language-toggle.client";
 import { ThemeToggle } from "./theme-toggle.client";
 
 const ICON_BUTTON =
-  "flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  "flex size-9.5 shrink-0 items-center justify-center rounded-[10px] border border-transparent text-muted-foreground transition-colors hover:border-sidebar-border hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40";
 
 export function DashboardHeader() {
   const t = useTranslations("header");
@@ -37,7 +37,7 @@ export function DashboardHeader() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-40 flex h-16 items-center gap-2 border-b border-sidebar-border bg-sidebar px-4 text-sidebar-foreground sm:gap-3 sm:px-6">
+    <header className="sticky top-0 z-40 flex h-16 items-center gap-1 border-b border-sidebar-border bg-sidebar/90 px-3 text-sidebar-foreground backdrop-blur-md sm:gap-3 sm:px-6">
       <button
         type="button"
         onClick={() => setMobileOpen(true)}
@@ -48,21 +48,27 @@ export function DashboardHeader() {
       </button>
 
       <div className="flex min-w-0 flex-1 items-center gap-1.5">
-        {route.parent && route.parentHref && (
+        {route.parent && (
           <>
-            <Link
-              href={route.parentHref}
-              className="hidden shrink-0 text-sm text-muted-foreground transition-colors hover:text-sidebar-foreground sm:inline"
-            >
-              {tNav(route.parent)}
-            </Link>
+            {route.parentHref ? (
+              <Link
+                href={route.parentHref}
+                className="hidden shrink-0 text-[13px] text-muted-foreground transition-colors hover:text-sidebar-foreground sm:inline"
+              >
+                {tNav(route.parent)}
+              </Link>
+            ) : (
+              <span className="hidden shrink-0 text-[13px] text-muted-foreground sm:inline">
+                {tNav(route.parent)}
+              </span>
+            )}
             <ChevronRight
               aria-hidden="true"
-              className="hidden size-3.5 shrink-0 text-muted-foreground/60 sm:block rtl:rotate-180"
+              className="hidden size-3.5 shrink-0 text-muted-foreground sm:block rtl:rotate-180"
             />
           </>
         )}
-        <h1 className="truncate text-[17px] font-semibold tracking-tight text-sidebar-foreground">
+        <h1 className="truncate text-[15px] font-semibold text-sidebar-foreground">
           {tNav(route.title)}
         </h1>
       </div>
@@ -70,13 +76,13 @@ export function DashboardHeader() {
       <button
         type="button"
         onClick={() => setPaletteOpen(true)}
-        className="hidden h-9 w-64 shrink-0 items-center gap-2 rounded-lg border border-sidebar-border bg-sidebar-accent/60 ps-3 pe-1.5 text-sm text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:flex lg:w-80"
+        className="hidden h-9.5 w-[280px] max-w-[40vw] shrink-0 items-center gap-2 rounded-[10px] border border-sidebar-border bg-sidebar-accent px-3 text-sm text-muted-foreground transition-colors hover:border-input hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 md:flex"
       >
         <Search className="size-4 shrink-0" />
         <span className="flex-1 truncate text-start">{t("search")}</span>
         <kbd
           dir="ltr"
-          className="rounded-md border border-sidebar-border bg-sidebar px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground"
+          className="rounded-[5px] border border-input px-1.5 font-mono text-[11px] text-muted-foreground"
         >
           {isMac ? "⌘" : "Ctrl"} K
         </kbd>

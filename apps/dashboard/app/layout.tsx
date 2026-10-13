@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Montserrat, Noto_Kufi_Arabic } from "next/font/google";
 import "@workspace/ui/globals.css";
+import "./globals.css";
 import { getLocale, getTranslations } from "next-intl/server";
 import { NextIntlClientProvider } from "next-intl";
 import { Toaster } from "@workspace/ui/components/sonner";
