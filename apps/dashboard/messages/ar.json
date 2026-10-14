@@ -416,47 +416,138 @@
     }
   },
   "home": {
-    "walletBalance": "رصيد المحفظة",
-    "products": "المنتجات",
-    "storeRating": "تقييم المتجر",
-    "storeRatingValue": "{rating}/5 ({count, plural, zero {لا تقييمات} one {تقييم واحد} two {تقييمان} few {# تقييمات} many {# تقييمًا} other {# تقييم}})",
-    "positiveRating": "التقييمات الإيجابية",
-    "quickLinks": {
-      "title": "روابط سريعة",
-      "addProduct": "إضافة منتج",
-      "addProductDescription": "اعرض منتجًا جديدًا",
+    "range": {
+      "label": "فترة التقرير",
+      "days": "{count, plural, few {# أيام} other {# يومًا}}"
+    },
+    "header": {
+      "morning": "صباح الخير، {name}",
+      "evening": "مساء الخير، {name}",
+      "pendingOrders": "{count, plural, one {لديك طلب جديد بانتظار التجهيز.} two {لديك طلبان جديدان بانتظار التجهيز.} few {لديك # طلبات جديدة بانتظار التجهيز.} other {لديك # طلبًا جديدًا بانتظار التجهيز.}}",
+      "almostReady": "متجرك جاهز تقريبًا. أكمل الإعداد لتستقبل أول طلب.",
+      "summary": "إليك ملخص أداء متجرك.",
+      "addProduct": "إضافة منتج"
+    },
+    "setup": {
+      "title": "جهّز متجرك لأول طلب",
+      "description": "أكمل هذه الخطوات ليظهر متجرك للعملاء ويبدأ في استقبال الطلبات.",
+      "progress": "التقدّم",
+      "done": "تم",
+      "dismiss": "إخفاء دليل الإعداد",
+      "tasks": {
+        "profile": {
+          "title": "إعداد بيانات المتجر",
+          "description": "الشعار ووصف المتجر",
+          "cta": "إعداد"
+        },
+        "fulfillment": {
+          "title": "إعداد الشحن والتنفيذ",
+          "description": "عنوان الاستلام وطريقة التوصيل",
+          "cta": "إعداد"
+        },
+        "product": {
+          "title": "إضافة أول منتج",
+          "description": "الصور، السعر والمخزون",
+          "cta": "أضف منتجًا"
+        },
+        "coupon": {
+          "title": "أنشئ كوبون خصم",
+          "description": "امنح العملاء الجدد سببًا للطلب",
+          "cta": "إنشاء"
+        },
+        "campaign": {
+          "title": "أطلق أول حملة إعلانية",
+          "description": "اظهر للعملاء من اليوم الأول",
+          "cta": "ابدأ"
+        }
+      }
+    },
+    "kpis": {
+      "currency": "ج.م",
+      "sales": "المبيعات",
       "orders": "الطلبات",
-      "ordersDescription": "إدارة الطلبات الأخيرة",
-      "shipping": "الشحن",
-      "shippingDescription": "اشحن وتتبّع",
-      "promotions": "العروض",
-      "promotionsDescription": "أنشئ كوبون خصم",
-      "analytics": "التحليلات",
-      "analyticsDescription": "نظرة عامة على الأداء",
-      "settings": "الإعدادات",
-      "settingsDescription": "تفضيلات المتجر"
+      "ordersUnit": "طلب",
+      "wallet": "رصيد المحفظة",
+      "rating": "تقييم المتجر",
+      "vsPrevious": "مقارنة بالفترة السابقة",
+      "noSales": "لا توجد مبيعات بعد",
+      "averageOrder": "متوسط الطلب {value} {currency}",
+      "noOrders": "لا توجد طلبات بعد",
+      "withdraw": "سحب الرصيد",
+      "walletEmpty": "يُضاف بعد أول طلب مُسلَّم",
+      "ratingLabel": "التقييم {rating} من 5",
+      "positive": "{percent} تقييمات إيجابية",
+      "noRatings": "لا توجد تقييمات بعد"
     },
-    "latestOrders": "أحدث الطلبات",
-    "viewAll": "عرض الكل",
-    "table": {
-      "order": "الطلب",
-      "customer": "العميل",
-      "product": "المنتج",
-      "date": "التاريخ",
-      "status": "الحالة",
-      "total": "الإجمالي"
+    "chart": {
+      "title": "المبيعات",
+      "lastDays": "{count, plural, few {آخر # أيام} other {آخر # يومًا}}",
+      "statement": "كشف الحساب",
+      "revenue": "الإيرادات",
+      "orders": "عدد الطلبات",
+      "currency": "ج.م",
+      "ordersShort": "{count, plural, few {طلبات} other {طلب}}",
+      "emptyTitle": "سيظهر أداء مبيعاتك هنا",
+      "emptyDescription": "بعد أول طلب على متجرك",
+      "emptyRangeTitle": "لا توجد مبيعات في هذه الفترة",
+      "emptyRangeDescription": "جرّب فترة أطول"
     },
-    "noRecentOrders": "لا توجد طلبات حديثة",
-    "customer": "عميل",
+    "attention": {
+      "title": "يحتاج انتباهك",
+      "description": "مهام مفتوحة الآن",
+      "allClear": "لا توجد مهام مفتوحة حاليًا.",
+      "pendingOrders": {
+        "title": "طلبات بانتظار التجهيز",
+        "description": "جهّزها قبل موعد الاستلام"
+      },
+      "lowStock": {
+        "title": "منتجات قاربت على النفاد",
+        "description": "أقل من {threshold} قطع في المخزون"
+      },
+      "unansweredQuestions": {
+        "title": "أسئلة بدون رد",
+        "description": "العملاء ينتظرون إجابتك"
+      },
+      "newReviews": {
+        "title": "تقييمات جديدة",
+        "description": "آخر 7 أيام"
+      }
+    },
+    "orders": {
+      "title": "أحدث الطلبات",
+      "description": "{count, plural, one {آخر طلب} two {آخر طلبين} few {آخر # طلبات} other {آخر # طلبًا}}",
+      "viewAll": "عرض كل الطلبات",
+      "emptyTitle": "لا توجد طلبات بعد",
+      "emptyDescription": "عند وصول أول طلب سيظهر هنا مع حالته وتفاصيل العميل.",
+      "promote": "روّج لمنتجاتك",
+      "guest": "زائر",
+      "table": {
+        "order": "الطلب",
+        "customer": "العميل",
+        "product": "المنتج",
+        "date": "التاريخ",
+        "total": "الإجمالي",
+        "status": "الحالة"
+      }
+    },
+    "topProducts": {
+      "title": "الأكثر مبيعًا",
+      "description": "حسب الإيرادات",
+      "viewAll": "المنتجات",
+      "emptyTitle": "لا توجد بيانات بعد",
+      "emptyDescription": "أضف منتجاتك وسنعرض هنا الأكثر مبيعًا.",
+      "addProduct": "إضافة منتج",
+      "sold": "{count} مبيعة"
+    },
     "questions": {
-      "emptyTitle": "أسئلة المنتجات غير المُجاب عنها",
-      "empty": "لا توجد أسئلة معلّقة حاليًا.",
-      "title": "أسئلة غير مُجاب عنها",
-      "sku": "رمز المنتج (SKU)",
-      "notAvailable": "غير متوفر",
-      "questionPrefix": "س:",
-      "answerPlaceholder": "اكتب إجابتك...",
-      "send": "إرسال"
+      "title": "أسئلة المنتجات غير المُجاب عنها",
+      "description": "الرد السريع يرفع معدل التحويل",
+      "viewAll": "كل الأسئلة",
+      "emptyTitle": "لا توجد أسئلة معلّقة حاليًا",
+      "emptyDescription": "أسئلة العملاء عن منتجاتك ستظهر هنا لترد عليها مباشرة.",
+      "answerPlaceholder": "اكتب ردّك…",
+      "send": "إرسال",
+      "reply": "رد"
     }
   },
   "table": {
@@ -576,7 +667,11 @@
       "clickBrowse": "انقر للتصفح",
       "progress": "تم رفع {count} من {max} صور",
       "chooseFromGallery": "اختر صورة من المعرض",
-      "removeImage": "إزالة الصورة"
+      "removeImage": "إزالة الصورة",
+      "dropTitle": "اسحب الصور هنا أو انقر للرفع",
+      "dropSubtitle": "حتى {max} صور",
+      "add": "إضافة",
+      "cover": "الغلاف"
     },
     "sellerImage": {
       "notAnImage": "يرجى اختيار ملف صورة (PNG أو JPG أو WebP)",
@@ -607,7 +702,10 @@
     },
     "categories": {
       "suggested": "فئات مقترحة:",
-      "select": "اختيار الفئة {name}"
+      "select": "اختيار الفئة {name}",
+      "suggestedHeading": "مقترحة من اسم المنتج",
+      "bestMatch": "الأنسب",
+      "typeNameFirst": "اكتب اسم المنتج وسنقترح لك الفئة المناسبة."
     },
     "seo": {
       "title": "الظهور في محركات البحث",
@@ -728,10 +826,27 @@
         "images": "الصور",
         "pricing": "التسعير",
         "stock": "المخزون",
-        "barcode": "الباركود"
+        "barcode": "الباركود",
+        "variant": "النوع",
+        "price": "السعر",
+        "discount": "الخصم"
       },
       "setDefault": "تعيين {name} كمتغير افتراضي",
-      "default": "افتراضي"
+      "default": "افتراضي",
+      "emptyTitle": "هل للمنتج ألوان أو مقاسات؟",
+      "emptyBody": "أضف خيارًا وسننشئ كل التركيبات لتحدد سعر وكمية كل منها.",
+      "addOption": "إضافة خيار",
+      "addAnotherOption": "إضافة خيار آخر",
+      "optionName": "اسم الخيار",
+      "customNamePlaceholderEn": "e.g. Fabric, Fit",
+      "customNamePlaceholderAr": "مثال: القماش، القصة",
+      "valuesPlaceholderFirst": "اكتب القيمة واضغط Enter (مثال: أحمر)",
+      "valuesPlaceholder": "أضف قيمة…",
+      "removeOption": "حذف الخيار",
+      "removeValue": "حذف {value}",
+      "missingTranslation": "لم تُترجم بعد — انقر للإضافة",
+      "combinationsHint": "{count, plural, one {نوع واحد} two {نوعان} few {# أنواع} many {# نوعًا} other {# نوع}} · النوع الافتراضي يستخدم السعر والصور والكمية الرئيسية",
+      "finalPrice": "النهائي {amount}"
     },
     "bulk": {
       "status": {
@@ -771,7 +886,165 @@
     },
     "previous": "السابق",
     "next": "التالي",
-    "saveChanges": "حفظ التغييرات"
+    "saveChanges": "حفظ التغييرات",
+    "page": {
+      "newTitle": "منتج جديد",
+      "notSaved": "لم يُحفظ بعد",
+      "unsaved": "تغييرات غير محفوظة",
+      "autosaved": "حُفظت المسودة تلقائيًا",
+      "importProduct": "استيراد منتج",
+      "saveDraft": "حفظ كمسودة",
+      "draftShort": "مسودة",
+      "publish": "نشر المنتج",
+      "publishShort": "نشر",
+      "publishing": "جارٍ النشر…",
+      "draftSaved": "تم حفظ المسودة على هذا الجهاز",
+      "draftRestored": "استعدنا مسودة المنتج غير المحفوظة",
+      "startOver": "البدء من جديد",
+      "fixRequired": "أكمل الحقول المطلوبة المميزة بالأحمر",
+      "readiness": "جاهزية النشر",
+      "ready": "جاهز للنشر",
+      "startBasics": "ابدأ بإضافة الأساسيات",
+      "remaining": "{count, plural, one {حقل مطلوب متبقٍ} two {حقلان مطلوبان متبقيان} few {# حقول مطلوبة متبقية} many {# حقلًا مطلوبًا متبقيًا} other {# حقل مطلوب متبقٍ}}",
+      "allDone": "كل الحقول المطلوبة مكتملة",
+      "optional": "اختياري",
+      "preview": "معاينة كما يراها العميل",
+      "previewName": "اسم المنتج",
+      "previewCategory": "يظهر في {category}",
+      "contentLanguageHint": "الحقول المميزة بـ AR/EN تُكتب بكل لغة",
+      "nav": {
+        "basic": "الأساسيات",
+        "media": "الصور",
+        "content": "الوصف",
+        "price": "السعر",
+        "stock": "المخزون",
+        "shipping": "الشحن",
+        "visibility": "الظهور"
+      }
+    },
+    "sections": {
+      "basic": {
+        "title": "المعلومات الأساسية",
+        "description": "الاسم والفئة هما أول ما يراه العميل ويُستخدمان في البحث.",
+        "importFromLink": "استيراد من رابط",
+        "name": "اسم المنتج",
+        "namePlaceholderEn": "e.g. Short sleeve cotton t-shirt",
+        "namePlaceholderAr": "مثال: تيشيرت قطن بأكمام قصيرة",
+        "link": "الرابط:",
+        "editSlug": "تعديل",
+        "doneSlug": "تم",
+        "category": "الفئة",
+        "brand": "العلامة التجارية",
+        "optional": "اختياري",
+        "shortDescription": "وصف مختصر",
+        "shortDescriptionPlaceholder": "جملة أو جملتان تلخّص المنتج — تظهر بجانب السعر في صفحة المنتج"
+      },
+      "media": {
+        "title": "الصور والوسائط",
+        "description": "الصورة الأولى هي الغلاف. اسحب الصور لإعادة ترتيبها.",
+        "hint": "PNG أو JPG أو WebP · حد أقصى 2 ميجابايت · يُفضّل 1000×1000 بخلفية فاتحة"
+      },
+      "content": {
+        "title": "الوصف التفصيلي والمميزات",
+        "description": "اشرح الخامة والمقاسات وطريقة الاستخدام. المميزات تظهر كنقاط مختصرة أعلى الصفحة.",
+        "highlights": "المميزات الرئيسية",
+        "addHighlight": "إضافة ميزة",
+        "removeHighlight": "حذف الميزة",
+        "highlightPlaceholderEn": "e.g. 100% Egyptian cotton",
+        "highlightPlaceholderAr": "مثال: قطن مصري 100%",
+        "pasteTip": "نصيحة: الصق قائمة كاملة في أول حقل وسنقسّمها تلقائيًا.",
+        "body": "محتوى المنتج",
+        "bodyPlaceholder": "اكتب وصفًا تفصيليًا للمنتج…"
+      },
+      "pricing": {
+        "title": "السعر والخصم",
+        "description": "نحسب السعر النهائي تلقائيًا بعد الخصم.",
+        "productPrice": "سعر المنتج",
+        "discount": "الخصم",
+        "currency": "ج.م",
+        "discountType": "نوع الخصم",
+        "finalForCustomer": "السعر النهائي للعميل",
+        "save": "وفّر {amount}",
+        "percentOff": "خصم {percent}%",
+        "noDiscount": "بدون خصم",
+        "youReceive": "ستحصل على {amount}",
+        "roundingHint": "تُقرَّب الأسعار لأقرب 5 ج.م.",
+        "expiryTitle": "تحديد موعد انتهاء الخصم",
+        "expiryDescription": "يعود السعر الأصلي تلقائيًا بعد الموعد",
+        "endsAt": "ينتهي في"
+      },
+      "stock": {
+        "title": "المخزون والأنواع",
+        "description": "أضف أنواعًا مثل اللون والمقاس لتحديد كمية وسعر لكل نوع.",
+        "sku": "رمز المنتج (SKU)",
+        "generate": "توليد",
+        "quantity": "الكمية المتاحة",
+        "decrease": "إنقاص",
+        "increase": "زيادة",
+        "defaultVariantStock": "هذه كمية النوع الافتراضي",
+        "variantsHeading": "الأنواع والخيارات"
+      },
+      "shipping": {
+        "title": "الشحن والتجهيز",
+        "description": "الوزن والأبعاد تُستخدم لحساب تكلفة الشحن للعميل.",
+        "method": "طريقة التنفيذ",
+        "sellerTitle": "يتولاه البائع",
+        "sellerDescription": "تجهّز الطلب وتسلّمه لشركة الشحن من مخزنك",
+        "platformTitle": "تنفيذ طلبي",
+        "platformDescription": "نخزّن منتجك ونجهّز ونشحن الطلبات نيابةً عنك",
+        "handling": "مدة التجهيز",
+        "days": "أيام",
+        "handlingHint": "من استلام الطلب حتى تسليمه للشحن",
+        "weight": "الوزن بعد التغليف",
+        "dimensions": "الأبعاد بعد التغليف",
+        "dimensionsNote": "الطول × العرض × الارتفاع",
+        "lengthShort": "ط",
+        "widthShort": "ع",
+        "heightShort": "ا",
+        "freeTitle": "توصيل مجاني لهذا المنتج",
+        "freeDescription": "تتحمّل أنت تكلفة الشحن، ويظهر وسم «توصيل مجاني» للعميل",
+        "storeFreeDelivery": "متجرك يقدّم توصيلًا مجانيًا على كل المنتجات."
+      },
+      "visibility": {
+        "title": "الترويج والظهور في البحث",
+        "description": "اختياري. نملأ هذه الحقول من الاسم والوصف إن تركتها فارغة.",
+        "trending": "رائج الآن",
+        "trendingDescription": "يظهر في قسم الأكثر رواجًا",
+        "seasonal": "موسمي",
+        "seasonalDescription": "يظهر في حملات المواسم والأعياد",
+        "searchEngines": "محركات البحث",
+        "serpTitle": "عنوان المنتج",
+        "serpDescription": "وصف المنتج كما سيظهر في نتائج البحث.",
+        "metaTitle": "عنوان الميتا",
+        "metaTitlePlaceholder": "يُملأ تلقائيًا من اسم المنتج",
+        "metaTitleHint": "المقترح: 50–60 حرفًا",
+        "metaDescription": "وصف الميتا",
+        "metaDescriptionPlaceholder": "يُملأ تلقائيًا من الوصف المختصر",
+        "metaDescriptionHint": "المقترح: 150–160 حرفًا"
+      }
+    },
+    "import": {
+      "title": "استيراد منتج",
+      "description": "املأ النموذج تلقائيًا من رابط منتج أو بيانات JSON، ثم راجع الحقول قبل النشر.",
+      "tabs": {
+        "url": "من رابط",
+        "data": "بيانات JSON",
+        "bulk": "عدة روابط"
+      },
+      "help": {
+        "url": "الصق رابط صفحة المنتج من أي متجر.",
+        "data": "الصق بيانات المنتج بصيغة JSON أو نص منسّق — راجع PRODUCT_DATA_FORMAT.md للتفاصيل.",
+        "bulk": "رابط في كل سطر. سيُفتح كل منتج للمراجعة قبل الحفظ."
+      },
+      "placeholders": {
+        "url": "https://…",
+        "data": "{ \"title\": \"…\", \"price\": 0 }",
+        "bulk": "رابط في كل سطر"
+      },
+      "cancel": "إلغاء",
+      "submit": "استيراد",
+      "close": "إغلاق"
+    }
   },
   "settings": {
     "storeLink": {
@@ -1449,6 +1722,7 @@
     "callNow": "اتصل الآن"
   },
   "header": {
+    "installApp": "تثبيت التطبيق",
     "openMenu": "فتح القائمة",
     "search": "بحث…",
     "searchPlaceholder": "ابحث عن صفحة، منتج، أو رقم طلب…",
@@ -1467,25 +1741,73 @@
     "steps": {
       "package": "اختر الباقة",
       "product": "اختر المنتج",
-      "payment": "ادفع وأكّد الطلب"
+      "payment": "ادفع وأكّد الطلب",
+      "packageDesc": "قارن الباقات واختر ما يناسب هدفك ومدة حملتك.",
+      "productDesc": "المنتج الذي ستُبنى عليه الحملة الإعلانية.",
+      "paymentDesc": "حوّل المبلغ ثم أرسل بيانات التحويل للمراجعة."
     },
     "package": {
       "weekly_full": {
-        "name": "باقة الأسبوع الإعلانية",
+        "name": "باقة الأسبوع الأساسية",
         "summary": "متاح باقه إعلانيه مدتها اسبوع عباره عن:"
       },
-      "days": "{count} أيام",
-      "total": "التكلفه الإجماليه",
+      "weekly_plus": {
+        "name": "باقة الأسبوع بلس",
+        "summary": "حملة أقوى لمدة أسبوع مع فيديو بالذكاء الاصطناعي:"
+      },
+      "weekly_pro": {
+        "name": "باقة الأسبوع برو",
+        "summary": "أكبر حملة أسبوعية عندنا لأوسع وصول:"
+      },
+      "monthly_basic": {
+        "name": "باقة الشهر الأساسية",
+        "summary": "شهر كامل من الإعلانات لمنتجك عباره عن:"
+      },
+      "monthly_plus": {
+        "name": "باقة الشهر بلس",
+        "summary": "حملة لمدة شهر مع فيديوهات جديدة بالذكاء الاصطناعي:"
+      },
+      "monthly_pro": {
+        "name": "باقة الشهر برو",
+        "summary": "أكبر حملة عندنا: شهر إعلانات مع فيديو جديد بالذكاء الاصطناعي كل أسبوع:"
+      },
+      "days": "{count, plural, =7 {7 أيام} other {# يومًا}}",
       "currency": "جنيه",
-      "select": "اختيار الباقة",
-      "selected": "تم الاختيار",
-      "timelineLabel": "خطة الحملة على مدار الأسبوع",
       "day": "يوم {day}",
       "features": {
-        "video": "فيديو إعلاني للمنتج مع شرح مزايا المنتج",
+        "video_social": "فيديو إعلاني للمنتج من محتوى السوشيال ميديا مع تعليق صوتي يشرح مزايا المنتج",
+        "video_ai": "{count, plural, one {فيديو إعلاني للمنتج بالذكاء الاصطناعي} two {فيديوهين إعلانيين للمنتج بالذكاء الاصطناعي} other {# فيديوهات إعلانية للمنتج بالذكاء الاصطناعي}} مع تعليق صوتي يشرح مزايا المنتج",
         "platforms": "نشر المنتج على جميع منصات طلبي",
         "featured": "وضع المنتج في خانه المنتجات المميزه في الويبسايت بحيث يكون اول حاجه العميل يشوفها لما يدخل الويبسايت",
-        "meta": "إعلان ممول على ميتا (فيسبوك + انستجرام) مدته إسبوع"
+        "meta": "إعلان ممول على ميتا (فيسبوك + انستجرام) طوال مدة الحملة"
+      },
+      "periods": {
+        "weekly": "أسبوعي",
+        "monthly": "شهري"
+      },
+      "popular": "الأكثر طلبًا",
+      "week": "أسبوع {week}",
+      "estimates": {
+        "title": "النتائج المتوقعة",
+        "reach": "الوصول",
+        "messages": "الرسائل",
+        "purchases": "عمليات الشراء",
+        "disclaimer": "تقديرات مبنية على حملاتنا السابقة. النتائج الفعلية تختلف حسب المنتج والسعر."
+      },
+      "perDay": "{amount} جنيه / يوم",
+      "plan": {
+        "title": "خطة الحملة · {name}",
+        "subtitle": "ما يحدث لمنتجك على مدار {days}",
+        "service": "الخدمة",
+        "ongoing": "مستمر",
+        "once": "مرة واحدة"
+      },
+      "featuresShort": {
+        "video_social": "فيديو إعلاني من السوشيال ميديا مع تعليق صوتي",
+        "video_ai": "{count, plural, one {فيديو إعلاني بالذكاء الاصطناعي} two {فيديوهين إعلانيين بالذكاء الاصطناعي} other {# فيديوهات إعلانية بالذكاء الاصطناعي}} مع تعليق صوتي",
+        "platforms": "نشر على جميع منصات طلبي",
+        "featured": "ظهور في المنتجات المميزة",
+        "meta": "إعلان ممول على ميتا"
       }
     },
     "product": {
@@ -1499,7 +1821,6 @@
       "change": "تغيير"
     },
     "payment": {
-      "title": "حوّل {amount} جنيه على فودافون كاش",
       "number": "رقم المحفظة",
       "copy": "نسخ الرقم",
       "copied": "تم نسخ الرقم",
@@ -1515,19 +1836,28 @@
       "referencePlaceholder": "موجود في رسالة التأكيد",
       "submit": "أكّد الدفع وأرسل الطلب",
       "submitting": "جارٍ الإرسال...",
-      "needProduct": "اختر منتجًا أولًا"
+      "brand": "فودافون كاش",
+      "amount": "المبلغ المطلوب",
+      "amountCopied": "تم نسخ المبلغ",
+      "digits": "11 رقمًا",
+      "optional": "اختياري",
+      "agree": "أوافق على أن الحملة تبدأ بعد تأكيد التحويل، وأن المبلغ غير قابل للاسترداد بعد بدء الحملة."
     },
     "summary": {
       "title": "ملخص الطلب",
       "package": "الباقة",
       "product": "المنتج",
       "none": "لم يتم الاختيار",
-      "total": "الإجمالي"
+      "total": "الإجمالي",
+      "totalCost": "التكلفة الإجمالية",
+      "duration": "المدة",
+      "choosePackage": "اختر باقة",
+      "chooseProduct": "اختر منتجًا",
+      "note": "المبالغ شاملة كل الخدمات المذكورة في الباقة، ولا توجد رسوم إضافية على الإعلان الممول."
     },
     "success": {
       "title": "تم إرسال طلبك",
-      "body": "سنراجع التحويل ونتواصل معك لبدء الحملة. تقدر تتابع حالة الطلب من القائمة بالأسفل.",
-      "again": "إعلان عن منتج آخر"
+      "body": "سنراجع التحويل ونتواصل معك لبدء الحملة. تقدر تتابع حالة الطلب من القائمة بالأسفل."
     },
     "requests": {
       "title": "طلباتك الإعلانية",
@@ -1540,6 +1870,13 @@
         "active": "الحملة تعمل",
         "completed": "انتهت",
         "rejected": "مرفوض"
+      },
+      "emptyHint": "طلباتك وحالة كل حملة ستظهر هنا بعد الإرسال.",
+      "columns": {
+        "product": "المنتج",
+        "package": "الباقة",
+        "amount": "المبلغ",
+        "status": "الحالة"
       }
     },
     "errors": {
@@ -1550,6 +1887,16 @@
       "product_not_active": "المنتج غير منشور. انشره أولًا ثم أعد المحاولة.",
       "already_requested": "هذا المنتج عليه طلب إعلاني قائم بالفعل.",
       "unknown": "تعذّر إرسال الطلب. حاول مرة أخرى."
+    },
+    "flow": {
+      "change": "تغيير",
+      "back": "رجوع",
+      "next": "التالي",
+      "send": "إرسال",
+      "nextProduct": "التالي: اختر المنتج",
+      "nextPayment": "التالي: الدفع",
+      "pickPackage": "اختر باقة للمتابعة",
+      "picked": "تم اختيار {name}"
     }
   }
 }

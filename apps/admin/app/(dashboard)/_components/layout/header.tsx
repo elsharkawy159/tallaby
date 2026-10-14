@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation'
 import { ThemeSwitcher } from '@/components/theme-switcher'
+import { InstallAppButton } from '@/components/install-app-button'
 import { UserNav } from './user-nav'
 import { getPageTitleFromPathname } from './header.lib'
 import { MobileNavTrigger } from './mobile-nav'
@@ -21,6 +22,7 @@ export default function Header({ user }: { user: AdminUser }) {
           </h1>
         </div>
         <div className="flex shrink-0 items-center gap-1">
+          <InstallAppButton />
           <ThemeSwitcher />
           <UserNav user={user} />
         </div>

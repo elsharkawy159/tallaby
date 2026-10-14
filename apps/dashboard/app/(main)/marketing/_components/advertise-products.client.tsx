@@ -1,184 +1,224 @@
 "use client";
 
-import { useState } from "react";
-import { Check, CircleCheckBig, ImageOff } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ArrowLeft, ArrowRight, Layers, Loader2, Package, Send, Smartphone } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import { Button } from "@workspace/ui/components/button";
-import { cn } from "@workspace/ui/lib/utils";
+import { Tabs, TabsList, TabsTrigger } from "@workspace/ui/components/tabs";
 import type { AdRequestRow } from "@/actions/ads";
-import { AD_PACKAGES, type AdPackageKey } from "@/lib/ad-packages";
+import {
+  AD_PACKAGE_PERIODS,
+  AD_PACKAGES,
+  type AdPackageKey,
+  type AdPackagePeriod,
+} from "@/lib/ad-packages";
 import { AdPackageCard } from "./ad-package-card";
 import { AdRequestsList } from "./ad-requests-list";
-import { PaymentPanel } from "./payment-panel";
+import { CampaignPlan } from "./campaign-plan";
+import { MobileSummaryBar, OrderSummary, type SummaryAction } from "./order-summary";
+import { PaymentPanel, usePaymentForm } from "./payment-panel";
 import { ProductPicker, type AdProductOption } from "./product-picker";
+import { StepSection, type StepState } from "./step-section";
 
 type Props = {
   products: AdProductOption[];
   requests: AdRequestRow[];
 };
 
+type Step = 1 | 2 | 3;
+
+const stepId = (n: Step) => `ad-step-${n}`;
+
 export function AdvertiseProducts({ products, requests }: Props) {
   const t = useTranslations("advertise");
+  const tNav = useTranslations("nav");
+  const [period, setPeriod] = useState<AdPackagePeriod>("weekly");
   const [packageKey, setPackageKey] = useState<AdPackageKey | null>(null);
   const [productId, setProductId] = useState<string | null>(null);
-  const [submitted, setSubmitted] = useState(false);
+  const [step, setStep] = useState<Step>(1);
+  const scrollTarget = useRef<string | null>(null);
 
   const pkg = AD_PACKAGES.find((p) => p.key === packageKey) ?? null;
   const product = products.find((p) => p.id === productId) ?? null;
+  const pkgName = pkg ? t(`package.${pkg.key}.name`) : "";
 
-  const reset = () => {
-    setProductId(null);
-    setSubmitted(false);
+  const payment = usePaymentForm({
+    pkg,
+    productId,
+    onSubmitted: () => {
+      toast.success(t("success.title"), { description: t("success.body") });
+      setPackageKey(null);
+      setProductId(null);
+      setStep(1);
+      scrollTarget.current = "ad-requests";
+    },
+  });
+
+  // Scroll after the step's body has rendered, so the offset is right.
+  useEffect(() => {
+    if (!scrollTarget.current) return;
+    document.getElementById(scrollTarget.current)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    scrollTarget.current = null;
+  });
+
+  const canGo = (n: Step) => n === 1 || (n === 2 && !!pkg) || (n === 3 && !!pkg && !!product);
+  const go = (n: Step) => {
+    if (!canGo(n)) return;
+    setStep(n);
+    scrollTarget.current = stepId(n);
+  };
+  const stateOf = (n: Step): StepState => {
+    if (step === n) return "active";
+    if ((n === 1 && pkg) || (n === 2 && product)) return "done";
+    return canGo(n) ? "idle" : "locked";
+  };
+
+  const summaryAction: SummaryAction =
+    step === 1
+      ? { label: pkg ? t("flow.nextProduct") : t("summary.choosePackage"), disabled: !pkg, onClick: () => go(2) }
+      : step === 2
+        ? { label: product ? t("flow.nextPayment") : t("summary.chooseProduct"), disabled: !product, onClick: () => go(3) }
+        : {
+            label: payment.pending ? t("payment.submitting") : t("payment.submit"),
+            disabled: !payment.ready,
+            pending: payment.pending,
+            onClick: payment.submit,
+          };
+  const mobileAction: SummaryAction = {
+    ...summaryAction,
+    label: step === 3 ? t("flow.send") : t("flow.next"),
   };
 
   return (
-    <div className="space-y-10">
-      <p className="max-w-2xl text-muted-foreground">{t("intro")}</p>
-
-      {submitted ? (
-        <div
-          role="status"
-          className="flex flex-col items-start gap-3 rounded-2xl border border-primary/30 bg-primary/5 p-6"
-        >
-          <CircleCheckBig className="size-8 text-primary" aria-hidden />
-          <h2 className="text-xl font-bold">{t("success.title")}</h2>
-          <p className="max-w-xl text-sm text-muted-foreground">{t("success.body")}</p>
-          <Button variant="outline" onClick={reset}>
-            {t("success.again")}
-          </Button>
+    <div className="mx-auto w-full pb-28 lg:pb-0">
+      <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-bold leading-snug sm:text-2xl">{tNav("advertiseProducts")}</h1>
+          <p className="mt-1 max-w-155 text-pretty text-muted-foreground">{t("intro")}</p>
         </div>
-      ) : (
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_18rem]">
-          <ol className="space-y-8">
-            <Step index={1} title={t("steps.package")} done={!!pkg} active>
-              <div className="space-y-4">
-                {AD_PACKAGES.map((p) => (
-                  <AdPackageCard
-                    key={p.key}
-                    pkg={p}
-                    selected={p.key === packageKey}
-                    onSelect={() => setPackageKey(p.key)}
-                  />
+        <div className="hidden flex-wrap gap-1.5 sm:flex">
+          {(
+            [
+              ["package", Layers],
+              ["product", Package],
+              ["payment", Smartphone],
+            ] as const
+          ).map(([key, Icon]) => (
+            <span
+              key={key}
+              className="inline-flex h-7.5 items-center gap-1.5 whitespace-nowrap rounded-full border bg-card px-3 text-xs text-muted-foreground"
+            >
+              <Icon className="size-3.5 text-primary-ink" aria-hidden />
+              {t(`steps.${key}`)}
+            </span>
+          ))}
+        </div>
+      </header>
+
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_17.5rem] xl:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="flex min-w-0 flex-col gap-3.5">
+          <StepSection
+            id={stepId(1)}
+            index={1}
+            title={t("steps.package")}
+            description={t("steps.packageDesc")}
+            summary={pkg ? `${pkgName} · ${pkg.price.toLocaleString()} ${t("package.currency")}` : undefined}
+            state={stateOf(1)}
+            onOpen={() => go(1)}
+            footer={
+              <>
+                <span className="text-xs text-muted-foreground">
+                  {pkg ? t("flow.picked", { name: pkgName }) : t("flow.pickPackage")}
+                </span>
+                <Button type="button" variant="secondary" disabled={!pkg} onClick={() => go(2)}>
+                  {t("flow.nextProduct")}
+                  <ArrowRight className="rtl:rotate-180" aria-hidden />
+                </Button>
+              </>
+            }
+          >
+            <Tabs value={period} onValueChange={(v) => setPeriod(v as AdPackagePeriod)} className="mb-4">
+              <TabsList>
+                {AD_PACKAGE_PERIODS.map((key) => (
+                  <TabsTrigger key={key} value={key} className="min-w-30">
+                    {t(`package.periods.${key}`)}
+                  </TabsTrigger>
                 ))}
-              </div>
-            </Step>
-
-            <Step index={2} title={t("steps.product")} done={!!product} active={!!pkg}>
-              {pkg && (
-                <ProductPicker
-                  products={products}
-                  selectedId={productId}
-                  onSelect={setProductId}
+              </TabsList>
+            </Tabs>
+            <div
+              role="radiogroup"
+              aria-label={t("steps.package")}
+              className="grid gap-3 pt-2.5 sm:grid-cols-[repeat(auto-fit,minmax(13.75rem,1fr))]"
+            >
+              {AD_PACKAGES.filter((p) => p.period === period).map((p) => (
+                <AdPackageCard
+                  key={p.key}
+                  pkg={p}
+                  selected={p.key === packageKey}
+                  onSelect={() => setPackageKey(p.key)}
                 />
-              )}
-            </Step>
-
-            <Step index={3} title={t("steps.payment")} done={false} active={!!pkg && !!product} last>
-              {pkg && product && (
-                <PaymentPanel
-                  pkg={pkg}
-                  productId={product.id}
-                  onSubmitted={() => setSubmitted(true)}
-                />
-              )}
-            </Step>
-          </ol>
-
-          <aside className="hidden lg:block">
-            <div className="sticky top-20 space-y-4 rounded-2xl border bg-card p-5">
-              <h2 className="font-bold">{t("summary.title")}</h2>
-              <dl className="space-y-4 text-sm">
-                <div className="space-y-1">
-                  <dt className="text-xs text-muted-foreground">{t("summary.package")}</dt>
-                  <dd className="font-medium">
-                    {pkg ? t(`package.${pkg.key}.name`) : (
-                      <span className="text-muted-foreground">{t("summary.none")}</span>
-                    )}
-                  </dd>
-                </div>
-                <div className="space-y-1">
-                  <dt className="text-xs text-muted-foreground">{t("summary.product")}</dt>
-                  <dd>
-                    {product ? (
-                      <div className="flex items-center gap-2.5">
-                        <div className="size-10 shrink-0 overflow-hidden rounded-md bg-muted">
-                          {product.image ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={product.image} alt="" className="size-full object-cover" />
-                          ) : (
-                            <span className="flex size-full items-center justify-center text-muted-foreground">
-                              <ImageOff className="size-4" aria-hidden />
-                            </span>
-                          )}
-                        </div>
-                        <span className="line-clamp-2 font-medium">{product.title}</span>
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground">{t("summary.none")}</span>
-                    )}
-                  </dd>
-                </div>
-                <div className="flex items-baseline justify-between border-t pt-4">
-                  <dt className="text-muted-foreground">{t("summary.total")}</dt>
-                  <dd className="text-2xl font-bold tabular-nums">
-                    {(pkg?.price ?? 0).toLocaleString()}
-                    <span className="ms-1 text-sm font-medium">{t("package.currency")}</span>
-                  </dd>
-                </div>
-              </dl>
+              ))}
             </div>
-          </aside>
+            <p className="mt-2.5 text-[11px] text-muted-foreground">{t("package.estimates.disclaimer")}</p>
+            {pkg && <CampaignPlan pkg={pkg} />}
+          </StepSection>
+
+          <StepSection
+            id={stepId(2)}
+            index={2}
+            title={t("steps.product")}
+            description={t("steps.productDesc")}
+            summary={product?.title}
+            state={stateOf(2)}
+            onOpen={() => go(2)}
+            footer={
+              <>
+                <Button type="button" variant="soft" onClick={() => go(1)}>
+                  <ArrowLeft className="rtl:rotate-180" aria-hidden />
+                  {t("flow.back")}
+                </Button>
+                <Button type="button" variant="secondary" disabled={!product} onClick={() => go(3)}>
+                  {t("flow.nextPayment")}
+                  <ArrowRight className="rtl:rotate-180" aria-hidden />
+                </Button>
+              </>
+            }
+          >
+            <ProductPicker products={products} selectedId={productId} onSelect={setProductId} />
+          </StepSection>
+
+          <StepSection
+            id={stepId(3)}
+            index={3}
+            title={t("steps.payment")}
+            description={t("steps.paymentDesc")}
+            state={stateOf(3)}
+            onOpen={() => go(3)}
+            footer={
+              <>
+                <Button type="button" variant="soft" onClick={() => go(2)}>
+                  <ArrowLeft className="rtl:rotate-180" aria-hidden />
+                  {t("flow.back")}
+                </Button>
+                <Button type="button" variant="accent" disabled={!payment.ready} onClick={payment.submit}>
+                  {payment.pending ? <Loader2 className="animate-spin" aria-hidden /> : <Send aria-hidden />}
+                  {payment.pending ? t("payment.submitting") : t("payment.submit")}
+                </Button>
+              </>
+            }
+          >
+            {pkg && <PaymentPanel pkg={pkg} form={payment} />}
+          </StepSection>
+
+          <AdRequestsList requests={requests} />
         </div>
-      )}
 
-      <AdRequestsList requests={requests} />
-    </div>
-  );
-}
-
-function Step({
-  index,
-  title,
-  done,
-  active,
-  last,
-  children,
-}: {
-  index: number;
-  title: string;
-  done: boolean;
-  active: boolean;
-  last?: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <li className="relative flex gap-4">
-      {/* Rail connecting the step markers. */}
-      {!last && (
-        <span
-          aria-hidden
-          className={cn(
-            "absolute start-4 top-10 bottom-[-2rem] w-px -translate-x-1/2 rtl:translate-x-1/2",
-            done ? "bg-primary" : "bg-border"
-          )}
-        />
-      )}
-      <span
-        className={cn(
-          "relative z-10 flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-bold transition-colors",
-          done
-            ? "bg-primary text-primary-foreground"
-            : active
-              ? "border-2 border-primary bg-background text-primary"
-              : "border bg-muted text-muted-foreground"
-        )}
-      >
-        {done ? <Check className="size-4" aria-hidden /> : index}
-      </span>
-      <div className="min-w-0 flex-1 space-y-4 pt-1">
-        <h2 className={cn("text-lg font-bold", !active && "text-muted-foreground")}>{title}</h2>
-        {children}
+        <OrderSummary pkg={pkg} product={product} action={summaryAction} />
       </div>
-    </li>
+
+      <MobileSummaryBar pkg={pkg} product={product} action={mobileAction} />
+    </div>
   );
 }

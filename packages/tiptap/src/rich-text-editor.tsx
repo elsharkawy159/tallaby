@@ -326,7 +326,7 @@ export function RichTextEditor({
 
       className={cn(
 
-        "rich-text-editor overflow-hidden rounded-lg border border-border bg-card shadow-sm",
+        "rich-text-editor overflow-hidden rounded-[10px] border border-input bg-card transition-[border-color,box-shadow] focus-within:border-primary focus-within:ring-[3px] focus-within:ring-primary/20",
 
         disabled && "opacity-60",
 
@@ -352,7 +352,7 @@ export function RichTextEditor({
 
 
 
-      <div className="flex flex-wrap items-center gap-1 border-b border-border bg-muted/80 p-2">
+      <div className="flex flex-wrap items-center gap-0.5 border-b border-border bg-muted p-1.5">
 
         <ToolbarButton
 

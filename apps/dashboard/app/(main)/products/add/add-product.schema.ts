@@ -13,6 +13,12 @@ export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number]
 const roundPositivePriceInput = (val: unknown) =>
   typeof val === "number" && val > 0 ? roundPriceUpToNearestFive(val) : val
 
+/** Editor HTML with actual text or media — an emptied editor leaves "<p></p>". */
+const hasRichText = (html: string | undefined) =>
+  !!html &&
+  (/<(img|video|iframe)/i.test(html) ||
+    html.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim() !== "")
+
 const localizedFieldsSchema = z.object({
   title: z.string().max(255),
   slug: z.string().max(255),
@@ -210,9 +216,9 @@ export const addProductFormSchema = z
     const arHasContent =
       (ar.title ?? "").trim() !== "" ||
       (ar.description ?? "").trim() !== "" ||
-      (ar.content ?? "").trim() !== "" ||
+      hasRichText(ar.content) ||
       (ar.slug ?? "").trim() !== "" ||
-      ((ar.bulletPoints ?? []).length > 0) ||
+      (ar.bulletPoints ?? []).some((point) => point.trim() !== "") ||
       (ar.metaTitle ?? "").trim() !== "" ||
       (ar.metaDescription ?? "").trim() !== ""
 
@@ -371,9 +377,9 @@ export function isLocaleMissingRequiredFields(
     const hasAnyArContent =
       title !== "" ||
       (data?.description ?? "").trim() !== "" ||
-      (data?.content ?? "").trim() !== "" ||
+      hasRichText(data?.content) ||
       (data?.slug ?? "").trim() !== "" ||
-      ((data?.bulletPoints ?? []).length > 0) ||
+      (data?.bulletPoints ?? []).some((point) => point.trim() !== "") ||
       (data?.metaTitle ?? "").trim() !== "" ||
       (data?.metaDescription ?? "").trim() !== ""
     return hasAnyArContent && !title

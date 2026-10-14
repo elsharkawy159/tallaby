@@ -2,11 +2,13 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Check, ImageOff, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Input } from "@workspace/ui/components/input";
 import { Button } from "@workspace/ui/components/button";
 import { cn } from "@workspace/ui/lib/utils";
+import { ProductThumb } from "./product-thumb";
+import { RadioDot } from "./radio-dot";
 
 export type AdProductOption = {
   id: string;
@@ -22,9 +24,6 @@ type Props = {
   selectedId: string | null;
   onSelect: (id: string) => void;
 };
-
-/** Show the search box only once the grid is long enough to need it. */
-const SEARCH_THRESHOLD = 6;
 
 export function ProductPicker({ products, selectedId, onSelect }: Props) {
   const t = useTranslations("advertise.product");
@@ -43,7 +42,7 @@ export function ProductPicker({ products, selectedId, onSelect }: Props) {
     return (
       <div className="flex flex-col items-start gap-3 rounded-xl border border-dashed p-5">
         <p className="text-sm text-muted-foreground">{t("empty")}</p>
-        <Button asChild size="sm">
+        <Button asChild size="sm" variant="secondary">
           <Link href="/products/add">{t("addProduct")}</Link>
         </Button>
       </div>
@@ -52,29 +51,27 @@ export function ProductPicker({ products, selectedId, onSelect }: Props) {
 
   return (
     <div className="space-y-3">
-      {products.length > SEARCH_THRESHOLD && (
-        <div className="relative">
-          <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={t("search")}
-            aria-label={t("search")}
-            className="ps-9"
-          />
-        </div>
-      )}
-
-      {visible.length === 0 ? (
-        <p className="py-6 text-center text-sm text-muted-foreground">{t("noResults")}</p>
-      ) : (
-        <div
-          role="radiogroup"
+      <div className="relative">
+        <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder={t("search")}
           aria-label={t("search")}
-          className="grid max-h-[26rem] grid-cols-2 gap-3 overflow-y-auto p-0.5 sm:grid-cols-3 xl:grid-cols-4"
-        >
-          {visible.map((p) => {
+          className="h-10.5 ps-9"
+        />
+      </div>
+
+      <div
+        role="radiogroup"
+        aria-label={t("search")}
+        className="grid max-h-90 grid-cols-1 gap-2.5 overflow-y-auto p-0.5 sm:grid-cols-[repeat(auto-fill,minmax(15.5rem,1fr))] max-sm:max-h-none"
+      >
+        {visible.length === 0 ? (
+          <p className="col-span-full py-7 text-center text-sm text-muted-foreground">{t("noResults")}</p>
+        ) : (
+          visible.map((p) => {
             const pickable = isPickable(p);
             const selected = p.id === selectedId;
             return (
@@ -86,44 +83,30 @@ export function ProductPicker({ products, selectedId, onSelect }: Props) {
                 disabled={!pickable}
                 onClick={() => onSelect(p.id)}
                 className={cn(
-                  "group relative flex flex-col overflow-hidden rounded-xl border bg-card text-start transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                  selected ? "border-primary ring-1 ring-primary" : "hover:border-primary/50",
-                  !pickable && "cursor-not-allowed opacity-50 hover:border-border"
+                  "flex items-center gap-3 rounded-xl border-[1.5px] bg-card p-2.5 text-start transition-colors focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary/25",
+                  selected ? "border-primary bg-primary-soft" : "border-border hover:border-input",
+                  !pickable && "cursor-not-allowed opacity-50"
                 )}
               >
-                <div className="relative aspect-square w-full bg-muted">
-                  {p.image ? (
-                    // Product images come from many hosts (imports), so skip next/image.
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={p.image} alt="" loading="lazy" className="size-full object-cover" />
-                  ) : (
-                    <span className="flex size-full items-center justify-center text-muted-foreground">
-                      <ImageOff className="size-6" aria-hidden />
-                    </span>
-                  )}
-                  {selected && (
-                    <span className="absolute end-2 top-2 flex size-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow">
-                      <Check className="size-3.5" aria-hidden />
-                    </span>
-                  )}
-                </div>
-                <div className="space-y-1 p-2.5">
-                  <p className="line-clamp-2 text-sm font-medium leading-snug">{p.title}</p>
-                  {!p.isActive ? (
-                    <p className="text-xs text-muted-foreground">{t("notActive")}</p>
-                  ) : p.hasOpenRequest ? (
-                    <p className="text-xs text-muted-foreground">{t("hasOpenRequest")}</p>
-                  ) : p.price !== null ? (
-                    <p className="text-xs tabular-nums text-muted-foreground">
-                      {p.price.toLocaleString()} {tPackage("currency")}
-                    </p>
-                  ) : null}
-                </div>
+                <ProductThumb image={p.image} size={52} />
+                <span className="min-w-0 flex-1">
+                  <b className="block truncate text-[13px] font-semibold">{p.title}</b>
+                  <small className="block text-xs text-muted-foreground">
+                    {!p.isActive
+                      ? t("notActive")
+                      : p.hasOpenRequest
+                        ? t("hasOpenRequest")
+                        : p.price !== null
+                          ? `${p.price.toLocaleString()} ${tPackage("currency")}`
+                          : null}
+                  </small>
+                </span>
+                <RadioDot checked={selected} className="ms-1" />
               </button>
             );
-          })}
-        </div>
-      )}
+          })
+        )}
+      </div>
 
       {products.some((p) => !p.isActive) && (
         <p className="text-xs text-muted-foreground">{t("inactiveHint")}</p>

@@ -1,9 +1,5 @@
-import { VendorDashboardSkeleton } from "./_components/vendor-dashboard.skeleton";
+import { HomeSkeleton } from "./_components/home.skeletons";
 
 export default function Loading() {
-  return (
-    <div className="min-h-screen p-4 sm:p-6">
-      <VendorDashboardSkeleton />
-    </div>
-  );
+  return <HomeSkeleton />;
 }

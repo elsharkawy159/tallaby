@@ -1,34 +1,46 @@
 "use client"
 
-import { useState, useTransition } from "react"
-import { useForm } from "react-hook-form"
+import { useEffect, useState, useTransition } from "react"
+import { useForm, useFormContext, useFormState, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
 import { useTranslations } from "next-intl"
+import { FileDown, LoaderCircle, Rocket } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
 import { Form } from "@workspace/ui/components/form"
-import { Separator } from "@workspace/ui/components/separator"
-import { LoaderCircle } from "lucide-react"
 import { createProduct } from "@/actions/products"
+import { cn } from "@/lib/utils"
+import { useLocalizedResolver } from "@/lib/i18n/localized-resolver"
+import type { SellerPricingSettings } from "@/lib/utils/product-pricing.lib"
+import { BUTTON_CLASS, SMALL_BUTTON_CLASS } from "@/components/form/form-ui"
 import {
   addProductFormSchema,
   defaultValues,
   type AddProductFormData,
+  type BrandOption,
+  type CategoryOption,
   type SupportedLocale,
 } from "./add-product.schema"
 import {
-  ADD_PRODUCT_STEPS,
-  getStepValidationStatus,
-  scrollToStepSection,
+  PRODUCT_SECTIONS,
+  getFirstInvalidSection,
+  getSectionProgress,
+  getStickyOffset,
+  scrollToSection,
 } from "./add-product.lib"
-import { BasicInformationStep } from "./steps/basic-information-step"
-import { PriceStockStep } from "./steps/price-stock-step"
-import { SeoStep } from "./steps/seo-step"
+import { BasicSection } from "./sections/basic-section"
+import { MediaSection } from "./sections/media-section"
+import { ContentSection } from "./sections/content-section"
+import { PricingSection } from "./sections/pricing-section"
+import { InventorySection } from "./sections/inventory-section"
+import { ShippingSection } from "./sections/shipping-section"
+import { VisibilitySection } from "./sections/visibility-section"
+import { ProductPreview } from "./product-preview"
+import { MobilePublishBar, PublishChecklist, SectionChips } from "./publish-progress"
+import { ImportDialog } from "./import-dialog"
 import { BulkUrlImport } from "./bulk-url-import.client"
-import type { CategoryOption, BrandOption } from "./add-product.schema"
-import type { SellerPricingSettings } from "@/lib/utils/product-pricing.lib"
-import { cn } from "@/lib/utils"
-import { useLocalizedResolver } from "@/lib/i18n/localized-resolver"
+import { useProductDraft, type DraftStatus } from "./use-product-draft"
+import { prepareProductForSubmit } from "./prepare-product-submit.lib"
 
 interface AddProductProps {
   categories: CategoryOption[]
@@ -37,8 +49,8 @@ interface AddProductProps {
 }
 
 const LOCALE_LABELS: Record<SupportedLocale, string> = {
-  en: "English",
   ar: "العربية",
+  en: "English",
 }
 
 export default function AddProduct ({
@@ -50,9 +62,11 @@ export default function AddProduct ({
   const [activeLocale, setActiveLocale] = useState<SupportedLocale>("en")
   const [mode, setMode] = useState<"single" | "bulk">("single")
   const [bulkUrls, setBulkUrls] = useState<string[]>([])
-  const [importSectionOpen, setImportSectionOpen] = useState(true)
+  const [importOpen, setImportOpen] = useState(false)
+  const [activeSection, setActiveSection] = useState<string>(PRODUCT_SECTIONS[0].id)
   const tToast = useTranslations("toast")
-  const t = useTranslations("productForm")
+  const t = useTranslations("productForm.page")
+  const tBasic = useTranslations("productForm.sections.basic")
   const resolver = useLocalizedResolver(zodResolver(addProductFormSchema) as any)
 
   const form = useForm<AddProductFormData>({
@@ -62,24 +76,46 @@ export default function AddProduct ({
     shouldUnregister: false,
   })
 
-  const { isValid } = form.formState
+  const draft = useProductDraft(form, {
+    enabled: mode === "single",
+    onRestore: () =>
+      toast.message(t("draftRestored"), {
+        action: {
+          label: t("startOver"),
+          onClick: () => {
+            draft.clear()
+            form.reset(defaultValues as any)
+          },
+        },
+      }),
+  })
 
-  const handleEnterBulk = (urls: string[]) => {
-    setBulkUrls(urls)
-    setMode("bulk")
-  }
-
-  const handleExitBulk = () => {
-    setMode("single")
-    setBulkUrls([])
-  }
+  // Highlight the section in view in the checklist / chips.
+  useEffect(() => {
+    if (mode !== "single") return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) setActiveSection(entry.target.id)
+        }
+      },
+      { rootMargin: "-40% 0px -55% 0px" }
+    )
+    for (const { id } of PRODUCT_SECTIONS) {
+      const el = document.getElementById(id)
+      if (el) observer.observe(el)
+    }
+    return () => observer.disconnect()
+  }, [mode])
 
   const handleSubmit = (data: AddProductFormData) => {
     startTransition(async () => {
       try {
-        const result = await createProduct(data)
+        const result = await createProduct(prepareProductForSubmit(data))
 
         if (result.success) {
+          draft.pause()
+          draft.clear()
           toast.success(tToast("productCreatedSuccessfully"))
           // Full reload clears stuck pending UI and resets the form cleanly
           window.location.reload()
@@ -93,6 +129,25 @@ export default function AddProduct ({
     })
   }
 
+  const publish = form.handleSubmit(handleSubmit, (errors) => {
+    toast.error(t("fixRequired"))
+    const first = getFirstInvalidSection(errors)
+    if (first) {
+      // Errors in the other language are invisible until we switch to it.
+      const en = errors.localized?.en
+      const ar = errors.localized?.ar
+      if (first === "sec-basic" && !(activeLocale === "en" ? en : ar) && (en || ar)) {
+        setActiveLocale(en ? "en" : "ar")
+      }
+      scrollToSection(first)
+    }
+  })
+
+  const saveDraft = () => {
+    draft.saveNow()
+    toast.success(t("draftSaved"))
+  }
+
   if (mode === "bulk") {
     return (
       <BulkUrlImport
@@ -100,164 +155,249 @@ export default function AddProduct ({
         categories={categories}
         brands={brands}
         sellerPricing={sellerPricing}
-        onExit={handleExitBulk}
+        onExit={() => {
+          setMode("single")
+          setBulkUrls([])
+        }}
       />
     )
   }
 
+  const publishButton = (compact = false) => (
+    <Button
+      type="button"
+      variant="accent"
+      onClick={publish}
+      disabled={isPending}
+      className={cn(BUTTON_CLASS, "rounded-xl font-semibold", compact && "px-4")}
+    >
+      {isPending ? <LoaderCircle className="animate-spin" /> : !compact && <Rocket />}
+      {isPending ? t("publishing") : compact ? t("publishShort") : t("publish")}
+    </Button>
+  )
+
   return (
-    <div className="min-h-screen pb-24">
-      {/* Header */}
-      <div className="sticky top-16 z-20 bg-card border-b border-border shadow-sm">
-        <div className="container px-6 py-4 flex items-center justify-end gap-4">
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-medium text-foreground hidden sm:inline">
-              {t("contentLanguage")}
-            </span>
-            <div className="flex items-center gap-1">
-              {(["en", "ar"] as const).map((loc) => (
-                <Button
-                  key={loc}
-                  type="button"
-                  variant={activeLocale === loc ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setActiveLocale(loc)}
-                  className="min-w-[4rem]"
-                >
-                  {LOCALE_LABELS[loc]}
-                </Button>
-              ))}
+    <Form {...form}>
+      <div className="min-h-screen pb-32 lg:pb-24">
+        {/* Page header */}
+        <div
+          data-sticky-head
+          className="sticky top-16 z-20 border-b bg-background/95 backdrop-blur-md"
+        >
+          <div className="mx-auto flex max-w-[1240px] flex-wrap items-center gap-x-4 gap-y-2.5 px-4 py-3 sm:px-6 sm:py-3.5">
+            <h1 className="text-[17px] leading-snug font-bold sm:text-xl">{t("newTitle")}</h1>
+            <SaveStatus status={draft.status} />
+            <div className="flex w-full items-center gap-2 sm:ms-auto sm:w-auto">
+              <LocaleSwitch value={activeLocale} onChange={setActiveLocale} />
+              <Button
+                type="button"
+                variant="soft"
+                size="icon"
+                className="ms-auto size-10 rounded-[10px] sm:ms-0"
+                onClick={() => setImportOpen(true)}
+                title={t("importProduct")}
+                aria-label={t("importProduct")}
+              >
+                <FileDown className="size-[18px]" />
+              </Button>
+              <Button
+                type="button"
+                variant="neutral"
+                className={cn(BUTTON_CLASS, "hidden rounded-xl lg:inline-flex")}
+                onClick={saveDraft}
+              >
+                {t("saveDraft")}
+              </Button>
+              <div className="hidden lg:block">{publishButton()}</div>
             </div>
           </div>
+          <ProgressChips activeSection={activeSection} />
         </div>
-      </div>
 
-      <div className="container py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-8">
-          {/* Vertical stepper */}
-          <aside className="lg:sticky lg:top-40 lg:self-start">
-            <nav className="flex flex-col">
-              {ADD_PRODUCT_STEPS.map((step, index) => {
-                const status = getStepValidationStatus(
-                  step.id,
-                  form.formState,
-                  form.getFieldState
-                )
+        <form
+          id="add-product-form"
+          onSubmit={(e) => {
+            e.preventDefault()
+            void publish()
+          }}
+          className="mx-auto w-full px-3 pt-4 sm:px-6 sm:pt-6"
+        >
+          <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_280px] xl:grid-cols-[minmax(0,1fr)_320px]">
+            <div className="flex min-w-0 flex-col gap-4">
+              <BasicSection
+                categories={categories}
+                brands={brands}
+                activeLocale={activeLocale}
+                action={
+                  <Button
+                    type="button"
+                    variant="soft"
+                    className={cn(SMALL_BUTTON_CLASS, "h-8 text-xs")}
+                    onClick={() => setImportOpen(true)}
+                  >
+                    <FileDown />
+                    <span className="hidden sm:inline">{tBasic("importFromLink")}</span>
+                  </Button>
+                }
+              />
+              <MediaSection />
+              <ContentSection activeLocale={activeLocale} />
+              <PricingSection sellerPricing={sellerPricing} />
+              <InventorySection sellerPricing={sellerPricing} activeLocale={activeLocale} />
+              <ShippingSection sellerPricing={sellerPricing} />
+              <VisibilitySection activeLocale={activeLocale} />
+            </div>
 
-                return (
-                  <div key={step.id} className="flex flex-col">
-                    <button
-                      type="button"
-                      onClick={() => scrollToStepSection(step.key)}
-                      className={cn(
-                        "flex items-center gap-3 text-start py-2",
-                        status === "valid" && "text-muted-foreground",
-                        status === "error" && "text-red-600 dark:text-red-400",
-                        status === "default" && "text-muted-foreground"
-                      )}
-                    >
-                      <div
-                        className={cn(
-                          "w-8 h-8 rounded-full flex items-center justify-center border-2 shrink-0 text-sm font-medium",
-                          status === "valid" &&
-                            "border-muted-foreground bg-muted-foreground text-background",
-                          status === "error" &&
-                            "border-red-500 bg-red-500 text-white",
-                          status === "default" &&
-                            "border-border bg-card text-muted-foreground"
-                        )}
-                      >
-                        {status === "valid" ? (
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M5 13l4 4L19 7"
-                            />
-                          </svg>
-                        ) : (
-                          step.id
-                        )}
-                      </div>
-                      <span className="text-sm font-medium">{t(`steps.${step.title}`)}</span>
-                    </button>
-                    {index < ADD_PRODUCT_STEPS.length - 1 && (
-                      <div
-                        className={cn(
-                          "ms-4 w-0.5 h-6",
-                          status === "valid" ? "bg-muted-foreground" : "bg-border"
-                        )}
-                      />
-                    )}
-                  </div>
-                )
-              })}
-            </nav>
-          </aside>
-
-          {/* Form content */}
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(handleSubmit as any)}
-              className="space-y-8"
-              id="add-product-form"
+            <aside
+              className="sticky hidden flex-col gap-3.5 lg:flex"
+              style={{ top: "var(--product-aside-top, 150px)" }}
             >
-              <section id="step-basic" className="scroll-mt-28">
-                <BasicInformationStep
-                  categories={categories}
-                  brands={brands}
-                  sellerPricing={sellerPricing}
-                  activeLocale={activeLocale}
-                  onBulkUrls={handleEnterBulk}
-                  importSectionOpen={importSectionOpen}
-                  onImportSectionOpenChange={setImportSectionOpen}
-                />
-              </section>
+              <ProductPreview activeLocale={activeLocale} categories={categories} />
+              <ProgressAside activeSection={activeSection} />
+            </aside>
+          </div>
+        </form>
 
-              <Separator />
+        <ProgressMobileBar
+          actions={
+            <>
+              <Button type="button" variant="soft" className={cn(BUTTON_CLASS, "hidden sm:inline-flex")} onClick={saveDraft}>
+                {t("draftShort")}
+              </Button>
+              {publishButton(true)}
+            </>
+          }
+        />
 
-              <section id="step-priceStock" className="scroll-mt-28">
-                <PriceStockStep
-                  sellerPricing={sellerPricing}
-                  activeLocale={activeLocale}
-                />
-              </section>
-
-              <Separator />
-
-              <section id="step-seo" className="scroll-mt-28">
-                <SeoStep activeLocale={activeLocale} />
-              </section>
-            </form>
-          </Form>
-        </div>
+        <ImportDialog
+          open={importOpen}
+          onOpenChange={setImportOpen}
+          categories={categories}
+          sellerPricing={sellerPricing}
+          onBulkUrls={(urls) => {
+            setBulkUrls(urls)
+            setMode("bulk")
+          }}
+        />
+        <StickyOffsetVar />
       </div>
+    </Form>
+  )
+}
 
-      {/* Fixed bottom save bar */}
-      <div className="fixed bottom-0 inset-x-0 z-10 border-t border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
-        <div className="px-6 py-4 flex items-center justify-end container">
-          <Button
-            type="submit"
-            form="add-product-form"
-            disabled={isPending || !isValid}
-          >
-            {isPending ? (
-              <span className="flex items-center gap-2">
-                <LoaderCircle className="size-4 animate-spin" />
-                {t("saving")}
-              </span>
-            ) : (
-              t("save")
+/** Exposes the sticky header's height to CSS so the aside parks just below it. */
+function StickyOffsetVar () {
+  useEffect(() => {
+    const update = () =>
+      document.documentElement.style.setProperty("--product-aside-top", `${getStickyOffset()}px`)
+    update()
+    const head = document.querySelector<HTMLElement>("[data-sticky-head]")
+    const observer = head ? new ResizeObserver(update) : null
+    if (head) observer?.observe(head)
+    return () => {
+      observer?.disconnect()
+      document.documentElement.style.removeProperty("--product-aside-top")
+    }
+  }, [])
+  return null
+}
+
+/*
+ * The readiness widgets watch the whole form. Keeping them in their own
+ * components means a keystroke re-renders them, not every section.
+ */
+function useSectionProgress () {
+  const form = useFormContext<AddProductFormData>()
+  const values = useWatch({ control: form.control })
+  const { errors, submitCount } = useFormState({ control: form.control })
+  return getSectionProgress(values as Partial<AddProductFormData>, errors, submitCount > 0)
+}
+
+function ProgressAside ({ activeSection }: { activeSection: string }) {
+  return <PublishChecklist sections={useSectionProgress()} activeId={activeSection} />
+}
+
+function ProgressChips ({ activeSection }: { activeSection: string }) {
+  return <SectionChips sections={useSectionProgress()} activeId={activeSection} />
+}
+
+function ProgressMobileBar ({ actions }: { actions: React.ReactNode }) {
+  return <MobilePublishBar sections={useSectionProgress()} actions={actions} />
+}
+
+function SaveStatus ({ status }: { status: DraftStatus }) {
+  const t = useTranslations("productForm.page")
+  return (
+    <span className="hidden items-center gap-1.5 text-xs whitespace-nowrap text-muted-foreground sm:flex">
+      <i
+        className={cn(
+          "size-[7px] rounded-full",
+          status === "saved" ? "bg-success" : status === "pending" ? "bg-accent" : "bg-faint"
+        )}
+      />
+      {status === "saved" ? t("autosaved") : status === "pending" ? t("unsaved") : t("notSaved")}
+    </span>
+  )
+}
+
+/** Content-language toggle; the dot turns green once that language has a name. */
+function LocaleSwitch ({
+  value,
+  onChange,
+}: {
+  value: SupportedLocale
+  onChange: (locale: SupportedLocale) => void
+}) {
+  const t = useTranslations("productForm")
+  const form = useFormContext<AddProductFormData>()
+  const [enTitle, arTitle] = useWatch({
+    control: form.control,
+    name: ["localized.en.title", "localized.ar.title"],
+  })
+  const filled: Record<SupportedLocale, boolean> = {
+    en: Boolean(enTitle?.trim()),
+    ar: Boolean(arTitle?.trim()),
+  }
+
+  return (
+    <div
+      className="flex flex-1 items-center gap-1 rounded-xl border bg-card p-[3px] sm:flex-none"
+      title={t("page.contentLanguageHint")}
+      role="radiogroup"
+      aria-label={t("contentLanguage")}
+    >
+      <span className="hidden px-1 ps-2 text-xs whitespace-nowrap text-muted-foreground md:inline">
+        {t("contentLanguage")}
+      </span>
+      {(["ar", "en"] as const).map((locale) => (
+        <button
+          key={locale}
+          type="button"
+          role="radio"
+          aria-checked={value === locale}
+          onClick={() => onChange(locale)}
+          className={cn(
+            "flex h-8 flex-1 items-center justify-center gap-1.5 rounded-[9px] px-3 text-[13px] transition-colors sm:flex-none",
+            value === locale
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          <i
+            className={cn(
+              "size-1.5 rounded-full",
+              filled[locale]
+                ? value === locale
+                  ? "bg-[#7ee2a2]"
+                  : "bg-success"
+                : value === locale
+                  ? "bg-white/50"
+                  : "bg-input"
             )}
-          </Button>
-        </div>
-      </div>
+          />
+          {LOCALE_LABELS[locale]}
+        </button>
+      ))}
     </div>
   )
 }

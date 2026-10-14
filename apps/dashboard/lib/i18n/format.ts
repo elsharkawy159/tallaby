@@ -37,6 +37,36 @@ export function formatDate(
   return new Intl.DateTimeFormat(intlLocale(locale), { ...options, ...digits(locale) }).format(date);
 }
 
+const RELATIVE_UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
+  ["year", 365 * 24 * 3600],
+  ["month", 30 * 24 * 3600],
+  ["week", 7 * 24 * 3600],
+  ["day", 24 * 3600],
+  ["hour", 3600],
+  ["minute", 60],
+  ["second", 1],
+];
+
+/** "12 minutes ago" / "منذ 12 دقيقة", with the same digits as the rest of the dashboard. */
+export function formatRelativeTime(value: DateInput, locale: string, now: Date = new Date()) {
+  const date = toDate(value);
+  if (!date) return "—";
+  const seconds = Math.round((date.getTime() - now.getTime()) / 1000);
+  const [unit, size] =
+    RELATIVE_UNITS.find(([, s]) => Math.abs(seconds) >= s) ?? RELATIVE_UNITS[RELATIVE_UNITS.length - 1]!;
+  // RelativeTimeFormat takes the numbering system via the locale tag.
+  const tag = locale.startsWith("ar") ? `${intlLocale(locale)}-u-nu-latn` : intlLocale(locale);
+  return new Intl.RelativeTimeFormat(tag, { numeric: "auto" }).format(
+    Math.round(seconds / size),
+    unit
+  );
+}
+
+/** Short number for chart axes: 1.2K / 1.2 ألف. */
+export function formatCompactNumber(value: number, locale: string) {
+  return formatNumber(value, locale, { notation: "compact", maximumFractionDigits: 1 });
+}
+
 export function formatDateTime(value: DateInput, locale: string) {
   return formatDate(value, locale, { dateStyle: "medium", timeStyle: "short" });
 }

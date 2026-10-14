@@ -1,41 +1,16 @@
 "use client";
 
-import React, { useCallback, useState, useEffect } from "react";
-import Image from "next/image";
-import {
-  X,
-  LoaderCircle,
-  Upload,
-  ImageIcon,
-  CheckCircle2,
-  Trash,
-} from "lucide-react";
+import React, { useCallback, useEffect, useState } from "react";
+import { ImagePlus, LoaderCircle, Plus, Trash2 } from "lucide-react";
 import { useDropzone } from "react-dropzone";
-import {
-  DragDropContext,
-  Draggable,
-  Droppable,
-  DropResult,
-} from "@hello-pangea/dnd";
 import { UseFormReturn } from "react-hook-form";
-
-import { createClient } from "@/supabase/client";
-
-import { Input } from "@workspace/ui/components/input";
-import { AspectRatio } from "@workspace/ui/components/aspect-ratio";
-import { RadioGroup } from "@workspace/ui/components/radio-group";
-import {
-  generateImageName,
-  getPublicUrl,
-  getTodayDate,
-  validateImage,
-} from "@/lib/utils";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { Button } from "@workspace/ui/components/button";
+
+import { createClient } from "@/supabase/client";
+import { cn, generateImageName, getPublicUrl, validateImage } from "@/lib/utils";
 
 interface FileToUpload {
-  progress: number;
   file?: File;
   preview?: string;
   liveSource: string | null;
@@ -45,542 +20,347 @@ interface FileToUpload {
 interface ImageUploadProps {
   onChange: (value: string[]) => void;
   value: string[];
-  form: UseFormReturn<any>;
+  /** Kept for call-site compatibility; uploads don't touch other fields. */
+  form?: UseFormReturn<any>;
   bucket: string;
   maxImages?: number;
   /** Compact square layout for tight spaces (e.g. a table cell). */
   compact?: boolean;
+  /** Left side of the footer row (format hints); the counter sits opposite. */
+  footer?: React.ReactNode;
 }
 
+const keyOf = (file: FileToUpload) => file.liveSource || file.preview || "";
+
+/**
+ * Product image grid: the cover takes a 2×2 tile, the rest follow, and tiles
+ * reorder by drag. Files upload to Supabase as soon as they're dropped.
+ */
 export function ImageUpload({
   onChange,
   value,
-  form,
   bucket,
   maxImages = 5,
   compact = false,
+  footer,
 }: ImageUploadProps) {
   const supabase = createClient();
   const tToast = useTranslations("toast");
   const t = useTranslations("inputs.imageUpload");
 
-  const [filesToUpload, setFilesToUpload] = useState<FileToUpload[]>(() =>
-    value.map((file) => ({
-      progress: 0,
-      liveSource: file,
-      isUploaded: true,
-    })),
+  const [files, setFiles] = useState<FileToUpload[]>(() =>
+    value.map((file) => ({ liveSource: file, isUploaded: true }))
   );
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [overIndex, setOverIndex] = useState<number | null>(null);
 
-  // Keep local state in sync when form value changes externally
+  // Keep local state in sync when the form value changes externally (import, draft restore).
   useEffect(() => {
-    const hasInProgress = filesToUpload.some((f) => !f.isUploaded);
-    if (hasInProgress) return;
-
-    const currentLiveSources = filesToUpload
-      .map((f) => f.liveSource)
-      .filter((v): v is string => Boolean(v));
-
-    const isSame =
-      currentLiveSources.length === value.length &&
-      currentLiveSources.every((v, i) => v === value[i]);
-
-    if (isSame) return;
-
-    setFilesToUpload(
-      value.map((file) => ({
-        progress: 0,
-        liveSource: file,
-        isUploaded: true,
-      })),
-    );
+    if (files.some((f) => !f.isUploaded)) return;
+    const current = files.map((f) => f.liveSource).filter((v): v is string => Boolean(v));
+    const isSame = current.length === value.length && current.every((v, i) => v === value[i]);
+    if (!isSame) setFiles(value.map((file) => ({ liveSource: file, isUploaded: true })));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
-  // Cleanup blob URLs on unmount to prevent memory leaks
+  // Revoke blob previews on unmount.
   useEffect(() => {
     return () => {
-      filesToUpload.forEach((file) => {
-        if (file.preview && file.preview.startsWith("blob:")) {
-          URL.revokeObjectURL(file.preview);
-        }
+      files.forEach((file) => {
+        if (file.preview?.startsWith("blob:")) URL.revokeObjectURL(file.preview);
       });
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const removeFile = useCallback(
-    (fileToRemove: string) => {
-      setFilesToUpload((prev) => {
-        const filtered = prev.filter((item) => {
-          const shouldRemove =
-            item.liveSource === fileToRemove || item.preview === fileToRemove;
-
-          // Clean up blob URL if it's a preview image being removed
-          if (
-            shouldRemove &&
-            item.preview &&
-            item.preview.startsWith("blob:")
-          ) {
-            URL.revokeObjectURL(item.preview);
-          }
-
-          return !shouldRemove;
-        });
-
-        return filtered;
-      });
-
-      // Only update the onChange value if it's an uploaded file (has liveSource)
-      const updatedValue = value.filter((item) => item !== fileToRemove);
-      if (updatedValue.length !== value.length) {
-        onChange(updatedValue);
-      }
+    (source: string) => {
+      setFiles((prev) =>
+        prev.filter((item) => {
+          const match = item.liveSource === source || item.preview === source;
+          if (match && item.preview?.startsWith("blob:")) URL.revokeObjectURL(item.preview);
+          return !match;
+        })
+      );
+      const next = value.filter((item) => item !== source);
+      if (next.length !== value.length) onChange(next);
     },
-    [onChange, value],
+    [onChange, value]
   );
 
-  const handleFileUpload = useCallback(
+  const uploadFile = useCallback(
     async (file: File): Promise<string | null> => {
-      const folderName = getTodayDate();
-      const uniqueFileName = generateImageName(file);
-
       try {
         const { data, error } = await supabase.storage
           .from(bucket)
-          .upload(uniqueFileName, file, { upsert: false });
-
+          .upload(generateImageName(file), file, { upsert: false });
         if (error) throw error;
-
-        setFilesToUpload((prev) =>
+        setFiles((prev) =>
           prev.map((item) =>
-            item.file?.name === file.name
-              ? { ...item, liveSource: data.path, isUploaded: true }
-              : item,
-          ),
+            item.file === file ? { ...item, liveSource: data.path, isUploaded: true } : item
+          )
         );
-
         return data.path;
-      } catch (error) {
-        setFilesToUpload((prev) =>
-          prev.filter((item) => item.file?.name !== file.name),
-        );
+      } catch {
+        setFiles((prev) => prev.filter((item) => item.file !== file));
         toast.error(tToast("uploadError", { fileName: file.name }));
         return null;
       }
     },
-    [supabase, tToast],
+    [bucket, supabase, tToast]
   );
 
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
-      // Check if adding new files would exceed max limit
-      const currentCount = filesToUpload.length;
-      const availableSlots = maxImages - currentCount;
-
+      const availableSlots = maxImages - files.length;
       if (availableSlots <= 0) {
         toast.error(tToast("maxImagesAllowed", { max: maxImages }));
         return;
       }
 
-      // Limit accepted files to available slots
-      const filesToProcess = acceptedFiles.slice(0, availableSlots);
-      const exceededFiles = acceptedFiles.slice(availableSlots);
-
-      if (exceededFiles.length > 0) {
-        toast.warning(
-          tToast("onlyMoreImagesAllowed", {
-            available: availableSlots,
-            skipped: exceededFiles.length,
-          }),
-        );
+      const toProcess = acceptedFiles.slice(0, availableSlots);
+      const skipped = acceptedFiles.length - toProcess.length;
+      if (skipped > 0) {
+        toast.warning(tToast("onlyMoreImagesAllowed", { available: availableSlots, skipped }));
       }
 
-      const { validFiles, invalidFiles } = await Promise.all(
-        filesToProcess.map(async (file) => {
+      const checked = await Promise.all(
+        toProcess.map(async (file) => {
           try {
             await validateImage(file);
-            return { file, isValid: true };
+            return file;
           } catch (error) {
-            return { file, isValid: false, error };
+            toast.error(
+              error instanceof Error
+                ? tToast.has(error.message)
+                  ? tToast(error.message)
+                  : error.message
+                : t("unknownError")
+            );
+            return null;
           }
-        }),
-      ).then((results) =>
-        results.reduce(
-          (acc, { file, isValid, error }) => {
-            if (isValid) {
-              acc.validFiles.push(file);
-            } else {
-              acc.invalidFiles.push(file);
-              toast.error(
-                error instanceof Error
-                  ? tToast.has(error.message)
-                    ? tToast(error.message)
-                    : error.message
-                  : t("unknownError"),
-              );
-            }
-            return acc;
-          },
-          { validFiles: [] as File[], invalidFiles: [] as File[] },
-        ),
+        })
       );
-
+      const validFiles = checked.filter((file): file is File => file !== null);
       if (validFiles.length === 0) return;
 
-      const newFilesToUpload: FileToUpload[] = validFiles.map((file) => ({
-        progress: 0,
-        file,
-        preview: URL.createObjectURL(file),
-        liveSource: null,
-        isUploaded: false,
-      }));
+      setFiles((prev) => [
+        ...prev,
+        ...validFiles.map((file) => ({
+          file,
+          preview: URL.createObjectURL(file),
+          liveSource: null,
+          isUploaded: false,
+        })),
+      ]);
 
-      setFilesToUpload((prev) => [...prev, ...newFilesToUpload]);
-
-      const uploadedPaths = await Promise.all(validFiles.map(handleFileUpload));
-      const successfulUploads = uploadedPaths.filter(
-        (path): path is string => path !== null,
-      );
-
-      onChange([...value, ...successfulUploads]);
+      const uploaded = await Promise.all(validFiles.map(uploadFile));
+      onChange([...value, ...uploaded.filter((path): path is string => path !== null)]);
     },
-    [
-      handleFileUpload,
-      onChange,
-      value,
-      filesToUpload.length,
-      maxImages,
-      tToast,
-    ],
+    [files.length, maxImages, onChange, t, tToast, uploadFile, value]
   );
 
-  const isMaxReached = filesToUpload.length >= maxImages;
+  const isMaxReached = files.length >= maxImages;
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    accept: {
-      "image/*": [],
-    },
+    accept: { "image/png": [], "image/jpeg": [], "image/webp": [] },
     onDrop,
     disabled: isMaxReached,
     maxFiles: maxImages,
+    // Tile reordering uses native drag events too; don't treat those as file drops.
+    noDragEventsBubbling: true,
   });
 
-  const handleOnDragEnd = useCallback(
-    (result: DropResult) => {
-      if (!result.destination) return;
+  const move = (from: number, to: number) => {
+    if (from === to) return;
+    const next = [...files];
+    const [item] = next.splice(from, 1);
+    if (!item) return;
+    next.splice(to, 0, item);
+    setFiles(next);
+    onChange(next.map((f) => f.liveSource).filter((s): s is string => s !== null));
+  };
 
-      const items = Array.from(filesToUpload);
-      const [reorderedItem] = items.splice(result.source.index, 1);
-
-      if (reorderedItem && result.destination) {
-        items.splice(result.destination.index, 0, reorderedItem);
-
-        setFilesToUpload(items);
-        onChange(
-          items
-            .map((item) => item.liveSource)
-            .filter((source): source is string => source !== null),
-        );
-      }
+  const tileDragProps = (index: number) => ({
+    draggable: files[index]?.isUploaded,
+    onDragStart: (e: React.DragEvent) => {
+      setDragIndex(index);
+      e.dataTransfer.effectAllowed = "move";
     },
-    [filesToUpload, onChange],
+    onDragEnd: () => {
+      setDragIndex(null);
+      setOverIndex(null);
+    },
+    onDragOver: (e: React.DragEvent) => {
+      if (dragIndex === null) return;
+      e.preventDefault();
+      setOverIndex(index);
+    },
+    onDragLeave: () => setOverIndex((current) => (current === index ? null : current)),
+    onDrop: (e: React.DragEvent) => {
+      if (dragIndex === null) return;
+      e.preventDefault();
+      move(dragIndex, index);
+      setDragIndex(null);
+      setOverIndex(null);
+    },
+  });
+
+  const dropzone = (variant: "big" | "tile" | "compact") => (
+    <div
+      {...getRootProps()}
+      className={cn(
+        "flex cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-[1.5px] border-dashed border-input bg-muted text-center text-xs text-muted-foreground transition-colors",
+        "hover:border-primary hover:bg-primary-soft hover:text-primary-ink",
+        isDragActive && "border-primary bg-primary-soft text-primary-ink",
+        variant === "big" && "col-span-full px-4 py-8",
+        variant === "tile" && "aspect-square p-2",
+        variant === "compact" && "size-16 rounded-lg"
+      )}
+    >
+      <input {...getInputProps()} />
+      {variant === "big" ? (
+        <>
+          <span className="mb-1 grid size-11 place-items-center rounded-xl border bg-card text-primary-ink">
+            <ImagePlus className="size-[18px]" />
+          </span>
+          <b className="text-[15px] font-semibold text-foreground">
+            {isDragActive ? t("dropHere") : t("dropTitle")}
+          </b>
+          <span>{t("dropSubtitle", { max: maxImages })}</span>
+        </>
+      ) : (
+        <>
+          <Plus className="size-[18px]" />
+          {variant === "tile" && t("add")}
+        </>
+      )}
+    </div>
   );
 
+  if (compact) {
+    return (
+      <div className="flex flex-wrap gap-1.5">
+        {files.map((file, index) => (
+          <Tile
+            key={keyOf(file)}
+            file={file}
+            bucket={bucket}
+            compact
+            isOver={overIndex === index}
+            onRemove={removeFile}
+            removeLabel={t("removeImage")}
+            {...tileDragProps(index)}
+          />
+        ))}
+        {!isMaxReached && dropzone("compact")}
+      </div>
+    );
+  }
+
   return (
-    <div
-      className={
-        compact
-          ? "flex flex-col gap-2"
-          : "flex lg:flex-row flex-col justify-between gap-4"
-      }
-    >
-      {/* Image Preview */}
-      {filesToUpload.length > 0 && (
-        <div className={compact ? "" : "flex gap-6 flex-1"}>
-          {/* Thumbnail Grid */}
-          <div className={compact ? "" : "lg:col-span-1"}>
-            <div className="space-y-2">
-              {!compact && (
-                <h3 className="text-xs font-semibold text-foreground flex justify-between items-center gap-2">
-                  <ImageIcon className="size-4" />
-
-                  <span className="text-xs font-normal text-muted-foreground bg-muted px-2 py-1 rounded-full">
-                    {filesToUpload.length}/{maxImages}
-                  </span>
-                </h3>
-              )}
-
-              <DragDropContext onDragEnd={handleOnDragEnd}>
-                <Droppable
-                  droppableId="images"
-                  direction={compact ? "horizontal" : "vertical"}
-                >
-                  {(droppableProvided) => (
-                    <RadioGroup
-                      defaultValue={
-                        form.getValues("cover") ??
-                        filesToUpload[0]?.liveSource ??
-                        ""
-                      }
-                      className={
-                        compact ? "flex flex-wrap gap-2" : "flex flex-col gap-3"
-                      }
-                      onValueChange={(cover) =>
-                        form.setValue("attachments.cover", cover)
-                      }
-                      {...droppableProvided.droppableProps}
-                      ref={droppableProvided.innerRef}
-                    >
-                      {filesToUpload.map((file, idx) => (
-                        <Draggable
-                          key={file.liveSource || file.preview || ""}
-                          draggableId={file.liveSource || file.preview || ""}
-                          index={idx}
-                        >
-                          {(provided, snapshot) => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-                              className={`relative rounded-lg border transition-all duration-200 ${
-                                compact ? "size-30" : "min-w-28"
-                              } ${
-                                snapshot.isDragging
-                                  ? "bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-900/60 shadow-lg scale-105 rotate-2"
-                                  : "bg-card border-border hover:border-muted-foreground/40 hover:shadow-md"
-                              }`}
-                            >
-                              <FilePreview
-                                file={file}
-                                removeFile={removeFile}
-                                idx={idx}
-                                bucket={bucket}
-                                compact={compact}
-                              />
-                            </div>
-                          )}
-                        </Draggable>
-                      ))}
-                      {droppableProvided.placeholder}
-                    </RadioGroup>
-                  )}
-                </Droppable>
-              </DragDropContext>
-            </div>
-          </div>
-
-          {/* Preview Area */}
-          {!compact && (
-            <div className="lg:col-span-2">
-              <div className="space-y-4">
-                <div className="relative w-full h-[400px] bg-gradient-to-br from-muted/40 to-muted rounded-xl border border-border overflow-hidden shadow-sm">
-                  {filesToUpload.length > 0 ? (
-                    <div className="w-full h-full flex items-center justify-center p-2">
-                      <Image
-                        src={
-                          filesToUpload[0].liveSource
-                            ? getPublicUrl(filesToUpload[0].liveSource, bucket)
-                            : filesToUpload[0].preview || ""
-                        }
-                        width={600}
-                        height={600}
-                        className="w-full h-full object-contain rounded-lg max-w-xl"
-                        alt={t("selectedPreview")}
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      />
-                    </div>
-                  ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground">
-                      <ImageIcon className="h-16 w-16 mb-4 opacity-50" />
-                      <p className="text-sm font-medium">{t("noImageSelected")}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {t("chooseFromGallery")}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Upload */}
-      <div className={compact ? "relative" : "relative flex-1"}>
-        <label
-          {...getRootProps()}
-          className={`group bg-card relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed transition-all duration-200 ease-in-out ${
-            compact ? "size-30" : "w-full"
-          } ${
-            isMaxReached
-              ? "cursor-not-allowed border-border bg-muted/50 opacity-60"
-              : isDragActive
-                ? "cursor-pointer border-primary/60 bg-primary/5 scale-[1.02] shadow-lg"
-                : "cursor-pointer border-border bg-muted/30 hover:border-primary/40 hover:bg-primary/5 hover:shadow-md"
-          }`}
-        >
-          {compact ? (
-            <div className="space-y-1 text-center px-2 py-2">
-              {isMaxReached ? (
-                <ImageIcon className="mx-auto size-6 text-muted-foreground" />
-              ) : (
-                <Upload className="mx-auto size-6 text-muted-foreground group-hover:text-primary transition-colors duration-200" />
-              )}
-              <p className="text-xs font-medium text-muted-foreground">
-                {filesToUpload.length}/{maxImages}
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4 text-center px-6 py-8">
-              <div
-                className={`relative transition-transform duration-200 ${isDragActive ? "scale-110" : "group-hover:scale-105"}`}
-              >
-                {isMaxReached ? (
-                  <ImageIcon className="mx-auto h-12 w-12 text-muted-foreground" />
-                ) : (
-                  <Upload className="mx-auto h-12 w-12 text-muted-foreground group-hover:text-primary transition-colors duration-200" />
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <p
-                  className={`text-lg font-semibold transition-colors duration-200 ${
-                    isMaxReached
-                      ? "text-muted-foreground"
-                      : isDragActive
-                        ? "text-primary"
-                        : "text-foreground group-hover:text-primary"
-                  }`}
-                >
-                  {isMaxReached
-                    ? t("maxReached", { max: maxImages })
-                    : isDragActive
-                      ? t("dropHere")
-                      : t("clickOrDrag")}
-                </p>
-
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {t("formats")}
-                </p>
-
-                <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 rounded-full bg-border"></div>
-                    <span>{t("dragDrop")}</span>
-                  </div>
-                  <span>•</span>
-                  <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 rounded-full bg-border"></div>
-                    <span>{t("clickBrowse")}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Progress indicator */}
-              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                <span>
-                  {t("progress", { count: filesToUpload.length, max: maxImages })}
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* Subtle background pattern */}
-          <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-transparent via-transparent to-muted/20 pointer-events-none" />
-        </label>
-
-        <Input
-          {...getInputProps()}
-          id="dropzone-file"
-          accept="image/png, image/jpeg, image/webp"
-          type="file"
-          className="hidden"
-          disabled={isMaxReached}
-        />
+    <div className="flex flex-col gap-3">
+      <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4">
+        {files.length === 0
+          ? dropzone("big")
+          : files.map((file, index) => (
+              <Tile
+                key={keyOf(file)}
+                file={file}
+                bucket={bucket}
+                isCover={index === 0}
+                coverLabel={t("cover")}
+                isOver={overIndex === index}
+                onRemove={removeFile}
+                removeLabel={t("removeImage")}
+                className={index === 0 ? "col-span-2 row-span-2" : undefined}
+                {...tileDragProps(index)}
+              />
+            ))}
+        {files.length > 0 && !isMaxReached && dropzone("tile")}
+      </div>
+      <div className="flex flex-wrap justify-between gap-3 text-xs text-muted-foreground">
+        <span>{footer}</span>
+        <span className="font-sans tabular-nums">
+          {files.length} / {maxImages}
+        </span>
       </div>
     </div>
   );
 }
 
-interface FilePreviewProps {
+interface TileProps extends React.HTMLAttributes<HTMLDivElement> {
   file: FileToUpload;
-  removeFile: (file: string) => void;
-  idx: number;
   bucket: string;
   compact?: boolean;
+  isCover?: boolean;
+  coverLabel?: string;
+  isOver: boolean;
+  onRemove: (source: string) => void;
+  removeLabel: string;
+  draggable?: boolean;
 }
 
-const FilePreview = React.memo(
-  ({ file, removeFile, idx, bucket, compact = false }: FilePreviewProps) => {
-    const t = useTranslations("inputs.imageUpload");
-    // Determine the image source
-    const getImageSrc = () => {
-      if (file.liveSource) {
-        return getPublicUrl(file.liveSource, bucket);
-      } else if (file.preview) {
-        return file.preview;
-      }
-      return "";
-    };
+function Tile({
+  file,
+  bucket,
+  compact = false,
+  isCover = false,
+  coverLabel,
+  isOver,
+  onRemove,
+  removeLabel,
+  className,
+  ...dragProps
+}: TileProps) {
+  const src = file.liveSource ? getPublicUrl(file.liveSource, bucket) : file.preview || "";
+  const isUploading = !file.isUploaded;
 
-    const imageSrc = getImageSrc();
-    const isUploaded = file.isUploaded && file.liveSource;
-    const isUploading = !file.isUploaded && file.preview;
-    const isPrimary = idx === 0;
+  return (
+    <div
+      {...dragProps}
+      className={cn(
+        "group relative aspect-square overflow-hidden rounded-xl border bg-muted",
+        compact ? "size-16 rounded-lg" : "cursor-grab active:cursor-grabbing",
+        isOver && "outline-2 outline-offset-2 outline-primary outline-dashed",
+        className
+      )}
+    >
+      {src && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={src} alt="" className="size-full object-cover" draggable={false} />
+      )}
 
-    return (
-      <div className="relative group">
-        <AspectRatio ratio={compact ? 1 : 4 / 3} className="relative">
-          {imageSrc ? (
-            <Image
-              src={imageSrc}
-              fill
-              className="object-cover transition-transform duration-300 hover:scale-105 hover:rotate-2 rounded-lg"
-              alt={`Image ${idx + 1}`}
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            />
-          ) : (
-            <div className="w-full h-full bg-muted flex items-center justify-center">
-              <ImageIcon className="h-8 w-8 text-muted-foreground" />
-            </div>
+      {isUploading && (
+        <div className="absolute inset-0 grid place-items-center bg-black/50">
+          <LoaderCircle className="size-5 animate-spin text-white" />
+        </div>
+      )}
+
+      {isCover && !isUploading && (
+        <span className="absolute top-2 start-2 rounded-full bg-primary px-2 text-[11px] leading-[22px] font-semibold text-primary-foreground">
+          {coverLabel}
+        </span>
+      )}
+
+      {!isUploading && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            const source = file.liveSource || file.preview;
+            if (source) onRemove(source);
+          }}
+          aria-label={removeLabel}
+          className={cn(
+            "absolute top-1.5 end-1.5 grid place-items-center rounded-lg bg-black/55 text-white transition-opacity",
+            compact ? "size-6" : "size-7",
+            "opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
           )}
-
-          {/* Loading overlay for uploading images */}
-          {isUploading && (
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center rounded-lg">
-              <div className="text-center text-white">
-                <LoaderCircle className="w-6 h-6 animate-spin mx-auto mb-2" />
-              </div>
-            </div>
-          )}
-
-          {/* Primary image indicator */}
-          {isPrimary && isUploaded && (
-            <div className="absolute top-2 start-2 bg-primary ring-1 text-white text-[10px] px-1 py-0.5 rounded-full font-semibold shadow-sm">
-              Main
-            </div>
-          )}
-
-          {/* Remove button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              const sourceToRemove = file.liveSource || file.preview;
-              if (sourceToRemove) {
-                removeFile(sourceToRemove);
-              }
-            }}
-            className="absolute -top-1.5 -end-1.5 hover:text-white w-5.5 h-5.5 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center lg:opacity-80 group-hover:opacity-100 transition-all duration-300 shadow-lg hover:scale-105"
-            aria-label={t("removeImage")}
-          >
-            <X className="size-3.5" />
-          </Button>
-        </AspectRatio>
-      </div>
-    );
-  },
-);
-
-FilePreview.displayName = "FilePreview";
+        >
+          <Trash2 className="size-3.5" />
+        </button>
+      )}
+    </div>
+  );
+}

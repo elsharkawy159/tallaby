@@ -26,6 +26,15 @@ export const metadata = {
   metadataBase: new URL(defaultUrl),
   title: "Admin Dashboard",
   description: "Admin Dashboard",
+  icons: {
+    apple: [{ url: "/logo/logo.png", sizes: "180x180" }],
+  },
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "Tallaby Admin",
+    statusBarStyle: "default",
+  },
   robots: {
     index: false,
     follow: false,

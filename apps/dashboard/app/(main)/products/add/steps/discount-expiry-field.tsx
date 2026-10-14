@@ -3,15 +3,17 @@
 import { useLocale, useTranslations } from "next-intl";
 import { ar as arLocale } from "date-fns/locale";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useFormContext } from "react-hook-form";
-import { Switch } from "@workspace/ui/components/switch";
 import { DateTimeInput } from "@workspace/ui/components";
+import { ToggleRow } from "@/components/form/form-ui";
 import type { AddProductFormData } from "../add-product.schema";
 
 interface DiscountExpiryFieldProps {
   name: string;
-  label?: string;
+  /** Defaults to the short "Discount expiry" label. */
+  title?: string;
+  description?: string;
 }
 
 function defaultExpiry(): Date {
@@ -21,55 +23,43 @@ function defaultExpiry(): Date {
   return date;
 }
 
-export function DiscountExpiryField({
-  name,
-  label,
-}: DiscountExpiryFieldProps) {
+export function DiscountExpiryField({ name, title, description }: DiscountExpiryFieldProps) {
   const form = useFormContext<AddProductFormData>();
   const t = useTranslations("productForm.discountExpiry");
   const locale = useLocale();
+  const id = useId();
   const value = form.watch(name as any) as Date | null | undefined;
   const [enabled, setEnabled] = useState<boolean>(!!value);
 
   const handleToggle = (checked: boolean) => {
     setEnabled(checked);
     if (!checked) {
-      form.setValue(name as any, null, {
-        shouldDirty: true,
-        shouldValidate: true,
-      });
+      form.setValue(name as any, null, { shouldDirty: true, shouldValidate: true });
     } else if (!value) {
-      form.setValue(name as any, defaultExpiry(), {
-        shouldDirty: true,
-        shouldValidate: true,
-      });
+      form.setValue(name as any, defaultExpiry(), { shouldDirty: true, shouldValidate: true });
     }
   };
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-3">
-        <Switch
-          id={`${name}-toggle`}
-          checked={enabled}
-          onCheckedChange={handleToggle}
-        />
-        <label
-          htmlFor={`${name}-toggle`}
-          className="text-sm font-medium cursor-pointer"
-        >
-          {label ?? t("label")}
-        </label>
-      </div>
+    <div className="flex flex-col gap-3">
+      <ToggleRow
+        id={`${id}-discount-expiry`}
+        checked={enabled || !!value}
+        onCheckedChange={handleToggle}
+        title={title ?? t("label")}
+        description={description}
+      />
 
-      {enabled && (
-        <DateTimeInput
-          name={name}
-          placeholder={t("placeholder")}
-          minDate={new Date()}
-          showClearButton={false}
-          locale={locale === "ar" ? arLocale : undefined}
-        />
+      {(enabled || !!value) && (
+        <div className="max-w-sm">
+          <DateTimeInput
+            name={name}
+            placeholder={t("placeholder")}
+            minDate={new Date()}
+            showClearButton={false}
+            locale={locale === "ar" ? arLocale : undefined}
+          />
+        </div>
       )}
     </div>
   );

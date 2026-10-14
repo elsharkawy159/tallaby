@@ -1,49 +1,52 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Copy, Loader2 } from "lucide-react";
+import { Copy, Smartphone } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@workspace/ui/components/button";
+import { Checkbox } from "@workspace/ui/components/checkbox";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { createAdRequest } from "@/actions/ads";
 import { EGYPT_MOBILE_REGEX, VODAFONE_CASH_NUMBER, type AdPackage } from "@/lib/ad-packages";
 
-type Props = {
-  pkg: AdPackage;
-  productId: string | null;
-  onSubmitted: () => void;
-};
-
 /** Vodafone's brand red, used only to mark this as the Vodafone Cash step. */
 const VODAFONE_RED = "#E60000";
 
-export function PaymentPanel({ pkg, productId, onSubmitted }: Props) {
-  const t = useTranslations("advertise.payment");
+/**
+ * Payment form state, lifted so the step footer, the order summary and the
+ * mobile bar can all submit the same form.
+ */
+export function usePaymentForm({
+  pkg,
+  productId,
+  onSubmitted,
+}: {
+  pkg: AdPackage | null;
+  productId: string | null;
+  onSubmitted: () => void;
+}) {
   const tErrors = useTranslations("advertise.errors");
   const [payerPhone, setPayerPhone] = useState("");
   const [reference, setReference] = useState("");
+  const [agreed, setAgreed] = useState(false);
   const [phoneTouched, setPhoneTouched] = useState(false);
   const [pending, startTransition] = useTransition();
 
   const phoneValid = EGYPT_MOBILE_REGEX.test(payerPhone.trim());
-  const showPhoneError = phoneTouched && !phoneValid;
-  const amount = pkg.price.toLocaleString();
+  const ready = !!pkg && !!productId && phoneValid && agreed && !pending;
 
-  const copyNumber = async () => {
-    try {
-      await navigator.clipboard.writeText(VODAFONE_CASH_NUMBER);
-      toast.success(t("copied"));
-    } catch {
-      // Clipboard can be blocked (insecure context); the number stays selectable.
-    }
+  const reset = () => {
+    setPayerPhone("");
+    setReference("");
+    setAgreed(false);
+    setPhoneTouched(false);
   };
 
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const submit = () => {
     setPhoneTouched(true);
-    if (!productId || !phoneValid) return;
+    if (!pkg || !productId || !phoneValid || !agreed) return;
 
     startTransition(async () => {
       const result = await createAdRequest({
@@ -53,9 +56,7 @@ export function PaymentPanel({ pkg, productId, onSubmitted }: Props) {
         transferReference: reference.trim() || undefined,
       });
       if (result.success) {
-        setPayerPhone("");
-        setReference("");
-        setPhoneTouched(false);
+        reset();
         onSubmitted();
       } else {
         toast.error(tErrors(result.error));
@@ -63,87 +64,162 @@ export function PaymentPanel({ pkg, productId, onSubmitted }: Props) {
     });
   };
 
-  return (
-    <div className="overflow-hidden rounded-2xl border bg-card">
-      <div className="border-s-4 p-5 sm:p-6" style={{ borderInlineStartColor: VODAFONE_RED }}>
-        <h3 className="text-lg font-bold">{t("title", { amount })}</h3>
+  return {
+    payerPhone,
+    setPayerPhone,
+    reference,
+    setReference,
+    agreed,
+    setAgreed,
+    phoneTouched,
+    setPhoneTouched,
+    phoneValid,
+    pending,
+    ready,
+    submit,
+  };
+}
 
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-muted/60 px-4 py-3">
-          <div>
-            <p className="text-xs text-muted-foreground">{t("number")}</p>
-            <p
-              dir="ltr"
-              className="select-all text-2xl font-bold tracking-wider tabular-nums sm:text-3xl"
-            >
-              {VODAFONE_CASH_NUMBER}
-            </p>
-          </div>
-          <Button type="button" variant="outline" size="sm" onClick={copyNumber}>
-            <Copy className="size-4" aria-hidden />
-            {t("copy")}
-          </Button>
+export type PaymentForm = ReturnType<typeof usePaymentForm>;
+
+export function PaymentPanel({ pkg, form }: { pkg: AdPackage; form: PaymentForm }) {
+  const t = useTranslations("advertise.payment");
+  const tPackage = useTranslations("advertise.package");
+  const amount = pkg.price.toLocaleString();
+  const showPhoneError = form.phoneTouched && !form.phoneValid;
+
+  const copy = async (value: string, message: string) => {
+    try {
+      await navigator.clipboard.writeText(value);
+      toast.success(message);
+    } catch {
+      // Clipboard can be blocked (insecure context); the value stays selectable.
+    }
+  };
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        form.submit();
+      }}
+      noValidate
+      className="grid gap-4 xl:grid-cols-2"
+    >
+      <div className="flex flex-col gap-3.5 rounded-2xl border bg-muted/30 p-4">
+        <div className="flex items-center gap-2.5 font-bold">
+          <span
+            className="flex size-8 items-center justify-center rounded-full text-white"
+            style={{ backgroundColor: VODAFONE_RED }}
+          >
+            <Smartphone className="size-4" aria-hidden />
+          </span>
+          {t("brand")}
         </div>
 
-        <ol className="mt-4 space-y-2 text-sm">
-          {(["one", "two", "three"] as const).map((step, i) => (
-            <li key={step} className="flex gap-3">
-              <span
-                className="flex size-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white"
-                style={{ backgroundColor: VODAFONE_RED }}
-              >
-                {i + 1}
-              </span>
-              <span className="leading-relaxed">
-                {t(`howTo.${step}`, { number: VODAFONE_CASH_NUMBER, amount })}
-              </span>
-            </li>
+        <CopyField
+          label={t("number")}
+          value={VODAFONE_CASH_NUMBER}
+          copyLabel={t("copy")}
+          onCopy={() => copy(VODAFONE_CASH_NUMBER, t("copied"))}
+        />
+        <CopyField
+          label={t("amount")}
+          value={amount}
+          suffix={tPackage("currency")}
+          copyLabel={t("copy")}
+          onCopy={() => copy(String(pkg.price), t("amountCopied"))}
+        />
+
+        <ol className="list-decimal space-y-1 ps-4.5 text-xs leading-relaxed text-muted-foreground">
+          {(["one", "two", "three"] as const).map((step) => (
+            <li key={step}>{t(`howTo.${step}`, { number: VODAFONE_CASH_NUMBER, amount })}</li>
           ))}
         </ol>
       </div>
 
-      <form onSubmit={submit} noValidate className="space-y-4 border-t p-5 sm:p-6">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="payer-phone">{t("payerPhone")}</Label>
-            <Input
-              id="payer-phone"
-              dir="ltr"
-              inputMode="tel"
-              autoComplete="tel"
-              maxLength={11}
-              value={payerPhone}
-              onChange={(e) => setPayerPhone(e.target.value.replace(/\D/g, ""))}
-              onBlur={() => setPhoneTouched(true)}
-              placeholder={t("payerPhonePlaceholder")}
-              aria-invalid={showPhoneError}
-              aria-describedby={showPhoneError ? "payer-phone-error" : undefined}
-              className="text-start tabular-nums"
-            />
-            {showPhoneError && (
-              <p id="payer-phone-error" className="text-xs text-destructive">
-                {t("payerPhoneError")}
-              </p>
-            )}
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="transfer-reference">{t("reference")}</Label>
-            <Input
-              id="transfer-reference"
-              dir="ltr"
-              maxLength={100}
-              value={reference}
-              onChange={(e) => setReference(e.target.value)}
-              placeholder={t("referencePlaceholder")}
-              className="text-start"
-            />
-          </div>
+      <div className="flex flex-col gap-3.5">
+        <div className="space-y-1.5">
+          <Label htmlFor="payer-phone" className="flex justify-between gap-2">
+            {t("payerPhone")}
+            <span className="text-xs font-normal text-muted-foreground">{t("digits")}</span>
+          </Label>
+          <Input
+            id="payer-phone"
+            dir="ltr"
+            inputMode="tel"
+            autoComplete="tel"
+            maxLength={11}
+            value={form.payerPhone}
+            onChange={(e) => form.setPayerPhone(e.target.value.replace(/\D/g, ""))}
+            onBlur={() => form.setPhoneTouched(true)}
+            placeholder={t("payerPhonePlaceholder")}
+            aria-invalid={showPhoneError}
+            aria-describedby={showPhoneError ? "payer-phone-error" : undefined}
+            className="h-11 text-start tabular-nums"
+          />
+          {showPhoneError && (
+            <p id="payer-phone-error" className="text-xs text-destructive">
+              {t("payerPhoneError")}
+            </p>
+          )}
         </div>
 
-        <Button type="submit" size="lg" className="w-full" disabled={pending || !productId}>
-          {pending && <Loader2 className="size-4 animate-spin" aria-hidden />}
-          {pending ? t("submitting") : productId ? t("submit") : t("needProduct")}
+        <div className="space-y-1.5">
+          <Label htmlFor="transfer-reference" className="flex justify-between gap-2">
+            {t("reference")}
+            <span className="text-xs font-normal text-muted-foreground">{t("optional")}</span>
+          </Label>
+          <Input
+            id="transfer-reference"
+            dir="ltr"
+            maxLength={100}
+            value={form.reference}
+            onChange={(e) => form.setReference(e.target.value)}
+            placeholder={t("referencePlaceholder")}
+            className="h-11 text-start"
+          />
+        </div>
+
+        <label className="flex cursor-pointer items-start gap-2.5 text-xs leading-relaxed text-muted-foreground">
+          <Checkbox
+            checked={form.agreed}
+            onCheckedChange={(v) => form.setAgreed(v === true)}
+            className="mt-0.5"
+          />
+          {t("agree")}
+        </label>
+      </div>
+    </form>
+  );
+}
+
+function CopyField({
+  label,
+  value,
+  suffix,
+  copyLabel,
+  onCopy,
+}: {
+  label: string;
+  value: string;
+  suffix?: string;
+  copyLabel: string;
+  onCopy: () => void;
+}) {
+  return (
+    <div className="space-y-1">
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <div className="flex h-11.5 items-center justify-between gap-2.5 rounded-xl border bg-card ps-3.5 pe-1.5">
+        <p className="select-all text-[17px] font-bold tracking-wide tabular-nums">
+          <span dir="ltr">{value}</span>
+          {suffix && <span className="ms-1.5 text-sm font-medium tracking-normal">{suffix}</span>}
+        </p>
+        <Button type="button" variant="neutral" size="sm" onClick={onCopy}>
+          <Copy aria-hidden />
+          {copyLabel}
         </Button>
-      </form>
+      </div>
     </div>
   );
 }

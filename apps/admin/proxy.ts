@@ -12,10 +12,11 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
+     * - manifest.webmanifest (PWA manifest — must load before login)
      * - api/revalidate (server-to-server cache invalidation webhook —
      *   authenticated by its own shared secret, not a user session)
      * Feel free to modify this pattern to include more paths.
      */
-    '/((?!_next/static|_next/image|favicon.ico|api/revalidate|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|api/revalidate|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };

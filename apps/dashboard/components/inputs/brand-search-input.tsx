@@ -17,7 +17,6 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from '@workspace/ui/components/form'
 import {
@@ -29,6 +28,7 @@ import { searchBrands, createBrand } from '@/actions/brands'
 import { useDebounce } from '@/hooks/use-debounce'
 import { toast } from 'sonner'
 import { useTranslations } from 'next-intl'
+import { FieldLabel } from '@/components/form/form-ui'
 
 export interface BrandOption {
   id: string
@@ -43,6 +43,8 @@ interface BrandSearchInputProps {
   disabled?: boolean
   className?: string
   selectedBrands?: BrandOption[]
+  /** Muted note at the end of the label, e.g. "Optional". */
+  labelNote?: string
 }
 
 export function BrandSearchInput({
@@ -52,6 +54,7 @@ export function BrandSearchInput({
   disabled = false,
   className,
   selectedBrands = [],
+  labelNote,
 }: BrandSearchInputProps) {
   const form = useFormContext()
   const tToast = useTranslations('toast')
@@ -144,8 +147,8 @@ export function BrandSearchInput({
       control={form.control}
       name={name}
       render={() => (
-        <FormItem className={className}>
-          <FormLabel className="text-sm">{label ?? t('label')}</FormLabel>
+        <FormItem className={cn('gap-1.5', className)}>
+          <FieldLabel note={labelNote}>{label ?? t('label')}</FieldLabel>
           <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
               <FormControl>
@@ -155,14 +158,14 @@ export function BrandSearchInput({
                   role="combobox"
                   disabled={disabled}
                   className={cn(
-                    'justify-between gap-2 ps-3 w-full truncate rounded-lg bg-card h-11.5 hover:bg-muted/50 transition-colors text-foreground font-medium',
+                    'justify-between gap-2 ps-3.5 pe-3 w-full truncate rounded-[10px] border-input bg-card h-11 shadow-none hover:bg-card hover:border-faint transition-[border-color,box-shadow] text-foreground font-normal rtl:flex-row data-[state=open]:border-primary data-[state=open]:ring-[3px] data-[state=open]:ring-primary/20',
                     !selectedBrand && 'text-muted-foreground'
                   )}
                 >
                   <span className="truncate">
                     {selectedBrand ? selectedBrand.name : (placeholder ?? t('placeholder'))}
                   </span>
-                  <ChevronsUpDown className="ms-2 h-4 w-4 shrink-0 opacity-50" />
+                  <ChevronsUpDown className="size-4 shrink-0 text-faint" />
                 </Button>
               </FormControl>
             </PopoverTrigger>

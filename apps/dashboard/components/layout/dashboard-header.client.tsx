@@ -8,6 +8,7 @@ import { ChevronRight, Menu, Search } from "lucide-react";
 import { useSidebarStore } from "@/stores";
 import { CommandPalette } from "./command-palette.client";
 import { resolveDashboardRoute } from "./dashboard-routes.lib";
+import { InstallAppButton } from "./install-app-button.client";
 import { LanguageToggle } from "./language-toggle.client";
 import { ThemeToggle } from "./theme-toggle.client";
 
@@ -96,6 +97,7 @@ export function DashboardHeader() {
         <Search className="size-[18px]" />
       </button>
 
+      <InstallAppButton />
       <LanguageToggle />
       <ThemeToggle />
 

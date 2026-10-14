@@ -28,6 +28,15 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: t("title"),
     description: t("description"),
+    icons: {
+      apple: [{ url: "/logo/logo.png", sizes: "180x180" }],
+    },
+    manifest: "/manifest.webmanifest",
+    appleWebApp: {
+      capable: true,
+      title: "Tallaby Seller",
+      statusBarStyle: "default",
+    },
     robots: {
       index: false,
       follow: false,

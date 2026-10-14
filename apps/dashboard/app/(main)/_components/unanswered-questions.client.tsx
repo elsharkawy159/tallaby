@@ -1,132 +1,123 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import Image from "next/image";
-import { Button } from "@workspace/ui/components/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/card";
-import { Input } from "@workspace/ui/components/input";
-import { Separator } from "@workspace/ui/components/separator";
+import { useOptimistic, useState, useTransition } from "react";
+import { Reply } from "lucide-react";
+import { useLocale, useNow, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { useTranslations } from "next-intl";
+import { Button } from "@workspace/ui/components/button";
+import { Input } from "@workspace/ui/components/input";
+import { formatRelativeTime } from "@/lib/i18n/format";
+import type { HomeQuestion } from "./home.queries";
+import { ProductThumb } from "./home-ui";
 import { handleAnswerQuestion } from "./unanswered-questions.server";
-import { MessageCircleQuestion, Send } from "lucide-react";
-import { getPublicUrl } from "@/lib/utils";
 
-type QuestionRow = {
-  id: string;
-  question: string;
-  createdAt?: string | null;
-  productId: string;
-  productTitle: string;
-  productSku?: string | null;
-  productImages?: string[] | null;
-};
-
-export function UnansweredQuestionsClient({
-  initial,
-}: {
-  initial: QuestionRow[];
-}) {
-  const [rows, setRows] = useState<QuestionRow[]>(initial);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [isPending, startTransition] = useTransition();
-  const tToast = useTranslations("toast");
+/** Question list with an inline reply box per row. Answered rows leave immediately. */
+export function UnansweredQuestionsClient({ questions }: { questions: HomeQuestion[] }) {
   const t = useTranslations("home.questions");
+  const tToast = useTranslations("toast");
+  const locale = useLocale();
+  const now = useNow({ updateInterval: 60_000 });
+  const [rows, removeRow] = useOptimistic(questions, (state, id: string) =>
+    state.filter((q) => q.id !== id)
+  );
+  const [openId, setOpenId] = useState<string | null>(null);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [pendingId, setPendingId] = useState<string | null>(null);
+  const [, startTransition] = useTransition();
 
-  const handleChange = (id: string, v: string) => {
-    setAnswers((s) => ({ ...s, [id]: v }));
-  };
-
-  const handleSubmit = (id: string) => {
-    const payload = { questionId: id, answer: answers[id]?.trim() ?? "" };
-    if (!payload.answer) {
+  const submit = (id: string) => {
+    const answer = answers[id]?.trim() ?? "";
+    if (!answer) {
       toast.error(tToast("pleaseWriteAnswerFirst"));
       return;
     }
+    setPendingId(id);
     startTransition(async () => {
-      const res = await handleAnswerQuestion(payload);
+      removeRow(id);
+      const res = await handleAnswerQuestion({ questionId: id, answer });
+      setPendingId(null);
       if (res.success) {
         toast.success(tToast("answerSubmitted"));
-        setRows((r) => r.filter((q) => q.id !== id));
-        setAnswers((s) => ({ ...s, [id]: "" }));
+        setAnswers(({ [id]: _, ...rest }) => rest);
+        setOpenId(null);
       } else {
-        toast.error(res.error || tToast("failedToSubmitAnswer"));
+        // The optimistic removal rolls back on its own when the transition ends.
+        // Server errors are English internals, so show our own message.
+        toast.error(tToast("failedToSubmitAnswer"));
       }
     });
   };
 
   if (rows.length === 0) {
     return (
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <MessageCircleQuestion className="h-5 w-5" /> {t("emptyTitle")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            {t("empty")}
-          </p>
-        </CardContent>
-      </Card>
+      <div className="flex flex-col items-center gap-1.5 px-5 pb-7 pt-6 text-center text-[13px] text-muted-foreground">
+        <b className="text-sm text-foreground">{t("emptyTitle")}</b>
+        <span>{t("emptyDescription")}</span>
+      </div>
     );
   }
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="flex items-center gap-2">
-          <MessageCircleQuestion className="h-5 w-5" /> {t("title")}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {rows.map((q) => (
-          <div key={q.id} className="space-y-3">
-            <div className="flex items-start gap-3">
-              <div className="h-12 w-12 rounded bg-muted overflow-hidden flex-shrink-0">
-                <Image
-                  src={getPublicUrl(q.productImages?.[0] ?? "", "products")}
-                  alt={q.productTitle}
-                  width={48}
-                  height={48}
-                  className="h-12 w-12 object-cover"
-                />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="text-sm font-medium text-foreground truncate">
-                  {q.productTitle}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  {t("sku")}: <span dir="ltr">{q.productSku ?? t("notAvailable")}</span>
-                </div>
-                <div className="text-sm mt-2">
-                  {t("questionPrefix")} {q.question}
-                </div>
-              </div>
+    <ul className="flex flex-col px-5 pb-3.5 pt-1.5">
+      {rows.map((q) => {
+        const open = openId === q.id;
+        const inputId = `answer-${q.id}`;
+        return (
+          <li key={q.id} className="flex items-start gap-3.5 border-b py-3.5 last:border-b-0">
+            <ProductThumb src={q.image} />
+            <div className="min-w-0 flex-1">
+              <b className="block font-semibold leading-relaxed">{q.question}</b>
+              <small className="text-xs text-muted-foreground">
+                {q.productTitle}
+                {q.createdAt && <> · {formatRelativeTime(q.createdAt, locale, now)}</>}
+              </small>
+              {open && (
+                <form
+                  className="mt-2.5 flex gap-2"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    submit(q.id);
+                  }}
+                >
+                  <label htmlFor={inputId} className="sr-only">
+                    {t("answerPlaceholder")}
+                  </label>
+                  <Input
+                    id={inputId}
+                    autoFocus
+                    maxLength={2000}
+                    placeholder={t("answerPlaceholder")}
+                    value={answers[q.id] ?? ""}
+                    onChange={(e) => setAnswers((s) => ({ ...s, [q.id]: e.target.value }))}
+                    className="h-[38px] rounded-[10px]"
+                  />
+                  <Button
+                    type="submit"
+                    variant="secondary"
+                    size="sm"
+                    className="h-[38px] rounded-[9px]"
+                    disabled={pendingId === q.id || !answers[q.id]?.trim()}
+                  >
+                    {t("send")}
+                  </Button>
+                </form>
+              )}
             </div>
-            <div className="flex items-center gap-2">
-              <Input
-                placeholder={t("answerPlaceholder")}
-                value={answers[q.id] ?? ""}
-                onChange={(e) => handleChange(q.id, e.target.value)}
-              />
-              <Button
-                onClick={() => handleSubmit(q.id)}
-                disabled={isPending || !answers[q.id]?.trim()}
-              >
-                <Send className="h-4 w-4 me-1 rtl:-scale-x-100" />
-                {t("send")}
-              </Button>
-            </div>
-            <Separator />
-          </div>
-        ))}
-      </CardContent>
-    </Card>
+            <Button
+              type="button"
+              variant="neutral"
+              size="sm"
+              className="rounded-[9px]"
+              aria-expanded={open}
+              aria-controls={open ? inputId : undefined}
+              onClick={() => setOpenId(open ? null : q.id)}
+            >
+              <Reply aria-hidden />
+              {t("reply")}
+            </Button>
+          </li>
+        );
+      })}
+    </ul>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ChevronLeft, ChevronRight, Check } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronsUpDown, Check } from "lucide-react";
 
 import { cn } from "@workspace/ui/lib/utils";
 import { Button } from "@workspace/ui/components/button";
@@ -185,7 +185,7 @@ function CategoryPopover({
   const selectedLabel = React.useMemo(() => {
     if (!value) return "";
     const p = findCategoryPathById(categories, value);
-    return p ? p.map((c) => c.name).join(" / ") : "";
+    return p ? p.map((c) => c.name).join(" › ") : "";
   }, [categories, value]);
 
   return (
@@ -206,7 +206,7 @@ function CategoryPopover({
           variant="outline"
           disabled={disabled}
           className={cn(
-            "justify-between gap-2 ps-3 w-full truncate rounded-lg bg-card h-11.5 hover:bg-muted/50 transition-colors text-foreground font-medium",
+            "justify-between gap-2 ps-3.5 pe-3 w-full truncate rounded-[10px] border-input bg-card h-11 shadow-none hover:bg-card hover:border-faint transition-[border-color,box-shadow] text-foreground font-normal rtl:flex-row data-[state=open]:border-primary data-[state=open]:ring-[3px] data-[state=open]:ring-primary/20",
             !selectedLabel && "text-muted-foreground",
             triggerClassName,
             className
@@ -214,6 +214,7 @@ function CategoryPopover({
           aria-label={selectedLabel || placeholder}
         >
           <span className="truncate">{selectedLabel || placeholder}</span>
+          <ChevronsUpDown className="size-4 shrink-0 text-faint" />
         </Button>
       </PopoverTrigger>
       <PopoverContent
@@ -266,7 +267,7 @@ function CategoryPopover({
             <CommandEmpty>{labels.empty}</CommandEmpty>
             {query
               ? globalSearchResults.map((item) => {
-                  const label = item.path.map((p) => p.name).join(" / ");
+                  const label = item.path.map((p) => p.name).join(" › ");
                   const isSelected = Boolean(value && value === item.id);
                   return (
                     <CommandItem

@@ -13,6 +13,7 @@ import { searchBrands } from "@/actions/brands"
 import {
   flattenCategories,
   searchCategoriesByProductName,
+  suggestCategories,
 } from "./add-product.lib"
 import {
   defaultLocalizedFields,
@@ -464,17 +465,17 @@ export async function buildFormValuesFromImport (
       categoryMatched = true
     }
   } else {
-    const title = data.localized?.en?.title
-    if (title) {
-      const suggestions = searchCategoriesByProductName(
-        ctx.categories,
-        title,
-        1
-      )
-      if (suggestions.length > 0) {
-        values.categoryId = suggestions[0]!.id
-        categoryMatched = true
-      }
+    const [best] = suggestCategories(
+      ctx.categories,
+      {
+        titles: [data.localized?.en?.title, data.localized?.ar?.title],
+        description: data.localized?.en?.description,
+      },
+      1
+    )
+    if (best) {
+      values.categoryId = best.category.id
+      categoryMatched = true
     }
   }
 

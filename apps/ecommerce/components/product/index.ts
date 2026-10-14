@@ -3,11 +3,6 @@ export { WishlistButton } from "./wishlist-button";
 export { QuantitySelector } from "./quantity-selector";
 export { DiscountPercentBadge } from "./discount-percent-badge";
 export { ProductCardActions } from "./product-card-actions";
-export { ProductCardDiscountBadge } from "./product-card-discount-badge";
-export { ProductCardImage } from "./product-card-image";
-export { ProductCardInfo } from "./product-card-info";
-export { ProductCardMedia } from "./product-card-media";
-export { ProductCardSwatches } from "./product-card-swatches";
 export { ShareProductPopover } from "./share-product-popover";
 export type {
   ProductCardProps,

@@ -416,47 +416,138 @@
     }
   },
   "home": {
-    "walletBalance": "Wallet Balance",
-    "products": "Products",
-    "storeRating": "Store Rating",
-    "storeRatingValue": "{rating}/5 ({count, plural, one {# rating} other {# ratings}})",
-    "positiveRating": "Positive Rating",
-    "quickLinks": {
-      "title": "Quick Links",
-      "addProduct": "Add Product",
-      "addProductDescription": "List a new item",
+    "range": {
+      "label": "Reporting period",
+      "days": "{count} days"
+    },
+    "header": {
+      "morning": "Good morning, {name}",
+      "evening": "Good evening, {name}",
+      "pendingOrders": "You have {count, plural, one {# new order} other {# new orders}} waiting to be prepared.",
+      "almostReady": "Your store is almost ready. Finish setup to receive your first order.",
+      "summary": "Here's how your store is doing.",
+      "addProduct": "Add product"
+    },
+    "setup": {
+      "title": "Get your store ready for its first order",
+      "description": "Complete these steps so customers can find your store and start ordering.",
+      "progress": "Progress",
+      "done": "done",
+      "dismiss": "Hide setup guide",
+      "tasks": {
+        "profile": {
+          "title": "Set up your store profile",
+          "description": "Logo and store description",
+          "cta": "Set up"
+        },
+        "fulfillment": {
+          "title": "Set up shipping & fulfillment",
+          "description": "Pickup address and delivery method",
+          "cta": "Set up"
+        },
+        "product": {
+          "title": "Add your first product",
+          "description": "Photos, price and stock",
+          "cta": "Add product"
+        },
+        "coupon": {
+          "title": "Create a discount coupon",
+          "description": "Give new customers a reason to order",
+          "cta": "Create"
+        },
+        "campaign": {
+          "title": "Launch your first ad campaign",
+          "description": "Get seen by customers from day one",
+          "cta": "Start"
+        }
+      }
+    },
+    "kpis": {
+      "currency": "EGP",
+      "sales": "Sales",
       "orders": "Orders",
-      "ordersDescription": "Manage recent orders",
-      "shipping": "Shipping",
-      "shippingDescription": "Ship & track",
-      "promotions": "Promotions",
-      "promotionsDescription": "Create a coupon",
-      "analytics": "Analytics",
-      "analyticsDescription": "Performance overview",
-      "settings": "Settings",
-      "settingsDescription": "Store preferences"
+      "ordersUnit": "orders",
+      "wallet": "Wallet balance",
+      "rating": "Store rating",
+      "vsPrevious": "vs. previous period",
+      "noSales": "No sales yet",
+      "averageOrder": "Avg. order {value} {currency}",
+      "noOrders": "No orders yet",
+      "withdraw": "Withdraw balance",
+      "walletEmpty": "Added after your first delivered order",
+      "ratingLabel": "Rated {rating} out of 5",
+      "positive": "{percent} positive",
+      "noRatings": "No ratings yet"
     },
-    "latestOrders": "Latest Orders",
-    "viewAll": "View all",
-    "table": {
-      "order": "Order",
-      "customer": "Customer",
-      "product": "Product",
-      "date": "Date",
-      "status": "Status",
-      "total": "Total"
+    "chart": {
+      "title": "Sales",
+      "lastDays": "Last {count} days",
+      "statement": "Statement",
+      "revenue": "Revenue",
+      "orders": "Orders",
+      "currency": "EGP",
+      "ordersShort": "{count, plural, one {order} other {orders}}",
+      "emptyTitle": "Your sales performance will show here",
+      "emptyDescription": "after the first order on your store",
+      "emptyRangeTitle": "No sales in this period",
+      "emptyRangeDescription": "Try a longer period"
     },
-    "noRecentOrders": "No recent orders",
-    "customer": "Customer",
+    "attention": {
+      "title": "Needs your attention",
+      "description": "Open tasks right now",
+      "allClear": "No open tasks right now.",
+      "pendingOrders": {
+        "title": "Orders waiting to be prepared",
+        "description": "Prepare them before pickup"
+      },
+      "lowStock": {
+        "title": "Products running low",
+        "description": "Fewer than {threshold} left in stock"
+      },
+      "unansweredQuestions": {
+        "title": "Unanswered questions",
+        "description": "Customers are waiting for your reply"
+      },
+      "newReviews": {
+        "title": "New reviews",
+        "description": "Last 7 days"
+      }
+    },
+    "orders": {
+      "title": "Latest orders",
+      "description": "Last {count, plural, one {# order} other {# orders}}",
+      "viewAll": "View all orders",
+      "emptyTitle": "No orders yet",
+      "emptyDescription": "When your first order arrives it will show here with its status and customer details.",
+      "promote": "Promote your products",
+      "guest": "Guest",
+      "table": {
+        "order": "Order",
+        "customer": "Customer",
+        "product": "Product",
+        "date": "Date",
+        "total": "Total",
+        "status": "Status"
+      }
+    },
+    "topProducts": {
+      "title": "Best sellers",
+      "description": "By revenue",
+      "viewAll": "Products",
+      "emptyTitle": "No data yet",
+      "emptyDescription": "Add your products and we'll show your best sellers here.",
+      "addProduct": "Add product",
+      "sold": "{count} sold"
+    },
     "questions": {
-      "emptyTitle": "Unanswered Product Questions",
-      "empty": "No pending questions right now.",
-      "title": "Unanswered Questions",
-      "sku": "SKU",
-      "notAvailable": "N/A",
-      "questionPrefix": "Q:",
-      "answerPlaceholder": "Type your answer...",
-      "send": "Send"
+      "title": "Unanswered product questions",
+      "description": "Quick replies raise conversion",
+      "viewAll": "All questions",
+      "emptyTitle": "No pending questions right now",
+      "emptyDescription": "Customer questions about your products will show here so you can reply directly.",
+      "answerPlaceholder": "Write your reply…",
+      "send": "Send",
+      "reply": "Reply"
     }
   },
   "table": {
@@ -576,7 +667,11 @@
       "clickBrowse": "Click to browse",
       "progress": "{count} of {max} images uploaded",
       "chooseFromGallery": "Choose an image from the gallery",
-      "removeImage": "Remove image"
+      "removeImage": "Remove image",
+      "dropTitle": "Drag images here or click to upload",
+      "dropSubtitle": "Up to {max} images",
+      "add": "Add",
+      "cover": "Cover"
     },
     "sellerImage": {
       "notAnImage": "Please select an image file (PNG, JPG, or WebP)",
@@ -607,7 +702,10 @@
     },
     "categories": {
       "suggested": "Suggested categories:",
-      "select": "Select category {name}"
+      "select": "Select category {name}",
+      "suggestedHeading": "Suggested from the product name",
+      "bestMatch": "Best match",
+      "typeNameFirst": "Type the product name and we'll suggest the right category."
     },
     "seo": {
       "title": "Search Engine Listing",
@@ -728,10 +826,27 @@
         "images": "Images",
         "pricing": "Pricing",
         "stock": "Stock",
-        "barcode": "Barcode"
+        "barcode": "Barcode",
+        "variant": "Variant",
+        "price": "Price",
+        "discount": "Discount"
       },
       "setDefault": "Set {name} as default variant",
-      "default": "Default"
+      "default": "Default",
+      "emptyTitle": "Does this product come in colors or sizes?",
+      "emptyBody": "Add an option and we'll create every combination so you can set a price and quantity for each.",
+      "addOption": "Add option",
+      "addAnotherOption": "Add another option",
+      "optionName": "Option name",
+      "customNamePlaceholderEn": "e.g. Fabric, Fit",
+      "customNamePlaceholderAr": "مثال: القماش، القصة",
+      "valuesPlaceholderFirst": "Type a value and press Enter (e.g. Red)",
+      "valuesPlaceholder": "Add value…",
+      "removeOption": "Remove option",
+      "removeValue": "Remove {value}",
+      "missingTranslation": "Not translated yet — click to add",
+      "combinationsHint": "{count, plural, one {# variant} other {# variants}} · the default variant uses the main price, images and stock",
+      "finalPrice": "Final {amount}"
     },
     "bulk": {
       "status": {
@@ -771,7 +886,165 @@
     },
     "previous": "Previous",
     "next": "Next",
-    "saveChanges": "Save changes"
+    "saveChanges": "Save changes",
+    "page": {
+      "newTitle": "New product",
+      "notSaved": "Not saved yet",
+      "unsaved": "Unsaved changes",
+      "autosaved": "Draft saved on this device",
+      "importProduct": "Import product",
+      "saveDraft": "Save draft",
+      "draftShort": "Draft",
+      "publish": "Publish product",
+      "publishShort": "Publish",
+      "publishing": "Publishing…",
+      "draftSaved": "Draft saved on this device",
+      "draftRestored": "We restored your unsaved product draft",
+      "startOver": "Start over",
+      "fixRequired": "Complete the required fields marked in red",
+      "readiness": "Publish readiness",
+      "ready": "Ready to publish",
+      "startBasics": "Start with the basics",
+      "remaining": "{count, plural, one {# required field left} other {# required fields left}}",
+      "allDone": "All required fields are complete",
+      "optional": "Optional",
+      "preview": "Preview as customers see it",
+      "previewName": "Product name",
+      "previewCategory": "Listed in {category}",
+      "contentLanguageHint": "Fields marked AR/EN are written once per language",
+      "nav": {
+        "basic": "Basics",
+        "media": "Images",
+        "content": "Description",
+        "price": "Price",
+        "stock": "Inventory",
+        "shipping": "Shipping",
+        "visibility": "Visibility"
+      }
+    },
+    "sections": {
+      "basic": {
+        "title": "Basic information",
+        "description": "The name and category are the first things customers see, and they power search.",
+        "importFromLink": "Import from link",
+        "name": "Product name",
+        "namePlaceholderEn": "e.g. Short sleeve cotton t-shirt",
+        "namePlaceholderAr": "مثال: تيشيرت قطن بأكمام قصيرة",
+        "link": "Link:",
+        "editSlug": "Edit",
+        "doneSlug": "Done",
+        "category": "Category",
+        "brand": "Brand",
+        "optional": "Optional",
+        "shortDescription": "Short description",
+        "shortDescriptionPlaceholder": "One or two sentences that sum up the product — shown next to the price on the product page"
+      },
+      "media": {
+        "title": "Images & media",
+        "description": "The first image is the cover. Drag images to reorder them.",
+        "hint": "PNG, JPG or WebP · max 2 MB · 1000×1000 on a light background works best"
+      },
+      "content": {
+        "title": "Detailed description & highlights",
+        "description": "Explain the material, sizing and how to use it. Highlights show as short bullets at the top of the page.",
+        "highlights": "Key highlights",
+        "addHighlight": "Add highlight",
+        "removeHighlight": "Remove highlight",
+        "highlightPlaceholderEn": "e.g. 100% Egyptian cotton",
+        "highlightPlaceholderAr": "مثال: قطن مصري 100%",
+        "pasteTip": "Tip: paste a whole list into the first field and we'll split it for you.",
+        "body": "Product content",
+        "bodyPlaceholder": "Write a detailed product description…"
+      },
+      "pricing": {
+        "title": "Price & discount",
+        "description": "We calculate the final price after the discount automatically.",
+        "productPrice": "Product price",
+        "discount": "Discount",
+        "currency": "EGP",
+        "discountType": "Discount type",
+        "finalForCustomer": "Final price for customers",
+        "save": "Save {amount}",
+        "percentOff": "{percent}% off",
+        "noDiscount": "No discount",
+        "youReceive": "You receive {amount}",
+        "roundingHint": "Prices round up to the nearest 5 EGP.",
+        "expiryTitle": "Set a discount end date",
+        "expiryDescription": "The original price comes back automatically afterwards",
+        "endsAt": "Ends on"
+      },
+      "stock": {
+        "title": "Inventory & variants",
+        "description": "Add variants like color and size to set a quantity and price for each.",
+        "sku": "SKU",
+        "generate": "Generate",
+        "quantity": "Available quantity",
+        "decrease": "Decrease",
+        "increase": "Increase",
+        "defaultVariantStock": "This is the stock of the default variant",
+        "variantsHeading": "Variants & options"
+      },
+      "shipping": {
+        "title": "Shipping & handling",
+        "description": "Weight and dimensions are used to calculate the customer's shipping cost.",
+        "method": "Fulfillment method",
+        "sellerTitle": "Fulfilled by you",
+        "sellerDescription": "You pack the order and hand it to the courier from your own stock",
+        "platformTitle": "Fulfilled by Tallaby",
+        "platformDescription": "We store your product, then pack and ship orders for you",
+        "handling": "Handling time",
+        "days": "days",
+        "handlingHint": "From receiving the order until it's handed to the courier",
+        "weight": "Packed weight",
+        "dimensions": "Packed dimensions",
+        "dimensionsNote": "Length × width × height",
+        "lengthShort": "L",
+        "widthShort": "W",
+        "heightShort": "H",
+        "freeTitle": "Free delivery on this product",
+        "freeDescription": "You cover the shipping cost and customers see a “Free delivery” tag",
+        "storeFreeDelivery": "Your store already offers free delivery on every product."
+      },
+      "visibility": {
+        "title": "Promotion & search visibility",
+        "description": "Optional. We fill these from the name and description if you leave them empty.",
+        "trending": "Trending now",
+        "trendingDescription": "Shows in the trending section",
+        "seasonal": "Seasonal",
+        "seasonalDescription": "Shows in seasonal and holiday campaigns",
+        "searchEngines": "Search engines",
+        "serpTitle": "Product title",
+        "serpDescription": "Product description as it will appear in search results.",
+        "metaTitle": "Meta title",
+        "metaTitlePlaceholder": "Filled from the product name",
+        "metaTitleHint": "Recommended: 50–60 characters",
+        "metaDescription": "Meta description",
+        "metaDescriptionPlaceholder": "Filled from the short description",
+        "metaDescriptionHint": "Recommended: 150–160 characters"
+      }
+    },
+    "import": {
+      "title": "Import product",
+      "description": "Fill the form automatically from a product link or data, then review the fields before publishing.",
+      "tabs": {
+        "url": "From link",
+        "data": "Data / JSON",
+        "bulk": "Several links"
+      },
+      "help": {
+        "url": "Paste the product page link from any store.",
+        "data": "Paste product data as JSON or formatted text — see PRODUCT_DATA_FORMAT.md.",
+        "bulk": "One link per line. Each product opens for review before saving."
+      },
+      "placeholders": {
+        "url": "https://…",
+        "data": "{ \"title\": \"…\", \"price\": 0 }",
+        "bulk": "One link per line"
+      },
+      "cancel": "Cancel",
+      "submit": "Import",
+      "close": "Close"
+    }
   },
   "settings": {
     "storeLink": {
@@ -1449,6 +1722,7 @@
     "callNow": "Call Now"
   },
   "header": {
+    "installApp": "Install app",
     "openMenu": "Open menu",
     "search": "Search…",
     "searchPlaceholder": "Search pages, products, or an order number…",
@@ -1467,25 +1741,73 @@
     "steps": {
       "package": "Choose a package",
       "product": "Choose a product",
-      "payment": "Pay and confirm"
+      "payment": "Pay and confirm",
+      "packageDesc": "Compare packages and pick the one that fits your goal and campaign length.",
+      "productDesc": "The product your ad campaign will be built around.",
+      "paymentDesc": "Send the amount, then submit the transfer details for review."
     },
     "package": {
       "weekly_full": {
-        "name": "One-week ad package",
+        "name": "Basic weekly package",
         "summary": "A one-week ad package that includes:"
       },
-      "days": "{count} days",
-      "total": "Total cost",
+      "weekly_plus": {
+        "name": "Plus weekly package",
+        "summary": "A stronger one-week campaign with an AI-made video:"
+      },
+      "weekly_pro": {
+        "name": "Pro weekly package",
+        "summary": "Our biggest one-week campaign, for the widest reach:"
+      },
+      "monthly_basic": {
+        "name": "Basic monthly package",
+        "summary": "A full month of ads for your product that includes:"
+      },
+      "monthly_plus": {
+        "name": "Plus monthly package",
+        "summary": "A month-long campaign with fresh AI-made videos:"
+      },
+      "monthly_pro": {
+        "name": "Pro monthly package",
+        "summary": "Our biggest campaign: a month of ads with a new AI-made video every week:"
+      },
+      "days": "{count, plural, one {# day} other {# days}}",
       "currency": "EGP",
-      "select": "Choose package",
-      "selected": "Selected",
-      "timelineLabel": "Campaign plan across the week",
       "day": "Day {day}",
       "features": {
-        "video": "A promo video for your product that explains its features",
+        "video_social": "A promo video for your product made from social-media footage, with a voiceover explaining its features",
+        "video_ai": "{count, plural, one {An AI-made promo video} other {# AI-made promo videos}} for your product, with a voiceover explaining its features",
         "platforms": "Your product published on all Tallaby channels",
         "featured": "Your product placed in Featured Products, the first thing customers see on the website",
-        "meta": "A one-week sponsored ad on Meta (Facebook + Instagram)"
+        "meta": "A sponsored ad on Meta (Facebook + Instagram) for the whole campaign"
+      },
+      "periods": {
+        "weekly": "Weekly",
+        "monthly": "Monthly"
+      },
+      "popular": "Most popular",
+      "week": "Week {week}",
+      "estimates": {
+        "title": "Expected results",
+        "reach": "Reach",
+        "messages": "Messages",
+        "purchases": "Purchases",
+        "disclaimer": "Estimates based on our past campaigns. Actual results vary by product and price."
+      },
+      "perDay": "{amount} EGP / day",
+      "plan": {
+        "title": "Campaign plan · {name}",
+        "subtitle": "What happens to your product over {days}",
+        "service": "Service",
+        "ongoing": "Ongoing",
+        "once": "One-time"
+      },
+      "featuresShort": {
+        "video_social": "Social-media promo video with voiceover",
+        "video_ai": "{count, plural, one {AI promo video} other {# AI promo videos}} with voiceover",
+        "platforms": "Posted on all Tallaby channels",
+        "featured": "Shown in Featured Products",
+        "meta": "Sponsored ad on Meta"
       }
     },
     "product": {
@@ -1499,7 +1821,6 @@
       "change": "Change"
     },
     "payment": {
-      "title": "Send {amount} EGP with Vodafone Cash",
       "number": "Wallet number",
       "copy": "Copy number",
       "copied": "Number copied",
@@ -1515,19 +1836,28 @@
       "referencePlaceholder": "Found in the confirmation SMS",
       "submit": "Confirm payment and send request",
       "submitting": "Sending...",
-      "needProduct": "Choose a product first"
+      "brand": "Vodafone Cash",
+      "amount": "Amount to send",
+      "amountCopied": "Amount copied",
+      "digits": "11 digits",
+      "optional": "Optional",
+      "agree": "I agree that the campaign starts after the transfer is confirmed, and that the amount can't be refunded once the campaign has started."
     },
     "summary": {
       "title": "Order summary",
       "package": "Package",
       "product": "Product",
       "none": "Not chosen yet",
-      "total": "Total"
+      "total": "Total",
+      "totalCost": "Total cost",
+      "duration": "Duration",
+      "choosePackage": "Choose a package",
+      "chooseProduct": "Choose a product",
+      "note": "Prices include every service listed in the package. There are no extra fees for the sponsored ad."
     },
     "success": {
       "title": "Request sent",
-      "body": "We'll check the transfer and contact you to start the campaign. Track its status in the list below.",
-      "again": "Advertise another product"
+      "body": "We'll check the transfer and contact you to start the campaign. Track its status in the list below."
     },
     "requests": {
       "title": "Your ad requests",
@@ -1540,6 +1870,13 @@
         "active": "Running",
         "completed": "Finished",
         "rejected": "Rejected"
+      },
+      "emptyHint": "Your requests and each campaign's status will show here after you send them.",
+      "columns": {
+        "product": "Product",
+        "package": "Package",
+        "amount": "Amount",
+        "status": "Status"
       }
     },
     "errors": {
@@ -1550,6 +1887,16 @@
       "product_not_active": "This product isn't published. Publish it, then try again.",
       "already_requested": "This product already has an open ad request.",
       "unknown": "Couldn't send the request. Try again."
+    },
+    "flow": {
+      "change": "Change",
+      "back": "Back",
+      "next": "Next",
+      "send": "Send",
+      "nextProduct": "Next: choose a product",
+      "nextPayment": "Next: payment",
+      "pickPackage": "Choose a package to continue",
+      "picked": "{name} selected"
     }
   }
 }
