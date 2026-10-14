@@ -11,6 +11,10 @@ const alertVariants = cva(
         default: "bg-card text-card-foreground",
         destructive:
           "text-destructive bg-card [&>svg]:text-current *:data-[slot=alert-description]:text-destructive/90",
+        // Borderless tinted notes (inline guidance, onboarding hints).
+        info: "border-transparent rounded-xl bg-primary-soft text-primary-ink leading-relaxed *:data-[slot=alert-description]:text-primary-ink",
+        muted:
+          "border-transparent rounded-xl bg-muted text-foreground leading-relaxed [&>svg]:text-success *:data-[slot=alert-description]:text-foreground",
       },
     },
     defaultVariants: {

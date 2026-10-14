@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import Image from "next/image";
-import { ImagePlus, Loader2, RefreshCw, Trash2 } from "lucide-react";
+import { Camera, ImagePlus, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 
@@ -61,8 +61,6 @@ export function BannerUploader({ value, onChange, disabled = false, className }:
     }
   };
 
-  const remove = () => onChange("");
-
   return (
     <div className={cn("relative", className)}>
       <button
@@ -71,48 +69,48 @@ export function BannerUploader({ value, onChange, disabled = false, className }:
         disabled={busy}
         aria-label={preview ? t("changeBanner") : t("uploadBanner")}
         className={cn(
-          "group relative block aspect-[3/1] w-full overflow-hidden rounded-xl md:aspect-[4/1]",
-          "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
-          preview
-            ? "bg-muted"
-            : "border-2 border-dashed border-border bg-muted/40 hover:border-primary hover:bg-primary/5",
-          busy && "cursor-not-allowed",
+          "group relative grid aspect-[3/1] min-h-30 w-full place-items-center overflow-hidden border-b sm:aspect-[4/1]",
+          "border-neutral-200 bg-[repeating-linear-gradient(135deg,var(--muted)_0_10px,var(--card)_10px_20px)] dark:border-input",
+          "outline-none focus-visible:ring-[3px] focus-visible:ring-primary/30 focus-visible:ring-inset",
+          busy ? "cursor-not-allowed" : "cursor-pointer"
         )}
       >
         {preview ? (
-          <>
-            <Image src={preview} alt="" fill sizes="(min-width: 768px) 720px, 100vw" className="object-cover" />
-            {!busy && (
-              <span className="absolute inset-0 flex items-center justify-center gap-2 bg-black/45 text-sm font-medium text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
-                <RefreshCw className="h-4 w-4" aria-hidden />
-                {t("changeBanner")}
-              </span>
-            )}
-          </>
+          <Image src={preview} alt="" fill sizes="(min-width: 768px) 760px, 100vw" className="object-cover" />
         ) : (
-          // Content sits in the top/end area so the overlapping logo never covers it.
-          <span className="absolute inset-0 flex flex-col items-center justify-center gap-1 px-4 pb-6 text-center md:items-end md:pe-10 md:pb-0">
-            <ImagePlus className="h-6 w-6 text-muted-foreground" aria-hidden />
-            <span className="text-sm font-medium">{t("uploadBanner")}</span>
-            <span className="text-xs text-muted-foreground">{t("bannerHint")}</span>
+          // Kept above the overlapping logo so it is never covered.
+          <span className="flex flex-col items-center gap-1.5 px-4 pb-8 text-center text-sm font-semibold text-neutral-700 transition-colors group-hover:text-primary sm:pb-6 dark:text-foreground">
+            <ImagePlus className="size-5" aria-hidden />
+            {t("uploadBanner")}
+            <small className="text-xs font-normal text-muted-foreground">{t("bannerHint")}</small>
           </span>
         )}
         {isUploading && (
-          <span className="absolute inset-0 flex items-center justify-center bg-background/60">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" aria-hidden />
+          <span className="absolute inset-0 grid place-items-center bg-background/60">
+            <Loader2 className="size-6 animate-spin text-primary" aria-hidden />
           </span>
         )}
       </button>
 
       {preview && !busy && (
-        <button
-          type="button"
-          onClick={remove}
-          className="absolute end-2 top-2 flex items-center gap-1.5 rounded-full bg-background/90 px-3 py-1.5 text-xs font-medium shadow-sm hover:bg-background focus-visible:outline-2 focus-visible:outline-primary"
-        >
-          <Trash2 className="h-3.5 w-3.5" aria-hidden />
-          {t("removeBanner")}
-        </button>
+        <div className="absolute end-3 top-3 flex gap-1.5">
+          <button
+            type="button"
+            onClick={pick}
+            className="flex cursor-pointer items-center gap-1.5 rounded-full bg-black/55 px-2.5 py-1.5 text-[12.5px] text-white hover:bg-black/70"
+          >
+            <Camera className="size-3.5" aria-hidden />
+            {t("changeBanner")}
+          </button>
+          <button
+            type="button"
+            onClick={() => onChange("")}
+            aria-label={t("removeBanner")}
+            className="grid size-7.5 cursor-pointer place-items-center rounded-full bg-black/55 text-white hover:bg-black/70"
+          >
+            <Trash2 className="size-3.5" aria-hidden />
+          </button>
+        </div>
       )}
 
       <input

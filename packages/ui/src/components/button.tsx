@@ -29,6 +29,8 @@ const buttonVariants = cva(
           "h-9.5 px-6 py-2 has-data-[icon=inline-end]:pe-3 has-data-[icon=inline-start]:ps-3",
         sm: "h-8 rounded-full gap-1.5 px-3 has-data-[icon=inline-end]:pe-2.5 has-data-[icon=inline-start]:ps-2.5",
         lg: "h-10 rounded-full px-6 has-data-[icon=inline-end]:pe-4 has-data-[icon=inline-start]:ps-4",
+        // Large pill for primary page actions (wizard footers, success screens).
+        xl: "h-11.5 rounded-full px-5.5 text-[15px] has-data-[icon=inline-end]:pe-4.5 has-data-[icon=inline-start]:ps-4.5",
         icon: "size-9",
       },
     },

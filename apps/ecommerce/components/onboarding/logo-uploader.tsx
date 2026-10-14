@@ -1,13 +1,12 @@
 "use client";
 
 import React, { useRef, useState } from "react";
-import { Camera, Loader2, X } from "lucide-react";
+import { Camera, Loader2, Store, X } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { checkSellerImage, uploadSellerImage } from "./seller-image-upload";
 
-import { Button } from "@workspace/ui/components/button";
 import { cn } from "@/lib/utils";
 
 interface LogoUploaderProps {
@@ -17,21 +16,15 @@ interface LogoUploaderProps {
   className?: string;
 }
 
-export function LogoUploader({
-  value,
-  onChange,
-  disabled = false,
-  className,
-}: LogoUploaderProps) {
+/** Round store avatar with a camera badge; sits over the cover image. */
+export function LogoUploader({ value, onChange, disabled = false, className }: LogoUploaderProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [preview, setPreview] = useState<string | null>(value || null);
+  // Local object URL only while uploading; the form value is the source of truth.
+  const [pending, setPending] = useState<string | null>(null);
+  const preview = (isUploading && pending) || value || null;
   const t = useTranslations("onboarding");
-
-  const handleLogoClick = () => {
-    if (disabled || isUploading) return;
-    fileInputRef.current?.click();
-  };
+  const busy = disabled || isUploading;
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -44,93 +37,62 @@ export function LogoUploader({
     }
 
     setIsUploading(true);
-
+    const objectUrl = URL.createObjectURL(file);
+    setPending(objectUrl);
     try {
-      // Create preview
-      const previewUrl = URL.createObjectURL(file);
-      setPreview(previewUrl);
-
-      const publicUrl = await uploadSellerImage(file, "logo");
-      onChange(publicUrl);
+      onChange(await uploadSellerImage(file, "logo"));
       toast.success(t("logoUploadedSuccessfully"));
     } catch (error) {
       console.error("Error uploading logo:", error);
       toast.error(t("failedToUploadLogo"));
-      setPreview(value || null);
     } finally {
+      URL.revokeObjectURL(objectUrl);
+      setPending(null);
       setIsUploading(false);
-      // Reset file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    }
-  };
-
-  const handleRemove = () => {
-    setPreview(null);
-    onChange("");
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
   return (
-    <div className={cn("space-y-2", className)}>
-      <div
-        onClick={handleLogoClick}
+    <div className={cn("relative size-21 shrink-0", className)}>
+      <button
+        type="button"
+        onClick={() => !busy && fileInputRef.current?.click()}
+        disabled={busy}
+        aria-label={t("uploadLogo")}
         className={cn(
-          "relative size-32 rounded-full bg-card border-2 border-dashed border-gray-300 dark:border-gray-700 flex items-center justify-center cursor-pointer transition-colors",
-          disabled || isUploading
-            ? "opacity-50 cursor-not-allowed"
-            : "hover:border-primary hover:bg-gray-50 dark:hover:bg-gray-800"
+          "relative grid size-full place-items-center overflow-hidden rounded-full border-4 border-card bg-primary-soft text-primary/70 shadow-md",
+          "outline-none focus-visible:ring-[3px] focus-visible:ring-primary/30",
+          busy ? "cursor-not-allowed" : "cursor-pointer"
         )}
       >
         {preview ? (
-          <>
-            <Image
-              src={preview}
-              alt={t("businessLogo")}
-              title={t("businessLogo")}
-              width={124}
-              height={124}
-              className="object-cover rounded-full w-full h-full"
-            />
-            {!disabled && !isUploading && (
-              <div className="absolute inset-0 bg-black/50 rounded-full opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
-                <Camera className="h-6 w-6 text-white" />
-              </div>
-            )}
-            {!disabled && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleRemove();
-                }}
-                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 z-10"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-          </>
+          <Image src={preview} alt={t("businessLogo")} fill sizes="84px" className="object-cover" />
         ) : (
-          <div className="flex flex-col items-center justify-center text-center p-4">
-            {isUploading ? (
-              <Loader2 className="size-6 text-gray-400 animate-spin" />
-            ) : (
-              <>
-                <Camera className="size-6 text-gray-400 mb-2" />
-                <span className="text-xs text-gray-500">
-                  {t("clickToUpload")}
-                </span>
-                <span className="text-xs text-gray-400 mt-1">
-                  {t("pngJpgMax")}
-                </span>
-              </>
-            )}
-          </div>
+          <Store className="size-6.5" aria-hidden />
         )}
-      </div>
+        {isUploading && (
+          <span className="absolute inset-0 grid place-items-center bg-background/60">
+            <Loader2 className="size-5 animate-spin text-primary" aria-hidden />
+          </span>
+        )}
+      </button>
+      <span
+        aria-hidden
+        className="pointer-events-none absolute end-0 bottom-0 grid size-7 place-items-center rounded-full border-2 border-card bg-primary text-white"
+      >
+        <Camera className="size-3.5" />
+      </span>
+      {value && !busy && (
+        <button
+          type="button"
+          onClick={() => onChange("")}
+          aria-label={t("removeLogo")}
+          className="absolute -top-1 -end-1 grid size-6 cursor-pointer place-items-center rounded-full border-2 border-card bg-destructive text-white hover:bg-destructive/90"
+        >
+          <X className="size-3" aria-hidden />
+        </button>
+      )}
 
       <input
         ref={fileInputRef}
@@ -138,10 +100,8 @@ export function LogoUploader({
         accept="image/*"
         onChange={handleFileSelect}
         className="hidden"
-        disabled={disabled || isUploading}
+        disabled={busy}
       />
     </div>
   );
 }
-
-

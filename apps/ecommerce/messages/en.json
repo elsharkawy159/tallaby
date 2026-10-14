@@ -1499,9 +1499,9 @@
       "no": "No",
       "inventoryUnits": "How many units would you send to our warehouse?",
       "inventoryUnitsWhy": "Helps us reserve the right storage space.",
-      "packagingNotes": "Anything special about how your products should be packed? (optional)",
+      "packagingNotes": "Special packaging needs",
       "packagingNotesPlaceholder": "e.g. glass bottles, items that must stay upright",
-      "coverage": "Where are most of your customers? (optional)",
+      "coverage": "Where are most of your customers?",
       "coverageWhy": "Helps us confirm delivery availability in your areas.",
       "selectAll": "Select all",
       "clearAll": "Clear",
@@ -1511,10 +1511,19 @@
       "dropOffBody": "Since Tallaby will store your products, you bring your inventory to the Tallaby warehouse yourself. Our team will share the warehouse address and arrange a drop-off time with you. Your orders will then ship directly from our warehouse.",
       "sameAsLegal": "Same as my business address",
       "street": "Street address",
-      "landmark": "Landmark (optional)",
-      "contactName": "Contact person (optional)",
+      "landmark": "Landmark",
+      "contactName": "Contact person",
       "contactPhone": "Contact mobile number",
-      "select": "Select"
+      "select": "Select",
+      "allEgypt": "All Egypt",
+      "sizeShort_small": "Small",
+      "sizeShort_medium": "Medium",
+      "sizeShort_large": "Large",
+      "sizeShort_mixed": "Mixed",
+      "sizeHint_small": "Fits in a hand",
+      "sizeHint_medium": "Shoebox size",
+      "sizeHint_large": "Bulky or heavy",
+      "sizeHint_mixed": "A bit of everything"
     },
     "range": {
       "1_10": "1–10",
@@ -1544,7 +1553,14 @@
       "handledBy_tallaby": "Tallaby",
       "confirmedAfterContact": "Services handled by Tallaby will be confirmed after our team contacts you. You won't be charged for anything now.",
       "notProvided": "Not provided",
-      "awaitingSetup": "Awaiting setup"
+      "awaitingSetup": "Awaiting setup",
+      "products": "Products",
+      "ordersPerDay": "Orders / day",
+      "size": "Size",
+      "fragile": "Fragile",
+      "units": "Warehouse units",
+      "packaging": "Packaging",
+      "regions": "Regions"
     },
     "terms": {
       "accept": "I have read and agree to Tallaby's <link>Terms & Conditions</link>.",
@@ -1597,13 +1613,71 @@
     "tallabyStorageDetail": "You deliver your inventory to our warehouse.",
     "recommended": "Recommended",
     "storeBanner": "Store banner",
-    "optional": "(optional)",
-    "uploadBanner": "Upload a banner",
-    "changeBanner": "Change banner",
+    "optional": "Optional",
+    "uploadBanner": "Add a cover image",
+    "changeBanner": "Change cover",
     "removeBanner": "Remove",
-    "bannerHint": "Shown across the top of your store page. Wide image, 1600 × 400 works best. PNG or JPG, max 5MB.",
+    "bannerHint": "1600 × 400 · JPG or PNG · up to 5 MB",
     "bannerUploaded": "Banner uploaded",
-    "bannerUploadFailed": "Couldn’t upload the banner. Try again."
+    "bannerUploadFailed": "Couldn’t upload the banner. Try again.",
+    "uploadLogo": "Upload logo",
+    "removeLogo": "Remove logo",
+    "storeNamePlaceholder": "Your store name",
+    "brandHint": "Logo: square, at least 400 × 400 · Both optional",
+    "supportEmailHint": "Customers will see this",
+    "supportPhoneHint": "Our team reaches you on WhatsApp here",
+    "businessTypeHint_individual": "Selling under your own name",
+    "businessTypeHint_company": "Registered company with a tax ID",
+    "businessTypeHint_partnership": "Two or more owners",
+    "businessTypeHint_corporation": "Large or joint-stock company",
+    "fulfillment": {
+      "services": "Services",
+      "tallabyCount": "Tallaby handles {count} of {total}",
+      "me": "Me",
+      "plan": "Plan",
+      "change": "Change",
+      "done": "Done",
+      "pricingNote": "Pricing is agreed with our team after sign-up. Nothing is charged now."
+    },
+    "wizard": {
+      "intro": "Set up your seller account in about 5 minutes. Your progress is saved automatically.",
+      "questions": "Questions?",
+      "saved": "Saved",
+      "continue": "Continue",
+      "submit": "Submit application",
+      "steps": {
+        "store": {
+          "label": "Your store",
+          "summary": "Name, look and contact details",
+          "title": "Tell us about your store",
+          "description": "This is how customers will see you on Tallaby."
+        },
+        "address": {
+          "label": "Business address",
+          "summary": "Your registered address",
+          "title": "Where is your business registered?",
+          "description": "The official address of your business."
+        },
+        "fulfillment": {
+          "label": "Fulfillment",
+          "summary": "Who handles what",
+          "title": "How should orders be fulfilled?",
+          "description": "Choose a starting point, then adjust each service. You can change this later with our team."
+        },
+        "operations": {
+          "label": "Operations",
+          "summary": "Volumes and product types",
+          "title": "A few operational details",
+          "description": "This helps our team prepare the right setup for you."
+        },
+        "review": {
+          "label": "Review & submit",
+          "summary": "Check and send",
+          "title": "Review and submit",
+          "description": "Make sure everything is right before sending."
+        }
+      }
+    }
   },
   "toast": {
     "questionSubmitted": "Your question has been submitted and is pending approval",

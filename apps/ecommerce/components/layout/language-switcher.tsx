@@ -11,8 +11,11 @@ import { updatePreferences } from "@/actions/customer";
 import type { ProductLocale } from "@/lib/product-translations";
 
 interface LanguageSwitcherProps {
-  /** `topbar` renders just the other locale as a plain text link. */
-  variant?: "header" | "default" | "topbar";
+  /**
+   * `topbar` renders just the other locale as a plain text link; `pill` renders
+   * it as a translucent pill for dark surfaces.
+   */
+  variant?: "header" | "default" | "topbar" | "pill";
 }
 
 // Product slugs differ per locale, so the internal pathname alone can't be
@@ -59,6 +62,23 @@ export function LanguageSwitcher({
     { code: "ar", label: "عربي" },
     { code: "en", label: "English" },
   ];
+
+  if (variant === "pill") {
+    const other = locales.find((l) => l.code !== locale);
+    if (!other) return null;
+    return (
+      <button
+        type="button"
+        lang={other.code}
+        disabled={isPending}
+        onClick={() => switchLocale(other.code)}
+        className="flex cursor-pointer items-center gap-1.5 rounded-full border border-white/18 bg-white/10 px-3 py-1.5 text-[13px] font-medium text-white hover:bg-white/18 disabled:opacity-60"
+      >
+        <Globe className="size-3.5" aria-hidden />
+        {other.label}
+      </button>
+    );
+  }
 
   if (variant === "topbar") {
     const other = locales.find((l) => l.code !== locale);

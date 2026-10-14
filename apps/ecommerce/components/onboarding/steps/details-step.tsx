@@ -1,13 +1,22 @@
 "use client";
 
+import { Check, Warehouse } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useFormContext, useWatch } from "react-hook-form";
 
-import { Warehouse } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@workspace/ui/components/alert";
-import { Button } from "@workspace/ui/components/button";
+import { ChoiceCard, ChoiceGroup } from "@workspace/ui/components/choice-card";
 import { Checkbox } from "@workspace/ui/components/checkbox";
+import {
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@workspace/ui/components/form";
 import { Label } from "@workspace/ui/components/label";
+import { Toggle } from "@workspace/ui/components/toggle";
 import {
   DAILY_ORDER_RANGES,
   INVENTORY_UNIT_RANGES,
@@ -19,8 +28,9 @@ import {
 import { EGYPT_GOVERNORATES, getGovernorateLabel } from "@workspace/lib/shipping";
 import type { OnboardingFormValues } from "../become-seller.dto";
 import {
-  ChoiceCard,
-  InlineError,
+  ChoiceField,
+  FieldGrid,
+  FieldLabelText,
   SelectField,
   TextAreaField,
   TextField,
@@ -31,66 +41,44 @@ export function DetailsStep() {
   const t = useTranslations("onboarding");
   const form = useFormContext<OnboardingFormValues>();
   const services = useWatch({ control: form.control, name: "services" });
-  const fragile = useWatch({ control: form.control, name: "details.hasFragileProducts" });
 
   const rangeOptions = (ranges: readonly string[]) =>
     ranges.map((value) => ({ value, label: t(`range.${value}`) }));
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <SelectField
-          name="details.estimatedSkus"
-          label={t("details.skus")}
-          description={t("details.skusWhy")}
-          placeholder={t("details.select")}
-          options={rangeOptions(SKU_RANGES)}
-        />
-        <SelectField
-          name="details.estimatedDailyOrders"
-          label={t("details.dailyOrders")}
-          description={t("details.dailyOrdersWhy")}
-          placeholder={t("details.select")}
-          options={rangeOptions(DAILY_ORDER_RANGES)}
-        />
-      </div>
-
-      <SelectField
+    <>
+      <ChoiceField
+        name="details.estimatedSkus"
+        label={t("details.skus")}
+        description={t("details.skusWhy")}
+        columns={SKU_RANGES.length}
+        options={rangeOptions(SKU_RANGES)}
+      />
+      <ChoiceField
+        name="details.estimatedDailyOrders"
+        label={t("details.dailyOrders")}
+        description={t("details.dailyOrdersWhy")}
+        columns={DAILY_ORDER_RANGES.length}
+        options={rangeOptions(DAILY_ORDER_RANGES)}
+      />
+      <ChoiceField
         name="details.sizeCategory"
         label={t("details.sizeCategory")}
-        placeholder={t("details.select")}
+        columns={PRODUCT_SIZE_CATEGORIES.length}
         options={PRODUCT_SIZE_CATEGORIES.map((value) => ({
           value,
-          label: t(`details.size_${value}`),
+          label: t(`details.sizeShort_${value}`),
+          description: t(`details.sizeHint_${value}`),
         }))}
       />
-
-      <div className="space-y-2">
-        <p className="text-sm font-medium">{t("details.fragile")}</p>
-        <p className="text-sm text-muted-foreground">{t("details.fragileWhy")}</p>
-        <div className="grid grid-cols-2 gap-3" role="radiogroup">
-          {[true, false].map((value) => (
-            <ChoiceCard
-              key={String(value)}
-              className="py-3"
-              selected={fragile === value}
-              onSelect={() => {
-                form.setValue("details.hasFragileProducts", value, { shouldDirty: true });
-                form.clearErrors("details.hasFragileProducts");
-              }}
-              title={value ? t("details.yes") : t("details.no")}
-            />
-          ))}
-        </div>
-        <InlineError name="details.hasFragileProducts" />
-      </div>
+      <FragileField />
 
       {services.storage.provider === "tallaby" && (
-        <SelectField
+        <ChoiceField
           name="details.estimatedInventoryUnits"
           label={t("details.inventoryUnits")}
           description={t("details.inventoryUnitsWhy")}
-          placeholder={t("details.select")}
+          columns={INVENTORY_UNIT_RANGES.length}
           options={rangeOptions(INVENTORY_UNIT_RANGES)}
         />
       )}
@@ -100,82 +88,113 @@ export function DetailsStep() {
           name="details.specialPackagingNotes"
           label={t("details.packagingNotes")}
           placeholder={t("details.packagingNotesPlaceholder")}
+          rows={2}
+          maxLength={500}
+          optional
         />
       )}
 
       {services.delivery.provider === "tallaby" && <CoverageField />}
 
       {requiresInventoryDropOff(services) && (
-        <Alert>
-          <Warehouse className="size-4" />
-          <AlertTitle>{t("details.dropOffTitle")}</AlertTitle>
+        <Alert variant="info">
+          <Warehouse />
+          <AlertTitle className="font-semibold">{t("details.dropOffTitle")}</AlertTitle>
           <AlertDescription>{t("details.dropOffBody")}</AlertDescription>
         </Alert>
       )}
 
       {requiresPickupAddress(services) && <PickupSection />}
-    </div>
+    </>
   );
 }
+
+function FragileField() {
+  const t = useTranslations("onboarding");
+  const { control, clearErrors } = useFormContext<OnboardingFormValues>();
+  return (
+    <FormField
+      control={control}
+      name="details.hasFragileProducts"
+      render={({ field, fieldState }) => (
+        <FormItem>
+          <FormLabel className="text-sm font-semibold text-neutral-900 data-[error=true]:text-neutral-900 dark:text-foreground">
+            {t("details.fragile")}
+          </FormLabel>
+          <FormControl>
+            <ChoiceGroup
+              ref={field.ref}
+              columns={2}
+              value={field.value === null ? "" : field.value ? "yes" : "no"}
+              onValueChange={(value) => {
+                field.onChange(value === "yes");
+                clearErrors("details.hasFragileProducts");
+              }}
+            >
+              {(["yes", "no"] as const).map((value) => (
+                <ChoiceCard
+                  key={value}
+                  value={value}
+                  title={t(`details.${value}`)}
+                  aria-invalid={!!fieldState.error}
+                />
+              ))}
+            </ChoiceGroup>
+          </FormControl>
+          {!fieldState.error && (
+            <FormDescription className="text-[12.5px]">{t("details.fragileWhy")}</FormDescription>
+          )}
+          <FormMessage className="text-[13px] font-medium" />
+        </FormItem>
+      )}
+    />
+  );
+}
+
+const pillClass =
+  "h-9 min-w-0 cursor-pointer gap-1.5 rounded-full border border-neutral-300 bg-card px-3.5 text-[13.5px] font-normal text-neutral-700 hover:border-secondary hover:bg-card hover:text-neutral-700 dark:border-input dark:text-foreground data-[state=on]:border-primary data-[state=on]:bg-primary data-[state=on]:text-white [&_svg]:size-3.5";
 
 function CoverageField() {
   const t = useTranslations("onboarding");
   const locale = useLocale();
   const form = useFormContext<OnboardingFormValues>();
   const selected = useWatch({ control: form.control, name: "details.coverageGovernorates" }) ?? [];
-
-  const toggle = (value: string, checked: boolean) =>
-    form.setValue(
-      "details.coverageGovernorates",
-      checked ? [...selected, value] : selected.filter((v) => v !== value),
-      { shouldDirty: true }
-    );
+  const all = selected.length === EGYPT_GOVERNORATES.length;
+  const set = (next: string[]) =>
+    form.setValue("details.coverageGovernorates", next, { shouldDirty: true });
 
   return (
     <fieldset className="space-y-2">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <legend className="text-sm font-medium">{t("details.coverage")}</legend>
-        <div className="flex gap-1">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() =>
-              form.setValue("details.coverageGovernorates", [...EGYPT_GOVERNORATES], {
-                shouldDirty: true,
-              })
-            }
-          >
-            {t("details.selectAll")}
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => form.setValue("details.coverageGovernorates", [], { shouldDirty: true })}
-          >
-            {t("details.clearAll")}
-          </Button>
-        </div>
-      </div>
-      <p className="text-sm text-muted-foreground">{t("details.coverageWhy")}</p>
-      <div className="grid grid-cols-2 gap-2 rounded-lg border p-3 sm:grid-cols-3">
+      <legend className="mb-2 flex items-center gap-2 text-sm font-semibold text-neutral-900 dark:text-foreground">
+        <FieldLabelText optional>{t("details.coverage")}</FieldLabelText>
+      </legend>
+      <div className="flex flex-wrap gap-2">
+        <Toggle
+          pressed={all}
+          onPressedChange={() => set(all ? [] : [...EGYPT_GOVERNORATES])}
+          className={`${pillClass} font-semibold`}
+        >
+          {all && <Check aria-hidden />}
+          {t("details.allEgypt")}
+        </Toggle>
         {EGYPT_GOVERNORATES.map((value) => {
-          const id = `coverage-${value.replace(/\s+/g, "-")}`;
+          const on = selected.includes(value);
           return (
-            <div key={value} className="flex items-center gap-2">
-              <Checkbox
-                id={id}
-                checked={selected.includes(value)}
-                onCheckedChange={(checked) => toggle(value, checked === true)}
-              />
-              <Label htmlFor={id} className="text-sm font-normal">
-                {getGovernorateLabel(value, locale)}
-              </Label>
-            </div>
+            <Toggle
+              key={value}
+              pressed={on}
+              onPressedChange={(pressed) =>
+                set(pressed ? [...selected, value] : selected.filter((v) => v !== value))
+              }
+              className={pillClass}
+            >
+              {on && <Check aria-hidden />}
+              {getGovernorateLabel(value, locale)}
+            </Toggle>
           );
         })}
       </div>
+      <p className="text-[12.5px] text-muted-foreground">{t("details.coverageWhy")}</p>
     </fieldset>
   );
 }
@@ -187,15 +206,18 @@ function PickupSection() {
   const governorates = useGovernorateOptions(EGYPT_GOVERNORATES);
 
   return (
-    <section className="space-y-4 rounded-xl border p-4">
+    <section className="space-y-4 rounded-[14px] border border-neutral-200 p-5 dark:border-input">
       <header>
-        <h3 className="font-semibold">{t("details.pickupTitle")}</h3>
-        <p className="text-sm text-muted-foreground">{t("details.pickupWhy")}</p>
+        <h3 className="text-base font-bold text-neutral-900 dark:text-foreground">
+          {t("details.pickupTitle")}
+        </h3>
+        <p className="text-[13px] text-muted-foreground">{t("details.pickupWhy")}</p>
       </header>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2.5">
         <Checkbox
           id="pickup-same-as-legal"
+          className="size-5 rounded-md"
           checked={sameAsLegal}
           onCheckedChange={(checked) => {
             form.setValue("pickup.sameAsLegal", checked === true, { shouldDirty: true });
@@ -207,10 +229,10 @@ function PickupSection() {
         </Label>
       </div>
 
-      {!sameAsLegal && (
-        <>
-          <TextField name="pickup.street" label={t("details.street")} />
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <FieldGrid>
+        {!sameAsLegal && (
+          <>
+            <TextField name="pickup.street" label={t("details.street")} className="sm:col-span-2" />
             <SelectField
               name="pickup.governorate"
               label={t("governorate")}
@@ -218,21 +240,24 @@ function PickupSection() {
               options={governorates}
             />
             <TextField name="pickup.city" label={t("city")} />
-          </div>
-          <TextField name="pickup.landmark" label={t("details.landmark")} />
-        </>
-      )}
-
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <TextField name="pickup.contactName" label={t("details.contactName")} />
+            <TextField
+              name="pickup.landmark"
+              label={t("details.landmark")}
+              className="sm:col-span-2"
+              optional
+            />
+          </>
+        )}
+        <TextField name="pickup.contactName" label={t("details.contactName")} optional />
         <TextField
           name="pickup.contactPhone"
           type="tel"
+          inputMode="tel"
           dir="ltr"
           label={t("details.contactPhone")}
           placeholder="01XXXXXXXXX"
         />
-      </div>
+      </FieldGrid>
     </section>
   );
 }

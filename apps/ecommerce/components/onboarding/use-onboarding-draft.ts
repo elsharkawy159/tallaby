@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import {
-  ONBOARDING_STEPS,
+  WIZARD_STEPS,
   onboardingDefaults,
   type OnboardingFormValues,
 } from "./become-seller.dto";
@@ -14,7 +14,8 @@ import {
  * progress lives in localStorage. Every access is guarded: storage can be
  * unavailable in private windows.
  */
-const DRAFT_VERSION = 1;
+// v2: the wizard went from 7 to 5 screens, so v1 step indices no longer apply.
+const DRAFT_VERSION = 2;
 const keyFor = (userId: string) => `tallaby:seller-onboarding:${userId}`;
 
 interface StoredDraft {
@@ -56,16 +57,17 @@ export function useOnboardingDraft(
   setStep: (step: number) => void
 ) {
   const [restored, setRestored] = useState(false);
+  const [savedAt, setSavedAt] = useState<number | null>(null);
   const ready = useRef(false);
+  const lastStep = useRef<number | null>(null);
 
-  // Restore once.
+  // Restore once (guarded: Strict Mode re-runs effects in development).
   useEffect(() => {
-    if (!userId) return;
+    if (!userId || ready.current) return;
     const draft = read(userId);
     if (draft) {
       form.reset(mergeWithDefaults(draft.values));
-      // Resume on the last step the seller reached, but never past review.
-      setStep(Math.min(Math.max(draft.step, 0), ONBOARDING_STEPS.indexOf("review")));
+      setStep(Math.min(Math.max(draft.step, 0), WIZARD_STEPS.length - 1));
       setRestored(true);
     }
     ready.current = true;
@@ -82,11 +84,15 @@ export function useOnboardingDraft(
         const { acceptTerms: _consent, ...values } = form.getValues();
         const draft: StoredDraft = { version: DRAFT_VERSION, step, values };
         window.localStorage.setItem(keyFor(userId), JSON.stringify(draft));
+        setSavedAt(Date.now());
       } catch {
         // Storage full or blocked: the wizard still works, just without resume.
       }
     };
-    save();
+    // Save immediately only when the step really changed; on mount the step is
+    // still the pre-restore 0 and would overwrite the draft being restored.
+    if (lastStep.current !== null && lastStep.current !== step) save();
+    lastStep.current = step;
     const subscription = form.watch(() => {
       clearTimeout(timer);
       timer = setTimeout(save, 400);
@@ -106,5 +112,5 @@ export function useOnboardingDraft(
     }
   }, [userId]);
 
-  return { restored, clear, dismissRestored: () => setRestored(false) };
+  return { restored, savedAt, clear, dismissRestored: () => setRestored(false) };
 }

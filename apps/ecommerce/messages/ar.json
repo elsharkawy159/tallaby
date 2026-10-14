@@ -1592,9 +1592,9 @@
       "no": "لا",
       "inventoryUnits": "كم قطعة سترسلها إلى مستودعنا؟",
       "inventoryUnitsWhy": "يساعدنا على حجز مساحة التخزين المناسبة.",
-      "packagingNotes": "هل هناك متطلبات خاصة لتغليف منتجاتك؟ (اختياري)",
+      "packagingNotes": "متطلبات خاصة للتغليف",
       "packagingNotesPlaceholder": "مثال: زجاجات، منتجات يجب أن تبقى في وضع قائم",
-      "coverage": "أين يتواجد معظم عملائك؟ (اختياري)",
+      "coverage": "أين يتواجد معظم عملائك؟",
       "coverageWhy": "يساعدنا على تأكيد توفر التوصيل في مناطقك.",
       "selectAll": "تحديد الكل",
       "clearAll": "مسح",
@@ -1604,10 +1604,19 @@
       "dropOffBody": "بما أن طلبي ستتولى تخزين منتجاتك، ستقوم أنت بتوصيل مخزونك إلى مستودع طلبي. سيرسل لك فريقنا عنوان المستودع وينسق معك موعد التسليم. بعد ذلك تُشحن طلباتك مباشرةً من مستودعنا.",
       "sameAsLegal": "نفس عنوان نشاطي التجاري",
       "street": "العنوان",
-      "landmark": "علامة مميزة (اختياري)",
-      "contactName": "الشخص المسؤول (اختياري)",
+      "landmark": "علامة مميزة",
+      "contactName": "الشخص المسؤول",
       "contactPhone": "رقم الموبايل للتواصل",
-      "select": "اختر"
+      "select": "اختر",
+      "allEgypt": "كل مصر",
+      "sizeShort_small": "صغير",
+      "sizeShort_medium": "متوسط",
+      "sizeShort_large": "كبير",
+      "sizeShort_mixed": "متنوع",
+      "sizeHint_small": "يحمل باليد",
+      "sizeHint_medium": "بحجم علبة حذاء",
+      "sizeHint_large": "ضخم أو ثقيل",
+      "sizeHint_mixed": "أحجام مختلفة"
     },
     "range": {
       "1_10": "١–١٠",
@@ -1637,7 +1646,14 @@
       "handledBy_tallaby": "طلبي",
       "confirmedAfterContact": "سيتم تأكيد الخدمات التي تتولاها طلبي بعد تواصل فريقنا معك. لن يتم تحصيل أي مبالغ الآن.",
       "notProvided": "غير محدد",
-      "awaitingSetup": "بانتظار الإعداد"
+      "awaitingSetup": "بانتظار الإعداد",
+      "products": "المنتجات",
+      "ordersPerDay": "الطلبات يوميًا",
+      "size": "الحجم",
+      "fragile": "قابل للكسر",
+      "units": "القطع في المستودع",
+      "packaging": "التغليف",
+      "regions": "المناطق"
     },
     "terms": {
       "accept": "قرأت وأوافق على <link>الشروط والأحكام</link> الخاصة بطلبي.",
@@ -1690,13 +1706,71 @@
     "tallabyStorageDetail": "تقوم بتوصيل مخزونك إلى مستودعنا.",
     "recommended": "موصى به",
     "storeBanner": "غلاف المتجر",
-    "optional": "(اختياري)",
-    "uploadBanner": "ارفع صورة غلاف",
+    "optional": "اختياري",
+    "uploadBanner": "أضف صورة غلاف",
     "changeBanner": "تغيير الغلاف",
     "removeBanner": "إزالة",
-    "bannerHint": "يظهر أعلى صفحة متجرك. يُفضّل صورة عريضة بمقاس 1600 × 400. ‏PNG أو JPG بحد أقصى 5 ميجابايت.",
+    "bannerHint": "١٦٠٠ × ٤٠٠ · JPG أو PNG · حتى ٥ ميجابايت",
     "bannerUploaded": "تم رفع الغلاف",
-    "bannerUploadFailed": "تعذّر رفع الغلاف. حاول مرة أخرى."
+    "bannerUploadFailed": "تعذّر رفع الغلاف. حاول مرة أخرى.",
+    "uploadLogo": "رفع الشعار",
+    "removeLogo": "إزالة الشعار",
+    "storeNamePlaceholder": "اسم متجرك",
+    "brandHint": "الشعار: مربع، ٤٠٠ × ٤٠٠ على الأقل · كلاهما اختياري",
+    "supportEmailHint": "سيظهر للعملاء",
+    "supportPhoneHint": "يتواصل معك فريقنا عبر واتساب على هذا الرقم",
+    "businessTypeHint_individual": "تبيع باسمك الشخصي",
+    "businessTypeHint_company": "شركة مسجلة لها رقم ضريبي",
+    "businessTypeHint_partnership": "مالكان أو أكثر",
+    "businessTypeHint_corporation": "شركة كبيرة أو مساهمة",
+    "fulfillment": {
+      "services": "الخدمات",
+      "tallabyCount": "طلبي تتولى {count} من {total}",
+      "me": "أنا",
+      "plan": "الخطة",
+      "change": "تغيير",
+      "done": "تم",
+      "pricingNote": "يتم الاتفاق على الأسعار مع فريقنا بعد التسجيل. لن يتم تحصيل أي مبالغ الآن."
+    },
+    "wizard": {
+      "intro": "أنشئ حساب البائع في حوالي ٥ دقائق. يتم حفظ تقدمك تلقائيًا.",
+      "questions": "لديك سؤال؟",
+      "saved": "تم الحفظ",
+      "continue": "متابعة",
+      "submit": "إرسال الطلب",
+      "steps": {
+        "store": {
+          "label": "متجرك",
+          "summary": "الاسم والشكل وبيانات التواصل",
+          "title": "عرّفنا على متجرك",
+          "description": "هكذا سيراك العملاء على طلبي."
+        },
+        "address": {
+          "label": "عنوان النشاط",
+          "summary": "العنوان المسجل رسميًا",
+          "title": "أين نشاطك التجاري مسجل؟",
+          "description": "العنوان الرسمي لنشاطك التجاري."
+        },
+        "fulfillment": {
+          "label": "تنفيذ الطلبات",
+          "summary": "من يتولى كل خدمة",
+          "title": "كيف تريد تنفيذ الطلبات؟",
+          "description": "اختر نقطة البداية ثم عدّل كل خدمة. يمكنك تغيير ذلك لاحقًا مع فريقنا."
+        },
+        "operations": {
+          "label": "التفاصيل التشغيلية",
+          "summary": "الكميات وأنواع المنتجات",
+          "title": "بعض التفاصيل التشغيلية",
+          "description": "تساعد فريقنا على تجهيز الإعداد المناسب لك."
+        },
+        "review": {
+          "label": "المراجعة والإرسال",
+          "summary": "تأكد ثم أرسل",
+          "title": "راجع وأرسل",
+          "description": "تأكد من صحة كل شيء قبل الإرسال."
+        }
+      }
+    }
   },
   "toast": {
     "questionSubmitted": "تم إرسال سؤالك وهو في انتظار الموافقة",

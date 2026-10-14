@@ -269,6 +269,31 @@ export const ONBOARDING_STEPS = [
 ] as const;
 export type OnboardingStep = (typeof ONBOARDING_STEPS)[number];
 
+/** Screens the seller walks through; each groups one or more validation sections. */
+export const WIZARD_STEPS = ["store", "address", "fulfillment", "operations", "review"] as const;
+export type WizardStep = (typeof WIZARD_STEPS)[number];
+
+const WIZARD_SECTIONS: Record<WizardStep, readonly OnboardingStep[]> = {
+  store: ["business"],
+  address: ["legal"],
+  fulfillment: ["model", "services"],
+  operations: ["details"],
+  review: ["review", "terms"],
+};
+
+export function validateWizardStep(
+  step: WizardStep,
+  values: OnboardingFormValues
+): FieldIssue[] {
+  return WIZARD_SECTIONS[step].flatMap((section) => validateStep(section, values));
+}
+
+/** Which wizard screen owns a form path. */
+export function wizardStepForPath(path: string): WizardStep {
+  const section = stepForPath(path);
+  return WIZARD_STEPS.find((step) => WIZARD_SECTIONS[step].includes(section))!;
+}
+
 const zodIssues = (
   result: { success: true } | { success: false; error: z.ZodError },
   prefix: string

@@ -1,38 +1,31 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition, type ReactNode } from "react";
 import { useForm, type FieldPath } from "react-hook-form";
 import { toast } from "sonner";
-import { ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
+import { ChevronRight, CircleCheck, CircleHelp, RotateCcw } from "lucide-react";
 import { useTranslations } from "next-intl";
 import posthog from "posthog-js";
 
 import { Link, useRouter } from "@/i18n/navigation";
 import { useDebounce } from "@/hooks/use-debounce";
+import { Logo } from "@/components/logo";
+import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { Button } from "@workspace/ui/components/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/card";
 import { Form } from "@workspace/ui/components/form";
-import { Progress } from "@workspace/ui/components/progress";
 import { Spinner } from "@workspace/ui/components/spinner";
 import type { FulfillmentPlanView } from "@workspace/lib/fulfillment";
 
 import {
-  ONBOARDING_STEPS,
+  WIZARD_STEPS,
   onboardingDefaults,
-  stepForPath,
   toFormPath,
   toSubmission,
-  validateStep,
+  validateWizardStep,
+  wizardStepForPath,
   type FieldIssue,
   type OnboardingFormValues,
-  type OnboardingStep,
+  type WizardStep,
 } from "./become-seller.dto";
 import {
   checkBusinessNameAvailability,
@@ -40,36 +33,41 @@ import {
 } from "./become-seller.server";
 import { useOnboardingDraft } from "./use-onboarding-draft";
 import { recommendedDefaults } from "./fulfillment-choices.lib";
+import { OnboardingSteps } from "./onboarding-steps";
 import { BusinessStep, type BusinessNameCheck } from "./steps/business-step";
 import { LegalAddressStep } from "./steps/legal-address-step";
-import { ModelStep } from "./steps/model-step";
-import { ServicesStep } from "./steps/services-step";
+import { FulfillmentStep } from "./steps/fulfillment-step";
 import { DetailsStep } from "./steps/details-step";
 import { ReviewStep } from "./steps/review-step";
-import { TermsStep } from "./steps/terms-step";
+
+const SELLER_SUPPORT_EMAIL = "sellers@tallaby.com";
 
 interface OnboardingFormClientProps {
   user: { id: string } | null;
   plans: FulfillmentPlanView[];
+  /** Social sign-in buttons, shown to signed-out visitors. */
+  signInOptions?: ReactNode;
 }
 
-export function OnboardingFormClient({ user, plans }: OnboardingFormClientProps) {
+export function OnboardingFormClient({ user, plans, signInOptions }: OnboardingFormClientProps) {
   const t = useTranslations("onboarding");
   const tToast = useTranslations("toast");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [stepIndex, setStepIndex] = useState(0);
+  const [maxReached, setMaxReached] = useState(0);
   const [nameCheck, setNameCheck] = useState<BusinessNameCheck>("idle");
-  const topRef = useRef<HTMLDivElement>(null);
 
   // Start from the recommended setup (Tallaby handles fulfillment).
   const initialValues = useMemo(() => recommendedDefaults(plans, onboardingDefaults), [plans]);
   const form = useForm<OnboardingFormValues>({ defaultValues: initialValues });
-  const step = ONBOARDING_STEPS[stepIndex]!;
-  const isLastStep = stepIndex === ONBOARDING_STEPS.length - 1;
-  const progress = ((stepIndex + 1) / ONBOARDING_STEPS.length) * 100;
+  const step = WIZARD_STEPS[stepIndex]!;
+  const isLastStep = stepIndex === WIZARD_STEPS.length - 1;
 
-  const draft = useOnboardingDraft(user?.id, form, stepIndex, setStepIndex);
+  const draft = useOnboardingDraft(user?.id, form, stepIndex, (restored) => {
+    setStepIndex(restored);
+    setMaxReached(restored);
+  });
 
   useEffect(() => {
     if (draft.restored) {
@@ -122,39 +120,43 @@ export function OnboardingFormClient({ user, plans }: OnboardingFormClientProps)
 
   const goTo = (target: number) => {
     setStepIndex(target);
-    topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setMaxReached((max) => Math.max(max, target));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  /** Moves to the screen that owns the first issue and brings it into view. */
+  const revealFirstIssue = (issues: FieldIssue[]) => {
+    const target = WIZARD_STEPS.indexOf(wizardStepForPath(issues[0]!.path));
+    if (target !== stepIndex) goTo(target);
+    setTimeout(() => {
+      const field = document.querySelector<HTMLElement>(
+        '#onboarding-form [aria-invalid="true"]'
+      );
+      field?.scrollIntoView({ behavior: "smooth", block: "center" });
+      field?.focus({ preventScroll: true });
+    }, 50);
   };
 
   const handleNext = () => {
     const values = form.getValues();
     form.clearErrors();
-    const issues = validateStep(step, values);
-    if (step === "business" && nameCheck === "taken") {
+    // Review re-validates earlier screens (e.g. a stale draft).
+    const issues = isLastStep
+      ? WIZARD_STEPS.flatMap((s) => validateWizardStep(s, values))
+      : validateWizardStep(step, values);
+    if (step === "store" && nameCheck === "taken") {
       issues.push({ path: "businessName", code: "business_name_taken" });
     }
     if (issues.length) {
       applyIssues(issues);
-      // Review re-validates earlier steps (e.g. a stale draft): jump to the first problem.
-      if (step === "review") goTo(ONBOARDING_STEPS.indexOf(stepForPath(issues[0]!.path)));
+      revealFirstIssue(issues);
       return;
     }
-    goTo(stepIndex + 1);
+    if (isLastStep) submit(values);
+    else goTo(stepIndex + 1);
   };
 
-  const handleBack = () => {
-    if (stepIndex > 0) goTo(stepIndex - 1);
-  };
-
-  const handleSubmit = () => {
-    const values = form.getValues();
-    form.clearErrors();
-    const issues = [...validateStep("review", values), ...validateStep("terms", values)];
-    if (issues.length) {
-      applyIssues(issues);
-      goTo(ONBOARDING_STEPS.indexOf(stepForPath(issues[0]!.path)));
-      return;
-    }
-
+  const submit = (values: OnboardingFormValues) => {
     startTransition(async () => {
       try {
         const result = await submitSellerApplication(toSubmission(values));
@@ -178,9 +180,7 @@ export function OnboardingFormClient({ user, plans }: OnboardingFormClientProps)
             code,
           }));
           applyIssues(serverIssues);
-          if (serverIssues[0]) {
-            goTo(ONBOARDING_STEPS.indexOf(stepForPath(serverIssues[0].path)));
-          }
+          if (serverIssues.length) revealFirstIssue(serverIssues);
         }
       } catch (error) {
         console.error("Form submission error:", error);
@@ -193,39 +193,13 @@ export function OnboardingFormClient({ user, plans }: OnboardingFormClientProps)
     draft.clear();
     draft.dismissRestored();
     form.reset(initialValues);
+    setMaxReached(0);
     goTo(0);
   };
 
-  if (!user) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("authenticationRequired")}</CardTitle>
-          <CardDescription>{t("mustBeLoggedIn")}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col gap-4">
-            <Button className="w-full" asChild>
-              <Link href="/auth?redirect=/onboarding">{t("signInToContinue")}</Link>
-            </Button>
-            <p className="text-center text-sm text-gray-600">
-              {t("dontHaveAccount")}{" "}
-              <Link
-                href="/auth?redirect=/onboarding"
-                className="font-semibold text-primary hover:text-primary/80"
-              >
-                {t("signUp")}
-              </Link>
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const renderStep = (current: OnboardingStep) => {
+  const renderStep = (current: WizardStep) => {
     switch (current) {
-      case "business":
+      case "store":
         return (
           <BusinessStep
             nameCheck={nameCheck}
@@ -233,83 +207,165 @@ export function OnboardingFormClient({ user, plans }: OnboardingFormClientProps)
             disabled={isPending}
           />
         );
-      case "legal":
+      case "address":
         return <LegalAddressStep />;
-      case "model":
-        return <ModelStep plans={plans} />;
-      case "services":
-        return <ServicesStep plans={plans} />;
-      case "details":
+      case "fulfillment":
+        return <FulfillmentStep plans={plans} />;
+      case "operations":
         return <DetailsStep />;
       case "review":
-        return <ReviewStep plans={plans} onEdit={(s) => goTo(ONBOARDING_STEPS.indexOf(s))} />;
-      case "terms":
-        return <TermsStep />;
+        return <ReviewStep plans={plans} onEdit={(s) => goTo(WIZARD_STEPS.indexOf(s))} />;
     }
   };
 
   return (
-    <Card ref={topRef} className="scroll-mt-4">
-      <CardHeader className="space-y-4">
-        <div className="space-y-2">
-          <div className="flex items-center justify-between gap-2">
-            <CardTitle>{t(`steps.${step}.title`)}</CardTitle>
-            <p className="shrink-0 text-xs text-muted-foreground">
-              {t("stepOf", { current: stepIndex + 1, total: ONBOARDING_STEPS.length })}
-            </p>
-          </div>
-          <CardDescription>{t(`steps.${step}.description`)}</CardDescription>
+    <div className="grid min-h-screen bg-background lg:grid-cols-[340px_minmax(0,1fr)]">
+      <aside className="sticky top-0 z-20 flex flex-col bg-primary px-4 py-3 text-white lg:h-screen lg:gap-7 lg:overflow-auto lg:px-7 lg:pt-7 lg:pb-6">
+        <div className="flex items-center justify-between gap-3">
+          <Logo color="white" logoClassName="h-6.5 md:h-6.5 lg:h-8.5" />
+          <LanguageSwitcher variant="pill" />
         </div>
-        <Progress value={progress} />
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form
-            id="onboarding-form"
-            noValidate
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (isLastStep) handleSubmit();
-              else handleNext();
-            }}
-          >
-            {renderStep(step)}
-          </form>
-        </Form>
-      </CardContent>
-      <CardFooter className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-1">
-          {stepIndex > 0 && (
-            <Button type="button" variant="outline" onClick={handleBack} disabled={isPending}>
-              {t("back")}
-              <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
-            </Button>
-          )}
-          {draft.restored && stepIndex === 0 && (
-            <Button type="button" variant="ghost" size="sm" onClick={startOver}>
-              <RotateCcw className="h-3.5 w-3.5" />
-              {t("startOver")}
-            </Button>
-          )}
+        <div className="hidden lg:block">
+          <h2 className="mb-1.5 text-2xl font-bold text-white">{t("becomeSeller")}</h2>
+          <p className="text-sm leading-relaxed text-white/80">{t("wizard.intro")}</p>
         </div>
-        {!isLastStep ? (
-          <Button type="submit" form="onboarding-form">
-            <ChevronRight className="h-4 w-4 rtl:rotate-180" />
-            {t("next")}
-          </Button>
+        <OnboardingSteps
+          current={user ? stepIndex : -1}
+          maxReached={user ? maxReached : -1}
+          onSelect={goTo}
+        />
+        <div className="mt-auto hidden items-center gap-2.5 border-t border-white/14 pt-5 text-[13px] text-white/80 lg:flex">
+          <CircleHelp className="size-4.5 shrink-0" aria-hidden />
+          <span>
+            {t("wizard.questions")}{" "}
+            <a href={`mailto:${SELLER_SUPPORT_EMAIL}`} className="text-white underline">
+              {SELLER_SUPPORT_EMAIL}
+            </a>
+          </span>
+        </div>
+      </aside>
+
+      <main className="flex flex-col items-center px-3 pt-4 lg:px-8 lg:pt-12 lg:pb-30">
+        {!user ? (
+          <SignInCard>{signInOptions}</SignInCard>
         ) : (
-          <Button type="submit" form="onboarding-form" disabled={isPending} size="lg">
-            {isPending ? (
-              <>
-                <Spinner className="h-4 w-4" />
-                {t("submitting")}
-              </>
-            ) : (
-              t("submit")
-            )}
-          </Button>
+          <div className="w-full max-w-[760px] rounded-[14px] border border-neutral-200 bg-card shadow-[0_1px_3px_rgba(20,81,99,.06),0_1px_2px_rgba(0,0,0,.04)] lg:rounded-2xl dark:border-input">
+            <header className="px-4.5 pt-5.5 pb-1 lg:px-9 lg:pt-8 lg:pb-2">
+              <span className="text-[12.5px] font-semibold tracking-wide text-primary/80">
+                {t("stepOf", { current: stepIndex + 1, total: WIZARD_STEPS.length })}
+              </span>
+              <h1 className="mt-1.5 mb-1.5 text-[21px] leading-snug font-bold text-neutral-900 lg:text-[26px] dark:text-foreground">
+                {t(`wizard.steps.${step}.title`)}
+              </h1>
+              <p className="text-sm leading-relaxed text-pretty text-muted-foreground lg:text-[15px]">
+                {t(`wizard.steps.${step}.description`)}
+              </p>
+            </header>
+
+            <Form {...form}>
+              <form
+                id="onboarding-form"
+                noValidate
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleNext();
+                }}
+              >
+                <div
+                  key={step}
+                  className="flex flex-col gap-4.5 px-4.5 pt-4.5 pb-6 animate-in fade-in slide-in-from-bottom-1.5 duration-300 lg:gap-5.5 lg:px-9 lg:pt-6 lg:pb-8"
+                >
+                  {renderStep(step)}
+                </div>
+              </form>
+            </Form>
+
+            <footer className="sticky bottom-0 flex items-center gap-3 border-t border-neutral-200 bg-card/97 px-4 py-3 pb-[calc(12px+env(safe-area-inset-bottom))] shadow-[0_-6px_16px_rgba(20,81,99,.06)] lg:rounded-b-2xl lg:px-9 lg:py-4 lg:shadow-none dark:border-input">
+              {stepIndex > 0 ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="xl"
+                  className="max-lg:flex-1 rtl:flex-row"
+                  onClick={() => goTo(stepIndex - 1)}
+                  disabled={isPending}
+                >
+                  <ChevronRight className="size-4 ltr:rotate-180" />
+                  {t("back")}
+                </Button>
+              ) : draft.restored ? (
+                <Button type="button" variant="soft" size="sm" className="rtl:flex-row" onClick={startOver}>
+                  <RotateCcw className="size-3.5" />
+                  {t("startOver")}
+                </Button>
+              ) : null}
+              <span className="hidden flex-1 items-center justify-center gap-1.5 text-[12.5px] text-muted-foreground lg:flex">
+                {draft.savedAt && (
+                  <>
+                    <CircleCheck className="size-3.5 text-success" aria-hidden />
+                    {t("wizard.saved")}
+                  </>
+                )}
+              </span>
+              <Button
+                type="submit"
+                form="onboarding-form"
+                variant="accent"
+                size="xl"
+                className="ms-auto max-lg:flex-1 lg:ms-0 rtl:flex-row"
+                disabled={isPending}
+              >
+                {isPending ? (
+                  <>
+                    <Spinner className="size-4" />
+                    {t("submitting")}
+                  </>
+                ) : isLastStep ? (
+                  t("wizard.submit")
+                ) : (
+                  <>
+                    {t("wizard.continue")}
+                    <ChevronRight className="size-4 rtl:rotate-180" />
+                  </>
+                )}
+              </Button>
+            </footer>
+          </div>
         )}
-      </CardFooter>
-    </Card>
+      </main>
+    </div>
+  );
+}
+
+function SignInCard({ children }: { children?: ReactNode }) {
+  const t = useTranslations("onboarding");
+  return (
+    <div className="w-full max-w-[520px] space-y-5 rounded-[14px] border border-neutral-200 bg-card px-6 py-8 text-center shadow-[0_1px_3px_rgba(20,81,99,.06)] lg:rounded-2xl lg:px-9 dark:border-input">
+      <div className="space-y-1.5">
+        <h1 className="text-[21px] font-bold text-neutral-900 lg:text-[26px] dark:text-foreground">
+          {t("authenticationRequired")}
+        </h1>
+        <p className="text-sm text-muted-foreground lg:text-[15px]">{t("mustBeLoggedIn")}</p>
+      </div>
+      <Button variant="accent" size="xl" className="w-full" asChild>
+        <Link href="/auth?redirect=/onboarding">{t("signInToContinue")}</Link>
+      </Button>
+      {children && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-3 text-xs text-muted-foreground uppercase">
+            <span className="h-px flex-1 bg-border" />
+            {t("orSignInWith")}
+            <span className="h-px flex-1 bg-border" />
+          </div>
+          {children}
+        </div>
+      )}
+      <p className="text-sm text-muted-foreground">
+        {t("dontHaveAccount")}{" "}
+        <Link href="/auth?redirect=/onboarding" className="font-semibold text-primary hover:underline">
+          {t("signUp")}
+        </Link>
+      </p>
+    </div>
   );
 }
