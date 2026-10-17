@@ -441,6 +441,8 @@ export const sellers = pgTable("sellers", {
 	/** Set once by startFeeTrialIfNeeded, together with feeTrialEndsAt (0059). */
 	feeTrialStartedAt: timestamp("fee_trial_started_at", { withTimezone: true, mode: 'string' }),
 	feeTrialEndsAt: timestamp("fee_trial_ends_at", { withTimezone: true, mode: 'string' }),
+	/** 'publish' | 'product_active' | 'admin' (0059). */
+	feeTrialStartTrigger: text("fee_trial_start_trigger"),
 	feePlanEffectiveAt: timestamp("fee_plan_effective_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),

@@ -33,6 +33,7 @@ import {
   validateSiteConfig,
 } from "@workspace/store-sections";
 import { ensureStoreSiteScaffold } from "../stores/server";
+import { startFeeTrialIfNeeded } from "../sellers/fee-trial.server";
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 type Queryable = Tx | typeof db;
@@ -255,7 +256,8 @@ export async function publishStoreSite(
         })
         .where(eq(stores.id, storeId));
 
-      // Fee trial hook (startFeeTrialIfNeeded, P6-03): not wired yet.
+      // The first publish can start the seller's fee trial (D20).
+      await startFeeTrialIfNeeded(tx, sellerId, "publish");
       return { revisionId: revision!.id, revisionNumber };
     });
     return { success: true, data };
