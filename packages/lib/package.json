@@ -17,7 +17,8 @@
     "@workspace/db": "workspace:*",
     "drizzle-orm": "0.45.1",
     "stripe": "^22.1.1",
-    "zod": "^4.2.1"
+    "zod": "^4.2.1",
+    "@workspace/store-sections": "workspace:*"
   },
   "types": "index.ts",
   "exports": {
@@ -72,6 +73,18 @@
     "./plans": {
       "types": "./src/plans/index.ts",
       "default": "./src/plans/index.ts"
+    },
+    "./stores": {
+      "types": "./src/stores/stores.lib.ts",
+      "default": "./src/stores/stores.lib.ts"
+    },
+    "./stores/server": {
+      "types": "./src/stores/server.ts",
+      "default": "./src/stores/server.ts"
+    },
+    "./store-sites/server": {
+      "types": "./src/store-sites/server.ts",
+      "default": "./src/store-sites/server.ts"
     },
     "./storefront": {
       "types": "./src/storefront/index.ts",

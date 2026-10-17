@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validateSiteConfig } from "./validate";
+import { validatePageContent, validateSiteConfig } from "./validate";
 import { classicTemplateFixture, withHomeSections } from "./fixtures.test-utils";
 
 const ALLOWED = {
@@ -107,5 +107,47 @@ describe("validateSiteConfig", () => {
     expect(result.success).toBe(false);
     if (result.success) return;
     expect(result.issues[0]!.code).toBe("unsupported_version");
+  });
+});
+
+describe("validatePageContent", () => {
+  it("parses and sanitizes one page's draft content", () => {
+    const result = validatePageContent(
+      { sections: [{ id: "s1", sectionId: "classic-hero", version: 1, props: { body: "<script>x</script>ok" } }] },
+      { allowedSections: ALLOWED },
+    );
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.data.sections[0]!.props.body).toBe("ok");
+  });
+
+  it("rejects customCode nodes and unknown sections", () => {
+    const bad = validatePageContent(
+      {
+        sections: [
+          {
+            id: "s1",
+            sectionId: "classic-hero",
+            version: 1,
+            props: {},
+            componentTree: [{ id: "n", type: "customCode", props: {}, children: [] }],
+          },
+        ],
+      },
+      { allowedSections: ALLOWED },
+    );
+    expect(bad.success).toBe(false);
+    const unknown = validatePageContent(
+      { sections: [{ id: "s1", sectionId: "nope", version: 1, props: {} }] },
+      { allowedSections: ALLOWED },
+    );
+    expect(unknown.success).toBe(false);
+    if (unknown.success) return;
+    expect(unknown.issues[0]!.code).toBe("unknown_section");
+  });
+
+  it("rejects non-objects and oversize content", () => {
+    expect(validatePageContent("x").success).toBe(false);
+    expect(validatePageContent({ sections: [{ id: "s1", sectionId: "a", version: 1, props: { b: "x".repeat(200) } }] }, { maxBytes: 100 }).success).toBe(false);
   });
 });

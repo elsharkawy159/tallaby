@@ -91,8 +91,10 @@ CREATE TRIGGER stores_published_revision_same_store
   FOR EACH ROW EXECUTE FUNCTION stores_published_revision_same_store();
 
 -- Revisions are append-only. Restoring an old one copies it into the drafts and
--- publishes a NEW revision. A DELETE is allowed only when the store itself is
--- gone (the ON DELETE CASCADE from stores).
+-- publishes a NEW revision. Two exceptions, both driven by foreign keys:
+--   * DELETE when the store itself is gone (ON DELETE CASCADE from stores);
+--   * UPDATE that only clears published_by (ON DELETE SET NULL from users), so
+--     deleting a user who once published is not blocked.
 CREATE OR REPLACE FUNCTION store_site_revisions_immutable()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -101,6 +103,13 @@ AS $$
 BEGIN
   IF TG_OP = 'DELETE' AND NOT EXISTS (SELECT 1 FROM stores WHERE id = OLD.store_id) THEN
     RETURN OLD;
+  END IF;
+  IF TG_OP = 'UPDATE' AND NEW.published_by IS NULL AND OLD.published_by IS NOT NULL
+     AND (NEW.id, NEW.store_id, NEW.revision_number, NEW.schema_version, NEW.template_key, NEW.snapshot, NEW.created_at)
+         IS NOT DISTINCT FROM
+         (OLD.id, OLD.store_id, OLD.revision_number, OLD.schema_version, OLD.template_key, OLD.snapshot, OLD.created_at)
+  THEN
+    RETURN NEW;
   END IF;
   RAISE EXCEPTION 'store_site_revisions is append-only; publish a new revision instead of %', TG_OP
     USING ERRCODE = 'restrict_violation';

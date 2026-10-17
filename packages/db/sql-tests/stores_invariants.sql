@@ -93,8 +93,8 @@ BEGIN
   IF NOT failed THEN RAISE EXCEPTION '9: cross-seller store_products row accepted'; END IF;
 
   -- 10. Revisions: append-only, same-store pointer, cascade on store delete.
-  INSERT INTO store_site_revisions (store_id, revision_number, schema_version, template_key, snapshot)
-  VALUES (store_a, 1, 1, 'tallaby-classic', '{}') RETURNING id INTO rev_a;
+  INSERT INTO store_site_revisions (store_id, revision_number, schema_version, template_key, snapshot, published_by)
+  VALUES (store_a, 1, 1, 'tallaby-classic', '{}', u_a) RETURNING id INTO rev_a;
   INSERT INTO store_site_revisions (store_id, revision_number, schema_version, template_key, snapshot)
   VALUES (store_b, 1, 1, 'tallaby-classic', '{}') RETURNING id INTO rev_b;
   failed := false;
@@ -105,6 +105,15 @@ BEGIN
   BEGIN DELETE FROM store_site_revisions WHERE id = rev_a;
   EXCEPTION WHEN restrict_violation THEN failed := true; END;
   IF NOT failed THEN RAISE EXCEPTION '10: revision DELETE accepted'; END IF;
+  -- Clearing published_by alone is allowed (users ON DELETE SET NULL); with any other change it is not.
+  failed := false;
+  BEGIN UPDATE store_site_revisions SET published_by = NULL, snapshot = '{"x":2}' WHERE id = rev_a;
+  EXCEPTION WHEN restrict_violation THEN failed := true; END;
+  IF NOT failed THEN RAISE EXCEPTION '10: revision UPDATE hidden behind published_by = NULL accepted'; END IF;
+  UPDATE store_site_revisions SET published_by = NULL WHERE id = rev_a;
+  IF (SELECT published_by FROM store_site_revisions WHERE id = rev_a) IS NOT NULL THEN
+    RAISE EXCEPTION '10: clearing published_by was blocked';
+  END IF;
   failed := false;
   BEGIN UPDATE stores SET published_revision_id = rev_b WHERE id = store_a;
   EXCEPTION WHEN check_violation THEN failed := true; END;

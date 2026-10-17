@@ -6,9 +6,9 @@
  * Checks that need the database (product ids in the store's catalog, media
  * owned by the seller, form/CMS ids in the store) run in the publish action.
  */
-import { migrateSiteConfig } from "./migrate";
+import { CURRENT_SITE_CONFIG_VERSION, migrateSiteConfig } from "./migrate";
 import { sanitizeSiteConfig } from "./sanitize";
-import { type ComponentNode, type SectionInstance, type SiteConfig, siteConfigSchema } from "./schema";
+import { type ComponentNode, type PageContent, type SectionInstance, type SiteConfig, siteConfigSchema } from "./schema";
 
 export type SiteConfigIssueCode =
   | "invalid_config"
@@ -153,5 +153,42 @@ export function validateSiteConfig(
     data: sanitizeSiteConfig(config),
     migrated: migration.migrated,
     fromVersion: migration.fromVersion,
+  };
+}
+
+export type ValidatePageContentResult =
+  | { success: true; data: PageContent }
+  | { success: false; issues: SiteConfigIssue[] };
+
+const PAGE_CONTENT_PATH = ["pages", 0, "content"] as const;
+
+/**
+ * Validates one page's draft content (autosave). Runs it through the exact same
+ * pipeline as a full publish by wrapping it in a one-page SiteConfig; issue
+ * paths are reported relative to the content.
+ */
+export function validatePageContent(
+  raw: unknown,
+  options: ValidateSiteConfigOptions = {},
+): ValidatePageContentResult {
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
+    return { success: false, issues: [{ code: "invalid_config", path: [], message: "invalid_content" }] };
+  }
+  const wrapped = {
+    schemaVersion: CURRENT_SITE_CONFIG_VERSION,
+    pages: [{ slug: "home", isHome: true, name: "page", content: raw }],
+  };
+  const result = validateSiteConfig(wrapped, options);
+  if (result.success) return { success: true, data: result.data.pages[0]!.content };
+
+  const prefix = PAGE_CONTENT_PATH.length;
+  return {
+    success: false,
+    issues: result.issues.map((issue) => ({
+      ...issue,
+      path: issue.path.slice(0, prefix).every((p, i) => p === PAGE_CONTENT_PATH[i])
+        ? issue.path.slice(prefix)
+        : issue.path,
+    })),
   };
 }
