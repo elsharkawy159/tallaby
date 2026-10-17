@@ -18,11 +18,16 @@
     "./render": {
       "types": "./src/render/index.ts",
       "default": "./src/render/index.ts"
+    },
+    "./templates": {
+      "types": "./src/templates/index.ts",
+      "default": "./src/templates/index.ts"
     }
   },
   "scripts": {
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "classic:sql": "tsx scripts/classic-template-sql.ts"
   },
   "dependencies": {
     "sanitize-html": "^2.17.0",

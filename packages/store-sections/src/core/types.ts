@@ -135,6 +135,8 @@ export interface RenderContext {
   /** Host-provided interactive pieces (the storefront cart, or editor placeholders). */
   renderCartButton?: () => ReactNode;
   renderAddToCart?: (product: ProductSummary) => ReactNode;
+  /** Renders a Tallaby Classic part with the host's own components (P4-03). */
+  renderClassic?: (part: "classic-header" | "classic-hero" | "classic-categories" | "classic-catalog" | "classic-footer", props: Record<string, unknown>) => ReactNode;
 }
 
 export type SectionRenderProps<P> = {

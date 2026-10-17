@@ -4,6 +4,7 @@ import postgres from "postgres";
 import { eq, inArray } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import * as DB_SCHEMA from "@workspace/db/schema";
+import { storeSectionRegistry } from "@workspace/store-sections/render";
 import {
   getPublishedStoreSite,
   getStoreForEditor,
@@ -18,7 +19,8 @@ import {
  */
 const TEST_DATABASE_URL = process.env.TEST_DATABASE_URL;
 
-const ALLOWED = { "classic-hero": 1, "classic-catalog": 1 };
+// The real section library: stores start as Tallaby Classic (classic header/footer, P4-03).
+const ALLOWED = storeSectionRegistry.allowedSections();
 const hero = (title: string) => ({
   sections: [{ id: "s1", sectionId: "classic-hero", version: 1, props: { title } }],
 });
