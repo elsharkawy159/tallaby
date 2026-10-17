@@ -4,7 +4,8 @@
  * host, since next/image throws on unconfigured hosts.
  */
 export const OPTIMIZED_IMAGE_HOSTS = [
-  "sakwqwocbccpyrmwjowq.supabase.co",
+  "sakwqwocbccpyrmwjowq.supabase.co", // production Supabase Storage
+  "cxqjrwjianxskhzmrkla.supabase.co", // staging Supabase Storage
   "images.unsplash.com",
 ] as const;
 
