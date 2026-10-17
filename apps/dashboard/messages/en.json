@@ -2196,5 +2196,107 @@
     "notOnPlan": "Not on your plan",
     "upgradesSoon": "Upgrades will be available soon.",
     "manageStores": "Manage stores"
+  },
+  "storePayments": {
+    "saved": "Payment methods updated.",
+    "readOnly": "This store is read-only, so payment methods can't be changed.",
+    "checkoutNotice": "Your store's website will offer these methods once store checkout launches. Until then, orders are paid the same way as today.",
+    "liveTitle": "Payment methods",
+    "liveDescription": "Choose how customers pay on your store. Keep at least one method on.",
+    "soonTitle": "Coming soon",
+    "soonDescription": "These will be available in a later update.",
+    "soon": "Soon",
+    "edit": "Edit",
+    "setUp": "Set up",
+    "toggle": "Turn {method} on or off",
+    "notSetUp": "Not set up yet",
+    "codFeeSummary": "Extra fee: EGP {fee}",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saveAndEnable": "Save and turn on",
+    "instapayIdentifiers": "Add at least one way to receive money: InstaPay address, mobile number or IBAN.",
+    "operatorHint": "Numbers starting like this usually belong to {operator}. Make sure this number has a {method} wallet.",
+    "previewTitle": "What customers will see",
+    "previewBody": "Pay with {method} to {store}:",
+    "fields": {
+      "holderName": "Account holder name",
+      "phone": "Wallet mobile number",
+      "ipa": "InstaPay address",
+      "iban": "IBAN",
+      "paymentLink": "InstaPay payment link (optional)",
+      "codFee": "Cash on delivery fee (EGP)",
+      "codFeeHelp": "Added to the order total when the customer pays on delivery. Use 0 for no fee.",
+      "note": "Note to customers (optional)"
+    },
+    "fieldErrors": {
+      "holder_invalid": "Enter the account holder's name (at least 2 characters).",
+      "phone_invalid": "Enter a valid Egyptian mobile number, e.g. 01012345678.",
+      "ipa_invalid": "Use an InstaPay address like name@instapay.",
+      "iban_invalid": "An Egyptian IBAN is EG followed by 27 digits.",
+      "iban_checksum": "This IBAN isn't valid. Check the digits.",
+      "link_invalid": "Use an InstaPay link that starts with https://ipn.eg/.",
+      "identifier_required": "Add an InstaPay address, mobile number or IBAN.",
+      "codInvalid": "The fee must be a whole number from 0 to 500.",
+      "invalid": "This value isn't valid."
+    },
+    "errors": {
+      "invalidDetails": "Some details are not valid. Please check them.",
+      "lastMethod": "Keep at least one payment method on.",
+      "notAvailable": "This payment method isn't available yet.",
+      "readOnly": "This store is read-only.",
+      "notFound": "Store not found.",
+      "rateLimited": "Too many changes. Please wait a few minutes and try again.",
+      "generic": "Couldn't save. Please try again."
+    },
+    "methods": {
+      "cod": {
+        "name": "Cash on delivery",
+        "description": "The customer pays the courier when the order arrives.",
+        "setupHelp": "Optional: add a fee or a note for customers."
+      },
+      "vodafone_cash": {
+        "name": "Vodafone Cash",
+        "description": "Customers transfer to your Vodafone Cash wallet.",
+        "setupHelp": "Customers send the money to this wallet. You confirm when it arrives."
+      },
+      "e_cash": {
+        "name": "e& Cash",
+        "description": "Customers transfer to your e& Cash wallet.",
+        "setupHelp": "Customers send the money to this wallet. You confirm when it arrives."
+      },
+      "we_pay": {
+        "name": "WE Pay",
+        "description": "Customers transfer to your WE Pay wallet.",
+        "setupHelp": "Customers send the money to this wallet. You confirm when it arrives."
+      },
+      "orange_cash": {
+        "name": "Orange Cash",
+        "description": "Customers transfer to your Orange Cash wallet.",
+        "setupHelp": "Customers send the money to this wallet. You confirm when it arrives."
+      },
+      "instapay": {
+        "name": "InstaPay",
+        "description": "Customers transfer with InstaPay to your account.",
+        "setupHelp": "Customers send the money with InstaPay. You confirm when it arrives."
+      },
+      "card": {
+        "name": "Debit / credit card"
+      },
+      "fawry": {
+        "name": "Fawry"
+      },
+      "installments": {
+        "name": "Installments"
+      },
+      "apple_google_pay": {
+        "name": "Apple Pay / Google Pay"
+      },
+      "bank_transfer": {
+        "name": "Bank transfer"
+      },
+      "tallaby_wallet": {
+        "name": "Tallaby wallet"
+      }
+    }
   }
 }

@@ -3,17 +3,16 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Badge } from "@workspace/ui/components/badge";
 import { cn } from "@/lib/utils";
 
-/** General · Payment methods (soon, P3-07) · Policies. */
+/** General · Payment methods · Policies. */
 export function StoreSettingsTabs({ storeId }: { storeId: string }) {
   const t = useTranslations("nav");
   const pathname = usePathname();
   const base = `/stores/${storeId}/settings`;
   const tabs = [
     { href: base, label: t("general"), exact: true },
-    { href: `${base}/payments`, label: t("paymentMethods"), soon: true },
+    { href: `${base}/payments`, label: t("paymentMethods") },
     { href: `${base}/policies`, label: t("policies") },
   ];
 
@@ -21,20 +20,6 @@ export function StoreSettingsTabs({ storeId }: { storeId: string }) {
     <nav className="flex gap-1 overflow-x-auto border-b" aria-label={t("storeSettings")}>
       {tabs.map((tab) => {
         const active = tab.exact ? pathname === tab.href : pathname.startsWith(tab.href);
-        if (tab.soon) {
-          return (
-            <span
-              key={tab.href}
-              aria-disabled="true"
-              className="flex shrink-0 items-center gap-1.5 border-b-2 border-transparent px-3 py-2.5 text-sm text-muted-foreground/70"
-            >
-              {tab.label}
-              <Badge variant="outline" className="text-[10px] font-normal">
-                {t("soon")}
-              </Badge>
-            </span>
-          );
-        }
         return (
           <Link
             key={tab.href}

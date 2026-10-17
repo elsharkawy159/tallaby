@@ -19,9 +19,18 @@ import {
   sellers,
   storeDesignSystems,
   storePages,
+  storeSettingsAudit,
   stores,
   sql,
 } from "@workspace/db";
+import {
+  maskPaymentDetails,
+  parseStorePayments,
+  validateMethodChange,
+  type MethodChange,
+  type MethodChangeError,
+  type StorePayments,
+} from "../payments/store-methods";
 import { canCreateStore } from "../plans";
 import { normalizeSubdomain, validateSubdomain } from "../storefront";
 import {
@@ -428,4 +437,68 @@ export async function updateStorePolicies(
     .where(and(ownStore(sellerId, storeId), eq(stores.status, "active")))
     .returning({ id: stores.id });
   return updated.length ? { success: true, data: updated[0]! } : { success: false, error: "store_read_only" };
+}
+
+export type StorePaymentsError = StoreWriteError | MethodChangeError;
+
+/** The store's payment settings (defaults when none are saved). */
+export async function getStorePayments(sellerId: string, storeId: string, q: Queryable = db): Promise<StorePayments | null> {
+  const store = await getStore(sellerId, storeId, q);
+  if (!store) return null;
+  return parseStorePayments((store.settings as Record<string, unknown> | null)?.payments);
+}
+
+/**
+ * Store settings › Payment methods (P3-07). Changes one method under a row
+ * lock, keeps at least one method enabled, and writes a masked audit row.
+ * Storefront checkout does not read these settings yet (P3-07 Part B).
+ */
+export async function updateStorePaymentMethod(
+  sellerId: string,
+  actorId: string,
+  storeId: string,
+  key: string,
+  change: MethodChange,
+  q: Queryable = db,
+): Promise<StoreResult<StorePayments, StorePaymentsError>> {
+  if (!UUID_RE.test(storeId)) return { success: false, error: "not_found" };
+  try {
+    const data = await q.transaction(async (tx) => {
+      const [store] = await tx
+        .select({ settings: stores.settings, status: stores.status })
+        .from(stores)
+        .where(ownStore(sellerId, storeId))
+        .for("update");
+      if (!store) throw new StoreActionError("not_found");
+      if (store.status !== "active") throw new StoreActionError("store_read_only");
+
+      const settings = (store.settings ?? {}) as Record<string, unknown>;
+      const current = parseStorePayments(settings.payments);
+      const result = validateMethodChange(current, key, change);
+      if (!result.success) throw new StoreActionError(result.error);
+
+      await tx
+        .update(stores)
+        .set({ settings: { ...settings, payments: result.data }, updatedAt: sql`now()` })
+        .where(ownStore(sellerId, storeId));
+
+      const before = current[key as keyof StorePayments] as { enabled?: boolean } | undefined;
+      const after = result.data[key as keyof StorePayments] as { enabled: boolean; details?: unknown } & Record<string, unknown>;
+      const action = before?.enabled === after.enabled ? "updated" : after.enabled ? "enabled" : "disabled";
+      const { details, ...rest } = after;
+      await tx.insert(storeSettingsAudit).values({
+        storeId,
+        sellerId,
+        actorId,
+        section: "payments",
+        action,
+        changes: { method: key, ...rest, ...(details !== undefined && { details: maskPaymentDetails(details) }) },
+      });
+      return result.data;
+    });
+    return { success: true, data };
+  } catch (error) {
+    if (error instanceof StoreActionError) return { success: false, error: error.code as StorePaymentsError };
+    throw error;
+  }
 }

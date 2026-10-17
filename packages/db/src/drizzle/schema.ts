@@ -2891,6 +2891,38 @@ export const storeIntegrations = pgTable("store_integrations", {
 	check("store_integrations_provider_check", sql`provider IN ('meta_pixel', 'meta_capi', 'google_analytics', 'google_tag_manager', 'tiktok_pixel', 'snapchat_pixel', 'google_sheets', 'shopify_import')`),
 ]);
 
+/** Append-only audit of sensitive store settings changes (0058). Details are masked. */
+export const storeSettingsAudit = pgTable("store_settings_audit", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	storeId: uuid("store_id").notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	actorId: uuid("actor_id"),
+	/** payments | shipping | domain */
+	section: text().notNull(),
+	action: text().notNull(),
+	changes: jsonb().default({}).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("store_settings_audit_store_idx").using("btree", table.storeId.asc().nullsLast().op("uuid_ops"), table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
+	index("store_settings_audit_seller_idx").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.storeId],
+			foreignColumns: [stores.id],
+			name: "store_settings_audit_store_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.sellerId],
+			foreignColumns: [sellers.id],
+			name: "store_settings_audit_seller_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.actorId],
+			foreignColumns: [users.id],
+			name: "store_settings_audit_actor_id_fkey"
+		}).onDelete("set null"),
+	check("store_settings_audit_section_check", sql`section IN ('payments', 'shipping', 'domain')`),
+]);
+
 /** Own-delivery shipping zones per store (0057). One enabled zone per governorate. */
 export const storeShippingZones = pgTable("store_shipping_zones", {
 	id: uuid().defaultRandom().primaryKey().notNull(),

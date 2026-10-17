@@ -50,6 +50,10 @@
       "types": "./src/payments/index.ts",
       "default": "./src/payments/index.ts"
     },
+    "./payments/store-methods": {
+      "types": "./src/payments/store-methods.ts",
+      "default": "./src/payments/store-methods.ts"
+    },
     "./orders": {
       "types": "./src/orders/index.ts",
       "default": "./src/orders/index.ts"

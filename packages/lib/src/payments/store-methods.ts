@@ -1,0 +1,212 @@
+/**
+ * Store payment methods (PLAN.md §8.6, P3-07): the catalog every app shows and
+ * the rules for stores.settings.payments. Pure; no DB imports.
+ *
+ * NOT YET USED AT CHECKOUT. Seller-collected methods (wallets, InstaPay) must
+ * not be credited to the seller as seller_earning on delivery; that needs the
+ * collector-aware store wallet (P6-05, owner approval). Until then storefront
+ * checkout is unchanged and this only powers Store settings › Payment methods.
+ */
+import { z } from "zod";
+import { EGYPT_MOBILE_REGEX } from "../fulfillment/validate";
+
+export type PaymentCollector = "seller" | "tallaby" | "delivery";
+export type PaymentMethodStatus = "live" | "soon";
+export type PaymentMethodKind = "cod" | "wallet" | "instapay" | "other";
+
+export type StorePaymentMethod = {
+  key: string;
+  kind: PaymentMethodKind;
+  status: PaymentMethodStatus;
+  collector: PaymentCollector;
+  /** Public path (same in ecommerce and dashboard public/), or null → initials badge. */
+  logo: string | null;
+  /** Brand initials + colour for methods without a logo file yet. */
+  badge?: { text: string; color: string };
+};
+
+export const STORE_PAYMENT_METHODS = [
+  { key: "cod", kind: "cod", status: "live", collector: "delivery", logo: null, badge: { text: "COD", color: "#0a5c4f" } },
+  { key: "vodafone_cash", kind: "wallet", status: "live", collector: "seller", logo: "/payment-method/Vodafone_logo.png" },
+  { key: "e_cash", kind: "wallet", status: "live", collector: "seller", logo: "/payment-method/Eand_logo.png" },
+  // Official brand assets still needed for these two (owner action).
+  { key: "we_pay", kind: "wallet", status: "live", collector: "seller", logo: null, badge: { text: "WE", color: "#5c2d91" } },
+  { key: "orange_cash", kind: "wallet", status: "live", collector: "seller", logo: null, badge: { text: "OC", color: "#ff7900" } },
+  { key: "instapay", kind: "instapay", status: "live", collector: "seller", logo: "/payment-method/Instapay_logo.png" },
+  { key: "card", kind: "other", status: "soon", collector: "tallaby", logo: null, badge: { text: "VISA", color: "#1a1f71" } },
+  { key: "fawry", kind: "other", status: "soon", collector: "tallaby", logo: null, badge: { text: "F", color: "#f7c600" } },
+  { key: "installments", kind: "other", status: "soon", collector: "tallaby", logo: null, badge: { text: "÷", color: "#00a19a" } },
+  { key: "apple_google_pay", kind: "other", status: "soon", collector: "tallaby", logo: null, badge: { text: "Pay", color: "#111111" } },
+  { key: "bank_transfer", kind: "other", status: "soon", collector: "seller", logo: null, badge: { text: "BT", color: "#475569" } },
+  { key: "tallaby_wallet", kind: "other", status: "soon", collector: "tallaby", logo: null, badge: { text: "T", color: "#0a5c4f" } },
+] as const satisfies readonly StorePaymentMethod[];
+
+export type StorePaymentMethodKey = (typeof STORE_PAYMENT_METHODS)[number]["key"];
+export type LivePaymentMethodKey = "cod" | "vodafone_cash" | "e_cash" | "we_pay" | "orange_cash" | "instapay";
+
+const LIVE_KEYS: LivePaymentMethodKey[] = ["cod", "vodafone_cash", "e_cash", "we_pay", "orange_cash", "instapay"];
+const WALLET_KEYS = ["vodafone_cash", "e_cash", "we_pay", "orange_cash"] as const;
+
+export function getStorePaymentMethod(key: string) {
+  return STORE_PAYMENT_METHODS.find((m) => m.key === key);
+}
+
+/** Usual operator by mobile prefix. A HINT only: numbers can be ported between operators. */
+export function operatorHint(phone: string): (typeof WALLET_KEYS)[number] | null {
+  const p = phone.replace(/[\s-]/g, "").replace(/^\+?20/, "0");
+  if (!/^01\d{9}$/.test(p)) return null;
+  return ({ "010": "vodafone_cash", "011": "e_cash", "012": "orange_cash", "015": "we_pay" } as const)[p.slice(0, 3) as "010"] ?? null;
+}
+
+/** ISO 13616 mod-97 check. */
+export function ibanChecksumValid(iban: string): boolean {
+  const v = iban.replace(/\s+/g, "").toUpperCase();
+  if (!/^[A-Z]{2}\d{2}[A-Z0-9]+$/.test(v)) return false;
+  const rearranged = v.slice(4) + v.slice(0, 4);
+  let rest = 0;
+  for (const ch of rearranged) {
+    const n = /\d/.test(ch) ? ch : String(ch.charCodeAt(0) - 55);
+    for (const d of n) rest = (rest * 10 + Number(d)) % 97;
+  }
+  return rest === 1;
+}
+
+const holderName = z.string().trim().min(2).max(120);
+const mobile = z
+  .string()
+  .transform((v) => v.replace(/[\s-]/g, ""))
+  .pipe(z.string().regex(EGYPT_MOBILE_REGEX, "phone_invalid"));
+
+export const walletDetailsSchema = z.object({ holderName, phone: mobile }).strict();
+
+export const instapayDetailsSchema = z
+  .object({
+    holderName,
+    ipa: z.string().trim().toLowerCase().regex(/^[a-z0-9._-]{2,60}@instapay$/, "ipa_invalid").optional(),
+    phone: mobile.optional(),
+    iban: z
+      .string()
+      .transform((v) => v.replace(/\s+/g, "").toUpperCase())
+      .pipe(z.string().regex(/^EG\d{27}$/, "iban_invalid").refine(ibanChecksumValid, "iban_checksum"))
+      .optional(),
+    paymentLink: z
+      .string()
+      .trim()
+      .regex(/^https:\/\/ipn\.eg\/[^\s]+$/, "link_invalid")
+      .optional(),
+    qrMediaId: z.uuid().optional(),
+  })
+  .strict()
+  .refine((d) => d.ipa || d.phone || d.iban, { message: "identifier_required", path: ["ipa"] });
+
+export const codSettingsSchema = z
+  .object({
+    enabled: z.boolean(),
+    fee: z.number().int().min(0).max(500),
+    minOrder: z.number().min(0).max(1_000_000).optional(),
+    maxOrder: z.number().min(0).max(1_000_000).optional(),
+    note: z.string().trim().max(300).optional(),
+  })
+  .strict();
+
+const walletEntry = z.object({ enabled: z.boolean(), details: walletDetailsSchema.optional() }).strict();
+const instapayEntry = z.object({ enabled: z.boolean(), details: instapayDetailsSchema.optional() }).strict();
+
+export const storePaymentsSchema = z
+  .object({
+    cod: codSettingsSchema.optional(),
+    vodafone_cash: walletEntry.optional(),
+    e_cash: walletEntry.optional(),
+    we_pay: walletEntry.optional(),
+    orange_cash: walletEntry.optional(),
+    instapay: instapayEntry.optional(),
+  })
+  .strict()
+  .superRefine((p, ctx) => {
+    for (const key of LIVE_KEYS) {
+      const entry = p[key] as { enabled: boolean; details?: unknown } | undefined;
+      if (key !== "cod" && entry?.enabled && !entry.details) {
+        ctx.addIssue({ code: "custom", message: "details_required", path: [key, "details"] });
+      }
+    }
+    if (!LIVE_KEYS.some((key) => p[key]?.enabled)) {
+      ctx.addIssue({ code: "custom", message: "last_method", path: [] });
+    }
+  });
+
+export type StorePayments = z.output<typeof storePaymentsSchema>;
+
+/** New stores: cash on delivery only (D30). */
+export function defaultStorePayments(): StorePayments {
+  return { cod: { enabled: true, fee: 0 } };
+}
+
+/** stores.settings.payments as stored, or the defaults when missing/invalid. */
+export function parseStorePayments(raw: unknown): StorePayments {
+  const parsed = storePaymentsSchema.safeParse(raw);
+  return parsed.success ? parsed.data : defaultStorePayments();
+}
+
+export type MethodChange = {
+  enabled: boolean;
+  details?: unknown;
+  /** COD only. */
+  fee?: number;
+  note?: string;
+};
+
+export type MethodChangeError = "not_available" | "invalid_details" | "last_method";
+
+/**
+ * Applies one method change to the current settings and validates the result.
+ * Details are kept when a method is only switched off, so switching it back on
+ * does not ask for them again.
+ */
+export function validateMethodChange(
+  current: StorePayments,
+  key: string,
+  change: MethodChange,
+): { success: true; data: StorePayments } | { success: false; error: MethodChangeError } {
+  if (!LIVE_KEYS.includes(key as LivePaymentMethodKey)) return { success: false, error: "not_available" };
+  const next: Record<string, unknown> = { ...current };
+
+  if (key === "cod") {
+    const prev = current.cod ?? { enabled: false, fee: 0 };
+    const cod = codSettingsSchema.safeParse({
+      ...prev,
+      enabled: change.enabled,
+      ...(change.fee !== undefined && { fee: change.fee }),
+      ...(change.note !== undefined && { note: change.note || undefined }),
+    });
+    if (!cod.success) return { success: false, error: "invalid_details" };
+    next.cod = cod.data;
+  } else {
+    const prev = current[key as Exclude<LivePaymentMethodKey, "cod">] as { details?: unknown } | undefined;
+    const details = change.details ?? prev?.details;
+    if (change.enabled || change.details !== undefined) {
+      const schema = key === "instapay" ? instapayDetailsSchema : walletDetailsSchema;
+      const parsed = schema.safeParse(details);
+      if (!parsed.success) return { success: false, error: "invalid_details" };
+      next[key] = { enabled: change.enabled, details: parsed.data };
+    } else {
+      next[key] = { enabled: false, ...(details !== undefined && { details }) };
+    }
+  }
+
+  const result = storePaymentsSchema.safeParse(next);
+  if (!result.success) {
+    const last = result.error.issues.some((i) => i.message === "last_method");
+    return { success: false, error: last ? "last_method" : "invalid_details" };
+  }
+  return { success: true, data: result.data };
+}
+
+/** For the audit log: identifiers reduced to their last 4 characters. */
+export function maskPaymentDetails(details: unknown): Record<string, unknown> | null {
+  if (!details || typeof details !== "object") return null;
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(details as Record<string, unknown>)) {
+    out[k] = ["phone", "iban", "ipa"].includes(k) && typeof v === "string" ? `•••${v.slice(-4)}` : v;
+  }
+  return out;
+}
