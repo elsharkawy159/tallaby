@@ -7,8 +7,6 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
-import Image from 'next/image'
-import { useDropzone } from 'react-dropzone'
 import {
   AlertCircle,
   Building2,
@@ -19,15 +17,12 @@ import {
   FileCheck2,
   Globe,
   Headphones,
-  ImagePlus,
-  ImageUp,
+  Landmark,
   LoaderCircle,
   Mail,
   Phone,
-  ScrollText,
   Store,
-  Trash2,
-  Upload,
+  Wallet,
   Warehouse,
   type LucideIcon,
 } from 'lucide-react'
@@ -42,17 +37,9 @@ import {
   FormMessage,
 } from '@workspace/ui/components/form'
 import { Input } from '@workspace/ui/components/input'
-import { Textarea } from '@workspace/ui/components/textarea'
-import { Separator } from '@workspace/ui/components/separator'
 import { Button } from '@workspace/ui/components/button'
 import { Progress } from '@workspace/ui/components/progress'
-import { Avatar, AvatarFallback, AvatarImage } from '@workspace/ui/components/avatar'
-import {
-  SELLER_IMAGE_ACCEPT,
-  SELLER_IMAGE_ACCEPT_ATTR,
-  useSellerUpload,
-} from '@/components/inputs/use-seller-upload'
-import { cn, getPublicUrl } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 import { useLocalizedResolver } from '@/lib/i18n/localized-resolver'
 
 import type { SellerSettingsInitialData } from './seller-settings.types'
@@ -61,6 +48,8 @@ import {
   type SellerProfileForm,
 } from './seller-settings.schema'
 import { handleUpdateSellerProfile } from './seller-settings.server'
+import type { SellerAccountView } from '@workspace/lib/sellers/server'
+import { LegalDetailsSection, PayoutDetailsSection, StoreDetailsMovedCard } from './account-sections.client'
 import { DocumentsSection, requiredDocumentsUploaded } from './seller-documents.client'
 import {
   FIELD_CLASS,
@@ -71,20 +60,21 @@ import {
   SMALL_BUTTON_CLASS,
   SectionCard,
   SectionIcon,
-  TEXTAREA_CLASS,
   FieldHint,
 } from './settings-ui'
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
-type SectionId = 'identity' | 'info' | 'contact' | 'link' | 'policies' | 'docs'
+type SectionId = 'info' | 'contact' | 'legal' | 'payout' | 'link' | 'docs'
 
+// Store-level fields (logo, banner, description, policies) moved to
+// Store settings (PLAN.md P3-05); this page is the seller ACCOUNT.
 const SECTIONS: { id: SectionId; icon: LucideIcon }[] = [
-  { id: 'identity', icon: Store },
   { id: 'info', icon: Building2 },
   { id: 'contact', icon: Headphones },
+  { id: 'legal', icon: Landmark },
+  { id: 'payout', icon: Wallet },
   { id: 'link', icon: Globe },
-  { id: 'policies', icon: ScrollText },
   { id: 'docs', icon: FileCheck2 },
 ]
 
@@ -94,15 +84,20 @@ interface SellerSettingsFormProps {
   storeHref: string
   /** Store link + custom domain controls; they save on their own. */
   linkSection: React.ReactNode
+  /** Business type, legal address and masked payout account (P3-05). */
+  account: SellerAccountView
+  /** The main store, whose settings now hold logo, description and policies. */
+  primaryStoreId: string | null
 }
 
 const AUTOSAVE_DELAY_MS = 900
-const DESCRIPTION_MAX = 300
 
 export function SellerSettingsForm ({
   initialData,
   storeHref,
   linkSection,
+  account,
+  primaryStoreId,
 }: SellerSettingsFormProps) {
   const t = useTranslations('settings')
   const router = useRouter()
@@ -114,14 +109,8 @@ export function SellerSettingsForm ({
   const defaults: SellerProfileForm = useMemo(
     () => ({
       businessName: initialData.profile.businessName ?? '',
-      displayName: initialData.profile.displayName ?? '',
-      description: initialData.profile.description ?? '',
-      logoUrl: initialData.profile.logoUrl ?? '',
-      bannerUrl: initialData.profile.bannerUrl ?? '',
       supportEmail: initialData.profile.supportEmail ?? '',
       supportPhone: initialData.profile.supportPhone ?? '',
-      returnPolicy: initialData.profile.returnPolicy ?? '',
-      shippingPolicy: initialData.profile.shippingPolicy ?? '',
     }),
     [initialData.profile]
   )
@@ -207,8 +196,6 @@ export function SellerSettingsForm ({
   useEffect(() => {
     const subscription = form.watch((_values, info) => {
       if (info.type !== 'change') return
-      // Images save immediately via dedicated handlers
-      if (info.name === 'logoUrl' || info.name === 'bannerUrl') return
       setSaveStatus('idle')
       scheduleAutosave()
     })
@@ -219,28 +206,14 @@ export function SellerSettingsForm ({
     }
   }, [form, scheduleAutosave])
 
-  const handleImageChange = useCallback(
-    (field: 'logoUrl' | 'bannerUrl', url: string) => {
-      form.setValue(field, url, {
-        shouldDirty: true,
-        shouldValidate: true,
-      })
-      if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
-      void form.handleSubmit((values) =>
-        persistProfile({ ...values, [field]: url })
-      )()
-    },
-    [form, persistProfile]
-  )
-
   const values = useWatch({ control: form.control })
   const has = (value: string | undefined) => Boolean(value?.trim())
   const complete: Record<SectionId, boolean> = {
-    identity: has(values.logoUrl) && has(values.bannerUrl) && has(values.displayName),
-    info: has(values.businessName) && has(values.description),
+    info: has(values.businessName) && Boolean(account.businessType),
     contact: has(values.supportEmail) && has(values.supportPhone),
+    legal: Boolean(account.legalAddress.state && account.legalAddress.street),
+    payout: account.payout !== null,
     link: true,
-    policies: has(values.returnPolicy) && has(values.shippingPolicy),
     docs: requiredDocumentsUploaded(initialData.documents),
   }
 
@@ -264,15 +237,14 @@ export function SellerSettingsForm ({
       <div className='grid grid-cols-1 items-start gap-0 md:grid-cols-[200px_minmax(0,1fr)] md:gap-5 xl:grid-cols-[240px_minmax(0,1fr)] xl:gap-7'>
         <SectionNav complete={complete} />
 
+        <div className='flex min-w-0 flex-col gap-5'>
+        <StoreDetailsMovedCard storeId={primaryStoreId} />
+
         <Form {...form}>
           <form
             className='flex min-w-0 flex-col gap-5'
             onSubmit={(e) => e.preventDefault()}
           >
-            <IdentitySection
-              control={form.control}
-              onImageChange={handleImageChange}
-            />
 
             <SectionCard
               id='info'
@@ -293,31 +265,6 @@ export function SellerSettingsForm ({
                       <Input
                         className={FIELD_CLASS}
                         placeholder={t('fields.businessNamePlaceholder')}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name='description'
-                render={({ field }) => (
-                  <FormItem className='gap-1.5'>
-                    <FormLabel className='justify-between text-[13px] font-semibold'>
-                      {t('fields.description')}
-                      <LabelNote>
-                        <span dir='ltr' className='font-montserrat tabular-nums'>
-                          {field.value.length}/{DESCRIPTION_MAX}
-                        </span>
-                      </LabelNote>
-                    </FormLabel>
-                    <FormControl>
-                      <Textarea
-                        className={TEXTAREA_CLASS}
-                        maxLength={DESCRIPTION_MAX}
-                        placeholder={t('fields.descriptionPlaceholder')}
                         {...field}
                       />
                     </FormControl>
@@ -389,6 +336,12 @@ export function SellerSettingsForm ({
               </div>
             </SectionCard>
 
+          </form>
+        </Form>
+
+            <LegalDetailsSection account={account} />
+            <PayoutDetailsSection payout={account.payout} />
+
             <SectionCard
               id='link'
               icon={Globe}
@@ -404,37 +357,6 @@ export function SellerSettingsForm ({
               {linkSection}
             </SectionCard>
 
-            <SectionCard
-              id='policies'
-              icon={ScrollText}
-              title={t('sections.policies.title')}
-              description={t('sections.policies.description')}
-            >
-              <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5'>
-                {(['returnPolicy', 'shippingPolicy'] as const).map((name) => (
-                  <FormField
-                    key={name}
-                    control={form.control}
-                    name={name}
-                    render={({ field }) => (
-                      <FormItem className='gap-1.5'>
-                        <FormLabel className='text-[13px] font-semibold'>
-                          {t(`fields.${name}`)}
-                        </FormLabel>
-                        <FormControl>
-                          <Textarea
-                            className={TEXTAREA_CLASS}
-                            placeholder={t(`fields.${name}Placeholder`)}
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                ))}
-              </div>
-            </SectionCard>
 
             <DocumentsSection
               initialDocuments={initialData.documents}
@@ -442,8 +364,7 @@ export function SellerSettingsForm ({
             />
 
             <FulfillmentLinkCard />
-          </form>
-        </Form>
+        </div>
       </div>
     </div>
   )
@@ -453,7 +374,7 @@ export function SellerSettingsForm ({
 
 function SectionNav ({ complete }: { complete: Record<SectionId, boolean> }) {
   const t = useTranslations('settings')
-  const [active, setActive] = useState<SectionId>('identity')
+  const [active, setActive] = useState<SectionId>('info')
   const listRef = useRef<HTMLElement>(null)
 
   // Highlight the section crossing the upper third of the viewport.
@@ -568,241 +489,6 @@ function SectionNav ({ complete }: { complete: Record<SectionId, boolean> }) {
 }
 
 /* ----------------------------------------------------------------------- */
-
-function IdentitySection ({
-  control,
-  onImageChange,
-}: {
-  control: Control<SellerProfileForm>
-  onImageChange: (field: 'logoUrl' | 'bannerUrl', url: string) => void
-}) {
-  const t = useTranslations('settings')
-  const [logoUrl, bannerUrl, displayName, businessName] = useWatch({
-    control,
-    name: ['logoUrl', 'bannerUrl', 'displayName', 'businessName'],
-  })
-  const logo = useImageField('logos', (url) => onImageChange('logoUrl', url))
-  const banner = useImageField('banners', (url) => onImageChange('bannerUrl', url))
-  const logoSrc = logo.preview ?? (logoUrl ? getPublicUrl(logoUrl, 'sellers') : '')
-  const bannerSrc = banner.preview ?? (bannerUrl ? getPublicUrl(bannerUrl, 'sellers') : '')
-  const storeName = displayName || businessName || t('identity.yourStore')
-  const initial = storeName.charAt(0).toUpperCase()
-
-  const bannerDrop = useDropzone({
-    accept: SELLER_IMAGE_ACCEPT,
-    multiple: false,
-    disabled: banner.isUploading,
-    noClick: Boolean(bannerSrc),
-    noKeyboard: Boolean(bannerSrc),
-    onDrop: ([file]) => {
-      if (file) void banner.pick(file)
-    },
-  })
-
-  return (
-    <SectionCard
-      id='identity'
-      icon={Store}
-      title={t('sections.identity.title')}
-      description={t('sections.identity.description')}
-    >
-      <div className='flex flex-wrap items-center gap-5'>
-        <div className='relative'>
-          <Avatar className='size-22 border bg-muted'>
-            <AvatarImage src={logoSrc || undefined} alt={t('identity.logo')} className='object-cover' />
-            <AvatarFallback className='bg-muted text-2xl font-semibold text-faint'>
-              {initial}
-            </AvatarFallback>
-          </Avatar>
-          {logo.isUploading && (
-            <div className='absolute inset-0 grid place-items-center rounded-full bg-black/40'>
-              <LoaderCircle className='size-5 animate-spin text-white' />
-            </div>
-          )}
-        </div>
-
-        <div className='min-w-[200px] flex-1'>
-          <p className='text-sm font-semibold'>{t('identity.logo')}</p>
-          <FieldHint className='mt-0.5 mb-2.5'>{t('identity.logoHint')}</FieldHint>
-          <div className='flex flex-wrap gap-2'>
-            <Button
-              type='button'
-              variant='neutral'
-              className={SMALL_BUTTON_CLASS}
-              disabled={logo.isUploading}
-              onClick={logo.open}
-            >
-              <Upload />
-              {logoUrl ? t('identity.changeLogo') : t('identity.uploadLogo')}
-            </Button>
-            {logoUrl && (
-              <Button
-                type='button'
-                variant='soft'
-                className={cn(SMALL_BUTTON_CLASS, 'text-destructive hover:bg-destructive-soft hover:text-destructive')}
-                disabled={logo.isUploading}
-                onClick={() => onImageChange('logoUrl', '')}
-              >
-                <Trash2 />
-                {t('identity.remove')}
-              </Button>
-            )}
-          </div>
-          {logo.input}
-        </div>
-
-        <div className='flex items-center gap-2.5 rounded-xl border border-dashed border-input bg-muted px-3.5 py-2.5'>
-          <Avatar className='size-8'>
-            <AvatarImage src={logoSrc || undefined} alt='' className='object-cover' />
-            <AvatarFallback className='bg-primary-soft text-xs font-semibold text-primary-ink'>
-              {initial}
-            </AvatarFallback>
-          </Avatar>
-          <div className='min-w-0'>
-            <p className='max-w-[160px] truncate text-[13px] leading-tight font-semibold'>{storeName}</p>
-            <p className='text-[11px] whitespace-nowrap text-muted-foreground'>
-              {t('identity.preview')}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <Separator className='my-1' />
-
-      <FormField
-        control={control}
-        name='displayName'
-        render={({ field }) => (
-          <FormItem className='gap-1.5'>
-            <FormLabel className='justify-between text-[13px] font-semibold'>
-              {t('fields.displayName')}
-              <LabelNote>{t('fields.displayNameNote')}</LabelNote>
-            </FormLabel>
-            <FormControl>
-              <Input
-                className={FIELD_CLASS}
-                maxLength={40}
-                placeholder={t('fields.displayNamePlaceholder')}
-                {...field}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <div className='flex flex-col gap-1.5'>
-        <p className='flex justify-between gap-2 text-[13px] font-semibold'>
-          {t('fields.banner')}
-          <LabelNote>{t('identity.bannerSize')}</LabelNote>
-        </p>
-        <div
-          {...bannerDrop.getRootProps({
-            'aria-label': bannerSrc ? undefined : t('identity.bannerEmpty'),
-          })}
-          className={cn(
-            'relative aspect-[2.4/1] overflow-hidden rounded-xl border bg-muted outline-none sm:aspect-[4/1]',
-            !bannerSrc &&
-              'cursor-pointer border-[1.5px] border-dashed border-input transition-colors hover:border-primary hover:bg-primary-soft focus-visible:border-primary',
-            bannerDrop.isDragActive && 'border-primary bg-primary-soft'
-          )}
-        >
-          <input {...bannerDrop.getInputProps()} />
-          {bannerSrc ? (
-            <>
-              <Image
-                src={bannerSrc}
-                alt={t('fields.banner')}
-                fill
-                sizes='(max-width: 768px) 100vw, 880px'
-                className='object-cover'
-                unoptimized={bannerSrc.startsWith('blob:')}
-              />
-              <div className='absolute end-3 bottom-3 flex gap-2'>
-                <Button
-                  type='button'
-                  variant='neutral'
-                  className={cn(SMALL_BUTTON_CLASS, 'border-transparent bg-white/95 text-[#1f2a2e] hover:bg-white dark:bg-white/95')}
-                  disabled={banner.isUploading}
-                  onClick={bannerDrop.open}
-                >
-                  <ImageUp />
-                  {t('identity.changeBanner')}
-                </Button>
-                <Button
-                  type='button'
-                  variant='neutral'
-                  className={cn(SMALL_BUTTON_CLASS, 'border-transparent bg-white/95 px-2.5 text-[#c62828] hover:bg-[#fdecec] dark:bg-white/95')}
-                  disabled={banner.isUploading}
-                  onClick={() => onImageChange('bannerUrl', '')}
-                  aria-label={t('identity.removeBanner')}
-                >
-                  <Trash2 />
-                </Button>
-              </div>
-              {banner.isUploading && (
-                <div className='absolute inset-0 grid place-items-center bg-black/40'>
-                  <LoaderCircle className='size-6 animate-spin text-white' />
-                </div>
-              )}
-            </>
-          ) : (
-            <div className='absolute inset-0 flex flex-col items-center justify-center gap-1.5 px-4 text-center text-muted-foreground'>
-              {banner.isUploading ? (
-                <LoaderCircle className='size-7 animate-spin' />
-              ) : (
-                <ImagePlus className='size-7' />
-              )}
-              <span className='text-sm'>{t('identity.bannerEmpty')}</span>
-              <FieldHint>{t('identity.formats')}</FieldHint>
-            </div>
-          )}
-        </div>
-      </div>
-    </SectionCard>
-  )
-}
-
-/** A hidden file input plus a local preview shown while the upload runs. */
-function useImageField (
-  folder: 'logos' | 'banners',
-  onUploaded: (url: string) => void
-) {
-  const { upload, isUploading } = useSellerUpload({ folder })
-  const [preview, setPreview] = useState<string | null>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
-
-  const pick = async (file: File) => {
-    const blob = URL.createObjectURL(file)
-    setPreview(blob)
-    const url = await upload(file)
-    if (url) onUploaded(url)
-    setPreview(null)
-    URL.revokeObjectURL(blob)
-  }
-
-  const input = (
-    <input
-      ref={inputRef}
-      type='file'
-      accept={SELLER_IMAGE_ACCEPT_ATTR}
-      className='hidden'
-      onChange={(e) => {
-        const file = e.target.files?.[0]
-        e.target.value = ''
-        if (file) void pick(file)
-      }}
-    />
-  )
-
-  return {
-    preview,
-    isUploading,
-    pick,
-    input,
-    open: () => inputRef.current?.click(),
-  }
-}
 
 /* ----------------------------------------------------------------------- */
 

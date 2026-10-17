@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
-import { Check, Headphones, Megaphone, Package, Rocket, ScrollText, Store, TicketPercent } from "lucide-react";
+import { Check, Headphones, Landmark, Megaphone, Package, Rocket, ScrollText, Store, TicketPercent, Wallet } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Button } from "@workspace/ui/components/button";
@@ -17,6 +17,8 @@ const ICONS: Record<SetupKey, LucideIcon> = {
   product: Package,
   contact: Headphones,
   policies: ScrollText,
+  legal: Landmark,
+  payout: Wallet,
   coupon: TicketPercent,
   campaign: Megaphone,
 };

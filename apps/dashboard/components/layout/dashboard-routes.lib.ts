@@ -4,6 +4,7 @@ import {
   CircleHelp,
   DollarSign,
   FileBarChart,
+  Gem,
   Gift,
   Package,
   PackagePlus,
@@ -90,6 +91,7 @@ export const DASHBOARD_ROUTES: DashboardRoute[] = [
   { href: "/stores/[storeId]/settings/policies", title: "policies", parent: "storeSettings", icon: ScrollText },
   { href: "/stores", title: "myStores", parent: "account", icon: Store },
   { href: "/settings", title: "settings", parent: "account", icon: Settings },
+  { href: "/settings/plan", title: "planUsage", parent: "account", icon: Gem },
   { href: "/settings/fulfillment", title: "fulfillment", parent: "settings", parentHref: "/settings", icon: Warehouse },
   { href: "/help", title: "help", parent: "account", icon: CircleHelp },
 ];

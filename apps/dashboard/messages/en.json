@@ -10,7 +10,7 @@
     "advertiseProducts": "Advertise your products",
     "accountStatements": "Account Statements",
     "coupons": "Coupons & Discounts",
-    "settings": "Store settings",
+    "settings": "Business & account",
     "fulfillment": "Fulfillment setup",
     "financial": "Financial Dashboard",
     "marketing": "Marketing & Promotions",
@@ -499,6 +499,16 @@
           "title": "Write your return & shipping policies",
           "description": "Customers read them before ordering",
           "cta": "Write"
+        },
+        "legal": {
+          "title": "Add your legal details",
+          "description": "Business type and registered address",
+          "cta": "Add"
+        },
+        "payout": {
+          "title": "Set up your payout account",
+          "description": "Where we send your earnings",
+          "cta": "Set up"
         }
       }
     },
@@ -1256,7 +1266,9 @@
       "contact": "Contact & support",
       "link": "Link & domain",
       "policies": "Policies",
-      "docs": "Verification documents"
+      "docs": "Verification documents",
+      "legal": "Legal details",
+      "payout": "Payout account"
     },
     "progress": {
       "title": "Profile completeness",
@@ -1301,6 +1313,62 @@
       "formats": "PNG, JPG or WebP up to 5 MB",
       "changeBanner": "Change",
       "removeBanner": "Remove banner"
+    },
+    "account": {
+      "save": "Save",
+      "saved": "Saved",
+      "cancel": "Cancel",
+      "moved": {
+        "title": "Logo, description and policies moved to Store settings",
+        "description": "Each store now has its own identity and policies. Open your main store's settings to edit them."
+      },
+      "legal": {
+        "title": "Legal details",
+        "description": "Your business type and registered address. Used for invoices and payouts, never shown in your store.",
+        "businessType": "Business type",
+        "governorate": "Governorate",
+        "governoratePlaceholder": "Choose a governorate",
+        "city": "City / area",
+        "postalCode": "Postal code (optional)",
+        "street": "Street address",
+        "streetPlaceholder": "Building, street and district",
+        "hint": "Only your governorate is shown publicly (for delivery estimates)."
+      },
+      "businessTypes": {
+        "individual": "Individual",
+        "company": "Company",
+        "partnership": "Partnership",
+        "corporation": "Corporation"
+      },
+      "payout": {
+        "title": "Payout account",
+        "description": "Where Tallaby sends your earnings.",
+        "method": "Payout method",
+        "accountHolder": "Account holder name",
+        "bankName": "Bank name",
+        "iban": "IBAN",
+        "provider": "Wallet provider",
+        "phone": "Wallet mobile number",
+        "address": "InstaPay address or mobile number",
+        "hint": "For your security, saved details are shown with the last 4 characters only.",
+        "change": "Change",
+        "methods": {
+          "bank_transfer": "Bank transfer",
+          "mobile_wallet": "Mobile wallet",
+          "instapay": "InstaPay"
+        },
+        "providers": {
+          "vodafone_cash": "Vodafone Cash",
+          "etisalat_cash": "e& Cash",
+          "orange_cash": "Orange Cash",
+          "we_pay": "WE Pay"
+        }
+      },
+      "errors": {
+        "invalidInput": "Some details are not valid. Please check them and try again.",
+        "forbidden": "You can't change these details right now.",
+        "generic": "Couldn't save. Please try again."
+      }
     }
   },
   "orders": {
@@ -2099,5 +2167,26 @@
       "defaultLocaleNotSupported": "The default language must be one of the store languages.",
       "policyTooLong": "This policy is too long."
     }
+  },
+  "planUsage": {
+    "description": "Your plan decides how many stores you can run and which tools you get.",
+    "currentPlan": "Current plan",
+    "currentPlanDescription": "Everyone starts on Free. Paid plans with more stores and tools are coming.",
+    "plans": {
+      "free": "Free"
+    },
+    "stores": "Stores",
+    "storesUsage": "{count} of {max} stores",
+    "storesFull": "You have used all stores on your plan. Archived stores count toward the limit.",
+    "features": {
+      "customDomain": "Connect your own domain",
+      "ai": "AI website builder",
+      "advancedSettings": "Advanced store settings",
+      "removeTallabyBadge": "Remove the “by Tallaby” badge"
+    },
+    "included": "Included",
+    "notOnPlan": "Not on your plan",
+    "upgradesSoon": "Upgrades will be available soon.",
+    "manageStores": "Manage stores"
   }
 }
