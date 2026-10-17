@@ -94,6 +94,14 @@
       "types": "./src/integrations/server.ts",
       "default": "./src/integrations/server.ts"
     },
+    "./store-wallet": {
+      "types": "./src/store-wallet/index.ts",
+      "default": "./src/store-wallet/index.ts"
+    },
+    "./store-wallet/server": {
+      "types": "./src/store-wallet/server.ts",
+      "default": "./src/store-wallet/server.ts"
+    },
     "./sellers": {
       "types": "./src/sellers/index.ts",
       "default": "./src/sellers/index.ts"

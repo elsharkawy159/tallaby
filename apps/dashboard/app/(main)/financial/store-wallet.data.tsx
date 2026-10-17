@@ -16,6 +16,7 @@ import {
   listStoreWalletEntries,
   type EntryFilter,
 } from "./store-wallet.server";
+import { TopUpButton } from "./top-up.client";
 
 const signedClass = (value: number) =>
   value < 0 ? "text-destructive" : value > 0 ? "text-success" : "text-foreground";
@@ -29,12 +30,10 @@ export async function StoreWalletSection({
   sellerId,
   filter,
   before,
-  topUp,
 }: {
   sellerId: string;
   filter: EntryFilter;
   before: string | null;
-  topUp?: React.ReactNode;
 }) {
   const [overview, rows, t, tStatus, locale] = await Promise.all([
     getStoreWalletOverview(sellerId),
@@ -83,7 +82,7 @@ export async function StoreWalletSection({
                 })}
               </p>
             </div>
-            {topUp}
+            <TopUpButton disabled={overview.status !== "active"} />
           </CardContent>
           {balance < 0 && (
             <p className="mx-6 mb-6 flex gap-2 rounded-xl bg-destructive-soft p-3 text-[13px] text-destructive">

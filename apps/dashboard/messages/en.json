@@ -2450,6 +2450,39 @@
     }
   },
   "storeWallet": {
+    "topUp": {
+      "button": "Top up",
+      "title": "Top up your store wallet",
+      "description": "Add money to cover fees and paid services. You pay on Kashier by card or mobile wallet.",
+      "amount": "Amount (EGP)",
+      "limits": "From EGP 50 to EGP 20,000.",
+      "continue": "Continue to payment",
+      "refresh": "Check again",
+      "backToWallet": "Back to wallet",
+      "errors": {
+        "invalid": "Enter an amount in pounds, for example 250.",
+        "too_small": "The minimum top-up is EGP 50.",
+        "too_large": "The maximum top-up is EGP 20,000.",
+        "not_configured": "Online payment isn't available right now. Try again later.",
+        "provider_error": "We couldn't open the payment page. Try again.",
+        "rateLimited": "Too many attempts. Try again in a few minutes.",
+        "notAllowed": "Your account can't top up right now."
+      },
+      "result": {
+        "succeeded": {
+          "title": "Top-up received",
+          "description": "{amount} was added to your store wallet."
+        },
+        "processing": {
+          "title": "Payment is being confirmed",
+          "description": "We'll add {amount} as soon as Kashier confirms the payment. This usually takes a few seconds."
+        },
+        "failed": {
+          "title": "Top-up didn't go through",
+          "description": "{amount} was not charged to your wallet. You can try again."
+        }
+      }
+    },
     "title": "Store wallet",
     "thisMonth": "This month: {sales} in sales, {fees} in fees",
     "negative": "Your balance is below zero. New sales pay it back automatically, or you can top up at any time.",

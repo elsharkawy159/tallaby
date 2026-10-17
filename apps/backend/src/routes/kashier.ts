@@ -6,6 +6,8 @@ import {
 } from '@workspace/lib/kashier'
 import type { KashierWebhookBody } from '@workspace/lib/kashier'
 import { fulfillDigitalOrderItems } from '@workspace/lib/digital'
+import { parseStoreTopUpReference } from '@workspace/lib/store-wallet'
+import { applyStoreTopUpWebhook } from '@workspace/lib/store-wallet/server'
 
 /**
  * Kashier accepts 200 (processed) or 409 (already processed) as an ack; any
@@ -41,6 +43,23 @@ app.post('/webhook', async (c) => {
         transactionId: data.transactionId,
       })
       return c.json({ error: 'Invalid signature' }, 401)
+    }
+
+    // Store-wallet top-ups (PLAN.md P6-10): "stopup_<id>". Credited only here.
+    const topUpId = parseStoreTopUpReference(data.merchantOrderId)
+    if (topUpId) {
+      if (body.event !== 'pay') return c.json({ received: true, outcome: 'ignored' })
+      const outcome = await applyStoreTopUpWebhook({
+        topUpId,
+        status: data.status,
+        amount: data.amount,
+        currency: data.currency,
+        transactionId: String(data.transactionId),
+      })
+      if (outcome === 'duplicate') {
+        return c.json({ received: true, duplicate: true }, 409)
+      }
+      return c.json({ received: true, outcome })
     }
 
     const orderId = parseKashierOrderReference(data.merchantOrderId)
