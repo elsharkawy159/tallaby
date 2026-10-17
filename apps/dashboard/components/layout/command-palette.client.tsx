@@ -13,7 +13,7 @@ import {
   CommandList,
 } from "@workspace/ui/components/command";
 import { useSupportWhatsAppUrl } from "@/components/dashboard/support-chat-link.client";
-import { DASHBOARD_ROUTES } from "./dashboard-routes.lib";
+import { DASHBOARD_ROUTES, isStoreScopedHref } from "./dashboard-routes.lib";
 import {
   searchDashboard,
   type DashboardSearchResults,
@@ -160,7 +160,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
         </CommandGroup>
 
         <CommandGroup heading={t("pages")}>
-          {DASHBOARD_ROUTES.map((route) => (
+          {DASHBOARD_ROUTES.filter((route) => !isStoreScopedHref(route.href)).map((route) => (
             <CommandItem
               key={route.href}
               value={route.parent ? `${tNav(route.parent)} ${tNav(route.title)}` : tNav(route.title)}
