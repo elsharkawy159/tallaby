@@ -81,7 +81,9 @@ export const storeGeneralSettingsSchema = z
     contact: storeContactSchema.optional(),
     defaultLocale: z.enum(STORE_LOCALES).optional(),
     supportedLocales: z.array(z.enum(STORE_LOCALES)).min(1).max(STORE_LOCALES.length).optional(),
-    catalogMode: z.enum(["all", "selected"]).optional(),
+    // catalogMode ("selected") is not settable until the product picker and the
+    // storefront filtering ship together (P4-07 / D24); every store shows the
+    // seller's whole catalog meanwhile.
   })
   .strict()
   .refine(

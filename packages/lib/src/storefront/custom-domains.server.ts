@@ -4,7 +4,7 @@
  * re-check cron.
  */
 
-import { db, and, eq, sellerCustomDomains, sellers } from "@workspace/db";
+import { db, and, eq, isNull, sellerCustomDomains, sellers, stores } from "@workspace/db";
 import {
   getProjectDomain,
   isDomainMisconfigured,
@@ -16,19 +16,25 @@ export type CustomDomainStatus = "pending" | "active" | "failed";
 
 export type CustomDomainRow = typeof sellerCustomDomains.$inferSelect;
 
+type Queryable = Pick<typeof db, "select">;
+
 /**
- * The store subdomain an active custom domain serves, or null. Only approved
- * sellers' domains resolve.
+ * The store subdomain an active custom domain serves, or null. Resolves
+ * through the domain's store (PLAN.md P5-00): only active, non-deleted stores
+ * of approved sellers.
  */
-export async function findSubdomainForCustomDomain(domain: string): Promise<string | null> {
-  const [row] = await db
-    .select({ subdomain: sellers.subdomain })
+export async function findSubdomainForCustomDomain(domain: string, q: Queryable = db): Promise<string | null> {
+  const [row] = await q
+    .select({ subdomain: stores.subdomain })
     .from(sellerCustomDomains)
-    .innerJoin(sellers, eq(sellers.id, sellerCustomDomains.sellerId))
+    .innerJoin(stores, eq(stores.id, sellerCustomDomains.storeId))
+    .innerJoin(sellers, eq(sellers.id, stores.sellerId))
     .where(
       and(
         eq(sellerCustomDomains.domain, domain),
         eq(sellerCustomDomains.status, "active"),
+        eq(stores.status, "active"),
+        isNull(stores.deletedAt),
         eq(sellers.status, "approved"),
       ),
     )
@@ -39,14 +45,18 @@ export async function findSubdomainForCustomDomain(domain: string): Promise<stri
 /** The active custom domain of the store at `subdomain`, or null. */
 export async function findActiveCustomDomainForSubdomain(
   subdomain: string,
+  q: Queryable = db,
 ): Promise<string | null> {
-  const [row] = await db
+  const [row] = await q
     .select({ domain: sellerCustomDomains.domain })
-    .from(sellerCustomDomains)
-    .innerJoin(sellers, eq(sellers.id, sellerCustomDomains.sellerId))
+    .from(stores)
+    .innerJoin(sellerCustomDomains, eq(sellerCustomDomains.storeId, stores.id))
+    .innerJoin(sellers, eq(sellers.id, stores.sellerId))
     .where(
       and(
-        eq(sellers.subdomain, subdomain),
+        eq(stores.subdomain, subdomain),
+        eq(stores.status, "active"),
+        isNull(stores.deletedAt),
         eq(sellerCustomDomains.status, "active"),
         eq(sellers.status, "approved"),
       ),

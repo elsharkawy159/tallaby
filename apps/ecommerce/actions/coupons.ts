@@ -5,7 +5,7 @@ import { couponTags } from "@workspace/cache"
 import { db, carts, cartItems, coupons, couponUsage, userAddresses, eq, and, sql, gte, lte, desc, or, isNull } from "@workspace/db"
 import { getUser } from "./auth"
 import { getCurrentUserId } from "@/lib/get-current-user-id"
-import { activeCartWhere, getCartStoreSellerId } from "@/lib/storefront.server"
+import { activeCartWhere, getCartScope } from "@/lib/storefront.server"
 import {
   isCouponAllowedOnChannel,
   isLineEligibleForCoupon,
@@ -209,7 +209,7 @@ export async function validateCoupon(
       0
     )
 
-    const channel = (await getCartStoreSellerId()) ? "storefront" : "marketplace"
+    const channel = (await getCartScope()) ? "storefront" : "marketplace"
     if (!isCouponAllowedOnChannel(coupon, channel)) {
       return { success: false, error: "couponNotForThisStore" }
     }
@@ -309,7 +309,7 @@ export async function applyCouponToCart(data: {
 
     // Get the user's active cart with items
     const cart = await db.query.carts.findFirst({
-      where: activeCartWhere(userId, await getCartStoreSellerId()),
+      where: activeCartWhere(userId, await getCartScope()),
       with: {
         cartItems: {
           where: eq(cartItems.savedForLater, false),
@@ -381,7 +381,7 @@ export async function removeCouponFromCart(data?: {
 
     // Get the user's active cart
     const cart = await db.query.carts.findFirst({
-      where: activeCartWhere(userId, await getCartStoreSellerId()),
+      where: activeCartWhere(userId, await getCartScope()),
       with: {
         cartItems: {
           where: eq(cartItems.savedForLater, false),

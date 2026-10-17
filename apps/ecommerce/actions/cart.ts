@@ -16,7 +16,7 @@ import {
   getOrCreateCurrentUserId,
 } from "@/lib/get-current-user-id";
 import { getLocale } from "next-intl/server";
-import { activeCartWhere, getCartStoreSellerId } from "@/lib/storefront.server";
+import { activeCartWhere, getCartScope } from "@/lib/storefront.server";
 import {
   mergeProductWithTranslation,
   pickTranslationFromArray,
@@ -44,9 +44,9 @@ async function getCart() {
       return null;
     }
 
-    const storeSellerId = await getCartStoreSellerId();
+    const scope = await getCartScope();
     const cart = await db.query.carts.findFirst({
-      where: activeCartWhere(userId, storeSellerId),
+      where: activeCartWhere(userId, scope),
     });
 
     return cart || null;
@@ -72,16 +72,23 @@ async function ensureCart() {
 
     // Try to find cart, or insert if none
     // Prevent multiple active carts per user and storefront
-    const storeSellerId = await getCartStoreSellerId();
+    const scope = await getCartScope();
     let cart = await db.query.carts.findFirst({
-      where: activeCartWhere(userId, storeSellerId),
+      where: activeCartWhere(userId, scope),
     });
 
     if (!cart) {
       try {
         const [newCart] = await db
           .insert(carts)
-          .values({ userId, storeSellerId, status: "active", currency: "EGP" })
+          .values({
+            userId,
+            // Storefront carts belong to one store; store_seller_id is still written for compatibility.
+            storeId: scope?.storeId ?? null,
+            storeSellerId: scope?.sellerId ?? null,
+            status: "active",
+            currency: "EGP",
+          })
           .returning();
 
         if (!newCart) {
@@ -97,7 +104,7 @@ async function ensureCart() {
         console.error("ensureCart: Error inserting cart:", insertError);
         // If insert failed, try to get cart again (race condition)
         cart = await db.query.carts.findFirst({
-          where: activeCartWhere(userId, storeSellerId),
+          where: activeCartWhere(userId, scope),
         });
 
         if (!cart) {

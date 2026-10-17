@@ -2,10 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { cookies, headers } from "next/headers";
+import { applyInvalidation, invalidateStorefront } from "@workspace/cache";
 import {
   archiveStore,
   checkStoreSubdomain,
   createStore,
+  getStore,
   restoreStore,
 } from "@workspace/lib/stores/server";
 import { requireSeller, isAccessError } from "@/lib/auth/require-seller.server";
@@ -28,7 +30,14 @@ async function clientKey(prefix: string): Promise<string> {
   return `${prefix}:${h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || "unknown"}`;
 }
 
-function refresh() {
+/**
+ * The storefront caches the store lookup by subdomain, including "not found",
+ * so creating, archiving or restoring a store must clear that entry.
+ */
+async function refresh(subdomain?: string) {
+  if (subdomain) {
+    await applyInvalidation(invalidateStorefront([subdomain]), { from: "dashboard", mode: "action" });
+  }
   revalidatePath("/stores");
   // The sidebar switcher lives in the (main) layout.
   revalidatePath("/", "layout");
@@ -78,7 +87,7 @@ export async function createStoreAction(input: {
       path: "/",
       maxAge: 60 * 60 * 24 * 365,
     });
-    refresh();
+    await refresh(result.data.subdomain);
     return { success: true, data: { id: result.data.id } };
   });
 }
@@ -86,9 +95,10 @@ export async function createStoreAction(input: {
 export async function archiveStoreAction(storeId: string): Promise<StoreActionResult<null>> {
   return guard(async () => {
     const seller = await requireSeller({ forWrite: true });
+    const store = await getStore(seller.sellerId, String(storeId));
     const result = await archiveStore(seller.sellerId, String(storeId));
     if (!result.success) return { success: false, error: result.error === "primary_store" ? "primaryStore" : "notFound" };
-    refresh();
+    await refresh(store?.subdomain);
     return { success: true, data: null };
   });
 }
@@ -96,9 +106,10 @@ export async function archiveStoreAction(storeId: string): Promise<StoreActionRe
 export async function restoreStoreAction(storeId: string): Promise<StoreActionResult<null>> {
   return guard(async () => {
     const seller = await requireSeller({ forWrite: true });
+    const store = await getStore(seller.sellerId, String(storeId));
     const result = await restoreStore(seller.sellerId, String(storeId));
     if (!result.success) return { success: false, error: "notFound" };
-    refresh();
+    await refresh(store?.subdomain);
     return { success: true, data: null };
   });
 }

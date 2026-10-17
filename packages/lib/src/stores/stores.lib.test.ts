@@ -92,3 +92,9 @@ describe("storePoliciesSchema", () => {
     expect(storePoliciesSchema.safeParse({ terms: "x".repeat(20_001) }).success).toBe(false);
   });
 });
+
+describe("catalog mode", () => {
+  it("cannot be set through general settings yet (no picker / storefront filter)", () => {
+    expect(storeGeneralSettingsSchema.safeParse({ catalogMode: "selected" }).success).toBe(false);
+  });
+});

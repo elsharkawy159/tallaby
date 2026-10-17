@@ -18,8 +18,11 @@ describe.skipIf(!TEST_DATABASE_URL)("ensureSellerAccount (integration)", () => {
   const u2 = randomUUID();
   const u3 = randomUUID();
   const u4 = randomUUID();
+  // Fresh users for the refusal tests: the race above makes u3 or u4 (randomly) a seller.
+  const u5 = randomUUID();
+  const u6 = randomUUID();
   const tag = u1.slice(0, 8);
-  const users = [u1, u2, u3, u4];
+  const users = [u1, u2, u3, u4, u5, u6];
 
   beforeAll(async () => {
     await db.insert(s.users).values(users.map((id) => ({ id, isGuest: false, role: "customer" as const })));
@@ -89,7 +92,7 @@ describe.skipIf(!TEST_DATABASE_URL)("ensureSellerAccount (integration)", () => {
 
   it("refuses a subdomain that is already used", async () => {
     const result = await ensureSellerAccount(
-      { userId: u4, email: "four@example.com", subdomain: `su-${tag}-one`, phone: "01512345678" },
+      { userId: u5, email: "five@example.com", subdomain: `su-${tag}-one`, phone: "01512345678" },
       db,
     );
     expect(result).toEqual({ success: false, error: "taken" });
@@ -97,10 +100,10 @@ describe.skipIf(!TEST_DATABASE_URL)("ensureSellerAccount (integration)", () => {
 
   it("validates input", async () => {
     expect(
-      await ensureSellerAccount({ userId: u4, email: "four@example.com", subdomain: "admin", phone: "01512345678" }, db),
+      await ensureSellerAccount({ userId: u6, email: "six@example.com", subdomain: "admin", phone: "01512345678" }, db),
     ).toEqual({ success: false, error: "invalid_input" });
     expect(
-      await ensureSellerAccount({ userId: u4, email: "four@example.com", subdomain: `su-${tag}-x`, phone: "123" }, db),
+      await ensureSellerAccount({ userId: u6, email: "six@example.com", subdomain: `su-${tag}-x`, phone: "123" }, db),
     ).toEqual({ success: false, error: "invalid_input" });
   });
 
