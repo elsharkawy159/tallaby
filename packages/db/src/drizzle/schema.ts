@@ -154,6 +154,8 @@ export const carts = pgTable("carts", {
 	reminderSentBy: uuid("reminder_sent_by"),
 	/** NULL = tallaby.com marketplace cart; set = that seller's storefront cart (0045). */
 	storeSellerId: uuid("store_seller_id"),
+	/** The storefront cart's store (0050). Filled from the primary store by trigger when omitted. */
+	storeId: uuid("store_id"),
 }, (table) => [
 	index("cart_session_id_idx").using("btree", table.sessionId.asc().nullsLast().op("text_ops")),
 	index("cart_user_id_idx").using("btree", table.userId.asc().nullsLast().op("uuid_ops")),
@@ -173,6 +175,12 @@ export const carts = pgTable("carts", {
 			columns: [table.storeSellerId],
 			foreignColumns: [sellers.id],
 			name: "carts_store_seller_id_fkey"
+		}).onDelete("cascade"),
+	index("carts_user_store_id_status_idx").using("btree", table.userId.asc().nullsLast().op("uuid_ops"), table.storeId.asc().nullsLast().op("uuid_ops"), table.status.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.storeId],
+			foreignColumns: [stores.id],
+			name: "carts_store_id_fkey"
 		}).onDelete("cascade"),
 ]);
 
@@ -420,6 +428,12 @@ export const sellers = pgTable("sellers", {
 	/** What the store sells, shown on its storefront (0046). */
 	storeCategory: text("store_category"),
 	storeCategoryAr: text("store_category_ar"),
+	/** Account plan id; limits live in @workspace/lib/plans (0050). */
+	plan: text().default('free').notNull(),
+	planStartedAt: timestamp("plan_started_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	planExpiresAt: timestamp("plan_expires_at", { withTimezone: true, mode: 'string' }),
+	/** Audited admin override of the plan's store limit (D27). NULL = plan limit. */
+	maxStoresOverride: integer("max_stores_override"),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 }, (table) => [
@@ -440,13 +454,21 @@ export const sellers = pgTable("sellers", {
 export const sellerSubdomainRedirects = pgTable("seller_subdomain_redirects", {
 	subdomain: text().primaryKey().notNull(),
 	sellerId: uuid("seller_id").notNull(),
+	/** The store the old subdomain belonged to (0050). Filled from the primary store by trigger when omitted. */
+	storeId: uuid("store_id"),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
 	index("seller_subdomain_redirects_seller_id_idx").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops")),
+	index("seller_subdomain_redirects_store_id_idx").using("btree", table.storeId.asc().nullsLast().op("uuid_ops")),
 	foreignKey({
 			columns: [table.sellerId],
 			foreignColumns: [sellers.id],
 			name: "seller_subdomain_redirects_seller_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.storeId],
+			foreignColumns: [stores.id],
+			name: "seller_subdomain_redirects_store_id_fkey"
 		}).onDelete("cascade"),
 ]);
 
@@ -454,6 +476,8 @@ export const sellerSubdomainRedirects = pgTable("seller_subdomain_redirects", {
 export const sellerCustomDomains = pgTable("seller_custom_domains", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	sellerId: uuid("seller_id").notNull(),
+	/** The store this domain serves (0050). Filled from the primary store by trigger when omitted. */
+	storeId: uuid("store_id"),
 	domain: text().notNull(),
 	/** pending | active | failed */
 	status: text().default('pending').notNull(),
@@ -468,10 +492,16 @@ export const sellerCustomDomains = pgTable("seller_custom_domains", {
 	uniqueIndex("seller_custom_domains_seller_id_key").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops")),
 	uniqueIndex("seller_custom_domains_domain_key").using("btree", table.domain.asc().nullsLast().op("text_ops")),
 	index("seller_custom_domains_status_idx").using("btree", table.status.asc().nullsLast().op("text_ops")),
+	uniqueIndex("seller_custom_domains_store_id_key").using("btree", table.storeId.asc().nullsLast().op("uuid_ops")),
 	foreignKey({
 			columns: [table.sellerId],
 			foreignColumns: [sellers.id],
 			name: "seller_custom_domains_seller_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.storeId],
+			foreignColumns: [stores.id],
+			name: "seller_custom_domains_store_id_fkey"
 		}).onDelete("cascade"),
 ]);
 
@@ -1442,6 +1472,8 @@ export const orders = pgTable("orders", {
 	customerUserAgent: text("customer_user_agent"),
 	referralSource: text("referral_source"),
 	orderSource: orderSource("order_source").default('website').notNull(),
+	/** Storefront orders: the store they were placed on (0050). NULL for marketplace orders. */
+	storeId: uuid("store_id"),
 	metadata: jsonb(),
 	hasDigitalItems: boolean("has_digital_items").default(false),
 	isDigitalOnly: boolean("is_digital_only").default(false),
@@ -1456,6 +1488,12 @@ export const orders = pgTable("orders", {
 	index("order_number_idx").using("btree", table.orderNumber.asc().nullsLast().op("text_ops")),
 	index("order_status_idx").using("btree", table.status.asc().nullsLast().op("enum_ops")),
 	index("order_user_id_idx").using("btree", table.userId.asc().nullsLast().op("uuid_ops")),
+	index("orders_store_id_idx").using("btree", table.storeId.asc().nullsLast().op("uuid_ops")).where(sql`store_id IS NOT NULL`),
+	foreignKey({
+			columns: [table.storeId],
+			foreignColumns: [stores.id],
+			name: "orders_store_id_fkey"
+		}).onDelete("set null"),
 	foreignKey({
 			columns: [table.billingAddressId],
 			foreignColumns: [userAddresses.id],
@@ -2335,4 +2373,550 @@ export const adCampaignRequests = pgTable("ad_campaign_requests", {
 		foreignColumns: [products.id],
 		name: "ad_campaign_requests_product_id_fkey"
 	}).onDelete("cascade"),
+]);
+
+// ---------------------------------------------------------------------------
+// Multi-store tenant + website builder (0050–0057, PLAN.md §11).
+// All server-only (RLS enabled, no policies). Every query must check that the
+// store belongs to the session's seller and filter child rows by store_id.
+// ---------------------------------------------------------------------------
+
+/** The tenant: one storefront. A seller owns up to plan.maxStores stores (0050). */
+export const stores = pgTable("stores", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	name: text().notNull(),
+	subdomain: text().notNull(),
+	/** Exactly one per seller. Its subdomain mirrors sellers.subdomain (triggers in 0050). */
+	isPrimary: boolean("is_primary").default(false).notNull(),
+	/** active | archived | suspended */
+	status: text().default('active').notNull(),
+	deletedAt: timestamp("deleted_at", { withTimezone: true, mode: 'string' }),
+	logoUrl: text("logo_url"),
+	faviconUrl: text("favicon_url"),
+	bannerUrl: text("banner_url"),
+	description: text(),
+	storeCategory: text("store_category"),
+	storeCategoryAr: text("store_category_ar"),
+	defaultLocale: text("default_locale").default('ar').notNull(),
+	supportedLocales: text("supported_locales").array().default(["ar", "en"]).notNull(),
+	contact: jsonb().default({}).notNull(),
+	policies: jsonb().default({}).notNull(),
+	seo: jsonb().default({}).notNull(),
+	settings: jsonb().default({}).notNull(),
+	/** all | selected (store_products) */
+	catalogMode: text("catalog_mode").default('all').notNull(),
+	templateKey: text("template_key").default('tallaby-classic').notNull(),
+	previousTemplateKey: text("previous_template_key"),
+	/** draft | published | unpublished */
+	siteStatus: text("site_status").default('draft').notNull(),
+	schemaVersion: integer("schema_version").default(1).notNull(),
+	sharedHeader: jsonb("shared_header"),
+	sharedFooter: jsonb("shared_footer"),
+	publishedRevisionId: uuid("published_revision_id"),
+	firstPublishedAt: timestamp("first_published_at", { withTimezone: true, mode: 'string' }),
+	lastPublishedAt: timestamp("last_published_at", { withTimezone: true, mode: 'string' }),
+	subdomainUpdatedAt: timestamp("subdomain_updated_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("stores_subdomain_key").using("btree", table.subdomain.asc().nullsLast().op("text_ops")),
+	uniqueIndex("stores_one_primary").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops")).where(sql`is_primary`),
+	index("stores_seller_idx").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops")).where(sql`deleted_at IS NULL`),
+	foreignKey({
+			columns: [table.sellerId],
+			foreignColumns: [sellers.id],
+			name: "stores_seller_id_fkey"
+		}).onDelete("cascade"),
+	// stores_published_revision_id_fkey → store_site_revisions(id) ON DELETE SET NULL exists
+	// in SQL (0051); not declared here because the circular reference breaks type inference.
+	check("stores_status_check", sql`status IN ('active', 'archived', 'suspended')`),
+	check("stores_catalog_mode_check", sql`catalog_mode IN ('all', 'selected')`),
+	check("stores_site_status_check", sql`site_status IN ('draft', 'published', 'unpublished')`),
+	check("stores_default_locale_check", sql`default_locale IN ('ar', 'en')`),
+	check("stores_subdomain_format", sql`subdomain ~ '^[a-z0-9][a-z0-9-]{1,30}[a-z0-9]$' AND position('--' IN subdomain) = 0 AND NOT is_reserved_subdomain(subdomain)`),
+]);
+
+/** A store's selected catalog, used only when stores.catalog_mode = 'selected' (0050). */
+export const storeProducts = pgTable("store_products", {
+	storeId: uuid("store_id").notNull(),
+	productId: uuid("product_id").notNull(),
+	position: integer().default(0).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	primaryKey({ columns: [table.storeId, table.productId], name: "store_products_pkey" }),
+	index("store_products_product_idx").using("btree", table.productId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.storeId],
+			foreignColumns: [stores.id],
+			name: "store_products_store_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.productId],
+			foreignColumns: [products.id],
+			name: "store_products_product_id_fkey"
+		}).onDelete("cascade"),
+]);
+
+/** Theme tokens per store (0051). No custom CSS column by design. */
+export const storeDesignSystems = pgTable("store_design_systems", {
+	storeId: uuid("store_id").primaryKey().notNull(),
+	colors: jsonb().default({}).notNull(),
+	typography: jsonb().default({}).notNull(),
+	spacing: jsonb().default({}).notNull(),
+	version: integer().default(0).notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.storeId],
+			foreignColumns: [stores.id],
+			name: "store_design_systems_store_id_fkey"
+		}).onDelete("cascade"),
+]);
+
+/** Builder page drafts (0051). The public storefront never reads this table. */
+export const storePages = pgTable("store_pages", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	storeId: uuid("store_id").notNull(),
+	slug: text().notNull(),
+	isHome: boolean("is_home").default(false).notNull(),
+	name: jsonb().default({}).notNull(),
+	seo: jsonb().default({}).notNull(),
+	draftContent: jsonb("draft_content").default({ sections: [] }).notNull(),
+	/** Optimistic concurrency: UPDATE … WHERE draft_version = :clientVersion. */
+	draftVersion: integer("draft_version").default(1).notNull(),
+	useSharedHeader: boolean("use_shared_header").default(true).notNull(),
+	useSharedFooter: boolean("use_shared_footer").default(true).notNull(),
+	showInNav: boolean("show_in_nav").default(true).notNull(),
+	orderIndex: integer("order_index").default(0).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("store_pages_store_slug_key").using("btree", table.storeId.asc().nullsLast().op("uuid_ops"), table.slug.asc().nullsLast().op("text_ops")),
+	uniqueIndex("store_pages_one_home").using("btree", table.storeId.asc().nullsLast().op("uuid_ops")).where(sql`is_home`),
+	index("store_pages_store_order_idx").using("btree", table.storeId.asc().nullsLast().op("uuid_ops"), table.orderIndex.asc().nullsLast().op("int4_ops")),
+	foreignKey({
+			columns: [table.storeId],
+			foreignColumns: [stores.id],
+			name: "store_pages_store_id_fkey"
+		}).onDelete("cascade"),
+	check("store_pages_slug_format", sql`slug ~ '^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$'`),
+]);
+
+/** Immutable publish snapshots (append-only trigger, 0051). */
+export const storeSiteRevisions = pgTable("store_site_revisions", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	storeId: uuid("store_id").notNull(),
+	revisionNumber: integer("revision_number").notNull(),
+	schemaVersion: integer("schema_version").notNull(),
+	templateKey: text("template_key").notNull(),
+	/** Validated SiteConfig (@workspace/store-sections). */
+	snapshot: jsonb().notNull(),
+	publishedBy: uuid("published_by"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("store_site_revisions_store_number_key").using("btree", table.storeId.asc().nullsLast().op("uuid_ops"), table.revisionNumber.asc().nullsLast().op("int4_ops")),
+	foreignKey({
+			columns: [table.storeId],
+			foreignColumns: [stores.id],
+			name: "store_site_revisions_store_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.publishedBy],
+			foreignColumns: [users.id],
+			name: "store_site_revisions_published_by_fkey"
+		}).onDelete("set null"),
+	check("store_site_revisions_number_positive", sql`revision_number > 0`),
+]);
+
+/** Global, admin-authored templates (0052). 'tallaby-classic' is the default. */
+export const templates = pgTable("templates", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	key: text().notNull(),
+	name: jsonb().notNull(),
+	description: jsonb().default({}).notNull(),
+	category: text().default('general').notNull(),
+	thumbnailUrl: text("thumbnail_url"),
+	previewUrl: text("preview_url"),
+	isDefault: boolean("is_default").default(false).notNull(),
+	isActive: boolean("is_active").default(true).notNull(),
+	isPremium: boolean("is_premium").default(false).notNull(),
+	price: numeric({ precision: 10, scale: 2 }),
+	sortOrder: integer("sort_order").default(0).notNull(),
+	currentVersionId: uuid("current_version_id"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	unique("templates_key_key").on(table.key),
+	uniqueIndex("templates_one_default").using("btree", table.isDefault.asc().nullsLast().op("bool_ops")).where(sql`is_default`),
+	// templates_current_version_id_fkey → template_versions(id) ON DELETE SET NULL exists
+	// in SQL (0052); not declared here because the circular reference breaks type inference.
+	check("templates_price_check", sql`price IS NULL OR price >= 0`),
+]);
+
+export const templateVersions = pgTable("template_versions", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	templateId: uuid("template_id").notNull(),
+	version: integer().notNull(),
+	schemaVersion: integer("schema_version").notNull(),
+	/** SiteConfig */
+	config: jsonb().notNull(),
+	changelog: text(),
+	publishedBy: uuid("published_by"),
+	publishedAt: timestamp("published_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	unique("template_versions_template_version_key").on(table.templateId, table.version),
+	foreignKey({
+			columns: [table.templateId],
+			foreignColumns: [templates.id],
+			name: "template_versions_template_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.publishedBy],
+			foreignColumns: [users.id],
+			name: "template_versions_published_by_fkey"
+		}).onDelete("set null"),
+]);
+
+export const templateInstalls = pgTable("template_installs", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	templateId: uuid("template_id").notNull(),
+	templateVersionId: uuid("template_version_id"),
+	storeId: uuid("store_id").notNull(),
+	installedBy: uuid("installed_by"),
+	installedAt: timestamp("installed_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("template_installs_store_idx").using("btree", table.storeId.asc().nullsLast().op("uuid_ops"), table.installedAt.desc().nullsFirst().op("timestamptz_ops")),
+	foreignKey({
+			columns: [table.templateId],
+			foreignColumns: [templates.id],
+			name: "template_installs_template_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.templateVersionId],
+			foreignColumns: [templateVersions.id],
+			name: "template_installs_template_version_id_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.storeId],
+			foreignColumns: [stores.id],
+			name: "template_installs_store_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.installedBy],
+			foreignColumns: [users.id],
+			name: "template_installs_installed_by_fkey"
+		}).onDelete("set null"),
+]);
+
+/** Seller media library folders; store_id NULL = shared by the seller's stores (0053). */
+export const mediaFolders = pgTable("media_folders", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	storeId: uuid("store_id"),
+	parentId: uuid("parent_id"),
+	name: text().notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("media_folders_seller_idx").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops"), table.storeId.asc().nullsLast().op("uuid_ops")),
+	index("media_folders_parent_idx").using("btree", table.parentId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.sellerId],
+			foreignColumns: [sellers.id],
+			name: "media_folders_seller_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.storeId],
+			foreignColumns: [stores.id],
+			name: "media_folders_store_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.parentId],
+			foreignColumns: [table.id],
+			name: "media_folders_parent_id_fkey"
+		}).onDelete("cascade"),
+	check("media_folders_name_length", sql`char_length(name) BETWEEN 1 AND 120`),
+]);
+
+/** Uploaded files in the `store-media` bucket, path '{seller_id}/{store_id|shared}/…' (0053). */
+export const mediaAssets = pgTable("media_assets", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	storeId: uuid("store_id"),
+	folderId: uuid("folder_id"),
+	bucket: text().default('store-media').notNull(),
+	storagePath: text("storage_path").notNull(),
+	filename: text().notNull(),
+	mimeType: text("mime_type").notNull(),
+	bytes: bigint({ mode: "number" }).notNull(),
+	width: integer(),
+	height: integer(),
+	altText: jsonb("alt_text").default({}).notNull(),
+	contentHash: text("content_hash"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	unique("media_assets_bucket_path_key").on(table.bucket, table.storagePath),
+	index("media_assets_seller_created_idx").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops"), table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
+	index("media_assets_store_idx").using("btree", table.storeId.asc().nullsLast().op("uuid_ops")),
+	index("media_assets_folder_idx").using("btree", table.folderId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.sellerId],
+			foreignColumns: [sellers.id],
+			name: "media_assets_seller_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.storeId],
+			foreignColumns: [stores.id],
+			name: "media_assets_store_id_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.folderId],
+			foreignColumns: [mediaFolders.id],
+			name: "media_assets_folder_id_fkey"
+		}).onDelete("set null"),
+	check("media_assets_bytes_check", sql`bytes >= 0`),
+	check("media_assets_path_owner", sql`storage_path LIKE seller_id::text || '/%'`),
+]);
+
+/** Reusable builder sections saved by the seller (0053). */
+export const savedBlocks = pgTable("saved_blocks", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	storeId: uuid("store_id").notNull(),
+	authorId: uuid("author_id"),
+	name: varchar({ length: 200 }).notNull(),
+	description: text(),
+	blockType: varchar("block_type", { length: 40 }).default('section').notNull(),
+	content: jsonb().notNull(),
+	thumbnailUrl: text("thumbnail_url"),
+	usageCount: integer("usage_count").default(0).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("saved_blocks_store_idx").using("btree", table.storeId.asc().nullsLast().op("uuid_ops"), table.updatedAt.desc().nullsFirst().op("timestamptz_ops")),
+	foreignKey({
+			columns: [table.storeId],
+			foreignColumns: [stores.id],
+			name: "saved_blocks_store_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.authorId],
+			foreignColumns: [users.id],
+			name: "saved_blocks_author_id_fkey"
+		}).onDelete("set null"),
+]);
+
+/** Per-store forms (0054). */
+export const storeForms = pgTable("store_forms", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	storeId: uuid("store_id").notNull(),
+	key: text().notNull(),
+	name: text().notNull(),
+	description: text(),
+	fields: jsonb().default([]).notNull(),
+	settings: jsonb().default({}).notNull(),
+	/** active | disabled */
+	status: text().default('active').notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	unique("store_forms_store_key_key").on(table.storeId, table.key),
+	foreignKey({
+			columns: [table.storeId],
+			foreignColumns: [stores.id],
+			name: "store_forms_store_id_fkey"
+		}).onDelete("cascade"),
+	check("store_forms_status_check", sql`status IN ('active', 'disabled')`),
+	check("store_forms_key_format", sql`key ~ '^[a-z0-9][a-z0-9_-]{0,62}$'`),
+]);
+
+/** Form submissions: customer PII, 12-month retention (D28) (0054). */
+export const storeFormSubmissions = pgTable("store_form_submissions", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	storeId: uuid("store_id").notNull(),
+	formId: uuid("form_id").notNull(),
+	userId: uuid("user_id"),
+	name: text(),
+	email: text(),
+	phone: text(),
+	message: text(),
+	data: jsonb().default({}).notNull(),
+	/** new | read | archived | spam */
+	status: text().default('new').notNull(),
+	sourceUrl: text("source_url"),
+	ipHash: text("ip_hash"),
+	userAgent: text("user_agent"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("store_form_submissions_store_created_idx").using("btree", table.storeId.asc().nullsLast().op("uuid_ops"), table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
+	index("store_form_submissions_form_idx").using("btree", table.formId.asc().nullsLast().op("uuid_ops"), table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
+	foreignKey({
+			columns: [table.storeId],
+			foreignColumns: [stores.id],
+			name: "store_form_submissions_store_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.formId],
+			foreignColumns: [storeForms.id],
+			name: "store_form_submissions_form_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: "store_form_submissions_user_id_fkey"
+		}).onDelete("set null"),
+	check("store_form_submissions_status_check", sql`status IN ('new', 'read', 'archived', 'spam')`),
+]);
+
+/** Per-store CMS collections; the blog is kind = 'blog' (0055). */
+export const cmsCollections = pgTable("cms_collections", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	storeId: uuid("store_id").notNull(),
+	kind: text().default('custom').notNull(),
+	name: text().notNull(),
+	slug: varchar({ length: 128 }).notNull(),
+	description: text(),
+	icon: text(),
+	fields: jsonb().default([]).notNull(),
+	primaryFieldKey: text("primary_field_key"),
+	slugFieldKey: text("slug_field_key"),
+	settings: jsonb().default({}).notNull(),
+	isSystem: boolean("is_system").default(false).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	unique("cms_collections_store_slug_key").on(table.storeId, table.slug),
+	foreignKey({
+			columns: [table.storeId],
+			foreignColumns: [stores.id],
+			name: "cms_collections_store_id_fkey"
+		}).onDelete("cascade"),
+	check("cms_collections_slug_format", sql`slug ~ '^[a-z0-9](?:[a-z0-9-]{0,126}[a-z0-9])?$'`),
+]);
+
+export const cmsItems = pgTable("cms_items", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	collectionId: uuid("collection_id").notNull(),
+	/** Must equal the collection's store_id (trigger, 0055). */
+	storeId: uuid("store_id").notNull(),
+	slug: varchar({ length: 200 }).notNull(),
+	/** draft | published | archived */
+	status: text().default('draft').notNull(),
+	data: jsonb().default({}).notNull(),
+	seo: jsonb().default({}).notNull(),
+	publishedAt: timestamp("published_at", { withTimezone: true, mode: 'string' }),
+	orderIndex: integer("order_index").default(0).notNull(),
+	createdBy: uuid("created_by"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	unique("cms_items_collection_slug_key").on(table.collectionId, table.slug),
+	index("cms_items_store_collection_status_idx").using("btree", table.storeId.asc().nullsLast().op("uuid_ops"), table.collectionId.asc().nullsLast().op("uuid_ops"), table.status.asc().nullsLast().op("text_ops"), table.orderIndex.asc().nullsLast().op("int4_ops")),
+	foreignKey({
+			columns: [table.collectionId],
+			foreignColumns: [cmsCollections.id],
+			name: "cms_items_collection_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.storeId],
+			foreignColumns: [stores.id],
+			name: "cms_items_store_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.createdBy],
+			foreignColumns: [users.id],
+			name: "cms_items_created_by_fkey"
+		}).onDelete("set null"),
+	check("cms_items_status_check", sql`status IN ('draft', 'published', 'archived')`),
+]);
+
+export const cmsItemRevisions = pgTable("cms_item_revisions", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	itemId: uuid("item_id").notNull(),
+	data: jsonb().notNull(),
+	reason: text().default('manual').notNull(),
+	createdBy: uuid("created_by"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("cms_item_revisions_item_idx").using("btree", table.itemId.asc().nullsLast().op("uuid_ops"), table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
+	foreignKey({
+			columns: [table.itemId],
+			foreignColumns: [cmsItems.id],
+			name: "cms_item_revisions_item_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.createdBy],
+			foreignColumns: [users.id],
+			name: "cms_item_revisions_created_by_fkey"
+		}).onDelete("set null"),
+]);
+
+/** Per-store apps/integrations. config = public ids only; secrets encrypted app-side (0056). */
+export const storeIntegrations = pgTable("store_integrations", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	storeId: uuid("store_id").notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	provider: text().notNull(),
+	/** connected | error | disconnected */
+	status: text().default('disconnected').notNull(),
+	config: jsonb().default({}).notNull(),
+	credentialsEncrypted: text("credentials_encrypted"),
+	scopes: text().array().default([]).notNull(),
+	externalAccountId: text("external_account_id"),
+	lastError: text("last_error"),
+	lastSyncedAt: timestamp("last_synced_at", { withTimezone: true, mode: 'string' }),
+	connectedBy: uuid("connected_by"),
+	connectedAt: timestamp("connected_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	unique("store_integrations_store_provider_key").on(table.storeId, table.provider),
+	index("store_integrations_seller_idx").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.storeId],
+			foreignColumns: [stores.id],
+			name: "store_integrations_store_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.sellerId],
+			foreignColumns: [sellers.id],
+			name: "store_integrations_seller_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.connectedBy],
+			foreignColumns: [users.id],
+			name: "store_integrations_connected_by_fkey"
+		}).onDelete("set null"),
+	check("store_integrations_status_check", sql`status IN ('connected', 'error', 'disconnected')`),
+	check("store_integrations_provider_check", sql`provider IN ('meta_pixel', 'meta_capi', 'google_analytics', 'google_tag_manager', 'tiktok_pixel', 'snapchat_pixel', 'google_sheets', 'shopify_import')`),
+]);
+
+/** Own-delivery shipping zones per store (0057). One enabled zone per governorate. */
+export const storeShippingZones = pgTable("store_shipping_zones", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	storeId: uuid("store_id").notNull(),
+	name: jsonb().notNull(),
+	governorates: text().array().notNull(),
+	price: numeric({ precision: 10, scale: 2 }).notNull(),
+	perKgSurcharge: numeric("per_kg_surcharge", { precision: 10, scale: 2 }).default('0').notNull(),
+	freeOver: numeric("free_over", { precision: 10, scale: 2 }),
+	deliveryDaysMin: integer("delivery_days_min").default(1).notNull(),
+	deliveryDaysMax: integer("delivery_days_max").default(3).notNull(),
+	codEnabled: boolean("cod_enabled").default(true).notNull(),
+	enabled: boolean().default(true).notNull(),
+	sortOrder: integer("sort_order").default(0).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("store_shipping_zones_store_idx").using("btree", table.storeId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.storeId],
+			foreignColumns: [stores.id],
+			name: "store_shipping_zones_store_id_fkey"
+		}).onDelete("cascade"),
+	check("store_shipping_zones_price_check", sql`price >= 0`),
+	check("store_shipping_zones_per_kg_check", sql`per_kg_surcharge >= 0`),
+	check("store_shipping_zones_free_over_check", sql`free_over IS NULL OR free_over >= 0`),
+	check("store_shipping_zones_days_check", sql`delivery_days_min >= 0 AND delivery_days_max >= delivery_days_min`),
+	check("store_shipping_zones_governorates_check", sql`cardinality(governorates) > 0`),
 ]);
