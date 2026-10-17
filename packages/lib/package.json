@@ -74,6 +74,14 @@
       "types": "./src/plans/index.ts",
       "default": "./src/plans/index.ts"
     },
+    "./sellers": {
+      "types": "./src/sellers/signup.lib.ts",
+      "default": "./src/sellers/signup.lib.ts"
+    },
+    "./sellers/server": {
+      "types": "./src/sellers/ensure-seller-account.ts",
+      "default": "./src/sellers/ensure-seller-account.ts"
+    },
     "./stores": {
       "types": "./src/stores/stores.lib.ts",
       "default": "./src/stores/stores.lib.ts"

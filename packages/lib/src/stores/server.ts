@@ -144,7 +144,7 @@ export async function getStoreBySubdomain(subdomain: string, q: Queryable = db) 
  * (legacy mirror), or it is another seller's old address (redirect). The
  * seller's own old addresses can be taken back.
  */
-async function isStoreSubdomainTaken(
+export async function isStoreSubdomainTaken(
   q: Queryable,
   subdomain: string,
   sellerId: string,
