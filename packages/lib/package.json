@@ -69,6 +69,10 @@
       "types": "./src/fulfillment/index.ts",
       "default": "./src/fulfillment/index.ts"
     },
+    "./plans": {
+      "types": "./src/plans/index.ts",
+      "default": "./src/plans/index.ts"
+    },
     "./storefront": {
       "types": "./src/storefront/index.ts",
       "default": "./src/storefront/index.ts"
