@@ -82,7 +82,7 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
     feature: "storeBuilder",
     items: [
       { key: "websiteOverview", href: "/stores/[storeId]/website", status: "planned" },
-      { key: "websiteBuilder", href: "/stores/[storeId]/editor", status: "planned" },
+      { key: "websiteBuilder", href: "/stores/[storeId]/editor", status: "live" },
       { key: "templates", href: "/stores/[storeId]/website/templates", status: "planned" },
       { key: "designSystem", href: "/stores/[storeId]/website/design", status: "planned" },
       { key: "pages", href: "/stores/[storeId]/website/pages", status: "planned" },

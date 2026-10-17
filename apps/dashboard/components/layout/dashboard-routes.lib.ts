@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import {
   AppWindow,
+  LayoutTemplate,
   BarChart3,
   Bike,
   CircleHelp,
@@ -91,6 +92,7 @@ export const DASHBOARD_ROUTES: DashboardRoute[] = [
   { href: "/reviews", title: "reviews", parent: "products", icon: Star },
   { href: "/coupons", title: "promotions", parent: "marketing", icon: Gift },
   { href: "/marketing", title: "advertiseProducts", parent: "marketing", icon: TrendingUp },
+  { href: "/stores/[storeId]/editor", title: "websiteBuilder", parent: "website", icon: LayoutTemplate },
   { href: "/stores/[storeId]/apps", title: "apps", icon: AppWindow },
   { href: "/financial", title: "accountStatements", parent: "finance", icon: DollarSign },
   { href: "/reports", title: "reports", parent: "finance", icon: FileBarChart },

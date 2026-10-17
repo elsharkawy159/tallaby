@@ -2528,5 +2528,133 @@
       "frozen": "Frozen",
       "closed": "Closed"
     }
+  },
+  "storeEditor": {
+    "title": "Website editor",
+    "back": "Back",
+    "pageLabel": "Page",
+    "editingLanguage": "Editing language",
+    "device": "Preview size",
+    "devices": {
+      "desktop": "Desktop",
+      "tablet": "Tablet",
+      "mobile": "Phone"
+    },
+    "undo": "Undo",
+    "redo": "Redo",
+    "viewStore": "View store",
+    "publish": "Publish",
+    "publishChanges": "Publish changes",
+    "published": "Published (version {number}). Your store shows it now.",
+    "conflict": "This website was changed in another tab or by another session. Reload to get the latest version before editing.",
+    "reload": "Reload",
+    "panels": {
+      "sections": "Sections",
+      "pages": "Pages",
+      "theme": "Theme"
+    },
+    "canvas": {
+      "addToCart": "Add to cart"
+    },
+    "inspector": {
+      "empty": "Select a section on the page to edit it.",
+      "imageHint": "Paste an image link. The media library is coming soon.",
+      "chooseCategory": "Choose a category",
+      "chooseProduct": "Choose a product",
+      "searchProducts": "Search your products",
+      "missingProduct": "Product no longer available",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "remove": "Remove",
+      "addItem": "Add item",
+      "translating": "Editing the {locale} text. Images, links and layout are shared with the Arabic version.",
+      "nothingToEdit": "This part shows your store's own details. Change them in the store settings."
+    },
+    "save": {
+      "saved": "Saved",
+      "saving": "Saving…",
+      "unsaved": "Unsaved changes",
+      "conflict": "Changed elsewhere",
+      "error": "Couldn't save"
+    },
+    "classic": {
+      "note": "Shown exactly like your live store.",
+      "classic-header": {
+        "title": "Store header (logo, name, cart)"
+      },
+      "classic-hero": {
+        "title": "Store front (name, cover, rating)"
+      },
+      "classic-categories": {
+        "title": "Category circles"
+      },
+      "classic-catalog": {
+        "title": "All products, with search and sorting"
+      },
+      "classic-footer": {
+        "title": "Store footer (contact and policies)"
+      }
+    },
+    "sections": {
+      "header": "Header",
+      "footer": "Footer",
+      "drag": "Drag to reorder",
+      "duplicate": "Duplicate",
+      "remove": "Remove",
+      "add": "Add section",
+      "cancel": "Cancel",
+      "categories": {
+        "header": "Header",
+        "hero": "Banners",
+        "commerce": "Products",
+        "content": "Content",
+        "social-proof": "Trust",
+        "media": "Media",
+        "contact": "Contact",
+        "footer": "Footer"
+      }
+    },
+    "pages": {
+      "inMenu": "In menu",
+      "hidden": "Hidden",
+      "delete": "Delete page",
+      "new": "New page",
+      "name": "Name",
+      "slug": "Address",
+      "slugHint": "Lowercase letters, numbers and dashes, e.g. about-us.",
+      "create": "Create page"
+    },
+    "theme": {
+      "intro": "Colors and corners for your whole website. Empty colors use the Tallaby Classic look.",
+      "colors": {
+        "primary": "Main color (buttons)",
+        "background": "Background",
+        "foreground": "Text",
+        "muted": "Secondary text",
+        "border": "Lines",
+        "secondary": "Soft background",
+        "accent": "Highlight"
+      },
+      "reset": "Reset",
+      "radius": "Corner roundness"
+    },
+    "errors": {
+      "notFound": "This store or page wasn't found.",
+      "readOnly": "This store is archived, so it can't be edited.",
+      "publishBlocked": "Your account can't publish right now. Contact support.",
+      "invalidContent": "Something in this section isn't valid. Check it and try again.",
+      "versionConflict": "This website was changed elsewhere. Reload before continuing.",
+      "invalidSlug": "Use lowercase letters, numbers and dashes only.",
+      "reservedSlug": "This address is used by the store. Choose another one.",
+      "slugTaken": "Another page already uses this address.",
+      "tooManyPages": "You've reached the maximum number of pages.",
+      "homePage": "The home page can't be deleted.",
+      "notPublished": "This website isn't published yet.",
+      "invalidSite": "The website has a problem and couldn't be published. Check the highlighted sections.",
+      "invalidInput": "Check the details and try again.",
+      "rateLimited": "Too many changes at once. Wait a moment and try again.",
+      "generic": "Something went wrong. Try again.",
+      "saveFirst": "Wait for your changes to be saved, then try again."
+    }
   }
 }

@@ -11,6 +11,21 @@ import type { DesignSystem } from "../config/schema";
 /** Class on the site root; the theme CSS is scoped to it. */
 export const SITE_ROOT_CLASS = "sf-site";
 
+/**
+ * Tallaby Classic defaults (apps/ecommerce storefront.module.css `.tokens`),
+ * for hosts that render sections outside the storefront (the editor canvas).
+ */
+export const CLASSIC_TOKENS: Readonly<Record<string, string>> = {
+  "--sf-paper": "#ffffff",
+  "--sf-shelf": "#f2f5f4",
+  "--sf-line": "#e2e8e7",
+  "--sf-ink": "#10242b",
+  "--sf-muted": "#5c6d72",
+  "--sf-brand": "#145163",
+  "--sf-brand-ink": "#ffffff",
+  "--sf-sun": "#fdad28",
+};
+
 const COLOR_TOKENS: Record<keyof DesignSystem["colors"], string[]> = {
   primary: ["--sf-brand", "--primary"],
   secondary: ["--sf-shelf"],
