@@ -66,6 +66,10 @@
       "types": "./src/orders/coupon-scope.lib.ts",
       "default": "./src/orders/coupon-scope.lib.ts"
     },
+    "./orders/platform-fee": {
+      "types": "./src/orders/platform-fee.lib.ts",
+      "default": "./src/orders/platform-fee.lib.ts"
+    },
     "./orders/payment": {
       "types": "./src/orders/payment.lib.ts",
       "default": "./src/orders/payment.lib.ts"
