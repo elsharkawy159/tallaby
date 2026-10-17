@@ -10,6 +10,9 @@ import { MobileCartBar } from "./_components/mobile-cart-bar.client";
 import { ByTallabyBadge } from "./_components/by-tallaby-badge";
 import { storefrontFont } from "./_components/storefront-font";
 import { StorefrontTracking } from "./_components/seller-tracking";
+import { StoreSiteChrome } from "./_components/store-site";
+import { SITE_ROOT_CLASS, SiteTheme } from "@workspace/store-sections/render";
+import { getCachedPublishedSite } from "@/lib/store-site/published-site.server";
 import s from "./storefront.module.css";
 
 type StorefrontLayoutProps = {
@@ -51,14 +54,17 @@ export default async function StorefrontLayout({
   children,
   params,
 }: StorefrontLayoutProps) {
-  const { subdomain } = await params;
+  const { locale, subdomain } = await params;
   const store = await resolveStorefront(subdomain);
+  // A published builder site replaces the default header/footer (P5-01).
+  const site = await getCachedPublishedSite(store.id, store.storeId, store.subdomain);
 
   return (
-    <div className={cn(storefrontFont.variable, s.root)}>
-      <StorefrontHeader store={store} />
+    <div className={cn(storefrontFont.variable, s.root, site && SITE_ROOT_CLASS)}>
+      {site && <SiteTheme designSystem={site.designSystem} />}
+      {site ? <StoreSiteChrome store={store} site={site} locale={locale} part="header" /> : <StorefrontHeader store={store} />}
       <main className="flex-1">{children}</main>
-      <StorefrontFooter store={store} />
+      {site ? <StoreSiteChrome store={store} site={site} locale={locale} part="footer" /> : <StorefrontFooter store={store} />}
       <MobileCartBar />
       <ByTallabyBadge />
       <AuthDialogProvider />

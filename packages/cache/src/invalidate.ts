@@ -252,6 +252,11 @@ export function invalidateCustomDomain(subdomain: string, domain: string): Cache
   return inv([sellerTags.subdomain(subdomain), sellerTags.customDomain(domain)]);
 }
 
+/** A store published or unpublished its builder site: that store's site and storefront profile only. */
+export function invalidateStoreSite(sellerId: string, storeId: string, subdomain: string): CacheInvalidation {
+  return inv([storeTags.site(sellerId, storeId), sellerTags.subdomain(subdomain)]);
+}
+
 /** A store connected, changed or removed a tracking app (P7-02/P7-03). Only that store. */
 export function invalidateStoreIntegrations(sellerId: string, storeId: string): CacheInvalidation {
   return inv([storeTags.integrations(sellerId, storeId)]);

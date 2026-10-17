@@ -51,7 +51,7 @@ function splitLocale(pathname: string): { locale: AppLocale; path: string } {
   return { locale: routing.defaultLocale, path: pathname };
 }
 
-function marketplaceOrigin(): string {
+export function marketplaceOrigin(): string {
   const site = process.env.NEXT_PUBLIC_SITE_URL;
   if (site) return site.replace(/\/$/, "");
   return `https://${process.env.NEXT_PUBLIC_ROOT_DOMAIN || "tallaby.com"}`;
@@ -85,6 +85,12 @@ export function routeStorefrontRequest(
   if (path === "/") return rewrite("");
   if (path === "/cart") return rewrite("/cart");
   if (/^\/products\/[^/]+\/?$/.test(path)) return rewrite(path.replace(/\/$/, ""));
+
+  // A builder page of this store (/about). An unknown slug is redirected to
+  // the marketplace by the page route, as before (P5-01).
+  if (/^\/[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?\/?$/.test(path) && path !== "/products" && path !== "/search") {
+    return rewrite(`/pages${path.replace(/\/$/, "")}`);
+  }
 
   // The storefront home is the store's catalog.
   if (path === "/products" || path === "/search") {

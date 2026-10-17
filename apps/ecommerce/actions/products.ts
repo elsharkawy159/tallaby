@@ -49,6 +49,8 @@ interface ProductFilters {
   minRating?: number;
   condition?: string;
   sellerId?: string;
+  /** Only these products (store builder sections that list picked products). */
+  productIds?: string[];
   isFeatured?: boolean;
   isTrending?: boolean;
   isSeasonal?: boolean;
@@ -93,6 +95,10 @@ export const getProducts = createCachedQuery({
 
       if (filters.categoryIds?.length) {
         conditions.push(inArray(products.categoryId, filters.categoryIds));
+      }
+
+      if (filters.productIds) {
+        conditions.push(inArray(products.id, filters.productIds.length ? filters.productIds : ["00000000-0000-0000-0000-000000000000"]));
       }
 
       const categoryNames = [

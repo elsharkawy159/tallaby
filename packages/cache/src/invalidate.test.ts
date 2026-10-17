@@ -5,6 +5,7 @@ import {
   invalidateProduct,
   invalidateProductInventory,
   invalidateStoreIntegrations,
+  invalidateStoreSite,
   mergeInvalidations,
   type ProductCacheSnapshot,
 } from "./invalidate";
@@ -309,5 +310,15 @@ describe("invalidateStoreIntegrations", () => {
     expect(result.tags).toEqual([storeTags.integrations("seller-a", "store-a1")]);
     expect(result.tags).not.toContain(storeTags.integrations("seller-a", "store-a2"));
     expect(result.paths).toEqual([]);
+  });
+});
+
+describe("invalidateStoreSite", () => {
+  it("emits that store's site tag and its storefront profile, nothing for sibling stores", () => {
+    expect(invalidateStoreSite("seller-a", "store-a1", "sara").tags).toEqual([
+      "store:site:seller-a:store-a1",
+      "seller:subdomain:sara",
+    ]);
+    expect(invalidateStoreSite("seller-a", "store-a1", "sara").tags).not.toContain(storeTags.site("seller-a", "store-a2"));
   });
 });

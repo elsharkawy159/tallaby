@@ -5,6 +5,8 @@ import { StorefrontHero } from "./_components/storefront-hero";
 import { CategoryCircles } from "./_components/category-circles";
 import { StorefrontCatalog } from "./_components/storefront-catalog";
 import s from "./storefront.module.css";
+import { StoreSitePage } from "./_components/store-site";
+import { getCachedPublishedSite } from "@/lib/store-site/published-site.server";
 
 type StorefrontPageProps = {
   params: Promise<{ locale: string; subdomain: string }>;
@@ -27,6 +29,13 @@ export default async function StorefrontPage({ params, searchParams }: Storefron
     sort: one(sp.sort),
     page: Math.max(1, Math.floor(Number(one(sp.page)) || 1)),
   };
+
+  // A published builder site renders its own home page (P5-01).
+  const site = await getCachedPublishedSite(store.id, store.storeId, store.subdomain);
+  const home = site?.pages.find((page) => page.isHome);
+  if (site && home) {
+    return <StoreSitePage store={store} site={site} page={home} locale={locale} classic={{ categories, query }} />;
+  }
 
   return (
     <>

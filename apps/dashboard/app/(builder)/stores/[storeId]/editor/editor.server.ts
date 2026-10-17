@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { applyInvalidation, invalidateStorefront } from "@workspace/cache";
+import { applyInvalidation, invalidateStoreSite } from "@workspace/cache";
 import {
   createStorePage,
   deleteStorePage,
@@ -57,7 +57,10 @@ async function withStore<T>(
 }
 
 async function invalidateStore(access: Access) {
-  await applyInvalidation(invalidateStorefront([access.store.subdomain]), { from: "dashboard", mode: "action" });
+  await applyInvalidation(invalidateStoreSite(access.seller.sellerId, access.store.id, access.store.subdomain), {
+    from: "dashboard",
+    mode: "action",
+  });
 }
 
 export async function saveDraft(storeId: string, pageId: string, content: unknown, clientVersion: number) {

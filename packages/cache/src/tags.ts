@@ -68,6 +68,8 @@ export const sellerTags = {
 export const storeTags = {
   /** Connected tracking apps rendered on that store host (P7-03). */
   integrations: (sellerId: string, storeId: string) => `store:integrations:${sellerId}:${storeId}`,
+  /** The store's published builder site (P5-01, P5-03). */
+  site: (sellerId: string, storeId: string) => `store:site:${sellerId}:${storeId}`,
 } as const;
 
 export const reviewTags = {
