@@ -45,6 +45,9 @@ export async function getSellerOrders(params?: {
             paymentMethod: true,
             paymentStatus: true,
             createdAt: true,
+            // Sales channel (P3-06): marketplace vs a store's storefront.
+            orderSource: true,
+            storeId: true,
           },
           with: {
             user: {

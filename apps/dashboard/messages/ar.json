@@ -1418,6 +1418,11 @@
       "orderTotal": "إجمالي الطلب",
       "yourItemsTotal": "إجمالي منتجاتك",
       "yourEarnings": "أرباحك"
+    },
+    "channel": {
+      "label": "قناة البيع",
+      "all": "كل الطلبات",
+      "marketplace": "سوق طلبي"
     }
   },
   "shipping": {
@@ -1558,8 +1563,11 @@
       "riderUpdated": "تم تحديث المندوب",
       "riderActivated": "تم تفعيل المندوب",
       "riderDeactivatedMessage": "تم إيقاف المندوب",
-      "saved": "تم الحفظ"
-    }
+      "saved": "تم الحفظ",
+      "bulkUpdated": "تم تحديث {updated}، وتخطي {skipped}"
+    },
+    "bulkOutForDelivery": "تحديد {count} كخرج للتوصيل",
+    "bulkDelivered": "تحديد {count} كتم التوصيل"
   },
   "reviews": {
     "title": "التقييمات",

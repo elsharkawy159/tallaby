@@ -25,6 +25,7 @@ import { Button } from "@workspace/ui/components/button";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { formatPrice } from "@workspace/lib";
 import { OrderStatusTracker } from "./order-status-tracker";
+import { DeliveryTimeline } from "./delivery-timeline";
 import { OrderItemsList } from "./order-items-list";
 import { OrderStoreReviewCard } from "./order-store-review-card";
 import { OrderCancelButton } from "./order-cancel-button";
@@ -246,6 +247,8 @@ export async function OrderConfirmationContent({
         status={order.status}
         paymentMethod={order.paymentMethod}
       />
+
+      <DeliveryTimeline placedAt={order.createdAt} shipments={shipments} />
 
       {shipments.length > 0 && shipments.some((s) => s.trackingNumber) && (
         <Card className="rounded-xl md:rounded-2xl border overflow-hidden pt-0 bg-white">

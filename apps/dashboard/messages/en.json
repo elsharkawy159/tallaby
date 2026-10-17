@@ -1418,6 +1418,11 @@
       "orderTotal": "Order total",
       "yourItemsTotal": "Your items total",
       "yourEarnings": "Your earnings"
+    },
+    "channel": {
+      "label": "Sales channel",
+      "all": "All orders",
+      "marketplace": "Tallaby marketplace"
     }
   },
   "shipping": {
@@ -1558,8 +1563,11 @@
       "riderUpdated": "Rider updated",
       "riderActivated": "Rider activated",
       "riderDeactivatedMessage": "Rider deactivated",
-      "saved": "Saved"
-    }
+      "saved": "Saved",
+      "bulkUpdated": "{updated} updated, {skipped} skipped"
+    },
+    "bulkOutForDelivery": "Mark {count} out for delivery",
+    "bulkDelivered": "Mark {count} delivered"
   },
   "reviews": {
     "title": "Reviews",

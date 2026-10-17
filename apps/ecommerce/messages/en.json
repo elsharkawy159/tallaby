@@ -484,6 +484,13 @@
     "startShoppingDescription": "Start shopping to see your orders here"
   },
   "orders": {
+    "deliveryUpdates": "Delivery updates",
+    "deliveryPlaced": "Order placed",
+    "deliveryAssigned": "Courier assigned",
+    "deliveryOutForDelivery": "Out for delivery",
+    "deliveryDelivered": "Delivered",
+    "deliveryFailed": "Delivery attempt failed: {reason}",
+    "deliveryFailedNoReason": "Delivery attempt failed",
     "orders": "Orders",
     "orderHistory": "Order History",
     "orderDetails": "Order Details",

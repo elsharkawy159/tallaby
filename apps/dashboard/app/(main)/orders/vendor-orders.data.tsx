@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { getSellerOrders } from "@/actions/orders";
+import { getSellerStores } from "@/lib/stores/current-store.server";
 import {
   getOrderDisplayNumber,
   pickProductSlug,
@@ -19,9 +20,10 @@ export async function VendorOrdersData({
 }: {
   initialOrderId?: string | null;
 }) {
-  const [res, t] = await Promise.all([
+  const [res, t, { stores }] = await Promise.all([
     getSellerOrders({ limit: 100, offset: 0 }),
     getTranslations("orders"),
+    getSellerStores(),
   ]);
 
   const items: SellerOrderItem[] = res?.success ? (res.data ?? []) : [];
@@ -40,6 +42,7 @@ export async function VendorOrdersData({
     variant: item.variantName ?? null,
     quantity: item.quantity ?? 1,
     total: item.total ?? "0",
+    storeId: item.order?.storeId ?? null,
     status: resolveVendorOrderStatus(item),
   }));
 
@@ -47,5 +50,6 @@ export async function VendorOrdersData({
       key={initialOrderId ?? "all"}
       rows={rows}
       initialOrderId={initialOrderId}
+      stores={stores.map(({ id, name }) => ({ id, name }))}
     />;
 }

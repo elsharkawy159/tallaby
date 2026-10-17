@@ -70,6 +70,11 @@ export async function getOrderConfirmationData(
             carrier: true,
             status: true,
             estimatedDeliveryDate: true,
+            // Delivery timeline (P3-06): set by the seller / rider status updates.
+            assignedAt: true,
+            shippedAt: true,
+            deliveredAt: true,
+            failureReason: true,
           },
         },
         userAddress_shippingAddressId: true,
@@ -211,6 +216,10 @@ export async function getOrderConfirmationData(
         carrier: s.carrier ?? null,
         status: s.status ?? null,
         estimatedDeliveryDate: s.estimatedDeliveryDate ?? null,
+        assignedAt: s.assignedAt ?? null,
+        shippedAt: s.shippedAt ?? null,
+        deliveredAt: s.deliveredAt ?? null,
+        failureReason: s.status === "failed" ? (s.failureReason ?? null) : null,
       })),
       shippingAddress: {
         fullName: order.userAddress_shippingAddressId?.fullName || "",

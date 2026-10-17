@@ -484,6 +484,13 @@
     "startShoppingDescription": "ابدأ التسوق لرؤية طلباتك هنا"
   },
   "orders": {
+    "deliveryUpdates": "تحديثات التوصيل",
+    "deliveryPlaced": "تم إنشاء الطلب",
+    "deliveryAssigned": "تم تعيين المندوب",
+    "deliveryOutForDelivery": "خرج للتوصيل",
+    "deliveryDelivered": "تم التوصيل",
+    "deliveryFailed": "تعذر التوصيل: {reason}",
+    "deliveryFailedNoReason": "تعذر التوصيل",
     "orders": "الطلبات",
     "orderHistory": "سجل الطلبات",
     "orderDetails": "تفاصيل الطلب",

@@ -29,6 +29,11 @@ export interface ShipmentInfo {
   carrier: string | null;
   status: string | null;
   estimatedDeliveryDate: string | null;
+  assignedAt: string | null;
+  shippedAt: string | null;
+  deliveredAt: string | null;
+  /** Only set while the shipment is in the failed state. */
+  failureReason: string | null;
 }
 
 export interface OrderConfirmationData {

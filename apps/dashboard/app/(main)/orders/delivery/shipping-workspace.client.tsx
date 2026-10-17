@@ -22,7 +22,7 @@ import { Card, CardContent } from "@workspace/ui/components/card";
 import { Switch } from "@workspace/ui/components/switch";
 import { TableSection } from "@workspace/ui/components/table-section";
 import { Tabs, TabsList, TabsTrigger } from "@workspace/ui/components/tabs";
-import { setSellerRiderActive, setSellerRiderAvailable } from "@/actions/shipping";
+import { bulkUpdateShipmentStatus, setSellerRiderActive, setSellerRiderAvailable } from "@/actions/shipping";
 import { cn } from "@/lib/utils";
 import { formatDateTime, formatMoney } from "@/lib/i18n/format";
 import { SHIPPING_STATUS_BADGE } from "@/lib/shipping/shipping-status";
@@ -77,14 +77,25 @@ function StatCard({
 export function ShippingWorkspace({
   orders,
   riders,
+  initialView = "orders",
 }: {
   orders: ShippingOrderRow[];
   riders: SellerRider[];
+  /** /orders/delivery opens the deliveries, /orders/riders the riders (P3-06). */
+  initialView?: "orders" | "riders";
 }) {
   const t = useTranslations("shipping");
   const tStatus = useTranslations("status.shipping");
   const locale = useLocale();
-  const [view, setView] = useState<"orders" | "riders">("orders");
+  const [view, setView] = useState<"orders" | "riders">(initialView);
+  const [bulkPending, startBulk] = useTransition();
+
+  const runBulk = (orderIds: string[], status: "out_for_delivery" | "delivered") =>
+    startBulk(async () => {
+      const res = await bulkUpdateShipmentStatus({ orderIds, status });
+      if (res.success) toast.success(res.message);
+      else toast.error(res.error);
+    });
   const [tab, setTab] = useState<OrderTab>("all");
   const [assignIds, setAssignIds] = useState<string[]>([]);
   const [assignCurrent, setAssignCurrent] = useState<string | null>(null);
@@ -333,19 +344,42 @@ export function ShippingWorkspace({
             searchColumnId="order"
             hideViewOptions
             buttons={(table) => {
-              const selected = table
-                .getSelectedRowModel()
-                .rows.map((r) => r.original)
-                .filter((r) => r.editable && r.status === "pending");
-              if (selected.length === 0) return null;
+              const picked = table.getSelectedRowModel().rows.map((r) => r.original);
+              const selected = picked.filter((r) => r.editable && r.status === "pending");
+              // Bulk moves: the server re-checks every order and skips the ones that can't move.
+              const toOut = picked.filter((r) => r.editable && r.status === "assigned");
+              const toDelivered = picked.filter((r) => r.editable && r.status === "out_for_delivery");
+              if (selected.length === 0 && toOut.length === 0 && toDelivered.length === 0) return null;
               return (
-                <Button
-                  onClick={() => openAssign(selected.map((r) => r.id))}
-                  className="bg-[#E9520E] hover:bg-[#D4460C]"
-                >
-                  <UserPlus className="me-2 h-4 w-4" />
-                  {t("assignToOrders", { count: selected.length })}
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                  {selected.length > 0 && (
+                    <Button
+                      onClick={() => openAssign(selected.map((r) => r.id))}
+                      className="bg-[#E9520E] hover:bg-[#D4460C]"
+                    >
+                      <UserPlus className="me-2 h-4 w-4" />
+                      {t("assignToOrders", { count: selected.length })}
+                    </Button>
+                  )}
+                  {toOut.length > 0 && (
+                    <Button
+                      variant="outline"
+                      disabled={bulkPending}
+                      onClick={() => runBulk(toOut.map((r) => r.id), "out_for_delivery")}
+                    >
+                      {t("bulkOutForDelivery", { count: toOut.length })}
+                    </Button>
+                  )}
+                  {toDelivered.length > 0 && (
+                    <Button
+                      variant="outline"
+                      disabled={bulkPending}
+                      onClick={() => runBulk(toDelivered.map((r) => r.id), "delivered")}
+                    >
+                      {t("bulkDelivered", { count: toDelivered.length })}
+                    </Button>
+                  )}
+                </div>
               );
             }}
           />

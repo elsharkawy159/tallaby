@@ -1,7 +1,7 @@
 import { getShippingOverview } from "@/actions/shipping";
 import { ShippingWorkspace } from "./shipping-workspace.client";
 
-export async function ShippingData() {
+export async function ShippingData({ view = "orders" }: { view?: "orders" | "riders" }) {
   const res = await getShippingOverview();
 
   if (!res.success || !res.data) {
@@ -12,5 +12,5 @@ export async function ShippingData() {
     );
   }
 
-  return <ShippingWorkspace orders={res.data.orders} riders={res.data.riders} />;
+  return <ShippingWorkspace orders={res.data.orders} riders={res.data.riders} initialView={view} />;
 }

@@ -58,10 +58,10 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
     key: "ordersShipping",
     icon: ShoppingBag,
     items: [
-      { key: "orders", href: "/orders", countKey: "orders", status: "live" },
-      // Moves to /orders/delivery in P3-06 (with a redirect).
-      { key: "deliveryTracking", href: "/shipping", countKey: "shipping", status: "live" },
-      { key: "riders", href: "/orders/riders", status: "planned" },
+      { key: "orders", href: "/orders", countKey: "orders", status: "live", exact: true },
+      // /shipping redirects here (P3-06).
+      { key: "deliveryTracking", href: "/orders/delivery", countKey: "shipping", status: "live" },
+      { key: "riders", href: "/orders/riders", status: "live" },
       { key: "shippingSettings", href: "/stores/[storeId]/shipping", status: "planned" },
     ],
   },

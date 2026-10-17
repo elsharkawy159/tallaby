@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import {
   BarChart3,
+  Bike,
   CircleHelp,
   DollarSign,
   FileBarChart,
@@ -79,7 +80,8 @@ export interface DashboardRoute {
 export const DASHBOARD_ROUTES: DashboardRoute[] = [
   { href: "/", title: "dashboard", icon: BarChart3 },
   { href: "/orders", title: "orders", parent: "ordersShipping", icon: ShoppingBag },
-  { href: "/shipping", title: "deliveryTracking", parent: "ordersShipping", icon: Truck },
+  { href: "/orders/delivery", title: "deliveryTracking", parent: "ordersShipping", icon: Truck },
+  { href: "/orders/riders", title: "riders", parent: "ordersShipping", icon: Bike },
   { href: "/products", title: "manageProducts", parent: "products", parentHref: "/products", icon: Package },
   { href: "/products/add", title: "addProducts", parent: "products", parentHref: "/products", icon: PackagePlus },
   { href: "/reviews", title: "reviews", parent: "products", icon: Star },
