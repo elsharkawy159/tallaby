@@ -5,6 +5,7 @@ import {
   productTags,
   reviewTags,
   sellerTags,
+  storeTags,
 } from "./tags";
 
 /**
@@ -249,6 +250,11 @@ export function invalidateStorefront(subdomains: string[]): CacheInvalidation {
  */
 export function invalidateCustomDomain(subdomain: string, domain: string): CacheInvalidation {
   return inv([sellerTags.subdomain(subdomain), sellerTags.customDomain(domain)]);
+}
+
+/** A store connected, changed or removed a tracking app (P7-02/P7-03). Only that store. */
+export function invalidateStoreIntegrations(sellerId: string, storeId: string): CacheInvalidation {
+  return inv([storeTags.integrations(sellerId, storeId)]);
 }
 
 /** Platform-wide coupons (no seller) — the storefront's "available coupons". */

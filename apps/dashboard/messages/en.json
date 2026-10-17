@@ -2378,5 +2378,73 @@
       "rateLimited": "Too many changes. Please wait a few minutes and try again.",
       "generic": "Couldn't save. Please try again."
     }
+  },
+  "storeApps": {
+    "title": "Apps",
+    "description": "Connect your own tracking tools to this store. They load only on this store's website.",
+    "connect": "Connect",
+    "manage": "Manage",
+    "connected": "Connected",
+    "soon": "Soon",
+    "save": "Save",
+    "disconnect": "Disconnect",
+    "saved": "App saved",
+    "removed": "App disconnected",
+    "onlyThisStore": "This app runs only on this store's website, not on the Tallaby marketplace or your other stores.",
+    "gtmWarning": "Google Tag Manager runs whatever tags you add to your container. You are responsible for those tags and for any visitor consent they need.",
+    "errors": {
+      "invalidId": "Check the ID and try again.",
+      "notAvailable": "This app isn't available yet.",
+      "readOnly": "This store is archived, so its apps can't be changed.",
+      "notFound": "Store not found.",
+      "rateLimited": "Too many changes. Try again in a few minutes.",
+      "generic": "Something went wrong. Try again."
+    },
+    "providers": {
+      "meta_pixel": {
+        "name": "Meta Pixel",
+        "description": "Measure your Facebook and Instagram ads and build audiences.",
+        "idLabel": "Pixel ID",
+        "placeholder": "123456789012345",
+        "hint": "15 or 16 digits, from Meta Events Manager › Data sources.",
+        "invalid": "A Pixel ID is 15 or 16 digits."
+      },
+      "google_analytics": {
+        "name": "Google Analytics 4",
+        "description": "See your store's traffic and sales in Google Analytics.",
+        "idLabel": "Measurement ID",
+        "placeholder": "G-XXXXXXXXXX",
+        "hint": "Starts with G-. Find it in Admin › Data streams.",
+        "invalid": "A Measurement ID looks like G-XXXXXXXXXX."
+      },
+      "google_tag_manager": {
+        "name": "Google Tag Manager",
+        "description": "Manage your own tags from one GTM container.",
+        "idLabel": "Container ID",
+        "placeholder": "GTM-XXXXXXX",
+        "hint": "Starts with GTM-. It's shown at the top of your container.",
+        "invalid": "A Container ID looks like GTM-XXXXXXX."
+      },
+      "meta_capi": {
+        "name": "Meta Conversions API",
+        "description": "Send purchases to Meta from the server for more reliable tracking."
+      },
+      "tiktok_pixel": {
+        "name": "TikTok Pixel",
+        "description": "Measure your TikTok ads."
+      },
+      "snapchat_pixel": {
+        "name": "Snapchat Pixel",
+        "description": "Measure your Snapchat ads."
+      },
+      "google_sheets": {
+        "name": "Google Sheets",
+        "description": "Export your orders to a spreadsheet."
+      },
+      "shopify_import": {
+        "name": "Shopify import",
+        "description": "Copy your products from a Shopify store."
+      }
+    }
   }
 }

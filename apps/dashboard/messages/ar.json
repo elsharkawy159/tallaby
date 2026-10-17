@@ -2378,5 +2378,73 @@
       "rateLimited": "تغييرات كثيرة. انتظر بضع دقائق ثم حاول مرة أخرى.",
       "generic": "تعذر الحفظ. حاول مرة أخرى."
     }
+  },
+  "storeApps": {
+    "title": "التطبيقات",
+    "description": "اربط أدوات التتبع الخاصة بك بهذا المتجر. تعمل فقط على موقع هذا المتجر.",
+    "connect": "ربط",
+    "manage": "إدارة",
+    "connected": "مرتبط",
+    "soon": "قريبًا",
+    "save": "حفظ",
+    "disconnect": "إلغاء الربط",
+    "saved": "تم حفظ التطبيق",
+    "removed": "تم إلغاء ربط التطبيق",
+    "onlyThisStore": "يعمل هذا التطبيق على موقع هذا المتجر فقط، وليس على سوق طلبي أو على متاجرك الأخرى.",
+    "gtmWarning": "يشغّل Google Tag Manager أي وسوم تضيفها إلى الحاوية الخاصة بك. أنت مسؤول عن هذه الوسوم وعن أي موافقة يحتاجها زوار متجرك.",
+    "errors": {
+      "invalidId": "راجع المعرّف وحاول مرة أخرى.",
+      "notAvailable": "هذا التطبيق غير متاح بعد.",
+      "readOnly": "هذا المتجر مؤرشف، لذلك لا يمكن تغيير تطبيقاته.",
+      "notFound": "المتجر غير موجود.",
+      "rateLimited": "تغييرات كثيرة. حاول مرة أخرى بعد بضع دقائق.",
+      "generic": "حدث خطأ. حاول مرة أخرى."
+    },
+    "providers": {
+      "meta_pixel": {
+        "name": "Meta Pixel",
+        "description": "قِس نتائج إعلاناتك على فيسبوك وإنستجرام وكوّن جماهير مخصصة.",
+        "idLabel": "معرّف البكسل (Pixel ID)",
+        "placeholder": "123456789012345",
+        "hint": "15 أو 16 رقمًا، تجده في Meta Events Manager › مصادر البيانات.",
+        "invalid": "معرّف البكسل مكوّن من 15 أو 16 رقمًا."
+      },
+      "google_analytics": {
+        "name": "Google Analytics 4",
+        "description": "تابع زيارات متجرك ومبيعاته في Google Analytics.",
+        "idLabel": "معرّف القياس (Measurement ID)",
+        "placeholder": "G-XXXXXXXXXX",
+        "hint": "يبدأ بـ G-. تجده في الإدارة › مصادر البيانات.",
+        "invalid": "معرّف القياس يكون بالشكل G-XXXXXXXXXX."
+      },
+      "google_tag_manager": {
+        "name": "Google Tag Manager",
+        "description": "أدِر وسومك الخاصة من حاوية GTM واحدة.",
+        "idLabel": "معرّف الحاوية (Container ID)",
+        "placeholder": "GTM-XXXXXXX",
+        "hint": "يبدأ بـ GTM-. يظهر أعلى صفحة الحاوية.",
+        "invalid": "معرّف الحاوية يكون بالشكل GTM-XXXXXXX."
+      },
+      "meta_capi": {
+        "name": "Meta Conversions API",
+        "description": "أرسل المشتريات إلى Meta من الخادم لتتبع أدق."
+      },
+      "tiktok_pixel": {
+        "name": "TikTok Pixel",
+        "description": "قِس نتائج إعلاناتك على تيك توك."
+      },
+      "snapchat_pixel": {
+        "name": "Snapchat Pixel",
+        "description": "قِس نتائج إعلاناتك على سناب شات."
+      },
+      "google_sheets": {
+        "name": "Google Sheets",
+        "description": "صدّر طلباتك إلى جدول بيانات."
+      },
+      "shopify_import": {
+        "name": "الاستيراد من Shopify",
+        "description": "انسخ منتجاتك من متجر Shopify."
+      }
+    }
   }
 }

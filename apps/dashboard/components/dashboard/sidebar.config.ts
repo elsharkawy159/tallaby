@@ -102,7 +102,7 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
       { key: "advertiseProducts", href: "/marketing", countKey: "marketing", status: "live" },
     ],
   },
-  { kind: "link", key: "apps", href: "/stores/[storeId]/apps", icon: AppWindow, status: "planned" },
+  { kind: "link", key: "apps", href: "/stores/[storeId]/apps", icon: AppWindow, status: "live" },
   {
     kind: "group",
     key: "finance",

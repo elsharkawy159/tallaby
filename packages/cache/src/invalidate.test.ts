@@ -4,10 +4,11 @@ import {
   invalidatePlatformCoupons,
   invalidateProduct,
   invalidateProductInventory,
+  invalidateStoreIntegrations,
   mergeInvalidations,
   type ProductCacheSnapshot,
 } from "./invalidate";
-import { categoryTags, couponTags, productTags } from "./tags";
+import { categoryTags, couponTags, productTags, storeTags } from "./tags";
 
 function snapshot(overrides: Partial<ProductCacheSnapshot> = {}): ProductCacheSnapshot {
   return {
@@ -298,5 +299,15 @@ describe("invalidateAllCategories", () => {
 describe("invalidatePlatformCoupons", () => {
   it("emits the storefront's available-coupons tag", () => {
     expect(invalidatePlatformCoupons().tags).toEqual([couponTags.available()]);
+  });
+});
+
+describe("invalidateStoreIntegrations", () => {
+  it("emits only that store's tag, scoped by seller", () => {
+    const result = invalidateStoreIntegrations("seller-a", "store-a1");
+    expect(result.tags).toEqual(["store:integrations:seller-a:store-a1"]);
+    expect(result.tags).toEqual([storeTags.integrations("seller-a", "store-a1")]);
+    expect(result.tags).not.toContain(storeTags.integrations("seller-a", "store-a2"));
+    expect(result.paths).toEqual([]);
   });
 });

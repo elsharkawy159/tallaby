@@ -61,6 +61,15 @@ export const sellerTags = {
   customDomain: (domain: string) => `seller:domain:${domain}`,
 } as const;
 
+/**
+ * Store-scoped data (stores table, PLAN.md §8). Every tag carries the owning
+ * seller id as well as the store id (CLAUDE.md rule 8).
+ */
+export const storeTags = {
+  /** Connected tracking apps rendered on that store host (P7-03). */
+  integrations: (sellerId: string, storeId: string) => `store:integrations:${sellerId}:${storeId}`,
+} as const;
+
 export const reviewTags = {
   product: (productId: string) => `review:product:${productId}`,
   seller: (sellerId: string) => `review:seller:${sellerId}`,
@@ -86,6 +95,7 @@ export type BrandTag = ReturnType<(typeof brandTags)[keyof typeof brandTags]>;
 export type SellerTag = ReturnType<
   (typeof sellerTags)[keyof typeof sellerTags]
 >;
+export type StoreTag = ReturnType<(typeof storeTags)[keyof typeof storeTags]>;
 export type ReviewTag = ReturnType<
   (typeof reviewTags)[keyof typeof reviewTags]
 >;
