@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@workspace/ui/components/button";
 import { Tabs, TabsList, TabsTrigger } from "@workspace/ui/components/tabs";
-import type { AdRequestRow } from "@/actions/ads";
+import type { AdRequestRow, AdWallet } from "@/actions/ads";
 import {
   AD_PACKAGE_PERIODS,
   AD_PACKAGES,
@@ -24,13 +24,14 @@ import { StepSection, type StepState } from "./step-section";
 type Props = {
   products: AdProductOption[];
   requests: AdRequestRow[];
+  wallet: AdWallet | null;
 };
 
 type Step = 1 | 2 | 3;
 
 const stepId = (n: Step) => `ad-step-${n}`;
 
-export function AdvertiseProducts({ products, requests }: Props) {
+export function AdvertiseProducts({ products, requests, wallet }: Props) {
   const t = useTranslations("advertise");
   const tNav = useTranslations("nav");
   const [period, setPeriod] = useState<AdPackagePeriod>("weekly");
@@ -46,8 +47,11 @@ export function AdvertiseProducts({ products, requests }: Props) {
   const payment = usePaymentForm({
     pkg,
     productId,
-    onSubmitted: () => {
-      toast.success(t("success.title"), { description: t("success.body") });
+    wallet,
+    onSubmitted: (method) => {
+      toast.success(t("success.title"), {
+        description: t(method === "wallet" ? "success.walletBody" : "success.body"),
+      });
       setPackageKey(null);
       setProductId(null);
       setStep(1);

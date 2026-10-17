@@ -18,6 +18,9 @@ import {
 } from "./store-wallet.server";
 import { TopUpButton } from "./top-up.client";
 
+/** Below this (EGP) the notice gets stronger (D21 / P6-08). Optional purchases stop at the wallet's limit. */
+const NEGATIVE_ALERT_EGP = -500;
+
 const signedClass = (value: number) =>
   value < 0 ? "text-destructive" : value > 0 ? "text-success" : "text-foreground";
 
@@ -87,7 +90,7 @@ export async function StoreWalletSection({
           {balance < 0 && (
             <p className="mx-6 mb-6 flex gap-2 rounded-xl bg-destructive-soft p-3 text-[13px] text-destructive">
               <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden />
-              {t("negative")}
+              {balance <= NEGATIVE_ALERT_EGP ? t("negativeStrong") : t("negative")}
             </p>
           )}
         </Card>

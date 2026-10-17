@@ -1785,7 +1785,7 @@ export const sellerWallet = pgTable("seller_wallet", {
 	currency: text().default('EGP').notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	status: walletStatus().default('active').notNull(),
-	/** How far below zero optional purchases may take it; NULL = no limit (D21, 0060). */
+	/** How far below zero optional purchases may take it; NULL = DEFAULT_NEGATIVE_LIMIT, i.e. 0 (D21, 0060). Fees ignore it. */
 	negativeLimit: numeric("negative_limit", { precision: 10, scale: 2 }),
 }, (table) => [
 	uniqueIndex("seller_wallet_seller_id_idx").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops")),

@@ -273,6 +273,9 @@ describe.skipIf(!TEST_DATABASE_URL)("store wallet (integration)", { timeout: 60_
           enforceNegativeLimit: enforce,
         })
       );
+    await db.update(s.sellerWallet).set({ negativeLimit: null }).where(eq(s.sellerWallet.sellerId, a.id));
+    await expect(charge("-10.01", true)).rejects.toBeInstanceOf(StoreWalletLimitError); // no limit set = no overdraft
+    await db.update(s.sellerWallet).set({ negativeLimit: "20.00" }).where(eq(s.sellerWallet.sellerId, a.id));
     await charge("-30.00", true); // 10 - 30 = -20, at the limit
     await expect(charge("-0.01", true)).rejects.toBeInstanceOf(StoreWalletLimitError);
     await charge("-100.00", false, "fee");

@@ -1973,6 +1973,16 @@
       "optional": "Optional",
       "agree": "I agree that the campaign starts after the transfer is confirmed, and that the amount can't be refunded once the campaign has started."
     },
+    "wallet": {
+      "methodLabel": "Payment method",
+      "method": "Store wallet",
+      "balance": "Wallet balance",
+      "after": "Balance after this ad",
+      "note": "The amount is taken from your store wallet when you send the request. If we reject it, it goes back to your wallet.",
+      "insufficient": "Your wallet balance isn't enough for this package. Top up your wallet or pay with Vodafone Cash.",
+      "notActive": "Your store wallet is frozen, so it can't pay for ads right now.",
+      "agree": "I agree that the amount is taken from my store wallet now, and that it can't be refunded once the campaign has started."
+    },
     "summary": {
       "title": "Order summary",
       "package": "Package",
@@ -1987,7 +1997,8 @@
     },
     "success": {
       "title": "Request sent",
-      "body": "We'll check the transfer and contact you to start the campaign. Track its status in the list below."
+      "body": "We'll check the transfer and contact you to start the campaign. Track its status in the list below.",
+      "walletBody": "The amount was taken from your store wallet. We'll contact you to start the campaign. Track its status in the list below."
     },
     "requests": {
       "title": "Your ad requests",
@@ -2016,7 +2027,9 @@
       "product_not_found": "We couldn't find this product in your store.",
       "product_not_active": "This product isn't published. Publish it, then try again.",
       "already_requested": "This product already has an open ad request.",
-      "unknown": "Couldn't send the request. Try again."
+      "unknown": "Couldn't send the request. Try again.",
+      "insufficient_balance": "Your wallet balance isn't enough for this package. Top up first or pay with Vodafone Cash.",
+      "wallet_not_active": "Your store wallet is frozen, so it can't pay for ads right now."
     },
     "flow": {
       "change": "Change",
@@ -2486,6 +2499,7 @@
     "title": "Store wallet",
     "thisMonth": "This month: {sales} in sales, {fees} in fees",
     "negative": "Your balance is below zero. New sales pay it back automatically, or you can top up at any time.",
+    "negativeStrong": "Your balance is well below zero. Top up soon: until it recovers, ads and other paid services can't be paid from the wallet.",
     "howTitle": "How the platform fee works",
     "how": "For each delivered order, Tallaby charges 2% of what you sold, with a minimum of EGP 5. Shipping is not included. Nothing is charged for cancelled or undelivered orders.",
     "trialActive": "Free trial: {days, plural, one {# day} other {# days}} left, no fee on orders placed until {date}.",

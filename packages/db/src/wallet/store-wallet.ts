@@ -62,6 +62,9 @@ const DIRECTION: Record<StoreWalletEntryType, "credit" | "debit" | "either"> = {
 
 const AMOUNT_RE = /^-?\d{1,8}(\.\d{1,2})?$/;
 
+/** Overdraft allowed for optional purchases when seller_wallet.negative_limit is NULL (D21). */
+export const DEFAULT_NEGATIVE_LIMIT = "0";
+
 export class InvalidStoreWalletEntryError extends Error {
   constructor(message: string) {
     super(`Invalid store wallet entry: ${message}`);
@@ -107,7 +110,7 @@ export interface PostStoreWalletEntryInput {
   description: string;
   metadata?: Record<string, unknown> | null;
   createdBy?: string | null;
-  /** Optional purchases only: refuse if the balance would pass -negative_limit. Fees never set this. */
+  /** Optional purchases only: refuse if the balance would pass -negative_limit (NULL = DEFAULT_NEGATIVE_LIMIT). Fees never set this. */
   enforceNegativeLimit?: boolean;
 }
 
@@ -154,8 +157,10 @@ export async function postStoreWalletEntry(
         .values({ sellerId: input.sellerId, balance: "0", currency: "EGP" })
         .onConflictDoNothing({ target: sellerWallet.sellerId });
 
+      // D21: optional purchases may not take the balance below -negative_limit;
+      // without a limit set by an admin, that is zero (no overdraft).
       const limitGuard = input.enforceNegativeLimit
-        ? sql`AND (${sellerWallet.negativeLimit} IS NULL OR ${sellerWallet.balance} + ${amount} >= -${sellerWallet.negativeLimit})`
+        ? sql`AND balance + ${amount} >= -coalesce(negative_limit, ${DEFAULT_NEGATIVE_LIMIT}::numeric)`
         : sql``;
 
       const moved = await sp.execute<{ balance_before: string; balance_after: string }>(sql`

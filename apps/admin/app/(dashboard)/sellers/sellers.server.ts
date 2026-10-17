@@ -66,6 +66,8 @@ export interface SellersQuery {
   commission?: string[];
   /** "free" | "paid" */
   delivery?: string[];
+  /** "negative" | "non_negative" store-wallet balance (PLAN.md P6-08) */
+  wallet?: string[];
   joinedFrom?: string;
   joinedTo?: string;
   sort?: { id: SellersSortId; desc: boolean } | null;
@@ -108,6 +110,16 @@ export async function getSellers(query: SellersQuery = {}) {
     booleanFilter(query.verification, sellers.isVerified, "verified");
     booleanFilter(query.commission, sellers.isCommissionExempt, "exempt");
     booleanFilter(query.delivery, sellers.freeDelivery, "free");
+
+    // Store wallet (D21): admins look at negative wallets and decide.
+    const wallet = new Set(query.wallet ?? []);
+    if (wallet.size === 1) {
+      conditions.push(
+        wallet.has("negative")
+          ? sql`coalesce(${sellers.walletBalance}, 0) < 0`
+          : sql`coalesce(${sellers.walletBalance}, 0) >= 0`
+      );
+    }
 
     if (query.joinedFrom) conditions.push(gte(sellers.joinDate, query.joinedFrom));
     if (query.joinedTo) conditions.push(lt(sellers.joinDate, query.joinedTo));

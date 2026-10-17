@@ -69,6 +69,14 @@ export const sellersFilters: DataTableFilter[] = [
       { value: "paid", label: "Paid delivery" },
     ],
   },
+  {
+    id: "wallet",
+    title: "Wallet",
+    options: [
+      { value: "negative", label: "Negative balance" },
+      { value: "non_negative", label: "Zero or positive" },
+    ],
+  },
   { id: "joined", title: "Joined", type: "dateRange" },
 ];
 
@@ -197,7 +205,13 @@ export function getSellersColumns(
       ),
       meta: { label: "Balance" },
       cell: ({ row }) => (
-        <div className="font-medium whitespace-nowrap">
+        <div
+          className={
+            Number(row.original.walletBalance) < 0
+              ? "font-medium whitespace-nowrap text-destructive"
+              : "font-medium whitespace-nowrap"
+          }
+        >
           {formatCurrency(row.original.walletBalance)}
         </div>
       ),

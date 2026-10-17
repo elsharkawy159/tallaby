@@ -1,6 +1,11 @@
 "use server";
 
-import { db, adCampaignRequests, products } from "@workspace/db";
+import { db, adCampaignRequests, products, sellerWallet } from "@workspace/db";
+import {
+  StoreWalletLimitError,
+  StoreWalletNotActiveError,
+  postStoreWalletEntry,
+} from "@workspace/db/wallet";
 import { uniqueViolationConstraint } from "@workspace/lib/fulfillment/server";
 import { and, desc, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
@@ -33,14 +38,43 @@ export type CreateAdRequestError =
   | "product_not_found"
   | "product_not_active"
   | "already_requested"
+  | "insufficient_balance"
+  | "wallet_not_active"
   | "unknown";
 
-const createAdRequestSchema = z.object({
-  packageKey: z.string().min(1),
-  productId: z.string().uuid(),
-  payerPhone: z.string().trim().regex(EGYPT_MOBILE_REGEX),
-  transferReference: z.string().trim().max(100).optional(),
-});
+export type AdPaymentMethod = "vodafone_cash" | "wallet";
+
+/** Store wallet figures the payment step needs (PLAN.md P6-11). */
+export type AdWallet = { balance: number; negativeLimit: number; active: boolean };
+
+const createAdRequestSchema = z.discriminatedUnion("paymentMethod", [
+  z.object({
+    paymentMethod: z.literal("vodafone_cash"),
+    packageKey: z.string().min(1),
+    productId: z.string().uuid(),
+    payerPhone: z.string().trim().regex(EGYPT_MOBILE_REGEX),
+    transferReference: z.string().trim().max(100).optional(),
+  }),
+  z.object({
+    paymentMethod: z.literal("wallet"),
+    packageKey: z.string().min(1),
+    productId: z.string().uuid(),
+  }),
+]);
+
+export async function getAdWallet(): Promise<AdWallet | null> {
+  const session = await getUser();
+  if (!session?.user?.id) return null;
+  const [row] = await db
+    .select({ balance: sellerWallet.balance, negativeLimit: sellerWallet.negativeLimit, status: sellerWallet.status })
+    .from(sellerWallet)
+    .where(eq(sellerWallet.sellerId, session.user.id));
+  return {
+    balance: Number(row?.balance ?? 0),
+    negativeLimit: Number(row?.negativeLimit ?? 0),
+    active: (row?.status ?? "active") === "active",
+  };
+}
 
 export async function getSellerAdRequests(): Promise<AdRequestRow[]> {
   const session = await getUser();
@@ -96,9 +130,10 @@ export async function getSellerAdRequests(): Promise<AdRequestRow[]> {
 }
 
 export async function createAdRequest(input: {
+  paymentMethod?: AdPaymentMethod;
   packageKey: string;
   productId: string;
-  payerPhone: string;
+  payerPhone?: string;
   transferReference?: string;
 }): Promise<
   { success: true; data: { id: string } } | { success: false; error: CreateAdRequestError }
@@ -107,9 +142,9 @@ export async function createAdRequest(input: {
     const session = await getUser();
     if (!session?.user?.id) return { success: false, error: "unauthorized" };
 
-    const parsed = createAdRequestSchema.safeParse(input);
+    const parsed = createAdRequestSchema.safeParse({ paymentMethod: "vodafone_cash", ...input });
     if (!parsed.success) return { success: false, error: "invalid_input" };
-    const { packageKey, productId, payerPhone, transferReference } = parsed.data;
+    const { packageKey, productId } = parsed.data;
 
     const pkg = getAdPackage(packageKey);
     if (!pkg) return { success: false, error: "invalid_package" };
@@ -121,21 +156,48 @@ export async function createAdRequest(input: {
     if (!product) return { success: false, error: "product_not_found" };
     if (product.status !== "active") return { success: false, error: "product_not_active" };
 
-    const [created] = await db
-      .insert(adCampaignRequests)
-      .values({
-        sellerId: session.user.id,
-        productId,
-        packageKey: pkg.key,
-        amount: String(pkg.price),
-        payerPhone,
-        transferReference: transferReference || null,
-      })
-      .returning({ id: adCampaignRequests.id });
+    const sellerId = session.user.id;
+    const amount = pkg.price.toFixed(2);
+
+    // Paid from the store wallet: the request and its service_charge commit
+    // together; the charge may not overdraw past the wallet's limit (D21).
+    const created = await db.transaction(async (tx) => {
+      const [row] = await tx
+        .insert(adCampaignRequests)
+        .values({
+          sellerId,
+          productId,
+          packageKey: pkg.key,
+          amount,
+          paymentMethod: parsed.data.paymentMethod,
+          payerPhone: parsed.data.paymentMethod === "vodafone_cash" ? parsed.data.payerPhone : "",
+          transferReference:
+            parsed.data.paymentMethod === "vodafone_cash" ? parsed.data.transferReference || null : null,
+        })
+        .returning({ id: adCampaignRequests.id });
+
+      if (parsed.data.paymentMethod === "wallet") {
+        await postStoreWalletEntry(tx, {
+          sellerId,
+          type: "service_charge",
+          amount: `-${amount}`,
+          referenceType: "ad_request",
+          referenceId: row!.id,
+          description: `Product ad: ${pkg.key}`,
+          metadata: { packageKey: pkg.key, productId },
+          createdBy: sellerId,
+          enforceNegativeLimit: true,
+        });
+      }
+      return row!;
+    });
 
     revalidatePath("/marketing");
+    revalidatePath("/financial");
     return { success: true, data: { id: created.id } };
   } catch (error) {
+    if (error instanceof StoreWalletLimitError) return { success: false, error: "insufficient_balance" };
+    if (error instanceof StoreWalletNotActiveError) return { success: false, error: "wallet_not_active" };
     // The only unique index besides the pk: one open request per product.
     if (uniqueViolationConstraint(error) !== null) {
       return { success: false, error: "already_requested" };

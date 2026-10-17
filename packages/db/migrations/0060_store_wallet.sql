@@ -30,7 +30,8 @@ ALTER TYPE transaction_type ADD VALUE IF NOT EXISTS 'fee_reversal';
 -- 2. One wallet row per seller; signed balance (no balance >= 0 CHECK)
 -- ---------------------------------------------------------------------------
 ALTER TABLE seller_wallet ADD COLUMN IF NOT EXISTS status wallet_status NOT NULL DEFAULT 'active';
--- NULL = no limit for optional purchases (D21; the default policy is P6-08).
+-- How far below zero optional purchases may go. NULL = the app default, 0
+-- (D21, P6-08). Fees ignore it.
 ALTER TABLE seller_wallet ADD COLUMN IF NOT EXISTS negative_limit numeric(10,2);
 
 DO $$ BEGIN

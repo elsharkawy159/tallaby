@@ -1,6 +1,6 @@
 import { getLocale } from "next-intl/server";
 import { parsePriceJson } from "@workspace/lib";
-import { getSellerAdRequests } from "@/actions/ads";
+import { getAdWallet, getSellerAdRequests } from "@/actions/ads";
 import { getSellerProducts } from "@/actions/products";
 import { AdvertiseProducts } from "./advertise-products.client";
 import type { AdProductOption } from "./product-picker";
@@ -9,10 +9,11 @@ import type { AdProductOption } from "./product-picker";
 const OPEN_STATUSES = new Set(["pending", "approved", "active"]);
 
 export async function AdvertiseData() {
-  const [locale, productsResult, requests] = await Promise.all([
+  const [locale, productsResult, requests, wallet] = await Promise.all([
     getLocale(),
     getSellerProducts(),
     getSellerAdRequests(),
+    getAdWallet(),
   ]);
 
   const openProductIds = new Set(
@@ -34,5 +35,5 @@ export async function AdvertiseData() {
     };
   });
 
-  return <AdvertiseProducts products={products} requests={requests} />;
+  return <AdvertiseProducts products={products} requests={requests} wallet={wallet} />;
 }
