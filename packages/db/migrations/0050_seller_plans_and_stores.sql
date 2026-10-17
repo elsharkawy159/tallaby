@@ -368,6 +368,91 @@ CREATE TRIGGER orders_fill_store_id
   BEFORE INSERT ON orders
   FOR EACH ROW EXECUTE FUNCTION orders_fill_store_id();
 
+-- 6f. Storefront profile of the PRIMARY store, in both directions, until the
+--     storefront reads stores (P5-00). The ecommerce storefront still reads
+--     these sellers columns; admin and the old /settings page still write them.
+--       stores.name            ↔ sellers.display_name
+--       stores.description     ↔ sellers.store_description (falls back to description)
+--       logo_url, banner_url, store_category, store_category_ar ↔ same columns
+--       stores.contact.email   ↔ sellers.support_email ('' when removed; NOT NULL)
+--       stores.contact.phone   ↔ sellers.support_phone
+--       stores.policies.return / .shipping ↔ sellers.return_policy / shipping_policy
+--     Each side only writes when a value differs, so the pair settles after one hop.
+CREATE OR REPLACE FUNCTION sellers_sync_primary_store_profile()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = public
+AS $$
+DECLARE
+  new_description text := COALESCE(NEW.store_description, NEW.description);
+BEGIN
+  UPDATE stores st
+  SET name = NEW.display_name,
+      description = new_description,
+      logo_url = NEW.logo_url,
+      banner_url = NEW.banner_url,
+      store_category = NEW.store_category,
+      store_category_ar = NEW.store_category_ar,
+      contact = jsonb_strip_nulls(st.contact || jsonb_build_object(
+        'email', NULLIF(NEW.support_email, ''), 'phone', NULLIF(NEW.support_phone, ''))),
+      policies = jsonb_strip_nulls(st.policies || jsonb_build_object(
+        'return', NULLIF(NEW.return_policy, ''), 'shipping', NULLIF(NEW.shipping_policy, ''))),
+      updated_at = now()
+  WHERE st.seller_id = NEW.id AND st.is_primary
+    AND (st.name, st.description, st.logo_url, st.banner_url, st.store_category, st.store_category_ar,
+         st.contact->>'email', st.contact->>'phone', st.policies->>'return', st.policies->>'shipping')
+        IS DISTINCT FROM
+        (NEW.display_name, new_description, NEW.logo_url, NEW.banner_url, NEW.store_category, NEW.store_category_ar,
+         NULLIF(NEW.support_email, ''), NULLIF(NEW.support_phone, ''),
+         NULLIF(NEW.return_policy, ''), NULLIF(NEW.shipping_policy, ''));
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS sellers_sync_primary_store_profile ON sellers;
+CREATE TRIGGER sellers_sync_primary_store_profile
+  AFTER UPDATE OF display_name, store_description, description, logo_url, banner_url, store_category,
+    store_category_ar, support_email, support_phone, return_policy, shipping_policy ON sellers
+  FOR EACH ROW EXECUTE FUNCTION sellers_sync_primary_store_profile();
+
+CREATE OR REPLACE FUNCTION stores_sync_seller_profile()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = public
+AS $$
+BEGIN
+  IF NOT NEW.is_primary THEN
+    RETURN NEW;
+  END IF;
+  UPDATE sellers s
+  SET display_name = NEW.name,
+      store_description = NEW.description,
+      logo_url = NEW.logo_url,
+      banner_url = NEW.banner_url,
+      store_category = NEW.store_category,
+      store_category_ar = NEW.store_category_ar,
+      support_email = COALESCE(NEW.contact->>'email', ''),
+      support_phone = NEW.contact->>'phone',
+      return_policy = NEW.policies->>'return',
+      shipping_policy = NEW.policies->>'shipping',
+      updated_at = now()
+  WHERE s.id = NEW.seller_id
+    AND (s.display_name, COALESCE(s.store_description, s.description), s.logo_url, s.banner_url,
+         s.store_category, s.store_category_ar, NULLIF(s.support_email, ''), NULLIF(s.support_phone, ''),
+         NULLIF(s.return_policy, ''), NULLIF(s.shipping_policy, ''))
+        IS DISTINCT FROM
+        (NEW.name, NEW.description, NEW.logo_url, NEW.banner_url, NEW.store_category, NEW.store_category_ar,
+         NEW.contact->>'email', NEW.contact->>'phone', NEW.policies->>'return', NEW.policies->>'shipping');
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS stores_sync_seller_profile ON stores;
+CREATE TRIGGER stores_sync_seller_profile
+  AFTER UPDATE OF name, description, logo_url, banner_url, store_category, store_category_ar, contact, policies
+  ON stores
+  FOR EACH ROW EXECUTE FUNCTION stores_sync_seller_profile();
+
 -- ---------------------------------------------------------------------------
 -- Checks after applying (PLAN.md §11.11.2), each should return 0 rows:
 --   SELECT id FROM sellers s WHERE NOT EXISTS (SELECT 1 FROM stores t WHERE t.seller_id = s.id AND t.is_primary);

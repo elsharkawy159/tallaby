@@ -42,18 +42,25 @@ export const createStoreInputSchema = z.object({
 });
 export type CreateStoreInput = z.input<typeof createStoreInputSchema>;
 
+// An https URL, or a path inside a Tallaby storage bucket (older logos are
+// stored as `logos/abc.png` in the `sellers` bucket). Never other schemes.
+const STORAGE_PATH = /^(?!.*\.\.)[A-Za-z0-9][A-Za-z0-9/_.-]{0,500}$/;
 const httpUrl = z
   .string()
   .trim()
   .max(2048)
-  .refine((v) => /^https:\/\/[^\s]+$/i.test(v) || /^http:\/\/localhost[:/]/i.test(v), "invalid_url");
+  .refine(
+    (v) => /^https:\/\/[^\s]+$/i.test(v) || /^http:\/\/localhost[:/]/i.test(v) || STORAGE_PATH.test(v),
+    "invalid_url",
+  );
 
 const optionalText = (max: number) => z.string().trim().max(max).nullable().optional();
 
 export const storeContactSchema = z
   .object({
-    phone: z.string().trim().regex(/^\+?[0-9 ]{7,20}$/, "invalid_phone").optional(),
-    whatsapp: z.string().trim().regex(/^\+?[0-9 ]{7,20}$/, "invalid_phone").optional(),
+    // Same characters the existing seller settings accept (values are mirrored both ways).
+    phone: z.string().trim().regex(/^[+()\d\s-]{7,24}$/, "invalid_phone").optional(),
+    whatsapp: z.string().trim().regex(/^[+()\d\s-]{7,24}$/, "invalid_phone").optional(),
     email: z.email().max(254).optional(),
   })
   .strict();
@@ -82,3 +89,15 @@ export const storeGeneralSettingsSchema = z
     { message: "default_locale_not_supported", path: ["defaultLocale"] },
   );
 export type StoreGeneralSettings = z.output<typeof storeGeneralSettingsSchema>;
+
+export const STORE_POLICY_KEYS = ["return", "shipping", "privacy", "terms"] as const;
+export type StorePolicyKey = (typeof STORE_POLICY_KEYS)[number];
+export type StorePolicies = Partial<Record<StorePolicyKey, string>>;
+
+const policyText = z.string().trim().max(20_000).optional();
+
+/** Store settings › Policies. Empty text removes a policy; omitted keys are left as they are. */
+export const storePoliciesSchema = z
+  .object({ return: policyText, shipping: policyText, privacy: policyText, terms: policyText })
+  .strict()
+  .transform((p) => Object.fromEntries(Object.entries(p).filter(([, v]) => v !== undefined)) as StorePolicies);

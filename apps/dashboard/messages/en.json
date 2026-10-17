@@ -2009,5 +2009,80 @@
       "nameTooShort": "Use at least 2 characters.",
       "nameTooLong": "Use at most 80 characters."
     }
+  },
+  "storeSettings": {
+    "save": "Save changes",
+    "saved": "Store settings saved",
+    "readOnly": "This store is archived or suspended, so its settings are read-only. Restore it from My stores to edit.",
+    "readOnlyBadge": "Read-only",
+    "identity": {
+      "title": "Store identity",
+      "description": "How your store appears to customers: name, logo, description and banner."
+    },
+    "contact": {
+      "title": "Contact",
+      "description": "Shown in your store footer so customers can reach you.",
+      "hint": "Leave a field empty to hide it from your store."
+    },
+    "languages": {
+      "title": "Languages",
+      "description": "The languages your store is shown in.",
+      "currency": "Prices are shown in Egyptian pounds (EGP)."
+    },
+    "locales": {
+      "ar": "Arabic",
+      "en": "English"
+    },
+    "fields": {
+      "name": "Store name",
+      "namePlaceholder": "e.g. Faster Store",
+      "description": "Store description",
+      "descriptionPlaceholder": "What do you sell? What makes your store special?",
+      "categoryAr": "Store category (Arabic)",
+      "categoryArPlaceholder": "مثال: ملابس رياضية",
+      "categoryEn": "Store category (English)",
+      "categoryEnPlaceholder": "e.g. Sportswear",
+      "phone": "Phone",
+      "whatsapp": "WhatsApp",
+      "email": "Email",
+      "supportedLocales": "Store languages",
+      "defaultLocale": "Default language"
+    },
+    "policies": {
+      "shownOnStore": "Shown on your store",
+      "return": {
+        "title": "Return policy",
+        "description": "When and how customers can return or exchange a product.",
+        "placeholder": "e.g. Returns accepted within 14 days of delivery for unused items…"
+      },
+      "shipping": {
+        "title": "Shipping policy",
+        "description": "Delivery times, areas and costs.",
+        "placeholder": "e.g. Orders are delivered within 2–4 working days across Egypt…"
+      },
+      "privacy": {
+        "title": "Privacy policy",
+        "description": "How you use your customers' information.",
+        "placeholder": "e.g. We only use your details to deliver your order…"
+      },
+      "terms": {
+        "title": "Terms of service",
+        "description": "The rules for buying from your store.",
+        "placeholder": "e.g. By placing an order you agree to…"
+      }
+    },
+    "errors": {
+      "invalidInput": "Some values are not valid. Please check the form.",
+      "readOnly": "This store is read-only.",
+      "notFound": "Store not found.",
+      "generic": "Couldn't save. Please try again.",
+      "nameTooShort": "Use at least 2 characters.",
+      "nameTooLong": "Use at most 80 characters.",
+      "phoneInvalid": "Enter a valid phone number.",
+      "emailInvalid": "Enter a valid email address.",
+      "localeRequired": "Choose at least one language.",
+      "defaultLocaleNotSupported": "The default language must be one of the store languages.",
+      "policyTooLong": "This policy is too long."
+    }
   }
 }

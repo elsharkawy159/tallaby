@@ -27,9 +27,11 @@ import { normalizeSubdomain, validateSubdomain } from "../storefront";
 import {
   createStoreInputSchema,
   storeGeneralSettingsSchema,
+  storePoliciesSchema,
   subdomainCandidates,
   type CreateStoreInput,
   type StoreGeneralSettings,
+  type StorePolicies,
   type StoreSubdomainStatus,
 } from "./stores.lib";
 
@@ -289,11 +291,19 @@ export async function updateStoreSettings(
   const defaultLocale = fields.defaultLocale ?? store.defaultLocale;
   if (!locales.includes(defaultLocale)) return { success: false, error: "invalid_input" };
 
+  // phone / whatsapp / email are edited together and replaced as a set (a
+  // cleared field is removed); other contact keys (e.g. social links) are kept.
+  let nextContact: Record<string, unknown> | undefined;
+  if (contact) {
+    const { phone: _p, whatsapp: _w, email: _e, ...rest } = store.contact as Record<string, unknown>;
+    nextContact = { ...rest, ...contact };
+  }
+
   const updated = await q
     .update(stores)
     .set({
       ...fields,
-      ...(contact && { contact: { ...(store.contact as Record<string, unknown>), ...contact } }),
+      ...(nextContact && { contact: nextContact }),
       updatedAt: sql`now()`,
     })
     .where(and(ownStore(sellerId, storeId), eq(stores.status, "active")))
@@ -388,4 +398,34 @@ export async function listStoreRedirects(sellerId: string, storeId: string, q: Q
     .from(sellerSubdomainRedirects)
     .where(and(eq(sellerSubdomainRedirects.sellerId, sellerId), eq(sellerSubdomainRedirects.storeId, storeId)))
     .orderBy(desc(sellerSubdomainRedirects.createdAt));
+}
+
+/**
+ * Store settings › Policies. Merges into stores.policies; an empty string
+ * removes that policy. For the primary store, the 0050 trigger mirrors
+ * return/shipping to the sellers row the storefront still reads (until P5-00).
+ */
+export async function updateStorePolicies(
+  sellerId: string,
+  storeId: string,
+  patch: StorePolicies,
+  q: Queryable = db,
+): Promise<StoreResult<{ id: string }, StoreWriteError>> {
+  const parsed = storePoliciesSchema.safeParse(patch);
+  if (!parsed.success) return { success: false, error: "invalid_input" };
+  const store = await getStore(sellerId, storeId, q);
+  if (!store) return { success: false, error: "not_found" };
+  if (store.status !== "active") return { success: false, error: "store_read_only" };
+
+  const next: Record<string, string> = { ...(store.policies as Record<string, string>) };
+  for (const [key, value] of Object.entries(parsed.data) as [string, string][]) {
+    if (value) next[key] = value;
+    else delete next[key];
+  }
+  const updated = await q
+    .update(stores)
+    .set({ policies: next, updatedAt: sql`now()` })
+    .where(and(ownStore(sellerId, storeId), eq(stores.status, "active")))
+    .returning({ id: stores.id });
+  return updated.length ? { success: true, data: updated[0]! } : { success: false, error: "store_read_only" };
 }

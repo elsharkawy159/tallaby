@@ -43,6 +43,28 @@ BEGIN
   UPDATE stores SET subdomain = 'inv-renamed-a2' WHERE id = store_a;
   IF (SELECT subdomain FROM sellers WHERE id = u_a) <> 'inv-renamed-a2' THEN RAISE EXCEPTION '3: store→seller subdomain sync failed'; END IF;
 
+  -- 3b. Storefront profile sync for the primary store, both ways (until P5-00).
+  UPDATE sellers SET display_name = 'Legacy Name', return_policy = 'Legacy returns', support_phone = '0100' WHERE id = u_a;
+  IF (SELECT name FROM stores WHERE id = store_a) <> 'Legacy Name'
+     OR (SELECT policies->>'return' FROM stores WHERE id = store_a) <> 'Legacy returns'
+     OR (SELECT contact->>'phone' FROM stores WHERE id = store_a) <> '0100' THEN
+    RAISE EXCEPTION '3b: seller→store profile sync failed';
+  END IF;
+  UPDATE stores SET name = 'New Name', description = 'New desc',
+         policies = policies || '{"shipping":"Ships fast"}', contact = '{"phone":"0111"}'
+  WHERE id = store_a;
+  IF (SELECT display_name FROM sellers WHERE id = u_a) <> 'New Name'
+     OR (SELECT store_description FROM sellers WHERE id = u_a) <> 'New desc'
+     OR (SELECT shipping_policy FROM sellers WHERE id = u_a) <> 'Ships fast'
+     OR (SELECT support_phone FROM sellers WHERE id = u_a) <> '0111'
+     OR (SELECT support_email FROM sellers WHERE id = u_a) <> '' THEN
+    RAISE EXCEPTION '3b: store→seller profile sync failed';
+  END IF;
+  -- The round trip settled: the store still has exactly what was written.
+  IF (SELECT contact FROM stores WHERE id = store_a) <> '{"phone":"0111"}'::jsonb THEN
+    RAISE EXCEPTION '3b: profile sync did not settle (contact = %)', (SELECT contact FROM stores WHERE id = store_a);
+  END IF;
+
   -- 4. A non-primary store does not touch sellers.subdomain.
   INSERT INTO stores (seller_id, name, subdomain) VALUES (u_a, 'A second', 'inv-second-a') RETURNING id INTO extra_a;
   UPDATE stores SET subdomain = 'inv-second-a2' WHERE id = extra_a;

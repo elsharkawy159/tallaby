@@ -76,3 +76,19 @@ describe("storeGeneralSettingsSchema", () => {
     expect(storeGeneralSettingsSchema.safeParse({ logoUrl: null }).success).toBe(true);
   });
 });
+
+describe("storePoliciesSchema", () => {
+  it("accepts the four policies as optional text", async () => {
+    const { storePoliciesSchema } = await import("./stores.lib");
+    expect(storePoliciesSchema.parse({ return: " 14 days ", shipping: "", privacy: undefined })).toEqual({
+      return: "14 days",
+      shipping: "",
+    });
+  });
+
+  it("rejects unknown keys and overlong text", async () => {
+    const { storePoliciesSchema } = await import("./stores.lib");
+    expect(storePoliciesSchema.safeParse({ refunds: "x" }).success).toBe(false);
+    expect(storePoliciesSchema.safeParse({ terms: "x".repeat(20_001) }).success).toBe(false);
+  });
+});

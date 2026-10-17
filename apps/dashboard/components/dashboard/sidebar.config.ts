@@ -117,9 +117,9 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
     key: "storeSettings",
     icon: Store,
     items: [
-      { key: "general", href: "/stores/[storeId]/settings", status: "planned", exact: true },
-      { key: "paymentMethods", href: "/stores/[storeId]/settings/payments", status: "planned" },
-      { key: "policies", href: "/stores/[storeId]/settings/policies", status: "planned" },
+      { key: "general", href: "/stores/[storeId]/settings", status: "live", exact: true },
+      { key: "paymentMethods", href: "/stores/[storeId]/settings/payments", status: "soon" },
+      { key: "policies", href: "/stores/[storeId]/settings/policies", status: "live" },
     ],
   },
   {
