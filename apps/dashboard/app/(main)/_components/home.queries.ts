@@ -4,6 +4,7 @@ import { desc, eq, sql } from "drizzle-orm";
 import { createClient } from "@/supabase/server";
 import type { HomeChannel, HomeRange } from "./home.shared";
 import type { SetupFlags } from "./setup-checklist.lib";
+import type { FeeTrialFields } from "@workspace/lib/sellers";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 
 /**
@@ -53,6 +54,8 @@ export type HomeSnapshot = {
   /** Setup flags for the store selected in the sidebar (setup-checklist.lib.ts). */
   setup: SetupFlags;
   setupStoreId: string | null;
+  /** Platform fee trial (0059), for the trial banner. */
+  feeTrial: FeeTrialFields;
   hasOrders: boolean;
   attention: {
     pendingOrders: number;
@@ -77,6 +80,9 @@ export const getHomeSnapshot = cache(async (): Promise<HomeSnapshot | null> => {
       s.store_rating::float8 AS store_rating,
       s.positive_rating_percent::float8 AS positive_rating_percent,
       coalesce(s.total_ratings, 0)::int AS total_ratings,
+      s.fee_trial_eligible,
+      s.fee_trial_started_at,
+      s.fee_trial_ends_at,
       coalesce(st.logo_url IS NOT NULL AND nullif(st.description, '') IS NOT NULL, false) AS setup_profile,
       coalesce(st.contact ? 'phone' OR st.contact ? 'email', false) AS setup_contact,
       coalesce(st.policies ? 'return' AND st.policies ? 'shipping', false) AS setup_policies,
@@ -123,6 +129,11 @@ export const getHomeSnapshot = cache(async (): Promise<HomeSnapshot | null> => {
       campaign: Boolean(row.setup_campaign),
     },
     setupStoreId: storeId,
+    feeTrial: {
+      feeTrialEligible: Boolean(row.fee_trial_eligible),
+      feeTrialStartedAt: row.fee_trial_started_at ?? null,
+      feeTrialEndsAt: row.fee_trial_ends_at ?? null,
+    },
     hasOrders: Boolean(row.has_orders),
     attention: {
       pendingOrders: Number(row.pending_orders),

@@ -68,11 +68,24 @@ export interface DigitalDeliveryCopy {
   questions: string;
 }
 
+export interface FeeTrialReminderCopy {
+  previewT7: string;
+  previewT1: string;
+  subjectT7: string;
+  subjectT1: string;
+  greeting: string;
+  bodyT7: string;
+  bodyT1: string;
+  feeNote: string;
+  cta: string;
+}
+
 export interface EmailMessages {
   common: EmailCommonCopy;
   orderConfirmation: OrderConfirmationCopy;
   welcome: WelcomeCopy;
   digitalDelivery: DigitalDeliveryCopy;
+  feeTrialReminder: FeeTrialReminderCopy;
   paymentMethods: Record<string, string>;
 }
 
@@ -146,6 +159,17 @@ const en: EmailMessages = {
     findPurchases: "You can always find your purchases under",
     myDigitalProducts: "My Digital Products",
     questions: "Questions? Contact us at",
+  },
+  feeTrialReminder: {
+    previewT7: "Your free trial ends in 7 days. No platform fee until {date}.",
+    previewT1: "Your free trial ends tomorrow. No platform fee until {date}.",
+    subjectT7: "Your Tallaby free trial ends in 7 days",
+    subjectT1: "Your Tallaby free trial ends tomorrow",
+    greeting: "Hi {name},",
+    bodyT7: "Your 30-day free trial ends on {date}. Until then, Tallaby charges no platform fee on your orders.",
+    bodyT1: "Your 30-day free trial ends on {date}. Orders placed after that pay the platform fee.",
+    feeNote: "The platform fee is 2% of each order, with a minimum of EGP 5. Shipping is not included.",
+    cta: "Open your dashboard",
   },
   paymentMethods: {
     cash: "Cash",
@@ -227,6 +251,17 @@ const ar: EmailMessages = {
     findPurchases: "يمكنك دائمًا العثور على مشترياتك من",
     myDigitalProducts: "منتجاتي الرقمية",
     questions: "لديك سؤال؟ تواصل معنا عبر",
+  },
+  feeTrialReminder: {
+    previewT7: "تنتهي تجربتك المجانية بعد 7 أيام. لا رسوم منصة حتى {date}.",
+    previewT1: "تنتهي تجربتك المجانية غدًا. لا رسوم منصة حتى {date}.",
+    subjectT7: "تنتهي تجربتك المجانية على طلبي بعد 7 أيام",
+    subjectT1: "تنتهي تجربتك المجانية على طلبي غدًا",
+    greeting: "مرحبًا {name}،",
+    bodyT7: "تنتهي تجربتك المجانية لمدة 30 يومًا في {date}. وحتى ذلك الوقت لا يحصل طلبي على أي رسوم منصة من طلباتك.",
+    bodyT1: "تنتهي تجربتك المجانية لمدة 30 يومًا في {date}. الطلبات التي تصل بعد ذلك تُحسب عليها رسوم المنصة.",
+    feeNote: "رسوم المنصة 2% من كل طلب، بحد أدنى 5 جنيهات، ولا تشمل الشحن.",
+    cta: "افتح لوحة التحكم",
   },
   paymentMethods: {
     cash: "نقدًا",

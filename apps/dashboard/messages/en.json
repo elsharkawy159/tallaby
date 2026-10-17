@@ -446,6 +446,13 @@
     }
   },
   "home": {
+    "trial": {
+      "notStartedTitle": "Your 30-day free trial is waiting",
+      "notStarted": "No platform fee for 30 days, starting when your store goes live: your first active product or your first website publish.",
+      "activeTitle": "{days, plural, one {# day} other {# days}} left in your free trial",
+      "active": "No platform fee on orders placed until {date}. After that, the fee is 2% per order, minimum EGP 5.",
+      "planLink": "Plan & usage"
+    },
     "range": {
       "label": "Reporting period",
       "days": "{count} days"

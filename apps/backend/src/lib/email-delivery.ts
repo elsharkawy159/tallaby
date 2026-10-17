@@ -2,6 +2,9 @@ import { db, emailDeliveries, and, eq } from "@workspace/db";
 
 export const EMAIL_TYPES = {
   orderConfirmation: "order_confirmation",
+  /** reference_id = seller id; the trial never restarts, so once per seller. */
+  feeTrialReminderT7: "fee_trial_reminder_t7",
+  feeTrialReminderT1: "fee_trial_reminder_t1",
 } as const;
 
 export type EmailType = (typeof EMAIL_TYPES)[keyof typeof EMAIL_TYPES];

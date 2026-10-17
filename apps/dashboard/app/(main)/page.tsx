@@ -18,6 +18,7 @@ import { RecentOrdersData } from "./_components/recent-orders.data";
 import { SalesChartData } from "./_components/sales-chart.data";
 import { SetupChecklistData } from "./_components/setup-checklist.data";
 import { TopProductsData } from "./_components/top-products.data";
+import { TrialBannerData } from "./_components/trial-banner.data";
 import { UnansweredQuestionsData } from "./_components/unanswered-questions.data";
 
 // Per-seller data read from the session cookie.
@@ -69,9 +70,14 @@ export default async function VendorDashboardPage({
           />
         }
         setup={
-          <Suspense fallback={null}>
-            <SetupChecklistData />
-          </Suspense>
+          <>
+            <Suspense fallback={null}>
+              <TrialBannerData />
+            </Suspense>
+            <Suspense fallback={null}>
+              <SetupChecklistData />
+            </Suspense>
+          </>
         }
         kpis={
           <RangePending>
