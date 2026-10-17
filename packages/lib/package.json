@@ -86,6 +86,14 @@
       "types": "./src/plans/index.ts",
       "default": "./src/plans/index.ts"
     },
+    "./integrations": {
+      "types": "./src/integrations/index.ts",
+      "default": "./src/integrations/index.ts"
+    },
+    "./integrations/server": {
+      "types": "./src/integrations/server.ts",
+      "default": "./src/integrations/server.ts"
+    },
     "./sellers": {
       "types": "./src/sellers/index.ts",
       "default": "./src/sellers/index.ts"
