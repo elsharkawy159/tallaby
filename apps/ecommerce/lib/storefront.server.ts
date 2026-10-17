@@ -17,13 +17,14 @@ import {
   sellers,
   sellerSubdomainRedirects,
   sellerCustomDomains,
+  storeProducts,
   stores,
   eq,
   and,
   isNull,
   sql,
 } from "@workspace/db";
-import { categoryTags, productTags, sellerTags } from "@workspace/cache";
+import { categoryTags, productTags, sellerTags, storeTags } from "@workspace/cache";
 import {
   hostnameOf,
   isPlatformHost,
@@ -240,8 +241,43 @@ export type StorefrontCategory = {
   coverImage: string | null;
 };
 
-/** One seller's root categories, each with one of their own product photos. */
-export function getStorefrontCategories(sellerId: string) {
+/**
+ * The store id to narrow product lists by: set only when the store shows a
+ * selected catalog (D24, `store_products`), else undefined (all the seller's
+ * active products, today's behaviour).
+ */
+export function catalogStoreId(store: Pick<Storefront, "storeId" | "catalogMode">): string | undefined {
+  return store.catalogMode === "selected" ? store.storeId : undefined;
+}
+
+/** Whether the store shows this product of its seller: always in "all" mode, else only its picks. */
+export function storeShowsProduct(
+  store: Pick<Storefront, "id" | "storeId" | "catalogMode">,
+  productId: string,
+): Promise<boolean> {
+  if (store.catalogMode !== "selected") return Promise.resolve(true);
+  return unstable_cache(
+    async () => {
+      const [row] = await db
+        .select({ productId: storeProducts.productId })
+        .from(storeProducts)
+        .where(and(eq(storeProducts.storeId, store.storeId), eq(storeProducts.productId, productId)))
+        .limit(1);
+      return Boolean(row);
+    },
+    [`storefront-catalog-has-${store.storeId}-${productId}`],
+    { tags: [storeTags.catalog(store.id, store.storeId)], revalidate: 3600 },
+  )();
+}
+
+/**
+ * One seller's root categories, each with one of their own product photos.
+ * With `storeId` (a store in selected mode) only that store's picks count.
+ */
+export function getStorefrontCategories(sellerId: string, storeId?: string) {
+  const selected = storeId
+    ? sql`AND EXISTS (SELECT 1 FROM store_products sp WHERE sp.store_id = ${storeId} AND sp.product_id = p.id)`
+    : sql``;
   return unstable_cache(
     async () => {
       try {
@@ -262,7 +298,7 @@ export function getStorefrontCategories(sellerId: string) {
           FROM products p
           JOIN ancestry a ON a.id = p.category_id AND a.parent_id IS NULL
           JOIN categories r ON r.id = a.root_id
-          WHERE p.seller_id = ${sellerId} AND p.status = 'active'
+          WHERE p.seller_id = ${sellerId} AND p.status = 'active' ${selected}
           GROUP BY 1
           ORDER BY "productCount" DESC, name
         `);
@@ -282,9 +318,9 @@ export function getStorefrontCategories(sellerId: string) {
         return [] as StorefrontCategory[];
       }
     },
-    [`storefront-categories-${sellerId}`],
+    storeId ? [`storefront-categories-${sellerId}-${storeId}`] : [`storefront-categories-${sellerId}`],
     {
-      tags: [productTags.seller(sellerId), categoryTags.all()],
+      tags: [productTags.seller(sellerId), categoryTags.all(), ...(storeId ? [storeTags.catalog(sellerId, storeId)] : [])],
       revalidate: 3600,
     },
   )();

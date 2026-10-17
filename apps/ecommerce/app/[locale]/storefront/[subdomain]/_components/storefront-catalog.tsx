@@ -22,11 +22,14 @@ import s from "../storefront.module.css";
 
 export async function StorefrontCatalog({
   sellerId,
+  catalogStoreId,
   locale,
   categories,
   query,
 }: {
   sellerId: string;
+  /** Set when the store shows a selected catalog (D24). */
+  catalogStoreId?: string;
   locale: string;
   categories: StorefrontCategory[];
   query: StoreQuery;
@@ -76,6 +79,7 @@ export async function StorefrontCatalog({
       <Suspense key={JSON.stringify(query)} fallback={<ProductsGridSkeleton />}>
         <CatalogGrid
           sellerId={sellerId}
+          catalogStoreId={catalogStoreId}
           locale={locale}
           categoryIds={active?.categoryIds}
           query={query}
@@ -87,11 +91,13 @@ export async function StorefrontCatalog({
 
 async function CatalogGrid({
   sellerId,
+  catalogStoreId,
   locale,
   categoryIds,
   query,
 }: {
   sellerId: string;
+  catalogStoreId?: string;
   locale: string;
   categoryIds?: string[];
   query: StoreQuery;
@@ -99,6 +105,7 @@ async function CatalogGrid({
   const tStores = await getTranslations("pages.stores");
   const result = await getProducts({
     sellerId,
+    catalogStoreId,
     categoryIds,
     searchQuery: query.search,
     sortBy: SORT_MAP[query.sort as keyof typeof SORT_MAP] ?? "popular",

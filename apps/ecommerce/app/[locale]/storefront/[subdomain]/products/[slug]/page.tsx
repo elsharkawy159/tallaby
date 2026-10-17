@@ -8,7 +8,7 @@ import { getProductBySlug } from "@/actions/products";
 import { Link } from "@/i18n/navigation";
 import { BASE_URL } from "@/lib/constants";
 import type { ProductLocale } from "@/lib/product-translations";
-import { resolveStorefront } from "@/lib/storefront.server";
+import { resolveStorefront, storeShowsProduct } from "@/lib/storefront.server";
 import { ProductDisplay } from "@/app/[locale]/(main)/products/[slug]/_components/product-display.client";
 import { ProductContent } from "@/app/[locale]/(main)/products/[slug]/_components/product-content";
 import { ProductTabsWrapper } from "@/app/[locale]/(main)/products/[slug]/_components/product-tabs-wrapper.client";
@@ -36,6 +36,8 @@ async function resolveStoreProduct(locale: string, subdomain: string, slug: stri
 
   if (!product) redirect(locale === "ar" ? "/" : `/${locale}`);
   if (product.sellerId !== store.id) redirect(marketplaceProductUrl(locale, slug));
+  // A store with a selected catalog (D24) only opens its picks.
+  if (!(await storeShowsProduct(store, product.id))) redirect(marketplaceProductUrl(locale, slug));
   return { store, product };
 }
 

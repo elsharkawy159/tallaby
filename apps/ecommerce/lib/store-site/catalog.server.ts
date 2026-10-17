@@ -7,8 +7,9 @@ import { getStorefrontCategories, type StorefrontCategory } from "@/lib/storefro
 
 /**
  * Catalog for builder sections on a store host (PLAN.md P5-02). Only this
- * store's seller's active products, whatever ids a stored section asks for:
- * a picked product of another seller is simply not returned.
+ * store's seller's active products (and only the store's picks in selected
+ * catalog mode), whatever ids a stored section asks for: a picked product of
+ * another seller, or one the store does not show, is simply not returned.
  */
 
 type RawProduct = Record<string, unknown> & {
@@ -63,15 +64,17 @@ function categorySummary(category: StorefrontCategory, locale: string): Category
   };
 }
 
+/** `catalogStoreId` is set for a store in selected catalog mode (D24): only its picks are returned. */
 export async function resolveStoreCatalog(
   sellerId: string,
+  catalogStoreId: string | undefined,
   queries: Record<string, CatalogQuery>,
   locale: string,
 ): Promise<ResolvedCatalog> {
   const entries = Object.entries(queries);
   const withVariants = new Set<string>();
   const needsCategories = entries.some(([, q]) => q.kind === "categories" || (q.kind === "products" && q.source === "category"));
-  const storeCategories = needsCategories ? await getStorefrontCategories(sellerId) : [];
+  const storeCategories = needsCategories ? await getStorefrontCategories(sellerId, catalogStoreId) : [];
 
   const products: Record<string, ProductSummary[]> = {};
   await Promise.all(
@@ -88,6 +91,7 @@ export async function resolveStoreCatalog(
       }
       const result = await getProducts({
         sellerId,
+        catalogStoreId,
         locale: locale as ProductLocale,
         limit: Math.min(query.limit, 48),
         sortBy: "newest",

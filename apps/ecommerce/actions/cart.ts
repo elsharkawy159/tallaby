@@ -24,6 +24,7 @@ import {
   type ProductLocale,
 } from "@/lib/product-translations";
 import { getPriceFinal } from "@workspace/lib";
+import { storeSellsProduct } from "@workspace/lib/stores/server";
 
 type ProductPrice = {
   base: number;
@@ -265,6 +266,10 @@ export async function addToCart(
   if (!product) return { success: false, error: "Product not found" };
   // A storefront cart only ever holds that seller's products.
   if (cart.storeSellerId && product.sellerId !== cart.storeSellerId) {
+    return { success: false, error: "This product isn't sold in this store" };
+  }
+  // ...and, for a store with a selected catalog (D24), only its picks.
+  if (cart.storeId && !(await storeSellsProduct(cart.storeId, productId))) {
     return { success: false, error: "This product isn't sold in this store" };
   }
 

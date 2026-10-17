@@ -30,6 +30,7 @@ import {
   WALLET_REFERENCE_TYPES,
 } from "@workspace/db/wallet";
 import { placeOrderFromCart } from "@workspace/lib/orders";
+import { cartProductsOutsideStoreCatalog } from "@workspace/lib/stores/server";
 import {
   applyInvalidation,
   invalidateProductInventory,
@@ -74,6 +75,13 @@ export async function createOrder(data: {
       !(ONLINE_CARD_PAYMENT_ENABLED && isOnlineCardPaymentEnabled())
     ) {
       return { success: false, error: "Online card payment is unavailable" };
+    }
+
+    // A store with a selected catalog (D24) may have dropped a product after it
+    // was added to this cart; refuse like an unavailable product.
+    const [unsold] = await cartProductsOutsideStoreCatalog(data.cartId);
+    if (unsold) {
+      return { success: false, error: `Product is no longer available: ${unsold}` };
     }
 
     const result = await placeOrderFromCart({

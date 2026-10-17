@@ -31,7 +31,7 @@ export default async function StoreEditorPage({ params }: { params: Promise<{ st
   const [editor, status, catalog] = await Promise.all([
     getStoreForEditor(store.sellerId, store.id),
     getStoreSiteStatus(store.sellerId, store.id),
-    loadEditorCatalog(store.sellerId),
+    loadEditorCatalog(store.sellerId, store.catalogMode === "selected" ? store.id : undefined),
   ]);
   if (!editor) notFound();
 

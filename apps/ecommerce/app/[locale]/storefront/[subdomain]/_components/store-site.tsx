@@ -14,7 +14,7 @@ import type { StoreQuery } from "@/app/[locale]/(main)/stores/[slug]/_components
 import { AddToCartButton } from "@/components/product/add-to-cart-button";
 import { Link } from "@/i18n/navigation";
 import { resolveStoreCatalog } from "@/lib/store-site/catalog.server";
-import type { Storefront, StorefrontCategory } from "@/lib/storefront.server";
+import { catalogStoreId, type Storefront, type StorefrontCategory } from "@/lib/storefront.server";
 import { CartSheet } from "./cart-sheet.client";
 import { CategoryCircles } from "./category-circles";
 import { StorefrontCatalog } from "./storefront-catalog";
@@ -60,7 +60,7 @@ function classicRenderer(store: Storefront, locale: string, classic: ClassicData
       case "classic-catalog":
         return classic ? (
           <div className={`${s.wrap} py-10 md:py-14`}>
-            <StorefrontCatalog sellerId={store.id} locale={locale} categories={classic.categories} query={classic.query} />
+            <StorefrontCatalog sellerId={store.id} catalogStoreId={catalogStoreId(store)} locale={locale} categories={classic.categories} query={classic.query} />
           </div>
         ) : null;
       default:
@@ -78,7 +78,7 @@ async function buildContext(
 ): Promise<RenderContext> {
   const queries = collectCatalogQueries(sections, storeSectionRegistry);
   const catalog = Object.keys(queries).length
-    ? await resolveStoreCatalog(store.id, queries, locale)
+    ? await resolveStoreCatalog(store.id, catalogStoreId(store), queries, locale)
     : { products: {}, categories: [], withVariants: new Set<string>() };
 
   return {

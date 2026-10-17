@@ -4,6 +4,7 @@ import {
   invalidatePlatformCoupons,
   invalidateProduct,
   invalidateProductInventory,
+  invalidateStoreCatalog,
   invalidateStoreIntegrations,
   invalidateStoreSite,
   mergeInvalidations,
@@ -320,5 +321,14 @@ describe("invalidateStoreSite", () => {
       "seller:subdomain:sara",
     ]);
     expect(invalidateStoreSite("seller-a", "store-a1", "sara").tags).not.toContain(storeTags.site("seller-a", "store-a2"));
+  });
+});
+
+describe("invalidateStoreCatalog", () => {
+  it("emits that store's catalog tag and storefront profile, nothing for sibling stores", () => {
+    const result = invalidateStoreCatalog("seller-a", "store-a1", "sara");
+    expect(result.tags).toEqual(["store:catalog:seller-a:store-a1", "seller:subdomain:sara"]);
+    expect(result.tags).not.toContain(storeTags.catalog("seller-a", "store-a2"));
+    expect(result.paths).toEqual([]);
   });
 });

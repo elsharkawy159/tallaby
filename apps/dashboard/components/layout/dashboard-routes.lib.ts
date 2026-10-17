@@ -62,6 +62,7 @@ export type NavKey =
   | "finance"
   | "storeSettings"
   | "general"
+  | "catalog"
   | "paymentMethods"
   | "policies"
   | "myStores"
@@ -97,6 +98,7 @@ export const DASHBOARD_ROUTES: DashboardRoute[] = [
   { href: "/financial", title: "accountStatements", parent: "finance", icon: DollarSign },
   { href: "/reports", title: "reports", parent: "finance", icon: FileBarChart },
   { href: "/stores/[storeId]/settings", title: "general", parent: "storeSettings", icon: Store },
+  { href: "/stores/[storeId]/settings/catalog", title: "catalog", parent: "storeSettings", icon: Package },
   { href: "/stores/[storeId]/settings/payments", title: "paymentMethods", parent: "storeSettings", icon: CreditCard },
   { href: "/stores/[storeId]/settings/policies", title: "policies", parent: "storeSettings", icon: ScrollText },
   { href: "/stores", title: "myStores", parent: "account", icon: Store },

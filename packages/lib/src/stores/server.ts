@@ -752,3 +752,5 @@ export async function updateStoreShippingSettings(
     return shippingFailure(error);
   }
 }
+
+export * from "./catalog.server";

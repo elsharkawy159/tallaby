@@ -1,10 +1,10 @@
-import { and, categories, db, desc, eq, inArray, productTranslations, products, sql } from "@workspace/db";
+import { and, categories, db, desc, eq, inArray, productTranslations, products, sql, storeProducts } from "@workspace/db";
 import { parsePriceJson } from "@workspace/lib";
 
 /**
  * Read-only data the editor canvas needs to preview commerce sections
- * (PLAN.md P4-06, P4-07): this seller's active products and the categories
- * they use. Loaded once per editor session; the canvas filters it locally.
+ * (PLAN.md P4-06, P4-07): the active products this store can show (the
+ * seller's, or the store's picks in selected catalog mode) and their categories. Loaded once per editor session; the canvas filters it locally.
  * Never cached (seller-specific editor data).
  */
 
@@ -31,7 +31,11 @@ function publicImage(path: unknown): string | null {
   return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products/${path}`;
 }
 
-export async function loadEditorCatalog(sellerId: string): Promise<{ products: EditorProduct[]; categories: EditorCategory[] }> {
+/** `catalogStoreId` is set for a store in selected catalog mode (D24): only its picks are listed. */
+export async function loadEditorCatalog(
+  sellerId: string,
+  catalogStoreId?: string,
+): Promise<{ products: EditorProduct[]; categories: EditorCategory[] }> {
   const rows = await db
     .select({
       id: products.id,
@@ -46,7 +50,15 @@ export async function loadEditorCatalog(sellerId: string): Promise<{ products: E
       slug: sql<string | null>`(SELECT coalesce(t.slug, '') FROM ${productTranslations} t WHERE t.product_id = ${products.id} ORDER BY (t.locale = 'ar') DESC LIMIT 1)`,
     })
     .from(products)
-    .where(and(eq(products.sellerId, sellerId), eq(products.status, "active")))
+    .where(
+      and(
+        eq(products.sellerId, sellerId),
+        eq(products.status, "active"),
+        catalogStoreId
+          ? sql`EXISTS (SELECT 1 FROM ${storeProducts} sp WHERE sp.store_id = ${catalogStoreId} AND sp.product_id = ${products.id})`
+          : undefined,
+      ),
+    )
     .orderBy(desc(products.createdAt))
     .limit(MAX_PRODUCTS);
 

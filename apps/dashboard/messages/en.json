@@ -70,7 +70,8 @@
     "createStore": "Create store",
     "storeUsage": "{count} of {max}",
     "primaryStore": "Main store",
-    "archived": "Archived"
+    "archived": "Archived",
+    "catalog": "Catalog"
   },
   "common": {
     "loading": "Loading...",
@@ -2196,6 +2197,33 @@
       "localeRequired": "Choose at least one language.",
       "defaultLocaleNotSupported": "The default language must be one of the store languages.",
       "policyTooLong": "This policy is too long."
+    },
+    "catalog": {
+      "title": "Products in this store",
+      "description": "Choose whether this store shows all your products or only the ones you pick. Your products and stock are shared by all your stores.",
+      "modeAll": "All my products",
+      "modeAllHint": "Every active product you add shows in this store automatically.",
+      "modeSelected": "Only selected products",
+      "modeSelectedHint": "This store shows only the products you tick below. New products are not added automatically.",
+      "pickTitle": "Pick products",
+      "pickDescription": "Only active products appear on the store. Draft and pending products show once they are approved.",
+      "search": "Search your products",
+      "selectedCount": "{count, plural, =0 {No products selected} one {1 product selected} other {# products selected}}",
+      "selectShown": "Select shown",
+      "clearShown": "Clear shown",
+      "noProducts": "You have no products yet. Add products first, then pick them here.",
+      "noMatches": "No products match your search.",
+      "status": {
+        "active": "Active",
+        "draft": "Draft",
+        "pending": "Pending review",
+        "rejected": "Rejected"
+      },
+      "tooMany": "You can pick up to {max} products.",
+      "shownLimit": "Showing your {max} newest products.",
+      "emptySelection": "Pick at least one product, or show all your products.",
+      "invalidProduct": "One of the picked products is no longer yours. Reload the page and try again.",
+      "saved": "Catalog saved"
     }
   },
   "planUsage": {

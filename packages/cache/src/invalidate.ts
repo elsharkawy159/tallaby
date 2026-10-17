@@ -257,6 +257,14 @@ export function invalidateStoreSite(sellerId: string, storeId: string, subdomain
   return inv([storeTags.site(sellerId, storeId), sellerTags.subdomain(subdomain)]);
 }
 
+/**
+ * A store changed its catalog mode or selection (P4-07): that store's catalog
+ * lists and its storefront profile (which carries the mode). Never a sibling store.
+ */
+export function invalidateStoreCatalog(sellerId: string, storeId: string, subdomain: string): CacheInvalidation {
+  return inv([storeTags.catalog(sellerId, storeId), sellerTags.subdomain(subdomain)]);
+}
+
 /** A store connected, changed or removed a tracking app (P7-02/P7-03). Only that store. */
 export function invalidateStoreIntegrations(sellerId: string, storeId: string): CacheInvalidation {
   return inv([storeTags.integrations(sellerId, storeId)]);

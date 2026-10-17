@@ -94,7 +94,23 @@ describe("storePoliciesSchema", () => {
 });
 
 describe("catalog mode", () => {
-  it("cannot be set through general settings yet (no picker / storefront filter)", () => {
+  it("is not settable through general settings (only with its selection)", () => {
     expect(storeGeneralSettingsSchema.safeParse({ catalogMode: "selected" }).success).toBe(false);
+  });
+
+  it("validates mode and product ids, dedupes and keeps order", async () => {
+    const { storeCatalogInputSchema, STORE_CATALOG_MAX_PRODUCTS } = await import("./stores.lib");
+    const a = "11111111-1111-4111-8111-111111111111";
+    const b = "22222222-2222-4222-8222-222222222222";
+    expect(storeCatalogInputSchema.parse({ mode: "selected", productIds: [b, a, b.toUpperCase()] })).toEqual({
+      mode: "selected",
+      productIds: [b, a],
+    });
+    expect(storeCatalogInputSchema.safeParse({ mode: "some", productIds: [] }).success).toBe(false);
+    expect(storeCatalogInputSchema.safeParse({ mode: "all", productIds: ["1; drop"] }).success).toBe(false);
+    expect(storeCatalogInputSchema.safeParse({ mode: "all", productIds: [], storeId: a }).success).toBe(false);
+    expect(
+      storeCatalogInputSchema.safeParse({ mode: "selected", productIds: Array(STORE_CATALOG_MAX_PRODUCTS + 1).fill(a) }).success,
+    ).toBe(false);
   });
 });

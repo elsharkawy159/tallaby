@@ -81,9 +81,7 @@ export const storeGeneralSettingsSchema = z
     contact: storeContactSchema.optional(),
     defaultLocale: z.enum(STORE_LOCALES).optional(),
     supportedLocales: z.array(z.enum(STORE_LOCALES)).min(1).max(STORE_LOCALES.length).optional(),
-    // catalogMode ("selected") is not settable until the product picker and the
-    // storefront filtering ship together (P4-07 / D24); every store shows the
-    // seller's whole catalog meanwhile.
+    // The catalog mode is set with its product selection (storeCatalogInputSchema).
   })
   .strict()
   .refine(
@@ -92,7 +90,26 @@ export const storeGeneralSettingsSchema = z
   );
 export type StoreGeneralSettings = z.output<typeof storeGeneralSettingsSchema>;
 
-export const STORE_POLICY_KEYS = ["return", "shipping", "privacy", "terms"] as const;
+export const STORE_CATALOG_MODES = ["all", "selected"] as const;
+export type StoreCatalogMode = (typeof STORE_CATALOG_MODES)[number];
+export const STORE_CATALOG_MAX_PRODUCTS = 1000;
+
+/**
+ * Store settings › Catalog (PLAN.md D24). "all" = every active product of the
+ * seller; "selected" = only `productIds`, in this order. Duplicates are dropped.
+ */
+export const storeCatalogInputSchema = z
+  .object({
+    mode: z.enum(STORE_CATALOG_MODES),
+    productIds: z
+      .array(z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i))
+      .max(STORE_CATALOG_MAX_PRODUCTS)
+      .transform((ids) => [...new Set(ids.map((id) => id.toLowerCase()))]),
+  })
+  .strict();
+export type StoreCatalogInput = z.input<typeof storeCatalogInputSchema>;
+
+export const STORE_POLICY_KEYS =["return", "shipping", "privacy", "terms"] as const;
 export type StorePolicyKey = (typeof STORE_POLICY_KEYS)[number];
 export type StorePolicies = Partial<Record<StorePolicyKey, string>>;
 

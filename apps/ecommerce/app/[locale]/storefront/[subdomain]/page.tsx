@@ -1,6 +1,6 @@
 import { cn } from "@workspace/ui/lib/utils";
 import type { StoreQuery } from "@/app/[locale]/(main)/stores/[slug]/_components/store-products";
-import { getStorefrontCategories, resolveStorefront } from "@/lib/storefront.server";
+import { catalogStoreId, getStorefrontCategories, resolveStorefront } from "@/lib/storefront.server";
 import { StorefrontHero } from "./_components/storefront-hero";
 import { CategoryCircles } from "./_components/category-circles";
 import { StorefrontCatalog } from "./_components/storefront-catalog";
@@ -20,7 +20,7 @@ export default async function StorefrontPage({ params, searchParams }: Storefron
   const { locale, subdomain } = await params;
   const sp = await searchParams;
   const store = await resolveStorefront(subdomain);
-  const categories = await getStorefrontCategories(store.id);
+  const categories = await getStorefrontCategories(store.id, catalogStoreId(store));
 
   const query: StoreQuery = {
     category: categories.some((c) => c.key === one(sp.category)) ? one(sp.category) : undefined,
@@ -44,6 +44,7 @@ export default async function StorefrontPage({ params, searchParams }: Storefron
         <CategoryCircles categories={categories} query={query} />
         <StorefrontCatalog
           sellerId={store.id}
+          catalogStoreId={catalogStoreId(store)}
           locale={locale}
           categories={categories}
           query={query}

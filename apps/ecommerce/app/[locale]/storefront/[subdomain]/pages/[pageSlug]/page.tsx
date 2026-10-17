@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { storeUrl } from "@workspace/lib/storefront";
 import { routing } from "@/i18n/routing";
 import { getCachedPublishedSite } from "@/lib/store-site/published-site.server";
-import { getStorefrontCategories, resolveStorefront } from "@/lib/storefront.server";
+import { catalogStoreId, getStorefrontCategories, resolveStorefront } from "@/lib/storefront.server";
 import { marketplaceOrigin } from "@/lib/storefront-routing";
 import { StoreSitePage } from "../../_components/store-site";
 
@@ -44,7 +44,7 @@ export default async function StoreBuilderPage({ params }: StorePageProps) {
   const { locale, subdomain, pageSlug } = await params;
   const { store, site, page } = await resolvePage(locale, subdomain, pageSlug);
   if (!page) notFound();
-  const categories = await getStorefrontCategories(store.id);
+  const categories = await getStorefrontCategories(store.id, catalogStoreId(store));
   return (
     <StoreSitePage
       store={store}

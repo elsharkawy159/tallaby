@@ -11,6 +11,7 @@ import {
   productQuestions,
   categories,
   brands,
+  storeProducts,
   eq,
   and,
   or,
@@ -31,7 +32,7 @@ import {
 } from "@/lib/product-translations"
 import { getUser } from "./auth";
 import { unstable_cache } from "next/cache";
-import { brandTags, cacheProfiles, categoryTags, createCachedQuery, productTags } from "@workspace/cache";
+import { brandTags, cacheProfiles, categoryTags, createCachedQuery, productTags, storeTags } from "@workspace/cache";
 
 interface ProductFilters {
   categoryId?: string;
@@ -51,6 +52,8 @@ interface ProductFilters {
   sellerId?: string;
   /** Only these products (store builder sections that list picked products). */
   productIds?: string[];
+  /** Only the products this store selected (a store in `selected` catalog mode, D24). Use with sellerId. */
+  catalogStoreId?: string;
   isFeatured?: boolean;
   isTrending?: boolean;
   isSeasonal?: boolean;
@@ -77,6 +80,7 @@ export const getProducts = createCachedQuery({
     if (filters.categoryId) tags.push(productTags.category(filters.categoryId));
     if (filters.brandId) tags.push(productTags.brand(filters.brandId));
     if (filters.sellerId) tags.push(productTags.seller(filters.sellerId));
+    if (filters.sellerId && filters.catalogStoreId) tags.push(storeTags.catalog(filters.sellerId, filters.catalogStoreId));
     if (filters.isFeatured) tags.push(productTags.featured());
     if (filters.isTrending) tags.push(productTags.trending());
     if (filters.isSeasonal) tags.push(productTags.seasonal());
@@ -99,6 +103,12 @@ export const getProducts = createCachedQuery({
 
       if (filters.productIds) {
         conditions.push(inArray(products.id, filters.productIds.length ? filters.productIds : ["00000000-0000-0000-0000-000000000000"]));
+      }
+
+      if (filters.catalogStoreId) {
+        conditions.push(
+          sql`EXISTS (SELECT 1 FROM ${storeProducts} sp WHERE sp.store_id = ${filters.catalogStoreId} AND sp.product_id = ${products.id})`
+        );
       }
 
       const categoryNames = [

@@ -5,13 +5,14 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
-/** General · Payment methods · Policies. */
+/** General · Catalog · Payment methods · Policies. */
 export function StoreSettingsTabs({ storeId }: { storeId: string }) {
   const t = useTranslations("nav");
   const pathname = usePathname();
   const base = `/stores/${storeId}/settings`;
   const tabs = [
     { href: base, label: t("general"), exact: true },
+    { href: `${base}/catalog`, label: t("catalog") },
     { href: `${base}/payments`, label: t("paymentMethods") },
     { href: `${base}/policies`, label: t("policies") },
   ];
