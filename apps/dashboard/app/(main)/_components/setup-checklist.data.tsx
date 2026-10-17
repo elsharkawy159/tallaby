@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
-import { Check, Megaphone, Package, Rocket, Store, TicketPercent, Truck } from "lucide-react";
+import { Check, Headphones, Megaphone, Package, Rocket, ScrollText, Store, TicketPercent } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Button } from "@workspace/ui/components/button";
@@ -10,18 +10,19 @@ import { SETUP_DISMISS_COOKIE } from "./home.shared";
 import { HomeCard, IconTile } from "./home-ui";
 import { SetupDismissible } from "./setup-dismiss.client";
 
-type SetupKey = keyof HomeSnapshot["setup"];
+import { buildSetupTasks, isSetupDone, type SetupKey } from "./setup-checklist.lib";
 
-const TASKS: { key: SetupKey; icon: LucideIcon; href: string }[] = [
-  { key: "profile", icon: Store, href: "/settings" },
-  { key: "fulfillment", icon: Truck, href: "/settings/fulfillment" },
-  { key: "product", icon: Package, href: "/products/add" },
-  { key: "coupon", icon: TicketPercent, href: "/coupons" },
-  { key: "campaign", icon: Megaphone, href: "/marketing" },
-];
+const ICONS: Record<SetupKey, LucideIcon> = {
+  profile: Store,
+  product: Package,
+  contact: Headphones,
+  policies: ScrollText,
+  coupon: TicketPercent,
+  campaign: Megaphone,
+};
 
 export function isSetupComplete(snapshot: HomeSnapshot) {
-  return TASKS.every((task) => snapshot.setup[task.key]);
+  return isSetupDone(snapshot.setup, snapshot.setupStoreId);
 }
 
 /** "Get your store ready" checklist. Hidden once complete or dismissed. */
@@ -35,8 +36,12 @@ export async function SetupChecklistData() {
   if (!snapshot || isSetupComplete(snapshot)) return null;
   if (cookieStore.get(SETUP_DISMISS_COOKIE)?.value === "1") return null;
 
-  const doneCount = TASKS.filter((task) => snapshot.setup[task.key]).length;
-  const nextIndex = TASKS.findIndex((task) => !snapshot.setup[task.key]);
+  const TASKS = buildSetupTasks(snapshot.setup, snapshot.setupStoreId).map((task) => ({
+    ...task,
+    icon: ICONS[task.key],
+  }));
+  const doneCount = TASKS.filter((task) => task.done).length;
+  const nextIndex = TASKS.findIndex((task) => !task.done);
 
   return (
     <SetupDismissible>
@@ -75,7 +80,7 @@ export async function SetupChecklistData() {
 
         <ol className="flex flex-col px-5 py-2">
           {TASKS.map((task, i) => {
-            const done = snapshot.setup[task.key];
+            const done = task.done;
             return (
               <li key={task.key} className="flex items-center gap-3.5 border-b py-3 last:border-b-0">
                 <span

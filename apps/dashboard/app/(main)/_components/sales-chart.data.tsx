@@ -4,13 +4,13 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { Button } from "@workspace/ui/components/button";
 import { formatNumber } from "@/lib/i18n/format";
 import { getHomeSnapshot, getSalesOverview } from "./home.queries";
-import type { HomeRange } from "./home.shared";
+import type { HomeChannel, HomeRange } from "./home.shared";
 import { HomeCard, HomeCardHeader } from "./home-ui";
 import { SalesChart } from "./sales-chart.client";
 
-export async function SalesChartData({ range }: { range: HomeRange }) {
+export async function SalesChartData({ range, channel = "all" }: { range: HomeRange; channel?: HomeChannel }) {
   const [sales, snapshot, t, locale] = await Promise.all([
-    getSalesOverview(range),
+    getSalesOverview(range, channel),
     getHomeSnapshot(),
     getTranslations("home.chart"),
     getLocale(),

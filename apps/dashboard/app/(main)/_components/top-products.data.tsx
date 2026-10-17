@@ -4,13 +4,13 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { Button } from "@workspace/ui/components/button";
 import { formatNumber } from "@/lib/i18n/format";
 import { getTopProducts } from "./home.queries";
-import type { HomeRange } from "./home.shared";
+import type { HomeChannel, HomeRange } from "./home.shared";
 import { EmptyState, HeaderLink, HomeCard, HomeCardHeader, ProductThumb } from "./home-ui";
 
-export async function TopProductsData({ range }: { range: HomeRange }) {
+export async function TopProductsData({ range, channel = "all" }: { range: HomeRange; channel?: HomeChannel }) {
   const locale = await getLocale();
   const [products, t] = await Promise.all([
-    getTopProducts(range, locale),
+    getTopProducts(range, locale, channel),
     getTranslations("home.topProducts"),
   ]);
   const max = products[0]?.revenue || 1;

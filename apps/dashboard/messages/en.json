@@ -489,6 +489,16 @@
           "title": "Launch your first ad campaign",
           "description": "Get seen by customers from day one",
           "cta": "Start"
+        },
+        "contact": {
+          "title": "Add your contact details",
+          "description": "Phone or email shown in your store",
+          "cta": "Add"
+        },
+        "policies": {
+          "title": "Write your return & shipping policies",
+          "description": "Customers read them before ordering",
+          "cta": "Write"
         }
       }
     },
@@ -578,6 +588,11 @@
       "answerPlaceholder": "Write your reply…",
       "send": "Send",
       "reply": "Reply"
+    },
+    "channel": {
+      "label": "Sales channel",
+      "all": "All sales",
+      "marketplace": "Tallaby marketplace"
     }
   },
   "table": {

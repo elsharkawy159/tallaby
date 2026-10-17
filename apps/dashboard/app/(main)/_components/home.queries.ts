@@ -2,7 +2,9 @@ import { cache } from "react";
 import { db, orderItems } from "@workspace/db";
 import { desc, eq, sql } from "drizzle-orm";
 import { createClient } from "@/supabase/server";
-import type { HomeRange } from "./home.shared";
+import type { HomeChannel, HomeRange } from "./home.shared";
+import type { SetupFlags } from "./setup-checklist.lib";
+import { getSellerStores } from "@/lib/stores/current-store.server";
 
 /**
  * Read-only loaders for the dashboard home. Kept out of `actions/` on purpose:
@@ -48,13 +50,9 @@ export type HomeSnapshot = {
   storeRating: number | null;
   positiveRatingPercent: number | null;
   totalRatings: number;
-  setup: {
-    profile: boolean;
-    fulfillment: boolean;
-    product: boolean;
-    coupon: boolean;
-    campaign: boolean;
-  };
+  /** Setup flags for the store selected in the sidebar (setup-checklist.lib.ts). */
+  setup: SetupFlags;
+  setupStoreId: string | null;
   hasOrders: boolean;
   attention: {
     pendingOrders: number;
@@ -67,6 +65,9 @@ export type HomeSnapshot = {
 export const getHomeSnapshot = cache(async (): Promise<HomeSnapshot | null> => {
   const sellerId = await getHomeSellerId();
   if (!sellerId) return null;
+  const { selected } = await getSellerStores();
+  // Only ever one of this seller's stores (getSellerStores ignores foreign ids).
+  const storeId = selected?.id ?? null;
 
   const result = await db.execute(sql`
     SELECT
@@ -76,9 +77,10 @@ export const getHomeSnapshot = cache(async (): Promise<HomeSnapshot | null> => {
       s.store_rating::float8 AS store_rating,
       s.positive_rating_percent::float8 AS positive_rating_percent,
       coalesce(s.total_ratings, 0)::int AS total_ratings,
-      (s.logo_url IS NOT NULL AND coalesce(s.description, s.store_description) IS NOT NULL) AS setup_profile,
-      EXISTS (SELECT 1 FROM seller_fulfillment_profiles f WHERE f.seller_id = s.id) AS setup_fulfillment,
-      EXISTS (SELECT 1 FROM products p WHERE p.seller_id = s.id) AS setup_product,
+      coalesce(st.logo_url IS NOT NULL AND nullif(st.description, '') IS NOT NULL, false) AS setup_profile,
+      coalesce(st.contact ? 'phone' OR st.contact ? 'email', false) AS setup_contact,
+      coalesce(st.policies ? 'return' AND st.policies ? 'shipping', false) AS setup_policies,
+      EXISTS (SELECT 1 FROM products p WHERE p.seller_id = s.id AND p.status = 'active') AS setup_product,
       EXISTS (SELECT 1 FROM coupons c WHERE c.seller_id = s.id) AS setup_coupon,
       EXISTS (SELECT 1 FROM ad_campaign_requests a WHERE a.seller_id = s.id) AS setup_campaign,
       EXISTS (SELECT 1 FROM order_items oi WHERE oi.seller_id = s.id) AS has_orders,
@@ -93,6 +95,7 @@ export const getHomeSnapshot = cache(async (): Promise<HomeSnapshot | null> => {
           AND (r.seller_id = s.id
             OR r.product_id IN (SELECT p.id FROM products p WHERE p.seller_id = s.id))) AS new_reviews
     FROM sellers s
+    LEFT JOIN stores st ON st.id = ${storeId}::uuid AND st.seller_id = s.id
     WHERE s.id = ${sellerId}
   `);
 
@@ -109,11 +112,13 @@ export const getHomeSnapshot = cache(async (): Promise<HomeSnapshot | null> => {
     totalRatings: Number(row.total_ratings),
     setup: {
       profile: Boolean(row.setup_profile),
-      fulfillment: Boolean(row.setup_fulfillment),
+      contact: Boolean(row.setup_contact),
+      policies: Boolean(row.setup_policies),
       product: Boolean(row.setup_product),
       coupon: Boolean(row.setup_coupon),
       campaign: Boolean(row.setup_campaign),
     },
+    setupStoreId: storeId,
     hasOrders: Boolean(row.has_orders),
     attention: {
       pendingOrders: Number(row.pending_orders),
@@ -141,7 +146,20 @@ export type SalesOverview = {
   previousOrders: number;
 };
 
-export const getSalesOverview = cache(async (range: HomeRange): Promise<SalesOverview> => {
+/**
+ * Restricts order items to a sales channel (PLAN.md P3-04). The channel was
+ * already checked against the seller's own stores (resolveHomeChannel); the
+ * store id is a bound parameter.
+ */
+function channelFilter(channel: HomeChannel) {
+  if (channel === "all") return sql``;
+  if (channel === "marketplace") {
+    return sql`AND EXISTS (SELECT 1 FROM orders o WHERE o.id = oi.order_id AND o.store_id IS NULL)`;
+  }
+  return sql`AND EXISTS (SELECT 1 FROM orders o WHERE o.id = oi.order_id AND o.store_id = ${channel}::uuid)`;
+}
+
+export const getSalesOverview = cache(async (range: HomeRange, channel: HomeChannel = "all"): Promise<SalesOverview> => {
   const sellerId = await getHomeSellerId();
   const empty = { series: [], revenue: 0, orders: 0, previousRevenue: 0, previousOrders: 0 };
   if (!sellerId) return empty;
@@ -159,6 +177,7 @@ export const getSalesOverview = cache(async (range: HomeRange): Promise<SalesOve
         AND oi.status NOT IN ${NON_REVENUE}
         AND coalesce(oi.is_refunded, false) = false
         AND oi.created_at >= ((b.start_local - make_interval(days => ${range}::int)) AT TIME ZONE 'Africa/Cairo')
+        ${channelFilter(channel)}
     ),
     cur AS (SELECT i.* FROM items i, bounds b WHERE i.day >= b.start_local::date),
     prev AS (SELECT i.* FROM items i, bounds b WHERE i.day < b.start_local::date)
@@ -205,7 +224,7 @@ export type TopProduct = {
 };
 
 export const getTopProducts = cache(
-  async (range: HomeRange, locale: string): Promise<TopProduct[]> => {
+  async (range: HomeRange, locale: string, channel: HomeChannel = "all"): Promise<TopProduct[]> => {
     const sellerId = await getHomeSellerId();
     if (!sellerId) return [];
 
@@ -225,6 +244,7 @@ export const getTopProducts = cache(
         AND oi.status NOT IN ${NON_REVENUE}
         AND coalesce(oi.is_refunded, false) = false
         AND oi.created_at >= (${rangeStartLocal(range)} AT TIME ZONE 'Africa/Cairo')
+        ${channelFilter(channel)}
       GROUP BY oi.product_id
       ORDER BY revenue DESC
       LIMIT 4

@@ -4,12 +4,21 @@ import { createContext, useContext, useOptimistic, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { cn } from "@workspace/ui/lib/utils";
-import { HOME_RANGES, type HomeRange } from "./home.shared";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/select";
+import { HOME_RANGES, type HomeChannel, type HomeRange } from "./home.shared";
 
 type RangeContext = {
   range: HomeRange;
+  channel: HomeChannel;
   pending: boolean;
   setRange: (range: HomeRange) => void;
+  setChannel: (channel: HomeChannel) => void;
 };
 
 const Ctx = createContext<RangeContext | null>(null);
@@ -21,9 +30,11 @@ const Ctx = createContext<RangeContext | null>(null);
  */
 export function HomeRangeProvider({
   range,
+  channel = "all",
   children,
 }: {
   range: HomeRange;
+  channel?: HomeChannel;
   children: React.ReactNode;
 }) {
   const router = useRouter();
@@ -31,21 +42,38 @@ export function HomeRangeProvider({
   const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
   const [optimisticRange, setOptimisticRange] = useOptimistic(range);
+  const [optimisticChannel, setOptimisticChannel] = useOptimistic(channel);
+
+  const replaceParam = (key: string, value: string | null) => {
+    const params = new URLSearchParams(searchParams);
+    if (value === null) params.delete(key);
+    else params.set(key, value);
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  };
 
   const setRange = (next: HomeRange) => {
     if (next === optimisticRange) return;
     startTransition(() => {
       setOptimisticRange(next);
-      const params = new URLSearchParams(searchParams);
-      if (next === 7) params.delete("range");
-      else params.set("range", String(next));
-      const query = params.toString();
-      router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+      replaceParam("range", next === 7 ? null : String(next));
+    });
+  };
+
+  const setChannel = (next: HomeChannel) => {
+    if (next === optimisticChannel) return;
+    startTransition(() => {
+      setOptimisticChannel(next);
+      replaceParam("channel", next === "all" ? null : next);
     });
   };
 
   return (
-    <Ctx.Provider value={{ range: optimisticRange, pending, setRange }}>{children}</Ctx.Provider>
+    <Ctx.Provider
+      value={{ range: optimisticRange, channel: optimisticChannel, pending, setRange, setChannel }}
+    >
+      {children}
+    </Ctx.Provider>
   );
 }
 
@@ -100,5 +128,28 @@ export function RangePending({ children, className }: { children: React.ReactNod
     >
       {children}
     </div>
+  );
+}
+
+/** All sales / marketplace / one store. Options come from the server (the seller's own stores). */
+export function ChannelSelect({ stores }: { stores: { id: string; name: string }[] }) {
+  const t = useTranslations("home.channel");
+  const { channel, setChannel } = useRange();
+
+  return (
+    <Select value={channel} onValueChange={(value) => setChannel(value as HomeChannel)}>
+      <SelectTrigger className="h-[40px] w-[180px] rounded-[11px] bg-card text-[13px]" aria-label={t("label")}>
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="all">{t("all")}</SelectItem>
+        <SelectItem value="marketplace">{t("marketplace")}</SelectItem>
+        {stores.map((store) => (
+          <SelectItem key={store.id} value={store.id}>
+            {store.name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }
