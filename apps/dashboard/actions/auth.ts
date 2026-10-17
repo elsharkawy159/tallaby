@@ -1,7 +1,6 @@
 "use server";
 
 import { createClient } from "@/supabase/server";
-import { getSellerAccess } from "@/lib/auth/seller-access";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
@@ -43,12 +42,8 @@ export const login = async (email: string, password: string) => {
   // Access is decided by the sellers row (see lib/auth/seller-access.ts), not
   // by user_metadata.is_seller. Pending/suspended sellers may sign in; the
   // dashboard layout shows them a status screen instead of the dashboard.
-  const access = await getSellerAccess(user.id);
-  if (!access.allowed && access.reason === "no_seller") {
-    await supabase.auth.signOut();
-    throw new Error(t("noSellerAccount"));
-  }
-
+  // Users without a seller row (e.g. customers) stay signed in: the layout
+  // sends them to /signup to create their store (PLAN.md P2-04).
   return data;
 };
 

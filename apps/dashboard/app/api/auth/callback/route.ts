@@ -1,6 +1,35 @@
 import { revalidatePath } from "next/cache";
 import { type NextRequest, NextResponse } from "next/server";
+import type { User } from "@supabase/supabase-js";
+import { db, eq, sellers } from "@workspace/db";
 import { createClient } from "@/supabase/server";
+import { safeNextPath } from "@/lib/auth/safe-next.lib";
+import { completeSignup, signupIntentFromMetadata } from "@/app/signup/signup-complete.server";
+import { readSignupIntentCookie } from "@/app/signup/signup-intent.server";
+
+/**
+ * OAuth and email-confirmation callback. After the session is established, a
+ * pending signup (signed intent cookie, or the choices saved in user_metadata
+ * at email signup) becomes the seller account + primary store (PLAN.md P2-03).
+ * A signed-in user with no seller row and no pending signup goes to /signup.
+ */
+async function finish(origin: string, next: string, user: User | null) {
+  revalidatePath("/", "layout");
+  if (!user) return NextResponse.redirect(`${origin}${next}`);
+
+  const [seller] = await db.select({ id: sellers.id }).from(sellers).where(eq(sellers.id, user.id)).limit(1);
+  if (seller) return NextResponse.redirect(`${origin}${next}`);
+
+  const intent = (await readSignupIntentCookie()) ?? signupIntentFromMetadata(user);
+  if (!intent) return NextResponse.redirect(`${origin}/signup`);
+
+  const result = await completeSignup(user, intent);
+  if (!result.success) {
+    // e.g. the address was taken meanwhile: let them pick another one.
+    return NextResponse.redirect(`${origin}/signup?error=${result.error === "taken" ? "subdomainTaken" : "generic"}`);
+  }
+  return NextResponse.redirect(`${origin}/?welcome=1`);
+}
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
@@ -8,63 +37,36 @@ export async function GET(request: NextRequest) {
   const type = searchParams.get("type");
   const token = searchParams.get("token");
   const tokenHash = searchParams.get("token_hash");
-
-  // if "next" is in param, use it as the redirect URL
-  const next = searchParams.get("next") ?? "/";
+  const next = safeNextPath(searchParams.get("next"));
 
   const supabase = await createClient();
 
-  // Handle OAuth callback with code
+  // OAuth (and PKCE email confirmation) callback with a code
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
-
-    if (error) {
-      return NextResponse.redirect(`${origin}/auth`);
-    }
-
-    revalidatePath("/", "layout");
-    return NextResponse.redirect(`${origin}${next}`);
+    if (error) return NextResponse.redirect(`${origin}/login`);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    return finish(origin, next, user);
   }
 
-  // Handle email verification
+  // Email verification links that carry a token
   if (type && (token || tokenHash)) {
-    // For email verification, Supabase SSR automatically processes the token
-    // when the callback URL is visited. The Supabase client processes the token
-    // by reading the URL parameters. We need to check if verification succeeded.
-
-    // Try to get the session - this will trigger token processing if not already done
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession();
-
-    // Also try to get the user to verify token was processed
     const {
       data: { user },
       error: userError,
     } = await supabase.auth.getUser();
 
-    // If there's an explicit error indicating invalid token, redirect to auth page
-    if (sessionError && sessionError.message.includes("Invalid")) {
-      return NextResponse.redirect(`${origin}/auth`);
-    }
     if (userError && userError.message.includes("Invalid")) {
-      return NextResponse.redirect(`${origin}/auth`);
+      return NextResponse.redirect(`${origin}/login`);
     }
+    if (user) return finish(origin, next, user);
 
-    // If we have a session or user, verification was successful
-    if (session || user) {
-      revalidatePath("/", "layout");
-      return NextResponse.redirect(`${origin}${next}`);
-    }
-
-    // If no explicit error and token parameters are present,
-    // Supabase SSR has processed the token. Even without a session,
-    // the email is verified. Redirect to auth with success message.
+    // Verified, but no session in this browser: sign in to continue.
     revalidatePath("/", "layout");
-    return NextResponse.redirect(`${origin}/auth?verified=true`);
+    return NextResponse.redirect(`${origin}/login?verified=true`);
   }
 
-  // If no code or token parameters, redirect to auth page
-  return NextResponse.redirect(`${origin}/auth`);
+  return NextResponse.redirect(`${origin}/login`);
 }

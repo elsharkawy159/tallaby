@@ -5,6 +5,7 @@ import { SellerAccessBlocked } from "@/components/layout/seller-access-blocked";
 import { getSellerAccess } from "@/lib/auth/seller-access";
 import { createClient } from "@/supabase/server";
 import { getTranslations } from "next-intl/server";
+import { redirect } from "next/navigation";
 
 export default async function DashboardLayout({
   children,
@@ -22,6 +23,11 @@ export default async function DashboardLayout({
     : ({ allowed: false, reason: "no_seller" } as const);
 
   const t = await getTranslations();
+
+  // Signed in but not a seller yet (e.g. a customer account): finish signup.
+  if (user && !access.allowed && access.reason === "no_seller") {
+    redirect("/signup");
+  }
 
   if (!access.allowed) {
     return <SellerAccessBlocked access={access} />;
