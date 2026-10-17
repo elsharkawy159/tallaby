@@ -7,6 +7,7 @@ import { Providers } from "./providers";
 import NextTopLoader from "nextjs-toploader";
 import { Scripts } from "@/components/layout/structured-data";
 import { MetaPixel } from "@/components/meta/meta-pixel";
+import { GoogleAnalytics } from "@/components/layout/google-analytics";
 import { ElfsightChatbot } from "@/components/chatbot/elfsight-chatbot";
 // import { ZolaiChatbot } from "@/components/chatbot/zolai-chatbot";
 import { getMessages, getTranslations } from "next-intl/server";
@@ -134,6 +135,7 @@ export default async function RootLayout({
         } antialiased`}
       >
         <MetaPixel />
+        <GoogleAnalytics />
         <NextTopLoader
           color="var(--accent)"
           crawlSpeed={200}

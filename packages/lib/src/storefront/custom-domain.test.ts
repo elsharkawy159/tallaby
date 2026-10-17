@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   hostnameOf,
+  isMarketplaceHost,
   isPlatformHost,
   normalizeCustomDomain,
   storeHostname,
@@ -62,6 +63,17 @@ describe("isPlatformHost", () => {
   it.each(["faster-eg.com", "www.faster-eg.com", "tallaby.com.evil.com", "nottallaby.com"])(
     "%s is a custom domain",
     (host) => expect(isPlatformHost(host)).toBe(false),
+  );
+});
+
+describe("isMarketplaceHost", () => {
+  it.each(["tallaby.com", "www.tallaby.com", "localhost:3000", "tallaby-git-main.vercel.app", null])(
+    "%s is the marketplace",
+    (host) => expect(isMarketplaceHost(host)).toBe(true),
+  );
+
+  it.each(["faster.tallaby.com", "faster.localhost:3000", "faster-eg.com"])("%s is a storefront", (host) =>
+    expect(isMarketplaceHost(host)).toBe(false),
   );
 });
 

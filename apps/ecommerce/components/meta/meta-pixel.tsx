@@ -1,23 +1,28 @@
 'use client'
 
 import Script from 'next/script'
+import { useIsMarketplaceHost } from '@/lib/marketplace/marketplace-host.client'
 
 const PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID
 
 /**
  * Loads Meta Pixel once globally. PageView is fired from the init snippet only.
  * Do not call track('PageView') from route components.
+ *
+ * Marketplace only (PLAN.md P5-05), see `useIsMarketplaceHost`. The
+ * <noscript> image fallback is therefore gone; it only counted visitors with
+ * JavaScript disabled.
  */
 export function MetaPixel () {
-  if (!PIXEL_ID) return null
+  const onMarketplace = useIsMarketplaceHost()
+  if (!PIXEL_ID || !onMarketplace) return null
 
   return (
-    <>
-      <Script
-        id="meta-pixel"
-        strategy="afterInteractive"
-        dangerouslySetInnerHTML={{
-          __html: `
+    <Script
+      id="meta-pixel"
+      strategy="afterInteractive"
+      dangerouslySetInnerHTML={{
+        __html: `
 !function(f,b,e,v,n,t,s)
 {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
 n.callMethod.apply(n,arguments):n.queue.push(arguments)};
@@ -28,18 +33,8 @@ s.parentNode.insertBefore(t,s)}(window, document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
 fbq('init', '${PIXEL_ID}');
 fbq('track', 'PageView');
-          `.trim(),
-        }}
-      />
-      <noscript>
-        <img
-          height="1"
-          width="1"
-          style={{ display: 'none' }}
-          src={`https://www.facebook.com/tr?id=${PIXEL_ID}&ev=PageView&noscript=1`}
-          alt=""
-        />
-      </noscript>
-    </>
+        `.trim(),
+      }}
+    />
   )
 }

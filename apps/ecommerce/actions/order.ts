@@ -36,6 +36,7 @@ import {
 } from "@workspace/cache";
 import { getCurrentUserId } from "@/lib/get-current-user-id";
 import { getCartStoreSellerId } from "@/lib/storefront.server";
+import { isMarketplaceRequest } from "@/lib/marketplace/marketplace-host.server";
 import { buildOrderPagePath } from "@/lib/order-access-token";
 import { getUser } from "./auth";
 import { revalidateCartCheckout } from "@/lib/revalidate-cart-checkout";
@@ -111,35 +112,38 @@ export async function createOrder(data: {
     await clearPendingCouponCode();
 
     const metaEventId = order.id;
-    try {
-      const { sendMetaCapiEvent } = await import("@/lib/meta/meta.server");
-      const { getMetaCapiUserData } = await import("@/lib/meta/meta.user");
-      const { toMetaContentIds } = await import("@/lib/meta/meta.product");
-      const { DEFAULT_CURRENCY } = await import("@/lib/constants");
+    // Tallaby CAPI is marketplace-only; storefront orders skip it (PLAN.md P5-05).
+    if (await isMarketplaceRequest()) {
+      try {
+        const { sendMetaCapiEvent } = await import("@/lib/meta/meta.server");
+        const { getMetaCapiUserData } = await import("@/lib/meta/meta.user");
+        const { toMetaContentIds } = await import("@/lib/meta/meta.product");
+        const { DEFAULT_CURRENCY } = await import("@/lib/constants");
 
-      const productIds = createdOrderItems.map((item) => item.productId);
-      const numItems = createdOrderItems.reduce(
-        (sum, item) => sum + Number(item.quantity || 0),
-        0
-      );
-      const { userData, eventSourceUrl } = await getMetaCapiUserData();
+        const productIds = createdOrderItems.map((item) => item.productId);
+        const numItems = createdOrderItems.reduce(
+          (sum, item) => sum + Number(item.quantity || 0),
+          0
+        );
+        const { userData, eventSourceUrl } = await getMetaCapiUserData();
 
-      await sendMetaCapiEvent({
-        eventName: "Purchase",
-        eventId: metaEventId,
-        eventSourceUrl: eventSourceUrl ?? undefined,
-        userData,
-        customData: {
-          content_ids: toMetaContentIds(productIds),
-          content_type: "product",
-          value: Number(order.totalAmount),
-          currency: order.currency || DEFAULT_CURRENCY,
-          num_items: numItems,
-          order_id: order.id,
-        },
-      });
-    } catch (metaError) {
-      console.error("Meta CAPI Purchase failed:", metaError);
+        await sendMetaCapiEvent({
+          eventName: "Purchase",
+          eventId: metaEventId,
+          eventSourceUrl: eventSourceUrl ?? undefined,
+          userData,
+          customData: {
+            content_ids: toMetaContentIds(productIds),
+            content_type: "product",
+            value: Number(order.totalAmount),
+            currency: order.currency || DEFAULT_CURRENCY,
+            num_items: numItems,
+            order_id: order.id,
+          },
+        });
+      } catch (metaError) {
+        console.error("Meta CAPI Purchase failed:", metaError);
+      }
     }
 
     return {

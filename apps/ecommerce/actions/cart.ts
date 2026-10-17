@@ -17,6 +17,7 @@ import {
 } from "@/lib/get-current-user-id";
 import { getLocale } from "next-intl/server";
 import { activeCartWhere, getCartScope } from "@/lib/storefront.server";
+import { isMarketplaceRequest } from "@/lib/marketplace/marketplace-host.server";
 import {
   mergeProductWithTranslation,
   pickTranslationFromArray,
@@ -360,7 +361,7 @@ export async function addToCart(
     ? `${cartItem.id}_${Date.now()}`
     : undefined;
 
-  if (metaEventId) {
+  if (metaEventId && (await isMarketplaceRequest())) {
     try {
       const { sendMetaCapiEvent } = await import("@/lib/meta/meta.server");
       const { getMetaCapiUserData } = await import("@/lib/meta/meta.user");

@@ -137,3 +137,12 @@ export function isPlatformHost(host: string | null | undefined): boolean {
   if (/^\d{1,3}(?:\.\d{1,3}){3}$/.test(hostname)) return true;
   return isTallabyHostname(hostname);
 }
+
+/**
+ * The marketplace itself (tallaby.com, previews, localhost), not a seller
+ * storefront subdomain or custom domain. Tallaby's own tracking (Meta pixel,
+ * CAPI) runs only here (PLAN.md P5-05).
+ */
+export function isMarketplaceHost(host: string | null | undefined): boolean {
+  return isPlatformHost(host) && !storeSubdomainFromHost(host);
+}
