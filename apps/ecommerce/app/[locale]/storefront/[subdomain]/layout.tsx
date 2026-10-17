@@ -9,6 +9,7 @@ import { StorefrontFooter } from "./_components/storefront-footer";
 import { MobileCartBar } from "./_components/mobile-cart-bar.client";
 import { ByTallabyBadge } from "./_components/by-tallaby-badge";
 import { storefrontFont } from "./_components/storefront-font";
+import { StorefrontTracking } from "./_components/seller-tracking";
 import s from "./storefront.module.css";
 
 type StorefrontLayoutProps = {
@@ -61,6 +62,7 @@ export default async function StorefrontLayout({
       <MobileCartBar />
       <ByTallabyBadge />
       <AuthDialogProvider />
+      <StorefrontTracking store={store} />
     </div>
   );
 }

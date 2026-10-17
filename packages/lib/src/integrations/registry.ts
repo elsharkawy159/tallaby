@@ -75,3 +75,10 @@ export function getIntegration(provider: string): IntegrationDefinition | null {
 }
 
 export type IntegrationStatus = "connected" | "error" | "disconnected";
+
+/** Public tracking ids rendered on one store's storefront (P7-03). */
+export type StorefrontTrackingConfig = {
+  metaPixelId: string | null;
+  ga4MeasurementId: string | null;
+  gtmContainerId: string | null;
+};

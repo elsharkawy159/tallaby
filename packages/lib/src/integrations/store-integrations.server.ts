@@ -1,5 +1,11 @@
 import { and, db, eq, sql, storeIntegrations, stores } from "@workspace/db";
-import { INTEGRATIONS, isIntegrationProvider, type IntegrationProvider, type IntegrationStatus } from "./registry";
+import {
+  INTEGRATIONS,
+  isIntegrationProvider,
+  type IntegrationProvider,
+  type IntegrationStatus,
+  type StorefrontTrackingConfig,
+} from "./registry";
 import { readIntegrationId, validateIdentifierConfig } from "./validate";
 
 /**
@@ -166,12 +172,6 @@ export async function disconnectStoreIntegration(
     return { success: true, data: null } as const;
   });
 }
-
-export type StorefrontTrackingConfig = {
-  metaPixelId: string | null;
-  ga4MeasurementId: string | null;
-  gtmContainerId: string | null;
-};
 
 /**
  * Public tracking ids for one store's storefront (P7-03): only connected,

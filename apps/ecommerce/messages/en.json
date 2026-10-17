@@ -1984,6 +1984,12 @@
     "finalDescription": "Share your code. Help people save. Earn when they shop."
   },
   "storefront": {
+    "consent": {
+      "label": "Cookie choice",
+      "text": "This store uses cookies to measure visits and ads. You can accept or decline.",
+      "accept": "Accept",
+      "decline": "Decline"
+    },
     "homeLabel": "{store} home",
     "openCart": "Cart, {count, plural, =0 {empty} one {# item} other {# items}}",
     "categoriesLabel": "Shop by category",
