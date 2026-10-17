@@ -442,7 +442,9 @@
       "order_payment": "Order payment",
       "adjustment": "Adjustment",
       "bonus": "Bonus",
-      "commission_reversal": "Commission reversal"
+      "commission_reversal": "Commission reversal",
+      "service_charge": "Service charge",
+      "fee_reversal": "Fee reversal"
     }
   },
   "home": {
@@ -2445,6 +2447,39 @@
         "name": "Shopify import",
         "description": "Copy your products from a Shopify store."
       }
+    }
+  },
+  "storeWallet": {
+    "title": "Store wallet",
+    "thisMonth": "This month: {sales} in sales, {fees} in fees",
+    "negative": "Your balance is below zero. New sales pay it back automatically, or you can top up at any time.",
+    "howTitle": "How the platform fee works",
+    "how": "For each delivered order, Tallaby charges 2% of what you sold, with a minimum of EGP 5. Shipping is not included. Nothing is charged for cancelled or undelivered orders.",
+    "trialActive": "Free trial: {days, plural, one {# day} other {# days}} left, no fee on orders placed until {date}.",
+    "trialNotStarted": "Your 30-day free trial starts when your store goes live.",
+    "entriesTitle": "Wallet activity",
+    "filterLabel": "Filter activity",
+    "filters": {
+      "all": "All",
+      "sales": "Sales",
+      "fees": "Fees",
+      "topups": "Top-ups",
+      "other": "Other"
+    },
+    "columns": {
+      "date": "Date",
+      "type": "Type",
+      "store": "Store",
+      "order": "Order",
+      "amount": "Amount",
+      "balance": "Balance"
+    },
+    "accountLevel": "Account",
+    "empty": "No wallet activity yet.",
+    "older": "Show older activity",
+    "walletStatus": {
+      "frozen": "Frozen",
+      "closed": "Closed"
     }
   }
 }
