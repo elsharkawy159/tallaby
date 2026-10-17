@@ -1,0 +1,166 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { applyInvalidation, invalidateStorefront } from "@workspace/cache";
+import {
+  createStorePage,
+  deleteStorePage,
+  discardStoreDrafts,
+  getStoreSiteStatus,
+  listStoreRevisions,
+  publishStoreSite,
+  reorderStorePages,
+  restoreRevisionToDraft,
+  saveStoreChrome,
+  saveStoreDesignSystem,
+  saveStorePageDraft,
+  unpublishStoreSite,
+  updateStorePage,
+  type StoreRevisionRow,
+} from "@workspace/lib/store-sites/server";
+import { storeSectionRegistry } from "@workspace/store-sections/render";
+import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
+import { createRateLimiter } from "@/lib/rate-limit.lib";
+import { EDITOR_ERRORS, type EditorErrorKey, type EditorResult } from "./editor.dto";
+
+/**
+ * Website editor actions (PLAN.md P4-04). Every action takes the store id
+ * from the editor URL and re-checks it with requireStore; nothing trusts a
+ * seller or store id from the client. Content is validated against the
+ * section library in @workspace/lib. Publish is rate-limited and only
+ * invalidates this store's storefront.
+ */
+
+const ALLOWED = storeSectionRegistry.allowedSections();
+const saveLimiter = createRateLimiter({ limit: 240, windowMs: 10 * 60_000 });
+const publishLimiter = createRateLimiter({ limit: 20, windowMs: 10 * 60_000 });
+
+type Access = Awaited<ReturnType<typeof requireStore>>;
+
+function fail<T>(error: string | EditorErrorKey): EditorResult<T> {
+  return { success: false, error: EDITOR_ERRORS[error] ?? (error as EditorErrorKey) ?? "generic" };
+}
+
+async function withStore<T>(
+  storeId: string,
+  options: { forWrite?: boolean; forPublish?: boolean },
+  run: (access: Access) => Promise<EditorResult<T>>,
+): Promise<EditorResult<T>> {
+  try {
+    const access = await requireStore(String(storeId), options);
+    return await run(access);
+  } catch (error) {
+    if (isAccessError(error)) return fail(error.code === "store_read_only" ? "readOnly" : error.code === "publish_blocked" ? "publishBlocked" : "notFound");
+    console.error("[store-editor] action failed", (error as Error)?.message);
+    return fail("generic");
+  }
+}
+
+async function invalidateStore(access: Access) {
+  await applyInvalidation(invalidateStorefront([access.store.subdomain]), { from: "dashboard", mode: "action" });
+}
+
+export async function saveDraft(storeId: string, pageId: string, content: unknown, clientVersion: number) {
+  return withStore<{ draftVersion: number }>(storeId, { forWrite: true }, async ({ seller, store }) => {
+    if (!saveLimiter.check(`editor:${seller.sellerId}`)) return fail("rateLimited");
+    const result = await saveStorePageDraft(seller.sellerId, store.id, String(pageId), content, Number(clientVersion), { allowedSections: ALLOWED });
+    return result.success ? result : fail(result.error);
+  });
+}
+
+export async function saveDesignSystem(storeId: string, designSystem: unknown, clientVersion: number) {
+  return withStore<{ version: number }>(storeId, { forWrite: true }, async ({ seller, store }) => {
+    if (!saveLimiter.check(`editor:${seller.sellerId}`)) return fail("rateLimited");
+    const result = await saveStoreDesignSystem(seller.sellerId, store.id, designSystem, Number(clientVersion));
+    return result.success ? result : fail(result.error);
+  });
+}
+
+export async function saveChrome(storeId: string, part: "header" | "footer", instance: unknown) {
+  return withStore<null>(storeId, { forWrite: true }, async ({ seller, store }) => {
+    if (!saveLimiter.check(`editor:${seller.sellerId}`)) return fail("rateLimited");
+    const result = await saveStoreChrome(seller.sellerId, store.id, part, instance, { allowedSections: ALLOWED });
+    return result.success ? result : fail(result.error);
+  });
+}
+
+export async function createPage(storeId: string, input: { name: { ar?: string; en?: string }; slug: string }) {
+  return withStore<{ id: string; slug: string }>(storeId, { forWrite: true }, async ({ seller, store }) => {
+    const result = await createStorePage(seller.sellerId, store.id, input);
+    return result.success ? result : fail(result.error);
+  });
+}
+
+export async function updatePage(
+  storeId: string,
+  pageId: string,
+  input: { name?: { ar?: string; en?: string }; slug?: string; seo?: unknown; showInNav?: boolean },
+) {
+  return withStore<null>(storeId, { forWrite: true }, async ({ seller, store }) => {
+    const result = await updateStorePage(seller.sellerId, store.id, String(pageId), input);
+    return result.success ? result : fail(result.error);
+  });
+}
+
+export async function deletePage(storeId: string, pageId: string) {
+  return withStore<null>(storeId, { forWrite: true }, async ({ seller, store }) => {
+    const result = await deleteStorePage(seller.sellerId, store.id, String(pageId));
+    return result.success ? result : fail(result.error);
+  });
+}
+
+export async function reorderPages(storeId: string, pageIds: string[]) {
+  return withStore<null>(storeId, { forWrite: true }, async ({ seller, store }) => {
+    const result = await reorderStorePages(seller.sellerId, store.id, pageIds);
+    return result.success ? result : fail(result.error);
+  });
+}
+
+export async function publish(storeId: string) {
+  return withStore<{ revisionId: string; revisionNumber: number }>(storeId, { forPublish: true }, async (access) => {
+    if (!publishLimiter.check(`publish:${access.seller.sellerId}`)) return fail("rateLimited");
+    const result = await publishStoreSite(access.seller.sellerId, access.store.id, access.seller.userId, { allowedSections: ALLOWED });
+    if (!result.success) return fail(result.error);
+    await invalidateStore(access);
+    revalidatePath(`/stores/${access.store.id}/website`);
+    return result;
+  });
+}
+
+export async function unpublish(storeId: string) {
+  return withStore<null>(storeId, { forWrite: true }, async (access) => {
+    const result = await unpublishStoreSite(access.seller.sellerId, access.store.id);
+    if (!result.success) return fail(result.error);
+    await invalidateStore(access);
+    revalidatePath(`/stores/${access.store.id}/website`);
+    return result;
+  });
+}
+
+export async function discardDraft(storeId: string) {
+  return withStore<{ pages: number }>(storeId, { forWrite: true }, async ({ seller, store }) => {
+    const result = await discardStoreDrafts(seller.sellerId, store.id);
+    return result.success ? result : fail(result.error);
+  });
+}
+
+export async function listRevisions(storeId: string) {
+  return withStore<StoreRevisionRow[]>(storeId, {}, async ({ seller, store }) => {
+    const rows = await listStoreRevisions(seller.sellerId, store.id);
+    return rows ? { success: true, data: rows } : fail("notFound");
+  });
+}
+
+export async function restoreRevision(storeId: string, revisionId: string) {
+  return withStore<{ pages: number }>(storeId, { forWrite: true }, async ({ seller, store }) => {
+    const result = await restoreRevisionToDraft(seller.sellerId, store.id, String(revisionId));
+    return result.success ? result : fail(result.error);
+  });
+}
+
+export async function siteStatus(storeId: string) {
+  return withStore<NonNullable<Awaited<ReturnType<typeof getStoreSiteStatus>>>>(storeId, {}, async ({ seller, store }) => {
+    const status = await getStoreSiteStatus(seller.sellerId, store.id);
+    return status ? { success: true, data: status } : fail("notFound");
+  });
+}

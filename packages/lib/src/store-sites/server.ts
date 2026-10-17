@@ -10,10 +10,12 @@
  *
  * Every function takes the session's sellerId and checks store ownership.
  */
+import { z } from "zod";
 import {
   and,
   asc,
   db,
+  desc,
   eq,
   isNull,
   max,
@@ -26,6 +28,10 @@ import {
 } from "@workspace/db";
 import {
   CURRENT_SITE_CONFIG_VERSION,
+  MAX_PAGES,
+  RESERVED_PAGE_SLUGS,
+  designSystemSchema,
+  pageSeoSchema,
   type SiteConfig,
   type SiteConfigIssue,
   siteConfigSchema,
@@ -368,4 +374,335 @@ export async function getPublishedStoreSite(storeId: string, q: Queryable = db):
   if (!row) return null;
   const parsed = siteConfigSchema.safeParse(row.snapshot);
   return parsed.success ? parsed.data : null;
+}
+
+// ---------------------------------------------------------------------------
+// Builder: design system, header/footer, pages, revisions (PLAN.md P4-04)
+// ---------------------------------------------------------------------------
+
+const PAGE_SLUG_RE = /^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$/;
+
+const pageNameSchema = z.object({
+  ar: z.string().trim().max(80).optional(),
+  en: z.string().trim().max(80).optional(),
+});
+
+function checkPageSlug(slug: string): "invalid_slug" | "reserved_slug" | null {
+  if (!PAGE_SLUG_RE.test(slug)) return "invalid_slug";
+  if ((RESERVED_PAGE_SLUGS as readonly string[]).includes(slug)) return "reserved_slug";
+  return null;
+}
+
+function pgCode(error: unknown): string | undefined {
+  const e = error as { code?: string; cause?: { code?: string } };
+  return e?.cause?.code ?? e?.code;
+}
+
+type WriteError = "not_found" | "store_read_only";
+
+type OwnStore = NonNullable<Awaited<ReturnType<typeof loadOwnStore>>>;
+
+async function writableStore(
+  q: Queryable,
+  sellerId: string,
+  storeId: string,
+  lock = false,
+): Promise<{ error: WriteError } | { store: OwnStore }> {
+  const store = await loadOwnStore(q, sellerId, storeId, lock);
+  if (!store) return { error: "not_found" as const };
+  if (store.status !== "active") return { error: "store_read_only" as const };
+  return { store };
+}
+
+/** Theme tokens (draft; live on publish). Optimistic concurrency on `version`. */
+export async function saveStoreDesignSystem(
+  sellerId: string,
+  storeId: string,
+  input: unknown,
+  clientVersion: number,
+  q: Queryable = db,
+): Promise<SiteResult<{ version: number }, WriteError | "invalid_content" | "version_conflict">> {
+  const found = await writableStore(q, sellerId, storeId);
+  if ("error" in found) return { success: false, error: found.error };
+  const parsed = designSystemSchema.safeParse(input);
+  if (!parsed.success || !Number.isInteger(clientVersion)) return { success: false, error: "invalid_content" };
+  await ensureStoreSiteScaffold(q, storeId);
+  const [row] = await q
+    .update(storeDesignSystems)
+    .set({ ...parsed.data, version: sql`${storeDesignSystems.version} + 1`, updatedAt: sql`now()` })
+    .where(and(eq(storeDesignSystems.storeId, storeId), eq(storeDesignSystems.version, clientVersion)))
+    .returning({ version: storeDesignSystems.version });
+  return row ? { success: true, data: { version: row.version } } : { success: false, error: "version_conflict" };
+}
+
+/** The shared header or footer (null removes it). Validated like page content. */
+export async function saveStoreChrome(
+  sellerId: string,
+  storeId: string,
+  part: "header" | "footer",
+  instance: unknown,
+  options: BuilderOptions = {},
+  q: Queryable = db,
+): Promise<SiteResult<null, WriteError | "invalid_content">> {
+  if (part !== "header" && part !== "footer") return { success: false, error: "invalid_content" };
+  const found = await writableStore(q, sellerId, storeId);
+  if ("error" in found) return { success: false, error: found.error };
+  let value: unknown = null;
+  if (instance !== null) {
+    const validated = validatePageContent({ sections: [instance] }, { allowedSections: options.allowedSections });
+    if (!validated.success) return { success: false, error: "invalid_content", issues: validated.issues };
+    if (validated.data.sections.length !== 1) return { success: false, error: "invalid_content" };
+    value = validated.data.sections[0];
+  }
+  await q
+    .update(stores)
+    .set(part === "header" ? { sharedHeader: value, updatedAt: sql`now()` } : { sharedFooter: value, updatedAt: sql`now()` })
+    .where(and(eq(stores.id, storeId), eq(stores.sellerId, sellerId)));
+  return { success: true, data: null };
+}
+
+export type PageWriteError = WriteError | "invalid_input" | "invalid_slug" | "reserved_slug" | "slug_taken" | "too_many_pages";
+
+/** A new, empty page at the end of the menu. */
+export async function createStorePage(
+  sellerId: string,
+  storeId: string,
+  input: { name: unknown; slug: unknown },
+  q: Queryable = db,
+): Promise<SiteResult<{ id: string; slug: string }, PageWriteError>> {
+  const name = pageNameSchema.safeParse(input?.name);
+  const slug = typeof input?.slug === "string" ? input.slug.trim().toLowerCase() : "";
+  if (!name.success || !(name.data.ar || name.data.en)) return { success: false, error: "invalid_input" };
+  const slugProblem = checkPageSlug(slug);
+  if (slugProblem) return { success: false, error: slugProblem };
+  try {
+    const row = await q.transaction(async (tx) => {
+      const found = await writableStore(tx, sellerId, storeId, true);
+      if ("error" in found) throw new SiteError(found.error);
+      const [stats] = await tx
+        .select({ count: sql<number>`count(*)::int`, last: sql<number>`coalesce(max(${storePages.orderIndex}), 0)::int` })
+        .from(storePages)
+        .where(eq(storePages.storeId, storeId));
+      if ((stats?.count ?? 0) >= MAX_PAGES) throw new SiteError("too_many_pages");
+      const [created] = await tx
+        .insert(storePages)
+        .values({ storeId, slug, name: name.data, orderIndex: (stats?.last ?? 0) + 1 })
+        .returning({ id: storePages.id, slug: storePages.slug });
+      return created!;
+    });
+    return { success: true, data: row };
+  } catch (error) {
+    if (error instanceof SiteError) return { success: false, error: error.code as PageWriteError };
+    if (pgCode(error) === "23505") return { success: false, error: "slug_taken" };
+    throw error;
+  }
+}
+
+/** Rename, re-slug, SEO and menu visibility of a page. The home page keeps its slug. */
+export async function updateStorePage(
+  sellerId: string,
+  storeId: string,
+  pageId: string,
+  input: { name?: unknown; slug?: unknown; seo?: unknown; showInNav?: unknown },
+  q: Queryable = db,
+): Promise<SiteResult<null, PageWriteError>> {
+  if (!UUID_RE.test(pageId)) return { success: false, error: "not_found" };
+  const found = await writableStore(q, sellerId, storeId);
+  if ("error" in found) return { success: false, error: found.error };
+
+  const patch: Record<string, unknown> = {};
+  if (input.name !== undefined) {
+    const name = pageNameSchema.safeParse(input.name);
+    if (!name.success || !(name.data.ar || name.data.en)) return { success: false, error: "invalid_input" };
+    patch.name = name.data;
+  }
+  if (input.seo !== undefined) {
+    const seo = pageSeoSchema.safeParse(input.seo);
+    if (!seo.success) return { success: false, error: "invalid_input" };
+    patch.seo = seo.data;
+  }
+  if (input.showInNav !== undefined) {
+    if (typeof input.showInNav !== "boolean") return { success: false, error: "invalid_input" };
+    patch.showInNav = input.showInNav;
+  }
+  let slug: string | undefined;
+  if (input.slug !== undefined) {
+    slug = typeof input.slug === "string" ? input.slug.trim().toLowerCase() : "";
+    const slugProblem = checkPageSlug(slug);
+    if (slugProblem) return { success: false, error: slugProblem };
+  }
+
+  try {
+    const [page] = await q
+      .select({ isHome: storePages.isHome })
+      .from(storePages)
+      .where(and(eq(storePages.id, pageId), eq(storePages.storeId, storeId)));
+    if (!page) return { success: false, error: "not_found" };
+    if (slug !== undefined && !page.isHome) patch.slug = slug;
+    if (Object.keys(patch).length === 0) return { success: true, data: null };
+    await q
+      .update(storePages)
+      .set({ ...patch, updatedAt: sql`now()` })
+      .where(and(eq(storePages.id, pageId), eq(storePages.storeId, storeId)));
+    return { success: true, data: null };
+  } catch (error) {
+    if (pgCode(error) === "23505") return { success: false, error: "slug_taken" };
+    throw error;
+  }
+}
+
+/** Deletes a draft page (it leaves the live site at the next publish). Never the home page. */
+export async function deleteStorePage(
+  sellerId: string,
+  storeId: string,
+  pageId: string,
+  q: Queryable = db,
+): Promise<SiteResult<null, WriteError | "home_page">> {
+  if (!UUID_RE.test(pageId)) return { success: false, error: "not_found" };
+  const found = await writableStore(q, sellerId, storeId);
+  if ("error" in found) return { success: false, error: found.error };
+  const [page] = await q
+    .select({ isHome: storePages.isHome })
+    .from(storePages)
+    .where(and(eq(storePages.id, pageId), eq(storePages.storeId, storeId)));
+  if (!page) return { success: false, error: "not_found" };
+  if (page.isHome) return { success: false, error: "home_page" };
+  await q.delete(storePages).where(and(eq(storePages.id, pageId), eq(storePages.storeId, storeId)));
+  return { success: true, data: null };
+}
+
+/** New menu order; `pageIds` must be exactly this store's pages. */
+export async function reorderStorePages(
+  sellerId: string,
+  storeId: string,
+  pageIds: unknown,
+  q: Queryable = db,
+): Promise<SiteResult<null, WriteError | "invalid_input">> {
+  if (!Array.isArray(pageIds) || pageIds.some((id) => typeof id !== "string" || !UUID_RE.test(id))) {
+    return { success: false, error: "invalid_input" };
+  }
+  const ids = pageIds as string[];
+  try {
+    await q.transaction(async (tx) => {
+      const found = await writableStore(tx, sellerId, storeId, true);
+      if ("error" in found) throw new SiteError(found.error);
+      const pages = await tx.select({ id: storePages.id }).from(storePages).where(eq(storePages.storeId, storeId));
+      const own = new Set(pages.map((p) => p.id));
+      if (ids.length !== own.size || new Set(ids).size !== own.size || ids.some((id) => !own.has(id))) {
+        throw new SiteError("invalid_input");
+      }
+      for (const [index, id] of ids.entries()) {
+        await tx.update(storePages).set({ orderIndex: index }).where(and(eq(storePages.id, id), eq(storePages.storeId, storeId)));
+      }
+    });
+    return { success: true, data: null };
+  } catch (error) {
+    if (error instanceof SiteError) return { success: false, error: error.code as WriteError | "invalid_input" };
+    throw error;
+  }
+}
+
+/** Takes the builder site offline: the storefront shows the default Tallaby Classic page again. */
+export async function unpublishStoreSite(
+  sellerId: string,
+  storeId: string,
+  q: Queryable = db,
+): Promise<SiteResult<null, WriteError | "not_published">> {
+  const found = await writableStore(q, sellerId, storeId);
+  if ("error" in found) return { success: false, error: found.error };
+  const updated = await q
+    .update(stores)
+    .set({ publishedRevisionId: null, siteStatus: "unpublished", updatedAt: sql`now()` })
+    .where(and(eq(stores.id, storeId), eq(stores.sellerId, sellerId), sql`${stores.publishedRevisionId} IS NOT NULL`))
+    .returning({ id: stores.id });
+  return updated.length ? { success: true, data: null } : { success: false, error: "not_published" };
+}
+
+/** Throws away unpublished changes: drafts become the live revision again. */
+export async function discardStoreDrafts(
+  sellerId: string,
+  storeId: string,
+  q: Queryable = db,
+): Promise<SiteResult<{ pages: number }, WriteError | "not_published" | "invalid_site">> {
+  const store = await loadOwnStore(q, sellerId, storeId);
+  if (!store) return { success: false, error: "not_found" };
+  const [row] = await q.select({ revisionId: stores.publishedRevisionId }).from(stores).where(eq(stores.id, storeId));
+  if (!row?.revisionId) return { success: false, error: "not_published" };
+  return restoreRevisionToDraft(sellerId, storeId, row.revisionId, q);
+}
+
+export type StoreRevisionRow = {
+  id: string;
+  revisionNumber: number;
+  createdAt: string;
+  publishedBy: string | null;
+  isLive: boolean;
+};
+
+/** Newest first. */
+export async function listStoreRevisions(
+  sellerId: string,
+  storeId: string,
+  limit = 20,
+  q: Queryable = db,
+): Promise<StoreRevisionRow[] | null> {
+  const store = await loadOwnStore(q, sellerId, storeId);
+  if (!store) return null;
+  const [live] = await q.select({ id: stores.publishedRevisionId }).from(stores).where(eq(stores.id, storeId));
+  const rows = await q
+    .select({
+      id: storeSiteRevisions.id,
+      revisionNumber: storeSiteRevisions.revisionNumber,
+      createdAt: storeSiteRevisions.createdAt,
+      publishedBy: storeSiteRevisions.publishedBy,
+    })
+    .from(storeSiteRevisions)
+    .where(eq(storeSiteRevisions.storeId, storeId))
+    .orderBy(desc(storeSiteRevisions.revisionNumber))
+    .limit(Math.min(Math.max(limit, 1), 100));
+  return rows.map((row) => ({ ...row, isLive: row.id === live?.id }));
+}
+
+/** JSON with sorted object keys, for comparing configs. */
+function stableStringify(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(stableStringify).join(",")}]`;
+  if (value && typeof value === "object") {
+    return `{${Object.keys(value as Record<string, unknown>)
+      .sort()
+      .filter((key) => (value as Record<string, unknown>)[key] !== undefined)
+      .map((key) => `${JSON.stringify(key)}:${stableStringify((value as Record<string, unknown>)[key])}`)
+      .join(",")}}`;
+  }
+  return JSON.stringify(value);
+}
+
+/**
+ * Publish state for the editor and the Website overview. "Unpublished
+ * changes" compares the validated drafts with the live revision, so store
+ * settings changes (which also touch the stores row) never count.
+ */
+export async function getStoreSiteStatus(sellerId: string, storeId: string, q: Queryable = db) {
+  const store = await loadOwnStore(q, sellerId, storeId);
+  if (!store) return null;
+  const [row] = await q
+    .select({
+      siteStatus: stores.siteStatus,
+      lastPublishedAt: stores.lastPublishedAt,
+      snapshot: storeSiteRevisions.snapshot,
+    })
+    .from(stores)
+    .leftJoin(storeSiteRevisions, eq(storeSiteRevisions.id, stores.publishedRevisionId))
+    .where(eq(stores.id, storeId));
+
+  const draft = validateSiteConfig(await buildDraftSiteConfig(q, store));
+  const live = row?.snapshot ? siteConfigSchema.safeParse(row.snapshot) : null;
+  const hasUnpublishedChanges =
+    !live?.success || !draft.success || stableStringify(draft.data) !== stableStringify(live.data);
+
+  return {
+    siteStatus: row!.siteStatus as "draft" | "published" | "unpublished",
+    isLive: Boolean(row?.snapshot),
+    lastPublishedAt: row!.lastPublishedAt,
+    hasUnpublishedChanges,
+  };
 }
