@@ -434,6 +434,14 @@ export const sellers = pgTable("sellers", {
 	planExpiresAt: timestamp("plan_expires_at", { withTimezone: true, mode: 'string' }),
 	/** Audited admin override of the plan's store limit (D27). NULL = plan limit. */
 	maxStoresOverride: integer("max_stores_override"),
+	/** Platform fee plan; rates live in @workspace/lib/orders/platform-fee (0059). */
+	feePlan: text("fee_plan").default('standard_2pct_min5').notNull(),
+	/** New sellers get the 30-day no-fee trial (D5); existing sellers were backfilled false (0059). */
+	feeTrialEligible: boolean("fee_trial_eligible").default(true).notNull(),
+	/** Set once by startFeeTrialIfNeeded, together with feeTrialEndsAt (0059). */
+	feeTrialStartedAt: timestamp("fee_trial_started_at", { withTimezone: true, mode: 'string' }),
+	feeTrialEndsAt: timestamp("fee_trial_ends_at", { withTimezone: true, mode: 'string' }),
+	feePlanEffectiveAt: timestamp("fee_plan_effective_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 }, (table) => [

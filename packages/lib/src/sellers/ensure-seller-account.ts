@@ -95,6 +95,8 @@ export async function ensureSellerAccount(
           supportPhone: phone,
           status: "approved",
           onboardingComplete: false,
+          // New sellers get the 30-day no-fee trial (D5, P6-02).
+          feeTrialEligible: true,
         })
         .onConflictDoNothing({ target: sellers.id })
         .returning({ id: sellers.id });
