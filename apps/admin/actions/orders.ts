@@ -2,7 +2,8 @@
 
 import { db } from "@workspace/db";
 import { orders, orderItems, users, products, sellers } from "@workspace/db";
-import { eq, and, desc, sql, gte, lte, like, or, inArray } from "drizzle-orm";
+import { eq, and, desc, sql, gte, lte, like, or, inArray, notInArray } from "drizzle-orm";
+import { creditSellerOnDelivery } from "@workspace/db/wallet";
 import { fulfillDigitalOrderItems } from "@workspace/lib/digital";
 import {
   scheduleAffiliateCommissionRelease,
@@ -209,6 +210,20 @@ export async function updateOrderStatus(
       }
 
       if (status === "delivered") {
+        // Same effect as the shipping app's delivered event: open lines are
+        // delivered and the sellers' store wallets get their entries
+        // (PLAN.md P6-05). Both are idempotent.
+        const deliveredAt = new Date().toISOString();
+        await tx
+          .update(orderItems)
+          .set({ status: "delivered", deliveredAt, updatedAt: deliveredAt })
+          .where(
+            and(
+              eq(orderItems.orderId, orderId),
+              notInArray(orderItems.status, ["cancelled", "returned", "refunded", "delivered"])
+            )
+          );
+        await creditSellerOnDelivery(tx, orderId);
         await scheduleAffiliateCommissionRelease(tx, orderId);
       } else if (status === "returned" || status === "refunded") {
         await reverseAffiliateCommission(tx, orderId);

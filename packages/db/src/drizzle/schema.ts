@@ -17,7 +17,8 @@ export const shippingSpeed = pgEnum("shipping_speed", ['standard', 'expedited', 
 export const userRole = pgEnum("user_role", ['customer', 'seller', 'admin', 'support', 'driver', 'marketing'])
 export const productType = pgEnum("product_type", ['physical', 'digital'])
 export const productStatus = pgEnum("product_status", ['draft', 'pending', 'active', 'rejected'])
-export const transactionType = pgEnum("transaction_type", ['sale', 'refund', 'withdrawal', 'fee'])
+/** Seller ledger entry types; top_up, service_charge, adjustment and fee_reversal added for the store wallet (0060). */
+export const transactionType = pgEnum("transaction_type", ['sale', 'refund', 'withdrawal', 'fee', 'top_up', 'service_charge', 'adjustment', 'fee_reversal'])
 export const digitalProductType = pgEnum("digital_product_type", ['digital_download', 'ebook', 'template', 'design_asset', 'audio', 'video', 'course', 'ai_prompt', 'software', 'font', 'printable', 'game_asset', 'gift_card', 'license_key', 'external_access', 'bundle'])
 export const digitalDeliveryMethod = pgEnum("digital_delivery_method", ['automatic', 'manual'])
 export const digitalFulfillmentStatus = pgEnum("digital_fulfillment_status", ['pending', 'delivered', 'downloaded', 'expired', 'revoked', 'failed'])
@@ -1779,9 +1780,13 @@ export const sellerCategories = pgTable("seller_categories", {
 export const sellerWallet = pgTable("seller_wallet", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	sellerId: uuid("seller_id").notNull(),
+	/** Signed: the store wallet may go negative (0060). Changed only by postStoreWalletEntry. */
 	balance: numeric({ precision: 10, scale: 2 }).default('0').notNull(),
 	currency: text().default('EGP').notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	status: walletStatus().default('active').notNull(),
+	/** How far below zero optional purchases may take it; NULL = no limit (D21, 0060). */
+	negativeLimit: numeric("negative_limit", { precision: 10, scale: 2 }),
 }, (table) => [
 	uniqueIndex("seller_wallet_seller_id_idx").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops")),
 	foreignKey({
@@ -1801,7 +1806,30 @@ export const walletTransactions = pgTable("wallet_transactions", {
 	orderId: uuid("order_id"),
 	description: text(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	/** The store the entry belongs to, for per-store reporting; NULL for account-level entries (0060). */
+	storeId: uuid("store_id"),
+	/** Idempotency claim: unique per (seller, type, reference_type, reference_id) (0060). */
+	referenceType: text("reference_type"),
+	referenceId: text("reference_id"),
+	balanceBefore: numeric("balance_before", { precision: 10, scale: 2 }),
+	balanceAfter: numeric("balance_after", { precision: 10, scale: 2 }),
+	metadata: jsonb(),
+	createdBy: uuid("created_by"),
 }, (table) => [
+	uniqueIndex("wallet_transactions_reference_once").using("btree", table.sellerId, table.type, table.referenceType, table.referenceId).where(sql`reference_type IS NOT NULL`),
+	uniqueIndex("wallet_transactions_sale_once").using("btree", table.sellerId, table.orderId).where(sql`type = 'sale' AND reference_type IS NULL`),
+	index("wallet_transactions_store_id_idx").using("btree", table.storeId.asc().nullsLast().op("uuid_ops")),
+	index("wallet_transactions_order_id_idx").using("btree", table.orderId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+		columns: [table.storeId],
+		foreignColumns: [stores.id],
+		name: "wallet_transactions_store_id_fkey"
+	}).onDelete("set null"),
+	foreignKey({
+		columns: [table.createdBy],
+		foreignColumns: [users.id],
+		name: "wallet_transactions_created_by_fkey"
+	}).onDelete("set null"),
 	index("wallet_transactions_seller_id_idx").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops")),
 	index("wallet_transactions_type_idx").using("btree", table.type.asc().nullsLast().op("enum_ops")),
 	foreignKey({
@@ -2961,4 +2989,44 @@ export const storeShippingZones = pgTable("store_shipping_zones", {
 	check("store_shipping_zones_free_over_check", sql`free_over IS NULL OR free_over >= 0`),
 	check("store_shipping_zones_days_check", sql`delivery_days_min >= 0 AND delivery_days_max >= delivery_days_min`),
 	check("store_shipping_zones_governorates_check", sql`cardinality(governorates) > 0`),
+]);
+
+/** Store-wallet top-ups, confirmed only by the provider webhook (0060, P6-09/P6-10). */
+export const sellerWalletTopUps = pgTable("seller_wallet_top_ups", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	amount: numeric({ precision: 10, scale: 2 }).notNull(),
+	currency: text().default('EGP').notNull(),
+	status: walletTopUpStatus().default('pending').notNull(),
+	provider: text().default('kashier').notNull(),
+	/** Kashier merchantOrderId "stopup_<uuid>". */
+	providerReference: text("provider_reference"),
+	providerTransactionId: text("provider_transaction_id"),
+	transactionId: uuid("transaction_id"),
+	failureReason: text("failure_reason"),
+	metadata: jsonb(),
+	createdBy: uuid("created_by"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("seller_wallet_top_ups_provider_txn").using("btree", table.provider, table.providerTransactionId).where(sql`provider_transaction_id IS NOT NULL`),
+	uniqueIndex("seller_wallet_top_ups_provider_ref").using("btree", table.provider, table.providerReference).where(sql`provider_reference IS NOT NULL`),
+	index("seller_wallet_top_ups_seller_idx").using("btree", table.sellerId, table.createdAt.desc()),
+	foreignKey({
+			columns: [table.sellerId],
+			foreignColumns: [sellers.id],
+			name: "seller_wallet_top_ups_seller_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.transactionId],
+			foreignColumns: [walletTransactions.id],
+			name: "seller_wallet_top_ups_transaction_id_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.createdBy],
+			foreignColumns: [users.id],
+			name: "seller_wallet_top_ups_created_by_fkey"
+		}).onDelete("set null"),
+	check("seller_wallet_top_ups_amount_check", sql`amount > 0`),
+	check("seller_wallet_top_ups_currency_check", sql`currency = 'EGP'`),
 ]);
