@@ -20,6 +20,7 @@ import {
   storeDesignSystems,
   storePages,
   storeSettingsAudit,
+  storeShippingZones,
   stores,
   sql,
 } from "@workspace/db";
@@ -32,6 +33,14 @@ import {
   type StorePayments,
 } from "../payments/store-methods";
 import { canCreateStore } from "../plans";
+import {
+  MAX_ZONES_PER_STORE,
+  findZoneOverlap,
+  parseStoreShipping,
+  storeShippingSettingsSchema,
+  zoneInputSchema,
+  type StoreShippingSettings,
+} from "../shipping/store-zones";
 import { normalizeSubdomain, validateSubdomain } from "../storefront";
 import {
   createStoreInputSchema,
@@ -500,5 +509,219 @@ export async function updateStorePaymentMethod(
   } catch (error) {
     if (error instanceof StoreActionError) return { success: false, error: error.code as StorePaymentsError };
     throw error;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Shipping (P3-08 Part A). Checkout does not read these yet (Part B).
+// ---------------------------------------------------------------------------
+
+export type StoreShippingZone = {
+  id: string;
+  nameAr: string;
+  nameEn: string | null;
+  governorates: string[];
+  price: number;
+  perKgSurcharge: number;
+  freeOver: number | null;
+  deliveryDaysMin: number;
+  deliveryDaysMax: number;
+  codEnabled: boolean;
+  enabled: boolean;
+};
+
+export type StoreShippingError = StoreWriteError | "overlap" | "too_many_zones" | "no_zones";
+
+function toZone(row: typeof storeShippingZones.$inferSelect): StoreShippingZone {
+  const name = (row.name ?? {}) as { ar?: string; en?: string };
+  return {
+    id: row.id,
+    nameAr: name.ar ?? "",
+    nameEn: name.en ?? null,
+    governorates: row.governorates,
+    price: Number(row.price),
+    perKgSurcharge: Number(row.perKgSurcharge),
+    freeOver: row.freeOver === null ? null : Number(row.freeOver),
+    deliveryDaysMin: row.deliveryDaysMin,
+    deliveryDaysMax: row.deliveryDaysMax,
+    codEnabled: row.codEnabled,
+    enabled: row.enabled,
+  };
+}
+
+const egp = (n: number) => n.toFixed(2);
+
+/** Settings + zones for Store settings › Shipping, or null for a foreign store. */
+export async function getStoreShipping(
+  sellerId: string,
+  storeId: string,
+  q: Queryable = db,
+): Promise<{ settings: StoreShippingSettings; zones: StoreShippingZone[] } | null> {
+  const store = await getStore(sellerId, storeId, q);
+  if (!store) return null;
+  const rows = await q
+    .select()
+    .from(storeShippingZones)
+    .where(eq(storeShippingZones.storeId, storeId))
+    .orderBy(asc(storeShippingZones.sortOrder), asc(storeShippingZones.createdAt));
+  return {
+    settings: parseStoreShipping((store.settings as Record<string, unknown> | null)?.shipping),
+    zones: rows.map(toZone),
+  };
+}
+
+async function lockActiveStore(tx: Tx, sellerId: string, storeId: string) {
+  if (!UUID_RE.test(storeId)) throw new StoreActionError("not_found");
+  const [store] = await tx
+    .select({ settings: stores.settings, status: stores.status })
+    .from(stores)
+    .where(ownStore(sellerId, storeId))
+    .for("update");
+  if (!store) throw new StoreActionError("not_found");
+  if (store.status !== "active") throw new StoreActionError("store_read_only");
+  return store;
+}
+
+async function zonesOf(tx: Tx, storeId: string) {
+  return (await tx.select().from(storeShippingZones).where(eq(storeShippingZones.storeId, storeId))).map(toZone);
+}
+
+function shippingFailure(error: unknown): { success: false; error: StoreShippingError } {
+  if (error instanceof StoreActionError) return { success: false, error: error.code as StoreShippingError };
+  if (pgErrorCode(error) === "23P01") return { success: false, error: "overlap" };
+  throw error;
+}
+
+/** Creates (zoneId null) or updates one own-delivery zone. No governorate may sit in two enabled zones. */
+export async function saveStoreShippingZone(
+  sellerId: string,
+  actorId: string,
+  storeId: string,
+  zoneId: string | null,
+  input: unknown,
+  q: Queryable = db,
+): Promise<StoreResult<StoreShippingZone, StoreShippingError>> {
+  const parsed = zoneInputSchema.safeParse(input);
+  if (!parsed.success) return { success: false, error: "invalid_input" };
+  if (zoneId !== null && !UUID_RE.test(zoneId)) return { success: false, error: "not_found" };
+  const z = parsed.data;
+  const values = {
+    name: { ar: z.nameAr, ...(z.nameEn && { en: z.nameEn }) },
+    governorates: z.governorates,
+    price: egp(z.price),
+    perKgSurcharge: egp(z.perKgSurcharge),
+    freeOver: z.freeOver === null ? null : egp(z.freeOver),
+    deliveryDaysMin: z.deliveryDaysMin,
+    deliveryDaysMax: z.deliveryDaysMax,
+    codEnabled: z.codEnabled,
+    enabled: z.enabled,
+  };
+  try {
+    const data = await q.transaction(async (tx) => {
+      const store = await lockActiveStore(tx, sellerId, storeId);
+      const existing = await zonesOf(tx, storeId);
+      if (zoneId !== null && !existing.some((e) => e.id === zoneId)) throw new StoreActionError("not_found");
+      if (zoneId === null && existing.length >= MAX_ZONES_PER_STORE) throw new StoreActionError("too_many_zones");
+      const id = zoneId ?? "new";
+      const next = [...existing.filter((e) => e.id !== id), { id, governorates: z.governorates, enabled: z.enabled }];
+      if (findZoneOverlap(next)) throw new StoreActionError("overlap");
+      const settings = parseStoreShipping((store.settings as Record<string, unknown> | null)?.shipping);
+      if (settings.method === "own" && !next.some((e) => e.enabled)) throw new StoreActionError("no_zones");
+
+      const [row] =
+        zoneId === null
+          ? await tx
+              .insert(storeShippingZones)
+              .values({ storeId, sortOrder: existing.length, ...values })
+              .returning()
+          : await tx
+              .update(storeShippingZones)
+              .set({ ...values, updatedAt: sql`now()` })
+              .where(and(eq(storeShippingZones.id, zoneId), eq(storeShippingZones.storeId, storeId)))
+              .returning();
+      await tx.insert(storeSettingsAudit).values({
+        storeId,
+        sellerId,
+        actorId,
+        section: "shipping",
+        action: zoneId === null ? "zone_created" : "zone_updated",
+        changes: { zoneId: row!.id, ...values },
+      });
+      return toZone(row!);
+    });
+    return { success: true, data };
+  } catch (error) {
+    return shippingFailure(error);
+  }
+}
+
+/** Deletes one zone. The last enabled zone of an own-delivery store cannot go. */
+export async function deleteStoreShippingZone(
+  sellerId: string,
+  actorId: string,
+  storeId: string,
+  zoneId: string,
+  q: Queryable = db,
+): Promise<StoreResult<{ id: string }, StoreShippingError>> {
+  if (!UUID_RE.test(zoneId)) return { success: false, error: "not_found" };
+  try {
+    await q.transaction(async (tx) => {
+      const store = await lockActiveStore(tx, sellerId, storeId);
+      const zones = await zonesOf(tx, storeId);
+      const zone = zones.find((z) => z.id === zoneId);
+      if (!zone) throw new StoreActionError("not_found");
+      const settings = parseStoreShipping((store.settings as Record<string, unknown> | null)?.shipping);
+      if (settings.method === "own" && !zones.some((z) => z.enabled && z.id !== zoneId)) throw new StoreActionError("no_zones");
+      await tx.delete(storeShippingZones).where(and(eq(storeShippingZones.id, zoneId), eq(storeShippingZones.storeId, storeId)));
+      await tx.insert(storeSettingsAudit).values({
+        storeId,
+        sellerId,
+        actorId,
+        section: "shipping",
+        action: "zone_deleted",
+        changes: { zoneId, name: { ar: zone.nameAr }, governorates: zone.governorates },
+      });
+    });
+    return { success: true, data: { id: zoneId } };
+  } catch (error) {
+    return shippingFailure(error);
+  }
+}
+
+/** Store-level shipping settings. "Own delivery" needs at least one enabled zone. */
+export async function updateStoreShippingSettings(
+  sellerId: string,
+  actorId: string,
+  storeId: string,
+  input: unknown,
+  q: Queryable = db,
+): Promise<StoreResult<StoreShippingSettings, StoreShippingError>> {
+  const parsed = storeShippingSettingsSchema.safeParse(input);
+  if (!parsed.success) return { success: false, error: "invalid_input" };
+  try {
+    const data = await q.transaction(async (tx) => {
+      const store = await lockActiveStore(tx, sellerId, storeId);
+      if (parsed.data.method === "own" && !(await zonesOf(tx, storeId)).some((z) => z.enabled)) {
+        throw new StoreActionError("no_zones");
+      }
+      const settings = (store.settings ?? {}) as Record<string, unknown>;
+      const before = parseStoreShipping(settings.shipping);
+      await tx
+        .update(stores)
+        .set({ settings: { ...settings, shipping: parsed.data }, updatedAt: sql`now()` })
+        .where(ownStore(sellerId, storeId));
+      await tx.insert(storeSettingsAudit).values({
+        storeId,
+        sellerId,
+        actorId,
+        section: "shipping",
+        action: before.method === parsed.data.method ? "settings_updated" : `method_${parsed.data.method}`,
+        changes: { before, after: parsed.data },
+      });
+      return parsed.data;
+    });
+    return { success: true, data };
+  } catch (error) {
+    return shippingFailure(error);
   }
 }

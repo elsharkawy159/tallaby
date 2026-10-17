@@ -62,7 +62,7 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
       // /shipping redirects here (P3-06).
       { key: "deliveryTracking", href: "/orders/delivery", countKey: "shipping", status: "live" },
       { key: "riders", href: "/orders/riders", status: "live" },
-      { key: "shippingSettings", href: "/stores/[storeId]/shipping", status: "planned" },
+      { key: "shippingSettings", href: "/stores/[storeId]/shipping", status: "live" },
     ],
   },
   {

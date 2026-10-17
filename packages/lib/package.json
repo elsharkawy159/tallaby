@@ -38,6 +38,10 @@
       "types": "./src/shipping/index.ts",
       "default": "./src/shipping/index.ts"
     },
+    "./shipping/store-zones": {
+      "types": "./src/shipping/store-zones.ts",
+      "default": "./src/shipping/store-zones.ts"
+    },
     "./paymob": {
       "types": "./src/paymob/index.ts",
       "default": "./src/paymob/index.ts"
