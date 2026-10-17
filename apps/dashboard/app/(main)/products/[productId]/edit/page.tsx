@@ -45,6 +45,8 @@ export default async function EditProductPage({
     commissionRate: seller?.commissionRate ?? DEFAULT_COMMISSION_RATE,
     isCommissionExempt: seller?.isCommissionExempt ?? false,
     sellerFreeDelivery: seller?.freeDelivery ?? false,
+    feeTrialStartedAt: seller?.feeTrialStartedAt ?? null,
+    feeTrialEndsAt: seller?.feeTrialEndsAt ?? null,
   };
   const defaultValues = buildEditDefaultValues(
     product as Parameters<typeof buildEditDefaultValues>[0],

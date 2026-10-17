@@ -4,6 +4,7 @@ import {
   STANDARD_FEE_PLAN,
   allocateFeeAcrossLines,
   computePlatformFeePiastres,
+  computeOrderLineFees,
   computeSellerPlatformFee,
   eligibleSubtotalForSeller,
   isTrialActive,
@@ -182,5 +183,43 @@ describe('computeSellerPlatformFee', () => {
 
   it('uses the current time by default', () => {
     expect(computeSellerPlatformFee({}, [{ total: 500 }]).feePiastres).toBe(1_000)
+  })
+})
+
+describe('computeOrderLineFees (D22)', () => {
+  const at = new Date('2026-11-15T12:00:00.000Z')
+
+  it('charges each seller on its own lines and keeps the line order', () => {
+    const fees = computeOrderLineFees(
+      [
+        { sellerId: 'a', total: '300.00' },
+        { sellerId: 'b', total: '100.00' },
+        { sellerId: 'a', total: '50.00' },
+      ],
+      new Map([['b', { isCommissionExempt: true }]]),
+      at,
+    )
+    expect(fees.map((fee) => fee.commissionAmount)).toEqual(['6.00', '0.00', '1.00'])
+    expect(fees.map((fee) => fee.sellerEarning)).toEqual(['294.00', '100.00', '49.00'])
+    expect(fees[0]!.platformFee).toBe(fees[2]!.platformFee)
+    expect(fees[0]!.platformFee.feePiastres).toBe(700)
+    expect(fees[1]!.platformFee.exempt).toBe(true)
+    expect(fees[0]!.commissionRate).toBe(0.02)
+  })
+
+  it('charges the minimum to each seller separately', () => {
+    const fees = computeOrderLineFees(
+      [
+        { sellerId: 'a', total: 100 },
+        { sellerId: 'b', total: 100 },
+      ],
+      new Map(),
+      at,
+    )
+    expect(fees.map((fee) => fee.commissionAmount)).toEqual(['5.00', '5.00'])
+  })
+
+  it('returns nothing for no lines', () => {
+    expect(computeOrderLineFees([], new Map())).toEqual([])
   })
 })

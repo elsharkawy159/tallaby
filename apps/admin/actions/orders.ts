@@ -2,7 +2,7 @@
 
 import { db } from "@workspace/db";
 import { orders, orderItems, users, products, sellers } from "@workspace/db";
-import { eq, and, desc, sql, gte, lte, like, or } from "drizzle-orm";
+import { eq, and, desc, sql, gte, lte, like, or, inArray } from "drizzle-orm";
 import { fulfillDigitalOrderItems } from "@workspace/lib/digital";
 import {
   scheduleAffiliateCommissionRelease,
@@ -11,6 +11,7 @@ import {
 } from "@workspace/db/affiliates";
 import {
   PLATFORM_COMMISSION_RATE,
+  computeOrderLineFees,
   formatDecimal,
   type OrderDiscountLine,
 } from "@workspace/lib/orders";
@@ -342,9 +343,43 @@ export async function updateOrderPricing(orderId: string, input: unknown) {
       return { success: false, error: "Order item does not belong to this order" };
     }
 
-    const itemUpdates = existing.orderItems.map((item) => {
+    const lineSubtotals = existing.orderItems.map(
+      (item) => (priceByItemId.get(item.id) ?? Number(item.price)) * item.quantity
+    );
+
+    // Orders placed with the platform fee (PLAN.md P6-04) are charged again
+    // with the same rules, as of the order date (trial included). Older orders
+    // keep scaling their stored 5% rate.
+    const hasFeeSnapshot = existing.orderItems.some(
+      (item) => (item.metadata as { platformFee?: unknown } | null)?.platformFee != null
+    );
+    let lineFees: ReturnType<typeof computeOrderLineFees> | null = null;
+    if (hasFeeSnapshot) {
+      const sellerIds = [...new Set(existing.orderItems.map((item) => item.sellerId))];
+      const profiles = await db
+        .select({
+          id: sellers.id,
+          feePlan: sellers.feePlan,
+          feeTrialStartedAt: sellers.feeTrialStartedAt,
+          feeTrialEndsAt: sellers.feeTrialEndsAt,
+          isCommissionExempt: sellers.isCommissionExempt,
+        })
+        .from(sellers)
+        .where(inArray(sellers.id, sellerIds));
+      lineFees = computeOrderLineFees(
+        existing.orderItems.map((item, index) => ({
+          sellerId: item.sellerId,
+          total: lineSubtotals[index]!,
+        })),
+        new Map(profiles.map((profile) => [profile.id, profile])),
+        existing.createdAt ? new Date(existing.createdAt) : new Date()
+      );
+    }
+
+    const itemUpdates = existing.orderItems.map((item, index) => {
       const price = priceByItemId.get(item.id) ?? Number(item.price);
-      const lineSubtotal = price * item.quantity;
+      const lineSubtotal = lineSubtotals[index]!;
+      const fee = lineFees?.[index];
       const commissionRate = Number(item.commissionRate ?? PLATFORM_COMMISSION_RATE);
 
       return {
@@ -352,8 +387,20 @@ export async function updateOrderPricing(orderId: string, input: unknown) {
         price: formatDecimal(price),
         subtotal: formatDecimal(lineSubtotal),
         total: formatDecimal(lineSubtotal),
-        commissionAmount: formatDecimal(lineSubtotal * commissionRate),
-        sellerEarning: formatDecimal(lineSubtotal * (1 - commissionRate)),
+        ...(fee
+          ? {
+              commissionRate: fee.commissionRate,
+              commissionAmount: fee.commissionAmount,
+              sellerEarning: fee.sellerEarning,
+              metadata: {
+                ...((item.metadata as Record<string, unknown> | null) ?? {}),
+                platformFee: fee.platformFee,
+              },
+            }
+          : {
+              commissionAmount: formatDecimal(lineSubtotal * commissionRate),
+              sellerEarning: formatDecimal(lineSubtotal * (1 - commissionRate)),
+            }),
       };
     });
 
@@ -394,8 +441,10 @@ export async function updateOrderPricing(orderId: string, input: unknown) {
             price: item.price,
             subtotal: item.subtotal,
             total: item.total,
+            ...("commissionRate" in item ? { commissionRate: item.commissionRate } : {}),
             commissionAmount: item.commissionAmount,
             sellerEarning: item.sellerEarning,
+            ...("metadata" in item ? { metadata: item.metadata } : {}),
             updatedAt: now,
           })
           .where(eq(orderItems.id, item.id));

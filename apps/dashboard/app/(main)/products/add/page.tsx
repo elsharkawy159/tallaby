@@ -28,6 +28,8 @@ export default async function AddProductPage() {
         commissionRate: seller?.commissionRate ?? DEFAULT_COMMISSION_RATE,
         isCommissionExempt: seller?.isCommissionExempt ?? false,
         sellerFreeDelivery: seller?.freeDelivery ?? false,
+        feeTrialStartedAt: seller?.feeTrialStartedAt ?? null,
+        feeTrialEndsAt: seller?.feeTrialEndsAt ?? null,
       }}
     />
   );

@@ -132,3 +132,44 @@ export function computeSellerPlatformFee (
     },
   }
 }
+
+export type OrderLineFee = {
+  commissionAmount: string
+  commissionRate: number
+  sellerEarning: string
+  platformFee: PlatformFeeSnapshot
+}
+
+/**
+ * The fee for every line of an order: lines are grouped per seller, each
+ * seller is charged on its own part (D22), and the result keeps the input
+ * order. Sellers missing from `profiles` are charged the standard fee.
+ */
+export function computeOrderLineFees (
+  lines: ReadonlyArray<{ sellerId: string; total: number | string }>,
+  profiles: ReadonlyMap<string, SellerFeeProfile>,
+  at: Date = new Date(),
+): OrderLineFee[] {
+  const groups = new Map<string, number[]>()
+  lines.forEach((line, index) => {
+    const group = groups.get(line.sellerId)
+    if (group) group.push(index)
+    else groups.set(line.sellerId, [index])
+  })
+
+  const result = new Array<OrderLineFee>(lines.length)
+  for (const [sellerId, indexes] of groups) {
+    const fee = computeSellerPlatformFee(profiles.get(sellerId) ?? {}, indexes.map((i) => lines[i]!), at)
+    indexes.forEach((lineIndex, position) => {
+      const total = Math.max(0, toPiastres(lines[lineIndex]!.total))
+      const lineFee = fee.lineFeesPiastres[position] ?? 0
+      result[lineIndex] = {
+        commissionAmount: (lineFee / 100).toFixed(2),
+        commissionRate: fee.effectiveRate,
+        sellerEarning: ((total - lineFee) / 100).toFixed(2),
+        platformFee: fee.snapshot,
+      }
+    })
+  }
+  return result
+}
