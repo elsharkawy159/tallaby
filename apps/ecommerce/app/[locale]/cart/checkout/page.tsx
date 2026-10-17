@@ -9,6 +9,7 @@ import { getAddresses } from "@/actions/customer";
 import { getTranslations } from "next-intl/server";
 import { getUser } from "@/actions/auth";
 import { MetaInitiateCheckout } from "@/components/meta/meta-initiate-checkout.client";
+import { HostStoreTracking } from "@/components/storefront/host-store-tracking";
 import { DEFAULT_CURRENCY } from "@/lib/constants";
 
 export const metadata: Metadata = generateNoIndexMetadata();
@@ -87,6 +88,8 @@ export default async function Checkout() {
             currency={currency}
           />
         )}
+
+        <HostStoreTracking />
 
         <CheckoutData
           checkoutData={checkoutData}

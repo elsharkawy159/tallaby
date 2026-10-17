@@ -6,7 +6,7 @@ import type { AddToCartButtonProps } from "./product-card.types";
 import { useTranslations } from "next-intl";
 import { useCart } from "@/providers/cart-provider";
 import posthog from "posthog-js";
-import { trackMetaEvent } from "@/lib/meta/meta.client";
+import { trackCommerceEvent } from "@/lib/storefront-events.client";
 import { toMetaContentIds } from "@/lib/meta/meta.product";
 import { DEFAULT_CURRENCY } from "@/lib/constants";
 import { useRouter } from "@/i18n/navigation";
@@ -61,7 +61,7 @@ export const AddToCartButton = ({
       const unitPrice = Number(result.data?.price ?? 0);
       const value = unitPrice * quantity;
 
-      trackMetaEvent(
+      trackCommerceEvent(
         "AddToCart",
         {
           content_ids: toMetaContentIds([productId]),

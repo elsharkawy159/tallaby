@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { OrderConfirmationData } from "./_components/order-confirmation.data";
 import { OrderConfirmationSkeleton } from "./_components/order-confirmation.skeleton";
 import { generateNoIndexMetadata } from "@/lib/metadata";
+import { HostStoreTracking } from "@/components/storefront/host-store-tracking";
 
 export const metadata: Metadata = generateNoIndexMetadata();
 
@@ -28,6 +29,9 @@ export default async function OrderConfirmationPage({
           accessToken={accessToken}
           autoExpandReviewItemId={autoExpandReviewItemId}
         />
+      </Suspense>
+      <Suspense fallback={null}>
+        <HostStoreTracking />
       </Suspense>
     </div>
   );

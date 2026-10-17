@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { trackMetaEvent } from '@/lib/meta/meta.client'
+import { trackCommerceEvent } from '@/lib/storefront-events.client'
 import { toMetaContentIds } from '@/lib/meta/meta.product'
 import { DEFAULT_CURRENCY } from '@/lib/constants'
 import { trackMetaInitiateCheckoutAction } from '@/actions/meta'
@@ -37,7 +37,7 @@ export function MetaInitiateCheckout ({
     const ids = toMetaContentIds(productIdsKey.split(','))
     const safeValue = Number.isFinite(value) ? value : 0
 
-    trackMetaEvent(
+    trackCommerceEvent(
       'InitiateCheckout',
       {
         content_ids: ids,

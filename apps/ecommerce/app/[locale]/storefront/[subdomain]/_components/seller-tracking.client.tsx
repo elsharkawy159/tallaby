@@ -1,9 +1,10 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import Script from "next/script";
 import { useTranslations } from "next-intl";
 import { isValidIntegrationId, type StorefrontTrackingConfig } from "@workspace/lib/integrations";
+import { markStoreTrackingReady } from "@/lib/storefront-events.client";
 
 /**
  * The store's own tracking apps (PLAN.md §9, P7-03), loaded only after the
@@ -52,7 +53,27 @@ export function SellerTracking({ config }: { config: StorefrontTrackingConfig })
   const pixelId = isValidIntegrationId("meta_pixel", config.metaPixelId) ? config.metaPixelId : null;
   const ga4Id = isValidIntegrationId("google_analytics", config.ga4MeasurementId) ? config.ga4MeasurementId : null;
   const gtmId = isValidIntegrationId("google_tag_manager", config.gtmContainerId) ? config.gtmContainerId : null;
-  if (!pixelId && !ga4Id && !gtmId) return null;
+  const any = Boolean(pixelId || ga4Id || gtmId);
+
+  // Once the snippets have defined their queues (fbq / gtag / dataLayer),
+  // release the commerce events that fired before (P7-04).
+  useEffect(() => {
+    if (!any || consent !== "granted") return;
+    let tries = 0;
+    const timer = setInterval(() => {
+      const loaded =
+        (!pixelId || typeof window.fbq === "function") &&
+        (!ga4Id || typeof window.gtag === "function") &&
+        (!gtmId || Array.isArray(window.dataLayer));
+      if (loaded || ++tries > 100) {
+        clearInterval(timer);
+        if (loaded) markStoreTrackingReady();
+      }
+    }, 100);
+    return () => clearInterval(timer);
+  }, [any, consent, pixelId, ga4Id, gtmId]);
+
+  if (!any) return null;
 
   if (consent === "pending" || consent === "denied") return null;
 
