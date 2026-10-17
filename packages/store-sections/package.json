@@ -1,0 +1,34 @@
+{
+  "name": "@workspace/store-sections",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Versioned store site schema (SiteConfig), migrations, validation and sanitizing shared by the dashboard editor and the ecommerce storefront renderer",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./config": {
+      "types": "./src/config/index.ts",
+      "default": "./src/config/index.ts"
+    }
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "sanitize-html": "^2.17.0",
+    "zod": "^4.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "@types/sanitize-html": "^2.16.0",
+    "@workspace/typescript-config": "workspace:*",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}
