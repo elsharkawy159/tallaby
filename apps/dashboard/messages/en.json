@@ -1973,5 +1973,41 @@
       "passwordTooShort": "Use at least 8 characters.",
       "passwordTooLong": "Use at most 72 characters."
     }
+  },
+  "stores": {
+    "description": "Each store has its own address, design and settings. Your products, wallet and plan are shared.",
+    "usage": "{count} of {max} stores",
+    "create": "Create store",
+    "limitHint": "You have reached your plan's store limit. Archived stores count toward it.",
+    "suspended": "Suspended",
+    "createdOn": "Created {date}",
+    "actions": "Store actions",
+    "makeCurrent": "Manage this store",
+    "selected": "Now managing {name}",
+    "restore": "Restore",
+    "restored": "Store restored",
+    "archive": "Archive",
+    "archived": "Store archived",
+    "archiveTitle": "Archive {name}?",
+    "archiveDescription": "The store goes offline for customers and becomes read-only. You can restore it any time. It still counts toward your store limit.",
+    "cancel": "Cancel",
+    "createTitle": "Create a new store",
+    "createDescription": "It goes live right away with the default theme. You can change everything later.",
+    "name": "Store name",
+    "namePlaceholder": "e.g. My second store",
+    "createdToast": "{name} is live",
+    "errors": {
+      "limitReached": "You have reached your plan's store limit.",
+      "subdomainTaken": "This store address is taken. Choose another one.",
+      "invalidSubdomain": "Choose a valid, available store address.",
+      "invalidInput": "Please check the highlighted fields.",
+      "primaryStore": "Your main store cannot be archived.",
+      "notFound": "Store not found.",
+      "forbidden": "You can't change stores right now.",
+      "rateLimited": "Too many attempts. Please wait and try again.",
+      "generic": "Something went wrong. Please try again.",
+      "nameTooShort": "Use at least 2 characters.",
+      "nameTooLong": "Use at most 80 characters."
+    }
   }
 }

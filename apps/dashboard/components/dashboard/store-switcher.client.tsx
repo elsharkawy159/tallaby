@@ -4,9 +4,8 @@ import { useTransition } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Check, ChevronsUpDown, ExternalLink, Plus, Store } from "lucide-react";
+import { Check, ChevronsUpDown, ExternalLink, Plus } from "lucide-react";
 import { storeHostname, storeUrl } from "@workspace/lib/storefront";
-import { Avatar, AvatarFallback, AvatarImage } from "@workspace/ui/components";
 import { Badge } from "@workspace/ui/components/badge";
 import {
   DropdownMenu,
@@ -16,7 +15,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu";
-import { cn, getPublicUrl } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { StoreLogo } from "@/components/stores/store-logo.client";
 import { selectStore } from "./store-switcher.server";
 
 export type SwitcherStore = {
@@ -27,20 +27,6 @@ export type SwitcherStore = {
   status: string;
   logoUrl: string | null;
 };
-
-const logoSrc = (logoUrl: string | null) =>
-  logoUrl ? (/^https?:/.test(logoUrl) ? logoUrl : getPublicUrl(logoUrl, "sellers")) : undefined;
-
-function StoreAvatar({ store, className }: { store: SwitcherStore; className?: string }) {
-  return (
-    <Avatar className={cn("size-8 shrink-0 rounded-lg border border-sidebar-border", className)}>
-      <AvatarImage src={logoSrc(store.logoUrl)} alt="" className="object-cover" />
-      <AvatarFallback className="rounded-lg bg-primary-soft text-xs font-semibold text-primary-ink">
-        {store.name.slice(0, 1).toUpperCase() || <Store className="size-4" />}
-      </AvatarFallback>
-    </Avatar>
-  );
-}
 
 /**
  * Top-of-sidebar store switcher (PLAN.md §7.2). Picking a store only changes
@@ -92,7 +78,7 @@ export function StoreSwitcher({
         aria-label={t("switchStore")}
         title={isCollapsed ? selected.name : undefined}
       >
-        <StoreAvatar store={selected} />
+        <StoreLogo name={selected.name} logoUrl={selected.logoUrl} />
         {!isCollapsed && (
           <>
             <span className="min-w-0 flex-1">
@@ -114,7 +100,7 @@ export function StoreSwitcher({
             disabled={store.status === "archived"}
             className="gap-2.5"
           >
-            <StoreAvatar store={store} className="size-7" />
+            <StoreLogo name={store.name} logoUrl={store.logoUrl} className="size-7" />
             <span className="min-w-0 flex-1">
               <span className="block truncate text-sm">{store.name}</span>
               <span dir="ltr" className="block truncate text-start text-xs text-muted-foreground rtl:text-end">

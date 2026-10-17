@@ -127,7 +127,7 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
     key: "account",
     icon: UserCog,
     items: [
-      { key: "myStores", href: "/stores", status: "planned", exact: true },
+      { key: "myStores", href: "/stores", status: "live", exact: true },
       { key: "settings", href: "/settings", status: "live", exact: true },
       { key: "planUsage", href: "/settings/plan", status: "planned" },
       { key: "fulfillment", href: "/settings/fulfillment", status: "live" },
