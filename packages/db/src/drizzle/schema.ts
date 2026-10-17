@@ -270,7 +270,7 @@ export const contacts = pgTable("contacts", {
 			name: "contacts_user_id_fkey"
 		}).onUpdate("cascade").onDelete("cascade"),
 	pgPolicy("Enable insert access for all users", { as: "permissive", for: "insert", to: ["public"], withCheck: sql`true`  }),
-	pgPolicy("Enable read access for authenticated users", { as: "permissive", for: "select", to: ["authenticated"] }),
+	// 0049: the authenticated read-all policy was dropped (exposed every submission).
 ]);
 
 export const paymentMethods = pgTable("payment_methods", {
@@ -1310,11 +1310,9 @@ export const users = pgTable("users", {
 		}).onUpdate("cascade").onDelete("cascade"),
 	unique("users_email_unique").on(table.email),
 	unique("users_referral_code_unique").on(table.referralCode),
-	pgPolicy("Public users are viewable by everyone.", { as: "permissive", for: "select", to: ["public"], using: sql`true` }),
-	pgPolicy("Users can insert their own profile.", { as: "permissive", for: "insert", to: ["public"] }),
-	pgPolicy("Users can update own profile.", { as: "permissive", for: "update", to: ["public"] }),
-	pgPolicy("Users can read their own profile", { as: "permissive", for: "select", to: ["authenticated"] }),
-	pgPolicy("Enable read access for all users", { as: "permissive", for: "select", to: ["public"] }),
+	// 0049: public read-all, self insert and self update were dropped, and
+	// INSERT/UPDATE/DELETE revoked from anon/authenticated (role self-escalation).
+	pgPolicy("Users can read their own profile", { as: "permissive", for: "select", to: ["authenticated"], using: sql`(auth.uid() = id)` }),
 ]);
 
 export const products = pgTable("products", {
@@ -1378,10 +1376,8 @@ export const products = pgTable("products", {
 			foreignColumns: [sellers.id],
 			name: "products_seller_id_fkey"
 		}).onDelete("cascade"),
-	pgPolicy("Allow authenticated insert access", { as: "permissive", for: "insert", to: ["authenticated"] }),
-	pgPolicy("Public full access", { as: "permissive", for: "all", to: ["public"] }),
+	// 0049: insert / "Public full access" policies dropped and writes revoked from anon/authenticated.
 	pgPolicy("Enable read access for all users", { as: "permissive", for: "select", to: ["public"] }),
-	pgPolicy("Enable insert for authenticated users only", { as: "permissive", for: "insert", to: ["authenticated"] }),
 	// Last line of defence behind the atomic decrementStock() WHERE-guard (packages/db/src/inventory).
 	check("products_quantity_non_negative", sql`quantity >= 0`),
 ]);
