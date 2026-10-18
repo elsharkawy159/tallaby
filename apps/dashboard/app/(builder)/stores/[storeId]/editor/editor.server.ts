@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { applyInvalidation, invalidateStoreSite } from "@workspace/cache";
+import { logServerError } from "@workspace/db/log";
 import {
   createStorePage,
   deleteStorePage,
@@ -43,7 +44,7 @@ function fail<T>(error: string | EditorErrorKey): EditorResult<T> {
 
 async function withStore<T>(
   storeId: string,
-  options: { forWrite?: boolean; forPublish?: boolean },
+  options: { forWrite?: boolean; forPublish?: boolean; publishAction?: "publish" | "unpublish" },
   run: (access: Access) => Promise<EditorResult<T>>,
 ): Promise<EditorResult<T>> {
   try {
@@ -51,7 +52,12 @@ async function withStore<T>(
     return await run(access);
   } catch (error) {
     if (isAccessError(error)) return fail(error.code === "store_read_only" ? "readOnly" : error.code === "publish_blocked" ? "publishBlocked" : "notFound");
-    console.error("[store-editor] action failed", (error as Error)?.message);
+    if (options.publishAction) {
+      // P9-03: publish failures are searchable as [publish] (ids only).
+      logServerError("publish", `${options.publishAction} failed`, { storeId: String(storeId) }, error);
+    } else {
+      console.error("[store-editor] action failed", (error as Error)?.message);
+    }
     return fail("generic");
   }
 }
@@ -120,7 +126,7 @@ export async function reorderPages(storeId: string, pageIds: string[]) {
 }
 
 export async function publish(storeId: string) {
-  return withStore<{ revisionId: string; revisionNumber: number }>(storeId, { forPublish: true }, async (access) => {
+  return withStore<{ revisionId: string; revisionNumber: number }>(storeId, { forPublish: true, publishAction: "publish" }, async (access) => {
     if (!publishLimiter.check(`publish:${access.seller.sellerId}`)) return fail("rateLimited");
     const result = await publishStoreSite(access.seller.sellerId, access.store.id, access.seller.userId, { allowedSections: ALLOWED });
     if (!result.success) return fail(result.error);
@@ -131,7 +137,7 @@ export async function publish(storeId: string) {
 }
 
 export async function unpublish(storeId: string) {
-  return withStore<null>(storeId, { forWrite: true }, async (access) => {
+  return withStore<null>(storeId, { forWrite: true, publishAction: "unpublish" }, async (access) => {
     const result = await unpublishStoreSite(access.seller.sellerId, access.store.id);
     if (!result.success) return fail(result.error);
     await invalidateStore(access);

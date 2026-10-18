@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { and, db, gt, lte, sellers, sql } from "@workspace/db";
+import { logServerError } from "@workspace/db/log";
 import { feeTrialReminderStage } from "@workspace/lib/sellers";
 
 export const dynamic = "force-dynamic";
@@ -20,7 +21,7 @@ export async function GET(request: NextRequest) {
   const backendUrl = process.env.BACKEND_API_URL;
   const apiSecret = process.env.INTERNAL_API_SECRET;
   if (!backendUrl || !apiSecret) {
-    console.error("fee-trial-reminders: BACKEND_API_URL or INTERNAL_API_SECRET not configured");
+    logServerError("fee", "trial reminders not configured (BACKEND_API_URL or INTERNAL_API_SECRET missing)");
     return NextResponse.json({ error: "Email backend not configured" }, { status: 500 });
   }
 
@@ -54,7 +55,7 @@ export async function GET(request: NextRequest) {
       else summary.skipped++;
     } catch (error) {
       summary.errors++;
-      console.error(`fee-trial-reminders: seller ${seller.id} failed:`, error);
+      logServerError("fee", "trial reminder failed", { sellerId: seller.id, stage }, error);
     }
   }
 

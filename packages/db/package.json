@@ -16,6 +16,11 @@
       "import": "./src/drizzle/schema.ts",
       "require": "./src/drizzle/schema.ts"
     },
+    "./log": {
+      "types": "./src/log.ts",
+      "import": "./src/log.ts",
+      "require": "./src/log.ts"
+    },
     "./supabase/service": {
       "types": "./src/supabase/service.ts",
       "import": "./src/supabase/service.ts",

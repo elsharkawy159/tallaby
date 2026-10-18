@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { applyInvalidation, invalidateStoreIntegrations } from "@workspace/cache";
+import { logServerError } from "@workspace/db/log";
 import {
   connectIdentifierIntegration,
   disconnectStoreIntegration,
@@ -50,7 +51,7 @@ export async function connectStoreApp(
   } catch (error) {
     const denied = accessError(error);
     if (denied) return denied;
-    console.error("[store-apps] connect failed", (error as Error)?.message);
+    logServerError("integration", "connect failed", { storeId: String(storeId), provider: String(provider) }, error);
     return { success: false, error: "generic" };
   }
 }
@@ -69,7 +70,7 @@ export async function disconnectStoreApp(storeId: string, provider: string): Pro
   } catch (error) {
     const denied = accessError(error);
     if (denied) return denied;
-    console.error("[store-apps] disconnect failed", (error as Error)?.message);
+    logServerError("integration", "disconnect failed", { storeId: String(storeId), provider: String(provider) }, error);
     return { success: false, error: "generic" };
   }
 }

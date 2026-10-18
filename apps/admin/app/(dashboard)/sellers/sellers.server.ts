@@ -33,6 +33,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getCurrentAdminUser } from "@/lib/auth/admin-auth";
 import { applyInvalidation, invalidateSeller } from "@workspace/cache";
+import { applySellerOverride } from "@workspace/lib/admin/server";
 import {
   sellerStatusUpdateSchema,
   sellerFiltersSchema,
@@ -364,7 +365,9 @@ export async function updateSeller(
   try {
     await getCurrentAdminUser();
 
-    const validatedData = sellerUpdateSchema.parse(data);
+    // The fee exemption is an audited override (updateSellerCommissionExempt,
+    // P9-02); this generic update cannot change it.
+    const validatedData = sellerUpdateSchema.omit({ isCommissionExempt: true }).parse(data);
 
     await db
       .update(sellers)
@@ -412,19 +415,21 @@ export async function updateSellerCommissionExempt(
   isCommissionExempt: boolean
 ) {
   try {
-    await getCurrentAdminUser();
+    const admin = await getCurrentAdminUser();
 
-    const validatedData = sellerUpdateSchema.parse({ isCommissionExempt });
-
-    await db
-      .update(sellers)
-      .set({
-        isCommissionExempt: validatedData.isCommissionExempt,
-        updatedAt: new Date().toISOString(),
-      })
-      .where(eq(sellers.id, sellerId));
+    // Audited like every other fee override (P9-02); a repeat is a no-op.
+    const result = await applySellerOverride(admin.id, {
+      action: "set_commission_exempt",
+      sellerId,
+      exempt: Boolean(isCommissionExempt),
+      reason: "Changed with the sellers list toggle",
+    });
+    if (!result.success && result.error !== "no_change") {
+      return { success: false, error: "Failed to update commission exemption" };
+    }
 
     revalidatePath("/sellers");
+    revalidatePath(`/sellers/${sellerId}`);
     await applyInvalidation(invalidateSeller(sellerId), {
       from: "admin",
       mode: "action",

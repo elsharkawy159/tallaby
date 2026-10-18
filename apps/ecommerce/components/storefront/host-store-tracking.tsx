@@ -1,5 +1,5 @@
 import { getCartScope } from "@/lib/storefront.server";
-import { getCachedStorefrontTracking } from "@/lib/storefront-tracking.server";
+import { loadStorefrontTracking } from "@/lib/storefront-tracking.server";
 import { SellerTracking } from "@/app/[locale]/storefront/[subdomain]/_components/seller-tracking.client";
 
 /**
@@ -11,6 +11,6 @@ import { SellerTracking } from "@/app/[locale]/storefront/[subdomain]/_component
 export async function HostStoreTracking() {
   const scope = await getCartScope();
   if (!scope) return null;
-  const config = await getCachedStorefrontTracking(scope.sellerId, scope.storeId);
-  return <SellerTracking config={config} />;
+  const config = await loadStorefrontTracking(scope.sellerId, scope.storeId);
+  return config ? <SellerTracking config={config} /> : null;
 }

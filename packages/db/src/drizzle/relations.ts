@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { stores, storeProducts, storeDesignSystems, storePages, storeSiteRevisions, templates, templateVersions, templateInstalls, mediaFolders, mediaAssets, savedBlocks, storeForms, storeFormSubmissions, cmsCollections, cmsItems, cmsItemRevisions, storeIntegrations, storeShippingZones, storeSettingsAudit, sellerWalletTopUps } from "./schema";
+import { stores, storeProducts, storeDesignSystems, storePages, storeSiteRevisions, templates, templateVersions, templateInstalls, mediaFolders, mediaAssets, savedBlocks, storeForms, storeFormSubmissions, cmsCollections, cmsItems, cmsItemRevisions, storeIntegrations, storeShippingZones, storeSettingsAudit, sellerWalletTopUps, adminAuditLog } from "./schema";
 import { users, deliveries, shipments, orders, payments, paymentMethods, carts, categories, sellers, coupons, notifications, contacts, userAddresses, products, productVariants, refunds, returns, orderItems, shipmentItems, productQuestions, shippingAddresses, couponUsage, cartItems, reviews, returnItems, reviewVotes, searchLogs, sellerDocuments, sellerPayoutItems, sellerPayouts, reviewComments, userDevices, wishlistItems, wishlists, brands, productAnswers, userRewards, productTranslations, digitalProducts, digitalOrders, sellerCategories, sellerWallet, walletTransactions, digitalFiles, licenseKeys, digitalBundleItems, digitalAccessLogs, shippingProviders, shipmentBatches, shipmentBatchItems, userWallets, userWalletTransactions, walletTopUps, walletPayoutRequests, affiliates, affiliateCommissions } from "./schema";
 
 export const deliveriesRelations = relations(deliveries, ({one}) => ({
@@ -224,6 +224,7 @@ export const sellersRelations = relations(sellers, ({one, many}) => ({
 	sellerWallet: many(sellerWallet),
 	sellerCategories: many(sellerCategories),
 	walletTransactions: many(walletTransactions),
+	adminAuditLog: many(adminAuditLog),
 }));
 
 export const notificationsRelations = relations(notifications, ({one}) => ({
@@ -822,6 +823,7 @@ export const storesRelations = relations(stores, ({one, many}) => ({
 	shippingZones: many(storeShippingZones),
 	settingsAudit: many(storeSettingsAudit),
 	savedBlocks: many(savedBlocks),
+	adminAuditLog: many(adminAuditLog),
 }));
 
 export const storeProductsRelations = relations(storeProducts, ({one}) => ({
@@ -1021,5 +1023,20 @@ export const sellerWalletTopUpsRelations = relations(sellerWalletTopUps, ({one})
 	transaction: one(walletTransactions, {
 		fields: [sellerWalletTopUps.transactionId],
 		references: [walletTransactions.id]
+	}),
+}));
+
+export const adminAuditLogRelations = relations(adminAuditLog, ({one}) => ({
+	actor: one(users, {
+		fields: [adminAuditLog.actorId],
+		references: [users.id]
+	}),
+	seller: one(sellers, {
+		fields: [adminAuditLog.sellerId],
+		references: [sellers.id]
+	}),
+	store: one(stores, {
+		fields: [adminAuditLog.storeId],
+		references: [stores.id]
 	}),
 }));

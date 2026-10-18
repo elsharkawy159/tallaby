@@ -3030,3 +3030,42 @@ export const sellerWalletTopUps = pgTable("seller_wallet_top_ups", {
 	check("seller_wallet_top_ups_amount_check", sql`amount > 0`),
 	check("seller_wallet_top_ups_currency_check", sql`currency = 'EGP'`),
 ]);
+
+/**
+ * Append-only log of admin overrides on a seller account or store (0063, P9-02):
+ * plan, store limit, fee plan, trial, exemption, negative limit, store
+ * unpublish/suspend, wallet adjustments. Written in the same transaction as the
+ * change. Never holds secrets or payment details.
+ */
+export const adminAuditLog = pgTable("admin_audit_log", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	actorId: uuid("actor_id"),
+	sellerId: uuid("seller_id").notNull(),
+	storeId: uuid("store_id"),
+	action: text().notNull(),
+	before: jsonb().default({}).notNull(),
+	after: jsonb().default({}).notNull(),
+	reason: text().notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("admin_audit_log_seller_idx").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops"), table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
+	index("admin_audit_log_store_idx").using("btree", table.storeId.asc().nullsLast().op("uuid_ops")).where(sql`store_id IS NOT NULL`),
+	index("admin_audit_log_actor_idx").using("btree", table.actorId.asc().nullsLast().op("uuid_ops")).where(sql`actor_id IS NOT NULL`),
+	foreignKey({
+			columns: [table.actorId],
+			foreignColumns: [users.id],
+			name: "admin_audit_log_actor_id_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.sellerId],
+			foreignColumns: [sellers.id],
+			name: "admin_audit_log_seller_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.storeId],
+			foreignColumns: [stores.id],
+			name: "admin_audit_log_store_id_fkey"
+		}).onDelete("set null"),
+	check("admin_audit_log_action_check", sql`action ~ '^[a-z][a-z_]{2,63}$'`),
+	check("admin_audit_log_reason_check", sql`char_length(btrim(reason)) BETWEEN 3 AND 1000`),
+]);

@@ -30,6 +30,7 @@ import {
   Handshake,
   Warehouse,
   TicketPercent,
+  PlugZap,
 } from "lucide-react";
 import type { SidebarCounts, SidebarProps } from "./sidebar.types";
 import { SIDEBAR_COUNT_BADGE_CLASS } from "./sidebar.types";
@@ -111,6 +112,11 @@ const sidebarLinks: SidebarLink[] = [
     icon: Store,
     countKey: "pendingSellers",
     countLabel: "Sellers awaiting approval",
+  },
+  {
+    title: "Integration errors",
+    href: "/integration-errors",
+    icon: PlugZap,
   },
   {
     title: "Fulfillment",

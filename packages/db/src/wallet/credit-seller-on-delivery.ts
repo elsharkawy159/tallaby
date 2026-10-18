@@ -1,6 +1,7 @@
 import { and, eq, isNull } from "drizzle-orm";
 
 import type { db as dbType } from "../drizzle/database";
+import { logServerError } from "../log";
 import { orderItems, orders, shipments, stores, walletTransactions } from "../drizzle/schema";
 import { resolveCollectionParty } from "./collection-party";
 import { postStoreWalletEntryOnce, STORE_WALLET_REFERENCE_TYPES } from "./store-wallet";
@@ -32,8 +33,20 @@ const hasFeeSnapshot = (line: DeliveredLine) =>
  *   collected the money; only the `fee` when the seller did.
  * - Older orders (5% snapshot): the legacy single net `sale`
  *   (Σ seller_earning), as before.
+ *
+ * A failure is logged as `[fee]` (P9-03) and rethrown, so the caller's
+ * transaction (the delivered status change) rolls back as before.
  */
 export async function creditSellerOnDelivery(tx: Tx, orderId: string): Promise<void> {
+  try {
+    await postDeliveryEntries(tx, orderId);
+  } catch (error) {
+    logServerError("fee", "delivery credit failed", { orderId }, error);
+    throw error;
+  }
+}
+
+async function postDeliveryEntries(tx: Tx, orderId: string): Promise<void> {
   const items: DeliveredLine[] = await tx
     .select({
       sellerId: orderItems.sellerId,

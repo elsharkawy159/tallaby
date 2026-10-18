@@ -1,5 +1,5 @@
 import type { Storefront } from "@/lib/storefront.server";
-import { getCachedStorefrontTracking } from "@/lib/storefront-tracking.server";
+import { loadStorefrontTracking } from "@/lib/storefront-tracking.server";
 import { SellerTracking } from "./seller-tracking.client";
 
 /**
@@ -9,6 +9,6 @@ import { SellerTracking } from "./seller-tracking.client";
  * same seller's other store, can never render here.
  */
 export async function StorefrontTracking({ store }: { store: Pick<Storefront, "id" | "storeId"> }) {
-  const config = await getCachedStorefrontTracking(store.id, store.storeId);
-  return <SellerTracking config={config} />;
+  const config = await loadStorefrontTracking(store.id, store.storeId);
+  return config ? <SellerTracking config={config} /> : null;
 }

@@ -1,4 +1,5 @@
 import { db, eq, sellers, users } from "@workspace/db";
+import { logServerError } from "@workspace/db/log";
 import { feeTrialReminderStage, type FeeTrialReminderStage } from "@workspace/lib/sellers";
 import {
   FeeTrialReminderEmail,
@@ -79,7 +80,7 @@ export async function sendFeeTrialReminder(
       claim.delivery.id,
       error instanceof Error ? error.message : String(error),
     ).catch((releaseError) => {
-      console.error("fee-trial-reminder: failed to release claim:", releaseError);
+      logServerError("fee", "trial reminder claim release failed", { sellerId, stage }, releaseError);
     });
     throw error;
   }
