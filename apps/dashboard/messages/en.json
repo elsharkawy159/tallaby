@@ -3019,8 +3019,10 @@
       "invalidInput": "Check the details and try again.",
       "rateLimited": "Too many changes at once. Wait a moment and try again.",
       "generic": "Something went wrong. Try again.",
-      "saveFirst": "Wait for your changes to be saved, then try again."
-    }
+      "saveFirst": "Wait for your changes to be saved, then try again.",
+      "previewUnavailable": "Preview on your store isn't available right now."
+    },
+    "previewOnStore": "Preview on store"
   },
   "websiteDesign": {
     "title": "Design system",
@@ -3145,5 +3147,128 @@
       "rateLimited": "Too many changes at once. Wait a moment and try again.",
       "generic": "Something went wrong. Try again."
     }
+  },
+  "websiteOverview": {
+    "title": "Website overview",
+    "description": "Your store's address, what shoppers see now, and your unpublished changes.",
+    "status": {
+      "draft": "Draft",
+      "published": "Published",
+      "changes": "Unpublished changes",
+      "unpublished": "Unpublished"
+    },
+    "statusHint": {
+      "draft": "Your website hasn't been published yet. Shoppers see the Tallaby Classic store design until you publish.",
+      "published": "Shoppers see your latest published version.",
+      "changes": "You have changes that shoppers don't see yet. Preview them, then publish.",
+      "unpublished": "Your website is offline. Shoppers see the Tallaby Classic store design until you publish again."
+    },
+    "liveUrl": "Store address",
+    "copy": "Copy",
+    "open": "Open",
+    "copied": "Store address copied",
+    "copyFailed": "Couldn't copy the address",
+    "lastPublished": "Last published",
+    "never": "Never",
+    "pageCount": "{count, plural, =1 {1 page} other {# pages}}",
+    "edit": "Edit website",
+    "preview": "Preview on store",
+    "previewUnavailable": "Preview on your store isn't set up yet.",
+    "publish": "Publish",
+    "publishChanges": "Publish changes",
+    "publishedToast": "Published. Your store shows it now.",
+    "discard": "Discard changes",
+    "discardTitle": "Discard unpublished changes?",
+    "discardBody": "Your drafts go back to the version shoppers see now. This can't be undone.",
+    "discardedToast": "Changes discarded",
+    "unpublish": "Unpublish",
+    "unpublishTitle": "Unpublish your website?",
+    "unpublishBody": "Shoppers will see the Tallaby Classic store design until you publish again. Your pages and drafts are kept.",
+    "unpublishedToast": "Website unpublished",
+    "thumbnail": "Your live store",
+    "manage": "Manage your website",
+    "links": {
+      "design": {
+        "title": "Design system",
+        "body": "Colors, fonts, logo and buttons"
+      },
+      "pages": {
+        "title": "Pages",
+        "body": "Add, rename and order pages, with SEO"
+      },
+      "domain": {
+        "title": "Domain & SEO",
+        "body": "Your address, own domain and search settings"
+      },
+      "social": {
+        "title": "Social media",
+        "body": "Links shown in your header and footer"
+      },
+      "blog": {
+        "title": "Blog",
+        "body": "Write posts for your store"
+      },
+      "forms": {
+        "title": "Forms",
+        "body": "Contact forms and submissions"
+      },
+      "media": {
+        "title": "Media library",
+        "body": "Your images and files"
+      },
+      "templates": {
+        "title": "Templates",
+        "body": "Start from a ready-made design"
+      }
+    },
+    "revisions": "Version history",
+    "revisionsHint": "Every publish saves a version. Restoring copies it into your drafts; publish to make it live.",
+    "noRevisions": "No versions yet. Your first publish creates one.",
+    "version": "Version {number}",
+    "live": "Live",
+    "restore": "Restore",
+    "restoreTitle": "Restore version {number}?",
+    "restoreBody": "Your current drafts are replaced with this version. What shoppers see doesn't change until you publish.",
+    "restoredToast": "Version restored to your drafts. Publish to make it live.",
+    "cancel": "Cancel"
+  },
+  "websitePages": {
+    "title": "Pages",
+    "description": "Your website's pages, their addresses, menu order and search settings.",
+    "draftNote": "Changes here are saved as drafts and go live when you publish.",
+    "publishLink": "Go to publish",
+    "new": "New page",
+    "editTitle": "Edit page",
+    "sheetDescription": "Name, address and how the page shows in search results.",
+    "home": "Home page",
+    "noindexBadge": "Hidden from search",
+    "inMenu": "In menu",
+    "showInNav": "Show in the menu",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "edit": "Edit page",
+    "delete": "Delete page",
+    "deleteTitle": "Delete \"{name}\"?",
+    "deleteBody": "The page is removed from your drafts and leaves your live website when you publish next.",
+    "deleted": "Page deleted",
+    "basics": "Page",
+    "nameAr": "Name (Arabic)",
+    "nameEn": "Name (English)",
+    "nameRequired": "Enter a name in at least one language.",
+    "slug": "Address",
+    "slugHint": "Lowercase English letters, numbers and dashes, e.g. about-us.",
+    "homeSlug": "The home page is always at your store's main address.",
+    "seo": "Search engines",
+    "seoTitle": "Search title",
+    "seoDescription": "Search description",
+    "ogImage": "Share image link",
+    "ogImageHint": "Shown when the page is shared on social media.",
+    "noindex": "Hide from search engines",
+    "noindexHint": "Google won't list this page.",
+    "create": "Create page",
+    "save": "Save",
+    "created": "Page created",
+    "saved": "Page saved",
+    "cancel": "Cancel"
   }
 }

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { storeUrl } from "@workspace/lib/storefront";
 import { routing } from "@/i18n/routing";
-import { getCachedPublishedSite } from "@/lib/store-site/published-site.server";
+import { getStorefrontSite } from "@/lib/store-site/preview.server";
 import { catalogStoreId, getStorefrontCategories, resolveStorefront } from "@/lib/storefront.server";
 import { marketplaceOrigin } from "@/lib/storefront-routing";
 import { StoreSitePage } from "../../_components/store-site";
@@ -18,24 +18,25 @@ type StorePageProps = {
  */
 async function resolvePage(locale: string, subdomain: string, pageSlug: string) {
   const store = await resolveStorefront(subdomain);
-  const site = await getCachedPublishedSite(store.id, store.storeId, store.subdomain);
+  // In preview (P4-08) this is the verified draft, so unpublished pages open too.
+  const { site, preview } = await getStorefrontSite(store.id, store.storeId, store.subdomain);
   const page = site?.pages.find((p) => p.slug === pageSlug && !p.isHome);
   if (!site || !page) {
     const prefix = locale === routing.defaultLocale ? "" : `/${locale}`;
     redirect(`${marketplaceOrigin()}${prefix}/${pageSlug}`);
   }
-  return { store, site, page };
+  return { store, site, page, preview };
 }
 
 export async function generateMetadata({ params }: StorePageProps): Promise<Metadata> {
   const { locale, subdomain, pageSlug } = await params;
-  const { store, page } = await resolvePage(locale, subdomain, pageSlug);
+  const { store, page, preview } = await resolvePage(locale, subdomain, pageSlug);
   const url = `${storeUrl(store.subdomain, store.customDomain)}${locale === routing.defaultLocale ? "" : `/${locale}`}/${page.slug}`;
   return {
     title: page.seo.title || page.name,
     description: page.seo.description || undefined,
     alternates: { canonical: url },
-    robots: page.seo.noindex ? { index: false, follow: true } : undefined,
+    robots: preview ? { index: false, follow: false } : page.seo.noindex ? { index: false, follow: true } : undefined,
     openGraph: page.seo.ogImage ? { images: [{ url: page.seo.ogImage }] } : undefined,
   };
 }

@@ -12,7 +12,8 @@ import { storeFontVariables, storefrontFont } from "./_components/storefront-fon
 import { StorefrontTracking } from "./_components/seller-tracking";
 import { StoreSiteChrome } from "./_components/store-site";
 import { SITE_ROOT_CLASS, SiteTheme } from "@workspace/store-sections/render";
-import { getCachedPublishedSite } from "@/lib/store-site/published-site.server";
+import { getStorefrontSite } from "@/lib/store-site/preview.server";
+import { StorePreviewBanner } from "./_components/store-preview-banner";
 import s from "./storefront.module.css";
 
 type StorefrontLayoutProps = {
@@ -30,8 +31,11 @@ export async function generateMetadata({
   const image = store.bannerUrl || store.logoUrl;
   // Website › Design system › Brand (P4-13): the favicon, else the logo.
   const icon = store.faviconUrl || store.logoUrl;
+  const { preview } = await getStorefrontSite(store.id, store.storeId, store.subdomain);
 
   return {
+    // Preview responses are never indexed (PLAN.md §10.5).
+    ...(preview && { robots: { index: false, follow: false } }),
     // The store is the brand here, not Tallaby.
     title: { default: store.displayName, template: `%s | ${store.displayName}` },
     description,
@@ -59,10 +63,12 @@ export default async function StorefrontLayout({
   const { locale, subdomain } = await params;
   const store = await resolveStorefront(subdomain);
   // A published builder site replaces the default header/footer (P5-01).
-  const site = await getCachedPublishedSite(store.id, store.storeId, store.subdomain);
+  // In "Preview on my store" (P4-08) this is the verified draft instead.
+  const { site, preview } = await getStorefrontSite(store.id, store.storeId, store.subdomain);
 
   return (
     <div className={cn(storefrontFont.variable, s.root, site && [SITE_ROOT_CLASS, storeFontVariables])}>
+      {preview && <StorePreviewBanner state={preview} />}
       {site && <SiteTheme designSystem={site.designSystem} />}
       {site ? <StoreSiteChrome store={store} site={site} locale={locale} part="header" /> : <StorefrontHeader store={store} />}
       <main className="flex-1">{children}</main>

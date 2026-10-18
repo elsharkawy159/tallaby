@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getStoreForEditor, getStoreSiteStatus } from "@workspace/lib/store-sites/server";
+import { storePreviewSecret } from "@workspace/lib/store-sites/preview";
 import { storeUrl } from "@workspace/lib/storefront";
 import { publicStoreSocialLinks } from "@workspace/lib/stores";
 import { designSystemSchema, sectionInstanceSchema, type SiteLocale } from "@workspace/store-sections";
@@ -74,6 +75,7 @@ export default async function StoreEditorPage({ params }: { params: Promise<{ st
     locales: [...new Set(locales)],
     catalog,
     isLive: Boolean(status?.isLive),
+    previewEnabled: storePreviewSecret() !== null,
   };
 
   return <StoreEditor initial={initial} />;

@@ -138,6 +138,10 @@
       "types": "./src/store-sites/server.ts",
       "default": "./src/store-sites/server.ts"
     },
+    "./store-sites/preview": {
+      "types": "./src/store-sites/preview-token.ts",
+      "default": "./src/store-sites/preview-token.ts"
+    },
     "./storefront": {
       "types": "./src/storefront/index.ts",
       "default": "./src/storefront/index.ts"

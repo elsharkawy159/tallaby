@@ -9,6 +9,7 @@ import {
   ArrowRight,
   Copy,
   ExternalLink,
+  Eye,
   FileText,
   GripVertical,
   LoaderCircle,
@@ -45,6 +46,7 @@ import { createInstance, duplicateSection, insertSection, moveSection, removeSec
 import { createPage, deletePage, publish, updatePage } from "./editor.server";
 import { createEditorStore, hasPendingChanges, type EditorPage, type EditorStore } from "./editor.store";
 import { useEditorAutosave } from "./use-editor-autosave.client";
+import { useStorePreview } from "./use-store-preview.client";
 
 type Catalog = { products: EditorProduct[]; categories: EditorCategory[] };
 
@@ -62,6 +64,8 @@ export type EditorInitial = {
   locales: SiteLocale[];
   catalog: Catalog;
   isLive: boolean;
+  /** STORE_PREVIEW_SECRET is configured (P4-08). */
+  previewEnabled: boolean;
 };
 
 const nameOf = (value: { ar?: string; en?: string }, locale: string) => (locale === "en" ? value.en || value.ar : value.ar || value.en) || "";
@@ -87,6 +91,7 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
   const { flush, saveStatus } = useEditorAutosave(initial.storeId, store);
   const [publishing, setPublishing] = useState(false);
   const [isLive, setIsLive] = useState(initial.isLive);
+  const preview = useStorePreview(initial.storeId, flush);
 
   const page = state.pages.find((p) => p.id === state.activePageId) ?? state.pages[0]!;
   const selected =
@@ -169,7 +174,7 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
     <div className="flex h-dvh flex-col bg-background">
       <header className="flex h-14 shrink-0 items-center gap-2 border-b px-3">
         <Button asChild variant="ghost" size="sm">
-          <Link href={`/stores/${initial.storeId}/settings`}>
+          <Link href={`/stores/${initial.storeId}/website`}>
             <ArrowRight className="ltr:rotate-180" aria-hidden />
             <span className="hidden sm:inline">{t("back")}</span>
           </Link>
@@ -233,6 +238,18 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
             {t("viewStore")}
           </a>
         </Button>
+        {initial.previewEnabled && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="hidden md:inline-flex"
+            onClick={preview.open}
+            disabled={preview.opening || initial.readOnly || saveStatus === "conflict"}
+          >
+            {preview.opening ? <LoaderCircle className="animate-spin" aria-hidden /> : <Eye aria-hidden />}
+            {t("previewOnStore")}
+          </Button>
+        )}
         <Button size="sm" onClick={onPublish} disabled={publishing || initial.readOnly || saveStatus === "conflict"}>
           {publishing ? <LoaderCircle className="animate-spin" aria-hidden /> : <UploadCloud aria-hidden />}
           {t(isLive ? "publishChanges" : "publish")}

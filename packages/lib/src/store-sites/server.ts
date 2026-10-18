@@ -40,6 +40,7 @@ import {
 } from "@workspace/store-sections";
 import { ensureStoreSiteScaffold } from "../stores/server";
 import { startFeeTrialIfNeeded } from "../sellers/fee-trial.server";
+import { storeDraftKey } from "./preview-token";
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 type Queryable = Tx | typeof db;
@@ -174,7 +175,10 @@ export async function saveStorePageDraft(
 type LocalizedName = { ar?: string; en?: string };
 
 /** The draft SiteConfig of a store, as stored (not yet validated). */
-async function buildDraftSiteConfig(q: Queryable, store: NonNullable<Awaited<ReturnType<typeof loadOwnStore>>>) {
+async function buildDraftSiteConfig(
+  q: Queryable,
+  store: Pick<OwnStore, "id" | "defaultLocale" | "supportedLocales" | "sharedHeader" | "sharedFooter">,
+) {
   const [designSystem] = await q
     .select({ colors: storeDesignSystems.colors, typography: storeDesignSystems.typography, spacing: storeDesignSystems.spacing })
     .from(storeDesignSystems)
@@ -374,6 +378,60 @@ export async function getPublishedStoreSite(storeId: string, q: Queryable = db):
   if (!row) return null;
   const parsed = siteConfigSchema.safeParse(row.snapshot);
   return parsed.success ? parsed.data : null;
+}
+
+// ---------------------------------------------------------------------------
+// Preview on the store host (PLAN.md P4-08)
+// ---------------------------------------------------------------------------
+
+/**
+ * Fingerprint of the store's current draft, for a preview token. Owner-checked;
+ * null for a missing, foreign or archived store.
+ */
+export async function getStoreDraftKey(sellerId: string, storeId: string, q: Queryable = db): Promise<string | null> {
+  const store = await loadOwnStore(q, sellerId, storeId);
+  if (!store || store.status !== "active") return null;
+  await ensureStoreSiteScaffold(q, storeId);
+  return storeDraftKey(await buildDraftSiteConfig(q, store));
+}
+
+export type StoreDraftPreview =
+  | { success: true; site: SiteConfig }
+  | { success: false; error: "not_found" | "draft_changed" | "invalid_site" };
+
+/**
+ * The DRAFT site of a store, for a verified preview token only. `storeId` must
+ * be the store of the request host and `draftKey` the one the token carries:
+ * when the drafts changed since the token was issued, nothing is returned.
+ * Never cache the result (PLAN.md §10.5).
+ */
+export async function getStoreDraftSiteForPreview(
+  storeId: string,
+  draftKey: string,
+  options: BuilderOptions = {},
+  q: Queryable = db,
+): Promise<StoreDraftPreview> {
+  if (!UUID_RE.test(storeId)) return { success: false, error: "not_found" };
+  const [store] = await q
+    .select({
+      id: stores.id,
+      defaultLocale: stores.defaultLocale,
+      supportedLocales: stores.supportedLocales,
+      sharedHeader: stores.sharedHeader,
+      sharedFooter: stores.sharedFooter,
+    })
+    .from(stores)
+    .innerJoin(sellers, eq(sellers.id, stores.sellerId))
+    .where(
+      and(eq(stores.id, storeId), eq(stores.status, "active"), isNull(stores.deletedAt), eq(sellers.status, "approved")),
+    )
+    .limit(1);
+  if (!store) return { success: false, error: "not_found" };
+
+  const raw = await buildDraftSiteConfig(q, store);
+  if (storeDraftKey(raw) !== draftKey) return { success: false, error: "draft_changed" };
+  const validated = validateSiteConfig(raw, { allowedSections: options.allowedSections });
+  return validated.success ? { success: true, site: validated.data } : { success: false, error: "invalid_site" };
 }
 
 // ---------------------------------------------------------------------------

@@ -18,7 +18,11 @@ import {
   unpublishStoreSite,
   updateStorePage,
   type StoreRevisionRow,
+  getStoreDraftKey,
 } from "@workspace/lib/store-sites/server";
+import { signStorePreviewToken, storePreviewSecret } from "@workspace/lib/store-sites/preview";
+import { storeUrl } from "@workspace/lib/storefront";
+import { findActiveCustomDomainForSubdomain } from "@workspace/lib/storefront/server";
 import { storeSectionRegistry } from "@workspace/store-sections/render";
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
@@ -35,6 +39,7 @@ import { EDITOR_ERRORS, type EditorErrorKey, type EditorResult } from "./editor.
 const ALLOWED = storeSectionRegistry.allowedSections();
 const saveLimiter = createRateLimiter({ limit: 240, windowMs: 10 * 60_000 });
 const publishLimiter = createRateLimiter({ limit: 20, windowMs: 10 * 60_000 });
+const previewLimiter = createRateLimiter({ limit: 30, windowMs: 10 * 60_000 });
 
 type Access = Awaited<ReturnType<typeof requireStore>>;
 
@@ -171,5 +176,30 @@ export async function siteStatus(storeId: string) {
   return withStore<NonNullable<Awaited<ReturnType<typeof getStoreSiteStatus>>>>(storeId, {}, async ({ seller, store }) => {
     const status = await getStoreSiteStatus(seller.sellerId, store.id);
     return status ? { success: true, data: status } : fail("notFound");
+  });
+}
+
+/**
+ * "Preview on my store" (PLAN.md P4-08): a signed link to the store host that
+ * shows the CURRENT drafts for up to 15 minutes. The token is bound to this
+ * store and to the drafts as they are now, so a later edit needs a new link.
+ * Fails closed when STORE_PREVIEW_SECRET is not configured.
+ */
+export async function previewLink(storeId: string) {
+  return withStore<{ url: string; expiresAt: number }>(storeId, {}, async ({ seller, store }) => {
+    const secret = storePreviewSecret();
+    if (!secret) return fail("previewUnavailable");
+    if (store.status !== "active") return fail("readOnly");
+    if (!previewLimiter.check(`preview:${seller.sellerId}`)) return fail("rateLimited");
+    const [draftKey, customDomain] = await Promise.all([
+      getStoreDraftKey(seller.sellerId, store.id),
+      findActiveCustomDomainForSubdomain(store.subdomain),
+    ]);
+    if (!draftKey) return fail("notFound");
+    const { token, expiresAt } = signStorePreviewToken({ storeId: store.id, draftKey, secret });
+    // The store host sets the preview cookie itself, so the link opens on the
+    // address the store is served from (its own domain when one is active).
+    const url = `${storeUrl(store.subdomain, customDomain)}/api/store-preview?token=${encodeURIComponent(token)}`;
+    return { success: true, data: { url, expiresAt } };
   });
 }

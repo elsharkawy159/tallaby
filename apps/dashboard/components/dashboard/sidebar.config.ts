@@ -81,11 +81,11 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
     icon: Globe,
     feature: "storeBuilder",
     items: [
-      { key: "websiteOverview", href: "/stores/[storeId]/website", status: "planned" },
+      { key: "websiteOverview", href: "/stores/[storeId]/website", status: "live", exact: true },
       { key: "websiteBuilder", href: "/stores/[storeId]/editor", status: "live" },
       { key: "templates", href: "/stores/[storeId]/website/templates", status: "planned" },
       { key: "designSystem", href: "/stores/[storeId]/website/design", status: "live" },
-      { key: "pages", href: "/stores/[storeId]/website/pages", status: "planned" },
+      { key: "pages", href: "/stores/[storeId]/website/pages", status: "live" },
       { key: "domainSeo", href: "/stores/[storeId]/website/domain", status: "planned" },
       { key: "socialMedia", href: "/stores/[storeId]/website/social", status: "live" },
       { key: "blog", href: "/stores/[storeId]/website/blog", status: "planned" },

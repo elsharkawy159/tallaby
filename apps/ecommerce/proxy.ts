@@ -5,6 +5,7 @@ import {
   isPlatformHost,
   storeSubdomainFromHost,
 } from "@workspace/lib/storefront";
+import { STORE_PREVIEW_COOKIE } from "@workspace/lib/store-sites/preview";
 import { routing } from "@/i18n/routing";
 import {
   isInternalStorefrontPath,
@@ -17,6 +18,19 @@ import {
 import { updateSession } from "./supabase/middleware";
 
 const handleI18nRouting = createMiddleware(routing);
+
+/**
+ * A browser in "Preview on my store" (P4-08) may be shown drafts: never let a
+ * shared cache keep that response, and never let it be indexed. The draft
+ * itself is only rendered after the token is verified for this host's store.
+ */
+function markStorePreview(request: NextRequest, response: NextResponse): NextResponse {
+  if (request.cookies.has(STORE_PREVIEW_COOKIE)) {
+    response.headers.set("Cache-Control", "private, no-store");
+    response.headers.set("X-Robots-Tag", "noindex, nofollow");
+  }
+  return response;
+}
 
 export async function proxy(request: NextRequest) {
   const host = request.headers.get("host");
@@ -31,14 +45,14 @@ export async function proxy(request: NextRequest) {
       return NextResponse.redirect(`https://${customDomain}${pathname}${search}`, 308);
     }
     const storefront = routeStorefrontRequest(request, storeSubdomain);
-    if (storefront) return updateSession(request, storefront);
+    if (storefront) return markStorePreview(request, await updateSession(request, storefront));
   } else if (!isPlatformHost(host)) {
     // A seller's own domain (faster-eg.com). Vercel only routes domains we
     // attached, but an inactive or removed one must not show anything.
     const subdomain = await subdomainForCustomDomain(hostnameOf(host));
     if (!subdomain) return new NextResponse(null, { status: 404 });
     const storefront = routeStorefrontRequest(request, subdomain);
-    if (storefront) return updateSession(request, storefront);
+    if (storefront) return markStorePreview(request, await updateSession(request, storefront));
   } else if (isInternalStorefrontPath(request.nextUrl.pathname)) {
     // Storefront pages only exist on their own subdomain, where the cart is
     // scoped to the store; on tallaby.com they would show the wrong cart.

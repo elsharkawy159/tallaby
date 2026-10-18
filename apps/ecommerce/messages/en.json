@@ -2041,5 +2041,10 @@
     "brands": "Brands",
     "stores": "Stores",
     "products": "Products"
+  },
+  "storePreview": {
+    "active": "Preview — not live. Only you can see these unpublished changes.",
+    "invalid": "This preview has expired or your website changed since it was opened. Open a new preview from your dashboard.",
+    "exit": "Exit preview"
   }
 }
