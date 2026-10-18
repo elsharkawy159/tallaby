@@ -96,8 +96,10 @@ export function applyPresetDesign(instance: SectionInstance, preset: SectionPres
   if (preset.sectionId !== instance.sectionId) return instance;
   const definition = storeSectionRegistry.get(instance.sectionId);
   if (!definition) return instance;
-  const keys = designKeys(definition);
-  const design = Object.fromEntries(Object.entries(preset.props ?? {}).filter(([key]) => keys.has(key)));
+  // Every design prop takes the preset's value, or the section default when the preset relies on it.
+  const presetProps = (preset.props ?? {}) as Record<string, unknown>;
+  const defaults = definition.defaultProps as Record<string, unknown>;
+  const design = Object.fromEntries([...designKeys(definition)].map((key) => [key, key in presetProps ? presetProps[key] : defaults[key]]));
   const shell = (preset.style as { shell?: unknown } | undefined)?.shell;
   const { shell: _old, ...style } = (instance.style ?? {}) as Record<string, unknown>;
   const nextStyle = shell ? { ...style, shell: structuredClone(shell) } : style;

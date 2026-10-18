@@ -46,6 +46,13 @@ describe("applyPresetDesign", () => {
     expect(next.id).toBe("h1");
   });
 
+  it("goes back to the defaults for a preset that relies on them", () => {
+    const hero: SectionInstance = { id: "h1", sectionId: "hero-banner", version: 1, props: { title: "Mine", align: "center", height: "lg" } };
+    const next = applyPresetDesign(hero, getPreset("hero.full-width")!);
+    expect(next.props).toMatchObject({ title: "Mine", align: "start", height: "md" });
+    expect(currentPreset(next, [getPreset("hero.full-width")!, centered])?.id).toBe("hero.full-width");
+  });
+
   it("never touches data props (source, category, picks)", () => {
     const grid: SectionInstance = { id: "g", sectionId: "product-grid", version: 1, props: { source: "category", categoryId: CATEGORY, limit: 4 } };
     const preset: SectionPreset = { ...getPreset("products.featured")!, props: { source: "featured", columns: "3", title: "X" } };

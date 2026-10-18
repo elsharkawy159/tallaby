@@ -361,6 +361,8 @@ export function EditorDndProvider({
   return (
     <EditorDndContext.Provider value={value}>
       <DndContext
+        // A fixed id keeps dnd-kit's generated aria ids the same on the server and the client (no hydration mismatch).
+        id="store-editor-dnd"
         sensors={sensors}
         collisionDetection={collisionDetection}
         // Panels scroll for Layers sorting; the canvas frame scrolls itself (autoScroll above).
