@@ -1,5 +1,5 @@
 import type { SectionInstance } from "../config/schema";
-import type { AnySectionDefinition, CatalogQuery, SectionCategory } from "./types";
+import type { AnySectionDefinition, CatalogQuery, ContentQuery, SectionCategory } from "./types";
 
 export type SectionRegistry = {
   get: (sectionId: string) => AnySectionDefinition | undefined;
@@ -90,6 +90,22 @@ export function collectCatalogQueries(
     if (!definition?.catalogQuery) continue;
     const props = resolveSectionProps(definition, applyMigrations(instance, definition).props);
     const query = definition.catalogQuery(props);
+    if (query) out[instance.id] = query;
+  }
+  return out;
+}
+
+/** Every blog/CMS content query of a page, keyed by section instance id (P4-16, P4-11). */
+export function collectContentQueries(
+  sections: readonly SectionInstance[],
+  registry: SectionRegistry,
+): Record<string, ContentQuery> {
+  const out: Record<string, ContentQuery> = {};
+  for (const instance of sections) {
+    const definition = registry.get(instance.sectionId);
+    if (!definition?.contentQuery) continue;
+    const props = resolveSectionProps(definition, applyMigrations(instance, definition).props);
+    const query = definition.contentQuery(props);
     if (query) out[instance.id] = query;
   }
   return out;

@@ -2981,6 +2981,7 @@
         "commerce": "Products",
         "content": "Content",
         "social-proof": "Trust",
+        "blog": "Blog & content",
         "media": "Media",
         "contact": "Contact",
         "footer": "Footer"
@@ -3524,6 +3525,116 @@
       "limitReached": "You've reached the maximum number of forms for this store.",
       "rateLimited": "Too many changes in a short time. Wait a few minutes and try again.",
       "generic": "Something went wrong. Please try again."
+    }
+  },
+  "websiteBlog": {
+    "title": "Blog",
+    "subtitle": "Articles on your store, at /blog. Each post is published on its own, without publishing the website.",
+    "viewBlog": "View blog",
+    "newPost": "New post",
+    "search": "Search posts",
+    "tagFilter": "Tag: {tag}",
+    "states": {
+      "all": "All",
+      "published": "Published",
+      "scheduled": "Scheduled",
+      "draft": "Draft"
+    },
+    "emptyTitle": "No posts yet",
+    "emptyText": "Write your first post: news, guides or tips about your products. Blog sections on your website show your latest posts automatically.",
+    "noMatches": "No posts match these filters.",
+    "view": "View",
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "deleteTitle": "Delete this post?",
+    "deleteText": "\"{title}\" will be removed from your store. This can't be undone.",
+    "deleted": "Post deleted.",
+    "errors": {
+      "invalidInput": "Some fields aren't valid. Check the highlighted fields and try again.",
+      "invalidData": "Some fields aren't valid. Check the highlighted fields and try again.",
+      "readOnly": "This store is archived, so its blog can't be changed.",
+      "notFound": "This post wasn't found.",
+      "slugTaken": "Another post already uses this address. Choose another one.",
+      "rateLimited": "Too many changes at once. Wait a moment and try again.",
+      "generic": "Something went wrong. Try again."
+    },
+    "editor": {
+      "back": "All posts",
+      "newTitle": "New post",
+      "untitled": "Untitled post",
+      "viewLive": "View on store",
+      "readOnly": "This store is archived, so this post can't be changed.",
+      "unsaved": "Unsaved changes",
+      "noChanges": "All changes saved",
+      "save": {
+        "draft": "Save draft",
+        "publish": "Publish post",
+        "schedule": "Schedule post"
+      },
+      "saved": {
+        "draft": "Draft saved.",
+        "published": "Post published. It's on your store now.",
+        "scheduled": "Post scheduled. It goes live at the chosen time."
+      },
+      "content": {
+        "title": "Post",
+        "description": "Title, address and the article itself.",
+        "postTitle": "Title",
+        "slug": "Address",
+        "slugHint": "Lowercase English letters, numbers and dashes, e.g. summer-guide.",
+        "slugInvalid": "Use lowercase English letters, numbers and dashes only.",
+        "excerpt": "Summary",
+        "excerptHint": "Shown on post cards and in search results when there's no SEO description.",
+        "body": "Article",
+        "bodyPlaceholder": "Write your post…"
+      },
+      "cover": {
+        "title": "Cover image",
+        "description": "Shown at the top of the post and on its card.",
+        "remove": "Remove image"
+      },
+      "details": {
+        "title": "Details",
+        "description": "Tags, author and when the post appears.",
+        "tags": "Tags",
+        "tagsHint": "Separate tags with commas.",
+        "author": "Author",
+        "visibility": "Visibility",
+        "scheduleAt": "Publish on",
+        "publishedOn": "Published on {date}."
+      },
+      "modes": {
+        "draft": {
+          "title": "Draft",
+          "description": "Only you can see it."
+        },
+        "publish": {
+          "title": "Published",
+          "description": "Visible on your store now."
+        },
+        "schedule": {
+          "title": "Scheduled",
+          "description": "Goes live at a date you choose."
+        }
+      },
+      "seo": {
+        "title": "Search & sharing",
+        "description": "How this post appears on Google and when shared.",
+        "metaTitle": "SEO title",
+        "metaDescription": "SEO description",
+        "hint": "Leave empty to use the title and summary.",
+        "indexTitle": "Show in search engines",
+        "indexDescription": "Turn off to ask search engines not to list this post."
+      },
+      "revisions": {
+        "title": "Earlier versions",
+        "description": "Every save keeps a version you can go back to.",
+        "show": "Show versions",
+        "empty": "No earlier versions yet.",
+        "restore": "Restore",
+        "restored": "Version restored."
+      }
     }
   }
 }

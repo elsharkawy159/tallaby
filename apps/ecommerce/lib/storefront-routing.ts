@@ -105,6 +105,18 @@ export function routeStorefrontRequest(
   if (path === "/cart") return rewrite("/cart");
   if (/^\/products\/[^/]+\/?$/.test(path)) return rewrite(path.replace(/\/$/, ""));
 
+  // The store blog (P4-16): /blog (?page=, ?tag=) and /blog/{post}.
+  if (path === "/blog" || path === "/blog/") return rewrite("/blog");
+  const blogPost = /^\/blog\/([a-z0-9](?:[a-z0-9-]{0,198}[a-z0-9])?)\/?$/.exec(path);
+  if (blogPost) return rewrite(`/blog/${blogPost[1]}`);
+
+  // A CMS item (/{collection}/{item}, P4-11). An unknown collection or item
+  // is redirected to the marketplace by the route, as before.
+  const cmsItem = /^\/([a-z0-9](?:[a-z0-9-]{0,126}[a-z0-9])?)\/([a-z0-9](?:[a-z0-9-]{0,198}[a-z0-9])?)\/?$/.exec(path);
+  if (cmsItem && cmsItem[1] !== "products" && cmsItem[1] !== "blog") {
+    return rewrite(`/cms/${cmsItem[1]}/${cmsItem[2]}`);
+  }
+
   // A builder page of this store (/about). An unknown slug is redirected to
   // the marketplace by the page route, as before (P5-01).
   if (/^\/[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?\/?$/.test(path) && path !== "/products" && path !== "/search") {

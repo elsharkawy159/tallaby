@@ -31,6 +31,56 @@ export function sanitizeRichText(value: string): string {
   return LOOKS_LIKE_HTML.test(value) ? sanitizeHtml(value, RICH_TEXT_OPTIONS) : value;
 }
 
+/**
+ * Long-form rich text from the dashboard editor (@workspace/tiptap): blog post
+ * bodies and CMS rich-text fields (PLAN.md §8.9, §17 content safety). Run on
+ * save AND before render. Allows headings, lists, quotes, code, links and
+ * images; no scripts, iframes, event handlers, classes or arbitrary styles
+ * (only text alignment). Links get http(s)/mailto/tel only; images http(s)
+ * only. Links that open a new tab get rel="noopener noreferrer nofollow".
+ */
+const ARTICLE_OPTIONS: sanitizeHtml.IOptions = {
+  allowedTags: [...(RICH_TEXT_OPTIONS.allowedTags as string[]), "img", "figure", "figcaption"],
+  allowedAttributes: {
+    a: ["href", "target", "rel"],
+    img: ["src", "alt", "title", "width", "height"],
+    "*": ["dir", "style"],
+  },
+  allowedStyles: {
+    "*": { "text-align": [/^(?:left|right|center|justify|start|end)$/] },
+  },
+  allowedSchemes: ["http", "https", "mailto", "tel"],
+  allowedSchemesByTag: { img: ["http", "https"] },
+  allowProtocolRelative: false,
+  disallowedTagsMode: "discard",
+  transformTags: {
+    a: (tagName, attribs) => {
+      const out: Record<string, string> = { ...attribs };
+      if (out.target && out.target !== "_blank") delete out.target;
+      if (out.target === "_blank") out.rel = "noopener noreferrer nofollow";
+      return { tagName, attribs: out };
+    },
+  },
+};
+
+export function sanitizeArticleHtml(value: string): string {
+  if (!value) return "";
+  return sanitizeHtml(value, ARTICLE_OPTIONS).trim();
+}
+
+/** Plain text of article HTML (excerpts, reading time, search). */
+export function articlePlainText(value: string): string {
+  return sanitizeHtml(value ?? "", { allowedTags: [], allowedAttributes: {} })
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 const UNSAFE_STYLE_VALUE = /expression\s*\(|javascript:|vbscript:|[<>]|@import|behavior\s*:|-moz-binding/i;
 const CSS_URL = /url\(\s*(['"]?)(.*?)\1\s*\)/gi;
 

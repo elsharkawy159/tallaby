@@ -5,6 +5,7 @@ import {
   invalidateProduct,
   invalidateProductInventory,
   invalidateStoreCatalog,
+  invalidateStoreCms,
   invalidateStoreIntegrations,
   invalidateStoreSite,
   mergeInvalidations,
@@ -321,6 +322,16 @@ describe("invalidateStoreSite", () => {
       "seller:subdomain:sara",
     ]);
     expect(invalidateStoreSite("seller-a", "store-a1", "sara").tags).not.toContain(storeTags.site("seller-a", "store-a2"));
+  });
+});
+
+describe("invalidateStoreCms", () => {
+  it("emits only that store's content tag, with the seller id, never a sibling store's", () => {
+    const result = invalidateStoreCms("seller-a", "store-a1");
+    expect(result.tags).toEqual(["store:cms:seller-a:store-a1"]);
+    expect(result.tags).not.toContain(storeTags.cms("seller-a", "store-a2"));
+    expect(result.tags).not.toContain(storeTags.cms("seller-b", "store-a1"));
+    expect(result.paths).toEqual([]);
   });
 });
 

@@ -7,6 +7,7 @@ import { createSectionRegistry } from "../core/registry";
 import type { AnySectionDefinition } from "../core/types";
 import { storeFooter, storeHeader } from "./chrome";
 import { CLASSIC_SECTIONS } from "./classic";
+import { blogFeaturedPost, blogLatestPosts, cmsItem, cmsList } from "./blog";
 import { categoryGrid, featuredProduct, productGrid } from "./commerce";
 import { ctaBanner, features, heroBanner, imageWithText, richText, spacer } from "./content";
 import { contactInfo, faq, imageGallery, logoCloud, testimonials } from "./engagement";
@@ -29,6 +30,10 @@ export const STORE_SECTIONS: readonly AnySectionDefinition[] = [
   ctaBanner,
   contactInfo,
   contactForm,
+  blogLatestPosts,
+  blogFeaturedPost,
+  cmsList,
+  cmsItem,
   spacer,
   storeFooter,
 ];
@@ -38,7 +43,13 @@ export const storeSectionRegistry = createSectionRegistry(STORE_SECTIONS);
 export * from "./classic";
 export { FORM_SUBMIT_CLASS, FormFieldsView, formCopy } from "./forms";
 
+export { BLOG_COLLECTION_SLUG } from "./blog";
+
 export {
+  blogFeaturedPost,
+  blogLatestPosts,
+  cmsItem,
+  cmsList,
   categoryGrid,
   contactForm,
   contactInfo,

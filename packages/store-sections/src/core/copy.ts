@@ -29,6 +29,12 @@ export const SECTION_COPY = {
   formSubmit: { ar: "إرسال", en: "Send" },
   formSuccess: { ar: "شكرًا لك! وصلتنا رسالتك وسنتواصل معك قريبًا.", en: "Thank you! We received your message and will get back to you soon." },
   formSelect: { ar: "اختر…", en: "Choose…" },
+  noPosts: { ar: "لا توجد مقالات منشورة بعد.", en: "No posts published yet." },
+  noItems: { ar: "لا يوجد محتوى منشور هنا بعد.", en: "Nothing published here yet." },
+  pickCollection: { ar: "اكتب عنوان المجموعة لعرض محتواها هنا.", en: "Enter a collection address to show its content here." },
+  readMore: { ar: "اقرأ المزيد", en: "Read more" },
+  allPosts: { ar: "كل المقالات", en: "All posts" },
+  minutesRead: { ar: "{n} دقائق قراءة", en: "{n} min read" },
 } as const satisfies Record<string, Localized>;
 
 export type SectionCopyKey = keyof typeof SECTION_COPY;

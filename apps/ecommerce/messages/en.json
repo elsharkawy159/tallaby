@@ -1983,6 +1983,24 @@
     "finalHeading": "Ready to start earning with Tallaby?",
     "finalDescription": "Share your code. Help people save. Earn when they shop."
   },
+  "storefrontBlog": {
+    "title": "Blog",
+    "description": "News, guides and stories from {store}.",
+    "empty": "No posts published yet.",
+    "emptyTag": "No posts with this tag yet.",
+    "allTags": "All",
+    "tagTitle": "Posts tagged “{tag}”",
+    "readMore": "Read more",
+    "minutesRead": "{n} min read",
+    "by": "By {author}",
+    "previous": "Newer posts",
+    "next": "Older posts",
+    "pageOf": "Page {page} of {total}",
+    "backToBlog": "Back to the blog",
+    "tags": "Tags",
+    "morePosts": "More posts",
+    "backHome": "Back to the store"
+  },
   "storefront": {
     "consent": {
       "label": "Cookie choice",

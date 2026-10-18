@@ -265,6 +265,14 @@ export function invalidateStoreCatalog(sellerId: string, storeId: string, subdom
   return inv([storeTags.catalog(sellerId, storeId), sellerTags.subdomain(subdomain)]);
 }
 
+/**
+ * A store saved, published, unpublished or deleted a blog post or CMS item, or
+ * changed a collection (P4-16, P4-11): that store's public content only.
+ */
+export function invalidateStoreCms(sellerId: string, storeId: string): CacheInvalidation {
+  return inv([storeTags.cms(sellerId, storeId)]);
+}
+
 /** A store connected, changed or removed a tracking app (P7-02/P7-03). Only that store. */
 export function invalidateStoreIntegrations(sellerId: string, storeId: string): CacheInvalidation {
   return inv([storeTags.integrations(sellerId, storeId)]);

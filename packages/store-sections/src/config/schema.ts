@@ -37,6 +37,8 @@ export type AllowedNodeType = (typeof ALLOWED_NODE_TYPES)[number];
 export const RESERVED_PAGE_SLUGS = [
   "products", "product", "cart", "checkout", "auth", "login", "signup", "orders",
   "profile", "payment", "api", "storefront", "search", "sitemap", "robots", "_next",
+  // Store blog routes (/blog, /blog/[slug], P4-16).
+  "blog",
 ] as const;
 
 export const MAX_PAGES = 50;

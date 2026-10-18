@@ -7,6 +7,7 @@ import {
   SectionRenderer,
   collectCatalogQueries,
   collectFormIds,
+  collectContentQueries,
   storeSectionRegistry,
   type NavPage,
   type RenderContext,
@@ -15,6 +16,8 @@ import { getPublicUrl } from "@workspace/ui/lib/utils";
 import type { StoreQuery } from "@/app/[locale]/(main)/stores/[slug]/_components/store-products";
 import { AddToCartButton } from "@/components/product/add-to-cart-button";
 import { Link } from "@/i18n/navigation";
+import { formatContentDate, toContentSummary } from "@/lib/store-cms/cms.lib";
+import { getCachedSectionContent } from "@/lib/store-cms/cms.server";
 import { resolveStoreCatalog } from "@/lib/store-site/catalog.server";
 import { catalogStoreId, type Storefront, type StorefrontCategory } from "@/lib/storefront.server";
 import { CartSheet } from "./cart-sheet.client";
@@ -81,13 +84,22 @@ async function buildContext(
 ): Promise<RenderContext> {
   const queries = collectCatalogQueries(sections, storeSectionRegistry);
   const formIds = collectFormIds(sections, storeSectionRegistry);
-  const [catalog, forms] = await Promise.all([
+  const contentQueries = collectContentQueries(sections, storeSectionRegistry);
+  const [catalog, forms, content] = await Promise.all([
     Object.keys(queries).length
       ? resolveStoreCatalog(store.id, catalogStoreId(store), queries, locale)
       : { products: {}, categories: [], withVariants: new Set<string>() },
     // Forms of THIS host's store only (P4-10); another store's form id resolves to nothing.
     formIds.length ? getPublicStoreForms(store.storeId, formIds) : {},
+    // Blog/CMS sections (P4-16, P4-11): only this store's published items.
+    Object.keys(contentQueries).length ? getCachedSectionContent(store.id, store.storeId, contentQueries) : null,
   ]);
+  const contentItems = Object.fromEntries(
+    Object.entries(content?.items ?? {}).map(([instanceId, items]) => [
+      instanceId,
+      items.map((item) => toContentSummary(item, content?.fields[item.collectionSlug])),
+    ]),
+  );
 
   return {
     mode: "public",
@@ -105,6 +117,8 @@ async function buildContext(
     },
     pages: navPages(site, locale),
     catalog: { products: catalog.products, categories: catalog.categories },
+    content: { items: contentItems },
+    formatDate: (iso) => formatContentDate(iso, locale),
     Link: ({ href, className, children, ...rest }) => (
       <Link href={href} className={className} aria-label={rest["aria-label"]}>
         {children}

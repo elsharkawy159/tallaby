@@ -165,6 +165,14 @@
     "./store-forms/server": {
       "types": "./src/store-forms/server.ts",
       "default": "./src/store-forms/server.ts"
+    },
+    "./cms": {
+      "types": "./src/cms/cms.lib.ts",
+      "default": "./src/cms/cms.lib.ts"
+    },
+    "./cms/server": {
+      "types": "./src/cms/cms.server.ts",
+      "default": "./src/cms/cms.server.ts"
     }
   },
   "devDependencies": {

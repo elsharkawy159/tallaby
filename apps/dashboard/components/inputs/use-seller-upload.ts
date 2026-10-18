@@ -41,7 +41,7 @@ export function useSellerUpload ({
   folder,
   bucket = 'sellers',
 }: {
-  folder: 'logos' | 'banners' | 'documents'
+  folder: 'logos' | 'banners' | 'documents' | 'blog'
   bucket?: string
 }) {
   const t = useTranslations('inputs.sellerImage')

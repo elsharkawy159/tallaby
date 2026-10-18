@@ -62,6 +62,7 @@ export const SECTION_CATEGORIES = [
   "commerce",
   "content",
   "social-proof",
+  "blog",
   "media",
   "contact",
   "footer",
@@ -78,6 +79,32 @@ export type CatalogQuery =
       limit: number;
     }
   | { kind: "categories"; limit: number };
+
+/**
+ * Published CMS items a content section needs (blog posts are the system
+ * collection `blog`), resolved by the host from the store of the request
+ * (P4-16, P4-11). Never drafts or scheduled items.
+ */
+export type ContentQuery = {
+  /** Collection slug of this store ("blog" for the blog). */
+  collection: string;
+  limit: number;
+  /** One item by slug (CMS item section). */
+  slug?: string | null;
+};
+
+export type ContentItemSummary = {
+  id: string;
+  title: string;
+  href: string;
+  excerpt?: string | null;
+  image?: string | null;
+  /** ISO date. */
+  publishedAt?: string | null;
+  tags?: string[];
+  authorName?: string | null;
+  readingMinutes?: number | null;
+};
 
 export type ProductSummary = {
   id: string;
@@ -150,6 +177,10 @@ export interface RenderContext {
   pages: NavPage[];
   /** Products per section instance id, and the store's categories. */
   catalog: { products: Record<string, ProductSummary[]>; categories: CategorySummary[] };
+  /** Published blog/CMS items per section instance id (from `contentQuery`). */
+  content?: { items: Record<string, ContentItemSummary[]> };
+  /** Formats an ISO date for the page locale (defaults to the date part). */
+  formatDate?: (iso: string) => string;
   Link: ComponentType<LinkProps>;
   /** Resolves a stored image (storage path or URL) to a URL. */
   imageUrl: (src: string | null | undefined) => string | null;
@@ -187,6 +218,8 @@ export interface SectionDefinition<P extends Record<string, unknown> = Record<st
   catalogQuery?: (props: P) => CatalogQuery | null;
   /** The `store_forms` id this instance shows, given its (validated) props (P4-10). */
   formRef?: (props: P) => string | null;
+  /** Published blog/CMS items this instance needs, given its (validated) props. */
+  contentQuery?: (props: P) => ContentQuery | null;
   /** Only usable as the site header or footer, not inside a page. */
   chrome?: "header" | "footer";
   Component: ComponentType<SectionRenderProps<P>>;

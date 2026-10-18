@@ -2112,6 +2112,24 @@
     "finalHeading": "جاهز لتبدأ الربح مع طلبي؟",
     "finalDescription": "شارك كودك. ساعد الناس على التوفير. اربح عند تسوقهم."
   },
+  "storefrontBlog": {
+    "title": "المدونة",
+    "description": "أخبار وأدلة وقصص من {store}.",
+    "empty": "لا توجد مقالات منشورة بعد.",
+    "emptyTag": "لا توجد مقالات بهذا الوسم بعد.",
+    "allTags": "الكل",
+    "tagTitle": "مقالات بوسم «{tag}»",
+    "readMore": "اقرأ المزيد",
+    "minutesRead": "{n} دقائق قراءة",
+    "by": "بقلم {author}",
+    "previous": "مقالات أحدث",
+    "next": "مقالات أقدم",
+    "pageOf": "صفحة {page} من {total}",
+    "backToBlog": "العودة إلى المدونة",
+    "tags": "الوسوم",
+    "morePosts": "مقالات أخرى",
+    "backHome": "العودة إلى المتجر"
+  },
   "storefront": {
     "consent": {
       "label": "اختيار ملفات تعريف الارتباط",

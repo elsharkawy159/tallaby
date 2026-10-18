@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { sanitizeRichText, sanitizeSiteConfig, sanitizeStyle } from "./sanitize";
+import { articlePlainText, sanitizeArticleHtml, sanitizeRichText, sanitizeSiteConfig, sanitizeStyle } from "./sanitize";
 import { classicTemplateFixture, withHomeSections } from "./fixtures.test-utils";
 import { siteConfigSchema } from "./schema";
 
@@ -120,5 +120,38 @@ describe("sanitizeSiteConfig", () => {
     );
     sanitizeSiteConfig(config);
     expect(config.pages[0]!.content.sections[0]!.props.body).toBe("<script>a</script>");
+  });
+});
+
+describe("sanitizeArticleHtml (blog / CMS rich text)", () => {
+  it("strips scripts, iframes and event handlers", () => {
+    const out = sanitizeArticleHtml(
+      '<p onclick="x()">a</p><script>alert(1)</script><iframe src="https://x.test"></iframe><img src="https://cdn.test/a.png" onerror="alert(1)">',
+    );
+    expect(out).toBe('<p>a</p><img src="https://cdn.test/a.png" />');
+  });
+
+  it("drops javascript: and data: URLs on links and images", () => {
+    const out = sanitizeArticleHtml(
+      '<a href="javascript:alert(1)">x</a><a href="java\tscript:alert(1)">y</a><img src="data:image/png;base64,AAA">',
+    );
+    expect(out).not.toMatch(/javascript|data:/i);
+  });
+
+  it("keeps headings, lists, quotes, safe links and alignment, but no classes or other styles", () => {
+    const out = sanitizeArticleHtml(
+      '<h2 class="x" style="text-align:center;color:red">T</h2><ul><li>1</li></ul><blockquote>q</blockquote><a href="https://tallaby.com">l</a>',
+    );
+    expect(out).toBe('<h2 style="text-align:center">T</h2><ul><li>1</li></ul><blockquote>q</blockquote><a href="https://tallaby.com">l</a>');
+  });
+
+  it("forces rel on links that open a new tab", () => {
+    expect(sanitizeArticleHtml('<a href="https://x.test" target="_blank" rel="opener">x</a>')).toBe(
+      '<a href="https://x.test" target="_blank" rel="noopener noreferrer nofollow">x</a>',
+    );
+  });
+
+  it("gives plain text for excerpts", () => {
+    expect(articlePlainText("<p>Hello&nbsp;<strong>world</strong></p><script>x</script>")).toBe("Hello world");
   });
 });

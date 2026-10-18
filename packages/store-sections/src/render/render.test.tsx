@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import type { PageContent, SectionInstance } from "../config/schema";
 import { validateSiteConfig } from "../config/validate";
-import { collectCatalogQueries, collectFormIds } from "../core/registry";
+import { collectCatalogQueries, collectContentQueries, collectFormIds } from "../core/registry";
 import { FONT_PAIRINGS, findFontPairing, storeFontFamily } from "../core/fonts";
 import { designSystemToCss, designSystemToTokens } from "../core/theme";
 import type { PublicStoreForm, RenderContext } from "../core/types";
@@ -164,6 +164,79 @@ describe("commerce sections", () => {
     expect(html(<SectionRenderer instance={instance("featured-product")} registry={storeSectionRegistry} ctx={makeCtx({ mode: "edit" })} />)).toContain(
       "اختر منتجًا",
     );
+  });
+});
+
+describe("blog and CMS sections (P4-16, P4-11)", () => {
+  const post = {
+    id: "p1",
+    title: "كيف تختار المقاس",
+    href: "/blog/size-guide",
+    excerpt: "دليل سريع",
+    image: "https://cdn.test/cover.png",
+    publishedAt: "2026-10-01T10:00:00.000Z",
+    readingMinutes: 4,
+  };
+
+  it("blog sections are pre-bound to the store's blog; CMS sections ask only when a collection is set", () => {
+    const sections = [
+      instance("blog-latest-posts", { limit: 5 }),
+      instance("blog-featured-post"),
+      instance("cms-list", { collection: "Lookbook", limit: 4 }),
+      instance("cms-item", { collection: "faq", slug: "returns" }),
+      { ...instance("cms-list"), id: "s-empty-cms" },
+      instance("rich-text"),
+    ];
+    expect(collectContentQueries(sections, storeSectionRegistry)).toEqual({
+      "s-blog-latest-posts": { collection: "blog", limit: 5 },
+      "s-blog-featured-post": { collection: "blog", limit: 1 },
+      "s-cms-list": { collection: "lookbook", limit: 4 },
+      "s-cms-item": { collection: "faq", slug: "returns", limit: 1 },
+    });
+    // A bad collection slug is dropped, never sent to the host.
+    expect(collectContentQueries([instance("cms-list", { collection: "../x" })], storeSectionRegistry)).toEqual({});
+  });
+
+  it("shows an empty state when the blog has no published posts", () => {
+    for (const id of ["blog-latest-posts", "blog-featured-post"]) {
+      const markup = html(<SectionRenderer instance={instance(id)} registry={storeSectionRegistry} ctx={makeCtx()} />);
+      expect(markup, id).toContain("لا توجد مقالات منشورة بعد.");
+    }
+    const en = html(<SectionRenderer instance={instance("blog-latest-posts")} registry={storeSectionRegistry} ctx={makeCtx({ locale: "en", dir: "ltr", content: { items: {} } })} />);
+    expect(en).toContain("No posts published yet.");
+    expect(en).not.toContain('href="/blog"');
+  });
+
+  it("renders the posts the host resolved, linking to the post and to /blog", () => {
+    const markup = html(
+      <SectionRenderer
+        instance={instance("blog-latest-posts")}
+        registry={storeSectionRegistry}
+        ctx={makeCtx({ content: { items: { "s-blog-latest-posts": [post] } }, formatDate: () => "1 أكتوبر" })}
+      />,
+    );
+    expect(markup).toContain('href="/blog/size-guide"');
+    expect(markup).toContain('href="/blog"');
+    expect(markup).toContain("كيف تختار المقاس");
+    expect(markup).toContain("1 أكتوبر · 4 دقائق قراءة");
+  });
+
+  it("hides an unset CMS section on the store but explains it in the editor", () => {
+    expect(html(<SectionRenderer instance={instance("cms-list")} registry={storeSectionRegistry} ctx={makeCtx()} />)).not.toContain("<section");
+    expect(html(<SectionRenderer instance={instance("cms-list")} registry={storeSectionRegistry} ctx={makeCtx({ mode: "edit" })} />)).toContain("اكتب عنوان المجموعة");
+    expect(html(<SectionRenderer instance={instance("cms-list", { collection: "faq" })} registry={storeSectionRegistry} ctx={makeCtx()} />)).toContain("لا يوجد محتوى منشور هنا بعد.");
+  });
+
+  it("escapes item titles and drops unsafe item links", () => {
+    const markup = html(
+      <SectionRenderer
+        instance={instance("blog-featured-post")}
+        registry={storeSectionRegistry}
+        ctx={makeCtx({ content: { items: { "s-blog-featured-post": [{ ...post, title: "<b>x</b>", href: "javascript:alert(1)" }] } } })}
+      />,
+    );
+    expect(markup).not.toContain("javascript:");
+    expect(markup).toContain("&lt;b&gt;x&lt;/b&gt;");
   });
 });
 
