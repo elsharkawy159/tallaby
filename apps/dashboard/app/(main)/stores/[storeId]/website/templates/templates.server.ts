@@ -1,11 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { applyStoreTemplate, undoStoreTemplate } from "@workspace/lib/store-sites/server";
+import { applyStoreTemplate, getStoreTemplateConfig, undoStoreTemplate } from "@workspace/lib/store-sites/server";
 import { contentOverrideKeys, storeSectionRegistry } from "@workspace/store-sections/render";
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
-import { TEMPLATE_ERRORS, type TemplateActionResult } from "./templates.dto";
+import { TEMPLATE_ERRORS, type TemplateActionResult, type TemplatePreviewView } from "./templates.dto";
 
 /**
  * Website › Templates actions (PLAN.md §8.1, P4-05). The store id is explicit
@@ -46,6 +46,28 @@ export async function applyTemplate(storeId: string, templateKey: string) {
     if (!result.success) return { success: false, error: TEMPLATE_ERRORS[result.error] ?? "generic" };
     return { success: true, data: { pagesUpdated: result.data.pagesUpdated, pagesCreated: result.data.pagesCreated } };
   });
+}
+
+/** Read-only: the template's pages and look for the preview dialog (not rate-limited, no write access needed). */
+export async function templatePreview(storeId: string, templateKey: string): Promise<TemplateActionResult<TemplatePreviewView>> {
+  try {
+    const { seller, store } = await requireStore(String(storeId));
+    const config = await getStoreTemplateConfig(seller.sellerId, store.id, String(templateKey));
+    if (!config) return { success: false, error: "templateNotFound" };
+    return {
+      success: true,
+      data: {
+        designSystem: config.designSystem,
+        header: config.header,
+        footer: config.footer,
+        pages: config.pages.map((page) => ({ slug: page.slug, isHome: page.isHome, name: page.name, sections: page.content.sections, content: page.content })),
+      },
+    };
+  } catch (error) {
+    if (isAccessError(error)) return { success: false, error: "notFound" };
+    console.error("[website-templates] preview failed", (error as Error)?.message);
+    return { success: false, error: "generic" };
+  }
 }
 
 export async function undoTemplate(storeId: string) {

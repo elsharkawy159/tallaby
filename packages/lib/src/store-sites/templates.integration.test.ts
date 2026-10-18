@@ -6,7 +6,7 @@ import * as DB_SCHEMA from "@workspace/db/schema";
 import { contentOverrideKeys, storeSectionRegistry } from "@workspace/store-sections/render";
 import { createIsolationWorld, type IsolationWorld } from "../stores/isolation.fixtures";
 import { getStoreForEditor, saveStoreDesignSystem, saveStorePageDraft } from "./server";
-import { applyStoreTemplate, listStoreTemplates, undoStoreTemplate } from "./templates.server";
+import { applyStoreTemplate, getStoreTemplateConfig, listStoreTemplates, undoStoreTemplate } from "./templates.server";
 
 /**
  * Templates apply/undo (PLAN.md §8.1, P4-05) against the staging copy, which
@@ -37,6 +37,14 @@ describe.skipIf(!TEST_DATABASE_URL)("store templates (integration)", { timeout: 
     expect(gallery?.currentKey).toBe("tallaby-classic");
     expect(gallery?.templates.find((t) => t.key === "tallaby-classic")?.isDefault).toBe(true);
     expect(await listStoreTemplates(w.b.sellerId, w.a.a2, db)).toBeNull();
+  });
+
+  it("reads one template's config for the preview, only for the seller's own store", async () => {
+    const config = await getStoreTemplateConfig(w.a.sellerId, w.a.a2, "tallaby-classic", db);
+    expect(config?.pages.some((p) => p.isHome)).toBe(true);
+    expect(await getStoreTemplateConfig(w.b.sellerId, w.a.a2, "tallaby-classic", db)).toBeNull();
+    expect(await getStoreTemplateConfig(w.a.sellerId, w.a.a2, "no-such-template", db)).toBeNull();
+    expect(await getStoreTemplateConfig(w.a.sellerId, w.a.a2, "../bad", db)).toBeNull();
   });
 
   it("applies to drafts only, keeps seller text in matching sections, and leaves other stores alone", async () => {

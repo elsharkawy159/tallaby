@@ -12,6 +12,7 @@
 import type { ComponentType, ReactNode } from "react";
 import type { z } from "zod";
 import type { SectionInstance, SiteLocale } from "../config/schema";
+import type { SlotDefinition } from "./slots";
 
 export type Localized = { ar: string; en: string };
 
@@ -66,6 +67,8 @@ export const SECTION_CATEGORIES = [
   "media",
   "contact",
   "footer",
+  /** Built from elements (P4B-02). */
+  "custom",
 ] as const;
 export type SectionCategory = (typeof SECTION_CATEGORIES)[number];
 
@@ -166,6 +169,8 @@ export type LinkProps = {
   className?: string;
   children: ReactNode;
   "aria-label"?: string;
+  /** Editable-part marker (P4B-01); hosts forward it to the rendered element. */
+  "data-part"?: string;
 };
 
 export interface RenderContext {
@@ -213,6 +218,11 @@ export interface SectionDefinition<P extends Record<string, unknown> = Record<st
   defaultProps: P;
   propDefinitions: PropDefinition[];
   itemCollections?: ItemCollectionDefinition[];
+  /**
+   * Containers of editable parts the seller can reorder and move parts
+   * between (P4B-16, `core/slots.ts`). Stored in `instance.slots`.
+   */
+  slots?: readonly SlotDefinition[];
   migrateProps?: (oldProps: Record<string, unknown>, fromVersion: number) => Record<string, unknown>;
   /** Catalog data this instance needs, given its (validated) props. */
   catalogQuery?: (props: P) => CatalogQuery | null;
@@ -220,6 +230,11 @@ export interface SectionDefinition<P extends Record<string, unknown> = Record<st
   formRef?: (props: P) => string | null;
   /** Published blog/CMS items this instance needs, given its (validated) props. */
   contentQuery?: (props: P) => ContentQuery | null;
+  /**
+   * `false` hides the section from the editor Add panel; existing pages keep
+   * rendering it (P4B: one section per category).
+   */
+  insertable?: false;
   /** Only usable as the site header or footer, not inside a page. */
   chrome?: "header" | "footer";
   Component: ComponentType<SectionRenderProps<P>>;

@@ -3,7 +3,7 @@
  * (`--sf-*`) and Tailwind, so new sections sit naturally next to Classic.
  * Presentational only.
  */
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 import { z } from "zod";
 import { isExternalHref, safeHref } from "../core/links";
 import type { ProductSummary, RenderContext } from "../core/types";
@@ -21,6 +21,62 @@ export const optionalUrl = z
   .catch("");
 export const imageSrc = z.string().max(2048).catch("");
 export const align = z.enum(["start", "center"]).catch("start");
+
+/** `data-part` of an editable part of a section (P4B-01); empty when not marked. */
+export type PartAttr = { "data-part"?: string };
+
+/**
+ * Marks the editable parts of a section instance: the editor selects them on
+ * click and part styles (`instance.style.parts`) target them. Emitted in both
+ * modes, so the storefront applies the same styles. `key` is a prop key or
+ * `collection.index.field`.
+ */
+export function partOf(instanceId: string) {
+  return (key: string): PartAttr => ({ "data-part": `${instanceId}::${key}` });
+}
+
+/**
+ * Marks one item of an item collection (`collection.index`) so the editor
+ * can reorder items by dragging them (P4B-16). Emitted in both modes, like
+ * `data-part`.
+ */
+export function itemOf(instanceId: string) {
+  return (collection: string, index: number): { "data-item": string } => ({ "data-item": `${instanceId}::${collection}.${index}` });
+}
+
+/**
+ * A slot of editable parts (P4B-16): renders `parts` in order inside one
+ * element marked `data-slot`, which the editor reads to place dragged parts.
+ * An empty slot renders nothing on the storefront and a drop area in the editor.
+ */
+export function PartSlot({
+  instanceId,
+  slot,
+  parts,
+  ctx,
+  className,
+  render,
+}: {
+  instanceId: string;
+  slot: string;
+  parts: readonly string[];
+  ctx: RenderContext;
+  className?: string;
+  render: (part: string) => ReactNode;
+}) {
+  const empty = parts.length === 0;
+  if (empty && ctx.mode !== "edit") return null;
+  return (
+    <div
+      data-slot={`${instanceId}::${slot}`}
+      className={cn(className, empty && "min-h-16 rounded-(--sf-radius,12px) border border-dashed border-(--sf-line)")}
+    >
+      {parts.map((part) => (
+        <Fragment key={part}>{render(part)}</Fragment>
+      ))}
+    </div>
+  );
+}
 
 export function cn(...classes: (string | false | null | undefined)[]): string {
   return classes.filter(Boolean).join(" ");
@@ -62,11 +118,13 @@ export function SectionHeading({
   subtitle,
   align: alignment = "start",
   action,
+  parts,
 }: {
   title?: string;
   subtitle?: string;
   align?: "start" | "center";
   action?: ReactNode;
+  parts?: { title?: PartAttr; subtitle?: PartAttr };
 }) {
   if (!title && !subtitle && !action) return null;
   return (
@@ -77,8 +135,8 @@ export function SectionHeading({
       )}
     >
       <div className={cn("min-w-0", alignment === "center" && "max-w-2xl")}>
-        {title && <h2 className="text-balance text-2xl font-bold leading-tight md:text-3xl">{title}</h2>}
-        {subtitle && <p className="mt-2 text-pretty text-(--sf-muted)">{subtitle}</p>}
+        {title && <h2 {...parts?.title} className="text-balance text-2xl font-bold leading-tight md:text-3xl">{title}</h2>}
+        {subtitle && <p {...parts?.subtitle} className="mt-2 text-pretty text-(--sf-muted)">{subtitle}</p>}
       </div>
       {action}
     </div>
@@ -95,25 +153,32 @@ export function SmartLink({
   className,
   children,
   label,
+  part,
 }: {
   ctx: RenderContext;
   href: string;
   className?: string;
   children: ReactNode;
   label?: string;
+  part?: PartAttr;
 }) {
   const safe = safeHref(href);
-  if (!safe) return <span className={className}>{children}</span>;
+  if (!safe)
+    return (
+      <span {...part} className={className}>
+        {children}
+      </span>
+    );
   if (isExternalHref(safe) || safe.startsWith("tel:") || safe.startsWith("mailto:")) {
     return (
-      <a href={safe} className={className} aria-label={label} rel="noopener noreferrer" target={isExternalHref(safe) ? "_blank" : undefined}>
+      <a {...part} href={safe} className={className} aria-label={label} rel="noopener noreferrer" target={isExternalHref(safe) ? "_blank" : undefined}>
         {children}
       </a>
     );
   }
   const Link = ctx.Link;
   return (
-    <Link href={safe} className={className} aria-label={label}>
+    <Link {...part} href={safe} className={className} aria-label={label}>
       {children}
     </Link>
   );
@@ -124,17 +189,20 @@ export function ButtonLink({
   href,
   label,
   variant = "solid",
+  part,
 }: {
   ctx: RenderContext;
   href: string;
   label: string;
   variant?: "solid" | "outline" | "light";
+  part?: PartAttr;
 }) {
   if (!label || !safeHref(href)) return null;
   return (
     <SmartLink
       ctx={ctx}
       href={href}
+      part={part}
       className={cn(
         "inline-flex h-11 items-center justify-center rounded-(--sf-radius,12px) px-6 text-sm font-semibold transition-opacity hover:opacity-90",
         variant === "solid" && "bg-(--sf-brand) text-(--sf-brand-ink,#fff)",
@@ -157,17 +225,19 @@ export function SectionImage({
   alt,
   className,
   eager = false,
+  part,
 }: {
   ctx: RenderContext;
   src: string | null | undefined;
   alt: string;
   className?: string;
   eager?: boolean;
+  part?: PartAttr;
 }) {
   const url = ctx.imageUrl(src);
-  if (!url) return <div aria-hidden className={cn("bg-(--sf-shelf)", className)} />;
+  if (!url) return <div {...part} aria-hidden className={cn("bg-(--sf-shelf)", className)} />;
   // eslint-disable-next-line @next/next/no-img-element -- shared by both apps; no next/image here
-  return <img src={url} alt={alt} className={cn("object-cover", className)} loading={eager ? "eager" : "lazy"} decoding="async" />;
+  return <img {...part} src={url} alt={alt} className={cn("object-cover", className)} loading={eager ? "eager" : "lazy"} decoding="async" />;
 }
 
 // ---------------------------------------------------------------------------

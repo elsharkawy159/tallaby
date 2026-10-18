@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { sectionText } from "../core/copy";
 import type { SectionDefinition } from "../core/types";
-import { EmptyState, ProductCardView, SectionHeading, SectionImage, SectionShell, SmartLink, cn, text } from "./_primitives";
+import { EmptyState, ProductCardView, SectionHeading, SectionImage, SectionShell, SmartLink, cn, partOf, text } from "./_primitives";
 
 const uuid = z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
 
@@ -81,6 +81,7 @@ export const productGrid: SectionDefinition<ProductGridProps> = {
       <SectionShell id="products">
         <SectionHeading
           title={props.title}
+          parts={{ title: partOf(instance.id)("title") }}
           action={
             props.showViewAll && products.length > 0 ? (
               <SmartLink ctx={ctx} href="/#products" className="text-sm font-semibold text-(--sf-brand)">
@@ -119,6 +120,7 @@ type FeaturedProps = z.infer<typeof featuredSchema>;
 
 export const featuredProduct: SectionDefinition<FeaturedProps> = {
   id: "featured-product",
+  insertable: false,
   version: 1,
   category: "commerce",
   displayName: { ar: "منتج مميز", en: "Featured product" },
@@ -202,14 +204,14 @@ export const categoryGrid: SectionDefinition<CategoryGridProps> = {
     { key: "limit", label: { ar: "العدد", en: "How many" }, type: "number", min: 1, max: 24 },
   ],
   catalogQuery: (props) => ({ kind: "categories", limit: props.limit }),
-  Component: ({ props, ctx }) => {
+  Component: ({ instance, props, ctx }) => {
     const categories = ctx.catalog.categories.slice(0, props.limit);
     if (categories.length === 0) {
       return ctx.mode === "edit" ? <SectionShell><EmptyState>{sectionText("noCategories", ctx.locale)}</EmptyState></SectionShell> : null;
     }
     return (
       <SectionShell>
-        <SectionHeading title={props.title} />
+        <SectionHeading title={props.title} parts={{ title: partOf(instance.id)("title") }} />
         {props.style === "circles" ? (
           <ul className="flex gap-4 overflow-x-auto pb-2 md:flex-wrap md:overflow-visible">
             {categories.map((category) => (

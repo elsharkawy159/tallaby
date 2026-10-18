@@ -1,51 +1,42 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import Link from "next/link";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { DragDropContext, Draggable, Droppable, type DropResult } from "@hello-pangea/dnd";
-import {
-  ArrowRight,
-  Copy,
-  ExternalLink,
-  Eye,
-  FileText,
-  GripVertical,
-  LoaderCircle,
-  Monitor,
-  Palette,
-  PanelTop,
-  Plus,
-  Redo2,
-  Smartphone,
-  Tablet,
-  Trash2,
-  Undo2,
-  UploadCloud,
-} from "lucide-react";
 import { useStore } from "zustand";
 import type { DesignSystem, SectionInstance, SiteLocale } from "@workspace/store-sections";
 import {
-  SECTION_CATEGORIES,
+  CLASSIC_TOKENS,
   collectCatalogQueries,
+  designSystemToTokens,
   storeSectionRegistry,
-  type AnySectionDefinition,
   type RenderContext,
   type StoreProfile,
 } from "@workspace/store-sections/render";
-import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
-import { Input } from "@workspace/ui/components/input";
-import { Label } from "@workspace/ui/components/label";
-import { cn } from "@workspace/ui/lib/utils";
+import { MediaPicker } from "@/components/media/media-picker.client";
+import { EditorDndProvider } from "./dnd/editor-dnd.client";
 import { EditorCanvas } from "./editor-canvas.client";
+import { createEditorCommands } from "./editor-commands.lib";
+import { QuickInsertDialog, ShortcutsDialog } from "./editor-dialogs.client";
+import { EditorRail } from "./editor-rail.client";
+import { EditorSidebar } from "./editor-sidebar.client";
+import { EditorTopbar } from "./editor-topbar.client";
 import type { EditorCategory, EditorForm, EditorProduct } from "./editor.data";
-import { SectionInspector } from "./editor-inspector.client";
-import { createInstance, duplicateSection, insertSection, moveSection, removeSection, resolveCanvasCatalog, updateSection } from "./editor.lib";
-import { createPage, deletePage, publish, updatePage } from "./editor.server";
-import { createEditorStore, hasPendingChanges, type EditorPage, type EditorStore } from "./editor.store";
+import { getInstance, isImageSelection, refOf } from "./editor-selection.lib";
+import { resolveCanvasCatalog } from "./editor.lib";
+import { publish } from "./editor.server";
+import { createEditorStore, type EditorPage, type EditorStore, type Rail } from "./editor.store";
+import { AddPanel } from "./panels/add-panel.client";
+import { BrandPanel } from "./panels/brand-panel.client";
+import { ExplorePanel } from "./panels/explore-panel.client";
+import { FormsPanel } from "./panels/forms-panel.client";
+import { LayersPanel } from "./panels/layers-panel.client";
+import { MediaPanel } from "./panels/media-panel.client";
+import { PagesPanel, nameOf } from "./panels/pages-panel.client";
+import type { TemplateCardView } from "@/app/(main)/stores/[storeId]/website/templates/templates.dto";
 import { useEditorAutosave } from "./use-editor-autosave.client";
+import { useEditorShortcuts } from "./use-editor-shortcuts.client";
 import { useStorePreview } from "./use-store-preview.client";
 
 type Catalog = { products: EditorProduct[]; categories: EditorCategory[]; forms: EditorForm[] };
@@ -66,10 +57,13 @@ export type EditorInitial = {
   isLive: boolean;
   /** STORE_PREVIEW_SECRET is configured (P4-08). */
   previewEnabled: boolean;
+  /** Add › Templates: the gallery and this store's current template. */
+  templates: { currentKey: string; items: TemplateCardView[] };
+  /** Class names defining the store font variables (website/_components/store-fonts.ts). */
+  fontClassName: string;
+  /** Store category from Store settings › General (Explore tab searches). */
+  category: { en: string | null; ar: string | null };
 };
-
-const nameOf = (value: { ar?: string; en?: string }, locale: string) => (locale === "en" ? value.en || value.ar : value.ar || value.en) || "";
-const label = (value: { ar: string; en: string }, locale: string) => (locale === "en" ? value.en : value.ar) || value.ar;
 
 export function StoreEditor({ initial }: { initial: EditorInitial }) {
   const storeRef = useRef<EditorStore | null>(null);
@@ -84,66 +78,87 @@ export function StoreEditor({ initial }: { initial: EditorInitial }) {
   return <EditorShell initial={initial} store={storeRef.current} />;
 }
 
+/**
+ * The editor layout (P4B-03, like the reference workspace): top bar, tab
+ * rail and its panel, the canvas, and the Content/Style sidebar.
+ */
 function EditorShell({ initial, store }: { initial: EditorInitial; store: EditorStore }) {
   const t = useTranslations("storeEditor");
   const uiLocale = useLocale();
-  const state = useStore(store);
+  const pages = useStore(store, (s) => s.pages);
+  const activePageId = useStore(store, (s) => s.activePageId);
+  const header = useStore(store, (s) => s.header);
+  const footer = useStore(store, (s) => s.footer);
+  const designSystem = useStore(store, (s) => s.designSystem);
+  const locale = useStore(store, (s) => s.locale);
+  const defaultLocale = useStore(store, (s) => s.defaultLocale);
+  const device = useStore(store, (s) => s.device);
+  const rail = useStore(store, (s) => s.rail);
   const { flush, saveStatus } = useEditorAutosave(initial.storeId, store);
   const [publishing, setPublishing] = useState(false);
   const [isLive, setIsLive] = useState(initial.isLive);
+  const [panelOpen, setPanelOpen] = useState(true);
+  const [quickInsert, setQuickInsert] = useState<{ open: boolean; index: number | null }>({ open: false, index: null });
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [imagePickerOpen, setImagePickerOpen] = useState(false);
   const preview = useStorePreview(initial.storeId, flush);
+  // Forms refresh from the Forms tab (they are edited on their own page).
+  const [forms, setForms] = useState(initial.catalog.forms);
+  const catalog = useMemo(() => ({ ...initial.catalog, forms }), [initial.catalog, forms]);
+  const commands = useMemo(() => createEditorCommands(store), [store]);
 
-  const page = state.pages.find((p) => p.id === state.activePageId) ?? state.pages[0]!;
-  const selected =
-    state.selection?.target === "page"
-      ? page.content.sections.find((s) => s.id === (state.selection as { sectionId: string }).sectionId) ?? null
-      : state.selection?.target === "header"
-        ? state.header
-        : state.selection?.target === "footer"
-          ? state.footer
-          : null;
-  const selectedDefinition = selected ? storeSectionRegistry.get(selected.sectionId) : undefined;
+  const shortcutActions = useMemo(
+    () => ({
+      save: () => void flush(),
+      quickInsert: () => setQuickInsert({ open: true, index: null }),
+      showShortcuts: () => setShortcutsOpen(true),
+    }),
+    [flush],
+  );
+  const onFrameKeyDown = useEditorShortcuts(store, commands, shortcutActions);
 
-  // Keyboard: undo / redo.
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== "z") return;
-      const tag = (event.target as HTMLElement | null)?.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
-      event.preventDefault();
-      if (event.shiftKey) store.getState().redo();
-      else store.getState().undo();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [store]);
+  const page = pages.find((p) => p.id === activePageId) ?? pages[0]!;
 
-  const ctx = useMemo<RenderContext>(() => {
-    const sections = [...page.content.sections, ...(state.header ? [state.header] : []), ...(state.footer ? [state.footer] : [])];
-    const catalog = resolveCanvasCatalog(collectCatalogQueries(sections, storeSectionRegistry), initial.catalog, state.locale);
-    return {
+  // What does not change with page edits (also used by the Add panel's section previews).
+  const baseCtx = useMemo<Omit<RenderContext, "pages" | "catalog" | "renderClassic">>(
+    () => ({
       mode: "edit",
-      locale: state.locale,
-      dir: state.locale === "ar" ? "rtl" : "ltr",
+      locale,
+      dir: locale === "ar" ? "rtl" : "ltr",
       store: initial.store,
-      pages: state.pages
-        .filter((p) => p.isHome || p.showInNav)
-        .map((p) => ({ name: nameOf(p.name, state.locale), href: p.isHome ? "/" : `/${p.slug}`, isHome: p.isHome })),
-      catalog,
-      Link: ({ href, className, children }) => (
-        <a href={href} className={className}>
+      Link: ({ href, className, children, ...rest }) => (
+        <a href={href} className={className} data-part={rest["data-part"]}>
           {children}
         </a>
       ),
       imageUrl: (src) => (src && /^(https?:)?\/\//.test(src) ? src : src ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/sellers/${src}` : null),
-      formatPrice: (amount) => new Intl.NumberFormat(state.locale === "ar" ? "ar-EG" : "en-EG", { style: "currency", currency: "EGP", maximumFractionDigits: 0 }).format(amount),
+      formatPrice: (amount) => new Intl.NumberFormat(locale === "ar" ? "ar-EG" : "en-EG", { style: "currency", currency: "EGP", maximumFractionDigits: 0 }).format(amount),
       renderCartButton: () => <span className="inline-flex h-9 items-center rounded-full border border-(--sf-line) px-3 text-sm">🛒</span>,
       renderAddToCart: () => <span className="inline-flex h-8 items-center justify-center rounded-md bg-(--sf-brand) px-3 text-xs font-semibold text-white">{t("canvas.addToCart")}</span>,
-      renderClassic: (part) => <ClassicPlaceholder part={part} />,
       // Static preview of this store's forms (no renderForm in the canvas).
-      forms: Object.fromEntries(initial.catalog.forms.map((f) => [f.id, f.form])),
+      forms: Object.fromEntries(forms.map((f) => [f.id, f.form])),
+    }),
+    [locale, forms, initial.store, t],
+  );
+
+  const ctx = useMemo<RenderContext>(() => {
+    const sections = [...page.content.sections, ...(header ? [header] : []), ...(footer ? [footer] : [])];
+    return {
+      ...baseCtx,
+      pages: pages
+        .filter((p) => p.isHome || p.showInNav)
+        .map((p) => ({ name: nameOf(p.name, locale), href: p.isHome ? "/" : `/${p.slug}`, isHome: p.isHome })),
+      catalog: resolveCanvasCatalog(collectCatalogQueries(sections, storeSectionRegistry), catalog, locale),
+      renderClassic: (part) => <ClassicPlaceholder part={part} />,
     };
-  }, [page.content.sections, state.header, state.footer, state.pages, state.locale, initial.catalog, initial.store, t]);
+  }, [baseCtx, page.content.sections, header, footer, pages, locale, catalog]);
+
+  // The store's --sf-* colors on the editor too, so color swatches show the real theme
+  // (only --sf-* keys: the dashboard's own tokens stay untouched).
+  const themeVars = useMemo(
+    () => Object.fromEntries(Object.entries({ ...CLASSIC_TOKENS, ...designSystemToTokens(designSystem) }).filter(([key]) => key.startsWith("--sf-"))),
+    [designSystem],
+  );
 
   const onPublish = async () => {
     setPublishing(true);
@@ -165,98 +180,48 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
     }
   };
 
-  const editSelected = (next: SectionInstance) => {
-    const selection = state.selection;
-    if (!selection) return;
-    if (selection.target === "page") state.editPage(page.id, (content) => updateSection(content, selection.sectionId, () => next));
-    else state.editChrome(selection.target, next);
+  // Selecting an image opens Explore, so a photo can be dropped onto it right away.
+  useEffect(
+    () =>
+      store.subscribe((state, prev) => {
+        const { selection } = state;
+        if (!selection || selection === prev.selection) return;
+        const page = state.pages.find((p) => p.id === state.activePageId) ?? state.pages[0];
+        if (!page) return;
+        const instance = getInstance({ content: page.content, header: state.header, footer: state.footer }, refOf(selection));
+        if (!isImageSelection(instance, selection)) return;
+        if (state.rail !== "explore") state.setRail("explore");
+        setPanelOpen(true);
+      }),
+    [store],
+  );
+
+  const toggleRail = (next: Rail) => {
+    if (next === rail && panelOpen) setPanelOpen(false);
+    else {
+      store.getState().setRail(next);
+      setPanelOpen(true);
+    }
   };
 
   return (
-    <div className="flex h-dvh flex-col bg-background">
-      <header className="flex h-14 shrink-0 items-center gap-2 border-b px-3">
-        <Button asChild variant="ghost" size="sm">
-          <Link href={`/stores/${initial.storeId}/website`}>
-            <ArrowRight className="ltr:rotate-180" aria-hidden />
-            <span className="hidden sm:inline">{t("back")}</span>
-          </Link>
-        </Button>
-        <span className="hidden truncate font-semibold md:inline">{initial.store.name}</span>
-        <select
-          aria-label={t("pageLabel")}
-          className="h-9 max-w-44 rounded-md border bg-background px-2 text-sm"
-          value={page.id}
-          onChange={(e) => state.setActivePage(e.target.value)}
-        >
-          {state.pages.map((p) => (
-            <option key={p.id} value={p.id}>
-              {nameOf(p.name, uiLocale) || p.slug}
-            </option>
-          ))}
-        </select>
-        {initial.locales.length > 1 && (
-          <div role="group" aria-label={t("editingLanguage")} className="flex rounded-md border p-0.5">
-            {initial.locales.map((locale) => (
-              <button
-                key={locale}
-                type="button"
-                aria-pressed={state.locale === locale}
-                onClick={() => state.setLocale(locale)}
-                className={cn("rounded px-2 py-1 text-xs font-semibold uppercase", state.locale === locale && "bg-muted")}
-              >
-                {locale}
-              </button>
-            ))}
-          </div>
-        )}
-        <div role="group" aria-label={t("device")} className="ms-auto hidden rounded-md border p-0.5 sm:flex">
-          {([
-            ["desktop", Monitor],
-            ["tablet", Tablet],
-            ["mobile", Smartphone],
-          ] as const).map(([device, Icon]) => (
-            <button
-              key={device}
-              type="button"
-              aria-pressed={state.device === device}
-              aria-label={t(`devices.${device}`)}
-              onClick={() => state.setDevice(device)}
-              className={cn("rounded p-1.5", state.device === device && "bg-muted")}
-            >
-              <Icon className="size-4" aria-hidden />
-            </button>
-          ))}
-        </div>
-        <Button variant="ghost" size="icon" onClick={() => state.undo()} disabled={state.past.length === 0} aria-label={t("undo")}>
-          <Undo2 className="size-4" />
-        </Button>
-        <Button variant="ghost" size="icon" onClick={() => state.redo()} disabled={state.future.length === 0} aria-label={t("redo")}>
-          <Redo2 className="size-4" />
-        </Button>
-        <SaveBadge status={saveStatus} />
-        <Button asChild variant="outline" size="sm" className="hidden md:inline-flex">
-          <a href={initial.storeUrl} target="_blank" rel="noopener noreferrer">
-            <ExternalLink aria-hidden />
-            {t("viewStore")}
-          </a>
-        </Button>
-        {initial.previewEnabled && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="hidden md:inline-flex"
-            onClick={preview.open}
-            disabled={preview.opening || initial.readOnly || saveStatus === "conflict"}
-          >
-            {preview.opening ? <LoaderCircle className="animate-spin" aria-hidden /> : <Eye aria-hidden />}
-            {t("previewOnStore")}
-          </Button>
-        )}
-        <Button size="sm" onClick={onPublish} disabled={publishing || initial.readOnly || saveStatus === "conflict"}>
-          {publishing ? <LoaderCircle className="animate-spin" aria-hidden /> : <UploadCloud aria-hidden />}
-          {t(isLive ? "publishChanges" : "publish")}
-        </Button>
-      </header>
+    <div className={`flex h-dvh flex-col bg-background ${initial.fontClassName}`} style={themeVars as React.CSSProperties}>
+      <EditorTopbar
+        store={store}
+        storeId={initial.storeId}
+        storeUrl={initial.storeUrl}
+        locales={initial.locales}
+        uiLocale={uiLocale}
+        saveStatus={saveStatus}
+        onRetrySave={() => void flush()}
+        previewEnabled={initial.previewEnabled}
+        preview={preview}
+        readOnly={initial.readOnly}
+        publishing={publishing}
+        isLive={isLive}
+        onPublish={() => void onPublish()}
+        onShowShortcuts={() => setShortcutsOpen(true)}
+      />
 
       {saveStatus === "conflict" && (
         <div role="alert" className="flex items-center justify-between gap-3 bg-amber-50 px-4 py-2 text-sm text-amber-900">
@@ -267,76 +232,88 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
         </div>
       )}
 
-      <div className="grid min-h-0 flex-1 grid-cols-[260px_minmax(0,1fr)] lg:grid-cols-[260px_minmax(0,1fr)_320px]">
-        <aside className="flex min-h-0 flex-col border-e">
-          <div role="tablist" className="flex border-b">
-            {([
-              ["sections", PanelTop],
-              ["pages", FileText],
-              ["theme", Palette],
-            ] as const).map(([panel, Icon]) => (
-              <button
-                key={panel}
-                type="button"
-                role="tab"
-                aria-selected={state.panel === panel}
-                onClick={() => state.setPanel(panel)}
-                className={cn("flex flex-1 items-center justify-center gap-1.5 py-2.5 text-xs font-medium", state.panel === panel ? "border-b-2 border-primary" : "text-muted-foreground")}
-              >
-                <Icon className="size-4" aria-hidden />
-                {t(`panels.${panel}`)}
-              </button>
-            ))}
-          </div>
-          <div className="min-h-0 flex-1 overflow-y-auto p-3">
-            {state.panel === "sections" && <SectionsPanel store={store} page={page} uiLocale={uiLocale} />}
-            {state.panel === "pages" && <PagesPanel storeId={initial.storeId} store={store} uiLocale={uiLocale} />}
-            {state.panel === "theme" && <ThemePanel store={store} />}
-          </div>
-        </aside>
+      <EditorDndProvider store={store} commands={commands} storeId={initial.storeId} readOnly={initial.readOnly}>
+      <div className="flex min-h-0 flex-1">
+        <EditorRail store={store} panelOpen={panelOpen} onToggle={toggleRail} />
+        {panelOpen && (
+          <aside aria-label={t(`rail.${rail}`)} className="flex w-[300px] shrink-0 flex-col border-e bg-background">
+            {rail === "add" && (
+              <AddPanel
+                store={store}
+                commands={commands}
+                uiLocale={uiLocale}
+                preview={{ ctx: baseCtx, catalog, designSystem, defaultLocale, fontClassName: initial.fontClassName }}
+                templates={initial.templates}
+                templateHost={{
+                  storeId: initial.storeId,
+                  store: initial.store,
+                  catalog,
+                  fontClassName: initial.fontClassName,
+                  defaultLocale,
+                  readOnly: initial.readOnly,
+                  flush,
+                }}
+              />
+            )}
+            {rail === "forms" && (
+              <FormsPanel storeId={initial.storeId} readOnly={initial.readOnly} store={store} commands={commands} forms={forms} onForms={setForms} />
+            )}
+            {rail === "explore" && (
+              <ExplorePanel storeId={initial.storeId} readOnly={initial.readOnly} category={initial.category} uiLocale={uiLocale} commands={commands} />
+            )}
+            {rail === "layers" && <LayersPanel store={store} commands={commands} uiLocale={uiLocale} />}
+            {rail === "media" && <MediaPanel storeId={initial.storeId} readOnly={initial.readOnly} commands={commands} />}
+            {rail === "pages" && (
+              <div className="min-h-0 flex-1 overflow-y-auto p-3">
+                <PagesPanel storeId={initial.storeId} store={store} uiLocale={uiLocale} />
+              </div>
+            )}
+            {rail === "brand" && <BrandPanel store={store} storeId={initial.storeId} readOnly={initial.readOnly} />}
+          </aside>
+        )}
 
-        <EditorCanvas
-          ctx={ctx}
-          sections={page.content.sections}
-          header={state.header}
-          footer={state.footer}
-          designSystem={state.designSystem}
-          defaultLocale={state.defaultLocale}
-          device={state.device}
-          selection={state.selection}
-          onSelect={(selection) => state.select(selection)}
-        />
+        <main className="min-w-0 flex-1">
+          <EditorCanvas
+            ctx={ctx}
+            sections={page.content.sections}
+            header={header}
+            footer={footer}
+            designSystem={designSystem}
+            fontClassName={initial.fontClassName}
+            defaultLocale={defaultLocale}
+            device={device}
+            store={store}
+            commands={commands}
+            uiLocale={uiLocale}
+            onRequestImage={() => setImagePickerOpen(true)}
+            onQuickInsert={(index) => setQuickInsert({ open: true, index })}
+            onFrameKeyDown={onFrameKeyDown}
+          />
+        </main>
 
-        <aside className="hidden min-h-0 overflow-y-auto border-s p-4 lg:block">
-          {selected && selectedDefinition ? (
-            <SectionInspector
-              key={selected.id}
-              definition={selectedDefinition}
-              instance={selected}
-              onChange={editSelected}
-              locale={state.locale}
-              defaultLocale={state.defaultLocale}
-              uiLocale={uiLocale}
-              catalog={initial.catalog}
-              storeId={initial.storeId}
-              readOnly={initial.readOnly}
-            />
-          ) : (
-            <p className="text-sm text-muted-foreground">{t("inspector.empty")}</p>
-          )}
+        <aside aria-label={t("sidebar.label")} className="hidden w-[320px] shrink-0 border-s bg-background lg:block">
+          <EditorSidebar store={store} storeId={initial.storeId} readOnly={initial.readOnly} catalog={catalog} uiLocale={uiLocale} />
         </aside>
       </div>
-    </div>
-  );
-}
+      </EditorDndProvider>
 
-function SaveBadge({ status }: { status: string }) {
-  const t = useTranslations("storeEditor.save");
-  return (
-    <Badge variant={status === "error" || status === "conflict" ? "destructive" : "outline"} className="hidden whitespace-nowrap sm:inline-flex">
-      {status === "saving" && <LoaderCircle className="size-3 animate-spin" aria-hidden />}
-      {t(status)}
-    </Badge>
+      <QuickInsertDialog
+        open={quickInsert.open}
+        index={quickInsert.index}
+        onOpenChange={(open) => setQuickInsert((prev) => ({ ...prev, open }))}
+        commands={commands}
+        uiLocale={uiLocale}
+      />
+      <ShortcutsDialog open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
+      <MediaPicker
+        storeId={initial.storeId}
+        readOnly={initial.readOnly}
+        hideTrigger
+        open={imagePickerOpen}
+        onOpenChange={setImagePickerOpen}
+        onPick={(asset) => commands.applyImage(asset.url)}
+      />
+    </div>
   );
 }
 
@@ -346,250 +323,6 @@ function ClassicPlaceholder({ part }: { part: string }) {
     <div className="mx-auto my-3 w-[calc(100%-2rem)] max-w-(--sf-max-width,1200px) rounded-xl border-2 border-dashed border-(--sf-line) bg-(--sf-shelf) p-6 text-center">
       <p className="font-semibold">{t(`${part}.title` as never)}</p>
       <p className="mt-1 text-sm text-(--sf-muted)">{t("note")}</p>
-    </div>
-  );
-}
-
-function SectionsPanel({ store, page, uiLocale }: { store: EditorStore; page: EditorPage; uiLocale: string }) {
-  const t = useTranslations("storeEditor.sections");
-  const state = useStore(store);
-  const [adding, setAdding] = useState(false);
-  const pageSections = storeSectionRegistry.list().filter((d) => !d.chrome);
-
-  const onDragEnd = (result: DropResult) => {
-    if (!result.destination) return;
-    state.editPage(page.id, (content) => moveSection(content, result.source.index, result.destination!.index));
-  };
-  const add = (definition: AnySectionDefinition) => {
-    const instance = createInstance(definition);
-    state.editPage(page.id, (content) => insertSection(content, instance));
-    state.select({ target: "page", sectionId: instance.id });
-    setAdding(false);
-  };
-
-  return (
-    <div className="space-y-3">
-      <ChromeRow label={t("header")} active={state.selection?.target === "header"} onClick={() => state.select({ target: "header" })} />
-      <DragDropContext onDragEnd={onDragEnd}>
-        <Droppable droppableId="page-sections">
-          {(provided) => (
-            <ul ref={provided.innerRef} {...provided.droppableProps} className="space-y-1">
-              {page.content.sections.map((instance, index) => {
-                const definition = storeSectionRegistry.get(instance.sectionId);
-                const active = state.selection?.target === "page" && state.selection.sectionId === instance.id;
-                return (
-                  <Draggable key={instance.id} draggableId={instance.id} index={index}>
-                    {(drag) => (
-                      <li
-                        ref={drag.innerRef}
-                        {...drag.draggableProps}
-                        className={cn("group flex items-center gap-1 rounded-md border bg-background px-1.5 py-1.5 text-sm", active && "border-primary")}
-                      >
-                        <span {...drag.dragHandleProps} aria-label={t("drag")} className="cursor-grab text-muted-foreground">
-                          <GripVertical className="size-4" />
-                        </span>
-                        <button type="button" className="min-w-0 flex-1 truncate text-start" onClick={() => state.select({ target: "page", sectionId: instance.id })}>
-                          {definition ? label(definition.displayName, uiLocale) : instance.sectionId}
-                        </button>
-                        <IconButton label={t("duplicate")} onClick={() => state.editPage(page.id, (content) => duplicateSection(content, instance.id).content)}>
-                          <Copy className="size-3.5" />
-                        </IconButton>
-                        <IconButton
-                          label={t("remove")}
-                          onClick={() => {
-                            state.editPage(page.id, (content) => removeSection(content, instance.id));
-                            state.select(null);
-                          }}
-                        >
-                          <Trash2 className="size-3.5" />
-                        </IconButton>
-                      </li>
-                    )}
-                  </Draggable>
-                );
-              })}
-              {provided.placeholder}
-            </ul>
-          )}
-        </Droppable>
-      </DragDropContext>
-      <ChromeRow label={t("footer")} active={state.selection?.target === "footer"} onClick={() => state.select({ target: "footer" })} />
-
-      {adding ? (
-        <div className="space-y-3 rounded-lg border p-2">
-          {SECTION_CATEGORIES.filter((category) => pageSections.some((d) => d.category === category)).map((category) => (
-            <div key={category}>
-              <p className="mb-1 text-xs font-semibold text-muted-foreground">{t(`categories.${category}`)}</p>
-              <ul className="space-y-1">
-                {pageSections
-                  .filter((d) => d.category === category)
-                  .map((definition) => (
-                    <li key={definition.id}>
-                      <button type="button" onClick={() => add(definition)} className="w-full rounded-md px-2 py-1.5 text-start text-sm hover:bg-muted">
-                        <span className="block font-medium">{label(definition.displayName, uiLocale)}</span>
-                        <span className="block text-xs text-muted-foreground">{label(definition.description, uiLocale)}</span>
-                      </button>
-                    </li>
-                  ))}
-              </ul>
-            </div>
-          ))}
-          <Button variant="ghost" size="sm" className="w-full" onClick={() => setAdding(false)}>
-            {t("cancel")}
-          </Button>
-        </div>
-      ) : (
-        <Button variant="outline" size="sm" className="w-full" onClick={() => setAdding(true)} disabled={page.content.sections.length >= 80}>
-          <Plus aria-hidden />
-          {t("add")}
-        </Button>
-      )}
-    </div>
-  );
-}
-
-function ChromeRow({ label: text, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
-  return (
-    <button type="button" onClick={onClick} className={cn("w-full rounded-md border border-dashed px-2 py-1.5 text-start text-xs text-muted-foreground", active && "border-primary text-foreground")}>
-      {text}
-    </button>
-  );
-}
-
-function IconButton({ label: text, onClick, children }: { label: string; onClick: () => void; children: ReactNode }) {
-  return (
-    <button type="button" aria-label={text} title={text} onClick={onClick} className="rounded p-1 text-muted-foreground opacity-0 hover:bg-muted group-hover:opacity-100 focus-visible:opacity-100">
-      {children}
-    </button>
-  );
-}
-
-function PagesPanel({ storeId, store, uiLocale }: { storeId: string; store: EditorStore; uiLocale: string }) {
-  const t = useTranslations("storeEditor.pages");
-  const tErrors = useTranslations("storeEditor.errors");
-  const state = useStore(store);
-  const [name, setName] = useState("");
-  const [slug, setSlug] = useState("");
-  const [busy, setBusy] = useState(false);
-
-  const add = async () => {
-    setBusy(true);
-    const result = await createPage(storeId, { name: { [state.defaultLocale]: name }, slug });
-    setBusy(false);
-    if (!result.success) {
-      toast.error(tErrors(result.error));
-      return;
-    }
-    const pageName = { [state.defaultLocale]: name } as { ar?: string; en?: string };
-    state.setPages([...state.pages, { id: result.data.id, slug: result.data.slug, isHome: false, name: pageName, seo: {}, showInNav: true, content: { sections: [] }, version: 1 }]);
-    state.setActivePage(result.data.id);
-    setName("");
-    setSlug("");
-  };
-
-  const toggleNav = async (page: EditorPage) => {
-    const result = await updatePage(storeId, page.id, { showInNav: !page.showInNav });
-    if (!result.success) return toast.error(tErrors(result.error));
-    state.setPages(state.pages.map((p) => (p.id === page.id ? { ...p, showInNav: !p.showInNav } : p)));
-  };
-
-  const remove = async (page: EditorPage) => {
-    if (hasPendingChanges(state) && state.dirtyPages[page.id]) return toast.error(tErrors("saveFirst"));
-    const result = await deletePage(storeId, page.id);
-    if (!result.success) return toast.error(tErrors(result.error));
-    state.setPages(state.pages.filter((p) => p.id !== page.id));
-  };
-
-  return (
-    <div className="space-y-4">
-      <ul className="space-y-1">
-        {state.pages.map((page) => (
-          <li key={page.id} className={cn("flex items-center gap-2 rounded-md border px-2 py-1.5 text-sm", page.id === state.activePageId && "border-primary")}>
-            <button type="button" className="min-w-0 flex-1 truncate text-start" onClick={() => state.setActivePage(page.id)}>
-              {nameOf(page.name, uiLocale) || page.slug}
-              <span dir="ltr" className="ms-1 text-xs text-muted-foreground">
-                /{page.isHome ? "" : page.slug}
-              </span>
-            </button>
-            {!page.isHome && (
-              <>
-                <button type="button" className="text-xs text-muted-foreground underline-offset-2 hover:underline" onClick={() => void toggleNav(page)}>
-                  {page.showInNav ? t("inMenu") : t("hidden")}
-                </button>
-                <button type="button" aria-label={t("delete")} onClick={() => void remove(page)} className="text-muted-foreground">
-                  <Trash2 className="size-3.5" />
-                </button>
-              </>
-            )}
-          </li>
-        ))}
-      </ul>
-      <form
-        className="space-y-2 rounded-lg border p-2"
-        onSubmit={(event) => {
-          event.preventDefault();
-          void add();
-        }}
-      >
-        <p className="text-sm font-semibold">{t("new")}</p>
-        <div className="space-y-1">
-          <Label htmlFor="new-page-name">{t("name")}</Label>
-          <Input id="new-page-name" value={name} maxLength={80} onChange={(e) => setName(e.target.value)} />
-        </div>
-        <div className="space-y-1">
-          <Label htmlFor="new-page-slug">{t("slug")}</Label>
-          <Input id="new-page-slug" dir="ltr" value={slug} placeholder="about" onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))} />
-          <p className="text-xs text-muted-foreground">{t("slugHint")}</p>
-        </div>
-        <Button type="submit" size="sm" className="w-full" disabled={busy || !name.trim() || !slug}>
-          {busy ? <LoaderCircle className="animate-spin" aria-hidden /> : <Plus aria-hidden />}
-          {t("create")}
-        </Button>
-      </form>
-    </div>
-  );
-}
-
-const COLOR_KEYS = ["primary", "background", "foreground", "muted", "border", "secondary", "accent"] as const;
-
-function ThemePanel({ store }: { store: EditorStore }) {
-  const t = useTranslations("storeEditor.theme");
-  const state = useStore(store);
-  const colors = state.designSystem.colors ?? {};
-  const setColor = (key: (typeof COLOR_KEYS)[number], value: string | undefined) =>
-    state.editDesign((ds) => ({ ...ds, colors: { ...ds.colors, [key]: value } }));
-  return (
-    <div className="space-y-4">
-      <p className="text-xs text-muted-foreground">{t("intro")}</p>
-      {COLOR_KEYS.map((key) => (
-        <div key={key} className="flex items-center gap-2">
-          <input
-            type="color"
-            aria-label={t(`colors.${key}`)}
-            value={colors[key] && /^#[0-9a-f]{6}$/i.test(colors[key]!) ? colors[key] : "#ffffff"}
-            onChange={(e) => setColor(key, e.target.value)}
-            className="h-8 w-10 rounded border"
-          />
-          <span className="flex-1 text-sm">{t(`colors.${key}`)}</span>
-          {colors[key] && (
-            <button type="button" className="text-xs text-muted-foreground underline-offset-2 hover:underline" onClick={() => setColor(key, undefined)}>
-              {t("reset")}
-            </button>
-          )}
-        </div>
-      ))}
-      <div className="space-y-1">
-        <Label htmlFor="theme-radius">{t("radius")}</Label>
-        <input
-          id="theme-radius"
-          type="range"
-          min={0}
-          max={24}
-          value={state.designSystem.spacing?.borderRadius ?? 12}
-          onChange={(e) => state.editDesign((ds) => ({ ...ds, spacing: { ...ds.spacing, borderRadius: Number(e.target.value) } }))}
-          className="w-full"
-        />
-      </div>
     </div>
   );
 }

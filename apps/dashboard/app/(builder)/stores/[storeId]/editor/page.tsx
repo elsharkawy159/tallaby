@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { getStoreForEditor, getStoreSiteStatus } from "@workspace/lib/store-sites/server";
+import { getStoreForEditor, getStoreSiteStatus, listStoreTemplates } from "@workspace/lib/store-sites/server";
 import { storePreviewSecret } from "@workspace/lib/store-sites/preview";
 import { storeUrl } from "@workspace/lib/storefront";
 import { publicStoreSocialLinks } from "@workspace/lib/stores";
 import { designSystemSchema, sectionInstanceSchema, type SiteLocale } from "@workspace/store-sections";
 import { storeBuilderEnabled } from "@/components/dashboard/sidebar.config";
 import { loadStorePage } from "@/lib/stores/store-page.server";
+import { storeFontVariables } from "@/app/(main)/stores/[storeId]/website/_components/store-fonts";
+import { toTemplateCardViews } from "@/app/(main)/stores/[storeId]/website/templates/templates.lib";
 import { StoreEditor, type EditorInitial } from "./editor.client";
 import { loadEditorCatalog, loadEditorForms } from "./editor.data";
 
@@ -30,11 +32,12 @@ export default async function StoreEditorPage({ params }: { params: Promise<{ st
   const store = await loadStorePage(storeId);
   if (!storeBuilderEnabled(store.sellerId)) notFound();
 
-  const [editor, status, products, forms] = await Promise.all([
+  const [editor, status, products, forms, gallery] = await Promise.all([
     getStoreForEditor(store.sellerId, store.id),
     getStoreSiteStatus(store.sellerId, store.id),
     loadEditorCatalog(store.sellerId, store.catalogMode === "selected" ? store.id : undefined),
     loadEditorForms(store.sellerId, store.id),
+    listStoreTemplates(store.sellerId, store.id),
   ]);
   const catalog = { ...products, forms };
   if (!editor) notFound();
@@ -78,6 +81,9 @@ export default async function StoreEditorPage({ params }: { params: Promise<{ st
     catalog,
     isLive: Boolean(status?.isLive),
     previewEnabled: storePreviewSecret() !== null,
+    templates: { currentKey: gallery?.currentKey ?? "", items: toTemplateCardViews(gallery?.templates ?? []) },
+    fontClassName: storeFontVariables,
+    category: { en: store.storeCategory ?? null, ar: store.storeCategoryAr ?? null },
   };
 
   return <StoreEditor initial={initial} />;

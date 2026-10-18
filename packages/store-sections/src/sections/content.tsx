@@ -1,7 +1,22 @@
 import { BadgeCheck, Gift, Headphones, Leaf, ShieldCheck, Sparkles, Star, Truck, type LucideIcon } from "lucide-react";
 import { z } from "zod";
+import { resolveSlotLayout, type SlotDefinition } from "../core/slots";
 import type { SectionDefinition } from "../core/types";
-import { ButtonLink, SectionHeading, SectionImage, SectionShell, align, cn, imageSrc, optionalUrl, text } from "./_primitives";
+import {
+  ButtonLink,
+  PartSlot,
+  SectionHeading,
+  SectionImage,
+  SectionShell,
+  align,
+  cn,
+  imageSrc,
+  itemOf,
+  optionalUrl,
+  partOf,
+  text,
+  type PartAttr,
+} from "./_primitives";
 
 // ---------------------------------------------------------------------------
 // hero-banner
@@ -61,9 +76,11 @@ export const heroBanner: SectionDefinition<HeroProps> = {
       ],
     },
   ],
-  Component: ({ props, ctx }) => (
+  Component: ({ instance, props, ctx }) => {
+    const part = partOf(instance.id);
+    return (
     <section className="relative isolate overflow-hidden bg-(--sf-ink) text-white">
-      <SectionImage ctx={ctx} src={props.image} alt="" eager className="absolute inset-0 -z-10 size-full opacity-60" />
+      <SectionImage ctx={ctx} src={props.image} alt="" eager part={part("image")} className="absolute inset-0 -z-10 size-full opacity-60" />
       <div
         className={cn(
           "mx-auto flex w-full max-w-(--sf-max-width,1200px) flex-col justify-center gap-4 px-4 md:px-8",
@@ -71,14 +88,15 @@ export const heroBanner: SectionDefinition<HeroProps> = {
           props.align === "center" && "items-center text-center",
         )}
       >
-        {props.title && <h1 className="max-w-3xl text-balance text-3xl font-extrabold leading-tight md:text-5xl">{props.title}</h1>}
-        {props.subtitle && <p className="max-w-2xl text-pretty text-white/85 md:text-lg">{props.subtitle}</p>}
+        {props.title && <h1 {...part("title")} className="max-w-3xl text-balance text-3xl font-extrabold leading-tight md:text-5xl">{props.title}</h1>}
+        {props.subtitle && <p {...part("subtitle")} className="max-w-2xl text-pretty text-white/85 md:text-lg">{props.subtitle}</p>}
         <div>
-          <ButtonLink ctx={ctx} href={props.ctaHref} label={props.ctaLabel} variant="light" />
+          <ButtonLink ctx={ctx} href={props.ctaHref} label={props.ctaLabel} variant="light" part={part("ctaLabel")} />
         </div>
       </div>
     </section>
-  ),
+    );
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -94,6 +112,12 @@ const imageTextSchema = z.object({
   ctaHref: optionalUrl,
 });
 type ImageTextProps = z.infer<typeof imageTextSchema>;
+
+/** Two columns; every part may sit in either one. */
+const IMAGE_TEXT_SLOTS = [
+  { key: "media", label: { ar: "عمود الصورة", en: "Image column" }, parts: ["image"], accepts: ["title", "body", "ctaLabel"] },
+  { key: "text", label: { ar: "عمود النص", en: "Text column" }, parts: ["title", "body", "ctaLabel"], accepts: ["image"] },
+] as const satisfies readonly SlotDefinition[];
 
 export const imageWithText: SectionDefinition<ImageTextProps> = {
   id: "image-with-text",
@@ -127,29 +151,50 @@ export const imageWithText: SectionDefinition<ImageTextProps> = {
     { key: "ctaLabel", label: { ar: "نص الزر", en: "Button text" }, type: "text", maxLength: 40, translatable: true },
     { key: "ctaHref", label: { ar: "رابط الزر", en: "Button link" }, type: "url" },
   ],
-  Component: ({ props, ctx }) => (
+  slots: IMAGE_TEXT_SLOTS,
+  Component: ({ instance, props, ctx }) => {
+    const part = partOf(instance.id);
+    const layout = resolveSlotLayout(instance, IMAGE_TEXT_SLOTS);
+    const renderPart = (key: string) => {
+      switch (key) {
+        case "image":
+          return (
+            <SectionImage ctx={ctx} src={props.image} alt={props.title} part={part("image")} className="block aspect-[4/3] w-full rounded-(--sf-radius,12px)" />
+          );
+        case "title":
+          return props.title && <h2 {...part("title")} className="text-balance text-2xl font-bold md:text-3xl">{props.title}</h2>;
+        case "body":
+          return props.body && <Paragraphs text={props.body} part={part("body")} />;
+        case "ctaLabel":
+          return <ButtonLink ctx={ctx} href={props.ctaHref} label={props.ctaLabel} part={part("ctaLabel")} />;
+        default:
+          return null;
+      }
+    };
+    // With every part in one column the storefront shows one full-width column; the editor keeps both as drop areas.
+    const twoColumns = ctx.mode === "edit" || (layout.media!.length > 0 && layout.text!.length > 0);
+    return (
     <SectionShell>
-      <div className="grid items-center gap-8 md:grid-cols-2">
-        <SectionImage
+      <div className={cn("grid items-center gap-8", twoColumns && "md:grid-cols-2")}>
+        <PartSlot
+          instanceId={instance.id}
+          slot="media"
+          parts={layout.media!}
           ctx={ctx}
-          src={props.image}
-          alt={props.title}
-          className={cn("aspect-[4/3] w-full rounded-(--sf-radius,12px)", props.imageSide === "end" && "md:order-2")}
+          render={renderPart}
+          className={cn("space-y-4", props.imageSide === "end" && "md:order-2")}
         />
-        <div className="space-y-4">
-          {props.title && <h2 className="text-balance text-2xl font-bold md:text-3xl">{props.title}</h2>}
-          {props.body && <Paragraphs text={props.body} />}
-          <ButtonLink ctx={ctx} href={props.ctaHref} label={props.ctaLabel} />
-        </div>
+        <PartSlot instanceId={instance.id} slot="text" parts={layout.text!} ctx={ctx} render={renderPart} className="space-y-4" />
       </div>
     </SectionShell>
-  ),
+    );
+  },
 };
 
 /** Plain text with blank-line paragraphs. Seller text is never parsed as HTML. */
-function Paragraphs({ text: value }: { text: string }) {
+function Paragraphs({ text: value, part }: { text: string; part?: PartAttr }) {
   return (
-    <div className="space-y-3 text-pretty leading-relaxed text-(--sf-muted)">
+    <div {...part} className="space-y-3 text-pretty leading-relaxed text-(--sf-muted)">
       {value
         .split(/\n{2,}/)
         .map((p) => p.trim())
@@ -169,6 +214,10 @@ function Paragraphs({ text: value }: { text: string }) {
 
 const richTextSchema = z.object({ title: text(120), body: text(5000), align });
 type RichTextProps = z.infer<typeof richTextSchema>;
+
+const RICH_TEXT_SLOTS = [
+  { key: "content", label: { ar: "المحتوى", en: "Content" }, parts: ["title", "body"] },
+] as const satisfies readonly SlotDefinition[];
 
 export const richText: SectionDefinition<RichTextProps> = {
   id: "rich-text",
@@ -192,14 +241,29 @@ export const richText: SectionDefinition<RichTextProps> = {
       ],
     },
   ],
-  Component: ({ props }) => (
+  slots: RICH_TEXT_SLOTS,
+  Component: ({ instance, props, ctx }) => {
+    const part = partOf(instance.id);
+    const layout = resolveSlotLayout(instance, RICH_TEXT_SLOTS);
+    return (
     <SectionShell>
-      <div className={cn("max-w-3xl space-y-4", props.align === "center" && "mx-auto text-center")}>
-        {props.title && <h2 className="text-balance text-2xl font-bold md:text-3xl">{props.title}</h2>}
-        {props.body && <Paragraphs text={props.body} />}
-      </div>
+      <PartSlot
+        instanceId={instance.id}
+        slot="content"
+        parts={layout.content!}
+        ctx={ctx}
+        className={cn("max-w-3xl space-y-4", props.align === "center" && "mx-auto text-center")}
+        render={(key) =>
+          key === "title"
+            ? props.title && <h2 {...part("title")} className="text-balance text-2xl font-bold md:text-3xl">{props.title}</h2>
+            : key === "body"
+              ? props.body && <Paragraphs text={props.body} part={part("body")} />
+              : null
+        }
+      />
     </SectionShell>
-  ),
+    );
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -262,27 +326,31 @@ export const features: SectionDefinition<FeaturesProps> = {
       ],
     },
   ],
-  Component: ({ props }) => (
+  Component: ({ instance, props }) => {
+    const part = partOf(instance.id);
+    const item = itemOf(instance.id);
+    return (
     <SectionShell tone="shelf">
-      <SectionHeading title={props.title} align="center" />
+      <SectionHeading title={props.title} align="center" parts={{ title: part("title") }} />
       <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
-        {props.items.map((item, i) => {
-          const Icon = FEATURE_ICONS[item.icon] ?? Star;
+        {props.items.map((entry, i) => {
+          const Icon = FEATURE_ICONS[entry.icon] ?? Star;
           return (
-            <li key={i} className="flex gap-3 rounded-(--sf-radius,12px) bg-(--sf-paper) p-4">
+            <li key={i} {...item("items", i)} className="flex gap-3 rounded-(--sf-radius,12px) bg-(--sf-paper) p-4">
               <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-(--sf-brand) text-(--sf-brand-ink,#fff)">
                 <Icon className="size-5" aria-hidden />
               </span>
               <div className="min-w-0">
-                <p className="font-semibold">{item.title}</p>
-                {item.text && <p className="text-sm text-(--sf-muted)">{item.text}</p>}
+                <p {...part(`items.${i}.title`)} className="font-semibold">{entry.title}</p>
+                {entry.text && <p {...part(`items.${i}.text`)} className="text-sm text-(--sf-muted)">{entry.text}</p>}
               </div>
             </li>
           );
         })}
       </ul>
     </SectionShell>
-  ),
+    );
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -291,6 +359,10 @@ export const features: SectionDefinition<FeaturesProps> = {
 
 const ctaSchema = z.object({ title: text(120), text: text(300), ctaLabel: text(40), ctaHref: optionalUrl });
 type CtaProps = z.infer<typeof ctaSchema>;
+
+const CTA_SLOTS = [
+  { key: "content", label: { ar: "المحتوى", en: "Content" }, parts: ["title", "text", "ctaLabel"] },
+] as const satisfies readonly SlotDefinition[];
 
 export const ctaBanner: SectionDefinition<CtaProps> = {
   id: "cta-banner",
@@ -306,15 +378,35 @@ export const ctaBanner: SectionDefinition<CtaProps> = {
     { key: "ctaLabel", label: { ar: "نص الزر", en: "Button text" }, type: "text", maxLength: 40, translatable: true },
     { key: "ctaHref", label: { ar: "رابط الزر", en: "Button link" }, type: "url" },
   ],
-  Component: ({ props, ctx }) => (
+  slots: CTA_SLOTS,
+  Component: ({ instance, props, ctx }) => {
+    const part = partOf(instance.id);
+    const layout = resolveSlotLayout(instance, CTA_SLOTS);
+    const renderPart = (key: string) => {
+      switch (key) {
+        case "title":
+          return props.title && <h2 {...part("title")} className="text-balance text-2xl font-bold md:text-3xl">{props.title}</h2>;
+        case "text":
+          return props.text && <p {...part("text")} className="max-w-2xl text-pretty opacity-90">{props.text}</p>;
+        case "ctaLabel":
+          return <ButtonLink ctx={ctx} href={props.ctaHref} label={props.ctaLabel} variant="light" part={part("ctaLabel")} />;
+        default:
+          return null;
+      }
+    };
+    return (
     <SectionShell tone="brand">
-      <div className="flex flex-col items-center gap-4 text-center">
-        {props.title && <h2 className="text-balance text-2xl font-bold md:text-3xl">{props.title}</h2>}
-        {props.text && <p className="max-w-2xl text-pretty opacity-90">{props.text}</p>}
-        <ButtonLink ctx={ctx} href={props.ctaHref} label={props.ctaLabel} variant="light" />
-      </div>
+      <PartSlot
+        instanceId={instance.id}
+        slot="content"
+        parts={layout.content!}
+        ctx={ctx}
+        render={renderPart}
+        className="flex flex-col items-center gap-4 text-center"
+      />
     </SectionShell>
-  ),
+    );
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -326,6 +418,7 @@ type SpacerProps = z.infer<typeof spacerSchema>;
 
 export const spacer: SectionDefinition<SpacerProps> = {
   id: "spacer",
+  insertable: false,
   version: 1,
   category: "content",
   displayName: { ar: "مسافة", en: "Spacer" },

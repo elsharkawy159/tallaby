@@ -3,7 +3,7 @@ import { z } from "zod";
 import { sectionText } from "../core/copy";
 import { whatsappHref } from "../core/links";
 import type { SectionDefinition } from "../core/types";
-import { SectionHeading, SectionImage, SectionShell, SmartLink, cn, imageSrc, optionalUrl, text } from "./_primitives";
+import { SectionHeading, SectionImage, SectionShell, SmartLink, cn, imageSrc, itemOf, optionalUrl, partOf, text } from "./_primitives";
 
 // ---------------------------------------------------------------------------
 // testimonials
@@ -43,18 +43,20 @@ export const testimonials: SectionDefinition<TestimonialsProps> = {
       ],
     },
   ],
-  Component: ({ props }) => (
+  Component: ({ instance, props }) => {
+    const part = partOf(instance.id);
+    return (
     <SectionShell>
-      <SectionHeading title={props.title} align="center" />
+      <SectionHeading title={props.title} align="center" parts={{ title: part("title") }} />
       <ul className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {props.items.map((item, i) => (
           <li key={i}>
             <figure className="flex h-full flex-col gap-3 rounded-(--sf-radius,12px) border border-(--sf-line) bg-(--sf-paper) p-5">
               <Quote className="size-5 text-(--sf-sun)" aria-hidden />
-              <blockquote className="flex-1 text-pretty leading-relaxed">{item.quote}</blockquote>
+              <blockquote {...part(`items.${i}.quote`)} className="flex-1 text-pretty leading-relaxed">{item.quote}</blockquote>
               {(item.name || item.detail) && (
                 <figcaption className="text-sm">
-                  <span className="font-semibold">{item.name}</span>
+                  <span {...part(`items.${i}.name`)} className="font-semibold">{item.name}</span>
                   {item.detail && <span className="text-(--sf-muted)"> · {item.detail}</span>}
                 </figcaption>
               )}
@@ -63,7 +65,8 @@ export const testimonials: SectionDefinition<TestimonialsProps> = {
         ))}
       </ul>
     </SectionShell>
-  ),
+    );
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -103,24 +106,27 @@ export const faq: SectionDefinition<FaqProps> = {
       ],
     },
   ],
-  Component: ({ props }) => (
+  Component: ({ instance, props }) => {
+    const part = partOf(instance.id);
+    return (
     <SectionShell>
       <div className="mx-auto max-w-3xl">
-        <SectionHeading title={props.title} align="center" />
+        <SectionHeading title={props.title} align="center" parts={{ title: part("title") }} />
         <div className="divide-y divide-(--sf-line) rounded-(--sf-radius,12px) border border-(--sf-line)">
           {props.items.map((item, i) => (
-            <details key={i} className="group px-4 py-3">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 font-medium">
+            <details key={i} {...itemOf(instance.id)("items", i)} className="group px-4 py-3">
+              <summary {...part(`items.${i}.question`)} className="flex cursor-pointer list-none items-center justify-between gap-3 font-medium">
                 {item.question}
                 <ChevronDown className="size-4 shrink-0 transition-transform group-open:rotate-180" aria-hidden />
               </summary>
-              <p className="mt-2 whitespace-pre-line text-pretty text-sm leading-relaxed text-(--sf-muted)">{item.answer}</p>
+              <p {...part(`items.${i}.answer`)} className="mt-2 whitespace-pre-line text-pretty text-sm leading-relaxed text-(--sf-muted)">{item.answer}</p>
             </details>
           ))}
         </div>
       </div>
     </SectionShell>
-  ),
+    );
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -155,12 +161,12 @@ export const logoCloud: SectionDefinition<LogosProps> = {
       ],
     },
   ],
-  Component: ({ props, ctx }) => (
+  Component: ({ instance, props, ctx }) => (
     <SectionShell>
-      <SectionHeading title={props.title} align="center" />
+      <SectionHeading title={props.title} align="center" parts={{ title: partOf(instance.id)("title") }} />
       <ul className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6">
         {props.logos.map((logo, i) => {
-          const image = <SectionImage ctx={ctx} src={logo.src} alt={logo.alt} className="h-10 w-auto object-contain opacity-80" />;
+          const image = <SectionImage ctx={ctx} src={logo.src} alt={logo.alt} part={partOf(instance.id)(`logos.${i}.src`)} className="h-10 w-auto object-contain opacity-80" />;
           return <li key={i}>{logo.href ? <SmartLink ctx={ctx} href={logo.href}>{image}</SmartLink> : image}</li>;
         })}
       </ul>
@@ -214,21 +220,24 @@ export const imageGallery: SectionDefinition<GalleryProps> = {
       ],
     },
   ],
-  Component: ({ props, ctx }) => (
+  Component: ({ instance, props, ctx }) => {
+    const part = partOf(instance.id);
+    return (
     <SectionShell>
-      <SectionHeading title={props.title} />
+      <SectionHeading title={props.title} parts={{ title: part("title") }} />
       <ul className={cn("grid grid-cols-2 gap-3", props.columns === "3" && "md:grid-cols-3", props.columns === "4" && "md:grid-cols-4")}>
         {props.images.map((image, i) => (
           <li key={i}>
             <figure className="space-y-1.5">
-              <SectionImage ctx={ctx} src={image.src} alt={image.alt} className="aspect-square w-full rounded-(--sf-radius,12px)" />
-              {image.caption && <figcaption className="text-sm text-(--sf-muted)">{image.caption}</figcaption>}
+              <SectionImage ctx={ctx} src={image.src} alt={image.alt} part={part(`images.${i}.src`)} className="aspect-square w-full rounded-(--sf-radius,12px)" />
+              {image.caption && <figcaption {...part(`images.${i}.caption`)} className="text-sm text-(--sf-muted)">{image.caption}</figcaption>}
             </figure>
           </li>
         ))}
       </ul>
     </SectionShell>
-  ),
+    );
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -247,6 +256,7 @@ type ContactProps = z.infer<typeof contactSchema>;
 
 export const contactInfo: SectionDefinition<ContactProps> = {
   id: "contact-info",
+  insertable: false,
   version: 1,
   category: "contact",
   displayName: { ar: "معلومات التواصل", en: "Contact details" },

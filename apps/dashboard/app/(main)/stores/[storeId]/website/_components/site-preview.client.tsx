@@ -10,6 +10,7 @@ import {
   SectionRenderer,
   SiteTheme,
   collectCatalogQueries,
+  designSystemToTokens,
   storeSectionRegistry,
   type ClassicPart,
   type RenderContext,
@@ -28,7 +29,7 @@ const instance = (id: string, sectionId: string, props: Record<string, unknown>)
  * the dashboard does not have; the preview shows the closest library
  * sections filled with this store's data instead.
  */
-function classicStandIns(store: StoreProfile): Record<ClassicPart, SectionInstance> {
+export function classicStandIns(store: StoreProfile): Record<ClassicPart, SectionInstance> {
   return {
     "classic-header": instance("preview-classic-header", "store-header", { showLogo: true, showName: true, showNav: true, announcement: "" }),
     "classic-hero": instance("preview-classic-hero", "hero-banner", {
@@ -168,7 +169,8 @@ export function SitePreview({
           <div
             className={`${SITE_ROOT_CLASS} ${fontClassName ?? ""} flex min-h-screen flex-col`}
             style={{
-              ...(CLASSIC_TOKENS as CSSProperties),
+              // Inline beats SiteTheme's stylesheet, so the store's tokens are merged here.
+              ...({ ...CLASSIC_TOKENS, ...designSystemToTokens(designSystem) } as CSSProperties),
               background: "var(--sf-paper)",
               color: "var(--sf-ink)",
               fontFamily: "var(--sf-font-body, var(--font-storefront)), system-ui, sans-serif",

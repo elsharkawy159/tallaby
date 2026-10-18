@@ -9,6 +9,8 @@
 import { CURRENT_SITE_CONFIG_VERSION, migrateSiteConfig } from "./migrate";
 import { sanitizeSiteConfig } from "./sanitize";
 import { type ComponentNode, type PageContent, type SectionInstance, type SiteConfig, siteConfigSchema } from "./schema";
+import { MAX_NODES_PER_SECTION } from "../elements/registry";
+import { countNodes } from "../elements/tree";
 
 export type SiteConfigIssueCode =
   | "invalid_config"
@@ -17,6 +19,7 @@ export type SiteConfigIssueCode =
   | "too_deep"
   | "invalid_schema"
   | "tree_too_deep"
+  | "tree_too_large"
   | "duplicate_section_id"
   | "unknown_section"
   | "unsupported_section_version";
@@ -104,6 +107,9 @@ export function validateSiteConfig(
   const checkSection = (section: SectionInstance, path: (string | number)[]) => {
     if (treeDepth(section.componentTree) > maxTreeDepth) {
       issues.push({ code: "tree_too_deep", path: [...path, "componentTree"], message: `> ${maxTreeDepth}` });
+    }
+    if (section.componentTree && countNodes(section.componentTree) > MAX_NODES_PER_SECTION) {
+      issues.push({ code: "tree_too_large", path: [...path, "componentTree"], message: `> ${MAX_NODES_PER_SECTION} elements` });
     }
     if (!allowedSections) return;
     const maxVersion = allowedSections[section.sectionId];

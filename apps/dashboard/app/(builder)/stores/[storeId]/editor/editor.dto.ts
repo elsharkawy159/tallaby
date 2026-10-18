@@ -35,3 +35,6 @@ export const EDITOR_ERRORS: Record<string, EditorErrorKey> = {
   invalid_site: "invalidSite",
   invalid_input: "invalidInput",
 };
+
+/** Forms tab row: a store form with its counts (owner request 2026-10-18). */
+export type EditorFormSummary = { id: string; fieldCount: number; submissionCount: number; newCount: number };

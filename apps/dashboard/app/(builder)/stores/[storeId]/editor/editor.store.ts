@@ -22,7 +22,18 @@ export type EditorPage = {
   version: number;
 };
 
-export type Selection = { target: "page"; sectionId: string } | { target: "header" } | { target: "footer" } | null;
+/** A section on the page, or the shared header/footer. */
+export type SectionRef = { target: "page"; sectionId: string } | { target: "header" } | { target: "footer" };
+
+/**
+ * What is selected (P4B-04): a section, one of its editable parts
+ * (`part` = prop key or `collection.index.field`), or an element of a
+ * custom section (`nodeId`).
+ */
+export type Selection = (SectionRef & { part?: string; nodeId?: string }) | null;
+export type Rail = "add" | "layers" | "media" | "explore" | "forms" | "pages" | "brand";
+/** Add panel tabs; Templates opens by itself after a new page is created. */
+export type AddTab = "elements" | "sections" | "templates";
 export type Device = "desktop" | "tablet" | "mobile";
 export type SaveStatus = "saved" | "saving" | "unsaved" | "conflict" | "error";
 
@@ -50,20 +61,36 @@ export type EditorState = {
   past: Snapshot[];
   future: Snapshot[];
   saveStatus: SaveStatus;
-  panel: "sections" | "theme" | "pages";
+  rail: Rail;
+  addTab: AddTab;
+  inspectorTab: "content" | "style";
+  /** Inspector shows only the selected part's field ("Selected element only"). */
+  focusSelected: boolean;
+  gridOverlay: boolean;
+  /** Last undoable change, so bursts of the same edit (typing) share one undo step. */
+  lastCommit: { key: string; at: number } | null;
 };
 
+/** Edits with the same key within this window are one undo step. */
+const COALESCE_MS = 1000;
+
 export type EditorActions = {
-  editPage: (pageId: string, update: (content: PageContent) => PageContent) => void;
-  editChrome: (part: "header" | "footer", value: SectionInstance | null) => void;
-  editDesign: (update: (ds: DesignSystem) => DesignSystem) => void;
+  editPage: (pageId: string, update: (content: PageContent) => PageContent, coalesceKey?: string) => void;
+  editChrome: (part: "header" | "footer", value: SectionInstance | null, coalesceKey?: string) => void;
+  /** Edits one section of the active page, or the header/footer. */
+  editSection: (ref: SectionRef, update: (instance: SectionInstance) => SectionInstance, coalesceKey?: string) => void;
+  editDesign: (update: (ds: DesignSystem) => DesignSystem, coalesceKey?: string) => void;
   undo: () => void;
   redo: () => void;
   select: (selection: Selection) => void;
   setActivePage: (pageId: string) => void;
   setLocale: (locale: SiteLocale) => void;
   setDevice: (device: Device) => void;
-  setPanel: (panel: EditorState["panel"]) => void;
+  setRail: (rail: Rail) => void;
+  setAddTab: (tab: EditorState["addTab"]) => void;
+  setInspectorTab: (tab: EditorState["inspectorTab"]) => void;
+  setFocusSelected: (value: boolean) => void;
+  toggleGridOverlay: () => void;
   setSaveStatus: (status: SaveStatus) => void;
   markPageSaved: (pageId: string, version: number, content: PageContent) => void;
   markChromeSaved: (part: "header" | "footer", value: SectionInstance | null) => void;
@@ -109,14 +136,17 @@ function restore(state: EditorState, snap: Snapshot): Partial<EditorState> {
 export function createEditorStore(initial: Pick<EditorState, "pages" | "header" | "footer" | "designSystem" | "designVersion" | "defaultLocale">) {
   const home = initial.pages.find((p) => p.isHome) ?? initial.pages[0]!;
   return createStore<EditorState & EditorActions>()((set, get) => {
-    /** Applies an undoable change. */
-    const commit = (change: (state: EditorState) => Partial<EditorState>) => {
+    /** Applies an undoable change; the same `coalesceKey` in quick succession reuses the last undo step. */
+    const commit = (change: (state: EditorState) => Partial<EditorState>, coalesceKey?: string) => {
       const state = get();
+      const now = Date.now();
+      const merge = Boolean(coalesceKey && state.lastCommit?.key === coalesceKey && now - state.lastCommit.at < COALESCE_MS);
       set({
         ...change(state),
-        past: [...state.past, snapshot(state)].slice(-MAX_HISTORY),
+        past: merge ? state.past : [...state.past, snapshot(state)].slice(-MAX_HISTORY),
         future: [],
         saveStatus: "unsaved",
+        lastCommit: coalesceKey ? { key: coalesceKey, at: now } : null,
       });
     };
 
@@ -132,35 +162,62 @@ export function createEditorStore(initial: Pick<EditorState, "pages" | "header" 
       past: [],
       future: [],
       saveStatus: "saved",
-      panel: "sections",
+      rail: "add",
+      addTab: "elements",
+      inspectorTab: "content",
+      focusSelected: false,
+      gridOverlay: false,
+      lastCommit: null,
 
-      editPage: (pageId, update) =>
-        commit((state) => ({
-          pages: state.pages.map((p) => (p.id === pageId ? { ...p, content: update(p.content) } : p)),
-          dirtyPages: { ...state.dirtyPages, [pageId]: true },
-        })),
-      editChrome: (part, value) =>
-        commit((state) => ({ [part]: value, dirtyChrome: { ...state.dirtyChrome, [part]: true } })),
-      editDesign: (update) => commit((state) => ({ designSystem: update(state.designSystem), dirtyDesign: true })),
+      editPage: (pageId, update, coalesceKey) =>
+        commit(
+          (state) => ({
+            pages: state.pages.map((p) => (p.id === pageId ? { ...p, content: update(p.content) } : p)),
+            dirtyPages: { ...state.dirtyPages, [pageId]: true },
+          }),
+          coalesceKey,
+        ),
+      editChrome: (part, value, coalesceKey) =>
+        commit((state) => ({ [part]: value, dirtyChrome: { ...state.dirtyChrome, [part]: true } }), coalesceKey),
+      editSection: (ref, update, coalesceKey) => {
+        const state = get();
+        if (ref.target === "page") {
+          const page = state.pages.find((p) => p.id === state.activePageId);
+          if (!page?.content.sections.some((s) => s.id === ref.sectionId)) return;
+          state.editPage(
+            page.id,
+            (content) => ({ ...content, sections: content.sections.map((s) => (s.id === ref.sectionId ? update(s) : s)) }),
+            coalesceKey,
+          );
+          return;
+        }
+        const current = state[ref.target];
+        if (current) state.editChrome(ref.target, update(current), coalesceKey);
+      },
+      editDesign: (update, coalesceKey) => commit((state) => ({ designSystem: update(state.designSystem), dirtyDesign: true }), coalesceKey),
 
       undo: () => {
         const state = get();
         const previous = state.past.at(-1);
         if (!previous) return;
-        set({ ...restore(state, previous), past: state.past.slice(0, -1), future: [snapshot(state), ...state.future] });
+        set({ ...restore(state, previous), past: state.past.slice(0, -1), future: [snapshot(state), ...state.future], lastCommit: null });
       },
       redo: () => {
         const state = get();
         const next = state.future[0];
         if (!next) return;
-        set({ ...restore(state, next), future: state.future.slice(1), past: [...state.past, snapshot(state)] });
+        set({ ...restore(state, next), future: state.future.slice(1), past: [...state.past, snapshot(state)], lastCommit: null });
       },
 
-      select: (selection) => set({ selection }),
+      select: (selection) => set({ selection, lastCommit: null }),
       setActivePage: (pageId) => set({ activePageId: pageId, selection: null }),
       setLocale: (locale) => set({ locale }),
       setDevice: (device) => set({ device }),
-      setPanel: (panel) => set({ panel }),
+      setRail: (rail) => set({ rail }),
+      setAddTab: (addTab) => set({ addTab }),
+      setInspectorTab: (inspectorTab) => set({ inspectorTab }),
+      setFocusSelected: (focusSelected) => set({ focusSelected }),
+      toggleGridOverlay: () => set((state) => ({ gridOverlay: !state.gridOverlay })),
       setSaveStatus: (saveStatus) => set({ saveStatus }),
 
       markPageSaved: (pageId, version, content) =>

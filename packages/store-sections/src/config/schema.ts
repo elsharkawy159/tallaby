@@ -30,6 +30,8 @@ export const ALLOWED_NODE_TYPES = [
   "shadcn-accordion", "shadcn-carousel", "shadcn-calendar", "shadcn-dialog",
   "shadcn-badge", "shadcn-card", "shadcn-tabs", "shadcn-alert", "shadcn-avatar",
   "shadcn-progress", "shadcn-tooltip",
+  // Custom-section elements (P4B-01); additive, schema version unchanged.
+  "divider", "spacer", "badge",
 ] as const;
 export type AllowedNodeType = (typeof ALLOWED_NODE_TYPES)[number];
 

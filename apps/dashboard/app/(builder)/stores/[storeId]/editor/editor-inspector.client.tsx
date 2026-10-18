@@ -1,14 +1,17 @@
 "use client";
 
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { ArrowDown, ArrowUp, Plus, Trash2, X } from "lucide-react";
-import type { SectionInstance, SiteLocale } from "@workspace/store-sections";
-import type {
-  AnySectionDefinition,
-  ItemCollectionDefinition,
-  Localized,
-  PropDefinition,
+import { ArrowDown, ArrowUp, Plus, RotateCcw, Trash2, X } from "lucide-react";
+import type { ComponentNode, SectionInstance, SiteLocale } from "@workspace/store-sections";
+import {
+  getElementDefinition,
+  type AnySectionDefinition,
+  type ItemCollectionDefinition,
+  type Localized,
+  type PropDefinition,
+  isCustomSlotLayout,
+  resetSlotLayout,
 } from "@workspace/store-sections/render";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
@@ -17,7 +20,9 @@ import { Switch } from "@workspace/ui/components/switch";
 import { Textarea } from "@workspace/ui/components/textarea";
 import { MediaPicker } from "@/components/media/media-picker.client";
 import type { EditorCategory, EditorForm, EditorProduct } from "./editor.data";
-import { addItem, moveItem, readItemProp, readProp, removeItem, setItemProp, setSectionProp } from "./editor.lib";
+import { addItem, readItemProp, readProp, removeItem, setItemProp, setSectionProp } from "./editor.lib";
+import { placeItem } from "./editor-slots.lib";
+import { partField, readNodeProp, readPart, setNodeProp, writePart } from "./editor-selection.lib";
 
 type Catalog = { products: EditorProduct[]; categories: EditorCategory[]; forms: EditorForm[] };
 
@@ -29,8 +34,18 @@ const label = (value: Localized, locale: string) => (locale === "en" ? value.en 
 const SELECT_CLASS =
   "h-9 w-full rounded-md border border-input bg-background px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
+/** Characters used / allowed, under text fields (like the reference). */
+function Counter({ value, max }: { value: string; max?: number }) {
+  if (!max) return null;
+  return (
+    <p className="mt-1 text-end text-xs tabular-nums text-muted-foreground" aria-live="polite">
+      {value.length}/{max}
+    </p>
+  );
+}
+
 /** One field, by `PropDefinition.type`. */
-function Field({
+export function Field({
   prop,
   value,
   onChange,
@@ -51,7 +66,12 @@ function Field({
 
   switch (prop.type) {
     case "textarea":
-      return <Textarea id={id} value={text} maxLength={prop.maxLength} rows={4} onChange={(e) => onChange(e.target.value)} />;
+      return (
+        <div>
+          <Textarea id={id} value={text} maxLength={prop.maxLength} rows={4} onChange={(e) => onChange(e.target.value)} />
+          <Counter value={text} max={prop.maxLength} />
+        </div>
+      );
     case "number":
       return (
         <Input
@@ -141,7 +161,10 @@ function Field({
       return <ProductsPicker id={id} value={Array.isArray(value) ? (value as string[]) : []} onChange={onChange} catalog={catalog} uiLocale={uiLocale} />;
     default:
       return (
-        <Input id={id} dir={prop.type === "url" ? "ltr" : undefined} value={text} maxLength={prop.maxLength} onChange={(e) => onChange(e.target.value)} />
+        <div>
+          <Input id={id} dir={prop.type === "url" ? "ltr" : undefined} value={text} maxLength={prop.maxLength} onChange={(e) => onChange(e.target.value)} />
+          {prop.type === "text" && <Counter value={text} max={prop.maxLength} />}
+        </div>
       );
   }
 }
@@ -236,10 +259,10 @@ function Collection({
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted-foreground">#{index + 1}</span>
             <div className="flex">
-              <Button type="button" size="icon" variant="ghost" className="size-7" disabled={index === 0} onClick={() => onChange(moveItem(instance, definition.key, index, index - 1))} aria-label={t("moveUp")}>
+              <Button type="button" size="icon" variant="ghost" className="size-7" disabled={index === 0} onClick={() => onChange(placeItem(instance, definition.key, index, index - 1))} aria-label={t("moveUp")}>
                 <ArrowUp className="size-3.5" />
               </Button>
-              <Button type="button" size="icon" variant="ghost" className="size-7" disabled={index === items.length - 1} onClick={() => onChange(moveItem(instance, definition.key, index, index + 1))} aria-label={t("moveDown")}>
+              <Button type="button" size="icon" variant="ghost" className="size-7" disabled={index === items.length - 1} onClick={() => onChange(placeItem(instance, definition.key, index, index + 1))} aria-label={t("moveDown")}>
                 <ArrowDown className="size-3.5" />
               </Button>
               <Button type="button" size="icon" variant="ghost" className="size-7" disabled={target.locale !== target.defaultLocale} onClick={() => onChange(removeItem(instance, definition.key, index))} aria-label={t("remove")}>
@@ -286,6 +309,9 @@ function Collection({
   );
 }
 
+/** Field id of a part in the full inspector (`items.2.title` → `<id>-items-2-title`). */
+const partFieldId = (instanceId: string, part: string) => `${instanceId}-${part.replaceAll(".", "-")}`;
+
 /** Properties of the selected section, generated from its definition. */
 export function SectionInspector({
   definition,
@@ -297,6 +323,8 @@ export function SectionInspector({
   catalog,
   storeId,
   readOnly = false,
+  focusPart,
+  onlyPart = false,
 }: {
   definition: AnySectionDefinition;
   instance: SectionInstance;
@@ -307,17 +335,50 @@ export function SectionInspector({
   catalog: Catalog;
   storeId: string;
   readOnly?: boolean;
+  /** The part clicked on the canvas: its field is focused (P4B-04). */
+  focusPart?: string;
+  /** Show only the focused part's field ("Selected element only"). */
+  onlyPart?: boolean;
 }) {
   const t = useTranslations("storeEditor.inspector");
   const target = { locale, defaultLocale };
   const mediaStore = useMemo(() => ({ storeId, readOnly }), [storeId, readOnly]);
+  const focusedField = partField(definition, focusPart);
+
+  useEffect(() => {
+    if (!focusPart) return;
+    const element = document.getElementById(partFieldId(instance.id, focusPart));
+    element?.scrollIntoView({ block: "center", behavior: "smooth" });
+    if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) element.focus({ preventScroll: true });
+    // Only when the clicked part changes, not on every keystroke.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusPart, instance.id]);
+
+  if (onlyPart && focusPart && focusedField) {
+    const locked = locale !== defaultLocale && !focusedField.translatable;
+    const fieldId = partFieldId(instance.id, focusPart);
+    return (
+      <InspectorStore.Provider value={mediaStore}>
+        <div className="space-y-1.5">
+          <Label htmlFor={fieldId}>{label(focusedField.label, uiLocale)}</Label>
+          <fieldset disabled={locked} className={locked ? "opacity-60" : undefined}>
+            <Field
+              id={fieldId}
+              prop={focusedField}
+              value={readPart(instance, focusPart, focusedField, target)}
+              onChange={(value) => onChange(writePart(instance, focusPart, focusedField, value, target))}
+              uiLocale={uiLocale}
+              catalog={catalog}
+            />
+          </fieldset>
+        </div>
+      </InspectorStore.Provider>
+    );
+  }
+
   return (
     <InspectorStore.Provider value={mediaStore}>
       <div className="space-y-4">
-        <div>
-          <h2 className="font-semibold">{label(definition.displayName, uiLocale)}</h2>
-          <p className="text-xs text-muted-foreground">{label(definition.description, uiLocale)}</p>
-        </div>
         {locale !== defaultLocale && <p className="rounded-md bg-muted p-2 text-xs">{t("translating", { locale: locale.toUpperCase() })}</p>}
         {definition.propDefinitions.length === 0 && !definition.itemCollections?.length && (
           <p className="text-sm text-muted-foreground">{t("nothingToEdit")}</p>
@@ -353,6 +414,72 @@ export function SectionInspector({
             catalog={catalog}
           />
         ))}
+        {definition.slots?.length ? (
+          // Parts are moved on the canvas (P4B-16); here the seller can go back to the default order.
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-dashed p-2.5">
+            <p className="text-xs text-muted-foreground">{t("partsHint")}</p>
+            {isCustomSlotLayout(instance, definition.slots) && (
+              <Button type="button" size="sm" variant="outline" className="h-7 shrink-0" onClick={() => onChange(resetSlotLayout(instance, definition.slots!))}>
+                <RotateCcw className="size-3.5" aria-hidden />
+                {t("resetLayout")}
+              </Button>
+            )}
+          </div>
+        ) : null}
+      </div>
+    </InspectorStore.Provider>
+  );
+}
+
+/** Content fields of the selected element of a custom section (P4B-07). */
+export function ElementInspector({
+  node,
+  onChange,
+  locale,
+  defaultLocale,
+  uiLocale,
+  catalog,
+  storeId,
+  readOnly = false,
+}: {
+  node: ComponentNode;
+  onChange: (node: ComponentNode) => void;
+  locale: SiteLocale;
+  defaultLocale: SiteLocale;
+  uiLocale: string;
+  catalog: Catalog;
+  storeId: string;
+  readOnly?: boolean;
+}) {
+  const t = useTranslations("storeEditor.inspector");
+  const definition = getElementDefinition(node.type);
+  const mediaStore = useMemo(() => ({ storeId, readOnly }), [storeId, readOnly]);
+  if (!definition) return null;
+  return (
+    <InspectorStore.Provider value={mediaStore}>
+      <div className="space-y-4">
+        {locale !== defaultLocale && <p className="rounded-md bg-muted p-2 text-xs">{t("translating", { locale: locale.toUpperCase() })}</p>}
+        {definition.fields.length === 0 && <p className="text-sm text-muted-foreground">{t("styleOnly")}</p>}
+        {definition.fields.map((prop) => {
+          const target = { locale, defaultLocale, translatable: prop.translatable };
+          const fieldId = `${node.id}-${prop.key}`;
+          const locked = locale !== defaultLocale && !prop.translatable;
+          return (
+            <div key={prop.key} className="space-y-1.5">
+              <Label htmlFor={fieldId}>{label(prop.label, uiLocale)}</Label>
+              <fieldset disabled={locked} className={locked ? "opacity-60" : undefined}>
+                <Field
+                  id={fieldId}
+                  prop={prop}
+                  value={readNodeProp(node, prop.key, target)}
+                  onChange={(value) => onChange(setNodeProp(node, prop.key, value, target))}
+                  uiLocale={uiLocale}
+                  catalog={catalog}
+                />
+              </fieldset>
+            </div>
+          );
+        })}
       </div>
     </InspectorStore.Provider>
   );

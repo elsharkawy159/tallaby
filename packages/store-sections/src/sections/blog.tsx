@@ -8,7 +8,7 @@
 import { z } from "zod";
 import { sectionText } from "../core/copy";
 import type { ContentItemSummary, RenderContext, SectionDefinition } from "../core/types";
-import { EmptyState, SectionHeading, SectionImage, SectionShell, SmartLink, cn, text } from "./_primitives";
+import { EmptyState, SectionHeading, SectionImage, SectionShell, SmartLink, cn, partOf, text } from "./_primitives";
 
 /** Slug of the system blog collection (cms_collections.slug). */
 export const BLOG_COLLECTION_SLUG = "blog";
@@ -137,6 +137,7 @@ export const blogLatestPosts: SectionDefinition<LatestPostsProps> = {
       <SectionShell id="blog">
         <SectionHeading
           title={props.title}
+          parts={{ title: partOf(instance.id)("title") }}
           action={
             props.showViewAll && posts.length > 0 ? (
               <SmartLink ctx={ctx} href="/blog" className="text-sm font-semibold text-(--sf-brand)">
@@ -182,6 +183,7 @@ type FeaturedPostProps = z.infer<typeof featuredPostSchema>;
 
 export const blogFeaturedPost: SectionDefinition<FeaturedPostProps> = {
   id: "blog-featured-post",
+  insertable: false,
   version: 1,
   category: "blog",
   displayName: { ar: "مقال مميز", en: "Featured post" },

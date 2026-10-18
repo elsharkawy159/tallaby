@@ -3,7 +3,7 @@ import { sectionText, type SectionCopyKey } from "../core/copy";
 import type { SectionDefinition } from "../core/types";
 import { SocialIcon } from "../social/icon";
 import { getSocialPlatform } from "../social/platforms";
-import { SectionImage, SmartLink, cn, text } from "./_primitives";
+import { SectionImage, SmartLink, cn, partOf, text } from "./_primitives";
 
 const POLICY_COPY: Record<"return" | "shipping" | "privacy" | "terms", SectionCopyKey> = {
   return: "policyReturn",
@@ -39,12 +39,12 @@ export const storeHeader: SectionDefinition<HeaderProps> = {
     { key: "showName", label: { ar: "إظهار اسم المتجر", en: "Show store name" }, type: "switch" },
     { key: "showNav", label: { ar: "إظهار الصفحات", en: "Show pages" }, type: "switch" },
   ],
-  Component: ({ props, ctx }) => {
+  Component: ({ instance, props, ctx }) => {
     const nav = ctx.pages.filter((p) => !p.isHome);
     return (
       <header className="sticky top-0 z-40 border-b border-(--sf-line) bg-(--sf-paper)/95 backdrop-blur">
         {props.announcement && (
-          <p className="bg-(--sf-brand) px-4 py-2 text-center text-xs font-medium text-(--sf-brand-ink,#fff)">{props.announcement}</p>
+          <p {...partOf(instance.id)("announcement")} className="bg-(--sf-brand) px-4 py-2 text-center text-xs font-medium text-(--sf-brand-ink,#fff)">{props.announcement}</p>
         )}
         <div className="mx-auto flex h-16 w-full max-w-(--sf-max-width,1200px) items-center gap-4 px-4 md:px-8">
           <SmartLink ctx={ctx} href="/" className="flex min-w-0 items-center gap-2.5" label={sectionText("home", ctx.locale)}>
@@ -113,7 +113,7 @@ export const storeFooter: SectionDefinition<FooterProps> = {
     { key: "showSocial", label: { ar: "إظهار الروابط الاجتماعية", en: "Show social links" }, type: "switch" },
     { key: "showContact", label: { ar: "إظهار التواصل", en: "Show contact" }, type: "switch" },
   ],
-  Component: ({ props, ctx }) => {
+  Component: ({ instance, props, ctx }) => {
     const policies = props.showPolicies ? (ctx.store.policies ?? []) : [];
     const social = props.showSocial ? (ctx.store.social ?? []) : [];
     const contact = props.showContact ? ctx.store.contact : undefined;
@@ -123,7 +123,9 @@ export const storeFooter: SectionDefinition<FooterProps> = {
           <div className="space-y-2">
             <p className="text-lg font-bold">{ctx.store.name}</p>
             {(props.about || ctx.store.description) && (
-              <p className="text-pretty text-sm leading-relaxed text-(--sf-muted)">{props.about || ctx.store.description}</p>
+              <p {...partOf(instance.id)("about")} className="text-pretty text-sm leading-relaxed text-(--sf-muted)">
+                {props.about || ctx.store.description}
+              </p>
             )}
           </div>
           {policies.length > 0 && (

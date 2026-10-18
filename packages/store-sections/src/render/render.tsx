@@ -7,6 +7,7 @@ import { resolveSectionForLocale } from "../core/locale";
 import { applyMigrations, resolveSectionProps, type SectionRegistry } from "../core/registry";
 import { SITE_ROOT_CLASS, designSystemToCss, type ThemeInput } from "../core/theme";
 import type { RenderContext } from "../core/types";
+import { collectPageCss, escapeStyleBlock, type StyleCssMode } from "../elements/style";
 
 export function SectionRenderer({
   instance,
@@ -66,6 +67,23 @@ export function SiteTheme({ designSystem }: { designSystem: ThemeInput | null | 
   const css = designSystemToCss(designSystem);
   if (!css) return null;
   return <style data-site-theme dangerouslySetInnerHTML={{ __html: css.replace(/</g, "\\3c ") }} />;
+}
+
+/**
+ * Section, part and element styles of one page (P4B-01), as one scoped block.
+ * Render it inside the site root, after `SiteTheme`, with the header and
+ * footer included.
+ */
+export function PageStyles({
+  sections,
+  mode = "public",
+}: {
+  sections: readonly (SectionInstance | null | undefined)[];
+  mode?: StyleCssMode;
+}) {
+  const css = collectPageCss(sections, mode);
+  if (!css) return null;
+  return <style data-page-styles dangerouslySetInnerHTML={{ __html: escapeStyleBlock(css) }} />;
 }
 
 export { SITE_ROOT_CLASS };

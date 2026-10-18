@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { SiteLocale } from "../config/schema";
 import { sectionText } from "../core/copy";
 import type { PublicFormField, PublicStoreForm, SectionDefinition } from "../core/types";
-import { SectionHeading, SectionShell, cn, text } from "./_primitives";
+import { SectionHeading, SectionShell, cn, partOf, text } from "./_primitives";
 
 // ---------------------------------------------------------------------------
 // Form fields (presentational, no hooks): the storefront's interactive form
@@ -198,7 +198,12 @@ export const contactForm: SectionDefinition<ContactFormProps> = {
     return (
       <SectionShell tone={props.tone}>
         <div className={cn("mx-auto", props.width === "narrow" ? "max-w-2xl" : "max-w-4xl")}>
-          <SectionHeading title={props.title} subtitle={props.text} align="center" />
+          <SectionHeading
+            title={props.title}
+            subtitle={props.text}
+            align="center"
+            parts={{ title: partOf(instance.id)("title"), subtitle: partOf(instance.id)("text") }}
+          />
           {!form ? (
             <p className="rounded-(--sf-radius,12px) border border-dashed border-(--sf-line) p-6 text-center text-sm text-(--sf-muted)">
               {sectionText("pickForm", ctx.locale)}

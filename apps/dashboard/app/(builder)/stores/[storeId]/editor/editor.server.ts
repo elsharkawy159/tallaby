@@ -26,7 +26,9 @@ import { findActiveCustomDomainForSubdomain } from "@workspace/lib/storefront/se
 import { storeSectionRegistry } from "@workspace/store-sections/render";
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
-import { EDITOR_ERRORS, type EditorErrorKey, type EditorResult } from "./editor.dto";
+import { listStoreForms } from "@workspace/lib/store-forms/server";
+import { loadEditorForms, type EditorForm } from "./editor.data";
+import { EDITOR_ERRORS, type EditorErrorKey, type EditorFormSummary, type EditorResult } from "./editor.dto";
 
 /**
  * Website editor actions (PLAN.md P4-04). Every action takes the store id
@@ -95,6 +97,20 @@ export async function saveChrome(storeId: string, part: "header" | "footer", ins
     if (!saveLimiter.check(`editor:${seller.sellerId}`)) return fail("rateLimited");
     const result = await saveStoreChrome(seller.sellerId, store.id, part, instance, { allowedSections: ALLOWED });
     return result.success ? result : fail(result.error);
+  });
+}
+
+/** Forms tab: the store's forms (for the canvas too) and their counts. Never cached. */
+export async function listForms(storeId: string) {
+  return withStore<{ forms: EditorForm[]; summaries: EditorFormSummary[] }>(storeId, {}, async ({ seller, store }) => {
+    const [forms, summaries] = await Promise.all([loadEditorForms(seller.sellerId, store.id), listStoreForms(seller.sellerId, store.id)]);
+    return {
+      success: true,
+      data: {
+        forms,
+        summaries: summaries.map((s) => ({ id: s.id, fieldCount: s.fieldCount, submissionCount: s.submissionCount, newCount: s.newCount })),
+      },
+    };
   });
 }
 

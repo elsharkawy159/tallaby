@@ -31,10 +31,26 @@ export function mergeRecord(base: Record<string, unknown>, overlay: Record<strin
   return out;
 }
 
+type TreeNode = NonNullable<SectionInstance["componentTree"]>[number];
+
+/** Element text overlays live on each node: `node.props.translations[locale]` (P4B-02). */
+function resolveTreeForLocale(nodes: TreeNode[], locale: string): TreeNode[] {
+  return nodes.map((node) => {
+    const overlay = (node.props.translations as Record<string, unknown> | undefined)?.[locale];
+    const props = isPlainObject(overlay) ? mergeRecord(node.props, overlay) : node.props;
+    return { ...node, props, children: resolveTreeForLocale(node.children, locale) };
+  });
+}
+
 /** The instance as seen in `locale`; the same object when nothing changes. */
 export function resolveSectionForLocale(instance: SectionInstance, locale: string, defaultLocale: string): SectionInstance {
   if (locale === defaultLocale) return instance;
   const overlay = instance.translations?.[locale as keyof NonNullable<SectionInstance["translations"]>];
-  if (!overlay || Object.keys(overlay).length === 0) return instance;
-  return { ...instance, props: mergeRecord(instance.props, overlay) };
+  const hasOverlay = Boolean(overlay && Object.keys(overlay).length > 0);
+  if (!hasOverlay && !instance.componentTree?.length) return instance;
+  return {
+    ...instance,
+    ...(hasOverlay && { props: mergeRecord(instance.props, overlay!) }),
+    ...(instance.componentTree?.length && { componentTree: resolveTreeForLocale(instance.componentTree, locale) }),
+  };
 }

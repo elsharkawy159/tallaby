@@ -41,6 +41,7 @@ import {
   type OverrideKeys,
   type PageContent,
   type SectionInstance,
+  type SiteConfig,
 } from "@workspace/store-sections";
 import { ensureStoreSiteScaffold } from "../stores/server";
 
@@ -188,6 +189,25 @@ export async function listStoreTemplates(sellerId: string, storeId: string, q: Q
       ? { id: install.id, templateKey: install.templateKey, installedAt: install.installedAt, canUndo: !install.undoneAt && install.hasDraft }
       : null,
   };
+}
+
+/**
+ * One active template's current config, for the editor's preview dialog
+ * (owner request 2026-10-18). Null for a foreign store, an unknown or
+ * inactive key, or a broken version (the gallery hides those too).
+ */
+export async function getStoreTemplateConfig(sellerId: string, storeId: string, templateKey: string, q: Queryable = db): Promise<SiteConfig | null> {
+  if (!TEMPLATE_KEY_RE.test(templateKey)) return null;
+  const store = await ownStore(q, sellerId, storeId);
+  if (!store) return null;
+  const [row] = await q
+    .select({ config: templateVersions.config })
+    .from(templates)
+    .innerJoin(templateVersions, eq(templateVersions.id, templates.currentVersionId))
+    .where(and(eq(templates.key, templateKey), eq(templates.isActive, true)))
+    .limit(1);
+  const config = siteConfigSchema.safeParse(row?.config);
+  return config.success ? config.data : null;
 }
 
 // ---------------------------------------------------------------------------

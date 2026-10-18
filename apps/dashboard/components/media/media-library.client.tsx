@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useState, useTransition, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
@@ -51,7 +51,8 @@ const SELECT_CLASS =
  * The media library of one store (PLAN.md P4-09): folders, drag-and-drop
  * upload of several images, grid/list views, AR/EN alt text, usage hints,
  * shared vs this-store files, delete. `mode="pick"` turns a click into a
- * selection for the editor's image fields (MediaPicker).
+ * selection for the editor's image fields (MediaPicker). `tileWrapper`
+ * lets a host wrap each grid tile (the website editor makes them draggable).
  */
 export function MediaLibrary({
   storeId,
@@ -59,12 +60,14 @@ export function MediaLibrary({
   readOnly = false,
   mode = "manage",
   onPick,
+  tileWrapper,
 }: {
   storeId: string;
   initial?: MediaLibraryView;
   readOnly?: boolean;
   mode?: "manage" | "pick";
   onPick?: (asset: MediaAssetView) => void;
+  tileWrapper?: (asset: MediaAssetView, tile: ReactNode) => ReactNode;
 }) {
   const t = useTranslations("mediaLibrary");
   const locale = useLocale();
@@ -77,6 +80,7 @@ export function MediaLibrary({
   const [details, setDetails] = useState<MediaAssetView | null>(null);
   const [picked, setPicked] = useState<string | null>(null);
   const [folderDialog, setFolderDialog] = useState<{ folder?: MediaFolderView } | null>(null);
+  const wrapTile = tileWrapper ?? ((_: MediaAssetView, tile: ReactNode) => tile);
   const [deletingFolder, setDeletingFolder] = useState<MediaFolderView | null>(null);
 
   const showError = useCallback((error: MediaErrorKey | "uploadFailed") => toast.error(t(`errors.${error}`)), [t]);
@@ -165,7 +169,8 @@ export function MediaLibrary({
   const pickedAsset = assets.find((a) => a.id === picked) ?? null;
 
   return (
-    <div className="space-y-4">
+    // A container, so the grids follow the space they get (a narrow editor panel or the full page), not the screen.
+    <div className="@container space-y-4">
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-2">
         <SegmentedControl value={scope} onValueChange={(value) => go({ scope: value as MediaScope, folderId: null })} aria-label={t("scope.label")}>
@@ -273,7 +278,7 @@ export function MediaLibrary({
 
       {/* Folders */}
       {children.length > 0 && (
-        <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+        <ul className="grid grid-cols-2 gap-2 @lg:grid-cols-3 @3xl:grid-cols-4">
           {children.map((folder) => (
             <li key={folder.id}>
               <button
@@ -295,9 +300,11 @@ export function MediaLibrary({
         <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">{t(folderId ? "emptyFolder" : "empty")}</p>
       )}
       {view === "grid" ? (
-        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        <ul className="grid grid-cols-2 gap-3 @lg:grid-cols-3 @3xl:grid-cols-4 @5xl:grid-cols-5">
           {assets.map((asset) => (
             <li key={asset.id}>
+              {wrapTile(
+                asset,
               <button
                 type="button"
                 onClick={() => (mode === "pick" ? setPicked(asset.id) : setDetails(asset))}
@@ -322,7 +329,8 @@ export function MediaLibrary({
                     {asset.usage > 0 ? t("usedIn", { count: asset.usage }) : t("unused")}
                   </p>
                 </div>
-              </button>
+              </button>,
+              )}
             </li>
           ))}
         </ul>

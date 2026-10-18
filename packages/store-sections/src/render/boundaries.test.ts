@@ -21,12 +21,12 @@ describe("package boundaries", () => {
   });
 
   it("has no client hooks in sections or the renderer (server-renderable)", () => {
-    const offenders = sources.filter(({ path, code }) => /[\/](sections|render)[\/]/.test(path) && /\buse(State|Effect|Ref|Context|Reducer)\(|"use client"/.test(code));
+    const offenders = sources.filter(({ path, code }) => /[\/](sections|render|elements)[\/]/.test(path) && /\buse(State|Effect|Ref|Context|Reducer)\(|"use client"/.test(code));
     expect(offenders.map((o) => o.path)).toEqual([]);
   });
 
   it("never uses dangerouslySetInnerHTML except for the theme <style>", () => {
-    const offenders = sources.filter(({ path, code }) => code.includes("dangerouslySetInnerHTML") && !path.endsWith("render.tsx"));
+    const offenders = sources.filter(({ path, code }) => code.includes("dangerouslySetInnerHTML") && !/render[\\/]render\.tsx$/.test(path));
     expect(offenders.map((o) => o.path)).toEqual([]);
   });
 });

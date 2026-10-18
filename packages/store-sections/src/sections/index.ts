@@ -12,6 +12,7 @@ import { categoryGrid, featuredProduct, productGrid } from "./commerce";
 import { ctaBanner, features, heroBanner, imageWithText, richText, spacer } from "./content";
 import { contactInfo, faq, imageGallery, logoCloud, testimonials } from "./engagement";
 import { contactForm } from "./forms";
+import { customSection } from "./custom";
 
 export const STORE_SECTIONS: readonly AnySectionDefinition[] = [
   ...CLASSIC_SECTIONS,
@@ -35,6 +36,7 @@ export const STORE_SECTIONS: readonly AnySectionDefinition[] = [
   cmsList,
   cmsItem,
   spacer,
+  customSection,
   storeFooter,
 ];
 
@@ -54,6 +56,7 @@ export {
   contactForm,
   contactInfo,
   ctaBanner,
+  customSection,
   faq,
   featuredProduct,
   features,

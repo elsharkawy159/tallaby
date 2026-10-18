@@ -7,6 +7,7 @@
 import sanitizeHtml from "sanitize-html";
 import type { ComponentNode, SectionInstance, SiteConfig } from "./schema";
 import { hasDangerousScheme } from "./url";
+import { normalizeBreakpointStyles, normalizeSectionStyle, normalizeStyle } from "../elements/style";
 
 const RICH_TEXT_OPTIONS: sanitizeHtml.IOptions = {
   allowedTags: [
@@ -129,8 +130,9 @@ function sanitizeNode(node: ComponentNode): ComponentNode {
     ...node,
     props: sanitizeProps(node.props),
     children: node.children.map(sanitizeNode),
-    ...(node.style && { style: sanitizeStyle(node.style) }),
-    ...(node.breakpointStyles && { breakpointStyles: sanitizeBreakpoints(node.breakpointStyles) }),
+    // Element styles keep only the whitelist (P4B-01); nothing else reaches CSS.
+    ...(node.style && { style: normalizeStyle(node.style) }),
+    ...(node.breakpointStyles && { breakpointStyles: normalizeBreakpointStyles(node.breakpointStyles, normalizeStyle) }),
   };
 }
 
@@ -141,8 +143,10 @@ function sanitizeSection(section: SectionInstance): SectionInstance {
     ...(section.translations && {
       translations: sanitizeValue(section.translations) as SectionInstance["translations"],
     }),
-    ...(section.style && { style: sanitizeStyle(section.style) }),
-    ...(section.breakpointStyles && { breakpointStyles: sanitizeBreakpoints(section.breakpointStyles) }),
+    ...(section.style && { style: normalizeSectionStyle(section.style) }),
+    ...(section.breakpointStyles && {
+      breakpointStyles: normalizeBreakpointStyles(section.breakpointStyles, normalizeSectionStyle),
+    }),
     ...(section.componentTree && { componentTree: section.componentTree.map(sanitizeNode) }),
   };
 }

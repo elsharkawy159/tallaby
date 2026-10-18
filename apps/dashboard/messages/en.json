@@ -2,18 +2,18 @@
   "nav": {
     "dashboard": "Dashboard",
     "products": "Products",
-    "manageProducts": "Manage Products",
+    "manageProducts": "Manage products",
     "addProducts": "Add products",
     "orders": "Orders",
     "reviews": "Reviews & Q&A",
     "promotions": "Promotions",
     "advertiseProducts": "Advertise your products",
-    "accountStatements": "Account Statements",
-    "coupons": "Coupons & Discounts",
+    "accountStatements": "Account statements",
+    "coupons": "Coupons",
     "settings": "Business & account",
     "fulfillment": "Fulfillment setup",
     "financial": "Financial Dashboard",
-    "marketing": "Marketing & Promotions",
+    "marketing": "Promotions & Discounts",
     "shipping": "Shipping & Logistics",
     "reports": "Reports & Analytics",
     "help": "Help & Support",
@@ -40,7 +40,7 @@
     "supportMessageStoreLink": "Store link: {url}",
     "supportMessageQuestion": "I have a question about: ",
     "editProduct": "Edit product",
-    "settingsGroup": "Settings",
+    "settingsGroup": "Store settings",
     "ordersGroup": "Orders",
     "deliveryTracking": "Delivery tracking",
     "riders": "Riders",
@@ -56,9 +56,9 @@
     "blog": "Blog",
     "forms": "Forms",
     "mediaLibrary": "Media library",
-    "apps": "Apps",
-    "finance": "Finance & Reports",
-    "fulfillmentShipping": "Fulfillment & Shipping",
+    "apps": "Apps & integrations",
+    "finance": "Wallet",
+    "fulfillmentShipping": "Shipping & Fulfillment",
     "storeSettings": "Store settings",
     "general": "General",
     "paymentMethods": "Payment methods",
@@ -72,7 +72,11 @@
     "primaryStore": "Main store",
     "archived": "Archived",
     "catalog": "Catalog",
-    "wallet": "Wallet"
+    "wallet": "Wallet",
+    "walletBalance": "Balance & top-ups",
+    "campaigns": "Marketing campaigns",
+    "accountHelp": "Account & help",
+    "categoriesBrands": "Categories & brands"
   },
   "common": {
     "loading": "Loading...",
@@ -613,10 +617,10 @@
   },
   "home": {
     "trial": {
-      "notStartedTitle": "Your 30-day free trial is waiting",
-      "notStarted": "No platform fee for 30 days, starting when your store goes live: your first active product or your first website publish.",
+      "notStartedTitle": "Your 7-day free trial is waiting",
+      "notStarted": "No platform fee for 7 days, counted from the day your first store was created.",
       "activeTitle": "{days, plural, one {# day} other {# days}} left in your free trial",
-      "active": "No platform fee on orders placed until {date}. After that, the fee is 2% per order, minimum EGP 5.",
+      "active": "No platform fee on orders placed until {date}. After that, the fee is a flat EGP 5 per delivered order.",
       "planLink": "Plan & usage"
     },
     "range": {
@@ -2031,6 +2035,13 @@
     "walletBalance": "Wallet Balance: {amount}",
     "walletLabel": "Wallet Balance:"
   },
+  "negativeWalletDialog": {
+    "title": "Your wallet balance is negative",
+    "description": "Tallaby takes a flat EGP 5 from your wallet for each delivered order. Top up to clear the amount you owe.",
+    "balanceLabel": "Current balance:",
+    "topUp": "Top up now",
+    "later": "Later"
+  },
   "advertise": {
     "intro": "Pick the package, choose a product, and pay with Vodafone Cash. Our team checks the transfer and starts your campaign.",
     "steps": {
@@ -2325,7 +2336,9 @@
       "whatsapp": "WhatsApp",
       "email": "Email",
       "supportedLocales": "Store languages",
-      "defaultLocale": "Default language"
+      "defaultLocale": "Default language",
+      "industry": "Industry",
+      "industryHint": "Pick the closest one; it fills the category fields below and suggests photos in the website editor."
     },
     "errors": {
       "invalidInput": "Some values are not valid. Please check the form.",
@@ -2793,9 +2806,9 @@
     "negative": "Your balance is below zero. New sales pay it back automatically, or you can top up at any time.",
     "negativeStrong": "Your balance is well below zero. Top up soon: until it recovers, ads and other paid services can't be paid from the wallet.",
     "howTitle": "How the platform fee works",
-    "how": "For each delivered order, Tallaby charges 2% of what you sold, with a minimum of EGP 5. Shipping is not included. Nothing is charged for cancelled or undelivered orders.",
+    "how": "For each delivered order, Tallaby takes a flat EGP 5 from your wallet, whatever the order total. If your balance is zero or less, it goes below zero. Your first 7 days are free. Nothing is charged for cancelled or undelivered orders.",
     "trialActive": "Free trial: {days, plural, one {# day} other {# days}} left, no fee on orders placed until {date}.",
-    "trialNotStarted": "Your 30-day free trial starts when your store goes live.",
+    "trialNotStarted": "Your 7-day free trial starts when your first store is created.",
     "entriesTitle": "Wallet activity",
     "filterLabel": "Filter activity",
     "filters": {
@@ -3008,13 +3021,26 @@
     "published": "Published (version {number}). Your store shows it now.",
     "conflict": "This website was changed in another tab or by another session. Reload to get the latest version before editing.",
     "reload": "Reload",
-    "panels": {
-      "sections": "Sections",
-      "pages": "Pages",
-      "theme": "Theme"
-    },
     "canvas": {
-      "addToCart": "Add to cart"
+      "addToCart": "Add to cart",
+      "elementBadge": "Element",
+      "sectionBadge": "Section",
+      "selectParent": "Select parent",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "duplicate": "Duplicate",
+      "delete": "Delete",
+      "insertAbove": "Add a section above",
+      "insertBelow": "Add a section below",
+      "copy": "Copy",
+      "cut": "Cut",
+      "paste": "Paste",
+      "copyStyle": "Copy style",
+      "pasteStyle": "Paste style",
+      "toggleHidden": "Hide/show on this device",
+      "dragToMove": "Drag to move",
+      "dragItemToMove": "Drag to move this item",
+      "itemTitle": "Item {position}"
     },
     "inspector": {
       "empty": "Select a section on the page to edit it.",
@@ -3029,16 +3055,20 @@
       "addItem": "Add item",
       "translating": "Editing the {locale} text. Images, links and layout are shared with the Arabic version.",
       "nothingToEdit": "This part shows your store's own details. Change them in the store settings.",
+      "partsHint": "Drag a part on the page to change its place.",
+      "resetLayout": "Reset layout",
       "chooseForm": "Choose a form",
       "formDisabled": "{name} (turned off)",
-      "manageForms": "Create and edit forms"
+      "manageForms": "Create and edit forms",
+      "styleOnly": "This element only has style settings. Open the Style tab."
     },
     "save": {
       "saved": "Saved",
       "saving": "Saving…",
       "unsaved": "Unsaved changes",
       "conflict": "Changed elsewhere",
-      "error": "Couldn't save"
+      "error": "Couldn't save",
+      "retry": "Retry"
     },
     "classic": {
       "note": "Shown exactly like your live store.",
@@ -3058,26 +3088,6 @@
         "title": "Store footer (contact and policies)"
       }
     },
-    "sections": {
-      "header": "Header",
-      "footer": "Footer",
-      "drag": "Drag to reorder",
-      "duplicate": "Duplicate",
-      "remove": "Remove",
-      "add": "Add section",
-      "cancel": "Cancel",
-      "categories": {
-        "header": "Header",
-        "hero": "Banners",
-        "commerce": "Products",
-        "content": "Content",
-        "social-proof": "Trust",
-        "blog": "Blog & content",
-        "media": "Media",
-        "contact": "Contact",
-        "footer": "Footer"
-      }
-    },
     "pages": {
       "inMenu": "In menu",
       "hidden": "Hidden",
@@ -3087,20 +3097,6 @@
       "slug": "Address",
       "slugHint": "Lowercase letters, numbers and dashes, e.g. about-us.",
       "create": "Create page"
-    },
-    "theme": {
-      "intro": "Colors and corners for your whole website. Empty colors use the Tallaby Classic look.",
-      "colors": {
-        "primary": "Main color (buttons)",
-        "background": "Background",
-        "foreground": "Text",
-        "muted": "Secondary text",
-        "border": "Lines",
-        "secondary": "Soft background",
-        "accent": "Highlight"
-      },
-      "reset": "Reset",
-      "radius": "Corner roundness"
     },
     "errors": {
       "notFound": "This store or page wasn't found.",
@@ -3121,7 +3117,423 @@
       "saveFirst": "Wait for your changes to be saved, then try again.",
       "previewUnavailable": "Preview on your store isn't available right now."
     },
-    "previewOnStore": "Preview on store"
+    "previewOnStore": "Preview on store",
+    "managePages": "Manage pages…",
+    "gridOverlay": "Column grid",
+    "rail": {
+      "label": "Editor tools",
+      "add": "Add",
+      "layers": "Layers",
+      "media": "Images",
+      "pages": "Pages",
+      "brand": "Brand",
+      "explore": "Explore",
+      "templates": "Templates",
+      "forms": "Forms"
+    },
+    "add": {
+      "tabs": {
+        "elements": "Elements",
+        "sections": "Sections",
+        "templates": "Templates"
+      },
+      "elementsTitle": "Elements",
+      "search": "Search elements…",
+      "searchSections": "Search sections…",
+      "recent": "Recent",
+      "mostUsed": "Most used",
+      "layouts": "Layouts",
+      "groups": {
+        "layout": "Layout",
+        "text": "Text",
+        "basic": "Basic"
+      },
+      "noResults": "No results.",
+      "sectionsIntro": "Drag a section onto the page, or click it to add it after the selected section.",
+      "inUse": "In use",
+      "sectionGroups": {
+        "header": "Header",
+        "hero": "Hero",
+        "products": "Products",
+        "categories": "Categories",
+        "features": "Features",
+        "about": "About",
+        "content": "Content",
+        "cta": "Call to action",
+        "faq": "FAQ",
+        "testimonials": "Testimonials",
+        "logos": "Logos",
+        "gallery": "Gallery",
+        "blog": "Blog",
+        "contact": "Contact",
+        "footer": "Footer",
+        "custom": "Custom section"
+      },
+      "categories": {
+        "header": "Headers",
+        "hero": "Hero",
+        "commerce": "Products & categories",
+        "content": "Content",
+        "social-proof": "Reviews & logos",
+        "blog": "Blog",
+        "media": "Gallery",
+        "contact": "Contact",
+        "footer": "Footers",
+        "custom": "Custom"
+      },
+      "previewSection": "Preview section",
+      "cancel": "Cancel",
+      "addSection": "Add section",
+      "useSection": "Use this section",
+      "dragHint": "Drag onto the page, or click to add after the selected section",
+      "dragElementHint": "Drag onto the page, or click to add after the selection"
+    },
+    "layers": {
+      "title": "Layers",
+      "header": "Header",
+      "footer": "Footer",
+      "everyPage": "every page",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "duplicate": "Duplicate",
+      "delete": "Delete",
+      "show": "Show on this device",
+      "hide": "Hide on this device",
+      "rename": "Double-click to rename",
+      "empty": "This page is empty. Add a section from the Add panel.",
+      "dragHandle": "Drag to reorder {name}"
+    },
+    "media": {
+      "title": "Media library",
+      "intro": "Drag an image onto an image on the page to replace it, or between elements to add it. Double-click an image to use it on the selection."
+    },
+    "sidebar": {
+      "label": "Properties",
+      "empty": "Select anything on the page to edit it.",
+      "section": "Section",
+      "element": "Element",
+      "tabs": {
+        "content": "Content",
+        "style": "Style"
+      },
+      "selectedOnly": "Selected element only",
+      "showAll": "Show all",
+      "customHint": "Add elements from the Add panel, then click any element on the page to edit it."
+    },
+    "style": {
+      "size": "Size",
+      "sizes": {
+        "xs": "Extra small",
+        "sm": "Small",
+        "md": "Medium",
+        "lg": "Large",
+        "xl": "Extra large",
+        "2xl": "2XL",
+        "3xl": "3XL",
+        "4xl": "4XL"
+      },
+      "weight": "Weight",
+      "weights": {
+        "light": "Light",
+        "normal": "Normal",
+        "medium": "Medium",
+        "bold": "Bold"
+      },
+      "italic": "Italic",
+      "underline": "Underline",
+      "align": "Align",
+      "aligns": {
+        "start": "Start",
+        "center": "Center",
+        "end": "End",
+        "justify": "Justify"
+      },
+      "lineHeight": "Line",
+      "lineHeights": {
+        "tight": "Tight",
+        "snug": "Snug",
+        "normal": "Normal",
+        "relaxed": "Relaxed"
+      },
+      "color": "Color",
+      "tokens": {
+        "foreground": "Text",
+        "muted": "Secondary text",
+        "primary": "Main color",
+        "primaryInk": "Text on main",
+        "accent": "Highlight",
+        "background": "Background",
+        "secondary": "Soft background",
+        "border": "Lines",
+        "white": "White",
+        "black": "Black",
+        "transparent": "Transparent"
+      },
+      "direction": "Direction",
+      "directions": {
+        "column": "Column",
+        "row": "Row"
+      },
+      "columns": "Columns",
+      "gap": "Gap",
+      "alignItems": "Align",
+      "alignItemsOptions": {
+        "start": "Start",
+        "center": "Center",
+        "end": "End",
+        "stretch": "Stretch"
+      },
+      "justify": "Justify",
+      "justifyOptions": {
+        "start": "Start",
+        "center": "Center",
+        "end": "End",
+        "between": "Spread"
+      },
+      "padding": "Padding",
+      "margin": "Margin",
+      "mixed": "Mixed",
+      "background": "Fill",
+      "ratio": "Ratio",
+      "ratios": {
+        "square": "1:1",
+        "landscape": "4:3",
+        "wide": "16:9",
+        "portrait": "3:4"
+      },
+      "fit": "Fit",
+      "fits": {
+        "cover": "Cover",
+        "contain": "Contain"
+      },
+      "radius": "Radius",
+      "border": "Border",
+      "borderColor": "Border color",
+      "shadow": "Shadow",
+      "shadows": {
+        "none": "None",
+        "sm": "Soft",
+        "md": "Medium",
+        "lg": "Strong"
+      },
+      "opacity": "Opacity",
+      "width": "Width",
+      "maxWidth": "Max width",
+      "minHeight": "Min height",
+      "sides": {
+        "top": "top",
+        "end": "end",
+        "bottom": "bottom",
+        "start": "start"
+      },
+      "editingDesktop": "Editing desktop styles (the base for every device).",
+      "editingDevice": "Editing {device} styles only.",
+      "devices": {
+        "desktop": "desktop",
+        "tablet": "tablet",
+        "mobile": "phone"
+      },
+      "resetAll": "Clear",
+      "resetDevice": "Use desktop",
+      "groups": {
+        "typography": "Typography",
+        "layout": "Layout",
+        "image": "Image",
+        "spacing": "Spacing",
+        "size": "Size",
+        "box": "Fill and border",
+        "visibility": "Visibility"
+      },
+      "hideOn": "Hide on {device}",
+      "hideHint": "It stays visible on the other devices."
+    },
+    "popover": {
+      "kinds": {
+        "section": "Section",
+        "text": "Text",
+        "button": "Button",
+        "image": "Image",
+        "container": "Container",
+        "icon": "Icon",
+        "generic": "Element"
+      },
+      "drag": "Drag to move the panel",
+      "duplicate": "Duplicate",
+      "show": "Show on this device",
+      "hide": "Hide on this device",
+      "delete": "Delete",
+      "close": "Close",
+      "variant": "Style",
+      "variants": {
+        "solid": "Solid",
+        "outline": "Outline",
+        "light": "Light"
+      },
+      "replaceImage": "Replace image",
+      "deviceNote": "Changes here apply to {device} only.",
+      "devices": {
+        "desktop": "desktop",
+        "tablet": "tablet",
+        "mobile": "phone"
+      }
+    },
+    "quickInsert": {
+      "title": "Quick insert",
+      "description": "Search for a section, layout or element to add.",
+      "placeholder": "What do you want to add?"
+    },
+    "shortcuts": {
+      "title": "Keyboard shortcuts",
+      "description": "Shortcuts don't run while you type in a field.",
+      "actions": {
+        "undo": "Undo",
+        "redo": "Redo",
+        "copy": "Copy",
+        "cut": "Cut",
+        "paste": "Paste",
+        "duplicate": "Duplicate",
+        "delete": "Delete",
+        "quickInsert": "Quick insert",
+        "save": "Save now",
+        "deselect": "Deselect / select parent",
+        "siblings": "Previous / next item",
+        "move": "Move up / down",
+        "parentChild": "Parent / child",
+        "help": "This list"
+      }
+    },
+    "brand": {
+      "title": "Brand",
+      "description": "Colors, fonts and layout for your whole website.",
+      "reset": "Back to Tallaby Classic",
+      "themes": "Themes",
+      "sample": "Aa",
+      "headingFont": "Heading font",
+      "bodyFont": "Text font",
+      "classicFont": "Classic (Readex Pro)",
+      "identityHint": "Your logo, favicon and cover image are on the Design system page. They apply to your store right away.",
+      "openDesign": "Logo, favicon and cover",
+      "draftNote": "Changes save automatically as a draft, the same as the Design system page. They go live when you publish.",
+      "resetTitle": "Go back to Tallaby Classic?",
+      "resetDescription": "Colors, fonts, corners, page width and spacing go back to the Classic look. You can undo this.",
+      "resetAction": "Reset",
+      "cancel": "Cancel"
+    },
+    "templates": {
+      "title": "Templates",
+      "description": "Ready-made websites. Click one to preview it with your products.",
+      "empty": "No templates yet.",
+      "current": "Current",
+      "soon": "Soon",
+      "pagesCount": "{count, plural, one {# page} other {# pages}}",
+      "pages": "Template pages",
+      "desktop": "Desktop",
+      "mobile": "Phone",
+      "loading": "Loading preview",
+      "previewFailed": "This preview couldn't be loaded. Try again.",
+      "pagesLabel": "Pages",
+      "sectionsLabel": "Sections",
+      "versionLabel": "Version",
+      "look": "Look",
+      "pagesAndSections": "Pages and sections",
+      "home": "Home",
+      "sectionsCount": "{count, plural, one {# section} other {# sections}}",
+      "saveFirst": "Your latest changes couldn't be saved, so the template wasn't applied. Try again."
+    },
+    "explore": {
+      "title": "Explore photos",
+      "intro": "Free photos from Pexels for your website.",
+      "forIndustry": "Free photos from Pexels picked for {industry}.",
+      "search": "Search photos in English",
+      "setIndustry": "Choose your store's industry for better suggestions",
+      "howTo": "Drag a photo onto an image to replace it or between elements to add it, or click it to use it on the selected image.",
+      "readOnly": "This store is archived, so photos can't be added.",
+      "noResults": "No photos found. Try another word.",
+      "use": "Use",
+      "photoBy": "Photo by {name} on Pexels",
+      "importing": "Adding photo",
+      "loading": "Loading photos",
+      "more": "Load more",
+      "attribution": "Photos provided by Pexels",
+      "imported": "Photo added to your images.",
+      "errors": {
+        "notFound": "This photo isn't available anymore.",
+        "readOnly": "This store is archived, so photos can't be added.",
+        "unavailable": "Photo search isn't set up yet. Contact support.",
+        "rateLimited": "Too many searches at once. Wait a moment and try again.",
+        "invalidInput": "Type something to search.",
+        "tooLarge": "This photo is too large to add.",
+        "tooMany": "Your image library is full. Delete some images first.",
+        "generic": "Something went wrong. Try again."
+      }
+    },
+    "forms": {
+      "title": "Forms",
+      "description": "Your store's forms. Messages go to your inbox.",
+      "refresh": "Refresh forms",
+      "new": "New",
+      "create": "Create a contact form",
+      "search": "Search forms",
+      "emptyTitle": "No forms yet",
+      "emptyText": "Create a contact form, then add it to this page.",
+      "noMatch": "No forms match your search.",
+      "fields": "{count, plural, one {# field} other {# fields}}",
+      "submissions": "{count, plural, one {# message} other {# messages}}",
+      "newSubmissions": "{count, plural, one {# new} other {# new}}",
+      "edit": "Edit {name}",
+      "disabled": "Disabled",
+      "onPage": "On this page",
+      "add": "Add to page",
+      "added": "“{name}” added to the page.",
+      "addFailed": "This page can't take more sections.",
+      "createFailed": "The form couldn't be created. Try again.",
+      "loadFailed": "Your forms couldn't be loaded. Try again.",
+      "hint": "Edit a form's fields on the Forms page; this list refreshes when you come back."
+    },
+    "dnd": {
+      "instructions": "To reorder a layer, focus its grip and press Space or Enter, move it with the arrow keys, then press Space or Enter to drop it or Escape to cancel. Elements, sections and photos are added with Enter or a click, or by dragging them onto the page.",
+      "announce": {
+        "start": "Picked up {label}.",
+        "drop": "Dropped {label}.",
+        "cancel": "Cancelled. {label} was not moved.",
+        "noTarget": "{label} is not over the page.",
+        "insertSection": "Will be added as section {position}.",
+        "moveSection": "Will move to position {position}.",
+        "newSection": "Will be added in a new section at position {position}.",
+        "intoSection": "Will be added at position {position} here.",
+        "replaceImage": "Will replace this image.",
+        "movePart": "Will move to position {position} here.",
+        "invalid": "Can't be dropped here.",
+        "noop": "Already here.",
+        "layerOver": "Position {position} of {total}."
+      },
+      "newSection": "New section",
+      "replaceImage": "Replace",
+      "limit": "This page already has the most sections it can hold.",
+      "unsupported": "Can't drop this here",
+      "targetGone": "The page changed before the photo was ready, so it wasn't placed. It's saved in your images."
+    },
+    "pageTemplates": {
+      "scope": {
+        "page": "This page",
+        "site": "Whole site"
+      },
+      "forPage": "Designs for “{name}”",
+      "emptyTitle": "No template has a design for this page yet",
+      "emptyBody": "Templates are matched by the page address. You can still pick any template page, or start from blank.",
+      "showAll": "Show all page designs",
+      "showMatching": "Show only designs for this page",
+      "startBlank": "Start from blank",
+      "more": "+{count} more",
+      "sectionsCount": "{count, plural, one {# section} other {# sections}}",
+      "previewNote": "Shown with your store's colours, fonts, header and footer. Only this page changes.",
+      "replaces": "This replaces the {count, plural, one {# section} other {# sections}} on this page. You can undo it.",
+      "onlyThisPage": "Only this page changes. Your other pages, header, footer and brand stay as they are.",
+      "apply": "Apply to this page",
+      "cancel": "Cancel",
+      "applied": "Design applied to “{name}”.",
+      "undo": "Undo"
+    }
   },
   "websiteDesign": {
     "title": "Design system",
@@ -3775,6 +4187,70 @@
       "nothingToUndo": "There's no template change to undo.",
       "rateLimited": "Too many changes at once. Wait a moment and try again.",
       "generic": "Something went wrong. Try again."
+    }
+  },
+  "categoriesBrands": {
+    "title": "Categories & brands",
+    "subtitle": "Your own lists for organising products. Search Tallaby's ready-made list to add one in a click, or add your own. Other sellers never see your lists.",
+    "tabs": {
+      "categories": "Categories",
+      "brands": "Brands"
+    },
+    "categories": {
+      "title": "Your categories",
+      "description": "Group your products the way your customers shop.",
+      "add": "Add category",
+      "addHint": "Type to search Tallaby's categories, or create your own.",
+      "searchPlaceholder": "Search categories, e.g. Shoes",
+      "filter": "Filter your categories",
+      "empty": "You have no categories yet. Add some from Tallaby's list or create your own."
+    },
+    "brands": {
+      "title": "Your brands",
+      "description": "The brands you sell, including your own label.",
+      "add": "Add brand",
+      "addHint": "Type to search Tallaby's brands, or create your own.",
+      "searchPlaceholder": "Search brands, e.g. Nike",
+      "filter": "Filter your brands",
+      "empty": "You have no brands yet. Add some from Tallaby's list or create your own."
+    },
+    "productCount": "{count, plural, =0 {No products} one {1 product} other {# products}}",
+    "fromPack": "From Tallaby",
+    "inYourList": "Added",
+    "typeToSearch": "Start typing to see suggestions.",
+    "noPackMatches": "Nothing in Tallaby's list matches.",
+    "noMatches": "Nothing matches.",
+    "createOwn": "Create “{name}”",
+    "nameEn": "Name",
+    "nameAr": "Arabic name (optional)",
+    "back": "Back",
+    "save": "Save",
+    "cancel": "Cancel",
+    "rename": "Rename",
+    "renameHint": "The new name shows everywhere this item is used.",
+    "delete": "Delete",
+    "deleteTitle": "Delete “{name}”?",
+    "deleteBody": "{count, plural, =0 {No products use it.} one {1 product uses it; the product stays, just without this.} other {# products use it; they stay, just without this.}}",
+    "added": "“{name}” added",
+    "saved": "Saved",
+    "deleted": "Deleted",
+    "errors": {
+      "invalidInput": "Check the name and try again.",
+      "duplicate": "That's already in your list.",
+      "limit": "You can keep up to {max} items in each list.",
+      "notFound": "We couldn't find that item. Refresh and try again.",
+      "readOnly": "Your account can't make changes right now.",
+      "generic": "Something went wrong. Try again."
+    },
+    "productForm": {
+      "category": "My category",
+      "brand": "My brand",
+      "optional": "Optional",
+      "none": "None",
+      "emptyList": "Your list is empty",
+      "hint": "From your own lists, for grouping products in your store.",
+      "manage": "Manage lists",
+      "linkFailed": "The product was saved, but your category or brand wasn't. Edit the product to set it again."
     }
   }
 }

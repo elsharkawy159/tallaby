@@ -4,6 +4,7 @@ import { getPublicStoreForms } from "@workspace/lib/store-forms/server";
 import { storeUrl } from "@workspace/lib/storefront";
 import type { SiteConfig } from "@workspace/store-sections";
 import {
+  PageStyles,
   SectionRenderer,
   collectCatalogQueries,
   collectFormIds,
@@ -120,7 +121,7 @@ async function buildContext(
     content: { items: contentItems },
     formatDate: (iso) => formatContentDate(iso, locale),
     Link: ({ href, className, children, ...rest }) => (
-      <Link href={href} className={className} aria-label={rest["aria-label"]}>
+      <Link href={href} className={className} aria-label={rest["aria-label"]} data-part={rest["data-part"]}>
         {children}
       </Link>
     ),
@@ -151,7 +152,12 @@ export async function StoreSiteChrome({
   const instance = part === "header" ? site.header : site.footer;
   if (!instance) return null;
   const ctx = await buildContext(store, site, locale, [instance], null);
-  return <SectionRenderer instance={instance} registry={storeSectionRegistry} ctx={ctx} defaultLocale={site.settings.defaultLocale} />;
+  return (
+    <>
+      <PageStyles sections={[instance]} />
+      <SectionRenderer instance={instance} registry={storeSectionRegistry} ctx={ctx} defaultLocale={site.settings.defaultLocale} />
+    </>
+  );
 }
 
 /** One page of a published site (its sections only; chrome is in the layout). */
@@ -172,6 +178,8 @@ export async function StoreSitePage({
   // The storefront layout owns <main>, so the sections render directly.
   return (
     <>
+      {/* Section, part and element styles from the editor (P4B-01). */}
+      <PageStyles sections={page.content.sections} />
       {page.content.sections.map((instance) => (
         <SectionRenderer key={instance.id} instance={instance} registry={storeSectionRegistry} ctx={ctx} defaultLocale={site.settings.defaultLocale} />
       ))}
