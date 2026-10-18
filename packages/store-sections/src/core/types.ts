@@ -32,20 +32,37 @@ export type PropFieldType =
   /** One category of this store's catalog. */
   | "category"
   /** One form of this store (`store_forms`, P4-10 picker). */
-  | "form";
+  | "form"
+  /** Several categories of this store's catalog, ordered. */
+  | "categories"
+  /** One coupon of this seller (campaign banners). */
+  | "coupon"
+  /** A date and time (ISO), e.g. a campaign end. */
+  | "datetime"
+  /** A visual picker of layouts or card designs; options carry a `diagram` key. */
+  | "layout";
+
+/** Small editor diagrams for `layout` options (drawn by the editor). */
+export type LayoutDiagram = string;
 
 export interface PropDefinition {
   key: string;
   label: Localized;
   type: PropFieldType;
   placeholder?: Localized;
-  options?: { value: string; label: Localized }[];
+  options?: { value: string; label: Localized; diagram?: LayoutDiagram }[];
   min?: number;
   max?: number;
   maxLength?: number;
   /** Text fields shown per locale (stored in `translations[locale]` for non-default locales). */
   translatable?: boolean;
-  group?: "content" | "layout" | "appearance";
+  /**
+   * `data` fields (source, filters, picks, sort, limit) sit apart from the
+   * design fields in the inspector, so changing one never resets the other.
+   */
+  group?: "content" | "layout" | "appearance" | "data";
+  /** Show the field only while another prop has one of these values (e.g. `categoryId` when `source` is `category`). */
+  showWhen?: { key: string; equals: readonly (string | boolean)[] };
 }
 
 export interface ItemCollectionDefinition {
@@ -72,16 +89,38 @@ export const SECTION_CATEGORIES = [
 ] as const;
 export type SectionCategory = (typeof SECTION_CATEGORIES)[number];
 
-/** What a commerce section needs from the catalog; resolved by the host app (P4-07, P5-02). */
+/**
+ * Products a section can show. `best-sellers` and `trending` rank by units
+ * sold in this store's orders (90 and 14 days); `discounted` keeps products
+ * whose list price is above the selling price. Never random.
+ */
+export const PRODUCT_SOURCES = ["all", "newest", "featured", "category", "selected", "best-sellers", "trending", "discounted"] as const;
+export type ProductSource = (typeof PRODUCT_SOURCES)[number];
+export const PRODUCT_SORTS = ["default", "newest", "price-asc", "price-desc", "rating"] as const;
+export type ProductSort = (typeof PRODUCT_SORTS)[number];
+
+/** What a commerce section needs from the catalog; resolved by the host app (P4-07, P5-02). Hosts ignore kinds they don't know. */
 export type CatalogQuery =
   | {
       kind: "products";
-      source: "all" | "newest" | "featured" | "category" | "selected";
+      source: ProductSource;
       categoryId?: string | null;
       productIds?: string[];
+      /** Order after the source has picked; `default` keeps the source's own order. */
+      sort?: ProductSort;
       limit: number;
     }
-  | { kind: "categories"; limit: number };
+  | { kind: "categories"; limit: number }
+  /** The seller's brand list (`seller_product_brands`, 0068). */
+  | { kind: "brands"; limit: number }
+  /** Approved customer reviews of this store's products, newest first. */
+  | { kind: "reviews"; limit: number; minRating?: number }
+  /** One coupon of this seller, for a campaign banner. Inactive or expired gives nothing. */
+  | { kind: "coupon"; couponId: string };
+
+/** Store data a section can depend on; drives the editor-only empty states. */
+export const DATA_NEEDS = ["products", "categories", "brands", "reviews", "promotions", "articles", "storeInfo", "navigation", "forms"] as const;
+export type DataNeed = (typeof DATA_NEEDS)[number];
 
 /**
  * Published CMS items a content section needs (blog posts are the system
@@ -129,6 +168,37 @@ export type CategorySummary = {
   productCount?: number;
 };
 
+export type BrandSummary = { id: string; name: string; logo: string | null; href: string | null };
+
+/** A real, approved customer review. `verified` only when the review row says so. */
+export type ReviewSummary = {
+  id: string;
+  rating: number;
+  title: string | null;
+  body: string | null;
+  authorName: string | null;
+  verified: boolean;
+  productTitle: string | null;
+  productHref: string | null;
+  /** ISO date. */
+  createdAt: string | null;
+};
+
+/** Aggregate of this store's approved reviews. */
+export type ReviewStats = { average: number; count: number; distribution: Record<"1" | "2" | "3" | "4" | "5", number> };
+
+/** An active coupon of this seller. */
+export type CouponSummary = {
+  id: string;
+  code: string;
+  discountType: "percentage" | "fixed";
+  discountValue: number;
+  /** ISO date; null when the coupon has no end. */
+  endsAt: string | null;
+};
+
+export type PaymentMethodSummary = { key: string; label: string };
+
 export type StoreProfile = {
   name: string;
   description?: string | null;
@@ -140,6 +210,22 @@ export type StoreProfile = {
   social?: { platform: string; url: string }[];
   /** Which policy pages exist (links are built by the host). */
   policies?: { key: "return" | "shipping" | "privacy" | "terms"; href: string }[];
+  /** Payment methods this store accepts, from its settings. */
+  paymentMethods?: PaymentMethodSummary[];
+};
+
+/**
+ * Editor-only data state (never set on the storefront). Lets dynamic
+ * sections tell "no records" from "still loading" and "request failed", and
+ * lets the host draw the empty-state action (a link to its own management
+ * page, or an editor command), so no dashboard route lives in this package.
+ */
+export type EditorDataContext = {
+  state: "ready" | "refreshing" | "error";
+  /** The primary action of an empty state; `label` is the package's own copy. */
+  renderAction: (need: DataNeed, label: string) => ReactNode;
+  /** Retries loading store data after an error. */
+  renderRetry: (label: string) => ReactNode;
 };
 
 export type NavPage = { name: string; href: string; isHome: boolean };
@@ -180,8 +266,28 @@ export interface RenderContext {
   dir: "rtl" | "ltr";
   store: StoreProfile;
   pages: NavPage[];
-  /** Products per section instance id, and the store's categories. */
-  catalog: { products: Record<string, ProductSummary[]>; categories: CategorySummary[] };
+  /**
+   * Products per section instance id, and the store's categories. The other
+   * lists are optional so older hosts keep compiling; a missing list means
+   * "not resolved", which sections treat like an empty one.
+   */
+  catalog: {
+    products: Record<string, ProductSummary[]>;
+    categories: CategorySummary[];
+    brands?: BrandSummary[];
+    /** Reviews per section instance id. */
+    reviews?: Record<string, ReviewSummary[]>;
+    reviewStats?: ReviewStats | null;
+    /** Coupons by coupon id. */
+    coupons?: Record<string, CouponSummary>;
+    /**
+     * Editor only: how many records the store has per need, so an empty
+     * section can tell "no products at all" from "none match this filter".
+     */
+    counts?: Partial<Record<DataNeed, number>>;
+  };
+  /** Editor only: data state and empty-state actions. */
+  editorData?: EditorDataContext;
   /** Published blog/CMS items per section instance id (from `contentQuery`). */
   content?: { items: Record<string, ContentItemSummary[]> };
   /** Formats an ISO date for the page locale (defaults to the date part). */
@@ -193,6 +299,12 @@ export interface RenderContext {
   /** Host-provided interactive pieces (the storefront cart, or editor placeholders). */
   renderCartButton?: () => ReactNode;
   renderAddToCart?: (product: ProductSummary) => ReactNode;
+  /** Wishlist toggle, when the host supports it on this store. */
+  renderWishlistButton?: (product: ProductSummary) => ReactNode;
+  /** Customer account link or menu, when the host supports it. */
+  renderAccountButton?: () => ReactNode;
+  /** A live countdown to `endsAt` (ISO). Without it, sections print the end date. */
+  renderCountdown?: (endsAt: string, instanceId: string) => ReactNode;
   /** Forms of this store by id, resolved server-side by the host (P4-10). Foreign ids are never present. */
   forms?: Record<string, PublicStoreForm>;
   /** The interactive storefront form; without it (editor canvas) a static preview is drawn. */

@@ -7,7 +7,7 @@
 import sanitizeHtml from "sanitize-html";
 import type { ComponentNode, SectionInstance, SiteConfig } from "./schema";
 import { hasDangerousScheme } from "./url";
-import { normalizeBreakpointStyles, normalizeSectionStyle, normalizeStyle } from "../elements/style";
+import { normalizeBreakpointStyles, normalizeSectionBreakpointStyle, normalizeSectionStyle, normalizeStyle } from "../elements/style";
 
 const RICH_TEXT_OPTIONS: sanitizeHtml.IOptions = {
   allowedTags: [
@@ -145,7 +145,7 @@ function sanitizeSection(section: SectionInstance): SectionInstance {
     }),
     ...(section.style && { style: normalizeSectionStyle(section.style) }),
     ...(section.breakpointStyles && {
-      breakpointStyles: normalizeBreakpointStyles(section.breakpointStyles, normalizeSectionStyle),
+      breakpointStyles: normalizeBreakpointStyles(section.breakpointStyles, normalizeSectionBreakpointStyle),
     }),
     ...(section.componentTree && { componentTree: section.componentTree.map(sanitizeNode) }),
   };

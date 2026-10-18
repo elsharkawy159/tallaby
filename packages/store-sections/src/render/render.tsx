@@ -7,7 +7,8 @@ import { resolveSectionForLocale } from "../core/locale";
 import { applyMigrations, resolveSectionProps, type SectionRegistry } from "../core/registry";
 import { SITE_ROOT_CLASS, designSystemToCss, type ThemeInput } from "../core/theme";
 import type { RenderContext } from "../core/types";
-import { collectPageCss, escapeStyleBlock, type StyleCssMode } from "../elements/style";
+import { shellLayout } from "../elements/shell";
+import { collectPageCss, escapeStyleBlock, normalizeSectionStyle, type StyleCssMode } from "../elements/style";
 
 export function SectionRenderer({
   instance,
@@ -27,9 +28,26 @@ export function SectionRenderer({
   const localizedInstance = resolveSectionForLocale(migrated, ctx.locale, defaultLocale);
   const props = resolveSectionProps(definition, localizedInstance.props);
   const Component = definition.Component;
+  const content = <Component instance={localizedInstance} props={props} ctx={ctx} />;
+  const shell = shellLayout(normalizeSectionStyle(instance.style).shell, (src) => ctx.imageUrl(src));
+  // No shell: the wrapper renders exactly as before the shell existed (P4B-05).
+  if (!shell) {
+    return (
+      <div data-section-id={instance.id} data-section-type={instance.sectionId}>
+        {content}
+      </div>
+    );
+  }
   return (
-    <div data-section-id={instance.id} data-section-type={instance.sectionId}>
-      <Component instance={localizedInstance} props={props} ctx={ctx} />
+    <div data-section-id={instance.id} data-section-type={instance.sectionId} {...shell.outer}>
+      {shell.bgImage && (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element -- shared by both apps; no next/image here */}
+          <img src={shell.bgImage} alt="" aria-hidden className="pointer-events-none absolute inset-0 -z-10 size-full object-cover" loading="lazy" decoding="async" />
+          {shell.overlay > 0 && <div aria-hidden className="absolute inset-0 -z-10" style={{ background: `rgb(0 0 0 / ${shell.overlay}%)` }} />}
+        </>
+      )}
+      {shell.inner ? <div style={shell.inner}>{content}</div> : content}
     </div>
   );
 }

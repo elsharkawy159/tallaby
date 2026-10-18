@@ -10,6 +10,7 @@
  */
 import type { ComponentNode, SectionInstance } from "../config/schema";
 import { SITE_ROOT_CLASS } from "../core/theme";
+import { normalizeShell, shellAnimationCss, type SectionShellStyle } from "./shell";
 
 export const STYLE_BREAKPOINTS = ["tablet", "mobile"] as const;
 export type StyleBreakpoint = (typeof STYLE_BREAKPOINTS)[number];
@@ -183,11 +184,16 @@ export function normalizeStyle(input: unknown): StyleValues {
   return out as StyleValues;
 }
 
-/** A section's own style: whitelisted keys plus `parts` (styles of its editable parts). */
-export type SectionStyle = StyleValues & { parts?: Record<string, StyleValues> };
+/**
+ * A section's own style: whitelisted keys, `parts` (styles of its editable
+ * parts) and `shell` (the shared section frame, `./shell.ts`; desktop only).
+ */
+export type SectionStyle = StyleValues & { parts?: Record<string, StyleValues>; shell?: SectionShellStyle };
 
 export function normalizeSectionStyle(input: unknown): SectionStyle {
   const out: SectionStyle = normalizeStyle(input);
+  const shell = normalizeShell(input && typeof input === "object" ? (input as { shell?: unknown }).shell : undefined);
+  if (shell) out.shell = shell;
   const parts = input && typeof input === "object" ? (input as { parts?: unknown }).parts : undefined;
   if (parts && typeof parts === "object" && !Array.isArray(parts)) {
     const clean: Record<string, StyleValues> = {};
@@ -199,6 +205,12 @@ export function normalizeSectionStyle(input: unknown): SectionStyle {
     if (Object.keys(clean).length) out.parts = clean;
   }
   return out;
+}
+
+/** A section's per-device style: like `normalizeSectionStyle`, without the shell (it has no device overrides). */
+export function normalizeSectionBreakpointStyle(input: unknown): SectionStyle {
+  const { shell: _shell, ...rest } = normalizeSectionStyle(input);
+  return rest;
 }
 
 /** Keeps only the known breakpoints, each normalized with `normalize`. */
@@ -309,8 +321,8 @@ function collectNodes(target: Map<string, Responsive>, sectionId: string, nodes:
 function collectSection(target: Map<string, Responsive>, instance: SectionInstance) {
   if (!ID_RE.test(instance.id)) return;
   const own = normalizeSectionStyle(instance.style);
-  const bps = normalizeBreakpointStyles(instance.breakpointStyles, normalizeSectionStyle);
-  const { parts, ...sectionStyle } = own;
+  const bps = normalizeBreakpointStyles(instance.breakpointStyles, normalizeSectionBreakpointStyle);
+  const { parts, shell: _shell, ...sectionStyle } = own;
   const sectionSelector = `.${SITE_ROOT_CLASS} [data-section-id="${instance.id}"]`;
   collect(target, sectionSelector, "base", sectionStyle);
   for (const [key, style] of Object.entries(parts ?? {})) {
@@ -335,7 +347,8 @@ function collectSection(target: Map<string, Responsive>, instance: SectionInstan
 export function collectPageCss(sections: readonly (SectionInstance | null | undefined)[], mode: StyleCssMode = "public"): string {
   const target = new Map<string, Responsive>();
   for (const instance of sections) if (instance) collectSection(target, instance);
-  if (!target.size) return "";
+  const animated = mode === "public" ? collectAnimations(sections) : [];
+  if (!target.size) return shellAnimationCss(animated);
   const base: string[] = [];
   const media: Record<StyleBreakpoint, string[]> = { tablet: [], mobile: [] };
   const hidden: Record<"base" | StyleBreakpoint, string[]> = { base: [], tablet: [], mobile: [] };
@@ -358,7 +371,17 @@ export function collectPageCss(sections: readonly (SectionInstance | null | unde
     const rules = hidden[device].join("");
     if (rules) css += `@media ${DEVICE_RANGE[device]}{${rules}}`;
   }
-  return css;
+  return css + shellAnimationCss(animated);
+}
+
+function collectAnimations(sections: readonly (SectionInstance | null | undefined)[]) {
+  const out: { selector: string; animation: "fade" | "rise" }[] = [];
+  for (const instance of sections) {
+    if (!instance || !ID_RE.test(instance.id)) continue;
+    const animation = normalizeSectionStyle(instance.style).shell?.animation;
+    if (animation && animation !== "none") out.push({ selector: `.${SITE_ROOT_CLASS} [data-section-id="${instance.id}"]`, animation });
+  }
+  return out;
 }
 
 /** Escapes a CSS block for a `<style>` element (same rule as `SiteTheme`). */
