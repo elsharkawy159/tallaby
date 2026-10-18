@@ -59,11 +59,11 @@ export const INTEGRATIONS: Record<IntegrationProvider, IntegrationDefinition> = 
     idField: "containerId",
     warnsAboutSellerScripts: true,
   },
-  meta_capi: { provider: "meta_capi", category: "tracking", kind: "credentials", availability: "soon" },
+  meta_capi: { provider: "meta_capi", category: "tracking", kind: "credentials", availability: "available" },
   tiktok_pixel: { provider: "tiktok_pixel", category: "tracking", kind: "identifier", availability: "soon", idField: "pixelId" },
   snapchat_pixel: { provider: "snapchat_pixel", category: "tracking", kind: "identifier", availability: "soon", idField: "pixelId" },
-  google_sheets: { provider: "google_sheets", category: "export", kind: "oauth", availability: "soon" },
-  shopify_import: { provider: "shopify_import", category: "import", kind: "credentials", availability: "soon" },
+  google_sheets: { provider: "google_sheets", category: "export", kind: "oauth", availability: "available" },
+  shopify_import: { provider: "shopify_import", category: "import", kind: "credentials", availability: "available" },
 };
 
 export function isIntegrationProvider(value: unknown): value is IntegrationProvider {

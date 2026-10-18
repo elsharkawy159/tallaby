@@ -5,6 +5,7 @@ import Script from "next/script";
 import { useTranslations } from "next-intl";
 import { isValidIntegrationId, type StorefrontTrackingConfig } from "@workspace/lib/integrations";
 import { markStoreTrackingReady } from "@/lib/storefront-events.client";
+import { STORE_TRACKING_CONSENT_COOKIE } from "@/lib/storefront-consent";
 
 /**
  * The store's own tracking apps (PLAN.md §9, P7-03), loaded only after the
@@ -27,12 +28,23 @@ function readConsent(): Consent {
   }
 }
 
+/**
+ * Mirrors the choice into a host-only cookie so the server follows it too
+ * (the store's Meta CAPI Purchase, P7-05). No Domain attribute: it never
+ * reaches the marketplace or another store's host.
+ */
+function mirrorConsentCookie(value: "granted" | "denied") {
+  const secure = window.location.protocol === "https:" ? "; Secure" : "";
+  document.cookie = `${STORE_TRACKING_CONSENT_COOKIE}=${value}; Path=/; Max-Age=31536000; SameSite=Lax${secure}`;
+}
+
 function writeConsent(value: "granted" | "denied") {
   try {
     window.localStorage.setItem(CONSENT_KEY, value);
   } catch {
     // Private mode: the choice lasts for this page only.
   }
+  mirrorConsentCookie(value);
   window.dispatchEvent(new Event(CONSENT_EVENT));
 }
 
@@ -54,6 +66,13 @@ export function SellerTracking({ config }: { config: StorefrontTrackingConfig })
   const ga4Id = isValidIntegrationId("google_analytics", config.ga4MeasurementId) ? config.ga4MeasurementId : null;
   const gtmId = isValidIntegrationId("google_tag_manager", config.gtmContainerId) ? config.gtmContainerId : null;
   const any = Boolean(pixelId || ga4Id || gtmId);
+
+  // Choices made before the cookie existed (localStorage only) are mirrored once.
+  useEffect(() => {
+    if ((consent === "granted" || consent === "denied") && !document.cookie.includes(`${STORE_TRACKING_CONSENT_COOKIE}=${consent}`)) {
+      mirrorConsentCookie(consent);
+    }
+  }, [consent]);
 
   // Once the snippets have defined their queues (fbq / gtag / dataLayer),
   // release the commerce events that fired before (P7-04).

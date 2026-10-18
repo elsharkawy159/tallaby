@@ -6,18 +6,24 @@ import {
   type IntegrationStatus,
   type StorefrontTrackingConfig,
 } from "./registry";
-import { readIntegrationId, validateIdentifierConfig } from "./validate";
+import {
+  readIntegrationId,
+  readPublicDetails,
+  validateIdentifierConfig,
+  type IntegrationPublicDetails,
+} from "./validate";
 
 /**
  * Store apps data access (PLAN.md §9.1, P7-02). Server-only; every function
  * takes the session seller and an explicit store id and checks the store
- * belongs to that seller. Credentials are never selected here.
+ * belongs to that seller. Credentials are never selected here: summaries only
+ * say whether a secret is saved.
  */
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
-type Queryable = Tx | typeof db;
+export type Queryable = Tx | typeof db;
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+export const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export type IntegrationResult<T, E extends string> = { success: true; data: T } | { success: false; error: E };
 
@@ -26,12 +32,54 @@ export type StoreIntegrationSummary = {
   status: IntegrationStatus;
   /** The public identifier (pixel id, measurement id, container id), when valid. */
   identifier: string | null;
+  /** True when an encrypted secret is stored (the UI shows "token saved", never the token). */
+  credentialsSaved: boolean;
+  /** Whitelisted public config (shop domain, spreadsheet id, …). */
+  details: IntegrationPublicDetails;
   lastError: string | null;
+  lastSyncedAt: string | null;
   connectedAt: string | null;
   updatedAt: string;
 };
 
-async function ownStoreStatus(q: Queryable, sellerId: string, storeId: string, lock = false) {
+/** The columns a summary is built from; never `credentials_encrypted` itself. */
+export const summaryColumns = {
+  provider: storeIntegrations.provider,
+  status: storeIntegrations.status,
+  config: storeIntegrations.config,
+  credentialsSaved: sql<boolean>`(${storeIntegrations.credentialsEncrypted} IS NOT NULL)`,
+  lastError: storeIntegrations.lastError,
+  lastSyncedAt: storeIntegrations.lastSyncedAt,
+  connectedAt: storeIntegrations.connectedAt,
+  updatedAt: storeIntegrations.updatedAt,
+};
+
+type SummaryRow = {
+  provider: string;
+  status: string;
+  config: unknown;
+  credentialsSaved: boolean;
+  lastError: string | null;
+  lastSyncedAt: string | null;
+  connectedAt: string | null;
+  updatedAt: string;
+};
+
+export function toIntegrationSummary(provider: IntegrationProvider, row: SummaryRow): StoreIntegrationSummary {
+  return {
+    provider,
+    status: row.status as IntegrationStatus,
+    identifier: readIntegrationId(provider, row.config),
+    credentialsSaved: Boolean(row.credentialsSaved),
+    details: readPublicDetails(provider, row.config),
+    lastError: row.lastError,
+    lastSyncedAt: row.lastSyncedAt,
+    connectedAt: row.connectedAt,
+    updatedAt: row.updatedAt,
+  };
+}
+
+export async function ownStoreStatus(q: Queryable, sellerId: string, storeId: string, lock = false) {
   const query = q
     .select({ status: stores.status })
     .from(stores)
@@ -50,31 +98,11 @@ export async function listStoreIntegrations(
   if (!(await ownStoreStatus(q, sellerId, storeId))) return null;
 
   const rows = await q
-    .select({
-      provider: storeIntegrations.provider,
-      status: storeIntegrations.status,
-      config: storeIntegrations.config,
-      lastError: storeIntegrations.lastError,
-      connectedAt: storeIntegrations.connectedAt,
-      updatedAt: storeIntegrations.updatedAt,
-    })
+    .select(summaryColumns)
     .from(storeIntegrations)
     .where(and(eq(storeIntegrations.storeId, storeId), eq(storeIntegrations.sellerId, sellerId)));
 
-  return rows.flatMap((row) =>
-    isIntegrationProvider(row.provider)
-      ? [
-          {
-            provider: row.provider,
-            status: row.status as IntegrationStatus,
-            identifier: readIntegrationId(row.provider, row.config),
-            lastError: row.lastError,
-            connectedAt: row.connectedAt,
-            updatedAt: row.updatedAt,
-          },
-        ]
-      : [],
-  );
+  return rows.flatMap((row) => (isIntegrationProvider(row.provider) ? [toIntegrationSummary(row.provider, row)] : []));
 }
 
 export type ConnectIntegrationError = "not_found" | "store_read_only" | "unsupported" | "not_available" | "invalid_id";
@@ -124,25 +152,9 @@ export async function connectIdentifierIntegration(
           updatedAt: sql`now()`,
         },
       })
-      .returning({
-        status: storeIntegrations.status,
-        config: storeIntegrations.config,
-        lastError: storeIntegrations.lastError,
-        connectedAt: storeIntegrations.connectedAt,
-        updatedAt: storeIntegrations.updatedAt,
-      });
+      .returning(summaryColumns);
 
-    return {
-      success: true,
-      data: {
-        provider,
-        status: row!.status as IntegrationStatus,
-        identifier: readIntegrationId(provider, row!.config),
-        lastError: row!.lastError,
-        connectedAt: row!.connectedAt,
-        updatedAt: row!.updatedAt,
-      },
-    } as const;
+    return { success: true, data: toIntegrationSummary(provider, row!) } as const;
   });
 }
 

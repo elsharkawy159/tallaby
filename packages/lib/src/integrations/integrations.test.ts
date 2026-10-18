@@ -32,9 +32,16 @@ describe("registry", () => {
     for (const provider of INTEGRATION_PROVIDERS) expect(INTEGRATIONS[provider].provider).toBe(provider);
   });
 
-  it("launches Pixel, GA4 and GTM first; GTM carries the D18 warning", () => {
+  it("launches Pixel, GA4, GTM, Meta CAPI, Sheets and Shopify; GTM carries the D18 warning", () => {
     const available = INTEGRATION_PROVIDERS.filter((p) => INTEGRATIONS[p].availability === "available");
-    expect(available).toEqual(["meta_pixel", "google_analytics", "google_tag_manager"]);
+    expect(available).toEqual([
+      "meta_pixel",
+      "google_analytics",
+      "google_tag_manager",
+      "meta_capi",
+      "google_sheets",
+      "shopify_import",
+    ]);
     expect(INTEGRATIONS.google_tag_manager.warnsAboutSellerScripts).toBe(true);
   });
 

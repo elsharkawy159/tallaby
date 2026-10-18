@@ -60,3 +60,38 @@ export function readIntegrationId(provider: IntegrationProvider, config: unknown
   const value = (config as Record<string, unknown>)[field];
   return isValidIntegrationId(provider, value) ? value : null;
 }
+
+/**
+ * Public, non-secret details a provider keeps in `config` that the dashboard
+ * may show (P7-05..P7-07). Only these whitelisted keys ever leave the server;
+ * secrets are never in `config`.
+ */
+export type IntegrationPublicDetails = {
+  testMode?: boolean;
+  shopDomain?: string;
+  shopName?: string;
+  shopCurrency?: string;
+  spreadsheetId?: string;
+  spreadsheetTitle?: string;
+  exportedOrders?: number;
+  importedProducts?: number;
+};
+
+const DETAIL_KEYS: Partial<Record<IntegrationProvider, Array<keyof IntegrationPublicDetails>>> = {
+  meta_capi: ["testMode"],
+  shopify_import: ["shopDomain", "shopName", "shopCurrency", "importedProducts"],
+  google_sheets: ["spreadsheetId", "spreadsheetTitle", "exportedOrders"],
+};
+
+export function readPublicDetails(provider: IntegrationProvider, config: unknown): IntegrationPublicDetails {
+  const keys = DETAIL_KEYS[provider];
+  if (!keys || !config || typeof config !== "object") return {};
+  const source = config as Record<string, unknown>;
+  const out: Record<string, unknown> = {};
+  for (const key of keys) {
+    const value = source[key];
+    if (typeof value === "boolean" || (typeof value === "number" && Number.isFinite(value))) out[key] = value;
+    else if (typeof value === "string" && value.length <= 200) out[key] = value;
+  }
+  return out as IntegrationPublicDetails;
+}

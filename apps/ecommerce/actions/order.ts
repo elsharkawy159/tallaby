@@ -36,7 +36,10 @@ import {
   invalidateProductInventory,
 } from "@workspace/cache";
 import { getCurrentUserId } from "@/lib/get-current-user-id";
-import { getCartStoreSellerId } from "@/lib/storefront.server";
+import { getCartScope, getCartStoreSellerId } from "@/lib/storefront.server";
+import { hasStoreTrackingConsent, STORE_TRACKING_CONSENT_COOKIE } from "@/lib/storefront-consent";
+import { cookies } from "next/headers";
+import { after } from "next/server";
 import { isMarketplaceRequest } from "@/lib/marketplace/marketplace-host.server";
 import { buildOrderPagePath } from "@/lib/order-access-token";
 import { getUser } from "./auth";
@@ -151,6 +154,28 @@ export async function createOrder(data: {
         });
       } catch (metaError) {
         console.error("Meta CAPI Purchase failed:", metaError);
+      }
+    } else {
+      // The store's own CAPI (PLAN.md P7-05): only for an order of the store
+      // this host serves, only after the visitor accepted tracking on it
+      // (D19), and only after the response, so a slow or failing Meta call
+      // never touches checkout.
+      try {
+        const scope = await getCartScope();
+        const consent = (await cookies()).get(STORE_TRACKING_CONSENT_COOKIE)?.value;
+        if (scope && order.storeId === scope.storeId && hasStoreTrackingConsent(consent)) {
+          const purchase = {
+            storeId: scope.storeId,
+            order: { id: order.id, totalAmount: order.totalAmount, currency: order.currency },
+            items: createdOrderItems.map((item) => ({ productId: item.productId, quantity: item.quantity })),
+          };
+          after(async () => {
+            const { sendStorePurchaseEvent } = await import("@/lib/meta/store-meta-capi.server");
+            await sendStorePurchaseEvent(purchase);
+          });
+        }
+      } catch {
+        console.error("Store Meta CAPI scheduling failed");
       }
     }
 
