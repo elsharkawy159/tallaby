@@ -61,7 +61,6 @@
     "storeSettings": "Store settings",
     "general": "General",
     "paymentMethods": "Payment methods",
-    "policies": "Policies",
     "myStores": "My stores",
     "planUsage": "Plan & usage",
     "soon": "Soon",
@@ -667,11 +666,6 @@
           "title": "Add your contact details",
           "description": "Phone or email shown in your store",
           "cta": "Add"
-        },
-        "policies": {
-          "title": "Write your return & shipping policies",
-          "description": "Customers read them before ordering",
-          "cta": "Write"
         },
         "legal": {
           "title": "Add your legal details",
@@ -2329,29 +2323,6 @@
       "supportedLocales": "Store languages",
       "defaultLocale": "Default language"
     },
-    "policies": {
-      "shownOnStore": "Shown on your store",
-      "return": {
-        "title": "Return policy",
-        "description": "When and how customers can return or exchange a product.",
-        "placeholder": "e.g. Returns accepted within 14 days of delivery for unused items…"
-      },
-      "shipping": {
-        "title": "Shipping policy",
-        "description": "Delivery times, areas and costs.",
-        "placeholder": "e.g. Orders are delivered within 2–4 working days across Egypt…"
-      },
-      "privacy": {
-        "title": "Privacy policy",
-        "description": "How you use your customers' information.",
-        "placeholder": "e.g. We only use your details to deliver your order…"
-      },
-      "terms": {
-        "title": "Terms of service",
-        "description": "The rules for buying from your store.",
-        "placeholder": "e.g. By placing an order you agree to…"
-      }
-    },
     "errors": {
       "invalidInput": "Some values are not valid. Please check the form.",
       "readOnly": "This store is read-only.",
@@ -2362,8 +2333,7 @@
       "phoneInvalid": "Enter a valid phone number.",
       "emailInvalid": "Enter a valid email address.",
       "localeRequired": "Choose at least one language.",
-      "defaultLocaleNotSupported": "The default language must be one of the store languages.",
-      "policyTooLong": "This policy is too long."
+      "defaultLocaleNotSupported": "The default language must be one of the store languages."
     },
     "catalog": {
       "title": "Products in this store",

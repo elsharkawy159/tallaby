@@ -233,15 +233,3 @@ export function parseStoreSeo(raw: unknown): StoreSeo {
     googleSiteVerification: pick(googleSiteVerification, value.googleSiteVerification),
   };
 }
-
-export const STORE_POLICY_KEYS =["return", "shipping", "privacy", "terms"] as const;
-export type StorePolicyKey = (typeof STORE_POLICY_KEYS)[number];
-export type StorePolicies = Partial<Record<StorePolicyKey, string>>;
-
-const policyText = z.string().trim().max(20_000).optional();
-
-/** Store settings › Policies. Empty text removes a policy; omitted keys are left as they are. */
-export const storePoliciesSchema = z
-  .object({ return: policyText, shipping: policyText, privacy: policyText, terms: policyText })
-  .strict()
-  .transform((p) => Object.fromEntries(Object.entries(p).filter(([, v]) => v !== undefined)) as StorePolicies);

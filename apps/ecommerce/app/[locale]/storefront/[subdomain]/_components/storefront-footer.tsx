@@ -1,5 +1,5 @@
 import { getFormatter, getLocale, getTranslations } from "next-intl/server";
-import { ChevronDown, Mail, MapPin, MessageCircle, Phone, Star, Store } from "lucide-react";
+import { Mail, MapPin, MessageCircle, Phone, Star, Store } from "lucide-react";
 import { getGovernorateLabel } from "@workspace/lib/shipping";
 import { SocialIcon, getSocialPlatform } from "@workspace/store-sections/render";
 import { cn } from "@workspace/ui/lib/utils";
@@ -21,9 +21,8 @@ function whatsappNumber(phone: string): string | null {
  * sign, here set large and faint along the bottom edge.
  */
 export async function StorefrontFooter({ store }: { store: Storefront }) {
-  const [t, tStores, format, locale] = await Promise.all([
+  const [t, format, locale] = await Promise.all([
     getTranslations("storefront"),
-    getTranslations("pages.stores"),
     getFormatter(),
     getLocale(),
   ]);
@@ -32,11 +31,6 @@ export async function StorefrontFooter({ store }: { store: Storefront }) {
   const category = storeCategoryLabel(store, locale);
   const ratings = store.totalRatings ?? 0;
   const social = store.social ?? [];
-
-  const policies = [
-    { title: tStores("shippingPolicy"), body: store.shippingPolicy },
-    { title: tStores("returnPolicy"), body: store.returnPolicy },
-  ].filter((p): p is { title: string; body: string } => Boolean(p.body?.trim()));
 
   return (
     <footer className={s.footer}>
@@ -114,32 +108,15 @@ export async function StorefrontFooter({ store }: { store: Storefront }) {
           )}
         </div>
 
-        {(bio || policies.length > 0) && (
+        {/* Store policies are builder pages now (2026-10-18), not footer text. */}
+        {bio && (
           <div className={s.footerBody}>
-            {bio && (
-              <section className="max-w-prose">
-                <h3 className={s.footerHeading}>
-                  {t("aboutHeading", { store: store.displayName })}
-                </h3>
-                <p className="line-clamp-5 whitespace-pre-line leading-relaxed">{bio}</p>
-              </section>
-            )}
-
-            {policies.length > 0 && (
-              <section className={s.footerPolicies}>
-                {policies.map((policy) => (
-                  <details key={policy.title} className={s.policy}>
-                    <summary>
-                      {policy.title}
-                      <ChevronDown className={s.policyChevron} aria-hidden />
-                    </summary>
-                    <p className="whitespace-pre-line pb-4 text-sm leading-relaxed">
-                      {policy.body}
-                    </p>
-                  </details>
-                ))}
-              </section>
-            )}
+            <section className="max-w-prose">
+              <h3 className={s.footerHeading}>
+                {t("aboutHeading", { store: store.displayName })}
+              </h3>
+              <p className="line-clamp-5 whitespace-pre-line leading-relaxed">{bio}</p>
+            </section>
           </div>
         )}
       </div>

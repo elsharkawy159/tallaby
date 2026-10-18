@@ -9,7 +9,6 @@
 export type SetupFlags = {
   profile: boolean;
   contact: boolean;
-  policies: boolean;
   product: boolean;
   /** Account: legal address (street + governorate) and a payout account (P3-05). */
   legal: boolean;
@@ -22,13 +21,12 @@ export type SetupKey = keyof SetupFlags;
 
 export type SetupTask = { key: SetupKey; href: string; done: boolean };
 
-const STORE_STEPS = new Set<SetupKey>(["profile", "contact", "policies"]);
+const STORE_STEPS = new Set<SetupKey>(["profile", "contact"]);
 
 const STEPS: { key: SetupKey; href: (storeId: string) => string }[] = [
   { key: "profile", href: (id) => `/stores/${id}/settings` },
   { key: "product", href: () => "/products/add" },
   { key: "contact", href: (id) => `/stores/${id}/settings` },
-  { key: "policies", href: (id) => `/stores/${id}/settings/policies` },
   { key: "legal", href: () => "/settings#legal" },
   { key: "payout", href: () => "/settings#payout" },
   { key: "coupon", href: () => "/coupons" },

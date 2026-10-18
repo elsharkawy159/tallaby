@@ -12,7 +12,6 @@ import {
   getStoreBySubdomain,
   listStores,
   restoreStore,
-  updateStorePolicies,
   updateStoreSettings,
   updateStoreSubdomain,
 } from "./server";
@@ -211,66 +210,5 @@ describe.skipIf(!TEST_DATABASE_URL)("stores (integration)", () => {
     await db.update(s.sellers).set({ status: "suspended" }).where(eq(s.sellers.id, sellerA));
     expect(await getStoreBySubdomain(sub("moved"), db)).toBeNull();
     await db.update(s.sellers).set({ status: "approved" }).where(eq(s.sellers.id, sellerA));
-  });
-});
-
-describe.skipIf(!TEST_DATABASE_URL)("store policies (integration)", () => {
-  const client = postgres(TEST_DATABASE_URL ?? "postgres://unused", { prepare: false, max: 2 });
-  const db = drizzle(client, { schema: DB_SCHEMA });
-  const s = DB_SCHEMA;
-  const sellerId = randomUUID();
-  const other = randomUUID();
-  let storeId: string;
-
-  beforeAll(async () => {
-    await db.insert(s.users).values([
-      { id: sellerId, isGuest: false, role: "seller" },
-      { id: other, isGuest: false, role: "seller" },
-    ]);
-    await db.insert(s.sellers).values(
-      [sellerId, other].map((id, i) => ({
-        id,
-        businessName: `Pol ${i}`,
-        displayName: `Pol ${i}`,
-        slug: `pol-${id.slice(0, 8)}`,
-        subdomain: `pol-${id.slice(0, 8)}`,
-        businessType: "individual",
-        legalAddress: { country: "EG" },
-        supportEmail: "pol@example.com",
-        returnPolicy: "Old returns",
-        status: "approved" as const,
-      })),
-    );
-    const [store] = await db.select().from(s.stores).where(eq(s.stores.sellerId, sellerId));
-    storeId = store!.id;
-  });
-
-  afterAll(async () => {
-    await db.delete(s.users).where(inArray(s.users.id, [sellerId, other]));
-    await client.end();
-  });
-
-  it("starts from the seller's existing policies (backfill / trigger)", async () => {
-    const store = await getStore(sellerId, storeId, db);
-    expect(store?.policies).toMatchObject({ return: "Old returns" });
-  });
-
-  it("updates the store policies and mirrors return/shipping to the storefront's seller row", async () => {
-    const result = await updateStorePolicies(sellerId, storeId, { return: "30 days", shipping: "2-4 days", terms: "Be nice" }, db);
-    expect(result.success).toBe(true);
-    const store = await getStore(sellerId, storeId, db);
-    expect(store?.policies).toEqual({ return: "30 days", shipping: "2-4 days", terms: "Be nice" });
-    const [seller] = await db.select().from(s.sellers).where(eq(s.sellers.id, sellerId));
-    expect(seller).toMatchObject({ returnPolicy: "30 days", shippingPolicy: "2-4 days" });
-  });
-
-  it("removes a policy saved as empty text", async () => {
-    await updateStorePolicies(sellerId, storeId, { terms: "" }, db);
-    const store = await getStore(sellerId, storeId, db);
-    expect(store?.policies).not.toHaveProperty("terms");
-  });
-
-  it("refuses another seller's store", async () => {
-    expect(await updateStorePolicies(other, storeId, { return: "hijack" }, db)).toEqual({ success: false, error: "not_found" });
   });
 });

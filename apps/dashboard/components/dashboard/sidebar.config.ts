@@ -131,7 +131,6 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
     items: [
       { key: "general", href: "/stores/[storeId]/settings", status: "live", exact: true },
       { key: "paymentMethods", href: "/stores/[storeId]/settings/payments", status: "live" },
-      { key: "policies", href: "/stores/[storeId]/settings/policies", status: "live" },
     ],
   },
   {

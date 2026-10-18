@@ -85,7 +85,6 @@ export const getHomeSnapshot = cache(async (): Promise<HomeSnapshot | null> => {
       s.fee_trial_ends_at,
       coalesce(st.logo_url IS NOT NULL AND nullif(st.description, '') IS NOT NULL, false) AS setup_profile,
       coalesce(st.contact ? 'phone' OR st.contact ? 'email', false) AS setup_contact,
-      coalesce(st.policies ? 'return' AND st.policies ? 'shipping', false) AS setup_policies,
       EXISTS (SELECT 1 FROM products p WHERE p.seller_id = s.id AND p.status = 'active') AS setup_product,
       (nullif(s.legal_address->>'street', '') IS NOT NULL AND nullif(s.legal_address->>'state', '') IS NOT NULL) AS setup_legal,
       coalesce(s.payment_details ? 'method', false) AS setup_payout,
@@ -121,7 +120,6 @@ export const getHomeSnapshot = cache(async (): Promise<HomeSnapshot | null> => {
     setup: {
       profile: Boolean(row.setup_profile),
       contact: Boolean(row.setup_contact),
-      policies: Boolean(row.setup_policies),
       product: Boolean(row.setup_product),
       legal: Boolean(row.setup_legal),
       payout: Boolean(row.setup_payout),

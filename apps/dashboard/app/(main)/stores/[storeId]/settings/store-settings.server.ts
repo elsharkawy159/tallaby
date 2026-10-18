@@ -2,12 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { applyInvalidation, invalidateStorefront } from "@workspace/cache";
-import { updateStorePolicies, updateStoreSettings } from "@workspace/lib/stores/server";
+import { updateStoreSettings } from "@workspace/lib/stores/server";
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
 import type { StoreSettingsResult } from "./store-settings.dto";
 
 /**
- * Store settings › General and Policies (PLAN.md §7.3, P3-03). Every call
+ * Store settings › General (PLAN.md §7.3, P3-03). Every call
  * carries the storeId explicitly and re-checks ownership with requireStore;
  * the payload is validated by the strict schemas in @workspace/lib/stores.
  */
@@ -32,20 +32,6 @@ export async function saveStoreGeneral(storeId: string, input: unknown): Promise
   try {
     const { seller, store } = await requireStore(String(storeId), { forWrite: true });
     const result = await updateStoreSettings(seller.sellerId, store.id, input as never);
-    if (!result.success) {
-      return { success: false, error: result.error === "invalid_input" ? "invalidInput" : result.error === "store_read_only" ? "readOnly" : "notFound" };
-    }
-    await afterSave(store.id, store.subdomain);
-    return { success: true };
-  } catch (error) {
-    return failure(error);
-  }
-}
-
-export async function saveStorePolicies(storeId: string, input: unknown): Promise<StoreSettingsResult> {
-  try {
-    const { seller, store } = await requireStore(String(storeId), { forWrite: true });
-    const result = await updateStorePolicies(seller.sellerId, store.id, input as never);
     if (!result.success) {
       return { success: false, error: result.error === "invalid_input" ? "invalidInput" : result.error === "store_read_only" ? "readOnly" : "notFound" };
     }

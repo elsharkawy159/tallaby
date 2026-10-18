@@ -18,13 +18,6 @@ export type StoreGeneralFormValues = {
   supportedLocales: ("ar" | "en")[];
 };
 
-export type StorePoliciesFormValues = {
-  return: string;
-  shipping: string;
-  privacy: string;
-  terms: string;
-};
-
 /** Form values → the strict server schema (empty strings become null / omitted). */
 export function toGeneralPatch(v: StoreGeneralFormValues) {
   const contact: Record<string, string> = {};

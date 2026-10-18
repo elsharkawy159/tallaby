@@ -67,7 +67,7 @@ type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
 type SectionId = 'info' | 'contact' | 'legal' | 'payout' | 'link' | 'docs'
 
-// Store-level fields (logo, banner, description, policies) moved to
+// Store-level fields (logo, banner, description) moved to
 // Store settings (PLAN.md P3-05); this page is the seller ACCOUNT.
 const SECTIONS: { id: SectionId; icon: LucideIcon }[] = [
   { id: 'info', icon: Building2 },
@@ -86,7 +86,7 @@ interface SellerSettingsFormProps {
   linkSection: React.ReactNode
   /** Business type, legal address and masked payout account (P3-05). */
   account: SellerAccountView
-  /** The main store, whose settings now hold logo, description and policies. */
+  /** The main store, whose settings now hold logo and description. */
   primaryStoreId: string | null
 }
 

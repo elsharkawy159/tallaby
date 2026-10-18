@@ -109,7 +109,6 @@ export function getStorefrontBySubdomain(subdomain: string) {
           faviconUrl: stores.faviconUrl,
           bannerUrl: stores.bannerUrl,
           contact: stores.contact,
-          policies: stores.policies,
           storeCategory: stores.storeCategory,
           storeCategoryAr: stores.storeCategoryAr,
           seo: stores.seo,
@@ -143,7 +142,6 @@ export function getStorefrontBySubdomain(subdomain: string) {
         .limit(1);
 
       const contact = (row.contact ?? {}) as { email?: string; phone?: string };
-      const policies = (row.policies ?? {}) as { return?: string; shipping?: string };
       // Only the governorate is public; the rest of the legal address is not.
       const state = (row.legalAddress as { state?: string } | null)?.state;
       return {
@@ -159,8 +157,6 @@ export function getStorefrontBySubdomain(subdomain: string) {
         logoUrl: row.logoUrl,
         faviconUrl: row.faviconUrl,
         bannerUrl: row.bannerUrl,
-        returnPolicy: policies.return ?? null,
-        shippingPolicy: policies.shipping ?? null,
         storeRating: row.storeRating,
         positiveRatingPercent: row.positiveRatingPercent,
         totalRatings: row.totalRatings,
@@ -181,7 +177,7 @@ export function getStorefrontBySubdomain(subdomain: string) {
       };
     },
     // v6: + seo (P4-14) and social links (P4-15). v4: resolves through stores (P5-00).
-    [`storefront-v6-${subdomain}`],
+    [`storefront-v7-${subdomain}`],
     { tags: ["sellers", sellerTags.subdomain(subdomain)], revalidate: 3600 },
   )();
 }

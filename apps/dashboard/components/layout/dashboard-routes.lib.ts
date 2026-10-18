@@ -21,7 +21,6 @@ import {
   MapPinned,
   Package,
   PackagePlus,
-  ScrollText,
   Settings,
   ShoppingBag,
   Star,
@@ -73,7 +72,6 @@ export type NavKey =
   | "general"
   | "catalog"
   | "paymentMethods"
-  | "policies"
   | "myStores"
   | "planUsage";
 
@@ -118,7 +116,6 @@ export const DASHBOARD_ROUTES: DashboardRoute[] = [
   { href: "/reports", title: "reports", parent: "finance", icon: FileBarChart },
   { href: "/stores/[storeId]/settings", title: "general", parent: "storeSettings", icon: Store },
   { href: "/stores/[storeId]/settings/payments", title: "paymentMethods", parent: "storeSettings", icon: CreditCard },
-  { href: "/stores/[storeId]/settings/policies", title: "policies", parent: "storeSettings", icon: ScrollText },
   { href: "/stores", title: "myStores", parent: "account", icon: Store },
   { href: "/settings", title: "settings", parent: "account", icon: Settings },
   { href: "/settings/plan", title: "planUsage", parent: "account", icon: Gem },

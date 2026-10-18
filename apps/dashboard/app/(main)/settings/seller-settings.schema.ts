@@ -2,7 +2,7 @@ import { z } from "zod";
 
 /**
  * Business & account (PLAN.md P3-05). Store fields (display name, logo, banner,
- * description, policies) moved to Store settings and are no longer sent from
+ * description) moved to Store settings and are no longer sent from
  * here, so this autosave form can never overwrite them.
  */
 export const sellerProfileSchema = z.object({

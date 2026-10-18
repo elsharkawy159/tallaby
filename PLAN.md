@@ -454,8 +454,7 @@ Finance — المالية ▾
   └─ Reports — التقارير                            /reports                            Account (store filter)   Existing
 Store settings — إعدادات المتجر ▾                                                     (Store scope)
   ├─ General — عام                                 /stores/[storeId]/settings          New (absorbs store fields of /settings)
-  ├─ Payment methods — طرق الدفع                   /stores/[storeId]/settings/payments New (COD on; wallets + InstaPay; others Soon)
-  └─ Policies — السياسات                           /stores/[storeId]/settings/policies New
+  └─ Payment methods — طرق الدفع                   /stores/[storeId]/settings/payments New (COD on; wallets + InstaPay; others Soon)
 Account — الحساب ▾
   ├─ My stores — متاجري                            /stores                             Account                  New
   ├─ Business & account — النشاط والحساب            /settings                           Account                  Existing (store fields move out)
@@ -2682,3 +2681,22 @@ After P1-08 and P1-01 (`3289639`), typecheck and test match the baseline. `@work
   - The WhatsApp circle sits bottom-left and does not cover the sidebar.
   - Products › Store catalog saves.
   - On mobile pages with a fixed bottom bar (add or edit product), check that the circle doesn't hide a button.
+
+### 2026-10-18 — Store settings › Policies removed (owner request)
+
+- **Why:** a store's return, shipping, privacy and terms pages are now built as website-builder pages, so the separate Policies page goes.
+- **Removed:**
+  - The `/stores/[storeId]/settings/policies` page, its tab, its sidebar link and its `DASHBOARD_ROUTES` entry.
+  - `saveStorePolicies`, `updateStorePolicies` and `storePoliciesSchema`, plus their tests.
+  - The "policies" setup-checklist step.
+  - The message keys `nav.policies`, `storeSettings.policies`, `storeSettings.errors.policyTooLong` and `home.setup.tasks.policies`.
+  - The shipping and return policy accordions in the Tallaby Classic footer. The footer keeps the "About" text. The storefront cache key was bumped to `storefront-v7`.
+- **Migration `0065_drop_store_policies.sql` (destructive, applied on staging only):**
+  - Rewrites `sellers_create_primary_store`, `sellers_sync_primary_store_profile` and `stores_sync_seller_profile` so they no longer reference policies.
+  - Drops `stores.policies`.
+  - It ran twice on staging without errors and `sql-tests/stores_invariants.sql` passes. Before the drop, only 2 primary stores had policies, and both were already mirrored in `sellers`.
+- **Kept:** `sellers.return_policy` and `sellers.shipping_policy`, which the marketplace store page, checkout and admin read. The primary store no longer syncs into them, and no dashboard page edits them now. A decision is open on whether to drop them too.
+- **Checks:**
+  - Typecheck: db, lib, dashboard and admin are clean; ecommerce has only the baseline errors.
+  - Tests: lib 563 (with staging integration), dashboard 115, ecommerce 126 and store-sections 154 all pass.
+- **Production:** needs `0065` after `0050`–`0064`.

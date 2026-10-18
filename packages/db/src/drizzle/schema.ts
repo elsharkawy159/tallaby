@@ -2439,7 +2439,6 @@ export const stores = pgTable("stores", {
 	defaultLocale: text("default_locale").default('ar').notNull(),
 	supportedLocales: text("supported_locales").array().default(["ar", "en"]).notNull(),
 	contact: jsonb().default({}).notNull(),
-	policies: jsonb().default({}).notNull(),
 	seo: jsonb().default({}).notNull(),
 	settings: jsonb().default({}).notNull(),
 	/** all | selected (store_products) */

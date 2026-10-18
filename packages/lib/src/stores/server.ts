@@ -46,14 +46,12 @@ import { normalizeSubdomain, validateSubdomain } from "../storefront";
 import {
   createStoreInputSchema,
   storeGeneralSettingsSchema,
-  storePoliciesSchema,
   storeSocialLinksSchema,
   storeSeoSchema,
   subdomainCandidates,
   type StoreSocialLink,
   type CreateStoreInput,
   type StoreGeneralSettings,
-  type StorePolicies,
   type StoreSeo,
   type StoreSeoInput,
   type StoreSubdomainStatus,
@@ -450,35 +448,6 @@ export async function listStoreRedirects(sellerId: string, storeId: string, q: Q
     .orderBy(desc(sellerSubdomainRedirects.createdAt));
 }
 
-/**
- * Store settings › Policies. Merges into stores.policies; an empty string
- * removes that policy. For the primary store, the 0050 trigger mirrors
- * return/shipping to the sellers row the storefront still reads (until P5-00).
- */
-export async function updateStorePolicies(
-  sellerId: string,
-  storeId: string,
-  patch: StorePolicies,
-  q: Queryable = db,
-): Promise<StoreResult<{ id: string }, StoreWriteError>> {
-  const parsed = storePoliciesSchema.safeParse(patch);
-  if (!parsed.success) return { success: false, error: "invalid_input" };
-  const store = await getStore(sellerId, storeId, q);
-  if (!store) return { success: false, error: "not_found" };
-  if (store.status !== "active") return { success: false, error: "store_read_only" };
-
-  const next: Record<string, string> = { ...(store.policies as Record<string, string>) };
-  for (const [key, value] of Object.entries(parsed.data) as [string, string][]) {
-    if (value) next[key] = value;
-    else delete next[key];
-  }
-  const updated = await q
-    .update(stores)
-    .set({ policies: next, updatedAt: sql`now()` })
-    .where(and(ownStore(sellerId, storeId), eq(stores.status, "active")))
-    .returning({ id: stores.id });
-  return updated.length ? { success: true, data: updated[0]! } : { success: false, error: "store_read_only" };
-}
 
 /**
  * Website › Social media (PLAN.md §8.8, P4-15): replaces `contact.social`

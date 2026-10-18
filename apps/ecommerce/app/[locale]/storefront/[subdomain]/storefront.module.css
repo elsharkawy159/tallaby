@@ -490,7 +490,6 @@
 }
 
 .footerButton:focus-visible,
-.policy summary:focus-visible,
 .byTallaby:focus-visible {
   outline: 2px solid #fff;
   outline-offset: 3px;
@@ -513,47 +512,6 @@
 .footerHeading {
   margin-bottom: 8px;
   font-weight: 600;
-}
-
-.policy {
-  border-bottom: 1px solid rgb(255 255 255 / 0.12);
-}
-
-.policy:first-child {
-  border-top: 1px solid rgb(255 255 255 / 0.12);
-}
-
-@media (min-width: 768px) {
-  .policy:first-child {
-    border-top: 0;
-  }
-}
-
-.policy summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding-block: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  list-style: none;
-  border-radius: 4px;
-}
-
-.policy summary::-webkit-details-marker {
-  display: none;
-}
-
-.policyChevron {
-  width: 18px;
-  height: 18px;
-  flex: none;
-  transition: transform 200ms;
-}
-
-.policy[open] .policyChevron {
-  transform: rotate(180deg);
 }
 
 /* The store name, set as large as the hero sign and barely there. */
