@@ -126,7 +126,7 @@ async function buildContext(
     ),
     // Builder images live in the seller's media; product images are already URLs.
     imageUrl: (src) => (src ? getPublicUrl(src, "sellers") || null : null),
-    formatPrice: (amount) => formatPricePlain(amount, locale),
+    formatPrice: (amount) => formatPricePlain(amount, locale, store.currencyLabel),
     renderCartButton: () => <CartSheet storeName={store.displayName} fontClassName={storefrontFont.variable} />,
     renderAddToCart: (product) =>
       catalog.withVariants.has(product.id) ? null : <AddToCartButton productId={product.id} size="sm" stock={product.inStock ? 1 : 0} />,

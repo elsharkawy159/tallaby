@@ -1,5 +1,6 @@
 "use client";
 
+import { useCurrencyLabel } from "@/lib/currency-label.client";
 import { ShoppingBag } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { formatPricePlain } from "@workspace/lib";
@@ -25,6 +26,7 @@ export function StorefrontCart({
 }) {
   const t = useTranslations("storefront");
   const locale = useLocale();
+  const currencyLabel = useCurrencyLabel();
   const { cartItems, loading } = useCart();
   const items = cartItems.filter((item) => !item.savedForLater);
   const subtotal = items.reduce((sum, i) => sum + Number(i.price) * i.quantity, 0);
@@ -107,7 +109,7 @@ export function StorefrontCart({
                     productStock={stock}
                   />
                   <span className="text-sm font-semibold tabular-nums">
-                    {formatPricePlain(Number(item.price) * item.quantity, locale)}
+                    {formatPricePlain(Number(item.price) * item.quantity, locale, currencyLabel)}
                   </span>
                 </div>
               </div>
@@ -122,7 +124,7 @@ export function StorefrontCart({
             {t("subtotal")} <span className="text-sm">({t("itemCount", { count })})</span>
           </span>
           <span className="text-xl font-bold tabular-nums">
-            {formatPricePlain(subtotal, locale)}
+            {formatPricePlain(subtotal, locale, currencyLabel)}
           </span>
         </div>
         <p className="text-xs text-(--sf-muted)">{t("shippingNote")}</p>

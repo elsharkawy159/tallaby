@@ -1,3 +1,5 @@
+import type { CurrencyLabel } from "@workspace/lib";
+
 /** Error keys live under `storeSettings.errors`. */
 export type StoreSettingsErrorKey = "invalidInput" | "readOnly" | "notFound" | "generic";
 
@@ -16,10 +18,11 @@ export type StoreGeneralFormValues = {
   email: string;
   defaultLocale: "ar" | "en";
   supportedLocales: ("ar" | "en")[];
+  currencyLabel: CurrencyLabel;
 };
 
 /** Form values → the strict server schema (empty strings become null / omitted). */
-export function toGeneralPatch(v: StoreGeneralFormValues) {
+export function toGeneralPatch(v: StoreGeneralFormValues, opts: { brand: boolean }) {
   const contact: Record<string, string> = {};
   if (v.phone.trim()) contact.phone = v.phone.trim();
   if (v.whatsapp.trim()) contact.whatsapp = v.whatsapp.trim();
@@ -29,10 +32,11 @@ export function toGeneralPatch(v: StoreGeneralFormValues) {
     description: v.description.trim() || null,
     storeCategory: v.storeCategory.trim() || null,
     storeCategoryAr: v.storeCategoryAr.trim() || null,
-    logoUrl: v.logoUrl || null,
-    bannerUrl: v.bannerUrl || null,
+    // Logo and banner are edited in Website › Design system when the seller has the builder.
+    ...(opts.brand && { logoUrl: v.logoUrl || null, bannerUrl: v.bannerUrl || null }),
     contact,
     defaultLocale: v.defaultLocale,
     supportedLocales: v.supportedLocales,
+    currencyLabel: v.currencyLabel,
   };
 }

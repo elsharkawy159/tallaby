@@ -1,5 +1,6 @@
 "use client";
 
+import { useCurrencyLabel } from "@/lib/currency-label.client";
 import { useMemo } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { formatPrice } from "@workspace/lib";
@@ -29,6 +30,7 @@ const ProductCard = ({
   ...product
 }: ProductCardWithStatusProps) => {
   const locale = useLocale() as "en" | "ar";
+  const currencyLabel = useCurrencyLabel();
   const t = useTranslations("product");
   const slug = product.slug || "unknown-product";
   const price = resolvePrice(product);
@@ -45,9 +47,9 @@ const ProductCard = ({
       title={product.title || product.name || "Untitled Product"}
       href={`/products/${slug}`}
       image={resolvePrimaryImage(product.images)}
-      priceHtml={formatPrice(price, locale)}
+      priceHtml={formatPrice(price, locale, "sm", currencyLabel)}
       listPriceHtml={
-        listPrice != null && listPrice > price ? formatPrice(listPrice, locale) : null
+        listPrice != null && listPrice > price ? formatPrice(listPrice, locale, "sm", currencyLabel) : null
       }
       discountPercent={discountPercent}
       discountLabel={

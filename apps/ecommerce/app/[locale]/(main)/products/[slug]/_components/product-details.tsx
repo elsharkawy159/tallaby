@@ -1,5 +1,6 @@
 "use client";
 
+import { useCurrencyLabel } from "@/lib/currency-label.client";
 import { Truck, RotateCcw, Globe, Banknote, Check } from "lucide-react";
 import { ProductActions } from "./ProductActions";
 import { HideBottomNavOnScroll } from "@/components/layout/hide-bottom-nav-on-scroll.client";
@@ -59,6 +60,7 @@ export const ProductDetails = ({
   onVariantChange,
 }: ProductDetailsProps) => {
   const locale = useLocale() as ProductLocale;
+  const currencyLabel = useCurrencyLabel();
   const t = useTranslations("product");
 
   // Use internal state if props are not provided (backwards compatibility)
@@ -193,6 +195,7 @@ export const ProductDetails = ({
   const freeShippingThresholdLabel = formatPricePlain(
     FREE_SHIPPING_THRESHOLD,
     locale,
+    currencyLabel,
   );
 
   const renderVariantButton = (
@@ -332,6 +335,7 @@ export const ProductDetails = ({
                   getPriceFinal(variant.price),
                   locale,
                   "sm",
+                  currencyLabel,
                 ),
               }}
             />

@@ -4,6 +4,9 @@ export {
   formatPrice,
   formatPricePlain,
   parseCurrencyAmount,
+  parseCurrencyLabel,
+  CURRENCY_LABELS,
+  type CurrencyLabel,
 } from "./src/utils/formatPrice";
 
 export {

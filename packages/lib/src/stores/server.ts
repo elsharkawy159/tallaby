@@ -334,7 +334,7 @@ export async function updateStoreSettings(
   if (!store) return { success: false, error: "not_found" };
   if (store.status !== "active") return { success: false, error: "store_read_only" };
 
-  const { contact, ...fields } = parsed.data;
+  const { contact, currencyLabel, ...fields } = parsed.data;
   const locales = fields.supportedLocales ?? store.supportedLocales;
   const defaultLocale = fields.defaultLocale ?? store.defaultLocale;
   if (!locales.includes(defaultLocale)) return { success: false, error: "invalid_input" };
@@ -352,6 +352,10 @@ export async function updateStoreSettings(
     .set({
       ...fields,
       ...(nextContact && { contact: nextContact }),
+      // Other settings keys (payments, …) are kept.
+      ...(currencyLabel && {
+        settings: sql`jsonb_set(coalesce(${stores.settings}, '{}'::jsonb), '{currencyLabel}', to_jsonb(${currencyLabel}::text))`,
+      }),
       updatedAt: sql`now()`,
     })
     .where(and(ownStore(sellerId, storeId), eq(stores.status, "active")))

@@ -13,6 +13,7 @@ import { StoreSiteChrome } from "./_components/store-site";
 import { SITE_ROOT_CLASS, SiteTheme } from "@workspace/store-sections/render";
 import { getStorefrontSite } from "@/lib/store-site/preview.server";
 import { StorePreviewBanner } from "./_components/store-preview-banner";
+import { CurrencyLabelProvider } from "@/lib/currency-label.client";
 import s from "./storefront.module.css";
 
 type StorefrontLayoutProps = {
@@ -42,16 +43,18 @@ export default async function StorefrontLayout({
   const { site, preview } = await getStorefrontSite(store.id, store.storeId, store.subdomain);
 
   return (
-    <div className={cn(storefrontFont.variable, s.root, site && [SITE_ROOT_CLASS, storeFontVariables])}>
-      {preview && <StorePreviewBanner state={preview} />}
-      {site && <SiteTheme designSystem={site.designSystem} />}
-      {site ? <StoreSiteChrome store={store} site={site} locale={locale} part="header" /> : <StorefrontHeader store={store} />}
-      <main className="flex-1">{children}</main>
-      {site ? <StoreSiteChrome store={store} site={site} locale={locale} part="footer" /> : <StorefrontFooter store={store} />}
-      <MobileCartBar />
-      <ByTallabyBadge />
-      <AuthDialogProvider />
-      <StorefrontTracking store={store} />
-    </div>
+    <CurrencyLabelProvider label={store.currencyLabel}>
+      <div className={cn(storefrontFont.variable, s.root, site && [SITE_ROOT_CLASS, storeFontVariables])}>
+        {preview && <StorePreviewBanner state={preview} />}
+        {site && <SiteTheme designSystem={site.designSystem} />}
+        {site ? <StoreSiteChrome store={store} site={site} locale={locale} part="header" /> : <StorefrontHeader store={store} />}
+        <main className="flex-1">{children}</main>
+        {site ? <StoreSiteChrome store={store} site={site} locale={locale} part="footer" /> : <StorefrontFooter store={store} />}
+        <MobileCartBar />
+        <ByTallabyBadge />
+        <AuthDialogProvider />
+        <StorefrontTracking store={store} />
+      </div>
+    </CurrencyLabelProvider>
   );
 }

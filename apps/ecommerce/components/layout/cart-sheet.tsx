@@ -1,5 +1,6 @@
 "use client";
 
+import { useCurrencyLabel } from "@/lib/currency-label.client";
 import { Link, useRouter } from "@/i18n/navigation";
 import Image from "next/image";
 import { Button } from "@workspace/ui/components/button";
@@ -46,6 +47,7 @@ export function CartSheet({
   const [loadingItems, setLoadingItems] = useState<Set<string>>(new Set());
   const router = useRouter();
   const locale = useLocale();
+  const currencyLabel = useCurrencyLabel();
   const tToast = useTranslations("toast");
   const t = useTranslations("cart");
 
@@ -227,14 +229,14 @@ export function CartSheet({
                             <p
                               className="text-sm font-semibold"
                               dangerouslySetInnerHTML={{
-                                __html: formatPrice(lineTotal, locale),
+                                __html: formatPrice(lineTotal, locale, "sm", currencyLabel),
                               }}
                             />
                             {item.quantity > 1 && (
                               <p
                                 className="text-xs text-muted-foreground"
                                 dangerouslySetInnerHTML={{
-                                  __html: formatPrice(unitPrice, locale),
+                                  __html: formatPrice(unitPrice, locale, "sm", currencyLabel),
                                 }}
                               />
                             )}
@@ -254,7 +256,7 @@ export function CartSheet({
                   <span
                     className="font-semibold"
                     dangerouslySetInnerHTML={{
-                      __html: formatPrice(subtotal, locale),
+                      __html: formatPrice(subtotal, locale, "sm", currencyLabel),
                     }}
                   />
                 </div>
@@ -264,7 +266,7 @@ export function CartSheet({
                   <span
                     className="text-lg font-bold text-primary"
                     dangerouslySetInnerHTML={{
-                      __html: formatPrice(subtotal, locale),
+                      __html: formatPrice(subtotal, locale, "sm", currencyLabel),
                     }}
                   />
                 </div>

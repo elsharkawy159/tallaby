@@ -1,5 +1,6 @@
 "use client";
 
+import { useCurrencyLabel } from "@/lib/currency-label.client";
 import { Truck } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { formatPrice, formatPricePlain } from "@workspace/lib";
@@ -30,6 +31,7 @@ export function PriceTicket({
   locale,
 }: PriceTicketProps) {
   const t = useTranslations("product");
+  const currencyLabel = useCurrencyLabel();
   const hasDiscount = listPrice != null && listPrice > price;
   const hasStub = (hasDiscount && discountExpiryDate != null) || hasFreeDelivery;
 
@@ -38,14 +40,14 @@ export function PriceTicket({
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-4 md:px-5">
         <span
           className="text-3xl font-bold leading-none text-primary lg:text-4xl"
-          dangerouslySetInnerHTML={{ __html: formatPrice(price, locale, "lg") }}
+          dangerouslySetInnerHTML={{ __html: formatPrice(price, locale, "lg", currencyLabel) }}
         />
         {hasDiscount && (
           <span
             className="text-base font-medium text-gray-500 line-through decoration-red-400/80"
             aria-label={t("insteadOf")}
             dangerouslySetInnerHTML={{
-              __html: formatPrice(listPrice, locale, "sm"),
+              __html: formatPrice(listPrice, locale, "sm", currencyLabel),
             }}
           />
         )}
@@ -58,7 +60,7 @@ export function PriceTicket({
         {hasDiscount && (
           <p className="basis-full pt-1.5 text-sm font-semibold text-[#9a5800]">
             {t("youSave", {
-              amount: formatPricePlain(listPrice - price, locale),
+              amount: formatPricePlain(listPrice - price, locale, currencyLabel),
             })}
           </p>
         )}

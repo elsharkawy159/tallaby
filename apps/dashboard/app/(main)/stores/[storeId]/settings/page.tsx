@@ -1,3 +1,5 @@
+import { parseCurrencyLabel } from "@workspace/lib";
+import { storeBuilderEnabled } from "@/components/dashboard/sidebar.config";
 import { loadStorePage } from "@/lib/stores/store-page.server";
 import { StoreGeneralForm } from "./store-general.client";
 import type { StoreGeneralFormValues } from "./store-settings.dto";
@@ -20,7 +22,16 @@ export default async function StoreGeneralSettingsPage({ params }: { params: Pro
     email: contact.email ?? "",
     defaultLocale: store.defaultLocale === "en" ? "en" : "ar",
     supportedLocales: locales.length ? locales : ["ar", "en"],
+    currencyLabel: parseCurrencyLabel((store.settings as Record<string, unknown> | null)?.currencyLabel),
   };
 
-  return <StoreGeneralForm storeId={store.id} initial={initial} readOnly={store.status !== "active"} />;
+  return (
+    <StoreGeneralForm
+      storeId={store.id}
+      initial={initial}
+      readOnly={store.status !== "active"}
+      // Builder sellers edit logo and banner in Website › Design system.
+      brandInSettings={!storeBuilderEnabled(store.sellerId)}
+    />
+  );
 }

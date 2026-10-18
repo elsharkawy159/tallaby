@@ -9,6 +9,7 @@
  */
 
 import { headers } from "next/headers";
+import { parseCurrencyLabel } from "@workspace/lib";
 import { unstable_cache } from "next/cache";
 import { notFound, redirect } from "next/navigation";
 import {
@@ -112,6 +113,7 @@ export function getStorefrontBySubdomain(subdomain: string) {
           storeCategory: stores.storeCategory,
           storeCategoryAr: stores.storeCategoryAr,
           seo: stores.seo,
+          settings: stores.settings,
           sellerId: sellers.id,
           slug: sellers.slug,
           storeRating: sellers.storeRating,
@@ -169,6 +171,8 @@ export function getStorefrontBySubdomain(subdomain: string) {
         storeCategoryAr: row.storeCategoryAr,
         /** Website › Domain & SEO (P4-14), re-validated field by field. */
         seo: parseStoreSeo(row.seo),
+        /** Store settings › General: "EGP" (default), "جنيهاً" or "ج.م". */
+        currencyLabel: parseCurrencyLabel((row.settings as Record<string, unknown> | null)?.currencyLabel),
         governorate: normalizeGovernorate(state),
         /** The store's own domain once live (faster-eg.com), else null. */
         customDomain: domain?.domain ?? null,
@@ -177,7 +181,7 @@ export function getStorefrontBySubdomain(subdomain: string) {
       };
     },
     // v6: + seo (P4-14) and social links (P4-15). v4: resolves through stores (P5-00).
-    [`storefront-v7-${subdomain}`],
+    [`storefront-v8-${subdomain}`],
     { tags: ["sellers", sellerTags.subdomain(subdomain)], revalidate: 3600 },
   )();
 }

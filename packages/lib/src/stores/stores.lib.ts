@@ -3,6 +3,7 @@
  * P1-04). No database imports.
  */
 import { z } from "zod";
+import { CURRENCY_LABELS } from "../utils/formatPrice";
 import { SOCIAL_PLATFORM_KEYS, SOCIAL_VALUE_MAX, normalizeSocialLink } from "@workspace/store-sections/social";
 import { SUBDOMAIN_MAX_LENGTH, normalizeSubdomain, validateSubdomain, type SubdomainProblem } from "../storefront";
 
@@ -82,6 +83,8 @@ export const storeGeneralSettingsSchema = z
     contact: storeContactSchema.optional(),
     defaultLocale: z.enum(STORE_LOCALES).optional(),
     supportedLocales: z.array(z.enum(STORE_LOCALES)).min(1).max(STORE_LOCALES.length).optional(),
+    /** How prices are labelled on this store's site (stores.settings.currencyLabel). */
+    currencyLabel: z.enum(CURRENCY_LABELS).optional(),
     // The catalog mode is set with its product selection (storeCatalogInputSchema).
   })
   .strict()
