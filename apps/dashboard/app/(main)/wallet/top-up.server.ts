@@ -33,7 +33,7 @@ export async function startTopUp(amount: string): Promise<TopUpActionResult> {
       actorId: seller.userId,
       amount: String(amount),
       email: user?.email ?? null,
-      returnUrl: `${base}/financial/top-up`,
+      returnUrl: `${base}/wallet/top-up`,
       locale,
     });
     return result.success ? { success: true, sessionUrl: result.sessionUrl } : result;

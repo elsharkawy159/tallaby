@@ -2,7 +2,7 @@ import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { db, orders, sellerWallet, sellers, stores, walletTransactions } from "@workspace/db";
 
 /**
- * Store wallet reads for /financial (PLAN.md §13.4, P6-06). Server-only and
+ * Store wallet reads for /wallet (PLAN.md §13.4, P6-06). Server-only and
  * always scoped to the session seller passed in by the page. Never cached:
  * wallet data is read fresh on every request (CLAUDE.md rule 8).
  */
@@ -131,4 +131,14 @@ export async function listStoreWalletEntries(
     .where(and(...conditions))
     .orderBy(desc(walletTransactions.createdAt), desc(walletTransactions.id))
     .limit(ENTRIES_PAGE_SIZE + 1);
+}
+
+/** The header's wallet box: the balance only, read fresh (never cached). */
+export async function getStoreWalletBalance(sellerId: string): Promise<number | null> {
+  const [row] = await db
+    .select({ balance: sql<string>`coalesce(${sellerWallet.balance}, 0)::text` })
+    .from(sellers)
+    .leftJoin(sellerWallet, eq(sellerWallet.sellerId, sellers.id))
+    .where(eq(sellers.id, sellerId));
+  return row ? Number(row.balance) : null;
 }

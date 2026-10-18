@@ -71,7 +71,8 @@
     "primaryStore": "Main store",
     "archived": "Archived",
     "catalog": "Catalog",
-    "content": "Content"
+    "content": "Content",
+    "wallet": "Wallet"
   },
   "common": {
     "loading": "Loading...",
@@ -2026,7 +2027,9 @@
     "quickActions": "Quick actions",
     "pages": "Pages",
     "language": "Switch language",
-    "toggleTheme": "Toggle dark mode"
+    "toggleTheme": "Toggle dark mode",
+    "walletBalance": "Wallet Balance: {amount}",
+    "walletLabel": "Wallet Balance:"
   },
   "advertise": {
     "intro": "Pick the package, choose a product, and pay with Vodafone Cash. Our team checks the transfer and starts your campaign.",

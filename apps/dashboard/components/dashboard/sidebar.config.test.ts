@@ -30,7 +30,7 @@ describe("SIDEBAR_CONFIG", () => {
 
   it("keeps every existing page reachable", () => {
     const hrefs = allLinks(resolveSidebar(SIDEBAR_CONFIG, { storeId: STORE, features: {} })).map((l) => l.href);
-    for (const href of ["/", "/orders", "/orders/delivery", "/orders/riders", "/products", "/products/add", "/reviews", "/coupons", "/marketing", "/financial", "/reports", "/settings", "/settings/fulfillment", "/help"]) {
+    for (const href of ["/", "/orders", "/orders/delivery", "/orders/riders", "/products", "/products/add", "/reviews", "/coupons", "/marketing", "/wallet", "/financial", "/reports", "/settings", "/settings/fulfillment", "/help"]) {
       expect(hrefs, href).toContain(href);
     }
   });

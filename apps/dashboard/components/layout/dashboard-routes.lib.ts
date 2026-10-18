@@ -27,6 +27,7 @@ import {
   Store,
   TrendingUp,
   Truck,
+  Wallet,
   Warehouse,
 } from "lucide-react";
 
@@ -73,7 +74,8 @@ export type NavKey =
   | "catalog"
   | "paymentMethods"
   | "myStores"
-  | "planUsage";
+  | "planUsage"
+  | "wallet";
 
 export interface DashboardRoute {
   /** A path, or a pattern with `[storeId]` for store-scoped pages. */
@@ -112,6 +114,7 @@ export const DASHBOARD_ROUTES: DashboardRoute[] = [
   { href: "/coupons", title: "promotions", parent: "marketing", icon: Gift },
   { href: "/marketing", title: "advertiseProducts", parent: "marketing", icon: TrendingUp },
   { href: "/stores/[storeId]/apps", title: "apps", icon: AppWindow },
+  { href: "/wallet", title: "wallet", parent: "finance", icon: Wallet },
   { href: "/financial", title: "accountStatements", parent: "finance", icon: DollarSign },
   { href: "/reports", title: "reports", parent: "finance", icon: FileBarChart },
   { href: "/stores/[storeId]/settings", title: "general", parent: "storeSettings", icon: Store },

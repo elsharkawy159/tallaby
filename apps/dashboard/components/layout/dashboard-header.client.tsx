@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useTranslations } from "next-intl";
-import { ChevronRight, Menu, Search } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+import { ChevronRight, Menu, Search, Wallet } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { formatMoney } from "@/lib/i18n/format";
 import { useSidebarStore } from "@/stores";
 import { CommandPalette } from "./command-palette.client";
 import { resolveDashboardRoute } from "./dashboard-routes.lib";
@@ -15,8 +17,9 @@ import { ThemeToggle } from "./theme-toggle.client";
 const ICON_BUTTON =
   "flex size-9.5 shrink-0 items-center justify-center rounded-[10px] border border-transparent text-muted-foreground transition-colors hover:border-sidebar-border hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40";
 
-export function DashboardHeader() {
+export function DashboardHeader({ walletBalance }: { walletBalance: number | null }) {
   const t = useTranslations("header");
+  const locale = useLocale();
   const tNav = useTranslations("nav");
   const pathname = usePathname();
   const route = resolveDashboardRoute(pathname);
@@ -96,6 +99,24 @@ export function DashboardHeader() {
       >
         <Search className="size-[18px]" />
       </button>
+
+      {walletBalance != null && (
+        <Link
+          href="/wallet"
+          title={t("walletBalance", { amount: formatMoney(walletBalance, locale) })}
+          aria-current={pathname === "/wallet" ? "page" : undefined}
+          className={cn(
+            "flex h-9.5 shrink-0 items-center gap-2 rounded-[10px] border border-sidebar-border bg-sidebar-accent px-2.5 text-[13px] transition-colors hover:border-input focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
+            pathname === "/wallet" && "border-primary/40 bg-primary-soft text-primary-ink",
+          )}
+        >
+          <Wallet className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+          <span className="hidden text-muted-foreground lg:inline">{t("walletLabel")}</span>
+          <bdi dir="ltr" className={cn("font-semibold tabular-nums", walletBalance < 0 && "text-destructive")}>
+            {formatMoney(walletBalance, locale)}
+          </bdi>
+        </Link>
+      )}
 
       <InstallAppButton />
       <LanguageToggle />

@@ -2700,3 +2700,35 @@ After P1-08 and P1-01 (`3289639`), typecheck and test match the baseline. `@work
   - Typecheck: db, lib, dashboard and admin are clean; ecommerce has only the baseline errors.
   - Tests: lib 563 (with staging integration), dashboard 115, ecommerce 126 and store-sections 154 all pass.
 - **Production:** needs `0065` after `0050`–`0064`.
+
+### 2026-10-18 — Payments design, EGP currency, brand fields, wallet page (owner requests)
+
+- **Store settings › Payment methods** now follows the Claude design "Dashboard/Seller Payments":
+  - A **Cash** card and a **Wallets & instant transfer** card. Rows show a status tag (not set up / on / off) and a masked details line.
+  - **Set up** (accent) or **Edit** plus a switch. The last method that is on can't be switched off.
+  - The existing **Soon** card is kept.
+  - At the owner's request, there is no page title and no customer-preview box.
+  - The sheet has the design's "how it works" steps.
+  - COD gets an optional **maximum order value** (`codSettingsSchema.maxOrder`, cleared with `null`). It isn't enforced anywhere yet, because storefront checkout doesn't use these methods (P6-05).
+- **EGP:**
+  - `CurrencyInput` / `CurrencyAddon` (`apps/dashboard/components/form/currency-input.tsx`) show a static "EGP" on the left of every amount field: payments, product price and discount, coupons, top-up and shipping.
+  - `formatPricePlain`, `formatPrice` and `formatCurrency` now print `300 EGP` in both languages, with Western digits.
+  - Dashboard and marketing Arabic copy says EGP instead of ج.م.
+  - **Store settings › General › Currency** sets `stores.settings.currencyLabel` to "EGP" (default), "جنيهاً" or "ج.م". The store's site (Classic product card, product page, cart sheet, storefront cart, builder sections) reads it through `CurrencyLabelProvider`; the storefront cache key is `storefront-v8`. Checkout pages on the store host and the marketplace keep EGP.
+  - **Not changed:** `apps/ecommerce/messages/ar.json` still has ج.م strings, because that file has the owner's uncommitted edits.
+- **Brand fields:**
+  - For sellers with the website builder, logo and banner are no longer in Store settings › General. They are edited in Website › Design system, and General shows a link there.
+  - Sellers without the builder flag keep both fields in General, because the Design page is gated by the flag.
+  - The `banner_url` column stays, since the marketplace store page uses it.
+- **Wallet:**
+  - The store wallet (balance, ledger, top-up) moved from `/financial` to a new `/wallet` page.
+  - `/financial` keeps the account statements. `/financial/top-up` forwards Kashier returns from before the move to `/wallet/top-up`, and new top-ups return to `/wallet/top-up`.
+  - The header shows a **"رصيد المحفظة: 300 EGP"** box linking to `/wallet`. On small screens it shows only the amount, in red when negative. The balance is read fresh in the `(main)` layout.
+  - Finance › Wallet was added to the sidebar and to `DASHBOARD_ROUTES`.
+- **Checks:**
+  - Typecheck: dashboard, lib, store-sections, shipping and marketing are clean; ecommerce and admin have only the baseline errors.
+  - Tests pass: lib 394 (unit), dashboard 115, ecommerce 126, store-sections 154.
+- **Manual browser check (owner):**
+  - Payments: set up a wallet, switch it off and on, and confirm the last method stays locked. Edit COD's fee and max order.
+  - Pick "جنيهاً" in Store settings and check the storefront prices.
+  - Click the header wallet box, then do a Kashier test top-up and confirm it returns to `/wallet/top-up`.

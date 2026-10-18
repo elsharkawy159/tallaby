@@ -120,6 +120,7 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
     key: "finance",
     icon: Wallet,
     items: [
+      { key: "wallet", href: "/wallet", status: "live" },
       { key: "accountStatements", href: "/financial", countKey: "financial", status: "live" },
       { key: "reports", href: "/reports", status: "live" },
     ],
