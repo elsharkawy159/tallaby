@@ -2,10 +2,10 @@
  * Public and editor renderer (PLAN.md P4-02, P5-01). No hooks and no editor
  * imports, so the storefront renders it as a server component.
  */
-import type { DesignSystem, PageContent, SectionInstance, SiteLocale } from "../config/schema";
+import type { PageContent, SectionInstance, SiteLocale } from "../config/schema";
 import { resolveSectionForLocale } from "../core/locale";
 import { applyMigrations, resolveSectionProps, type SectionRegistry } from "../core/registry";
-import { SITE_ROOT_CLASS, designSystemToCss } from "../core/theme";
+import { SITE_ROOT_CLASS, designSystemToCss, type ThemeInput } from "../core/theme";
 import type { RenderContext } from "../core/types";
 
 export function SectionRenderer({
@@ -62,7 +62,7 @@ export function PageRenderer({
 }
 
 /** Scoped theme tokens for a site root carrying `SITE_ROOT_CLASS`. */
-export function SiteTheme({ designSystem }: { designSystem: Pick<DesignSystem, "colors" | "spacing"> | null | undefined }) {
+export function SiteTheme({ designSystem }: { designSystem: ThemeInput | null | undefined }) {
   const css = designSystemToCss(designSystem);
   if (!css) return null;
   return <style data-site-theme dangerouslySetInnerHTML={{ __html: css.replace(/</g, "\\3c ") }} />;

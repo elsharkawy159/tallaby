@@ -22,6 +22,18 @@
     "./templates": {
       "types": "./src/templates/index.ts",
       "default": "./src/templates/index.ts"
+    },
+    "./social": {
+      "types": "./src/social/platforms.ts",
+      "default": "./src/social/platforms.ts"
+    },
+    "./fonts": {
+      "types": "./src/core/fonts.ts",
+      "default": "./src/core/fonts.ts"
+    },
+    "./social-icon": {
+      "types": "./src/social/icon.tsx",
+      "default": "./src/social/icon.tsx"
     }
   },
   "scripts": {

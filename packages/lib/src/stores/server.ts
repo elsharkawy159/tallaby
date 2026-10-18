@@ -47,7 +47,9 @@ import {
   createStoreInputSchema,
   storeGeneralSettingsSchema,
   storePoliciesSchema,
+  storeSocialLinksSchema,
   subdomainCandidates,
+  type StoreSocialLink,
   type CreateStoreInput,
   type StoreGeneralSettings,
   type StorePolicies,
@@ -473,6 +475,34 @@ export async function updateStorePolicies(
     .where(and(ownStore(sellerId, storeId), eq(stores.status, "active")))
     .returning({ id: stores.id });
   return updated.length ? { success: true, data: updated[0]! } : { success: false, error: "store_read_only" };
+}
+
+/**
+ * Website › Social media (PLAN.md §8.8, P4-15): replaces `contact.social`
+ * with the validated, normalized list. Set in SQL with jsonb_set, so phone,
+ * WhatsApp and email in the same column are never touched.
+ */
+export async function updateStoreSocialLinks(
+  sellerId: string,
+  storeId: string,
+  input: unknown,
+  q: Queryable = db,
+): Promise<StoreResult<{ links: StoreSocialLink[] }, StoreWriteError>> {
+  const parsed = storeSocialLinksSchema.safeParse(input);
+  if (!parsed.success) return { success: false, error: "invalid_input" };
+  const store = await getStore(sellerId, storeId, q);
+  if (!store) return { success: false, error: "not_found" };
+  if (store.status !== "active") return { success: false, error: "store_read_only" };
+
+  const updated = await q
+    .update(stores)
+    .set({
+      contact: sql`jsonb_set(coalesce(${stores.contact}, '{}'::jsonb), '{social}', ${JSON.stringify(parsed.data)}::jsonb, true)`,
+      updatedAt: sql`now()`,
+    })
+    .where(and(ownStore(sellerId, storeId), eq(stores.status, "active")))
+    .returning({ id: stores.id });
+  return updated.length ? { success: true, data: { links: parsed.data } } : { success: false, error: "store_read_only" };
 }
 
 export type StorePaymentsError = StoreWriteError | MethodChangeError;

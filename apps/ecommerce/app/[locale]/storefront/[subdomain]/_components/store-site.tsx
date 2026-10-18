@@ -92,7 +92,7 @@ async function buildContext(
       bannerUrl: store.bannerUrl,
       url: storeUrl(store.subdomain, store.customDomain),
       contact: { phone: store.supportPhone, email: store.supportEmail, whatsapp: store.supportPhone },
-      social: [],
+      social: store.social ?? [],
       policies: [],
     },
     pages: navPages(site, locale),

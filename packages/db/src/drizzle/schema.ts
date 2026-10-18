@@ -2623,6 +2623,9 @@ export const templateInstalls = pgTable("template_installs", {
 	storeId: uuid("store_id").notNull(),
 	installedBy: uuid("installed_by"),
 	installedAt: timestamp("installed_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	/** Drafts just before this install (0064), restored by "Undo template change". */
+	previousDraft: jsonb("previous_draft"),
+	undoneAt: timestamp("undone_at", { withTimezone: true, mode: 'string' }),
 }, (table) => [
 	index("template_installs_store_idx").using("btree", table.storeId.asc().nullsLast().op("uuid_ops"), table.installedAt.desc().nullsFirst().op("timestamptz_ops")),
 	foreignKey({

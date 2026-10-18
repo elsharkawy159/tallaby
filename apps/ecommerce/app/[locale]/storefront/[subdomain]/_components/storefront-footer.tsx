@@ -1,6 +1,7 @@
 import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 import { ChevronDown, Mail, MapPin, MessageCircle, Phone, Star, Store } from "lucide-react";
 import { getGovernorateLabel } from "@workspace/lib/shipping";
+import { SocialIcon, getSocialPlatform } from "@workspace/store-sections/render";
 import { cn } from "@workspace/ui/lib/utils";
 import { BASE_URL } from "@/lib/constants";
 import { storeCategoryLabel, type Storefront } from "@/lib/storefront.server";
@@ -30,6 +31,7 @@ export async function StorefrontFooter({ store }: { store: Storefront }) {
   const whatsapp = store.supportPhone ? whatsappNumber(store.supportPhone) : null;
   const category = storeCategoryLabel(store, locale);
   const ratings = store.totalRatings ?? 0;
+  const social = store.social ?? [];
 
   const policies = [
     { title: tStores("shippingPolicy"), body: store.shippingPolicy },
@@ -70,7 +72,7 @@ export async function StorefrontFooter({ store }: { store: Storefront }) {
             </div>
           </div>
 
-          {(store.supportPhone || store.supportEmail) && (
+          {(store.supportPhone || store.supportEmail || social.length > 0) && (
             <nav aria-label={t("contactHeading")} className={s.footerContact}>
               {whatsapp && (
                 <a
@@ -95,6 +97,19 @@ export async function StorefrontFooter({ store }: { store: Storefront }) {
                   {t("email")}
                 </a>
               )}
+              {/* Website › Social media (P4-15); read live from the store, not the publish snapshot. */}
+              {social.map((link) => (
+                <a
+                  key={link.platform}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={getSocialPlatform(link.platform)?.label[locale === "en" ? "en" : "ar"] ?? link.platform}
+                  className={cn(s.footerButton, s.footerSocial)}
+                >
+                  <SocialIcon platform={link.platform} className="size-4" />
+                </a>
+              ))}
             </nav>
           )}
         </div>

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getStoreForEditor, getStoreSiteStatus } from "@workspace/lib/store-sites/server";
 import { storeUrl } from "@workspace/lib/storefront";
+import { publicStoreSocialLinks } from "@workspace/lib/stores";
 import { designSystemSchema, sectionInstanceSchema, type SiteLocale } from "@workspace/store-sections";
 import { storeBuilderEnabled } from "@/components/dashboard/sidebar.config";
 import { loadStorePage } from "@/lib/stores/store-page.server";
@@ -52,7 +53,7 @@ export default async function StoreEditorPage({ params }: { params: Promise<{ st
       bannerUrl: store.bannerUrl,
       url: storeUrl(store.subdomain),
       contact: { phone: contact.phone ?? null, email: contact.email ?? null, whatsapp: contact.phone ?? null },
-      social: [],
+      social: publicStoreSocialLinks(store.contact),
       policies: [],
     },
     pages: editor.pages.map((page) => ({

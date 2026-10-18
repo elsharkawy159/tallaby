@@ -49,6 +49,24 @@ export function resolveSectionProps<P extends Record<string, unknown>>(
   return (parsed.success ? parsed.data : definition.defaultProps) as P;
 }
 
+const CONTENT_FIELD_TYPES = new Set(["text", "textarea", "image", "url"]);
+
+/**
+ * The seller-content props of every section (text, images, links and item
+ * lists), keyed by section id. applyTemplate keeps these when a template
+ * section has the same instance id as the store's (PLAN.md §8.1, P4-05).
+ */
+export function contentOverrideKeys(registry: SectionRegistry): Record<string, string[]> {
+  return Object.fromEntries(
+    registry
+      .list()
+      .map((d) => [
+        d.id,
+        [...d.propDefinitions.filter((p) => CONTENT_FIELD_TYPES.has(p.type)).map((p) => p.key), ...(d.itemCollections ?? []).map((c) => c.key)],
+      ]),
+  );
+}
+
 /** Every catalog query of a page, keyed by section instance id (for the host resolver). */
 export function collectCatalogQueries(
   sections: readonly SectionInstance[],

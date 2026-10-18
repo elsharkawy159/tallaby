@@ -33,6 +33,7 @@ import {
 } from "@workspace/lib/storefront";
 import { findSubdomainForCustomDomain } from "@workspace/lib/storefront/server";
 import { normalizeGovernorate } from "@workspace/lib/shipping";
+import { publicStoreSocialLinks } from "@workspace/lib/stores";
 
 /**
  * The storefront subdomain of the current request, or null on tallaby.com.
@@ -103,6 +104,7 @@ export function getStorefrontBySubdomain(subdomain: string) {
           subdomain: stores.subdomain,
           description: stores.description,
           logoUrl: stores.logoUrl,
+          faviconUrl: stores.faviconUrl,
           bannerUrl: stores.bannerUrl,
           contact: stores.contact,
           policies: stores.policies,
@@ -152,6 +154,7 @@ export function getStorefrontBySubdomain(subdomain: string) {
         description: row.description,
         storeDescription: row.description,
         logoUrl: row.logoUrl,
+        faviconUrl: row.faviconUrl,
         bannerUrl: row.bannerUrl,
         returnPolicy: policies.return ?? null,
         shippingPolicy: policies.shipping ?? null,
@@ -168,10 +171,12 @@ export function getStorefrontBySubdomain(subdomain: string) {
         governorate: normalizeGovernorate(state),
         /** The store's own domain once live (faster-eg.com), else null. */
         customDomain: domain?.domain ?? null,
+        /** Enabled social links (Website › Social media, P4-15), read live from the store row. */
+        social: publicStoreSocialLinks(row.contact),
       };
     },
-    // v4: resolves through stores (P5-00).
-    [`storefront-v4-${subdomain}`],
+    // v4: resolves through stores (P5-00); v5: social links (P4-15).
+    [`storefront-v5-${subdomain}`],
     { tags: ["sellers", sellerTags.subdomain(subdomain)], revalidate: 3600 },
   )();
 }

@@ -3,7 +3,8 @@ import { describe, expect, it } from "vitest";
 import type { PageContent, SectionInstance } from "../config/schema";
 import { validateSiteConfig } from "../config/validate";
 import { collectCatalogQueries } from "../core/registry";
-import { designSystemToCss } from "../core/theme";
+import { FONT_PAIRINGS, findFontPairing, storeFontFamily } from "../core/fonts";
+import { designSystemToCss, designSystemToTokens } from "../core/theme";
 import type { RenderContext } from "../core/types";
 import { STORE_SECTIONS, storeSectionRegistry } from "../sections";
 import { PageRenderer, SectionRenderer, SiteTheme } from "./render";
@@ -180,9 +181,36 @@ describe("PageRenderer and theme", () => {
 
   it("maps the design system onto the Classic tokens", () => {
     const css = designSystemToCss({ colors: { primary: "#ff0000", background: "#ffffff" }, spacing: { borderRadius: 4 } });
-    expect(css).toBe(".sf-site { --sf-brand: #ff0000; --primary: #ff0000; --sf-paper: #ffffff; --background: #ffffff; --sf-radius: 4px; }");
+    expect(css).toBe(
+      ".sf-site { --sf-brand: #ff0000; --primary: #ff0000; --sf-paper: #ffffff; --background: #ffffff; --sf-brand-ink: #ffffff; --primary-foreground: #ffffff; --sf-radius: 4px; }",
+    );
     expect(designSystemToCss(null)).toBe("");
     expect(designSystemToCss({ colors: { primary: "red;}</style><script>" }, spacing: {} })).toBe("");
     expect(html(<SiteTheme designSystem={{ colors: {}, spacing: {} }} />)).toBe("");
+  });
+
+  it("uses dark text on a light brand color (P4-13)", () => {
+    const tokens = designSystemToTokens({ colors: { primary: "#ffe066" }, spacing: {} });
+    expect(tokens["--sf-brand-ink"]).toBe("#10242b");
+    // Non-hex colors keep the Classic ink.
+    expect(designSystemToTokens({ colors: { primary: "oklch(0.7 0.1 200)" }, spacing: {} })["--sf-brand-ink"]).toBeUndefined();
+  });
+
+  it("maps only fonts the storefront loads (P4-13)", () => {
+    const tokens = designSystemToTokens({ colors: {}, spacing: {}, typography: { headingFont: "El Messiri", bodyFont: "Cairo" } });
+    expect(tokens["--sf-font-heading"]).toBe("var(--font-sf-el-messiri), system-ui, sans-serif");
+    expect(tokens["--sf-font-body"]).toBe("var(--font-sf-cairo), system-ui, sans-serif");
+    const unknown = designSystemToTokens({ colors: {}, spacing: {}, typography: { headingFont: "Comic Sans", bodyFont: "Papyrus" } });
+    expect(unknown).toEqual({});
+    expect(findFontPairing({ headingFont: "Noto Kufi Arabic", bodyFont: "IBM Plex Sans Arabic" }).id).toBe("kufi");
+    expect(findFontPairing({}).id).toBe("classic");
+    expect(FONT_PAIRINGS.every((p) => storeFontFamily(p.heading) && storeFontFamily(p.body))).toBe(true);
+  });
+
+  it("renders footer social links as labelled icons (P4-15)", () => {
+    const markup = html(<SectionRenderer instance={instance("store-footer")} registry={storeSectionRegistry} ctx={makeCtx()} />);
+    expect(markup).toContain('href="https://instagram.com/sara"');
+    expect(markup).toContain('aria-label="إنستجرام"');
+    expect(markup).toContain("<svg");
   });
 });

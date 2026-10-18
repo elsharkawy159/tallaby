@@ -3,6 +3,7 @@
  * P1-04). No database imports.
  */
 import { z } from "zod";
+import { SOCIAL_PLATFORM_KEYS, SOCIAL_VALUE_MAX, normalizeSocialLink } from "@workspace/store-sections/social";
 import { SUBDOMAIN_MAX_LENGTH, normalizeSubdomain, validateSubdomain, type SubdomainProblem } from "../storefront";
 
 export const STORE_STATUSES = ["active", "archived", "suspended"] as const;
@@ -108,6 +109,56 @@ export const storeCatalogInputSchema = z
   })
   .strict();
 export type StoreCatalogInput = z.input<typeof storeCatalogInputSchema>;
+
+/**
+ * Website › Social media (PLAN.md §8.8, P4-15): `stores.contact.social`.
+ * One entry per platform; every value is normalized to the platform's https
+ * URL (`normalizeSocialLink`), so a link can only point at that platform.
+ */
+export const storeSocialLinkSchema = z
+  .object({
+    platform: z.enum(SOCIAL_PLATFORM_KEYS),
+    value: z.string().trim().min(1).max(SOCIAL_VALUE_MAX),
+    enabled: z.boolean(),
+    order: z.number().int().min(0).max(100),
+  })
+  .strict()
+  .transform((link, ctx) => {
+    const url = normalizeSocialLink(link.platform, link.value);
+    if (!url) {
+      ctx.addIssue({ code: "custom", message: "invalid_social_link", path: ["value"] });
+      return z.NEVER;
+    }
+    return { ...link, value: url };
+  });
+
+export const storeSocialLinksSchema = z
+  .array(storeSocialLinkSchema)
+  .max(SOCIAL_PLATFORM_KEYS.length)
+  .refine((links) => new Set(links.map((l) => l.platform)).size === links.length, "duplicate_platform")
+  .transform((links) => [...links].sort((a, b) => a.order - b.order).map((link, order) => ({ ...link, order })));
+export type StoreSocialLink = z.output<typeof storeSocialLinkSchema>;
+
+/**
+ * The stored social list of a `stores.contact` value, re-validated on read
+ * (entries that no longer validate are dropped), in display order.
+ */
+export function readStoreSocialLinks(contact: unknown): StoreSocialLink[] {
+  const raw = (contact as { social?: unknown } | null)?.social;
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((entry) => storeSocialLinkSchema.safeParse(entry))
+    .filter((r) => r.success)
+    .map((r) => r.data)
+    .sort((a, b) => a.order - b.order);
+}
+
+/** Enabled links as the storefront renders them (`RenderContext.store.social`). */
+export function publicStoreSocialLinks(contact: unknown): { platform: string; url: string }[] {
+  return readStoreSocialLinks(contact)
+    .filter((link) => link.enabled)
+    .map((link) => ({ platform: link.platform, url: link.value }));
+}
 
 export const STORE_POLICY_KEYS =["return", "shipping", "privacy", "terms"] as const;
 export type StorePolicyKey = (typeof STORE_POLICY_KEYS)[number];

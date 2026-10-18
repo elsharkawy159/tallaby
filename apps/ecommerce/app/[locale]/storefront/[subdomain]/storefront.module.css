@@ -27,11 +27,12 @@
   --border: var(--sf-line);
 
   color: var(--sf-ink);
-  font-family: var(--font-storefront), system-ui, sans-serif;
+  /* A published design system may pick another loaded font (P4-13). */
+  font-family: var(--sf-font-body, var(--font-storefront)), system-ui, sans-serif;
 }
 
 .tokens :where(h1, h2, h3, h4) {
-  font-family: inherit;
+  font-family: var(--sf-font-heading, var(--sf-font-body, var(--font-storefront))), system-ui, sans-serif;
 }
 
 .root {
@@ -475,6 +476,13 @@
   background: #fff;
   color: var(--sf-ink);
   box-shadow: none;
+}
+
+/* Icon-only social link (P4-15). */
+.footerSocial {
+  width: 44px;
+  padding-inline: 0;
+  justify-content: center;
 }
 
 .footerButton:active {

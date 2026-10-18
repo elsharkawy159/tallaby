@@ -1,6 +1,9 @@
 import type { LucideIcon } from "lucide-react";
 import {
   AppWindow,
+  LayoutGrid,
+  Palette,
+  Share2,
   LayoutTemplate,
   BarChart3,
   Bike,
@@ -95,6 +98,9 @@ export const DASHBOARD_ROUTES: DashboardRoute[] = [
   { href: "/coupons", title: "promotions", parent: "marketing", icon: Gift },
   { href: "/marketing", title: "advertiseProducts", parent: "marketing", icon: TrendingUp },
   { href: "/stores/[storeId]/editor", title: "websiteBuilder", parent: "website", icon: LayoutTemplate },
+  { href: "/stores/[storeId]/website/templates", title: "templates", parent: "website", icon: LayoutGrid },
+  { href: "/stores/[storeId]/website/design", title: "designSystem", parent: "website", icon: Palette },
+  { href: "/stores/[storeId]/website/social", title: "socialMedia", parent: "website", icon: Share2 },
   { href: "/stores/[storeId]/website/media", title: "mediaLibrary", parent: "website", icon: Images },
   { href: "/stores/[storeId]/apps", title: "apps", icon: AppWindow },
   { href: "/financial", title: "accountStatements", parent: "finance", icon: DollarSign },

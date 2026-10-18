@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { sectionText, type SectionCopyKey } from "../core/copy";
 import type { SectionDefinition } from "../core/types";
+import { SocialIcon } from "../social/icon";
+import { getSocialPlatform } from "../social/platforms";
 import { SectionImage, SmartLink, cn, text } from "./_primitives";
 
 const POLICY_COPY: Record<"return" | "shipping" | "privacy" | "terms", SectionCopyKey> = {
@@ -162,13 +164,23 @@ export const storeFooter: SectionDefinition<FooterProps> = {
               <div>
                 <p className="mb-2 text-sm font-semibold">{sectionText("followUs", ctx.locale)}</p>
                 <ul className="flex flex-wrap gap-2 text-sm">
-                  {social.map((link) => (
-                    <li key={link.url}>
-                      <SmartLink ctx={ctx} href={link.url} className={cn("rounded-full border border-(--sf-line) bg-(--sf-paper) px-3 py-1 capitalize")}>
-                        {link.platform}
-                      </SmartLink>
-                    </li>
-                  ))}
+                  {social.map((link) => {
+                    const platform = getSocialPlatform(link.platform);
+                    return (
+                      <li key={link.url}>
+                        <SmartLink
+                          ctx={ctx}
+                          href={link.url}
+                          label={platform ? platform.label[ctx.locale] : link.platform}
+                          className={cn(
+                            "grid size-9 place-items-center rounded-full border border-(--sf-line) bg-(--sf-paper) text-(--sf-ink) hover:text-(--sf-brand)",
+                          )}
+                        >
+                          <SocialIcon platform={link.platform} className="size-4" />
+                        </SmartLink>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             )}

@@ -488,6 +488,31 @@
     "tryAnotherEmail": "Try Another Email",
     "sendResetLink": "Send Reset Link",
     "continueWithGoogle": "Continue with Google",
+    "welcomeBack": "Welcome back",
+    "signInSubtitle": "Sign in to manage your products, orders and store.",
+    "tabSignIn": "Sign in",
+    "tabCreateAccount": "Create account",
+    "orWithEmail": "or with email",
+    "newToTallaby": "New to Tallaby?",
+    "createSellerAccount": "Create a seller account",
+    "needHelp": "Need help?",
+    "helpMessage": "Hi, I need help signing in to my Tallaby seller account.",
+    "copyright": "© {year} Tallaby",
+    "panel": {
+      "pill": "Tallaby for Sellers",
+      "title": "Sell to more customers, <em>run it all from one place.</em>",
+      "description": "Tallaby is a multi-vendor marketplace. Open your store, list your products and let shoppers across the platform find you.",
+      "storefrontTitle": "Your own storefront",
+      "storefrontText": "Brand your store with a logo, cover and custom page.",
+      "ordersTitle": "Products & orders",
+      "ordersText": "Add listings, track stock and fulfil orders in one dashboard.",
+      "insightsTitle": "Sales insights",
+      "insightsText": "See what sells, where your visitors come from and how you grow.",
+      "marketingTitle": "Built-in marketing",
+      "marketingText": "Run coupons and promotions to bring shoppers back.",
+      "help": "Questions about selling? <link>Talk to our seller team</link>",
+      "helpMessage": "Hi, I have a question about selling on Tallaby."
+    },
     "errors": {
       "invalidCredentials": "Incorrect email or password.",
       "emailNotConfirmed": "Please confirm your email address before signing in.",
@@ -2995,6 +3020,130 @@
       "rateLimited": "Too many changes at once. Wait a moment and try again.",
       "generic": "Something went wrong. Try again.",
       "saveFirst": "Wait for your changes to be saved, then try again."
+    }
+  },
+  "websiteDesign": {
+    "title": "Design system",
+    "description": "Colors, fonts, brand and buttons for your whole website.",
+    "unsaved": "Unsaved changes",
+    "draftSaved": "Draft saved",
+    "savedDraft": "Draft saved. Publish to show it on your store.",
+    "published": "Published (version {number}). Your store shows it now.",
+    "readOnly": "This store is archived, so its design can't be changed.",
+    "reload": "Reload",
+    "reset": "Back to Classic",
+    "discard": "Discard changes",
+    "saveDraft": "Save draft",
+    "publish": "Publish",
+    "draftNote": "Colors, fonts and buttons are saved as a draft and go live when you publish.",
+    "openEditor": "Open the website editor",
+    "tabs": {
+      "colors": "Colors",
+      "typography": "Typography",
+      "brand": "Brand",
+      "buttons": "Buttons & layout"
+    },
+    "colors": {
+      "presets": "Color palettes",
+      "custom": "Custom colors",
+      "customHint": "Use a hex color such as #145163. Empty colors keep the Tallaby Classic look.",
+      "preset": {
+        "classic": "Tallaby Classic",
+        "ocean": "Ocean",
+        "forest": "Forest",
+        "sunset": "Sunset",
+        "berry": "Berry",
+        "midnight": "Midnight",
+        "rose": "Rose",
+        "sand": "Sand"
+      },
+      "fields": {
+        "primary": "Main color (buttons)",
+        "accent": "Highlight",
+        "secondary": "Soft background",
+        "background": "Background",
+        "foreground": "Text",
+        "muted": "Secondary text",
+        "border": "Lines"
+      }
+    },
+    "typography": {
+      "hint": "Font pairs that work in Arabic and English. Headings use the first font, text the second.",
+      "sampleHeading": "Welcome to our store",
+      "sampleBody": "Hand-picked products, delivered across Egypt.",
+      "classic": "Tallaby Classic"
+    },
+    "brand": {
+      "hint": "Logo, favicon and cover apply to your store right away; they don't wait for Publish.",
+      "save": "Save brand",
+      "saved": "Brand saved.",
+      "favicon": "Favicon",
+      "faviconHint": "The small square icon in browser tabs. Use a square image, at least 64 × 64.",
+      "uploadFavicon": "Upload favicon",
+      "changeFavicon": "Change favicon",
+      "remove": "Remove"
+    },
+    "buttons": {
+      "radius": "Corner roundness",
+      "sample": "Shop now",
+      "classic": "Classic",
+      "width": "Page width",
+      "widths": {
+        "narrow": "Narrow",
+        "standard": "Standard",
+        "wide": "Wide"
+      },
+      "spacing": "Space between sections",
+      "spacings": {
+        "compact": "Compact",
+        "standard": "Standard",
+        "airy": "Airy"
+      }
+    },
+    "preview": {
+      "title": "Preview",
+      "desktop": "Desktop",
+      "mobile": "Phone"
+    },
+    "errors": {
+      "notFound": "This store wasn't found.",
+      "readOnly": "This store is archived, so it can't be edited.",
+      "publishBlocked": "Your account can't publish right now. Contact support.",
+      "invalidContent": "One of the values isn't valid. Check the colors and try again.",
+      "invalidInput": "Check the details and try again.",
+      "versionConflict": "The design was changed in another tab. Reload before continuing.",
+      "invalidSite": "The website has a problem and couldn't be published. Open the editor to check it.",
+      "rateLimited": "Too many changes at once. Wait a moment and try again.",
+      "generic": "Something went wrong. Try again."
+    }
+  },
+  "websiteSocial": {
+    "title": "Social media",
+    "description": "Your accounts, shown as icons in your store's header and footer.",
+    "readOnly": "This store is archived, so its links can't be changed.",
+    "saved": "Social links saved. Your store shows them now.",
+    "save": "Save links",
+    "show": "Show",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "useStoreNumber": "Use the store's WhatsApp number",
+    "hint": "Links update on your store right away, without publishing. Change the order with the arrows.",
+    "invalid": {
+      "url": "Enter a {platform} link, e.g. the address of your page.",
+      "handle": "Enter your {platform} username or profile link.",
+      "phone": "Enter a mobile number with the country code, e.g. 201012345678."
+    },
+    "preview": {
+      "title": "Preview",
+      "description": "How the icons look in your store footer.",
+      "empty": "No links shown yet."
+    },
+    "errors": {
+      "notFound": "This store wasn't found.",
+      "readOnly": "This store is archived, so it can't be edited.",
+      "invalidInput": "One of the links isn't valid. Check it and try again.",
+      "rateLimited": "Too many changes at once. Wait a moment and try again.",
+      "generic": "Something went wrong. Try again."
     }
   }
 }

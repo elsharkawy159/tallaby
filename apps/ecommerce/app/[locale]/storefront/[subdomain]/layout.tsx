@@ -8,7 +8,7 @@ import { StorefrontHeader } from "./_components/storefront-header";
 import { StorefrontFooter } from "./_components/storefront-footer";
 import { MobileCartBar } from "./_components/mobile-cart-bar.client";
 import { ByTallabyBadge } from "./_components/by-tallaby-badge";
-import { storefrontFont } from "./_components/storefront-font";
+import { storeFontVariables, storefrontFont } from "./_components/storefront-font";
 import { StorefrontTracking } from "./_components/seller-tracking";
 import { StoreSiteChrome } from "./_components/store-site";
 import { SITE_ROOT_CLASS, SiteTheme } from "@workspace/store-sections/render";
@@ -28,6 +28,8 @@ export async function generateMetadata({
   const url = storeUrl(store.subdomain, store.customDomain);
   const description = store.description || store.storeDescription || undefined;
   const image = store.bannerUrl || store.logoUrl;
+  // Website › Design system › Brand (P4-13): the favicon, else the logo.
+  const icon = store.faviconUrl || store.logoUrl;
 
   return {
     // The store is the brand here, not Tallaby.
@@ -46,7 +48,7 @@ export async function generateMetadata({
       description,
       images: image ? [getPublicUrl(image, "sellers")] : undefined,
     },
-    icons: store.logoUrl ? { icon: getPublicUrl(store.logoUrl, "sellers") } : undefined,
+    icons: icon ? { icon: getPublicUrl(icon, "sellers") } : undefined,
   };
 }
 
@@ -60,7 +62,7 @@ export default async function StorefrontLayout({
   const site = await getCachedPublishedSite(store.id, store.storeId, store.subdomain);
 
   return (
-    <div className={cn(storefrontFont.variable, s.root, site && SITE_ROOT_CLASS)}>
+    <div className={cn(storefrontFont.variable, s.root, site && [SITE_ROOT_CLASS, storeFontVariables])}>
       {site && <SiteTheme designSystem={site.designSystem} />}
       {site ? <StoreSiteChrome store={store} site={site} locale={locale} part="header" /> : <StorefrontHeader store={store} />}
       <main className="flex-1">{children}</main>
