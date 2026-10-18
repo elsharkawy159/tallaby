@@ -10,7 +10,7 @@ Read these before changing anything: [`PROJECT.md`](PROJECT.md) (architecture), 
 4. **Stop and ask** before changing the agreed business model (`PLAN.md` §13), running a destructive or production migration, or changing money and ledger logic outside an approved task.
 5. **Tenant isolation.** The `sellers` row (`sellers.id = users.id`) is the **account** (plan, wallet, trial, legal data). The planned **`stores`** table is the **tenant**: a seller can own several stores, up to the plan limit (Free = 3; `sellers.plan` defaults to `'free'`, and limits live in the code plans module). Server code bypasses RLS through Drizzle, so every query must check that the store belongs to the session's seller and filter child rows by `store_id`. On storefronts, the store comes from the request host. Store-scoped actions always take an explicit `storeId`; never use a "current store" cookie as the target of a write. Never trust seller or store IDs sent by the client. Hiding a UI element is not authorization.
 6. **Migrations.**
-   - Write hand-written, idempotent SQL in `packages/db/migrations/NNNN_name.sql` (next number: `0063`; `0049` is the 2026-10-17 RLS security fix, `0050`–`0062` are on staging only).
+   - Write hand-written, idempotent SQL in `packages/db/migrations/NNNN_name.sql` (next number: `0065`; `0049` is the 2026-10-17 RLS security fix, `0050`–`0064` are on staging only).
    - Mirror each change in `packages/db/src/drizzle/schema.ts` and `relations.ts`.
    - **Do not run `drizzle-kit generate`.** Its journal stops at `0033`.
    - New server-only tables get RLS enabled with no policies.

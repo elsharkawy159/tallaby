@@ -1891,6 +1891,16 @@ Each task lists: **ID · Priority · Depends on**, then Files (existing → veri
 
 **P4-05 · P1 · deps: P4-03, P4-04** Templates gallery + apply: `apps/dashboard/app/(main)/stores/[storeId]/website/templates/*` [Proposed]; §8.1; writes `template_installs`.
 - Tests: the merge keeps text overrides; product, order and other-store rows are untouched.
+- **Done 2026-10-18.**
+  - Pure merge `mergeTemplateIntoDraft` (`@workspace/store-sections/templates`). A section with the same instance id and section id keeps the seller's content props (`contentOverrideKeys`, also per translation). The home page lands on the store's home page and other pages match by slug. Missing pages are created, other store pages are never deleted, and the design system becomes the template's.
+  - `@workspace/lib/store-sites/server` (`templates.server.ts`):
+    - `listStoreTemplates`: active templates with a valid current version, plus the last install.
+    - `applyStoreTemplate`: locks the store and writes **drafts only**, then `stores.template_key` / `previous_template_key` and a `template_installs` row. Premium templates are refused until the theme store exists.
+    - `undoStoreTemplate`: only the latest install, once.
+  - **Deviation:** undo restores the exact pre-apply drafts, saved in `template_installs.previous_draft` (**`0064_template_install_undo.sql`**, staging only; it was `0071` in the worktree), instead of re-applying `previous_template_key`. Edits made after the apply are replaced too, and the confirm dialog says so.
+  - Dashboard `website/templates`: gallery that works with one template (category filter hidden with one category; outline preview when there's no thumbnail), "Use template" / "Reset to this template" with a confirm dialog, and the undo banner. Actions are rate-limited 20/10 min and don't invalidate the storefront (drafts only).
+  - "Preview with my products" is not in the gallery yet; P4-08's "Preview on my store" covers the draft after applying.
+  - Tests: `templates.integration.test.ts` (keeps text in a matching section, A1 and the live revision untouched, undo exact and once, foreign store and unknown key refused); store-sections `apply.test.ts`.
 
 **P4-06 · P0 · deps: P4-01, P4-04** Editor route + page manager.
 - Files [Proposed]: `apps/dashboard/app/(builder)/layout.tsx` (replace the copied pass-through with the auth/seller gate + `NextIntlClientProvider`), `apps/dashboard/app/(builder)/stores/[storeId]/editor/page.tsx`. Adapt `components/website/{website-pages-list,add-page-dialog,manage-page-sheet}.tsx`.
@@ -2368,26 +2378,26 @@ Tick each box when its acceptance is met, and add the date and commit.
 - [x] P4-02 Shared section library — 2026-10-17, `d2a1fa6`
 - [x] P4-03 Tallaby Classic (no visual change) + template seed — 2026-10-17, `ed282f2` (`0062` on staging only)
 - [x] P4-04 Builder actions (store-scoped) — 2026-10-17, `2068c58`
-- [ ] P4-05 Templates gallery
+- [x] P4-05 Templates gallery — 2026-10-18, `91830db` (merge + `0064` in `d24f6da`; see the task note)
 - [x] P4-06 Editor route + pages — 2026-10-18, `3983b6d` (browser check pending)
 - [x] P4-07 Catalog sections + store catalog mode (D24) — pickers/sections `d2a1fa6`, `3983b6d`; catalog mode 2026-10-18, `f59a774` (see the task note)
-- [ ] P4-08 Preview
-- [ ] P4-09 Media library
-- [ ] P4-10 Forms
-- [ ] P4-11 CMS
-- [ ] P4-12 Website overview
-- [ ] P4-13 Design system page
-- [ ] P4-14 Domain & SEO page
-- [ ] P4-15 Social media
-- [ ] P4-16 Blog
-- [ ] P4-17 Pages list
+- [x] P4-08 Preview — 2026-10-18, `34b6684` (needs `STORE_PREVIEW_SECRET` set; browser check pending)
+- [x] P4-09 Media library — 2026-10-18, `b0335fe`
+- [x] P4-10 Forms — 2026-10-18, `b6b36b6`
+- [~] P4-11 CMS — storefront side (routes, sections, `@workspace/lib/cms`) 2026-10-18, `643feae`; **dashboard collections/schema/record UI still to do**
+- [x] P4-12 Website overview — 2026-10-18, `34b6684`
+- [x] P4-13 Design system page — 2026-10-18, `d24f6da`
+- [x] P4-14 Domain & SEO page — 2026-10-18, `bfc82e0`
+- [x] P4-15 Social media — 2026-10-18, `d24f6da`
+- [x] P4-16 Blog — 2026-10-18, `643feae`
+- [x] P4-17 Pages list — 2026-10-18, `34b6684`
 
 **Phase 5**
 - [x] P5-00 Host → store resolution — 2026-10-17, `dd46b73` (catalog `selected` filtering deferred with the picker, see note)
 - [x] P5-01 Published rendering + custom page routes — 2026-10-17, `72d9432` (CMS routes come with P4-11)
 - [x] P5-02 Catalog resolvers — 2026-10-17, `72d9432`; store catalog mode 2026-10-18 with P4-07 (`f59a774`)
 - [x] P5-03 Cache tags — 2026-10-17, `2e1e904` + `72d9432`
-- [ ] P5-04 Host robots/sitemap
+- [x] P5-04 Host robots/sitemap — 2026-10-18, `bfc82e0` (with P4-14)
 - [x] P5-05 Marketplace tracking off storefronts — 2026-10-17, `cb63997` (Meta pixel + CAPI, GA4, PostHog, Elfsight chat)
 
 **Phase 6**
@@ -2409,19 +2419,19 @@ Tick each box when its acceptance is met, and add the date and commit.
 - [x] P7-02 Apps UI — 2026-10-17, `2e1e904`
 - [x] P7-03 Storefront injection (with consent banner) — 2026-10-17, `54e7e94`
 - [x] P7-04 Event bridge — 2026-10-17, `54c10df`
-- [ ] P7-05 Meta CAPI
-- [ ] P7-06 Google Sheets
-- [ ] P7-07 Shopify import
+- [x] P7-05 Meta CAPI — 2026-10-18, `5ca12d9`
+- [x] P7-06 Google Sheets — 2026-10-18, `5ca12d9` (needs Google OAuth env + the daily cron)
+- [x] P7-07 Shopify import — 2026-10-18, `5ca12d9`
 
 **Phase 8**
-- [ ] P8-01 Fulfillment request flow
+- [x] P8-01 Fulfillment request flow — 2026-10-18, `7e98443` (docs part in `14b2cd0`)
 - [ ] P8-02 Shipping wiring
 - [ ] P8-03 Fulfillment billing
 
 **Phase 9**
-- [ ] P9-01 Admin seller site/fee view
-- [ ] P9-02 Admin overrides + audit
-- [ ] P9-03 Monitoring
+- [x] P9-01 Admin seller site/fee view — 2026-10-18, `ee63c27`
+- [x] P9-02 Admin overrides + audit — 2026-10-18, `ee63c27` (`0063`, staging only)
+- [x] P9-03 Monitoring — 2026-10-18, `ee63c27` (structured `[fee]`/`[publish]`/`[integration]` logs; no external service)
 - [ ] P9-04 Security review
 - [ ] P9-05 Pilot rollout
 - [ ] P9-06 Docs updated
@@ -2598,3 +2608,59 @@ After P1-08 and P1-01 (`3289639`), typecheck and test match the baseline. `@work
 - Env / config to finish: `NEXT_PUBLIC_SITE_URL` in `apps/marketing/.env` points at the dashboard; set it to the marketing origin. Add the marketing `/api/auth/callback` URL to the Supabase redirect allow-list. Optional `NEXT_PUBLIC_DASHBOARD_URL`, `NEXT_PUBLIC_MARKETPLACE_URL`.
 - Store-preview product photos `assets/store/p*.png` from the design could not be exported (binary); previews use existing Supabase product images instead. Facebook/LinkedIn links were placeholders in the design and are not shown.
 - Checks: typecheck clean and pricing tests 5/5 before the signup/footer/WhatsApp changes. Final typecheck and tests (incl. the copied intent-token test) **not yet run**: the machine ran out of memory and the runs were stopped. Lint blocked by the baseline ESLint 10 crash (ecommerce crashes the same way). No browser check yet.
+  - **Update (same day, later):** marketing typecheck clean and tests 11/11 in the full run below.
+
+### 2026-10-18 — Agent worktrees merged into `feat/seller-saas`, P4-05
+
+- **Source.** Nine `.claude/worktrees/agent-*` worktrees from an earlier session held uncommitted work. They were all at `f59a774` with no commits, the agents had stopped by about 03:16, and none of it was in this plan. Each worktree's diff was applied here with a 3-way merge and committed per task group:
+
+  | Commit | Tasks |
+  |---|---|
+  | `7e98443` | P8-01 |
+  | `ee63c27` | P9-01, P9-02, P9-03 |
+  | `5ca12d9` | P7-05, P7-06, P7-07 |
+  | `b0335fe` | P4-09 |
+  | `d24f6da` | P4-13, P4-15 |
+  | `34b6684` | P4-08, P4-12, P4-17 |
+  | `bfc82e0` | P4-14, P5-04 |
+  | `b6b36b6` | P4-10 |
+  | `643feae` | P4-16, P4-11 storefront |
+
+  `48ac7b0` holds the typecheck and routing fixes. The worktrees themselves were left in place, unchanged.
+- **Gaps the agents left (filled here):**
+  - Missing message namespaces, now in AR + EN: `websiteDesign`, `websiteSocial`, `domainSeo` (plus 4 Arabic store-link/custom-domain errors), `websiteBlog`.
+  - The blog post editor (`post-editor.client.tsx`), imported by the new/edit pages but never written.
+  - The sidebar Forms badge (`countNewFormSubmissions`).
+  - Blog nav entries, and the blog rollout-flag gate.
+  - The P4-05 server function and gallery: only the pure merge and the migration existed.
+  - **Still missing:** the generic CMS dashboard UI (P4-11).
+- **Migrations.** The worktree `0071_template_install_undo.sql` was renumbered to **`0064`** (next free number after the admin `0063`). Both were already present on staging: the columns and table exist, checked read-only. **Production is untouched and now needs `0050`–`0064`.**
+- **Merge notes:**
+  - The storefront cache key went to `storefront-v6` (seo + social).
+  - The storefront metadata keeps the preview noindex and the favicon.
+  - `@workspace/db/log` casts fixed, `isAdminWriteRole` is now a type guard, and the cached CMS queries' `tags` take the full argument list.
+  - Store-host rewrites no longer keep a trailing slash: `/blog/?page=2` failed the routing test.
+- **Uncommitted owner work was left alone:**
+  - The owner committed `14b2cd0` from GitHub Desktop during the merge. It included `docs/fulfillment.md` with the P8-01 doc change, which was staged at that moment.
+  - The owner's own edits to `docs/fulfillment.md` and `apps/ecommerce/messages/ar.json` were set aside during the merge and restored, still uncommitted.
+  - The owner's in-progress login files (`apps/dashboard/app/login/*`, `components/auth/o-auth.tsx`) were never staged.
+- **Checks:**
+
+  | Check | Result |
+  |---|---|
+  | Typecheck | db, lib, store-sections, cache, dashboard, backend, shipping and marketing are clean. Ecommerce and admin show only the baseline errors (`product-details.tsx`, `profile.chunks.tsx`, `admin/app/layout.tsx`) |
+  | Unit tests | lib 392, store-sections 154, ecommerce 126, dashboard 113, cache 35, marketing 11, db 7, emails 3: all pass |
+  | lib integration (`TEST_DATABASE_URL` = staging) | 569 tests, all pass after two test-only fixes: 60 s timeouts on the CMS and media suites, and the media helper sending `metadata` as a jsonb string |
+
+  Lint is still blocked by the baseline ESLint 10 crash. `packages/db` integration tests were not re-run (known wallet failures, §23 2026-10-17).
+- **Manual browser checks still to do (owner):**
+  - Templates: "Use template" on a second store, then edit, undo and publish.
+  - Design system: preset, font and radius, then publish and check the storefront.
+  - Social links on the Classic footer.
+  - Domain & SEO: save, then check the page source, `robots.txt` and `sitemap.xml`.
+  - Forms: add a contact form section, submit on the store, check the inbox.
+  - Media: upload, pick it in the editor, delete.
+  - Blog: draft, schedule, publish, then `/blog`.
+  - Preview on my store (set `STORE_PREVIEW_SECRET`).
+  - Admin seller page overrides.
+  - Fulfillment request.
