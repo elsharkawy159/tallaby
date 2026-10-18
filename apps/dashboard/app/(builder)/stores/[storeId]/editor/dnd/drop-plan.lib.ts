@@ -21,6 +21,7 @@ import {
   storeSectionRegistry,
   type MakeId,
 } from "@workspace/store-sections/render";
+import { payloadPreset } from "../editor-library.lib";
 import { getInstance, partField } from "../editor-selection.lib";
 import type { Selection } from "../editor.store";
 import type { CanvasPayload, CanvasProbe, DropPlan, ImageCandidate, NodeSlot } from "./dnd.types";
@@ -112,8 +113,10 @@ export function planDrop(payload: CanvasPayload, probe: CanvasProbe | null, sour
 
   if (payload.kind === "section") {
     const definition = storeSectionRegistry.get(payload.sectionId);
+    // A library preset may start from a section hidden from the old list (contact details).
+    const listed = definition?.insertable !== false || Boolean(payloadPreset(payload.sectionId, payload.presetId));
     // Header and footer belong to every page; they are chosen with a click, not dropped.
-    if (!definition || definition.chrome || definition.insertable === false) return { kind: "invalid", reason: "unsupported", index: at };
+    if (!definition || definition.chrome || !listed) return { kind: "invalid", reason: "unsupported", index: at };
     return full ? { kind: "invalid", reason: "limit", index: at } : { kind: "insert-section", index: at };
   }
 
@@ -197,8 +200,8 @@ export function planDrop(payload: CanvasPayload, probe: CanvasProbe | null, sour
 
 export type DropDeps = {
   makeNodeId: MakeId;
-  /** A fresh instance of a library section (new id, default props); null for an unknown id. */
-  makeSection: (sectionId: string) => SectionInstance | null;
+  /** A fresh instance of a library section (new id; the preset's props, or the defaults); null for an unknown id. */
+  makeSection: (sectionId: string, presetId?: string) => SectionInstance | null;
   /** Image `src` for a photo drop (the imported media path; media drops carry their own). */
   src?: string;
 };
@@ -234,7 +237,7 @@ export function applyDropPlan(
   switch (plan.kind) {
     case "insert-section": {
       if (payload.kind !== "section" || !room) return null;
-      const instance = deps.makeSection(payload.sectionId);
+      const instance = deps.makeSection(payload.sectionId, payload.presetId);
       if (!instance) return null;
       return { content: placeSection(content, instance, plan.index), select: { target: "page", sectionId: instance.id } };
     }

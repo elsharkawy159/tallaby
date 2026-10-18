@@ -23,7 +23,9 @@ import {
   type AnySectionDefinition,
   type ElementType,
   type LayoutPreset,
+  type SectionPreset,
 } from "@workspace/store-sections/render";
+import { acceptsCardPreset, applyCardPreset, applyPresetDesign, chromeFromPreset, payloadPreset, presetInstance } from "./editor-library.lib";
 import { copyStyle, pasteStyle, readOwnStyle, setStyle, type StyleClip, type StyleTarget } from "./editor-style.lib";
 import { getInstance, partField, refOf, setNodeProp, withTree, writePart } from "./editor-selection.lib";
 import { createInstance, duplicateSection, insertSection, moveSection, newId, removeSection, updateSection } from "./editor.lib";
@@ -224,6 +226,44 @@ export function createEditorCommands(store: EditorStore) {
     },
     addPreset(preset: LayoutPreset) {
       return placeNodes(preset.nodes.map((template) => fromTemplate(template, makeNodeId)));
+    },
+
+    /**
+     * Add › Sections (P4B-05): a library preset. Header/footer presets restyle
+     * the shared chrome (keeping its content) and select it; a product-card
+     * design restyles the selected product section, or adds a product grid
+     * with that card; anything else is inserted after the selection. One
+     * undo step. Returns what happened, or false when nothing changed.
+     */
+    addLibraryPreset(preset: SectionPreset): "inserted" | "restyled" | "chrome" | false {
+      const definition = storeSectionRegistry.get(preset.sectionId);
+      if (!definition) return false;
+      if (definition.chrome) {
+        const part = definition.chrome;
+        const next = chromeFromPreset(state()[part], preset, part === "header" ? "hdr" : "ftr");
+        if (!next) return false;
+        state().editChrome(part, next);
+        state().select({ target: part });
+        return "chrome";
+      }
+      if (preset.kind === "card") {
+        const sel = state().selection;
+        const instance = selected();
+        if (sel && instance && acceptsCardPreset(instance, preset)) {
+          state().editSection(refOf(sel), (i) => applyCardPreset(i, preset));
+          state().select(refOf(sel));
+          return "restyled";
+        }
+      }
+      const instance = presetInstance(preset, newId());
+      return instance && insertSectionInstance(instance) ? "inserted" : false;
+    },
+
+    /** Inspector layout picker: the selected section takes another preset's design; content and data stay. */
+    applyPresetDesign(preset: SectionPreset) {
+      const sel = state().selection;
+      if (!sel) return;
+      state().editSection(refOf(sel), (instance) => applyPresetDesign(instance, preset));
     },
 
     duplicate() {
@@ -461,7 +501,9 @@ export function createEditorCommands(store: EditorStore) {
       if (!page) return false;
       const result = applyDropPlan(page.content, plan, payload, {
         makeNodeId,
-        makeSection: (sectionId) => {
+        makeSection: (sectionId, presetId) => {
+          const preset = payloadPreset(sectionId, presetId);
+          if (preset) return presetInstance(preset, newId());
           const definition = storeSectionRegistry.get(sectionId);
           return definition ? createInstance(definition) : null;
         },

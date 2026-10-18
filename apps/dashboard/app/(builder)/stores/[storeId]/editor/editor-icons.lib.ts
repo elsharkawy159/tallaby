@@ -1,5 +1,14 @@
 /** Palette and layer icons for elements, presets and section groups (editor only). */
 import {
+  BadgeCheck,
+  BookOpen,
+  ChartNoAxesColumn,
+  FileText,
+  IdCard,
+  Mail,
+  PanelBottom,
+  Phone,
+  TicketPercent,
   Badge,
   Box,
   Columns2,
@@ -101,4 +110,23 @@ export const CATEGORY_ICONS: Record<SectionCategory, LucideIcon> = {
   contact: Contact,
   footer: Footprints,
   custom: LayoutGrid,
+};
+
+/** Section library categories (P4B-05), keyed by `LibraryCategory.icon`. */
+export const LIBRARY_ICONS: Record<string, LucideIcon> = {
+  "panel-top": PanelTop,
+  image: ImageIcon,
+  "layout-grid": LayoutGrid,
+  "shopping-bag": ShoppingBag,
+  "credit-card": IdCard,
+  "badge-check": BadgeCheck,
+  "ticket-percent": TicketPercent,
+  sparkles: Sparkles,
+  "message-square-quote": MessageSquareQuote,
+  "book-open": BookOpen,
+  "chart-no-axes-column": ChartNoAxesColumn,
+  "file-text": FileText,
+  mail: Mail,
+  phone: Phone,
+  "panel-bottom": PanelBottom,
 };

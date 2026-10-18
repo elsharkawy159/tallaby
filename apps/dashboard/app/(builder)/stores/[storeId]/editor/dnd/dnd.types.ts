@@ -17,8 +17,8 @@ export type DragPayload =
   | { kind: "element"; elementType: ElementType }
   /** A layout preset (group of elements) from the Add › Elements tab. */
   | { kind: "preset"; presetId: string }
-  /** A new section from the Add › Sections tab (`sectionId` = library section id). */
-  | { kind: "section"; sectionId: string }
+  /** A new section from the Add › Sections tab (`sectionId` = library section id; `presetId` = the library layout it starts from). */
+  | { kind: "section"; sectionId: string; presetId?: string }
   /** An Explore photo: replaces an image under the pointer, or inserts an Image element. */
   | { kind: "photo"; photo: DragPhoto }
   /** An image from the store's media library (Images tab): same as a photo, already imported. */

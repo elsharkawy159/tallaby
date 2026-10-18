@@ -4,6 +4,8 @@ import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { ChevronDown, Eye, EyeOff, Monitor, RotateCcw, Smartphone, Tablet } from "lucide-react";
 import type { SectionInstance } from "@workspace/store-sections";
+import type { SectionShellStyle } from "@workspace/store-sections/render";
+import { SectionShellControls } from "./controls/section-shell.client";
 import { Button } from "@workspace/ui/components/button";
 import { Switch } from "@workspace/ui/components/switch";
 import {
@@ -44,6 +46,7 @@ export function StylePanel({
   device,
   onPatch,
   onReset,
+  shell,
 }: {
   instance: SectionInstance;
   target: StyleTarget;
@@ -52,6 +55,8 @@ export function StylePanel({
   device: Device;
   onPatch: (patch: StylePatch) => void;
   onReset: () => void;
+  /** The shared section frame (page sections only; one value for every device). */
+  shell?: { value: SectionShellStyle; onChange: (patch: Partial<SectionShellStyle>) => void; storeId: string; readOnly: boolean };
 }) {
   const t = useTranslations("storeEditor.style");
   const style = readEffectiveStyle(instance, target, device);
@@ -72,6 +77,12 @@ export function StylePanel({
         )}
       </div>
 
+      {shell && (
+        <Group title={t("groups.section")}>
+          <SectionShellControls value={shell.value} onChange={shell.onChange} storeId={shell.storeId} readOnly={shell.readOnly} />
+          {device !== "desktop" && <p className="mt-2 text-xs text-muted-foreground">{t("shell.allDevices")}</p>}
+        </Group>
+      )}
       {textual && (
         <Group title={t("groups.typography")}>
           <TypographyControls style={style} set={onPatch} />

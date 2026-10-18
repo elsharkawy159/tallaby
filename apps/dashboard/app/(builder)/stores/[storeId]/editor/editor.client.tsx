@@ -14,6 +14,7 @@ import {
   type StoreProfile,
 } from "@workspace/store-sections/render";
 import { Button } from "@workspace/ui/components/button";
+import { cn } from "@workspace/ui/lib/utils";
 import { MediaPicker } from "@/components/media/media-picker.client";
 import { EditorDndProvider } from "./dnd/editor-dnd.client";
 import { EditorCanvas } from "./editor-canvas.client";
@@ -24,6 +25,7 @@ import { EditorSidebar } from "./editor-sidebar.client";
 import { EditorTopbar } from "./editor-topbar.client";
 import type { EditorCategory, EditorForm, EditorProduct } from "./editor.data";
 import { getInstance, isImageSelection, refOf } from "./editor-selection.lib";
+import { storeDataCounts } from "./editor-library.lib";
 import { resolveCanvasCatalog } from "./editor.lib";
 import { publish } from "./editor.server";
 import { createEditorStore, type EditorPage, type EditorStore, type Rail } from "./editor.store";
@@ -118,6 +120,12 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
   const onFrameKeyDown = useEditorShortcuts(store, commands, shortcutActions);
 
   const page = pages.find((p) => p.id === activePageId) ?? pages[0]!;
+  const navPages = pages.filter((p) => !p.isHome && p.showInNav).length;
+  const counts = useMemo(
+    () => storeDataCounts({ products: catalog.products, categories: catalog.categories, forms, contact: initial.store.contact, navPages }),
+    [catalog.products, catalog.categories, forms, initial.store.contact, navPages],
+  );
+  const libraryWide = useStore(store, (s) => s.libraryWide && s.rail === "add" && s.addTab === "sections");
 
   // What does not change with page edits (also used by the Add panel's section previews).
   const baseCtx = useMemo<Omit<RenderContext, "pages" | "catalog" | "renderClassic">>(
@@ -236,13 +244,19 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
       <div className="flex min-h-0 flex-1">
         <EditorRail store={store} panelOpen={panelOpen} onToggle={toggleRail} />
         {panelOpen && (
-          <aside aria-label={t(`rail.${rail}`)} className="flex w-[300px] shrink-0 flex-col border-e bg-background">
+          <aside
+            aria-label={t(`rail.${rail}`)}
+            className={cn(
+              "flex shrink-0 flex-col border-e bg-background transition-[width] duration-200 ease-out motion-reduce:transition-none",
+              libraryWide ? "w-[min(560px,calc(100vw-30rem))]" : "w-[300px]",
+            )}
+          >
             {rail === "add" && (
               <AddPanel
                 store={store}
                 commands={commands}
                 uiLocale={uiLocale}
-                preview={{ ctx: baseCtx, catalog, designSystem, defaultLocale, fontClassName: initial.fontClassName }}
+                preview={{ ctx: baseCtx, catalog, designSystem, defaultLocale, fontClassName: initial.fontClassName, counts }}
                 templates={initial.templates}
                 templateHost={{
                   storeId: initial.storeId,

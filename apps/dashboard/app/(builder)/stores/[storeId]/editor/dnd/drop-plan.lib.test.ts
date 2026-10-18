@@ -52,6 +52,31 @@ describe("section drops", () => {
     }
   });
 
+  it("passes the library preset to the new section (P4B-05)", () => {
+    const content = page();
+    const payload: CanvasPayload = { kind: "section", sectionId: "hero-banner", presetId: "hero.centered" };
+    const plan = planDrop(payload, probe({ sectionIndex: 1 }), src(content));
+    const seen: [string, string | undefined][] = [];
+    const result = apply(content, plan, payload, {
+      makeSection: (sectionId: string, presetId?: string) => {
+        seen.push([sectionId, presetId]);
+        return { id: "from-preset", sectionId, version: 1, props: { align: "center" } };
+      },
+    });
+    expect(seen).toEqual([["hero-banner", "hero.centered"]]);
+    expect(result!.content.sections[1]).toMatchObject({ id: "from-preset", props: { align: "center" } });
+  });
+
+  it("allows a library preset of a section hidden from the old list, and nothing else hidden", () => {
+    const content = page();
+    expect(planDrop({ kind: "section", sectionId: "contact-info", presetId: "contact.info" }, probe(), src(content))).toEqual({ kind: "insert-section", index: 0 });
+    expect(planDrop({ kind: "section", sectionId: "contact-info" }, probe(), src(content))).toMatchObject({ kind: "invalid" });
+    // A preset id for another section does not unlock a hidden one.
+    expect(planDrop({ kind: "section", sectionId: "contact-info", presetId: "hero.centered" }, probe(), src(content))).toMatchObject({ kind: "invalid" });
+    // Header presets are set with a click, never dropped.
+    expect(planDrop({ kind: "section", sectionId: "store-header", presetId: "headers.minimal" }, probe(), src(content))).toMatchObject({ kind: "invalid" });
+  });
+
   it("moves a section to the start or end and never moves it onto itself", () => {
     const content = page();
     const toStart = planDrop({ kind: "move-section", instanceId: "faq" }, probe({ sectionIndex: 0 }), src(content));

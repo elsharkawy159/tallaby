@@ -6,6 +6,7 @@ import { ArrowDown, ArrowUp, Plus, RotateCcw, Trash2, X } from "lucide-react";
 import type { ComponentNode, SectionInstance, SiteLocale } from "@workspace/store-sections";
 import {
   getElementDefinition,
+  presetsForSection,
   type AnySectionDefinition,
   type ItemCollectionDefinition,
   type Localized,
@@ -18,13 +19,22 @@ import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { Switch } from "@workspace/ui/components/switch";
 import { Textarea } from "@workspace/ui/components/textarea";
+import { cn } from "@workspace/ui/lib/utils";
 import { MediaPicker } from "@/components/media/media-picker.client";
+import { LayoutDiagram } from "./controls/layout-diagram.client";
 import type { EditorCategory, EditorForm, EditorProduct } from "./editor.data";
+import { applyPresetDesign, currentPreset, fieldGroups } from "./editor-library.lib";
 import { addItem, readItemProp, readProp, removeItem, setItemProp, setSectionProp } from "./editor.lib";
 import { placeItem } from "./editor-slots.lib";
 import { partField, readNodeProp, readPart, setNodeProp, writePart } from "./editor-selection.lib";
 
-type Catalog = { products: EditorProduct[]; categories: EditorCategory[]; forms: EditorForm[] };
+type Catalog = {
+  products: EditorProduct[];
+  categories: EditorCategory[];
+  forms: EditorForm[];
+  /** This seller's coupons for campaign pickers; undefined when not loaded. */
+  coupons?: { id: string; label: string }[];
+};
 
 /** The store whose media library the image fields open (P4-09). */
 const InspectorStore = createContext<{ storeId: string; readOnly: boolean } | null>(null);
@@ -159,6 +169,36 @@ export function Field({
       );
     case "products":
       return <ProductsPicker id={id} value={Array.isArray(value) ? (value as string[]) : []} onChange={onChange} catalog={catalog} uiLocale={uiLocale} />;
+    case "categories":
+      return (
+        <OrderedPicker
+          id={id}
+          value={Array.isArray(value) ? (value as string[]) : []}
+          onChange={onChange}
+          options={catalog.categories.map((c) => ({ id: c.id, label: label(c.name, uiLocale) }))}
+          placeholder={t("searchCategories")}
+          missing={t("missingCategory")}
+        />
+      );
+    case "coupon":
+      // Only this seller's coupons; the storefront resolves the id for its own seller and hides inactive or expired ones.
+      return (
+        <div className="space-y-1.5">
+          <select id={id} className={SELECT_CLASS} value={text} onChange={(e) => onChange(e.target.value)}>
+            <option value="">{t("chooseCoupon")}</option>
+            {(catalog.coupons ?? []).map((coupon) => (
+              <option key={coupon.id} value={coupon.id}>
+                {coupon.label}
+              </option>
+            ))}
+          </select>
+          {catalog.coupons !== undefined && catalog.coupons.length === 0 && <p className="text-xs text-muted-foreground">{t("noCoupons")}</p>}
+        </div>
+      );
+    case "datetime":
+      return <DateTimeField id={id} value={text} onChange={onChange} />;
+    case "layout":
+      return <LayoutPicker id={id} prop={prop} value={text} onChange={onChange} uiLocale={uiLocale} />;
     default:
       return (
         <div>
@@ -217,6 +257,106 @@ function ProductsPicker({
           ))}
         </ul>
       )}
+    </div>
+  );
+}
+
+/** Ordered pick from a list (categories); same controls as the product picker. */
+function OrderedPicker({
+  id,
+  value,
+  onChange,
+  options,
+  placeholder,
+  missing,
+}: {
+  id: string;
+  value: string[];
+  onChange: (value: unknown) => void;
+  options: { id: string; label: string }[];
+  placeholder: string;
+  missing: string;
+}) {
+  const t = useTranslations("storeEditor.inspector");
+  const [query, setQuery] = useState("");
+  const byId = useMemo(() => new Map(options.map((o) => [o.id, o])), [options]);
+  const matches = options.filter((o) => !value.includes(o.id) && (!query || o.label.toLowerCase().includes(query.toLowerCase()))).slice(0, 8);
+  return (
+    <div className="space-y-2">
+      {value.length > 0 && (
+        <ul className="space-y-1">
+          {value.map((itemId, index) => (
+            <li key={itemId} className="flex items-center gap-1 rounded-md border px-2 py-1 text-sm">
+              <span className="min-w-0 flex-1 truncate">{byId.get(itemId)?.label ?? missing}</span>
+              <Button type="button" size="icon" variant="ghost" className="size-7" disabled={index === 0} onClick={() => onChange(moveIds(value, index, index - 1))} aria-label={t("moveUp")}>
+                <ArrowUp className="size-3.5" />
+              </Button>
+              <Button type="button" size="icon" variant="ghost" className="size-7" onClick={() => onChange(value.filter((v) => v !== itemId))} aria-label={t("remove")}>
+                <X className="size-3.5" />
+              </Button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <Input id={id} placeholder={placeholder} value={query} onChange={(e) => setQuery(e.target.value)} />
+      {matches.length > 0 && (
+        <ul className="max-h-48 overflow-auto rounded-md border">
+          {matches.map((option) => (
+            <li key={option.id}>
+              <button type="button" className="w-full px-2 py-1.5 text-start text-sm hover:bg-muted" onClick={() => onChange([...value, option.id])}>
+                {option.label}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+/** A local date and time, stored as an ISO instant (empty clears it). */
+function DateTimeField({ id, value, onChange }: { id: string; value: string; onChange: (value: unknown) => void }) {
+  const t = useTranslations("storeEditor.inspector");
+  const date = value ? new Date(value) : null;
+  const local = date && !Number.isNaN(date.getTime()) ? new Date(date.getTime() - date.getTimezoneOffset() * 60_000).toISOString().slice(0, 16) : "";
+  const past = date !== null && !Number.isNaN(date.getTime()) && date.getTime() < Date.now();
+  return (
+    <div className="space-y-1">
+      <Input
+        id={id}
+        type="datetime-local"
+        dir="ltr"
+        value={local}
+        onChange={(e) => onChange(e.target.value ? new Date(e.target.value).toISOString() : "")}
+      />
+      <p className={past ? "text-xs text-amber-700 dark:text-amber-400" : "text-xs text-muted-foreground"}>{past ? t("datePast") : t("dateHint")}</p>
+    </div>
+  );
+}
+
+/** Visual picker for `layout` fields: one small diagram per option. */
+function LayoutPicker({ id, prop, value, onChange, uiLocale }: { id: string; prop: PropDefinition; value: string; onChange: (value: unknown) => void; uiLocale: string }) {
+  return (
+    <div id={id} role="radiogroup" aria-label={label(prop.label, uiLocale)} className="grid grid-cols-3 gap-1.5">
+      {(prop.options ?? []).map((option) => {
+        const active = option.value === value;
+        return (
+          <button
+            key={option.value}
+            type="button"
+            role="radio"
+            aria-checked={active}
+            onClick={() => onChange(option.value)}
+            className={cn(
+              "flex flex-col items-center gap-1 rounded-md border p-1.5 text-[11px] leading-tight transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              active ? "border-foreground bg-muted text-foreground" : "text-muted-foreground hover:border-foreground/40 hover:text-foreground",
+            )}
+          >
+            <LayoutDiagram name={option.diagram ?? option.value} className="h-8 w-full" />
+            <span className="line-clamp-2 text-center">{label(option.label, uiLocale)}</span>
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -309,6 +449,16 @@ function Collection({
   );
 }
 
+/** A titled group of inspector fields (Design, Data, Content, Options). */
+function FieldGroup({ title, children }: { title: string | null; children: React.ReactNode }) {
+  return (
+    <section className="space-y-3">
+      {title && <h3 className="text-xs font-semibold text-muted-foreground">{title}</h3>}
+      {children}
+    </section>
+  );
+}
+
 /** Field id of a part in the full inspector (`items.2.title` → `<id>-items-2-title`). */
 const partFieldId = (instanceId: string, part: string) => `${instanceId}-${part.replaceAll(".", "-")}`;
 
@@ -344,6 +494,30 @@ export function SectionInspector({
   const target = { locale, defaultLocale };
   const mediaStore = useMemo(() => ({ storeId, readOnly }), [storeId, readOnly]);
   const focusedField = partField(definition, focusPart);
+  const groups = fieldGroups(definition, instance.props);
+  const designs = useMemo(() => presetsForSection(definition.id), [definition.id]);
+  const activeDesign = currentPreset(instance, designs);
+
+  const renderField = (prop: PropDefinition) => {
+    const editTarget = { ...target, translatable: prop.translatable };
+    const fieldId = `${instance.id}-${prop.key}`;
+    const locked = locale !== defaultLocale && !prop.translatable;
+    return (
+      <div key={prop.key} className="space-y-1.5">
+        <Label htmlFor={fieldId}>{label(prop.label, uiLocale)}</Label>
+        <fieldset disabled={locked} className={locked ? "opacity-60" : undefined}>
+          <Field
+            id={fieldId}
+            prop={prop}
+            value={readProp(instance, prop.key, editTarget)}
+            onChange={(value) => onChange(setSectionProp(instance, prop.key, value, editTarget))}
+            uiLocale={uiLocale}
+            catalog={catalog}
+          />
+        </fieldset>
+      </div>
+    );
+  };
 
   useEffect(() => {
     if (!focusPart) return;
@@ -383,26 +557,39 @@ export function SectionInspector({
         {definition.propDefinitions.length === 0 && !definition.itemCollections?.length && (
           <p className="text-sm text-muted-foreground">{t("nothingToEdit")}</p>
         )}
-        {definition.propDefinitions.map((prop) => {
-          const editTarget = { ...target, translatable: prop.translatable };
-          const fieldId = `${instance.id}-${prop.key}`;
-          const locked = locale !== defaultLocale && !prop.translatable;
-          return (
-            <div key={prop.key} className="space-y-1.5">
-              <Label htmlFor={fieldId}>{label(prop.label, uiLocale)}</Label>
-              <fieldset disabled={locked} className={locked ? "opacity-60" : undefined}>
-                <Field
-                  id={fieldId}
-                  prop={prop}
-                  value={readProp(instance, prop.key, editTarget)}
-                  onChange={(value) => onChange(setSectionProp(instance, prop.key, value, editTarget))}
-                  uiLocale={uiLocale}
-                  catalog={catalog}
-                />
-              </fieldset>
-            </div>
-          );
-        })}
+        {(designs.length > 1 || groups.design.length > 0) && (
+          <FieldGroup title={t("groups.design")}>
+            {designs.length > 1 && (
+              <div role="radiogroup" aria-label={t("designs")} className="flex flex-wrap gap-1.5">
+                {designs.map((preset) => {
+                  const active = preset.id === activeDesign?.id;
+                  return (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      role="radio"
+                      aria-checked={active}
+                      disabled={locale !== defaultLocale}
+                      onClick={() => onChange(applyPresetDesign(instance, preset))}
+                      className={cn(
+                        "rounded-full border px-2.5 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50",
+                        active ? "border-foreground bg-foreground text-background" : "text-muted-foreground hover:border-foreground/40 hover:text-foreground",
+                      )}
+                    >
+                      {label(preset.name, uiLocale)}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            {groups.design.map(renderField)}
+          </FieldGroup>
+        )}
+        {groups.data.length > 0 && <FieldGroup title={t("groups.data")}>{groups.data.map(renderField)}</FieldGroup>}
+        {groups.content.length > 0 && (
+          <FieldGroup title={groups.data.length || groups.design.length || designs.length > 1 ? t("groups.content") : null}>{groups.content.map(renderField)}</FieldGroup>
+        )}
+        {groups.options.length > 0 && <FieldGroup title={t("groups.options")}>{groups.options.map(renderField)}</FieldGroup>}
         {definition.itemCollections?.map((collection) => (
           <Collection
             key={collection.key}

@@ -3060,7 +3060,20 @@
       "chooseForm": "Choose a form",
       "formDisabled": "{name} (turned off)",
       "manageForms": "Create and edit forms",
-      "styleOnly": "This element only has style settings. Open the Style tab."
+      "styleOnly": "This element only has style settings. Open the Style tab.",
+      "groups": {
+        "design": "Design",
+        "data": "Data",
+        "content": "Content",
+        "options": "Options"
+      },
+      "designs": "Designs",
+      "searchCategories": "Search categories…",
+      "missingCategory": "Removed category",
+      "chooseCoupon": "Choose a coupon…",
+      "noCoupons": "You have no active coupons. Create one in Coupons.",
+      "dateHint": "Shown in your visitors’ local time.",
+      "datePast": "This date has passed, so nothing is shown on your store."
     },
     "save": {
       "saved": "Saved",
@@ -3186,7 +3199,41 @@
       "addSection": "Add section",
       "useSection": "Use this section",
       "dragHint": "Drag onto the page, or click to add after the selected section",
-      "dragElementHint": "Drag onto the page, or click to add after the selection"
+      "dragElementHint": "Drag onto the page, or click to add after the selection",
+      "library": {
+        "intro": "Pick a category, then drag a section onto the page or click it to add it after the selection.",
+        "search": "Search all sections…",
+        "back": "All categories",
+        "all": "All",
+        "filterLabel": "Show",
+        "filters": {
+          "all": "All",
+          "dynamic": "Store data",
+          "interactive": "Interactive",
+          "static": "Static"
+        },
+        "count": "{count, plural, one {# section} other {# sections}}",
+        "noResults": "No sections match. Try another word or clear the filters.",
+        "clearFilters": "Clear filters",
+        "preview": "Preview",
+        "add": "Add to page",
+        "useChrome": "Use on every page",
+        "applyCard": "Apply to selected section",
+        "inUse": "In use",
+        "cardsIntro": "Card designs change how products look. Select a product section first to restyle it, or add a new product grid with this card.",
+        "data": {
+          "products": "{count, plural, =0 {No products yet} one {Shows your # product} other {Shows your # products}}",
+          "categories": "{count, plural, =0 {No categories yet} one {Shows your # category} other {Shows your # categories}}",
+          "brands": "{count, plural, =0 {No brands yet} one {Shows your # brand} other {Shows your # brands}}",
+          "reviews": "{count, plural, =0 {No reviews yet} one {Shows # customer review} other {Shows # customer reviews}}",
+          "promotions": "{count, plural, =0 {No active coupons} one {# active coupon} other {# active coupons}}",
+          "articles": "Shows your blog posts",
+          "storeInfo": "Uses your store details",
+          "navigation": "Uses your site pages",
+          "forms": "{count, plural, =0 {No forms yet} one {Uses one of your # form} other {Uses one of your # forms}}"
+        },
+        "dataUnknown": "Uses your store data"
+      }
     },
     "layers": {
       "title": "Layers",
@@ -3342,10 +3389,49 @@
         "spacing": "Spacing",
         "size": "Size",
         "box": "Fill and border",
-        "visibility": "Visibility"
+        "visibility": "Visibility",
+        "section": "Section"
       },
       "hideOn": "Hide on {device}",
-      "hideHint": "It stays visible on the other devices."
+      "hideHint": "It stays visible on the other devices.",
+      "shell": {
+        "scheme": "Colours",
+        "schemes": {
+          "default": "Page",
+          "muted": "Soft",
+          "primary": "Brand",
+          "dark": "Dark"
+        },
+        "spacing": "Spacing",
+        "paddings": {
+          "none": "None",
+          "sm": "S",
+          "md": "M",
+          "lg": "L",
+          "xl": "XL"
+        },
+        "width": "Width",
+        "widths": {
+          "contained": "Contained",
+          "wide": "Wide",
+          "full": "Full"
+        },
+        "background": "Background image",
+        "noImage": "No background image.",
+        "removeImage": "Remove background image",
+        "overlay": "Overlay",
+        "backgroundHint": "Shows behind sections without their own background. The overlay darkens it so text stays readable.",
+        "entrance": "Entrance",
+        "animations": {
+          "none": "None",
+          "fade": "Fade",
+          "rise": "Rise"
+        },
+        "anchor": "Link name",
+        "anchorHint": "Lowercase letters, numbers and dashes. Lets buttons link to this section.",
+        "anchorLink": "Link to it with /#{anchor}",
+        "allDevices": "The section frame is the same on every device."
+      }
     },
     "popover": {
       "kinds": {

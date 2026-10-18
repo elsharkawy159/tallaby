@@ -13,6 +13,7 @@ import { clearStyle, setStyle, styleKindOf } from "./editor-style.lib";
 import type { EditorCategory, EditorForm, EditorProduct } from "./editor.data";
 import type { EditorStore } from "./editor.store";
 import { StylePanel } from "./style-panel.client";
+import { readShell, setShell } from "./editor-library.lib";
 
 type Catalog = { products: EditorProduct[]; categories: EditorCategory[]; forms: EditorForm[] };
 
@@ -160,6 +161,16 @@ export function EditorSidebar({
               state.editSection(ref, (i) => setStyle(i, target, device, patch), `style:${selectionKey}:${device}:${Object.keys(patch).join(",")}`)
             }
             onReset={() => state.editSection(ref, (i) => clearStyle(i, target, device))}
+            shell={
+              ref.target === "page" && target.kind === "section"
+                ? {
+                    value: readShell(instance),
+                    onChange: (patch) => state.editSection(ref, (i) => setShell(i, patch), `shell:${selectionKey}:${Object.keys(patch).join(",")}`),
+                    storeId,
+                    readOnly,
+                  }
+                : undefined
+            }
           />
         )}
       </div>

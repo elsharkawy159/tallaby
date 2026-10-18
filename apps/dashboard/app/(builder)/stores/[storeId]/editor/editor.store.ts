@@ -63,6 +63,8 @@ export type EditorState = {
   saveStatus: SaveStatus;
   rail: Rail;
   addTab: AddTab;
+  /** Add › Sections is browsing a library category or search results; the panel widens to two columns. */
+  libraryWide: boolean;
   inspectorTab: "content" | "style";
   /** Inspector shows only the selected part's field ("Selected element only"). */
   focusSelected: boolean;
@@ -88,6 +90,7 @@ export type EditorActions = {
   setDevice: (device: Device) => void;
   setRail: (rail: Rail) => void;
   setAddTab: (tab: EditorState["addTab"]) => void;
+  setLibraryWide: (value: boolean) => void;
   setInspectorTab: (tab: EditorState["inspectorTab"]) => void;
   setFocusSelected: (value: boolean) => void;
   toggleGridOverlay: () => void;
@@ -164,6 +167,7 @@ export function createEditorStore(initial: Pick<EditorState, "pages" | "header" 
       saveStatus: "saved",
       rail: "add",
       addTab: "elements",
+      libraryWide: false,
       inspectorTab: "content",
       focusSelected: false,
       gridOverlay: false,
@@ -215,6 +219,7 @@ export function createEditorStore(initial: Pick<EditorState, "pages" | "header" 
       setDevice: (device) => set({ device }),
       setRail: (rail) => set({ rail }),
       setAddTab: (addTab) => set({ addTab }),
+      setLibraryWide: (libraryWide) => set({ libraryWide }),
       setInspectorTab: (inspectorTab) => set({ inspectorTab }),
       setFocusSelected: (focusSelected) => set({ focusSelected }),
       toggleGridOverlay: () => set((state) => ({ gridOverlay: !state.gridOverlay })),
