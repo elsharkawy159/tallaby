@@ -40,7 +40,7 @@ const post = (slug: string, extra: Record<string, unknown> = {}) => ({
   ...extra,
 });
 
-describe.skipIf(!TEST_DATABASE_URL)("cms and blog (integration)", () => {
+describe.skipIf(!TEST_DATABASE_URL)("cms and blog (integration)", { timeout: 60_000 }, () => {
   const client = postgres(TEST_DATABASE_URL ?? "postgres://unused", { prepare: false, max: 4 });
   const db = drizzle(client, { schema: s });
   let w: IsolationWorld;

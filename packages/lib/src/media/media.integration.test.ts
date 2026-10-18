@@ -28,7 +28,7 @@ import {
  */
 const TEST_DATABASE_URL = process.env.TEST_DATABASE_URL;
 
-describe.skipIf(!TEST_DATABASE_URL)("media library (integration)", () => {
+describe.skipIf(!TEST_DATABASE_URL)("media library (integration)", { timeout: 60_000 }, () => {
   const client = postgres(TEST_DATABASE_URL ?? "postgres://unused", { prepare: false, max: 4 });
   const db = drizzle(client, { schema: s });
   let w: IsolationWorld;
@@ -40,7 +40,7 @@ describe.skipIf(!TEST_DATABASE_URL)("media library (integration)", () => {
   async function putObject(name: string, size = 1234, mimetype = "image/png") {
     await client`
       INSERT INTO storage.objects (bucket_id, name, metadata)
-      VALUES ('store-media', ${name}, ${client.json({ size, mimetype })})`;
+      VALUES ('store-media', ${name}, ${JSON.stringify({ size, mimetype })}::jsonb)`;
     return name;
   }
 
