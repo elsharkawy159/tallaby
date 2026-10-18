@@ -7,5 +7,5 @@ export default async function StorePaymentsPage({ params }: { params: Promise<{ 
   const store = await loadStorePage(storeId);
   const payments = parseStorePayments((store.settings as Record<string, unknown> | null)?.payments);
 
-  return <StorePaymentsSettings storeId={store.id} storeName={store.name} initial={payments} readOnly={store.status !== "active"} />;
+  return <StorePaymentsSettings storeId={store.id} initial={payments} readOnly={store.status !== "active"} />;
 }

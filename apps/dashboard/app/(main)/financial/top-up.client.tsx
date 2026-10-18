@@ -13,9 +13,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@workspace/ui/components/dialog";
-import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
-import { BUTTON_CLASS, FIELD_CLASS } from "@/components/form/form-ui";
+import { BUTTON_CLASS } from "@/components/form/form-ui";
+import { CurrencyInput } from "@/components/form/currency-input";
 import { startTopUp } from "./top-up.server";
 
 const PRESETS = ["100", "250", "500", "1000"];
@@ -75,16 +75,13 @@ export function TopUpButton({ disabled }: { disabled?: boolean }) {
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="top-up-amount">{t("amount")}</Label>
-              <Input
+              <CurrencyInput
                 id="top-up-amount"
-                dir="ltr"
-                inputMode="decimal"
-                className={FIELD_CLASS}
                 value={amount}
-                aria-invalid={error ? true : undefined}
+                invalid={!!error}
                 aria-describedby="top-up-hint"
-                onChange={(event) => {
-                  setAmount(event.target.value);
+                onChange={(value) => {
+                  setAmount(value);
                   setError(null);
                 }}
               />

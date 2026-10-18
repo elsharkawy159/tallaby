@@ -34,6 +34,7 @@ import { Label } from "@workspace/ui/components/label";
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@workspace/ui/components/sheet";
 import { Switch } from "@workspace/ui/components/switch";
 import { BUTTON_CLASS, FIELD_CLASS, LabelNote, SectionCard, SMALL_BUTTON_CLASS } from "@/components/form/form-ui";
+import { CurrencyInput } from "@/components/form/currency-input";
 import { cn } from "@/lib/utils";
 import { deleteShippingZone, saveShippingSettings, saveShippingZone } from "./shipping.server";
 import { toZoneInput, type ZoneFormValues } from "./shipping.dto";
@@ -241,16 +242,12 @@ function MethodCard({
           {method === "tallaby" && (
             <div className="grid gap-1.5">
               <Label htmlFor="free-over">{t("freeOver")}</Label>
-              <Input
+              <CurrencyInput
                 id="free-over"
-                type="number"
-                min={0}
-                dir="ltr"
-                className={FIELD_CLASS}
                 disabled={readOnly}
                 placeholder={t("freeOverPlaceholder")}
                 value={freeOver}
-                onChange={(e) => setFreeOver(e.target.value)}
+                onChange={setFreeOver}
               />
               <LabelNote>{t("freeOverHelp")}</LabelNote>
             </div>
@@ -443,18 +440,28 @@ function ZoneSheet({
     return (
       <div className="grid gap-1.5">
         <Label htmlFor={`zone-${key}`}>{t(`fields.${key}`)}</Label>
-        <Input
-          id={`zone-${key}`}
-          type="number"
-          min={0}
-          step={key.startsWith("delivery") ? 1 : 0.01}
-          dir="ltr"
-          className={cn(FIELD_CLASS, invalid && "border-destructive")}
-          aria-invalid={invalid}
-          placeholder={opts.placeholder}
-          value={values[key]}
-          onChange={(e) => set(key, e.target.value)}
-        />
+        {key.startsWith("delivery") ? (
+          <Input
+            id={`zone-${key}`}
+            type="number"
+            min={0}
+            step={1}
+            dir="ltr"
+            className={cn(FIELD_CLASS, invalid && "border-destructive")}
+            aria-invalid={invalid}
+            placeholder={opts.placeholder}
+            value={values[key]}
+            onChange={(e) => set(key, e.target.value)}
+          />
+        ) : (
+          <CurrencyInput
+            id={`zone-${key}`}
+            invalid={invalid}
+            placeholder={opts.placeholder}
+            value={values[key]}
+            onChange={(v) => set(key, v)}
+          />
+        )}
         {opts.help && <LabelNote>{opts.help}</LabelNote>}
       </div>
     );

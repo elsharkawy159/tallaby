@@ -55,6 +55,15 @@ describe("validateMethodChange", () => {
     expect(missing).toMatchObject({ success: false, error: "invalid_details" });
   });
 
+  it("sets and clears the COD order limit", () => {
+    const set = validateMethodChange(base, "cod", { enabled: true, maxOrder: 5000 });
+    expect(set).toMatchObject({ success: true, data: { cod: { maxOrder: 5000 } } });
+    if (!set.success) return;
+    const cleared = validateMethodChange(set.data, "cod", { enabled: true, maxOrder: null });
+    expect(cleared.success && cleared.data.cod?.maxOrder).toBeUndefined();
+    expect(validateMethodChange(base, "cod", { enabled: true, maxOrder: -1 }).success).toBe(false);
+  });
+
   it("requires at least one InstaPay identifier and validates each", () => {
     expect(validateMethodChange(base, "instapay", { enabled: true, details: { holderName: "Omar" } }).success).toBe(false);
     expect(

@@ -152,6 +152,8 @@ export type MethodChange = {
   details?: unknown;
   /** COD only. */
   fee?: number;
+  /** COD only: the method is hidden for orders above this (EGP); null clears it. */
+  maxOrder?: number | null;
   note?: string;
 };
 
@@ -176,6 +178,7 @@ export function validateMethodChange(
       ...prev,
       enabled: change.enabled,
       ...(change.fee !== undefined && { fee: change.fee }),
+      ...(change.maxOrder !== undefined && { maxOrder: change.maxOrder ?? undefined }),
       ...(change.note !== undefined && { note: change.note || undefined }),
     });
     if (!cod.success) return { success: false, error: "invalid_details" };

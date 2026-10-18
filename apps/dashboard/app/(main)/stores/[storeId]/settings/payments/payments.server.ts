@@ -27,7 +27,7 @@ const ERRORS: Record<string, StorePaymentsErrorKey> = {
 export async function saveStorePaymentMethod(
   storeId: string,
   method: string,
-  change: { enabled: boolean; details?: unknown; fee?: number; note?: string },
+  change: { enabled: boolean; details?: unknown; fee?: number; maxOrder?: number | null; note?: string },
 ): Promise<StorePaymentsResult<StorePayments>> {
   try {
     const { seller, store } = await requireStore(String(storeId), { forWrite: true });
@@ -37,6 +37,7 @@ export async function saveStorePaymentMethod(
       enabled: change?.enabled === true,
       ...(change?.details !== undefined && { details: change.details }),
       ...(typeof change?.fee === "number" && { fee: change.fee }),
+      ...((typeof change?.maxOrder === "number" || change?.maxOrder === null) && { maxOrder: change.maxOrder }),
       ...(typeof change?.note === "string" && { note: change.note }),
     });
     if (!result.success) return { success: false, error: ERRORS[result.error] ?? "generic" };
