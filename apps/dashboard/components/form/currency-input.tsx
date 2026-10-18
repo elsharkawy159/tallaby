@@ -25,18 +25,24 @@ export function CurrencyInput({
   decimals = true,
   invalid,
   className,
+  inputClassName,
+  addonClassName,
   ...props
 }: Omit<React.ComponentProps<"input">, "value" | "onChange" | "type"> & {
   value: string;
   onChange: (value: string) => void;
   decimals?: boolean;
   invalid?: boolean;
+  /** For a larger amount field (e.g. the top-up dialog). */
+  inputClassName?: string;
+  addonClassName?: string;
 }) {
   return (
     <InputGroup dir="ltr" invalid={invalid} className={cn(props.disabled && "opacity-60", className)}>
-      <CurrencyAddon />
+      <CurrencyAddon className={addonClassName} />
       <GroupInput
         {...props}
+        className={inputClassName}
         inputMode={decimals ? "decimal" : "numeric"}
         aria-invalid={invalid || undefined}
         value={value}

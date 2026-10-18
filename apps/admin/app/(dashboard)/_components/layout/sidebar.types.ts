@@ -9,6 +9,8 @@ export interface SidebarCounts {
   pendingProducts: number;
   /** Sellers awaiting approval. */
   pendingSellers: number;
+  /** Manual store-wallet top-ups (Vodafone Cash / InstaPay) waiting for review. */
+  pendingStoreTopUps: number;
 }
 
 export interface SidebarProps {
@@ -24,4 +26,5 @@ export const EMPTY_SIDEBAR_COUNTS: SidebarCounts = {
   pendingOrders: 0,
   pendingProducts: 0,
   pendingSellers: 0,
+  pendingStoreTopUps: 0,
 };

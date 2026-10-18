@@ -31,6 +31,7 @@ import {
   Warehouse,
   TicketPercent,
   PlugZap,
+  Banknote,
 } from "lucide-react";
 import type { SidebarCounts, SidebarProps } from "./sidebar.types";
 import { SIDEBAR_COUNT_BADGE_CLASS } from "./sidebar.types";
@@ -127,6 +128,13 @@ const sidebarLinks: SidebarLink[] = [
     title: "Wallets",
     href: "/wallets",
     icon: Wallet,
+  },
+  {
+    title: "Store top-ups",
+    href: "/store-top-ups",
+    icon: Banknote,
+    countKey: "pendingStoreTopUps",
+    countLabel: "Store top-ups waiting for review",
   },
   {
     title: "Affiliates",

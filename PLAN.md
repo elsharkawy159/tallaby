@@ -1734,7 +1734,7 @@ Each task lists: **ID · Priority · Depends on**, then Files (existing → veri
 - Acceptance: every existing page is reachable; the old URLs redirect.
 - **Done 2026-10-17 (`ee1678d`).** `components/dashboard/sidebar.config.ts` holds the §7.2 sitemap as data, with items marked `live | soon | planned`:
   - `planned` items stay hidden until their task ships, so no link leads to a 404. Each task flips its items to `live`.
-  - The Website group needs `STORE_BUILDER_SELLER_IDS` (`all` or a comma list of seller ids). It is a new server env var, unset = hidden.
+  - The Website group needs `STORE_BUILDER_SELLER_IDS` (`all` or a comma list of seller ids). It is a new server env var, unset = hidden. *(2026-10-18: default flipped, unset now = all sellers; see §23.)*
   - The store switcher (`store-switcher.{client,server}.tsx`) stores the choice in the `tallaby_store` cookie, which is **navigation only**. `selectStore` accepts only the seller's own stores, and `lib/stores/current-store.server.ts` ignores unknown ids.
   - `DASHBOARD_ROUTES` supports `[storeId]` patterns. The command palette skips them.
   - Tests: every live sidebar link is in `DASHBOARD_ROUTES`, every label exists in AR/EN, and every existing page is still reachable.
@@ -2732,3 +2732,49 @@ After P1-08 and P1-01 (`3289639`), typecheck and test match the baseline. `@work
   - Payments: set up a wallet, switch it off and on, and confirm the last method stays locked. Edit COD's fee and max order.
   - Pick "جنيهاً" in Store settings and check the storefront prices.
   - Click the header wallet box, then do a Kashier test top-up and confirm it returns to `/wallet/top-up`.
+
+### 2026-10-18 — Sidebar regrouped into 9 sections (owner request)
+
+- **New order** (`components/dashboard/sidebar.config.ts`, `components/layout/dashboard-routes.lib.ts`): Dashboard · Orders (Orders, Delivery tracking) · Products · Website & Content (flag-gated; the Website and Content groups merged back into one) · Marketing · Fulfillment & Shipping (Riders, Shipping settings, Fulfillment) · Finance & Reports · Apps · Settings (Store settings, Payment methods, My stores, Account settings, Plan & usage, Help).
+- No URL, badge, icon or flag logic changed. Group keys renamed: `ordersShipping`→`ordersGroup`, `website`+`content`→`websiteContent`, `storeSettings`+`account`→`settingsGroup`, new `fulfillmentShipping`; the Store settings link now uses `nav.storeSettings` instead of `nav.general`. Messages updated in AR and EN.
+- **Active link:** new `findActiveHref` picks the single most specific matching link, so `/settings/plan` lights Plan & usage (not Settings) and only one group auto-opens.
+- **Kept outside the spec:** Finance › Wallet (`/wallet`), which the spec didn't list but is an existing page.
+- **Checks:** dashboard typecheck clean; dashboard tests 120 pass (sidebar config 20). Lint still blocked by the baseline ESLint crash (`Class extends value undefined`, typescript-eslint vs ESLint 10).
+- **Manual browser check (owner):** AR/RTL and EN, desktop and mobile sheet, collapsed rail; flag on and off; `/orders/delivery` highlights only Delivery tracking.
+
+### 2026-10-18 — Store builder released to all sellers (owner request)
+
+- `storeBuilderEnabled` (`components/dashboard/sidebar.config.ts`) now treats an unset `STORE_BUILDER_SELLER_IDS` as `"all"`, so every current and future seller gets Website & Content, the editor and the website pages in every environment without extra config. The flag still works as an override: a comma list limits it, an empty value switches it off.
+- Side effect, by design of the existing flag: Store settings no longer shows the brand fields (`brandInSettings`); they live in the builder.
+- Documented in `apps/dashboard/.env.example`; 2 new tests in `sidebar.config.test.ts`.
+- **Check on deploy:** make sure no environment sets `STORE_BUILDER_SELLER_IDS` to an empty or old list, or it overrides the new default.
+
+### 2026-10-18 — Manual wallet top-ups: Vodafone Cash / InstaPay with receipt and admin approval (owner request)
+
+- **Seller (`/wallet` › Top up wallet):**
+  - A three-step dialog (`sm:max-w-[560px]`, no autofocus):
+    1. Amount and method: the large EGP field with `min=100` and presets, then Vodafone Cash or InstaPay.
+    2. Transfer slip: the exact amount and Tallaby's number, each with a copy button, plus the owner-provided masked holder name. Steps to follow, and an optional "number you sent from".
+    3. Receipt: pick or drop a JPG/PNG/WEBP up to 5 MB, with a preview, then **Send for review**.
+  - The wallet page shows a "{amount} under review" chip on the balance and a **Top-up requests** list (under review, added, or rejected with the admin's reason).
+  - Accounts are in `TALLABY_TOP_UP_ACCOUNTS`: Vodafone Cash 01003272830, InstaPay 01152372358.
+- **Money rules:**
+  - Submitting records a `seller_wallet_top_ups` row (provider `vodafone_cash`/`instapay`, status `pending`) and credits nothing.
+  - Only `reviewManualStoreTopUp` (`@workspace/lib/admin`) credits the wallet. In one locked transaction it re-checks the admin, moves the row out of `pending` once, posts `top_up` through `postStoreWalletEntry` (claim `top_up:<id>`) and writes `admin_audit_log` (`approve_top_up` / `reject_top_up`).
+  - A rejection requires a reason.
+  - Up to 3 open requests per seller. One request per receipt file.
+  - The minimum top-up is now **EGP 100** (`STORE_TOP_UP_MIN_EGP`), for Kashier as well.
+- **Receipts:**
+  - Stored in the private bucket `store-top-up-proofs` (migration `0066`, applied on staging and idempotent). Sellers can upload into their own `{sellerId}/` folder and read their own files; they can't overwrite or delete.
+  - The server action checks the path shape and that the file exists before recording the request.
+  - Admins see receipts through 30-minute signed URLs.
+- **Admin:** a new **Store top-ups** page (`/store-top-ups`) with a sidebar badge for pending requests. It shows a receipt card per request with Approve (note optional) or Reject (reason required), plus a Reviewed tab.
+- **Not used in the UI:** the Kashier card top-up code is kept, but the dialog no longer offers it.
+- **Checks:**
+  - Typecheck: dashboard, admin and lib are clean apart from the baseline errors.
+  - Tests: lib 576 of 578 pass with staging integration. The new `manual-top-up.integration.test.ts` proves that submitting credits nothing, a non-admin is refused, approval credits once with one audit row, a replay is refused, and a rejection needs a reason. The 2 failures are in `seller-setup.integration.test.ts`; they pass when run alone (7/7), so they are flaky under full-suite load on the shared staging database. Dashboard 122 pass.
+- **Manual browser check (owner):**
+  - Top up 100 EGP by InstaPay with a screenshot and confirm it shows as under review.
+  - Approve it in admin › Store top-ups and confirm the balance rises once.
+  - Reject a second one with a reason and confirm the seller sees it.
+- **Production:** needs `0066`.

@@ -40,12 +40,12 @@
     "supportMessageStoreLink": "Store link: {url}",
     "supportMessageQuestion": "I have a question about: ",
     "editProduct": "Edit product",
-    "account": "Account",
-    "ordersShipping": "Orders & Shipping",
+    "settingsGroup": "Settings",
+    "ordersGroup": "Orders",
     "deliveryTracking": "Delivery tracking",
     "riders": "Riders",
     "shippingSettings": "Shipping settings",
-    "website": "Website",
+    "websiteContent": "Website & Content",
     "websiteOverview": "Overview",
     "websiteBuilder": "Website builder",
     "templates": "Templates",
@@ -57,7 +57,8 @@
     "forms": "Forms",
     "mediaLibrary": "Media library",
     "apps": "Apps",
-    "finance": "Finance",
+    "finance": "Finance & Reports",
+    "fulfillmentShipping": "Fulfillment & Shipping",
     "storeSettings": "Store settings",
     "general": "General",
     "paymentMethods": "Payment methods",
@@ -71,7 +72,6 @@
     "primaryStore": "Main store",
     "archived": "Archived",
     "catalog": "Catalog",
-    "content": "Content",
     "wallet": "Wallet"
   },
   "common": {
@@ -2760,13 +2760,13 @@
       "title": "Top up your store wallet",
       "description": "Add money to cover fees and paid services. You pay on Kashier by card or mobile wallet.",
       "amount": "Amount",
-      "limits": "From EGP 50 to EGP 20,000.",
+      "limits": "From 100 to 20,000 EGP.",
       "continue": "Continue to payment",
       "refresh": "Check again",
       "backToWallet": "Back to wallet",
       "errors": {
         "invalid": "Enter an amount in pounds, for example 250.",
-        "too_small": "The minimum top-up is EGP 50.",
+        "too_small": "The minimum top-up is 100 EGP.",
         "too_large": "The maximum top-up is EGP 20,000.",
         "not_configured": "Online payment isn't available right now. Try again later.",
         "provider_error": "We couldn't open the payment page. Try again.",
@@ -2819,6 +2819,91 @@
     "walletStatus": {
       "frozen": "Frozen",
       "closed": "Closed"
+    },
+    "pendingTopUps": "{amount} under review",
+    "requests": {
+      "title": "Top-up requests",
+      "pending": "Under review",
+      "approved": "Added to wallet",
+      "rejected": "Rejected",
+      "methods": {
+        "vodafone_cash": "Vodafone Cash",
+        "instapay": "InstaPay"
+      }
+    },
+    "manualTopUp": {
+      "button": "Top up wallet",
+      "title": "Top up wallet",
+      "description": "Transfer the amount from your wallet or bank, then upload a picture of the receipt.",
+      "progress": "Top-up steps",
+      "steps": {
+        "amount": "Amount",
+        "transfer": "Transfer",
+        "receipt": "Receipt"
+      },
+      "amountLabel": "How much do you want to add?",
+      "limits": "From 100 to 20,000 EGP.",
+      "methodLabel": "Transfer with",
+      "methods": {
+        "vodafone_cash": {
+          "name": "Vodafone Cash",
+          "hint": "From any Vodafone Cash wallet",
+          "to": "To Vodafone Cash number"
+        },
+        "instapay": {
+          "name": "InstaPay",
+          "hint": "From the InstaPay app",
+          "to": "To InstaPay number"
+        }
+      },
+      "slip": {
+        "sendExactly": "Send exactly",
+        "copyAmount": "Copy amount",
+        "copyNumber": "Copy number",
+        "holder": "Account name: {name}",
+        "how": {
+          "open": "Open the {method} app.",
+          "send": "Send exactly {amount} to the number above.",
+          "screenshot": "Take a screenshot of the confirmation screen."
+        }
+      },
+      "senderLabel": "Number you sent from",
+      "optional": "Optional",
+      "senderHint": "Helps us match your transfer faster.",
+      "receipt": {
+        "pick": "Choose the receipt picture",
+        "pickHint": "JPG, PNG or WEBP, up to 5 MB",
+        "replace": "Change picture",
+        "remove": "Remove picture",
+        "previewAlt": "Transfer receipt",
+        "required": "Upload the transfer receipt first.",
+        "wrongType": "Choose a JPG, PNG or WEBP picture.",
+        "tooLarge": "The picture is larger than 5 MB.",
+        "uploadFailed": "Couldn't upload the picture. Try again.",
+        "reviewNote": "{amount} is added to your balance once we check the transfer. Until then it shows in your wallet as under review."
+      },
+      "back": "Back",
+      "next": "Next",
+      "transferred": "I've sent it",
+      "submit": "Send for review",
+      "copyFailed": "Couldn't copy. Copy it by hand.",
+      "done": {
+        "title": "Top-up request sent",
+        "subtitle": "Your request is now under review.",
+        "body": "We'll check your {method} transfer and add the amount to your balance. You can follow it on the wallet page.",
+        "close": "Done"
+      },
+      "errors": {
+        "invalid": "Check the details and try again.",
+        "too_small": "The minimum top-up is 100 EGP.",
+        "too_large": "The maximum top-up is 20,000 EGP.",
+        "invalid_proof": "We couldn't use that receipt. Upload it again.",
+        "too_many_open": "You have 3 top-ups under review. Wait until we check them.",
+        "wallet_not_active": "This wallet isn't active right now.",
+        "rateLimited": "Too many attempts. Wait a few minutes.",
+        "notAllowed": "You can't top up this wallet.",
+        "generic": "Couldn't send the request. Try again."
+      }
     }
   },
   "mediaLibrary": {

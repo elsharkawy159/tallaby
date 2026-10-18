@@ -14,6 +14,8 @@ export const AUDIT_ACTION_LABELS: Record<AdminAuditAction, string> = {
   suspend_store: "Store suspended",
   unsuspend_store: "Store unsuspended",
   wallet_adjustment: "Wallet adjustment",
+  approve_top_up: "Top-up approved",
+  reject_top_up: "Top-up rejected",
 };
 
 export function auditActionLabel(action: string): string {

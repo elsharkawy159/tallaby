@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { AlertTriangle, Gift, Info, Wallet } from "lucide-react";
+import { AlertTriangle, CircleCheck, CircleX, Clock, Gift, Info, Wallet } from "lucide-react";
+import { listManualStoreTopUps } from "@workspace/lib/store-wallet/server";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getFeeTrialStatus } from "@workspace/lib/sellers";
 import { Badge } from "@workspace/ui/components/badge";
@@ -38,9 +39,10 @@ export async function StoreWalletSection({
   filter: EntryFilter;
   before: string | null;
 }) {
-  const [overview, rows, t, tStatus, locale] = await Promise.all([
+  const [overview, rows, topUps, t, tStatus, locale] = await Promise.all([
     getStoreWalletOverview(sellerId),
     listStoreWalletEntries(sellerId, { filter, before }),
+    listManualStoreTopUps(sellerId),
     getTranslations("storeWallet"),
     getTranslations("status"),
     getLocale(),
@@ -54,6 +56,7 @@ export async function StoreWalletSection({
     feeTrialEndsAt: overview.trial.endsAt,
   });
   const entries = rows.slice(0, ENTRIES_PAGE_SIZE);
+  const pendingTotal = topUps.filter((r) => r.status === "pending").reduce((sum, r) => sum + Number(r.amount), 0);
   const next = rows.length > ENTRIES_PAGE_SIZE ? entryCursor(entries[entries.length - 1]!) : null;
   const href = (params: Record<string, string | null>) => {
     const search = new URLSearchParams();
@@ -78,6 +81,12 @@ export async function StoreWalletSection({
               <p dir="ltr" className={cn("text-start text-3xl font-bold tabular-nums rtl:text-end", signedClass(balance))}>
                 {formatMoney(balance, locale)}
               </p>
+              {pendingTotal > 0 && (
+                <p className="mb-1 inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-2.5 py-0.5 text-xs font-medium text-accent-ink">
+                  <Clock className="size-3.5" aria-hidden />
+                  {t("pendingTopUps", { amount: formatMoney(pendingTotal, locale) })}
+                </p>
+              )}
               <p className="text-xs text-muted-foreground">
                 {t("thisMonth", {
                   sales: formatMoney(Number(overview.salesThisMonth), locale),
@@ -85,7 +94,7 @@ export async function StoreWalletSection({
                 })}
               </p>
             </div>
-            <TopUpButton disabled={overview.status !== "active"} />
+            <TopUpButton sellerId={sellerId} disabled={overview.status !== "active"} />
           </CardContent>
           {balance < 0 && (
             <p className="mx-6 mb-6 flex gap-2 rounded-xl bg-destructive-soft p-3 text-[13px] text-destructive">
@@ -113,6 +122,48 @@ export async function StoreWalletSection({
           </CardContent>
         </Card>
       </div>
+
+      {topUps.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("requests.title")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="divide-y">
+              {topUps.map((r) => {
+                const Icon = r.status === "pending" ? Clock : r.status === "succeeded" ? CircleCheck : CircleX;
+                const state = r.status === "pending" ? "pending" : r.status === "succeeded" ? "approved" : "rejected";
+                return (
+                  <li key={r.id} className="flex flex-wrap items-center gap-3 py-3 first:pt-0 last:pb-0">
+                    <span
+                      className={cn(
+                        "grid size-9 shrink-0 place-items-center rounded-full",
+                        state === "pending" && "bg-accent-soft text-accent-ink",
+                        state === "approved" && "bg-success-soft text-success",
+                        state === "rejected" && "bg-destructive-soft text-destructive",
+                      )}
+                    >
+                      <Icon className="size-4" aria-hidden />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium">
+                        {t(`requests.${state}`)} · {t(`requests.methods.${r.method}`)}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatDate(r.createdAt, locale)}
+                        {state === "rejected" && r.failureReason && <> · {r.failureReason}</>}
+                      </p>
+                    </div>
+                    <p dir="ltr" className="font-semibold tabular-nums">
+                      {formatMoney(Number(r.amount), locale)}
+                    </p>
+                  </li>
+                );
+              })}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">

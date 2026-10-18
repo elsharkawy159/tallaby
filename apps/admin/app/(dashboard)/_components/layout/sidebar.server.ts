@@ -12,6 +12,7 @@ import {
   sellers,
   carts,
   cartItems,
+  sellerWalletTopUps,
 } from "@workspace/db";
 import { sql } from "drizzle-orm";
 import { getAdminUser } from "@/actions/auth";
@@ -42,7 +43,11 @@ export async function getSidebarCounts(): Promise<SidebarCounts> {
         ) AS unreminded_carts,
         (SELECT count(*)::int FROM ${orders} WHERE ${orders.status} = 'pending') AS pending_orders,
         (SELECT count(*)::int FROM ${products} WHERE ${products.status} = 'pending') AS pending_products,
-        (SELECT count(*)::int FROM ${sellers} WHERE ${sellers.status} = 'pending') AS pending_sellers
+        (SELECT count(*)::int FROM ${sellers} WHERE ${sellers.status} = 'pending') AS pending_sellers,
+        (SELECT count(*)::int FROM ${sellerWalletTopUps}
+          WHERE ${sellerWalletTopUps.status} = 'pending'
+            AND ${sellerWalletTopUps.provider} IN ('vodafone_cash', 'instapay')
+        ) AS pending_store_top_ups
     `);
 
     const rows = Array.isArray(result)
@@ -56,6 +61,7 @@ export async function getSidebarCounts(): Promise<SidebarCounts> {
       pendingOrders: Number(row.pending_orders ?? 0),
       pendingProducts: Number(row.pending_products ?? 0),
       pendingSellers: Number(row.pending_sellers ?? 0),
+      pendingStoreTopUps: Number(row.pending_store_top_ups ?? 0),
     };
   } catch (error) {
     console.error("Error fetching sidebar counts:", error);

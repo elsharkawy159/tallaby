@@ -31,6 +31,8 @@ export const ADMIN_AUDIT_ACTIONS = [
   "suspend_store",
   "unsuspend_store",
   "wallet_adjustment",
+  "approve_top_up",
+  "reject_top_up",
 ] as const;
 
 export type AdminAuditAction = (typeof ADMIN_AUDIT_ACTIONS)[number];
