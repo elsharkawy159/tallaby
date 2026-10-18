@@ -2,6 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   AppWindow,
   BarChart3,
+  FileText,
   Globe,
   Megaphone,
   Package,
@@ -72,9 +73,12 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
     items: [
       { key: "manageProducts", href: "/products", countKey: "products", status: "live", exact: true },
       { key: "addProducts", href: "/products/add", status: "live" },
+      // Which products the selected store shows (store-scoped).
+      { key: "catalog", href: "/stores/[storeId]/catalog", status: "live" },
       { key: "reviews", href: "/reviews", countKey: "reviews", status: "live" },
     ],
   },
+  // The store builder, split into the site itself and what goes on it.
   {
     kind: "group",
     key: "website",
@@ -85,9 +89,17 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
       { key: "websiteBuilder", href: "/stores/[storeId]/editor", status: "live" },
       { key: "templates", href: "/stores/[storeId]/website/templates", status: "live" },
       { key: "designSystem", href: "/stores/[storeId]/website/design", status: "live" },
-      { key: "pages", href: "/stores/[storeId]/website/pages", status: "live" },
       { key: "domainSeo", href: "/stores/[storeId]/website/domain", status: "live" },
       { key: "socialMedia", href: "/stores/[storeId]/website/social", status: "live" },
+    ],
+  },
+  {
+    kind: "group",
+    key: "content",
+    icon: FileText,
+    feature: "storeBuilder",
+    items: [
+      { key: "pages", href: "/stores/[storeId]/website/pages", status: "live" },
       { key: "blog", href: "/stores/[storeId]/website/blog", status: "live" },
       { key: "forms", href: "/stores/[storeId]/website/forms", countKey: "forms", status: "live" },
       { key: "mediaLibrary", href: "/stores/[storeId]/website/media", status: "live" },

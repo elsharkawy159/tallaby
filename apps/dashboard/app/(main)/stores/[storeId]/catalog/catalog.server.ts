@@ -28,7 +28,7 @@ export async function saveStoreCatalog(storeId: string, input: unknown): Promise
       from: "dashboard",
       mode: "action",
     });
-    revalidatePath(`/stores/${store.id}/settings/catalog`);
+    revalidatePath(`/stores/${store.id}/catalog`);
     return { success: true };
   } catch (error) {
     if (isAccessError(error)) {

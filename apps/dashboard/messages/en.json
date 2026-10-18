@@ -71,7 +71,8 @@
     "storeUsage": "{count} of {max}",
     "primaryStore": "Main store",
     "archived": "Archived",
-    "catalog": "Catalog"
+    "catalog": "Catalog",
+    "content": "Content"
   },
   "common": {
     "loading": "Loading...",

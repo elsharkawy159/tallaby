@@ -34,6 +34,23 @@ describe("SIDEBAR_CONFIG", () => {
       expect(hrefs, href).toContain(href);
     }
   });
+
+  it("puts every store-scoped page in the sidebar once a store exists", () => {
+    const linked = new Set(allLinks(SIDEBAR_CONFIG).map((l) => l.href));
+    for (const route of DASHBOARD_ROUTES) {
+      expect(linked.has(route.href), route.href).toBe(true);
+    }
+  });
+
+  it("files each page under the same section in the sidebar and the header", () => {
+    for (const group of SIDEBAR_CONFIG) {
+      if (group.kind !== "group") continue;
+      for (const item of group.items) {
+        const route = DASHBOARD_ROUTES.find((r) => r.href === item.href);
+        expect(route?.parent, item.href).toBe(group.key);
+      }
+    }
+  });
 });
 
 describe("resolveSidebar", () => {

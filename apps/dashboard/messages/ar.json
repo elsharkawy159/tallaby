@@ -71,7 +71,8 @@
     "storeUsage": "{count} من {max}",
     "primaryStore": "المتجر الرئيسي",
     "archived": "مؤرشف",
-    "catalog": "المنتجات المعروضة"
+    "catalog": "المنتجات المعروضة",
+    "content": "المحتوى"
   },
   "common": {
     "loading": "جاري التحميل...",

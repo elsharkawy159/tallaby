@@ -25,7 +25,6 @@ import {
   type ResolvedLink,
 } from "./sidebar.config";
 import { StoreSwitcher, type SwitcherStore } from "./store-switcher.client";
-import { SupportChatLink } from "./support-chat-link.client";
 
 interface SidebarProps {
   counts: SidebarCounts;
@@ -154,7 +153,6 @@ interface SidebarContentProps {
   seller: {
     logoUrl?: string | null;
     businessName?: string | null;
-    supportEmail?: string | null;
     [key: string]: unknown;
   } | null;
 }
@@ -242,18 +240,6 @@ const SidebarContent = ({
         </div>
       )}
 
-      {/* Store switcher */}
-      {stores.length > 0 && (
-        <div className={cn("shrink-0 border-b border-sidebar-border p-3", isCollapsed && "px-2")}>
-          <StoreSwitcher
-            stores={stores}
-            selectedId={selectedStoreId}
-            maxStores={maxStores}
-            isCollapsed={isCollapsed}
-          />
-        </div>
-      )}
-
       {/* Navigation */}
       <ScrollArea className="flex-1 overflow-y-auto">
         <ScrollBar />
@@ -264,27 +250,32 @@ const SidebarContent = ({
         </nav>
       </ScrollArea>
 
-      {/* Support + signed-in account */}
-      <div className="mt-auto flex flex-col gap-2.5 border-t border-sidebar-border p-3">
-        <SupportChatLink isCollapsed={isCollapsed} />
-        <div className={cn("flex items-center gap-2.5 rounded-xl p-2", isCollapsed && "flex-col p-0")}>
-          <Avatar className="size-9 shrink-0 border border-sidebar-border">
-            <AvatarImage
-              src={seller?.logoUrl ? getPublicUrl(seller.logoUrl, "sellers") : undefined}
-              alt={seller?.businessName ? t("nav.logoAlt", { name: seller.businessName }) : t("nav.vendor")}
-            />
-            <AvatarFallback className="bg-primary-soft text-sm font-semibold text-primary-ink">
-              {seller?.businessName?.[0] ?? <UserIcon className="size-4" />}
-            </AvatarFallback>
-          </Avatar>
-          {!isCollapsed && (
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-[13px] font-semibold text-sidebar-foreground">
-                {seller?.businessName ?? t("nav.vendor")}
-              </p>
-              {seller?.supportEmail && (
-                <p dir="ltr" className="truncate text-start text-xs text-muted-foreground rtl:text-end">
-                  {seller.supportEmail}
+      {/* The selected store (opens the store switcher) + sign out */}
+      <div className="mt-auto border-t border-sidebar-border p-3">
+        <div className={cn("flex items-center gap-2", isCollapsed && "flex-col")}>
+          {stores.length > 0 ? (
+            <div className={cn("min-w-0 flex-1", isCollapsed && "w-full")}>
+              <StoreSwitcher
+                stores={stores}
+                selectedId={selectedStoreId}
+                maxStores={maxStores}
+                isCollapsed={isCollapsed}
+              />
+            </div>
+          ) : (
+            <div className={cn("flex min-w-0 flex-1 items-center gap-2.5 p-2", isCollapsed && "flex-none p-0")}>
+              <Avatar className="size-9 shrink-0 border border-sidebar-border">
+                <AvatarImage
+                  src={seller?.logoUrl ? getPublicUrl(seller.logoUrl, "sellers") : undefined}
+                  alt={seller?.businessName ? t("nav.logoAlt", { name: seller.businessName }) : t("nav.vendor")}
+                />
+                <AvatarFallback className="bg-primary-soft text-sm font-semibold text-primary-ink">
+                  {seller?.businessName?.[0] ?? <UserIcon className="size-4" />}
+                </AvatarFallback>
+              </Avatar>
+              {!isCollapsed && (
+                <p className="min-w-0 flex-1 truncate text-[13px] font-semibold text-sidebar-foreground">
+                  {seller?.businessName ?? t("nav.vendor")}
                 </p>
               )}
             </div>

@@ -29,7 +29,7 @@ export type SwitcherStore = {
 };
 
 /**
- * Top-of-sidebar store switcher (PLAN.md §7.2). Picking a store only changes
+ * Store switcher at the bottom of the sidebar (PLAN.md §7.2). Picking a store only changes
  * which store the store-scoped links open; on a store page it moves to the
  * same page of the new store.
  */
@@ -91,7 +91,7 @@ export function StoreSwitcher({
           </>
         )}
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-[264px]">
+      <DropdownMenuContent side="top" align="start" className="w-[264px]">
         <DropdownMenuLabel className="text-xs text-muted-foreground">{t("yourStores")}</DropdownMenuLabel>
         {stores.map((store) => (
           <DropdownMenuItem

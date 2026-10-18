@@ -56,6 +56,7 @@ export type NavKey =
   | "shippingSettings"
   | "website"
   | "websiteOverview"
+  | "content"
   | "websiteBuilder"
   | "templates"
   | "designSystem"
@@ -98,30 +99,30 @@ export const DASHBOARD_ROUTES: DashboardRoute[] = [
   { href: "/stores/[storeId]/shipping", title: "shippingSettings", parent: "ordersShipping", icon: MapPinned },
   { href: "/products", title: "manageProducts", parent: "products", parentHref: "/products", icon: Package },
   { href: "/products/add", title: "addProducts", parent: "products", parentHref: "/products", icon: PackagePlus },
+  { href: "/stores/[storeId]/catalog", title: "catalog", parent: "products", icon: Package },
   { href: "/reviews", title: "reviews", parent: "products", icon: Star },
-  { href: "/coupons", title: "promotions", parent: "marketing", icon: Gift },
-  { href: "/marketing", title: "advertiseProducts", parent: "marketing", icon: TrendingUp },
   { href: "/stores/[storeId]/website", title: "websiteOverview", parent: "website", icon: Globe },
   { href: "/stores/[storeId]/editor", title: "websiteBuilder", parent: "website", icon: LayoutTemplate },
   { href: "/stores/[storeId]/website/templates", title: "templates", parent: "website", icon: LayoutGrid },
   { href: "/stores/[storeId]/website/design", title: "designSystem", parent: "website", icon: Palette },
-  { href: "/stores/[storeId]/website/pages", title: "pages", parent: "website", icon: FileText },
   { href: "/stores/[storeId]/website/domain", title: "domainSeo", parent: "website", icon: Globe },
   { href: "/stores/[storeId]/website/social", title: "socialMedia", parent: "website", icon: Share2 },
-  { href: "/stores/[storeId]/website/blog", title: "blog", parent: "website", icon: Newspaper },
-  { href: "/stores/[storeId]/website/forms", title: "forms", parent: "website", icon: ClipboardList },
-  { href: "/stores/[storeId]/website/media", title: "mediaLibrary", parent: "website", icon: Images },
+  { href: "/stores/[storeId]/website/pages", title: "pages", parent: "content", icon: FileText },
+  { href: "/stores/[storeId]/website/blog", title: "blog", parent: "content", icon: Newspaper },
+  { href: "/stores/[storeId]/website/forms", title: "forms", parent: "content", icon: ClipboardList },
+  { href: "/stores/[storeId]/website/media", title: "mediaLibrary", parent: "content", icon: Images },
+  { href: "/coupons", title: "promotions", parent: "marketing", icon: Gift },
+  { href: "/marketing", title: "advertiseProducts", parent: "marketing", icon: TrendingUp },
   { href: "/stores/[storeId]/apps", title: "apps", icon: AppWindow },
   { href: "/financial", title: "accountStatements", parent: "finance", icon: DollarSign },
   { href: "/reports", title: "reports", parent: "finance", icon: FileBarChart },
   { href: "/stores/[storeId]/settings", title: "general", parent: "storeSettings", icon: Store },
-  { href: "/stores/[storeId]/settings/catalog", title: "catalog", parent: "storeSettings", icon: Package },
   { href: "/stores/[storeId]/settings/payments", title: "paymentMethods", parent: "storeSettings", icon: CreditCard },
   { href: "/stores/[storeId]/settings/policies", title: "policies", parent: "storeSettings", icon: ScrollText },
   { href: "/stores", title: "myStores", parent: "account", icon: Store },
   { href: "/settings", title: "settings", parent: "account", icon: Settings },
   { href: "/settings/plan", title: "planUsage", parent: "account", icon: Gem },
-  { href: "/settings/fulfillment", title: "fulfillment", parent: "settings", parentHref: "/settings", icon: Warehouse },
+  { href: "/settings/fulfillment", title: "fulfillment", parent: "account", icon: Warehouse },
   { href: "/help", title: "help", parent: "account", icon: CircleHelp },
 ];
 

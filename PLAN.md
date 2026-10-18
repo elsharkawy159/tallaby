@@ -418,7 +418,8 @@ Optional cards: "Connect Meta Pixel", "Explore Tallaby Fulfillment".
 Status: **Existing** (works today), **Extend** (existing page gets new parts), **New**, **Soon** (visible but disabled).
 
 ```
-[Store switcher: logo · name · host ▾  — other stores · + Create store (N of 3)]
+(Store switcher: the sidebar footer, next to sign-out — logo · name · host ▴ — other stores · + Create store (N of 3).
+ WhatsApp support: a floating circle in the bottom-left corner of every page.)
 
 Home — الرئيسية                                   /                                   Account+store   Extend
 Orders & Shipping — الطلبات والشحن ▾
@@ -429,15 +430,17 @@ Orders & Shipping — الطلبات والشحن ▾
 Products — المنتجات ▾
   ├─ All products — كل المنتجات                    /products                           Account                  Existing
   ├─ Add product — إضافة منتج                      /products/add                       Account                  Existing
+  ├─ Store catalog — المنتجات المعروضة             /stores/[storeId]/catalog           Store                    Moved from Store settings (2026-10-18)
   └─ Reviews — التقييمات                           /reviews                            Account                  Existing (moved into group)
 Website — الموقع ▾                                                                     (all Store scope)
   ├─ Overview — نظرة عامة                          /stores/[storeId]/website           New
   ├─ Website builder — محرر الموقع                 /stores/[storeId]/editor            New (full screen)
   ├─ Templates — القوالب                           /stores/[storeId]/website/templates New
   ├─ Design system — الهوية والتصميم               /stores/[storeId]/website/design    New
-  ├─ Pages — الصفحات                               /stores/[storeId]/website/pages     New
   ├─ Domain & SEO — النطاق وتحسين الظهور           /stores/[storeId]/website/domain    New (reuses existing domain components)
-  ├─ Social media — التواصل الاجتماعي              /stores/[storeId]/website/social    New
+  └─ Social media — التواصل الاجتماعي              /stores/[storeId]/website/social    New
+Content — المحتوى ▾                                                                    (all Store scope; split out of Website 2026-10-18)
+  ├─ Pages — الصفحات                               /stores/[storeId]/website/pages     New
   ├─ Blog — المدونة                                /stores/[storeId]/website/blog      New
   ├─ Forms — النماذج                               /stores/[storeId]/website/forms     New
   └─ Media library — مكتبة الوسائط                 /stores/[storeId]/website/media     New
@@ -2664,3 +2667,18 @@ After P1-08 and P1-01 (`3289639`), typecheck and test match the baseline. `@work
   - Preview on my store (set `STORE_PREVIEW_SECRET`).
   - Admin seller page overrides.
   - Fulfillment request.
+
+### 2026-10-18 — Dashboard sidebar remap and floating WhatsApp support (owner request)
+
+- **Sidebar remap** (`components/dashboard/sidebar.config.ts`, `components/layout/dashboard-routes.lib.ts`, §7.2):
+  - The 10-item Website group is split in two. **Website** keeps Overview, Builder, Templates, Design system, Domain & SEO and Social media. A new **Content** group (`nav.content`, AR المحتوى) holds Pages, Blog, Forms and Media library.
+  - **Store catalog** (المنتجات المعروضة) moved from the Store settings tabs to the Products group. Its URL changed from `/stores/[storeId]/settings/catalog` to `/stores/[storeId]/catalog`, with no redirect from the old one. It now renders its own `StorePageHeader`, and the sitemap "no products" hint and `revalidatePath` point at the new URL.
+  - `DASHBOARD_ROUTES` now follows the sidebar order, and each page's parent matches its sidebar group. Fulfillment is now under Account rather than Settings. Two new config tests enforce both rules.
+- **Store switcher** moved from the top of the sidebar to the footer, replacing the seller name/email card next to sign-out. Its menu opens upward. A seller with no store still sees the seller card.
+- **WhatsApp support** is no longer a sidebar button. It is now a floating green circle (`SupportWhatsAppButton`) in the bottom-left corner of every `(main)` page, with the same pre-filled message. In LTR on desktop it sits just past the sidebar, and it is hidden when printing. The Help page and the command palette keep their links.
+- **Checks:** dashboard typecheck is clean and dashboard tests pass (115). Lint is still blocked by the baseline ESLint crash.
+- **Manual browser check (owner):**
+  - In AR and EN, expanded and collapsed: the footer switcher opens upward and switches store.
+  - The WhatsApp circle sits bottom-left and does not cover the sidebar.
+  - Products › Store catalog saves.
+  - On mobile pages with a fixed bottom bar (add or edit product), check that the circle doesn't hide a button.

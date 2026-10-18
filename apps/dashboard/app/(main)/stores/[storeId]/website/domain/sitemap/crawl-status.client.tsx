@@ -13,7 +13,7 @@ import type { CrawlStatus, NoindexReason } from "../domain-seo.data";
 /** Where the seller fixes each reason. */
 function reasonHref(storeId: string, reason: NoindexReason): string {
   if (reason === "indexingOff") return `/stores/${storeId}/website/domain/seo`;
-  if (reason === "noProducts") return `/stores/${storeId}/settings/catalog`;
+  if (reason === "noProducts") return `/stores/${storeId}/catalog`;
   return "/stores";
 }
 

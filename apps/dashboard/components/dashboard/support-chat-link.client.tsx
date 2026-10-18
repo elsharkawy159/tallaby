@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { getStorefrontStoreUrl, getSupportWhatsAppUrl } from "@/lib/constants";
 import { useSiteData } from "@/providers/site-data";
+import { useSidebarStore } from "@/stores";
 
 interface SupportChatLinkProps {
   isCollapsed?: boolean;
@@ -59,6 +60,33 @@ export const SupportChatLink = ({ isCollapsed, className }: SupportChatLinkProps
     >
       <WhatsAppIcon className="h-5 w-5 shrink-0" />
       {!isCollapsed && <span className="truncate">{t("chatWithSupport")}</span>}
+    </a>
+  );
+};
+
+/**
+ * Floating WhatsApp support button, a circle in the bottom-left corner of
+ * every dashboard page. In LTR the sidebar sits on the left on desktop, so
+ * the button moves past it.
+ */
+export const SupportWhatsAppButton = () => {
+  const t = useTranslations("nav");
+  const href = useSupportWhatsAppUrl();
+  const { isCollapsed } = useSidebarStore();
+
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={t("chatWithSupportHint")}
+      aria-label={t("chatWithSupport")}
+      className={cn(
+        "fixed bottom-5 left-5 z-40 flex size-14 items-center justify-center rounded-full bg-[#25d366] text-white shadow-lg shadow-black/15 transition-[transform,background-color,left] duration-300 hover:scale-105 hover:bg-[#1fb855] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#25d366] focus-visible:ring-offset-2 focus-visible:ring-offset-background print:hidden",
+        isCollapsed ? "ltr:lg:left-[100px]" : "ltr:lg:left-[300px]"
+      )}
+    >
+      <WhatsAppIcon className="size-7" />
     </a>
   );
 };

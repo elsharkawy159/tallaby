@@ -1,4 +1,5 @@
 import { SidebarData } from "@/components/dashboard/sidebar.data";
+import { SupportWhatsAppButton } from "@/components/dashboard/support-chat-link.client";
 import { DashboardHeader } from "@/components/layout/dashboard-header.client";
 import { MainContentWrapper } from "@/components/layout/main-content-wrapper";
 import { SellerAccessBlocked } from "@/components/layout/seller-access-blocked";
@@ -48,6 +49,7 @@ export default async function DashboardLayout({
         )}
         <main className="min-w-0">{children}</main>
       </MainContentWrapper>
+      <SupportWhatsAppButton />
     </div>
   );
 }
