@@ -29,7 +29,7 @@ export function summarizeError(error: unknown): ErrorSummary {
   const cause = (error as { cause?: unknown }).cause as { code?: unknown; message?: unknown } | undefined;
   const code =
     typeof (error as { code?: unknown }).code === "string"
-      ? ((error as { code: string }).code)
+      ? ((error as unknown as { code: string }).code)
       : typeof cause?.code === "string"
         ? cause.code
         : undefined;

@@ -93,8 +93,9 @@ export function routeStorefrontRequest(
   }
 
   const rewrite = (target: string) => {
-    const url = request.nextUrl.clone();
-    url.pathname = `/${locale}/${STOREFRONT_SEGMENT}/${subdomain}${target}`;
+    // A fresh URL, not nextUrl.clone(): NextURL keeps the request's trailing
+    // slash, so "/blog/?page=2" would rewrite to ".../blog/" instead of ".../blog".
+    const url = new URL(`/${locale}/${STOREFRONT_SEGMENT}/${subdomain}${target}${search}`, request.url);
     // Server actions resolve their locale from this header (see i18n/request.ts).
     const headers = new Headers(request.headers);
     headers.set("X-NEXT-INTL-LOCALE", locale);

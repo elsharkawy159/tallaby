@@ -14,7 +14,7 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 /** Roles allowed to make audited admin changes (users.role). */
 export const ADMIN_WRITE_ROLES = ["admin", "super_admin"] as const;
 
-export function isAdminWriteRole(role: string | null | undefined): boolean {
+export function isAdminWriteRole(role: string | null | undefined): role is string {
   return (ADMIN_WRITE_ROLES as readonly string[]).includes(role ?? "");
 }
 

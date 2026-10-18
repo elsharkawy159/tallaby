@@ -17,6 +17,8 @@ export type StoreMetadataInput = {
   description: string | null;
   storeDescription?: string | null;
   logoUrl: string | null;
+  /** Website › Design system › Brand (P4-13); the logo is the fallback icon. */
+  faviconUrl?: string | null;
   bannerUrl: string | null;
   seo: StoreSeo;
 };
