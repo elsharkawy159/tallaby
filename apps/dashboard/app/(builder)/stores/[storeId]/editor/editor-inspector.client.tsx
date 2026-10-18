@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { createContext, useContext, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { ArrowDown, ArrowUp, Plus, Trash2, X } from "lucide-react";
 import type { SectionInstance, SiteLocale } from "@workspace/store-sections";
@@ -15,10 +15,14 @@ import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { Switch } from "@workspace/ui/components/switch";
 import { Textarea } from "@workspace/ui/components/textarea";
+import { MediaPicker } from "@/components/media/media-picker.client";
 import type { EditorCategory, EditorProduct } from "./editor.data";
 import { addItem, moveItem, readItemProp, readProp, removeItem, setItemProp, setSectionProp } from "./editor.lib";
 
 type Catalog = { products: EditorProduct[]; categories: EditorCategory[] };
+
+/** The store whose media library the image fields open (P4-09). */
+const InspectorStore = createContext<{ storeId: string; readOnly: boolean } | null>(null);
 
 const label = (value: Localized, locale: string) => (locale === "en" ? value.en : value.ar) || value.ar;
 
@@ -42,6 +46,7 @@ function Field({
   id: string;
 }) {
   const t = useTranslations("storeEditor.inspector");
+  const inspectorStore = useContext(InspectorStore);
   const text = typeof value === "string" ? value : "";
 
   switch (prop.type) {
@@ -81,6 +86,9 @@ function Field({
     case "image":
       return (
         <div className="space-y-2">
+          {inspectorStore && (
+            <MediaPicker storeId={inspectorStore.storeId} readOnly={inspectorStore.readOnly} onPick={(asset) => onChange(asset.url)} />
+          )}
           <Input id={id} dir="ltr" placeholder="https://…" value={text} onChange={(e) => onChange(e.target.value)} />
           {/^https?:\/\//.test(text) && (
             // eslint-disable-next-line @next/next/no-img-element -- seller-entered preview
@@ -269,6 +277,8 @@ export function SectionInspector({
   defaultLocale,
   uiLocale,
   catalog,
+  storeId,
+  readOnly = false,
 }: {
   definition: AnySectionDefinition;
   instance: SectionInstance;
@@ -277,50 +287,55 @@ export function SectionInspector({
   defaultLocale: SiteLocale;
   uiLocale: string;
   catalog: Catalog;
+  storeId: string;
+  readOnly?: boolean;
 }) {
   const t = useTranslations("storeEditor.inspector");
   const target = { locale, defaultLocale };
+  const mediaStore = useMemo(() => ({ storeId, readOnly }), [storeId, readOnly]);
   return (
-    <div className="space-y-4">
-      <div>
-        <h2 className="font-semibold">{label(definition.displayName, uiLocale)}</h2>
-        <p className="text-xs text-muted-foreground">{label(definition.description, uiLocale)}</p>
+    <InspectorStore.Provider value={mediaStore}>
+      <div className="space-y-4">
+        <div>
+          <h2 className="font-semibold">{label(definition.displayName, uiLocale)}</h2>
+          <p className="text-xs text-muted-foreground">{label(definition.description, uiLocale)}</p>
+        </div>
+        {locale !== defaultLocale && <p className="rounded-md bg-muted p-2 text-xs">{t("translating", { locale: locale.toUpperCase() })}</p>}
+        {definition.propDefinitions.length === 0 && !definition.itemCollections?.length && (
+          <p className="text-sm text-muted-foreground">{t("nothingToEdit")}</p>
+        )}
+        {definition.propDefinitions.map((prop) => {
+          const editTarget = { ...target, translatable: prop.translatable };
+          const fieldId = `${instance.id}-${prop.key}`;
+          const locked = locale !== defaultLocale && !prop.translatable;
+          return (
+            <div key={prop.key} className="space-y-1.5">
+              <Label htmlFor={fieldId}>{label(prop.label, uiLocale)}</Label>
+              <fieldset disabled={locked} className={locked ? "opacity-60" : undefined}>
+                <Field
+                  id={fieldId}
+                  prop={prop}
+                  value={readProp(instance, prop.key, editTarget)}
+                  onChange={(value) => onChange(setSectionProp(instance, prop.key, value, editTarget))}
+                  uiLocale={uiLocale}
+                  catalog={catalog}
+                />
+              </fieldset>
+            </div>
+          );
+        })}
+        {definition.itemCollections?.map((collection) => (
+          <Collection
+            key={collection.key}
+            definition={collection}
+            instance={instance}
+            onChange={onChange}
+            target={target}
+            uiLocale={uiLocale}
+            catalog={catalog}
+          />
+        ))}
       </div>
-      {locale !== defaultLocale && <p className="rounded-md bg-muted p-2 text-xs">{t("translating", { locale: locale.toUpperCase() })}</p>}
-      {definition.propDefinitions.length === 0 && !definition.itemCollections?.length && (
-        <p className="text-sm text-muted-foreground">{t("nothingToEdit")}</p>
-      )}
-      {definition.propDefinitions.map((prop) => {
-        const editTarget = { ...target, translatable: prop.translatable };
-        const fieldId = `${instance.id}-${prop.key}`;
-        const locked = locale !== defaultLocale && !prop.translatable;
-        return (
-          <div key={prop.key} className="space-y-1.5">
-            <Label htmlFor={fieldId}>{label(prop.label, uiLocale)}</Label>
-            <fieldset disabled={locked} className={locked ? "opacity-60" : undefined}>
-              <Field
-                id={fieldId}
-                prop={prop}
-                value={readProp(instance, prop.key, editTarget)}
-                onChange={(value) => onChange(setSectionProp(instance, prop.key, value, editTarget))}
-                uiLocale={uiLocale}
-                catalog={catalog}
-              />
-            </fieldset>
-          </div>
-        );
-      })}
-      {definition.itemCollections?.map((collection) => (
-        <Collection
-          key={collection.key}
-          definition={collection}
-          instance={instance}
-          onChange={onChange}
-          target={target}
-          uiLocale={uiLocale}
-          catalog={catalog}
-        />
-      ))}
-    </div>
+    </InspectorStore.Provider>
   );
 }

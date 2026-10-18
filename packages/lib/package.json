@@ -126,6 +126,14 @@
       "types": "./src/stores/server.ts",
       "default": "./src/stores/server.ts"
     },
+    "./media": {
+      "types": "./src/media/media.lib.ts",
+      "default": "./src/media/media.lib.ts"
+    },
+    "./media/server": {
+      "types": "./src/media/server.ts",
+      "default": "./src/media/server.ts"
+    },
     "./store-sites/server": {
       "types": "./src/store-sites/server.ts",
       "default": "./src/store-sites/server.ts"

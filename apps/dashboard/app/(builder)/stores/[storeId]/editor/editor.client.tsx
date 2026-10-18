@@ -299,6 +299,8 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
               defaultLocale={state.defaultLocale}
               uiLocale={uiLocale}
               catalog={initial.catalog}
+              storeId={initial.storeId}
+              readOnly={initial.readOnly}
             />
           ) : (
             <p className="text-sm text-muted-foreground">{t("inspector.empty")}</p>
