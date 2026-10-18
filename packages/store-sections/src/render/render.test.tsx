@@ -2,10 +2,10 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import type { PageContent, SectionInstance } from "../config/schema";
 import { validateSiteConfig } from "../config/validate";
-import { collectCatalogQueries } from "../core/registry";
+import { collectCatalogQueries, collectFormIds } from "../core/registry";
 import { FONT_PAIRINGS, findFontPairing, storeFontFamily } from "../core/fonts";
 import { designSystemToCss, designSystemToTokens } from "../core/theme";
-import type { RenderContext } from "../core/types";
+import type { PublicStoreForm, RenderContext } from "../core/types";
 import { STORE_SECTIONS, storeSectionRegistry } from "../sections";
 import { PageRenderer, SectionRenderer, SiteTheme } from "./render";
 
@@ -212,5 +212,55 @@ describe("PageRenderer and theme", () => {
     expect(markup).toContain('href="https://instagram.com/sara"');
     expect(markup).toContain('aria-label="إنستجرام"');
     expect(markup).toContain("<svg");
+  });
+});
+
+describe("contact-form (P4-10)", () => {
+  const F1 = "33333333-3333-4333-8333-333333333333";
+  const F2 = "44444444-4444-4444-8444-444444444444";
+  const form: PublicStoreForm = {
+    id: F1,
+    fields: [
+      { key: "name", type: "text", label: "الاسم", required: true, width: "half" },
+      { key: "email", type: "email", label: "البريد <b>", required: false, width: "half" },
+      { key: "topic", type: "select", label: "الموضوع", required: false, width: "full", options: ["طلب", "أخرى"] },
+      { key: "agree", type: "checkbox", label: "أوافق", required: true, width: "full" },
+    ],
+    submitLabel: "",
+    successMessage: "",
+  };
+
+  it("collects the form ids a page shows (and ignores bad ids)", () => {
+    const sections = [instance("contact-form", { formId: F1 }), { ...instance("contact-form", { formId: "x" }), id: "s2" }, instance("faq")];
+    expect(collectFormIds(sections, storeSectionRegistry)).toEqual([F1]);
+  });
+
+  it("renders the host's interactive form for a resolved form", () => {
+    const markup = html(
+      <SectionRenderer
+        instance={instance("contact-form", { formId: F1 })}
+        registry={storeSectionRegistry}
+        ctx={makeCtx({ forms: { [F1]: form }, renderForm: (f, id) => <form data-host-form={`${f.id}:${id}`} /> })}
+      />,
+    );
+    expect(markup).toContain(`data-host-form="${F1}:s-contact-form"`);
+  });
+
+  it("shows nothing on the store for a form the host did not resolve (foreign, disabled or deleted)", () => {
+    const ctx = makeCtx({ forms: { [F1]: form }, renderForm: () => <form /> });
+    expect(html(<SectionRenderer instance={instance("contact-form", { formId: F2 })} registry={storeSectionRegistry} ctx={ctx} />)).not.toContain("<section");
+    expect(html(<SectionRenderer instance={instance("contact-form")} registry={storeSectionRegistry} ctx={ctx} />)).not.toContain("<form");
+  });
+
+  it("draws a static, escaped preview in the editor", () => {
+    const markup = html(
+      <SectionRenderer instance={instance("contact-form", { formId: F1 })} registry={storeSectionRegistry} ctx={makeCtx({ mode: "edit", forms: { [F1]: form } })} />,
+    );
+    expect(markup).toContain('name="name"');
+    expect(markup).toContain("disabled");
+    expect(markup).toContain("البريد &lt;b&gt;");
+    expect(markup).toContain("<option");
+    expect(markup).toContain("إرسال");
+    expect(html(<SectionRenderer instance={instance("contact-form")} registry={storeSectionRegistry} ctx={makeCtx({ mode: "edit" })} />)).toContain("اختر نموذجًا");
   });
 });

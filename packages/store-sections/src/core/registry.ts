@@ -67,6 +67,18 @@ export function contentOverrideKeys(registry: SectionRegistry): Record<string, s
   );
 }
 
+/** Every form id a page's sections show (for the host, which resolves them for its own store only). */
+export function collectFormIds(sections: readonly SectionInstance[], registry: SectionRegistry): string[] {
+  const out = new Set<string>();
+  for (const instance of sections) {
+    const definition = registry.get(instance.sectionId);
+    if (!definition?.formRef) continue;
+    const formId = definition.formRef(resolveSectionProps(definition, applyMigrations(instance, definition).props));
+    if (formId) out.add(formId);
+  }
+  return [...out];
+}
+
 /** Every catalog query of a page, keyed by section instance id (for the host resolver). */
 export function collectCatalogQueries(
   sections: readonly SectionInstance[],

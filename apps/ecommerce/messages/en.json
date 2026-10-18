@@ -2025,6 +2025,20 @@
     "nextCategories": "Next categories",
     "copyright": "© {year} {store}"
   },
+  "storeForms": {
+    "sending": "Sending…",
+    "fieldErrors": {
+      "required": "This field is required.",
+      "invalid": "Please check this value.",
+      "too_long": "This is too long."
+    },
+    "errors": {
+      "notFound": "This form is no longer available.",
+      "invalid": "Please fix the highlighted fields.",
+      "rateLimited": "Too many messages. Please try again in a few minutes.",
+      "generic": "Something went wrong. Please try again."
+    }
+  },
   "topbar": {
     "cashOnDelivery": "Cash on delivery available in every governorate in Egypt",
     "freeShipping": "Free shipping on orders over {threshold}",

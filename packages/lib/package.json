@@ -157,6 +157,14 @@
     "./fulfillment/server": {
       "types": "./src/fulfillment/server.ts",
       "default": "./src/fulfillment/server.ts"
+    },
+    "./store-forms": {
+      "types": "./src/store-forms/store-forms.lib.ts",
+      "default": "./src/store-forms/store-forms.lib.ts"
+    },
+    "./store-forms/server": {
+      "types": "./src/store-forms/server.ts",
+      "default": "./src/store-forms/server.ts"
     }
   },
   "devDependencies": {

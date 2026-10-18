@@ -29,7 +29,9 @@ export type PropFieldType =
   /** Several products of this store, ordered. */
   | "products"
   /** One category of this store's catalog. */
-  | "category";
+  | "category"
+  /** One form of this store (`store_forms`, P4-10 picker). */
+  | "form";
 
 export interface PropDefinition {
   key: string;
@@ -112,6 +114,26 @@ export type StoreProfile = {
 
 export type NavPage = { name: string; href: string; isHome: boolean };
 
+/** A field of a store form, as the storefront draws it (`@workspace/lib/store-forms` validates the full model). */
+export type PublicFormField = {
+  key: string;
+  type: "text" | "email" | "phone" | "textarea" | "select" | "checkbox";
+  label: string;
+  placeholder?: string;
+  helpText?: string;
+  required: boolean;
+  options?: string[];
+  width: "full" | "half";
+};
+
+/** A form resolved by the host for its own store (P4-10). Empty labels/messages fall back to section copy. */
+export type PublicStoreForm = {
+  id: string;
+  fields: PublicFormField[];
+  submitLabel: string;
+  successMessage: string;
+};
+
 export type LinkProps = {
   href: string;
   className?: string;
@@ -135,6 +157,10 @@ export interface RenderContext {
   /** Host-provided interactive pieces (the storefront cart, or editor placeholders). */
   renderCartButton?: () => ReactNode;
   renderAddToCart?: (product: ProductSummary) => ReactNode;
+  /** Forms of this store by id, resolved server-side by the host (P4-10). Foreign ids are never present. */
+  forms?: Record<string, PublicStoreForm>;
+  /** The interactive storefront form; without it (editor canvas) a static preview is drawn. */
+  renderForm?: (form: PublicStoreForm, instanceId: string) => ReactNode;
   /** Renders a Tallaby Classic part with the host's own components (P4-03). */
   renderClassic?: (part: "classic-header" | "classic-hero" | "classic-categories" | "classic-catalog" | "classic-footer", props: Record<string, unknown>) => ReactNode;
 }
@@ -159,6 +185,8 @@ export interface SectionDefinition<P extends Record<string, unknown> = Record<st
   migrateProps?: (oldProps: Record<string, unknown>, fromVersion: number) => Record<string, unknown>;
   /** Catalog data this instance needs, given its (validated) props. */
   catalogQuery?: (props: P) => CatalogQuery | null;
+  /** The `store_forms` id this instance shows, given its (validated) props (P4-10). */
+  formRef?: (props: P) => string | null;
   /** Only usable as the site header or footer, not inside a page. */
   chrome?: "header" | "footer";
   Component: ComponentType<SectionRenderProps<P>>;

@@ -25,6 +25,10 @@ export const SECTION_COPY = {
   policyTerms: { ar: "الشروط والأحكام", en: "Terms and conditions" },
   copyright: { ar: "© {year} {store}. جميع الحقوق محفوظة.", en: "© {year} {store}. All rights reserved." },
   pickProduct: { ar: "اختر منتجًا لعرضه هنا.", en: "Choose a product to show here." },
+  pickForm: { ar: "اختر نموذجًا لعرضه هنا.", en: "Choose a form to show here." },
+  formSubmit: { ar: "إرسال", en: "Send" },
+  formSuccess: { ar: "شكرًا لك! وصلتنا رسالتك وسنتواصل معك قريبًا.", en: "Thank you! We received your message and will get back to you soon." },
+  formSelect: { ar: "اختر…", en: "Choose…" },
 } as const satisfies Record<string, Localized>;
 
 export type SectionCopyKey = keyof typeof SECTION_COPY;

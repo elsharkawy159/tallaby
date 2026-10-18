@@ -40,7 +40,7 @@ import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { cn } from "@workspace/ui/lib/utils";
 import { EditorCanvas } from "./editor-canvas.client";
-import type { EditorCategory, EditorProduct } from "./editor.data";
+import type { EditorCategory, EditorForm, EditorProduct } from "./editor.data";
 import { SectionInspector } from "./editor-inspector.client";
 import { createInstance, duplicateSection, insertSection, moveSection, removeSection, resolveCanvasCatalog, updateSection } from "./editor.lib";
 import { createPage, deletePage, publish, updatePage } from "./editor.server";
@@ -48,7 +48,7 @@ import { createEditorStore, hasPendingChanges, type EditorPage, type EditorStore
 import { useEditorAutosave } from "./use-editor-autosave.client";
 import { useStorePreview } from "./use-store-preview.client";
 
-type Catalog = { products: EditorProduct[]; categories: EditorCategory[] };
+type Catalog = { products: EditorProduct[]; categories: EditorCategory[]; forms: EditorForm[] };
 
 export type EditorInitial = {
   storeId: string;
@@ -140,6 +140,8 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
       renderCartButton: () => <span className="inline-flex h-9 items-center rounded-full border border-(--sf-line) px-3 text-sm">🛒</span>,
       renderAddToCart: () => <span className="inline-flex h-8 items-center justify-center rounded-md bg-(--sf-brand) px-3 text-xs font-semibold text-white">{t("canvas.addToCart")}</span>,
       renderClassic: (part) => <ClassicPlaceholder part={part} />,
+      // Static preview of this store's forms (no renderForm in the canvas).
+      forms: Object.fromEntries(initial.catalog.forms.map((f) => [f.id, f.form])),
     };
   }, [page.content.sections, state.header, state.footer, state.pages, state.locale, initial.catalog, initial.store, t]);
 

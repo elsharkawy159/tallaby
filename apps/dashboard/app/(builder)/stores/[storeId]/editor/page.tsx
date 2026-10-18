@@ -9,7 +9,7 @@ import { designSystemSchema, sectionInstanceSchema, type SiteLocale } from "@wor
 import { storeBuilderEnabled } from "@/components/dashboard/sidebar.config";
 import { loadStorePage } from "@/lib/stores/store-page.server";
 import { StoreEditor, type EditorInitial } from "./editor.client";
-import { loadEditorCatalog } from "./editor.data";
+import { loadEditorCatalog, loadEditorForms } from "./editor.data";
 
 export const dynamic = "force-dynamic";
 
@@ -30,11 +30,13 @@ export default async function StoreEditorPage({ params }: { params: Promise<{ st
   const store = await loadStorePage(storeId);
   if (!storeBuilderEnabled(store.sellerId)) notFound();
 
-  const [editor, status, catalog] = await Promise.all([
+  const [editor, status, products, forms] = await Promise.all([
     getStoreForEditor(store.sellerId, store.id),
     getStoreSiteStatus(store.sellerId, store.id),
     loadEditorCatalog(store.sellerId, store.catalogMode === "selected" ? store.id : undefined),
+    loadEditorForms(store.sellerId, store.id),
   ]);
+  const catalog = { ...products, forms };
   if (!editor) notFound();
 
   const header = sectionInstanceSchema.safeParse(editor.store.sharedHeader);

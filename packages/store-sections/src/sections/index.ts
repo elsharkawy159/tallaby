@@ -10,6 +10,7 @@ import { CLASSIC_SECTIONS } from "./classic";
 import { categoryGrid, featuredProduct, productGrid } from "./commerce";
 import { ctaBanner, features, heroBanner, imageWithText, richText, spacer } from "./content";
 import { contactInfo, faq, imageGallery, logoCloud, testimonials } from "./engagement";
+import { contactForm } from "./forms";
 
 export const STORE_SECTIONS: readonly AnySectionDefinition[] = [
   ...CLASSIC_SECTIONS,
@@ -27,6 +28,7 @@ export const STORE_SECTIONS: readonly AnySectionDefinition[] = [
   logoCloud,
   ctaBanner,
   contactInfo,
+  contactForm,
   spacer,
   storeFooter,
 ];
@@ -34,9 +36,11 @@ export const STORE_SECTIONS: readonly AnySectionDefinition[] = [
 export const storeSectionRegistry = createSectionRegistry(STORE_SECTIONS);
 
 export * from "./classic";
+export { FORM_SUBMIT_CLASS, FormFieldsView, formCopy } from "./forms";
 
 export {
   categoryGrid,
+  contactForm,
   contactInfo,
   ctaBanner,
   faq,

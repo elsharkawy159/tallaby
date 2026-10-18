@@ -16,10 +16,10 @@ import { Label } from "@workspace/ui/components/label";
 import { Switch } from "@workspace/ui/components/switch";
 import { Textarea } from "@workspace/ui/components/textarea";
 import { MediaPicker } from "@/components/media/media-picker.client";
-import type { EditorCategory, EditorProduct } from "./editor.data";
+import type { EditorCategory, EditorForm, EditorProduct } from "./editor.data";
 import { addItem, moveItem, readItemProp, readProp, removeItem, setItemProp, setSectionProp } from "./editor.lib";
 
-type Catalog = { products: EditorProduct[]; categories: EditorCategory[] };
+type Catalog = { products: EditorProduct[]; categories: EditorCategory[]; forms: EditorForm[] };
 
 /** The store whose media library the image fields open (P4-09). */
 const InspectorStore = createContext<{ storeId: string; readOnly: boolean } | null>(null);
@@ -118,6 +118,24 @@ function Field({
             </option>
           ))}
         </select>
+      );
+    case "form":
+      // Only this store's forms (loaded for the session seller); the storefront also resolves the id for its own store only.
+      return (
+        <div className="space-y-1.5">
+          <select id={id} className={SELECT_CLASS} value={text} onChange={(e) => onChange(e.target.value)}>
+            <option value="">{t("chooseForm")}</option>
+            {catalog.forms.map((form) => (
+              <option key={form.id} value={form.id}>
+                {form.active ? form.name : t("formDisabled", { name: form.name })}
+              </option>
+            ))}
+          </select>
+          {/* Relative to /stores/[storeId]/editor → /stores/[storeId]/website/forms */}
+          <a href="website/forms" target="_blank" rel="noopener" className="text-xs text-primary underline-offset-2 hover:underline">
+            {t("manageForms")}
+          </a>
+        </div>
       );
     case "products":
       return <ProductsPicker id={id} value={Array.isArray(value) ? (value as string[]) : []} onChange={onChange} catalog={catalog} uiLocale={uiLocale} />;

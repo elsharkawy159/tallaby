@@ -1,10 +1,12 @@
 import type { ReactNode } from "react";
 import { formatPricePlain } from "@workspace/lib";
+import { getPublicStoreForms } from "@workspace/lib/store-forms/server";
 import { storeUrl } from "@workspace/lib/storefront";
 import type { SiteConfig } from "@workspace/store-sections";
 import {
   SectionRenderer,
   collectCatalogQueries,
+  collectFormIds,
   storeSectionRegistry,
   type NavPage,
   type RenderContext,
@@ -17,6 +19,7 @@ import { resolveStoreCatalog } from "@/lib/store-site/catalog.server";
 import { catalogStoreId, type Storefront, type StorefrontCategory } from "@/lib/storefront.server";
 import { CartSheet } from "./cart-sheet.client";
 import { CategoryCircles } from "./category-circles";
+import { StoreForm } from "./store-form.client";
 import { StorefrontCatalog } from "./storefront-catalog";
 import { storefrontFont } from "./storefront-font";
 import { StorefrontFooter } from "./storefront-footer";
@@ -77,9 +80,14 @@ async function buildContext(
   classic: ClassicData,
 ): Promise<RenderContext> {
   const queries = collectCatalogQueries(sections, storeSectionRegistry);
-  const catalog = Object.keys(queries).length
-    ? await resolveStoreCatalog(store.id, catalogStoreId(store), queries, locale)
-    : { products: {}, categories: [], withVariants: new Set<string>() };
+  const formIds = collectFormIds(sections, storeSectionRegistry);
+  const [catalog, forms] = await Promise.all([
+    Object.keys(queries).length
+      ? resolveStoreCatalog(store.id, catalogStoreId(store), queries, locale)
+      : { products: {}, categories: [], withVariants: new Set<string>() },
+    // Forms of THIS host's store only (P4-10); another store's form id resolves to nothing.
+    formIds.length ? getPublicStoreForms(store.storeId, formIds) : {},
+  ]);
 
   return {
     mode: "public",
@@ -109,6 +117,8 @@ async function buildContext(
     renderAddToCart: (product) =>
       catalog.withVariants.has(product.id) ? null : <AddToCartButton productId={product.id} size="sm" stock={product.inStock ? 1 : 0} />,
     renderClassic: classicRenderer(store, locale, classic),
+    forms,
+    renderForm: (form, instanceId) => <StoreForm form={form} instanceId={instanceId} />,
   };
 }
 

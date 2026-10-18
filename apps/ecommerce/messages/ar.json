@@ -2154,6 +2154,20 @@
     "nextCategories": "الأقسام التالية",
     "copyright": "© {year} {store}"
   },
+  "storeForms": {
+    "sending": "جارٍ الإرسال…",
+    "fieldErrors": {
+      "required": "هذا الحقل مطلوب.",
+      "invalid": "يرجى التحقق من هذه القيمة.",
+      "too_long": "النص أطول من المسموح."
+    },
+    "errors": {
+      "notFound": "هذا النموذج لم يعد متاحًا.",
+      "invalid": "يرجى تصحيح الحقول المحددة.",
+      "rateLimited": "رسائل كثيرة. يرجى المحاولة بعد بضع دقائق.",
+      "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى."
+    }
+  },
   "topbar": {
     "cashOnDelivery": "الدفع عند الاستلام متاح في كل محافظات مصر",
     "freeShipping": "شحن مجاني للطلبات فوق {threshold}",

@@ -89,7 +89,7 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
       { key: "domainSeo", href: "/stores/[storeId]/website/domain", status: "live" },
       { key: "socialMedia", href: "/stores/[storeId]/website/social", status: "live" },
       { key: "blog", href: "/stores/[storeId]/website/blog", status: "planned" },
-      { key: "forms", href: "/stores/[storeId]/website/forms", status: "planned" },
+      { key: "forms", href: "/stores/[storeId]/website/forms", countKey: "forms", status: "live" },
       { key: "mediaLibrary", href: "/stores/[storeId]/website/media", status: "live" },
     ],
   },

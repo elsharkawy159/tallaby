@@ -1,5 +1,7 @@
 import { and, categories, db, desc, eq, inArray, productTranslations, products, sql, storeProducts } from "@workspace/db";
 import { parsePriceJson } from "@workspace/lib";
+import { listStoreFormDefinitions } from "@workspace/lib/store-forms/server";
+import type { PublicStoreForm } from "@workspace/store-sections/render";
 
 /**
  * Read-only data the editor canvas needs to preview commerce sections
@@ -22,6 +24,20 @@ export type EditorProduct = {
 };
 
 export type EditorCategory = { id: string; name: { ar: string; en: string }; image: string | null; productCount: number };
+
+/** A form of this store for the contact-form picker and its canvas preview (P4-10). */
+export type EditorForm = { id: string; name: string; active: boolean; form: PublicStoreForm };
+
+/** The store's forms (checked against the session seller by the lib). Never cached. */
+export async function loadEditorForms(sellerId: string, storeId: string): Promise<EditorForm[]> {
+  const forms = await listStoreFormDefinitions(sellerId, storeId);
+  return forms.map((f) => ({
+    id: f.id,
+    name: f.name,
+    active: f.status === "active",
+    form: { id: f.id, fields: f.fields, submitLabel: f.settings.submitLabel, successMessage: f.settings.successMessage },
+  }));
+}
 
 const MAX_PRODUCTS = 300;
 
