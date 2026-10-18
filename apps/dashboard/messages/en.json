@@ -3636,5 +3636,54 @@
         "restored": "Version restored."
       }
     }
+  },
+  "websiteTemplates": {
+    "title": "Templates",
+    "description": "Ready-made looks for your website. Your text, images and products stay.",
+    "openEditor": "Open the website editor",
+    "readOnly": "This store is archived, so its template can't be changed.",
+    "current": "Current",
+    "default": "Default",
+    "soon": "Soon",
+    "use": "Use template",
+    "reapply": "Reset to this template",
+    "pagesCount": "{count, plural, one {# page} other {# pages}}",
+    "version": "Version {number}",
+    "empty": "No templates in this category.",
+    "moreSoon": "More templates are on the way.",
+    "cancel": "Cancel",
+    "applied": "{name} applied to your draft. Publish to show it on your store.",
+    "undone": "Template change undone.",
+    "lastApplied": "{name} was applied on {date}.",
+    "undo": "Undo template change",
+    "categories": {
+      "label": "Categories",
+      "all": "All",
+      "general": "General"
+    },
+    "confirm": {
+      "title": "Use {name}?",
+      "description": "Your website draft takes this template's layout and look.",
+      "keeps": "Text and images you changed in matching sections are kept.",
+      "draft": "Your live store doesn't change until you publish.",
+      "untouched": "Products, orders, settings, domains and your other stores aren't touched.",
+      "action": "Use template"
+    },
+    "undoConfirm": {
+      "title": "Undo the template change?",
+      "description": "Your website draft goes back to how it was just before the template was applied. Edits made since then are replaced too.",
+      "action": "Undo"
+    },
+    "errors": {
+      "notFound": "This store wasn't found.",
+      "readOnly": "This store is archived, so it can't be changed.",
+      "templateNotFound": "This template isn't available anymore. Reload the page.",
+      "premiumTemplate": "This template isn't available yet.",
+      "invalidTemplate": "This template has a problem and can't be used right now.",
+      "tooManyPages": "This template would add more pages than your website can have.",
+      "nothingToUndo": "There's no template change to undo.",
+      "rateLimited": "Too many changes at once. Wait a moment and try again.",
+      "generic": "Something went wrong. Try again."
+    }
   }
 }

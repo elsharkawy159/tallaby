@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { siteConfigSchema, type SectionInstance } from "../config/schema";
 import { contentOverrideKeys } from "../core/registry";
 import { storeSectionRegistry } from "../sections";
-import { mergeSectionInstance, mergeTemplateIntoDraft, type DraftSite } from "./apply";
+import { mergeSectionInstance, mergeTemplateIntoDraft, templateOutline, type DraftSite } from "./apply";
 import { tallabyClassicConfig } from "./tallaby-classic";
 
 const keys = contentOverrideKeys(storeSectionRegistry);
@@ -82,5 +82,13 @@ describe("applyTemplate merge (P4-05)", () => {
       keys,
     );
     expect(result.pages[0]!.content.sections.find((s) => s.id === "classic-categories")!.props).toEqual({ title: "Shop by type" });
+  });
+});
+
+describe("templateOutline (P4-05 gallery)", () => {
+  it("lists each page with its section ids", () => {
+    expect(templateOutline(siteConfigSchema.parse(tallabyClassicConfig()))).toEqual([
+      { slug: "home", isHome: true, name: "الرئيسية", sections: ["classic-hero", "classic-categories", "classic-catalog"] },
+    ]);
   });
 });

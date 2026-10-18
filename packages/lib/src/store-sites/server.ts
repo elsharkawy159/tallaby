@@ -764,3 +764,6 @@ export async function getStoreSiteStatus(sellerId: string, storeId: string, q: Q
     hasUnpublishedChanges,
   };
 }
+
+// Templates gallery and apply (P4-05).
+export * from "./templates.server";

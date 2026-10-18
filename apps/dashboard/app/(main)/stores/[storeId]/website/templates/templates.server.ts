@@ -1,0 +1,56 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { applyStoreTemplate, undoStoreTemplate } from "@workspace/lib/store-sites/server";
+import { contentOverrideKeys, storeSectionRegistry } from "@workspace/store-sections/render";
+import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
+import { createRateLimiter } from "@/lib/rate-limit.lib";
+import { TEMPLATE_ERRORS, type TemplateActionResult } from "./templates.dto";
+
+/**
+ * Website › Templates actions (PLAN.md §8.1, P4-05). The store id is explicit
+ * and re-checked with requireStore; the template is chosen by key and must be
+ * active. Applying writes drafts only, so the storefront is not invalidated:
+ * the live site changes on the next Publish.
+ */
+
+const ALLOWED = storeSectionRegistry.allowedSections();
+const OVERRIDE_KEYS = contentOverrideKeys(storeSectionRegistry);
+const limiter = createRateLimiter({ limit: 20, windowMs: 10 * 60_000 });
+
+type Access = Awaited<ReturnType<typeof requireStore>>;
+
+async function withStore<T>(storeId: string, run: (access: Access) => Promise<TemplateActionResult<T>>): Promise<TemplateActionResult<T>> {
+  try {
+    const access = await requireStore(String(storeId), { forWrite: true });
+    if (!limiter.check(`templates:${access.seller.sellerId}`)) return { success: false, error: "rateLimited" };
+    const result = await run(access);
+    if (result.success) {
+      revalidatePath(`/stores/${access.store.id}/website`, "layout");
+      revalidatePath(`/stores/${access.store.id}/editor`);
+    }
+    return result;
+  } catch (error) {
+    if (isAccessError(error)) return { success: false, error: error.code === "store_read_only" ? "readOnly" : "notFound" };
+    console.error("[website-templates] action failed", (error as Error)?.message);
+    return { success: false, error: "generic" };
+  }
+}
+
+export async function applyTemplate(storeId: string, templateKey: string) {
+  return withStore<{ pagesUpdated: number; pagesCreated: number }>(storeId, async ({ seller, store }) => {
+    const result = await applyStoreTemplate(seller.sellerId, store.id, String(templateKey), seller.userId, {
+      allowedSections: ALLOWED,
+      overrideKeys: OVERRIDE_KEYS,
+    });
+    if (!result.success) return { success: false, error: TEMPLATE_ERRORS[result.error] ?? "generic" };
+    return { success: true, data: { pagesUpdated: result.data.pagesUpdated, pagesCreated: result.data.pagesCreated } };
+  });
+}
+
+export async function undoTemplate(storeId: string) {
+  return withStore<{ templateKey: string }>(storeId, async ({ seller, store }) => {
+    const result = await undoStoreTemplate(seller.sellerId, store.id);
+    return result.success ? result : { success: false, error: TEMPLATE_ERRORS[result.error] ?? "generic" };
+  });
+}
