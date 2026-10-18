@@ -26,6 +26,25 @@ export function isInternalStorefrontPath(pathname: string): boolean {
   return pattern.test(pathname);
 }
 
+/** robots.txt, sitemap.xml and its chunk files: answered per host (P5-04). */
+export function isCrawlFilePath(pathname: string): boolean {
+  return pathname === "/robots.txt" || pathname === "/sitemap.xml" || /^\/sitemaps\/[^/]+$/.test(pathname);
+}
+
+/**
+ * A store host's robots.txt / sitemap.xml / sitemaps/{n}.xml → that store's
+ * own files under `storefront/[subdomain]`, or null for any other path. On
+ * tallaby.com these paths keep the marketplace files (app/robots.ts,
+ * app/sitemap.xml, app/sitemaps), unchanged.
+ */
+export function routeStoreCrawlFile(request: NextRequest, subdomain: string): NextResponse | null {
+  const { pathname } = request.nextUrl;
+  if (!isCrawlFilePath(pathname)) return null;
+  const url = request.nextUrl.clone();
+  url.pathname = `/${routing.defaultLocale}/${STOREFRONT_SEGMENT}/${subdomain}${pathname}`;
+  return NextResponse.rewrite(url);
+}
+
 /** Paths that keep their normal app behaviour on a store host. */
 const PASS_THROUGH = [
   "/cart/checkout",

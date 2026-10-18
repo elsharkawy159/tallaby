@@ -111,10 +111,15 @@ export function BannerField({
   value,
   onChange,
   disabled,
+  label,
+  sizeNote,
 }: {
   value: string;
   onChange: (value: string) => void;
   disabled?: boolean;
+  /** Field label and size note for other wide images (e.g. the SEO share image). */
+  label?: string;
+  sizeNote?: string;
 }) {
   const t = useTranslations("settings");
   const banner = useUploadPreview("banners", onChange);
@@ -133,8 +138,8 @@ export function BannerField({
   return (
     <div className="flex flex-col gap-1.5">
       <p className="flex justify-between gap-2 text-[13px] font-semibold">
-        {t("fields.banner")}
-        <LabelNote>{t("identity.bannerSize")}</LabelNote>
+        {label ?? t("fields.banner")}
+        <LabelNote>{sizeNote ?? t("identity.bannerSize")}</LabelNote>
       </p>
       <div
         {...drop.getRootProps({ "aria-label": src ? undefined : t("identity.bannerEmpty") })}

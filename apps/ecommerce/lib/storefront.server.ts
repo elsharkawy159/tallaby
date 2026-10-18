@@ -34,6 +34,8 @@ import {
 import { findSubdomainForCustomDomain } from "@workspace/lib/storefront/server";
 import { normalizeGovernorate } from "@workspace/lib/shipping";
 import { publicStoreSocialLinks } from "@workspace/lib/stores";
+import { parseStoreSeo } from "@workspace/lib/stores";
+import { storeHasVisibleProducts } from "@workspace/lib/stores/server";
 
 /**
  * The storefront subdomain of the current request, or null on tallaby.com.
@@ -110,6 +112,7 @@ export function getStorefrontBySubdomain(subdomain: string) {
           policies: stores.policies,
           storeCategory: stores.storeCategory,
           storeCategoryAr: stores.storeCategoryAr,
+          seo: stores.seo,
           sellerId: sellers.id,
           slug: sellers.slug,
           storeRating: sellers.storeRating,
@@ -168,6 +171,8 @@ export function getStorefrontBySubdomain(subdomain: string) {
         supportPhone: contact.phone ?? null,
         storeCategory: row.storeCategory,
         storeCategoryAr: row.storeCategoryAr,
+        /** Website › Domain & SEO (P4-14), re-validated field by field. */
+        seo: parseStoreSeo(row.seo),
         governorate: normalizeGovernorate(state),
         /** The store's own domain once live (faster-eg.com), else null. */
         customDomain: domain?.domain ?? null,
@@ -175,8 +180,8 @@ export function getStorefrontBySubdomain(subdomain: string) {
         social: publicStoreSocialLinks(row.contact),
       };
     },
-    // v4: resolves through stores (P5-00); v5: social links (P4-15).
-    [`storefront-v5-${subdomain}`],
+    // v6: + seo (P4-14) and social links (P4-15). v4: resolves through stores (P5-00).
+    [`storefront-v6-${subdomain}`],
     { tags: ["sellers", sellerTags.subdomain(subdomain)], revalidate: 3600 },
   )();
 }
@@ -273,6 +278,24 @@ export function storeShowsProduct(
     [`storefront-catalog-has-${store.storeId}-${productId}`],
     { tags: [storeTags.catalog(store.id, store.storeId)], revalidate: 3600 },
   )();
+}
+
+/**
+ * Whether the store shows at least one product (its catalog rules applied).
+ * A store without one is kept out of search: noindex and an empty sitemap
+ * (PLAN.md §10.3, P5-04). Cached with the store's catalog tags.
+ */
+export function storeHasProducts(store: Pick<Storefront, "id" | "storeId">): Promise<boolean> {
+  return unstable_cache(
+    () => storeHasVisibleProducts(store.id, store.storeId),
+    [`storefront-has-products-${store.id}-${store.storeId}`],
+    { tags: [productTags.seller(store.id), storeTags.catalog(store.id, store.storeId)], revalidate: 3600 },
+  )();
+}
+
+/** Whether search engines may index this store: indexing on and something to sell. */
+export async function isStorefrontIndexable(store: Pick<Storefront, "id" | "storeId" | "seo">): Promise<boolean> {
+  return store.seo.indexing && (await storeHasProducts(store));
 }
 
 /**

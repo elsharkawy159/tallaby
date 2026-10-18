@@ -1296,6 +1296,9 @@
         "reserved": "This address is reserved by Tallaby. Choose another.",
         "taken": "Another store already uses this address. Choose another.",
         "unauthorized": "Sign in again to change your store address.",
+        "notFound": "This store wasn't found. Reload the page.",
+        "readOnly": "This store is archived or suspended, so its address can't change.",
+        "rateLimited": "Too many checks. Wait a moment.",
         "failed": "Couldn't change the address. Try again."
       },
       "copyFailed": "Couldn’t copy the link",
@@ -1347,6 +1350,7 @@
         "hasDomain": "You already have a domain connected. Remove it first.",
         "notApproved": "Your store must be approved before you can connect a domain.",
         "unauthorized": "Sign in again to manage your domain.",
+        "primaryOnly": "For now, a custom domain can only be connected to your main store.",
         "limit": "We can't connect more domains right now. Contact support.",
         "config": "Custom domains aren't available right now. Contact support.",
         "failed": "Something went wrong. Try again."
@@ -3270,5 +3274,119 @@
     "created": "Page created",
     "saved": "Page saved",
     "cancel": "Cancel"
+  },
+  "domainSeo": {
+    "settingsLink": "Store address and domain moved to Website › Domain & SEO",
+    "tabs": {
+      "label": "Domain & SEO sections",
+      "domain": "Domain",
+      "seo": "SEO",
+      "sitemap": "Sitemap & robots"
+    },
+    "domain": {
+      "readOnly": "This store is archived or suspended, so its address can't be changed.",
+      "address": {
+        "title": "Store address",
+        "description": "Your free Tallaby address. Changing it keeps the old address working as a redirect."
+      },
+      "custom": {
+        "title": "Custom domain",
+        "description": "Use your own domain, such as mystore.com, for this store.",
+        "primaryOnly": "For now, a custom domain can only be connected to your main store.",
+        "primaryOnlyBadge": "Main store only",
+        "openPrimary": "Open {store}"
+      },
+      "redirects": {
+        "title": "Old addresses",
+        "description": "Visitors who open an old address are sent to your current one.",
+        "empty": "No old addresses yet.",
+        "since": "Since {date}"
+      }
+    },
+    "seo": {
+      "readOnly": "This store is archived or suspended, so its SEO can't be changed.",
+      "optional": "Optional",
+      "save": "Save SEO",
+      "saved": "SEO settings saved. Your store uses them now.",
+      "search": {
+        "title": "Search results",
+        "description": "How your store's pages appear on Google and other search engines."
+      },
+      "titleTemplate": {
+        "label": "Page title template",
+        "hint": "{token} is replaced by each page's name. Leave empty for \"page name | store name\".",
+        "invalid": "The template must contain %s exactly once.",
+        "tooLong": "Keep the template under 120 characters."
+      },
+      "description": {
+        "label": "Store description",
+        "placeholder": "What your store sells, in one or two sentences.",
+        "hint": "Shown under your store's name in search results. Pages with their own description use that instead.",
+        "tooLong": "Keep the description under 320 characters."
+      },
+      "preview": {
+        "label": "Search preview",
+        "pageTitle": "Home",
+        "noDescription": "Add a description to control the text shown here."
+      },
+      "share": {
+        "title": "Sharing",
+        "description": "The picture shown when your store's link is shared on WhatsApp, Facebook and others.",
+        "imageLabel": "Share image",
+        "imageSize": "Recommended 1200 × 630.",
+        "hint": "Without an image, your store's cover or logo is used."
+      },
+      "indexing": {
+        "title": "Show in search engines",
+        "on": "Search engines can list your store.",
+        "off": "Search engines are asked not to list your store, and it has no sitemap."
+      },
+      "verification": {
+        "title": "Google Search Console",
+        "description": "Verify that you own this store in Google Search Console with the \"HTML tag\" method.",
+        "label": "Verification code",
+        "hint": "Paste the code, or the whole meta tag Google shows you.",
+        "invalid": "This isn't a valid verification code. It has 10 to 100 letters, numbers, dashes or underscores."
+      }
+    },
+    "errors": {
+      "invalidInput": "Some fields aren't valid. Check them and try again.",
+      "readOnly": "This store is archived or suspended, so it can't be changed.",
+      "notFound": "This store wasn't found. Reload the page.",
+      "generic": "Something went wrong. Try again."
+    },
+    "sitemap": {
+      "status": {
+        "title": "Search status",
+        "indexed": "Search engines can find your store.",
+        "indexedBadge": "Visible",
+        "indexedHint": "New pages and products appear in your sitemap automatically.",
+        "notIndexed": "Search engines are asked not to list your store right now.",
+        "notIndexedBadge": "Hidden"
+      },
+      "reasons": {
+        "storeInactive": "The store is archived or suspended.",
+        "indexingOff": "\"Show in search engines\" is off.",
+        "noProducts": "The store has no products to show yet."
+      },
+      "fix": {
+        "storeInactive": "Open My stores",
+        "indexingOff": "Change in SEO",
+        "noProducts": "Choose products"
+      },
+      "files": {
+        "title": "Sitemap and robots",
+        "description": "Files search engines read. They are created automatically for this store.",
+        "sitemap": "Sitemap",
+        "robots": "Robots file",
+        "contents": "Lists your home page, pages, products and blog posts.",
+        "searchConsole": "In Google Search Console, submit the sitemap address to help Google find new pages faster."
+      },
+      "pagesNote": "Hidden pages and drafts are never listed.",
+      "open": "Open",
+      "copy": "Copy",
+      "copied": "Copied",
+      "copyFailed": "Couldn't copy"
+    }
   }
 }

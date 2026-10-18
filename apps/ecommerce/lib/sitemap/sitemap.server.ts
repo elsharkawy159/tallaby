@@ -18,12 +18,45 @@ const PRODUCT_BATCH_SIZE = 5_000;
 const ISO_SECONDS = 'YYYY-MM-DD"T"HH24:MI:SS"Z"';
 const ISO_MICROS = 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"';
 
+/** One store's catalog (P5-04): its seller's products, narrowed to its picks in "selected" mode. */
+export interface ProductScope {
+  sellerId: string;
+  /** Set only for a store in "selected" catalog mode (catalogStoreId). */
+  selectedStoreId?: string;
+}
+
+/**
+ * Store scope: the store's own products, minus any (locale, slug) that an
+ * older active product of ANOTHER seller claims. The store host resolves a
+ * product slug marketplace-wide (compareSlugClaim order) and sends other
+ * sellers' products to tallaby.com, so such a URL would not render here.
+ */
+function productScopeFilter(scope: ProductScope | undefined) {
+  if (!scope) return undefined;
+  return and(
+    eq(products.sellerId, scope.sellerId),
+    scope.selectedStoreId
+      ? sql`EXISTS (SELECT 1 FROM store_products sp WHERE sp.store_id = ${scope.selectedStoreId} AND sp.product_id = ${products.id})`
+      : undefined,
+    sql`NOT EXISTS (
+      SELECT 1 FROM product_translations t2
+      JOIN products p2 ON p2.id = t2.product_id
+      WHERE t2.locale = ${productTranslations.locale} AND t2.slug = ${productTranslations.slug}
+        AND p2.status = 'active' AND p2.seller_id <> ${scope.sellerId}
+        AND (p2.created_at < ${products.createdAt}
+             OR (p2.created_at = ${products.createdAt} AND p2.id < ${products.id})
+             OR (${products.createdAt} IS NULL AND p2.created_at IS NOT NULL))
+    )`,
+  );
+}
+
 /**
  * Every translation row of every storefront-visible product, paged by
  * translation id so no query is unbounded and nothing is skipped or
  * repeated between pages (ids are unique and the cursor is strict).
+ * Without `scope` (the marketplace) the query is exactly the original one.
  */
-async function fetchActiveProductTranslations(): Promise<ProductTranslationRow[]> {
+export async function fetchActiveProductTranslations(scope?: ProductScope): Promise<ProductTranslationRow[]> {
   const rows: ProductTranslationRow[] = [];
   let cursor: string | null = null;
 
@@ -44,6 +77,7 @@ async function fetchActiveProductTranslations(): Promise<ProductTranslationRow[]
         and(
           eq(products.status, "active"),
           isNotNull(productTranslations.slug),
+          productScopeFilter(scope),
           cursor ? gt(productTranslations.id, cursor) : undefined
         )
       )

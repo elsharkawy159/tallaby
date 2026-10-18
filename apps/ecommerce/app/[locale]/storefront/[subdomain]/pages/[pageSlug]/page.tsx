@@ -5,6 +5,7 @@ import { routing } from "@/i18n/routing";
 import { getStorefrontSite } from "@/lib/store-site/preview.server";
 import { catalogStoreId, getStorefrontCategories, resolveStorefront } from "@/lib/storefront.server";
 import { marketplaceOrigin } from "@/lib/storefront-routing";
+import { STORE_NOINDEX } from "@/lib/store-seo/store-seo.lib";
 import { StoreSitePage } from "../../_components/store-site";
 
 type StorePageProps = {
@@ -36,7 +37,9 @@ export async function generateMetadata({ params }: StorePageProps): Promise<Meta
     title: page.seo.title || page.name,
     description: page.seo.description || undefined,
     alternates: { canonical: url },
-    robots: preview ? { index: false, follow: false } : page.seo.noindex ? { index: false, follow: true } : undefined,
+    // Only set when needed: an explicit value would also replace the
+    // layout's store-wide noindex (P5-04). Previews are never indexed (P4-08).
+    ...((preview || page.seo.noindex) && { robots: STORE_NOINDEX }),
     openGraph: page.seo.ogImage ? { images: [{ url: page.seo.ogImage }] } : undefined,
   };
 }

@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import { storeUrl } from "@workspace/lib/storefront";
-import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { cn } from "@workspace/ui/lib/utils";
 import { AuthDialogProvider } from "@/components/auth/auth-dialog-provider";
-import { resolveStorefront } from "@/lib/storefront.server";
+import { isStorefrontIndexable, resolveStorefront } from "@/lib/storefront.server";
+import { buildStoreMetadata } from "@/lib/store-seo/store-seo.lib";
 import { StorefrontHeader } from "./_components/storefront-header";
 import { StorefrontFooter } from "./_components/storefront-footer";
 import { MobileCartBar } from "./_components/mobile-cart-bar.client";
@@ -26,34 +25,10 @@ export async function generateMetadata({
 }: StorefrontLayoutProps): Promise<Metadata> {
   const { locale, subdomain } = await params;
   const store = await resolveStorefront(subdomain);
-  const url = storeUrl(store.subdomain, store.customDomain);
-  const description = store.description || store.storeDescription || undefined;
-  const image = store.bannerUrl || store.logoUrl;
-  // Website › Design system › Brand (P4-13): the favicon, else the logo.
-  const icon = store.faviconUrl || store.logoUrl;
   const { preview } = await getStorefrontSite(store.id, store.storeId, store.subdomain);
-
-  return {
-    // Preview responses are never indexed (PLAN.md §10.5).
-    ...(preview && { robots: { index: false, follow: false } }),
-    // The store is the brand here, not Tallaby.
-    title: { default: store.displayName, template: `%s | ${store.displayName}` },
-    description,
-    metadataBase: new URL(url),
-    alternates: {
-      canonical: locale === "ar" ? url : `${url}/${locale}`,
-      languages: { ar: url, en: `${url}/en`, "x-default": url },
-    },
-    openGraph: {
-      type: "website",
-      url,
-      siteName: store.displayName,
-      title: store.displayName,
-      description,
-      images: image ? [getPublicUrl(image, "sellers")] : undefined,
-    },
-    icons: icon ? { icon: getPublicUrl(icon, "sellers") } : undefined,
-  };
+  // SEO settings (P4-14) apply at once; noindex while the store shows no
+  // products, the seller switched indexing off (P5-04), or in a draft preview (§10.5).
+  return buildStoreMetadata(store, locale, { indexable: !preview && (await isStorefrontIndexable(store)) });
 }
 
 export default async function StorefrontLayout({

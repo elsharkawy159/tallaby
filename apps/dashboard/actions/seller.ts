@@ -1,15 +1,22 @@
 "use server";
 
 import { db } from "@workspace/db";
-import { sellers, sellerDocuments, sellerSubdomainRedirects } from "@workspace/db";
-import { eq, desc, and, ne } from "drizzle-orm";
+import { sellers, sellerDocuments, sellerCustomDomains } from "@workspace/db";
+import { eq, desc, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { applyInvalidation, invalidateStorefront } from "@workspace/cache";
 import {
-  normalizeSubdomain,
-  validateSubdomain,
-  type SubdomainProblem,
-} from "@workspace/lib/storefront";
+  applyInvalidation,
+  invalidateCustomDomain,
+  invalidateStorefront,
+  mergeInvalidations,
+} from "@workspace/cache";
+import { type SubdomainProblem } from "@workspace/lib/storefront";
+import {
+  checkStoreSubdomain as checkStoreSubdomainStatus,
+  updateStoreSubdomain as updateStoreSubdomainForStore,
+} from "@workspace/lib/stores/server";
+import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
+import { createRateLimiter } from "@/lib/rate-limit.lib";
 import { getUser } from "./auth";
 
 
@@ -152,108 +159,81 @@ export async function getSellerMetrics() {
 }
 export type SubdomainResult =
   | { success: true; subdomain: string }
-  | { success: false; error: SubdomainProblem | "taken" | "unauthorized" | "failed" };
+  | {
+      success: false;
+      error: SubdomainProblem | "taken" | "unauthorized" | "notFound" | "readOnly" | "rateLimited" | "failed";
+    };
 
-class SubdomainTakenError extends Error {}
+const subdomainCheckLimiter = createRateLimiter({ limit: 60, windowMs: 60_000 });
 
-/** True when another seller uses `subdomain` now, or used it before. */
-async function isSubdomainTaken(
-  tx: Pick<typeof db, "select">,
-  subdomain: string,
-  sellerId: string,
-) {
-  const [owner] = await tx
-    .select({ id: sellers.id })
-    .from(sellers)
-    .where(and(eq(sellers.subdomain, subdomain), ne(sellers.id, sellerId)))
-    .limit(1);
-  if (owner) return true;
-  const [reserved] = await tx
-    .select({ id: sellerSubdomainRedirects.sellerId })
-    .from(sellerSubdomainRedirects)
-    .where(
-      and(
-        eq(sellerSubdomainRedirects.subdomain, subdomain),
-        ne(sellerSubdomainRedirects.sellerId, sellerId),
-      ),
-    )
-    .limit(1);
-  return Boolean(reserved);
-}
-
-/** Live check while the seller types a new store address. */
-export async function checkStoreSubdomain(input: string): Promise<SubdomainResult> {
-  const session = await getUser();
-  if (!session?.user?.id) return { success: false, error: "unauthorized" };
-
-  const subdomain = normalizeSubdomain(input);
-  const problem = validateSubdomain(subdomain);
-  if (problem) return { success: false, error: problem };
-  if (await isSubdomainTaken(db, subdomain, session.user.id)) {
-    return { success: false, error: "taken" };
+function subdomainFailure(error: unknown): SubdomainResult {
+  if (isAccessError(error)) {
+    if (error.code === "unauthorized" || error.code === "no_seller") return { success: false, error: "unauthorized" };
+    return { success: false, error: error.code === "store_read_only" ? "readOnly" : "notFound" };
   }
-  return { success: true, subdomain };
+  console.error("Error updating store subdomain:", error);
+  return { success: false, error: "failed" };
 }
 
 /**
- * Moves the seller's storefront to {subdomain}.tallaby.com. The old address
- * keeps redirecting to the new one, so links already shared still work.
+ * Live check while the seller types a new address for one of their stores
+ * (P4-14: any store, not only the primary). Ownership is re-checked here.
  */
-export async function updateStoreSubdomain(input: string): Promise<SubdomainResult> {
-  const session = await getUser();
-  const sellerId = session?.user?.id;
-  if (!sellerId) return { success: false, error: "unauthorized" };
-
-  const subdomain = normalizeSubdomain(input);
-  const problem = validateSubdomain(subdomain);
-  if (problem) return { success: false, error: problem };
-
-  const current = await db.query.sellers.findFirst({
-    where: eq(sellers.id, sellerId),
-    columns: { subdomain: true },
-  });
-  if (!current) return { success: false, error: "unauthorized" };
-  if (current.subdomain === subdomain) return { success: true, subdomain };
-
+export async function checkStoreSubdomain(storeId: string, input: string): Promise<SubdomainResult> {
   try {
-    await db.transaction(async (tx) => {
-      if (await isSubdomainTaken(tx, subdomain, sellerId)) {
-        throw new SubdomainTakenError();
-      }
-      const now = new Date().toISOString();
-      // Taking back one of their own old addresses: it stops redirecting.
-      await tx
-        .delete(sellerSubdomainRedirects)
-        .where(
-          and(
-            eq(sellerSubdomainRedirects.subdomain, subdomain),
-            eq(sellerSubdomainRedirects.sellerId, sellerId),
-          ),
-        );
-      await tx
-        .insert(sellerSubdomainRedirects)
-        .values({ subdomain: current.subdomain, sellerId })
-        .onConflictDoNothing();
-      await tx
-        .update(sellers)
-        .set({ subdomain, subdomainUpdatedAt: now, updatedAt: now })
-        .where(eq(sellers.id, sellerId));
-    });
-  } catch (error) {
-    // 23505: another seller claimed it between the check and the update.
-    const code = (error as { code?: string; cause?: { code?: string } })?.cause?.code
-      ?? (error as { code?: string })?.code;
-    if (error instanceof SubdomainTakenError || code === "23505") {
-      return { success: false, error: "taken" };
+    const { seller, store } = await requireStore(String(storeId));
+    if (!subdomainCheckLimiter.check(`subdomain-check:${seller.sellerId}`)) {
+      return { success: false, error: "rateLimited" };
     }
-    console.error("Error updating store subdomain:", error);
-    return { success: false, error: "failed" };
+    const check = await checkStoreSubdomainStatus(seller.sellerId, String(input ?? "").slice(0, 64), {
+      storeId: store.id,
+    });
+    if (check.status !== "available") return { success: false, error: check.status };
+    return { success: true, subdomain: check.subdomain };
+  } catch (error) {
+    return subdomainFailure(error);
   }
+}
 
-  await applyInvalidation(invalidateStorefront([current.subdomain, subdomain]), {
-    from: "dashboard",
-    mode: "action",
-  });
-  revalidatePath("/settings");
-  return { success: true, subdomain };
+/**
+ * Moves one store to {subdomain}.tallaby.com. The old address keeps
+ * redirecting to the new one, so links already shared still work. The single
+ * update path is @workspace/lib's updateStoreSubdomain; for the primary store
+ * the 0050 trigger keeps sellers.subdomain in sync.
+ */
+export async function updateStoreSubdomain(storeId: string, input: string): Promise<SubdomainResult> {
+  try {
+    const { seller, store } = await requireStore(String(storeId), { forWrite: true });
+    const result = await updateStoreSubdomainForStore(seller.sellerId, store.id, String(input ?? "").slice(0, 64));
+    if (!result.success) {
+      if (result.error === "not_found") return { success: false, error: "notFound" };
+      if (result.error === "store_read_only") return { success: false, error: "readOnly" };
+      if (result.error === "invalid_input" || result.error === "available") return { success: false, error: "invalid" };
+      return { success: false, error: result.error };
+    }
+
+    const { subdomain, previous } = result.data;
+    if (previous !== subdomain) {
+      // This store's profile under both names, and its custom domain lookup.
+      const [domain] = await db
+        .select({ domain: sellerCustomDomains.domain })
+        .from(sellerCustomDomains)
+        .where(and(eq(sellerCustomDomains.storeId, store.id), eq(sellerCustomDomains.sellerId, seller.sellerId)))
+        .limit(1);
+      await applyInvalidation(
+        mergeInvalidations(
+          invalidateStorefront([previous, subdomain]),
+          ...(domain ? [invalidateCustomDomain(subdomain, domain.domain)] : []),
+        ),
+        { from: "dashboard", mode: "action" },
+      );
+    }
+    revalidatePath("/settings");
+    revalidatePath(`/stores/${store.id}`, "layout");
+    // The sidebar store switcher shows store addresses.
+    revalidatePath("/", "layout");
+    return { success: true, subdomain };
+  } catch (error) {
+    return subdomainFailure(error);
+  }
 }

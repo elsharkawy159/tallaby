@@ -48,11 +48,14 @@ import {
   storeGeneralSettingsSchema,
   storePoliciesSchema,
   storeSocialLinksSchema,
+  storeSeoSchema,
   subdomainCandidates,
   type StoreSocialLink,
   type CreateStoreInput,
   type StoreGeneralSettings,
   type StorePolicies,
+  type StoreSeo,
+  type StoreSeoInput,
   type StoreSubdomainStatus,
 } from "./stores.lib";
 
@@ -503,6 +506,58 @@ export async function updateStoreSocialLinks(
     .where(and(ownStore(sellerId, storeId), eq(stores.status, "active")))
     .returning({ id: stores.id });
   return updated.length ? { success: true, data: { links: parsed.data } } : { success: false, error: "store_read_only" };
+}
+
+/**
+ * Website › Domain & SEO › SEO (P4-14). Replaces the SEO fields of
+ * stores.seo with the validated form (an empty field is removed); keys the
+ * form does not own are kept. Archived and suspended stores are read-only.
+ */
+export async function updateStoreSeo(
+  sellerId: string,
+  storeId: string,
+  input: StoreSeoInput,
+  q: Queryable = db,
+): Promise<StoreResult<StoreSeo, StoreWriteError>> {
+  const parsed = storeSeoSchema.safeParse(input);
+  if (!parsed.success) return { success: false, error: "invalid_input" };
+  const store = await getStore(sellerId, storeId, q);
+  if (!store) return { success: false, error: "not_found" };
+  if (store.status !== "active") return { success: false, error: "store_read_only" };
+
+  const next: Record<string, unknown> = { ...(store.seo as Record<string, unknown>) };
+  for (const [key, value] of Object.entries(parsed.data)) {
+    if (value === null) delete next[key];
+    else next[key] = value;
+  }
+  const updated = await q
+    .update(stores)
+    .set({ seo: next, updatedAt: sql`now()` })
+    .where(and(ownStore(sellerId, storeId), eq(stores.status, "active")))
+    .returning({ id: stores.id });
+  return updated.length ? { success: true, data: parsed.data } : { success: false, error: "store_read_only" };
+}
+
+/**
+ * Whether the store shows at least one product: an active product of its
+ * seller, and in "selected" mode one of its picks (D24). Stores without one
+ * are kept out of search (noindex, no sitemap; PLAN.md §10.3).
+ */
+export async function storeHasVisibleProducts(
+  sellerId: string,
+  storeId: string,
+  q: Queryable = db,
+): Promise<boolean> {
+  if (!UUID_RE.test(storeId)) return false;
+  const rows = await q.execute(sql`
+    SELECT 1 FROM stores st
+    JOIN products p ON p.seller_id = st.seller_id AND p.status = 'active'
+    WHERE st.id = ${storeId} AND st.seller_id = ${sellerId}
+      AND (st.catalog_mode <> 'selected'
+           OR EXISTS (SELECT 1 FROM store_products sp WHERE sp.store_id = st.id AND sp.product_id = p.id))
+    LIMIT 1
+  `);
+  return [...rows].length > 0;
 }
 
 export type StorePaymentsError = StoreWriteError | MethodChangeError;

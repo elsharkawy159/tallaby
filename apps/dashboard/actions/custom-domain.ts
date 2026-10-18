@@ -1,7 +1,7 @@
 "use server";
 
-import { db, sellers, sellerCustomDomains } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { db, sellerCustomDomains } from "@workspace/db";
+import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { applyInvalidation, invalidateCustomDomain } from "@workspace/cache";
 import {
@@ -22,7 +22,7 @@ import {
   type VercelDomainError,
   type VercelVerificationRecord,
 } from "@workspace/lib/storefront/vercel-domains";
-import { getUser } from "./auth";
+import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
 
 /** What the settings card shows about the seller's own domain. */
 export type CustomDomainView = {
@@ -45,6 +45,7 @@ export type CustomDomainResult =
         | "hasDomain"
         | "notApproved"
         | "unauthorized"
+        | "primaryOnly"
         | Exclude<VercelDomainError, "taken">
         | "failed";
     };
@@ -61,31 +62,48 @@ function toView(row: CustomDomainRow): CustomDomainView {
   };
 }
 
-async function currentSeller() {
-  const session = await getUser();
-  const sellerId = session?.user?.id;
-  if (!sellerId) return null;
-  return db.query.sellers.findFirst({
-    where: eq(sellers.id, sellerId),
-    columns: { id: true, subdomain: true, status: true },
-  });
+/**
+ * The store whose domain is managed (P4-14: explicit storeId, ownership
+ * re-checked; never a client seller id). Null when it is not the caller's.
+ */
+async function currentStore(storeId: string, options: { forWrite?: boolean } = {}) {
+  try {
+    const { seller, store } = await requireStore(String(storeId), options);
+    return {
+      sellerId: seller.sellerId,
+      status: seller.status,
+      storeId: store.id,
+      subdomain: store.subdomain,
+      isPrimary: store.isPrimary,
+    };
+  } catch (error) {
+    if (isAccessError(error)) return null;
+    throw error;
+  }
 }
 
-async function findRow(sellerId: string) {
+type CurrentStore = NonNullable<Awaited<ReturnType<typeof currentStore>>>;
+
+/**
+ * The store's domain row. Until P3-03b (owner approval) a seller has at most
+ * one custom domain, attached to the primary store (0050 fills store_id).
+ */
+async function findRow(store: CurrentStore) {
   const [row] = await db
     .select()
     .from(sellerCustomDomains)
-    .where(eq(sellerCustomDomains.sellerId, sellerId))
+    .where(and(eq(sellerCustomDomains.sellerId, store.sellerId), eq(sellerCustomDomains.storeId, store.storeId)))
     .limit(1);
   return row ?? null;
 }
 
-async function invalidate(subdomain: string, domain: string) {
-  await applyInvalidation(invalidateCustomDomain(subdomain, domain), {
+async function invalidate(store: CurrentStore, domain: string) {
+  await applyInvalidation(invalidateCustomDomain(store.subdomain, domain), {
     from: "dashboard",
     mode: "action",
   });
   revalidatePath("/settings");
+  revalidatePath(`/stores/${store.storeId}/website/domain`, "layout");
 }
 
 function vercelFailure(error: unknown): CustomDomainResult {
@@ -97,29 +115,35 @@ function vercelFailure(error: unknown): CustomDomainResult {
   return { success: false, error: "failed" };
 }
 
-/** The seller's custom domain, or null when they haven't added one. */
-export async function getCustomDomain(): Promise<CustomDomainResult> {
-  const seller = await currentSeller();
-  if (!seller) return { success: false, error: "unauthorized" };
-  const row = await findRow(seller.id);
+/** The store's custom domain, or null when it has none. */
+export async function getCustomDomain(storeId: string): Promise<CustomDomainResult> {
+  const store = await currentStore(storeId);
+  if (!store) return { success: false, error: "unauthorized" };
+  const row = await findRow(store);
   return { success: true, domain: row ? toView(row) : null };
 }
 
 /**
- * Connects `input` (e.g. faster-eg.com) to the seller's storefront: attaches
- * the apex and its www redirect to the ecommerce project on Vercel, then saves
- * it as pending until DNS is set up and verified.
+ * Connects `input` (e.g. faster-eg.com) to the store: attaches the apex and
+ * its www redirect to the ecommerce project on Vercel, then saves it as
+ * pending until DNS is set up and verified. Primary store only until P3-03b.
  */
-export async function addCustomDomain(input: string): Promise<CustomDomainResult> {
-  const seller = await currentSeller();
-  if (!seller) return { success: false, error: "unauthorized" };
-  if (seller.status !== "approved") return { success: false, error: "notApproved" };
+export async function addCustomDomain(storeId: string, input: string): Promise<CustomDomainResult> {
+  const store = await currentStore(storeId, { forWrite: true });
+  if (!store) return { success: false, error: "unauthorized" };
+  if (!store.isPrimary) return { success: false, error: "primaryOnly" };
+  if (store.status !== "approved") return { success: false, error: "notApproved" };
 
   const domain = normalizeCustomDomain(input);
   const problem = validateCustomDomain(domain);
   if (problem) return { success: false, error: problem };
 
-  if (await findRow(seller.id)) return { success: false, error: "hasDomain" };
+  const [existing] = await db
+    .select({ id: sellerCustomDomains.id })
+    .from(sellerCustomDomains)
+    .where(eq(sellerCustomDomains.sellerId, store.sellerId))
+    .limit(1);
+  if (existing) return { success: false, error: "hasDomain" };
   const [owner] = await db
     .select({ id: sellerCustomDomains.id })
     .from(sellerCustomDomains)
@@ -143,7 +167,7 @@ export async function addCustomDomain(input: string): Promise<CustomDomainResult
   try {
     [row] = await db
       .insert(sellerCustomDomains)
-      .values({ sellerId: seller.id, domain })
+      .values({ sellerId: store.sellerId, storeId: store.storeId, domain })
       .returning();
   } catch (error) {
     await Promise.allSettled([
@@ -166,20 +190,20 @@ export async function addCustomDomain(input: string): Promise<CustomDomainResult
   } catch (error) {
     console.error("Error checking new custom domain:", error);
   }
-  await invalidate(seller.subdomain, domain);
+  await invalidate(store, domain);
   return { success: true, domain: toView(row) };
 }
 
 /** Re-checks verification and DNS with Vercel (the seller's "Verify" button). */
-export async function verifyCustomDomain(): Promise<CustomDomainResult> {
-  const seller = await currentSeller();
-  if (!seller) return { success: false, error: "unauthorized" };
-  const row = await findRow(seller.id);
+export async function verifyCustomDomain(storeId: string): Promise<CustomDomainResult> {
+  const store = await currentStore(storeId);
+  if (!store) return { success: false, error: "unauthorized" };
+  const row = await findRow(store);
   if (!row) return { success: true, domain: null };
 
   try {
     const updated = await refreshCustomDomain(row);
-    if (updated.status !== row.status) await invalidate(seller.subdomain, row.domain);
+    if (updated.status !== row.status) await invalidate(store, row.domain);
     return { success: true, domain: toView(updated) };
   } catch (error) {
     return vercelFailure(error);
@@ -187,10 +211,10 @@ export async function verifyCustomDomain(): Promise<CustomDomainResult> {
 }
 
 /** Disconnects the domain; the store goes back to {subdomain}.tallaby.com. */
-export async function removeCustomDomain(): Promise<CustomDomainResult> {
-  const seller = await currentSeller();
-  if (!seller) return { success: false, error: "unauthorized" };
-  const row = await findRow(seller.id);
+export async function removeCustomDomain(storeId: string): Promise<CustomDomainResult> {
+  const store = await currentStore(storeId);
+  if (!store) return { success: false, error: "unauthorized" };
+  const row = await findRow(store);
   if (!row) return { success: true, domain: null };
 
   try {
@@ -199,7 +223,9 @@ export async function removeCustomDomain(): Promise<CustomDomainResult> {
   } catch (error) {
     return vercelFailure(error);
   }
-  await db.delete(sellerCustomDomains).where(eq(sellerCustomDomains.id, row.id));
-  await invalidate(seller.subdomain, row.domain);
+  await db
+    .delete(sellerCustomDomains)
+    .where(and(eq(sellerCustomDomains.id, row.id), eq(sellerCustomDomains.sellerId, store.sellerId)));
+  await invalidate(store, row.domain);
   return { success: true, domain: null };
 }

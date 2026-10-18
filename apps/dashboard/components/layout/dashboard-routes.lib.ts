@@ -104,6 +104,7 @@ export const DASHBOARD_ROUTES: DashboardRoute[] = [
   { href: "/stores/[storeId]/website/templates", title: "templates", parent: "website", icon: LayoutGrid },
   { href: "/stores/[storeId]/website/design", title: "designSystem", parent: "website", icon: Palette },
   { href: "/stores/[storeId]/website/pages", title: "pages", parent: "website", icon: FileText },
+  { href: "/stores/[storeId]/website/domain", title: "domainSeo", parent: "website", icon: Globe },
   { href: "/stores/[storeId]/website/social", title: "socialMedia", parent: "website", icon: Share2 },
   { href: "/stores/[storeId]/website/media", title: "mediaLibrary", parent: "website", icon: Images },
   { href: "/stores/[storeId]/apps", title: "apps", icon: AppWindow },

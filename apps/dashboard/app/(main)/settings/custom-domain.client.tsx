@@ -73,10 +73,17 @@ function dnsRecords (view: CustomDomainView): DnsRecord[] {
 }
 
 /**
- * Lets a seller serve their storefront from a domain they own (faster-eg.com):
- * add it, follow the DNS instructions at their registrar, then verify.
+ * Lets a seller serve a store from a domain they own (faster-eg.com): add it,
+ * follow the DNS instructions at their registrar, then verify. The actions
+ * take the store explicitly; until P3-03b only the primary store can have one.
  */
-export function CustomDomainSection ({ initial }: { initial: CustomDomainView | null }) {
+export function CustomDomainSection ({
+  storeId,
+  initial,
+}: {
+  storeId: string
+  initial: CustomDomainView | null
+}) {
   const t = useTranslations('settings.customDomain')
   const router = useRouter()
   const [view, setView] = useState(initial)
@@ -111,13 +118,13 @@ export function CustomDomainSection ({ initial }: { initial: CustomDomainView | 
   }
 
   const add = () =>
-    run('add', () => addCustomDomain(draft), () => {
+    run('add', () => addCustomDomain(storeId, draft), () => {
       setDraft('')
       toast.success(t('added'))
     })
 
   const verify = () =>
-    run('verify', verifyCustomDomain, (domain) => {
+    run('verify', () => verifyCustomDomain(storeId), (domain) => {
       if (domain?.status === 'active') toast.success(t('nowLive', { host: domain.domain }))
       else toast.info(t('notYet'))
     })
@@ -125,7 +132,7 @@ export function CustomDomainSection ({ initial }: { initial: CustomDomainView | 
   const remove = () => {
     if (!view) return
     if (!window.confirm(t('removeConfirm', { host: view.domain }))) return
-    run('remove', removeCustomDomain, () => toast.success(t('removed')))
+    run('remove', () => removeCustomDomain(storeId), () => toast.success(t('removed')))
   }
 
   const copy = async (value: string) => {

@@ -8,7 +8,9 @@ import {
 import { STORE_PREVIEW_COOKIE } from "@workspace/lib/store-sites/preview";
 import { routing } from "@/i18n/routing";
 import {
+  isCrawlFilePath,
   isInternalStorefrontPath,
+  routeStoreCrawlFile,
   routeStorefrontRequest,
 } from "@/lib/storefront-routing";
 import {
@@ -44,6 +46,9 @@ export async function proxy(request: NextRequest) {
       const { pathname, search } = request.nextUrl;
       return NextResponse.redirect(`https://${customDomain}${pathname}${search}`, 308);
     }
+    // The store's own robots.txt / sitemap.xml (P5-04); no session needed.
+    const crawlFile = routeStoreCrawlFile(request, storeSubdomain);
+    if (crawlFile) return crawlFile;
     const storefront = routeStorefrontRequest(request, storeSubdomain);
     if (storefront) return markStorePreview(request, await updateSession(request, storefront));
   } else if (!isPlatformHost(host)) {
@@ -51,12 +56,18 @@ export async function proxy(request: NextRequest) {
     // attached, but an inactive or removed one must not show anything.
     const subdomain = await subdomainForCustomDomain(hostnameOf(host));
     if (!subdomain) return new NextResponse(null, { status: 404 });
+    const crawlFile = routeStoreCrawlFile(request, subdomain);
+    if (crawlFile) return crawlFile;
     const storefront = routeStorefrontRequest(request, subdomain);
     if (storefront) return markStorePreview(request, await updateSession(request, storefront));
   } else if (isInternalStorefrontPath(request.nextUrl.pathname)) {
     // Storefront pages only exist on their own subdomain, where the cart is
     // scoped to the store; on tallaby.com they would show the wrong cart.
     return new NextResponse(null, { status: 404 });
+  } else if (isCrawlFilePath(request.nextUrl.pathname)) {
+    // The marketplace robots.txt / sitemap files, exactly as before this
+    // proxy started matching them (no locale routing, no session).
+    return NextResponse.next();
   }
 
   const response = handleI18nRouting(request);
@@ -73,13 +84,14 @@ export const config = {
      * - api/ (route handlers under app/api/, including OAuth callback and
      *   server-to-server webhooks — locale routing must not intercept these
      *   or they 404 instead of running their handlers)
-     * - sitemap.xml, sitemap.xsl (its browser stylesheet), sitemaps/
-     *   (chunked sitemap files), robots.txt,
-     *   manifest.webmanifest (top-level route handlers outside app/[locale]/
-     *   — locale routing must not intercept these or they 404 instead of
-     *   returning their content)
+     * - sitemap.xsl (the sitemap's browser stylesheet), manifest.webmanifest
+     *   (top-level files outside app/[locale]/ — locale routing must not
+     *   intercept these or they 404 instead of returning their content)
+     * robots.txt, sitemap.xml and sitemaps/ DO run through the proxy: store
+     * hosts get their own (P5-04); tallaby.com passes straight through to the
+     * marketplace files (see isCrawlFilePath above).
      * Feel free to modify this pattern to include more paths.
      */
-    "/((?!api/|_next/static|_next/image|favicon.ico|sitemap.xml|sitemap.xsl|sitemaps/|robots.txt|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!api/|_next/static|_next/image|favicon.ico|sitemap.xsl|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

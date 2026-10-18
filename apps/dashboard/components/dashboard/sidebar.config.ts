@@ -86,7 +86,7 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
       { key: "templates", href: "/stores/[storeId]/website/templates", status: "planned" },
       { key: "designSystem", href: "/stores/[storeId]/website/design", status: "live" },
       { key: "pages", href: "/stores/[storeId]/website/pages", status: "live" },
-      { key: "domainSeo", href: "/stores/[storeId]/website/domain", status: "planned" },
+      { key: "domainSeo", href: "/stores/[storeId]/website/domain", status: "live" },
       { key: "socialMedia", href: "/stores/[storeId]/website/social", status: "live" },
       { key: "blog", href: "/stores/[storeId]/website/blog", status: "planned" },
       { key: "forms", href: "/stores/[storeId]/website/forms", status: "planned" },

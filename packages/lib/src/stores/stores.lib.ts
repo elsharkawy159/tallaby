@@ -160,6 +160,80 @@ export function publicStoreSocialLinks(contact: unknown): { platform: string; ur
     .map((link) => ({ platform: link.platform, url: link.value }));
 }
 
+/**
+ * Google Search Console "HTML tag" token. The storefront renders it only as
+ * the content of `<meta name="google-site-verification">` through Next
+ * metadata (escaped), never as raw HTML; the pattern also rules out quotes
+ * and angle brackets.
+ */
+export const GOOGLE_SITE_VERIFICATION_RE = /^[A-Za-z0-9_-]{10,100}$/;
+/** Where the page title goes in a store title template: "%s | My store". */
+export const TITLE_TEMPLATE_TOKEN = "%s";
+
+const blankToNull = (v: unknown) => (typeof v === "string" && v.trim() === "" ? null : v);
+
+const titleTemplate = z
+  .string()
+  .trim()
+  .max(120)
+  .refine((v) => v.split(TITLE_TEMPLATE_TOKEN).length === 2, "invalid_title_template");
+const seoDescription = z.string().trim().max(320);
+const googleSiteVerification = z.string().trim().regex(GOOGLE_SITE_VERIFICATION_RE, "invalid_verification_token");
+
+/**
+ * Website › Domain & SEO › SEO (PLAN.md §7.3, P4-14), stored in `stores.seo`.
+ * Saved as a whole form; an empty field is `null` (removed). Applies at once:
+ * the storefront layout reads it live; page-level builder SEO still overrides
+ * the title and description of its page.
+ */
+export const storeSeoSchema = z
+  .object({
+    titleTemplate: z.preprocess(blankToNull, titleTemplate.nullable()),
+    description: z.preprocess(blankToNull, seoDescription.nullable()),
+    shareImageUrl: z.preprocess(blankToNull, httpUrl.nullable()),
+    /** false = ask search engines not to index the store (noindex, no sitemap). */
+    indexing: z.boolean(),
+    googleSiteVerification: z.preprocess(blankToNull, googleSiteVerification.nullable()),
+  })
+  .strict();
+export type StoreSeoInput = z.input<typeof storeSeoSchema>;
+
+export type StoreSeo = {
+  titleTemplate: string | null;
+  description: string | null;
+  shareImageUrl: string | null;
+  indexing: boolean;
+  googleSiteVerification: string | null;
+};
+
+export const DEFAULT_STORE_SEO: StoreSeo = {
+  titleTemplate: null,
+  description: null,
+  shareImageUrl: null,
+  indexing: true,
+  googleSiteVerification: null,
+};
+
+/**
+ * Reads `stores.seo` for rendering. Field by field, so one bad value (an old
+ * row, a manual edit) drops only that field, and every value is re-validated
+ * at render time, the verification token included.
+ */
+export function parseStoreSeo(raw: unknown): StoreSeo {
+  const value = (raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {}) as Record<string, unknown>;
+  const pick = <T>(schema: z.ZodType<T>, v: unknown): T | null => {
+    const parsed = schema.safeParse(v);
+    return parsed.success ? parsed.data : null;
+  };
+  return {
+    titleTemplate: pick(titleTemplate, value.titleTemplate) || null,
+    description: pick(seoDescription, value.description) || null,
+    shareImageUrl: pick(httpUrl, value.shareImageUrl) || null,
+    indexing: value.indexing !== false,
+    googleSiteVerification: pick(googleSiteVerification, value.googleSiteVerification),
+  };
+}
+
 export const STORE_POLICY_KEYS =["return", "shipping", "privacy", "terms"] as const;
 export type StorePolicyKey = (typeof STORE_POLICY_KEYS)[number];
 export type StorePolicies = Partial<Record<StorePolicyKey, string>>;

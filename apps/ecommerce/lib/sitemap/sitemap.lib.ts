@@ -136,7 +136,7 @@ export const STATIC_PAGES: StaticPageDef[] = [
 ];
 
 /** Entries for a path that exists in every locale under the same slug. */
-function sharedPathEntries(
+export function sharedPathEntries(
   baseUrl: string,
   path: string,
   fields: Pick<SitemapEntry, "type" | "lastModified" | "changeFrequency" | "priority">,
