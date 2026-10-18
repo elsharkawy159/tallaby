@@ -20,7 +20,7 @@ const KNOWN_ERRORS = new Set(["subdomainTaken", "generic"]);
 export default async function SignupPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; subdomain?: string }>;
 }) {
   const supabase = await createClient();
   const {
@@ -32,11 +32,13 @@ export default async function SignupPage({
     if (seller) redirect("/");
   }
 
-  const { error } = await searchParams;
+  const { error, subdomain } = await searchParams;
   return (
     <SignupForm
       signedInEmail={user ? (user.email ?? "") : null}
       initialError={error && KNOWN_ERRORS.has(error) ? (error as "subdomainTaken" | "generic") : null}
+      // Pre-filled from the marketing site's "claim your link" forms; still checked live and on submit.
+      initialSubdomain={typeof subdomain === "string" ? subdomain.trim().toLowerCase().slice(0, 32) : ""}
     />
   );
 }

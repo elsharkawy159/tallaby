@@ -1,0 +1,1146 @@
+{
+  "meta": {
+    "siteName": "Tallaby",
+    "titleTemplate": "%s | Tallaby",
+    "home": {
+      "title": "Tallaby | Get your store link in minutes, free",
+      "description": "Create a professional online store under your own brand with no code. Free plan, just 5 EGP per successful order, and no percentage."
+    },
+    "templates": {
+      "title": "Store templates",
+      "description": "Pick a store template made for what you sell. Every template is free, fully editable and mobile-ready."
+    },
+    "template": {
+      "title": "{name} template",
+      "description": "{desc}. Free, fully editable and mobile-ready."
+    },
+    "pricing": {
+      "title": "Pricing",
+      "description": "Free plan. A flat 5 EGP per successful order, with no percentage and no monthly subscription."
+    },
+    "blog": {
+      "title": "Blog",
+      "description": "Practical guides, seller stories and product updates for Egyptian brands."
+    },
+    "about": {
+      "title": "About us",
+      "description": "Every brand in Egypt deserves a store with its own name on it."
+    },
+    "careers": {
+      "title": "Careers",
+      "description": "Join a small team in Cairo building the tools that put local brands online."
+    },
+    "contact": {
+      "title": "Contact us",
+      "description": "Talk to a person, not a bot. WhatsApp, email or phone."
+    },
+    "faq": {
+      "title": "FAQ and help center",
+      "description": "Answers about setting up, selling, payments and shipping on Tallaby."
+    },
+    "terms": {
+      "title": "Terms of service",
+      "description": "The agreement between you and Tallaby when you create a store or shop on one."
+    },
+    "privacy": {
+      "title": "Privacy policy",
+      "description": "What we collect, why we collect it, and the choices you have."
+    },
+    "followUs": {
+      "title": "Follow Tallaby",
+      "description": "Follow us on social media for updated promotions and discounts."
+    }
+  },
+  "nav": {
+    "skip": "Skip to content",
+    "main": "Main",
+    "howItWorks": "How it works",
+    "templates": "Templates",
+    "pricing": "Pricing",
+    "blog": "Blog",
+    "about": "About",
+    "contact": "Contact",
+    "login": "Log in",
+    "cta": "Create Your Store Free",
+    "menu": "Menu",
+    "switchLabel": "عربي",
+    "switchAria": "التبديل للعربية",
+    "whatsapp": "Chat with us on WhatsApp"
+  },
+  "footer": {
+    "about": "Tallaby helps Egyptian brands launch a professional online store in minutes, under their own name, with no code.",
+    "location": "Cairo, Egypt",
+    "company": "Company",
+    "product": "Product",
+    "support": "Support",
+    "aboutUs": "About us",
+    "contactUs": "Contact us",
+    "blog": "Blog",
+    "careers": "Careers",
+    "templates": "Templates",
+    "builder": "Store builder",
+    "pricing": "Pricing",
+    "faq": "FAQ",
+    "helpCenter": "Help center",
+    "paymentMethods": "Payment methods",
+    "shippingInfo": "Shipping info",
+    "connectDomain": "Connect a domain",
+    "sellerLogin": "Seller login",
+    "rights": "© {year} tallaby.com. All rights reserved.",
+    "terms": "Terms of service",
+    "privacy": "Privacy policy",
+    "cookies": "Cookie policy",
+    "social": "Social media",
+    "claimPrompt": "Type your brand name to claim your store link"
+  },
+  "common": {
+    "storeLink": "Your store link",
+    "claimLink": "Claim My Link",
+    "createStore": "Create Your Store Free",
+    "available": "Available",
+    "preview": "Preview",
+    "egp": "EGP",
+    "minRead": "{minutes} min read",
+    "allQuestions": "All questions",
+    "seeAllQuestions": "See all questions",
+    "email": "Email"
+  },
+  "signup": {
+    "title": "Create your store",
+    "subtitle": "Free to start. You'll set up your store after signup.",
+    "slugLabel": "Store link",
+    "slugHint": "Lowercase letters, numbers and dashes.",
+    "checking": "Checking…",
+    "available": "{host} is available",
+    "taken": "This link is taken.",
+    "suggestions": "Try:",
+    "tooShort": "At least 3 characters",
+    "tooLong": "At most 32 characters",
+    "invalid": "Use lowercase English letters, numbers and single dashes.",
+    "reserved": "This link is reserved, try another",
+    "arabic": "Use English letters",
+    "rateLimited": "Too many checks. Wait a minute and try again.",
+    "required": "Choose a link for your store",
+    "terms": "By signing up you agree to Tallaby's <terms>Terms</terms> and <privacy>Privacy Policy</privacy>.",
+    "close": "Close",
+    "google": "Continue with Google",
+    "or": "or",
+    "email": "Email",
+    "password": "Password",
+    "passwordHint": "At least 8 characters.",
+    "passwordOk": "Looks good",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "phone": "Mobile number",
+    "phoneHint": "So our team can reach you on WhatsApp.",
+    "submit": "Create My Store",
+    "creating": "Creating…",
+    "doneTitle": "Your store is created",
+    "addProduct": "Add your first product",
+    "goDashboard": "Go to dashboard",
+    "confirmTitle": "Check your email",
+    "confirmBody": "We sent a confirmation link to {email}. Open it to finish creating your store.",
+    "errEmail": "Enter a valid email",
+    "errors": {
+      "invalidInput": "Check the details and try again.",
+      "invalidSubdomain": "Choose a valid store link.",
+      "phoneInvalid": "Enter a valid Egyptian mobile number.",
+      "subdomainTaken": "This link was just taken. Pick another one.",
+      "emailTaken": "This email already has an account. <login>Log in</login> instead.",
+      "rateLimited": "Too many attempts. Wait a few minutes and try again.",
+      "generic": "Something went wrong. Please try again."
+    }
+  },
+  "home": {
+    "hero": {
+      "eyebrow": "Store builder for Egyptian brands",
+      "title": "Get your store link <em>in minutes.</em> Free.",
+      "lead": "Type a name, claim your link, and you have a real online store under your own brand. Design it visually and publish when you're ready. No code.",
+      "point1": "Free to start, no card needed",
+      "point2": "Signup takes under a minute",
+      "point3": "Flat 5 EGP per order, no percentage",
+      "explore": "Explore Templates",
+      "pillReady": "Store ready",
+      "pillReadySub": "in under a minute",
+      "pillFee": "5 EGP per order",
+      "pillFeeSub": "no percentage, ever",
+      "pillPhone": "Works on every phone",
+      "themeColor": "Color {n}"
+    },
+    "how": {
+      "kicker": "How it works",
+      "title": "Three steps from idea to first order",
+      "s1Title": "Create your account",
+      "s1Body": "Pick your store link, add your email and a password, or continue with Google. That's all signup asks for.",
+      "s1Tag": "Under a minute",
+      "s2Title": "Customize your store",
+      "s2Body": "Choose a template, add your logo, colors and products, and arrange sections with the visual editor.",
+      "s2Tag": "No code",
+      "s3Title": "Start selling",
+      "s3Body": "Publish with one click, share your link, and manage orders from your dashboard. You only pay 5 EGP when an order succeeds.",
+      "s3Tag": "One-click publish",
+      "note": "Store setup comes later, from your dashboard."
+    },
+    "templates": {
+      "kicker": "Store templates",
+      "title": "Start from a design made for what you sell",
+      "desc": "Every template is fully editable and works on mobile out of the box.",
+      "filter": "Filter templates",
+      "use": "Use this template",
+      "preview": "Preview",
+      "seeAll": "See all templates"
+    },
+    "builder": {
+      "kicker": "Website builder",
+      "title": "Design it like you'd sketch it",
+      "desc": "Try it: change the colors, layout and device in the preview.",
+      "f1Title": "Visual editing",
+      "f1Body": "Click any section to edit text, images and order. What you see is what customers get.",
+      "f2Title": "Your brand, everywhere",
+      "f2Body": "Logo, colors, corner style and layouts apply across every page at once.",
+      "f3Title": "Mobile-ready",
+      "f3Body": "Every store adapts to phones automatically, where most of your customers shop.",
+      "f4Title": "No-code publishing",
+      "f4Body": "Publish changes instantly. No hosting, servers or developers to manage.",
+      "device": "Device",
+      "desktop": "Desktop",
+      "mobile": "Mobile",
+      "publish": "Publish",
+      "storeName": "Store name",
+      "brandColor": "Brand color",
+      "bannerLayout": "Banner layout",
+      "split": "Split",
+      "full": "Full image",
+      "center": "Centered",
+      "corners": "Corners",
+      "sharp": "Sharp",
+      "soft": "Soft",
+      "round": "Round",
+      "unpublished": "Unpublished changes",
+      "publishing": "Publishing…",
+      "liveAt": "Live at",
+      "colors": {
+        "teal": "Teal",
+        "ink": "Ink",
+        "rose": "Rose",
+        "vermilion": "Vermilion",
+        "sage": "Sage"
+      }
+    },
+    "features": {
+      "kicker": "Everything to sell online",
+      "title": "One dashboard for the whole store",
+      "desc": "Pick an area to see what you get.",
+      "dashboard": "Dashboard",
+      "areas": "Dashboard areas",
+      "tabs": {
+        "products": {
+          "title": "Products",
+          "sub": "Variants, photos and stock"
+        },
+        "orders": {
+          "title": "Orders",
+          "sub": "From new to delivered"
+        },
+        "checkout": {
+          "title": "Checkout",
+          "sub": "Fast, mobile-first checkout"
+        },
+        "analytics": {
+          "title": "Analytics",
+          "sub": "Sales and top products"
+        },
+        "seo": {
+          "title": "SEO",
+          "sub": "Titles, descriptions, links"
+        },
+        "marketing": {
+          "title": "Marketing",
+          "sub": "Discount codes and share links"
+        }
+      },
+      "status": {
+        "inStock": "In stock",
+        "low": "Low stock",
+        "draft": "Draft",
+        "new": "New",
+        "packing": "Packing",
+        "shipped": "Shipped",
+        "delivered": "Delivered"
+      },
+      "checkoutTitle": "Checkout",
+      "fullName": "Full name",
+      "phone": "Phone number",
+      "address": "Address",
+      "payOnline": "Pay online",
+      "cod": "Cash on delivery",
+      "placeOrder": "Place order",
+      "sales": "Sales",
+      "orders": "Orders",
+      "avgOrder": "Avg. order",
+      "pageTitle": "Page title",
+      "description": "Description",
+      "url": "URL",
+      "seoTitle": "Your store | Brand name",
+      "seoDesc": "A short description that shows under the title on Google.",
+      "discountCode": "Discount code",
+      "active": "Active",
+      "shareLink": "Share link"
+    },
+    "pricing": {
+      "kicker": "Simple pricing",
+      "title": "One free plan. Pay only when you sell.",
+      "tag": "Free plan",
+      "perOrder": "/ order",
+      "desc": "No monthly fee and no percentage of your sales. You're only charged for successful orders.",
+      "i1": "Unlimited visitors",
+      "i2": "Unlimited products",
+      "i3": "Unlimited orders",
+      "i4": "Website builder editor",
+      "i5": "Free themes and sections",
+      "i6": "Fast 24/7 support",
+      "i7": "Up to 3 stores",
+      "note": "Payment processing and shipping are charged separately. <link>Full pricing details</link>"
+    },
+    "faq": {
+      "kicker": "FAQ",
+      "title": "Questions before you start",
+      "desc": "Can't find your answer? Email us at {email}"
+    },
+    "final": {
+      "kicker": "Start now",
+      "title": "Your store link is waiting. Claim it before someone else does.",
+      "desc": "Signup takes under a minute. Design and publish whenever you're ready. You only pay 5 EGP per successful order.",
+      "boxTitle": "Choose your link",
+      "b1": "Free. No card needed.",
+      "b2": "Unlimited products, orders and visitors.",
+      "b3": "Support around the clock."
+    }
+  },
+  "templates": {
+    "categories": {
+      "all": "All",
+      "el": "Electronics",
+      "fa": "Fashion",
+      "be": "Beauty",
+      "ho": "Home",
+      "ac": "Accessories"
+    },
+    "items": {
+      "volt": {
+        "desc": "For electronics and gadgets",
+        "long": "A dark, precise template for tech products. Deep backgrounds make product shots glow, and tidy cards put specs and price up front."
+      },
+      "atelier": {
+        "desc": "For apparel and local labels",
+        "long": "A calm editorial template with sharp corners and large imagery, made for labels that tell the story behind each collection."
+      },
+      "glow": {
+        "desc": "For skincare and makeup",
+        "long": "A soft template with rounded corners and warm tones, for skincare and beauty brands that want a clean, gentle feel."
+      },
+      "nook": {
+        "desc": "For home and kitchen",
+        "long": "A warm, natural-toned template for homeware and kitchen goods, with room for product photos and how-to-use notes."
+      },
+      "charm": {
+        "desc": "For jewelry and accessories",
+        "long": "A luxe template on black with gold accents that makes small pieces feel important."
+      },
+      "tick": {
+        "desc": "For smartwatches and phones",
+        "long": "A bright, clean template with a bold accent, built for products customers compare before buying."
+      }
+    },
+    "hero": {
+      "eyebrow": "Store templates",
+      "title": "Pick a look. <em>Make it yours.</em>",
+      "lead": "Every template comes with a home page, product pages, cart and checkout. Change colors, fonts and sections anytime, without losing your products.",
+      "statTemplates": "Templates",
+      "statFree": "EGP to use any of them",
+      "statMobile": "Mobile-ready"
+    },
+    "count": "{count, plural, one {# template} other {# templates}}",
+    "previewTemplate": "Preview template",
+    "blankTitle": "Start from blank",
+    "blankBody": "An empty page. Arrange sections yourself.",
+    "blankCta": "Start blank",
+    "why": {
+      "switchTitle": "Switch anytime",
+      "switchBody": "Change templates later. Products, orders and settings stay put.",
+      "phoneTitle": "Built for phones",
+      "phoneBody": "Layouts are designed mobile-first, where most orders happen.",
+      "fastTitle": "Fast by default",
+      "fastBody": "Images are optimized automatically so pages load quickly.",
+      "langTitle": "Arabic and English",
+      "langBody": "Every template supports right-to-left and left-to-right."
+    },
+    "band": "Not sure which one? Start with any. You can switch later.",
+    "detail": {
+      "use": "Use This Template",
+      "demo": "Live demo",
+      "device": "Device",
+      "desktop": "Desktop",
+      "mobile": "Mobile",
+      "color": "Color",
+      "colorN": "Color {n}",
+      "corners": "Corners",
+      "sharp": "Sharp",
+      "soft": "Soft",
+      "round": "Round",
+      "start": "Start with this look",
+      "about": "About this template",
+      "pages": "Pages included",
+      "pHome": "Home page",
+      "pCollection": "Collection and search",
+      "pProduct": "Product page with variants",
+      "pCart": "Cart and checkout",
+      "pPolicies": "About, contact and policies",
+      "details": "Details",
+      "bestFor": "Best for",
+      "font": "Font",
+      "colorOptions": "Color options",
+      "price": "Price",
+      "free": "Free",
+      "more": "More templates"
+    }
+  },
+  "pricing": {
+    "hero": {
+      "eyebrow": "Pricing",
+      "title": "Free plan. <em>5 EGP per order.</em> No percentage.",
+      "lead": "A flat 5 EGP for each successful order, whatever its value. No monthly subscription, no commission on your sales. Unlimited products, orders and visitors.",
+      "estimate": "Estimate my fees",
+      "orderValue": "Order value",
+      "onOrder": "On a {value} EGP order",
+      "share": "That's just {pct}% of the order, with no percentage fee"
+    },
+    "plan": {
+      "kicker": "How it works",
+      "title": "One free plan for every store",
+      "freePlan": "Free plan",
+      "perOrder": "EGP per successful order",
+      "flat": "Flat fee, no percentage. Cancelled and returned orders aren't charged.",
+      "i1": "Unlimited products",
+      "i2": "Unlimited orders",
+      "i3": "Unlimited visitors",
+      "i4": "Every feature unlocked",
+      "wontPay": "What you won't pay",
+      "commission": "commission on sales",
+      "monthly": "EGP monthly subscription",
+      "setup": "EGP setup fee",
+      "cancel": "EGP to cancel",
+      "noCard": "No card needed to start. Close your store anytime."
+    },
+    "estimate": {
+      "kicker": "Estimate",
+      "title": "What would a month cost you?",
+      "desc": "Move the sliders to match your store. The fee is 5 EGP per order, so only the number of orders changes it.",
+      "orders": "Orders per month",
+      "aov": "Average order value",
+      "monthlyFee": "Estimated platform fee per month",
+      "perOrder": "Fee per order",
+      "sales": "Monthly sales",
+      "keep": "You keep",
+      "note": "Payment processing and shipping are charged separately."
+    },
+    "included": {
+      "kicker": "Included",
+      "title": "Everything, for every store",
+      "products": "Unlimited products",
+      "productsBody": "With variants, photos and stock tracking.",
+      "orders": "Unlimited orders",
+      "ordersBody": "From new to delivered in one dashboard.",
+      "visitors": "Unlimited visitors",
+      "visitorsBody": "No traffic caps, ever.",
+      "payLink": "Payment link",
+      "payLinkBody": "Send customers a direct online payment link.",
+      "templates": "All templates",
+      "templatesBody": "Switch anytime without losing data.",
+      "domain": "Custom domain",
+      "domainBody": "Connect a domain you already own.",
+      "codes": "Discount codes",
+      "codesBody": "Create codes and share links.",
+      "support": "24/7 support",
+      "supportBody": "Real people on WhatsApp and email.",
+      "processing": "Payment processing",
+      "processingBody": "Depends on the method your customer uses. Shown before you enable it.",
+      "shipping": "Shipping",
+      "shippingBody": "Priced per shipment by destination and weight. Shown before you confirm."
+    },
+    "faq": {
+      "kicker": "Pricing questions",
+      "title": "The fine print, in plain words",
+      "items": [
+        {
+          "q": "What counts as a successful order?",
+          "a": "An order that's delivered and not cancelled or returned. If a customer returns an order, the fee is not charged."
+        },
+        {
+          "q": "Does the fee change with order value?",
+          "a": "No. Every successful order costs a flat 5 EGP, whether it's 100 EGP or 10,000 EGP. We never take a percentage of your sales."
+        },
+        {
+          "q": "How do I pay the fee?",
+          "a": "Fees are deducted from your payouts automatically. You'll see every deduction in the Finance page of your dashboard."
+        },
+        {
+          "q": "Are there limits on the free plan?",
+          "a": "No. Products, orders and visitors are unlimited, and every feature is included."
+        }
+      ]
+    },
+    "band": "Start free today. Pay 5 EGP only when you sell."
+  },
+  "blog": {
+    "categories": {
+      "all": "All",
+      "guides": "Guides",
+      "growth": "Growth",
+      "stories": "Seller stories",
+      "payments": "Payments",
+      "product": "Product updates"
+    },
+    "author": "Tallaby team",
+    "posts": {
+      "pricing-products": {
+        "title": "How to price your products for online sales",
+        "excerpt": "A simple way to account for cost, shipping and fees, and land on a price that earns without scaring customers off."
+      },
+      "first-100-orders": {
+        "title": "Your first 100 orders: a practical checklist",
+        "excerpt": "From sharing your link to your first discount code, the steps that matter in month one."
+      },
+      "phone-photos": {
+        "title": "Shoot product photos with just your phone",
+        "excerpt": "Window light, a white backdrop and three angles. That's all you need."
+      },
+      "dms-to-store": {
+        "title": "From Instagram DMs to a real store",
+        "excerpt": "A small Alexandria label moved its orders from DMs to a store with its own link."
+      },
+      "cod-vs-online": {
+        "title": "Cash on delivery or online payment?",
+        "excerpt": "The pros and cons of each, and when to offer both."
+      },
+      "seo-basics": {
+        "title": "Getting found on Google: SEO basics",
+        "excerpt": "Titles, descriptions and images. The three things that move search results."
+      },
+      "discount-codes": {
+        "title": "New: discount codes and share links",
+        "excerpt": "Create a discount code in seconds and see which link brought orders."
+      }
+    },
+    "index": {
+      "eyebrow": "The Tallaby blog",
+      "title": "Notes on <em>selling online.</em>",
+      "lead": "Practical guides, seller stories and product updates for Egyptian brands.",
+      "byEmail": "Get it by email",
+      "featured": "Featured",
+      "read": "Read article",
+      "search": "Search posts",
+      "none": "No matching posts",
+      "newsTitle": "One useful email, every other week",
+      "newsBody": "New guides and seller stories. No spam, unsubscribe anytime.",
+      "subscribe": "Subscribe",
+      "subscribed": "Subscribed. Your first email is on its way soon."
+    },
+    "post": {
+      "share": "Share",
+      "copy": "Copy link",
+      "copied": "Copied",
+      "inArticle": "In this article",
+      "keepReading": "Keep reading",
+      "ctaTitle": "Ready to put a price on it?",
+      "ctaBody": "Create your store free and add your first product in minutes."
+    },
+    "article": {
+      "lede": "Pricing is the decision most new sellers get wrong, usually by charging too little. A low price feels safe, but it leaves no room for shipping surprises, returns or a discount code when you need one. Here's a simple way to get it right.",
+      "s1": "1. Start from your real cost",
+      "s1Body": "Add up everything it takes to get one unit ready to ship: materials or wholesale price, packaging, labels and any printing. If you make the product yourself, include your time.",
+      "s2": "2. Add the costs you don't see",
+      "s2List": [
+        "Shipping, if you offer free delivery.",
+        "Payment processing for online payments.",
+        "Platform fee: a flat 5 EGP per order on Tallaby.",
+        "A small buffer for returns and damaged items."
+      ],
+      "s3": "3. Choose a margin you can live with",
+      "s3Body": "For most handmade and small-batch goods, a margin between 50% and 100% on top of cost leaves room to grow. Lower margins can work for high-volume items, but only if your orders really are high volume.",
+      "quote": "If a 10% discount would make you lose money, your price is too low.",
+      "s4": "4. Check the market, then round",
+      "s4Body": "Look at three or four brands selling something similar. You don't need to be the cheapest; you need to be clearly worth it. Then round to a clean number: 449 or 450 reads better than 437.",
+      "tip": "Tip: test a price for two weeks before changing it. Small samples move around a lot.",
+      "toolTitle": "Try it: price calculator",
+      "toolBody": "Enter your numbers. The suggested price already covers the 5 EGP Tallaby fee.",
+      "unitCost": "Unit cost",
+      "packaging": "Packaging",
+      "shipping": "Shipping you cover",
+      "margin": "Margin %",
+      "suggested": "Suggested price",
+      "cost": "Cost",
+      "fee": "Tallaby fee",
+      "profit": "Your profit"
+    }
+  },
+  "about": {
+    "eyebrow": "About Tallaby",
+    "title": "Every brand in Egypt deserves a store with its <u>own name</u> on it.",
+    "lead": "We build the tools that let small brands sell online like big ones: their own link, their own look, their own customers. No code, no monthly fee.",
+    "word": "Arabic for<br></br>“my order”",
+    "photo": "Brand photography",
+    "storyKicker": "Our story",
+    "story": "Most Egyptian brands start on Instagram and WhatsApp. Orders live in DMs, stock lives in a notebook, and the brand lives on someone else's platform. <em>We started Tallaby to give them a home of their own.</em>",
+    "story1": "Tallaby began as a marketplace connecting shoppers with independent vendors across Egypt. Talking to those vendors every day, we heard the same request: help us sell under our own name.",
+    "story2": "So we built a store builder that fits how they actually work: Arabic first, mobile first, cash and online payments, local shipping, and a price that only kicks in when they make sales.",
+    "principlesKicker": "What we believe",
+    "principlesTitle": "Four principles behind every decision",
+    "p1": "Your brand comes first",
+    "p1Body": "Your store carries your name, your colors and your link. Tallaby stays in the background.",
+    "p2": "Pay when you earn",
+    "p2Body": "No subscriptions, no setup fees. If you don't sell, you don't pay.",
+    "p3": "Built for Egypt",
+    "p3Body": "Arabic interface, EGP pricing, local payment methods and couriers, support on WhatsApp.",
+    "p4": "Simple beats clever",
+    "p4Body": "If a feature needs a tutorial, we redesign it. Running a store should feel like using your phone.",
+    "f1": "Store builder launched",
+    "f2Value": "Cairo",
+    "f2": "Where we're based",
+    "f3": "Support for every store",
+    "f4": "Languages, Arabic and English",
+    "hiring": "We're hiring",
+    "hiringBody": "Help us put more Egyptian brands online.",
+    "roles": "See open roles",
+    "hello": "Say hello"
+  },
+  "careers": {
+    "eyebrow": "Careers at Tallaby",
+    "titleStart": "Come help us",
+    "titleEnd": "Egyptian commerce.",
+    "words": [
+      "build",
+      "design",
+      "grow",
+      "support"
+    ],
+    "lead": "We're a small team in Cairo building the tools that put local brands online. Every person here has a direct line to sellers and to the product.",
+    "perksKicker": "Working here",
+    "perksTitle": "What you get, besides the work",
+    "perkBig": "You'll talk to sellers every week",
+    "perkBigBody": "Everyone, engineers included, spends time with the brands using Tallaby. It's how we decide what to build.",
+    "perkBigPhoto": "team at a seller visit",
+    "perkHybrid": "Hybrid by default",
+    "perkHybridBody": "Office days in Cairo, the rest from wherever you work best.",
+    "perkHealth": "Health insurance",
+    "perkHealthBody": "Private medical cover for you from day one.",
+    "perkLearn": "Learning budget",
+    "perkLearnBody": "Courses, books and conferences you choose.",
+    "perkSetup": "Your setup",
+    "perkSetupBody": "A laptop and gear that fit your role.",
+    "rolesKicker": "Open roles",
+    "rolesTitle": "Find your spot",
+    "departments": {
+      "all": "All",
+      "eng": "Engineering",
+      "des": "Design",
+      "gro": "Growth",
+      "ss": "Seller success"
+    },
+    "theRole": "The role",
+    "youBring": "You bring",
+    "apply": "Apply",
+    "empty": "No roles in this team right now",
+    "roles": [],
+    "processKicker": "Hiring process",
+    "processTitle": "Four steps, about two weeks",
+    "steps": [
+      {
+        "title": "Apply",
+        "body": "Send your CV or portfolio and a few lines about why Tallaby."
+      },
+      {
+        "title": "Intro call",
+        "body": "30 minutes with the hiring manager."
+      },
+      {
+        "title": "Work sample",
+        "body": "A short, paid task close to the real job."
+      },
+      {
+        "title": "Meet the team",
+        "body": "Meet the people you'll work with, then an offer."
+      }
+    ],
+    "band": "Don't see your role? Write to us anyway.",
+    "bandBody": "Tell us what you'd do at Tallaby.",
+    "emailUs": "Email Us",
+    "noneTitle": "No open roles right now",
+    "noneBody": "We are not hiring for specific roles at the moment, but we always want to hear from people who care about Egyptian brands. Send us your CV or portfolio."
+  },
+  "contact": {
+    "eyebrow": "Contact us",
+    "title": "Talk to a person, <em>not a bot.</em>",
+    "lead": "Questions about setting up, payments, shipping or a partnership. Pick the channel that suits you.",
+    "live": "Support team online around the clock",
+    "whatsapp": "WhatsApp",
+    "whatsappBody": "Fastest for store and order questions. Send screenshots, voice notes, anything.",
+    "email": "Email",
+    "emailBody": "For detailed requests, documents and partnerships.",
+    "phone": "Phone",
+    "phoneBody": "Prefer to talk it through? Give us a call.",
+    "formTitle": "Send us a message",
+    "formBody": "Tell us a bit about you and we'll route it to the right person.",
+    "iAm": "I am a",
+    "who": {
+      "seller": "Seller",
+      "new": "Starting out",
+      "shopper": "Shopper",
+      "partner": "Partner or press"
+    },
+    "topics": {
+      "seller": [
+        "My store",
+        "Orders",
+        "Payments and payouts",
+        "Domain",
+        "Something else"
+      ],
+      "new": [
+        "Pricing",
+        "Templates",
+        "Moving an existing store",
+        "Something else"
+      ],
+      "shopper": [
+        "An order I placed",
+        "A return",
+        "Something else"
+      ],
+      "partner": [
+        "Partnership",
+        "Shipping or payments",
+        "Press",
+        "Something else"
+      ]
+    },
+    "name": "Full name",
+    "emailLabel": "Email",
+    "storeLink": "Your store link",
+    "topic": "Topic",
+    "message": "Message",
+    "messagePlaceholder": "How can we help?",
+    "send": "Send Message",
+    "sending": "Sending…",
+    "errName": "Enter your name",
+    "errEmail": "Enter a valid email",
+    "errMessage": "Add a little more detail",
+    "errGeneric": "Couldn't send your message. Try again or message us on WhatsApp.",
+    "errRate": "Too many messages. Try again in a few minutes.",
+    "sent": "Message sent",
+    "sentBody": "We'll get back to you by email. For anything urgent, message us on WhatsApp.",
+    "again": "Send another",
+    "office": "Cairo office",
+    "map": "map · Cairo office",
+    "officeAddress": "Cairo, Egypt. Visits by appointment.",
+    "officeHours": "Office: Sun to Thu, 10am to 6pm",
+    "supportHours": "Support: every day, 24/7",
+    "quick": "Looking for a quick answer?",
+    "browse": "Browse the help center"
+  },
+  "faq": {
+    "eyebrow": "Help center",
+    "title": "How can we <em>help?</em>",
+    "lead": "Answers about setting up, selling, payments and shipping.",
+    "search": "Search",
+    "placeholder": "Search for a question, e.g. domain",
+    "popular": "Popular:",
+    "popularTerms": [
+      "domain",
+      "pay",
+      "5 EGP",
+      "shipping"
+    ],
+    "categories": "Categories",
+    "noResults": "No results",
+    "noResultsBody": "Try another word, or contact us directly.",
+    "stillTitle": "Still stuck?",
+    "stillBody": "Our support team is online 24/7.",
+    "whatsapp": "WhatsApp Us",
+    "contactPage": "Contact page",
+    "groups": {
+      "start": {
+        "title": "Getting started",
+        "sub": "Signup and first publish",
+        "items": [
+          {
+            "q": "How long does it take to set up a store?",
+            "a": "Signup takes under a minute: your store link, email and password, or Google. After that you pick a template, add products and publish whenever you're ready."
+          },
+          {
+            "q": "Do I need to know how to code?",
+            "a": "No. Everything from design to publishing is visual. If you can use a phone, you can run your store."
+          },
+          {
+            "q": "Can I move products from another store?",
+            "a": "Yes. Upload a CSV of your products from the Products page, or ask support to help with the move."
+          }
+        ]
+      },
+      "pricing": {
+        "title": "Pricing and fees",
+        "sub": "Free plan and fees",
+        "items": [
+          {
+            "q": "How much does Tallaby cost?",
+            "a": "The plan is free. We charge a flat 5 EGP per successful order, with no percentage of the order value and no monthly fee."
+          },
+          {
+            "q": "Does the fee change with order value?",
+            "a": "No. A 150 EGP order and a 5,000 EGP order both cost 5 EGP. Cancelled and returned orders aren't charged."
+          },
+          {
+            "q": "Is there a limit on products or orders?",
+            "a": "No. The free plan includes unlimited products, orders and visitors."
+          }
+        ]
+      },
+      "payments": {
+        "title": "Payments",
+        "sub": "Methods and payouts",
+        "items": [
+          {
+            "q": "How do my customers pay?",
+            "a": "You choose which payment options to enable from your dashboard, such as cards, mobile wallets and cash on delivery. Every store also gets a direct online payment link."
+          },
+          {
+            "q": "When do I get paid?",
+            "a": "Payouts go to your bank account or wallet on the schedule you choose in Finance, after fees are deducted."
+          },
+          {
+            "q": "Are payment fees part of the 5 EGP?",
+            "a": "No. Payment processing fees are separate from the 5 EGP, depend on the method, and are shown before you enable it."
+          }
+        ]
+      },
+      "shipping": {
+        "title": "Shipping",
+        "sub": "Delivery and returns",
+        "items": [
+          {
+            "q": "Who ships my orders?",
+            "a": "You can ship yourself or use the couriers connected to Tallaby from your dashboard."
+          },
+          {
+            "q": "How is shipping priced?",
+            "a": "Per shipment, by destination and weight. The price is shown before you confirm."
+          },
+          {
+            "q": "How do returns work?",
+            "a": "You set your return policy in Settings and customers request returns from the order page. Returned orders aren't charged commission."
+          }
+        ]
+      },
+      "design": {
+        "title": "Design and templates",
+        "sub": "Templates and editor",
+        "items": [
+          {
+            "q": "Can I change templates after publishing?",
+            "a": "Yes, anytime. Your products, orders and settings stay the same."
+          },
+          {
+            "q": "Does my store support Arabic and English?",
+            "a": "Yes. Every template supports both directions, and you can add product details in both languages."
+          }
+        ]
+      },
+      "domain": {
+        "title": "Domains",
+        "sub": "Links and custom domains",
+        "items": [
+          {
+            "q": "Can I use my own domain?",
+            "a": "Your store starts on a free address like yourbrand.tallaby.com. You can connect a domain you own from Settings, then update its DNS records."
+          },
+          {
+            "q": "Can I change my store link?",
+            "a": "Yes, from Settings, if the new link is available. The old link redirects to the new one for 30 days."
+          }
+        ]
+      }
+    },
+    "home": [
+      {
+        "q": "How long does it take to set up a store?",
+        "a": "Signup takes under a minute: your store link, email and password, or Google. After that you pick a template, add products and publish whenever you're ready."
+      },
+      {
+        "q": "How much does Tallaby cost?",
+        "a": "The plan is free. Tallaby charges a flat 5 EGP for each successful order, with no percentage of the order value and no monthly fee. Payment and shipping charges are separate."
+      },
+      {
+        "q": "Does the fee change with the order value?",
+        "a": "No. A 150 EGP order and a 5,000 EGP order both cost 5 EGP. Cancelled and returned orders aren't charged."
+      },
+      {
+        "q": "Is there a limit on products or orders?",
+        "a": "No. The free plan includes unlimited products, orders and visitors."
+      },
+      {
+        "q": "Can I use my own domain?",
+        "a": "Your store starts on a free address like yourbrand.tallaby.com. You can connect a domain you own from Settings, then update its DNS records."
+      },
+      {
+        "q": "How do my customers pay?",
+        "a": "You choose which payment options to enable from your dashboard, and every store gets a direct online payment link. Payment processing fees are charged separately from the platform fee."
+      },
+      {
+        "q": "Do I need to know how to code?",
+        "a": "No. Everything from design to publishing is visual. If you can use a phone, you can run your store."
+      }
+    ]
+  },
+  "legal": {
+    "eyebrow": "Legal",
+    "contents": "Contents",
+    "print": "Print or save PDF",
+    "updated": "Last updated: {date}",
+    "readTime": "About {minutes} minutes to read",
+    "terms": {
+      "title": "Terms of service",
+      "lead": "The agreement between you and Tallaby when you create a store or shop on one.",
+      "summary": [
+        {
+          "title": "Your store is yours",
+          "body": "You own your brand, products and customer relationships."
+        },
+        {
+          "title": "Fees are simple",
+          "body": "Free plan. A flat 5 EGP per successful order, no percentage."
+        },
+        {
+          "title": "Leave anytime",
+          "body": "Close your store whenever you want, with no cancellation fee."
+        }
+      ],
+      "sections": [
+        {
+          "id": "accept",
+          "title": "Accepting these terms",
+          "paragraphs": [
+            "By creating an account or using Tallaby, you agree to these terms. If you use Tallaby on behalf of a business, you confirm you can accept them for that business.",
+            "You must be at least 18 years old and able to enter a binding contract under Egyptian law."
+          ]
+        },
+        {
+          "id": "account",
+          "title": "Your account",
+          "paragraphs": [
+            "Keep your login details private and tell us right away if you think someone else has accessed your account. You're responsible for activity under your account."
+          ],
+          "list": [
+            "Use accurate information when signing up.",
+            "One person or business per account.",
+            "Store links must not impersonate another brand."
+          ]
+        },
+        {
+          "id": "store",
+          "title": "Your store and content",
+          "paragraphs": [
+            "You keep ownership of everything you upload: product photos, descriptions, logos and brand assets. You give Tallaby permission to host and display that content so your store can work."
+          ],
+          "note": "We never sell your products or content to anyone else."
+        },
+        {
+          "id": "selling",
+          "title": "Selling rules",
+          "paragraphs": [
+            "You're responsible for the products you sell, their descriptions, pricing, stock and delivery to your customers. You may not sell:"
+          ],
+          "list": [
+            "Items that are illegal in Egypt.",
+            "Counterfeit goods or items that infringe someone's rights.",
+            "Weapons, drugs, or regulated medicines without a licence."
+          ]
+        },
+        {
+          "id": "fees",
+          "title": "Fees and payouts",
+          "paragraphs": [
+            "Tallaby is free to use. We charge a flat 5 EGP for each successful order, regardless of the order value. We don't take a percentage of your sales and there is no monthly subscription. Products, orders and visitors are unlimited.",
+            "Payment processing and shipping are charged separately and shown before you enable or confirm them. Fees are deducted from your payouts, and every deduction is listed in your dashboard."
+          ]
+        },
+        {
+          "id": "customers",
+          "title": "Orders and customers",
+          "paragraphs": [
+            "Each sale is a contract between you and your customer. You set your own return and refund policy, and it must be visible on your store. Tallaby may help resolve disputes but is not a party to the sale."
+          ]
+        },
+        {
+          "id": "ending",
+          "title": "Closing or suspending a store",
+          "paragraphs": [
+            "You can close your store at any time from Settings. We may suspend a store that breaks these terms, after notifying you where possible. Outstanding payouts are settled after any open orders are completed."
+          ]
+        },
+        {
+          "id": "liability",
+          "title": "Liability",
+          "paragraphs": [
+            "We work hard to keep Tallaby available and secure, but we provide the service as is. To the extent the law allows, Tallaby isn't liable for indirect losses such as lost profits."
+          ]
+        },
+        {
+          "id": "changes",
+          "title": "Changes and contact",
+          "paragraphs": [
+            "If we change these terms in a meaningful way, we'll tell you by email or in your dashboard at least 14 days before the change applies. These terms are governed by the laws of Egypt."
+          ],
+          "contact": "Questions? Email"
+        }
+      ]
+    },
+    "privacy": {
+      "title": "Privacy policy",
+      "lead": "What we collect, why we collect it, and the choices you have.",
+      "summary": [
+        {
+          "title": "We don't sell your data",
+          "body": "Not to advertisers, not to anyone."
+        },
+        {
+          "title": "Encrypted by default",
+          "body": "Data is encrypted in transit and at rest."
+        },
+        {
+          "title": "Yours to take",
+          "body": "Export or delete your data from Settings."
+        }
+      ],
+      "table": {
+        "data": "Data",
+        "why": "Why",
+        "kept": "Kept for"
+      },
+      "rows": [
+        [
+          "Account details",
+          "To sign you in and contact you about your store",
+          "While your account is open"
+        ],
+        [
+          "Store content",
+          "To host and display your products",
+          "Until you delete it"
+        ],
+        [
+          "Order details",
+          "To deliver orders and handle returns",
+          "5 years, for tax records"
+        ],
+        [
+          "Payout details",
+          "To send you your earnings",
+          "While your account is open"
+        ],
+        [
+          "Usage data",
+          "To fix bugs and improve the product",
+          "13 months"
+        ]
+      ],
+      "rights": [
+        {
+          "title": "Access",
+          "body": "See the data we hold about you."
+        },
+        {
+          "title": "Correct",
+          "body": "Fix anything that's wrong."
+        },
+        {
+          "title": "Export",
+          "body": "Download your data in a standard format."
+        },
+        {
+          "title": "Delete",
+          "body": "Close your account and erase your data."
+        }
+      ],
+      "sections": [
+        {
+          "id": "who",
+          "title": "Who we are",
+          "paragraphs": [
+            "Tallaby operates the store builder at tallaby.com and the stores hosted on it. This policy covers sellers who use Tallaby and shoppers who buy from Tallaby stores."
+          ]
+        },
+        {
+          "id": "collect",
+          "title": "What we collect",
+          "paragraphs": [
+            "We only collect what we need to run your store and process orders."
+          ],
+          "table": true
+        },
+        {
+          "id": "use",
+          "title": "How we use it",
+          "list": [
+            "Running your store, checkout and payouts.",
+            "Preventing fraud and keeping accounts secure.",
+            "Sending service messages about orders, fees and changes.",
+            "Marketing emails, only if you opt in. You can unsubscribe anytime."
+          ]
+        },
+        {
+          "id": "share",
+          "title": "Who we share it with",
+          "paragraphs": [
+            "We share data only with service providers who help us run Tallaby, such as payment processors, couriers and hosting providers, and only what they need to do that job. We may also share data if the law requires it."
+          ],
+          "note": "Shopper data belongs to the seller's store. Sellers can use it to fulfil orders, not to resell it."
+        },
+        {
+          "id": "cookies",
+          "title": "Cookies",
+          "paragraphs": [
+            "We use essential cookies to keep you signed in and remember your cart and language. Analytics cookies are optional and off until you accept them."
+          ]
+        },
+        {
+          "id": "rights",
+          "title": "Your rights",
+          "rights": true
+        },
+        {
+          "id": "security",
+          "title": "Security",
+          "paragraphs": [
+            "Data is encrypted in transit and at rest, access is limited to staff who need it, and card details are handled by certified payment providers. Tallaby never stores full card numbers."
+          ]
+        },
+        {
+          "id": "contact",
+          "title": "Contact",
+          "paragraphs": [
+            "To use any of your rights or ask a question, email us. We reply within 30 days."
+          ],
+          "contact": ""
+        }
+      ]
+    }
+  },
+  "followUs": {
+    "title": "Follow us for <em>promotions</em> and <em>discounts</em>",
+    "sub": "Follow us on social media for updated promotions and discounts.",
+    "social": "Social media",
+    "visit": "Visit Tallaby",
+    "shop": "Shop on tallaby.com",
+    "sell": "Become a Seller"
+  }
+}

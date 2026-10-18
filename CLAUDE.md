@@ -1,0 +1,26 @@
+# Tallaby — Instructions for Claude Code sessions
+
+Read these before changing anything: [`PROJECT.md`](PROJECT.md) (architecture), [`PROJECT_DESCRIPTION.md`](PROJECT_DESCRIPTION.md) (product), and [`PLAN.md`](PLAN.md) (the main roadmap, with tasks, dependencies and decisions). Each app's `AGENTS.md` (pulled in by the app-level `CLAUDE.md` files) says this Next.js version (16.3.3) differs from what you may know. Read `node_modules/next/dist/docs/` before writing Next.js code. `proxy.ts` replaces `middleware.ts`.
+
+## Durable rules
+
+1. **Check the code before trusting a doc.** Re-read the files a task touches. Never treat a "Planned" item in `PLAN.md` as already built.
+2. **Follow `PLAN.md` task order.** After each task, update its checklist (§22), the log (§23) and any note about where the code differed from the plan.
+3. **Keep existing behaviour.** The marketplace, checkout (`packages/lib/src/orders/place-order.ts`), wallets (`docs/wallet.md`), shipping and fulfillment (`docs/fulfillment.md`) must keep working. Make small changes, not rewrites.
+4. **Stop and ask** before changing the agreed business model (`PLAN.md` §13), running a destructive or production migration, or changing money and ledger logic outside an approved task.
+5. **Tenant isolation.** The `sellers` row (`sellers.id = users.id`) is the **account** (plan, wallet, trial, legal data). The planned **`stores`** table is the **tenant**: a seller can own several stores, up to the plan limit (Free = 3; `sellers.plan` defaults to `'free'`, and limits live in the code plans module). Server code bypasses RLS through Drizzle, so every query must check that the store belongs to the session's seller and filter child rows by `store_id`. On storefronts, the store comes from the request host. Store-scoped actions always take an explicit `storeId`; never use a "current store" cookie as the target of a write. Never trust seller or store IDs sent by the client. Hiding a UI element is not authorization.
+6. **Migrations.**
+   - Write hand-written, idempotent SQL in `packages/db/migrations/NNNN_name.sql` (next number: `0063`; `0049` is the 2026-10-17 RLS security fix, `0050`–`0062` are on staging only).
+   - Mirror each change in `packages/db/src/drizzle/schema.ts` and `relations.ts`.
+   - **Do not run `drizzle-kit generate`.** Its journal stops at `0033`.
+   - New server-only tables get RLS enabled with no policies.
+7. **Money.** Compute in integer piastres and store in the existing `numeric(10,2)` columns. Ledger writes must be idempotent, using a unique claim plus `ON CONFLICT`. Store-wallet balances (seller ledger) change **only** through the planned `postStoreWalletEntry` primitive. Store wallets may be negative, customer `user_wallets` may not, and the two ledgers stay separate. The agreed fee is max(EGP 5, 2%) for all sellers, with a 30-day trial for new sellers (`PLAN.md` §13).
+8. **Caching.** Use `@workspace/cache` (`createCachedQuery`, tags in `packages/cache/src/tags.ts`, cross-app broadcast). Never cache carts, orders, wallets, builder drafts or integration secrets. Every cache key and tag for store data includes the seller ID.
+9. **No seller-supplied code.** The builder has no custom HTML or JS nodes. Integrations inject scripts only from fixed templates, with IDs checked by regex, and only on that seller's storefront host.
+10. **Secrets.** Never put secrets in `NEXT_PUBLIC_*`, client components, logs or docs. The service-role key stays in server code only.
+11. **Reference builder is read-only.** The reference is Valorcy (the owner's project, GitHub `elsharkawy159/saas`) at `D:\programming projects\saas\apps\dashboard`. It covers the builder, forms, templates/themes and media library. Never modify it, or any other reference project. The copied Valorcy code in `apps/dashboard` (`app/(builder)`, `components/{cms,design,dnd,navigation,sections,website,website-builder,websites}`) was untracked user work at planning time. Do not delete it. `PLAN.md` P0-02 explains how to quarantine it.
+12. **Existing default storefront template.** `apps/ecommerce/app/[locale]/storefront/[subdomain]/` is the "Tallaby Classic" template. Keep how it looks. Do not design a new default template without the owner's approval.
+13. **i18n.** Arabic is the default locale. Add every string to both `ar.json` and `en.json`. The Arabic brand name is **طلبي**.
+14. **Code organisation.** Use the feature file split (`*.server.ts`, `*.data.tsx`, `*.client.tsx`, `*.dto.ts`, `*.types.ts`, `*.lib.ts`). Do not add to `apps/dashboard/actions/products.ts`.
+15. **Verification.** Run `pnpm lint`, `pnpm typecheck` and `pnpm test` (or the `--filter` equivalents) after each task. DB integration tests run only when `TEST_DATABASE_URL` is set. There is no E2E runner or CI yet, so record manual E2E checks in `PLAN.md` §23.
+16. **Do not touch others' uncommitted work.** Check `git status` first. Never discard or overwrite changes you did not make.

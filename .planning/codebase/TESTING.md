@@ -2,6 +2,8 @@
 
 **Analysis Date:** 2026-05-14
 
+> **Outdated (checked 2026-10-17).** Vitest 3.2.4 is now set up. `test` scripts exist in `apps/dashboard`, `apps/ecommerce`, `packages/db`, `packages/lib`, `packages/cache` and `packages/emails`, with about 29 `*.test.ts` files, including DB integration tests gated on `TEST_DATABASE_URL`. There is still no E2E runner and no CI. The current commands are in [`/PLAN.md`](../../PLAN.md) §18.1.
+
 ## Test Framework
 
 **Runner:** None installed

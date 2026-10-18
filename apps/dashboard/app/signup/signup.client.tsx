@@ -36,10 +36,12 @@ type FormValues = { subdomain: string; phone: string; email: string; password: s
 export function SignupForm({
   signedInEmail,
   initialError,
+  initialSubdomain = "",
 }: {
   /** Set when a user is already signed in (no seller row yet): the account step is skipped. */
   signedInEmail: string | null;
   initialError: SignupErrorKey | null;
+  initialSubdomain?: string;
 }) {
   const t = useTranslations("signup");
   const router = useRouter();
@@ -70,7 +72,7 @@ export function SignupForm({
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { subdomain: "", phone: "", email: "", password: "" },
+    defaultValues: { subdomain: initialSubdomain, phone: "", email: "", password: "" },
   });
 
   const handleResult = (result: SignupResult, email?: string) => {

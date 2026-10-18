@@ -33,9 +33,11 @@ CHECK forbids a plan on a seller-handled service.
    back to the baseline.
 4. **Baseline = today's behavior**: seller stores, packs, answers customers and
    handles returns; delivery is Tallaby `delivery_standard` (checkout bills
-   Tallaby's governorate rates, the shipping app dispatches). New sellers get the
-   baseline as `active_*`, so their orders behave exactly like existing sellers'
-   until an admin activates something.
+   Tallaby's governorate rates, the shipping app dispatches). Sellers signing up
+   from the dashboard get no rows at all (the resolver falls back to the
+   baseline); a row created later by a request also starts with the baseline as
+   `active_*`, so orders behave exactly like existing sellers' until an admin
+   activates something.
 5. **Agreements are separate from requests.** Recording one charges nothing and
    changes no order; activation may link one.
 
@@ -55,12 +57,29 @@ Unchanged and still per product. Seller storage -> `seller_fulfilled`
 `platform_fulfilled`. `fba` is unused (treat as `platform_fulfilled`).
 Actual order handling = seller's effective config + product `fulfillment_type`.
 
-## 5. Deferred
+## 5. Seller requests (dashboard)
 
-- Seller change requests from Settings (write `requested_*`, admin approves).
+Settings › Fulfillment services (`apps/dashboard/app/(main)/settings/fulfillment/`)
+lets a seller, with or without rows, request services. It calls
+`upsertSellerFulfillmentRequest` (`server.ts`, planning in `request.ts`):
+
+- Validates with `fulfillmentRequestSchema` + the live catalog, scoped to the
+  session seller (the seller row is locked for the write).
+- Missing rows are inserted with baseline `active_*` and the choice as
+  `requested_*` (`active` if the choice equals the baseline, else `requested`).
+- Existing rows: re-submitting the current request writes nothing; a new choice
+  rewrites `requested_*` with status `requested`; choosing the live config again
+  withdraws the request (status `active`). `active_*` is never written.
+- A `paused` service cannot be changed by the seller (any status change would
+  un-pause it); the seller is told to contact the team.
+- Open requests appear in the admin queue (`listOpenFulfillmentRequests`).
+
+## 6. Deferred
+
 - Shipping wiring: the shipping app should skip orders whose effective delivery
   is `seller` and must not auto-assign seller riders; shipment origin from the
-  pickup address or the warehouse (today hard-coded to Cairo).
+  pickup address or the warehouse (today hard-coded to Cairo). The shipping app
+  does not read fulfillment at all today; see PLAN.md P8-02 for the proposal.
 - Billing: agreement rates -> `wallet_transactions` rows of type `fee` on
   delivery. Note `place-order.ts` still hard-codes a 10% commission.
 - A `warehouses` table (one warehouse today, via `EGYPT_POST_WAREHOUSE_NAME`).

@@ -1,236 +1,107 @@
-# Tallaby - Multi-Vendor E-Commerce Platform
+# Tallaby (طلبي) — Product Description
 
-## Project Overview
+> Updated 2026-10-17. This replaces the January 2026 description, which described Tallaby only as an Amazon-style marketplace.
+> **Live** = in production code today. **Planned** = in the roadmap ([`PLAN.md`](PLAN.md)), not built yet.
+> Technical details are in [`PROJECT.md`](PROJECT.md). Brand and marketing voice are in `MARKETING_PROJECT.md`.
 
-**Tallaby** is a comprehensive, enterprise-grade multi-vendor e-commerce platform built as a modern monorepo. It serves as a full-featured marketplace solution where multiple vendors can list and sell their products to customers, similar to platforms like Amazon or eBay. The platform consists of three main applications: a customer-facing e-commerce storefront, a vendor dashboard for sellers, and an admin panel for platform management.
+## 1. Purpose and positioning
 
-## Architecture
+Tallaby (Arabic brand name **طلبي**, never "تالابي") is an Egyptian commerce platform that helps independent sellers sell online. It offers three things, which must always be presented separately:
 
-The project is structured as a **Turborepo monorepo** using **pnpm workspaces**, enabling code sharing, optimized builds, and efficient development workflows across multiple applications. The architecture follows a strict separation of concerns with shared packages for database schemas, UI components, and utilities.
+1. **Your own online stores.** Each seller gets a store at `yourstore.tallaby.com`, or on their own domain. Customers see the store's brand, products, cart and checkout. *Planned:* a seller can run **several stores** (for example, different brands) from one account. The **Free plan** allows up to **3 stores**, and everyone is on Free for now. Paid plans may later add more stores, AI features and advanced settings.
+   - *Live:* every seller has a storefront with the default Tallaby design, plus subdomain changes and custom domains. New sellers' stores will be visible from signup with their store info, and show an empty catalog until they add products.
+   - *Planned:* a visual website builder and templates.
+2. **The Tallaby marketplace.** A shared shopping site (`www.tallaby.com` today) where customers buy from many sellers in one cart. *Live.* A move to `store.tallaby.com` is planned for after the Tallaby Fulfillment service work.
+3. **Tallaby Fulfillment (optional).** Tallaby can handle storage, packaging, delivery, customer service and returns. *Live as a request-and-agree process.* Nothing is charged at signup, and terms are agreed with the team.
 
-## Main Applications
+Tallaby also runs its own last-mile delivery operation with riders and cash on delivery. It handles payments through Paymob and Kashier, cash on delivery and a customer wallet.
 
-### 1. E-Commerce Storefront (`apps/ecommerce`)
+## 2. Target sellers
 
-The customer-facing application where users browse products, make purchases, and manage their accounts.
+- Small and medium Egyptian businesses and individual sellers, often already selling through social media and WhatsApp. They want a real store link without technical work.
+- Arabic-first users on mobile. English is supported.
+- Sellers who may want to hand off operations (warehousing, delivery) as they grow.
 
-**Key Features:**
+## 3. Main seller workflows
 
-- Product catalog with advanced search and filtering
-- Shopping cart and wishlist functionality
-- Guest checkout and user authentication
-- Order tracking and management
-- Product reviews and ratings
-- Multi-language support (English, Arabic)
-- Real-time notifications
-- Returns and refunds management
-- Seller/store pages
-- Category browsing
-- Brand pages
-- Coupon and promotion system
-- Product recommendations
-- Analytics integration
+| Workflow | Status |
+|---|---|
+| Sign up and get a store | **Live:** a 5-step wizard (business details, legal address, fulfillment choices, operational details, review). The seller is approved immediately. **Planned:** choose a store address, create an account (email/password or Google) and a phone number, then go straight to the dashboard in under a minute. Everything else moves to a setup checklist in the dashboard |
+| Add and manage products | **Live:** create and edit physical and digital products, variants, images, Excel import, import from URL |
+| Manage orders and shipping | **Live:** order list, shipping status, seller riders, Tallaby delivery |
+| Get paid / store wallet | **Live:** net earnings credited to the seller wallet on delivery, payout records, account statements. **Planned:** a store wallet that can go negative, with automatic fee and earning entries, Kashier top-ups and paying for ads from the wallet |
+| Promote | **Live:** seller coupons (marketplace and/or storefront), paid ad-package requests, reviews |
+| Store settings | **Live:** business profile, logo, banner, policies, store subdomain, custom domain with DNS instructions. **Planned:** a Store Settings page with branding, favicon, theme, SEO, social links and contact |
+| Design the store | **Planned:** a "Website Design / تصميم المتجر" sidebar section with Templates, Website Editor and Store Settings |
+| Get paid by customers | **Live:** marketplace checkout with cash on delivery, card (Paymob/Kashier), customer wallet and manual transfers to Tallaby. **Planned (per store):** cash on delivery on by default; the seller can switch on **Vodafone Cash, e& Cash, WE Pay, Orange Cash and InstaPay** paid straight to their own number/InstaPay address (they confirm receipt in the dashboard); card, Fawry, installments, Apple/Google Pay shown as "Soon" |
+| Shipping | **Live:** Tallaby delivery at fixed governorate rates, seller free-delivery offers, seller riders and delivery-status updates. **Planned (per store):** choose Tallaby delivery or own delivery with zones (price per governorate group, free-over amount, delivery time, COD per zone); orders and delivery tracking grouped under "Orders & Shipping" |
+| Website extras | **Planned (per store):** domain & SEO page, social media links shown automatically in the website footer, a blog wired automatically into blog sections, forms with a submissions inbox, media library |
+| Connect apps | **Planned:** an "Apps / التكاملات" section. First Meta Pixel, Google Analytics 4 and Google Tag Manager. Later Meta Conversions API, Google Sheets order export and Shopify product import |
+| Request fulfillment services | **Live:** chosen during signup and activated by admins. **Planned:** requested any time from the dashboard instead of at signup |
 
-**Tech Stack:**
+## 4. Store creation and onboarding (planned experience)
 
-- Next.js 16.1.1 (App Router)
-- React 19.2.3
-- TypeScript 5.9.3
-- Tailwind CSS 4.1.18
-- shadcn/ui components
-- Next-intl (internationalization)
-- React Query (TanStack Query)
-- Zustand (state management)
-- react-hook-form + Zod (form handling)
-- Supabase (authentication & database)
+1. Type the store address you want (e.g. `faster`), and see straight away whether it is available.
+2. Sign up with email and password, or continue with Google.
+3. Enter a mobile number. The Tallaby team contacts sellers on WhatsApp. Whether this stays at signup is decision D6.
+4. Land in the dashboard. A checklist guides the rest: logo, first product, contact details, policies, publishing the store, payout details, and optional apps and fulfillment.
 
-### 2. Vendor Dashboard (`apps/dashboard`)
+Signup never asks for templates, fulfillment, store description, categories, shipping, payment setup or a wallet deposit.
 
-A comprehensive dashboard for vendors/sellers to manage their store operations.
+## 5. Website builder and templates (planned)
 
-**Key Features:**
+- **Templates.** A gallery of store designs. At launch the only template is **Tallaby Classic**, the current default storefront design. No new default design is created until the owner provides or approves one. Applying a template changes only the design draft. It never touches products, orders or settings.
+- **Website Editor.** Drag-and-drop sections such as hero, product grids, categories, catalog, banners, text, trust badges and header/footer. Sellers can edit text in Arabic and English, images, colors, fonts and spacing, preview on desktop and mobile, and use undo/redo and autosave.
+- **Publishing.** Changes go live only when the seller presses **Publish**. Earlier versions can be restored. Product sections always show the seller's real, active products.
+- **Safety.** Sellers cannot add custom code. Tracking tools are added only through supported Apps.
 
-- Product management (CRUD operations)
-- Order management and fulfillment
-- Inventory management
-- Sales analytics and reporting
-- Payout tracking and management
-- Shipping management
-- Brand and category management
-- Coupon creation and management
-- Review management
-- Site data configuration
-- File uploads (drag-and-drop)
+## 6. Product and order management (live)
 
-**Tech Stack:**
+Catalog with categories, brands, variants (with per-variant price, images and discount expiry), stock, merchandising flags and digital products. Orders go through these statuses: pending → payment processing / confirmed → shipping soon → shipped / out for delivery → delivered, plus cancelled, refund requested, refunded and returned. Payment methods are online payment (Paymob, Kashier), cash on delivery (limited when shipping is high), wallet and wallet-plus-remainder. Storefront orders are tagged so sellers and admins can tell them apart from marketplace orders.
 
-- Next.js 16.1.1 (App Router)
-- React 19.2.3
-- TypeScript 5.9.3
-- TanStack Table (data tables)
-- Recharts (analytics charts)
-- React Dropzone (file uploads)
-- Excel export functionality (xlsx)
-- Drag-and-drop (react-beautiful-dnd)
+## 7. Apps and integrations (planned)
 
-### 3. Admin Panel (`apps/admin`)
+| App | What it does for the seller |
+|---|---|
+| Meta Pixel | Track visits, add-to-cart and purchases on *your* store for Facebook/Instagram ads |
+| Google Analytics 4 | Traffic and sales reports for your store |
+| Google Tag Manager | Use your own tag container on your store (subject to decision D18) |
+| Meta Conversions API | Server-side purchase events for better ad tracking |
+| Google Sheets | Export your orders to your own spreadsheet |
+| Shopify import | Bring your existing Shopify products into Tallaby (import only) |
+| WhatsApp button | Let customers chat with you from your store |
 
-Platform administration interface for managing the entire marketplace.
+Each seller's tracking runs only on that seller's store, never on the marketplace or on other stores.
 
-**Key Features:**
+## 8. Platform fee, 30-day trial and store wallet (agreed business model, planned implementation)
 
-- User and customer management
-- Vendor approval and management
-- Order oversight
-- Product moderation
-- Category and brand administration
-- Analytics and reporting
-- Platform-wide settings
-- Role-based access control
+- Creating an account and a store is **free**, and no deposit is required to sign up, publish or sell.
+- **Fee for all sellers, old and new:** on each successful order, **2% of the seller's product subtotal with a minimum of EGP 5**. Shipping is excluded. Examples: EGP 100 → 5, EGP 250 → 5, EGP 500 → 10, EGP 1,000 → 20. Payment-provider fees and fulfillment charges are separate. Separate fees for future services (fulfillment, ads, themes) will be designed later.
+- **New sellers: no platform fee for 30 days**, starting when their store first goes live (first publish or first product, see PLAN D20). Preparing the store does not use up trial days. Republishing or changing templates does not restart the trial. Existing sellers have no trial.
+- **Store wallet:** every seller has a wallet that can be positive or negative. It updates automatically: earnings from delivered orders that Tallaby collected the money for are added, the platform fee is subtracted, and purchases such as product ads (and later themes and other services) are subtracted. Sellers can **top it up at any time** (through Kashier first). When a seller collects the cash themselves, only the fee is subtracted, which can make the balance negative until they top up or earn more.
+- **Refunds** are handled later, together with the Kashier integration work.
+- Still open (PLAN §21.3): how discounts affect the fee base (D2), the negative-balance limit (D21), and the minimum per seller on multi-seller marketplace orders (D22).
+- *Today (live):* orders carry a fixed 5% commission. The marketing copy and `MARKETING_PROJECT.md` still say "5% by default" and must be updated when the new fee ships.
 
-**Tech Stack:**
+## 9. Optional fulfillment
 
-- Next.js 16.1.1 (App Router)
-- React 19.2.3
-- TypeScript 5.9.3
-- TanStack Table
-- Recharts
-- Comprehensive admin controls
+Sellers can sell and publish without Tallaby Fulfillment. If they want it, they request services such as storage at the Tallaby warehouse (the seller drops off stock), packaging, delivery, customer service and returns. The Tallaby team agrees terms and activates them. Until something is activated, orders work as before: the seller stores and packs, and Tallaby delivers at standard rates. Fulfillment billing is separate from the platform fee.
 
-## Shared Packages
+## 10. Public marketplace (live)
 
-### Database Package (`packages/db`)
+Customers browse categories, brands, deals, trending and seasonal collections, search, compare sellers, use coupons and affiliate codes, check out as a guest or signed in, track orders, request returns, and manage their wallet and wishlist. The marketplace stays fully operational throughout the SaaS transformation.
 
-Centralized database schema and utilities using Drizzle ORM.
+## 11. Platform operations (live, with planned additions)
 
-**Features:**
+The admin panel manages sellers (status, commission settings, documents), products, orders (including external phone orders), payments, wallets and payouts, fulfillment plans and agreements, affiliates, coupons and analytics. The shipping app runs dispatch and the rider app. **Planned admin additions:** each seller's store site status and revisions, a moderation unpublish, trial dates, fee plan and overrides with an audit trail, and integration status.
 
-- Comprehensive PostgreSQL schema with 50+ tables
-- Type-safe database operations
-- Migrations management
-- Support for complex e-commerce entities:
-  - Products, variants, inventory
-  - Orders, payments, shipments
-  - Users, sellers, customers
-  - Reviews, ratings, notifications
-  - Coupons, promotions, deals
-  - Categories, brands, attributes
-  - Carts, wishlists
-  - Returns, refunds
-  - Analytics and reporting
+## 11b. Plans (planned)
 
-### UI Package (`packages/ui`)
+- Every seller account is on the **Free** plan: up to **3 stores**, all current features, no AI builder features, no advanced settings.
+- Each seller has one account-level wallet, fee trial and payout setup, shared by all their stores. Products are one shared catalog, and each store can show all of them or a selection.
+- **Later (not built yet):** paid subscriptions could raise the store limit and unlock AI usage and advanced settings. The system stores each seller's plan from day one so this can be added without restructuring.
 
-Shared component library built on shadcn/ui and Radix UI primitives.
+## 12. Boundaries and future opportunities
 
-**Components:**
-
-- Form components (inputs, selects, checkboxes, etc.)
-- Data display (tables, cards, badges)
-- Navigation (menus, dropdowns, tabs)
-- Feedback (toasts, alerts, dialogs)
-- Layout components
-- And 60+ reusable UI components
-
-### TypeScript & ESLint Configs (`packages/typescript-config`, `packages/eslint-config`)
-
-Shared configuration packages ensuring consistent code quality and type safety across all applications.
-
-### Shared Library (`packages/lib`)
-
-Common utilities and helper functions used across applications.
-
-## Technology Stack
-
-### Frontend
-
-- **Framework:** Next.js 16.1.1 (App Router, React Server Components)
-- **UI Library:** React 19.2.3
-- **Language:** TypeScript 5.9.3 (strict mode)
-- **Styling:** Tailwind CSS 4.1.18
-- **Component Library:** shadcn/ui + Radix UI
-- **State Management:** Zustand 5.0.9
-- **Form Handling:** react-hook-form 7.69.0 + Zod 4.2.1
-- **Data Fetching:** TanStack Query 5.90.14
-- **Internationalization:** next-intl 4.6.1
-- **Theming:** next-themes
-
-### Backend & Database
-
-- **Database:** PostgreSQL (via Supabase)
-- **ORM:** Drizzle ORM 0.45.1
-- **Authentication:** Supabase Auth
-- **Caching:** Upstash Redis
-- **File Storage:** Supabase Storage (presumably)
-
-### Development Tools
-
-- **Monorepo:** Turborepo 2.7.2
-- **Package Manager:** pnpm 10.4.1
-- **Code Quality:** ESLint 9.39.2 + Prettier
-- **Build Tool:** Next.js Turbopack (development)
-
-## Key Features & Capabilities
-
-### E-Commerce Core
-
-- ✅ Multi-vendor marketplace architecture
-- ✅ Product catalog with variants, attributes, and inventory
-- ✅ Advanced search and filtering
-- ✅ Shopping cart with guest checkout support
-- ✅ Wishlist functionality
-- ✅ Order management (pending → delivered workflow)
-- ✅ Payment processing with multiple payment methods
-- ✅ Shipping management with multiple carriers
-- ✅ Returns and refunds system
-- ✅ Product reviews and ratings
-- ✅ Coupon and promotion system
-- ✅ Deal types (daily deals, lightning deals, clearance)
-- ✅ Product recommendations engine
-- ✅ Real-time notifications
-
-### Vendor Management
-
-- ✅ Vendor registration and approval workflow
-- ✅ Seller dashboard with analytics
-- ✅ Product listing and management
-- ✅ Order fulfillment
-- ✅ Inventory tracking
-- ✅ Payout management
-- ✅ Performance metrics
-
-### Platform Administration
-
-- ✅ Multi-role access control (customer, seller, admin, support, driver)
-- ✅ Vendor approval and management
-- ✅ Content moderation
-- ✅ Platform-wide analytics
-- ✅ User management
-- ✅ System configuration
-
-### User Experience
-
-- ✅ Responsive design (mobile-first)
-- ✅ Internationalization (i18n) support
-- ✅ Dark mode support
-- ✅ Progressive Web App (PWA) capabilities
-- ✅ SEO optimization
-- ✅ Performance optimization (LCP, CLS, FID)
-- ✅ Accessibility features
-
-## Development Standards
-
-The project follows strict coding standards and architectural patterns:
-
-- **Server Components First:** Prioritizes Next.js Server Components for optimal performance
-- **Component Separation:** Complex components split into `.tsx`, `.client.tsx`, `.server.ts`, `.lib.ts`, `.types.ts`, `.dto.ts` files
-- **Type Safety:** Strict TypeScript with proper typing throughout
-- **Code Organization:** kebab-case file naming, proper folder structure
-- **Clean Code:** Removes unused code, proper imports, DRY principles
-- **Database Patterns:** Drizzle ORM with type-safe schemas, server actions for mutations
-- **Form Patterns:** react-hook-form + Zod validation with proper error handling
-- **Performance:** Code splitting, image optimization, lazy loading, Suspense boundaries
-
-## Project Status
-
-Active development on a modern, production-ready multi-vendor e-commerce platform designed to scale and handle complex marketplace operations. The codebase emphasizes type safety, performance, developer experience, and maintainability.
+- **Not planned now:** separate deployments per seller, seller-supplied code, per-seller payment gateways, AI site generation, team/staff accounts per store, Shopify storefront sync, and a monthly subscription.
+- **Future options:** more templates (once designs are approved), AI-assisted content, staff accounts, scheduled publishing, admin template authoring, an optional pre-funded seller wallet, automated payouts, and moving the marketplace to `store.tallaby.com` with `tallaby.com` as the seller acquisition site.

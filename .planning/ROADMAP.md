@@ -1,5 +1,7 @@
 # Roadmap — Tallaby Digital Products Milestone
 
+> **Superseded (2026-10-17).** Historical. The current roadmap is [`/PLAN.md`](../PLAN.md).
+
 ## Phases
 
 - [ ] **Phase 1: Schema & Migrations** - All new DB tables, enums, and column additions defined in Drizzle schema with migration generated
