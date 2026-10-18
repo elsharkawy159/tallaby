@@ -21,6 +21,8 @@ import {
   getSellerFulfillmentOverview,
   type SellerFulfillmentAgreementRow,
 } from "@workspace/lib/fulfillment/server";
+import { FulfillmentRequestForm } from "./fulfillment-request.client";
+import { initialRequestValues } from "./fulfillment-request.lib";
 
 // Reads the signed-in seller's configuration from the session cookie.
 export const dynamic = "force-dynamic";
@@ -50,8 +52,21 @@ export default async function FulfillmentSetupPage() {
   const t = await getTranslations("fulfillment");
   const locale = await getLocale();
   const { user } = await getUser();
-  const { services, plans, agreements } = await getSellerFulfillmentOverview(user!.id, {
+  const { profile, services, plans, agreements } = await getSellerFulfillmentOverview(user!.id, {
     includeAgreements: true,
+  });
+  // The request form starts from the seller's current request (requested_*),
+  // or from today's setup when they never asked for anything (P8-01).
+  const initialRequest = initialRequestValues(plans, {
+    model: profile?.model ?? null,
+    operationalDetails: profile?.operationalDetails,
+    pickupAddress: profile?.pickupAddress,
+    services: services.map((row) => ({
+      serviceType: row.serviceType,
+      requestedProvider: row.requestedProvider,
+      requestedPlanId: row.requestedPlanId,
+      requestedConfig: (row.requestedConfig ?? {}) as ServiceConfig,
+    })),
   });
   const plansById = new Map(plans.map((plan) => [plan.id, plan]));
   // Active terms first, then accepted, then proposed; newest first within each.
@@ -159,6 +174,8 @@ export default async function FulfillmentSetupPage() {
           <p className="text-sm text-muted-foreground">{t("changeNote")}</p>
         </>
       )}
+
+      <FulfillmentRequestForm plans={plans} initial={initialRequest} hasRequest={services.length > 0} />
     </div>
   );
 }
