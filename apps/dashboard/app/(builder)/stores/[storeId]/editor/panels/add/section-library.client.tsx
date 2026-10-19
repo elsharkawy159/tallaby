@@ -362,7 +362,7 @@ function PresetCard({
  * Mounts a preview only when it scrolls near the viewport, so a category
  * with many sections stays fast. Once mounted it stays mounted.
  */
-function LazyMount({ children }: { children: ReactNode }) {
+export function LazyMount({ children }: { children: ReactNode }) {
   const ref = useRef<HTMLSpanElement>(null);
   const [visible, setVisible] = useState(false);
   useEffect(() => {

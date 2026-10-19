@@ -4,13 +4,15 @@ import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import * as DB_SCHEMA from "@workspace/db/schema";
 import { contentOverrideKeys, storeSectionRegistry } from "@workspace/store-sections/render";
+import { classicConfig } from "@workspace/store-sections/templates";
 import { createIsolationWorld, type IsolationWorld } from "../stores/isolation.fixtures";
 import { getStoreForEditor, saveStoreDesignSystem, saveStorePageDraft } from "./server";
 import { applyStoreTemplate, getStoreTemplateConfig, listStoreTemplates, undoStoreTemplate } from "./templates.server";
 
 /**
  * Templates apply/undo (PLAN.md §8.1, P4-05) against the staging copy, which
- * has Tallaby Classic seeded (0062) and 0064. Skipped without TEST_DATABASE_URL.
+ * has Tallaby Classic seeded (0052/0062, v3 tree sections in 0071) and 0064.
+ * Skipped without TEST_DATABASE_URL.
  */
 const TEST_DATABASE_URL = process.env.TEST_DATABASE_URL;
 const OPTIONS = { allowedSections: storeSectionRegistry.allowedSections(), overrideKeys: contentOverrideKeys(storeSectionRegistry) };
@@ -47,14 +49,22 @@ describe.skipIf(!TEST_DATABASE_URL)("store templates (integration)", { timeout: 
     expect(await getStoreTemplateConfig(w.a.sellerId, w.a.a2, "../bad", db)).toBeNull();
   });
 
-  it("applies to drafts only, keeps seller text in matching sections, and leaves other stores alone", async () => {
+  // Needs 0071 (Tallaby Classic v3, tree sections) on the test database; skipped until it is applied.
+  const classicV3 = async () => {
+    const [row] = await db
+      .select({ version: s.templateVersions.version })
+      .from(s.templates)
+      .innerJoin(s.templateVersions, eq(s.templateVersions.id, s.templates.currentVersionId))
+      .where(eq(s.templates.key, "tallaby-classic"));
+    return (row?.version ?? 0) >= 3;
+  };
+
+  it("applies to drafts only, replaces the home sections, and leaves other stores alone", async (t) => {
+    if (!(await classicV3())) return t.skip();
+    // A2 started from Classic (store scaffold); the seller removed all but the hero and added a section.
     const page = await home(w.a.sellerId, w.a.a2);
-    const draft = {
-      sections: [
-        { id: "classic-categories", sectionId: "classic-categories", version: 1, props: { title: "My categories" } },
-        { id: "extra", sectionId: "hero-banner", version: 1, props: { title: "Gone after apply" } },
-      ],
-    };
+    const [hero] = (classicConfig().pages[0]!.content.sections);
+    const draft = { sections: [hero!, { ...hero!, id: "extra" }] };
     expect((await saveStorePageDraft(w.a.sellerId, w.a.a2, page.id, draft, page.draftVersion, OPTIONS, db)).success).toBe(true);
     const ds = (await getStoreForEditor(w.a.sellerId, w.a.a2, db))!.designSystem;
     await saveStoreDesignSystem(w.a.sellerId, w.a.a2, { colors: { primary: "#ff3366" }, typography: {}, spacing: {} }, ds.version, db);
@@ -63,12 +73,11 @@ describe.skipIf(!TEST_DATABASE_URL)("store templates (integration)", { timeout: 
     const [a2Store] = await db.select({ live: s.stores.publishedRevisionId }).from(s.stores).where(eq(s.stores.id, w.a.a2));
 
     const applied = await applyStoreTemplate(w.a.sellerId, w.a.a2, "tallaby-classic", w.a.sellerId, OPTIONS, db);
-    expect(applied).toMatchObject({ success: true, data: { templateKey: "tallaby-classic", pagesUpdated: 1, pagesCreated: 0 } });
+    expect(applied).toMatchObject({ success: true, data: { templateKey: "tallaby-classic", pagesUpdated: 6, pagesCreated: 0 } });
 
     const after = await home(w.a.sellerId, w.a.a2);
-    const sections = (after.draftContent as { sections: { sectionId: string; props: Record<string, unknown> }[] }).sections;
-    expect(sections.map((x) => x.sectionId)).toEqual(["classic-hero", "classic-categories", "classic-catalog"]);
-    expect(sections[1]!.props.title).toBe("My categories");
+    const sections = (after.draftContent as { sections: { id: string }[] }).sections;
+    expect(sections.map((x) => x.id)).toEqual(classicConfig().pages[0]!.content.sections.map((x) => x.id));
 
     const [a1After] = await db.select().from(s.storePages).where(eq(s.storePages.id, a1Before!.id));
     expect(a1After!.draftVersion).toBe(a1Before!.draftVersion);
@@ -77,11 +86,12 @@ describe.skipIf(!TEST_DATABASE_URL)("store templates (integration)", { timeout: 
     expect((await listStoreTemplates(w.a.sellerId, w.a.a2, db))?.lastInstall?.canUndo).toBe(true);
   });
 
-  it("undo restores the drafts from just before the apply, once", async () => {
+  it("undo restores the drafts from just before the apply, once", async (t) => {
+    if (!(await classicV3())) return t.skip();
     expect(await undoStoreTemplate(w.a.sellerId, w.a.a2, db)).toMatchObject({ success: true });
     const after = await home(w.a.sellerId, w.a.a2);
     const sections = (after.draftContent as { sections: { id: string }[] }).sections;
-    expect(sections.map((x) => x.id)).toEqual(["classic-categories", "extra"]);
+    expect(sections.map((x) => x.id)).toEqual(["tallaby-hero", "extra"]);
     expect((await getStoreForEditor(w.a.sellerId, w.a.a2, db))!.designSystem.colors).toMatchObject({ primary: "#ff3366" });
     expect(await undoStoreTemplate(w.a.sellerId, w.a.a2, db)).toMatchObject({ success: false, error: "nothing_to_undo" });
   });
@@ -91,5 +101,37 @@ describe.skipIf(!TEST_DATABASE_URL)("store templates (integration)", { timeout: 
     expect(await undoStoreTemplate(w.b.sellerId, w.a.a2, db)).toMatchObject({ error: "not_found" });
     expect(await applyStoreTemplate(w.a.sellerId, w.a.a2, "no-such-template", w.a.sellerId, OPTIONS, db)).toMatchObject({ error: "template_not_found" });
     expect(await applyStoreTemplate(w.a.sellerId, w.a.a2, "Bad Key!", w.a.sellerId, OPTIONS, db)).toMatchObject({ error: "template_not_found" });
+  });
+
+  // Needs 0070 (Atelier seed) on the test database; skipped until it is applied.
+  it("Atelier: creates and binds its forms, names the pages, fills in the store name; a re-apply reuses the forms", async (t) => {
+    const [row] = await db.select({ id: s.templates.id }).from(s.templates).where(eq(s.templates.key, "atelier"));
+    if (!row) return t.skip();
+    const form = (name: string) => ({ name, fields: [{ id: "email", key: "email", type: "email" as const, label: "Email", required: true, width: "full" as const }], settings: { submitLabel: "Send", successMessage: "Thanks" } });
+    const forms = { ...OPTIONS, formInput: (kind: string) => (kind === "newsletter" ? form("Atelier newsletter test") : kind === "contact" ? form("Atelier contact test") : undefined) };
+
+    const applied = await applyStoreTemplate(w.b.sellerId, w.b.b1, "atelier", w.b.sellerId, forms, db);
+    // B1 started from Tallaby Classic, which already has About, Contact and FAQ: Atelier fills those.
+    expect(applied).toMatchObject({ success: true, data: { templateKey: "atelier", pagesCreated: 0 } });
+
+    const storeForms = await db.select({ id: s.storeForms.id, name: s.storeForms.name }).from(s.storeForms).where(eq(s.storeForms.storeId, w.b.b1));
+    const ids = Object.fromEntries(storeForms.map((f) => [f.name, f.id]));
+    expect(ids["Atelier newsletter test"]).toBeTruthy();
+    expect(ids["Atelier contact test"]).toBeTruthy();
+
+    const editor = (await getStoreForEditor(w.b.sellerId, w.b.b1, db))!;
+    const json = JSON.stringify(editor.pages.map((p) => p.draftContent));
+    expect(json).toContain(ids["Atelier newsletter test"]!);
+    expect(json).toContain(ids["Atelier contact test"]!);
+    expect(json).not.toContain("formTemplate");
+    const about = editor.pages.find((p) => p.slug === "about")!;
+    // An existing page keeps its name; only its content changes.
+    expect(about.name).toMatchObject({ ar: "من نحن", en: "About us" });
+    const [store] = await db.select({ name: s.stores.name, header: s.stores.sharedHeader }).from(s.stores).where(eq(s.stores.id, w.b.b1));
+    expect(JSON.stringify(store!.header)).toContain(store!.name);
+
+    expect(await applyStoreTemplate(w.b.sellerId, w.b.b1, "atelier", w.b.sellerId, forms, db)).toMatchObject({ success: true });
+    const again = await db.select({ id: s.storeForms.id }).from(s.storeForms).where(eq(s.storeForms.storeId, w.b.b1));
+    expect(again).toHaveLength(storeForms.length);
   });
 });

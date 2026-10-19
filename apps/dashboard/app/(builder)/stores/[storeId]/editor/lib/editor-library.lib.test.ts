@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { SECTION_PRESETS, getPreset, storeSectionRegistry } from "@workspace/store-sections/render";
-import type { SectionInstance } from "@workspace/store-sections";
+import type { ComponentNode, SectionInstance } from "@workspace/store-sections";
 import {
   applyPresetDesign,
   fieldGroups,
+  formSectionInstance,
   isDesignProp,
   payloadPreset,
   presetDataStatus,
@@ -103,5 +104,26 @@ describe("helpers", () => {
     expect(payloadPreset("hero-banner", "hero.classic")).toBeUndefined();
     expect(payloadPreset("custom-section", "nope")).toBeUndefined();
     expect(payloadPreset("custom-section", undefined)).toBeUndefined();
+  });
+});
+
+describe("formSectionInstance", () => {
+  const walk = (nodes: readonly ComponentNode[]): ComponentNode[] => nodes.flatMap((n) => [n, ...walk(n.children)]);
+
+  it("is a tree section with the form bound and the form's name as the title in every locale", () => {
+    const instance = formSectionInstance({ id: "f-1", name: "  Request a quote  " }, "s1")!;
+    expect(instance.sectionId).toBe("custom-section");
+    expect(storeSectionRegistry.get(instance.sectionId)).toBeDefined();
+    const nodes = walk(instance.componentTree ?? []);
+    expect(nodes.filter((n) => n.type === "storeForm").map((n) => n.props.formId)).toEqual(["f-1"]);
+    const title = nodes.find((n) => n.props.role === "title")!;
+    expect(title.props.text).toBe("Request a quote");
+    expect(title.props.translations).toBeUndefined();
+  });
+
+  it("keeps the design's title for a blank name", () => {
+    const instance = formSectionInstance({ id: "f-1", name: " " }, "s1", { defaultLocale: "en" })!;
+    const title = walk(instance.componentTree ?? []).find((n) => n.props.role === "title")!;
+    expect(title.props.text).toBe("Send us a message");
   });
 });

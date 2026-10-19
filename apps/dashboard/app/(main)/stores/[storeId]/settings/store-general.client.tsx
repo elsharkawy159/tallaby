@@ -9,12 +9,31 @@ import { toast } from "sonner";
 import { z } from "zod";
 import Link from "next/link";
 import { Banknote, Headphones, Languages, LoaderCircle, Palette, Save, Store } from "lucide-react";
-import { CURRENCY_LABELS, formatPricePlain } from "@workspace/lib";
+import {
+  CURRENCY_LABELS,
+  REGIONAL_CURRENCY_CODES,
+  STORE_CURRENCIES,
+  STORE_CURRENCY_CODES,
+  formatPricePlain,
+  isCurrencyLabelFor,
+  isStoreCurrency,
+  type StoreCurrency,
+} from "@workspace/lib";
 
 import { Button } from "@workspace/ui/components/button";
 import { Checkbox } from "@workspace/ui/components/checkbox";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@workspace/ui/components/form";
 import { Input } from "@workspace/ui/components/input";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/select";
 import { Separator } from "@workspace/ui/components/separator";
 import { Textarea } from "@workspace/ui/components/textarea";
 import { BUTTON_CLASS, FIELD_CLASS, FieldHint, LabelNote, SectionCard, TEXTAREA_CLASS } from "@/components/form/form-ui";
@@ -26,6 +45,7 @@ import { saveStoreGeneral } from "./store-settings.server";
 import { toGeneralPatch, type StoreGeneralFormValues } from "./store-settings.dto";
 
 const DESCRIPTION_MAX = 2000;
+const INTERNATIONAL_CURRENCY_CODES = STORE_CURRENCY_CODES.filter((c) => !REGIONAL_CURRENCY_CODES.includes(c));
 const PHONE = /^[+()\d\s-]{7,24}$/;
 
 export function StoreGeneralForm({
@@ -61,18 +81,21 @@ export function StoreGeneralForm({
       email: z.string().refine((v) => !v.trim() || z.email().safeParse(v.trim()).success, t("errors.emailInvalid")),
       defaultLocale: z.enum(["ar", "en"]),
       supportedLocales: z.array(z.enum(["ar", "en"])).min(1, t("errors.localeRequired")),
+      currency: z.enum(STORE_CURRENCY_CODES),
       currencyLabel: z.enum(CURRENCY_LABELS),
     })
     .refine((v) => v.supportedLocales.includes(v.defaultLocale), {
       message: t("errors.defaultLocaleNotSupported"),
       path: ["defaultLocale"],
-    });
+    })
+    .refine((v) => isCurrencyLabelFor(v.currency, v.currencyLabel), { message: t("errors.invalidInput"), path: ["currencyLabel"] });
 
   const form = useForm<StoreGeneralFormValues>({ resolver: zodResolver(schema), defaultValues: initial });
   const name = useWatch({ control: form.control, name: "name" });
   const description = useWatch({ control: form.control, name: "description" });
   const [categoryEn, categoryAr] = useWatch({ control: form.control, name: ["storeCategory", "storeCategoryAr"] });
   const industry = findIndustry({ en: categoryEn, ar: categoryAr });
+  const currency = useWatch({ control: form.control, name: "currency" });
   const catalog = useStoreCatalog(storeId, catalogProps);
   const disabled = readOnly || isPending;
   const dirty = form.formState.isDirty || catalog.dirty;
@@ -127,6 +150,8 @@ export function StoreGeneralForm({
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5" noValidate>
         {readOnly && <p className="rounded-lg border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">{t("readOnly")}</p>}
 
+        {/* Two columns on desktop: the store's identity, then contact, languages and currency. */}
+        <div className="grid items-start gap-5 lg:grid-cols-2">
         <SectionCard id="identity" icon={Store} title={t("identity.title")} description={t("identity.description")}>
           {brandInSettings ? (
             <>
@@ -207,6 +232,7 @@ export function StoreGeneralForm({
           )}
         </SectionCard>
 
+        <div className="space-y-5">
         <SectionCard id="contact" icon={Headphones} title={t("contact.title")} description={t("contact.description")}>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
             {text("phone", t("fields.phone"), { placeholder: "01xxxxxxxxx", dir: "ltr", type: "tel" })}
@@ -270,12 +296,59 @@ export function StoreGeneralForm({
         <SectionCard id="currency" icon={Banknote} title={t("currency.title")} description={t("currency.description")}>
           <FormField
             control={form.control}
+            name="currency"
+            render={({ field }) => (
+              <FormItem className="gap-1.5">
+                <FormLabel className="text-[13px] font-semibold">{t("currency.currency")}</FormLabel>
+                <Select
+                  value={field.value}
+                  disabled={disabled}
+                  onValueChange={(value) => {
+                    if (!isStoreCurrency(value)) return;
+                    field.onChange(value);
+                    // A new currency starts on its code; the seller then picks the symbol.
+                    form.setValue("currencyLabel", STORE_CURRENCIES[value][0], { shouldDirty: true });
+                  }}
+                >
+                  <FormControl>
+                    <SelectTrigger className="!h-11 w-full rounded-[10px] bg-card px-3.5 shadow-none dark:bg-card">
+                      <SelectValue />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {(
+                      [
+                        ["regional", REGIONAL_CURRENCY_CODES],
+                        ["international", INTERNATIONAL_CURRENCY_CODES],
+                      ] as const
+                    ).map(([group, codes], index) => (
+                      <SelectGroup key={group}>
+                        {index > 0 && <SelectSeparator />}
+                        <SelectLabel>{t(`currency.groups.${group}`)}</SelectLabel>
+                        {codes.map((code: StoreCurrency) => (
+                          <SelectItem key={code} value={code}>
+                            <span dir="ltr" className="w-9 font-mono text-xs text-muted-foreground">
+                              {code}
+                            </span>
+                            {t(`currency.names.${code}`)}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
             name="currencyLabel"
             render={({ field }) => (
               <FormItem className="gap-2">
-                <FormLabel className="text-[13px] font-semibold">{t("currency.label")}</FormLabel>
-                <div role="radiogroup" aria-label={t("currency.label")} className="grid gap-2 sm:grid-cols-3">
-                  {CURRENCY_LABELS.map((label) => (
+                <FormLabel className="text-[13px] font-semibold">{t("currency.symbol")}</FormLabel>
+                <div role="radiogroup" aria-label={t("currency.symbol")} className="grid gap-2 sm:grid-cols-3">
+                  {STORE_CURRENCIES[currency].map((label) => (
                     <label
                       key={label}
                       className={cn(
@@ -292,7 +365,7 @@ export function StoreGeneralForm({
                         onChange={() => field.onChange(label)}
                       />
                       <span className="font-medium">{label}</span>
-                      <span className="ms-auto text-xs text-muted-foreground">{formatPricePlain(300, "ar", label)}</span>
+                      <span className="ms-auto text-xs text-muted-foreground">{formatPricePlain(300, uiLocale, label)}</span>
                     </label>
                   ))}
                 </div>
@@ -302,6 +375,8 @@ export function StoreGeneralForm({
           />
           <FieldHint>{t("currency.hint")}</FieldHint>
         </SectionCard>
+        </div>
+        </div>
 
         <StoreCatalogSections catalog={catalog} products={catalogProps.products} maxProducts={catalogProps.maxProducts} disabled={disabled} />
 

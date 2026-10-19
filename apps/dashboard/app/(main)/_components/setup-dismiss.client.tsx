@@ -23,7 +23,7 @@ export function SetupDismissible({ children }: { children: React.ReactNode }) {
         type="button"
         onClick={dismiss}
         aria-label={t("dismiss")}
-        className="absolute end-3 top-3 flex size-9 items-center justify-center rounded-[10px] text-white/80 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 xl:text-muted-foreground xl:hover:bg-muted xl:hover:text-foreground"
+        className="absolute end-3 top-3 flex size-9 items-center justify-center rounded-[10px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
       >
         <X className="size-[18px]" aria-hidden />
       </button>

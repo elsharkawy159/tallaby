@@ -1,4 +1,4 @@
-import { Almarai, Cairo, El_Messiri, IBM_Plex_Sans_Arabic, Noto_Kufi_Arabic, Readex_Pro, Tajawal } from "next/font/google";
+import { Almarai, Amiri, Cairo, El_Messiri, IBM_Plex_Sans_Arabic, Noto_Kufi_Arabic, Readex_Pro, Tajawal } from "next/font/google";
 
 /** The storefront's default typeface (Tallaby Classic); covers Arabic and Latin. */
 export const storefrontFont = Readex_Pro({
@@ -24,6 +24,7 @@ const plexArabic = IBM_Plex_Sans_Arabic({
 });
 const notoKufi = Noto_Kufi_Arabic({ subsets: ["arabic", "latin"], variable: "--font-sf-noto-kufi", preload: false });
 const elMessiri = El_Messiri({ subsets: ["arabic", "latin"], variable: "--font-sf-el-messiri", preload: false });
+const amiri = Amiri({ subsets: ["arabic", "latin"], weight: ["400", "700"], variable: "--font-sf-amiri", preload: false });
 
 /** Class names defining every store font variable (put on the storefront root). */
-export const storeFontVariables = [cairo, tajawal, almarai, plexArabic, notoKufi, elMessiri].map((font) => font.variable).join(" ");
+export const storeFontVariables = [cairo, tajawal, almarai, plexArabic, notoKufi, elMessiri, amiri].map((font) => font.variable).join(" ");

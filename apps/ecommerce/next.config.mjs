@@ -13,6 +13,20 @@ const nextConfig = {
       static: 30,
     },
   },
+  poweredByHeader: false,
+  // Baseline headers for every host. No X-Frame-Options / frame-ancestors:
+  // the dashboard editor and site preview embed storefronts in iframes.
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+        ],
+      },
+    ];
+  },
   async redirects() {
     return [
       // The marketplace seller pages are gone: the marketing home has the signup.
@@ -43,6 +57,10 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "images.unsplash.com",
+      },
+      {
+        protocol: "https",
+        hostname: "images.pexels.com",
       },
       {
         protocol: "https",

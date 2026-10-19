@@ -22,6 +22,8 @@ export const STORE_FONTS = [
   { name: "IBM Plex Sans Arabic", cssVar: "--font-sf-plex-arabic" },
   { name: "Noto Kufi Arabic", cssVar: "--font-sf-noto-kufi" },
   { name: "El Messiri", cssVar: "--font-sf-el-messiri" },
+  // Naskh serif with Latin glyphs: the editorial display face (Atelier template).
+  { name: "Amiri", cssVar: "--font-sf-amiri" },
 ] as const satisfies readonly StoreFont[];
 
 export type StoreFontName = (typeof STORE_FONTS)[number]["name"];
@@ -36,6 +38,7 @@ export const FONT_PAIRINGS: readonly FontPairing[] = [
   { id: "kufi", heading: "Noto Kufi Arabic", body: "IBM Plex Sans Arabic" },
   { id: "messiri", heading: "El Messiri", body: "Cairo" },
   { id: "almarai", heading: "Almarai", body: "Tajawal" },
+  { id: "amiri", heading: "Amiri", body: "Noto Kufi Arabic" },
 ];
 
 const BY_NAME = new Map<string, StoreFont>(STORE_FONTS.map((font) => [font.name, font]));

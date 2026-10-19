@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { ArrowDown, ArrowUp, Plus, RotateCcw, Trash2, X } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronDown, CircleAlert, CircleCheck, ExternalLink, Plus, RotateCcw, Settings2, Trash2, X } from "lucide-react";
 import type { ComponentNode, SectionInstance, SiteLocale } from "@workspace/store-sections";
 import {
   DATA_BINDINGS,
@@ -14,7 +14,15 @@ import {
   type Localized,
   type PropDefinition,
   isCustomSlotLayout,
+  PALETTE_TYPES,
+  createNode,
+  isFieldShown,
+  parseVideoUrl,
   resetSlotLayout,
+  videoLinkProblem,
+  videoPageUrl,
+  videoStillUrl,
+  type VideoProvider,
 } from "@workspace/store-sections/render";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
@@ -26,7 +34,7 @@ import { MediaPicker } from "@/components/media/media-picker.client";
 import { LayoutDiagram } from "./controls/layout-diagram.client";
 import type { EditorCategory, EditorForm, EditorProduct } from "../server/editor.data";
 import { applyPresetDesign, currentPreset, distinctDesigns, fieldGroups } from "../lib/editor-library.lib";
-import { addItem, readItemProp, readProp, removeItem, setItemProp, setSectionProp } from "../lib/editor.lib";
+import { addItem, newId, readItemProp, readProp, removeItem, setItemProp, setSectionProp } from "../lib/editor.lib";
 import { placeItem } from "../lib/editor-slots.lib";
 import { partField, readNodeProp, readPart, setNodeProp, writePart } from "../lib/editor-selection.lib";
 
@@ -99,6 +107,27 @@ export function Field({
     case "switch":
       return <Switch id={id} checked={value === true} onCheckedChange={(checked) => onChange(checked)} />;
     case "select":
+      if (isShortChoice(prop, uiLocale)) {
+        return (
+          <div id={id} role="radiogroup" aria-label={label(prop.label, uiLocale)} className="grid auto-cols-fr grid-flow-col rounded-md border bg-muted/40 p-0.5">
+            {(prop.options ?? []).map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                role="radio"
+                aria-checked={option.value === text}
+                onClick={() => onChange(option.value)}
+                className={cn(
+                  "truncate rounded px-1.5 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  option.value === text ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {label(option.label, uiLocale)}
+              </button>
+            ))}
+          </div>
+        );
+      }
       return (
         <select id={id} className={SELECT_CLASS} value={text} onChange={(e) => onChange(e.target.value)}>
           {(prop.options ?? []).map((option) => (
@@ -205,6 +234,8 @@ export function Field({
       return <DateTimeField id={id} value={text} onChange={onChange} />;
     case "layout":
       return <LayoutPicker id={id} prop={prop} value={text} onChange={onChange} uiLocale={uiLocale} />;
+    case "video":
+      return <VideoField id={id} value={text} onChange={onChange} placeholder={prop.placeholder ? label(prop.placeholder, uiLocale) : undefined} />;
     default:
       return (
         <div>
@@ -213,6 +244,102 @@ export function Field({
         </div>
       );
   }
+}
+
+/** Up to four options with short labels fit a button group instead of a dropdown. */
+function isShortChoice(prop: PropDefinition, uiLocale: string): boolean {
+  const options = prop.options ?? [];
+  return options.length > 1 && options.length <= 4 && options.every((o) => label(o.label, uiLocale).length <= 14);
+}
+
+const PROVIDER_NAMES: Record<VideoProvider, string> = {
+  youtube: "YouTube",
+  vimeo: "Vimeo",
+  tiktok: "TikTok",
+  instagram: "Instagram",
+  facebook: "Facebook",
+  file: "MP4",
+};
+
+/**
+ * A video link with a live check: which site it is from (with YouTube's
+ * still), why it can't be used (a share short link), and a tip for vertical videos.
+ */
+function VideoField({ id, value, onChange, placeholder }: { id: string; value: string; onChange: (value: unknown) => void; placeholder?: string }) {
+  const t = useTranslations("storeEditor.inspector.video");
+  const source = parseVideoUrl(value);
+  const problem = videoLinkProblem(value);
+  const still = source ? videoStillUrl(source) : null;
+  const vertical = source && ((source.provider === "youtube" && source.short) || source.provider === "tiktok" || source.provider === "instagram" || (source.provider === "facebook" && source.kind === "reel"));
+  return (
+    <div className="space-y-2">
+      <Input id={id} dir="ltr" inputMode="url" placeholder={placeholder} value={value} maxLength={2048} onChange={(e) => onChange(e.target.value.trim())} />
+      {problem && (
+        <p className="flex items-start gap-1.5 text-xs text-destructive">
+          <CircleAlert className="mt-px size-3.5 shrink-0" aria-hidden />
+          {t(problem === "short-link" ? "shortLink" : "invalid")}
+        </p>
+      )}
+      {source && (
+        <div className="flex items-center gap-2.5 rounded-md border p-1.5">
+          {still ? (
+            // eslint-disable-next-line @next/next/no-img-element -- the site's own still
+            <img src={still} alt="" className="h-10 w-16 shrink-0 rounded object-cover" />
+          ) : (
+            <span className="grid h-10 w-16 shrink-0 place-items-center rounded bg-muted text-[10px] font-semibold text-muted-foreground">
+              {PROVIDER_NAMES[source.provider]}
+            </span>
+          )}
+          <p className="flex min-w-0 flex-1 items-center gap-1 text-xs font-medium">
+            <CircleCheck className="size-3.5 shrink-0 text-emerald-600" aria-hidden />
+            <span className="truncate">{t("found", { site: PROVIDER_NAMES[source.provider] })}</span>
+          </p>
+          <a
+            href={videoPageUrl(source)}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={t("open")}
+            title={t("open")}
+            className="grid size-7 shrink-0 place-items-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            <ExternalLink className="size-3.5" aria-hidden />
+          </a>
+        </div>
+      )}
+      {vertical && <p className="text-xs text-muted-foreground">{t("verticalHint")}</p>}
+      {source?.provider === "instagram" && <p className="text-xs text-muted-foreground">{t("instagramHint")}</p>}
+    </div>
+  );
+}
+
+/**
+ * One inspector field: label, control and hint. Switches sit on the label's
+ * line so on/off options read as a compact list.
+ */
+function FieldRow({ prop, id, locked, uiLocale, children }: { prop: PropDefinition; id: string; locked: boolean; uiLocale: string; children: React.ReactNode }) {
+  const hint = prop.hint ? label(prop.hint, uiLocale) : null;
+  if (prop.type === "switch") {
+    return (
+      <fieldset disabled={locked} className={cn("flex items-start justify-between gap-3", locked && "opacity-60")}>
+        <div className="min-w-0 space-y-0.5">
+          <Label htmlFor={id} className="text-sm font-normal">
+            {label(prop.label, uiLocale)}
+          </Label>
+          {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
+        </div>
+        {children}
+      </fieldset>
+    );
+  }
+  return (
+    <div className="space-y-1.5">
+      <Label htmlFor={id}>{label(prop.label, uiLocale)}</Label>
+      <fieldset disabled={locked} className={locked ? "opacity-60" : undefined}>
+        {children}
+      </fieldset>
+      {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
+    </div>
+  );
 }
 
 /** Ordered pick of this store's products (P4-07). */
@@ -569,19 +696,16 @@ export function SectionInspector({
     const fieldId = `${instance.id}-${prop.key}`;
     const locked = locale !== defaultLocale && !prop.translatable;
     return (
-      <div key={prop.key} className="space-y-1.5">
-        <Label htmlFor={fieldId}>{label(prop.label, uiLocale)}</Label>
-        <fieldset disabled={locked} className={locked ? "opacity-60" : undefined}>
-          <Field
-            id={fieldId}
-            prop={prop}
-            value={readProp(instance, prop.key, editTarget)}
-            onChange={(value) => onChange(setSectionProp(instance, prop.key, value, editTarget))}
-            uiLocale={uiLocale}
-            catalog={catalog}
-          />
-        </fieldset>
-      </div>
+      <FieldRow key={prop.key} prop={prop} id={fieldId} locked={locked} uiLocale={uiLocale}>
+        <Field
+          id={fieldId}
+          prop={prop}
+          value={readProp(instance, prop.key, editTarget)}
+          onChange={(value) => onChange(setSectionProp(instance, prop.key, value, editTarget))}
+          uiLocale={uiLocale}
+          catalog={catalog}
+        />
+      </FieldRow>
     );
   };
 
@@ -699,9 +823,12 @@ export function ElementInspector({
   catalog,
   storeId,
   readOnly = false,
+  onOpenStyle,
 }: {
   node: ComponentNode;
   onChange: (node: ComponentNode) => void;
+  /** Switches the sidebar to Style (elements with no content fields). */
+  onOpenStyle?: () => void;
   locale: SiteLocale;
   defaultLocale: SiteLocale;
   uiLocale: string;
@@ -713,37 +840,81 @@ export function ElementInspector({
   const definition = getElementDefinition(node.type);
   const mediaStore = useMemo(() => ({ storeId, readOnly }), [storeId, readOnly]);
   if (!definition) return null;
+
+  // Fields that only apply to another choice (a category when the source is "from a category").
+  // …and options the element's current choice can't use (a video site's unsupported player options).
+  const values = { ...definition.defaultProps, ...node.props };
+  const shown = definition.fields.filter((prop) => isFieldShown(prop, values) && !definition.hideField?.(prop.key, values));
+  const main = shown.filter((p) => p.group !== "advanced" && p.group !== "data");
+  const data = shown.filter((p) => p.group === "data");
+  const advanced = shown.filter((p) => p.group === "advanced");
+  const renderField = (prop: PropDefinition) => {
+    const target = { locale, defaultLocale, translatable: prop.translatable };
+    const fieldId = node.id + "-" + prop.key;
+    return (
+      <FieldRow key={prop.key} prop={prop} id={fieldId} locked={locale !== defaultLocale && !prop.translatable} uiLocale={uiLocale}>
+        <Field
+          id={fieldId}
+          prop={prop}
+          value={readNodeProp(node, prop.key, target) ?? definition.defaultProps[prop.key]}
+          onChange={(value) => onChange(setNodeProp(node, prop.key, value, target))}
+          uiLocale={uiLocale}
+          catalog={catalog}
+        />
+      </FieldRow>
+    );
+  };
+  // Items that only live in this element (playlist videos) are added here, not from the palette.
+  const itemType = definition.childTypes?.length === 1 && !PALETTE_TYPES.includes(definition.childTypes[0]!) ? definition.childTypes[0]! : null;
+  const itemDefinition = itemType ? getElementDefinition(itemType) : undefined;
+
   return (
     <InspectorStore.Provider value={mediaStore}>
-      <div className="space-y-4">
+      <div className="space-y-5">
         {locale !== defaultLocale && <p className="rounded-md bg-muted p-2 text-xs">{t("translating", { locale: locale.toUpperCase() })}</p>}
         {isDataList(node.type) && <p className="rounded-md bg-muted p-2 text-xs">{t("listTemplate")}</p>}
         {typeof node.props.bind === "string" && BOUND_FIELDS.has(node.props.bind) && (
           <p className="rounded-md bg-muted p-2 text-xs">{t("boundField", { field: t(`boundFields.${node.props.bind}`) })}</p>
         )}
-        {definition.fields.length === 0 && <p className="text-sm text-muted-foreground">{t("styleOnly")}</p>}
-        {definition.fields.map((prop) => {
-          // Fields that only apply to another choice (a category when the source is "from a category").
-          if (prop.showWhen && !prop.showWhen.equals.includes(node.props[prop.showWhen.key] as string | boolean)) return null;
-          const target = { locale, defaultLocale, translatable: prop.translatable };
-          const fieldId = `${node.id}-${prop.key}`;
-          const locked = locale !== defaultLocale && !prop.translatable;
-          return (
-            <div key={prop.key} className="space-y-1.5">
-              <Label htmlFor={fieldId}>{label(prop.label, uiLocale)}</Label>
-              <fieldset disabled={locked} className={locked ? "opacity-60" : undefined}>
-                <Field
-                  id={fieldId}
-                  prop={prop}
-                  value={readNodeProp(node, prop.key, target)}
-                  onChange={(value) => onChange(setNodeProp(node, prop.key, value, target))}
-                  uiLocale={uiLocale}
-                  catalog={catalog}
-                />
-              </fieldset>
-            </div>
-          );
-        })}
+        {definition.fields.length === 0 && (
+          <div className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
+            <p>{t("styleOnly")}</p>
+            {onOpenStyle && (
+              <Button type="button" variant="link" size="sm" className="mt-1 h-auto p-0" onClick={onOpenStyle}>
+                {t("openStyle")}
+              </Button>
+            )}
+          </div>
+        )}
+        {main.length > 0 && <div className="space-y-4">{main.map(renderField)}</div>}
+        {data.length > 0 && <FieldGroup title={t("groups.data")}>{data.map(renderField)}</FieldGroup>}
+        {itemType && itemDefinition && (
+          <div className="space-y-1.5">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="w-full"
+              disabled={readOnly || locale !== defaultLocale}
+              onClick={() => onChange({ ...node, children: [...node.children, createNode(itemType, () => newId("n"))] })}
+            >
+              <Plus aria-hidden />
+              {t("addChild", { name: label(itemDefinition.label, uiLocale) })}
+            </Button>
+            <p className="text-xs text-muted-foreground">{t("addChildHint")}</p>
+          </div>
+        )}
+        {advanced.length > 0 && (
+          <details className="group rounded-lg border">
+            <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-2.5 text-sm font-medium [&::-webkit-details-marker]:hidden">
+              <Settings2 className="size-4 text-muted-foreground" aria-hidden />
+              <span className="flex-1">{t("advanced")}</span>
+              <span className="text-xs font-normal text-muted-foreground">{t("advancedCount", { count: advanced.length })}</span>
+              <ChevronDown className="size-4 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden />
+            </summary>
+            <div className="space-y-4 border-t px-3 py-3">{advanced.map(renderField)}</div>
+          </details>
+        )}
       </div>
     </InspectorStore.Provider>
   );

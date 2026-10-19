@@ -3,12 +3,11 @@ import postgres from "postgres";
 import { and, eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import * as DB_SCHEMA from "@workspace/db/schema";
-import { emptyHomeContent } from "@workspace/store-sections/templates";
 import { createIsolationWorld, type IsolationWorld } from "./isolation.fixtures";
 import { ensureStoreSiteScaffold } from "./server";
 import { getStoreForEditor } from "../store-sites/server";
 
-/** Stores start with an empty home page and no header/footer (Classic removed, 2026-10-19). Skipped without TEST_DATABASE_URL. */
+/** A never-published store starts from Tallaby Classic in its drafts (owner, 2026-10-19). Skipped without TEST_DATABASE_URL. */
 const TEST_DATABASE_URL = process.env.TEST_DATABASE_URL;
 
 describe.skipIf(!TEST_DATABASE_URL)("site scaffold (integration)", { timeout: 60_000 }, () => {
@@ -30,11 +29,21 @@ describe.skipIf(!TEST_DATABASE_URL)("site scaffold (integration)", { timeout: 60
     (await db.select().from(s.storePages).where(and(eq(s.storePages.storeId, storeId), eq(s.storePages.isHome, true))))[0]!;
   const store = async (storeId: string) => (await db.select().from(s.stores).where(eq(s.stores.id, storeId)))[0]!;
 
-  it("an unpublished store gets an empty home page and no header or footer", async () => {
+  it("an unpublished store starts from Tallaby Classic in its drafts, with its forms", async () => {
     await getStoreForEditor(w.a.sellerId, w.a.a2, db);
-    expect((await store(w.a.a2)).sharedHeader).toBeNull();
-    expect((await store(w.a.a2)).sharedFooter).toBeNull();
-    expect((await home(w.a.a2)).draftContent).toEqual(emptyHomeContent());
+    const row = await store(w.a.a2);
+    expect((row.sharedHeader as { source?: string }).source).toBe("tallaby-header@1");
+    expect((row.sharedFooter as { source?: string }).source).toBe("tallaby-footer@1");
+    const content = (await home(w.a.a2)).draftContent as { sections: { source?: string }[] };
+    expect(content.sections.map((s) => s.source)[0]).toBe("tallaby-hero@1");
+    const pages = await db.select().from(s.storePages).where(eq(s.storePages.storeId, w.a.a2));
+    expect(pages.map((p) => p.slug).sort()).toEqual(["about", "contact", "faq", "home", "privacy", "terms"]);
+    const forms = await db.select().from(s.storeForms).where(eq(s.storeForms.storeId, w.a.a2));
+    expect(forms).toHaveLength(2);
+    // The forms are bound in the drafts (newsletter on home, contact on Contact).
+    expect(JSON.stringify(content)).toContain(forms.find((f) => f.name.includes("النشرة") || f.name.includes("Newsletter"))!.id);
+    // Live site untouched: still unpublished.
+    expect(row.publishedRevisionId).toBeNull();
   });
 
   it("never replaces what a seller made or published", async () => {
@@ -57,6 +66,7 @@ describe.skipIf(!TEST_DATABASE_URL)("site scaffold (integration)", { timeout: 60
     await ensureStoreSiteScaffold(db, w.a.a2);
     const pages = await db.select().from(s.storePages).where(eq(s.storePages.storeId, w.a.a2));
     expect(pages.filter((p) => p.isHome)).toHaveLength(1);
-    expect(pages[0]!.draftContent).toEqual(emptyHomeContent());
+    expect(pages).toHaveLength(6);
+    expect(await db.select().from(s.storeForms).where(eq(s.storeForms.storeId, w.a.a2))).toHaveLength(2);
   });
 });

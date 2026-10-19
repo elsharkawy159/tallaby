@@ -41,6 +41,7 @@ import {
   localizedPlanName,
   localizedText,
   plansForService,
+  TALLABY_FULFILLMENT_ENABLED,
   type FulfillmentModel,
   type FulfillmentPlanView,
   type FulfillmentServiceType,
@@ -117,17 +118,27 @@ export function FulfillmentStep({ plans }: { plans: FulfillmentPlanView[] }) {
             value="tallaby_fulfillment"
             size="lg"
             indicator
-            disabled={!tallabyEverywhere}
+            disabled={!TALLABY_FULFILLMENT_ENABLED || !tallabyEverywhere}
             icon={<PackageCheck className="size-5.5" />}
             badge={
-              tallabyEverywhere && (
-                <span className="rounded-full bg-accent-soft px-2.5 py-0.5 text-[11.5px] font-semibold text-accent-ink">
-                  {t("recommended")}
+              !TALLABY_FULFILLMENT_ENABLED ? (
+                <span className="rounded-full bg-muted px-2.5 py-0.5 text-[11.5px] font-semibold text-muted-foreground">
+                  {t("model.soon")}
                 </span>
+              ) : (
+                tallabyEverywhere && (
+                  <span className="rounded-full bg-accent-soft px-2.5 py-0.5 text-[11.5px] font-semibold text-accent-ink">
+                    {t("recommended")}
+                  </span>
+                )
               )
             }
             title={t("model.tallabyTitle")}
-            description={tallabyEverywhere ? t("model.tallabyDescription") : t("tallabyUnavailable")}
+            description={
+              !TALLABY_FULFILLMENT_ENABLED || tallabyEverywhere
+                ? t("model.tallabyDescription")
+                : t("tallabyUnavailable")
+            }
           />
           <ChoiceCard
             value="seller_managed"

@@ -311,6 +311,7 @@
     "unchanged": "Nothing changed. Your request is already with our team.",
     "model": {
       "tallabyTitle": "Let Tallaby handle fulfillment",
+      "soon": "Soon",
       "tallabyDescription": "Send us your inventory and we'll handle storage, packaging, delivery, customer service and returns.",
       "manageTitle": "I want to manage fulfillment",
       "manageDescription": "Keep control of your operations and choose which services you want to handle yourself and which services you want Tallaby to handle.",
@@ -425,6 +426,7 @@
       "plan_not_allowed": "Plans only apply to Tallaby services.",
       "plan_unavailable": "This plan is no longer available. Please choose another.",
       "tallaby_model_requires_tallaby": "This service must be handled by Tallaby for this option.",
+      "tallaby_fulfillment_unavailable": "This option is coming soon.",
       "delivery_mode_required": "Please choose how you'll deliver.",
       "pickup_address_required": "Please add a pickup location.",
       "invalid": "Please check this field.",
@@ -642,6 +644,10 @@
       "progress": "Progress",
       "done": "done",
       "dismiss": "Hide setup guide",
+      "nextStep": "Next step",
+      "showAll": "Show all {count} steps",
+      "showLess": "Show less",
+      "remaining": "{count, plural, one {# step left} other {# steps left}}",
       "tasks": {
         "profile": {
           "title": "Set up your store profile",
@@ -1940,84 +1946,101 @@
     }
   },
   "help": {
-    "title": "Help & Support",
-    "subtitle": "Find answers and get help with your seller dashboard",
-    "liveChat": "Live Chat",
-    "contactSupport": "Contact Support",
-    "searchTitle": "How can we help you?",
-    "searchSubtitle": "Search our knowledge base or browse common topics",
-    "searchPlaceholder": "Search for help articles, guides, or FAQs...",
-    "browseFaqs": "Browse FAQs",
-    "browseFaqsDescription": "Find quick answers to common questions",
-    "videoTutorials": "Video Tutorials",
-    "videoTutorialsDescription": "Watch step-by-step video guides",
-    "contactSupportDescription": "Get personalized help from our team",
-    "quickLinks": {
-      "title": "Quick Links",
-      "gettingStarted": {
-        "title": "Getting Started Guide",
-        "description": "Complete setup guide for new sellers"
-      },
-      "productManagement": {
-        "title": "Product Management",
-        "description": "Learn how to manage your inventory"
-      },
-      "orderProcessing": {
-        "title": "Order Processing",
-        "description": "Handle orders from start to finish"
-      },
-      "marketingTools": {
-        "title": "Marketing Tools",
-        "description": "Promote your products effectively"
-      },
-      "paymentSetup": {
-        "title": "Payment Setup",
-        "description": "Configure payment methods"
-      },
-      "shippingConfiguration": {
-        "title": "Shipping Configuration",
-        "description": "Set up shipping options"
-      }
+    "contactTitle": "Talk to the Tallaby team",
+    "contactSubtitle": "Questions about your store, orders, wallet or website? Message us on WhatsApp or send an email, in Arabic or English. Include your store name so we can find your account quickly.",
+    "whatsappTitle": "WhatsApp",
+    "whatsappHint": "Fastest way to reach us. Your store name and link are added to the message.",
+    "whatsappAction": "Chat on WhatsApp",
+    "copyNumber": "Copy number",
+    "emailTitle": "Email",
+    "emailHint": "Best for longer questions, documents or screenshots.",
+    "emailAction": "Send email",
+    "copyEmail": "Copy email address",
+    "emailSubject": "Seller support: {store}",
+    "emailSubjectNoStore": "Seller support",
+    "copied": "Copied",
+    "copyFailed": "Couldn't copy. Select the text and copy it yourself.",
+    "faqTitle": "Common questions",
+    "searchLabel": "Search common questions",
+    "searchPlaceholder": "Search, e.g. wallet, shipping",
+    "searchResults": "{count, plural, =0 {No answers} one {# answer} other {# answers}} found",
+    "noResults": "Nothing matches “{query}”",
+    "noResultsHint": "Try a different word, or message us on WhatsApp and we'll answer directly.",
+    "openPage": "Open {page}",
+    "topics": {
+      "start": "Getting started",
+      "products": "Products",
+      "orders": "Orders and delivery",
+      "money": "Wallet, fees and payments",
+      "website": "Your website"
     },
-    "videos": {
-      "dashboardOverview": "Dashboard Overview",
-      "firstProduct": "Adding Your First Product",
-      "managingOrders": "Managing Orders",
-      "promotions": "Setting Up Promotions"
-    },
-    "views": "{count} views",
-    "faqTitle": "Frequently Asked Questions",
     "faqs": {
-      "addProduct": {
-        "question": "How do I add a new product to my store?",
-        "answer": "To add a new product, go to Products Management, click 'Add Product', fill in the required details including title, price, description, and upload product images. Don't forget to set your inventory quantity and shipping details."
+      "createStore": {
+        "question": "How do I open a store?",
+        "answer": "Go to My stores and choose Create store. Creating an account and a store is free. Each store has its own products, website, shipping and payment settings."
       },
-      "trackSales": {
-        "question": "How can I track my sales performance?",
-        "answer": "Visit the Analytics Dashboard to view comprehensive sales data, including total revenue, order counts, and performance trends. You can also access detailed reports in the Reports & Analytics section."
+      "fees": {
+        "question": "What does Tallaby charge?",
+        "answer": "A flat EGP 5 per delivered order, taken from your store wallet. Your first 7 days, counted from when you created your first store, are free: an order placed in that time has no fee, even if it's delivered later. Cancelled or undelivered orders are never charged."
+      },
+      "plan": {
+        "question": "How many stores can I have?",
+        "answer": "The Free plan includes up to 3 stores. You can see how many you're using in Plan & usage. If you need more, contact us."
+      },
+      "addProduct": {
+        "question": "How do I add a product?",
+        "answer": "Open Add products, enter the name, price, stock and photos, then save. Products go live on your store right away, with no review step."
+      },
+      "categories": {
+        "question": "Can I use my own categories and brands?",
+        "answer": "Yes. Products › Categories and Products › Brands hold your own lists. Choose which products each store shows in Store settings › General."
+      },
+      "manageOrders": {
+        "question": "Where do I see and follow up on orders?",
+        "answer": "Orders lists every order across your stores. Open one to see the customer, items, payment and status. Delivery tracking follows each shipment until it reaches the customer."
+      },
+      "delivery": {
+        "question": "Who delivers my orders?",
+        "answer": "By default Tallaby delivers, and customers pay Tallaby's shipping rate for their governorate. You can also add your own riders, and set your store's shipping options in Shipping settings."
+      },
+      "fulfillment": {
+        "question": "Can Tallaby store, pack or handle returns for me?",
+        "answer": "Yes. Request it from Fulfillment setup and choose what you want Tallaby to handle. Our team will contact you to agree the details before anything changes on your orders."
+      },
+      "wallet": {
+        "question": "How does the store wallet work?",
+        "answer": "Fees for delivered orders are taken from your wallet, and every entry is listed in Balance & top-ups. The balance can go below zero; when it does, you'll see a reminder to top up."
+      },
+      "topUp": {
+        "question": "How do I top up my wallet?",
+        "answer": "Open Balance & top-ups and choose Top up. Send between EGP 100 and EGP 20,000 by Vodafone Cash or InstaPay, then upload the transfer receipt. Your balance updates once our team confirms the transfer."
       },
       "paymentMethods": {
-        "question": "What payment methods are supported?",
-        "answer": "We support all major payment methods including credit cards (Visa, MasterCard, American Express), PayPal, Apple Pay, Google Pay, and bank transfers depending on your region."
+        "question": "Which payment methods can my store offer?",
+        "answer": "Cash on delivery is on for every store. In Payment methods you can also save your Vodafone Cash, e& Cash, WE Pay, Orange Cash or InstaPay details. Card payments, Fawry and installments are coming soon."
       },
-      "shippingRates": {
-        "question": "How do I set up shipping rates?",
-        "answer": "Go to Shipping & Logistics, click 'Add Carrier' or 'Shipping Settings' to configure your shipping zones, rates, and delivery options. You can set flat rates, weight-based pricing, or free shipping thresholds."
+      "builder": {
+        "question": "How do I design my store's website?",
+        "answer": "Open Website builder. Every new store starts with the Tallaby Classic template; edit its sections, colours and text, then press Publish. Visitors only see your changes after you publish."
       },
-      "customizeStore": {
-        "question": "Can I customize my store appearance?",
-        "answer": "Yes! In Profile Settings, you can customize your store name, logo, description, and business information. For advanced customization, contact our support team for additional options."
+      "domain": {
+        "question": "Can I use my own domain?",
+        "answer": "Yes. Connect it in Domain & SEO. Until then, your store works on its free Tallaby address."
       }
     },
-    "stillNeedHelp": "Still Need Help?",
-    "liveChatDescription": "Available 24/7 for instant support",
-    "startChat": "Start Chat",
-    "emailSupport": "Email Support",
-    "emailSupportDescription": "Response within 24 hours",
-    "sendEmail": "Send Email",
-    "phoneSupport": "Phone Support",
-    "phoneSupportHours": "Mon-Fri, 9AM-6PM EST",
-    "callNow": "Call Now"
+    "shortcutsTitle": "Go to",
+    "shortcutsSubtitle": "Pages sellers ask about most.",
+    "videosTitle": "Video tutorials",
+    "comingSoon": "Coming soon",
+    "videosSubtitle": "Short walkthroughs of the dashboard are on the way. Until then, message us and we'll guide you step by step.",
+    "videosPlanned": "Planned tutorials",
+    "videos": {
+      "firstStore": "Opening your first store",
+      "firstProduct": "Adding your first product",
+      "orders": "Handling an order from start to delivery",
+      "builder": "Designing your website",
+      "topUp": "Topping up your wallet"
+    }
   },
   "header": {
     "installApp": "Install app",
@@ -2085,7 +2108,6 @@
         "video_social": "A promo video for your product made from social-media footage, with a voiceover explaining its features",
         "video_ai": "{count, plural, one {An AI-made promo video} other {# AI-made promo videos}} for your product, with a voiceover explaining its features",
         "platforms": "Your product published on all Tallaby channels",
-        "featured": "Your product placed in Featured Products, the first thing customers see on the website",
         "meta": "A sponsored ad on Meta (Facebook + Instagram) for the whole campaign"
       },
       "periods": {
@@ -2113,7 +2135,6 @@
         "video_social": "Social-media promo video with voiceover",
         "video_ai": "{count, plural, one {AI promo video} other {# AI promo videos}} with voiceover",
         "platforms": "Posted on all Tallaby channels",
-        "featured": "Shown in Featured Products",
         "meta": "Sponsored ad on Meta"
       }
     },
@@ -2381,10 +2402,27 @@
       "saved": "Catalog saved"
     },
     "currency": {
-      "title": "Currency",
-      "description": "Prices are in Egyptian pounds. Choose how the currency appears on your store's site.",
-      "label": "Currency label",
-      "hint": "Applies to prices on your store's site. The dashboard keeps using EGP."
+      "title": "Website currency",
+      "description": "The currency your prices are shown in on your store's website, and how its symbol looks.",
+      "currency": "Currency",
+      "symbol": "Currency symbol",
+      "hint": "Prices are not converted: the amounts you enter are shown with this currency. The dashboard, wallet and shipping fees stay in EGP.",
+      "groups": {
+        "regional": "Egypt and the Gulf",
+        "international": "International"
+      },
+      "names": {
+        "EGP": "Egyptian pound",
+        "SAR": "Saudi riyal",
+        "AED": "UAE dirham",
+        "KWD": "Kuwaiti dinar",
+        "QAR": "Qatari riyal",
+        "BHD": "Bahraini dinar",
+        "OMR": "Omani rial",
+        "USD": "US dollar",
+        "EUR": "Euro",
+        "GBP": "British pound"
+      }
     }
   },
   "planUsage": {
@@ -2728,7 +2766,11 @@
         "idLabel": "Pixel ID",
         "placeholder": "123456789012345",
         "hint": "15 or 16 digits, from Meta Events Manager › Data sources.",
-        "invalid": "A Pixel ID is 15 or 16 digits."
+        "invalid": "A Pixel ID is 15 or 16 digits.",
+        "vendor": "Meta",
+        "step1": "Open <b>Meta Events Manager</b>",
+        "step2": "Pick your pixel under <b>Data sources</b>",
+        "step3": "Copy the <b>Pixel ID</b> and paste it below"
       },
       "google_analytics": {
         "name": "Google Analytics 4",
@@ -2736,7 +2778,11 @@
         "idLabel": "Measurement ID",
         "placeholder": "G-XXXXXXXXXX",
         "hint": "Starts with G-. Find it in Admin › Data streams.",
-        "invalid": "A Measurement ID looks like G-XXXXXXXXXX."
+        "invalid": "A Measurement ID looks like G-XXXXXXXXXX.",
+        "vendor": "Google",
+        "step1": "Open <b>Admin › Data streams</b> in Google Analytics",
+        "step2": "Select your web stream",
+        "step3": "Copy the <b>Measurement ID</b>"
       },
       "google_tag_manager": {
         "name": "Google Tag Manager",
@@ -2744,28 +2790,76 @@
         "idLabel": "Container ID",
         "placeholder": "GTM-XXXXXXX",
         "hint": "Starts with GTM-. It's shown at the top of your container.",
-        "invalid": "A Container ID looks like GTM-XXXXXXX."
+        "invalid": "A Container ID looks like GTM-XXXXXXX.",
+        "vendor": "Google",
+        "step1": "Open your workspace in <b>Tag Manager</b>",
+        "step2": "Find the ID next to the container name",
+        "step3": "Copy the <b>Container ID</b>"
       },
       "meta_capi": {
         "name": "Meta Conversions API",
-        "description": "Send purchases to Meta from the server for more reliable tracking."
+        "description": "Send purchases to Meta from the server for more reliable tracking.",
+        "vendor": "Meta"
       },
       "tiktok_pixel": {
         "name": "TikTok Pixel",
-        "description": "Measure your TikTok ads."
+        "description": "Measure your TikTok ads.",
+        "vendor": "TikTok"
       },
       "snapchat_pixel": {
         "name": "Snapchat Pixel",
-        "description": "Measure your Snapchat ads."
+        "description": "Measure your Snapchat ads.",
+        "vendor": "Snap Inc."
       },
       "google_sheets": {
         "name": "Google Sheets",
-        "description": "Export your orders to a spreadsheet."
+        "description": "Export your orders to a spreadsheet.",
+        "vendor": "Google"
       },
       "shopify_import": {
         "name": "Shopify import",
-        "description": "Copy your products from a Shopify store."
+        "description": "Copy your products from a Shopify store.",
+        "vendor": "Shopify"
       }
+    },
+    "heroTitle": "Connect your tools",
+    "connectedCount": "apps connected",
+    "readOnlyBadge": "Read-only",
+    "tabs": {
+      "all": "All",
+      "connected": "Connected"
+    },
+    "groups": {
+      "tracking": "Tracking & ads",
+      "data": "Import & export"
+    },
+    "groupCount": "{count, plural, one {# app} other {# apps}}",
+    "find": "Find an app",
+    "kinds": {
+      "script": "Storefront script",
+      "server": "Server-side",
+      "import": "One-time import",
+      "account": "Google account"
+    },
+    "comingSoon": "Coming soon",
+    "imported": "Imported",
+    "import": "Import",
+    "view": "View",
+    "cancel": "Cancel",
+    "howTo": "How to connect",
+    "looksGood": "Looks good",
+    "connectedSince": "{state} · {date}",
+    "eventsDelay": "New events can take up to 20 minutes to show in {vendor}.",
+    "empty": {
+      "noneTitle": "Nothing connected yet",
+      "noneBody": "Connect Meta Pixel or Google Analytics to start measuring sales.",
+      "noMatchTitle": "No apps match",
+      "noMatchBody": "Try another name, or request the app below."
+    },
+    "request": {
+      "title": "Missing an app?",
+      "body": "Tell us what you use and we'll prioritise it.",
+      "cta": "Request an app"
     }
   },
   "storeWallet": {
@@ -3092,7 +3186,20 @@
       "chooseCoupon": "Choose a coupon…",
       "noCoupons": "You have no active coupons. Create one in Coupons.",
       "dateHint": "Shown in your visitors’ local time.",
-      "datePast": "This date has passed, so nothing is shown on your store."
+      "datePast": "This date has passed, so nothing is shown on your store.",
+      "advanced": "Advanced",
+      "advancedCount": "{count} options",
+      "openStyle": "Open the Style tab",
+      "video": {
+        "invalid": "We can't play this link. Use a YouTube, Vimeo, TikTok, Instagram or Facebook video, or an .mp4 file.",
+        "shortLink": "This is a short share link. Open it in your browser and copy the full address from the address bar.",
+        "found": "{site} video found",
+        "open": "Open the video",
+        "verticalHint": "This video is vertical: choose the 9:16 ratio in the Style tab.",
+        "instagramHint": "Instagram shows the post with its own player, so the player options don't apply."
+      },
+      "addChild": "Add {name}",
+      "addChildHint": "Drag rows in Layers to reorder them."
     },
     "save": {
       "saved": "Saved",
@@ -3287,7 +3394,16 @@
       },
       "selectedOnly": "Selected element only",
       "showAll": "Show all",
-      "customHint": "Add elements from the Add panel, then click any element on the page to edit it."
+      "customHint": "Add elements from the Add panel, then click any element on the page to edit it.",
+      "emptyTitle": "Nothing selected",
+      "path": "Where it sits",
+      "actions": {
+        "parent": "Select parent",
+        "duplicate": "Duplicate",
+        "show": "Show on this device",
+        "hide": "Hide on this device",
+        "delete": "Delete"
+      }
     },
     "style": {
       "size": "Size",
@@ -3368,7 +3484,8 @@
         "square": "1:1",
         "landscape": "4:3",
         "wide": "16:9",
-        "portrait": "3:4"
+        "portrait": "3:4",
+        "story": "9:16"
       },
       "fit": "Fit",
       "fits": {
@@ -3581,13 +3698,11 @@
     },
     "forms": {
       "title": "Forms",
-      "description": "Your store's forms. Messages go to your inbox.",
+      "description": "Your store's forms. Every submission is saved as a lead.",
       "refresh": "Refresh forms",
-      "new": "New",
-      "create": "Create a contact form",
       "search": "Search forms",
       "emptyTitle": "No forms yet",
-      "emptyText": "Create a contact form, then add it to this page.",
+      "emptyText": "Pick a ready-made form below to add one to this page.",
       "noMatch": "No forms match your search.",
       "fields": "{count, plural, one {# field} other {# fields}}",
       "submissions": "{count, plural, one {# message} other {# messages}}",
@@ -3600,7 +3715,15 @@
       "addFailed": "This page can't take more sections.",
       "createFailed": "The form couldn't be created. Try again.",
       "loadFailed": "Your forms couldn't be loaded. Try again.",
-      "hint": "Edit a form's fields on the Forms page; this list refreshes when you come back."
+      "hint": "Edit a form's fields on the Forms page; this list refreshes when you come back.",
+      "leads": "Leads",
+      "leadsHint": "Open the leads inbox (Website › Forms › Leads)",
+      "yourForms": "Your forms",
+      "templates": "Ready-made forms",
+      "templatesHint": "One click creates the form and adds it to this page.",
+      "useTemplate": "Create “{name}” and add it to the page",
+      "addedHint": "Submissions will appear in your leads inbox.",
+      "limitReached": "You've reached the maximum number of forms for this store."
     },
     "dnd": {
       "instructions": "To reorder a layer, focus its grip and press Space or Enter, move it with the arrow keys, then press Space or Enter to drop it or Escape to cancel. Elements, sections and photos are added with Enter or a click, or by dragging them onto the page.",
@@ -3678,6 +3801,18 @@
         "hideInstead": "Hide on {device} only",
         "expired": "You changed something since then. Use undo first."
       }
+    },
+    "agent": {
+      "title": "AI assistant",
+      "soon": "Soon",
+      "mentionTitle": "{name} in {context}: the assistant will edit this element",
+      "removeMention": "Remove the selected element from the message",
+      "inputLabel": "Message to the AI assistant",
+      "placeholder": "Describe a change, e.g. “make the title bigger”…",
+      "placeholderMention": "What should change in “{name}”?",
+      "hint": "Select an element to mention it.",
+      "send": "Send",
+      "comingSoon": "The AI assistant is coming soon."
     }
   },
   "websiteDesign": {
@@ -4047,7 +4182,7 @@
     "tabs": {
       "label": "Forms",
       "forms": "Forms",
-      "submissions": "Inbox"
+      "submissions": "Leads"
     },
     "status": {
       "active": "On",
@@ -4067,19 +4202,12 @@
       "select": "Dropdown",
       "checkbox": "Checkbox"
     },
-    "starter": {
-      "name": "Contact form",
-      "fullName": "Your name",
-      "phone": "Phone number",
-      "email": "Email",
-      "message": "Your message"
-    },
     "list": {
       "title": "Store forms",
       "description": "Forms customers fill in on your website. Messages arrive in your inbox.",
       "create": "New form",
       "emptyTitle": "No forms yet",
-      "emptyBody": "Create a contact form, then add it to a page with the \"Contact form\" section in the website editor.",
+      "emptyBody": "Start from a ready-made form, then add it to a page from the Forms tab in the website editor.",
       "meta": "{fields, plural, one {# field} other {# fields}} · {submissions, plural, one {# message} other {# messages}}",
       "lastSubmission": "last on {date}",
       "newCount": "{count} new",
@@ -4088,8 +4216,9 @@
       "delete": "Delete",
       "deleted": "Form deleted",
       "deleteTitle": "Delete \"{name}\"?",
-      "deleteDescription": "Its messages are deleted too, and any \"Contact form\" section using it disappears from your website.",
-      "placeHint": "To show a form, open the website editor and add a \"Contact form\" section."
+      "deleteDescription": "Its leads are deleted too, and any section showing this form stops showing it on your website.",
+      "placeHint": "To show a form, open the website editor and add it from the Forms tab (or the Form section under Contact).",
+      "templates": "Start from a ready-made form"
     },
     "editor": {
       "title": "Edit form",
@@ -4134,8 +4263,8 @@
       "errorInvalid": "Check the fields: every field needs a label and a valid field ID."
     },
     "inbox": {
-      "title": "Inbox",
-      "description": "Messages sent through your website forms. Only you can see them.",
+      "title": "Leads",
+      "description": "Everything visitors send through your website forms. Only you can see it.",
       "export": "Download CSV",
       "filterForm": "Form",
       "filterStatus": "Status",
@@ -4173,6 +4302,193 @@
       "limitReached": "You've reached the maximum number of forms for this store.",
       "rateLimited": "Too many changes in a short time. Wait a few minutes and try again.",
       "generic": "Something went wrong. Please try again."
+    },
+    "templates": {
+      "contact": {
+        "name": "Contact form",
+        "description": "Name, phone, email and a message. The everyday \"Contact us\" form.",
+        "submit": "Send message",
+        "success": "Thanks! We got your message and will reply soon.",
+        "fields": {
+          "name": "Your name",
+          "phone": "Phone number",
+          "email": "Email",
+          "message": "Your message"
+        }
+      },
+      "newsletter": {
+        "name": "Newsletter sign-up",
+        "description": "Collect emails for new arrivals and offers.",
+        "submit": "Subscribe",
+        "success": "You're on the list. Watch your inbox for our next offer.",
+        "fields": {
+          "email": "Email",
+          "name": "First name",
+          "consent": "I agree to receive emails about offers and new arrivals"
+        }
+      },
+      "callback": {
+        "name": "Call-back request",
+        "description": "Visitors leave their number and a good time to call.",
+        "submit": "Call me back",
+        "success": "Thanks! We'll call you at the time you picked.",
+        "fields": {
+          "name": "Your name",
+          "phone": "Phone number",
+          "best_time": "Best time to call",
+          "message": "What is it about?"
+        },
+        "options": {
+          "morning": "Morning",
+          "afternoon": "Afternoon",
+          "evening": "Evening"
+        }
+      },
+      "quote": {
+        "name": "Request a quote",
+        "description": "Product, quantity and city, for price requests and big orders.",
+        "submit": "Get a quote",
+        "success": "Thanks! We'll send you a price soon.",
+        "fields": {
+          "name": "Your name",
+          "phone": "Phone number",
+          "email": "Email",
+          "product": "Product or service",
+          "quantity": "Quantity",
+          "city": "City",
+          "message": "Details"
+        },
+        "placeholders": {
+          "product": "Product name or link"
+        }
+      },
+      "booking": {
+        "name": "Appointment booking",
+        "description": "A visit, call or video call on the day and time the visitor prefers.",
+        "submit": "Book now",
+        "success": "Thanks! We'll confirm your appointment shortly.",
+        "fields": {
+          "name": "Your name",
+          "phone": "Phone number",
+          "email": "Email",
+          "service": "Appointment type",
+          "preferred_date": "Preferred day",
+          "preferred_time": "Preferred time",
+          "message": "Notes"
+        },
+        "placeholders": {
+          "preferred_date": "e.g. Saturday 12 October"
+        },
+        "options": {
+          "visit": "Store visit",
+          "phone_call": "Phone call",
+          "video_call": "Video call",
+          "morning": "Morning",
+          "afternoon": "Afternoon",
+          "evening": "Evening"
+        }
+      },
+      "productQuestion": {
+        "name": "Product question",
+        "description": "Questions about a product, its size or when it's back in stock.",
+        "submit": "Send question",
+        "success": "Thanks! We'll answer your question soon.",
+        "fields": {
+          "name": "Your name",
+          "phone": "Phone number",
+          "product": "Product",
+          "message": "Your question"
+        },
+        "placeholders": {
+          "product": "Product name or link"
+        }
+      },
+      "wholesale": {
+        "name": "Wholesale inquiry",
+        "description": "Business buyers and resellers asking for bulk prices.",
+        "submit": "Send inquiry",
+        "success": "Thanks! Our team will contact you about wholesale prices.",
+        "fields": {
+          "company": "Business name",
+          "name": "Contact person",
+          "phone": "Phone number",
+          "email": "Email",
+          "city": "City",
+          "volume": "Expected monthly quantity",
+          "message": "What would you like to order?"
+        },
+        "options": {
+          "small": "Under 50 pieces",
+          "medium": "50–200 pieces",
+          "large": "Over 200 pieces"
+        }
+      },
+      "feedback": {
+        "name": "Customer feedback",
+        "description": "A quick rating and comments after an order.",
+        "submit": "Send feedback",
+        "success": "Thank you for your feedback!",
+        "fields": {
+          "name": "Your name",
+          "order_number": "Order number",
+          "rating": "How was your experience?",
+          "message": "Tell us more",
+          "contact_ok": "You can contact me about my feedback"
+        },
+        "placeholders": {
+          "order_number": "Optional"
+        },
+        "options": {
+          "excellent": "Excellent",
+          "good": "Good",
+          "okay": "Okay",
+          "poor": "Poor"
+        }
+      },
+      "returns": {
+        "name": "Return or exchange",
+        "description": "Order number, reason and details for a return or exchange.",
+        "submit": "Send request",
+        "success": "Thanks! We'll contact you about your request.",
+        "fields": {
+          "name": "Your name",
+          "phone": "Phone number",
+          "order_number": "Order number",
+          "request_type": "Request",
+          "reason": "Reason",
+          "message": "Details"
+        },
+        "placeholders": {
+          "order_number": "e.g. 10245"
+        },
+        "options": {
+          "return": "Return",
+          "exchange": "Exchange",
+          "size": "Wrong size",
+          "damaged": "Arrived damaged",
+          "different": "Different from the photos",
+          "changed_mind": "Changed my mind",
+          "other": "Something else"
+        }
+      },
+      "customOrder": {
+        "name": "Custom order",
+        "description": "Made-to-order and personalised requests with a budget and date.",
+        "submit": "Send request",
+        "success": "Thanks! We'll contact you to discuss your order.",
+        "fields": {
+          "name": "Your name",
+          "phone": "Phone number",
+          "email": "Email",
+          "message": "What would you like?",
+          "budget": "Budget",
+          "needed_by": "Needed by"
+        },
+        "placeholders": {
+          "message": "Describe the colours, size, text or anything else",
+          "needed_by": "e.g. end of the month"
+        }
+      }
     }
   },
   "websiteBlog": {
@@ -4307,7 +4623,8 @@
     "categories": {
       "label": "Categories",
       "all": "All",
-      "general": "General"
+      "general": "General",
+      "fashion": "Fashion"
     },
     "confirm": {
       "title": "Use {name}?",
@@ -4315,7 +4632,8 @@
       "keeps": "Text and images you changed in matching sections are kept.",
       "draft": "Your live store doesn't change until you publish.",
       "untouched": "Products, orders, settings, domains and your other stores aren't touched.",
-      "action": "Use template"
+      "action": "Use template",
+      "forms": "Its newsletter and contact forms are added to Website › Forms."
     },
     "undoConfirm": {
       "title": "Undo the template change?",
@@ -4332,6 +4650,16 @@
       "nothingToUndo": "There's no template change to undo.",
       "rateLimited": "Too many changes at once. Wait a moment and try again.",
       "generic": "Something went wrong. Try again."
+    },
+    "preview": {
+      "action": "Preview",
+      "open": "Preview {name}",
+      "pages": "Pages",
+      "desktop": "Desktop",
+      "mobile": "Phone",
+      "loading": "Loading the preview",
+      "failed": "The preview could not be loaded. Close it and try again.",
+      "demoNote": "Shown with demo products from {store}. Your store keeps its own products."
     }
   },
   "categoriesBrands": {

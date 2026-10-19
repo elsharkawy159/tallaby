@@ -28,6 +28,10 @@ export const SECTION_COPY = {
   pickForm: { ar: "اختر نموذجًا لعرضه هنا.", en: "Choose a form to show here." },
   emptyCustom: { ar: "قسم فارغ. أضف عناصر من لوحة الإضافة.", en: "Empty section. Add elements from the Add panel." },
   emptyContainer: { ar: "اسحب عناصر إلى هنا", en: "Drop elements here" },
+  videoEmpty: { ar: "الصق رابط الفيديو في تبويب المحتوى", en: "Paste a video link in the Content tab" },
+  emptyPlaylist: { ar: "لا توجد فيديوهات. كرّر فيديو أو أضف واحدًا من تبويب المحتوى.", en: "No videos yet. Add one from the Content tab." },
+  videoTitle: { ar: "فيديو", en: "Video" },
+  videoAutoplay: { ar: "تشغيل تلقائي", en: "Autoplay" },
   emptyAccordion: { ar: "اسحب «سؤال» من العناصر إلى هنا", en: "Drop an “Accordion item” from Elements here" },
   formSubmit: { ar: "إرسال", en: "Send" },
   formSuccess: { ar: "شكرًا لك! وصلتنا رسالتك وسنتواصل معك قريبًا.", en: "Thank you! We received your message and will get back to you soon." },
@@ -73,6 +77,7 @@ export const SECTION_COPY = {
   dataErrorRetry: { ar: "حاول مرة أخرى", en: "Try again" },
   dataLoading: { ar: "جارٍ تحميل بيانات متجرك…", en: "Loading your store data…" },
   addToCart: { ar: "أضف للسلة", en: "Add to cart" },
+  addToWishlist: { ar: "أضف للمفضلة", en: "Add to wishlist" },
   verifiedBuyer: { ar: "مشترٍ موثّق", en: "Verified buyer" },
   whatsappChat: { ar: "راسلنا على واتساب", en: "Chat on WhatsApp" },
 } as const satisfies Record<string, Localized>;

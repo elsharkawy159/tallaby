@@ -12,8 +12,8 @@ import { FullStore } from "./store-preview";
 
 type Radius = "0px" | "10px" | "20px";
 
-/** Live template preview with device, colour preset and corner controls. */
-export function TemplatePreview({ templateId }: { templateId: string }) {
+/** Live template preview with device, colour preset and corner controls. "Soon" previews have no signup CTA. */
+export function TemplatePreview({ templateId, available = true }: { templateId: string; available?: boolean }) {
   const t = useTranslations("templates.detail");
   const template = findTemplate(templateId)!;
   const [mobile, setMobile] = React.useState(false);
@@ -63,7 +63,11 @@ export function TemplatePreview({ templateId }: { templateId: string }) {
           ]}
         />
         <span className="hidden flex-1 sm:block" />
-        <SignupTrigger size="sm">{t("start")}</SignupTrigger>
+        {available ? (
+          <SignupTrigger size="sm">{t("start")}</SignupTrigger>
+        ) : (
+          <span className="rounded-full bg-amber-50 px-3.5 py-2 text-sm font-bold text-[#8a5300]">{t("soon")}</span>
+        )}
       </div>
       <div className="grid place-items-center rounded-b-2xl border border-neutral-200 bg-[#e9eeef] p-3.5 md:p-7">
         <div

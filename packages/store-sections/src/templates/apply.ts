@@ -99,12 +99,12 @@ export function mergeTemplateIntoDraft(current: DraftSite, template: SiteConfig,
   };
 }
 
-/** Section ids per page, for the templates gallery's outline preview. */
+/** Section ids per page (a tree section's design, `<design>@<version>`), for the templates gallery's outline preview. */
 export function templateOutline(template: SiteConfig) {
   return template.pages.map((page) => ({
     slug: page.slug,
     isHome: page.isHome,
     name: page.name,
-    sections: page.content.sections.map((section) => section.sectionId),
+    sections: page.content.sections.map((section) => section.source ?? section.sectionId),
   }));
 }

@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { cn } from "@workspace/ui/lib/utils";
 import { CtaButton } from "@/components/marketing/site/cta-button";
 import { useSignup } from "@/components/marketing/signup/signup-dialog.client";
+import { SlugBadge, useSlugCheck } from "@/components/marketing/signup/slug-check.client";
 import { prettyName, ROOT_DOMAIN, slugify } from "@/lib/marketing/site.lib";
 import { IMG } from "@/lib/marketing/templates.data";
 
@@ -67,6 +68,7 @@ export function HeroStory({ children }: { children?: React.ReactNode }) {
   const { openSignup } = useSignup();
   const [slug, setSlug] = React.useState("");
   const beat = useStoryBeat();
+  const [slugState] = useSlugCheck(slug);
 
   return (
     <>
@@ -102,13 +104,7 @@ export function HeroStory({ children }: { children?: React.ReactNode }) {
           )}
           <span className="font-medium text-neutral-500">.{ROOT_DOMAIN}</span>
         </label>
-        <span
-          aria-hidden
-          className="hidden items-center gap-[5px] rounded-full bg-success-soft px-2.5 py-1 font-latin text-[11px] font-bold whitespace-nowrap text-[#166534] sm:flex"
-        >
-          <Check className="size-[13px]" />
-          {t("available")}
-        </span>
+        <SlugBadge state={slugState} className="hidden px-2.5 py-1 text-[11px] sm:flex" />
         <CtaButton type="submit" className="h-[46px] w-full px-[22px] text-[15px] sm:w-auto">
           {t("claimLink")}
         </CtaButton>

@@ -145,7 +145,8 @@ export function TemplatePreviewDialog({
                     key={`${template.key}:${page.slug}`}
                     className="h-full"
                     store={host.store}
-                    catalog={host.catalog}
+                    // A store with no products yet sees the template with its demo store.
+                    catalog={host.catalog.products.length || !preview.demo ? host.catalog : { products: preview.demo.products, categories: preview.demo.categories }}
                     sections={page.sections}
                     header={preview.header}
                     footer={preview.footer}

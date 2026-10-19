@@ -52,7 +52,6 @@ function AddAddressButton({
   return (
     <AddressManagerDialog
       onSuccess={(address: AddressData) => {
-        console.log("Address added:", address);
         onSuccess();
       }}
       trigger={

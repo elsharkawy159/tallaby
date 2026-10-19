@@ -1,5 +1,6 @@
 /** Palette and layer icons for elements, presets and section groups (editor only). */
 import {
+  Heart,
   BadgeCheck,
   BookOpen,
   ChartNoAxesColumn,
@@ -22,6 +23,9 @@ import {
   Heading2,
   HelpCircle,
   Image as ImageIcon,
+  Youtube,
+  ListVideo,
+  MonitorPlay,
   LayoutGrid,
   LayoutTemplate,
   ShoppingCart,
@@ -69,6 +73,9 @@ export const ELEMENT_ICONS: Record<ElementType, LucideIcon> = {
   blockQuote: Quote,
   button: MousePointerClick,
   image: ImageIcon,
+  video: MonitorPlay,
+  videoPlaylist: ListVideo,
+  videoItem: Youtube,
   divider: Minus,
   spacer: Rows3,
   icon: Star,
@@ -82,6 +89,7 @@ export const ELEMENT_ICONS: Record<ElementType, LucideIcon> = {
   postList: Newspaper,
   storeForm: Mail,
   addToCart: ShoppingCart,
+  wishlistButton: Heart,
 };
 
 export const PRESET_ICONS: Record<string, LucideIcon> = {

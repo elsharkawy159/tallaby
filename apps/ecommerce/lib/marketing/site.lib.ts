@@ -15,8 +15,14 @@ const withSlash = (url: string) => (url.endsWith("/") ? url : `${url}/`);
 /** Seller dashboard (signup, login). */
 export const DASHBOARD_URL = withSlash(process.env.NEXT_PUBLIC_DASHBOARD_URL || "https://dashboard.tallaby.com/");
 
-/** Public origin of this site, for canonical URLs and the sitemap. */
-export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/$/, "");
+/**
+ * Public origin of this site, for canonical URLs and the sitemap. Falls back
+ * like robots.txt (lib/constants SITEMAP_BASE_URL) so a missing variable in
+ * production never publishes localhost canonicals.
+ */
+export const SITE_URL = (
+  process.env.NEXT_PUBLIC_SITE_URL || (process.env.NODE_ENV === "production" ? "https://www.tallaby.com" : "http://localhost:3000")
+).replace(/\/$/, "");
 
 export const LOGIN_URL = `${DASHBOARD_URL}login`;
 

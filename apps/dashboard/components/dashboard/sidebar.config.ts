@@ -101,7 +101,8 @@ export const SIDEBAR_CONFIG: NavEntry[] = [
     items: [
       { key: "walletBalance", href: "/wallet", status: "live" },
       { key: "accountStatements", href: "/financial", countKey: "financial", status: "live" },
-      { key: "reports", href: "/reports", status: "live" },
+      // Hidden until the page has content (owner, 2026-10-19).
+      // { key: "reports", href: "/reports", status: "live" },
     ],
   },
   { kind: "divider" },

@@ -1,14 +1,19 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
+import { buildTemplateForm, getFormTemplate } from "@workspace/lib/store-forms";
 import { applyStoreTemplate, getStoreTemplateConfig, undoStoreTemplate } from "@workspace/lib/store-sites/server";
 import { contentOverrideKeys, storeSectionRegistry } from "@workspace/store-sections/render";
+import { getCodeTemplate } from "@workspace/store-sections/templates";
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
 import { TEMPLATE_ERRORS, type TemplateActionResult, type TemplatePreviewView } from "./templates.dto";
 
 /**
- * Website › Templates actions (PLAN.md §8.1, P4-05). The store id is explicit
+ * Website › Templates actions (PLAN.md §8.1, P4-05). Applying also creates the
+ * ready-made forms the template uses (newsletter, contact) in the store's
+ * language, or reuses the store's forms of the same name. The store id is explicit
  * and re-checked with requireStore; the template is chosen by key and must be
  * active. Applying writes drafts only, so the storefront is not invalidated:
  * the live site changes on the next Publish.
@@ -17,6 +22,14 @@ import { TEMPLATE_ERRORS, type TemplateActionResult, type TemplatePreviewView } 
 const ALLOWED = storeSectionRegistry.allowedSections();
 const OVERRIDE_KEYS = contentOverrideKeys(storeSectionRegistry);
 const limiter = createRateLimiter({ limit: 20, windowMs: 10 * 60_000 });
+
+/** A ready-made form a template needs (Website › Forms templates), in the store's language. */
+async function templateFormInput(kind: string, locale: "ar" | "en") {
+  const template = getFormTemplate(kind);
+  if (!template) return undefined;
+  const t = await getTranslations({ locale, namespace: `storeForms.templates.${template.id}` });
+  return buildTemplateForm(template, (key) => t(key as never));
+}
 
 type Access = Awaited<ReturnType<typeof requireStore>>;
 
@@ -42,6 +55,7 @@ export async function applyTemplate(storeId: string, templateKey: string) {
     const result = await applyStoreTemplate(seller.sellerId, store.id, String(templateKey), seller.userId, {
       allowedSections: ALLOWED,
       overrideKeys: OVERRIDE_KEYS,
+      formInput: templateFormInput,
     });
     if (!result.success) return { success: false, error: TEMPLATE_ERRORS[result.error] ?? "generic" };
     return { success: true, data: { pagesUpdated: result.data.pagesUpdated, pagesCreated: result.data.pagesCreated } };
@@ -61,6 +75,8 @@ export async function templatePreview(storeId: string, templateKey: string): Pro
         header: config.header,
         footer: config.footer,
         pages: config.pages.map((page) => ({ slug: page.slug, isHome: page.isHome, name: page.name, sections: page.content.sections, content: page.content })),
+        // Code templates bring a demo store, so the preview looks like the template's kind of shop.
+        demo: getCodeTemplate(String(templateKey))?.demo ?? null,
       },
     };
   } catch (error) {

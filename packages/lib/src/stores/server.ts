@@ -33,6 +33,7 @@ import {
   type StorePayments,
 } from "../payments/store-methods";
 import { emptyHomeContent } from "@workspace/store-sections/templates";
+import { seedStarterSite } from "./starter-site.server";
 import { canCreateStore } from "../plans";
 import {
   MAX_ZONES_PER_STORE,
@@ -221,23 +222,45 @@ export async function checkStoreSubdomain(
 // Writes
 // ---------------------------------------------------------------------------
 
-/** Design system row + an empty home page, so the editor always has something to open. */
+/**
+ * Design system row + a home page, so the editor always has something to
+ * open. A store that has never been published starts from the default
+ * template (Tallaby Classic, as trees, owner 2026-10-19) in its drafts;
+ * anything else gets an empty home page.
+ */
 export async function ensureStoreSiteScaffold(q: Queryable, storeId: string): Promise<void> {
-  await q.insert(storeDesignSystems).values({ storeId }).onConflictDoNothing();
+  const [createdDesign] = await q.insert(storeDesignSystems).values({ storeId }).onConflictDoNothing().returning({ storeId: storeDesignSystems.storeId });
 
-  // Tallaby Classic was removed (owner, 2026-10-19): a store starts with an
-  // empty home page and no header/footer until the tree designs replace them.
   const [home] = await q
     .select({ id: storePages.id })
     .from(storePages)
     .where(and(eq(storePages.storeId, storeId), eq(storePages.isHome, true)))
     .limit(1);
-  if (!home) {
-    await q
-      .insert(storePages)
-      .values({ storeId, slug: "home", isHome: true, name: { ar: "الرئيسية", en: "Home" }, draftContent: emptyHomeContent() })
-      .onConflictDoNothing();
+  if (home) return;
+
+  const [store] = await q
+    .select({
+      id: stores.id,
+      sellerId: stores.sellerId,
+      name: stores.name,
+      defaultLocale: stores.defaultLocale,
+      status: stores.status,
+      publishedRevisionId: stores.publishedRevisionId,
+      sharedHeader: stores.sharedHeader,
+      sharedFooter: stores.sharedFooter,
+    })
+    .from(stores)
+    .where(eq(stores.id, storeId))
+    .limit(1);
+  if (store && store.status === "active" && !store.publishedRevisionId) {
+    // One transaction (a savepoint inside the caller's): never a claimed but empty home.
+    await q.transaction((tx) => seedStarterSite(tx, store, Boolean(createdDesign)));
+    return;
   }
+  await q
+    .insert(storePages)
+    .values({ storeId, slug: "home", isHome: true, name: { ar: "الرئيسية", en: "Home" }, draftContent: emptyHomeContent() })
+    .onConflictDoNothing();
 }
 
 export type CreateStoreError = "invalid_input" | "no_seller" | "limit_reached" | "taken" | StoreSubdomainStatus;
@@ -311,7 +334,7 @@ export async function updateStoreSettings(
   if (!store) return { success: false, error: "not_found" };
   if (store.status !== "active") return { success: false, error: "store_read_only" };
 
-  const { contact, currencyLabel, ...fields } = parsed.data;
+  const { contact, currency, currencyLabel, ...fields } = parsed.data;
   const locales = fields.supportedLocales ?? store.supportedLocales;
   const defaultLocale = fields.defaultLocale ?? store.defaultLocale;
   if (!locales.includes(defaultLocale)) return { success: false, error: "invalid_input" };
@@ -330,9 +353,10 @@ export async function updateStoreSettings(
       ...fields,
       ...(nextContact && { contact: nextContact }),
       // Other settings keys (payments, …) are kept.
-      ...(currencyLabel && {
-        settings: sql`jsonb_set(coalesce(${stores.settings}, '{}'::jsonb), '{currencyLabel}', to_jsonb(${currencyLabel}::text))`,
-      }),
+      ...(currency &&
+        currencyLabel && {
+          settings: sql`coalesce(${stores.settings}, '{}'::jsonb) || jsonb_build_object('currency', ${currency}::text, 'currencyLabel', ${currencyLabel}::text)`,
+        }),
       updatedAt: sql`now()`,
     })
     .where(and(ownStore(sellerId, storeId), eq(stores.status, "active")))

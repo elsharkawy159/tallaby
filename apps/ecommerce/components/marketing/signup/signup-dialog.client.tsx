@@ -10,8 +10,7 @@ import { Link } from "@/i18n/navigation";
 import { DASHBOARD_URL, LOGIN_URL, ROOT_DOMAIN, hasArabic, slugify } from "@/lib/marketing/site.lib";
 import { CtaButton } from "@/components/marketing/site/cta-button";
 import { createClient } from "@/supabase/client";
-import { checkSubdomainAvailability } from "./subdomain.server";
-import type { SubdomainAvailability } from "./subdomain.dto";
+import { useSlugCheck, type SlugState } from "./slug-check.client";
 import { signUpWithEmail, startGoogleSignup } from "./signup.server";
 import { EGYPT_MOBILE, type SignupErrorKey, type SignupResult } from "./signup.dto";
 
@@ -78,39 +77,11 @@ export function SignupProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-type SlugState =
-  | { kind: "idle" }
-  | { kind: "checking" }
-  | { kind: "local"; message: "tooShort" | "arabic" | "required" }
-  | { kind: "result"; result: SubdomainAvailability };
-
 type Step = { kind: "form" } | { kind: "confirm"; email: string } | { kind: "done"; subdomain: string };
 
 const inputBox =
   "flex h-12 items-center overflow-hidden rounded-[10px] border bg-white transition-[border-color,box-shadow] focus-within:border-teal-700 focus-within:ring-[3px] focus-within:ring-teal-700/12";
 const inputEl = "h-full min-w-0 flex-1 bg-transparent px-3.5 text-[15px] outline-none";
-
-function useSlugCheck(slug: string, initialSlug: string) {
-  const [state, setState] = React.useState<SlugState>({ kind: "idle" });
-  const requestId = React.useRef(0);
-
-  const run = React.useCallback((value: string) => {
-    const id = ++requestId.current;
-    if (!value) return setState({ kind: "idle" });
-    if (value.length < 3) return setState({ kind: "local", message: "tooShort" });
-    setState({ kind: "checking" });
-    checkSubdomainAvailability(value)
-      .then((result) => id === requestId.current && setState({ kind: "result", result }))
-      .catch(() => id === requestId.current && setState({ kind: "result", result: { status: "unknown", subdomain: value, suggestions: [] } }));
-  }, []);
-
-  React.useEffect(() => {
-    const timer = window.setTimeout(() => run(slug), slug === initialSlug ? 0 : 350);
-    return () => window.clearTimeout(timer);
-  }, [slug, initialSlug, run]);
-
-  return [state, setState] as const;
-}
 
 function SignupForm({ initialSlug, initialError }: { initialSlug: string; initialError: SignupErrorKey | null }) {
   const t = useTranslations("signup");

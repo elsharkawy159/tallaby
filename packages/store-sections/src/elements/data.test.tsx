@@ -101,6 +101,17 @@ describe("bindings", () => {
     const records = listRecords(node("categoryList", { categoryIds: ["c", "a", "zz"] }), ctx({ catalog: { products: {}, categories } }));
     expect(records.map((r) => r.record.id)).toEqual(["c", "a"]);
   });
+
+  it("skips the first records of a list with an offset (lead and rest designs)", () => {
+    const products = ["p1", "p2", "p3", "p4"].map((id) => ({ ...product, id }));
+    const rest = node("productList", { source: "featured", limit: 2, offset: 1 }, [], "rest");
+    expect(nodeCatalogQuery(rest)).toMatchObject({ limit: 3 });
+    expect(listRecords(rest, ctx({ catalog: { products: { rest: products }, categories: [] } })).map((r) => r.record.id)).toEqual(["p2", "p3"]);
+    const categories = ["a", "b", "c"].map((id) => ({ id, key: id, name: id, href: `/c/${id}`, image: null }));
+    const more = node("categoryList", { limit: 6, offset: 1 });
+    expect(nodeCatalogQuery(more)).toEqual({ kind: "categories", limit: 7 });
+    expect(listRecords(more, ctx({ catalog: { products: {}, categories } })).map((r) => r.record.id)).toEqual(["b", "c"]);
+  });
 });
 
 describe("nesting", () => {

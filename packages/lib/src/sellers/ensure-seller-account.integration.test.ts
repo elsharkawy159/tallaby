@@ -59,7 +59,8 @@ describe.skipIf(!TEST_DATABASE_URL)("ensureSellerAccount (integration)", () => {
     const stores = await db.select().from(s.stores).where(eq(s.stores.sellerId, u1));
     expect(stores).toEqual([expect.objectContaining({ isPrimary: true, subdomain: `su-${tag}-one`, status: "active" })]);
     const pages = await db.select().from(s.storePages).where(eq(s.storePages.storeId, stores[0]!.id));
-    expect(pages).toHaveLength(1);
+    // The new store starts from Tallaby Classic in its drafts.
+    expect(pages.map((p) => p.slug).sort()).toEqual(["about", "contact", "faq", "home", "privacy", "terms"]);
     const [user] = await db.select({ role: s.users.role }).from(s.users).where(eq(s.users.id, u1));
     expect(user!.role).toBe("seller");
   });

@@ -1,6 +1,6 @@
 "use client";
 
-import { Clapperboard, Megaphone, Share2, Sparkles, Star, type LucideIcon } from "lucide-react";
+import { Clapperboard, Megaphone, Share2, Sparkles, type LucideIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@workspace/ui/lib/utils";
 import { planColumns, type AdPackage, type AdPackageFeature } from "@/lib/ad-packages";
@@ -9,7 +9,6 @@ const FEATURE_ICONS: Record<AdPackageFeature, LucideIcon> = {
   video_social: Clapperboard,
   video_ai: Sparkles,
   platforms: Share2,
-  featured: Star,
   meta: Megaphone,
 };
 

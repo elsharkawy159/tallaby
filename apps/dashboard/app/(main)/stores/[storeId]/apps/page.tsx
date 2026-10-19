@@ -4,7 +4,7 @@ import { listStoreIntegrations } from "@workspace/lib/integrations/server";
 import { getAllCategories } from "@/actions/categories";
 import { loadStorePage } from "@/lib/stores/store-page.server";
 import { isGoogleSheetsConfigured } from "@/lib/integrations/google-oauth.server";
-import { StorePageHeader } from "@/components/stores/store-page-header";
+import { storeHostname } from "@workspace/lib/storefront";
 import { StoreApps } from "./apps.client";
 import type { AppCategoryOption } from "./apps.types";
 
@@ -29,10 +29,10 @@ export default async function StoreAppsPage({ params }: { params: Promise<{ stor
   const categories = tree.success ? categoryOptions((tree.data ?? []) as CategoryNode[], locale) : [];
 
   return (
-    <section className="mx-auto w-full max-w-4xl space-y-5 p-4 sm:p-6">
-      <StorePageHeader store={store} />
+    <section className="mx-auto w-full max-w-[1120px] px-3.5 pt-[22px] pb-20 sm:px-6 sm:pt-8 sm:pb-24">
       <StoreApps
         storeId={store.id}
+        store={{ name: store.name, logoUrl: store.logoUrl, hostname: storeHostname(store.subdomain) }}
         initial={integrations}
         readOnly={store.status !== "active"}
         googleSheetsEnabled={isGoogleSheetsConfigured()}

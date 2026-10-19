@@ -3155,3 +3155,23 @@ export const adminAuditLog = pgTable("admin_audit_log", {
 `),
 	index("admin_audit_log_created_idx").using("btree", table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
 ]);
+
+/** tallaby.com newsletter sign-ups (0072). Server-only: RLS on, no policies. Emails are stored lowercased. */
+export const newsletterSubscribers = pgTable("newsletter_subscribers", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	email: text().notNull(),
+	locale: text().default('ar').notNull(),
+	source: text().default('blog').notNull(),
+	/** 'subscribed' | 'unsubscribed' */
+	status: text().default('subscribed').notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	unsubscribedAt: timestamp("unsubscribed_at", { withTimezone: true, mode: 'string' }),
+}, (table) => [
+	uniqueIndex("newsletter_subscribers_email_key").using("btree", table.email.asc().nullsLast().op("text_ops")),
+	index("newsletter_subscribers_created_idx").using("btree", table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
+	check("newsletter_subscribers_email_check", sql`length(email) BETWEEN 3 AND 200 AND email = lower(email)`),
+	check("newsletter_subscribers_locale_check", sql`locale IN ('ar', 'en')`),
+	check("newsletter_subscribers_source_check", sql`source ~ '^[a-z][a-z_-]{1,31}$'`),
+	check("newsletter_subscribers_status_check", sql`status IN ('subscribed', 'unsubscribed')`),
+]);

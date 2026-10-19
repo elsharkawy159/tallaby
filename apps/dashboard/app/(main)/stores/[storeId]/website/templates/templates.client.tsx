@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Check, LayoutTemplate, LoaderCircle, Lock, Pencil, RotateCcw, Sparkles } from "lucide-react";
+import { Check, Eye, LayoutTemplate, LoaderCircle, Lock, Pencil, RotateCcw, Sparkles } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,24 +20,32 @@ import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import { BUTTON_CLASS, SMALL_BUTTON_CLASS } from "@/components/form/form-ui";
 import { cn } from "@/lib/utils";
+import { TemplateLiveThumbnail, TemplatePreview } from "./template-preview.client";
 import { applyTemplate, undoTemplate } from "./templates.server";
 import type { TemplateCardView, TemplateInstallView } from "./templates.dto";
 
 type Localized = { ar?: string; en?: string };
 
-/** Website › Templates gallery (PLAN.md §8.1, P4-05). Works with a single template too. */
+/**
+ * Website › Templates gallery (PLAN.md §8.1, P4-05). Works with a single
+ * template too. Each card shows the template's home page live, and Preview
+ * opens every page with the template's demo store (storefront templates).
+ */
 export function TemplateGallery({
   storeId,
   currentKey,
   templates,
   lastInstall,
   readOnly,
+  fontClassName,
 }: {
   storeId: string;
   currentKey: string;
   templates: TemplateCardView[];
   lastInstall: TemplateInstallView | null;
   readOnly: boolean;
+  /** Class names defining the store font variables (store-fonts.ts). */
+  fontClassName: string;
 }) {
   const t = useTranslations("websiteTemplates");
   const locale = useLocale() === "en" ? "en" : "ar";
@@ -45,6 +53,7 @@ export function TemplateGallery({
   const router = useRouter();
   const [category, setCategory] = useState<string>("all");
   const [confirming, setConfirming] = useState<TemplateCardView | null>(null);
+  const [previewing, setPreviewing] = useState<TemplateCardView | null>(null);
   const [confirmUndo, setConfirmUndo] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -137,7 +146,23 @@ export function TemplateGallery({
             const current = template.key === currentKey;
             return (
               <li key={template.key} className={cn("flex flex-col overflow-hidden rounded-2xl border bg-card", current && "border-primary")}>
-                <TemplateThumbnail template={template} text={text} />
+                <button
+                  type="button"
+                  className="block w-full text-start focus-visible:outline-2 focus-visible:outline-primary"
+                  onClick={() => setPreviewing(template)}
+                  aria-label={t("preview.open", { name: text(template.name) })}
+                >
+                  {template.thumbnailUrl ? (
+                    <TemplateThumbnail template={template} text={text} />
+                  ) : (
+                    <TemplateLiveThumbnail
+                      storeId={storeId}
+                      template={template}
+                      fontClassName={fontClassName}
+                      fallback={<TemplateThumbnail template={template} text={text} />}
+                    />
+                  )}
+                </button>
                 <div className="flex flex-1 flex-col gap-3 p-4">
                   <div className="flex flex-wrap items-center gap-2">
                     <h3 className="font-bold">{text(template.name)}</h3>
@@ -156,10 +181,21 @@ export function TemplateGallery({
                     )}
                   </div>
                   {text(template.description) && <p className="text-sm text-muted-foreground">{text(template.description)}</p>}
+                  {template.palette.length > 0 && (
+                    <div className="flex h-5 w-28 overflow-hidden rounded-md border" aria-hidden>
+                      {template.palette.map((color) => (
+                        <span key={color} className="flex-1" style={{ background: color }} />
+                      ))}
+                    </div>
+                  )}
                   <p className="text-xs text-muted-foreground">
                     {t("pagesCount", { count: template.pages.length })} · {t("version", { number: template.version })}
                   </p>
                   <div className="mt-auto flex flex-wrap justify-end gap-2">
+                    <Button type="button" variant="outline" className={BUTTON_CLASS} onClick={() => setPreviewing(template)}>
+                      <Eye />
+                      {t("preview.action")}
+                    </Button>
                     <Button
                       type="button"
                       variant={current ? "neutral" : "default"}
@@ -180,6 +216,20 @@ export function TemplateGallery({
 
       <p className="text-xs text-muted-foreground">{t("moreSoon")}</p>
 
+      <TemplatePreview
+        storeId={storeId}
+        template={previewing}
+        current={previewing?.key === currentKey}
+        disabled={readOnly || isPending || Boolean(previewing?.isPremium)}
+        uiLocale={locale}
+        fontClassName={fontClassName}
+        onUse={(template) => {
+          setPreviewing(null);
+          setConfirming(template);
+        }}
+        onOpenChange={(open) => !open && setPreviewing(null)}
+      />
+
       <AlertDialog open={confirming !== null} onOpenChange={(open) => !open && !isPending && setConfirming(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -190,6 +240,7 @@ export function TemplateGallery({
             <li>{t("confirm.keeps")}</li>
             <li>{t("confirm.draft")}</li>
             <li>{t("confirm.untouched")}</li>
+            {(confirming?.formKinds.length ?? 0) > 0 && <li>{t("confirm.forms")}</li>}
           </ul>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isPending}>{t("cancel")}</AlertDialogCancel>

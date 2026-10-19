@@ -56,6 +56,7 @@ import { FORM_SUBMIT_CLASS, FormFieldsView, formCopy } from "../sections/forms";
 import { ButtonLink, SmartLink, cn } from "../sections/_primitives";
 import { DATA_NODE_NEEDS, boundValue, isDataList, listRecords, nodeFormId, walkNodes, type DataRecord } from "./data";
 import { MAX_ELEMENT_DEPTH, PATTERN_VARIANTS, getElementDefinition, type ElementIconName, type PatternVariant } from "./registry";
+import { VideoElement, VideoPlaylist } from "./render-video";
 
 const ICONS: Record<ElementIconName, LucideIcon> = {
   star: Star,
@@ -299,6 +300,13 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
       // eslint-disable-next-line @next/next/no-img-element -- shared by both apps; no next/image here
       return <img {...attrs} src={url} alt={str(props.alt, 160)} className="block w-full" loading="lazy" decoding="async" />;
     }
+    case "video":
+      return <VideoElement attrs={attrs} props={props} ctx={ctx} />;
+    case "videoPlaylist":
+      return <VideoPlaylist attrs={attrs} node={node} ctx={ctx} />;
+    case "videoItem":
+      // Drawn by its playlist; on its own it has no player to play in.
+      return null;
     case "divider":
       return <hr {...attrs} className="border-(--sf-line)" />;
     case "spacer":
@@ -389,6 +397,27 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
           <span className={cn(FORM_SUBMIT_CLASS, "w-fit")}>{formCopy(form, ctx.locale).submitLabel}</span>
         </div>
       );
+    }
+    case "wishlistButton": {
+      if (scope?.kind === "productList") {
+        const button = ctx.renderWishlistButton?.(scope.record);
+        return button ? (
+          <div {...attrs} className="flex">
+            {button}
+          </div>
+        ) : null;
+      }
+      // Outside a product list there is no product: a still heart in the editor only.
+      return ctx.mode === "edit" ? (
+        <div {...attrs} className="flex">
+          <span
+            aria-label={sectionText("addToWishlist", ctx.locale)}
+            className="inline-flex size-9 items-center justify-center rounded-full border border-(--sf-line) bg-(--sf-paper) opacity-70"
+          >
+            <Heart className="size-4" aria-hidden />
+          </span>
+        </div>
+      ) : null;
     }
     case "addToCart": {
       if (scope?.kind === "productList") {

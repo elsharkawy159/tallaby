@@ -7,6 +7,7 @@ export const OPTIMIZED_IMAGE_HOSTS = [
   "sakwqwocbccpyrmwjowq.supabase.co", // production Supabase Storage
   "cxqjrwjianxskhzmrkla.supabase.co", // staging Supabase Storage
   "images.unsplash.com",
+  "images.pexels.com",
 ] as const;
 
 /** True when next/image can optimize `src` (relative paths count as local). */

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
-import { createPortal } from "react-dom";
+import { createPortal, flushSync } from "react-dom";
 import { useTranslations } from "next-intl";
 import { useDroppable } from "@dnd-kit/core";
 import { RefreshCw } from "lucide-react";
@@ -410,11 +410,13 @@ export function EditorCanvas({
     doc.documentElement.dir = ctx.dir;
   }, [doc, ctx.locale, ctx.dir]);
 
-  // Track outline boxes every frame (scrolling, resizing, content changes); state only changes when a box moves.
+  // Track outline boxes every frame (resizing, content changes); state only changes when a box moves.
+  // Scrolling re-measures in the scroll event and commits before the paint, so outlines stay glued
+  // to the content instead of trailing it a frame behind (which looked like a smooth glide).
   useEffect(() => {
     if (!doc) return;
     let raf = 0;
-    const tick = () => {
+    const measure = () => {
       const f = frame.current;
       const c = container.current;
       if (f && c) {
@@ -439,10 +441,19 @@ export function EditorCanvas({
             : { selected, hover: hovered, section, drag, frame: frameBox, handles },
         );
       }
+    };
+    const tick = () => {
+      measure();
       raf = requestAnimationFrame(tick);
     };
+    const onScroll = () => flushSync(measure);
     raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    // Capture: scrolling inside the page's own scroll areas moves outlines too.
+    doc.addEventListener("scroll", onScroll, { capture: true, passive: true });
+    return () => {
+      cancelAnimationFrame(raf);
+      doc.removeEventListener("scroll", onScroll, { capture: true });
+    };
   }, [doc, hover, toolbarSection, pressed, store]);
 
   // The section toolbar follows the hovered section. Leaving the frame keeps it a moment, so the pointer can reach it.

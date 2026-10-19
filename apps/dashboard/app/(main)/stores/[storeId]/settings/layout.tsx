@@ -13,7 +13,7 @@ export default async function StoreSettingsLayout({
   const store = await loadStorePage(storeId);
 
   return (
-    <section className="mx-auto w-full max-w-4xl space-y-5 p-4 sm:p-6">
+    <section className="w-full space-y-5 p-4 sm:p-6">
       <StorePageHeader store={store} />
       <StoreSettingsTabs storeId={store.id} />
       {children}

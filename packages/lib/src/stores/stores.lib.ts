@@ -3,7 +3,7 @@
  * P1-04). No database imports.
  */
 import { z } from "zod";
-import { CURRENCY_LABELS } from "../utils/formatPrice";
+import { CURRENCY_LABELS, STORE_CURRENCY_CODES, isCurrencyLabelFor } from "../utils/formatPrice";
 import { SOCIAL_PLATFORM_KEYS, SOCIAL_VALUE_MAX, normalizeSocialLink } from "@workspace/store-sections/social";
 import { SUBDOMAIN_MAX_LENGTH, normalizeSubdomain, validateSubdomain, type SubdomainProblem } from "../storefront";
 
@@ -83,7 +83,9 @@ export const storeGeneralSettingsSchema = z
     contact: storeContactSchema.optional(),
     defaultLocale: z.enum(STORE_LOCALES).optional(),
     supportedLocales: z.array(z.enum(STORE_LOCALES)).min(1).max(STORE_LOCALES.length).optional(),
-    /** How prices are labelled on this store's site (stores.settings.currencyLabel). */
+    /** The website currency (stores.settings.currency); display only, amounts are not converted. */
+    currency: z.enum(STORE_CURRENCY_CODES).optional(),
+    /** How prices are labelled on this store's site (stores.settings.currencyLabel); one of the currency's symbols. */
     currencyLabel: z.enum(CURRENCY_LABELS).optional(),
     // The catalog mode is set with its product selection (storeCatalogInputSchema).
   })
@@ -91,7 +93,12 @@ export const storeGeneralSettingsSchema = z
   .refine(
     (s) => !s.defaultLocale || !s.supportedLocales || s.supportedLocales.includes(s.defaultLocale),
     { message: "default_locale_not_supported", path: ["defaultLocale"] },
-  );
+  )
+  // Currency and label are saved together, and the label must belong to the currency.
+  .refine((s) => (!s.currency && !s.currencyLabel) || (s.currency && isCurrencyLabelFor(s.currency, s.currencyLabel)), {
+    message: "currency_label_mismatch",
+    path: ["currencyLabel"],
+  });
 export type StoreGeneralSettings = z.output<typeof storeGeneralSettingsSchema>;
 
 export const STORE_CATALOG_MODES = ["all", "selected"] as const;

@@ -152,10 +152,20 @@ export function createTreeBuilder(industry?: string) {
     categoryList: (children: NodeTemplate[], opts: ListOptions) => list("categoryList", children, opts),
     /** Published blog posts; `children` is the card repeated per post. */
     postList: (children: NodeTemplate[], opts: ListOptions) => list("postList", children, opts),
-    /** One of the store's forms, picked by the seller after inserting. */
-    storeForm: (opts?: NodeOptions) => make("storeForm", {}, { label: { ar: "النموذج", en: "Form" }, ...opts }),
+    /**
+     * One of the store's forms, picked by the seller after inserting. In a
+     * template, `formTemplate` names the ready-made form (`contact`,
+     * `newsletter`…) that "Use template" creates and binds here.
+     */
+    storeForm: (opts?: NodeOptions & { formTemplate?: string }) => {
+      const { formTemplate, ...rest } = opts ?? {};
+      const node = make("storeForm", {}, { label: { ar: "النموذج", en: "Form" }, ...rest });
+      return formTemplate ? { ...node, props: { ...node.props, formTemplate } } : node;
+    },
     /** The cart button of the product a list card shows. */
     addToCart: (opts?: NodeOptions) => make("addToCart", {}, opts),
+    /** The wishlist heart of the product a list card shows. */
+    wishlistButton: (opts?: NodeOptions) => make("wishlistButton", {}, opts),
     card: (children: NodeTemplate[], opts?: NodeOptions) => make("card", {}, withDefaults("card", opts), children),
     box: (children: NodeTemplate[], opts?: NodeOptions) => make("div", {}, opts, children),
     pattern: (variant: PatternVariant, opts?: NodeOptions) => make("pattern", { variant }, opts),
@@ -170,6 +180,26 @@ export function createTreeBuilder(industry?: string) {
     photo: (index: number, alt: DesignText, opts?: NodeOptions) => image(stockPhoto(industry, index), alt, opts),
     /** Default photo of people (owner, team, packing). */
     person: (index: number, alt: DesignText, opts?: NodeOptions) => image(peoplePhoto(index), alt, opts),
+    /**
+     * A YouTube player (link set by the seller). `poster` is the default photo
+     * `index`, shown on the canvas until a link is pasted.
+     */
+    video: (poster: number, title: DesignText, opts?: NodeOptions) =>
+      make("video", { url: "", thumbnail: "auto", controls: true, poster: stockPhoto(industry, poster), title }, withDefaults("video", opts)),
+    /**
+     * A playlist: a player beside (or above) its list. Each video gets its
+     * link from the seller; `poster` is a default photo used as its thumbnail.
+     */
+    playlist: (
+      videos: { title: DesignText; duration?: DesignText; poster: number }[],
+      opts?: NodeOptions & { listPosition?: "end" | "start" | "below" },
+    ) =>
+      make(
+        "videoPlaylist",
+        { listPosition: opts?.listPosition ?? "end", controls: true },
+        withDefaults("videoPlaylist", opts),
+        videos.map((v) => make("videoItem", { url: "", title: v.title, duration: v.duration, poster: stockPhoto(industry, v.poster) })),
+      ),
     quote: (text: DesignText, opts?: NodeOptions) => make("blockQuote", { text }, opts),
     textLink: (text: DesignText, href: string, opts?: NodeOptions) => make("textLink", { text, href }, opts),
     link: (href: string, children: NodeTemplate[], opts?: NodeOptions) => make("linkBlock", { href }, withDefaults("linkBlock", opts), children),

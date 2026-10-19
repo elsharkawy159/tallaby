@@ -18,8 +18,13 @@ describe("store host routing (P5-01)", () => {
     expect(rewriteOf("/en/our-story/")).toContain("/en/storefront/sara/pages/our-story");
   });
 
-  it("keeps the old redirects for the catalog and deeper marketplace paths", () => {
-    expect(redirectOf("/products")).toMatch(/\/$/);
+  it("serves the catalog page at /products and /search (storefront templates)", () => {
+    expect(rewriteOf("/products")).toMatch(/\/ar\/storefront\/sara\/products(?:\?|$)/);
+    expect(rewriteOf("/products?category=dresses&sort=newest")).toContain("/ar/storefront/sara/products?category=dresses&sort=newest");
+    expect(rewriteOf("/en/search?q=coat")).toContain("/en/storefront/sara/products?q=coat");
+  });
+
+  it("keeps the old redirects for deeper marketplace paths", () => {
     expect(redirectOf("/categories/shoes/sale")).toContain("/categories/shoes/sale");
     expect(redirectOf("/products/a/b")).toContain("/products/a/b");
     expect(rewriteOf("/About")).toBeFalsy();

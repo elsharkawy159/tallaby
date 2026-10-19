@@ -7,21 +7,22 @@ import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@workspace/ui/lib/utils";
 import { Link } from "@/i18n/navigation";
 import { ChoiceGroup } from "@/components/marketing/site/choice-group.client";
-import { BLOG_CATEGORIES, BLOG_POSTS, type BlogCategory, type BlogPost } from "@/lib/marketing/blog.data";
+import { BLOG_CATEGORIES, type BlogCategory, type MarketingPost } from "@/lib/marketing/blog.data";
+import { isOptimizableImage } from "@/lib/marketing/blog.lib";
 import { PostMeta } from "./post-meta";
 
 /** Category chips, search and the post grid (everything after the featured post). */
-export function BlogIndex() {
+export function BlogIndex({ posts: all }: { posts: MarketingPost[] }) {
   const t = useTranslations("blog");
   const locale = useLocale();
   const [category, setCategory] = React.useState<BlogCategory>("all");
   const [query, setQuery] = React.useState("");
 
   const q = query.trim().toLowerCase();
-  const posts = BLOG_POSTS.slice(1).filter((p) => {
+  const posts = all.filter((p) => {
     if (category !== "all" && p.category !== category) return false;
     if (!q) return true;
-    return `${t(`posts.${p.id}.title`)} ${t(`posts.${p.id}.excerpt`)}`.toLowerCase().includes(q);
+    return `${p.title} ${p.excerpt}`.toLowerCase().includes(q);
   });
   const browsing = category === "all" && !q;
 
@@ -58,23 +59,22 @@ export function BlogIndex() {
   );
 }
 
-function PostCard({ post, locale, wide }: { post: BlogPost; locale: string; wide?: boolean }) {
-  const t = useTranslations("blog");
+function PostCard({ post, locale, wide }: { post: MarketingPost; locale: string; wide?: boolean }) {
   return (
     <Link
       href={`/blog/${post.id}`}
       className={cn("group flex flex-col gap-3 text-inherit hover:no-underline", wide && "sm:col-span-2 sm:grid sm:grid-cols-[1.1fr_1fr] sm:items-center sm:gap-6")}
     >
       <div className="relative aspect-[16/10] overflow-hidden rounded-2xl">
-        <Image src={post.image} alt="" fill sizes="(min-width: 1024px) 400px, 100vw" className="object-cover" />
+        <Image src={post.image} alt="" fill sizes="(min-width: 1024px) 400px, 100vw" unoptimized={!isOptimizableImage(post.image)} className="object-cover" />
         <span className="absolute inset-0 bg-teal-900 opacity-0 transition-opacity duration-200 group-hover:opacity-15" />
       </div>
       <div className="grid gap-2.5">
         <PostMeta post={post} locale={locale} />
         <h3 className="text-xl leading-[1.4] font-bold text-teal-900 transition-colors group-hover:text-teal-700 en:leading-[1.25] en:tracking-[-0.01em]">
-          {t(`posts.${post.id}.title`)}
+          {post.title}
         </h3>
-        <p className="text-[15px] text-slate-ink">{t(`posts.${post.id}.excerpt`)}</p>
+        <p className="text-[15px] text-slate-ink">{post.excerpt}</p>
       </div>
     </Link>
   );

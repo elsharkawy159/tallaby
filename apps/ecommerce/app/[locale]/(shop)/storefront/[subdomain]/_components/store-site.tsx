@@ -22,6 +22,7 @@ import { resolveStoreCatalog, type ResolvedCatalog } from "@/lib/store-site/cata
 import { catalogStoreId, type Storefront } from "@/lib/storefront.server";
 import { CartSheet } from "./cart-sheet.client";
 import { StoreForm } from "./store-form.client";
+import { StoreWishlistButton } from "./store-wishlist-button.client";
 import { storefrontFont } from "./storefront-font";
 
 /**
@@ -97,6 +98,7 @@ async function buildContext(
     renderCartButton: () => <CartSheet storeName={store.displayName} fontClassName={storefrontFont.variable} />,
     renderAddToCart: (product) =>
       catalog.withVariants.has(product.id) ? null : <AddToCartButton productId={product.id} size="sm" stock={product.inStock ? 1 : 0} />,
+    renderWishlistButton: (product) => <StoreWishlistButton productId={product.id} />,
     forms,
     renderForm: (form, instanceId) => <StoreForm form={form} instanceId={instanceId} />,
   };

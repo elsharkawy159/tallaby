@@ -205,7 +205,6 @@ export function UserMenu({
 
             <AddressManagerDialog
               onSuccess={(address: AddressData) => {
-                console.log("Address saved:", address);
               }}
               trigger={
                 <div className="w-full justify-start h-9 px-3 gap-2.5 font-medium flex items-center hover:bg-gray-100 rounded-md cursor-pointer">

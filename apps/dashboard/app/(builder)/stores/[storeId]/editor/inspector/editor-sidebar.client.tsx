@@ -1,12 +1,15 @@
 "use client";
 
+import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { MousePointerClick } from "lucide-react";
+import { MousePointerClick, Paintbrush, PenLine } from "lucide-react";
 import { useStore } from "zustand";
 import type { ComponentNode } from "@workspace/store-sections";
-import { storeSectionRegistry, updateNode } from "@workspace/store-sections/render";
+import { getElementDefinition, storeSectionRegistry, updateNode } from "@workspace/store-sections/render";
 import { cn } from "@workspace/ui/lib/utils";
-import { styleTargetOf } from "../lib/editor-commands.lib";
+import { styleTargetOf, type EditorCommands } from "../lib/editor-commands.lib";
+import { AgentDock } from "./agent-dock.client";
+import { SidebarHeader } from "./sidebar-header.client";
 import { ElementInspector, SectionInspector } from "./editor-inspector.client";
 import { getInstance, getNode, partField, refOf, selectionLabel, withTree } from "../lib/editor-selection.lib";
 import { clearDeviceOverrides, clearStyle, setStyle, styleKindOf } from "../lib/editor-style.lib";
@@ -18,8 +21,9 @@ import { readShell, setShell } from "../lib/editor-library.lib";
 type Catalog = { products: EditorProduct[]; categories: EditorCategory[]; forms: EditorForm[] };
 
 /**
- * Right sidebar (P4B-03): what is selected, then Content | Style. Content is
- * the section's fields (or only the clicked part's field), or the element's
+ * Right sidebar (P4B-03): what is selected (path and quick actions), then
+ * Content | Style, and the AI assistant input at the foot. Content is the
+ * section's fields (or only the clicked part's field), or the element's
  * fields; Style edits the device shown in the top bar.
  */
 export function EditorSidebar({
@@ -28,8 +32,10 @@ export function EditorSidebar({
   readOnly,
   catalog,
   uiLocale,
+  commands,
 }: {
   store: EditorStore;
+  commands: EditorCommands;
   storeId: string;
   readOnly: boolean;
   catalog: Catalog;
@@ -44,7 +50,9 @@ export function EditorSidebar({
   const locale = useStore(store, (s) => s.locale);
   const defaultLocale = useStore(store, (s) => s.defaultLocale);
   const device = useStore(store, (s) => s.device);
-  const tab = useStore(store, (s) => s.inspectorTab);
+  const preferredTab = useStore(store, (s) => s.inspectorTab);
+  // The style-only element the seller still chose Content for.
+  const [contentFor, setContentFor] = useState<string | null>(null);
   const focusSelected = useStore(store, (s) => s.focusSelected);
   const page = pages.find((p) => p.id === activePageId) ?? pages[0]!;
 
@@ -54,9 +62,15 @@ export function EditorSidebar({
 
   if (!selection || !instance || !definition || !info) {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-2 p-6 text-center">
-        <MousePointerClick className="size-8 text-muted-foreground/60" aria-hidden />
-        <p className="text-sm text-muted-foreground">{t("empty")}</p>
+      <div className="flex h-full min-h-0 flex-col">
+        <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2 p-6 text-center">
+          <span className="grid size-12 place-items-center rounded-full bg-muted">
+            <MousePointerClick className="size-5 text-muted-foreground" aria-hidden />
+          </span>
+          <p className="text-sm font-medium">{t("emptyTitle")}</p>
+          <p className="max-w-56 text-xs text-muted-foreground">{t("empty")}</p>
+        </div>
+        <AgentDock store={store} uiLocale={uiLocale} />
       </div>
     );
   }
@@ -67,6 +81,13 @@ export function EditorSidebar({
   const target = styleTargetOf(selection);
   const kind = styleKindOf(target, { nodeType: node?.type, fieldType: field?.type, partKey: selection.part?.split(".").pop() });
   const selectionKey = `${instance.id}:${selection.nodeId ?? selection.part ?? ""}`;
+  // An element with nothing to fill in (spacer, divider, box…) opens on Style, without changing the tab others open on.
+  const styleOnly = Boolean(node) && getElementDefinition(node!.type)?.fields.length === 0;
+  const tab = styleOnly && contentFor !== selectionKey ? "style" : preferredTab;
+  const openTab = (key: "content" | "style") => {
+    setContentFor(styleOnly && key === "content" ? selectionKey : null);
+    if (!styleOnly || key === "content") state.setInspectorTab(key);
+  };
   const state = store.getState();
 
   const editNode = (next: ComponentNode) =>
@@ -74,24 +95,36 @@ export function EditorSidebar({
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="border-b px-4 py-3">
-        <p className="text-[11px] font-semibold uppercase tracking-wide text-primary">{t(info.kind)}</p>
-        <h2 className="truncate font-semibold">{info.title}</h2>
-        {info.detail && <p className="truncate text-xs text-muted-foreground">{info.detail}</p>}
-      </div>
+      <SidebarHeader
+        store={store}
+        commands={commands}
+        instance={instance}
+        selection={selection}
+        info={info}
+        uiLocale={uiLocale}
+        readOnly={readOnly}
+        device={device}
+      />
       <div role="tablist" className="mx-4 mt-3 grid grid-cols-2 rounded-lg bg-muted p-1">
-        {(["content", "style"] as const).map((key) => (
-          <button
-            key={key}
-            type="button"
-            role="tab"
-            aria-selected={tab === key}
-            onClick={() => state.setInspectorTab(key)}
-            className={cn("rounded-md py-1.5 text-sm font-medium transition-colors", tab === key ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground")}
-          >
-            {t(`tabs.${key}`)}
-          </button>
-        ))}
+        {(["content", "style"] as const).map((key) => {
+          const TabIcon = key === "content" ? PenLine : Paintbrush;
+          return (
+            <button
+              key={key}
+              type="button"
+              role="tab"
+              aria-selected={tab === key}
+              onClick={() => openTab(key)}
+              className={cn(
+                "inline-flex items-center justify-center gap-1.5 rounded-md py-1.5 text-sm font-medium transition-colors",
+                tab === key ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <TabIcon className="size-3.5" aria-hidden />
+              {t(`tabs.${key}`)}
+            </button>
+          );
+        })}
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto p-4">
@@ -107,6 +140,7 @@ export function EditorSidebar({
               catalog={catalog}
               storeId={storeId}
               readOnly={readOnly}
+              onOpenStyle={() => state.setInspectorTab("style")}
             />
           ) : (
             <div className="space-y-4">
@@ -175,6 +209,7 @@ export function EditorSidebar({
           />
         )}
       </div>
+      <AgentDock store={store} uiLocale={uiLocale} />
     </div>
   );
 }

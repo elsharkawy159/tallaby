@@ -13,6 +13,8 @@ const card = (key: string, pages: [slug: string, isHome?: boolean][], extra: Par
   thumbnailUrl: null,
   isDefault: false,
   isPremium: false,
+  palette: [],
+  formKinds: [],
   version: 1,
   pages: pages.map(([slug, isHome = false]) => ({ slug, isHome, name: slug, sections: [] })),
   ...extra,

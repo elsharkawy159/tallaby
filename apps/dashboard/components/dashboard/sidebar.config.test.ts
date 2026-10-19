@@ -56,14 +56,17 @@ describe("SIDEBAR_CONFIG", () => {
 
   it("keeps every existing page reachable", () => {
     const hrefs = allLinks(resolveSidebar(SIDEBAR_CONFIG, { storeId: STORE, features: {} })).map((l) => l.href);
-    for (const href of ["/", "/orders", "/orders/delivery", "/orders/riders", "/products", "/products/add", "/products/categories", "/products/brands", "/reviews", "/coupons", "/marketing", "/wallet", "/financial", "/reports", "/stores", "/settings", "/settings/plan", "/settings/fulfillment", "/help"]) {
+    for (const href of ["/", "/orders", "/orders/delivery", "/orders/riders", "/products", "/products/add", "/products/categories", "/products/brands", "/reviews", "/coupons", "/marketing", "/wallet", "/financial", "/stores", "/settings", "/settings/plan", "/settings/fulfillment", "/help"]) {
       expect(hrefs, href).toContain(href);
     }
   });
 
   it("puts every store-scoped page in the sidebar once a store exists", () => {
     const linked = new Set(allLinks(SIDEBAR_CONFIG).map((l) => l.href));
+    // /reports is hidden from the sidebar until the page has content.
+    const hidden = new Set(["/reports"]);
     for (const route of DASHBOARD_ROUTES) {
+      if (hidden.has(route.href)) continue;
       expect(linked.has(route.href), route.href).toBe(true);
     }
   });

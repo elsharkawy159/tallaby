@@ -9,6 +9,12 @@
  * before go into `template_installs.previous_draft` (0064), so
  * `undoStoreTemplate` puts back exactly that.
  *
+ * Before the merge the template is fitted to the store (`prepareTemplateForStore`):
+ * its ready-made forms (newsletter, contact…) are found by name or created in
+ * the store and bound, the store's name goes into the header and footer, and
+ * an English-default store gets English first. Forms created this way stay
+ * when the install is undone (they are ordinary store forms).
+ *
  * Every function takes the session's sellerId and checks store ownership.
  */
 import { z } from "zod";
@@ -23,6 +29,7 @@ import {
   sellers,
   sql,
   storeDesignSystems,
+  storeForms,
   storePages,
   stores,
   templateInstalls,
@@ -32,10 +39,13 @@ import {
 import {
   MAX_PAGES,
   designSystemSchema,
+  getCodeTemplate,
   mergeTemplateIntoDraft,
   pageContentSchema,
+  prepareTemplateForStore,
   sectionInstanceSchema,
   siteConfigSchema,
+  templateFormNeeds,
   templateOutline,
   validateSiteConfig,
   type OverrideKeys,
@@ -43,6 +53,8 @@ import {
   type SectionInstance,
   type SiteConfig,
 } from "@workspace/store-sections";
+import { createStoreForm } from "../store-forms/server";
+import type { FormInput } from "../store-forms/store-forms.lib";
 import { ensureStoreSiteScaffold } from "../stores/server";
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -58,6 +70,12 @@ export type TemplateOptions = {
   allowedSections?: Readonly<Record<string, number>>;
   /** Seller-content prop keys per section, from contentOverrideKeys(storeSectionRegistry). */
   overrideKeys?: OverrideKeys;
+  /**
+   * Builds a ready-made form the template needs (`newsletter`, `contact`…)
+   * in the store's default language. A kind it returns nothing for leaves its
+   * form section unset (hidden on the storefront until the seller picks one).
+   */
+  formInput?: (kind: string, locale: "ar" | "en") => FormInput | undefined | Promise<FormInput | undefined>;
 };
 
 class TemplateError extends Error {
@@ -80,6 +98,7 @@ async function ownStore(q: Queryable, sellerId: string, storeId: string, lock = 
   const query = q
     .select({
       id: stores.id,
+      name: stores.name,
       status: stores.status,
       templateKey: stores.templateKey,
       previousTemplateKey: stores.previousTemplateKey,
@@ -267,6 +286,10 @@ export async function applyStoreTemplate(
       if (!config.success) throw new TemplateError("invalid_template");
 
       await ensureStoreSiteScaffold(tx, storeId);
+      const locale = store.defaultLocale === "en" ? "en" : "ar";
+      const formIds = await ensureTemplateForms(tx, sellerId, storeId, templateFormNeeds(config.data), (kind) => options.formInput?.(kind, locale));
+      const fitted = prepareTemplateForStore(config.data, { defaultLocale: locale, storeName: store.name, formIds });
+      const pageNames = getCodeTemplate(template.key)?.pageNames ?? {};
       const [ds] = await tx
         .select({ colors: storeDesignSystems.colors, typography: storeDesignSystems.typography, spacing: storeDesignSystems.spacing })
         .from(storeDesignSystems)
@@ -284,7 +307,7 @@ export async function applyStoreTemplate(
         footer: asInstance(store.sharedFooter),
         pages: pages.map((p) => ({ slug: p.slug, isHome: p.isHome, content: asContent(p.draftContent) })),
       };
-      const merged = mergeTemplateIntoDraft(current, config.data, options.overrideKeys ?? {});
+      const merged = mergeTemplateIntoDraft(current, fitted, options.overrideKeys ?? {});
 
       const created = merged.pages.filter((p) => p.targetSlug === null);
       if (pages.length + created.length > MAX_PAGES) throw new TemplateError("too_many_pages");
@@ -325,7 +348,7 @@ export async function applyStoreTemplate(
               storeId,
               slug: page.slug,
               isHome: false,
-              name: { [store.defaultLocale]: page.name },
+              name: pageNames[page.slug] ?? { [store.defaultLocale]: page.name },
               seo: page.seo,
               showInNav: page.showInNav,
               orderIndex: order,
@@ -358,6 +381,38 @@ export async function applyStoreTemplate(
     if (error instanceof TemplateError) return { success: false, error: error.code as ApplyTemplateError };
     throw error;
   }
+}
+
+/**
+ * This store's form of each needed kind: one with the same name if the store
+ * has it (a re-apply reuses it), else a new one. A kind with no input, or a
+ * store at its form limit, gets none. Runs inside the apply transaction.
+ */
+async function ensureTemplateForms(
+  tx: Tx,
+  sellerId: string,
+  storeId: string,
+  needs: readonly string[],
+  build: (kind: string) => FormInput | undefined | Promise<FormInput | undefined>,
+): Promise<Record<string, string>> {
+  const ids: Record<string, string> = {};
+  for (const kind of needs) {
+    const input = await build(kind);
+    if (!input) continue;
+    const [existing] = await tx
+      .select({ id: storeForms.id })
+      .from(storeForms)
+      .where(and(eq(storeForms.storeId, storeId), eq(storeForms.name, input.name)))
+      .orderBy(asc(storeForms.createdAt))
+      .limit(1);
+    if (existing) {
+      ids[kind] = existing.id;
+      continue;
+    }
+    const created = await createStoreForm(sellerId, storeId, input, tx);
+    if (created.success) ids[kind] = created.data.id;
+  }
+  return ids;
 }
 
 export type UndoTemplateError = "not_found" | "store_read_only" | "nothing_to_undo";

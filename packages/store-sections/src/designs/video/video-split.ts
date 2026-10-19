@@ -1,17 +1,16 @@
 /**
  * Video beside text (library V-b): eyebrow, title, paragraph, three tick
- * points and a button on the start side, and a portrait poster sized for
- * vertical phone videos on the end side.
+ * points and a button on the start side, and a portrait YouTube player sized
+ * for Shorts on the end side.
  */
 import { defineDesign } from "../builder";
 import { L } from "../_kit";
-import { playButton } from "./_video";
 
 const POINTS = [L("بدون أدوات", "No tools needed"), L("في أقل من دقيقة", "In under a minute"), L("يناسب كل الأحجام", "Fits every size")];
 
 export const videoSplit = defineDesign({
   id: "video-split",
-  version: 1,
+  version: 2,
   category: "video",
   subcategory: "with-text",
   name: L("فيديو ونص", "Video beside text"),
@@ -44,13 +43,12 @@ export const videoSplit = defineDesign({
                 ],
                 { label: L("النص", "Copy"), style: { gap: 14, alignItems: "start" } },
               ),
-              t.box(
-                [
-                  t.photo(1, L("غلاف الفيديو", "Video poster"), { role: "image", style: { aspectRatio: "portrait", objectFit: "cover", radius: 28 } }),
-                  playButton(t, 72),
-                ],
-                { label: L("المشغل", "Player"), style: { position: "relative", maxWidth: "420px", minHeight: 300 }, mobile: { order: -1 } },
-              ),
+              t.video(1, L("طريقة الاستخدام", "How to use it"), {
+                label: L("المشغل", "Player"),
+                role: "video",
+                style: { aspectRatio: "portrait", radius: 28, maxWidth: "420px" },
+                mobile: { order: -1 },
+              }),
             ],
             { label: L("التخطيط", "Layout"), columns: { desktop: 2, mobile: 1 }, style: { gap: 56, alignItems: "center" }, mobile: { gap: 24 } },
           ),

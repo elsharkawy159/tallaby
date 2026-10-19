@@ -10,6 +10,7 @@ import {
   setSubmissionStatus,
   updateStoreForm,
 } from "@workspace/lib/store-forms/server";
+import { buildTemplateForm, getFormTemplate } from "@workspace/lib/store-forms";
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
 import { INBOX_STATUSES, type FormsActionResult, type FormsErrorKey, type InboxFilter } from "./forms.dto";
@@ -52,6 +53,17 @@ export async function createForm(storeId: string, input: unknown): Promise<Forms
     console.error("[store-forms] create failed", error);
     return { success: false, error: "generic" };
   }
+}
+
+/**
+ * A ready-made form (Forms tab, Website › Forms) in the seller's language. The
+ * fields come from the template catalogue on the server, never from the client.
+ */
+export async function createFormFromTemplate(storeId: string, templateId: unknown): Promise<FormsActionResult<{ id: string }>> {
+  const template = getFormTemplate(templateId);
+  if (!template) return { success: false, error: "invalidInput" };
+  const t = await getTranslations(`storeForms.templates.${template.id}`);
+  return createForm(storeId, buildTemplateForm(template, (key) => t(key as never)));
 }
 
 export async function saveForm(storeId: string, formId: string, input: unknown): Promise<FormsActionResult> {

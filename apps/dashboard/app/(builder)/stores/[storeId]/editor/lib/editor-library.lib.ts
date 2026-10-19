@@ -6,9 +6,11 @@
  * props in the `layout`/`appearance` groups) and the section shell change, so
  * texts, images, items, product sources and picks survive a layout change.
  */
-import type { SectionInstance, SiteLocale } from "@workspace/store-sections";
+import type { ComponentNode, SectionInstance, SiteLocale } from "@workspace/store-sections";
 import {
+  getDesign,
   getPreset,
+  instantiateDesign,
   instantiatePreset,
   normalizeShell,
   storeSectionRegistry,
@@ -111,6 +113,35 @@ export function readShell(instance: SectionInstance): SectionShellStyle {
  */
 export function presetInstance(preset: SectionPreset, id: string, defaultLocale?: SiteLocale, industry?: string): SectionInstance | null {
   return instantiatePreset(preset, storeSectionRegistry, id, { defaultLocale, industry });
+}
+
+/** The design the Forms tab inserts (`designs/contact/contact-form.ts`). */
+export const FORM_SECTION_DESIGN = "contact-form";
+
+/**
+ * Forms tab: a form section bound to one of the store's forms, its title set
+ * to the form's name in every locale (the name is the seller's own text). Null
+ * when the design is missing.
+ */
+export function formSectionInstance(
+  form: { id: string; name: string },
+  id: string,
+  opts: { defaultLocale?: SiteLocale; industry?: string; makeId?: () => string } = {},
+): SectionInstance | null {
+  const design = getDesign(FORM_SECTION_DESIGN);
+  if (!design) return null;
+  const instance = instantiateDesign(design, { id, ...opts });
+  const title = form.name.trim().slice(0, 120);
+  const bind = (node: ComponentNode): ComponentNode => {
+    let props = node.props;
+    if (node.type === "storeForm") props = { ...props, formId: form.id };
+    else if (props.role === "title" && title) {
+      const { translations: _overlay, ...rest } = props;
+      props = { ...rest, text: title };
+    }
+    return { ...node, props, children: node.children.map(bind) };
+  };
+  return { ...instance, componentTree: instance.componentTree?.map(bind) };
 }
 
 /**

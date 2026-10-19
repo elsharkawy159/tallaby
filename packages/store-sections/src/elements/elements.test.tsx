@@ -74,6 +74,45 @@ describe("element renderer", () => {
     expect(html).toContain("<h1");
   });
 
+  it("plays YouTube from a privacy-enhanced embed, behind a thumbnail unless autoplay", () => {
+    const url = "https://youtu.be/dQw4w9WgXcQ";
+    const facade = render(custom([node("video", { url, title: "Demo" })]));
+    expect(facade).toContain("<iframe");
+    expect(facade).toContain("srcDoc=");
+    expect(facade).toContain("https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ");
+    expect(facade).toContain("i.ytimg.com/vi/dQw4w9WgXcQ");
+
+    const autoplay = render(custom([node("video", { url, autoplay: true })]));
+    expect(autoplay).not.toContain("srcDoc=");
+    expect(autoplay).toContain("autoplay=1&amp;mute=1");
+
+    // No link: nothing publicly; a still with a hint on the canvas (no player to swallow clicks).
+    expect(render(custom([node("video", { url: "https://vimeo.com/1" })]))).not.toContain("data-node-type=\"video\"");
+    const edit = render(custom([node("video", { url })]), { mode: "edit" });
+    expect(edit).toContain('data-node-type="video"');
+    expect(edit).not.toContain("<iframe");
+  });
+
+  it("plays a playlist row in the playlist's own frame", () => {
+    const item = (id: string, url: string, title: string): ComponentNode => ({ id, type: "videoItem" as ComponentNode["type"], props: { url, title }, children: [] });
+    const playlist: ComponentNode = {
+      id: "pl1",
+      type: "videoPlaylist" as ComponentNode["type"],
+      props: { listPosition: "end" },
+      children: [item("i1", "https://youtu.be/dQw4w9WgXcQ", "First"), item("i2", "https://www.tiktok.com/@s/video/7231338487075638570", "Second"), item("i3", "nope", "Broken")],
+    };
+    const html = render(custom([playlist]));
+    expect(html).toContain('name="vp-pl1"');
+    expect(html.match(/target="vp-pl1"/g)).toHaveLength(2);
+    expect(html).toContain("https://www.tiktok.com/player/v1/7231338487075638570?");
+    // A row without a playable link is left out publicly but stays selectable on the canvas.
+    expect(html).not.toContain("Broken");
+    const edit = render(custom([playlist]), { mode: "edit" });
+    expect(edit).toContain('data-node-id="i3"');
+    expect(edit).not.toContain("<iframe");
+    expect(edit).not.toContain("target=");
+  });
+
   it("draws nothing for unknown or non-palette types", () => {
     const html = render(custom([node("input", { value: "x" }), node("shadcn-dialog")]));
     expect(html).not.toContain("data-node-id");

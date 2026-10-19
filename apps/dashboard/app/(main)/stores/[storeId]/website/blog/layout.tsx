@@ -12,7 +12,7 @@ export default async function StoreBlogLayout({
   const store = await loadWebsiteStorePage(storeId);
 
   return (
-    <section className="mx-auto w-full max-w-5xl space-y-5 p-4 sm:p-6">
+    <section className="mx-auto w-full space-y-5 p-4 sm:p-6">
       <StorePageHeader store={store} />
       {children}
     </section>

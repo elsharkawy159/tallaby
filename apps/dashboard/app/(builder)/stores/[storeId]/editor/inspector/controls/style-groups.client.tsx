@@ -123,7 +123,7 @@ export function ContainerControls({ style, set, nodeType }: GroupProps & { nodeT
           />
         </ControlRow>
       )}
-      {(flex || nodeType === "grid") && (
+      {(flex || nodeType === "grid" || nodeType === "videoPlaylist") && (
         <>
           <ControlRow label={t("gap")} keys={["gap"]}>
             <NumberControl label={t("gap")} value={style.gap} min={0} max={200} onChange={(gap) => set({ gap })} />
@@ -169,7 +169,8 @@ export function ContainerControls({ style, set, nodeType }: GroupProps & { nodeT
   );
 }
 
-export function ImageControls({ style, set }: GroupProps) {
+/** `fit` is off for a video (the player always fills its box). */
+export function ImageControls({ style, set, fit = true }: GroupProps & { fit?: boolean }) {
   const t = useTranslations("storeEditor.style");
   return (
     <div className="space-y-2.5">
@@ -178,20 +179,22 @@ export function ImageControls({ style, set }: GroupProps) {
           label={t("ratio")}
           value={style.aspectRatio}
           onChange={(aspectRatio) => set({ aspectRatio })}
-          options={(["square", "landscape", "wide", "portrait"] as const).map((v) => ({ value: v, label: t(`ratios.${v}`) }))}
+          options={(["square", "landscape", "wide", "portrait", "story"] as const).map((v) => ({ value: v, label: t(`ratios.${v}`) }))}
         />
       </ControlRow>
-      <ControlRow label={t("fit")} keys={["objectFit"]}>
-        <Segmented
-          label={t("fit")}
-          value={style.objectFit}
-          onChange={(objectFit) => set({ objectFit })}
-          options={[
-            { value: "cover", label: t("fits.cover") },
-            { value: "contain", label: t("fits.contain") },
-          ]}
-        />
-      </ControlRow>
+      {fit && (
+        <ControlRow label={t("fit")} keys={["objectFit"]}>
+          <Segmented
+            label={t("fit")}
+            value={style.objectFit}
+            onChange={(objectFit) => set({ objectFit })}
+            options={[
+              { value: "cover", label: t("fits.cover") },
+              { value: "contain", label: t("fits.contain") },
+            ]}
+          />
+        </ControlRow>
+      )}
       <ControlRow label={t("radius")} keys={["radius"]}>
         <NumberControl label={t("radius")} value={style.radius} min={0} max={999} onChange={(radius) => set({ radius })} />
       </ControlRow>

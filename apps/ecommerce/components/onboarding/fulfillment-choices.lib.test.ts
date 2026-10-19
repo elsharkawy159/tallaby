@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   FULFILLMENT_SERVICE_TYPES,
+  TALLABY_FULFILLMENT_ENABLED,
   type FulfillmentPlanView,
   type FulfillmentServiceType,
 } from "@workspace/lib/fulfillment";
@@ -40,7 +41,17 @@ const fullCatalog = [
   plan(uuid(6), "returns", 10),
 ];
 
-describe("recommendedDefaults", () => {
+describe.skipIf(TALLABY_FULFILLMENT_ENABLED)("recommendedDefaults while Tallaby fulfillment is Soon", () => {
+  it("starts new sellers as seller-managed with Tallaby standard delivery", () => {
+    const values = recommendedDefaults(fullCatalog, onboardingDefaults);
+    expect(values.model).toBe("seller_managed");
+    expect(values.services.storage.provider).toBe("seller");
+    expect(values.services.delivery).toEqual({ provider: "tallaby", planId: uuid(4) });
+    expect(validateStep("model", values)).toEqual([]);
+  });
+});
+
+describe.runIf(TALLABY_FULFILLMENT_ENABLED)("recommendedDefaults", () => {
   it("preselects Tallaby fulfillment with the first plan of every service", () => {
     const values = recommendedDefaults(fullCatalog, onboardingDefaults);
     expect(values.model).toBe("tallaby_fulfillment");

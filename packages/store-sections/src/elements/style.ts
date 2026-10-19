@@ -42,7 +42,7 @@ const SHADOWS = {
   md: "0 4px 12px rgb(0 0 0 / 0.08)",
   lg: "0 12px 32px rgb(0 0 0 / 0.12)",
 } as const;
-const ASPECT_RATIOS = { auto: "auto", square: "1 / 1", landscape: "4 / 3", wide: "16 / 9", portrait: "3 / 4" } as const;
+const ASPECT_RATIOS = { auto: "auto", square: "1 / 1", landscape: "4 / 3", wide: "16 / 9", portrait: "3 / 4", story: "9 / 16" } as const;
 const ALIGN = { start: "flex-start", center: "center", end: "flex-end", stretch: "stretch" } as const;
 const JUSTIFY = { start: "flex-start", center: "center", end: "flex-end", between: "space-between", around: "space-around" } as const;
 
@@ -58,6 +58,11 @@ export const DISPLAY_SIZES = {
   "display-sm": "clamp(1.75rem,3vw,2.35rem)",
   "display-md": "clamp(2.2rem,5vw,3.25rem)",
   "display-lg": "clamp(2.5rem,6vw,3.75rem)",
+} as const;
+/** Design-system fonts by role (core/theme.ts sets the variables). */
+const FONT_FAMILIES = {
+  heading: "var(--sf-font-heading,var(--sf-font-body,var(--font-storefront))),system-ui,sans-serif",
+  body: "var(--sf-font-body,var(--font-storefront)),system-ui,sans-serif",
 } as const;
 const LETTER_SPACINGS = { tight: "-0.02em", normal: "0", wide: "0.06em", wider: "0.14em" } as const;
 /** Fixed gradients on theme tokens (`background-image`, over the background colour). */
@@ -111,6 +116,8 @@ export type StyleValues = {
   zIndex?: number;
   overflow?: "visible" | "hidden" | "clip";
   letterSpacing?: Enum<typeof LETTER_SPACINGS>;
+  /** The design system heading or body font (theme tokens only). */
+  fontFamily?: Enum<typeof FONT_FAMILIES>;
   textTransform?: "none" | "uppercase";
   gradient?: Enum<typeof GRADIENTS>;
   colSpan?: number;
@@ -183,6 +190,7 @@ const RULES: Record<StyleKey, Rule> = {
   zIndex: num(0, 10),
   overflow: oneOf(["visible", "hidden", "clip"]),
   letterSpacing: oneOf(LETTER_SPACINGS),
+  fontFamily: oneOf(FONT_FAMILIES),
   textTransform: oneOf(["none", "uppercase"]),
   gradient: oneOf(GRADIENTS),
   colSpan: num(1, 12),
@@ -307,6 +315,7 @@ export function styleDeclarations(style: StyleValues): string[] {
     add("font-size", style.fontSize in DISPLAY_SIZES ? DISPLAY_SIZES[style.fontSize as keyof typeof DISPLAY_SIZES] : `${FONT_SIZES[style.fontSize as keyof typeof FONT_SIZES]}rem`);
   }
   if (style.letterSpacing) add("letter-spacing", LETTER_SPACINGS[style.letterSpacing]);
+  if (style.fontFamily) add("font-family", FONT_FAMILIES[style.fontFamily]);
   if (style.textTransform) add("text-transform", style.textTransform);
   if (style.fontWeight) add("font-weight", String(FONT_WEIGHTS[style.fontWeight]));
   if (style.italic !== undefined) add("font-style", style.italic ? "italic" : "normal");

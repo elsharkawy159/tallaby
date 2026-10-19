@@ -1,11 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { Check, Lock } from "lucide-react";
+import { Lock } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@workspace/ui/lib/utils";
 import { CtaButton } from "@/components/marketing/site/cta-button";
 import { useSignup } from "@/components/marketing/signup/signup-dialog.client";
+import { SlugBadge, useSlugCheck } from "@/components/marketing/signup/slug-check.client";
 import { MiniStore } from "@/components/marketing/templates/store-preview";
 import { prettyName, ROOT_DOMAIN, slugify } from "@/lib/marketing/site.lib";
 import { TEMPLATES } from "@/lib/marketing/templates.data";
@@ -91,7 +92,7 @@ function useLinkDemo(userSlug: string) {
     return () => window.clearTimeout(timer);
   }, [userSlug]);
 
-  return { front, placeholder, available: Boolean(userSlug) || available };
+  return { front, placeholder, demoAvailable: available };
 }
 
 /** Big "yourbrand.tallaby.com [Claim]" bar with the template fan under it. */
@@ -99,7 +100,8 @@ export function HeroLinkClaim({ children }: { children?: React.ReactNode }) {
   const t = useTranslations("common");
   const { openSignup } = useSignup();
   const [slug, setSlug] = React.useState("");
-  const { front, placeholder, available } = useLinkDemo(slug);
+  const { front, placeholder, demoAvailable } = useLinkDemo(slug);
+  const [slugState] = useSlugCheck(slug);
 
   return (
     <>
@@ -135,16 +137,11 @@ export function HeroLinkClaim({ children }: { children?: React.ReactNode }) {
           )}
           <span className="font-medium text-neutral-500">.{ROOT_DOMAIN}</span>
         </label>
-        <span
-          aria-hidden
-          className={cn(
-            "hidden items-center gap-[5px] rounded-full bg-success-soft px-3 py-1.5 font-latin text-xs font-bold whitespace-nowrap text-[#166534] transition-[opacity,transform] duration-300 sm:flex",
-            !available && "scale-90 opacity-0",
-          )}
-        >
-          <Check className="size-[13px]" />
-          {t("available")}
-        </span>
+        <SlugBadge
+          state={slugState}
+          demo={slug ? undefined : demoAvailable}
+          className="hidden px-3 py-1.5 text-xs sm:flex"
+        />
         <CtaButton type="submit" className="h-[52px] w-full px-[30px] text-base sm:h-[60px] sm:w-auto">
           {t("claimLink")}
         </CtaButton>

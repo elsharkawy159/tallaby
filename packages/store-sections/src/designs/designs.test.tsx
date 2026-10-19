@@ -13,25 +13,26 @@ import { DESIGNS, STOCK_INDUSTRIES, getDesign, instantiateDesign } from ".";
 
 /** Designs this test expects to exist; each later design adds its id here. */
 const EXPECTED = [
-  ...["header-classic", "header-line", "header-centered", "header-announcement", "header-search", "header-pill"],
-  ...["hero-classic", "hero-ticket", "hero-poster", "hero-inline", "hero-product", "hero-collage"],
-  ...["categories-classic", "categories-tiles", "categories-stories", "categories-rail", "categories-bento", "categories-index"],
-  ...["products-classic", "products-grid", "products-rail", "products-feature", "products-shelf", "products-list"],
-  ...["promo-pair", "promo-ticker", "promo-deal", "promo-coupon", "promo-bento"],
-  ...["features-classic", "features-icon-cards", "features-checklist", "features-steps"],
-  ...["stats-classic", "stats-big-numbers", "stats-photo", "stats-progress", "stats-strip"],
-  ...["about-classic", "about-panel", "about-overlap", "about-rows", "about-values"],
-  ...["video-wide", "video-split", "video-cinema", "video-playlist", "video-reels"],
-  ...["gallery-feed", "gallery-mosaic", "gallery-polaroids", "gallery-strip"],
-  ...["brands-row", "brands-wall", "brands-tiles", "brands-press", "brands-featured"],
-  ...["testimonials-classic", "testimonials-spotlight", "testimonials-rating", "testimonials-wall", "testimonials-photos"],
-  ...["faq-classic", "faq-simple", "faq-side", "faq-cards", "faq-help"],
-  ...["blog-classic", "blog-lead", "blog-index", "blog-tiles", "blog-feature"],
-  ...["newsletter-classic", "newsletter-centered", "newsletter-photo", "newsletter-coupon"],
-  ...["contact-classic", "contact-visit", "contact-branches", "contact-whatsapp", "contact-strip"],
-  ...["text-policy", "text-centered", "text-callout", "text-columns", "text-quote"],
-  ...["page-header", "page-banner", "page-image", "page-subcategories", "page-promo"],
-  ...["footer-classic", "footer-line", "footer-wordmark", "footer-signup", "footer-centered"],
+  ...["header-classic", "header-line", "header-centered", "header-announcement", "header-search", "header-pill", "header-ruled", "header-chips", "header-brand-bar", "header-departments"],
+  ...["hero-classic", "hero-ticket", "hero-poster", "hero-inline", "hero-product", "hero-collage", "hero-bento", "hero-halves", "hero-big-word", "hero-search"],
+  ...["categories-classic", "categories-tiles", "categories-stories", "categories-rail", "categories-bento", "categories-index", "categories-ruled", "categories-chips", "categories-feature-list", "categories-big-type"],
+  ...["products-classic", "products-grid", "products-rail", "products-feature", "products-shelf", "products-list", "products-tabbed", "products-bento", "products-rows", "products-panel-rail"],
+  ...["promo-pair", "promo-ticker", "promo-deal", "promo-coupon", "promo-bento", "promo-twin", "promo-shipping", "promo-percent", "promo-tiers", "promo-sticker"],
+  ...["features-classic", "features-icon-cards", "features-checklist", "features-steps", "features-ruled", "features-bento", "features-side-title", "features-ticker", "features-compare", "features-orbit"],
+  ...["stats-classic", "stats-big-numbers", "stats-photo", "stats-progress", "stats-strip", "stats-ruled", "stats-band", "stats-sentence", "stats-rating", "stats-milestones"],
+  ...["about-classic", "about-panel", "about-overlap", "about-rows", "about-values", "about-list", "about-wide", "about-inset", "about-stories", "about-circle"],
+  ...["video-wide", "video-split", "video-cinema", "video-playlist", "video-reels", "video-vertical", "video-grid", "video-chapters", "video-film", "video-shop"],
+  ...["gallery-feed", "gallery-mosaic", "gallery-polaroids", "gallery-strip", "gallery-captioned", "gallery-slider", "gallery-prints", "gallery-bento", "gallery-side"],
+  ...["brands-row", "brands-wall", "brands-tiles", "brands-press", "brands-featured", "brands-ruled", "brands-cards", "brands-az", "brands-quotes", "brands-bubbles"],
+  ...["testimonials-classic", "testimonials-spotlight", "testimonials-rating", "testimonials-wall", "testimonials-photos", "testimonials-ruled", "testimonials-chat", "testimonials-bento", "testimonials-products", "testimonials-videos"],
+  ...["faq-classic", "faq-simple", "faq-side", "faq-cards", "faq-help", "faq-columns", "faq-panel", "faq-numbered", "faq-chat", "faq-topics"],
+  ...["blog-classic", "blog-lead", "blog-index", "blog-tiles", "blog-feature", "blog-dated", "blog-bento", "blog-rail", "blog-tabbed", "blog-headline"],
+  ...["newsletter-classic", "newsletter-centered", "newsletter-photo", "newsletter-coupon", "newsletter-ruled", "newsletter-big", "newsletter-interests", "newsletter-sticker", "newsletter-letter"],
+  ...["contact-classic", "contact-form", "contact-visit", "contact-branches", "contact-whatsapp", "contact-strip", "contact-hours", "contact-bento", "contact-big", "contact-router", "contact-team"],
+  ...["text-policy", "text-centered", "text-callout", "text-columns", "text-quote", "text-steps", "text-lead", "text-statement", "text-terms", "text-note"],
+  ...["page-header", "page-banner", "page-image", "page-subcategories", "page-promo", "page-toolbar", "page-brand", "page-split", "page-centered", "page-count"],
+  ...["product-perks"],
+  ...["footer-classic", "footer-line", "footer-wordmark", "footer-signup", "footer-centered", "footer-ruled", "footer-signoff", "footer-panel", "footer-help", "footer-links"],
 ];
 
 const ctx = (over: Partial<RenderContext> = {}): RenderContext => ({
@@ -158,7 +159,7 @@ describe("section designs", () => {
   const dataDesigns = DESIGNS.filter((d) => treeDataNeeds(instantiateDesign(d, { id: "d1" }).componentTree).length > 0);
 
   it("covers the store-data categories", () => {
-    expect(new Set(dataDesigns.map((d) => d.category))).toEqual(new Set(["products", "blog", "newsletter", "footers"]));
+    expect(new Set(dataDesigns.map((d) => d.category))).toEqual(new Set(["headers", "hero", "categories", "products", "promotions", "video", "blog", "newsletter", "contact", "page-header", "footers"]));
   });
 
   it.each(dataDesigns.map((d) => [d.id, d] as const))("%s draws real records, and nothing publicly without them", (_id, design) => {
@@ -166,7 +167,7 @@ describe("section designs", () => {
     const html = renderToStaticMarkup(<SectionRenderer instance={instance} registry={storeSectionRegistry} ctx={ctx(data)} />);
     if (design.category === "products") expect(html).toContain("سماعة لاسلكية");
     if (design.category === "blog") expect(html).toContain("إزاي تختار سماعة");
-    if (design.category === "newsletter" || design.id === "footer-signup") expect(html).toContain('type="email"');
+    if (design.category === "newsletter" || design.id === "footer-signup" || design.id === "contact-form") expect(html).toContain('type="email"');
     // The authored placeholders never reach shoppers once data is there.
     expect(html).not.toContain("اسم المنتج");
     expect(html).not.toContain("عنوان المقال");

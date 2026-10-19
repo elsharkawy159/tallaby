@@ -9,7 +9,7 @@
  */
 
 import { headers } from "next/headers";
-import { parseCurrencyLabel } from "@workspace/lib";
+import { parseStoreCurrency } from "@workspace/lib";
 import { unstable_cache } from "next/cache";
 import { notFound, redirect } from "next/navigation";
 import {
@@ -173,8 +173,8 @@ export function getStorefrontBySubdomain(subdomain: string) {
         storeCategoryAr: row.storeCategoryAr,
         /** Website › Domain & SEO (P4-14), re-validated field by field. */
         seo: parseStoreSeo(row.seo),
-        /** Store settings › General: "EGP" (default), "جنيهاً" or "ج.م". */
-        currencyLabel: parseCurrencyLabel((row.settings as Record<string, unknown> | null)?.currencyLabel),
+        /** Store settings › General: the label (symbol) of the store's website currency, "EGP" by default. */
+        currencyLabel: parseStoreCurrency(row.settings).label,
         governorate: normalizeGovernorate(state),
         /** The store's own domain once live (faster-eg.com), else null. */
         customDomain: domain?.domain ?? null,

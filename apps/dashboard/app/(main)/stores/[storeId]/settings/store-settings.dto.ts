@@ -1,4 +1,4 @@
-import type { CurrencyLabel } from "@workspace/lib";
+import type { CurrencyLabel, StoreCurrency } from "@workspace/lib";
 
 /** Error keys live under `storeSettings.errors`. */
 export type StoreSettingsErrorKey = "invalidInput" | "readOnly" | "notFound" | "generic";
@@ -18,6 +18,7 @@ export type StoreGeneralFormValues = {
   email: string;
   defaultLocale: "ar" | "en";
   supportedLocales: ("ar" | "en")[];
+  currency: StoreCurrency;
   currencyLabel: CurrencyLabel;
 };
 
@@ -37,6 +38,7 @@ export function toGeneralPatch(v: StoreGeneralFormValues, opts: { brand: boolean
     contact,
     defaultLocale: v.defaultLocale,
     supportedLocales: v.supportedLocales,
+    currency: v.currency,
     currencyLabel: v.currencyLabel,
   };
 }

@@ -15,7 +15,7 @@ import {
   FULFILLMENT_SERVICE_STATUSES,
   FULFILLMENT_SERVICE_TYPES,
 } from './constants'
-import { feeTypesForService } from './constants'
+import { TALLABY_FULFILLMENT_ENABLED, feeTypesForService } from './constants'
 import { getPlanPricingLabel } from './pricing'
 import { toFulfillmentPlanView, plansForService } from './plan-view'
 import {
@@ -112,7 +112,16 @@ describe('fulfillmentRequestSchema', () => {
     )
   })
 
-  it('requires Tallaby everywhere for the Tallaby fulfillment model', () => {
+  it.skipIf(TALLABY_FULFILLMENT_ENABLED)('rejects the Tallaby fulfillment model while it is "Soon"', () => {
+    const codes = issueCodes({
+      model: 'tallaby_fulfillment',
+      services: allTallaby,
+      details: { ...details, estimatedInventoryUnits: '101_500' },
+    })
+    expect(codes).toEqual(['model:tallaby_fulfillment_unavailable'])
+  })
+
+  it.runIf(TALLABY_FULFILLMENT_ENABLED)('requires Tallaby everywhere for the Tallaby fulfillment model', () => {
     const services = { ...allTallaby, returns: seller }
     const codes = issueCodes({
       model: 'tallaby_fulfillment',
@@ -169,7 +178,7 @@ describe('inventory drop-off', () => {
     expect(requiresPickupAddress(services)).toBe(false)
     expect(
       issueCodes({
-        model: 'tallaby_fulfillment',
+        model: 'seller_managed',
         services,
         details: { ...details, estimatedInventoryUnits: '101_500' },
       }),

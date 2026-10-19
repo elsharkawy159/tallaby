@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatCurrency, formatPrice, formatPricePlain, parseCurrencyLabel } from "./formatPrice";
+import { formatCurrency, formatPrice, formatPricePlain, parseStoreCurrency } from "./formatPrice";
 
 describe("price formatting", () => {
   it("labels amounts EGP by default, in both languages, with Western digits", () => {
@@ -13,8 +13,19 @@ describe("price formatting", () => {
     expect(formatPrice(300, "ar", "sm", "ج.م")).toBe('300 <span class="text-xs">ج.م</span>');
   });
 
-  it("falls back to EGP for unknown labels", () => {
-    expect(parseCurrencyLabel("USD")).toBe("EGP");
-    expect(parseCurrencyLabel("ج.م")).toBe("ج.م");
+  it("reads a store's currency and label from its settings", () => {
+    expect(parseStoreCurrency({ currency: "SAR", currencyLabel: "ر.س" })).toEqual({ currency: "SAR", label: "ر.س" });
+    expect(formatPricePlain(300, "ar", "ر.س")).toBe("300 ر.س");
+  });
+
+  it("reads stores saved before currencies as EGP with their label", () => {
+    expect(parseStoreCurrency({ currencyLabel: "ج.م" })).toEqual({ currency: "EGP", label: "ج.م" });
+    expect(parseStoreCurrency(null)).toEqual({ currency: "EGP", label: "EGP" });
+  });
+
+  it("falls back to the currency's code for a label from another currency or an unknown value", () => {
+    expect(parseStoreCurrency({ currency: "USD", currencyLabel: "ج.م" })).toEqual({ currency: "USD", label: "USD" });
+    expect(parseStoreCurrency({ currency: "XYZ", currencyLabel: "<b>" })).toEqual({ currency: "EGP", label: "EGP" });
+    expect(parseStoreCurrency({ currency: "toString" })).toEqual({ currency: "EGP", label: "EGP" });
   });
 });

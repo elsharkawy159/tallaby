@@ -180,11 +180,13 @@ export function ElementPopover({
         )}
         {kind === "image" && (
           <div className="space-y-2.5">
-            <Button type="button" variant="outline" size="sm" className="w-full" onClick={onRequestImage}>
-              <ImagePlus aria-hidden />
-              {t("replaceImage")}
-            </Button>
-            <ImageControls style={style} set={patch} />
+            {node?.type !== "video" && (
+              <Button type="button" variant="outline" size="sm" className="w-full" onClick={onRequestImage}>
+                <ImagePlus aria-hidden />
+                {t("replaceImage")}
+              </Button>
+            )}
+            <ImageControls style={style} set={patch} fit={node?.type !== "video"} />
           </div>
         )}
         {kind === "container" && <ContainerControls style={style} set={patch} nodeType={node?.type} />}

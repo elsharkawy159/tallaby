@@ -21,3 +21,4 @@ export { DATA_ACTION_CLASS, DataEmpty, EmptySection } from "../sections/_data";
 export * from "../core/catalog-resolve";
 export * from "../designs";
 export * from "../elements/data";
+export * from "../elements/video";

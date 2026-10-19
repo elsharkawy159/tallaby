@@ -26,7 +26,15 @@ import {
   type LayoutPreset,
   type SectionPreset,
 } from "@workspace/store-sections/render";
-import { acceptsCardPreset, applyCardPreset, applyPresetDesign, chromeFromPreset, payloadPreset, presetInstance } from "./editor-library.lib";
+import {
+  acceptsCardPreset,
+  applyCardPreset,
+  applyPresetDesign,
+  chromeFromPreset,
+  formSectionInstance,
+  payloadPreset,
+  presetInstance,
+} from "./editor-library.lib";
 import { copyStyle, pasteStyle, readOwnStyle, setStyle, type StyleClip, type StyleTarget } from "./editor-style.lib";
 import { getInstance, imageSpotOf, partField, refOf, setImageAt, setNodeProp, withTree, writePart } from "./editor-selection.lib";
 import { createInstance, duplicateSection, insertSection, moveSection, newId, removeSection, updateSection } from "./editor.lib";
@@ -213,12 +221,14 @@ export function createEditorCommands(store: EditorStore) {
     addSection(definition: AnySectionDefinition) {
       return insertSectionInstance(createInstance(definition));
     },
-    /** Forms tab: a contact-form section bound to one of the store's forms (P4-10). */
+    /** Forms tab: a form section (tree design) bound to one of the store's forms (P4-10). */
     addFormSection(formId: string, title: string) {
-      const definition = storeSectionRegistry.get("contact-form");
-      if (!definition) return false;
-      const instance = createInstance(definition);
-      return insertSectionInstance({ ...instance, props: { ...instance.props, formId, title: title.slice(0, 120) } });
+      const instance = formSectionInstance({ id: formId, name: title }, newId(), {
+        defaultLocale: state().defaultLocale,
+        industry: state().industry,
+        makeId: makeNodeId,
+      });
+      return instance ? insertSectionInstance(instance) : false;
     },
     /** Quick "+" between sections. */
     addSectionAt(definition: AnySectionDefinition, index: number) {

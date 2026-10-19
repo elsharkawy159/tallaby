@@ -199,6 +199,7 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
       formatPrice: (amount) => new Intl.NumberFormat(locale === "ar" ? "ar-EG" : "en-EG", { style: "currency", currency: "EGP", maximumFractionDigits: 0 }).format(amount),
       renderCartButton: () => <span className="inline-flex h-9 items-center rounded-full border border-(--sf-line) px-3 text-sm">🛒</span>,
       renderAddToCart: () => <span className="inline-flex h-8 items-center justify-center rounded-md bg-(--sf-brand) px-3 text-xs font-semibold text-white">{t("canvas.addToCart")}</span>,
+      renderWishlistButton: () => <span aria-hidden className="inline-flex size-8 items-center justify-center rounded-full border border-(--sf-line) bg-(--sf-paper) text-sm">♡</span>,
       // Static preview of this store's forms (no renderForm in the canvas).
       forms: Object.fromEntries(forms.map((f) => [f.id, f.form])),
     }),
@@ -334,7 +335,15 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
               />
             )}
             {rail === "forms" && (
-              <FormsPanel storeId={initial.storeId} readOnly={initial.readOnly} store={store} commands={commands} forms={forms} onForms={setForms} />
+              <FormsPanel
+                storeId={initial.storeId}
+                readOnly={initial.readOnly}
+                store={store}
+                commands={commands}
+                forms={forms}
+                onForms={setForms}
+                preview={{ ctx: baseCtx, catalog, posts: catalog.posts, designSystem, defaultLocale, fontClassName: initial.fontClassName, counts }}
+              />
             )}
             {rail === "explore" && (
               <ExplorePanel storeId={initial.storeId} readOnly={initial.readOnly} category={initial.category} uiLocale={uiLocale} commands={commands} />
@@ -373,7 +382,7 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
         </main>
 
         <aside aria-label={t("sidebar.label")} className="hidden w-[320px] shrink-0 border-s bg-background lg:block">
-          <EditorSidebar store={store} storeId={initial.storeId} readOnly={initial.readOnly} catalog={catalog} uiLocale={uiLocale} />
+          <EditorSidebar store={store} commands={commands} storeId={initial.storeId} readOnly={initial.readOnly} catalog={catalog} uiLocale={uiLocale} />
         </aside>
       </div>
       </EditorDndProvider>

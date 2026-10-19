@@ -70,6 +70,7 @@
     "claimLink": "Claim My Link",
     "createStore": "Create Your Store Free",
     "available": "Available",
+    "unavailable": "Not available",
     "preview": "Preview",
     "egp": "EGP",
     "minRead": "{minutes} min read",
@@ -1441,6 +1442,7 @@
       "manageTitle": "I want to manage fulfillment",
       "manageDescription": "Keep control of your operations and choose which services you want to handle yourself and which services you want Tallaby to handle.",
       "tallabyTitle": "Let Tallaby handle fulfillment",
+      "soon": "Soon",
       "tallabyDescription": "Send us your inventory and we'll handle storage, packaging, delivery, customer service and returns.",
       "includes": "Tallaby handles",
       "switchedToManaged": "You chose to handle a service yourself, so your setup is now \"I want to manage fulfillment\"."
@@ -1622,6 +1624,7 @@
       "plan_not_allowed": "Plans only apply to Tallaby services.",
       "plan_unavailable": "This plan is no longer available. Please choose another.",
       "tallaby_model_requires_tallaby": "This service must be handled by Tallaby for this option.",
+      "tallaby_fulfillment_unavailable": "This option is coming soon.",
       "delivery_mode_required": "Please choose how you'll deliver.",
       "pickup_address_required": "Please add a pickup location.",
       "terms_required": "You must accept the terms to continue.",
@@ -1697,6 +1700,7 @@
     }
   },
   "toast": {
+    "signInToWishlist": "Sign in to save to your wishlist",
     "questionSubmitted": "Your question has been submitted and is pending approval",
     "failedToSubmitQuestion": "Failed to submit question",
     "unexpectedError": "An unexpected error occurred. Please try again.",
@@ -2405,6 +2409,7 @@
   "templates": {
     "categories": {
       "all": "All",
+      "ge": "General",
       "el": "Electronics",
       "fa": "Fashion",
       "be": "Beauty",
@@ -2412,6 +2417,10 @@
       "ac": "Accessories"
     },
     "items": {
+      "classic": {
+        "desc": "The default for every new store",
+        "long": "Simple and modern, with calm colours, rounded cards and six ready pages. Every new store starts with it, and you can change any part in the editor."
+      },
       "volt": {
         "desc": "For electronics and gadgets",
         "long": "A dark, precise template for tech products. Deep backgrounds make product shots glow, and tidy cards put specs and price up front."
@@ -2447,6 +2456,7 @@
     },
     "count": "{count, plural, one {# template} other {# templates}}",
     "previewTemplate": "Preview template",
+    "soon": "Coming soon",
     "blankTitle": "Start from blank",
     "blankBody": "An empty page. Arrange sections yourself.",
     "blankCta": "Start blank",
@@ -2487,7 +2497,8 @@
       "colorOptions": "Color options",
       "price": "Price",
       "free": "Free",
-      "more": "More templates"
+      "more": "More templates",
+      "soon": "Coming soon"
     }
   },
   "pricing": {
@@ -2629,7 +2640,10 @@
       "newsTitle": "One useful email, every other week",
       "newsBody": "New guides and seller stories. No spam, unsubscribe anytime.",
       "subscribe": "Subscribe",
-      "subscribed": "Subscribed. Your first email is on its way soon."
+      "subscribed": "Subscribed. Your first email is on its way soon.",
+      "subscribeInvalid": "Enter a valid email address.",
+      "subscribeRate": "Too many tries. Please wait a few minutes.",
+      "subscribeError": "Something went wrong. Please try again."
     },
     "post": {
       "share": "Share",

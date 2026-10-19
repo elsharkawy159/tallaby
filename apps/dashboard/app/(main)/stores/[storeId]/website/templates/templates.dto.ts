@@ -1,6 +1,6 @@
 /** Website › Templates (PLAN.md §8.1, P4-05): shapes shared by the page, the gallery and the actions. */
 
-import type { DesignSystem, PageContent, SectionInstance } from "@workspace/store-sections";
+import type { DesignSystem, PageContent, SectionInstance, TemplateDemo } from "@workspace/store-sections";
 
 type Localized = { ar?: string; en?: string };
 
@@ -13,6 +13,12 @@ export type TemplateCardView = {
   isDefault: boolean;
   isPremium: boolean;
   version: number;
+  /** Colour swatches (code templates; empty for others). */
+  palette: readonly string[];
+  /** Ready-made forms "Use template" adds (`newsletter`, `contact`…). */
+  formKinds: readonly string[];
+  /** Page names in both languages by slug (code templates). */
+  pageNames?: Readonly<Record<string, Localized>>;
   /** Pages with their section names (resolved on the server from the section library). */
   pages: { slug: string; isHome: boolean; name: string; sections: Localized[] }[];
 };
@@ -26,6 +32,8 @@ export type TemplatePreviewView = {
   footer: SectionInstance | null;
   /** `content` = the whole page content (sections plus page-level styles), for applying one page. */
   pages: { slug: string; isHome: boolean; name: string; sections: SectionInstance[]; content: PageContent }[];
+  /** A demo store to preview with (code templates), or null to use the store's own products. */
+  demo: TemplateDemo | null;
 };
 
 /** Error keys under `websiteTemplates.errors`. */

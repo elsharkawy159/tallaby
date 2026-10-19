@@ -11,7 +11,8 @@ import { ForwardArrow } from "@/components/marketing/site/direction-icons";
 import { Container, Eyebrow, Section } from "@/components/marketing/site/layout-primitives";
 import { Reveal } from "@/components/marketing/site/reveal.client";
 import { richTags } from "@/components/marketing/site/rich-text";
-import { BLOG_POSTS } from "@/lib/marketing/blog.data";
+import { isOptimizableImage } from "@/lib/marketing/blog.lib";
+import { getMarketingPosts } from "@/lib/marketing/blog.server";
 import { pageMetadata } from "@/lib/marketing/metadata.lib";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -22,7 +23,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 export default async function BlogPage() {
   const t = await getTranslations("blog");
   const locale = await getLocale();
-  const featured = BLOG_POSTS[0]!;
+  const posts = await getMarketingPosts(locale);
+  const featured = posts[0];
 
   return (
     <>
@@ -45,34 +47,36 @@ export default async function BlogPage() {
             </CtaButton>
           </div>
 
-          <Link
-            href={`/blog/${featured.id}`}
-            className="grid overflow-hidden rounded-3xl bg-white text-body transition-transform duration-200 hover:-translate-y-1 hover:no-underline lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]"
-          >
-            <div className="relative min-h-60 lg:min-h-[380px]">
-              <Image src={featured.image} alt="" fill priority sizes="(min-width: 1024px) 700px, 100vw" className="object-cover" />
-              <span className="absolute start-[18px] top-[18px] rounded-full bg-amber-600 px-3 py-[5px] text-xs font-bold text-teal-900">
-                {t("index.featured")}
-              </span>
-            </div>
-            <div className="flex flex-col justify-center gap-3.5 p-[26px] lg:p-11">
-              <PostMeta post={featured} locale={locale} />
-              <h2 className="text-[clamp(24px,2.8vw,36px)] leading-[1.3] font-extrabold text-teal-900 en:leading-[1.15] en:tracking-[-0.02em]">
-                {t(`posts.${featured.id}.title`)}
-              </h2>
-              <p className="text-base text-slate-ink">{t(`posts.${featured.id}.excerpt`)}</p>
-              <span className="mt-2 flex items-center gap-1.5 font-bold text-teal-700">
-                {t("index.read")}
-                <ForwardArrow />
-              </span>
-            </div>
-          </Link>
+          {featured ? (
+            <Link
+              href={`/blog/${featured.id}`}
+              className="grid overflow-hidden rounded-3xl bg-white text-body transition-transform duration-200 hover:-translate-y-1 hover:no-underline lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]"
+            >
+              <div className="relative min-h-60 lg:min-h-[380px]">
+                <Image src={featured.image} alt="" fill priority unoptimized={!isOptimizableImage(featured.image)} sizes="(min-width: 1024px) 700px, 100vw" className="object-cover" />
+                <span className="absolute start-[18px] top-[18px] rounded-full bg-amber-600 px-3 py-[5px] text-xs font-bold text-teal-900">
+                  {t("index.featured")}
+                </span>
+              </div>
+              <div className="flex flex-col justify-center gap-3.5 p-[26px] lg:p-11">
+                <PostMeta post={featured} locale={locale} />
+                <h2 className="text-[clamp(24px,2.8vw,36px)] leading-[1.3] font-extrabold text-teal-900 en:leading-[1.15] en:tracking-[-0.02em]">
+                  {featured.title}
+                </h2>
+                <p className="text-base text-slate-ink">{featured.excerpt}</p>
+                <span className="mt-2 flex items-center gap-1.5 font-bold text-teal-700">
+                  {t("index.read")}
+                  <ForwardArrow />
+                </span>
+              </div>
+            </Link>
+          ) : null}
         </Container>
       </section>
 
       <Section>
         <Container>
-          <BlogIndex />
+          <BlogIndex posts={posts.slice(1)} />
         </Container>
       </Section>
 

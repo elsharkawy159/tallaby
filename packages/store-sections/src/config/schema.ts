@@ -36,6 +36,10 @@ export const ALLOWED_NODE_TYPES = [
   "pattern", "accordion", "accordionItem",
   // Data nodes (tree-sections spec §5.3); additive.
   "productList", "categoryList", "postList", "storeForm", "addToCart",
+  // Wishlist toggle inside a product card (storefront templates, 2026-10-19); additive.
+  "wishlistButton",
+  // Video playlist (owner request 2026-10-19); additive.
+  "videoPlaylist", "videoItem",
 ] as const;
 export type AllowedNodeType = (typeof ALLOWED_NODE_TYPES)[number];
 

@@ -29,7 +29,6 @@ function AddAddressButton({
   return (
     <AddressManagerDialog
       onSuccess={(address: AddressData) => {
-        console.log("Address added:", address);
         onSuccess();
       }}
       trigger={
@@ -80,7 +79,6 @@ export function AddressesClient({ initialAddresses }: AddressesClientProps) {
               key={address.id}
               address={address}
               onSuccess={(updatedAddress: AddressData) => {
-                console.log("Address updated:", updatedAddress);
                 refreshAddresses();
               }}
               trigger={

@@ -14,7 +14,7 @@ import {
   Timer,
   Users,
 } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { CtaButton } from "@/components/marketing/site/cta-button";
 import { ForwardArrow } from "@/components/marketing/site/direction-icons";
@@ -25,6 +25,7 @@ import { richTags } from "@/components/marketing/site/rich-text";
 import { SignupTrigger, SlugClaimForm } from "@/components/marketing/signup/signup-trigger.client";
 import { TemplateGallery } from "@/components/marketing/templates/template-gallery.client";
 import { CONTACT } from "@/lib/marketing/site.lib";
+import { getTemplateGallery } from "@/lib/marketing/templates.server";
 import { BuilderStudio } from "./builder-studio.client";
 import { DashboardTour } from "./dashboard-tour.client";
 import { HeroStory } from "./hero-story.client";
@@ -103,11 +104,13 @@ export async function HowItWorks() {
 }
 
 export async function TemplatesShowcase() {
-  const t = await getTranslations("home.templates");
+  const locale = await getLocale();
+  const [t, entries] = await Promise.all([getTranslations("home.templates"), getTemplateGallery(locale)]);
   return (
     <Section id="templates" aria-labelledby="tpl-title" className="border-y border-neutral-100 bg-white">
       <Container>
         <TemplateGallery
+          entries={entries}
           variant="home"
           heading={
             <Reveal>

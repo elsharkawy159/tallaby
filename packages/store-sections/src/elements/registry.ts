@@ -7,6 +7,7 @@
 import { PRODUCT_SORTS, PRODUCT_SOURCES, type Localized, type PropDefinition } from "../core/types";
 import type { StyleBreakpoint, StyleValues } from "./style";
 import type { NodeTemplate } from "./tree";
+import { VIDEO_CAPABILITIES, parseVideoUrl } from "./video";
 
 export const ELEMENT_GROUPS = ["layout", "text", "basic", "data"] as const;
 export type ElementGroup = (typeof ELEMENT_GROUPS)[number];
@@ -74,6 +75,9 @@ export type ElementType =
   | "blockQuote"
   | "button"
   | "image"
+  | "video"
+  | "videoPlaylist"
+  | "videoItem"
   | "divider"
   | "spacer"
   | "icon"
@@ -86,7 +90,8 @@ export type ElementType =
   | "categoryList"
   | "postList"
   | "storeForm"
-  | "addToCart";
+  | "addToCart"
+  | "wishlistButton";
 
 export interface ElementDefinition {
   type: ElementType;
@@ -106,6 +111,8 @@ export interface ElementDefinition {
   defaultChildren?: () => NodeTemplate[];
   /** Content-tab fields (same contract as section props). */
   fields: PropDefinition[];
+  /** Hides fields that don't apply to these props beyond `showWhen`/`hideWhen` (a video site's unsupported options). */
+  hideField?: (key: string, props: Record<string, unknown>) => boolean;
 }
 
 const textField = (key: string, label: Localized, max: number, type: "text" | "textarea" = "text"): PropDefinition => ({
@@ -119,8 +126,39 @@ const L = (ar: string, en: string): Localized => ({ ar, en });
 
 const linkField: PropDefinition = { key: "href", label: L("الرابط", "Link"), type: "url" };
 
-/** Elements that open a link or act on click; they never nest inside each other (no `<a>` in `<a>`). */
-export const LINK_TYPES: readonly ElementType[] = ["button", "linkBlock", "textLink", "addToCart"];
+const videoUrlField: PropDefinition = {
+  key: "url",
+  label: L("رابط الفيديو", "Video link"),
+  type: "video",
+  placeholder: L("https://…", "https://…"),
+  hint: L("يوتيوب، فيميو، تيك توك، إنستجرام، فيسبوك أو ملف فيديو (mp4).", "YouTube, Vimeo, TikTok, Instagram, Facebook or a video file (mp4)."),
+};
+
+const playbackFields: PropDefinition[] = [
+  {
+    key: "autoplay",
+    label: L("تشغيل تلقائي", "Autoplay"),
+    type: "switch",
+    group: "advanced",
+    hint: L("يبدأ صامتًا، فالمتصفحات لا تشغّل الصوت تلقائيًا.", "Starts muted: browsers never autoplay sound."),
+  },
+  { key: "muted", label: L("كتم الصوت", "Muted"), type: "switch", group: "advanced", hideWhen: { key: "autoplay", equals: [true] } },
+  { key: "loop", label: L("تكرار", "Loop"), type: "switch", group: "advanced" },
+  { key: "controls", label: L("أزرار التحكم", "Player controls"), type: "switch", group: "advanced" },
+  { key: "start", label: L("يبدأ من (ثانية)", "Start at (seconds)"), type: "number", group: "advanced", min: 0, max: 86400 },
+  { key: "end", label: L("ينتهي عند (ثانية)", "End at (seconds)"), type: "number", group: "advanced", min: 0, max: 86400 },
+];
+
+/** A video's options its site can't do (Instagram has none, TikTok can't start later…). */
+function hideUnsupported(key: string, props: Record<string, unknown>): boolean {
+  const source = parseVideoUrl(props.url);
+  if (!source) return false;
+  const can = VIDEO_CAPABILITIES[source.provider] as Record<string, boolean>;
+  return key in can && !can[key];
+}
+
+/** Elements that open a link or act on click (a playlist's rows are links); they never nest inside each other (no `<a>` in `<a>`). */
+export const LINK_TYPES: readonly ElementType[] = ["button", "linkBlock", "textLink", "addToCart", "wishlistButton", "videoPlaylist"];
 
 const SOURCE_LABELS: Record<(typeof PRODUCT_SOURCES)[number], Localized> = {
   all: L("كل المنتجات", "All products"),
@@ -429,6 +467,78 @@ export const ELEMENT_DEFINITIONS: readonly ElementDefinition[] = [
     fields: [{ key: "src", label: L("الصورة", "Image"), type: "image" }, textField("alt", L("وصف الصورة", "Alt text"), 160)],
   },
   {
+    type: "video",
+    group: "basic",
+    label: L("فيديو", "Video"),
+    keywords: ["video", "youtube", "shorts", "tiktok", "instagram", "reels", "facebook", "vimeo", "mp4", "player", "فيديو", "يوتيوب", "تيك توك", "ريلز"],
+    container: false,
+    defaultProps: { url: "", thumbnail: "auto", controls: true },
+    defaultStyle: { radius: 16, aspectRatio: "wide" },
+    fields: [
+      videoUrlField,
+      {
+        key: "thumbnail",
+        label: L("صورة الغلاف", "Thumbnail"),
+        type: "select",
+        options: [
+          { value: "auto", label: L("تلقائي", "Automatic") },
+          { value: "custom", label: L("صورتي", "My image") },
+          { value: "none", label: L("بدون", "None") },
+        ],
+        hint: L("مع الغلاف يتحمّل الفيديو عند الضغط فقط، فتبقى الصفحة سريعة.", "With a thumbnail the video loads only on click, so the page stays fast."),
+        hideWhen: { key: "autoplay", equals: [true] },
+      },
+      { key: "poster", label: L("صورة الغلاف", "Thumbnail image"), type: "image", showWhen: { key: "thumbnail", equals: ["custom"] } },
+      textField("title", L("عنوان الفيديو (لقارئات الشاشة)", "Video title (for screen readers)"), 120),
+      ...playbackFields,
+    ],
+    hideField: hideUnsupported,
+  },
+  {
+    type: "videoPlaylist",
+    group: "basic",
+    label: L("قائمة فيديوهات", "Video playlist"),
+    keywords: ["playlist", "videos", "guide", "series", "قائمة", "فيديوهات", "شروحات"],
+    container: true,
+    childTypes: ["videoItem"],
+    defaultProps: { listPosition: "end", controls: true },
+    defaultStyle: { gap: 24 },
+    defaultChildren: () => [1, 2, 3].map((n) => ({ type: "videoItem", props: { url: "", title: `فيديو ${n}`, translations: { en: { title: `Video ${n}` } } }, children: [] })),
+    fields: [
+      {
+        key: "listPosition",
+        label: L("مكان القائمة", "List position"),
+        type: "select",
+        options: [
+          { value: "end", label: L("بجانب المشغل", "Beside") },
+          { value: "start", label: L("قبل المشغل", "Before") },
+          { value: "below", label: L("تحت المشغل", "Below") },
+        ],
+        hint: L("على الموبايل تكون القائمة تحت المشغل دائمًا.", "On phones the list is always below the player."),
+      },
+      { key: "controls", label: L("أزرار التحكم", "Player controls"), type: "switch", group: "advanced" },
+    ],
+  },
+  {
+    type: "videoItem",
+    group: "basic",
+    label: L("فيديو في القائمة", "Playlist video"),
+    keywords: ["video", "فيديو"],
+    container: false,
+    defaultProps: { url: "", title: "فيديو جديد" },
+    fields: [
+      videoUrlField,
+      textField("title", L("العنوان", "Title"), 120),
+      textField("duration", L("المدة", "Length"), 12),
+      {
+        key: "poster",
+        label: L("الصورة المصغّرة", "Thumbnail image"),
+        type: "image",
+        hint: L("فيديوهات يوتيوب تأخذ صورتها تلقائيًا.", "YouTube videos get their own still automatically."),
+      },
+    ],
+  },
+  {
     type: "divider",
     group: "basic",
     label: L("فاصل", "Divider"),
@@ -598,6 +708,15 @@ export const ELEMENT_DEFINITIONS: readonly ElementDefinition[] = [
     defaultProps: {},
     fields: [],
   },
+  {
+    type: "wishlistButton",
+    group: "data",
+    label: L("زر المفضلة", "Wishlist button"),
+    keywords: ["wishlist", "favourite", "favorite", "heart", "مفضلة", "قلب"],
+    container: false,
+    defaultProps: {},
+    fields: [],
+  },
 ];
 
 const BY_TYPE = new Map(ELEMENT_DEFINITIONS.map((d) => [d.type, d]));
@@ -607,10 +726,10 @@ export function getElementDefinition(type: string): ElementDefinition | undefine
 }
 
 /**
- * List items come with their list; a section is only a tree's root. Accordion
+ * List and playlist items come with their list; a section is only a tree's root. Accordion
  * items stay in the palette so an emptied accordion can be refilled.
  */
-const NOT_IN_PALETTE: readonly ElementType[] = ["listItem", "section"];
+const NOT_IN_PALETTE: readonly ElementType[] = ["listItem", "videoItem", "section"];
 
 /** Types shown in the palette. */
 export const PALETTE_TYPES: readonly ElementType[] = ELEMENT_DEFINITIONS.filter((d) => !NOT_IN_PALETTE.includes(d.type)).map((d) => d.type);

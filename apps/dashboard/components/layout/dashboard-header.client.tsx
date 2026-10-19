@@ -62,9 +62,7 @@ export function DashboardHeader({ walletBalance }: { walletBalance: number | nul
                 {tNav(route.parent)}
               </Link>
             ) : (
-              <span className="hidden shrink-0 text-[13px] text-muted-foreground sm:inline">
-                {tNav(route.parent)}
-              </span>
+              <span className="hidden shrink-0 text-[13px] text-muted-foreground sm:inline">{tNav(route.parent)}</span>
             )}
             <ChevronRight
               aria-hidden="true"
@@ -72,55 +70,59 @@ export function DashboardHeader({ walletBalance }: { walletBalance: number | nul
             />
           </>
         )}
-        <h1 className="truncate text-[15px] font-semibold text-sidebar-foreground">
-          {tNav(route.title)}
-        </h1>
+        <h1 className="truncate text-[15px] font-semibold text-sidebar-foreground">{tNav(route.title)}</h1>
       </div>
 
-      <button
-        type="button"
-        onClick={() => setPaletteOpen(true)}
-        className="hidden h-9.5 w-[280px] max-w-[40vw] shrink-0 items-center gap-2 rounded-[10px] border border-sidebar-border bg-sidebar-accent px-3 text-sm text-muted-foreground transition-colors hover:border-input hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 md:flex"
-      >
-        <Search className="size-4 shrink-0" />
-        <span className="flex-1 truncate text-start">{t("search")}</span>
-        <kbd
-          dir="ltr"
-          className="rounded-[5px] border border-input px-1.5 font-mono text-[11px] text-muted-foreground"
+      {/* Desktop: title, search and actions share the width equally, so the search sits in the middle. */}
+      <div className="hidden min-w-0 flex-1 justify-center md:flex">
+        <button
+          type="button"
+          onClick={() => setPaletteOpen(true)}
+          className="flex h-9.5 w-full max-w-[360px] items-center gap-2 rounded-[10px] border border-sidebar-border bg-sidebar-accent px-3 text-sm text-muted-foreground transition-colors hover:border-input hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
         >
-          {isMac ? "⌘" : "Ctrl"} K
-        </kbd>
-      </button>
-      <button
-        type="button"
-        onClick={() => setPaletteOpen(true)}
-        className={`${ICON_BUTTON} md:hidden`}
-        aria-label={t("search")}
-      >
-        <Search className="size-[18px]" />
-      </button>
+          <Search className="size-4 shrink-0" />
+          <span className="flex-1 truncate text-start">{t("search")}</span>
+          <kbd
+            dir="ltr"
+            className="rounded-[5px] border border-input px-1.5 font-mono text-[11px] text-muted-foreground"
+          >
+            {isMac ? "⌘" : "Ctrl"} K
+          </kbd>
+        </button>
+      </div>
 
-      {walletBalance != null && (
-        <Link
-          href="/wallet"
-          title={t("walletBalance", { amount: formatMoney(walletBalance, locale) })}
-          aria-current={pathname === "/wallet" ? "page" : undefined}
-          className={cn(
-            "flex h-9.5 shrink-0 items-center gap-2 rounded-[10px] border border-sidebar-border bg-sidebar-accent px-2.5 text-[13px] transition-colors hover:border-input focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
-            pathname === "/wallet" && "border-primary/40 bg-primary-soft text-primary-ink",
-          )}
+      <div className="flex shrink-0 items-center justify-end gap-1 sm:gap-3 md:min-w-0 md:flex-1">
+        <button
+          type="button"
+          onClick={() => setPaletteOpen(true)}
+          className={`${ICON_BUTTON} md:hidden`}
+          aria-label={t("search")}
         >
-          <Wallet className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-          <span className="hidden text-muted-foreground lg:inline">{t("walletLabel")}</span>
-          <bdi dir="ltr" className={cn("font-semibold tabular-nums", walletBalance < 0 && "text-destructive")}>
-            {formatMoney(walletBalance, locale)}
-          </bdi>
-        </Link>
-      )}
+          <Search className="size-[18px]" />
+        </button>
 
-      <InstallAppButton />
-      <LanguageToggle />
-      <ThemeToggle />
+        {walletBalance != null && (
+          <Link
+            href="/wallet"
+            title={t("walletBalance", { amount: formatMoney(walletBalance, locale) })}
+            aria-current={pathname === "/wallet" ? "page" : undefined}
+            className={cn(
+              "flex h-9.5 shrink-0 items-center gap-2 rounded-[10px] border border-sidebar-border bg-sidebar-accent px-2.5 text-[13px] transition-colors hover:border-input focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
+              pathname === "/wallet" && "border-primary/40 bg-primary-soft text-primary-ink",
+            )}
+          >
+            <Wallet className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+            <span className="hidden text-muted-foreground lg:inline">{t("walletLabel")}</span>
+            <bdi dir="ltr" className={cn("font-semibold tabular-nums", walletBalance < 0 && "text-destructive")}>
+              {formatMoney(walletBalance, locale)}
+            </bdi>
+          </Link>
+        )}
+
+        <InstallAppButton />
+        <LanguageToggle />
+        <ThemeToggle />
+      </div>
 
       <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
     </header>

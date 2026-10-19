@@ -18,6 +18,7 @@ import { HERO_DESIGNS } from "./hero";
 import { IMAGE_TEXT_DESIGNS } from "./image-text";
 import { NEWSLETTER_DESIGNS } from "./newsletter";
 import { PAGE_HEADER_DESIGNS } from "./page-header";
+import { PRODUCT_PAGE_DESIGNS } from "./product-page";
 import { PRODUCT_DESIGNS } from "./products";
 import { PROMOTION_DESIGNS } from "./promotions";
 import { RICH_TEXT_DESIGNS } from "./rich-text";
@@ -58,6 +59,7 @@ export const DESIGNS: readonly Design[] = [
   ...CONTACT_DESIGNS,
   ...RICH_TEXT_DESIGNS,
   ...PAGE_HEADER_DESIGNS,
+  ...PRODUCT_PAGE_DESIGNS,
   ...FOOTER_DESIGNS,
 ];
 

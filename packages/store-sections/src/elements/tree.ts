@@ -93,20 +93,21 @@ function isLinkInside(nodes: readonly ComponentNode[]): boolean {
 /**
  * Whether `child` may go directly inside `parentId` (null = section root).
  * Rules: only containers take children, `childTypes` lists are respected,
- * list items live only in lists, and links never nest in links.
+ * list items live only in lists (playlist videos in playlists), and links never nest in links.
  */
 export function canContain(nodes: readonly ComponentNode[], parentId: string | null, child: ComponentNode): boolean {
   const childDef = getElementDefinition(child.type);
   if (!childDef) return false;
   // A section is the single root of a tree section, never nested.
   if (child.type === "section") return parentId === null && nodes.length === 0;
-  if (parentId === null) return child.type !== "listItem" && child.type !== "accordionItem";
+  if (parentId === null) return child.type !== "listItem" && child.type !== "accordionItem" && child.type !== "videoItem";
   const parent = findNode(nodes, parentId);
   const parentDef = parent && getElementDefinition(parent.type);
   if (!parent || !parentDef?.container) return false;
   if (parentDef.childTypes && !parentDef.childTypes.includes(childDef.type)) return false;
   if (child.type === "listItem" && parent.type !== "list") return false;
   if (child.type === "accordionItem" && parent.type !== "accordion") return false;
+  if (child.type === "videoItem" && parent.type !== "videoPlaylist") return false;
   const path = findPath(nodes, parentId) ?? [];
   const insideLink = path.some((id) => LINK_TYPES.includes(findNode(nodes, id)?.type as ElementType));
   if (insideLink && (LINK_TYPES.includes(childDef.type) || isLinkInside(child.children))) return false;

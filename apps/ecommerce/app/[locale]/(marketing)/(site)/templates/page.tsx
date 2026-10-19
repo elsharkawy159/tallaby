@@ -10,15 +10,16 @@ import { SignupTrigger } from "@/components/marketing/signup/signup-trigger.clie
 import { TemplateFan } from "@/components/marketing/templates/template-fan.client";
 import { TemplateGallery } from "@/components/marketing/templates/template-gallery.client";
 import { pageMetadata } from "@/lib/marketing/metadata.lib";
-import { TEMPLATES } from "@/lib/marketing/templates.data";
+import { getTemplateGallery } from "@/lib/marketing/templates.server";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   return pageMetadata({ locale, page: "templates", path: "/templates" });
 }
 
-export default async function TemplatesPage() {
-  const t = await getTranslations("templates");
+export default async function TemplatesPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const [t, entries] = await Promise.all([getTranslations("templates"), getTemplateGallery(locale)]);
   const why = [
     { icon: Repeat, title: t("why.switchTitle"), body: t("why.switchBody") },
     { icon: Smartphone, title: t("why.phoneTitle"), body: t("why.phoneBody") },
@@ -26,7 +27,7 @@ export default async function TemplatesPage() {
     { icon: Languages, title: t("why.langTitle"), body: t("why.langBody") },
   ];
   const stats = [
-    { value: String(TEMPLATES.length), label: t("hero.statTemplates") },
+    { value: String(entries.filter((e) => e.status === "available").length), label: t("hero.statTemplates") },
     { value: "0", label: t("hero.statFree") },
     { value: "100%", label: t("hero.statMobile") },
   ];
@@ -51,7 +52,7 @@ export default async function TemplatesPage() {
 
       <Section>
         <Container>
-          <TemplateGallery variant="page" />
+          <TemplateGallery entries={entries} variant="page" />
           <Reveal className="mt-[72px] grid gap-5 border-t border-neutral-200 pt-10 sm:grid-cols-2 lg:grid-cols-4">
             {why.map((w) => (
               <div key={w.title} className="grid gap-1.5">

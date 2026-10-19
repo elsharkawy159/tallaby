@@ -26,6 +26,7 @@ export async function StorefrontCatalog({
   locale,
   categories,
   query,
+  basePath = "/",
 }: {
   sellerId: string;
   /** Set when the store shows a selected catalog (D24). */
@@ -33,6 +34,8 @@ export async function StorefrontCatalog({
   locale: string;
   categories: StorefrontCategory[];
   query: StoreQuery;
+  /** The page pagination and "clear filters" link to (the classic home, or /products). */
+  basePath?: string;
 }) {
   const t = await getTranslations("storefront");
   const tStores = await getTranslations("pages.stores");
@@ -83,6 +86,7 @@ export async function StorefrontCatalog({
           locale={locale}
           categoryIds={active?.categoryIds}
           query={query}
+          basePath={basePath}
         />
       </Suspense>
     </section>
@@ -95,12 +99,14 @@ async function CatalogGrid({
   locale,
   categoryIds,
   query,
+  basePath,
 }: {
   sellerId: string;
   catalogStoreId?: string;
   locale: string;
   categoryIds?: string[];
   query: StoreQuery;
+  basePath: string;
 }) {
   const tStores = await getTranslations("pages.stores");
   const result = await getProducts({
@@ -127,7 +133,7 @@ async function CatalogGrid({
         </p>
         {filtered && (
           <Button asChild variant="outline" className="mt-4 rounded-full">
-            <Link href={storeQueryHref("/", { sort: query.sort })}>{tStores("clearFilters")}</Link>
+            <Link href={storeQueryHref(basePath, { sort: query.sort })}>{tStores("clearFilters")}</Link>
           </Button>
         )}
       </div>
@@ -145,7 +151,7 @@ async function CatalogGrid({
           <ProductCard key={product.id as string} {...(product as unknown as ProductCardProps)} />
         ))}
       </div>
-      {totalPages > 1 && <StorePagination basePath="/" query={query} totalPages={totalPages} />}
+      {totalPages > 1 && <StorePagination basePath={basePath} query={query} totalPages={totalPages} />}
     </>
   );
 }

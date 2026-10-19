@@ -54,6 +54,16 @@ describe("storeGeneralSettingsSchema", () => {
     expect(storeGeneralSettingsSchema.safeParse({ status: "active" }).success).toBe(false);
   });
 
+  it("saves a currency together with one of its own symbols", () => {
+    const ok = (v: object) => storeGeneralSettingsSchema.safeParse(v).success;
+    expect(ok({ currency: "SAR", currencyLabel: "ر.س" })).toBe(true);
+    expect(ok({ currency: "EGP", currencyLabel: "جنيهاً" })).toBe(true);
+    expect(ok({ currency: "SAR", currencyLabel: "ج.م" })).toBe(false);
+    expect(ok({ currencyLabel: "ج.م" })).toBe(false);
+    expect(ok({ currency: "USD" })).toBe(false);
+    expect(ok({ currency: "JPY", currencyLabel: "JPY" })).toBe(false);
+  });
+
   it("requires the default locale to be supported", () => {
     expect(
       storeGeneralSettingsSchema.safeParse({ defaultLocale: "en", supportedLocales: ["ar"] }).success,

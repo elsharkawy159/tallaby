@@ -65,13 +65,16 @@ const idsOf = (value: unknown) =>
         .slice(0, MAX_LIST_LIMIT)
     : [];
 
+/** Records a list skips first (a "lead and list" design shows the first record once). */
+const offsetOf = (value: unknown) => (typeof value === "number" && Number.isFinite(value) ? Math.min(10, Math.max(0, Math.round(value))) : 0);
+
 /** The catalog query of a data node, or null (not a catalog node, or not set up yet). */
 export function nodeCatalogQuery(node: ComponentNode): CatalogQuery | null {
   const props = node.props ?? {};
   if (node.type === "productList") {
     const source = PRODUCT_SOURCES.find((s) => s === props.source) ?? ("newest" satisfies ProductSource);
     const sort = PRODUCT_SORTS.find((s) => s === props.sort) ?? ("default" satisfies ProductSort);
-    const limit = clampLimit(props.limit, 8);
+    const limit = clampLimit(props.limit, 8) + offsetOf(props.offset);
     if (source === "category") {
       const categoryId = idOf(props.categoryId);
       return categoryId ? { kind: "products", source, categoryId, sort, limit } : null;
@@ -84,13 +87,10 @@ export function nodeCatalogQuery(node: ComponentNode): CatalogQuery | null {
   }
   if (node.type === "categoryList") {
     // Picked categories may sit anywhere in the store's list: load them all.
-    return { kind: "categories", limit: idsOf(props.categoryIds).length ? 200 : clampLimit(props.limit, 8) };
+    return { kind: "categories", limit: idsOf(props.categoryIds).length ? 200 : clampLimit(props.limit, 8) + offsetOf(props.offset) };
   }
   return null;
 }
-
-/** Posts a list skips first (a "lead and list" design shows the newest post once). */
-const offsetOf = (value: unknown) => (typeof value === "number" && Number.isFinite(value) ? Math.min(10, Math.max(0, Math.round(value))) : 0);
 
 /** The blog query of a post list. */
 export function nodeContentQuery(node: ComponentNode): ContentQuery | null {
@@ -125,14 +125,15 @@ export function listRecords(node: ComponentNode, ctx: RenderContext): DataRecord
   const props = node.props ?? {};
   if (node.type === "productList") {
     if (!nodeCatalogQuery(node)) return [];
-    return (ctx.catalog.products[node.id] ?? []).map((record) => ({ kind: "productList", record }));
+    const offset = offsetOf(props.offset);
+    return (ctx.catalog.products[node.id] ?? []).slice(offset, offset + clampLimit(props.limit, 8)).map((record) => ({ kind: "productList", record }));
   }
   if (node.type === "categoryList") {
     const picked = idsOf(props.categoryIds);
     const all = ctx.catalog.categories ?? [];
     const list = picked.length
       ? picked.map((id) => all.find((c) => c.id === id)).filter((c): c is CategorySummary => Boolean(c))
-      : all.slice(0, clampLimit(props.limit, 8));
+      : all.slice(offsetOf(props.offset), offsetOf(props.offset) + clampLimit(props.limit, 8));
     return list.map((record) => ({ kind: "categoryList", record }));
   }
   if (node.type === "postList") {

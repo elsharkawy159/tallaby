@@ -18,9 +18,12 @@ import s from "../storefront.module.css";
 export async function CategoryCircles({
   categories,
   query,
+  basePath = "/",
 }: {
   categories: StorefrontCategory[];
   query: StoreQuery;
+  /** The page the links filter (the classic home, or /products on builder sites). */
+  basePath?: string;
 }) {
   const [t, locale] = await Promise.all([
     getTranslations("storefront"),
@@ -32,7 +35,7 @@ export async function CategoryCircles({
     (locale === "ar" ? c.nameAr || c.name : c.name || c.nameAr) ?? "";
   const total = categories.reduce((sum, c) => sum + c.productCount, 0);
   const href = (category?: string) =>
-    storeQueryHref("/", { sort: query.sort, category });
+    storeQueryHref(basePath, { sort: query.sort, category });
 
   return (
     <nav aria-label={t("categoriesLabel")}>

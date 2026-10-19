@@ -71,14 +71,16 @@ describe.skipIf(!TEST_DATABASE_URL)("store builder (integration)", { timeout: 60
   });
 
   it("creates, renames, reorders and deletes pages with slug rules", async () => {
-    const about = await createStorePage(w.a.sellerId, w.a.a2, { name: { ar: "من نحن" }, slug: "about" }, db);
-    expect(about).toMatchObject({ success: true, data: { slug: "about" } });
+    // A2 started from Tallaby Classic, which already has an "about" page.
     expect(await createStorePage(w.a.sellerId, w.a.a2, { name: { ar: "x" }, slug: "about" }, db)).toMatchObject({ error: "slug_taken" });
+    const about = await createStorePage(w.a.sellerId, w.a.a2, { name: { ar: "فريقنا" }, slug: "team" }, db);
+    expect(about).toMatchObject({ success: true, data: { slug: "team" } });
+    expect(await createStorePage(w.a.sellerId, w.a.a2, { name: { ar: "x" }, slug: "team" }, db)).toMatchObject({ error: "slug_taken" });
     expect(await createStorePage(w.a.sellerId, w.a.a2, { name: { ar: "x" }, slug: "cart" }, db)).toMatchObject({ error: "reserved_slug" });
     expect(await createStorePage(w.a.sellerId, w.a.a2, { name: { ar: "x" }, slug: "Bad Slug" }, db)).toMatchObject({ error: "invalid_slug" });
     expect(await createStorePage(w.a.sellerId, w.a.a2, { name: {}, slug: "empty-name" }, db)).toMatchObject({ error: "invalid_input" });
     // The same slug in another store is fine.
-    expect(await createStorePage(w.b.sellerId, w.b.b1, { name: { ar: "من نحن" }, slug: "about" }, db)).toMatchObject({ success: true });
+    expect(await createStorePage(w.b.sellerId, w.b.b1, { name: { ar: "فريقنا" }, slug: "team" }, db)).toMatchObject({ success: true });
 
     const aboutId = about.success ? about.data.id : "";
     expect(
@@ -91,9 +93,13 @@ describe.skipIf(!TEST_DATABASE_URL)("store builder (integration)", { timeout: 60
     await updateStorePage(w.a.sellerId, w.a.a2, homeId, { slug: "landing" }, db);
     expect((await db.select().from(s.storePages).where(eq(s.storePages.id, homeId)))[0]!.slug).toBe("home");
 
-    expect(await reorderStorePages(w.a.sellerId, w.a.a2, [aboutId, homeId], db)).toEqual({ success: true, data: null });
+    const others = (await db.select({ id: s.storePages.id }).from(s.storePages).where(eq(s.storePages.storeId, w.a.a2)))
+      .map((r) => r.id)
+      .filter((id) => id !== aboutId && id !== homeId);
+    const order = [aboutId, ...others, homeId];
+    expect(await reorderStorePages(w.a.sellerId, w.a.a2, order, db)).toEqual({ success: true, data: null });
     const ordered = await db.select({ id: s.storePages.id }).from(s.storePages).where(eq(s.storePages.storeId, w.a.a2)).orderBy(s.storePages.orderIndex);
-    expect(ordered.map((r) => r.id)).toEqual([aboutId, homeId]);
+    expect(ordered.map((r) => r.id)).toEqual(order);
     expect(await reorderStorePages(w.a.sellerId, w.a.a2, [aboutId], db)).toMatchObject({ error: "invalid_input" });
     expect(await reorderStorePages(w.a.sellerId, w.a.a2, [aboutId, w.b.b1Home], db)).toMatchObject({ error: "invalid_input" });
 

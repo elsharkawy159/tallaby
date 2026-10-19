@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { listStoreTemplates } from "@workspace/lib/store-sites/server";
 import { StorePageHeader } from "@/components/stores/store-page-header";
 import { loadWebsiteStorePage } from "@/lib/stores/website-page.server";
+import { storeFontVariables } from "../_components/store-fonts";
 import { TemplateGallery } from "./templates.client";
 import { toTemplateCardViews } from "./templates.lib";
 
@@ -29,7 +30,7 @@ export default async function WebsiteTemplatesPage({ params }: { params: Promise
   const templates = toTemplateCardViews(gallery.templates);
 
   return (
-    <section className="mx-auto w-full max-w-5xl space-y-5 p-4 sm:p-6">
+    <section className="mx-auto w-full space-y-5 p-4 sm:p-6">
       <StorePageHeader store={store} />
       <TemplateGallery
         storeId={store.id}
@@ -37,6 +38,7 @@ export default async function WebsiteTemplatesPage({ params }: { params: Promise
         templates={templates}
         lastInstall={gallery.lastInstall}
         readOnly={store.status !== "active"}
+        fontClassName={storeFontVariables}
       />
     </section>
   );

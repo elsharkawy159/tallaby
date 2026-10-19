@@ -1,4 +1,6 @@
 import {
+  TALLABY_FULFILLMENT_ENABLED,
+  sellerManagedPreset,
   tallabyAvailableEverywhere,
   tallabyPreset,
   type FulfillmentPlanView,
@@ -17,15 +19,20 @@ export {
 } from "@workspace/lib/fulfillment";
 
 /**
- * Initial wizard values: the recommended setup, "Let Tallaby handle
- * fulfillment" with the first (admin-ordered) plan in every service. Falls
- * back to the plain defaults when Tallaby can't cover every service yet, so a
- * seller is never preselected into an option they can't submit.
+ * Initial wizard values. While "Let Tallaby handle fulfillment" is "Soon"
+ * (TALLABY_FULFILLMENT_ENABLED), new sellers start as seller-managed. Otherwise
+ * the recommended setup: Tallaby fulfillment with the first (admin-ordered)
+ * plan in every service, falling back to the plain defaults when Tallaby can't
+ * cover every service yet, so a seller is never preselected into an option
+ * they can't submit.
  */
 export function recommendedDefaults(
   plans: readonly FulfillmentPlanView[],
   base: OnboardingFormValues
 ): OnboardingFormValues {
+  if (!TALLABY_FULFILLMENT_ENABLED) {
+    return { ...base, model: "seller_managed", services: sellerManagedPreset(plans) };
+  }
   if (!tallabyAvailableEverywhere(plans)) return base;
   return {
     ...base,

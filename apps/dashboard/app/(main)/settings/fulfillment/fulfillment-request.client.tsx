@@ -36,6 +36,7 @@ import {
   INVENTORY_UNIT_RANGES,
   PRODUCT_SIZE_CATEGORIES,
   SKU_RANGES,
+  TALLABY_FULFILLMENT_ENABLED,
   fulfillmentRequestSchema,
   getPlanPricingLabel,
   localizedPlanDescription,
@@ -200,10 +201,21 @@ export function FulfillmentRequestForm({
                 value="tallaby_fulfillment"
                 size="lg"
                 indicator
-                disabled={!tallabyEverywhere}
+                disabled={!TALLABY_FULFILLMENT_ENABLED || !tallabyEverywhere}
                 icon={<PackageCheck className="size-5.5" />}
+                badge={
+                  !TALLABY_FULFILLMENT_ENABLED && (
+                    <span className="rounded-full bg-muted px-2.5 py-0.5 text-[11.5px] font-semibold text-muted-foreground">
+                      {t("model.soon")}
+                    </span>
+                  )
+                }
                 title={t("model.tallabyTitle")}
-                description={tallabyEverywhere ? t("model.tallabyDescription") : t("tallabyUnavailable")}
+                description={
+                  !TALLABY_FULFILLMENT_ENABLED || tallabyEverywhere
+                    ? t("model.tallabyDescription")
+                    : t("tallabyUnavailable")
+                }
               />
               <ChoiceCard
                 value="seller_managed"

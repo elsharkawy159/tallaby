@@ -72,7 +72,8 @@ function categorySummary(category: StorefrontCategory, locale: string): Category
     id: category.key,
     key: category.key,
     name,
-    href: `/?category=${encodeURIComponent(category.key)}#products`,
+    // Builder sites list a category on the catalog page (/products).
+    href: `/products?category=${encodeURIComponent(category.key)}`,
     image: category.coverImage ? getPublicUrl(category.coverImage, "products") || null : null,
     productCount: category.productCount,
   };

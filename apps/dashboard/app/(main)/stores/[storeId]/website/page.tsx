@@ -22,7 +22,7 @@ export default async function WebsiteOverviewPage({ params }: { params: Promise<
   const data = await loadWebsiteOverview(store);
 
   return (
-    <section className="mx-auto w-full max-w-5xl space-y-5 p-4 sm:p-6">
+    <section className="mx-auto w-full space-y-5 p-4 sm:p-6">
       <StorePageHeader store={store} />
       <WebsiteOverview data={data} />
     </section>

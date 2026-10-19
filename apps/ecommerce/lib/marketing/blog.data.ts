@@ -31,3 +31,22 @@ export const BLOG_POSTS: BlogPost[] = [
 export function findPost(id: string): BlogPost | undefined {
   return BLOG_POSTS.find((p) => p.id === id);
 }
+
+/**
+ * A post as the marketing blog renders it. `static` posts take their copy from
+ * messages; `cms` posts come from the platform store's blog collection
+ * (`blog.server.ts`) and carry their own title, excerpt and sanitized-on-render body.
+ */
+export type MarketingPost = BlogPost & {
+  source: "static" | "cms";
+  title: string;
+  excerpt: string;
+  /** CMS rich text (sanitized again when rendered). */
+  html?: string;
+  authorName?: string | null;
+  tags?: string[];
+  /** Locales from `lang:xx` tags; empty means every locale. */
+  langs?: string[];
+  updatedAt?: string;
+  seo?: { title?: string; description?: string; ogImage?: string; noindex?: boolean };
+};

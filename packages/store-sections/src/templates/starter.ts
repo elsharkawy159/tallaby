@@ -1,7 +1,8 @@
 /**
- * What a new store's website starts from: an empty home page and no header or
- * footer. Tallaby Classic was removed (owner, 2026-10-19); the starting site
- * will be rebuilt from section designs (CLAUDE.md rule 17). No React here.
+ * The empty home page: what a store gets when it does not start from the
+ * default template (a published store missing its home page). Never-published
+ * stores start from Tallaby Classic (`DEFAULT_TEMPLATE`, seeded by
+ * @workspace/lib `seedStarterSite`). No React here.
  */
 import type { PageContent } from "../config/schema";
 

@@ -127,7 +127,7 @@ export function StylePanel({
       )}
       {kind === "image" && (
         <Group title={t("groups.image")}>
-          <ImageControls style={style} set={onPatch} />
+          <ImageControls style={style} set={onPatch} fit={nodeType !== "video"} />
         </Group>
       )}
       <Group title={t("groups.spacing")} defaultOpen={kind === "section" || kind === "container"}>

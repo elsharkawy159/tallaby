@@ -40,7 +40,9 @@ export type PropFieldType =
   /** A date and time (ISO), e.g. a campaign end. */
   | "datetime"
   /** A visual picker of layouts or card designs; options carry a `diagram` key. */
-  | "layout";
+  | "layout"
+  /** A video link (YouTube, Vimeo, TikTok, Instagram, Facebook, a video file); the editor checks it. */
+  | "video";
 
 /** Small editor diagrams for `layout` options (drawn by the editor). */
 export type LayoutDiagram = string;
@@ -50,6 +52,8 @@ export interface PropDefinition {
   label: Localized;
   type: PropFieldType;
   placeholder?: Localized;
+  /** One line under the field explaining it. */
+  hint?: Localized;
   options?: { value: string; label: Localized; diagram?: LayoutDiagram }[];
   min?: number;
   max?: number;
@@ -60,9 +64,17 @@ export interface PropDefinition {
    * `data` fields (source, filters, picks, sort, limit) sit apart from the
    * design fields in the inspector, so changing one never resets the other.
    */
-  group?: "content" | "layout" | "appearance" | "data";
+  group?: "content" | "layout" | "appearance" | "data" | "advanced";
   /** Show the field only while another prop has one of these values (e.g. `categoryId` when `source` is `category`). */
   showWhen?: { key: string; equals: readonly (string | boolean)[] };
+  /** Hide the field while another prop has one of these values (e.g. thumbnail options while autoplay is on). */
+  hideWhen?: { key: string; equals: readonly (string | boolean)[] };
+}
+
+/** Whether a field applies to these props (its `showWhen` holds and its `hideWhen` does not). */
+export function isFieldShown(prop: PropDefinition, values: Record<string, unknown>): boolean {
+  if (prop.showWhen && !prop.showWhen.equals.includes(values[prop.showWhen.key] as string | boolean)) return false;
+  return !(prop.hideWhen && prop.hideWhen.equals.includes(values[prop.hideWhen.key] as string | boolean));
 }
 
 export interface ItemCollectionDefinition {

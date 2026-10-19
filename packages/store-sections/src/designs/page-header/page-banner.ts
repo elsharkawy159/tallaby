@@ -1,8 +1,3 @@
-/**
- * Classic category banner (library Cb-b, Classic template category pages): a
- * breadcrumb, then a rounded tinted panel with the category name large and a
- * line on the start side and its photo in a circle on the end side.
- */
 import { defineDesign } from "../builder";
 import { L } from "../_kit";
 import { crumbs } from "./_crumbs";

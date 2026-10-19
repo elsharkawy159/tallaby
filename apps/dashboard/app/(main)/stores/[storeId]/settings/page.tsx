@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { parseCurrencyLabel } from "@workspace/lib";
+import { parseStoreCurrency } from "@workspace/lib";
 import { STORE_CATALOG_MAX_PRODUCTS } from "@workspace/lib/stores";
 import { getStoreCatalog } from "@workspace/lib/stores/server";
 import { storeBuilderEnabled } from "@/components/dashboard/sidebar.config";
@@ -19,6 +19,7 @@ export default async function StoreGeneralSettingsPage({ params }: { params: Pro
   const contact = (store.contact ?? {}) as Record<string, string | undefined>;
   const locales = store.supportedLocales.filter((l): l is "ar" | "en" => l === "ar" || l === "en");
   const readOnly = store.status !== "active";
+  const currency = parseStoreCurrency(store.settings);
 
   const initial: StoreGeneralFormValues = {
     name: store.name,
@@ -32,7 +33,8 @@ export default async function StoreGeneralSettingsPage({ params }: { params: Pro
     email: contact.email ?? "",
     defaultLocale: store.defaultLocale === "en" ? "en" : "ar",
     supportedLocales: locales.length ? locales : ["ar", "en"],
-    currencyLabel: parseCurrencyLabel((store.settings as Record<string, unknown> | null)?.currencyLabel),
+    currency: currency.currency,
+    currencyLabel: currency.label,
   };
 
   return (

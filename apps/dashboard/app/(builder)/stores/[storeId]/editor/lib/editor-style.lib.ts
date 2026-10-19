@@ -173,14 +173,14 @@ export function pasteStyle(instance: SectionInstance, target: StyleTarget, clip:
 export type StyleKind = "section" | "text" | "button" | "image" | "container" | "icon" | "generic";
 
 const TEXT_NODES = new Set(["heading", "paragraph", "text", "blockQuote", "badge", "listItem", "textLink", "list"]);
-const CONTAINER_NODES = new Set(["container", "vFlex", "hFlex", "grid", "div", "linkBlock"]);
+const CONTAINER_NODES = new Set(["container", "vFlex", "hFlex", "grid", "div", "linkBlock", "videoPlaylist", "videoItem"]);
 
 export function styleKindOf(target: StyleTarget, info: { nodeType?: string; fieldType?: string; partKey?: string }): StyleKind {
   if (target.kind === "section") return "section";
   if (target.kind === "node") {
     const type = info.nodeType ?? "";
     if (CONTAINER_NODES.has(type)) return "container";
-    if (type === "image") return "image";
+    if (type === "image" || type === "video") return "image";
     if (type === "button") return "button";
     if (type === "icon") return "icon";
     return TEXT_NODES.has(type) ? "text" : "generic";

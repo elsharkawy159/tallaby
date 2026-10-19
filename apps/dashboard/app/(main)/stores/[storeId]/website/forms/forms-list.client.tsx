@@ -5,8 +5,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { ClipboardList, Inbox, LoaderCircle, Pencil, Plus, Trash2 } from "lucide-react";
+import { ChevronDown, ClipboardList, Inbox, LoaderCircle, Pencil, Plus, Trash2 } from "lucide-react";
 
+import { FORM_TEMPLATE_IDS } from "@workspace/lib/store-forms";
 import type { StoreFormSummary } from "@workspace/lib/store-forms/server";
 import {
   AlertDialog,
@@ -20,8 +21,15 @@ import {
 } from "@workspace/ui/components/alert-dialog";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@workspace/ui/components/dropdown-menu";
 import { SectionCard, SMALL_BUTTON_CLASS } from "@/components/form/form-ui";
-import { createForm, deleteForm } from "./forms.server";
+import { createFormFromTemplate, deleteForm } from "./forms.server";
 
 const formatDate = (iso: string, locale: string) =>
   new Intl.DateTimeFormat(locale === "en" ? "en-EG" : "ar-EG", { dateStyle: "medium" }).format(new Date(iso));
@@ -34,18 +42,10 @@ export function FormsList({ storeId, forms, readOnly }: { storeId: string; forms
   const [deleting, setDeleting] = useState<StoreFormSummary | null>(null);
   const base = `/stores/${storeId}/website/forms`;
 
-  // A ready-to-use contact form; the seller edits it on the next screen.
-  const onCreate = () =>
+  // A ready-made form (built on the server); the seller edits it on the next screen.
+  const onCreate = (templateId: string) =>
     startTransition(async () => {
-      const result = await createForm(storeId, {
-        name: t("starter.name"),
-        fields: [
-          { id: "name", type: "text", key: "name", label: t("starter.fullName"), required: true, width: "half" },
-          { id: "phone", type: "phone", key: "phone", label: t("starter.phone"), required: false, width: "half" },
-          { id: "email", type: "email", key: "email", label: t("starter.email"), required: true, width: "full" },
-          { id: "message", type: "textarea", key: "message", label: t("starter.message"), required: true, width: "full" },
-        ],
-      });
+      const result = await createFormFromTemplate(storeId, templateId);
       if (result.success) router.push(`${base}/${result.data.id}`);
       else toast.error(t(`errors.${result.error}`));
     });
@@ -71,10 +71,24 @@ export function FormsList({ storeId, forms, readOnly }: { storeId: string; forms
         title={t("list.title")}
         description={t("list.description")}
         action={
-          <Button type="button" size="sm" className={SMALL_BUTTON_CLASS} disabled={readOnly || isPending} onClick={onCreate}>
-            {isPending ? <LoaderCircle className="animate-spin" /> : <Plus />}
-            {t("list.create")}
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button type="button" size="sm" className={SMALL_BUTTON_CLASS} disabled={readOnly || isPending}>
+                {isPending ? <LoaderCircle className="animate-spin" /> : <Plus />}
+                {t("list.create")}
+                <ChevronDown />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-72">
+              <DropdownMenuLabel>{t("list.templates")}</DropdownMenuLabel>
+              {FORM_TEMPLATE_IDS.map((id) => (
+                <DropdownMenuItem key={id} className="flex-col items-start gap-0.5" onSelect={() => onCreate(id)}>
+                  <span className="font-medium">{t(`templates.${id}.name` as never)}</span>
+                  <span className="text-xs text-muted-foreground">{t(`templates.${id}.description` as never)}</span>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         }
       >
         {forms.length === 0 ? (

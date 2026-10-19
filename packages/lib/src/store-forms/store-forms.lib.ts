@@ -235,3 +235,5 @@ export function toCsv(header: readonly string[], rows: readonly (readonly unknow
   const lines = [header, ...rows].map((row) => row.map(escapeCsvCell).join(","));
   return `﻿${lines.join("\r\n")}\r\n`;
 }
+
+export { FORM_TEMPLATES, FORM_TEMPLATE_IDS, buildTemplateForm, getFormTemplate, type FormTemplate, type FormTemplateField } from "./form-templates.lib";

@@ -7,6 +7,7 @@
  *   faster.tallaby.com/                 → /ar/storefront/faster
  *   faster.tallaby.com/en/products/x    → /en/storefront/faster/products/x
  *   faster.tallaby.com/cart             → /ar/storefront/faster/cart
+ *   faster.tallaby.com/products?q=x     → /ar/storefront/faster/products?q=x
  *
  * Checkout, sign-in, orders and the policy pages run as-is on the store host
  * (cart actions are scoped by host, so they act on the storefront cart).
@@ -88,7 +89,6 @@ export function routeStorefrontRequest(
 ): NextResponse | null {
   const { pathname, search } = request.nextUrl;
   const { locale, path } = splitLocale(pathname);
-  const prefix = locale === routing.defaultLocale ? "" : `/${locale}`;
 
   if (PASS_THROUGH.some((p) => path === p || path.startsWith(`${p}/`))) {
     return null;
@@ -126,12 +126,9 @@ export function routeStorefrontRequest(
     return rewrite(`/pages${path.replace(/\/$/, "")}`);
   }
 
-  // The storefront home is the store's catalog.
-  if (path === "/products" || path === "/search") {
-    const url = request.nextUrl.clone();
-    url.pathname = prefix || "/";
-    return NextResponse.redirect(url);
-  }
+  // The catalog page (search, category, sort, pages). On a store without a
+  // builder site the route sends it on to the home page, which is its catalog.
+  if (path === "/products" || path === "/products/" || path === "/search") return rewrite("/products");
 
   return NextResponse.redirect(new URL(`${pathname}${search}`, marketplaceOrigin()));
 }

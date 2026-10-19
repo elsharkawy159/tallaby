@@ -189,6 +189,7 @@ export const LIBRARY_CATEGORIES: readonly LibraryCategory[] = [
       sub("info", "بيانات التواصل", "Contact info"),
       sub("address", "العنوان والفروع", "Address & branches"),
       sub("whatsapp", "واتساب", "WhatsApp"),
+      sub("form", "نماذج", "Forms"),
     ],
   },
   {
