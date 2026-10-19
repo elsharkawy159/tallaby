@@ -96,7 +96,7 @@ export function instantiatePreset(
   preset: SectionPreset,
   registry: SectionRegistry,
   id: string,
-  opts: { defaultLocale?: SiteLocale; makeId?: MakeId } = {},
+  opts: { defaultLocale?: SiteLocale; makeId?: MakeId; industry?: string } = {},
 ): SectionInstance | null {
   if (preset.designId) {
     const design = getDesign(preset.designId);

@@ -3065,6 +3065,21 @@
       "formDisabled": "{name} (turned off)",
       "manageForms": "Create and edit forms",
       "styleOnly": "This element only has style settings. Open the Style tab.",
+      "boundField": "On the site this shows the record's {field}. The text here only shows when it's outside its list.",
+      "boundFields": {
+        "title": "name",
+        "name": "name",
+        "image": "photo",
+        "href": "page link",
+        "price": "price",
+        "compareAtPrice": "price before discount",
+        "discount": "discount",
+        "rating": "rating",
+        "productCount": "product count",
+        "excerpt": "excerpt",
+        "date": "publish date"
+      },
+      "listTemplate": "Each record shows the elements inside this list. Edit the first card and every card follows.",
       "groups": {
         "design": "Design",
         "data": "Data",
@@ -3163,7 +3178,8 @@
       "groups": {
         "layout": "Layout",
         "text": "Text",
-        "basic": "Basic"
+        "basic": "Basic",
+        "data": "Store data"
       },
       "noResults": "No results.",
       "sectionsIntro": "Drag a section onto the page, or click it to add it after the selected section.",
@@ -3252,7 +3268,9 @@
       "hide": "Hide on this device",
       "rename": "Double-click to rename",
       "empty": "This page is empty. Add a section from the Add panel.",
-      "dragHandle": "Drag to reorder {name}"
+      "dragHandle": "Drag to reorder {name}",
+      "hiddenHere": "Hidden on this device",
+      "styledHere": "Has its own styles on this device"
     },
     "media": {
       "title": "Media library",
@@ -3377,8 +3395,6 @@
         "bottom": "bottom",
         "start": "start"
       },
-      "editingDesktop": "Editing desktop styles (the base for every device).",
-      "editingDevice": "Editing {device} styles only.",
       "devices": {
         "desktop": "desktop",
         "tablet": "tablet",
@@ -3435,7 +3451,13 @@
         "anchorHint": "Lowercase letters, numbers and dashes. Lets buttons link to this section.",
         "anchorLink": "Link to it with /#{anchor}",
         "allDevices": "The section frame is the same on every device."
-      }
+      },
+      "editing": {
+        "desktop": "Editing desktop, the base for every device.",
+        "tablet": "Editing tablet. Phones use these too unless they set their own.",
+        "mobile": "Editing phone only."
+      },
+      "resetSectionDevice": "Clear all {device} styles in this section"
     },
     "popover": {
       "kinds": {
@@ -3623,6 +3645,39 @@
       "cancel": "Cancel",
       "applied": "Design applied to “{name}”.",
       "undo": "Undo"
+    },
+    "responsive": {
+      "banner": {
+        "tablet": {
+          "title": "Editing tablet.",
+          "body": "Style changes apply to tablets, and to phones unless the phone has its own value."
+        },
+        "mobile": {
+          "title": "Editing phone.",
+          "body": "Style changes apply to phones only."
+        },
+        "shared": "Text, images, links, and adding, moving or deleting elements apply to every device. To remove something from this device only, hide it.",
+        "sharedLabel": "What changes on every device",
+        "backToDesktop": "Desktop"
+      },
+      "override": {
+        "own": "Set for {device} only.",
+        "below": "Won't change on the {devices}: a value is set there.",
+        "and": " and ",
+        "resetHint": "Click to use the inherited value.",
+        "reset": "Remove the {device} value",
+        "devices": {
+          "desktop": "desktop",
+          "tablet": "tablet",
+          "mobile": "phone"
+        }
+      },
+      "remove": {
+        "deleted": "Deleted on every device",
+        "description": "Deleting is never per device. You can hide it on the {device} instead.",
+        "hideInstead": "Hide on {device} only",
+        "expired": "You changed something since then. Use undo first."
+      }
     }
   },
   "websiteDesign": {

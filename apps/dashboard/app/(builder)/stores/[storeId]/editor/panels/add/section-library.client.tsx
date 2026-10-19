@@ -10,6 +10,7 @@ import {
   LIBRARY_CATEGORIES,
   SITE_ROOT_CLASS,
   collectCatalogQueries,
+  collectContentQueries,
   filterPresets,
   storeSectionRegistry,
   type DataNeed,
@@ -27,7 +28,7 @@ import { LIBRARY_ICONS } from "../../lib/editor-icons.lib";
 import { acceptsCardPreset, presetDataStatus, presetInstance } from "../../lib/editor-library.lib";
 import { recordUse } from "../../lib/editor-palette.lib";
 import { getInstance, refOf } from "../../lib/editor-selection.lib";
-import { resolveCanvasCatalog } from "../../lib/editor.lib";
+import { resolveCanvasCatalog, resolveCanvasContent } from "../../lib/editor.lib";
 import type { EditorStore } from "../../state/editor.store";
 import type { SectionPreviewHost } from "./add-panel.client";
 import { SectionThumbnail } from "./section-thumbnail.client";
@@ -64,6 +65,7 @@ export function SectionLibrary({
   const header = useStore(store, (s) => s.header);
   const footer = useStore(store, (s) => s.footer);
   const defaultLocale = useStore(store, (s) => s.defaultLocale);
+  const industry = useStore(store, (s) => s.industry);
   const selection = useStore(store, (s) => s.selection);
   const selectedInstance = useStore(store, (s) => {
     if (!s.selection) return null;
@@ -80,11 +82,11 @@ export function SectionLibrary({
   const instances = useMemo(() => {
     const out = new Map<string, SectionInstance>();
     for (const preset of filterPresets({})) {
-      const instance = presetInstance(preset, `preview-${preset.id.replace(/[^A-Za-z0-9_-]/g, "-")}`, defaultLocale);
+      const instance = presetInstance(preset, `preview-${preset.id.replace(/[^A-Za-z0-9_-]/g, "-")}`, defaultLocale, industry);
       if (instance) out.set(preset.id, instance);
     }
     return out;
-  }, [defaultLocale]);
+  }, [defaultLocale, industry]);
   const ctx = useMemo<RenderContext>(
     () => ({
       ...preview.ctx,
@@ -93,8 +95,9 @@ export function SectionLibrary({
         ...resolveCanvasCatalog(collectCatalogQueries([...instances.values()], storeSectionRegistry), preview.catalog, preview.ctx.locale),
         counts: preview.counts,
       },
+      content: resolveCanvasContent(collectContentQueries([...instances.values()], storeSectionRegistry), preview.posts),
     }),
-    [instances, preview.ctx, preview.catalog, preview.counts],
+    [instances, preview.ctx, preview.catalog, preview.counts, preview.posts],
   );
 
   const add = (preset: SectionPreset) => {
@@ -324,7 +327,7 @@ function PresetCard({
           isDragging && "opacity-50",
         )}
       >
-        <span className="relative block overflow-hidden rounded-md border bg-muted/30 transition-[border-color,box-shadow] group-hover/card:border-foreground/30 group-hover/card:shadow-sm">
+        <span data-drag-preview className="relative block overflow-hidden rounded-md border bg-muted/30 transition-[border-color,box-shadow] group-hover/card:border-foreground/30 group-hover/card:shadow-sm">
           {thumb}
           <span className="pointer-events-none absolute inset-x-2 bottom-2 flex justify-center opacity-0 transition-opacity group-hover/card:opacity-100 group-focus-within/card:opacity-100 motion-reduce:transition-none">
             <span className="inline-flex items-center gap-1 rounded-md bg-foreground px-2 py-1 text-[11px] font-medium text-background shadow-sm">

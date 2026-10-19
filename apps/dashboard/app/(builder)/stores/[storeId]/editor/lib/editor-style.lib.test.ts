@@ -1,6 +1,16 @@
 import { describe, expect, it } from "vitest";
 import type { SectionInstance } from "@workspace/store-sections";
-import { clearStyle, copyStyle, pasteStyle, readEffectiveStyle, readOwnStyle, setStyle } from "./editor-style.lib";
+import {
+  clearDeviceOverrides,
+  clearStyle,
+  copyStyle,
+  hasDeviceOverrides,
+  overrideState,
+  pasteStyle,
+  readEffectiveStyle,
+  readOwnStyle,
+  setStyle,
+} from "./editor-style.lib";
 import {
   getNode,
   parsePart,
@@ -80,5 +90,40 @@ describe("selection helpers", () => {
     const en = setNodeProp(node, "text", "Title", { locale: "en", defaultLocale: "ar", translatable: true });
     expect(en.props.text).toBe("عنوان");
     expect(readNodeProp(en, "text", { locale: "en", defaultLocale: "ar", translatable: true })).toBe("Title");
+  });
+});
+
+describe("responsive overrides", () => {
+  const padding = ["paddingTop"] as const;
+
+  it("reports the device's own value and smaller devices that keep theirs", () => {
+    let s = setStyle(hero(), { kind: "section" }, "desktop", { paddingTop: 80 });
+    expect(overrideState(s, { kind: "section" }, "desktop", padding)).toEqual({ own: false, below: [] });
+    s = setStyle(s, { kind: "section" }, "mobile", { paddingTop: 0 });
+    expect(overrideState(s, { kind: "section" }, "desktop", padding)).toEqual({ own: false, below: ["mobile"] });
+    expect(overrideState(s, { kind: "section" }, "tablet", padding)).toEqual({ own: false, below: ["mobile"] });
+    expect(overrideState(s, { kind: "section" }, "mobile", padding)).toEqual({ own: true, below: [] });
+    expect(overrideState(s, { kind: "section" }, "mobile", ["fontSize"])).toEqual({ own: false, below: [] });
+  });
+
+  it("finds and clears one device's overrides across the section, parts and elements", () => {
+    const node = { kind: "node", nodeId: "n2" } as const;
+    let s = setStyle(custom(), node, "mobile", { fontSize: "sm" });
+    s = setStyle(s, node, "tablet", { fontSize: "md" });
+    s = setStyle(s, { kind: "section" }, "mobile", { paddingTop: 0 });
+    expect(hasDeviceOverrides(s, "mobile")).toBe(true);
+    expect(hasDeviceOverrides(s, "desktop")).toBe(false);
+
+    const cleared = clearDeviceOverrides(s, "mobile");
+    expect(hasDeviceOverrides(cleared, "mobile")).toBe(false);
+    expect(cleared.breakpointStyles).toBeUndefined();
+    expect(readOwnStyle(cleared, node, "tablet")).toEqual({ fontSize: "md" });
+    expect(clearDeviceOverrides(s, "desktop")).toBe(s);
+  });
+
+  it("ignores an empty parts map", () => {
+    let s = setStyle(hero(), { kind: "part", part: "title" }, "mobile", { fontSize: "sm" });
+    s = clearStyle(s, { kind: "part", part: "title" }, "mobile");
+    expect(hasDeviceOverrides(s, "mobile")).toBe(false);
   });
 });

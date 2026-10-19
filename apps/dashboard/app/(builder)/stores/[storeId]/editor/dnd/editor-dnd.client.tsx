@@ -225,6 +225,16 @@ export function EditorDndProvider({
     if (element?.isConnected) {
       const rect = element.getBoundingClientRect();
       setGhost({ node: ghostCopy(element), width: rect.width, height: rect.height, dir: element.ownerDocument.documentElement.dir });
+      return;
+    }
+    // A library section shows its preview thumbnail (same document, so a plain copy keeps its look).
+    if (kind === "section") {
+      const target = event.activatorEvent.target;
+      const preview = target instanceof Element ? target.closest("button")?.querySelector<HTMLElement>("[data-drag-preview]") : null;
+      if (preview) {
+        const rect = preview.getBoundingClientRect();
+        setGhost({ node: preview.cloneNode(true), width: rect.width, height: rect.height, dir: document.documentElement.dir });
+      }
     }
   };
 

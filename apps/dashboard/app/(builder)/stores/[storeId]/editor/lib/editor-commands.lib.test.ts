@@ -90,9 +90,9 @@ describe("canvas drops through commands (P4B-12)", () => {
     const { store, commands, sections } = setup();
     commands.addSection(storeSectionRegistry.get("custom-section")!);
     const first = sections()[0]!.id;
-    expect(commands.applyDrop({ kind: "section", sectionId: "custom-section", presetId: "hero.split" }, { kind: "insert-section", index: 0 })).toBe(true);
+    expect(commands.applyDrop({ kind: "section", sectionId: "custom-section", presetId: "hero.classic" }, { kind: "insert-section", index: 0 })).toBe(true);
     expect(sections()).toHaveLength(2);
-    expect(sections()[0]!.source).toBe("hero-split@1");
+    expect(sections()[0]!.source).toBe("hero-classic@1");
     expect(store.getState().selection).toEqual({ target: "page", sectionId: sections()[0]!.id });
     store.getState().undo();
     expect(sections().map((s) => s.id)).toEqual([first]);

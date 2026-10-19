@@ -5,13 +5,16 @@ import { useTranslations } from "next-intl";
 import { CopyPlus, Eye, EyeOff, GripVertical, ImagePlus, Trash2, X } from "lucide-react";
 import { useStore } from "zustand";
 import type { SectionInstance } from "@workspace/store-sections";
-import { storeSectionRegistry, updateNode, type StyleValues } from "@workspace/store-sections/render";
+import { storeSectionRegistry, updateNode, type StyleKey, type StyleValues } from "@workspace/store-sections/render";
 import { Button } from "@workspace/ui/components/button";
+import { cn } from "@workspace/ui/lib/utils";
 import { ControlRow, Segmented } from "../inspector/controls/style-controls.client";
 import { ContainerControls, ImageControls, SpacingControls, TypographyControls, type StylePatch } from "../inspector/controls/style-groups.client";
 import { styleTargetOf, type EditorCommands } from "../lib/editor-commands.lib";
 import { getNode, partField, refOf, setNodeProp, withTree } from "../lib/editor-selection.lib";
-import { readEffectiveStyle, readOwnStyle, setStyle, styleKindOf } from "../lib/editor-style.lib";
+import { StyleOverrideProvider } from "../inspector/controls/style-override.client";
+import { DEVICE_TONE } from "../lib/editor-devices.lib";
+import { overrideState, readEffectiveStyle, readOwnStyle, setStyle, styleKindOf } from "../lib/editor-style.lib";
 import type { EditorStore } from "../state/editor.store";
 import { styleFromComputed } from "./canvas-handles.lib";
 import type { CanvasBox } from "./editor-overlay.client";
@@ -105,6 +108,12 @@ export function ElementPopover({
   const key = `${instance.id}:${selection.nodeId ?? selection.part}`;
   const patch = (value: StylePatch) => state.editSection(sectionRef, (i) => setStyle(i, target, device, value), `style:${key}:${device}:${Object.keys(value).join(",")}`);
 
+  const overrides = {
+    device,
+    state: (keys: readonly StyleKey[]) => overrideState(instance, target, device, keys),
+    reset: (keys: readonly StyleKey[]) => patch(Object.fromEntries(keys.map((k) => [k, undefined]))),
+  };
+
   const rtl = typeof document !== "undefined" && document.documentElement.dir === "rtl";
   const position = placePopover(anchor, bounds, height, rtl);
   const startDrag = (event: ReactPointerEvent) => {
@@ -151,35 +160,39 @@ export function ElementPopover({
         </PopButton>
       </div>
 
-      {(kind === "text" || kind === "button") && <TypographyControls style={style} set={patch} compact />}
-      {kind === "icon" && <TypographyControls style={style} set={patch} compact />}
-      {kind === "button" && node && (
-        <ControlRow label={t("variant")} className="mt-2.5">
-          <Segmented
-            label={t("variant")}
-            // The renderer draws a solid button when none is set.
-            value={(["solid", "outline", "light"] as const).find((v) => v === (node.props.variant ?? "solid"))}
-            onChange={(variant) =>
-              state.editSection(sectionRef, (i) =>
-                withTree(i, (nodes) => updateNode(nodes, node.id, (n) => setNodeProp(n, "variant", variant ?? "solid", { locale: state.locale, defaultLocale: state.defaultLocale }))),
-              )
-            }
-            options={(["solid", "outline", "light"] as const).map((v) => ({ value: v, label: t(`variants.${v}`) }))}
-          />
-        </ControlRow>
+      <StyleOverrideProvider value={overrides}>
+        {(kind === "text" || kind === "button") && <TypographyControls style={style} set={patch} compact />}
+        {kind === "icon" && <TypographyControls style={style} set={patch} compact />}
+        {kind === "button" && node && (
+          <ControlRow label={t("variant")} className="mt-2.5">
+            <Segmented
+              label={t("variant")}
+              // The renderer draws a solid button when none is set.
+              value={(["solid", "outline", "light"] as const).find((v) => v === (node.props.variant ?? "solid"))}
+              onChange={(variant) =>
+                state.editSection(sectionRef, (i) =>
+                  withTree(i, (nodes) => updateNode(nodes, node.id, (n) => setNodeProp(n, "variant", variant ?? "solid", { locale: state.locale, defaultLocale: state.defaultLocale }))),
+                )
+              }
+              options={(["solid", "outline", "light"] as const).map((v) => ({ value: v, label: t(`variants.${v}`) }))}
+            />
+          </ControlRow>
+        )}
+        {kind === "image" && (
+          <div className="space-y-2.5">
+            <Button type="button" variant="outline" size="sm" className="w-full" onClick={onRequestImage}>
+              <ImagePlus aria-hidden />
+              {t("replaceImage")}
+            </Button>
+            <ImageControls style={style} set={patch} />
+          </div>
+        )}
+        {kind === "container" && <ContainerControls style={style} set={patch} nodeType={node?.type} />}
+        {kind === "generic" && <SpacingControls style={style} set={patch} />}
+      </StyleOverrideProvider>
+      {device !== "desktop" && (
+        <p className={cn("mt-2.5 rounded px-2 py-1 text-[11px]", DEVICE_TONE[device].strip)}>{t("deviceNote", { device: t(`devices.${device}`) })}</p>
       )}
-      {kind === "image" && (
-        <div className="space-y-2.5">
-          <Button type="button" variant="outline" size="sm" className="w-full" onClick={onRequestImage}>
-            <ImagePlus aria-hidden />
-            {t("replaceImage")}
-          </Button>
-          <ImageControls style={style} set={patch} />
-        </div>
-      )}
-      {kind === "container" && <ContainerControls style={style} set={patch} nodeType={node?.type} />}
-      {kind === "generic" && <SpacingControls style={style} set={patch} />}
-      {device !== "desktop" && <p className="mt-2.5 text-[11px] text-muted-foreground">{t("deviceNote", { device: t(`devices.${device}`) })}</p>}
     </div>
   );
 }

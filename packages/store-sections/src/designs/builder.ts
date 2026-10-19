@@ -14,6 +14,7 @@ import type { LibraryCategoryId } from "../library/types";
 import { getElementDefinition, type ElementIconName, type ElementType, type PatternVariant } from "../elements/registry";
 import type { StyleBreakpoint, StyleValues } from "../elements/style";
 import { fromTemplate, type MakeId, type NodeTemplate } from "../elements/tree";
+import { peoplePhoto, stockPhoto } from "./stock-photos";
 
 /** A plain string is the same in both locales. */
 export type DesignText = string | Localized;
@@ -23,12 +24,24 @@ export type NodeOptions = {
   label?: DesignText;
   /** Content role (`title`, `image`, `items`…), used to carry content between designs. */
   role?: string;
+  /** Inside a data list: the record field this node shows (`title`, `price`, `image`, `href`…). */
+  bind?: string;
   style?: StyleValues;
   tablet?: StyleValues;
   mobile?: StyleValues;
 };
 
 export type GridOptions = NodeOptions & { columns: { desktop: number; tablet?: number; mobile?: number } };
+
+/** A data list: grid columns plus what it shows (`elements/data.ts`). */
+export type ListOptions = GridOptions & {
+  source?: string;
+  sort?: string;
+  limit?: number;
+  offset?: number;
+  /** The section still shows when this list is empty (another list carries it). */
+  optional?: boolean;
+};
 
 export type Design = {
   id: string;
@@ -80,7 +93,7 @@ function make(type: ElementType, props: Record<string, DesignText | boolean | un
   if (opts.mobile) breakpointStyles.mobile = opts.mobile;
   return {
     type: type as ComponentNode["type"],
-    props: { ...plain, ...(opts.role && { role: opts.role }), ...localize(text) },
+    props: { ...plain, ...(opts.role && { role: opts.role }), ...(opts.bind && { bind: opts.bind }), ...localize(text) },
     children,
     ...(opts.style && { style: { ...opts.style } }),
     ...(Object.keys(breakpointStyles).length && { breakpointStyles }),
@@ -101,16 +114,18 @@ function withDefaults(type: ElementType, opts: NodeOptions = {}): NodeOptions {
   };
 }
 
-export const treeBuilder = {
-  section: (opts: NodeOptions, children: NodeTemplate[]) => make("section", {}, withDefaults("section", opts), children),
-  container: (children: NodeTemplate[], opts?: NodeOptions) => make("container", {}, opts, children),
-  stack: (children: NodeTemplate[], opts?: NodeOptions) => make("vFlex", {}, opts, children),
-  row: (children: NodeTemplate[], opts?: NodeOptions) => make("hFlex", {}, opts, children),
-  grid: (children: NodeTemplate[], opts: GridOptions) => {
+/**
+ * The `t` helpers. `industry` picks the default photos (`./stock-photos.ts`)
+ * that `photo`/`person` put in; everything else is the same for every store.
+ */
+export function createTreeBuilder(industry?: string) {
+  const image = (src: string, alt: DesignText, opts?: NodeOptions) => make("image", { src, alt }, withDefaults("image", opts));
+  /** Columns per device as styles, like `grid`. */
+  const columned = (type: ElementType, props: Record<string, DesignText | boolean | undefined>, opts: GridOptions, children: NodeTemplate[]) => {
     const { columns, ...rest } = opts;
     return make(
-      "grid",
-      {},
+      type,
+      props,
       {
         ...rest,
         style: { columns: columns.desktop, ...rest.style },
@@ -119,31 +134,68 @@ export const treeBuilder = {
       },
       children,
     );
-  },
-  card: (children: NodeTemplate[], opts?: NodeOptions) => make("card", {}, withDefaults("card", opts), children),
-  box: (children: NodeTemplate[], opts?: NodeOptions) => make("div", {}, opts, children),
-  pattern: (variant: PatternVariant, opts?: NodeOptions) => make("pattern", { variant }, opts),
-  heading: (text: DesignText, level: "h1" | "h2" | "h3" | "h4", opts?: NodeOptions) => make("heading", { text, level }, opts),
-  paragraph: (text: DesignText, opts?: NodeOptions) => make("paragraph", { text }, opts),
-  text: (text: DesignText, opts?: NodeOptions) => make("text", { text }, opts),
-  badge: (text: DesignText, opts?: NodeOptions) => make("badge", { text }, opts),
-  button: (label: DesignText, href: string, variant: "solid" | "outline" | "light" = "solid", opts?: NodeOptions) =>
-    make("button", { label, href, variant }, opts),
-  image: (src: string, alt: DesignText, opts?: NodeOptions) => make("image", { src, alt }, withDefaults("image", opts)),
-  icon: (name: ElementIconName, opts?: NodeOptions) => make("icon", { name }, opts),
-  list: (items: DesignText[], opts?: NodeOptions) => make("list", {}, opts, items.map((text) => make("listItem", { text }))),
-  accordion: (items: { title: DesignText; body: DesignText; open?: boolean }[], opts?: NodeOptions) =>
-    make(
-      "accordion",
-      {},
-      opts,
-      items.map((item) => make("accordionItem", { title: item.title, open: item.open || undefined }, {}, [make("paragraph", { text: item.body })])),
-    ),
-  divider: (opts?: NodeOptions) => make("divider", {}, opts),
-  spacer: (height: number, opts?: NodeOptions) => make("spacer", {}, { ...opts, style: { minHeight: height, ...opts?.style } }),
-};
+  };
+  const list = (type: "productList" | "categoryList" | "postList", children: NodeTemplate[], opts: ListOptions) => {
+    const { source, sort, limit, offset, optional, ...rest } = opts;
+    const node = columned(type, { source, sort, optional }, rest, children);
+    return { ...node, props: { ...node.props, ...(limit !== undefined && { limit }), ...(offset && { offset }) } };
+  };
+  return {
+    section: (opts: NodeOptions, children: NodeTemplate[]) => make("section", {}, withDefaults("section", opts), children),
+    container: (children: NodeTemplate[], opts?: NodeOptions) => make("container", {}, opts, children),
+    stack: (children: NodeTemplate[], opts?: NodeOptions) => make("vFlex", {}, opts, children),
+    row: (children: NodeTemplate[], opts?: NodeOptions) => make("hFlex", {}, opts, children),
+    grid: (children: NodeTemplate[], opts: GridOptions) => columned("grid", {}, opts, children),
+    /** Store products; `children` is the card repeated per product (bind its parts). */
+    productList: (children: NodeTemplate[], opts: ListOptions) => list("productList", children, opts),
+    /** Store categories; `children` is the card repeated per category. */
+    categoryList: (children: NodeTemplate[], opts: ListOptions) => list("categoryList", children, opts),
+    /** Published blog posts; `children` is the card repeated per post. */
+    postList: (children: NodeTemplate[], opts: ListOptions) => list("postList", children, opts),
+    /** One of the store's forms, picked by the seller after inserting. */
+    storeForm: (opts?: NodeOptions) => make("storeForm", {}, { label: { ar: "النموذج", en: "Form" }, ...opts }),
+    /** The cart button of the product a list card shows. */
+    addToCart: (opts?: NodeOptions) => make("addToCart", {}, opts),
+    card: (children: NodeTemplate[], opts?: NodeOptions) => make("card", {}, withDefaults("card", opts), children),
+    box: (children: NodeTemplate[], opts?: NodeOptions) => make("div", {}, opts, children),
+    pattern: (variant: PatternVariant, opts?: NodeOptions) => make("pattern", { variant }, opts),
+    heading: (text: DesignText, level: "h1" | "h2" | "h3" | "h4", opts?: NodeOptions) => make("heading", { text, level }, opts),
+    paragraph: (text: DesignText, opts?: NodeOptions) => make("paragraph", { text }, opts),
+    text: (text: DesignText, opts?: NodeOptions) => make("text", { text }, opts),
+    badge: (text: DesignText, opts?: NodeOptions) => make("badge", { text }, opts),
+    button: (label: DesignText, href: string, variant: "solid" | "outline" | "light" = "solid", opts?: NodeOptions) =>
+      make("button", { label, href, variant }, opts),
+    image,
+    /** Default photo `index` for the store's industry. */
+    photo: (index: number, alt: DesignText, opts?: NodeOptions) => image(stockPhoto(industry, index), alt, opts),
+    /** Default photo of people (owner, team, packing). */
+    person: (index: number, alt: DesignText, opts?: NodeOptions) => image(peoplePhoto(index), alt, opts),
+    quote: (text: DesignText, opts?: NodeOptions) => make("blockQuote", { text }, opts),
+    textLink: (text: DesignText, href: string, opts?: NodeOptions) => make("textLink", { text, href }, opts),
+    link: (href: string, children: NodeTemplate[], opts?: NodeOptions) => make("linkBlock", { href }, withDefaults("linkBlock", opts), children),
+    icon: (name: ElementIconName, opts?: NodeOptions) => make("icon", { name }, opts),
+    list: (items: DesignText[], opts?: NodeOptions) =>
+      make(
+        "list",
+        {},
+        opts,
+        items.map((text) => make("listItem", { text })),
+      ),
+    accordion: (items: { title: DesignText; body: DesignText; open?: boolean }[], opts?: NodeOptions) =>
+      make(
+        "accordion",
+        {},
+        opts,
+        items.map((item) => make("accordionItem", { title: item.title, open: item.open || undefined }, {}, [make("paragraph", { text: item.body })])),
+      ),
+    divider: (opts?: NodeOptions) => make("divider", {}, opts),
+    spacer: (height: number, opts?: NodeOptions) => make("spacer", {}, { ...opts, style: { minHeight: height, ...opts?.style } }),
+  };
+}
 
-export type TreeBuilder = typeof treeBuilder;
+export type TreeBuilder = ReturnType<typeof createTreeBuilder>;
+
+export const treeBuilder: TreeBuilder = createTreeBuilder();
 
 // ---------------------------------------------------------------------------
 // Instantiation
@@ -163,12 +215,13 @@ function swapToEnglish(node: NodeTemplate): NodeTemplate {
 
 /**
  * A new tree section from a design: fresh node ids (`${id}-n1`, `${id}-n2`…
- * unless `makeId` is given), text in the store's default locale.
+ * unless `makeId` is given), text in the store's default locale, photos for
+ * the store's industry.
  */
-export function instantiateDesign(design: Design, opts: { id: string; defaultLocale?: SiteLocale; makeId?: MakeId }): SectionInstance {
+export function instantiateDesign(design: Design, opts: { id: string; defaultLocale?: SiteLocale; makeId?: MakeId; industry?: string }): SectionInstance {
   let counter = 0;
   const makeId = opts.makeId ?? (() => `${opts.id}-n${++counter}`);
-  const template = design.tree(treeBuilder);
+  const template = design.tree(opts.industry ? createTreeBuilder(opts.industry) : treeBuilder);
   const localized = opts.defaultLocale === "en" ? swapToEnglish(template) : template;
   return {
     id: opts.id,

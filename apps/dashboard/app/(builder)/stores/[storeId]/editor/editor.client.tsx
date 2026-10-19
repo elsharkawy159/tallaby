@@ -8,6 +8,7 @@ import type { DesignSystem, SectionInstance, SiteLocale } from "@workspace/store
 import {
   CLASSIC_TOKENS,
   collectCatalogQueries,
+  collectContentQueries,
   designSystemToTokens,
   storeSectionRegistry,
   type RenderContext,
@@ -16,7 +17,9 @@ import {
 import { Button } from "@workspace/ui/components/button";
 import { cn } from "@workspace/ui/lib/utils";
 import { MediaPicker } from "@/components/media/media-picker.client";
+import { findIndustry } from "@/lib/stores/industries.lib";
 import { EditorDndProvider } from "./dnd/editor-dnd.client";
+import { DeviceBanner } from "./canvas/device-banner.client";
 import { EditorCanvas } from "./canvas/editor-canvas.client";
 import { createEditorCommands } from "./lib/editor-commands.lib";
 import { QuickInsertDialog, ShortcutsDialog } from "./shell/editor-dialogs.client";
@@ -29,7 +32,7 @@ import { failedNeeds } from "./lib/editor-data.lib";
 import { useEditorData } from "./state/use-editor-data.client";
 import { getInstance, imageSpotOf, isImageSelection, refOf, setImageAt } from "./lib/editor-selection.lib";
 import { storeDataCounts } from "./lib/editor-library.lib";
-import { dropUnknownSections, resolveCanvasCatalog } from "./lib/editor.lib";
+import { dropUnknownSections, resolveCanvasCatalog, resolveCanvasContent } from "./lib/editor.lib";
 import { publish } from "./server/editor.server";
 import { createEditorStore, type EditorPage, type EditorStore, type Rail } from "./state/editor.store";
 import { AddPanel } from "./panels/add/add-panel.client";
@@ -40,6 +43,7 @@ import { LayersPanel } from "./panels/layers-panel.client";
 import { MediaPanel } from "./panels/media-panel.client";
 import { PagesPanel, nameOf } from "./panels/pages-panel.client";
 import type { TemplateCardView } from "@/app/(main)/stores/[storeId]/website/templates/templates.dto";
+import { useDeviceCommands } from "./state/use-device-commands.client";
 import { useEditorAutosave } from "./state/use-editor-autosave.client";
 import { useEditorShortcuts } from "./state/use-editor-shortcuts.client";
 import { useStorePreview } from "./state/use-store-preview.client";
@@ -86,6 +90,7 @@ export function StoreEditor({ initial }: { initial: EditorInitial }) {
       designSystem: initial.designSystem,
       designVersion: initial.designVersion,
       defaultLocale: initial.defaultLocale,
+      industry: findIndustry(initial.category)?.id,
     });
     if (clean.dropped) store.setState({ dirtyPages: clean.dirtyPages, dirtyChrome: clean.dirtyChrome, saveStatus: "unsaved" });
     storeRef.current = store;
@@ -124,7 +129,8 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
   // Store data refreshes when the seller comes back to this tab (P4B-05); forms also refresh from the Forms tab.
   const { data: catalog, state: dataState, refresh: refreshData, setForms } = useEditorData(initial.storeId, initial.catalog);
   const forms = catalog.forms;
-  const commands = useMemo(() => createEditorCommands(store), [store]);
+  const baseCommands = useMemo(() => createEditorCommands(store), [store]);
+  const commands = useDeviceCommands(store, baseCommands);
 
   const shortcutActions = useMemo(
     () => ({
@@ -162,8 +168,9 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
         brands: catalog.brands,
         reviews: catalog.reviewStats ? catalog.reviewStats.count : null,
         coupons: catalog.coupons?.filter((c) => c.live) ?? null,
+        posts: catalog.posts,
       }),
-    [catalog.products, catalog.categories, forms, initial.store.contact, navPages, catalog.brands, catalog.reviewStats, catalog.coupons],
+    [catalog.products, catalog.categories, forms, initial.store.contact, navPages, catalog.brands, catalog.reviewStats, catalog.coupons, catalog.posts],
   );
   const openPages = () => {
     store.getState().setRail("pages");
@@ -185,6 +192,10 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
         </a>
       ),
       imageUrl: (src) => (src && /^(https?:)?\/\//.test(src) ? src : src ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/sellers/${src}` : null),
+      formatDate: (iso) => {
+        const date = new Date(iso);
+        return Number.isNaN(date.getTime()) ? "" : new Intl.DateTimeFormat(locale === "en" ? "en-GB" : "ar-EG", { day: "numeric", month: "long", year: "numeric" }).format(date);
+      },
       formatPrice: (amount) => new Intl.NumberFormat(locale === "ar" ? "ar-EG" : "en-EG", { style: "currency", currency: "EGP", maximumFractionDigits: 0 }).format(amount),
       renderCartButton: () => <span className="inline-flex h-9 items-center rounded-full border border-(--sf-line) px-3 text-sm">🛒</span>,
       renderAddToCart: () => <span className="inline-flex h-8 items-center justify-center rounded-md bg-(--sf-brand) px-3 text-xs font-semibold text-white">{t("canvas.addToCart")}</span>,
@@ -202,6 +213,7 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
         .filter((p) => p.isHome || p.showInNav)
         .map((p) => ({ name: nameOf(p.name, locale), href: p.isHome ? "/" : `/${p.slug}`, isHome: p.isHome })),
       catalog: { ...resolveCanvasCatalog(collectCatalogQueries(sections, storeSectionRegistry), catalog, locale), counts },
+      content: resolveCanvasContent(collectContentQueries(sections, storeSectionRegistry), catalog.posts),
       editorData: {
         state: dataState,
         failed: failedNeeds(catalog.failed),
@@ -308,7 +320,7 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
                 store={store}
                 commands={commands}
                 uiLocale={uiLocale}
-                preview={{ ctx: baseCtx, catalog, designSystem, defaultLocale, fontClassName: initial.fontClassName, counts }}
+                preview={{ ctx: baseCtx, catalog, posts: catalog.posts, designSystem, defaultLocale, fontClassName: initial.fontClassName, counts }}
                 templates={initial.templates}
                 templateHost={{
                   storeId: initial.storeId,
@@ -338,23 +350,26 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
           </aside>
         )}
 
-        <main className="min-w-0 flex-1">
-          <EditorCanvas
-            ctx={ctx}
-            sections={shown.sections}
-            header={shown.header}
-            footer={shown.footer}
-            designSystem={designSystem}
-            fontClassName={initial.fontClassName}
-            defaultLocale={defaultLocale}
-            device={device}
-            store={store}
-            commands={commands}
-            uiLocale={uiLocale}
-            onRequestImage={() => setImagePickerOpen(true)}
-            onQuickInsert={(index) => setQuickInsert({ open: true, index })}
-            onFrameKeyDown={onFrameKeyDown}
-          />
+        <main className="flex min-w-0 flex-1 flex-col">
+          <DeviceBanner store={store} />
+          <div className="min-h-0 flex-1">
+            <EditorCanvas
+              ctx={ctx}
+              sections={shown.sections}
+              header={shown.header}
+              footer={shown.footer}
+              designSystem={designSystem}
+              fontClassName={initial.fontClassName}
+              defaultLocale={defaultLocale}
+              device={device}
+              store={store}
+              commands={commands}
+              uiLocale={uiLocale}
+              onRequestImage={() => setImagePickerOpen(true)}
+              onQuickInsert={(index) => setQuickInsert({ open: true, index })}
+              onFrameKeyDown={onFrameKeyDown}
+            />
+          </div>
         </main>
 
         <aside aria-label={t("sidebar.label")} className="hidden w-[320px] shrink-0 border-s bg-background lg:block">

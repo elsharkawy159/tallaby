@@ -5,7 +5,9 @@ import { useTranslations } from "next-intl";
 import { ArrowDown, ArrowUp, Plus, RotateCcw, Trash2, X } from "lucide-react";
 import type { ComponentNode, SectionInstance, SiteLocale } from "@workspace/store-sections";
 import {
+  DATA_BINDINGS,
   getElementDefinition,
+  isDataList,
   presetsForSection,
   type AnySectionDefinition,
   type ItemCollectionDefinition,
@@ -109,16 +111,20 @@ export function Field({
     case "color":
       return (
         <div className="flex gap-2">
-          <input type="color" aria-label={label(prop.label, uiLocale)} value={/^#[0-9a-f]{6}$/i.test(text) ? text : "#145163"} onChange={(e) => onChange(e.target.value)} className="h-9 w-12 rounded border" />
+          <input
+            type="color"
+            aria-label={label(prop.label, uiLocale)}
+            value={/^#[0-9a-f]{6}$/i.test(text) ? text : "#145163"}
+            onChange={(e) => onChange(e.target.value)}
+            className="h-9 w-12 rounded border"
+          />
           <Input id={id} dir="ltr" value={text} onChange={(e) => onChange(e.target.value)} />
         </div>
       );
     case "image":
       return (
         <div className="space-y-2">
-          {inspectorStore && (
-            <MediaPicker storeId={inspectorStore.storeId} readOnly={inspectorStore.readOnly} onPick={(asset) => onChange(asset.url)} />
-          )}
+          {inspectorStore && <MediaPicker storeId={inspectorStore.storeId} readOnly={inspectorStore.readOnly} onPick={(asset) => onChange(asset.url)} />}
           <Input id={id} dir="ltr" placeholder="https://…" value={text} onChange={(e) => onChange(e.target.value)} />
           {/^https?:\/\//.test(text) && (
             // eslint-disable-next-line @next/next/no-img-element -- seller-entered preview
@@ -236,10 +242,25 @@ function ProductsPicker({
         {value.map((productId, index) => (
           <li key={productId} className="flex items-center gap-1 rounded-md border px-2 py-1 text-sm">
             <span className="min-w-0 flex-1 truncate">{byId.get(productId) ? label(byId.get(productId)!.title, uiLocale) : t("missingProduct")}</span>
-            <Button type="button" size="icon" variant="ghost" className="size-7" disabled={index === 0} onClick={() => onChange(moveIds(value, index, index - 1))} aria-label={t("moveUp")}>
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              className="size-7"
+              disabled={index === 0}
+              onClick={() => onChange(moveIds(value, index, index - 1))}
+              aria-label={t("moveUp")}
+            >
               <ArrowUp className="size-3.5" />
             </Button>
-            <Button type="button" size="icon" variant="ghost" className="size-7" onClick={() => onChange(value.filter((v) => v !== productId))} aria-label={t("remove")}>
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              className="size-7"
+              onClick={() => onChange(value.filter((v) => v !== productId))}
+              aria-label={t("remove")}
+            >
               <X className="size-3.5" />
             </Button>
           </li>
@@ -288,10 +309,25 @@ function OrderedPicker({
           {value.map((itemId, index) => (
             <li key={itemId} className="flex items-center gap-1 rounded-md border px-2 py-1 text-sm">
               <span className="min-w-0 flex-1 truncate">{byId.get(itemId)?.label ?? missing}</span>
-              <Button type="button" size="icon" variant="ghost" className="size-7" disabled={index === 0} onClick={() => onChange(moveIds(value, index, index - 1))} aria-label={t("moveUp")}>
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
+                className="size-7"
+                disabled={index === 0}
+                onClick={() => onChange(moveIds(value, index, index - 1))}
+                aria-label={t("moveUp")}
+              >
                 <ArrowUp className="size-3.5" />
               </Button>
-              <Button type="button" size="icon" variant="ghost" className="size-7" onClick={() => onChange(value.filter((v) => v !== itemId))} aria-label={t("remove")}>
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
+                className="size-7"
+                onClick={() => onChange(value.filter((v) => v !== itemId))}
+                aria-label={t("remove")}
+              >
                 <X className="size-3.5" />
               </Button>
             </li>
@@ -322,20 +358,26 @@ function DateTimeField({ id, value, onChange }: { id: string; value: string; onC
   const past = date !== null && !Number.isNaN(date.getTime()) && date.getTime() < Date.now();
   return (
     <div className="space-y-1">
-      <Input
-        id={id}
-        type="datetime-local"
-        dir="ltr"
-        value={local}
-        onChange={(e) => onChange(e.target.value ? new Date(e.target.value).toISOString() : "")}
-      />
+      <Input id={id} type="datetime-local" dir="ltr" value={local} onChange={(e) => onChange(e.target.value ? new Date(e.target.value).toISOString() : "")} />
       <p className={past ? "text-xs text-amber-700 dark:text-amber-400" : "text-xs text-muted-foreground"}>{past ? t("datePast") : t("dateHint")}</p>
     </div>
   );
 }
 
 /** Visual picker for `layout` fields: one small diagram per option. */
-function LayoutPicker({ id, prop, value, onChange, uiLocale }: { id: string; prop: PropDefinition; value: string; onChange: (value: unknown) => void; uiLocale: string }) {
+function LayoutPicker({
+  id,
+  prop,
+  value,
+  onChange,
+  uiLocale,
+}: {
+  id: string;
+  prop: PropDefinition;
+  value: string;
+  onChange: (value: unknown) => void;
+  uiLocale: string;
+}) {
   return (
     <div id={id} role="radiogroup" aria-label={label(prop.label, uiLocale)} className="grid grid-cols-3 gap-1.5">
       {(prop.options ?? []).map((option) => {
@@ -399,13 +441,37 @@ function Collection({
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted-foreground">#{index + 1}</span>
             <div className="flex">
-              <Button type="button" size="icon" variant="ghost" className="size-7" disabled={index === 0} onClick={() => onChange(placeItem(instance, definition.key, index, index - 1))} aria-label={t("moveUp")}>
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
+                className="size-7"
+                disabled={index === 0}
+                onClick={() => onChange(placeItem(instance, definition.key, index, index - 1))}
+                aria-label={t("moveUp")}
+              >
                 <ArrowUp className="size-3.5" />
               </Button>
-              <Button type="button" size="icon" variant="ghost" className="size-7" disabled={index === items.length - 1} onClick={() => onChange(placeItem(instance, definition.key, index, index + 1))} aria-label={t("moveDown")}>
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
+                className="size-7"
+                disabled={index === items.length - 1}
+                onClick={() => onChange(placeItem(instance, definition.key, index, index + 1))}
+                aria-label={t("moveDown")}
+              >
                 <ArrowDown className="size-3.5" />
               </Button>
-              <Button type="button" size="icon" variant="ghost" className="size-7" disabled={target.locale !== target.defaultLocale} onClick={() => onChange(removeItem(instance, definition.key, index))} aria-label={t("remove")}>
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
+                className="size-7"
+                disabled={target.locale !== target.defaultLocale}
+                onClick={() => onChange(removeItem(instance, definition.key, index))}
+                aria-label={t("remove")}
+              >
                 <Trash2 className="size-3.5" />
               </Button>
             </div>
@@ -587,7 +653,9 @@ export function SectionInspector({
         )}
         {groups.data.length > 0 && <FieldGroup title={t("groups.data")}>{groups.data.map(renderField)}</FieldGroup>}
         {groups.content.length > 0 && (
-          <FieldGroup title={groups.data.length || groups.design.length || designs.length > 1 ? t("groups.content") : null}>{groups.content.map(renderField)}</FieldGroup>
+          <FieldGroup title={groups.data.length || groups.design.length || designs.length > 1 ? t("groups.content") : null}>
+            {groups.content.map(renderField)}
+          </FieldGroup>
         )}
         {groups.options.length > 0 && <FieldGroup title={t("groups.options")}>{groups.options.map(renderField)}</FieldGroup>}
         {definition.itemCollections?.map((collection) => (
@@ -618,6 +686,9 @@ export function SectionInspector({
   );
 }
 
+/** Record fields a node inside a data list can show (`storeEditor.inspector.boundFields`). */
+const BOUND_FIELDS: ReadonlySet<string> = new Set(Object.values(DATA_BINDINGS).flat());
+
 /** Content fields of the selected element of a custom section (P4B-07). */
 export function ElementInspector({
   node,
@@ -646,8 +717,14 @@ export function ElementInspector({
     <InspectorStore.Provider value={mediaStore}>
       <div className="space-y-4">
         {locale !== defaultLocale && <p className="rounded-md bg-muted p-2 text-xs">{t("translating", { locale: locale.toUpperCase() })}</p>}
+        {isDataList(node.type) && <p className="rounded-md bg-muted p-2 text-xs">{t("listTemplate")}</p>}
+        {typeof node.props.bind === "string" && BOUND_FIELDS.has(node.props.bind) && (
+          <p className="rounded-md bg-muted p-2 text-xs">{t("boundField", { field: t(`boundFields.${node.props.bind}`) })}</p>
+        )}
         {definition.fields.length === 0 && <p className="text-sm text-muted-foreground">{t("styleOnly")}</p>}
         {definition.fields.map((prop) => {
+          // Fields that only apply to another choice (a category when the source is "from a category").
+          if (prop.showWhen && !prop.showWhen.equals.includes(node.props[prop.showWhen.key] as string | boolean)) return null;
           const target = { locale, defaultLocale, translatable: prop.translatable };
           const fieldId = `${node.id}-${prop.key}`;
           const locked = locale !== defaultLocale && !prop.translatable;

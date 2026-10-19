@@ -20,6 +20,7 @@ import {
 import { cn } from "@workspace/ui/lib/utils";
 import { gapLines, type SelectionHandles } from "./canvas-handles.lib";
 import { EditorOverlay, elementDragKey, type CanvasBox, type CanvasBoxes } from "./editor-overlay.client";
+import { DEVICE_TONE } from "../lib/editor-devices.lib";
 import { styleKindOf } from "../lib/editor-style.lib";
 import type { EditorCommands } from "../lib/editor-commands.lib";
 import { CANVAS_DROP_ID, isCanvasPayload } from "../dnd/dnd.types";
@@ -511,7 +512,7 @@ export function EditorCanvas({
       <iframe
         ref={frame}
         title="canvas"
-        className="h-full rounded-lg border bg-white shadow-sm transition-[width]"
+        className={cn("h-full rounded-lg border bg-white shadow-sm transition-[width]", DEVICE_TONE[device].ring)}
         style={{ width: DEVICE_WIDTH[device], maxWidth: "100%", pointerEvents: canvasDrag ? "none" : undefined }}
       />
       {doc &&
@@ -626,7 +627,7 @@ function MarkerShape({ marker, frame, label }: { marker: DropMarker; frame: Canv
   const line = marker.line;
   const bar =
     line.orientation === "horizontal" ? (
-      <div className="absolute flex items-center" style={{ top: clampY(line.y) - 1, left: line.x, width: line.length }}>
+      <div className="absolute flex items-center transition-[top,left,width] duration-150 ease-out motion-reduce:transition-none" style={{ top: clampY(line.y) - 1, left: line.x, width: line.length }}>
         <span className={cn("absolute inset-x-1 h-0.5 rounded-full", marker.kind === "invalid" ? "bg-destructive" : "bg-primary shadow-[0_0_0_3px_color-mix(in_oklab,var(--primary)_20%,transparent)]")} />
         <span className={cn("relative size-2.5 rounded-full border-2 bg-background", marker.kind === "invalid" ? "border-destructive" : "border-primary")} />
         {label && (

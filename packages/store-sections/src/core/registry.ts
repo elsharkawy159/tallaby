@@ -1,4 +1,5 @@
 import type { SectionInstance } from "../config/schema";
+import { nodeCatalogQuery, nodeContentQuery, nodeFormId, walkNodes } from "../elements/data";
 import type { AnySectionDefinition, CatalogQuery, ContentQuery, SectionCategory } from "./types";
 
 export type SectionRegistry = {
@@ -71,6 +72,11 @@ export function contentOverrideKeys(registry: SectionRegistry): Record<string, s
 export function collectFormIds(sections: readonly SectionInstance[], registry: SectionRegistry): string[] {
   const out = new Set<string>();
   for (const instance of sections) {
+    // Form nodes of tree sections.
+    walkNodes(instance.componentTree, (node) => {
+      const formId = nodeFormId(node);
+      if (formId) out.add(formId);
+    });
     const definition = registry.get(instance.sectionId);
     if (!definition?.formRef) continue;
     const formId = definition.formRef(resolveSectionProps(definition, applyMigrations(instance, definition).props));
@@ -79,13 +85,14 @@ export function collectFormIds(sections: readonly SectionInstance[], registry: S
   return [...out];
 }
 
-/** Every catalog query of a page, keyed by section instance id (for the host resolver). */
-export function collectCatalogQueries(
-  sections: readonly SectionInstance[],
-  registry: SectionRegistry,
-): Record<string, CatalogQuery> {
+/** Every catalog query of a page, keyed by section instance id or, for data nodes of tree sections, by node id (for the host resolver). */
+export function collectCatalogQueries(sections: readonly SectionInstance[], registry: SectionRegistry): Record<string, CatalogQuery> {
   const out: Record<string, CatalogQuery> = {};
   for (const instance of sections) {
+    walkNodes(instance.componentTree, (node) => {
+      const query = nodeCatalogQuery(node);
+      if (query) out[node.id] = query;
+    });
     const definition = registry.get(instance.sectionId);
     if (!definition?.catalogQuery) continue;
     const props = resolveSectionProps(definition, applyMigrations(instance, definition).props);
@@ -95,13 +102,14 @@ export function collectCatalogQueries(
   return out;
 }
 
-/** Every blog/CMS content query of a page, keyed by section instance id (P4-16, P4-11). */
-export function collectContentQueries(
-  sections: readonly SectionInstance[],
-  registry: SectionRegistry,
-): Record<string, ContentQuery> {
+/** Every blog/CMS content query of a page, keyed by section instance id or post-list node id (P4-16, P4-11). */
+export function collectContentQueries(sections: readonly SectionInstance[], registry: SectionRegistry): Record<string, ContentQuery> {
   const out: Record<string, ContentQuery> = {};
   for (const instance of sections) {
+    walkNodes(instance.componentTree, (node) => {
+      const query = nodeContentQuery(node);
+      if (query) out[node.id] = query;
+    });
     const definition = registry.get(instance.sectionId);
     if (!definition?.contentQuery) continue;
     const props = resolveSectionProps(definition, applyMigrations(instance, definition).props);

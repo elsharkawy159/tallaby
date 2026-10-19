@@ -9,7 +9,7 @@ import { cn } from "@workspace/ui/lib/utils";
 import { styleTargetOf } from "../lib/editor-commands.lib";
 import { ElementInspector, SectionInspector } from "./editor-inspector.client";
 import { getInstance, getNode, partField, refOf, selectionLabel, withTree } from "../lib/editor-selection.lib";
-import { clearStyle, setStyle, styleKindOf } from "../lib/editor-style.lib";
+import { clearDeviceOverrides, clearStyle, setStyle, styleKindOf } from "../lib/editor-style.lib";
 import type { EditorCategory, EditorForm, EditorProduct } from "../server/editor.data";
 import type { EditorStore } from "../state/editor.store";
 import { StylePanel } from "./style-panel.client";
@@ -161,6 +161,7 @@ export function EditorSidebar({
               state.editSection(ref, (i) => setStyle(i, target, device, patch), `style:${selectionKey}:${device}:${Object.keys(patch).join(",")}`)
             }
             onReset={() => state.editSection(ref, (i) => clearStyle(i, target, device))}
+            onResetDevice={() => state.editSection(ref, (i) => clearDeviceOverrides(i, device))}
             shell={
               ref.target === "page" && target.kind === "section"
                 ? {

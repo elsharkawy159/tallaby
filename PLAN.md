@@ -2982,6 +2982,55 @@ After P1-08 and P1-01 (`3289639`), typecheck and test match the baseline. `@work
 - **Checks:** store-sections `tsc` clean, 371 tests pass (14 new default-render snapshots; tests updated for the new list, plus one-per-category and legacy-resolution tests); dashboard `tsc` clean, 230 tests pass; ecommerce `tsc` unchanged (19 existing errors in `product-details.tsx`/`profile.chunks.tsx`). `pnpm lint` still crashes (existing). **No browser check** (the Chrome extension was not connected). Owner to check: each section in the editor AR/EN, desktop/mobile, inserting header/footer, the Minimal card preset, a coupon in Promo banner, and a published page.
 - **Folder layout (2026-10-19, owner request, matches the Valorcy `components/sections/` layout):** `sections/library/` is one folder per library category id (`headers/`, `hero/`, `categories/`, `products/`, `brands/`, `promotions/`, `features/`, `testimonials/`, `about/`, `statistics/`, `content/`, `forms/`, `contact/`, `footers/`), one file per section (`hero/hero-split.tsx` …) and an `index.ts` per folder exporting `<CATEGORY>_SECTIONS`. Shared helpers (`uuid`, `INTRO_ONLY`, `ViewAll`, menu link fields, `formId`/`FormArea`) moved into `library/_parts.tsx`. Code moved unchanged; section ids, order and exports are the same. Checks: store-sections `tsc` clean, 371 tests pass (snapshots unchanged).
 
+### 2026-10-19 — Data nodes: Products, Blog and Newsletter designs; store-data integration map (owner request)
+
+- **Owner brief:** keep showing the categories that need store records, with an "add records" button on the section that opens a new tab. List every part that should come from the backend and propose the UX.
+- **Data nodes** (`store-sections/src/elements/data.ts`, tree-sections spec §5.3, first step):
+  - New nodes: `productList`, `categoryList`, `postList`, `storeForm` and `addToCart`. They are added to the schema, the registry (palette group "Store data") and the renderer.
+  - A list repeats its children once per record. Template nodes bind record fields with `props.bind`.
+  - Queries are collected per node id in `collectCatalogQueries`, `collectContentQueries` and `collectFormIds`, so the storefront needed no change.
+  - A section with an empty required list or form is not drawn publicly. In the editor it shows the existing `DataEmpty` with its new-tab action, and the editor refreshes the data on return.
+  - Lists never nest in lists. Props are checked and clamped.
+- **Designs:**
+  - Products: 6 (Classic plus P-a…P-e).
+  - Blog: 5 (B-a…B-e).
+  - Newsletter: 4 (N-a, N-b, N-c, N-e).
+  - Footer with sign-up (Z-d).
+  - Product-page sections still need page templates, so that category stays hidden.
+- **Presets:** designs with data nodes are `dynamic` and carry `dataNeeds`, so the Add panel shows its data chip.
+- **Editor:**
+  - It now loads the store's published blog posts (`loadEditorPosts`; it never creates the blog) and fills post lists on the canvas and in the Add panel previews.
+  - The inspector hides fields whose `showWhen` doesn't match and explains list templates and bound fields.
+  - AR/EN strings added.
+- **Integration map:** `docs/website-builder-integrations.md` lists every part of the 20 categories that should use store data, with status, gaps and one UX pattern. Main gaps:
+  - Header and footer nodes are missing (logo, menu, social, contact, payments, policies).
+  - Categories, brands, reviews and coupons are still typed.
+  - Address and hours are not in `StoreProfile`, and payment methods are not filled.
+  - There are no product-page or category-page templates.
+- **Checks:**
+  - store-sections: `tsc` clean, 923 tests pass (new `elements/data.test.tsx`; design tests render with sample store data and check the empty states).
+  - dashboard: `tsc` clean, 221 tests pass.
+  - ecommerce: `tsc` shows one error in `profile.chunks.tsx` (address form), not touched here.
+  - Visual check of the new designs with sample data (AR, 1280px) and of the empty editor states in headless Chrome. No in-app check.
+
+### 2026-10-19 — Section library uses the Claude Design categories (owner request)
+
+- **Owner brief:** split FAQ and content apart and put each section in its own category, sticking with the Claude Design categories and sections.
+- **Categories (`library/types.ts`, `library/categories.ts`):** the library now has the 20 Claude Design categories, in the same order and with the same names: headers, hero, categories, products, promotions, features, stats (`statistics`), image with text (`image-text`), video, gallery, brands, testimonials, FAQ, blog, newsletter, contact, rich text and policies (`rich-text`), page header and banner (`page-header`), product page (`product-page`), footer (`footers`). Removed: `product-cards`, `about`, `content` and `forms`. The Add panel hides a category until it has a design, so products, blog, newsletter and product page stay hidden for now.
+- **Designs:** `designs/content/` is split into `faq/`, `video/`, `gallery/`, `rich-text/` and `page-header/`, and `about/` became `image-text/`. Design ids did not change. Preset ids are now `<category>.<rest of id>` everywhere, e.g. `faq.classic`, `video.wide`, `rich-text.policy`, `page-header.banner`, `image-text.classic`. New editor icons for video, gallery, FAQ, blog, page header and product page.
+- **Checks:** store-sections `tsc` clean, 772 tests pass (a new test checks designs follow library category order); dashboard `tsc` clean, 221 tests pass.
+
+### 2026-10-19 — Section library from Claude Design: 78 tree designs (owner request)
+
+- **Owner brief:** build the Claude Design "Section Library" (20 categories, about 100 sections) as element-tree sections like the trial designs, replace the three trial designs, and use Pexels photos that depend on the store industry.
+- **Built (`packages/store-sections/src/designs/`):** 78 designs, each a `defineDesign` tree with Classic first in its folder (`headers` 6, `hero` 6, `categories` 6, `brands` 5, `promotions` 5, `features` 4, `testimonials` 5, `about` 5, `statistics` 5, `content` 24 (FAQ, page headers, rich text and policy, video, gallery), `contact` 5, `footers` 4). Shared pieces live in `_kit.ts` and per-folder `_shared.ts`. `hero-split`, `about-story` and `stats-cards` are removed.
+- **Presets:** `library/presets/library.ts` now derives one preset per design (`hero-classic` → `hero.classic`; content keeps the full id, e.g. `content.faq-classic`). New subcategories: headers `floating`, hero `sale`, promotions `coupon`, brands `press`, content `video`, `page-header` and `policy`.
+- **Industry photos:** `designs/stock-photos.ts` holds 10 Pexels photos per industry (the same ids as the dashboard's `STORE_INDUSTRIES`, plus `general`) and 10 people photos. These are picked through the Pexels API and are hotlinked from `images.pexels.com`. `t.photo(i)` and `t.person(i)` are resolved at insert. `instantiateDesign`, `instantiatePreset` and the editor's `presetInstance` take `industry`, the editor store gets `industry` from the store category (`findIndustry`), and Add-panel previews use it too.
+- **Elements:** 23 icons added (search, user, menu, plus, quote, chat, instagram, facebook, youtube, play, rotate, package, image, copy, globe, award, zap, users, store, percent, calendar, headphones, send). The `arrow` icon now flips in LTR.
+- **Not built (no data or form nodes yet, Plan 2):** Products (P-a…e and Classic), Product page (Pd-*), Blog (B-*) and Newsletter (N-*), plus the newsletter footer (Z-d) and the shoppable photo (G-d). Showing invented products, prices or posts would break rule 6. Countdown, carousels, marquees, tabs and video players are drawn as still layouts: a deal panel with an end date, side-by-side slides, still logo rows, grouped questions, and a poster with a play link.
+- **Known limits:** link blocks put their style on an inner span, so `width` and `order` on a link do not move it in a flex row; designs wrap such links in a sized stack. Header search and cart are links to `/products` and `/cart`. There is no account link, because store hosts have no account page.
+- **Checks:** store-sections `tsc` clean, 772 tests pass (snapshots regenerated); dashboard `tsc` clean, 218 tests pass. Visual check of every design at 1280px (AR) and 390px (sample) from a headless-Chrome static render with Tailwind's browser build; no in-app browser check. Owner to check: insert each category in the editor with a store industry set, in AR and EN, on desktop and mobile.
+
 ### 2026-10-19 — Tree sections: every section is an element tree; coded sections and Tallaby Classic removed (owner request)
 
 - **Owner decisions:** every section and template is built as an element tree so every element, parent and child, is selectable, styleable and movable (CLAUDE.md rule 17); keep only the three trialled designs (hero-split, about-story, stats-cards); remove the old coded sections entirely, Classic included ("Remove Classic too": new stores start empty until rebuilt). Design: [`docs/superpowers/specs/2026-10-19-tree-sections-design.md`](docs/superpowers/specs/2026-10-19-tree-sections-design.md); plan: [`docs/superpowers/plans/2026-10-19-tree-sections-plan-1-foundation.md`](docs/superpowers/plans/2026-10-19-tree-sections-plan-1-foundation.md) (Tasks 1–7 done, 8–10 open).
@@ -3072,3 +3121,15 @@ After P1-08 and P1-01 (`3289639`), typecheck and test match the baseline. `@work
 - Store hosts: `/privacy` and `/terms` are no longer pass-through; they serve the store's own builder page of that slug, or redirect to tallaby.com's. Root `app/not-found.tsx` became `app/global-not-found.tsx` (`experimental.globalNotFound`) plus `app/[locale]/[...rest]` for a localized 404; `/sell` and `/become-seller` redirect to `/`.
 - `apps/marketing` was then deleted (owner request) after checking that every file was carried over, including its uncommitted edits (components and messages compared; only the `siteFooter` rename differs). Its `SIGNUP_INTENT_SECRET` was copied into the local `apps/ecommerce/.env`. The tallaby.com Vercel project must build `apps/ecommerce`. Local port stays 3000 for tallaby.com and `{store}.localhost:3000`.
 - **Checks:** ecommerce tests 138 passed; `tsc` only shows 3 errors in `components/product-page/product-details.tsx`, which was moved unchanged from HEAD (pre-existing). `pnpm lint` still crashes before linting (pre-existing). Dev server smoke test: all marketing pages 200 (ar + en); `/products`, `/stores` 404; checkout/auth/orders/returns 200; `bein-sport.localhost:3000` home/cart/checkout 200, `/privacy` → tallaby.com/privacy. Pre-existing: `/returns` logs a FORMATTING_ERROR (`costFreeBody` is missing `{days}`). Nothing is committed.
+
+### 2026-10-19 — Responsive editing cues in the editor (owner request, outside the task list)
+
+- **What:** when the canvas shows a tablet or phone, the editor now says clearly that style edits go to that device only. Per-device storage (`breakpointStyles`, desktop base, tablet → phone cascade) was already in place, and no data shape changed.
+  - **Canvas strip** (`canvas/device-banner.client.tsx`) above the frame on tablet/phone: what the edit applies to, an info tooltip ("text, images, links and adding/moving/deleting apply to every device; hide to remove from this device only"), and a Desktop button. The frame gets a ring and the active top-bar device button a fill in the device colour (tablet violet, phone amber; `lib/editor-devices.lib.ts`).
+  - **Per-field marks** (`inspector/controls/style-override.client.tsx`, provided by the Style tab and the element popover): a coloured dot by a control's label when the edited device sets the value itself (click to drop it and inherit again). A small tablet/phone icon appears when a smaller device keeps its own value, so an edit here won't reach it. Spacing-box cells are tinted (own value) or dashed (kept below). Logic: `overrideState`, `hasDeviceOverrides`, `clearDeviceOverrides` in `lib/editor-style.lib.ts` (tested).
+  - **Style tab header** is tinted per device with clearer text, plus "Clear all {device} styles in this section" (the section, its parts and elements).
+  - **Delete on tablet/phone** (`state/use-device-commands.client.ts`, which wraps `commands.remove`): the delete still runs on every device, then a toast offers "Hide on {device} only" (undo + hide). The offer lapses after any other edit. This replaces the earlier idea of asking before deleting, which would block every delete.
+  - **Layers:** sections with tablet/phone styles show a coloured dot. Rows hidden on the shown device keep an eye-off icon visible.
+  - Strings are in `storeEditor.responsive`, `storeEditor.style.editing`, `style.resetSectionDevice` and `layers.hiddenHere/styledHere` (ar + en). `style.editingDesktop/editingDevice` were removed.
+- **Checks:** dashboard `tsc` is clean, and the dashboard tests pass (31 files, 221 tests, including 3 new ones in `editor-style.lib.test.ts`). `pnpm lint` still crashes before linting (pre-existing).
+- **Not done:** the browser check. The owner should check: switch to phone and see the strip, the ring and the amber device button. Set padding on a section in phone view and see the dot, then click it to reset. Back on desktop, the padding cells should be dashed with a phone icon. Delete an element in phone view and use "Hide on phone only". Check the layers dots, and check RTL and dark mode. Nothing is committed.

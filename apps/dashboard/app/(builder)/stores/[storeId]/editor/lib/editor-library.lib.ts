@@ -105,9 +105,12 @@ export function readShell(instance: SectionInstance): SectionShellStyle {
   return normalizeShell((instance.style as { shell?: unknown } | undefined)?.shell) ?? {};
 }
 
-/** A new instance of a preset with a fresh id (design text in the store default locale); null for an unknown section or design. */
-export function presetInstance(preset: SectionPreset, id: string, defaultLocale?: SiteLocale): SectionInstance | null {
-  return instantiatePreset(preset, storeSectionRegistry, id, { defaultLocale });
+/**
+ * A new instance of a preset with a fresh id (design text in the store default
+ * locale, default photos for the store's industry); null for an unknown section or design.
+ */
+export function presetInstance(preset: SectionPreset, id: string, defaultLocale?: SiteLocale, industry?: string): SectionInstance | null {
+  return instantiatePreset(preset, storeSectionRegistry, id, { defaultLocale, industry });
 }
 
 /**
@@ -181,6 +184,8 @@ export function storeDataCounts(input: {
   brands?: readonly unknown[] | null;
   reviews?: number | null;
   coupons?: readonly unknown[] | null;
+  /** Published blog posts. */
+  posts?: readonly unknown[] | null;
 }): Partial<Record<DataNeed, number>> {
   const contact = input.contact ?? {};
   return {
@@ -190,6 +195,7 @@ export function storeDataCounts(input: {
     ...(input.brands && { brands: input.brands.length }),
     ...(typeof input.reviews === "number" && { reviews: input.reviews }),
     ...(input.coupons && { promotions: input.coupons.length }),
+    ...(input.posts && { articles: input.posts.length }),
     storeInfo: [contact.phone, contact.email, contact.whatsapp].filter((v) => typeof v === "string" && v.trim()).length,
     navigation: input.navPages,
   };

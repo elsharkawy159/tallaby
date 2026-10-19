@@ -1,21 +1,29 @@
 import type { DataNeed, Localized } from "../core/types";
 
-/** The 15 groups of the section library (Add panel), in display order. */
+/**
+ * The 20 groups of the section library (Add panel), in display order: the
+ * categories of the Claude Design section library (2026-10-19).
+ */
 export const LIBRARY_CATEGORY_IDS = [
   "headers",
   "hero",
   "categories",
   "products",
-  "product-cards",
-  "brands",
   "promotions",
   "features",
-  "testimonials",
-  "about",
   "statistics",
-  "content",
-  "forms",
+  "image-text",
+  "video",
+  "gallery",
+  "brands",
+  "testimonials",
+  "faq",
+  "blog",
+  "newsletter",
   "contact",
+  "rich-text",
+  "page-header",
+  "product-page",
   "footers",
 ] as const;
 export type LibraryCategoryId = (typeof LIBRARY_CATEGORY_IDS)[number];

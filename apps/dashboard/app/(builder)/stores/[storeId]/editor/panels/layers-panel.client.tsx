@@ -14,7 +14,8 @@ import { useDragData, useReducedMotion } from "../dnd/editor-dnd.client";
 import type { EditorCommands } from "../lib/editor-commands.lib";
 import { ELEMENT_ICONS, SECTION_GROUP_ICONS } from "../lib/editor-icons.lib";
 import { SECTION_GROUPS } from "../lib/editor-palette.lib";
-import { readOwnStyle, type StyleTarget } from "../lib/editor-style.lib";
+import { DEVICE_TONE } from "../lib/editor-devices.lib";
+import { hasDeviceOverrides, readOwnStyle, type StyleTarget } from "../lib/editor-style.lib";
 import { nodeLabel, renameNode, sameRef, withTree } from "../lib/editor-selection.lib";
 import type { EditorStore, SectionRef, Selection } from "../state/editor.store";
 
@@ -67,6 +68,10 @@ export function LayersPanel({ store, commands, uiLocale }: { store: EditorStore;
     });
 
   const isHidden = (instance: SectionInstance, target: StyleTarget) => readOwnStyle(instance, target, device).hidden === true;
+  const sectionMarks = (instance: SectionInstance) => ({
+    hidden: t("hiddenHere"),
+    override: hasDeviceOverrides(instance, device) ? { label: t("styledHere"), className: DEVICE_TONE[device].dot } : undefined,
+  });
   const run = (sel: Selection, action: () => void) => {
     store.getState().select(sel);
     action();
@@ -119,6 +124,7 @@ export function LayersPanel({ store, commands, uiLocale }: { store: EditorStore;
                 label={definition ? pick(definition.displayName, uiLocale) : instance.sectionId}
                 active={sameRef(selection, ref) && !selection?.nodeId && !selection?.part}
                 hidden={isHidden(instance, { kind: "section" })}
+                marks={sectionMarks(instance)}
                 expandable={tree.length > 0}
                 expanded={open}
                 onToggle={() => toggle(instance.id)}
@@ -227,6 +233,7 @@ function NodeRows({
               label={custom || (definition ? pick(definition.label, uiLocale) : node.type)}
               active={selection?.nodeId === node.id && sameRef(selection, sectionRef)}
               hidden={hidden}
+              marks={{ hidden: t("hiddenHere") }}
               expandable={node.children.length > 0}
               expanded={open}
               onToggle={() => onToggle(node.id)}
@@ -353,6 +360,7 @@ function Row({
   hint,
   active,
   hidden,
+  marks,
   expandable,
   expanded,
   onToggle,
@@ -369,6 +377,8 @@ function Row({
   hint?: string;
   active: boolean;
   hidden?: boolean;
+  /** Device marks that stay visible: hidden here, or styled for this tablet/phone. */
+  marks?: { hidden?: string; override?: { label: string; className: string } };
   expandable?: boolean;
   expanded?: boolean;
   onToggle?: () => void;
@@ -425,6 +435,18 @@ function Row({
           {label}
           {hint && <span className="ms-1.5 text-xs text-muted-foreground">{hint}</span>}
         </button>
+      )}
+      {marks?.override && (
+        <span title={marks.override.label} className="grid size-4 shrink-0 place-items-center">
+          <span className={cn("size-1.5 rounded-full", marks.override.className)} aria-hidden />
+          <span className="sr-only">{marks.override.label}</span>
+        </span>
+      )}
+      {hidden && marks?.hidden && (
+        <span title={marks.hidden} className="shrink-0 text-muted-foreground group-hover:hidden group-focus-within:hidden">
+          <EyeOff className="size-3.5" aria-hidden />
+          <span className="sr-only">{marks.hidden}</span>
+        </span>
       )}
       <span className="flex opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">{actions}</span>
     </div>

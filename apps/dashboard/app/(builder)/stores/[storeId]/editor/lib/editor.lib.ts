@@ -7,6 +7,8 @@ import {
   selectProducts,
   type AnySectionDefinition,
   type CatalogQuery,
+  type ContentItemSummary,
+  type ContentQuery,
   type CouponSummary,
   type ProductSummary,
   type RenderContext,
@@ -129,14 +131,7 @@ function itemsOf(record: Record<string, unknown> | undefined, key: string): Reco
 }
 
 /** Sets one field of one item of a collection (same locale rule as `setSectionProp`). */
-export function setItemProp(
-  instance: SectionInstance,
-  collection: string,
-  index: number,
-  key: string,
-  value: unknown,
-  target: EditTarget,
-): SectionInstance {
+export function setItemProp(instance: SectionInstance, collection: string, index: number, key: string, value: unknown, target: EditTarget): SectionInstance {
   if (target.locale === target.defaultLocale || !target.translatable) {
     const items = itemsOf(instance.props, collection).map((item, i) => (i === index ? { ...item, [key]: value } : item));
     return { ...instance, props: { ...instance.props, [collection]: items } };
@@ -156,7 +151,7 @@ export function addItem(instance: SectionInstance, collection: string, item: Rec
 }
 
 export function removeItem(instance: SectionInstance, collection: string, index: number): SectionInstance {
-  const drop = <T,>(list: T[]) => list.filter((_, i) => i !== index);
+  const drop = <T>(list: T[]) => list.filter((_, i) => i !== index);
   const translations = instance.translations
     ? Object.fromEntries(
         Object.entries(instance.translations).map(([locale, overlay]) => {
@@ -173,7 +168,7 @@ export function removeItem(instance: SectionInstance, collection: string, index:
 }
 
 export function moveItem(instance: SectionInstance, collection: string, from: number, to: number): SectionInstance {
-  const move = <T,>(list: T[]) => {
+  const move = <T>(list: T[]) => {
     if (from < 0 || from >= list.length) return list;
     const next = [...list];
     const [item] = next.splice(from, 1);
@@ -231,6 +226,18 @@ function toSummary(product: EditorProduct, locale: SiteLocale): ProductSummary {
 }
 
 /** What the canvas loaded besides products and categories (P4B-05); every list may be missing. */
+/** Post lists on the canvas: the store's newest published posts, per list (same order as the storefront). */
+export function resolveCanvasContent(
+  queries: Record<string, ContentQuery>,
+  posts: readonly ContentItemSummary[] | null | undefined,
+): NonNullable<RenderContext["content"]> {
+  const items: Record<string, ContentItemSummary[]> = {};
+  for (const [key, query] of Object.entries(queries)) {
+    if (query.collection === "blog") items[key] = (posts ?? []).slice(0, query.limit);
+  }
+  return { items };
+}
+
 export type CanvasStoreData = {
   brands?: EditorBrand[] | null;
   reviews?: EditorReview[] | null;

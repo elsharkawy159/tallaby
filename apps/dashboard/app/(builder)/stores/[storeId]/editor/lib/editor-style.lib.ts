@@ -102,6 +102,56 @@ export function hasOwnStyle(instance: SectionInstance, target: StyleTarget, devi
   return Object.keys(readOwnStyle(instance, target, device)).length > 0;
 }
 
+/** Devices from the widest; each one inherits from the devices before it. */
+export const DEVICES: readonly Device[] = ["desktop", "tablet", "mobile"];
+
+/**
+ * Where `keys` are set, as seen from `device`: `own` when this device
+ * overrides them (never on desktop, the base), `below` the smaller devices
+ * that keep their own value, so a change here will not reach them.
+ */
+export function overrideState(
+  instance: SectionInstance,
+  target: StyleTarget,
+  device: Device,
+  keys: readonly StyleKey[],
+): { own: boolean; below: Device[] } {
+  const sets = (d: Device) => {
+    const style = readOwnStyle(instance, target, d);
+    return keys.some((key) => style[key] !== undefined);
+  };
+  return { own: device !== "desktop" && sets(device), below: DEVICES.slice(DEVICES.indexOf(device) + 1).filter(sets) };
+}
+
+function withoutDevice<T extends { breakpointStyles?: Record<string, unknown> }>(value: T, device: Device): T {
+  if (!value.breakpointStyles || !(device in value.breakpointStyles)) return value;
+  const { [device]: _removed, ...rest } = value.breakpointStyles;
+  const next = { ...value };
+  if (Object.keys(rest).length) next.breakpointStyles = rest;
+  else delete next.breakpointStyles;
+  return next;
+}
+
+const stripNodes = (nodes: ComponentNode[], device: Device): ComponentNode[] =>
+  nodes.map((node) => withoutDevice({ ...node, children: stripNodes(node.children ?? [], device) }, device));
+
+/** Whether the section, a part or any element has its own style on a tablet/phone. */
+export function hasDeviceOverrides(instance: SectionInstance, device: Device): boolean {
+  if (device === "desktop") return false;
+  const slot = instance.breakpointStyles?.[device];
+  if (isBag(slot) && Object.keys(slot).some((key) => key !== "parts" || (isBag(slot.parts) && Object.keys(slot.parts).length > 0))) return true;
+  const walk = (nodes: ComponentNode[]): boolean =>
+    nodes.some((node) => (isBag(node.breakpointStyles?.[device]) && Object.keys(node.breakpointStyles[device]).length > 0) || walk(node.children ?? []));
+  return walk(instance.componentTree ?? []);
+}
+
+/** Removes every tablet/phone override in the section (its parts and elements too). */
+export function clearDeviceOverrides(instance: SectionInstance, device: Device): SectionInstance {
+  if (device === "desktop") return instance;
+  const next = withoutDevice(instance, device);
+  return instance.componentTree ? { ...next, componentTree: stripNodes(instance.componentTree, device) } : next;
+}
+
 /** Copy/paste style: the target's own styles on every device. */
 export type StyleClip = Partial<Record<Device, StyleValues>>;
 

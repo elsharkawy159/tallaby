@@ -43,6 +43,7 @@ const FAILED_NEED: Record<EditorStoreData["failed"][number], DataNeed> = {
   brands: "brands",
   reviews: "reviews",
   coupons: "promotions",
+  posts: "articles",
 };
 
 /** Needs whose source failed to load, for `editorData.failed`. */

@@ -57,6 +57,8 @@ export type EditorState = {
   selection: Selection;
   locale: SiteLocale;
   defaultLocale: SiteLocale;
+  /** Store industry id (Store settings › General); picks the default photos of inserted sections. */
+  industry?: string;
   device: Device;
   past: Snapshot[];
   future: Snapshot[];
@@ -139,7 +141,7 @@ function restore(state: EditorState, snap: Snapshot): Partial<EditorState> {
   };
 }
 
-export function createEditorStore(initial: Pick<EditorState, "pages" | "header" | "footer" | "designSystem" | "designVersion" | "defaultLocale">) {
+export function createEditorStore(initial: Pick<EditorState, "pages" | "header" | "footer" | "designSystem" | "designVersion" | "defaultLocale" | "industry">) {
   const home = initial.pages.find((p) => p.isHome) ?? initial.pages[0]!;
   return createStore<EditorState & EditorActions>()((set, get) => {
     /** Applies an undoable change; the same `coalesceKey` in quick succession reuses the last undo step. */

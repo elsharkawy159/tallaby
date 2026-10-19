@@ -23,15 +23,22 @@ describe("presetInstance", () => {
   });
 
   it("builds a design preset's tree in the store's default locale", () => {
-    const preset = getPreset("statistics.cards")!;
+    const preset = getPreset("statistics.classic")!;
     expect(JSON.stringify(presetInstance(preset, "s1", "en")!.componentTree)).toContain('"translations":{"ar":');
     expect(JSON.stringify(presetInstance(preset, "s1")!.componentTree)).toContain('"translations":{"en":');
+  });
+
+  it("uses the store industry's default photos", () => {
+    const preset = getPreset("hero.classic")!;
+    const tree = (industry?: string) => JSON.stringify(presetInstance(preset, "s1", "ar", industry)!.componentTree);
+    expect(tree("beauty")).toContain("images.pexels.com");
+    expect(tree("beauty")).not.toBe(tree("pets"));
   });
 });
 
 describe("applyPresetDesign on tree sections", () => {
   it("leaves a tree section unchanged", () => {
-    const preset = getPreset("statistics.cards")!;
+    const preset = getPreset("statistics.classic")!;
     const instance = presetInstance(preset, "s1")!;
     expect(applyPresetDesign(instance, preset)).toBe(instance);
   });
@@ -82,7 +89,7 @@ describe("helpers", () => {
   });
 
   it("reports no data need for static designs", () => {
-    expect(presetDataStatus(getPreset("hero.split")!, { products: 1 })).toBeNull();
+    expect(presetDataStatus(getPreset("hero.classic")!, { products: 1 })).toBeNull();
   });
 
   it("counts the store's records per data need", () => {
@@ -92,8 +99,8 @@ describe("helpers", () => {
   });
 
   it("accepts a dragged preset only for its own section", () => {
-    expect(payloadPreset("custom-section", "hero.split")?.id).toBe("hero.split");
-    expect(payloadPreset("hero-banner", "hero.split")).toBeUndefined();
+    expect(payloadPreset("custom-section", "hero.classic")?.id).toBe("hero.classic");
+    expect(payloadPreset("hero-banner", "hero.classic")).toBeUndefined();
     expect(payloadPreset("custom-section", "nope")).toBeUndefined();
     expect(payloadPreset("custom-section", undefined)).toBeUndefined();
   });

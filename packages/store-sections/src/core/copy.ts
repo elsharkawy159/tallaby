@@ -72,6 +72,7 @@ export const SECTION_COPY = {
   dataErrorBody: { ar: "تحقق من اتصالك وحاول مرة أخرى. تعديلاتك محفوظة.", en: "Check your connection and try again. Your edits are safe." },
   dataErrorRetry: { ar: "حاول مرة أخرى", en: "Try again" },
   dataLoading: { ar: "جارٍ تحميل بيانات متجرك…", en: "Loading your store data…" },
+  addToCart: { ar: "أضف للسلة", en: "Add to cart" },
   verifiedBuyer: { ar: "مشترٍ موثّق", en: "Verified buyer" },
   whatsappChat: { ar: "راسلنا على واتساب", en: "Chat on WhatsApp" },
 } as const satisfies Record<string, Localized>;

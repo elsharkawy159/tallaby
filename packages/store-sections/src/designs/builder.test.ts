@@ -14,10 +14,11 @@ const sample: Design = defineDesign({
   keywords: ["sample"],
   tree: (t) =>
     t.section({ label: L("القسم", "Section"), style: { background: "secondary" } }, [
-      t.grid(
-        [t.card([t.heading(L("مرحبا", "Hello"), "h2", { role: "title" }), t.button(L("تسوّق", "Shop"), "/#products")])],
-        { label: L("الشبكة", "Grid"), columns: { desktop: 4, tablet: 2, mobile: 1 }, style: { gap: 16 } },
-      ),
+      t.grid([t.card([t.heading(L("مرحبا", "Hello"), "h2", { role: "title" }), t.button(L("تسوّق", "Shop"), "/#products")])], {
+        label: L("الشبكة", "Grid"),
+        columns: { desktop: 4, tablet: 2, mobile: 1 },
+        style: { gap: 16 },
+      }),
     ]),
 });
 

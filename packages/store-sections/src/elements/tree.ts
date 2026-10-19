@@ -4,6 +4,7 @@
  * editor store calls these; ids come from the caller's `makeId`.
  */
 import type { ComponentNode } from "../config/schema";
+import { isDataList } from "./data";
 import { LINK_TYPES, MAX_ELEMENT_DEPTH, MAX_NODES_PER_SECTION, getElementDefinition, type ElementType } from "./registry";
 
 export type MakeId = () => string;
@@ -109,7 +110,14 @@ export function canContain(nodes: readonly ComponentNode[], parentId: string | n
   const path = findPath(nodes, parentId) ?? [];
   const insideLink = path.some((id) => LINK_TYPES.includes(findNode(nodes, id)?.type as ElementType));
   if (insideLink && (LINK_TYPES.includes(childDef.type) || isLinkInside(child.children))) return false;
+  // One record list never repeats inside another.
+  const insideList = isDataList(parent.type) || path.some((id) => isDataList(findNode(nodes, id)?.type ?? ""));
+  if (insideList && hasDataList(child)) return false;
   return true;
+}
+
+function hasDataList(node: ComponentNode): boolean {
+  return isDataList(node.type) || node.children.some(hasDataList);
 }
 
 /** Whether the tree stays inside the node and depth limits. */
@@ -117,11 +125,7 @@ export function withinLimits(nodes: readonly ComponentNode[]): boolean {
   return countNodes(nodes) <= MAX_NODES_PER_SECTION && treeDepth(nodes) <= MAX_ELEMENT_DEPTH;
 }
 
-function mapChildren(
-  nodes: readonly ComponentNode[],
-  parentId: string | null,
-  update: (children: ComponentNode[]) => ComponentNode[],
-): ComponentNode[] {
+function mapChildren(nodes: readonly ComponentNode[], parentId: string | null, update: (children: ComponentNode[]) => ComponentNode[]): ComponentNode[] {
   if (parentId === null) return update([...nodes]);
   return nodes.map((node) =>
     node.id === parentId
@@ -149,15 +153,11 @@ export function insertNode(nodes: readonly ComponentNode[], target: string | nul
 }
 
 export function removeNode(nodes: readonly ComponentNode[], id: string): ComponentNode[] {
-  return nodes
-    .filter((node) => node.id !== id)
-    .map((node) => (node.children.length ? { ...node, children: removeNode(node.children, id) } : node));
+  return nodes.filter((node) => node.id !== id).map((node) => (node.children.length ? { ...node, children: removeNode(node.children, id) } : node));
 }
 
 export function updateNode(nodes: readonly ComponentNode[], id: string, update: (node: ComponentNode) => ComponentNode): ComponentNode[] {
-  return nodes.map((node) =>
-    node.id === id ? update(node) : node.children.length ? { ...node, children: updateNode(node.children, id, update) } : node,
-  );
+  return nodes.map((node) => (node.id === id ? update(node) : node.children.length ? { ...node, children: updateNode(node.children, id, update) } : node));
 }
 
 /** Moves a node under `parentId` at `index` (index counted after removal). No-op into itself or a descendant. */

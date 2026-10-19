@@ -6,10 +6,33 @@ import { MAX_ELEMENT_DEPTH, MAX_NODES_PER_SECTION, getElementDefinition } from "
 import { countNodes, treeDepth } from "../elements/tree";
 import { SectionRenderer } from "../render/render";
 import { storeSectionRegistry } from "../sections";
-import { DESIGNS, getDesign, instantiateDesign } from ".";
+import { collectCatalogQueries, collectContentQueries } from "../core/registry";
+import { treeDataNeeds } from "../elements/data";
+import { LIBRARY_CATEGORY_IDS } from "../library/types";
+import { DESIGNS, STOCK_INDUSTRIES, getDesign, instantiateDesign } from ".";
 
 /** Designs this test expects to exist; each later design adds its id here. */
-const EXPECTED = ["stats-cards", "hero-split", "about-story"];
+const EXPECTED = [
+  ...["header-classic", "header-line", "header-centered", "header-announcement", "header-search", "header-pill"],
+  ...["hero-classic", "hero-ticket", "hero-poster", "hero-inline", "hero-product", "hero-collage"],
+  ...["categories-classic", "categories-tiles", "categories-stories", "categories-rail", "categories-bento", "categories-index"],
+  ...["products-classic", "products-grid", "products-rail", "products-feature", "products-shelf", "products-list"],
+  ...["promo-pair", "promo-ticker", "promo-deal", "promo-coupon", "promo-bento"],
+  ...["features-classic", "features-icon-cards", "features-checklist", "features-steps"],
+  ...["stats-classic", "stats-big-numbers", "stats-photo", "stats-progress", "stats-strip"],
+  ...["about-classic", "about-panel", "about-overlap", "about-rows", "about-values"],
+  ...["video-wide", "video-split", "video-cinema", "video-playlist", "video-reels"],
+  ...["gallery-feed", "gallery-mosaic", "gallery-polaroids", "gallery-strip"],
+  ...["brands-row", "brands-wall", "brands-tiles", "brands-press", "brands-featured"],
+  ...["testimonials-classic", "testimonials-spotlight", "testimonials-rating", "testimonials-wall", "testimonials-photos"],
+  ...["faq-classic", "faq-simple", "faq-side", "faq-cards", "faq-help"],
+  ...["blog-classic", "blog-lead", "blog-index", "blog-tiles", "blog-feature"],
+  ...["newsletter-classic", "newsletter-centered", "newsletter-photo", "newsletter-coupon"],
+  ...["contact-classic", "contact-visit", "contact-branches", "contact-whatsapp", "contact-strip"],
+  ...["text-policy", "text-centered", "text-callout", "text-columns", "text-quote"],
+  ...["page-header", "page-banner", "page-image", "page-subcategories", "page-promo"],
+  ...["footer-classic", "footer-line", "footer-wordmark", "footer-signup", "footer-centered"],
+];
 
 const ctx = (over: Partial<RenderContext> = {}): RenderContext => ({
   mode: "public",
@@ -29,6 +52,38 @@ const ctx = (over: Partial<RenderContext> = {}): RenderContext => ({
 });
 
 const walk = (nodes: readonly ComponentNode[]): ComponentNode[] => nodes.flatMap((n) => [n, ...walk(n.children)]);
+
+const PRODUCT = { id: "p1", title: "سماعة لاسلكية", href: "/products/p1", image: "https://cdn.test/p1.jpg", price: 900, compareAtPrice: 1200, rating: 4.6 };
+const POST = { id: "b1", title: "إزاي تختار سماعة", href: "/blog/b1", excerpt: "سطر من المقال", image: "https://cdn.test/b1.jpg", publishedAt: "2026-10-02" };
+const FORM = {
+  id: "f1",
+  fields: [{ key: "email", type: "email" as const, label: "البريد", required: true, width: "full" as const }],
+  submitLabel: "اشترك",
+  successMessage: "",
+};
+
+/** A design's instance with its form picked, and store data for every data node it has. */
+function withStoreData(instance: ReturnType<typeof instantiateDesign>) {
+  const tree = instance.componentTree!.map(function pick(node: ComponentNode): ComponentNode {
+    return { ...node, props: node.type === "storeForm" ? { ...node.props, formId: "f1" } : node.props, children: node.children.map(pick) };
+  });
+  const filled = { ...instance, componentTree: tree };
+  const products = Object.fromEntries(
+    Object.keys(collectCatalogQueries([filled], storeSectionRegistry)).map((key) => [key, [PRODUCT, { ...PRODUCT, id: "p2", compareAtPrice: null }]]),
+  );
+  const items = Object.fromEntries(
+    Object.keys(collectContentQueries([filled], storeSectionRegistry)).map((key) => [key, [POST, { ...POST, id: "b2" }, { ...POST, id: "b3" }]]),
+  );
+  const data: Partial<RenderContext> = {
+    catalog: {
+      products,
+      categories: [{ id: "c1", key: "audio", name: "سماعات", href: "/products?category=c1", image: "https://cdn.test/c1.jpg", productCount: 12 }],
+    },
+    content: { items },
+    forms: { f1: FORM },
+  };
+  return { instance: filled, data };
+}
 
 describe("section designs", () => {
   it.each(EXPECTED)("%s is registered", (id) => {
@@ -55,11 +110,11 @@ describe("section designs", () => {
   });
 
   it.each(DESIGNS.map((d) => [d.id, d] as const))("%s renders in both locales and modes", (_id, design) => {
-    const instance = instantiateDesign(design, { id: "d1" });
+    const { instance, data } = withStoreData(instantiateDesign(design, { id: "d1" }));
     for (const locale of ["ar", "en"] as const) {
       for (const mode of ["edit", "public"] as const) {
         const html = renderToStaticMarkup(
-          <SectionRenderer instance={instance} registry={storeSectionRegistry} ctx={ctx({ locale, mode, dir: locale === "ar" ? "rtl" : "ltr" })} />,
+          <SectionRenderer instance={instance} registry={storeSectionRegistry} ctx={ctx({ ...data, locale, mode, dir: locale === "ar" ? "rtl" : "ltr" })} />,
         );
         expect(html).toContain("<section data-node-id=");
       }
@@ -67,24 +122,78 @@ describe("section designs", () => {
   });
 
   it.each(DESIGNS.map((d) => [d.id, d] as const))("%s matches its snapshot (ar, public)", (_id, design) => {
-    const instance = instantiateDesign(design, { id: "d1" });
-    expect(renderToStaticMarkup(<SectionRenderer instance={instance} registry={storeSectionRegistry} ctx={ctx()} />)).toMatchSnapshot();
+    const { instance, data } = withStoreData(instantiateDesign(design, { id: "d1" }));
+    expect(renderToStaticMarkup(<SectionRenderer instance={instance} registry={storeSectionRegistry} ctx={ctx(data)} />)).toMatchSnapshot();
   });
 
   it.each(DESIGNS.map((d) => [d.id, d] as const))("%s keeps image frames sized without a photo", (_id, design) => {
     // An empty image draws nothing publicly; the frame around it must keep its size.
     for (const node of walk(instantiateDesign(design, { id: "d1" }).componentTree!)) {
-      if (!node.children.some((c) => c.type === "image")) continue;
+      // Bound images take the record's photo; only authored empty images need a sized frame.
+      if (!node.children.some((c) => c.type === "image" && !c.props.src && !c.props.bind)) continue;
       expect(node.style?.minHeight, `${node.props.label}`).toBeGreaterThan(0);
       expect(node.breakpointStyles?.mobile?.minHeight, `${node.props.label} (mobile)`).toBeGreaterThan(0);
     }
+  });
+
+  it("lists every design once, in its library category and in library order", () => {
+    expect(DESIGNS.map((d) => d.id)).toEqual(EXPECTED);
+    const order = DESIGNS.map((d) => LIBRARY_CATEGORY_IDS.indexOf(d.category));
+    expect(order).toEqual([...order].sort((a, b) => a - b));
+    for (const design of DESIGNS) expect(LIBRARY_CATEGORY_IDS, design.id).toContain(design.category);
+  });
+
+  it("fills photos for the store's industry, falling back to general ones", () => {
+    const photos = (industry?: string) =>
+      walk(instantiateDesign(getDesign("hero-classic")!, { id: "d1", industry }).componentTree!)
+        .filter((n) => n.type === "image")
+        .map((n) => n.props.src as string);
+    expect(photos("beauty")).not.toEqual(photos("pets"));
+    expect(photos("nope")).toEqual(photos());
+    for (const industry of [undefined, ...STOCK_INDUSTRIES]) {
+      for (const src of photos(industry)) expect(src).toMatch(/^https:\/\/images\.pexels\.com\/photos\/\d+\//);
+    }
+  });
+
+  const dataDesigns = DESIGNS.filter((d) => treeDataNeeds(instantiateDesign(d, { id: "d1" }).componentTree).length > 0);
+
+  it("covers the store-data categories", () => {
+    expect(new Set(dataDesigns.map((d) => d.category))).toEqual(new Set(["products", "blog", "newsletter", "footers"]));
+  });
+
+  it.each(dataDesigns.map((d) => [d.id, d] as const))("%s draws real records, and nothing publicly without them", (_id, design) => {
+    const { instance, data } = withStoreData(instantiateDesign(design, { id: "d1" }));
+    const html = renderToStaticMarkup(<SectionRenderer instance={instance} registry={storeSectionRegistry} ctx={ctx(data)} />);
+    if (design.category === "products") expect(html).toContain("سماعة لاسلكية");
+    if (design.category === "blog") expect(html).toContain("إزاي تختار سماعة");
+    if (design.category === "newsletter" || design.id === "footer-signup") expect(html).toContain('type="email"');
+    // The authored placeholders never reach shoppers once data is there.
+    expect(html).not.toContain("اسم المنتج");
+    expect(html).not.toContain("عنوان المقال");
+
+    const empty = instantiateDesign(design, { id: "d1" });
+    expect(renderToStaticMarkup(<SectionRenderer instance={empty} registry={storeSectionRegistry} ctx={ctx()} />)).not.toContain("<section");
+  });
+
+  it.each(dataDesigns.map((d) => [d.id, d] as const))("%s shows the add-records action in the editor when empty", (_id, design) => {
+    const empty = instantiateDesign(design, { id: "d1" });
+    const editorData = {
+      state: "ready" as const,
+      renderAction: (need: string, label: string) => <a data-action={need}>{label}</a>,
+      renderRetry: () => null,
+    };
+    const html = renderToStaticMarkup(<SectionRenderer instance={empty} registry={storeSectionRegistry} ctx={ctx({ mode: "edit", editorData })} />);
+    for (const need of treeDataNeeds(empty.componentTree)) expect(html).toContain(`data-action="${need}"`);
   });
 
   it("gives two inserted copies of a design no shared node ids", () => {
     for (const design of DESIGNS) {
       const a = new Set(walk(instantiateDesign(design, { id: "a" }).componentTree!).map((n) => n.id));
       const b = walk(instantiateDesign(design, { id: "b" }).componentTree!).map((n) => n.id);
-      expect(b.some((id) => a.has(id)), design.id).toBe(false);
+      expect(
+        b.some((id) => a.has(id)),
+        design.id,
+      ).toBe(false);
     }
   });
 });

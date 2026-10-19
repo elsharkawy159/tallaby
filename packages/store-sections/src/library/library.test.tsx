@@ -2,7 +2,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { sectionInstanceSchema } from "../config/schema";
 import { DATA_NEEDS, type RenderContext } from "../core/types";
-import { getDesign } from "../designs";
+import { DESIGNS, getDesign } from "../designs";
+import { HERO_DESIGNS } from "../designs/hero";
 import { normalizeSectionStyle } from "../elements/style";
 import { SectionRenderer } from "../render/render";
 import { storeSectionRegistry } from "../sections";
@@ -28,7 +29,7 @@ const ctx: RenderContext = {
 };
 
 describe("library catalog", () => {
-  it("lists all 15 categories once, in order, each with subcategories", () => {
+  it("lists all 20 categories once, in order, each with subcategories", () => {
     expect(LIBRARY_CATEGORIES.map((c) => c.id)).toEqual([...LIBRARY_CATEGORY_IDS]);
     for (const category of LIBRARY_CATEGORIES) {
       expect(category.subcategories.length, category.id).toBeGreaterThan(0);
@@ -46,7 +47,10 @@ describe("library catalog", () => {
     const definition = storeSectionRegistry.get(preset.sectionId);
     expect(definition, preset.sectionId).toBeDefined();
     const category = LIBRARY_CATEGORIES.find((c) => c.id === preset.category);
-    expect(category?.subcategories.some((s) => s.id === preset.subcategory), preset.subcategory).toBe(true);
+    expect(
+      category?.subcategories.some((s) => s.id === preset.subcategory),
+      preset.subcategory,
+    ).toBe(true);
     expect(preset.name.ar && preset.name.en && preset.description.ar && preset.description.en).toBeTruthy();
     expect(preset.capabilities.length).toBeGreaterThan(0);
     for (const need of preset.dataNeeds ?? []) expect(DATA_NEEDS).toContain(need);
@@ -68,15 +72,16 @@ describe("library catalog", () => {
     expect(sectionInstanceSchema.safeParse(instance).success).toBe(true);
     for (const locale of ["ar", "en"] as const) {
       for (const mode of ["edit", "public"] as const) {
-        expect(() => renderToStaticMarkup(<SectionRenderer instance={instance} registry={storeSectionRegistry} ctx={{ ...ctx, locale, mode }} />)).not.toThrow();
+        expect(() =>
+          renderToStaticMarkup(<SectionRenderer instance={instance} registry={storeSectionRegistry} ctx={{ ...ctx, locale, mode }} />),
+        ).not.toThrow();
       }
     }
   });
 
-  it("lists only design presets, at most one per category for now", () => {
-    const counts = presetCountByCategory();
-    for (const id of LIBRARY_CATEGORY_IDS) expect(counts[id], id).toBeLessThanOrEqual(1);
-    expect(SECTION_PRESETS.map((p) => p.id).sort()).toEqual(["about.our-story", "hero.split", "statistics.cards"]);
+  it("lists one design preset per section design, in design order", () => {
+    expect(SECTION_PRESETS.map((p) => p.designId)).toEqual(DESIGNS.map((d) => d.id));
+    expect(getPreset("hero.classic")?.designId).toBe("hero-classic");
   });
 
   it("counts presets per category", () => {
@@ -87,7 +92,7 @@ describe("library catalog", () => {
 
 describe("instantiatePreset", () => {
   it("gives every inserted copy its own tree", () => {
-    const preset = getPreset("hero.split")!;
+    const preset = getPreset("hero.classic")!;
     const a = instantiatePreset(preset, storeSectionRegistry, "a")!;
     const b = instantiatePreset(preset, storeSectionRegistry, "b")!;
     expect(a.id).toBe("a");
@@ -97,16 +102,16 @@ describe("instantiatePreset", () => {
   });
 
   it("starts a tree section for a design preset", () => {
-    const instance = instantiatePreset(getPreset("statistics.cards")!, storeSectionRegistry, "t1")!;
-    expect(instance).toMatchObject({ id: "t1", sectionId: "custom-section", source: "stats-cards@1" });
+    const instance = instantiatePreset(getPreset("hero.poster")!, storeSectionRegistry, "t1")!;
+    expect(instance).toMatchObject({ id: "t1", sectionId: "custom-section", source: "hero-poster@1" });
     expect(instance.componentTree).toHaveLength(1);
     expect(instance.componentTree![0]!.type).toBe("section");
-    const en = instantiatePreset(getPreset("statistics.cards")!, storeSectionRegistry, "t2", { defaultLocale: "en" })!;
+    const en = instantiatePreset(getPreset("hero.poster")!, storeSectionRegistry, "t2", { defaultLocale: "en" })!;
     expect(JSON.stringify(en.componentTree)).toContain('"translations":{"ar":');
   });
 
   it("returns null for an unknown design", () => {
-    expect(instantiatePreset({ ...getPreset("statistics.cards")!, designId: "nope" }, storeSectionRegistry, "x")).toBeNull();
+    expect(instantiatePreset({ ...getPreset("hero.poster")!, designId: "nope" }, storeSectionRegistry, "x")).toBeNull();
   });
 
   it("resolves every design preset to a design", () => {
@@ -117,7 +122,7 @@ describe("instantiatePreset", () => {
   });
 
   it("returns null for an unknown section", () => {
-    expect(instantiatePreset({ ...getPreset("hero.split")!, designId: undefined, sectionId: "nope" }, storeSectionRegistry, "x")).toBeNull();
+    expect(instantiatePreset({ ...getPreset("hero.classic")!, designId: undefined, sectionId: "nope" }, storeSectionRegistry, "x")).toBeNull();
   });
 });
 
@@ -129,18 +134,23 @@ describe("search and filters", () => {
   });
 
   it("finds presets by name, keyword and category in both languages", () => {
-    expect(filterPresets({ query: "banner" }).map((p) => p.id)).toContain("hero.split");
-    expect(filterPresets({ query: "بانر" }).map((p) => p.id)).toContain("hero.split");
-    expect(filterPresets({ query: "numbers" }).map((p) => p.id)).toContain("statistics.cards");
-    expect(filterPresets({ query: "قصتنا" }).map((p) => p.id)).toContain("about.our-story");
+    expect(filterPresets({ query: "banner" }).map((p) => p.id)).toContain("hero.classic");
+    expect(filterPresets({ query: "بانر" }).map((p) => p.id)).toContain("hero.classic");
+    expect(filterPresets({ query: "numbers" }).map((p) => p.id)).toContain("statistics.classic");
+    expect(filterPresets({ query: "قصتنا" }).map((p) => p.id)).toContain("image-text.classic");
     expect(filterPresets({ query: "zzzz-nothing" })).toEqual([]);
   });
 
   it("filters by category, subcategory and capability", () => {
-    expect(filterPresets({ category: "hero" }).map((p) => p.id)).toEqual(["hero.split"]);
-    expect(filterPresets({ category: "hero", subcategory: "split" }).map((p) => p.id)).toEqual(["hero.split"]);
-    expect(filterPresets({ category: "products" })).toEqual([]);
-    expect(filterPresets({ capabilities: ["static"] })).toHaveLength(3);
+    expect(filterPresets({ category: "hero" }).map((p) => p.id)).toEqual(HERO_DESIGNS.map((d) => d.id.replace("hero-", "hero.")));
+    expect(filterPresets({ category: "hero", subcategory: "split" }).map((p) => p.id)).toEqual(["hero.classic"]);
+    expect(filterPresets({ category: "product-page" })).toEqual([]);
+    // Designs with data nodes are dynamic and list the store data they need.
+    const dynamic = filterPresets({ capabilities: ["dynamic"] });
+    expect(dynamic.map((p) => p.category)).toContain("products");
+    expect(getPreset("products.classic")?.dataNeeds).toEqual(["products"]);
+    expect(getPreset("newsletter.classic")?.dataNeeds).toEqual(["forms"]);
+    expect(filterPresets({ capabilities: ["static"] })).toHaveLength(SECTION_PRESETS.length - dynamic.length);
     expect(filterPresets({ capabilities: ["interactive"] })).toEqual([]);
   });
 

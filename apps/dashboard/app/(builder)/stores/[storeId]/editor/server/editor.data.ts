@@ -1,9 +1,18 @@
 import { and, categories, db, desc, eq, inArray, productTranslations, products, sql, storeProducts } from "@workspace/db";
 import { parsePriceJson } from "@workspace/lib";
+import { BLOG_FIELDS, cmsItemPath, cmsItemSummaryFields } from "@workspace/lib/cms";
+import { listCmsCollections, listCmsItems } from "@workspace/lib/cms/server";
 import { listStoreFormDefinitions } from "@workspace/lib/store-forms/server";
-import { sellerBrandList, sellerCoupons, storeProductSales, storeReviewStats, storeReviews, type SellerCouponRow } from "@workspace/lib/store-sites/catalog-data";
+import {
+  sellerBrandList,
+  sellerCoupons,
+  storeProductSales,
+  storeReviewStats,
+  storeReviews,
+  type SellerCouponRow,
+} from "@workspace/lib/store-sites/catalog-data";
 import { BEST_SELLER_DAYS, TRENDING_DAYS, type RatingStats } from "@workspace/lib/store-sites/catalog-data.lib";
-import type { PublicStoreForm } from "@workspace/store-sections/render";
+import type { ContentItemSummary, PublicStoreForm } from "@workspace/store-sections/render";
 
 /**
  * Read-only data the editor canvas needs to preview commerce sections
@@ -55,7 +64,7 @@ export type EditorStoreData = {
   reviews: EditorReview[] | null;
   reviewStats: RatingStats | null;
   coupons: EditorCoupon[] | null;
-  failed: ("sales" | "brands" | "reviews" | "coupons")[];
+  failed: ("sales" | "brands" | "reviews" | "coupons" | "posts")[];
 };
 
 export type EditorCategory = { id: string; name: { ar: string; en: string }; image: string | null; productCount: number };
@@ -82,27 +91,55 @@ function publicImage(path: unknown): string | null {
   return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/products/${path}`;
 }
 
+/**
+ * The store's published blog posts, newest first, for post lists on the
+ * canvas (checked against the session seller by the lib). Never creates the
+ * blog: a store without one simply has no posts yet.
+ */
+export async function loadEditorPosts(sellerId: string, storeId: string): Promise<ContentItemSummary[]> {
+  const blog = (await listCmsCollections(sellerId, storeId))?.find((c) => c.kind === "blog");
+  if (!blog) return [];
+  const list = await listCmsItems(sellerId, storeId, blog.id, { state: "published", limit: 24 });
+  return (list?.items ?? []).map((item) => {
+    const summary = cmsItemSummaryFields(BLOG_FIELDS, item.data);
+    return {
+      id: item.id,
+      title: summary.title || item.slug,
+      href: cmsItemPath(blog.slug, item.slug),
+      excerpt: summary.excerpt ?? (item.seo.description || null),
+      image: summary.image,
+      publishedAt: item.publishedAt,
+      tags: summary.tags,
+    };
+  });
+}
+
 /** Everything the canvas draws from the store (initial load and refresh). */
 export type EditorCatalogSnapshot = {
   products: EditorProduct[];
   categories: EditorCategory[];
   forms: EditorForm[];
+  /** Published blog posts; null when they failed to load. */
+  posts: ContentItemSummary[] | null;
 } & EditorStoreData;
 
 /** One load of the store data for the editor; `catalogMode` is the store's catalog mode (D24). */
 export async function loadEditorSnapshot(sellerId: string, storeId: string, catalogMode: string | null | undefined): Promise<EditorCatalogSnapshot> {
   const catalogStoreId = catalogMode === "selected" ? storeId : undefined;
-  const [catalog, forms, extra] = await Promise.all([
+  const postsFailed: EditorStoreData["failed"] = [];
+  const [catalog, forms, extra, posts] = await Promise.all([
     loadEditorCatalog(sellerId, catalogStoreId, { salesStoreId: storeId }),
     loadEditorForms(sellerId, storeId),
     loadEditorStoreData(sellerId, catalogStoreId),
+    attempt("posts", postsFailed, () => loadEditorPosts(sellerId, storeId)),
   ]);
   return {
     products: catalog.products,
     categories: catalog.categories,
     forms,
+    posts,
     ...extra,
-    failed: catalog.salesFailed ? [...extra.failed, "sales"] : extra.failed,
+    failed: [...extra.failed, ...postsFailed, ...(catalog.salesFailed ? (["sales"] as const) : [])],
   };
 }
 
@@ -178,16 +215,16 @@ export async function loadEditorCatalog(
       averageRating: products.averageRating,
       titleAr: sql<string | null>`(SELECT t.title FROM ${productTranslations} t WHERE t.product_id = ${products.id} AND t.locale = 'ar' LIMIT 1)`,
       titleEn: sql<string | null>`(SELECT t.title FROM ${productTranslations} t WHERE t.product_id = ${products.id} AND t.locale = 'en' LIMIT 1)`,
-      slug: sql<string | null>`(SELECT coalesce(t.slug, '') FROM ${productTranslations} t WHERE t.product_id = ${products.id} ORDER BY (t.locale = 'ar') DESC LIMIT 1)`,
+      slug: sql<
+        string | null
+      >`(SELECT coalesce(t.slug, '') FROM ${productTranslations} t WHERE t.product_id = ${products.id} ORDER BY (t.locale = 'ar') DESC LIMIT 1)`,
     })
     .from(products)
     .where(
       and(
         eq(products.sellerId, sellerId),
         eq(products.status, "active"),
-        catalogStoreId
-          ? sql`EXISTS (SELECT 1 FROM ${storeProducts} sp WHERE sp.store_id = ${catalogStoreId} AND sp.product_id = ${products.id})`
-          : undefined,
+        catalogStoreId ? sql`EXISTS (SELECT 1 FROM ${storeProducts} sp WHERE sp.store_id = ${catalogStoreId} AND sp.product_id = ${products.id})` : undefined,
       ),
     )
     .orderBy(desc(products.createdAt))

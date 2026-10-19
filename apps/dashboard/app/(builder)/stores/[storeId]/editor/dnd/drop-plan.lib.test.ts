@@ -43,9 +43,9 @@ describe("section drops", () => {
       [2, 2],
       [3, 3],
     ] as const) {
-      const plan = planDrop({ kind: "section", sectionId: "custom-section", presetId: "hero.split" }, probe({ sectionIndex: index }), src(content));
+      const plan = planDrop({ kind: "section", sectionId: "custom-section", presetId: "hero.classic" }, probe({ sectionIndex: index }), src(content));
       expect(plan).toEqual({ kind: "insert-section", index });
-      const result = apply(content, plan, { kind: "section", sectionId: "custom-section", presetId: "hero.split" });
+      const result = apply(content, plan, { kind: "section", sectionId: "custom-section", presetId: "hero.classic" });
       expect(result!.content.sections[expected]!.sectionId).toBe("custom-section");
       expect(result!.content.sections).toHaveLength(4);
       expect(result!.select).toEqual({ target: "page", sectionId: result!.content.sections[expected]!.id });
@@ -54,7 +54,7 @@ describe("section drops", () => {
 
   it("passes the library preset to the new section (P4B-05)", () => {
     const content = page();
-    const payload: CanvasPayload = { kind: "section", sectionId: "custom-section", presetId: "hero.split" };
+    const payload: CanvasPayload = { kind: "section", sectionId: "custom-section", presetId: "hero.classic" };
     const plan = planDrop(payload, probe({ sectionIndex: 1 }), src(content));
     const seen: [string, string | undefined][] = [];
     const result = apply(content, plan, payload, {
@@ -63,7 +63,7 @@ describe("section drops", () => {
         return { id: "from-preset", sectionId, version: 1, props: { align: "center" } };
       },
     });
-    expect(seen).toEqual([["custom-section", "hero.split"]]);
+    expect(seen).toEqual([["custom-section", "hero.classic"]]);
     expect(result!.content.sections[1]).toMatchObject({ id: "from-preset", props: { align: "center" } });
   });
 
@@ -93,8 +93,8 @@ describe("section drops", () => {
     const content = page();
     expect(planDrop({ kind: "section", sectionId: "store-header" }, probe(), src(content))).toMatchObject({ kind: "invalid", reason: "unsupported" });
     const full: PageContent = { sections: Array.from({ length: MAX_SECTIONS_PER_PAGE }, (_, i) => section(`s${i}`, "custom-section")) };
-    expect(planDrop({ kind: "section", sectionId: "custom-section", presetId: "hero.split" }, probe(), src(full))).toMatchObject({ kind: "invalid", reason: "limit" });
-    expect(planDrop({ kind: "section", sectionId: "custom-section", presetId: "hero.split" }, null, src(content))).toBeNull();
+    expect(planDrop({ kind: "section", sectionId: "custom-section", presetId: "hero.classic" }, probe(), src(full))).toMatchObject({ kind: "invalid", reason: "limit" });
+    expect(planDrop({ kind: "section", sectionId: "custom-section", presetId: "hero.classic" }, null, src(content))).toBeNull();
   });
 });
 

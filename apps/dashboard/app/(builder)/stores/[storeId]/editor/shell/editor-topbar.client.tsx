@@ -25,6 +25,7 @@ import { Button } from "@workspace/ui/components/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@workspace/ui/components/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@workspace/ui/components/tooltip";
 import { cn } from "@workspace/ui/lib/utils";
+import { DEVICE_TONE } from "../lib/editor-devices.lib";
 import { nameOf } from "../panels/pages-panel.client";
 import type { EditorStore, SaveStatus } from "../state/editor.store";
 
@@ -133,7 +134,7 @@ export function EditorTopbar({
                 aria-pressed={device === value}
                 aria-label={t(`devices.${value}`)}
                 onClick={() => state.setDevice(value)}
-                className={cn("grid h-7 w-8 place-items-center rounded-md text-muted-foreground", device === value && "bg-background text-foreground shadow-sm")}
+                className={cn("grid h-7 w-8 place-items-center rounded-md text-muted-foreground", device === value && cn("shadow-sm", DEVICE_TONE[value].pill))}
               >
                 <Icon className="size-4" aria-hidden />
               </button>

@@ -14,6 +14,7 @@ import {
   type DataNeed,
   type ElementType,
   type LayoutPreset,
+  type ContentItemSummary,
   type RenderContext,
 } from "@workspace/store-sections/render";
 import { Input } from "@workspace/ui/components/input";
@@ -217,6 +218,8 @@ function PaletteItem({ id, item, compact }: { id: string; item: Item; compact?: 
 export type SectionPreviewHost = {
   ctx: Omit<RenderContext, "pages" | "catalog">;
   catalog: PreviewCatalog;
+  /** Published blog posts for post-list previews (null: failed to load). */
+  posts?: ContentItemSummary[] | null;
   designSystem: DesignSystem;
   defaultLocale: SiteLocale;
   fontClassName: string;

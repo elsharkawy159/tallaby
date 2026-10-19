@@ -34,6 +34,8 @@ export const ALLOWED_NODE_TYPES = [
   "divider", "spacer", "badge",
   // Tree sections (tree-sections plan 1); additive.
   "pattern", "accordion", "accordionItem",
+  // Data nodes (tree-sections spec §5.3); additive.
+  "productList", "categoryList", "postList", "storeForm", "addToCart",
 ] as const;
 export type AllowedNodeType = (typeof ALLOWED_NODE_TYPES)[number];
 

@@ -258,7 +258,7 @@ export function createEditorCommands(store: EditorStore) {
           return "restyled";
         }
       }
-      const instance = presetInstance(preset, newId(), state().defaultLocale);
+      const instance = presetInstance(preset, newId(), state().defaultLocale, state().industry);
       return instance && insertSectionInstance(instance) ? "inserted" : false;
     },
 
@@ -503,7 +503,7 @@ export function createEditorCommands(store: EditorStore) {
         makeNodeId,
         makeSection: (sectionId, presetId) => {
           const preset = payloadPreset(sectionId, presetId);
-          if (preset) return presetInstance(preset, newId(), state().defaultLocale);
+          if (preset) return presetInstance(preset, newId(), state().defaultLocale, state().industry);
           const definition = storeSectionRegistry.get(sectionId);
           return definition ? createInstance(definition) : null;
         },

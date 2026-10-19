@@ -4,9 +4,12 @@ import { useTranslations } from "next-intl";
 import { AlignCenter, AlignJustify, AlignLeft, AlignRight, Italic, Underline } from "lucide-react";
 import type { StyleKey, StyleValues } from "@workspace/store-sections/render";
 import { ColorControl, ControlRow, LengthControl, NumberControl, Segmented, SpacingBox, ToggleButton } from "./style-controls.client";
+import { useOverrideTitles } from "./style-override.client";
 
 export type StylePatch = Partial<Record<StyleKey, unknown>>;
 type GroupProps = { style: StyleValues; set: (patch: StylePatch) => void };
+
+const PADDING_KEYS = ["paddingTop", "paddingEnd", "paddingBottom", "paddingStart"] as const satisfies readonly StyleKey[];
 
 const SIZES = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl"] as const;
 const WEIGHTS = [
@@ -38,7 +41,7 @@ export function TypographyControls({ style, set, compact = false }: GroupProps &
   const t = useTranslations("storeEditor.style");
   return (
     <div className="space-y-2.5">
-      <ControlRow label={t("size")}>
+      <ControlRow label={t("size")} keys={["fontSize"]}>
         <Segmented
           label={t("size")}
           value={style.fontSize}
@@ -46,7 +49,7 @@ export function TypographyControls({ style, set, compact = false }: GroupProps &
           options={(compact ? SIZES.slice(0, 6) : SIZES).map((v) => ({ value: v, label: v === "md" ? "M" : v.toUpperCase(), title: t(`sizes.${v}`) }))}
         />
       </ControlRow>
-      <ControlRow label={t("weight")}>
+      <ControlRow label={t("weight")} keys={["fontWeight", "italic", "underline"]}>
         <div className="flex flex-wrap items-center gap-1">
           <Segmented
             label={t("weight")}
@@ -62,7 +65,7 @@ export function TypographyControls({ style, set, compact = false }: GroupProps &
           </ToggleButton>
         </div>
       </ControlRow>
-      <ControlRow label={t("align")}>
+      <ControlRow label={t("align")} keys={["textAlign"]}>
         <Segmented
           label={t("align")}
           value={style.textAlign}
@@ -76,7 +79,7 @@ export function TypographyControls({ style, set, compact = false }: GroupProps &
         />
       </ControlRow>
       {!compact && (
-        <ControlRow label={t("lineHeight")}>
+        <ControlRow label={t("lineHeight")} keys={["lineHeight"]}>
           <Segmented
             label={t("lineHeight")}
             value={style.lineHeight}
@@ -85,7 +88,7 @@ export function TypographyControls({ style, set, compact = false }: GroupProps &
           />
         </ControlRow>
       )}
-      <ControlRow label={t("color")} className="items-start">
+      <ControlRow label={t("color")} className="items-start" keys={["color"]}>
         <ColorControl label={t("color")} value={style.color} onChange={(color) => set({ color })} tokenLabel={(token) => t(`tokens.${token}`)} />
       </ControlRow>
     </div>
@@ -98,7 +101,7 @@ export function ContainerControls({ style, set, nodeType }: GroupProps & { nodeT
   return (
     <div className="space-y-2.5">
       {flex && (
-        <ControlRow label={t("direction")}>
+        <ControlRow label={t("direction")} keys={["direction"]}>
           <Segmented
             label={t("direction")}
             value={style.direction}
@@ -111,7 +114,7 @@ export function ContainerControls({ style, set, nodeType }: GroupProps & { nodeT
         </ControlRow>
       )}
       {nodeType === "grid" && (
-        <ControlRow label={t("columns")}>
+        <ControlRow label={t("columns")} keys={["columns"]}>
           <Segmented
             label={t("columns")}
             value={style.columns === undefined ? undefined : String(style.columns)}
@@ -122,10 +125,10 @@ export function ContainerControls({ style, set, nodeType }: GroupProps & { nodeT
       )}
       {(flex || nodeType === "grid") && (
         <>
-          <ControlRow label={t("gap")}>
+          <ControlRow label={t("gap")} keys={["gap"]}>
             <NumberControl label={t("gap")} value={style.gap} min={0} max={200} onChange={(gap) => set({ gap })} />
           </ControlRow>
-          <ControlRow label={t("alignItems")}>
+          <ControlRow label={t("alignItems")} keys={["alignItems"]}>
             <Segmented
               label={t("alignItems")}
               value={style.alignItems}
@@ -136,7 +139,7 @@ export function ContainerControls({ style, set, nodeType }: GroupProps & { nodeT
         </>
       )}
       {flex && (
-        <ControlRow label={t("justify")}>
+        <ControlRow label={t("justify")} keys={["justifyContent"]}>
           <Segmented
             label={t("justify")}
             value={style.justifyContent}
@@ -145,7 +148,7 @@ export function ContainerControls({ style, set, nodeType }: GroupProps & { nodeT
           />
         </ControlRow>
       )}
-      <ControlRow label={t("padding")}>
+      <ControlRow label={t("padding")} keys={PADDING_KEYS}>
         <NumberControl
           label={t("padding")}
           placeholder={t("mixed")}
@@ -159,7 +162,7 @@ export function ContainerControls({ style, set, nodeType }: GroupProps & { nodeT
           onChange={(v) => set({ paddingTop: v, paddingEnd: v, paddingBottom: v, paddingStart: v })}
         />
       </ControlRow>
-      <ControlRow label={t("background")} className="items-start">
+      <ControlRow label={t("background")} className="items-start" keys={["background"]}>
         <ColorControl label={t("background")} value={style.background} onChange={(background) => set({ background })} tokenLabel={(token) => t(`tokens.${token}`)} />
       </ControlRow>
     </div>
@@ -170,7 +173,7 @@ export function ImageControls({ style, set }: GroupProps) {
   const t = useTranslations("storeEditor.style");
   return (
     <div className="space-y-2.5">
-      <ControlRow label={t("ratio")}>
+      <ControlRow label={t("ratio")} keys={["aspectRatio"]}>
         <Segmented
           label={t("ratio")}
           value={style.aspectRatio}
@@ -178,7 +181,7 @@ export function ImageControls({ style, set }: GroupProps) {
           options={(["square", "landscape", "wide", "portrait"] as const).map((v) => ({ value: v, label: t(`ratios.${v}`) }))}
         />
       </ControlRow>
-      <ControlRow label={t("fit")}>
+      <ControlRow label={t("fit")} keys={["objectFit"]}>
         <Segmented
           label={t("fit")}
           value={style.objectFit}
@@ -189,7 +192,7 @@ export function ImageControls({ style, set }: GroupProps) {
           ]}
         />
       </ControlRow>
-      <ControlRow label={t("radius")}>
+      <ControlRow label={t("radius")} keys={["radius"]}>
         <NumberControl label={t("radius")} value={style.radius} min={0} max={999} onChange={(radius) => set({ radius })} />
       </ControlRow>
     </div>
@@ -200,21 +203,21 @@ export function BoxControls({ style, set }: GroupProps) {
   const t = useTranslations("storeEditor.style");
   return (
     <div className="space-y-2.5">
-      <ControlRow label={t("background")} className="items-start">
+      <ControlRow label={t("background")} className="items-start" keys={["background"]}>
         <ColorControl label={t("background")} value={style.background} onChange={(background) => set({ background })} tokenLabel={(token) => t(`tokens.${token}`)} />
       </ControlRow>
-      <ControlRow label={t("border")}>
+      <ControlRow label={t("border")} keys={["borderWidth"]}>
         <NumberControl label={t("border")} value={style.borderWidth} min={0} max={20} onChange={(borderWidth) => set({ borderWidth })} />
       </ControlRow>
       {style.borderWidth !== undefined && style.borderWidth > 0 && (
-        <ControlRow label={t("borderColor")} className="items-start">
+        <ControlRow label={t("borderColor")} className="items-start" keys={["borderColor"]}>
           <ColorControl label={t("borderColor")} value={style.borderColor} onChange={(borderColor) => set({ borderColor })} tokenLabel={(token) => t(`tokens.${token}`)} />
         </ControlRow>
       )}
-      <ControlRow label={t("radius")}>
+      <ControlRow label={t("radius")} keys={["radius"]}>
         <NumberControl label={t("radius")} value={style.radius} min={0} max={999} onChange={(radius) => set({ radius })} />
       </ControlRow>
-      <ControlRow label={t("shadow")}>
+      <ControlRow label={t("shadow")} keys={["shadow"]}>
         <Segmented
           label={t("shadow")}
           value={style.shadow}
@@ -222,7 +225,7 @@ export function BoxControls({ style, set }: GroupProps) {
           options={(["none", "sm", "md", "lg"] as const).map((v) => ({ value: v, label: t(`shadows.${v}`) }))}
         />
       </ControlRow>
-      <ControlRow label={t("opacity")}>
+      <ControlRow label={t("opacity")} keys={["opacity"]}>
         <NumberControl label={t("opacity")} value={style.opacity} min={0} max={100} unit="%" onChange={(opacity) => set({ opacity })} />
       </ControlRow>
     </div>
@@ -233,13 +236,13 @@ export function SizeControls({ style, set }: GroupProps) {
   const t = useTranslations("storeEditor.style");
   return (
     <div className="space-y-2.5">
-      <ControlRow label={t("width")}>
+      <ControlRow label={t("width")} keys={["width"]}>
         <LengthControl label={t("width")} value={style.width} onChange={(width) => set({ width })} />
       </ControlRow>
-      <ControlRow label={t("maxWidth")}>
+      <ControlRow label={t("maxWidth")} keys={["maxWidth"]}>
         <LengthControl label={t("maxWidth")} value={style.maxWidth} onChange={(maxWidth) => set({ maxWidth })} />
       </ControlRow>
-      <ControlRow label={t("minHeight")}>
+      <ControlRow label={t("minHeight")} keys={["minHeight"]}>
         <NumberControl label={t("minHeight")} value={style.minHeight} min={0} max={2000} onChange={(minHeight) => set({ minHeight })} />
       </ControlRow>
     </div>
@@ -248,11 +251,17 @@ export function SizeControls({ style, set }: GroupProps) {
 
 export function SpacingControls({ style, set }: GroupProps) {
   const t = useTranslations("storeEditor.style");
+  const overrideTitle = useOverrideTitles();
   return (
     <SpacingBox
       values={style}
       onChange={(key, value) => set({ [key]: value })}
-      labels={{ margin: t("margin"), padding: t("padding"), side: (side) => t(`sides.${side.toLowerCase() as "top"}`) }}
+      labels={{
+        margin: t("margin"),
+        padding: t("padding"),
+        side: (side) => t(`sides.${side.toLowerCase() as "top"}`),
+        override: (key) => overrideTitle([key]),
+      }}
     />
   );
 }

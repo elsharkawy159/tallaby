@@ -2,8 +2,9 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { Check } from "lucide-react";
-import { COLOR_TOKEN_VARS, type ColorToken } from "@workspace/store-sections/render";
+import { COLOR_TOKEN_VARS, type ColorToken, type StyleKey } from "@workspace/store-sections/render";
 import { cn } from "@workspace/ui/lib/utils";
+import { OverrideMark, overrideFieldClass, useStyleOverrides } from "./style-override.client";
 
 /**
  * Small style controls shared by the element popover and the Style tab
@@ -11,10 +12,14 @@ import { cn } from "@workspace/ui/lib/utils";
  * They only emit whitelisted values; the store normalizes them again.
  */
 
-export function ControlRow({ label, children, className }: { label: string; children: ReactNode; className?: string }) {
+/** `keys` are the style values the row edits; with them it marks per-device overrides. */
+export function ControlRow({ label, children, className, keys }: { label: string; children: ReactNode; className?: string; keys?: readonly StyleKey[] }) {
   return (
     <div className={cn("flex items-center gap-3", className)}>
-      <span className="w-14 shrink-0 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{label}</span>
+      <span className="flex w-14 shrink-0 items-center gap-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+        <span className="min-w-0 truncate">{label}</span>
+        {keys && <OverrideMark keys={keys} />}
+      </span>
       <div className="min-w-0 flex-1">{children}</div>
     </div>
   );
@@ -217,21 +222,24 @@ export function SpacingBox({
 }: {
   values: Partial<Record<`padding${Side}` | `margin${Side}`, number>>;
   onChange: (key: `padding${Side}` | `margin${Side}`, value: number | undefined) => void;
-  labels: { margin: string; padding: string; side: (side: Side) => string };
+  labels: { margin: string; padding: string; side: (side: Side) => string; override?: (key: StyleKey) => string | undefined };
 }) {
+  // Cells the edited device sets itself are tinted; dashed ones keep a value on a smaller device.
+  const overrides = useStyleOverrides();
   const cell = (kind: "padding" | "margin", side: Side) => {
     const key = `${kind}${side}` as const;
     return (
       <input
         type="number"
         dir="ltr"
+        title={labels.override?.(key)}
         aria-label={`${labels[kind]} ${labels.side(side)}`}
         min={kind === "margin" ? -200 : 0}
         max={400}
         value={values[key] ?? ""}
         placeholder="0"
         onChange={(e) => onChange(key, e.target.value === "" ? undefined : Number(e.target.value))}
-        className="h-6 w-10 rounded border bg-background text-center text-[11px] tabular-nums"
+        className={cn("h-6 w-10 rounded border bg-background text-center text-[11px] tabular-nums", overrideFieldClass(overrides, key))}
       />
     );
   };

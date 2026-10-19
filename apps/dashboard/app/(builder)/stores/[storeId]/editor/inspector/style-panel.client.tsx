@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { ChevronDown, Eye, EyeOff, Monitor, RotateCcw, Smartphone, Tablet } from "lucide-react";
+import { cn } from "@workspace/ui/lib/utils";
 import type { SectionInstance } from "@workspace/store-sections";
 import type { SectionShellStyle } from "@workspace/store-sections/render";
 import { SectionShellControls } from "./controls/section-shell.client";
@@ -17,7 +18,17 @@ import {
   TypographyControls,
   type StylePatch,
 } from "./controls/style-groups.client";
-import { hasOwnStyle, readEffectiveStyle, readOwnStyle, type StyleKind, type StyleTarget } from "../lib/editor-style.lib";
+import { StyleOverrideProvider, type StyleOverrides } from "./controls/style-override.client";
+import { DEVICE_TONE } from "../lib/editor-devices.lib";
+import {
+  hasDeviceOverrides,
+  hasOwnStyle,
+  overrideState,
+  readEffectiveStyle,
+  readOwnStyle,
+  type StyleKind,
+  type StyleTarget,
+} from "../lib/editor-style.lib";
 import type { Device } from "../state/editor.store";
 
 const DEVICE_ICON = { desktop: Monitor, tablet: Tablet, mobile: Smartphone } as const;
@@ -46,6 +57,7 @@ export function StylePanel({
   device,
   onPatch,
   onReset,
+  onResetDevice,
   shell,
 }: {
   instance: SectionInstance;
@@ -55,6 +67,8 @@ export function StylePanel({
   device: Device;
   onPatch: (patch: StylePatch) => void;
   onReset: () => void;
+  /** Drops this tablet/phone's overrides in the whole section (its parts and elements too). */
+  onResetDevice?: () => void;
   /** The shared section frame (page sections only; one value for every device). */
   shell?: { value: SectionShellStyle; onChange: (patch: Partial<SectionShellStyle>) => void; storeId: string; readOnly: boolean };
 }) {
@@ -63,16 +77,29 @@ export function StylePanel({
   const hidden = readOwnStyle(instance, target, device).hidden === true;
   const DeviceIcon = DEVICE_ICON[device];
   const textual = kind === "text" || kind === "button";
+  const overrides: StyleOverrides = {
+    device,
+    state: (keys) => overrideState(instance, target, device, keys),
+    reset: (keys) => onPatch(Object.fromEntries(keys.map((key) => [key, undefined]))),
+  };
+  const sectionReset = kind === "section" && onResetDevice && hasDeviceOverrides(instance, device);
 
   return (
-    <div>
-      <div className="mb-1 flex items-center gap-2 rounded-md bg-muted/60 px-2.5 py-2 text-xs">
-        <DeviceIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-        <span className="flex-1">{t(device === "desktop" ? "editingDesktop" : "editingDevice", { device: t(`devices.${device}`) })}</span>
-        {hasOwnStyle(instance, target, device) && (
-          <Button type="button" variant="ghost" size="sm" className="h-6 px-1.5 text-xs" onClick={onReset}>
-            <RotateCcw className="size-3" aria-hidden />
-            {t(device === "desktop" ? "resetAll" : "resetDevice")}
+    <StyleOverrideProvider value={overrides}>
+      <div className={cn("mb-1 rounded-md px-2.5 py-2 text-xs", DEVICE_TONE[device].strip)}>
+        <div className="flex items-center gap-2">
+          <DeviceIcon className="size-4 shrink-0 opacity-70" aria-hidden />
+          <span className="flex-1">{t(`editing.${device}`)}</span>
+          {hasOwnStyle(instance, target, device) && (
+            <Button type="button" variant="ghost" size="sm" className="h-6 px-1.5 text-xs" onClick={onReset}>
+              <RotateCcw className="size-3" aria-hidden />
+              {t(device === "desktop" ? "resetAll" : "resetDevice")}
+            </Button>
+          )}
+        </div>
+        {sectionReset && (
+          <Button type="button" variant="link" size="sm" className="mt-1 h-auto p-0 text-xs text-inherit" onClick={onResetDevice}>
+            {t("resetSectionDevice", { device: t(`devices.${device}`) })}
           </Button>
         )}
       </div>
@@ -124,6 +151,6 @@ export function StylePanel({
         </label>
         <p className="mt-1.5 text-xs text-muted-foreground">{t("hideHint")}</p>
       </Group>
-    </div>
+    </StyleOverrideProvider>
   );
 }
