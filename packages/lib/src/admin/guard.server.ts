@@ -38,8 +38,12 @@ export async function assertAdminActor(q: Queryable, actorId: string): Promise<{
 
 export type AdminAuditEntry = {
   actorId: string;
-  sellerId: string;
+  /** Null only for platform-wide actions (0069); then targetType and targetId are required. */
+  sellerId: string | null;
   storeId?: string | null;
+  /** What was changed when it is not a seller account, e.g. "template" (0069). */
+  targetType?: string | null;
+  targetId?: string | null;
   action: AdminAuditAction;
   before: Record<string, unknown>;
   after: Record<string, unknown>;
@@ -54,6 +58,8 @@ export async function writeAdminAudit(q: Queryable, entry: AdminAuditEntry): Pro
       actorId: entry.actorId,
       sellerId: entry.sellerId,
       storeId: entry.storeId ?? null,
+      // Only sent when set, so seller rows still insert on a database without 0069.
+      ...(entry.targetType ? { targetType: entry.targetType, targetId: entry.targetId ?? null } : {}),
       action: entry.action,
       before: entry.before,
       after: entry.after,

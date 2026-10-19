@@ -11,12 +11,12 @@ import { findPath, getElementDefinition, storeSectionRegistry, type ElementType 
 import { cn } from "@workspace/ui/lib/utils";
 import type { DragPayload } from "../dnd/dnd.types";
 import { useDragData, useReducedMotion } from "../dnd/editor-dnd.client";
-import type { EditorCommands } from "../editor-commands.lib";
-import { ELEMENT_ICONS, SECTION_GROUP_ICONS } from "../editor-icons.lib";
-import { SECTION_GROUPS } from "../editor-palette.lib";
-import { readOwnStyle, type StyleTarget } from "../editor-style.lib";
-import { sameRef, withTree } from "../editor-selection.lib";
-import type { EditorStore, SectionRef, Selection } from "../editor.store";
+import type { EditorCommands } from "../lib/editor-commands.lib";
+import { ELEMENT_ICONS, SECTION_GROUP_ICONS } from "../lib/editor-icons.lib";
+import { SECTION_GROUPS } from "../lib/editor-palette.lib";
+import { readOwnStyle, type StyleTarget } from "../lib/editor-style.lib";
+import { nodeLabel, renameNode, sameRef, withTree } from "../lib/editor-selection.lib";
+import type { EditorStore, SectionRef, Selection } from "../state/editor.store";
 
 const pick = (value: { ar: string; en: string }, locale: string) => (locale === "en" ? value.en : value.ar) || value.ar;
 
@@ -207,7 +207,7 @@ function NodeRows({
           action();
         };
         const open = expanded.has(node.id);
-        const custom = typeof node.props.label === "string" ? node.props.label : "";
+        const custom = nodeLabel(node, uiLocale);
         const hidden = isHidden(instance, { kind: "node", nodeId: node.id });
         return (
           <SortableBlock
@@ -235,11 +235,7 @@ function NodeRows({
                 store.getState().editSection(sectionRef, (i) =>
                   withTree(i, (tree) => {
                     const rename = (list: ComponentNode[]): ComponentNode[] =>
-                      list.map((n) =>
-                        n.id === node.id
-                          ? { ...n, props: { ...n.props, label: label.trim().slice(0, 60) || undefined } }
-                          : { ...n, children: rename(n.children) },
-                      );
+                      list.map((n) => (n.id === node.id ? renameNode(n, label) : { ...n, children: rename(n.children) }));
                     return rename(tree);
                   }),
                 )

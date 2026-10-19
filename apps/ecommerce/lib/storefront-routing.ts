@@ -1,7 +1,7 @@
 /**
  * Request routing for seller storefronts ({subdomain}.tallaby.com, or the
  * seller's own domain such as faster-eg.com), used by proxy.ts. Storefront
- * pages live under `app/[locale]/storefront/[subdomain]` and are only
+ * pages live under `app/[locale]/(shop)/storefront/[subdomain]` and are only
  * reachable through a store host:
  *
  *   faster.tallaby.com/                 → /ar/storefront/faster
@@ -10,7 +10,8 @@
  *
  * Checkout, sign-in, orders and the policy pages run as-is on the store host
  * (cart actions are scoped by host, so they act on the storefront cart).
- * Anything else belongs to the marketplace and redirects to tallaby.com.
+ * Anything else redirects to tallaby.com, which is now the marketing site
+ * (app/[locale]/(marketing)).
  */
 
 import { NextResponse, type NextRequest } from "next/server";
@@ -53,8 +54,9 @@ const PASS_THROUGH = [
   "/payment",
   "/profile",
   "/error",
-  "/privacy",
-  "/terms",
+  // /privacy and /terms are not here: on tallaby.com they are the marketing
+  // pages, so a store host serves its own builder page of that slug, or the
+  // page route redirects to Tallaby's.
   "/returns",
   "/shipping",
   "/cookies",

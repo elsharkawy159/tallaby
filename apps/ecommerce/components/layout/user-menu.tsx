@@ -24,7 +24,7 @@ import {
 import { Button } from "@workspace/ui/components/button";
 import { Separator } from "@workspace/ui/components/separator";
 
-import { getWalletSummaryCardData } from "@/app/[locale]/(main)/profile/wallet/_components/wallet.server";
+import { getWalletSummaryCardData } from "@/app/[locale]/(shop)/(main)/profile/wallet/_components/wallet.server";
 import { AddressManagerDialog } from "@/components/shared/address-dialog";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import type { AddressData } from "@/components/address/address.schema";

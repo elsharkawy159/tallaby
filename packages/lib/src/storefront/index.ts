@@ -40,6 +40,32 @@ export function validateSubdomain(subdomain: string): SubdomainProblem | null {
   return null;
 }
 
+// Rough Arabic → Latin letters, so an Arabic store name still suggests an address.
+const ARABIC_TO_LATIN: Record<string, string> = {
+  "ا": "a", "أ": "a", "إ": "e", "آ": "a", "ء": "", "ؤ": "o", "ئ": "e", "ب": "b",
+  "ت": "t", "ث": "th", "ج": "g", "ح": "h", "خ": "kh", "د": "d", "ذ": "z", "ر": "r",
+  "ز": "z", "س": "s", "ش": "sh", "ص": "s", "ض": "d", "ط": "t", "ظ": "z", "ع": "a",
+  "غ": "gh", "ف": "f", "ق": "k", "ك": "k", "ل": "l", "م": "m", "ن": "n", "ه": "h",
+  "ة": "a", "و": "w", "ي": "y", "ى": "a",
+  "٠": "0", "١": "1", "٢": "2", "٣": "3", "٤": "4", "٥": "5", "٦": "6", "٧": "7", "٨": "8", "٩": "9",
+};
+
+/**
+ * A subdomain suggestion from a store name: "متجر فاستر" → "mtgr-fastr",
+ * "Faster Store!" → "faster-store". Only a starting point; the result may
+ * still be too short, reserved or taken, so callers validate it as usual.
+ */
+export function subdomainFromName(name: string): string {
+  return Array.from(name.normalize("NFKD").toLowerCase())
+    .map((ch) => ARABIC_TO_LATIN[ch] ?? ch)
+    .join("")
+    .replace(/[̀-ًͯ-ٰٟـ]/g, "") // Latin accents, Arabic harakat, tatweel
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+/, "")
+    .slice(0, SUBDOMAIN_MAX_LENGTH)
+    .replace(/-+$/, "");
+}
+
 /** The domain storefronts live under, e.g. `tallaby.com` (`localhost:3000` in dev). */
 export function storefrontRootDomain(): string {
   return (process.env.NEXT_PUBLIC_ROOT_DOMAIN || "tallaby.com")

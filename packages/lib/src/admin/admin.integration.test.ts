@@ -48,7 +48,7 @@ describe.skipIf(!TEST_DATABASE_URL)("admin overrides (integration)", { timeout: 
       { id: sellerUserId, isGuest: false, role: "seller", isVerified: true },
       { id: sellerC, isGuest: false, role: "seller" },
     ]);
-    // Seller C never publishes and has no products: its trial has not started.
+    // Seller C is not eligible, so its first store does not start a trial (0067).
     const sub = `adm-${sellerC.slice(0, 8)}`;
     await db.insert(s.sellers).values({
       id: sellerC,
@@ -60,6 +60,7 @@ describe.skipIf(!TEST_DATABASE_URL)("admin overrides (integration)", { timeout: 
       legalAddress: { country: "EG" },
       supportEmail: "adm@example.com",
       status: "approved",
+      feeTrialEligible: false,
     });
   });
 
@@ -124,14 +125,14 @@ describe.skipIf(!TEST_DATABASE_URL)("admin overrides (integration)", { timeout: 
       error: "no_change",
     });
     expect(
-      await applySellerOverride(adminId, { action: "set_fee_plan", sellerId: w.a.sellerId, reason, feePlan: "standard_2pct_min5" }, db),
+      await applySellerOverride(adminId, { action: "set_fee_plan", sellerId: w.a.sellerId, reason, feePlan: "flat_5" }, db),
     ).toEqual({ success: false, error: "no_change" });
     const exempt = await applySellerOverride(adminId, { action: "set_commission_exempt", sellerId: w.a.sellerId, reason: "Charity store", exempt: true }, db);
     expect(exempt).toMatchObject({ success: true, data: { before: { isCommissionExempt: false }, after: { isCommissionExempt: true } } });
   });
 
   it("trial: extend only a started trial to a later date; grant/revoke only before it starts", async () => {
-    // A published in the fixture, which started its trial (D20).
+    // A has a store, which started its trial (0067).
     const [a] = await db
       .select({ endsAt: s.sellers.feeTrialEndsAt, startedAt: s.sellers.feeTrialStartedAt })
       .from(s.sellers)
@@ -165,17 +166,17 @@ describe.skipIf(!TEST_DATABASE_URL)("admin overrides (integration)", { timeout: 
       success: false,
       error: "trial_not_started",
     });
-    expect(await applySellerOverride(adminId, { action: "grant_trial", sellerId: sellerC, reason }, db)).toEqual({
+    expect(await applySellerOverride(adminId, { action: "revoke_trial", sellerId: sellerC, reason }, db)).toEqual({
       success: false,
       error: "no_change",
     });
-    expect(await applySellerOverride(adminId, { action: "revoke_trial", sellerId: sellerC, reason }, db)).toMatchObject({
+    expect(await applySellerOverride(adminId, { action: "grant_trial", sellerId: sellerC, reason }, db)).toMatchObject({
       success: true,
-      data: { before: { feeTrialEligible: true }, after: { feeTrialEligible: false } },
+      data: { before: { feeTrialEligible: false }, after: { feeTrialEligible: true } },
     });
-    expect((await getSellerAccountForAdmin(sellerC, db))?.trial.state).toBe("none");
-    expect(await applySellerOverride(adminId, { action: "grant_trial", sellerId: sellerC, reason }, db)).toMatchObject({ success: true });
     expect((await getSellerAccountForAdmin(sellerC, db))?.trial.state).toBe("not_started");
+    expect(await applySellerOverride(adminId, { action: "revoke_trial", sellerId: sellerC, reason }, db)).toMatchObject({ success: true });
+    expect((await getSellerAccountForAdmin(sellerC, db))?.trial.state).toBe("none");
     expect((await auditRows(sellerC)).map((r) => r.action).sort()).toEqual(["grant_trial", "revoke_trial"]);
   });
 

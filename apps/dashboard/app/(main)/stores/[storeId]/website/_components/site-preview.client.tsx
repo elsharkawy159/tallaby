@@ -6,45 +6,21 @@ import { useTranslations } from "next-intl";
 import type { DesignSystem, SectionInstance, SiteLocale } from "@workspace/store-sections";
 import {
   CLASSIC_TOKENS,
+  PageStyles,
   SITE_ROOT_CLASS,
   SectionRenderer,
   SiteTheme,
   collectCatalogQueries,
   designSystemToTokens,
   storeSectionRegistry,
-  type ClassicPart,
   type RenderContext,
   type StoreProfile,
 } from "@workspace/store-sections/render";
-import { resolveCanvasCatalog } from "@/app/(builder)/stores/[storeId]/editor/editor.lib";
-import type { EditorCategory, EditorProduct } from "@/app/(builder)/stores/[storeId]/editor/editor.data";
+import { resolveCanvasCatalog } from "@/app/(builder)/stores/[storeId]/editor/lib/editor.lib";
+import type { EditorCategory, EditorProduct } from "@/app/(builder)/stores/[storeId]/editor/server/editor.data";
 
 export type PreviewCatalog = { products: EditorProduct[]; categories: EditorCategory[] };
 export type PreviewDevice = "desktop" | "mobile";
-
-const instance = (id: string, sectionId: string, props: Record<string, unknown>): SectionInstance => ({ id, sectionId, version: 1, props });
-
-/**
- * Tallaby Classic parts are drawn by the storefront's own components, which
- * the dashboard does not have; the preview shows the closest library
- * sections filled with this store's data instead.
- */
-export function classicStandIns(store: StoreProfile): Record<ClassicPart, SectionInstance> {
-  return {
-    "classic-header": instance("preview-classic-header", "store-header", { showLogo: true, showName: true, showNav: true, announcement: "" }),
-    "classic-hero": instance("preview-classic-hero", "hero-banner", {
-      title: store.name,
-      subtitle: store.description ?? "",
-      image: store.bannerUrl ?? "",
-      ctaLabel: "",
-      align: "start",
-      height: "md",
-    }),
-    "classic-categories": instance("preview-classic-categories", "category-grid", { title: "", style: "circles", limit: 8 }),
-    "classic-catalog": instance("preview-classic-catalog", "product-grid", { title: "", source: "newest", limit: 8, columns: "4", showViewAll: false }),
-    "classic-footer": instance("preview-classic-footer", "store-footer", { about: "", showPolicies: true, showSocial: true, showContact: true }),
-  };
-}
 
 /** Copies the dashboard's stylesheets (Tailwind, fonts) into the frame. */
 function syncStyles(target: Document) {
@@ -122,12 +98,10 @@ export function SitePreview({
     doc.documentElement.dir = dir;
   }, [locale, dir]);
 
-  const standIns = useMemo(() => classicStandIns(store), [store]);
-
   const ctx = useMemo<RenderContext>(() => {
-    const all = [...sections, ...(header ? [header] : []), ...(footer ? [footer] : []), ...Object.values(standIns)];
+    const all = [...sections, ...(header ? [header] : []), ...(footer ? [footer] : [])];
     const resolved = resolveCanvasCatalog(collectCatalogQueries(all, storeSectionRegistry), catalog, locale);
-    const base: RenderContext = {
+    return {
       mode: "edit",
       locale,
       dir,
@@ -150,11 +124,7 @@ export function SitePreview({
         </span>
       ),
     };
-    return {
-      ...base,
-      renderClassic: (part) => <SectionRenderer instance={standIns[part]} registry={storeSectionRegistry} ctx={base} defaultLocale={defaultLocale} />,
-    };
-  }, [sections, header, footer, standIns, catalog, locale, dir, store, defaultLocale, t]);
+  }, [sections, header, footer, catalog, locale, dir, store, t]);
 
   return (
     <div className={className}>
@@ -178,6 +148,8 @@ export function SitePreview({
             dir={dir}
           >
             <SiteTheme designSystem={designSystem} />
+            {/* Element styles of tree sections, as on the storefront. */}
+            <PageStyles sections={[header, ...sections, footer]} mode="public" />
             <style>{`.${SITE_ROOT_CLASS} :where(h1,h2,h3,h4){font-family:var(--sf-font-heading,var(--sf-font-body,var(--font-storefront))),system-ui,sans-serif}`}</style>
             {header && <SectionRenderer instance={header} registry={storeSectionRegistry} ctx={ctx} defaultLocale={defaultLocale} />}
             <main className="flex-1">

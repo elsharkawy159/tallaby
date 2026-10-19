@@ -10,11 +10,11 @@ import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { cn } from "@workspace/ui/lib/utils";
 import { createForm } from "@/app/(main)/stores/[storeId]/website/forms/forms.server";
-import type { EditorCommands } from "../editor-commands.lib";
-import type { EditorForm } from "../editor.data";
-import type { EditorFormSummary } from "../editor.dto";
-import { listForms } from "../editor.server";
-import type { EditorStore } from "../editor.store";
+import type { EditorCommands } from "../lib/editor-commands.lib";
+import type { EditorForm } from "../server/editor.data";
+import type { EditorFormSummary } from "../server/editor.dto";
+import { listForms } from "../server/editor.server";
+import type { EditorStore } from "../state/editor.store";
 
 /**
  * Forms tab (owner request 2026-10-18, like the reference `forms-panel.tsx`):

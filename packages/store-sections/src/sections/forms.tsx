@@ -1,8 +1,7 @@
-import { z } from "zod";
 import type { SiteLocale } from "../config/schema";
 import { sectionText } from "../core/copy";
-import type { PublicFormField, PublicStoreForm, SectionDefinition } from "../core/types";
-import { SectionHeading, SectionShell, cn, partOf, text } from "./_primitives";
+import type { PublicFormField, PublicStoreForm } from "../core/types";
+import { cn } from "./_primitives";
 
 // ---------------------------------------------------------------------------
 // Form fields (presentational, no hooks): the storefront's interactive form
@@ -138,88 +137,3 @@ export function formCopy(form: PublicStoreForm, locale: SiteLocale) {
     successMessage: form.successMessage || sectionText("formSuccess", locale),
   };
 }
-
-// ---------------------------------------------------------------------------
-// contact-form: bound to one `store_forms` row by id (P4-10)
-// ---------------------------------------------------------------------------
-
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-const contactFormSchema = z.object({
-  formId: z
-    .string()
-    .refine((v) => v === "" || UUID.test(v))
-    .catch(""),
-  title: text(120),
-  text: text(400),
-  width: z.enum(["narrow", "wide"]).catch("narrow"),
-  tone: z.enum(["paper", "shelf"]).catch("paper"),
-});
-type ContactFormProps = z.infer<typeof contactFormSchema>;
-
-export const contactForm: SectionDefinition<ContactFormProps> = {
-  id: "contact-form",
-  version: 1,
-  category: "contact",
-  displayName: { ar: "نموذج تواصل", en: "Contact form" },
-  description: { ar: "نموذج من نماذج متجرك يرسل الرسائل إلى صندوق الوارد.", en: "One of your store's forms; messages go to your inbox." },
-  propsSchema: contactFormSchema,
-  defaultProps: { formId: "", title: "راسلنا", text: "", width: "narrow", tone: "paper" },
-  propDefinitions: [
-    { key: "formId", label: { ar: "النموذج", en: "Form" }, type: "form" },
-    { key: "title", label: { ar: "العنوان", en: "Title" }, type: "text", maxLength: 120, translatable: true },
-    { key: "text", label: { ar: "النص", en: "Text" }, type: "textarea", maxLength: 400, translatable: true },
-    {
-      key: "width",
-      label: { ar: "العرض", en: "Width" },
-      type: "select",
-      group: "layout",
-      options: [
-        { value: "narrow", label: { ar: "ضيق", en: "Narrow" } },
-        { value: "wide", label: { ar: "عريض", en: "Wide" } },
-      ],
-    },
-    {
-      key: "tone",
-      label: { ar: "الخلفية", en: "Background" },
-      type: "select",
-      group: "appearance",
-      options: [
-        { value: "paper", label: { ar: "فاتحة", en: "Light" } },
-        { value: "shelf", label: { ar: "رمادية", en: "Tinted" } },
-      ],
-    },
-  ],
-  formRef: (props) => props.formId || null,
-  Component: ({ instance, props, ctx }) => {
-    const form = props.formId ? ctx.forms?.[props.formId] : undefined;
-    // A missing, disabled or foreign form shows nothing to visitors.
-    if (!form && ctx.mode === "public") return null;
-    return (
-      <SectionShell tone={props.tone}>
-        <div className={cn("mx-auto", props.width === "narrow" ? "max-w-2xl" : "max-w-4xl")}>
-          <SectionHeading
-            title={props.title}
-            subtitle={props.text}
-            align="center"
-            parts={{ title: partOf(instance.id)("title"), subtitle: partOf(instance.id)("text") }}
-          />
-          {!form ? (
-            <p className="rounded-(--sf-radius,12px) border border-dashed border-(--sf-line) p-6 text-center text-sm text-(--sf-muted)">
-              {sectionText("pickForm", ctx.locale)}
-            </p>
-          ) : ctx.renderForm ? (
-            ctx.renderForm(form, instance.id)
-          ) : (
-            <div className="space-y-5">
-              <FormFieldsView form={form} idPrefix={`f-${instance.id}`} locale={ctx.locale} disabled />
-              <button type="button" disabled className={FORM_SUBMIT_CLASS}>
-                {formCopy(form, ctx.locale).submitLabel}
-              </button>
-            </div>
-          )}
-        </div>
-      </SectionShell>
-    );
-  },
-};

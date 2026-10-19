@@ -2,10 +2,10 @@ import { describe, expect, it } from "vitest";
 import { siteConfigSchema, type SectionInstance } from "../config/schema";
 import { contentOverrideKeys } from "../core/registry";
 import { storeSectionRegistry } from "../sections";
-import { mergeSectionInstance, mergeTemplateIntoDraft, templateOutline, type DraftSite } from "./apply";
-import { tallabyClassicConfig } from "./tallaby-classic";
+import { mergeSectionInstance, mergeTemplateIntoDraft, templateOutline, type DraftSite, type OverrideKeys } from "./apply";
 
-const keys = contentOverrideKeys(storeSectionRegistry);
+// The merge is generic over content keys; these stand in for a prop-based section.
+const keys: OverrideKeys = { "hero-banner": ["title", "subtitle", "image", "ctaLabel", "ctaHref"], "rich-text": ["title"] };
 const section = (id: string, sectionId: string, props: Record<string, unknown>, extra: Partial<SectionInstance> = {}): SectionInstance => ({
   id,
   sectionId,
@@ -15,11 +15,8 @@ const section = (id: string, sectionId: string, props: Record<string, unknown>, 
 });
 
 describe("applyTemplate merge (P4-05)", () => {
-  it("content keys are text/image/link props and item lists, not layout", () => {
-    expect(keys["hero-banner"]).toEqual(expect.arrayContaining(["title", "subtitle", "image", "ctaLabel", "ctaHref"]));
-    expect(keys["hero-banner"]).not.toContain("align");
-    expect(keys["features"]).toContain("items");
-    expect(keys["product-grid"]).not.toContain("source");
+  it("tree sections have no prop content keys (content moves by role later)", () => {
+    expect(contentOverrideKeys(storeSectionRegistry)["custom-section"] ?? []).toEqual([]);
   });
 
   it("keeps the store's text and image overrides when the section id matches", () => {
@@ -68,27 +65,15 @@ describe("applyTemplate merge (P4-05)", () => {
     // "about" is not in the result: it stays as it is.
     expect(result.pages.some((p) => p.slug === "about")).toBe(false);
   });
-
-  it("re-applying Tallaby Classic to a Classic store keeps its category title", () => {
-    const classic = siteConfigSchema.parse(tallabyClassicConfig());
-    const home = classic.pages[0]!;
-    const edited = {
-      ...home.content,
-      sections: home.content.sections.map((s) => (s.id === "classic-categories" ? { ...s, props: { title: "Shop by type" } } : s)),
-    };
-    const result = mergeTemplateIntoDraft(
-      { designSystem: classic.designSystem, header: classic.header, footer: classic.footer, pages: [{ slug: "home", isHome: true, content: edited }] },
-      classic,
-      keys,
-    );
-    expect(result.pages[0]!.content.sections.find((s) => s.id === "classic-categories")!.props).toEqual({ title: "Shop by type" });
-  });
 });
 
 describe("templateOutline (P4-05 gallery)", () => {
   it("lists each page with its section ids", () => {
-    expect(templateOutline(siteConfigSchema.parse(tallabyClassicConfig()))).toEqual([
-      { slug: "home", isHome: true, name: "الرئيسية", sections: ["classic-hero", "classic-categories", "classic-catalog"] },
-    ]);
+    const config = siteConfigSchema.parse({
+      schemaVersion: 1,
+      designSystem: { colors: {}, typography: {}, spacing: {} },
+      pages: [{ slug: "home", isHome: true, name: "الرئيسية", seo: {}, content: { sections: [section("s1", "custom-section", {})] } }],
+    });
+    expect(templateOutline(config)).toEqual([{ slug: "home", isHome: true, name: "الرئيسية", sections: ["custom-section"] }]);
   });
 });

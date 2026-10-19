@@ -198,6 +198,12 @@ export async function getSellers(query: SellersQuery = {}) {
         sellerMetrics: sellers.sellerMetrics,
         createdAt: sellers.createdAt,
         updatedAt: sellers.updatedAt,
+        // SaaS account facts (docs/admin-saas.md §3.10).
+        plan: sellers.plan,
+        feeTrialEligible: sellers.feeTrialEligible,
+        feeTrialEndsAt: sellers.feeTrialEndsAt,
+        storeCount: sql<number>`(SELECT count(*)::int FROM stores st WHERE st.seller_id = ${sellers.id} AND st.deleted_at IS NULL)`,
+        lastOrderAt: sql<string | null>`(SELECT max(oi.created_at)::text FROM order_items oi WHERE oi.seller_id = ${sellers.id})`,
       })
       .from(sellers)
       .where(whereClause)
@@ -236,6 +242,7 @@ export async function getSellers(query: SellersQuery = {}) {
       joinDate: seller.joinDate ?? new Date().toISOString(),
       createdAt: seller.createdAt ?? new Date().toISOString(),
       updatedAt: seller.updatedAt ?? new Date().toISOString(),
+      storeCount: Number(seller.storeCount ?? 0),
     }));
 
     return {

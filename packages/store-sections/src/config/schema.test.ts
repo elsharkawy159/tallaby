@@ -20,6 +20,22 @@ describe("siteConfigSchema", () => {
     expect(result.data.settings).toEqual({ defaultLocale: "ar", locales: ["ar", "en"] });
   });
 
+  it("keeps a valid design source and rejects a malformed one", () => {
+    const section = (source: string) => ({ id: "s1", sectionId: "custom-section", version: 1, props: {}, source });
+    const ok = parse(withHomeSections([section("stats-cards@1")]));
+    expect(ok.success).toBe(true);
+    if (!ok.success) return;
+    expect(ok.data.pages[0]!.content.sections[0]!.source).toBe("stats-cards@1");
+    expect(parse(withHomeSections([section("x y")])).success).toBe(false);
+  });
+
+  it("accepts pattern, accordion and accordionItem nodes", () => {
+    const node = (id: string, type: string, children: unknown[] = []) => ({ id, type, props: {}, children });
+    const tree = [node("r", "section", [node("p", "pattern"), node("a", "accordion", [node("i", "accordionItem")])])];
+    const result = parse(withHomeSections([{ id: "s1", sectionId: "custom-section", version: 1, props: {}, componentTree: tree }]));
+    expect(result.success).toBe(true);
+  });
+
   it("rejects a customCode node in a section's component tree", () => {
     const config = withHomeSections([
       {

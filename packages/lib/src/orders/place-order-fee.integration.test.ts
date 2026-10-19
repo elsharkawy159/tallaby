@@ -189,11 +189,11 @@ describe.skipIf(!TEST_DATABASE_URL)('platform fee at order placement (integratio
       expect(line(key).total).toBe(line(key).subtotal)
     }
 
-    // A: max(5, 2% × 350) = 7.00, split 300:50.
-    expect(line('a1')).toMatchObject({ commissionAmount: '6.00', sellerEarning: '294.00', commissionRate: 0.02 })
-    expect(line('a2')).toMatchObject({ commissionAmount: '1.00', sellerEarning: '49.00', commissionRate: 0.02 })
+    // A: flat 5.00, split 300:50.
+    expect(line('a1')).toMatchObject({ commissionAmount: '4.29', sellerEarning: '295.71', commissionRate: 0.0143 })
+    expect(line('a2')).toMatchObject({ commissionAmount: '0.71', sellerEarning: '49.29', commissionRate: 0.0143 })
     expect(line('a1').metadata).toMatchObject({
-      platformFee: { plan: 'standard_2pct_min5', eligiblePiastres: 35_000, feePiastres: 700, trial: false, exempt: false },
+      platformFee: { plan: 'flat_5', eligiblePiastres: 35_000, feePiastres: 500, trial: false, exempt: false },
     })
     // B: trial → 0.
     expect(line('b1')).toMatchObject({ commissionAmount: '0.00', sellerEarning: '1000.00', commissionRate: 0 })
@@ -214,10 +214,10 @@ describe.skipIf(!TEST_DATABASE_URL)('platform fee at order placement (integratio
     expect(order.discountAmount).toBe('70.00')
     expect(line('a1')).toMatchObject({ discountAmount: '60.00', total: '240.00' })
     expect(line('a2')).toMatchObject({ discountAmount: '10.00', total: '40.00' })
-    // max(5, 2% × 280) = 5.60, split 240:40.
-    expect(line('a1')).toMatchObject({ commissionAmount: '4.80', sellerEarning: '235.20' })
-    expect(line('a2')).toMatchObject({ commissionAmount: '0.80', sellerEarning: '39.20' })
-    expect(line('a1').metadata).toMatchObject({ platformFee: { eligiblePiastres: 28_000, feePiastres: 560 } })
+    // Flat 5.00 on the seller's price, split 240:40.
+    expect(line('a1')).toMatchObject({ commissionAmount: '4.29', sellerEarning: '235.71' })
+    expect(line('a2')).toMatchObject({ commissionAmount: '0.71', sellerEarning: '39.29' })
+    expect(line('a1').metadata).toMatchObject({ platformFee: { eligiblePiastres: 28_000, feePiastres: 500 } })
   })
 
   it('does not lower the fee for a Tallaby-funded coupon (D2)', async () => {
@@ -226,7 +226,7 @@ describe.skipIf(!TEST_DATABASE_URL)('platform fee at order placement (integratio
     const { order, line } = await place(await cart([['a1', sellerA, '150.00', 2], ['a2', sellerA, '50.00', 1]]), code)
 
     expect(order.discountAmount).toBe('50.00')
-    expect(line('a1')).toMatchObject({ total: '300.00', commissionAmount: '6.00' })
-    expect(line('a2')).toMatchObject({ total: '50.00', commissionAmount: '1.00' })
+    expect(line('a1')).toMatchObject({ total: '300.00', commissionAmount: '4.29' })
+    expect(line('a2')).toMatchObject({ total: '50.00', commissionAmount: '0.71' })
   })
 })

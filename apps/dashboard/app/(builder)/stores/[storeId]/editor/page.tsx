@@ -11,7 +11,7 @@ import { loadStorePage } from "@/lib/stores/store-page.server";
 import { storeFontVariables } from "@/app/(main)/stores/[storeId]/website/_components/store-fonts";
 import { toTemplateCardViews } from "@/app/(main)/stores/[storeId]/website/templates/templates.lib";
 import { StoreEditor, type EditorInitial } from "./editor.client";
-import { loadEditorCatalog, loadEditorForms } from "./editor.data";
+import { loadEditorSnapshot } from "./server/editor.data";
 
 export const dynamic = "force-dynamic";
 
@@ -32,20 +32,18 @@ export default async function StoreEditorPage({ params }: { params: Promise<{ st
   const store = await loadStorePage(storeId);
   if (!storeBuilderEnabled(store.sellerId)) notFound();
 
-  const [editor, status, products, forms, gallery] = await Promise.all([
+  const [editor, status, catalog, gallery] = await Promise.all([
     getStoreForEditor(store.sellerId, store.id),
     getStoreSiteStatus(store.sellerId, store.id),
-    loadEditorCatalog(store.sellerId, store.catalogMode === "selected" ? store.id : undefined),
-    loadEditorForms(store.sellerId, store.id),
+    loadEditorSnapshot(store.sellerId, store.id, store.catalogMode),
     listStoreTemplates(store.sellerId, store.id),
   ]);
-  const catalog = { ...products, forms };
   if (!editor) notFound();
 
   const header = sectionInstanceSchema.safeParse(editor.store.sharedHeader);
   const footer = sectionInstanceSchema.safeParse(editor.store.sharedFooter);
   const designSystem = designSystemSchema.safeParse(editor.designSystem);
-  const contact = (store.contact ?? {}) as { phone?: string; email?: string };
+  const contact = (store.contact ?? {}) as { phone?: string; email?: string; whatsapp?: string };
   const locales = (editor.store.supportedLocales ?? ["ar", "en"]).map(asLocale);
 
   const initial: EditorInitial = {
@@ -58,7 +56,8 @@ export default async function StoreEditorPage({ params }: { params: Promise<{ st
       logoUrl: store.logoUrl,
       bannerUrl: store.bannerUrl,
       url: storeUrl(store.subdomain),
-      contact: { phone: contact.phone ?? null, email: contact.email ?? null, whatsapp: contact.phone ?? null },
+      // WhatsApp is its own store setting; sections fall back to the phone number themselves.
+      contact: { phone: contact.phone ?? null, email: contact.email ?? null, whatsapp: contact.whatsapp ?? null },
       social: publicStoreSocialLinks(store.contact),
       policies: [],
     },
@@ -79,6 +78,7 @@ export default async function StoreEditorPage({ params }: { params: Promise<{ st
     defaultLocale: asLocale(editor.store.defaultLocale),
     locales: [...new Set(locales)],
     catalog,
+    catalogMode: store.catalogMode ?? "all",
     isLive: Boolean(status?.isLive),
     previewEnabled: storePreviewSecret() !== null,
     templates: { currentKey: gallery?.currentKey ?? "", items: toTemplateCardViews(gallery?.templates ?? []) },

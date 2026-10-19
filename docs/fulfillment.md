@@ -81,5 +81,18 @@ lets a seller, with or without rows, request services. It calls
   pickup address or the warehouse (today hard-coded to Cairo). The shipping app
   does not read fulfillment at all today; see PLAN.md P8-02 for the proposal.
 - Billing: agreement rates -> `wallet_transactions` rows of type `fee` on
-  delivery. Note `place-order.ts` still hard-codes a 10% commission.
+  delivery. Note `place-order.ts` still hard-codes the platform commission
+  (`PLATFORM_COMMISSION_RATE = 0.05` in `place-order.lib.ts` since `0047`; it was 10%).
+  Fulfillment billing must stay separate from the platform fee.
 - A `warehouses` table (one warehouse today, via `EGYPT_POST_WAREHOUSE_NAME`).
+
+## 6. Planned changes (seller SaaS, see `/PLAN.md`)
+
+- Seller signup will **stop collecting fulfillment choices** (`PLAN.md` §6). New
+  sellers get no fulfillment rows; `resolveEffectiveFulfillment` already falls
+  back to the baseline for missing rows (§2.3 above), so their orders behave
+  like today's seller-managed sellers.
+- The "Seller change requests from Settings" item above becomes the main way to
+  ask for Tallaby services (`PLAN.md` P8-01). It writes only `requested_*`, and
+  activation stays admin-only.
+- Publishing a storefront never requires fulfillment.

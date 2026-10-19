@@ -8,6 +8,8 @@ export type StockPhoto = {
   id: string;
   /** Small image for the grid. */
   thumbUrl: string;
+  /** Sharp image for the hover preview on the canvas (large 2x, else large, else the thumb). */
+  previewUrl: string;
   width: number;
   height: number;
   alt: string;
@@ -56,6 +58,7 @@ export function toStockPhoto(photo: PexelsPhoto): StockPhoto | null {
   return {
     id: String(photo.id),
     thumbUrl: thumb,
+    previewUrl: [photo.src?.large2x, photo.src?.large].find(isPexelsImageUrl) ?? thumb,
     width: photo.width,
     height: photo.height,
     alt: photo.alt?.trim() ?? "",

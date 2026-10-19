@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   invalidateAllCategories,
+  invalidateFulfillmentPlans,
+  invalidateSellerCoupons,
+  invalidateStoreIntegrationsWithSummary,
+  invalidateTemplateCatalog,
   invalidatePlatformCoupons,
   invalidateProduct,
   invalidateProductInventory,
@@ -11,7 +15,15 @@ import {
   mergeInvalidations,
   type ProductCacheSnapshot,
 } from "./invalidate";
-import { categoryTags, couponTags, productTags, storeTags } from "./tags";
+import {
+  adminTags,
+  categoryTags,
+  couponTags,
+  fulfillmentTags,
+  productTags,
+  storeTags,
+  templateTags,
+} from "./tags";
 
 function snapshot(overrides: Partial<ProductCacheSnapshot> = {}): ProductCacheSnapshot {
   return {
@@ -341,5 +353,28 @@ describe("invalidateStoreCatalog", () => {
     expect(result.tags).toEqual(["store:catalog:seller-a:store-a1", "seller:subdomain:sara"]);
     expect(result.tags).not.toContain(storeTags.catalog("seller-a", "store-a2"));
     expect(result.paths).toEqual([]);
+  });
+});
+
+describe("admin invalidations (docs/admin-saas.md §4.3)", () => {
+  it("seller coupons: that seller's tag and the available list only", () => {
+    expect(invalidateSellerCoupons("seller-a").tags).toEqual([
+      couponTags.seller("seller-a"),
+      couponTags.available(),
+    ]);
+  });
+
+  it("template catalog and fulfillment plans carry no seller data", () => {
+    expect(invalidateTemplateCatalog().tags).toEqual([templateTags.catalog()]);
+    expect(invalidateFulfillmentPlans().tags).toEqual([fulfillmentTags.plans()]);
+  });
+
+  it("an admin integration change refreshes that store's scripts and the admin summary", () => {
+    const result = invalidateStoreIntegrationsWithSummary("seller-a", "store-a1");
+    expect(result.tags).toEqual([
+      storeTags.integrations("seller-a", "store-a1"),
+      adminTags.integrationSummary(),
+    ]);
+    expect(result.tags).not.toContain(storeTags.integrations("seller-a", "store-a2"));
   });
 });

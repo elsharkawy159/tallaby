@@ -32,6 +32,8 @@ export const ALLOWED_NODE_TYPES = [
   "shadcn-progress", "shadcn-tooltip",
   // Custom-section elements (P4B-01); additive, schema version unchanged.
   "divider", "spacer", "badge",
+  // Tree sections (tree-sections plan 1); additive.
+  "pattern", "accordion", "accordionItem",
 ] as const;
 export type AllowedNodeType = (typeof ALLOWED_NODE_TYPES)[number];
 
@@ -111,6 +113,8 @@ export const sectionInstanceSchema = z.object({
   componentTree: z.array(componentNodeSchema).max(MAX_NODES_PER_LIST).optional(),
   slots: z.record(z.string(), slotLayoutSchema).optional(),
   savedBlockRef: z.string().max(64).optional(),
+  /** The design a tree section started from (`<design-id>@<version>`); never affects rendering. */
+  source: z.string().max(100).regex(/^[a-z0-9-]+@\d{1,4}$/).optional(),
 });
 export type SectionInstance = z.output<typeof sectionInstanceSchema>;
 

@@ -26,8 +26,8 @@ import { Switch } from "@workspace/ui/components/switch";
 import { Textarea } from "@workspace/ui/components/textarea";
 import { BUTTON_CLASS, FIELD_CLASS, SectionCard, SMALL_BUTTON_CLASS, TEXTAREA_CLASS } from "@/components/form/form-ui";
 import { cn } from "@/lib/utils";
-import { createPage, deletePage, reorderPages, updatePage } from "@/app/(builder)/stores/[storeId]/editor/editor.server";
-import type { EditorErrorKey } from "@/app/(builder)/stores/[storeId]/editor/editor.dto";
+import { createPage, deletePage, reorderPages, updatePage } from "@/app/(builder)/stores/[storeId]/editor/server/editor.server";
+import type { EditorErrorKey } from "@/app/(builder)/stores/[storeId]/editor/server/editor.dto";
 import type { WebsitePageRow } from "../website.types";
 import { checkSlug, cleanSeo, moveItem, pageName, slugFromName, type SlugProblem } from "./pages.lib";
 

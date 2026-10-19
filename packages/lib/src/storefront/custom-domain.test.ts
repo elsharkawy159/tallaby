@@ -7,6 +7,7 @@ import {
   storeHostname,
   storeSubdomainFromHost,
   storeUrl,
+  subdomainFromName,
   validateCustomDomain,
 } from "./index";
 
@@ -91,5 +92,23 @@ describe("store URLs", () => {
   it("custom domains are not mistaken for store subdomains", () => {
     expect(storeSubdomainFromHost("faster-eg.com")).toBeNull();
     expect(hostnameOf("Faster-EG.com:443")).toBe("faster-eg.com");
+  });
+});
+
+describe("subdomainFromName", () => {
+  it("slugifies Latin names", () => {
+    expect(subdomainFromName("Faster Store!")).toBe("faster-store");
+    expect(subdomainFromName("  Ça va -- Shop  ")).toBe("ca-va-shop");
+  });
+
+  it("transliterates Arabic names and digits", () => {
+    expect(subdomainFromName("متجر فاستر")).toBe("mtgr-fastr");
+    expect(subdomainFromName("مَحَلّ ٢٤")).toBe("mhl-24");
+  });
+
+  it("caps the length without a trailing hyphen", () => {
+    const out = subdomainFromName("a".repeat(31) + " b");
+    expect(out).toBe("a".repeat(31));
+    expect(subdomainFromName("!!!")).toBe("");
   });
 });

@@ -7,8 +7,8 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 /**
- * Daily (vercel.json): fee trial reminders 7 days and 1 day before a seller's
- * trial ends (PLAN.md §13.5, P6-07). The backend sends each stage once per
+ * Daily (vercel.json): a fee trial reminder 1 day before a seller's 7-day
+ * trial ends (PLAN.md §13.5, P6-07; no 7-day reminder since 0067). The backend sends each stage once per
  * seller (email_deliveries claim), so a retried or doubled run is harmless and
  * a missed day is caught up the next day.
  */
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     .where(
       and(
         gt(sellers.feeTrialEndsAt, now.toISOString()),
-        lte(sellers.feeTrialEndsAt, sql`now() + interval '7 days'`),
+        lte(sellers.feeTrialEndsAt, sql`now() + interval '1 day'`),
       ),
     );
 

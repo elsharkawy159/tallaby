@@ -18,7 +18,7 @@ import {
   Plus,
 } from "lucide-react";
 
-import { storeHostname, storeUrl } from "@workspace/lib/storefront";
+import { storeHostname, storeUrl, subdomainFromName } from "@workspace/lib/storefront";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -278,6 +278,14 @@ function CreateStoreDialog({ open, onOpenChange }: { open: boolean; onOpenChange
   useEffect(() => {
     if (!open) form.reset();
   }, [open, form]);
+
+  // Fill the address from the name until the seller edits the address themselves
+  // (typing in it or picking a suggestion marks it dirty).
+  const name = form.watch("name");
+  useEffect(() => {
+    if (form.getFieldState("subdomain").isDirty) return;
+    form.setValue("subdomain", subdomainFromName(name ?? ""));
+  }, [name, form]);
 
   const onSubmit = (values: Values) => {
     if (!available) {

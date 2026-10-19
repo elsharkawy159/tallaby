@@ -14,7 +14,7 @@ const section = (id: string, sectionId: string, tree?: ComponentNode[]): Section
   ...(tree && { componentTree: tree }),
 });
 
-/** hero (pre-built) · custom [stack [heading, image], paragraph] · faq */
+/** hero (a removed coded section) · custom [stack [heading, image], paragraph] · faq (removed coded) */
 function page(): PageContent {
   return {
     sections: [
@@ -43,10 +43,10 @@ describe("section drops", () => {
       [2, 2],
       [3, 3],
     ] as const) {
-      const plan = planDrop({ kind: "section", sectionId: "features" }, probe({ sectionIndex: index }), src(content));
+      const plan = planDrop({ kind: "section", sectionId: "custom-section", presetId: "hero.split" }, probe({ sectionIndex: index }), src(content));
       expect(plan).toEqual({ kind: "insert-section", index });
-      const result = apply(content, plan, { kind: "section", sectionId: "features" });
-      expect(result!.content.sections[expected]!.sectionId).toBe("features");
+      const result = apply(content, plan, { kind: "section", sectionId: "custom-section", presetId: "hero.split" });
+      expect(result!.content.sections[expected]!.sectionId).toBe("custom-section");
       expect(result!.content.sections).toHaveLength(4);
       expect(result!.select).toEqual({ target: "page", sectionId: result!.content.sections[expected]!.id });
     }
@@ -54,7 +54,7 @@ describe("section drops", () => {
 
   it("passes the library preset to the new section (P4B-05)", () => {
     const content = page();
-    const payload: CanvasPayload = { kind: "section", sectionId: "hero-banner", presetId: "hero.centered" };
+    const payload: CanvasPayload = { kind: "section", sectionId: "custom-section", presetId: "hero.split" };
     const plan = planDrop(payload, probe({ sectionIndex: 1 }), src(content));
     const seen: [string, string | undefined][] = [];
     const result = apply(content, plan, payload, {
@@ -63,17 +63,13 @@ describe("section drops", () => {
         return { id: "from-preset", sectionId, version: 1, props: { align: "center" } };
       },
     });
-    expect(seen).toEqual([["hero-banner", "hero.centered"]]);
+    expect(seen).toEqual([["custom-section", "hero.split"]]);
     expect(result!.content.sections[1]).toMatchObject({ id: "from-preset", props: { align: "center" } });
   });
 
-  it("allows a library preset of a section hidden from the old list, and nothing else hidden", () => {
+  it("refuses removed coded sections", () => {
     const content = page();
-    expect(planDrop({ kind: "section", sectionId: "contact-info", presetId: "contact.info" }, probe(), src(content))).toEqual({ kind: "insert-section", index: 0 });
-    expect(planDrop({ kind: "section", sectionId: "contact-info" }, probe(), src(content))).toMatchObject({ kind: "invalid" });
-    // A preset id for another section does not unlock a hidden one.
-    expect(planDrop({ kind: "section", sectionId: "contact-info", presetId: "hero.centered" }, probe(), src(content))).toMatchObject({ kind: "invalid" });
-    // Header presets are set with a click, never dropped.
+    expect(planDrop({ kind: "section", sectionId: "hero-banner" }, probe(), src(content))).toMatchObject({ kind: "invalid", reason: "unsupported" });
     expect(planDrop({ kind: "section", sectionId: "store-header", presetId: "headers.minimal" }, probe(), src(content))).toMatchObject({ kind: "invalid" });
   });
 
@@ -96,9 +92,9 @@ describe("section drops", () => {
   it("refuses header/footer sections, a full page, and a drop off the canvas", () => {
     const content = page();
     expect(planDrop({ kind: "section", sectionId: "store-header" }, probe(), src(content))).toMatchObject({ kind: "invalid", reason: "unsupported" });
-    const full: PageContent = { sections: Array.from({ length: MAX_SECTIONS_PER_PAGE }, (_, i) => section(`s${i}`, "faq")) };
-    expect(planDrop({ kind: "section", sectionId: "features" }, probe(), src(full))).toMatchObject({ kind: "invalid", reason: "limit" });
-    expect(planDrop({ kind: "section", sectionId: "features" }, null, src(content))).toBeNull();
+    const full: PageContent = { sections: Array.from({ length: MAX_SECTIONS_PER_PAGE }, (_, i) => section(`s${i}`, "custom-section")) };
+    expect(planDrop({ kind: "section", sectionId: "custom-section", presetId: "hero.split" }, probe(), src(full))).toMatchObject({ kind: "invalid", reason: "limit" });
+    expect(planDrop({ kind: "section", sectionId: "custom-section", presetId: "hero.split" }, null, src(content))).toBeNull();
   });
 });
 
@@ -145,7 +141,9 @@ describe("element drops", () => {
       elementType: "heading",
     })!;
     expect(element.content.sections.map((s) => s.sectionId)).toEqual(["hero-banner", "custom-section", "custom-section", "faq"]);
-    expect(element.content.sections[1]!.componentTree![0]!.type).toBe("heading");
+    // A new element section is a tree section: its elements sit inside a section root, so absolute styles stay inside it.
+    expect(element.content.sections[1]!.componentTree![0]!.type).toBe("section");
+    expect(element.content.sections[1]!.componentTree![0]!.children[0]!.type).toBe("heading");
     // The pre-built section is untouched (no element data stored on it).
     expect(element.content.sections[0]).toBe(content.sections[0]);
   });
@@ -174,7 +172,8 @@ describe("element drops", () => {
     expect(plan).toEqual({ kind: "move-node-new-section", fromSectionId: "custom", nodeId: "h", index: 3 });
     const result = apply(content, plan, payload)!;
     expect(findNode(result.content.sections[1]!.componentTree!, "h")).toBeNull();
-    expect(result.content.sections[3]!.componentTree![0]!.id).toBe("h");
+    expect(result.content.sections[3]!.componentTree![0]!.type).toBe("section");
+    expect(result.content.sections[3]!.componentTree![0]!.children[0]!.id).toBe("h");
   });
 });
 
@@ -200,7 +199,7 @@ describe("photo drops", () => {
     );
     expect(plan).toEqual({ kind: "new-section", index: 0 });
     const result = apply(content, plan, photo, { src: "seller/store/photo.jpg" })!;
-    const image = result.content.sections[0]!.componentTree![0]!;
+    const image = result.content.sections[0]!.componentTree![0]!.children[0]!;
     expect(image).toMatchObject({ type: "image", props: { src: "seller/store/photo.jpg", alt: "A shop" } });
   });
 
@@ -234,28 +233,3 @@ describe("image onto image", () => {
   });
 });
 
-describe("part and item drops (P4B-16)", () => {
-  const content: PageContent = { sections: [section("about", "image-with-text"), section("hl", "features")] };
-  const ref = { target: "page" as const, sectionId: "about" };
-
-  it("moves a part to the other column, or refuses away from its section", () => {
-    const payload: CanvasPayload = { kind: "move-part", ref, part: "title" };
-    expect(planDrop(payload, probe({ part: { slot: "media", beforePart: null } }), src(content))).toEqual({
-      kind: "move-part",
-      ref,
-      part: "title",
-      slot: "media",
-      index: 1,
-    });
-    expect(planDrop(payload, probe({ part: null }), src(content))).toMatchObject({ kind: "invalid", reason: "unsupported" });
-    expect(planDrop(payload, probe({ part: { slot: "text", beforePart: "title" } }), src(content))).toMatchObject({ kind: "invalid", reason: "noop" });
-    expect(planDrop({ ...payload, ref: { target: "page", sectionId: "gone" } }, probe({ part: { slot: "text", beforePart: null } }), src(content))).toBeNull();
-  });
-
-  it("moves an item among its collection", () => {
-    const payload: CanvasPayload = { kind: "move-item", ref: { target: "page", sectionId: "hl" }, collection: "items", index: 0 };
-    expect(planDrop(payload, probe({ itemInsertAt: 3 }), src(content))).toMatchObject({ kind: "move-item", from: 0, to: 2 });
-    expect(planDrop(payload, probe({ itemInsertAt: 1 }), src(content))).toMatchObject({ kind: "invalid", reason: "noop" });
-    expect(planDrop(payload, probe({ itemInsertAt: null }), src(content))).toMatchObject({ kind: "invalid", reason: "unsupported" });
-  });
-});

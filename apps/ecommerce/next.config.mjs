@@ -6,6 +6,8 @@ const nextConfig = {
   transpilePackages: ["@workspace/ui"],
   // Avoid serving stale homepage RSC payloads on client-side navigation.
   experimental: {
+    // app/global-not-found.tsx: the root layout sits under [locale].
+    globalNotFound: true,
     staleTimes: {
       dynamic: 0,
       static: 30,
@@ -13,9 +15,15 @@ const nextConfig = {
   },
   async redirects() {
     return [
+      // The marketplace seller pages are gone: the marketing home has the signup.
       {
         source: "/become-seller",
-        destination: "/sell",
+        destination: "/",
+        permanent: true,
+      },
+      {
+        source: "/sell",
+        destination: "/",
         permanent: true,
       },
     ];

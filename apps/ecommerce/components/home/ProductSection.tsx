@@ -1,4 +1,4 @@
-import ProductCard from "@/app/[locale]/(main)/products/[slug]/_components/ProductCard";
+import ProductCard from "@/components/product-page/ProductCard";
 import { Button } from "@workspace/ui/components/button";
 import { ChevronRight } from "lucide-react";
 import {

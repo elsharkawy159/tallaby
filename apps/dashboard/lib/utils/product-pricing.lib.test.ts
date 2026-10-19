@@ -6,8 +6,8 @@ const base = { commissionRate: 5, isCommissionExempt: false }
 describe('calculateSellerEarning (platform fee, PLAN.md §13)', () => {
   it('takes max(EGP 5, 2%) from a one-unit order', () => {
     expect(calculateSellerEarning(100, base)).toBe(95)
-    expect(calculateSellerEarning(1000, base)).toBe(980)
-    expect(calculateSellerEarning('251', base)).toBe(245.98)
+    expect(calculateSellerEarning(1000, base)).toBe(995)
+    expect(calculateSellerEarning('251', base)).toBe(246)
   })
 
   it('never goes below zero for prices under EGP 5', () => {

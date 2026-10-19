@@ -143,7 +143,7 @@ export function getStorefrontBySubdomain(subdomain: string) {
         .where(and(eq(sellerCustomDomains.storeId, row.storeId), eq(sellerCustomDomains.status, "active")))
         .limit(1);
 
-      const contact = (row.contact ?? {}) as { email?: string; phone?: string };
+      const contact = (row.contact ?? {}) as { email?: string; phone?: string; whatsapp?: string };
       // Only the governorate is public; the rest of the legal address is not.
       const state = (row.legalAddress as { state?: string } | null)?.state;
       return {
@@ -167,6 +167,8 @@ export function getStorefrontBySubdomain(subdomain: string) {
         freeDelivery: row.freeDelivery,
         supportEmail: contact.email ?? null,
         supportPhone: contact.phone ?? null,
+        /** Store settings WhatsApp number; sections fall back to the phone. */
+        supportWhatsapp: contact.whatsapp ?? null,
         storeCategory: row.storeCategory,
         storeCategoryAr: row.storeCategoryAr,
         /** Website › Domain & SEO (P4-14), re-validated field by field. */

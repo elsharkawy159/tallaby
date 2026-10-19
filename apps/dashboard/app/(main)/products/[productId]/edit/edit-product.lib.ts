@@ -14,6 +14,8 @@ type ProductForEdit = {
   id: string;
   categoryId: string;
   brandId: string | null;
+  sellerCategoryId?: string | null;
+  sellerBrandId?: string | null;
   sku: string | null;
   quantity: string | number;
   maxOrderQuantity: number | null;
@@ -173,6 +175,8 @@ export function buildEditDefaultValues(
     productUrl: "",
     categoryId: product.categoryId ?? "",
     brandId: product.brandId ?? undefined,
+    sellerCategoryId: product.sellerCategoryId ?? "",
+    sellerBrandId: product.sellerBrandId ?? "",
     sku: product.sku ?? "",
     quantity,
     maxOrderQuantity: product.maxOrderQuantity ?? undefined,

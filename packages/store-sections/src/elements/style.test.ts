@@ -114,3 +114,66 @@ describe("collectPageCss", () => {
     expect(escapeStyleBlock("a</style>")).toBe("a\\3c /style>");
   });
 });
+
+describe("tree section styles", () => {
+  const tree = (style: Record<string, unknown>, breakpointStyles?: Record<string, Record<string, unknown>>) =>
+    section({ sectionId: "custom-section", componentTree: [{ id: "n1", type: "div", props: {}, children: [], style, ...(breakpointStyles && { breakpointStyles }) }] });
+
+  it("normalizes layering, type, gradient and grid keys and drops bad values", () => {
+    expect(
+      normalizeStyle({
+        position: "absolute",
+        zIndex: 99,
+        insetTop: "10px",
+        insetStart: "-16px",
+        insetEnd: "calc(1px)",
+        overflow: "hidden",
+        letterSpacing: "wide",
+        textTransform: "uppercase",
+        gradient: "brand-soft",
+        colSpan: 20,
+        order: -3,
+        fontSize: "display-lg",
+      }),
+    ).toEqual({
+      position: "absolute",
+      zIndex: 10,
+      insetTop: "10px",
+      insetStart: "-16px",
+      overflow: "hidden",
+      letterSpacing: "wide",
+      textTransform: "uppercase",
+      gradient: "brand-soft",
+      colSpan: 12,
+      order: -3,
+      fontSize: "display-lg",
+    });
+    expect(normalizeStyle({ position: "fixed", gradient: "url(x)" })).toEqual({});
+  });
+
+  it("emits logical inset properties", () => {
+    const css = styleDeclarations(normalizeStyle({ position: "absolute", insetTop: "0px", insetEnd: "16px", insetBottom: "-8px", insetStart: "5%" }));
+    expect(css).toEqual(
+      expect.arrayContaining(["position:absolute", "inset-block-start:0px", "inset-inline-end:16px", "inset-block-end:-8px", "inset-inline-start:5%"]),
+    );
+  });
+
+  it("uses clamp for display font sizes", () => {
+    expect(styleDeclarations({ fontSize: "display-md" })).toContain("font-size:clamp(2.2rem,5vw,3.25rem)");
+  });
+
+  it("emits a scoped hover rule, never nested", () => {
+    expect(normalizeStyle({ hover: { shadow: "md", scale: 105, content: "x", hover: { color: "primary" } } })).toEqual({ hover: { shadow: "md", scale: 105 } });
+    const css = collectPageCss([tree({ hover: { shadow: "md", scale: 105 } })]);
+    expect(css).toContain('[data-section-id="s1"] [data-node-id="n1"]:hover{box-shadow:');
+    expect(css).toContain("transform:scale(1.05)");
+    expect(css).toContain("@media (prefers-reduced-motion:reduce)");
+  });
+
+  it("puts hover and position overrides inside the device media query", () => {
+    const css = collectPageCss([tree({ position: "sticky" }, { mobile: { position: "relative", hover: { opacity: 80 } } })]);
+    const mobile = css.slice(css.indexOf("@media (max-width:767px){"));
+    expect(mobile).toContain("position:relative");
+    expect(mobile).toContain(':hover{opacity:0.8}');
+  });
+});

@@ -7,8 +7,8 @@
  * The slot under the pointer wins; otherwise the nearest slot of that
  * section, so the gaps between columns still give a precise target.
  */
-import { splitPartAttr } from "../editor-selection.lib";
-import type { SectionRef } from "../editor.store";
+import { splitPartAttr } from "../lib/editor-selection.lib";
+import type { SectionRef } from "../state/editor.store";
 import { insertionIndex, insertionLine, type Line, type Point, type Rect } from "./canvas-geometry.lib";
 import type { PartSlotHit } from "./part-drop.lib";
 

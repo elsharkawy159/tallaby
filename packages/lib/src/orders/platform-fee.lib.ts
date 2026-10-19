@@ -1,27 +1,32 @@
 /**
- * Tallaby platform fee (PLAN.md §13, P6-01).
+ * Tallaby platform fee (PLAN.md §13, P6-01; flat fee since 2026-10-18).
  *
- * fee = max(EGP 5, 2% of the seller's eligible subtotal), per seller per
- * order, shipping excluded, capped at the eligible subtotal. Pure and
- * integer-based: every amount here is in piastres (1 EGP = 100).
+ * fee = a flat EGP 5 per seller per order, shipping excluded, capped at the
+ * eligible subtotal. Pure and integer-based: every amount here is in piastres
+ * (1 EGP = 100).
  */
 
 import { allocateDiscountAcrossLines } from './coupon-scope.lib'
 
-export const STANDARD_FEE_RATE_BPS = 200
+/** No percentage: the fee is the flat minimum (owner decision, 2026-10-18). */
+export const STANDARD_FEE_RATE_BPS = 0
 export const STANDARD_FEE_MIN_PIASTRES = 500
-export const FEE_TRIAL_DAYS = 30
+/** No-fee days, counted from the seller's first store's created_at (0067). */
+export const FEE_TRIAL_DAYS = 7
 
 /** One plan today (D1); per-service fees are designed later. */
 export const FEE_PLANS = {
-  standard_2pct_min5: { rateBps: STANDARD_FEE_RATE_BPS, minPiastres: STANDARD_FEE_MIN_PIASTRES },
+  flat_5: { rateBps: STANDARD_FEE_RATE_BPS, minPiastres: STANDARD_FEE_MIN_PIASTRES },
 } as const satisfies Record<string, { rateBps: number; minPiastres: number }>
 
 export type FeePlanId = keyof typeof FEE_PLANS
 
-export const STANDARD_FEE_PLAN: FeePlanId = 'standard_2pct_min5'
+export const STANDARD_FEE_PLAN: FeePlanId = 'flat_5'
 
-/** Unknown or missing fee plans fall back to the standard plan. */
+/**
+ * Unknown or missing fee plans, including the retired 'standard_2pct_min5',
+ * fall back to the standard plan.
+ */
 export function resolveFeePlan (plan: string | null | undefined): FeePlanId {
   const id = plan?.trim().toLowerCase()
   return id && Object.hasOwn(FEE_PLANS, id) ? (id as FeePlanId) : STANDARD_FEE_PLAN

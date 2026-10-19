@@ -50,11 +50,27 @@ const JUSTIFY = { start: "flex-start", center: "center", end: "flex-end", betwee
 const COLOR_RE = /^(?:#[0-9a-f]{3,4}|#[0-9a-f]{6}|#[0-9a-f]{8}|(?:rgba?|hsla?|oklch|oklab)\([0-9.,%\s/+-]+\))$/i;
 // A length: auto, or a bounded number with px / % / rem.
 const LENGTH_RE = /^(?:auto|(\d{1,4}(?:\.\d{1,2})?)(px|%|rem))$/;
+// An offset (inset): like a length, and may be negative.
+const OFFSET_RE = /^(?:auto|(-?\d{1,4}(?:\.\d{1,2})?)(px|%|rem))$/;
+
+/** Fluid heading sizes for designs (clamp between mobile and desktop). */
+export const DISPLAY_SIZES = {
+  "display-sm": "clamp(1.75rem,3vw,2.35rem)",
+  "display-md": "clamp(2.2rem,5vw,3.25rem)",
+  "display-lg": "clamp(2.5rem,6vw,3.75rem)",
+} as const;
+const LETTER_SPACINGS = { tight: "-0.02em", normal: "0", wide: "0.06em", wider: "0.14em" } as const;
+/** Fixed gradients on theme tokens (`background-image`, over the background colour). */
+export const GRADIENTS = {
+  "brand-soft": "linear-gradient(135deg,color-mix(in srgb,var(--sf-brand) 16%,transparent),color-mix(in srgb,var(--sf-brand) 4%,transparent))",
+  "ink-fade": "linear-gradient(to top,color-mix(in srgb,var(--sf-ink) 70%,transparent),transparent)",
+  shelf: "linear-gradient(180deg,var(--sf-shelf),var(--sf-paper))",
+} as const;
 
 type Enum<T extends Record<string, unknown>> = keyof T;
 
 export type StyleValues = {
-  fontSize?: Enum<typeof FONT_SIZES>;
+  fontSize?: Enum<typeof FONT_SIZES> | Enum<typeof DISPLAY_SIZES>;
   fontWeight?: Enum<typeof FONT_WEIGHTS>;
   italic?: boolean;
   underline?: boolean;
@@ -87,6 +103,25 @@ export type StyleValues = {
   shadow?: Enum<typeof SHADOWS>;
   opacity?: number;
   hidden?: boolean;
+  position?: "relative" | "absolute" | "sticky";
+  insetTop?: string;
+  insetEnd?: string;
+  insetBottom?: string;
+  insetStart?: string;
+  zIndex?: number;
+  overflow?: "visible" | "hidden" | "clip";
+  letterSpacing?: Enum<typeof LETTER_SPACINGS>;
+  textTransform?: "none" | "uppercase";
+  gradient?: Enum<typeof GRADIENTS>;
+  colSpan?: number;
+  order?: number;
+  /** Styles while hovered (one level; no nested `hover`). */
+  hover?: HoverStyle;
+};
+
+export type HoverStyle = Pick<StyleValues, "color" | "background" | "borderColor" | "opacity" | "shadow"> & {
+  /** Percent, 100–110 (`transform: scale`). */
+  scale?: number;
 };
 
 export type StyleKey = keyof StyleValues;
@@ -96,7 +131,9 @@ type Rule =
   | { kind: "bool" }
   | { kind: "color" }
   | { kind: "length" }
-  | { kind: "number"; min: number; max: number };
+  | { kind: "number"; min: number; max: number }
+  | { kind: "offset" }
+  | { kind: "hover" };
 
 const num = (min: number, max: number): Rule => ({ kind: "number", min, max });
 const oneOf = (values: Record<string, unknown> | readonly string[]): Rule => ({
@@ -105,7 +142,7 @@ const oneOf = (values: Record<string, unknown> | readonly string[]): Rule => ({
 });
 
 const RULES: Record<StyleKey, Rule> = {
-  fontSize: oneOf(FONT_SIZES),
+  fontSize: oneOf([...Object.keys(FONT_SIZES), ...Object.keys(DISPLAY_SIZES)]),
   fontWeight: oneOf(FONT_WEIGHTS),
   italic: { kind: "bool" },
   underline: { kind: "bool" },
@@ -138,7 +175,22 @@ const RULES: Record<StyleKey, Rule> = {
   shadow: oneOf(SHADOWS),
   opacity: num(0, 100),
   hidden: { kind: "bool" },
+  position: oneOf(["relative", "absolute", "sticky"]),
+  insetTop: { kind: "offset" },
+  insetEnd: { kind: "offset" },
+  insetBottom: { kind: "offset" },
+  insetStart: { kind: "offset" },
+  zIndex: num(0, 10),
+  overflow: oneOf(["visible", "hidden", "clip"]),
+  letterSpacing: oneOf(LETTER_SPACINGS),
+  textTransform: oneOf(["none", "uppercase"]),
+  gradient: oneOf(GRADIENTS),
+  colSpan: num(1, 12),
+  order: num(-10, 10),
+  hover: { kind: "hover" },
 };
+
+const HOVER_KEYS = ["color", "background", "borderColor", "opacity", "shadow"] as const;
 
 export const STYLE_KEYS = Object.keys(RULES) as StyleKey[];
 
@@ -146,12 +198,25 @@ export const STYLE_KEYS = Object.keys(RULES) as StyleKey[];
 export const PART_KEY_RE = /^[A-Za-z][A-Za-z0-9]{0,39}(?:\.\d{1,3}\.[A-Za-z][A-Za-z0-9]{0,39})?$/;
 const ID_RE = /^[A-Za-z0-9_:-]{1,64}$/;
 
-function isLength(value: string): boolean {
-  const match = LENGTH_RE.exec(value);
+function isLength(value: string, re: RegExp = LENGTH_RE): boolean {
+  const match = re.exec(value);
   if (!match) return false;
   if (value === "auto") return true;
-  const amount = Number(match[1]);
+  const amount = Math.abs(Number(match[1]));
   return match[2] === "%" ? amount <= 100 : match[2] === "rem" ? amount <= 200 : amount <= 4000;
+}
+
+function normalizeHover(value: unknown): HoverStyle | undefined {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return undefined;
+  const input = value as Record<string, unknown>;
+  const out: Record<string, unknown> = {};
+  for (const key of HOVER_KEYS) {
+    const checked = checkValue(RULES[key], input[key]);
+    if (checked !== undefined) out[key] = checked;
+  }
+  const scale = checkValue(num(100, 110), input.scale);
+  if (scale !== undefined) out.scale = scale;
+  return Object.keys(out).length ? (out as HoverStyle) : undefined;
 }
 
 function checkValue(rule: Rule, value: unknown): unknown {
@@ -164,6 +229,10 @@ function checkValue(rule: Rule, value: unknown): unknown {
       return typeof value === "string" && (value in COLOR_TOKEN_VARS || COLOR_RE.test(value.trim())) ? value.trim() : undefined;
     case "length":
       return typeof value === "string" && isLength(value.trim()) ? value.trim() : undefined;
+    case "offset":
+      return typeof value === "string" && isLength(value.trim(), OFFSET_RE) ? value.trim() : undefined;
+    case "hover":
+      return normalizeHover(value);
     case "number":
       return typeof value === "number" && Number.isFinite(value)
         ? Math.min(rule.max, Math.max(rule.min, Math.round(value)))
@@ -234,7 +303,11 @@ const px = (value: number) => `${value}px`;
 export function styleDeclarations(style: StyleValues): string[] {
   const out: string[] = [];
   const add = (prop: string, value: string) => out.push(`${prop}:${value}`);
-  if (style.fontSize) add("font-size", `${FONT_SIZES[style.fontSize]}rem`);
+  if (style.fontSize) {
+    add("font-size", style.fontSize in DISPLAY_SIZES ? DISPLAY_SIZES[style.fontSize as keyof typeof DISPLAY_SIZES] : `${FONT_SIZES[style.fontSize as keyof typeof FONT_SIZES]}rem`);
+  }
+  if (style.letterSpacing) add("letter-spacing", LETTER_SPACINGS[style.letterSpacing]);
+  if (style.textTransform) add("text-transform", style.textTransform);
   if (style.fontWeight) add("font-weight", String(FONT_WEIGHTS[style.fontWeight]));
   if (style.italic !== undefined) add("font-style", style.italic ? "italic" : "normal");
   if (style.underline !== undefined) add("text-decoration-line", style.underline ? "underline" : "none");
@@ -266,6 +339,16 @@ export function styleDeclarations(style: StyleValues): string[] {
   if (style.radius !== undefined) add("border-radius", px(style.radius));
   if (style.shadow) add("box-shadow", SHADOWS[style.shadow]);
   if (style.opacity !== undefined) add("opacity", String(style.opacity / 100));
+  if (style.gradient) add("background-image", GRADIENTS[style.gradient]);
+  if (style.position) add("position", style.position);
+  if (style.insetTop) add("inset-block-start", style.insetTop);
+  if (style.insetBottom) add("inset-block-end", style.insetBottom);
+  if (style.insetStart) add("inset-inline-start", style.insetStart);
+  if (style.insetEnd) add("inset-inline-end", style.insetEnd);
+  if (style.zIndex !== undefined) add("z-index", String(style.zIndex));
+  if (style.overflow) add("overflow", style.overflow);
+  if (style.colSpan !== undefined) add("grid-column", `span ${style.colSpan} / span ${style.colSpan}`);
+  if (style.order !== undefined) add("order", String(style.order));
   return out;
 }
 
@@ -281,9 +364,25 @@ const DEVICE_RANGE: Record<"base" | StyleBreakpoint, string> = {
   mobile: `(max-width:${BREAKPOINT_MAX_WIDTH.mobile}px)`,
 };
 
+function hoverDeclarations(hover: HoverStyle): string[] {
+  const { scale, ...rest } = hover;
+  const out = styleDeclarations(rest);
+  if (scale !== undefined && scale !== 100) out.push(`transform:scale(${scale / 100})`);
+  return out;
+}
+
+/** The element's rule plus its `:hover` rule (the caller wraps both in the device media query). */
 function ruleFor(selector: string, style: StyleValues): string {
   const declarations = styleDeclarations(style);
-  return declarations.length ? `${selector}{${declarations.join(";")}}` : "";
+  let css = declarations.length ? `${selector}{${declarations.join(";")}}` : "";
+  const hover = style.hover ? hoverDeclarations(style.hover) : [];
+  if (hover.length) css += `${selector}:hover{${hover.join(";")}}`;
+  return css;
+}
+
+/** Hover zoom is motion: switched off for visitors who ask for reduced motion. */
+function reducedMotionRule(selectors: string[]): string {
+  return selectors.length ? `@media (prefers-reduced-motion:reduce){${selectors.map((s) => `${s}:hover`).join(",")}{transform:none}}` : "";
 }
 
 function hiddenRule(selector: string, mode: StyleCssMode): string {
@@ -352,7 +451,9 @@ export function collectPageCss(sections: readonly (SectionInstance | null | unde
   const base: string[] = [];
   const media: Record<StyleBreakpoint, string[]> = { tablet: [], mobile: [] };
   const hidden: Record<"base" | StyleBreakpoint, string[]> = { base: [], tablet: [], mobile: [] };
+  const zoomed: string[] = [];
   for (const [selector, entry] of target) {
+    if ([entry.base, entry.tablet, entry.mobile].some((style) => (style?.hover?.scale ?? 100) !== 100)) zoomed.push(selector);
     if (entry.base) base.push(ruleFor(selector, entry.base));
     if (entry.base?.hidden) hidden.base.push(hiddenRule(selector, mode));
     for (const bp of STYLE_BREAKPOINTS) {
@@ -371,7 +472,7 @@ export function collectPageCss(sections: readonly (SectionInstance | null | unde
     const rules = hidden[device].join("");
     if (rules) css += `@media ${DEVICE_RANGE[device]}{${rules}}`;
   }
-  return css + shellAnimationCss(animated);
+  return css + reducedMotionRule(zoomed) + shellAnimationCss(animated);
 }
 
 function collectAnimations(sections: readonly (SectionInstance | null | undefined)[]) {

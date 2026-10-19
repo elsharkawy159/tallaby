@@ -52,7 +52,7 @@ describe("sellerOverrideSchema", () => {
       { action: "set_plan", sellerId, reason, plan: "free" },
       { action: "set_store_limit", sellerId, reason, maxStoresOverride: 5 },
       { action: "set_store_limit", sellerId, reason, maxStoresOverride: null },
-      { action: "set_fee_plan", sellerId, reason, feePlan: "standard_2pct_min5" },
+      { action: "set_fee_plan", sellerId, reason, feePlan: "flat_5" },
       { action: "extend_trial", sellerId, reason, endsAt: "2026-12-01T00:00:00.000Z" },
       { action: "grant_trial", sellerId, reason },
       { action: "revoke_trial", sellerId, reason },

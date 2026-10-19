@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useDraggable } from "@dnd-kit/core";
 import { mediaAlt } from "@workspace/lib/media";
@@ -8,7 +8,7 @@ import { cn } from "@workspace/ui/lib/utils";
 import type { MediaAssetView } from "@/components/media/media.dto";
 import { MediaLibrary } from "@/components/media/media-library.client";
 import { useDragData } from "../dnd/editor-dnd.client";
-import type { EditorCommands } from "../editor-commands.lib";
+import type { EditorCommands } from "../lib/editor-commands.lib";
 
 /**
  * Media rail tab (P4B-03/12): this store's media library (P4-09). Picking an
@@ -18,6 +18,8 @@ import type { EditorCommands } from "../editor-commands.lib";
  */
 export function MediaPanel({ storeId, readOnly, commands }: { storeId: string; readOnly: boolean; commands: EditorCommands }) {
   const t = useTranslations("storeEditor.media");
+  // No hover preview outlives the panel.
+  useEffect(() => () => commands.previewImage(null), [commands]);
   return (
     <div className="min-h-0 flex-1 overflow-y-auto p-3">
       <h2 className="text-sm font-semibold">{t("title")}</h2>
@@ -28,15 +30,26 @@ export function MediaPanel({ storeId, readOnly, commands }: { storeId: string; r
           mode="pick"
           readOnly={readOnly}
           onPick={(asset) => commands.applyImage(asset.url)}
-          tileWrapper={readOnly ? undefined : (asset, tile) => <DraggableAsset asset={asset}>{tile}</DraggableAsset>}
+          tileWrapper={
+            readOnly
+              ? undefined
+              : (asset, tile) => (
+                  <DraggableAsset asset={asset} onHover={(on) => commands.previewImage(on ? asset.url : null)}>
+                    {tile}
+                  </DraggableAsset>
+                )
+          }
         />
       </div>
     </div>
   );
 }
 
-/** A library tile that can be dragged onto the canvas (clicks still select it). */
-function DraggableAsset({ asset, children }: { asset: MediaAssetView; children: ReactNode }) {
+/**
+ * A library tile that can be dragged onto the canvas (clicks still select it).
+ * Hovering shows it on the selected image (or the selected section's image).
+ */
+function DraggableAsset({ asset, onHover, children }: { asset: MediaAssetView; onHover: (on: boolean) => void; children: ReactNode }) {
   const locale = useLocale();
   const alt = mediaAlt(asset.altText, locale) ?? "";
   const data = useDragData({ kind: "media", src: asset.url, thumbUrl: asset.url, alt }, alt || asset.filename);
@@ -45,7 +58,12 @@ function DraggableAsset({ asset, children }: { asset: MediaAssetView; children: 
   const { onKeyDown: _keyboard, ...pointer } = listeners ?? {};
   void _keyboard;
   return (
-    <div ref={setNodeRef} {...pointer} className={cn("cursor-grab active:cursor-grabbing", isDragging && "opacity-40")}>
+    <div
+      ref={setNodeRef}
+      {...pointer}
+      onPointerEnter={() => onHover(true)}
+      onPointerLeave={() => onHover(false)}
+      className={cn("cursor-grab active:cursor-grabbing", isDragging && "opacity-40")}>
       {children}
     </div>
   );

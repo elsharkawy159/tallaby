@@ -8,8 +8,9 @@ import { getStoreForEditor, publishStoreSite, saveStorePageDraft } from "../stor
 import { startFeeTrialIfNeeded } from "./fee-trial.server";
 
 /**
- * Fee trial start (PLAN.md §13.5, P6-03) against a real Postgres with 0059
- * applied (the staging copy). Skipped when TEST_DATABASE_URL is unset.
+ * Fee trial start (PLAN.md §13.5; 7 days from the first store since 0067)
+ * against a real Postgres with 0059 and 0067 applied (the staging copy).
+ * Skipped when TEST_DATABASE_URL is unset.
  */
 const TEST_DATABASE_URL = process.env.TEST_DATABASE_URL;
 
@@ -89,69 +90,55 @@ describe.skipIf(!TEST_DATABASE_URL)("fee trial start (integration)", { timeout: 
     await client.end();
   });
 
-  it("new sellers are eligible and have not started", async () => {
+  it("starts when the first store is created, for 7 days", async () => {
     const seller = await newSeller();
-    expect(await trial(seller.id)).toMatchObject({ eligible: true, startedAt: null, endsAt: null, trigger: null });
+    const [store] = await db.select({ createdAt: s.stores.createdAt }).from(s.stores).where(eq(s.stores.id, seller.storeId));
+    const first = await trial(seller.id);
+    expect(first).toMatchObject({ eligible: true, trigger: "store_created" });
+    expect(new Date(first.startedAt!).getTime()).toBe(new Date(store!.createdAt).getTime());
+    const days = (new Date(first.endsAt!).getTime() - new Date(first.startedAt!).getTime()) / 86_400_000;
+    expect(days).toBe(7);
   });
 
-  it("starts on the first publish for 30 days and never restarts on republish", async () => {
+  it("never restarts on publish, republish, template change or product activation", async () => {
     const seller = await newSeller();
-    await publish(seller.id, seller.storeId);
     const first = await trial(seller.id);
-    expect(first.trigger).toBe("publish");
-    expect(first.startedAt).not.toBeNull();
-    const days = (new Date(first.endsAt!).getTime() - new Date(first.startedAt!).getTime()) / 86_400_000;
-    expect(days).toBe(30);
 
     await publish(seller.id, seller.storeId);
     await db.update(s.stores).set({ siteStatus: "unpublished" }).where(eq(s.stores.id, seller.storeId));
     await publish(seller.id, seller.storeId);
     await db.update(s.stores).set({ templateKey: "tallaby-classic" }).where(eq(s.stores.id, seller.storeId));
-    expect(await trial(seller.id)).toEqual(first);
-  });
-
-  it("starts when a product first becomes active, and a later publish keeps it", async () => {
-    const seller = await newSeller();
     const productId = await insertProduct(seller.id, "pending");
-    expect((await trial(seller.id)).startedAt).toBeNull();
-
-    await db.update(s.products).set({ status: "active" }).where(eq(s.products.id, productId));
-    const first = await trial(seller.id);
-    expect(first.trigger).toBe("product_active");
-    expect(first.startedAt).not.toBeNull();
-
-    await publish(seller.id, seller.storeId);
-    await db.update(s.products).set({ status: "draft" }).where(eq(s.products.id, productId));
     await db.update(s.products).set({ status: "active" }).where(eq(s.products.id, productId));
     expect(await trial(seller.id)).toEqual(first);
-  });
-
-  it("starts when a product is created active", async () => {
-    const seller = await newSeller();
-    await insertProduct(seller.id, "active");
-    expect((await trial(seller.id)).trigger).toBe("product_active");
   });
 
   it("a second store does not start a new trial", async () => {
     const seller = await newSeller();
-    await publish(seller.id, seller.storeId);
     const first = await trial(seller.id);
+    const sub = `ft2-${seller.id.slice(0, 8)}`;
+    await db.insert(s.stores).values({ sellerId: seller.id, name: sub, subdomain: sub });
     expect(await startFeeTrialIfNeeded(db, seller.id, "publish")).toBe(false);
     expect(await trial(seller.id)).toEqual(first);
   });
 
-  it("starts exactly once under concurrent triggers", async () => {
-    const seller = await newSeller();
+  it("uses the first store's date when started later (admin grant)", async () => {
+    const seller = await newSeller({ eligible: false });
+    const [store] = await db.select({ createdAt: s.stores.createdAt }).from(s.stores).where(eq(s.stores.id, seller.storeId));
+    await db.update(s.sellers).set({ feeTrialEligible: true }).where(eq(s.sellers.id, seller.id));
+
     const results = await Promise.all(
       Array.from({ length: 6 }, (_, i) =>
         db.transaction((tx) => startFeeTrialIfNeeded(tx, seller.id, i % 2 ? "publish" : "product_active")),
       ),
     );
     expect(results.filter(Boolean)).toHaveLength(1);
-    expect((await trial(seller.id)).startedAt).not.toBeNull();
+    const row = await trial(seller.id);
+    expect(row.trigger).toBe("store_created");
+    expect(new Date(row.startedAt!).getTime()).toBe(new Date(store!.createdAt).getTime());
   });
 
-  it("never starts for sellers who are not eligible (existing sellers, D5)", async () => {
+  it("never starts for sellers who are not eligible", async () => {
     const seller = await newSeller({ eligible: false });
     await insertProduct(seller.id, "active");
     await publish(seller.id, seller.storeId);

@@ -1,73 +1,16 @@
 /**
- * The curated Tallaby section library (PLAN.md P4-02, §8.2). Every id here is
- * allowed in a published site; anything else is skipped by the renderer and
- * rejected at publish (validateSiteConfig({ allowedSections })).
+ * The Tallaby section registry. Every section on a seller's website is a tree
+ * section: a `custom-section` holding an element tree, started from a design
+ * (`designs/`) or built from elements (CLAUDE.md rule 17). Anything else is
+ * skipped by the renderer and rejected at publish (validateSiteConfig({ allowedSections })).
  */
 import { createSectionRegistry } from "../core/registry";
 import type { AnySectionDefinition } from "../core/types";
-import { storeFooter, storeHeader } from "./chrome";
-import { CLASSIC_SECTIONS } from "./classic";
-import { blogFeaturedPost, blogLatestPosts, cmsItem, cmsList } from "./blog";
-import { categoryGrid, featuredProduct, productGrid } from "./commerce";
-import { ctaBanner, features, heroBanner, imageWithText, richText, spacer } from "./content";
-import { contactInfo, faq, imageGallery, logoCloud, testimonials } from "./engagement";
-import { contactForm } from "./forms";
 import { customSection } from "./custom";
 
-export const STORE_SECTIONS: readonly AnySectionDefinition[] = [
-  ...CLASSIC_SECTIONS,
-  storeHeader,
-  heroBanner,
-  productGrid,
-  featuredProduct,
-  categoryGrid,
-  features,
-  imageWithText,
-  richText,
-  testimonials,
-  faq,
-  imageGallery,
-  logoCloud,
-  ctaBanner,
-  contactInfo,
-  contactForm,
-  blogLatestPosts,
-  blogFeaturedPost,
-  cmsList,
-  cmsItem,
-  spacer,
-  customSection,
-  storeFooter,
-];
+export const STORE_SECTIONS: readonly AnySectionDefinition[] = [customSection];
 
 export const storeSectionRegistry = createSectionRegistry(STORE_SECTIONS);
 
-export * from "./classic";
 export { FORM_SUBMIT_CLASS, FormFieldsView, formCopy } from "./forms";
-
-export { BLOG_COLLECTION_SLUG } from "./blog";
-
-export {
-  blogFeaturedPost,
-  blogLatestPosts,
-  cmsItem,
-  cmsList,
-  categoryGrid,
-  contactForm,
-  contactInfo,
-  ctaBanner,
-  customSection,
-  faq,
-  featuredProduct,
-  features,
-  heroBanner,
-  imageGallery,
-  imageWithText,
-  logoCloud,
-  productGrid,
-  richText,
-  spacer,
-  storeFooter,
-  storeHeader,
-  testimonials,
-};
+export { customSection };

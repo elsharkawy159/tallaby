@@ -86,9 +86,30 @@ export const couponTags = {
   seller: (sellerId: string) => `coupon:seller:${sellerId}`,
 } as const;
 
+/** The platform template gallery (templates, versions, install counts). No seller data. */
+export const templateTags = {
+  catalog: () => "template:catalog",
+} as const;
+
+/** The Tallaby fulfillment plan catalog. No seller data; seller requests are never cached. */
+export const fulfillmentTags = {
+  plans: () => "fulfillment:plans",
+} as const;
+
+/**
+ * Admin-only aggregates that hold no money and no per-customer data
+ * (docs/admin-saas.md §4.2). Wallets, queues and orders are never cached.
+ */
+export const adminTags = {
+  /** Store integration counts per provider and status. */
+  integrationSummary: () => "admin:integration-summary",
+} as const;
+
 export const searchTags = {
   suggestions: () => "search:suggestions",
   trending: () => "search:trending",
+  /** Public stock-photo search results (editor Explore tab); no seller data. */
+  stockPhotos: () => "search:stock-photos",
 } as const;
 
 export type ProductTag = ReturnType<

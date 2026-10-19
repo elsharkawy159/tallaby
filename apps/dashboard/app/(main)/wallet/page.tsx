@@ -9,9 +9,9 @@ export const dynamic = "force-dynamic";
 export default async function WalletPage({
   searchParams,
 }: {
-  searchParams: Promise<{ entries?: string | string[]; before?: string | string[] }>;
+  searchParams: Promise<{ entries?: string | string[]; before?: string | string[]; topup?: string | string[] }>;
 }) {
-  const [{ entries, before }, seller] = await Promise.all([searchParams, requireSeller().catch((error) => error)]);
+  const [{ entries, before, topup }, seller] = await Promise.all([searchParams, requireSeller().catch((error) => error)]);
   if (isAccessError(seller)) redirect(seller.code === "no_seller" ? "/signup" : "/login");
   if (seller instanceof Error) throw seller;
 
@@ -21,6 +21,7 @@ export default async function WalletPage({
         sellerId={seller.sellerId}
         filter={parseEntryFilter(entries)}
         before={typeof before === "string" ? before : null}
+        openTopUp={topup === "1"}
       />
     </div>
   );

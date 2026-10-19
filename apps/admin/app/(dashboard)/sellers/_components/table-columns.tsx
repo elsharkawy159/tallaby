@@ -141,6 +141,52 @@ export function getSellersColumns(
       ),
     },
     {
+      id: "stores",
+      header: "Stores",
+      enableSorting: false,
+      meta: { label: "Stores" },
+      cell: ({ row }) => (
+        <Link href={`/stores?seller=${row.original.id}`} className="flex flex-col hover:underline">
+          <span>{row.original.storeCount ?? 0}</span>
+          <span className="text-xs text-muted-foreground">plan {row.original.plan ?? "free"}</span>
+        </Link>
+      ),
+    },
+    {
+      id: "trial",
+      header: "Fee trial",
+      enableSorting: false,
+      meta: { label: "Fee trial" },
+      cell: ({ row }) => {
+        const ends = row.original.feeTrialEndsAt;
+        if (row.original.isCommissionExempt) return <span className="text-sm text-muted-foreground">Exempt</span>;
+        if (!ends) {
+          return (
+            <span className="text-sm text-muted-foreground">
+              {row.original.feeTrialEligible === false ? "Not eligible" : "Not started"}
+            </span>
+          );
+        }
+        const active = new Date(ends) > new Date();
+        return (
+          <span className={active ? "text-sm text-green-700" : "text-sm text-muted-foreground"}>
+            {active ? `Until ${formatDate(ends)}` : "Ended"}
+          </span>
+        );
+      },
+    },
+    {
+      id: "lastOrder",
+      header: "Last order",
+      enableSorting: false,
+      meta: { label: "Last order" },
+      cell: ({ row }) => (
+        <div className="whitespace-nowrap text-sm text-muted-foreground">
+          {row.original.lastOrderAt ? formatDate(row.original.lastOrderAt) : "—"}
+        </div>
+      ),
+    },
+    {
       accessorKey: "storeRating",
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Rating" />

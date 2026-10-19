@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
-/** General · Payment methods. The catalog lives under Products. */
+/** General (with the store catalog) · Payment methods. */
 export function StoreSettingsTabs({ storeId }: { storeId: string }) {
   const t = useTranslations("nav");
   const pathname = usePathname();

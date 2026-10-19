@@ -8,6 +8,7 @@ import type { ReactNode } from "react";
 import {
   ArrowLeft,
   Check,
+  ChevronDown,
   Clock,
   CreditCard,
   Gift,
@@ -25,9 +26,10 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import type { ComponentNode } from "../config/schema";
+import { sectionText } from "../core/copy";
 import type { RenderContext } from "../core/types";
 import { ButtonLink, SmartLink, cn } from "../sections/_primitives";
-import { MAX_ELEMENT_DEPTH, getElementDefinition, type ElementIconName } from "./registry";
+import { MAX_ELEMENT_DEPTH, PATTERN_VARIANTS, getElementDefinition, type ElementIconName, type PatternVariant } from "./registry";
 
 const ICONS: Record<ElementIconName, LucideIcon> = {
   star: Star,
@@ -50,6 +52,13 @@ const ICONS: Record<ElementIconName, LucideIcon> = {
 
 const str = (value: unknown, max: number) => (typeof value === "string" ? value.slice(0, max) : "");
 
+/** Fixed decorative backgrounds; colours come from the theme tokens. */
+const PATTERN_CLASS: Record<PatternVariant, string> = {
+  grid: "[background-image:linear-gradient(var(--sf-line)_1px,transparent_1px),linear-gradient(90deg,var(--sf-line)_1px,transparent_1px)] [background-size:44px_44px] [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_80%)]",
+  dots: "[background-image:radial-gradient(var(--sf-line)_1.5px,transparent_1.5px)] [background-size:20px_20px] [mask-image:radial-gradient(ellipse_at_center,black_35%,transparent_80%)]",
+  glow: "[background:radial-gradient(60%_50%_at_50%_0%,color-mix(in_srgb,var(--sf-brand)_18%,transparent),transparent_70%)]",
+};
+
 const HEADING_CLASS = {
   h1: "text-4xl font-extrabold leading-tight md:text-5xl",
   h2: "text-2xl font-bold leading-tight md:text-3xl",
@@ -62,9 +71,56 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number): Rea
   if (!definition || depth > MAX_ELEMENT_DEPTH) return null;
   const props = node.props ?? {};
   const attrs = { "data-node-id": node.id, "data-node-type": node.type };
-  const kids = () => (definition.container ? renderElementTree(node.children, ctx, depth + 1) : null);
+  const kids = () => {
+    if (!definition.container) return null;
+    if (!node.children.length && ctx.mode === "edit") {
+      return (
+        <span data-editor-only className="block rounded-(--sf-radius,12px) border border-dashed border-(--sf-line) p-4 text-center text-xs text-(--sf-muted)">
+          {sectionText(node.type === "accordion" ? "emptyAccordion" : "emptyContainer", ctx.locale)}
+        </span>
+      );
+    }
+    return renderElementTree(node.children, ctx, depth + 1);
+  };
+
+  // An emptied section or card (decorations alone don't count) is a blank band publicly: draw nothing.
+  if ((definition.type === "section" || definition.type === "card") && ctx.mode !== "edit" && node.children.every((child) => child.type === "pattern")) {
+    return null;
+  }
 
   switch (definition.type) {
+    case "section":
+      return (
+        <section {...attrs} className="relative isolate overflow-x-clip">
+          {kids()}
+        </section>
+      );
+    case "card":
+      return (
+        <div {...attrs} className="min-w-0">
+          {kids()}
+        </div>
+      );
+    case "pattern": {
+      const variant = PATTERN_VARIANTS.find((v) => v === props.variant) ?? "grid";
+      return <div {...attrs} aria-hidden="true" className={cn("pointer-events-none absolute inset-0 -z-10", PATTERN_CLASS[variant])} />;
+    }
+    case "accordion":
+      return (
+        <div {...attrs} className="flex flex-col">
+          {kids()}
+        </div>
+      );
+    case "accordionItem":
+      return (
+        <details {...attrs} open={props.open === true} className="group border-b border-(--sf-line) py-4">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-start font-semibold [&::-webkit-details-marker]:hidden">
+            {str(props.title, 200)}
+            <ChevronDown className="size-4 shrink-0 transition-transform group-open:rotate-180 motion-reduce:transition-none" aria-hidden />
+          </summary>
+          <div className="mt-3">{kids()}</div>
+        </details>
+      );
     case "container":
       return (
         <div {...attrs} className="mx-auto w-full max-w-(--sf-max-width,1200px) px-4 md:px-8">

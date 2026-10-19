@@ -3,23 +3,14 @@
 import { useState, useTransition, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
-import Image from "next/image";
+import { ArrowLeft, ArrowRight, Loader2, MailCheck } from "lucide-react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@workspace/ui/components/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/card";
 import { Form } from "@workspace/ui/components/form";
-import { Separator } from "@workspace/ui/components/separator";
-import { TextInput } from "@workspace/ui/components/inputs/text-input";
 
 import { login, resetPassword } from "@/actions/auth";
 import {
@@ -29,6 +20,11 @@ import {
   type ResetPasswordFormData,
 } from "@/lib/validations/vendor-schemas";
 import { OAuth } from "@/components/auth/o-auth";
+import { AuthShell, AuthTabs } from "./auth-shell.client";
+import { AuthField } from "./auth-field.client";
+
+const PRIMARY_BUTTON =
+  "h-[50px] w-full rounded-full bg-accent text-[15px] font-semibold text-[#171717] hover:bg-[#e89318]";
 
 export default function AuthPage() {
   const [showResetForm, setShowResetForm] = useState(false);
@@ -101,202 +97,171 @@ export default function AuthPage() {
 
   if (showResetForm) {
     return (
-      <div className="relative min-h-screen flex items-center justify-center from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4">
-        <Image
-          src="https://images.unsplash.com/photo-1496917756835-20cb06e75b4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1908&q=80"
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover -z-10"
+      <AuthShell>
+        <AuthHeading
+          eyebrow={t("title")}
+          title={resetSuccess ? t("checkEmailTitle") : t("resetPasswordTitle")}
+          subtitle={
+            resetSuccess
+              ? t("checkEmailDescription")
+              : t("resetPasswordDescription")
+          }
         />
-        <div className="absolute inset-0 w-full h-full z-[-1] bg-gradient-to-b from-black/30 to-black from-70%" />
-        <Card className="w-full max-w-md">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">
-              {resetSuccess ? t("checkEmailTitle") : t("resetPasswordTitle")}
-            </CardTitle>
-            <CardDescription className="text-center">
-              {resetSuccess
-                ? t("checkEmailDescription")
-                : t("resetPasswordDescription")}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {resetSuccess ? (
-              <div className="space-y-4">
-                <div className="text-center py-4">
-                  <div className="mx-auto w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mb-4">
-                    <svg
-                      className="w-6 h-6 text-green-600 dark:text-green-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    {t("didntReceiveEmail")}
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => {
-                      setResetSuccess(false);
-                      setShowResetForm(false);
-                    }}
-                  >
-                    {t("backToSignIn")}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    className="w-full"
-                    onClick={() => setResetSuccess(false)}
-                  >
-                    {t("tryAnotherEmail")}
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <Form {...resetForm}>
-                <form
-                  onSubmit={resetForm.handleSubmit(handleResetPassword)}
-                  className="space-y-4"
-                >
-                  <TextInput
-                    form={resetForm}
-                    name="resetEmail"
-                    label={t("email")}
-                    type="email"
-                    placeholder={t("emailPlaceholder")}
-                    disabled={isPending}
-                    required
-                  />
-                  <div className="space-y-2">
-                    <Button
-                      type="submit"
-                      className="w-full"
-                      disabled={isPending}
-                    >
-                      {isPending && (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      )}
-                      {t("sendResetLink")}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => setShowResetForm(false)}
-                      disabled={isPending}
-                    >
-                      <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
-                      {t("backToSignIn")}
-                    </Button>
-                  </div>
-                </form>
-              </Form>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+        {resetSuccess ? (
+          <div className="flex flex-col gap-3">
+            <div className="flex items-start gap-3 rounded-xl bg-primary-soft p-4 text-sm text-foreground">
+              <MailCheck className="mt-0.5 size-5 shrink-0 text-primary" />
+              <p>{t("didntReceiveEmail")}</p>
+            </div>
+            <Button
+              type="button"
+              className={PRIMARY_BUTTON}
+              onClick={() => {
+                setResetSuccess(false);
+                setShowResetForm(false);
+              }}
+            >
+              <ArrowLeft className="size-[18px] rtl:rotate-180" />
+              {t("backToSignIn")}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="h-[50px] w-full rounded-full text-[15px] font-semibold"
+              onClick={() => setResetSuccess(false)}
+            >
+              {t("tryAnotherEmail")}
+            </Button>
+          </div>
+        ) : (
+          <Form {...resetForm}>
+            <form
+              onSubmit={resetForm.handleSubmit(handleResetPassword)}
+              className="flex flex-col gap-[22px]"
+              noValidate
+            >
+              <AuthField
+                form={resetForm}
+                name="resetEmail"
+                label={t("email")}
+                type="email"
+                placeholder={t("emailPlaceholder")}
+                autoComplete="email"
+                disabled={isPending}
+              />
+              <Button type="submit" className={PRIMARY_BUTTON} disabled={isPending}>
+                {isPending && <Loader2 className="size-[18px] animate-spin" />}
+                {t("sendResetLink")}
+              </Button>
+              <button
+                type="button"
+                className="inline-flex items-center justify-center gap-1.5 text-sm font-semibold text-primary hover:underline"
+                onClick={() => setShowResetForm(false)}
+                disabled={isPending}
+              >
+                <ArrowLeft className="size-4 rtl:rotate-180" />
+                {t("backToSignIn")}
+              </button>
+            </form>
+          </Form>
+        )}
+      </AuthShell>
     );
   }
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4">
-      <Image
-        src="https://images.unsplash.com/photo-1496917756835-20cb06e75b4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1908&q=80"
-        alt=""
-        fill
-        priority
-        sizes="100vw"
-        className="object-cover -z-10"
+    <AuthShell>
+      <AuthHeading
+        eyebrow={t("title")}
+        title={t("welcomeBack")}
+        subtitle={t("signInSubtitle")}
       />
-      <div className="absolute inset-0 w-full h-full z-[-1] bg-gradient-to-b from-black/30 to-black from-70%" />
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">
-            {t("title")}
-          </CardTitle>
-          <CardDescription className="text-center">
-            {t("subtitle")}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...signInForm}>
-            <form
-              onSubmit={signInForm.handleSubmit(handleSignIn)}
-              className="space-y-4"
-            >
-              <TextInput
-                form={signInForm}
-                name="email"
-                label={t("email")}
-                type="email"
-                placeholder={t("emailPlaceholder")}
-                disabled={isPending}
-                required
-              />
-              <TextInput
-                form={signInForm}
-                name="password"
-                label={t("password")}
-                type="password"
-                placeholder={t("passwordPlaceholder")}
-                disabled={isPending}
-                required
-              />
-              <div className="space-y-2">
-                <Button type="submit" className="w-full" disabled={isPending}>
-                  {isPending && (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  )}
-                  {t("signIn")}
-                  <ArrowRight className="h-4 w-4 rtl:rotate-180" />
-                </Button>
-                <Button
+      <AuthTabs active="signin" />
+      <OAuth next={"/"} />
+      <div className="flex items-center gap-3.5 text-[13px] text-muted-foreground before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border">
+        {t("orWithEmail")}
+      </div>
+
+      <Form {...signInForm}>
+        <form
+          onSubmit={signInForm.handleSubmit(handleSignIn)}
+          className="flex flex-col gap-[22px]"
+          noValidate
+        >
+          <div className="flex flex-col gap-4">
+            <AuthField
+              form={signInForm}
+              name="email"
+              label={t("email")}
+              type="email"
+              placeholder={t("emailPlaceholder")}
+              autoComplete="email"
+              disabled={isPending}
+            />
+            <AuthField
+              form={signInForm}
+              name="password"
+              label={t("password")}
+              type="password"
+              placeholder={t("passwordPlaceholder")}
+              autoComplete="current-password"
+              disabled={isPending}
+              labelAction={
+                <button
                   type="button"
-                  variant="link"
-                  className="w-full text-sm"
+                  className="text-[13px] font-semibold text-primary hover:underline"
                   onClick={() => setShowResetForm(true)}
                   disabled={isPending}
                 >
                   {t("forgotPassword")}
-                </Button>
-              </div>
-              <OAuth next={"/"} />
-            </form>
-          </Form>
-
-          <Separator className="my-4" />
-
-          <div className="text-center text-sm text-muted-foreground">
-            {t.rich("legal", {
-              terms: (chunks) => (
-                <Button variant="link" className="p-0 h-auto font-normal text-sm">
-                  {chunks}
-                </Button>
-              ),
-              privacy: (chunks) => (
-                <Button variant="link" className="p-0 h-auto font-normal text-sm">
-                  {chunks}
-                </Button>
-              ),
-            })}
+                </button>
+              }
+            />
           </div>
-        </CardContent>
-      </Card>
+          <Button type="submit" className={PRIMARY_BUTTON} disabled={isPending}>
+            {isPending && <Loader2 className="size-[18px] animate-spin" />}
+            {t("signIn")}
+            {!isPending && <ArrowRight className="size-[18px] rtl:rotate-180" />}
+          </Button>
+        </form>
+      </Form>
+
+      <p className="m-0 text-center text-sm text-muted-foreground">
+        {t("newToTallaby")}{" "}
+        <Link href="/signup" className="font-semibold text-primary hover:underline">
+          {t("createSellerAccount")}
+        </Link>
+      </p>
+      <p className="m-0 text-[12.5px] leading-relaxed text-muted-foreground">
+        {t.rich("legal", {
+          terms: (chunks) => <span className="font-semibold text-primary">{chunks}</span>,
+          privacy: (chunks) => <span className="font-semibold text-primary">{chunks}</span>,
+        })}
+      </p>
+    </AuthShell>
+  );
+}
+
+function AuthHeading({
+  eyebrow,
+  title,
+  subtitle,
+}: {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+}) {
+  return (
+    <div>
+      <div className="text-[12.5px] font-semibold tracking-[0.08em] text-[#2c6e80] uppercase rtl:tracking-normal">
+        {eyebrow}
+      </div>
+      <h1 className="mt-1.5 mb-2 text-[26px] leading-tight font-bold tracking-[-0.01em] text-foreground rtl:tracking-normal lg:text-[32px]">
+        {title}
+      </h1>
+      <p className="m-0 text-[15px] leading-relaxed text-pretty text-muted-foreground">
+        {subtitle}
+      </p>
     </div>
   );
 }

@@ -191,7 +191,9 @@ export type ReviewStats = { average: number; count: number; distribution: Record
 export type CouponSummary = {
   id: string;
   code: string;
-  discountType: "percentage" | "fixed";
+  /** The seller's coupon name, used for kinds a section cannot describe ("buy x get y"). */
+  name: string;
+  discountType: "percentage" | "fixed" | "free-shipping" | "other";
   discountValue: number;
   /** ISO date; null when the coupon has no end. */
   endsAt: string | null;
@@ -221,7 +223,10 @@ export type StoreProfile = {
  * page, or an editor command), so no dashboard route lives in this package.
  */
 export type EditorDataContext = {
+  /** `error`: the whole store-data request failed. */
   state: "ready" | "refreshing" | "error";
+  /** Sources that failed while the rest loaded; their empty sections show the error, not "add records". */
+  failed?: readonly DataNeed[];
   /** The primary action of an empty state; `label` is the package's own copy. */
   renderAction: (need: DataNeed, label: string) => ReactNode;
   /** Retries loading store data after an error. */
@@ -309,8 +314,6 @@ export interface RenderContext {
   forms?: Record<string, PublicStoreForm>;
   /** The interactive storefront form; without it (editor canvas) a static preview is drawn. */
   renderForm?: (form: PublicStoreForm, instanceId: string) => ReactNode;
-  /** Renders a Tallaby Classic part with the host's own components (P4-03). */
-  renderClassic?: (part: "classic-header" | "classic-hero" | "classic-categories" | "classic-catalog" | "classic-footer", props: Record<string, unknown>) => ReactNode;
 }
 
 export type SectionRenderProps<P> = {

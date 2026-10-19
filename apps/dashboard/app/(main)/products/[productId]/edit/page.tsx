@@ -8,6 +8,8 @@ import { EditProduct } from "./edit-product";
 import { buildEditDefaultValues } from "./edit-product.lib";
 import { getSellerProfile } from "@/actions/seller";
 import { DEFAULT_COMMISSION_RATE } from "@/lib/utils/product-pricing.lib";
+import { requireSeller } from "@/lib/auth/require-seller.server";
+import { loadSellerTaxonomyOptions } from "../../categories-brands/categories-brands.data";
 import type { CategoryOption, BrandOption } from "../../add/add-product.schema";
 
 export const dynamic = "force-dynamic";
@@ -25,12 +27,14 @@ export default async function EditProductPage({
   params,
 }: EditProductPageProps) {
   const { productId } = await params;
-  const [productResult, categoriesRes, brandsRes, sellerProfile] =
+  const { sellerId } = await requireSeller();
+  const [productResult, categoriesRes, brandsRes, sellerProfile, sellerTaxonomy] =
     await Promise.all([
       getProduct(productId),
       getAllCategories(),
       getAllBrands(),
       getSellerProfile(),
+      loadSellerTaxonomyOptions(sellerId),
     ]);
 
   if (!productResult.success || !productResult.data) {
@@ -60,6 +64,7 @@ export default async function EditProductPage({
       categories={categories}
       brands={brands}
       sellerPricing={sellerPricing}
+      sellerTaxonomy={sellerTaxonomy}
     />
   );
 }

@@ -7,7 +7,7 @@ import { storeUrl } from "@workspace/lib/storefront";
 import { designSystemSchema } from "@workspace/store-sections";
 import { StorePageHeader } from "@/components/stores/store-page-header";
 import { loadWebsiteStorePage } from "@/lib/stores/website-page.server";
-import { loadEditorCatalog } from "@/app/(builder)/stores/[storeId]/editor/editor.data";
+import { loadEditorCatalog } from "@/app/(builder)/stores/[storeId]/editor/server/editor.data";
 import { storeFontVariables } from "../_components/store-fonts";
 import { DesignSystemEditor } from "./design.client";
 

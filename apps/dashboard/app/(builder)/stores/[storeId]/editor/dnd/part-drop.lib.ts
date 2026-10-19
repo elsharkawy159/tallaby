@@ -6,7 +6,7 @@
  */
 import type { SectionInstance } from "@workspace/store-sections";
 import { findPartSlot, resolveSlotLayout, slotAccepts } from "@workspace/store-sections/render";
-import { slotsOf } from "../editor-slots.lib";
+import { slotsOf } from "../lib/editor-slots.lib";
 
 /** A slot under (or nearest to) the pointer: insert before `beforePart` (null = at the end). */
 export type PartSlotHit = { slot: string; beforePart: string | null };

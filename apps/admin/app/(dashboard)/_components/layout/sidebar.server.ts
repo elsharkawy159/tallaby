@@ -4,6 +4,7 @@
 // only by the Server Component in sidebar.data.tsx, so a plain async function
 // is both cheaper and a smaller surface.
 
+import { cache } from "react";
 import { db } from "@workspace/db";
 import {
   users,
@@ -13,6 +14,10 @@ import {
   carts,
   cartItems,
   sellerWalletTopUps,
+  sellerFulfillmentServices,
+  adCampaignRequests,
+  storeIntegrations,
+  sellerCustomDomains,
 } from "@workspace/db";
 import { sql } from "drizzle-orm";
 import { getAdminUser } from "@/actions/auth";
@@ -21,7 +26,11 @@ import {
   type SidebarCounts,
 } from "./sidebar.types";
 
-export async function getSidebarCounts(): Promise<SidebarCounts> {
+/**
+ * Admin work-queue counts, shared by the sidebar badges and the home action
+ * centre. React `cache()` makes both read one result per request.
+ */
+export const getSidebarCounts = cache(async function getSidebarCounts(): Promise<SidebarCounts> {
   try {
     await getAdminUser();
 
@@ -47,7 +56,13 @@ export async function getSidebarCounts(): Promise<SidebarCounts> {
         (SELECT count(*)::int FROM ${sellerWalletTopUps}
           WHERE ${sellerWalletTopUps.status} = 'pending'
             AND ${sellerWalletTopUps.provider} IN ('vodafone_cash', 'instapay')
-        ) AS pending_store_top_ups
+        ) AS pending_store_top_ups,
+        (SELECT count(DISTINCT ${sellerFulfillmentServices.sellerId})::int FROM ${sellerFulfillmentServices}
+          WHERE ${sellerFulfillmentServices.status} IN ('requested', 'under_review', 'awaiting_agreement')
+        ) AS fulfillment_open_sellers,
+        (SELECT count(*)::int FROM ${adCampaignRequests} WHERE ${adCampaignRequests.status} = 'pending') AS pending_ad_requests,
+        (SELECT count(*)::int FROM ${storeIntegrations} WHERE ${storeIntegrations.status} = 'error') AS integration_errors,
+        (SELECT count(*)::int FROM ${sellerCustomDomains} WHERE ${sellerCustomDomains.status} = 'failed') AS failing_domains
     `);
 
     const rows = Array.isArray(result)
@@ -62,9 +77,13 @@ export async function getSidebarCounts(): Promise<SidebarCounts> {
       pendingProducts: Number(row.pending_products ?? 0),
       pendingSellers: Number(row.pending_sellers ?? 0),
       pendingStoreTopUps: Number(row.pending_store_top_ups ?? 0),
+      fulfillmentOpenSellers: Number(row.fulfillment_open_sellers ?? 0),
+      pendingAdRequests: Number(row.pending_ad_requests ?? 0),
+      integrationErrors: Number(row.integration_errors ?? 0),
+      failingDomains: Number(row.failing_domains ?? 0),
     };
   } catch (error) {
     console.error("Error fetching sidebar counts:", error);
     return EMPTY_SIDEBAR_COUNTS;
   }
-}
+});

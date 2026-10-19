@@ -102,6 +102,28 @@ describe("validateSiteConfig", () => {
     expect(result.issues[0]!.code).toBe("tree_too_deep");
   });
 
+  it("allows 400 elements in a section and refuses 401", () => {
+    // Root + 3 groups + leaves: lists stay under the 200-children schema cap.
+    const tree = (leaves: number) => {
+      const sizes = [Math.ceil(leaves / 3), Math.ceil((leaves - Math.ceil(leaves / 3)) / 2)];
+      sizes.push(leaves - sizes[0]! - sizes[1]!);
+      const groups = sizes.map((size, g) => ({
+        id: `g${g}`,
+        type: "div",
+        props: {},
+        children: Array.from({ length: size }, (_, i) => ({ id: `l${g}-${i}`, type: "text", props: {}, children: [] })),
+      }));
+      return [{ id: "root", type: "section", props: {}, children: groups }];
+    };
+    const check = (leaves: number) =>
+      validateSiteConfig(withHomeSections([{ id: "s1", sectionId: "custom-section", version: 1, props: {}, componentTree: tree(leaves) }]));
+    expect(check(396).success).toBe(true);
+    const over = check(397);
+    expect(over.success).toBe(false);
+    if (over.success) return;
+    expect(over.issues.map((i) => i.code)).toContain("tree_too_large");
+  });
+
   it("passes through a migration failure", () => {
     const result = validateSiteConfig({ ...classicTemplateFixture(), schemaVersion: 42 });
     expect(result.success).toBe(false);

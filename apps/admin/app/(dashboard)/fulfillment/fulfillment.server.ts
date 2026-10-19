@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { applyInvalidation, invalidateFulfillmentPlans } from "@workspace/cache";
 import { getCurrentAdminUser } from "@/lib/auth/admin-auth";
 import type { FulfillmentServiceStatus, FulfillmentServiceType } from "@workspace/lib/fulfillment";
 import {
@@ -41,6 +42,7 @@ function failure(error: unknown, fallback: string): { success: false; error: str
 
 function revalidateSeller(sellerId: string) {
   revalidatePath("/fulfillment");
+  revalidatePath(`/fulfillment/${sellerId}`);
   revalidatePath(`/sellers/${sellerId}`);
 }
 
@@ -97,6 +99,7 @@ export async function savePlan(input: unknown, planId?: string): Promise<Result>
         ...toPlanValues(parsed.data),
       });
     }
+    await applyInvalidation(invalidateFulfillmentPlans(), { from: "admin", mode: "action" });
     revalidatePath("/fulfillment/plans");
     return { success: true, message: planId ? "Plan updated" : "Plan created" };
   } catch (error) {
@@ -108,6 +111,7 @@ export async function togglePlanActive(planId: string, isActive: boolean): Promi
   try {
     await getCurrentAdminUser();
     await setFulfillmentPlanActive(planId, isActive);
+    await applyInvalidation(invalidateFulfillmentPlans(), { from: "admin", mode: "action" });
     revalidatePath("/fulfillment/plans");
     return { success: true, message: isActive ? "Plan activated" : "Plan deactivated" };
   } catch (error) {

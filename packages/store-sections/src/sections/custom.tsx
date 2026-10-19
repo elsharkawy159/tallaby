@@ -30,6 +30,9 @@ export const customSection: SectionDefinition<CustomProps> = {
         </SectionShell>
       ) : null;
     }
-    return <section className="py-(--sf-section-y,48px)">{renderElementTree(tree, ctx)}</section>;
+    // A tree section's root node is the <section>; older custom sections keep the padded wrapper.
+    if (tree[0]?.type === "section") return <>{renderElementTree(tree, ctx)}</>;
+    // `relative isolate` keeps absolutely positioned elements inside their own section.
+    return <section className="relative isolate py-(--sf-section-y,48px)">{renderElementTree(tree, ctx)}</section>;
   },
 };

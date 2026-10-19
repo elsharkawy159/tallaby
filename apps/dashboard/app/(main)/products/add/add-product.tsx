@@ -41,11 +41,17 @@ import { ImportDialog } from "./import-dialog"
 import { BulkUrlImport } from "./bulk-url-import.client"
 import { useProductDraft, type DraftStatus } from "./use-product-draft"
 import { prepareProductForSubmit } from "./prepare-product-submit.lib"
+import { setProductSellerTaxonomy } from "../categories-brands/categories-brands.server"
+import { splitSellerTaxonomy } from "../categories-brands/categories-brands.lib"
+import { SellerTaxonomyProvider } from "../categories-brands/seller-taxonomy-fields.client"
+import type { SellerTaxonomyOption } from "../categories-brands/categories-brands.dto"
 
 interface AddProductProps {
   categories: CategoryOption[]
   brands: BrandOption[]
   sellerPricing: SellerPricingSettings
+  /** The seller's own lists for "My category" / "My brand". */
+  sellerTaxonomy: { categories: SellerTaxonomyOption[]; brands: SellerTaxonomyOption[] }
 }
 
 const LOCALE_LABELS: Record<SupportedLocale, string> = {
@@ -57,6 +63,7 @@ export default function AddProduct ({
   categories,
   brands,
   sellerPricing,
+  sellerTaxonomy,
 }: AddProductProps) {
   const [isPending, startTransition] = useTransition()
   const [activeLocale, setActiveLocale] = useState<SupportedLocale>("en")
@@ -67,6 +74,7 @@ export default function AddProduct ({
   const tToast = useTranslations("toast")
   const t = useTranslations("productForm.page")
   const tBasic = useTranslations("productForm.sections.basic")
+  const tTaxonomy = useTranslations("categoriesBrands.productForm")
   const resolver = useLocalizedResolver(zodResolver(addProductFormSchema) as any)
 
   const form = useForm<AddProductFormData>({
@@ -111,9 +119,14 @@ export default function AddProduct ({
   const handleSubmit = (data: AddProductFormData) => {
     startTransition(async () => {
       try {
-        const result = await createProduct(prepareProductForSubmit(data))
+        const { rest, taxonomy } = splitSellerTaxonomy(prepareProductForSubmit(data))
+        const result = await createProduct(rest as Parameters<typeof createProduct>[0])
 
         if (result.success) {
+          if (result.data?.id && (taxonomy.sellerCategoryId || taxonomy.sellerBrandId)) {
+            const linked = await setProductSellerTaxonomy(result.data.id, taxonomy)
+            if (!linked.success) toast.warning(tTaxonomy("linkFailed"))
+          }
           draft.pause()
           draft.clear()
           toast.success(tToast("productCreatedSuccessfully"))
@@ -177,6 +190,7 @@ export default function AddProduct ({
   )
 
   return (
+    <SellerTaxonomyProvider value={sellerTaxonomy}>
     <Form {...form}>
       <div className="min-h-screen pb-32 lg:pb-24">
         {/* Page header */}
@@ -282,6 +296,7 @@ export default function AddProduct ({
         <StickyOffsetVar />
       </div>
     </Form>
+    </SellerTaxonomyProvider>
   )
 }
 

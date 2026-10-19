@@ -18,7 +18,7 @@ import { SELLER_IMAGE_ACCEPT_ATTR, useSellerUpload } from "@/components/inputs/u
 import { BannerField, LogoField } from "@/components/stores/brand-image-fields.client";
 import { storeLogoSrc } from "@/components/stores/store-logo.client";
 import { cn } from "@/lib/utils";
-import { publish, saveDesignSystem } from "@/app/(builder)/stores/[storeId]/editor/editor.server";
+import { publish, saveDesignSystem } from "@/app/(builder)/stores/[storeId]/editor/server/editor.server";
 import { saveStoreGeneral } from "../../settings/store-settings.server";
 import { SitePreview, type PreviewCatalog, type PreviewDevice } from "../_components/site-preview.client";
 import {

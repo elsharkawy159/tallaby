@@ -12,8 +12,8 @@ import { cn } from "@workspace/ui/lib/utils";
 import { findIndustry, industryQueries } from "@/lib/stores/industries.lib";
 import type { StockPhoto } from "@/lib/stock-photos/stock-photos.lib";
 import { useDragData } from "../dnd/editor-dnd.client";
-import type { EditorCommands } from "../editor-commands.lib";
-import { importStockPhoto, searchStockPhotos, type ExploreErrorKey } from "../explore.server";
+import type { EditorCommands } from "../lib/editor-commands.lib";
+import { importStockPhoto, searchStockPhotos, type ExploreErrorKey } from "../server/explore.server";
 
 /**
  * Explore tab (owner request 2026-10-18, like the reference
@@ -59,6 +59,9 @@ export function ExplorePanel({
     return () => clearTimeout(timer);
   }, [input, suggestions]);
 
+  // No hover preview outlives the panel.
+  useEffect(() => () => commands.previewImage(null), [commands]);
+
   const load = async (q: string, p: number) => {
     const id = ++request.current;
     setLoading(true);
@@ -84,8 +87,11 @@ export function ExplorePanel({
     if (readOnly || importing) return;
     setImporting(photo.id);
     try {
+      // The photo stays shown on the image while it is copied into the library.
+      commands.previewImage(photo.previewUrl || photo.thumbUrl);
       const result = await importStockPhoto(storeId, photo.id);
       if (!result.success) {
+        commands.previewImage(null);
         toast.error(t(`errors.${result.error}`));
         return;
       }
@@ -147,7 +153,13 @@ export function ExplorePanel({
             {columns.map((column, ci) => (
               <div key={ci} className="flex min-w-0 flex-1 flex-col gap-1.5">
                 {column.map((photo) => (
-                  <div key={photo.id} className="group relative overflow-hidden rounded-md" style={{ aspectRatio: `${photo.width}/${photo.height}`, background: photo.avgColor ?? "var(--muted)" }}>
+                  <div
+                    key={photo.id}
+                    // Hover shows the photo on the selected image (kept while one is being imported).
+                    onPointerEnter={() => !readOnly && !importing && commands.previewImage(photo.previewUrl || photo.thumbUrl)}
+                    onPointerLeave={() => !importing && commands.previewImage(null)}
+                    className="group relative overflow-hidden rounded-md"
+                    style={{ aspectRatio: `${photo.width}/${photo.height}`, background: photo.avgColor ?? "var(--muted)" }}>
                     <PhotoButton
                       photo={photo}
                       disabled={readOnly || importing !== null}

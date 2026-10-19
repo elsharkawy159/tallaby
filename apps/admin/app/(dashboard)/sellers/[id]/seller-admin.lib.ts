@@ -16,6 +16,15 @@ export const AUDIT_ACTION_LABELS: Record<AdminAuditAction, string> = {
   wallet_adjustment: "Wallet adjustment",
   approve_top_up: "Top-up approved",
   reject_top_up: "Top-up rejected",
+  deactivate_coupon: "Coupon deactivated",
+  reactivate_coupon: "Coupon reactivated",
+  disconnect_integration: "Integration disconnected",
+  clear_integration_error: "Integration error cleared",
+  remove_domain: "Custom domain removed",
+  unpublish_cms_item: "Blog/CMS item unpublished",
+  set_ad_status: "Ad request status changed",
+  update_template: "Template updated",
+  set_default_template: "Default template changed",
 };
 
 export function auditActionLabel(action: string): string {

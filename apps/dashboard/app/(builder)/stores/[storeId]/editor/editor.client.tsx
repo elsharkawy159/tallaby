@@ -17,19 +17,22 @@ import { Button } from "@workspace/ui/components/button";
 import { cn } from "@workspace/ui/lib/utils";
 import { MediaPicker } from "@/components/media/media-picker.client";
 import { EditorDndProvider } from "./dnd/editor-dnd.client";
-import { EditorCanvas } from "./editor-canvas.client";
-import { createEditorCommands } from "./editor-commands.lib";
-import { QuickInsertDialog, ShortcutsDialog } from "./editor-dialogs.client";
-import { EditorRail } from "./editor-rail.client";
-import { EditorSidebar } from "./editor-sidebar.client";
-import { EditorTopbar } from "./editor-topbar.client";
-import type { EditorCategory, EditorForm, EditorProduct } from "./editor.data";
-import { getInstance, isImageSelection, refOf } from "./editor-selection.lib";
-import { storeDataCounts } from "./editor-library.lib";
-import { resolveCanvasCatalog } from "./editor.lib";
-import { publish } from "./editor.server";
-import { createEditorStore, type EditorPage, type EditorStore, type Rail } from "./editor.store";
-import { AddPanel } from "./panels/add-panel.client";
+import { EditorCanvas } from "./canvas/editor-canvas.client";
+import { createEditorCommands } from "./lib/editor-commands.lib";
+import { QuickInsertDialog, ShortcutsDialog } from "./shell/editor-dialogs.client";
+import { EditorRail } from "./shell/editor-rail.client";
+import { EditorSidebar } from "./inspector/editor-sidebar.client";
+import { EditorTopbar } from "./shell/editor-topbar.client";
+import type { EditorCatalogSnapshot } from "./server/editor.data";
+import { DataActionButton, DataRetryButton } from "./canvas/data-action.client";
+import { failedNeeds } from "./lib/editor-data.lib";
+import { useEditorData } from "./state/use-editor-data.client";
+import { getInstance, imageSpotOf, isImageSelection, refOf, setImageAt } from "./lib/editor-selection.lib";
+import { storeDataCounts } from "./lib/editor-library.lib";
+import { dropUnknownSections, resolveCanvasCatalog } from "./lib/editor.lib";
+import { publish } from "./server/editor.server";
+import { createEditorStore, type EditorPage, type EditorStore, type Rail } from "./state/editor.store";
+import { AddPanel } from "./panels/add/add-panel.client";
 import { BrandPanel } from "./panels/brand-panel.client";
 import { ExplorePanel } from "./panels/explore-panel.client";
 import { FormsPanel } from "./panels/forms-panel.client";
@@ -37,11 +40,11 @@ import { LayersPanel } from "./panels/layers-panel.client";
 import { MediaPanel } from "./panels/media-panel.client";
 import { PagesPanel, nameOf } from "./panels/pages-panel.client";
 import type { TemplateCardView } from "@/app/(main)/stores/[storeId]/website/templates/templates.dto";
-import { useEditorAutosave } from "./use-editor-autosave.client";
-import { useEditorShortcuts } from "./use-editor-shortcuts.client";
-import { useStorePreview } from "./use-store-preview.client";
+import { useEditorAutosave } from "./state/use-editor-autosave.client";
+import { useEditorShortcuts } from "./state/use-editor-shortcuts.client";
+import { useStorePreview } from "./state/use-store-preview.client";
 
-type Catalog = { products: EditorProduct[]; categories: EditorCategory[]; forms: EditorForm[] };
+type Catalog = EditorCatalogSnapshot;
 
 export type EditorInitial = {
   storeId: string;
@@ -56,6 +59,8 @@ export type EditorInitial = {
   defaultLocale: SiteLocale;
   locales: SiteLocale[];
   catalog: Catalog;
+  /** `all` or `selected` (D24): where "add products" sends the seller. */
+  catalogMode: string;
   isLive: boolean;
   /** STORE_PREVIEW_SECRET is configured (P4-08). */
   previewEnabled: boolean;
@@ -68,15 +73,27 @@ export type EditorInitial = {
 };
 
 export function StoreEditor({ initial }: { initial: EditorInitial }) {
+  const t = useTranslations("storeEditor");
   const storeRef = useRef<EditorStore | null>(null);
-  storeRef.current ??= createEditorStore({
-    pages: initial.pages,
-    header: initial.header,
-    footer: initial.footer,
-    designSystem: initial.designSystem,
-    designVersion: initial.designVersion,
-    defaultLocale: initial.defaultLocale,
-  });
+  const droppedRef = useRef(0);
+  if (!storeRef.current) {
+    // Drafts may still hold removed coded sections; they would block every save.
+    const clean = dropUnknownSections(initial, storeSectionRegistry.allowedSections());
+    const store = createEditorStore({
+      pages: clean.pages,
+      header: clean.header,
+      footer: clean.footer,
+      designSystem: initial.designSystem,
+      designVersion: initial.designVersion,
+      defaultLocale: initial.defaultLocale,
+    });
+    if (clean.dropped) store.setState({ dirtyPages: clean.dirtyPages, dirtyChrome: clean.dirtyChrome, saveStatus: "unsaved" });
+    storeRef.current = store;
+    droppedRef.current = clean.dropped;
+  }
+  useEffect(() => {
+    if (droppedRef.current) toast.info(t("legacySectionsDropped", { count: droppedRef.current }), { id: "legacy-sections" });
+  }, [t]);
   return <EditorShell initial={initial} store={storeRef.current} />;
 }
 
@@ -104,9 +121,9 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [imagePickerOpen, setImagePickerOpen] = useState(false);
   const preview = useStorePreview(initial.storeId, flush);
-  // Forms refresh from the Forms tab (they are edited on their own page).
-  const [forms, setForms] = useState(initial.catalog.forms);
-  const catalog = useMemo(() => ({ ...initial.catalog, forms }), [initial.catalog, forms]);
+  // Store data refreshes when the seller comes back to this tab (P4B-05); forms also refresh from the Forms tab.
+  const { data: catalog, state: dataState, refresh: refreshData, setForms } = useEditorData(initial.storeId, initial.catalog);
+  const forms = catalog.forms;
   const commands = useMemo(() => createEditorCommands(store), [store]);
 
   const shortcutActions = useMemo(
@@ -120,15 +137,43 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
   const onFrameKeyDown = useEditorShortcuts(store, commands, shortcutActions);
 
   const page = pages.find((p) => p.id === activePageId) ?? pages[0]!;
+  // A picture hovered in Images/Explore: drawn on the canvas only (the drafts are untouched).
+  const imagePreview = useStore(store, (s) => s.imagePreview);
+  const selection = useStore(store, (s) => s.selection);
+  const shown = useMemo(() => {
+    const plain = { sections: page.content.sections, header, footer };
+    if (!imagePreview || !selection) return plain;
+    const instance = getInstance({ content: page.content, header, footer }, refOf(selection));
+    const spot = imageSpotOf(instance, selection);
+    if (!instance || !spot) return plain;
+    const next = setImageAt(instance, spot, imagePreview, { locale, defaultLocale });
+    if (selection.target === "page") return { ...plain, sections: plain.sections.map((s) => (s.id === instance.id ? next : s)) };
+    return { ...plain, [selection.target]: next };
+  }, [imagePreview, selection, page.content, header, footer, locale, defaultLocale]);
   const navPages = pages.filter((p) => !p.isHome && p.showInNav).length;
   const counts = useMemo(
-    () => storeDataCounts({ products: catalog.products, categories: catalog.categories, forms, contact: initial.store.contact, navPages }),
-    [catalog.products, catalog.categories, forms, initial.store.contact, navPages],
+    () =>
+      storeDataCounts({
+        products: catalog.products,
+        categories: catalog.categories,
+        forms,
+        contact: initial.store.contact,
+        navPages,
+        brands: catalog.brands,
+        reviews: catalog.reviewStats ? catalog.reviewStats.count : null,
+        coupons: catalog.coupons?.filter((c) => c.live) ?? null,
+      }),
+    [catalog.products, catalog.categories, forms, initial.store.contact, navPages, catalog.brands, catalog.reviewStats, catalog.coupons],
   );
+  const openPages = () => {
+    store.getState().setRail("pages");
+    setPanelOpen(true);
+  };
+  const dataStore = { id: initial.storeId, catalogMode: initial.catalogMode };
   const libraryWide = useStore(store, (s) => s.libraryWide && s.rail === "add" && s.addTab === "sections");
 
   // What does not change with page edits (also used by the Add panel's section previews).
-  const baseCtx = useMemo<Omit<RenderContext, "pages" | "catalog" | "renderClassic">>(
+  const baseCtx = useMemo<Omit<RenderContext, "pages" | "catalog">>(
     () => ({
       mode: "edit",
       locale,
@@ -156,10 +201,17 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
       pages: pages
         .filter((p) => p.isHome || p.showInNav)
         .map((p) => ({ name: nameOf(p.name, locale), href: p.isHome ? "/" : `/${p.slug}`, isHome: p.isHome })),
-      catalog: resolveCanvasCatalog(collectCatalogQueries(sections, storeSectionRegistry), catalog, locale),
-      renderClassic: (part) => <ClassicPlaceholder part={part} />,
+      catalog: { ...resolveCanvasCatalog(collectCatalogQueries(sections, storeSectionRegistry), catalog, locale), counts },
+      editorData: {
+        state: dataState,
+        failed: failedNeeds(catalog.failed),
+        renderAction: (need, label) => <DataActionButton need={need} label={label} store={dataStore} onOpenPages={openPages} />,
+        renderRetry: (label) => <DataRetryButton label={label} onRetry={() => void refreshData(true)} />,
+      },
     };
-  }, [baseCtx, page.content.sections, header, footer, pages, locale, catalog]);
+    // openPages and dataStore only read stable values.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [baseCtx, page.content.sections, header, footer, pages, locale, catalog, counts, dataState, refreshData]);
 
   // The store's --sf-* colors on the editor too, so color swatches show the real theme
   // (only --sf-* keys: the dashboard's own tokens stay untouched).
@@ -289,9 +341,9 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
         <main className="min-w-0 flex-1">
           <EditorCanvas
             ctx={ctx}
-            sections={page.content.sections}
-            header={header}
-            footer={footer}
+            sections={shown.sections}
+            header={shown.header}
+            footer={shown.footer}
             designSystem={designSystem}
             fontClassName={initial.fontClassName}
             defaultLocale={defaultLocale}
@@ -331,12 +383,3 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
   );
 }
 
-function ClassicPlaceholder({ part }: { part: string }) {
-  const t = useTranslations("storeEditor.classic");
-  return (
-    <div className="mx-auto my-3 w-[calc(100%-2rem)] max-w-(--sf-max-width,1200px) rounded-xl border-2 border-dashed border-(--sf-line) bg-(--sf-shelf) p-6 text-center">
-      <p className="font-semibold">{t(`${part}.title` as never)}</p>
-      <p className="mt-1 text-sm text-(--sf-muted)">{t("note")}</p>
-    </div>
-  );
-}

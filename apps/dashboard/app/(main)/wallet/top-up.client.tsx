@@ -43,7 +43,16 @@ const groupNumber = (n: string) => n.replace(/^(\d{4})(\d{3})(\d+)$/, "$1 $2 $3"
  * the transfer to Tallaby's number, then the receipt. Submitting records a
  * pending request; the balance changes only after an admin approves it.
  */
-export function TopUpButton({ sellerId, disabled }: { sellerId: string; disabled?: boolean }) {
+export function TopUpButton({
+  sellerId,
+  disabled,
+  defaultOpen,
+}: {
+  sellerId: string;
+  disabled?: boolean;
+  /** Opens on load: /wallet?topup=1 from the negative-balance pop-up. */
+  defaultOpen?: boolean;
+}) {
   const t = useTranslations("storeWallet.manualTopUp");
   const tErrors = useTranslations("storeWallet.topUp.errors");
   const locale = useLocale();
@@ -51,7 +60,7 @@ export function TopUpButton({ sellerId, disabled }: { sellerId: string; disabled
   const ids = useId();
   const fileInput = useRef<HTMLInputElement>(null);
 
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(Boolean(defaultOpen) && !disabled);
   const [step, setStep] = useState<Step>("amount");
   const [amount, setAmount] = useState("250");
   const [amountError, setAmountError] = useState<string | null>(null);

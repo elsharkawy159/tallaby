@@ -1,6 +1,6 @@
 import { getCartScope } from "@/lib/storefront.server";
 import { loadStorefrontTracking } from "@/lib/storefront-tracking.server";
-import { SellerTracking } from "@/app/[locale]/storefront/[subdomain]/_components/seller-tracking.client";
+import { SellerTracking } from "@/app/[locale]/(shop)/storefront/[subdomain]/_components/seller-tracking.client";
 
 /**
  * The store's own tracking apps on pages a store host shares with the

@@ -37,7 +37,7 @@ import {
   setToken,
   type ColorKey,
 } from "@/app/(main)/stores/[storeId]/website/design/design.lib";
-import type { EditorStore } from "../editor.store";
+import type { EditorStore } from "../state/editor.store";
 
 const CLASSIC = { primary: "#145163", secondary: "#f2f5f4", accent: "#fdad28", background: "#ffffff", foreground: "#10242b" };
 const EMPTY: DesignSystem = { colors: {}, typography: {}, spacing: {} };

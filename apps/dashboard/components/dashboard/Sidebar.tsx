@@ -17,7 +17,7 @@ import { logout } from "@/actions/auth";
 import type { SidebarCounts } from "./sidebar.types";
 import {
   SIDEBAR_CONFIG,
-  isActiveHref,
+  findActiveHref,
   resolveSidebar,
   type NavFeature,
   type ResolvedEntry,
@@ -49,9 +49,8 @@ const SIDEBAR_SUBLINK_IDLE =
 const ICON_BUTTON =
   "flex size-9 shrink-0 items-center justify-center rounded-[10px] border border-transparent text-muted-foreground transition-colors hover:border-sidebar-border hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring/40";
 
-const linkActive = (pathname: string, link: ResolvedLink) => isActiveHref(pathname, link.href, { exact: link.exact });
-const groupActive = (pathname: string, group: ResolvedGroup) =>
-  group.items.some((item) => isActiveHref(pathname, item.href));
+const groupActive = (activeHref: string | null, group: ResolvedGroup) =>
+  group.items.some((item) => item.href === activeHref);
 
 export const Sidebar = ({ counts, stores, selectedStoreId, maxStores, features }: SidebarProps) => {
   const t = useTranslations();
@@ -169,9 +168,17 @@ const SidebarContent = ({
 }: SidebarContentProps) => {
   const pathname = usePathname();
   const t = useTranslations();
+  const activeHref = findActiveHref(entries, pathname);
+  const activeGroupKey =
+    entries.find((e): e is ResolvedGroup => e.kind === "group" && groupActive(activeHref, e))?.key ?? null;
+  // Accordion: one group open at a time; the current page's group opens on navigation.
+  const [openGroupKey, setOpenGroupKey] = useState<string | null>(activeGroupKey);
+  useEffect(() => {
+    if (activeGroupKey) setOpenGroupKey(activeGroupKey);
+  }, [activeGroupKey]);
 
   const renderTopLink = (link: ResolvedLink) => {
-    const isActive = linkActive(pathname, link);
+    const isActive = link.href === activeHref;
     const Icon = link.icon;
     const label = t(`nav.${link.key}`);
     return (
@@ -197,7 +204,7 @@ const SidebarContent = ({
   };
 
   const renderGroup = (group: ResolvedGroup) => {
-    const active = groupActive(pathname, group);
+    const active = groupActive(activeHref, group);
     const label = t(`nav.${group.key}`);
     if (isCollapsed) {
       return (
@@ -212,7 +219,18 @@ const SidebarContent = ({
         </li>
       );
     }
-    return <SidebarGroup key={group.key} group={group} label={label} active={active} counts={counts} />;
+    return (
+      <SidebarGroup
+        key={group.key}
+        group={group}
+        label={label}
+        active={active}
+        activeHref={activeHref}
+        counts={counts}
+        open={openGroupKey === group.key}
+        onOpenChange={(open) => setOpenGroupKey(open ? group.key : null)}
+      />
+    );
   };
 
   return (
@@ -245,7 +263,15 @@ const SidebarContent = ({
         <ScrollBar />
         <nav className="p-3">
           <ul className="space-y-0.5">
-            {entries.map((entry) => (entry.kind === "group" ? renderGroup(entry) : renderTopLink(entry)))}
+            {entries.map((entry, i) =>
+              entry.kind === "divider" ? (
+                <li key={`divider-${i}`} role="separator" className={cn("my-2 border-t border-sidebar-border", isCollapsed ? "mx-2" : "mx-3")} />
+              ) : entry.kind === "group" ? (
+                renderGroup(entry)
+              ) : (
+                renderTopLink(entry)
+              )
+            )}
           </ul>
         </nav>
       </ScrollArea>
@@ -309,28 +335,29 @@ function SoonBadge() {
   );
 }
 
-/** A collapsible sidebar section; opens itself when one of its pages is active. */
+/** A collapsible sidebar section; the parent keeps only one open at a time. */
 function SidebarGroup({
   group,
   label,
   active,
+  activeHref,
   counts,
+  open,
+  onOpenChange,
 }: {
   group: ResolvedGroup;
   label: string;
   active: boolean;
+  activeHref: string | null;
   counts: SidebarCounts;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }) {
   const t = useTranslations("nav");
-  const pathname = usePathname();
-  const [open, setOpen] = useState(active);
-  useEffect(() => {
-    if (active) setOpen(true);
-  }, [active]);
 
   return (
     <li>
-      <Collapsible open={open} onOpenChange={setOpen}>
+      <Collapsible open={open} onOpenChange={onOpenChange}>
         <CollapsibleTrigger className={cn(SIDEBAR_LINK, "w-full", active && "font-medium text-primary-ink")}>
           <group.icon className={cn(SIDEBAR_ICON, active && SIDEBAR_ICON_ACTIVE)} />
           <span className="min-w-0 flex-1 truncate text-start">{label}</span>
@@ -339,7 +366,7 @@ function SidebarGroup({
         <CollapsibleContent className="pt-0.5 pb-1">
           <ul className="ms-5 space-y-0.5 border-s border-sidebar-border ps-3">
             {group.items.map((item) => {
-              const isActive = linkActive(pathname, item);
+              const isActive = item.href === activeHref;
               return (
                 <li key={item.href}>
                   <Link

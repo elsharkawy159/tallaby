@@ -32,7 +32,7 @@ import {
   type MethodChangeError,
   type StorePayments,
 } from "../payments/store-methods";
-import { classicFooter, classicHeader, classicHomeContent } from "@workspace/store-sections/templates";
+import { emptyHomeContent } from "@workspace/store-sections/templates";
 import { canCreateStore } from "../plans";
 import {
   MAX_ZONES_PER_STORE,
@@ -225,41 +225,18 @@ export async function checkStoreSubdomain(
 export async function ensureStoreSiteScaffold(q: Queryable, storeId: string): Promise<void> {
   await q.insert(storeDesignSystems).values({ storeId }).onConflictDoNothing();
 
-  // A store starts as Tallaby Classic (P4-03): the classic header/footer and
-  // home page, i.e. what its storefront already shows. Only fills what is
-  // empty on a store that never published, so seller work is never replaced.
-  await q
-    .update(stores)
-    .set({
-      sharedHeader: sql`coalesce(${stores.sharedHeader}, ${JSON.stringify(classicHeader())}::jsonb)`,
-      sharedFooter: sql`coalesce(${stores.sharedFooter}, ${JSON.stringify(classicFooter())}::jsonb)`,
-    })
-    .where(and(eq(stores.id, storeId), isNull(stores.firstPublishedAt), sql`(${stores.sharedHeader} IS NULL OR ${stores.sharedFooter} IS NULL)`));
-
+  // Tallaby Classic was removed (owner, 2026-10-19): a store starts with an
+  // empty home page and no header/footer until the tree designs replace them.
   const [home] = await q
-    .select({ id: storePages.id, draftContent: storePages.draftContent })
+    .select({ id: storePages.id })
     .from(storePages)
     .where(and(eq(storePages.storeId, storeId), eq(storePages.isHome, true)))
     .limit(1);
   if (!home) {
     await q
       .insert(storePages)
-      .values({ storeId, slug: "home", isHome: true, name: { ar: "الرئيسية", en: "Home" }, draftContent: classicHomeContent() })
+      .values({ storeId, slug: "home", isHome: true, name: { ar: "الرئيسية", en: "Home" }, draftContent: emptyHomeContent() })
       .onConflictDoNothing();
-    return;
-  }
-  const sections = (home.draftContent as { sections?: unknown[] } | null)?.sections;
-  if (!sections || sections.length === 0) {
-    await q
-      .update(storePages)
-      .set({ draftContent: classicHomeContent() })
-      .where(
-        and(
-          eq(storePages.id, home.id),
-          sql`coalesce(jsonb_array_length(${storePages.draftContent}->'sections'), 0) = 0`,
-          sql`NOT EXISTS (SELECT 1 FROM stores s WHERE s.id = ${storeId} AND s.first_published_at IS NOT NULL)`,
-        ),
-      );
   }
 }
 

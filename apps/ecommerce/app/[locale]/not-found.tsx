@@ -1,3 +1,5 @@
+// The root layout has no CSS of its own (see app/[locale]/layout.tsx).
+import "@workspace/ui/globals.css";
 import { Button } from "@workspace/ui/components";
 import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";

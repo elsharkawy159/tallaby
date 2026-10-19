@@ -1,7 +1,10 @@
 import {
+  adminTags,
   brandTags,
   categoryTags,
   couponTags,
+  fulfillmentTags,
+  templateTags,
   productTags,
   reviewTags,
   sellerTags,
@@ -281,6 +284,26 @@ export function invalidateStoreIntegrations(sellerId: string, storeId: string): 
 /** Platform-wide coupons (no seller) — the storefront's "available coupons". */
 export function invalidatePlatformCoupons(): CacheInvalidation {
   return inv([couponTags.available()]);
+}
+
+/** One seller's coupon changed (admin deactivate/reactivate): that seller's coupons and the available list. */
+export function invalidateSellerCoupons(sellerId: string): CacheInvalidation {
+  return inv([couponTags.seller(sellerId), couponTags.available()]);
+}
+
+/** A template's gallery metadata changed (active, premium, price, order, default). */
+export function invalidateTemplateCatalog(): CacheInvalidation {
+  return inv([templateTags.catalog()]);
+}
+
+/** A fulfillment plan was created, edited or toggled. */
+export function invalidateFulfillmentPlans(): CacheInvalidation {
+  return inv([fulfillmentTags.plans()]);
+}
+
+/** A store integration changed status (connect, error, admin disconnect): its storefront scripts and the admin summary. */
+export function invalidateStoreIntegrationsWithSummary(sellerId: string, storeId: string): CacheInvalidation {
+  return inv([storeTags.integrations(sellerId, storeId), adminTags.integrationSummary()]);
 }
 
 export function invalidateReviewsForProduct(

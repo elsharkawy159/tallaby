@@ -46,6 +46,8 @@ function sellerIdOf(input: unknown): string | null {
 function refreshSellerPages(sellerId: string | null) {
   revalidatePath("/sellers");
   if (sellerId) revalidatePath(`/sellers/${sellerId}`);
+  // The store-wallet screens show the same balance, limit and audit rows.
+  revalidatePath("/wallets", "layout");
 }
 
 /** Plan, store-limit exception, fee plan, trial, exemption, negative limit. */

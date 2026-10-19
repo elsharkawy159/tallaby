@@ -3,13 +3,16 @@
  * into an ordinary section instance. Pure; used by the editor Add panel,
  * drag and drop and page templates alike.
  */
-import type { SectionInstance } from "../config/schema";
+import type { SectionInstance, SiteLocale } from "../config/schema";
 import type { SectionRegistry } from "../core/registry";
+import { getDesign, instantiateDesign } from "../designs";
+import type { MakeId } from "../elements/tree";
 import { LIBRARY_CATEGORIES } from "./categories";
 import { SECTION_PRESETS } from "./presets";
 import type { LibraryCategoryId, PresetCapability, SectionPreset } from "./types";
 
-const PRESETS_BY_ID = new Map(SECTION_PRESETS.map((p) => [p.id, p]));
+const ALL_PRESETS: readonly SectionPreset[] = SECTION_PRESETS;
+const PRESETS_BY_ID = new Map(ALL_PRESETS.map((p) => [p.id, p]));
 
 export function getPreset(id: string): SectionPreset | undefined {
   return PRESETS_BY_ID.get(id);
@@ -52,7 +55,7 @@ function haystack(preset: SectionPreset): string {
   );
 }
 
-const HAYSTACKS = new Map(SECTION_PRESETS.map((p) => [p.id, haystack(p)]));
+const HAYSTACKS = new Map(ALL_PRESETS.map((p) => [p.id, haystack(p)]));
 
 export type PresetFilter = {
   query?: string;
@@ -89,7 +92,16 @@ export function presetCountByCategory(presets: readonly SectionPreset[] = SECTIO
  * with the preset's props, plus its starting style. Everything is cloned, so
  * instances never share objects with the catalog. `null` for an unknown section.
  */
-export function instantiatePreset(preset: SectionPreset, registry: SectionRegistry, id: string): SectionInstance | null {
+export function instantiatePreset(
+  preset: SectionPreset,
+  registry: SectionRegistry,
+  id: string,
+  opts: { defaultLocale?: SiteLocale; makeId?: MakeId } = {},
+): SectionInstance | null {
+  if (preset.designId) {
+    const design = getDesign(preset.designId);
+    return design ? instantiateDesign(design, { id, ...opts }) : null;
+  }
   const definition = registry.get(preset.sectionId);
   if (!definition) return null;
   return {
@@ -103,5 +115,6 @@ export function instantiatePreset(preset: SectionPreset, registry: SectionRegist
 
 /** The presets a section can switch between in the inspector (same section, so content and data stay). */
 export function presetsForSection(sectionId: string): SectionPreset[] {
-  return SECTION_PRESETS.filter((p) => p.sectionId === sectionId && p.kind !== "card");
+  // Design presets start their own tree; switching a tree section to another design comes later (content roles).
+  return ALL_PRESETS.filter((p) => p.sectionId === sectionId && p.kind !== "card" && !p.designId);
 }

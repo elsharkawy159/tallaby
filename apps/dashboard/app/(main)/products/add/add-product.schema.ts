@@ -92,6 +92,9 @@ export const addProductFormSchema = z
     // shared fields
     categoryId: z.string().min(1, "product.categoryRequired"),
     brandId: z.string().optional(),
+    // The seller's own category / brand ("" = none); saved by setProductSellerTaxonomy, not createProduct.
+    sellerCategoryId: z.string().optional(),
+    sellerBrandId: z.string().optional(),
     sku: z.string().optional(),
     quantity: z.number().int().min(0).default(0),
     maxOrderQuantity: z.number().int().optional(),
@@ -254,6 +257,7 @@ export const defaultValues = {
   productUrl: "",
   categoryId: "",
   brandId: undefined,
+  // sellerCategoryId / sellerBrandId stay unset: bulk import sends these values straight to createProduct.
   sku: "",
   quantity: 0,
   maxOrderQuantity: undefined,

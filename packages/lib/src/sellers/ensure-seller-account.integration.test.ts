@@ -51,9 +51,10 @@ describe.skipIf(!TEST_DATABASE_URL)("ensureSellerAccount (integration)", () => {
       status: "approved",
       onboardingComplete: false,
       plan: "free",
-      feePlan: "standard_2pct_min5",
+      feePlan: "flat_5",
       feeTrialEligible: true,
-      feeTrialStartedAt: null,
+      // 0067: the first store starts the 7-day trial at signup.
+      feeTrialStartedAt: expect.any(String),
     });
     const stores = await db.select().from(s.stores).where(eq(s.stores.sellerId, u1));
     expect(stores).toEqual([expect.objectContaining({ isPrimary: true, subdomain: `su-${tag}-one`, status: "active" })]);

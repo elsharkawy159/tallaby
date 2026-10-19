@@ -467,8 +467,8 @@ export async function placeOrderFromCart(
     }
   }
 
-  // Platform fee (PLAN.md §13.2, D1/D2/D22): max(EGP 5, 2%) of each seller's
-  // line totals after that seller's own coupon, 0 during the seller's trial
+  // Platform fee (PLAN.md §13.2, D1/D2/D22): a flat EGP 5 per seller, capped at
+  // its line totals after its own coupon, 0 during the seller's 7-day trial
   // or when exempt. Snapshotted per line; never recomputed.
   const feeSellerIds = [...new Set(orderItemsData.map((item) => item.sellerId))]
   const feeProfiles = await db

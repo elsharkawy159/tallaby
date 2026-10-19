@@ -17,13 +17,24 @@ import {
 import { cn } from "@workspace/ui/lib/utils";
 import type { DragPayload } from "../dnd/dnd.types";
 import { useDragData } from "../dnd/editor-dnd.client";
-import type { EditorCommands } from "../editor-commands.lib";
-import { getInstance, refOf, selectionLabel } from "../editor-selection.lib";
-import { movableOf } from "../editor-slots.lib";
-import type { EditorStore, Selection } from "../editor.store";
+import type { EditorCommands } from "../lib/editor-commands.lib";
+import { getInstance, refOf, selectionLabel } from "../lib/editor-selection.lib";
+import { movableOf } from "../lib/editor-slots.lib";
+import type { EditorStore, Selection } from "../state/editor.store";
+import type { SelectionHandles } from "./canvas-handles.lib";
 import { ElementPopover } from "./element-popover.client";
+import { SelectionHandlesLayer } from "./selection-handles.client";
 
 export type CanvasBox = { top: number; left: number; width: number; height: number };
+export type CanvasBoxes = {
+  selected: CanvasBox | null;
+  hover: CanvasBox | null;
+  section: CanvasBox | null;
+  drag: CanvasBox | null;
+  frame: CanvasBox | null;
+  /** Gap dividers and radius of the selected element. */
+  handles: SelectionHandles | null;
+};
 
 const MOD = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform) ? "⌘" : "Ctrl+";
 
@@ -53,10 +64,11 @@ export function EditorOverlay({
   header,
   footer,
   uiLocale,
+  selectedElement,
 }: {
   store: EditorStore;
   commands: EditorCommands;
-  boxes: { selected: CanvasBox | null; hover: CanvasBox | null; section: CanvasBox | null; drag: CanvasBox | null; frame: CanvasBox | null };
+  boxes: CanvasBoxes;
   hover: NonNullable<Selection> | null;
   editing: boolean;
   /** A drag is on: outlines hide, the toolbar stays mounted (its handle may be the drag source). */
@@ -75,6 +87,8 @@ export function EditorOverlay({
   header: SectionInstance | null;
   footer: SectionInstance | null;
   uiLocale: string;
+  /** The selected element in the frame, as it looks (a button's link). */
+  selectedElement: () => HTMLElement | null;
 }) {
   const t = useTranslations("storeEditor.canvas");
   const selection = useStore(store, (s) => s.selection);
@@ -87,7 +101,7 @@ export function EditorOverlay({
   const sameAsSelected =
     !!hover && !!selection && hover.target === selection.target && hover.part === selection.part && hover.nodeId === selection.nodeId &&
     (hover.target !== "page" || hover.sectionId === (selection as { sectionId: string }).sectionId);
-  const { frame, selected, hover: hoverBox, section: sectionBox, drag: dragBox } = boxes;
+  const { frame, selected, hover: hoverBox, section: sectionBox, drag: dragBox, handles } = boxes;
   const toolbarIndex = toolbarSection ? sections.findIndex((s) => s.id === toolbarSection) : -1;
   const toolbarInstance = toolbarIndex >= 0 ? sections[toolbarIndex]! : null;
   const isSection = !!selection && !selection.part && !selection.nodeId;
@@ -111,7 +125,7 @@ export function EditorOverlay({
       {frame && (
         <Clip frame={frame}>
           {hoverBox && !sameAsSelected && !editing && !dragging && (
-            <div className="absolute rounded-[2px] border border-dashed border-primary/70" style={inFrame(hoverBox, frame)}>
+            <div className="absolute rounded-[2px] outline outline-dashed -outline-offset-1 outline-primary/70" style={inFrame(hoverBox, frame)}>
               {hoverInfo && (
                 <span className="absolute -top-5 start-0 whitespace-nowrap rounded-sm bg-primary/80 px-1.5 py-0.5 text-[10px] font-medium leading-none text-primary-foreground">
                   {hoverInfo.title}
@@ -120,19 +134,22 @@ export function EditorOverlay({
             </div>
           )}
           {selected && (
-            <div className={cn("absolute rounded-[2px] border-2 border-primary", editing && "border-dashed", dragging && "invisible")} style={inFrame(selected, frame)}>
+            // Centred on the element's edge (1px out, 1px in), so text touching it stays visible.
+            <div className={cn("absolute rounded-[2px] outline-2 -outline-offset-1 outline-primary", editing && "outline-dashed", dragging && "invisible")} style={inFrame(selected, frame)}>
               {selectedInfo && (
                 <span
                   className={cn(
-                    "absolute start-0 flex items-center gap-1 whitespace-nowrap rounded-sm bg-primary px-1.5 py-0.5 text-[10px] font-semibold uppercase leading-none tracking-wide text-primary-foreground",
-                    selected.top - frame.top < 20 ? "top-0" : "-top-[18px]",
+                    "absolute start-0 whitespace-nowrap rounded-sm bg-primary px-1.5 py-0.5 text-[10px] font-medium leading-none text-primary-foreground",
+                    selected.top - frame.top < 20 ? "top-0.5" : "-top-5",
                   )}
                 >
-                  {t(selectedInfo.kind === "element" ? "elementBadge" : "sectionBadge")}
-                  <span className="font-normal normal-case">· {selectedInfo.title}</span>
+                  {selectedInfo.title}
                 </span>
               )}
             </div>
+          )}
+          {selected && selection && handles && !isSection && !editing && !dragging && (
+            <SelectionHandlesLayer store={store} selection={selection} box={selected} frame={frame} handles={handles} />
           )}
           {sectionBox && toolbarInstance && !editing && (
             <SectionToolbar
@@ -173,6 +190,7 @@ export function EditorOverlay({
           instance={selectedInstance}
           onRequestImage={onRequestImage}
           uiLocale={uiLocale}
+          selectedElement={selectedElement}
         />
       )}
       <ContextMenu menu={menu} onClose={onCloseMenu} commands={commands} isPageSection={isPageSection} isSection={isSection} hasSelection={!!selection} />

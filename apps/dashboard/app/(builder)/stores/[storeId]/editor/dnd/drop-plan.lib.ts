@@ -17,13 +17,14 @@ import {
   fromTemplate,
   insertNode,
   moveNode,
+  newTreeSection,
   removeNode,
   storeSectionRegistry,
   type MakeId,
 } from "@workspace/store-sections/render";
-import { payloadPreset } from "../editor-library.lib";
-import { getInstance, partField } from "../editor-selection.lib";
-import type { Selection } from "../editor.store";
+import { payloadPreset } from "../lib/editor-library.lib";
+import { getInstance, partField } from "../lib/editor-selection.lib";
+import type { Selection } from "../state/editor.store";
 import type { CanvasPayload, CanvasProbe, DropPlan, ImageCandidate, NodeSlot } from "./dnd.types";
 import { planItemMove, planPartMove } from "./part-drop.lib";
 
@@ -260,8 +261,10 @@ export function applyDropPlan(
     case "new-section": {
       const nodes = payloadNodes(payload, deps.makeNodeId, { src: deps.src });
       const instance = room ? deps.makeSection(CUSTOM) : null;
-      const tree = instance && nodes.length ? insertAll([], null, 0, nodes) : null;
-      if (!instance || !tree) return null;
+      const loose = instance && nodes.length ? insertAll([], null, 0, nodes) : null;
+      // A new element section is a tree section (section root), like every inserted design.
+      const tree = loose ? newTreeSection(loose, deps.makeNodeId) : null;
+      if (!instance || !tree?.length) return null;
       return {
         content: placeSection(content, { ...instance, componentTree: tree }, plan.index),
         select: { target: "page", sectionId: instance.id, nodeId: nodes[0]!.id },
@@ -290,8 +293,9 @@ export function applyDropPlan(
       const from = sections.find((s) => s.id === plan.fromSectionId);
       const node = from ? findNode(from.componentTree ?? [], plan.nodeId) : null;
       const instance = room ? deps.makeSection(CUSTOM) : null;
-      const tree = node ? insertAll([], null, 0, [node]) : null;
-      if (!from || !node || !instance || !tree) return null;
+      const loose = node ? insertAll([], null, 0, [node]) : null;
+      const tree = loose ? newTreeSection(loose, deps.makeNodeId) : null;
+      if (!from || !node || !instance || !tree?.length) return null;
       const without = setTree(content, from.id, removeNode(from.componentTree ?? [], node.id));
       return {
         content: placeSection(without, { ...instance, componentTree: tree }, plan.index),

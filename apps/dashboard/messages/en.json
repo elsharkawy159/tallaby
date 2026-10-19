@@ -76,7 +76,8 @@
     "walletBalance": "Balance & top-ups",
     "campaigns": "Marketing campaigns",
     "accountHelp": "Account & help",
-    "categoriesBrands": "Categories & brands"
+    "sellerCategories": "Categories",
+    "sellerBrands": "Brands"
   },
   "common": {
     "loading": "Loading...",
@@ -3004,6 +3005,7 @@
   },
   "storeEditor": {
     "title": "Website editor",
+    "legacySectionsDropped": "{count, plural, one {Removed # old section that is no longer supported} other {Removed # old sections that are no longer supported}}. Your next save makes it permanent.",
     "back": "Back",
     "pageLabel": "Page",
     "editingLanguage": "Editing language",
@@ -3023,8 +3025,10 @@
     "reload": "Reload",
     "canvas": {
       "addToCart": "Add to cart",
-      "elementBadge": "Element",
-      "sectionBadge": "Section",
+      "dragGap": "Drag to change the gap",
+      "dragRadius": "Drag to round the corners",
+      "gapValue": "Gap {value}",
+      "radiusValue": "Radius {value}",
       "selectParent": "Select parent",
       "moveUp": "Move up",
       "moveDown": "Move down",
@@ -4276,12 +4280,6 @@
     }
   },
   "categoriesBrands": {
-    "title": "Categories & brands",
-    "subtitle": "Your own lists for organising products. Search Tallaby's ready-made list to add one in a click, or add your own. Other sellers never see your lists.",
-    "tabs": {
-      "categories": "Categories",
-      "brands": "Brands"
-    },
     "categories": {
       "title": "Your categories",
       "description": "Group your products the way your customers shop.",
@@ -4289,7 +4287,9 @@
       "addHint": "Type to search Tallaby's categories, or create your own.",
       "searchPlaceholder": "Search categories, e.g. Shoes",
       "filter": "Filter your categories",
-      "empty": "You have no categories yet. Add some from Tallaby's list or create your own."
+      "empty": "You have no categories yet. Add some from Tallaby's list or create your own.",
+      "pageTitle": "Categories",
+      "pageSubtitle": "Your own categories for organising products. Search Tallaby's ready-made list to add one in a click, or add your own. Other sellers never see your list."
     },
     "brands": {
       "title": "Your brands",
@@ -4298,7 +4298,9 @@
       "addHint": "Type to search Tallaby's brands, or create your own.",
       "searchPlaceholder": "Search brands, e.g. Nike",
       "filter": "Filter your brands",
-      "empty": "You have no brands yet. Add some from Tallaby's list or create your own."
+      "empty": "You have no brands yet. Add some from Tallaby's list or create your own.",
+      "pageTitle": "Brands",
+      "pageSubtitle": "Your own brands for organising products. Search Tallaby's ready-made list to add one in a click, or add your own. Other sellers never see your list."
     },
     "productCount": "{count, plural, =0 {No products} one {1 product} other {# products}}",
     "fromPack": "From Tallaby",
@@ -4312,21 +4314,36 @@
     "back": "Back",
     "save": "Save",
     "cancel": "Cancel",
-    "rename": "Rename",
-    "renameHint": "The new name shows everywhere this item is used.",
     "delete": "Delete",
     "deleteTitle": "Delete “{name}”?",
     "deleteBody": "{count, plural, =0 {No products use it.} one {1 product uses it; the product stays, just without this.} other {# products use it; they stay, just without this.}}",
     "added": "“{name}” added",
     "saved": "Saved",
     "deleted": "Deleted",
+    "edit": "Edit",
+    "editHint": "Changes show everywhere this item is used.",
+    "image": "Image",
+    "imageHint": "PNG, JPG or WebP, up to 5 MB. A square image looks best.",
+    "uploadImage": "Upload image",
+    "changeImage": "Change image",
+    "removeImage": "Remove",
+    "dragHandle": "Drag to reorder “{name}”",
+    "sortAz": "Sort A–Z",
+    "sorted": "Sorted A–Z",
+    "orderSaved": "Order saved",
+    "reorderHint": "Drag the handle to change the order. Your store and product form use this order.",
+    "filteringHint": "Clear the filter to reorder.",
+    "sortAzConfirmTitle": "Sort the list A–Z?",
+    "sortAzConfirmBody": "This replaces your current order.",
+    "sortAzConfirm": "Sort",
     "errors": {
       "invalidInput": "Check the name and try again.",
       "duplicate": "That's already in your list.",
       "limit": "You can keep up to {max} items in each list.",
       "notFound": "We couldn't find that item. Refresh and try again.",
       "readOnly": "Your account can't make changes right now.",
-      "generic": "Something went wrong. Try again."
+      "generic": "Something went wrong. Try again.",
+      "invalidImage": "That image can't be used. Upload it again."
     },
     "productForm": {
       "category": "My category",
@@ -4335,8 +4352,9 @@
       "none": "None",
       "emptyList": "Your list is empty",
       "hint": "From your own lists, for grouping products in your store.",
-      "manage": "Manage lists",
-      "linkFailed": "The product was saved, but your category or brand wasn't. Edit the product to set it again."
+      "linkFailed": "The product was saved, but your category or brand wasn't. Edit the product to set it again.",
+      "manageCategories": "Manage categories",
+      "manageBrands": "Manage brands"
     }
   }
 }

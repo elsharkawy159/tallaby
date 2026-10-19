@@ -14,7 +14,7 @@ export type FeeTrialFields = {
 export type FeeTrialStatus =
   /** Old seller, or an admin removed eligibility: no trial, nothing to show. */
   | { state: "none" }
-  /** Eligible; starts with the first active product or the first publish (D20). */
+  /** Eligible but no store yet (or an admin just granted it). */
   | { state: "not_started" }
   | { state: "active"; endsAt: Date; daysLeft: number }
   | { state: "ended"; endsAt: Date };
@@ -34,13 +34,13 @@ export function getFeeTrialStatus(seller: FeeTrialFields, now: Date = new Date()
   return { state: "active", endsAt, daysLeft: Math.max(1, Math.ceil((endsAt.getTime() - now.getTime()) / DAY_MS)) };
 }
 
+/** "t7" is kept for old email_deliveries rows; the 7-day trial never sends it. */
 export type FeeTrialReminderStage = "t7" | "t1";
 
 /**
- * Which reminder is due: "t1" in the last day, "t7" in the last week, else
- * none. The sender claims each stage once per seller, so a missed cron run
- * still sends it the next day, and a seller already in the last day only
- * gets "t1".
+ * Which reminder is due: "t1" in the last day, else none. The trial is only
+ * 7 days (0067), so the old one-week reminder would fire on day one. The
+ * sender claims the stage once per seller, so a missed cron run still sends it.
  */
 export function feeTrialReminderStage(
   endsAt: string | Date | null | undefined,
@@ -51,6 +51,5 @@ export function feeTrialReminderStage(
   const left = end.getTime() - now.getTime();
   if (left <= 0) return null;
   if (left <= DAY_MS) return "t1";
-  if (left <= 7 * DAY_MS) return "t7";
   return null;
 }

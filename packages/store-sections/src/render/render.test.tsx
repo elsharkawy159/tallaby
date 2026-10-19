@@ -1,33 +1,21 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import type { PageContent, SectionInstance } from "../config/schema";
+import type { ComponentNode, PageContent, SectionInstance } from "../config/schema";
 import { validateSiteConfig } from "../config/validate";
-import { collectCatalogQueries, collectContentQueries, collectFormIds } from "../core/registry";
 import { FONT_PAIRINGS, findFontPairing, storeFontFamily } from "../core/fonts";
 import { designSystemToCss, designSystemToTokens } from "../core/theme";
 import type { PublicStoreForm, RenderContext } from "../core/types";
 import { STORE_SECTIONS, storeSectionRegistry } from "../sections";
+import { FormFieldsView } from "../sections/forms";
 import { PageRenderer, SectionRenderer, SiteTheme } from "./render";
-
-const P1 = "11111111-1111-4111-8111-111111111111";
-const C1 = "22222222-2222-4222-8222-222222222222";
 
 function makeCtx(overrides: Partial<RenderContext> = {}): RenderContext {
   return {
     mode: "public",
     locale: "ar",
     dir: "rtl",
-    store: {
-      name: "متجر سارة",
-      url: "https://sara.tallaby.com",
-      contact: { phone: "01012345678", email: "hi@sara.test" },
-      social: [{ platform: "instagram", url: "https://instagram.com/sara" }],
-      policies: [{ key: "return", href: "/returns" }],
-    },
-    pages: [
-      { name: "الرئيسية", href: "/", isHome: true },
-      { name: "من نحن", href: "/about", isHome: false },
-    ],
+    store: { name: "متجر سارة", url: "https://sara.tallaby.com" },
+    pages: [{ name: "الرئيسية", href: "/", isHome: true }],
     catalog: { products: {}, categories: [] },
     Link: ({ href, className, children }) => (
       <a href={href} className={className} data-host-link>
@@ -40,219 +28,82 @@ function makeCtx(overrides: Partial<RenderContext> = {}): RenderContext {
   };
 }
 
-const instance = (sectionId: string, props: Record<string, unknown> = {}, extra: Partial<SectionInstance> = {}): SectionInstance => ({
-  id: `s-${sectionId}`,
-  sectionId,
+const node = (id: string, type: string, props: Record<string, unknown> = {}, children: ComponentNode[] = []): ComponentNode =>
+  ({ id, type, props, children }) as ComponentNode;
+
+/** A tree section: a section root holding `children`. */
+const tree = (id: string, children: ComponentNode[], extra: Partial<SectionInstance> = {}): SectionInstance => ({
+  id,
+  sectionId: "custom-section",
   version: 1,
-  props,
+  props: {},
+  componentTree: [node(`${id}-root`, "section", {}, children)],
   ...extra,
 });
 
-const html = (node: React.ReactElement) => renderToStaticMarkup(node);
+const html = (element: React.ReactElement) => renderToStaticMarkup(element);
+const render = (instance: SectionInstance, ctx = makeCtx()) => html(<SectionRenderer instance={instance} registry={storeSectionRegistry} ctx={ctx} />);
 
-describe("section library", () => {
-  it("has unique ids and every default passes its own schema", () => {
-    expect(new Set(STORE_SECTIONS.map((d) => d.id)).size).toBe(STORE_SECTIONS.length);
-    for (const definition of STORE_SECTIONS) {
-      const parsed = definition.propsSchema.safeParse(definition.defaultProps);
-      expect(parsed.success, definition.id).toBe(true);
-      for (const prop of definition.propDefinitions) expect(definition.defaultProps, `${definition.id}.${prop.key}`).toHaveProperty(prop.key);
-      for (const collection of definition.itemCollections ?? []) {
-        const withNew = { ...definition.defaultProps, [collection.key]: [collection.newItemTemplate()] };
-        expect(definition.propsSchema.safeParse(withNew).success, `${definition.id}.${collection.key}`).toBe(true);
-      }
-      expect(definition.displayName.ar && definition.displayName.en).toBeTruthy();
-    }
+describe("section registry", () => {
+  it("holds only tree sections", () => {
+    expect(STORE_SECTIONS.map((d) => d.id)).toEqual(["custom-section"]);
   });
 
-  it("lists every section for publish validation", () => {
-    const allowed = storeSectionRegistry.allowedSections();
-    expect(Object.keys(allowed).sort()).toEqual(STORE_SECTIONS.map((d) => d.id).sort());
+  it("rejects any other section at publish", () => {
     const config = {
       schemaVersion: 1,
-      pages: [{ slug: "home", isHome: true, name: "Home", content: { sections: [instance("hero-banner"), instance("custom-html")] } }],
+      pages: [{ slug: "home", isHome: true, name: "Home", content: { sections: [{ id: "s1", sectionId: "hero-banner", version: 1, props: {} }] } }],
     };
-    const result = validateSiteConfig(config, { allowedSections: allowed });
+    const result = validateSiteConfig(config, { allowedSections: storeSectionRegistry.allowedSections() });
     expect(result.success).toBe(false);
     if (!result.success) expect(result.issues.map((i) => i.code)).toContain("unknown_section");
-  });
-
-  it.each(STORE_SECTIONS.map((d) => d.id))("%s renders its defaults in Arabic and English", (id) => {
-    for (const locale of ["ar", "en"] as const) {
-      const markup = html(<SectionRenderer instance={instance(id)} registry={storeSectionRegistry} ctx={makeCtx({ locale, dir: locale === "ar" ? "rtl" : "ltr" })} />);
-      expect(markup).toContain(`data-section-type="${id}"`);
-    }
   });
 });
 
 describe("SectionRenderer", () => {
-  it("skips unknown sections", () => {
-    expect(html(<SectionRenderer instance={instance("custom-html", { html: "<script>" })} registry={storeSectionRegistry} ctx={makeCtx()} />)).toBe("");
+  it("skips unknown and removed sections", () => {
+    expect(render({ id: "s1", sectionId: "custom-html", version: 1, props: { html: "<script>" } })).toBe("");
+    expect(render({ id: "s2", sectionId: "classic-hero", version: 1, props: {} })).toBe("");
   });
 
-  it("drops invalid props and never renders dangerous links", () => {
-    const markup = html(
-      <SectionRenderer
-        instance={instance("hero-banner", { title: 42, ctaLabel: "Go", ctaHref: "javascript:alert(1)" })}
-        registry={storeSectionRegistry}
-        ctx={makeCtx()}
-      />,
-    );
+  it("never renders dangerous links", () => {
+    const markup = render(tree("s1", [node("b", "button", { label: "Go", href: "javascript:alert(1)" }), node("l", "textLink", { text: "x", href: "javascript:x" })]));
     expect(markup).not.toContain("javascript:");
-    expect(markup).not.toContain("Go</a>");
-    // A field of the wrong type is dropped; the rest of the section still renders.
-    expect(markup).not.toContain(">42<");
-    expect(markup).toContain("منتجات مختارة بعناية");
   });
 
   it("escapes seller text instead of rendering HTML", () => {
-    const markup = html(<SectionRenderer instance={instance("rich-text", { title: "<img src=x onerror=alert(1)>" })} registry={storeSectionRegistry} ctx={makeCtx()} />);
+    const markup = render(tree("s1", [node("h", "heading", { text: "<img src=x onerror=alert(1)>" })]));
     expect(markup).not.toContain("<img src=x");
     expect(markup).toContain("&lt;img");
   });
 
   it("applies the English overlay on the English site only", () => {
-    const hero = instance("hero-banner", { title: "عنوان" }, { translations: { en: { title: "Title" } } });
-    expect(html(<SectionRenderer instance={hero} registry={storeSectionRegistry} ctx={makeCtx()} />)).toContain("عنوان");
-    expect(html(<SectionRenderer instance={hero} registry={storeSectionRegistry} ctx={makeCtx({ locale: "en", dir: "ltr" })} />)).toContain("Title");
+    const section = tree("s1", [node("h", "heading", { text: "عنوان", translations: { en: { text: "Title" } } })]);
+    expect(render(section)).toContain("عنوان");
+    expect(render(section, makeCtx({ locale: "en", dir: "ltr" }))).toContain("Title");
   });
 
   it("uses the host Link for internal links and a plain anchor for external ones", () => {
-    const markup = html(<SectionRenderer instance={instance("store-footer")} registry={storeSectionRegistry} ctx={makeCtx()} />);
-    expect(markup).toContain('href="/returns" class="text-(--sf-muted) hover:text-(--sf-ink)" data-host-link');
+    const markup = render(tree("s1", [node("a", "textLink", { text: "in", href: "/about" }), node("b", "textLink", { text: "out", href: "https://instagram.com/sara" })]));
+    expect(markup).toMatch(/href="\/about"[^>]*data-host-link/);
     expect(markup).toContain('href="https://instagram.com/sara"');
     expect(markup).toContain('rel="noopener noreferrer"');
   });
 });
 
-describe("commerce sections", () => {
-  const grid = instance("product-grid", { source: "selected", productIds: [P1] });
-
-  it("asks the host for exactly the catalog it needs", () => {
-    const sections = [grid, instance("category-grid", { limit: 4 }), instance("featured-product"), instance("rich-text")];
-    expect(collectCatalogQueries(sections, storeSectionRegistry)).toEqual({
-      "s-product-grid": { kind: "products", source: "selected", categoryId: null, productIds: [P1], limit: 1 },
-      "s-category-grid": { kind: "categories", limit: 4 },
-    });
-    expect(collectCatalogQueries([instance("product-grid", { source: "category", categoryId: C1, limit: 6 })], storeSectionRegistry)).toEqual({
-      "s-product-grid": { kind: "products", source: "category", categoryId: C1, limit: 6 },
-    });
-  });
-
-  it("renders the products the host resolved, with the host's cart button", () => {
-    const ctx = makeCtx({
-      catalog: {
-        products: { "s-product-grid": [{ id: P1, title: "شنطة جلد", href: "/products/bag", image: "p/bag.jpg", price: 450, compareAtPrice: 500 }] },
-        categories: [],
-      },
-      renderAddToCart: (product) => <button data-add={product.id}>+</button>,
-    });
-    const markup = html(<SectionRenderer instance={grid} registry={storeSectionRegistry} ctx={ctx} />);
-    expect(markup).toContain("شنطة جلد");
-    expect(markup).toContain("450.00 EGP");
-    expect(markup).toContain("<s");
-    expect(markup).toContain(`data-add="${P1}"`);
-    expect(markup).toContain("https://cdn.test/p/bag.jpg");
-  });
-
-  it("shows an empty state without products", () => {
-    expect(html(<SectionRenderer instance={grid} registry={storeSectionRegistry} ctx={makeCtx()} />)).toContain("لا توجد منتجات هنا بعد.");
-  });
-
-  it("hides an unset featured product on the store but explains it in the editor", () => {
-    expect(html(<SectionRenderer instance={instance("featured-product")} registry={storeSectionRegistry} ctx={makeCtx()} />)).not.toContain("<section");
-    expect(html(<SectionRenderer instance={instance("featured-product")} registry={storeSectionRegistry} ctx={makeCtx({ mode: "edit" })} />)).toContain(
-      "اختر منتجًا",
-    );
-  });
-});
-
-describe("blog and CMS sections (P4-16, P4-11)", () => {
-  const post = {
-    id: "p1",
-    title: "كيف تختار المقاس",
-    href: "/blog/size-guide",
-    excerpt: "دليل سريع",
-    image: "https://cdn.test/cover.png",
-    publishedAt: "2026-10-01T10:00:00.000Z",
-    readingMinutes: 4,
-  };
-
-  it("blog sections are pre-bound to the store's blog; CMS sections ask only when a collection is set", () => {
-    const sections = [
-      instance("blog-latest-posts", { limit: 5 }),
-      instance("blog-featured-post"),
-      instance("cms-list", { collection: "Lookbook", limit: 4 }),
-      instance("cms-item", { collection: "faq", slug: "returns" }),
-      { ...instance("cms-list"), id: "s-empty-cms" },
-      instance("rich-text"),
-    ];
-    expect(collectContentQueries(sections, storeSectionRegistry)).toEqual({
-      "s-blog-latest-posts": { collection: "blog", limit: 5 },
-      "s-blog-featured-post": { collection: "blog", limit: 1 },
-      "s-cms-list": { collection: "lookbook", limit: 4 },
-      "s-cms-item": { collection: "faq", slug: "returns", limit: 1 },
-    });
-    // A bad collection slug is dropped, never sent to the host.
-    expect(collectContentQueries([instance("cms-list", { collection: "../x" })], storeSectionRegistry)).toEqual({});
-  });
-
-  it("shows an empty state when the blog has no published posts", () => {
-    for (const id of ["blog-latest-posts", "blog-featured-post"]) {
-      const markup = html(<SectionRenderer instance={instance(id)} registry={storeSectionRegistry} ctx={makeCtx()} />);
-      expect(markup, id).toContain("لا توجد مقالات منشورة بعد.");
-    }
-    const en = html(<SectionRenderer instance={instance("blog-latest-posts")} registry={storeSectionRegistry} ctx={makeCtx({ locale: "en", dir: "ltr", content: { items: {} } })} />);
-    expect(en).toContain("No posts published yet.");
-    expect(en).not.toContain('href="/blog"');
-  });
-
-  it("renders the posts the host resolved, linking to the post and to /blog", () => {
-    const markup = html(
-      <SectionRenderer
-        instance={instance("blog-latest-posts")}
-        registry={storeSectionRegistry}
-        ctx={makeCtx({ content: { items: { "s-blog-latest-posts": [post] } }, formatDate: () => "1 أكتوبر" })}
-      />,
-    );
-    expect(markup).toContain('href="/blog/size-guide"');
-    expect(markup).toContain('href="/blog"');
-    expect(markup).toContain("كيف تختار المقاس");
-    expect(markup).toContain("1 أكتوبر · 4 دقائق قراءة");
-  });
-
-  it("hides an unset CMS section on the store but explains it in the editor", () => {
-    expect(html(<SectionRenderer instance={instance("cms-list")} registry={storeSectionRegistry} ctx={makeCtx()} />)).not.toContain("<section");
-    expect(html(<SectionRenderer instance={instance("cms-list")} registry={storeSectionRegistry} ctx={makeCtx({ mode: "edit" })} />)).toContain("اكتب عنوان المجموعة");
-    expect(html(<SectionRenderer instance={instance("cms-list", { collection: "faq" })} registry={storeSectionRegistry} ctx={makeCtx()} />)).toContain("لا يوجد محتوى منشور هنا بعد.");
-  });
-
-  it("escapes item titles and drops unsafe item links", () => {
-    const markup = html(
-      <SectionRenderer
-        instance={instance("blog-featured-post")}
-        registry={storeSectionRegistry}
-        ctx={makeCtx({ content: { items: { "s-blog-featured-post": [{ ...post, title: "<b>x</b>", href: "javascript:alert(1)" }] } } })}
-      />,
-    );
-    expect(markup).not.toContain("javascript:");
-    expect(markup).toContain("&lt;b&gt;x&lt;/b&gt;");
-  });
-});
-
 describe("PageRenderer and theme", () => {
   it("renders header, sections in order, and footer", () => {
-    const content: PageContent = { sections: [instance("hero-banner"), instance("faq")] };
+    const text = (id: string) => node(`${id}-t`, "text", { text: id });
+    const content: PageContent = { sections: [tree("a", [text("A")]), tree("b", [text("B")])] };
     const markup = html(
-      <PageRenderer content={content} header={instance("store-header")} footer={instance("store-footer")} registry={storeSectionRegistry} ctx={makeCtx()} />,
+      <PageRenderer content={content} header={tree("hdr", [text("HDR")])} footer={tree("ftr", [text("FTR")])} registry={storeSectionRegistry} ctx={makeCtx()} />,
     );
-    const order = ["store-header", "hero-banner", "faq", "store-footer"].map((id) => markup.indexOf(`data-section-type="${id}"`));
+    const order = ["HDR", ">A<", ">B<", "FTR"].map((needle) => markup.indexOf(needle));
     expect(order.every((i) => i >= 0)).toBe(true);
-    expect([...order].sort((a, b) => a - b)).toEqual(order);
-    expect(markup).toContain("من نحن");
+    expect([...order].sort((x, y) => x - y)).toEqual(order);
   });
 
-  it("maps the design system onto the Classic tokens", () => {
+  it("maps the design system onto the store tokens", () => {
     const css = designSystemToCss({ colors: { primary: "#ff0000", background: "#ffffff" }, spacing: { borderRadius: 4 } });
     expect(css).toBe(
       ".sf-site { --sf-brand: #ff0000; --primary: #ff0000; --sf-paper: #ffffff; --background: #ffffff; --sf-brand-ink: #ffffff; --primary-foreground: #ffffff; --sf-radius: 4px; }",
@@ -265,7 +116,6 @@ describe("PageRenderer and theme", () => {
   it("uses dark text on a light brand color (P4-13)", () => {
     const tokens = designSystemToTokens({ colors: { primary: "#ffe066" }, spacing: {} });
     expect(tokens["--sf-brand-ink"]).toBe("#10242b");
-    // Non-hex colors keep the Classic ink.
     expect(designSystemToTokens({ colors: { primary: "oklch(0.7 0.1 200)" }, spacing: {} })["--sf-brand-ink"]).toBeUndefined();
   });
 
@@ -279,61 +129,25 @@ describe("PageRenderer and theme", () => {
     expect(findFontPairing({}).id).toBe("classic");
     expect(FONT_PAIRINGS.every((p) => storeFontFamily(p.heading) && storeFontFamily(p.body))).toBe(true);
   });
-
-  it("renders footer social links as labelled icons (P4-15)", () => {
-    const markup = html(<SectionRenderer instance={instance("store-footer")} registry={storeSectionRegistry} ctx={makeCtx()} />);
-    expect(markup).toContain('href="https://instagram.com/sara"');
-    expect(markup).toContain('aria-label="إنستجرام"');
-    expect(markup).toContain("<svg");
-  });
 });
 
-describe("contact-form (P4-10)", () => {
-  const F1 = "33333333-3333-4333-8333-333333333333";
-  const F2 = "44444444-4444-4444-8444-444444444444";
+describe("form fields (storefront forms and editor preview)", () => {
   const form: PublicStoreForm = {
-    id: F1,
+    id: "33333333-3333-4333-8333-333333333333",
     fields: [
       { key: "name", type: "text", label: "الاسم", required: true, width: "half" },
       { key: "email", type: "email", label: "البريد <b>", required: false, width: "half" },
       { key: "topic", type: "select", label: "الموضوع", required: false, width: "full", options: ["طلب", "أخرى"] },
-      { key: "agree", type: "checkbox", label: "أوافق", required: true, width: "full" },
     ],
     submitLabel: "",
     successMessage: "",
   };
 
-  it("collects the form ids a page shows (and ignores bad ids)", () => {
-    const sections = [instance("contact-form", { formId: F1 }), { ...instance("contact-form", { formId: "x" }), id: "s2" }, instance("faq")];
-    expect(collectFormIds(sections, storeSectionRegistry)).toEqual([F1]);
-  });
-
-  it("renders the host's interactive form for a resolved form", () => {
-    const markup = html(
-      <SectionRenderer
-        instance={instance("contact-form", { formId: F1 })}
-        registry={storeSectionRegistry}
-        ctx={makeCtx({ forms: { [F1]: form }, renderForm: (f, id) => <form data-host-form={`${f.id}:${id}`} /> })}
-      />,
-    );
-    expect(markup).toContain(`data-host-form="${F1}:s-contact-form"`);
-  });
-
-  it("shows nothing on the store for a form the host did not resolve (foreign, disabled or deleted)", () => {
-    const ctx = makeCtx({ forms: { [F1]: form }, renderForm: () => <form /> });
-    expect(html(<SectionRenderer instance={instance("contact-form", { formId: F2 })} registry={storeSectionRegistry} ctx={ctx} />)).not.toContain("<section");
-    expect(html(<SectionRenderer instance={instance("contact-form")} registry={storeSectionRegistry} ctx={ctx} />)).not.toContain("<form");
-  });
-
-  it("draws a static, escaped preview in the editor", () => {
-    const markup = html(
-      <SectionRenderer instance={instance("contact-form", { formId: F1 })} registry={storeSectionRegistry} ctx={makeCtx({ mode: "edit", forms: { [F1]: form } })} />,
-    );
+  it("draws escaped, disabled fields for a preview", () => {
+    const markup = html(<FormFieldsView form={form} idPrefix="f" locale="ar" disabled />);
     expect(markup).toContain('name="name"');
     expect(markup).toContain("disabled");
     expect(markup).toContain("البريد &lt;b&gt;");
     expect(markup).toContain("<option");
-    expect(markup).toContain("إرسال");
-    expect(html(<SectionRenderer instance={instance("contact-form")} registry={storeSectionRegistry} ctx={makeCtx({ mode: "edit" })} />)).toContain("اختر نموذجًا");
   });
 });

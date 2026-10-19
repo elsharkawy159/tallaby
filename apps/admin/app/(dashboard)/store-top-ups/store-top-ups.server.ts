@@ -41,6 +41,7 @@ export async function reviewStoreTopUpAction(input: {
     const result = await reviewManualStoreTopUp(actorId, input);
     if (!result.success) return { success: false, error: ERRORS[result.error] ?? "Something went wrong." };
     revalidatePath("/store-top-ups");
+    revalidatePath("/wallets", "layout");
     return {
       success: true,
       message:

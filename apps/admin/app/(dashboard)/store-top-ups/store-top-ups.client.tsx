@@ -106,7 +106,8 @@ export function StoreTopUpsList({ rows, view }: { rows: TopUpWithProof[]; view: 
   );
 }
 
-function ReviewDialog({
+/** Approve (credits the store wallet) or reject one manual top-up. Also used on /wallets. */
+export function ReviewDialog({
   row,
   decision,
   onClose,

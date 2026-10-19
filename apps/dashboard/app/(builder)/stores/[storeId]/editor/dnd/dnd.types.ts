@@ -6,7 +6,7 @@
  * a payload and a canvas probe into a `DropPlan`.
  */
 import type { ElementType } from "@workspace/store-sections/render";
-import type { SectionRef } from "../editor.store";
+import type { SectionRef } from "../state/editor.store";
 import type { PartSlotHit } from "./part-drop.lib";
 
 /** A photo from the Explore tab (imported into the store's media library on drop). */

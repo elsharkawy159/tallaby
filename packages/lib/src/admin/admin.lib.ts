@@ -33,6 +33,16 @@ export const ADMIN_AUDIT_ACTIONS = [
   "wallet_adjustment",
   "approve_top_up",
   "reject_top_up",
+  // Phase 9B (docs/admin-saas.md)
+  "deactivate_coupon",
+  "reactivate_coupon",
+  "disconnect_integration",
+  "clear_integration_error",
+  "remove_domain",
+  "unpublish_cms_item",
+  "set_ad_status",
+  "update_template",
+  "set_default_template",
 ] as const;
 
 export type AdminAuditAction = (typeof ADMIN_AUDIT_ACTIONS)[number];

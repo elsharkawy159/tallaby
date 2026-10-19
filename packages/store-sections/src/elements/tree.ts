@@ -17,7 +17,7 @@ export function createNode(type: ElementType, makeId: MakeId): ComponentNode {
     id: makeId(),
     type,
     props: structuredClone(definition.defaultProps),
-    children: (definition.defaultChildren?.() ?? []).map((child) => fromTemplate(child as NodeTemplate, makeId)),
+    children: (definition.defaultChildren?.() ?? []).map((child) => fromTemplate(child, makeId)),
     ...(definition.defaultStyle && { style: { ...definition.defaultStyle } }),
     ...(definition.defaultBreakpointStyles && { breakpointStyles: structuredClone(definition.defaultBreakpointStyles) }),
   };
@@ -27,6 +27,17 @@ export function createNode(type: ElementType, makeId: MakeId): ComponentNode {
 export function fromTemplate(template: NodeTemplate, makeId: MakeId): ComponentNode {
   const { children, ...rest } = structuredClone(template);
   return { ...rest, id: makeId(), children: (children ?? []).map((child) => fromTemplate(child, makeId)) };
+}
+
+/**
+ * The tree of a new tree section holding `nodes`: a `section` root around
+ * them (a moved section root is used as it is).
+ */
+export function newTreeSection(nodes: ComponentNode[], makeId: MakeId): ComponentNode[] {
+  if (nodes.length === 1 && nodes[0]!.type === "section") return [nodes[0]!];
+  const root = createNode("section", makeId);
+  const tree = [{ ...root, children: nodes.filter((node) => node.type !== "section") }];
+  return withinLimits(tree) ? tree : [];
 }
 
 /** Deep copy with new ids (paste, duplicate). */
@@ -86,12 +97,15 @@ function isLinkInside(nodes: readonly ComponentNode[]): boolean {
 export function canContain(nodes: readonly ComponentNode[], parentId: string | null, child: ComponentNode): boolean {
   const childDef = getElementDefinition(child.type);
   if (!childDef) return false;
-  if (parentId === null) return child.type !== "listItem";
+  // A section is the single root of a tree section, never nested.
+  if (child.type === "section") return parentId === null && nodes.length === 0;
+  if (parentId === null) return child.type !== "listItem" && child.type !== "accordionItem";
   const parent = findNode(nodes, parentId);
   const parentDef = parent && getElementDefinition(parent.type);
   if (!parent || !parentDef?.container) return false;
   if (parentDef.childTypes && !parentDef.childTypes.includes(childDef.type)) return false;
   if (child.type === "listItem" && parent.type !== "list") return false;
+  if (child.type === "accordionItem" && parent.type !== "accordion") return false;
   const path = findPath(nodes, parentId) ?? [];
   const insideLink = path.some((id) => LINK_TYPES.includes(findNode(nodes, id)?.type as ElementType));
   if (insideLink && (LINK_TYPES.includes(childDef.type) || isLinkInside(child.children))) return false;
@@ -119,7 +133,13 @@ function mapChildren(
 }
 
 /** Inserts `node` at `index` (end when omitted). Unchanged when not allowed or over the limits. */
-export function insertNode(nodes: readonly ComponentNode[], parentId: string | null, node: ComponentNode, index?: number): ComponentNode[] {
+export function insertNode(nodes: readonly ComponentNode[], target: string | null, node: ComponentNode, index?: number): ComponentNode[] {
+  // In a tree section everything lives inside its `section` root.
+  const root = nodes[0]?.type === "section" ? nodes[0] : null;
+  const redirect = target === null && root !== null && node.type !== "section";
+  const parentId = redirect ? root.id : target;
+  // A root-level slot is before (0) or after (1) the section; inside it that is its start or end.
+  if (redirect && index !== undefined) index = index <= 0 ? 0 : undefined;
   if (!canContain(nodes, parentId, node)) return [...nodes];
   const next = mapChildren(nodes, parentId, (children) => {
     children.splice(index === undefined ? children.length : Math.max(0, Math.min(index, children.length)), 0, node);

@@ -1,18 +1,19 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { useTranslations } from "next-intl";
 import { CopyPlus, Eye, EyeOff, GripVertical, ImagePlus, Trash2, X } from "lucide-react";
 import { useStore } from "zustand";
 import type { SectionInstance } from "@workspace/store-sections";
-import { storeSectionRegistry, updateNode } from "@workspace/store-sections/render";
+import { storeSectionRegistry, updateNode, type StyleValues } from "@workspace/store-sections/render";
 import { Button } from "@workspace/ui/components/button";
-import { ControlRow, Segmented } from "../controls/style-controls.client";
-import { ContainerControls, ImageControls, SpacingControls, TypographyControls, type StylePatch } from "../controls/style-groups.client";
-import { styleTargetOf, type EditorCommands } from "../editor-commands.lib";
-import { getNode, partField, refOf, setNodeProp, withTree } from "../editor-selection.lib";
-import { readEffectiveStyle, readOwnStyle, setStyle, styleKindOf } from "../editor-style.lib";
-import type { EditorStore } from "../editor.store";
+import { ControlRow, Segmented } from "../inspector/controls/style-controls.client";
+import { ContainerControls, ImageControls, SpacingControls, TypographyControls, type StylePatch } from "../inspector/controls/style-groups.client";
+import { styleTargetOf, type EditorCommands } from "../lib/editor-commands.lib";
+import { getNode, partField, refOf, setNodeProp, withTree } from "../lib/editor-selection.lib";
+import { readEffectiveStyle, readOwnStyle, setStyle, styleKindOf } from "../lib/editor-style.lib";
+import type { EditorStore } from "../state/editor.store";
+import { styleFromComputed } from "./canvas-handles.lib";
 import type { CanvasBox } from "./editor-overlay.client";
 
 const WIDTH = 300;
@@ -50,6 +51,7 @@ export function ElementPopover({
   bounds,
   instance,
   onRequestImage,
+  selectedElement,
 }: {
   store: EditorStore;
   commands: EditorCommands;
@@ -58,6 +60,7 @@ export function ElementPopover({
   instance: SectionInstance | null;
   onRequestImage: () => void;
   uiLocale: string;
+  selectedElement: () => HTMLElement | null;
 }) {
   const t = useTranslations("storeEditor.popover");
   const selection = useStore(store, (s) => s.selection);
@@ -74,13 +77,28 @@ export function ElementPopover({
     return () => observer.disconnect();
   }, [closed]);
 
+  // What the element looks like now (its preset, theme or inherited values), read after each change.
+  const [shown, setShown] = useState<StyleValues>({});
+  useEffect(() => {
+    const element = selectedElement();
+    const view = element?.ownerDocument.defaultView;
+    const next = element && view
+      ? styleFromComputed(view.getComputedStyle(element), {
+          rootPx: Number.parseFloat(view.getComputedStyle(element.ownerDocument.documentElement).fontSize) || 16,
+          rtl: view.getComputedStyle(element).direction === "rtl",
+        })
+      : {};
+    setShown((prev) => (JSON.stringify(prev) === JSON.stringify(next) ? prev : next));
+  }, [selectedElement, instance, device, anchor.width, anchor.height]);
+
   if (closed || !selection || !instance || !bounds) return null;
 
   const node = getNode(instance, selection.nodeId);
   const field = selection.part ? partField(storeSectionRegistry.get(instance.sectionId), selection.part) : undefined;
   const target = styleTargetOf(selection);
   const kind = styleKindOf(target, { nodeType: node?.type, fieldType: field?.type, partKey: selection.part?.split(".").pop() });
-  const style = readEffectiveStyle(instance, target, device);
+  // Its own values win; the rest show what applies now, so e.g. a medium button shows "M" selected.
+  const style = { ...shown, ...readEffectiveStyle(instance, target, device) };
   const hidden = readOwnStyle(instance, target, device).hidden === true;
   const state = store.getState();
   const sectionRef = refOf(selection);
@@ -139,7 +157,8 @@ export function ElementPopover({
         <ControlRow label={t("variant")} className="mt-2.5">
           <Segmented
             label={t("variant")}
-            value={(["solid", "outline", "light"] as const).find((v) => v === node.props.variant)}
+            // The renderer draws a solid button when none is set.
+            value={(["solid", "outline", "light"] as const).find((v) => v === (node.props.variant ?? "solid"))}
             onChange={(variant) =>
               state.editSection(sectionRef, (i) =>
                 withTree(i, (nodes) => updateNode(nodes, node.id, (n) => setNodeProp(n, "variant", variant ?? "solid", { locale: state.locale, defaultLocale: state.defaultLocale }))),

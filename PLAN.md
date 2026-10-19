@@ -1268,9 +1268,11 @@ Unpublish ([Proposed], P4-04): sets `site_status = 'unpublished'` and keeps `pub
 ### 13.1 Agreed rules (do not change without the user)
 
 - Account and store creation are free. No wallet deposit is required to register, create a store, publish or sell.
-- **New sellers** get 30 days with no platform fee, starting when the store first goes live (§13.5). The trial is not restarted by republishing, unpublishing, changing templates or retried callbacks. **Existing sellers do not get a trial** (D5).
-- **Fee for every seller, old and new, on every order** (D1): **fee = max(EGP 5, 2% × eligible subtotal)** per successful order, per seller. Shipping is excluded. Payment-provider fees and fulfillment charges are separate. Per-service fees (fulfillment, ads, themes…) will be designed later. The plan keeps one fee plan key so more can be added.
-- Examples (tests must cover these): EGP 100 → 5.00; EGP 250 → 5.00; EGP 500 → 10.00; EGP 1,000 → 20.00. Edge cases: 250.00 → exactly 5.00; 251.00 → 5.02; 0 → 0 (no order).
+> **Changed by the owner on 2026-10-18 (migration `0067`).** This replaces the 2%/min 5 fee and the 30-day trial below wherever they still appear in this plan: Tallaby's only profit per order is a **flat EGP 5 per seller per order** (fee plan `flat_5`), taken from the store wallet **when the order is delivered**. The wallet keeps going down at 0 or below (−5, −10, …). **Every seller account** gets **7 free days counted from its first store's `created_at`**. Whether an order is free depends on when it was **placed** (D4): an order placed on day 6 and delivered on day 9 is free. Orders placed from day 8 pay EGP 5. 0067 applied the rule to all existing sellers too, ending running 30-day trials. A negative wallet opens a top-up pop-up in the dashboard once per session.
+
+- **Every seller** gets 7 days with no platform fee, from the `created_at` of their first store (§13.5, changed 2026-10-18). The trial is not restarted by later stores, republishing, unpublishing, changing templates or retried callbacks.
+- **Fee for every seller, old and new, on every order** (D1): **fee = a flat EGP 5** per successful (delivered) order, per seller (changed 2026-10-18, was max(EGP 5, 2%)). It is capped at the seller's eligible subtotal for orders under EGP 5. Payment-provider fees and fulfillment charges are separate. Per-service fees (fulfillment, ads, themes…) will be designed later. The plan keeps one fee plan key so more can be added.
+- Examples (tests cover these): EGP 100 → 5.00; EGP 250 → 5.00; EGP 500 → 5.00; EGP 1,000 → 5.00. Edge cases: 3.00 → 3.00 (cap); 0 → 0 (no order).
 - Each seller has a **store wallet** that can be positive or negative. It updates automatically. Sellers can top it up at any time (Kashier first) to cover fees and future paid services (product ads, theme store, …) (D10).
 - **Refunds are deferred** (D3). They will be handled together with the Kashier integration work. Until then, refunds keep today's behaviour, and no automatic wallet or fee adjustment is built.
 
@@ -1360,6 +1362,8 @@ The client can never mark a top-up as paid. The same idea is already proven for 
 **Ads paid from the wallet.** `ad_campaign_requests` today records Vodafone Cash payments. Add a `wallet` payment method option where submitting the request posts a `service_charge` (reference `ad_request:<id>`). Rejection by an admin posts a compensating `adjustment` (refund of the charge) until the refunds work replaces it. Vodafone Cash stays available.
 
 ### 13.5 Trial lifecycle (P6-03, P6-07)
+
+> **Current rule (0067, owner 2026-10-18):** the trial is 7 days per seller account, from the first store's `created_at`. A `stores` AFTER INSERT trigger calls `start_fee_trial_if_needed`, which always writes `[min(stores.created_at), + 7 days)` once (trigger value `store_created`). The publish and product-active callers below still exist but are no-ops once the trial is set. The T-7 reminder is gone; only the T-1 email is sent. The text below describes the earlier 30-day design.
 
 - **Eligibility (D5, decided):** all new sellers (`fee_trial_eligible = true` at signup). Existing sellers are not eligible. Admins may grant eligibility manually before a trial starts.
 - **Start.** The brief says "when the seller first publishes". Under D7 a new seller's store is live from signup, and they can sell as soon as they add a product even if they never open the builder. If the trial started only on a builder Publish, a seller who never uses the builder would never start the trial, and so would never pay fees. **Recommended rule ([Decision] D20):** the trial starts at the **first of** (a) the first builder Publish, or (b) the first moment the seller has an active product (store becomes sellable). Implement one function, `startFeeTrialIfNeeded(tx, sellerId, trigger)`, using the conditional update in §11.9. The trial is per **seller account**: the first store to go live starts it, and later stores do not start a new one (D25). Call it from `publishStoreSite` and from the product-status transitions to `active` (dashboard product actions and admin product approval). Changing the rule then only means changing which callers run it.
@@ -1968,6 +1972,10 @@ Each task lists: **ID · Priority · Depends on**, then Files (existing → veri
 
 **P4-17 · P2 · deps: P4-06** Website › Pages (`/stores/[storeId]/website/pages`): page list outside the editor (rename, reorder, SEO, navigation visibility), sharing the P4-04 actions.
 
+### Phase 4B — Website editor upgrade (owner request 2026-10-18)
+
+The full design and task list are in [`docs/website-builder.md`](docs/website-builder.md). In short: make the editor work like the Valorcy reference (tab rail, Add panel, Layers, Content/Style inspector, canvas hover/selection/inline editing, shortcuts). Keep **one pre-built section per category**, with layout variants and a shared section style. Add **elements** and a `custom-section` that renders the existing `componentTree` field safely. Tasks **P4B-01 … P4B-14**. There is no migration (all data fits in `SiteConfig` v1) and no change to Tallaby Classic. `@dnd-kit` (already approved) is added only after the P4B-12 spike.
+
 ---
 
 ### Phase 5 — Independent storefront rendering (host → store)
@@ -2230,6 +2238,22 @@ Each task lists: **ID · Priority · Depends on**, then Files (existing → veri
 
 ---
 
+### Phase 9B — Admin SaaS alignment (owner request 2026-10-18)
+
+The full design and task list are in [`docs/admin-saas.md`](docs/admin-saas.md). In short, make `apps/admin` show and manage everything sellers create in the dashboard:
+
+- Remove Pricing calculator and External orders from the sidebar (code kept in comments).
+- Group the sidebar from a tested config, with Sellers directly above Customers.
+- Show one fulfillment row per seller, with a detail page that has a tab per service (Storage, Packaging, Delivery, Customer service, Returns).
+- Show all coupons (platform, sellers, affiliates).
+- Add a stores directory and a tabbed store detail (website, catalog, payments and shipping, integrations, forms, blog and CMS, media, audit).
+- Make the seller detail tabbed, loading only the open tab.
+- Add pages for integrations, templates, domains, ad campaigns (closes the P6-11 gap) and the audit log, plus an action centre with SaaS KPIs on the home page.
+
+Performance comes from streaming, one SQL round-trip per list and per-tab loading. Only reference data is Data-Cached; every admin write is audited and broadcasts its invalidation tags. There is one migration, `0069_admin_saas.sql`: `admin_audit_log.seller_id` becomes nullable, plus target columns and indexes. It needs owner approval before it goes to staging. Tasks are **P9B-01 … P9B-14**. Decisions D-A1…D-A6 are in that doc's §6.
+
+---
+
 ### Phase 10 — Domain repositioning and marketing content (gated by D8)
 
 **P10-01 · P2** `/sell` content rewrite per §16 (AR first, brand **طلبي**; no unsupported claims).
@@ -2394,6 +2418,24 @@ Tick each box when its acceptance is met, and add the date and commit.
 - [x] P4-16 Blog — 2026-10-18, `643feae`
 - [x] P4-17 Pages list — 2026-10-18, `34b6684`
 
+**Phase 4B** (website editor upgrade, [`docs/website-builder.md`](docs/website-builder.md))
+- [x] P4B-01 Element model + style whitelist (2026-10-18; part styles in `instance.style.parts`, see §23)
+- [x] P4B-02 Element renderer + `custom-section` (2026-10-18; store elements and video deferred)
+- [x] P4B-03 Editor shell like Valorcy (rail, panels, Content/Style inspector) (2026-10-18)
+- [x] P4B-04 Selection + canvas overlays (2026-10-18)
+- [~] P4B-05 Section library: style, layouts and presets (owner's section library brief, 2026-10-18; **built as presets over layout variants**, see §23). Phase 1 foundations `64ef692`, phase 2 library UI + inspector `264be31` done; owner's interim step done: one designed section per category (`sections/library/`) and an accordion Add panel; phase 3 (real data, empty states, refresh), phases 4–5 (layouts for all 15 categories, ~70 presets) and phase 6 (templates, docs) still to do
+- [x] P4B-06 Add panel with live previews (2026-10-18, owner request: an accordion per library category with every insertable section drawn live; no layout variants yet, see §23)
+- [x] P4B-07 Elements palette + layout presets (2026-10-18)
+- [x] P4B-08 Layers navigator (2026-10-18; no drag and no virtualisation yet)
+- [x] P4B-09 Style panel (per-device) (2026-10-18)
+- [x] P4B-10 Inline editing + image replace (2026-10-18)
+- [x] P4B-11 Clipboard, context menu, shortcuts, quick insert (2026-10-18)
+- [x] P4B-12 Drag and drop (2026-10-18: one `@dnd-kit/core` 6.3.1 + `sortable` 10.0.0 context for Add › Elements/Sections, Explore, Images, Layers and canvas moves; canvas targets from the frame's markers; see §23. Owner still to do a real-mouse/touch check)
+- [ ] P4B-13 Convert section to custom (**deferred** to the sections plan)
+- [x] P4B-14 Brand panel in the editor (2026-10-18; themes, colours, fonts, radius/width/spacing on the same draft as Website › Design system, see §23)
+- [x] P4B-15 Templates, Explore and Forms tabs in the editor (2026-10-18, owner request; not in the original plan, see §23)
+- [x] P4B-16 Movable parts in pre-built sections: slots + item drag for the Content sections (2026-10-18, owner request; not in the original plan, see §23)
+
 **Phase 5**
 - [x] P5-00 Host → store resolution — 2026-10-17, `dd46b73` (catalog `selected` filtering deferred with the picker, see note)
 - [x] P5-01 Published rendering + custom page routes — 2026-10-17, `72d9432` (CMS routes come with P4-11)
@@ -2438,6 +2480,22 @@ Tick each box when its acceptance is met, and add the date and commit.
 - [ ] P9-05 Pilot rollout
 - [ ] P9-06 Docs updated
 
+**Phase 9B** (admin SaaS alignment, [`docs/admin-saas.md`](docs/admin-saas.md))
+- [x] P9B-01 Hide Pricing calculator and External orders — 2026-10-18 (uncommitted)
+- [x] P9B-02 Grouped sidebar config (Sellers above Customers) — 2026-10-18 (uncommitted)
+- [x] P9B-03 Admin infra: `0069`, tags, invalidation descriptors, shared queue counts — 2026-10-18 (`0069` written, not applied)
+- [x] P9B-04 Fulfillment: one row per seller + per-service detail — 2026-10-18
+- [x] P9B-05 Coupons: platform, seller and affiliate coupons — 2026-10-18
+- [x] P9B-06 Stores directory + store detail — 2026-10-18
+- [x] P9B-07 Seller detail tabs + sellers list columns — 2026-10-18
+- [x] P9B-08 Integrations hub — 2026-10-18
+- [x] P9B-09 Ad campaigns admin — 2026-10-18
+- [x] P9B-10 Domains — 2026-10-18 (needs `STOREFRONT_VERCEL_*` in the admin env)
+- [x] P9B-11 Templates — 2026-10-18 (writes need `0069`)
+- [x] P9B-12 Action centre + SaaS KPIs — 2026-10-18
+- [x] P9B-13 Audit log page — 2026-10-18
+- [x] P9B-14 Security pass on the new admin surface — 2026-10-18 (grep checks; full P9-04 review still open)
+
 **Phase 10**
 - [ ] P10-01 `/sell` rewrite
 - [ ] P10-02 `MARKETING_PROJECT.md` facts
@@ -2446,8 +2504,9 @@ Tick each box when its acceptance is met, and add the date and commit.
 **Global confirmations (from the planning brief)**
 - [x] The existing default storefront template is kept (§3.6, §8.1, P4-03). No new default template is designed.
 - [x] Signup is minimal and asks for no fulfillment choice (§6).
-- [x] The 30-day trial is for new sellers (D5), per seller account, starts when their first store goes live, and is never restarted (§11.9, §12, §13.5, P6-03). The exact trigger is D20: first builder Publish or first active product.
-- [x] The fee is max(EGP 5, 2% of the eligible subtotal), shipping excluded, for all old and new sellers (§13, D1).
+- [x] ~~The 30-day trial is for new sellers (D5) … first builder Publish or first active product (D20).~~ **Replaced 2026-10-18 (0067):** a 7-day trial for every seller account, from the first store's `created_at`, never restarted (§13.1, §13.5).
+- [x] ~~The fee is max(EGP 5, 2% of the eligible subtotal).~~ **Replaced 2026-10-18 (0067):** a flat EGP 5 per seller per order, taken from the store wallet on delivery, for all old and new sellers (§13.1, D1).
+- [x] A negative store wallet opens a top-up pop-up in the dashboard once per session (2026-10-18).
 - [x] There is a store wallet per seller that can go negative, with automatic entries and Kashier top-ups (§11.10, §13.4, P6-05 to P6-11).
 - [x] Website Design and Apps sidebar groups are specified (§7).
 - [x] The reference builder (`D:programming projectssaasappsdashboard`, identical to the copied components) was inspected (§5, D9 resolved).
@@ -2604,7 +2663,7 @@ After P1-08 and P1-01 (`3289639`), typecheck and test match the baseline. `@work
 ### 2026-10-18 — Marketing website (`apps/marketing`, owner request, outside the task list)
 
 - New Next.js 16.3.3 app `apps/marketing` (port 3004, `[locale]` routing, Arabic default, shared `@workspace/ui`), ported from the Claude Design project "Marketing Website": home, templates + template detail, pricing, blog + post, about, careers, contact, FAQ, terms, privacy, follow-us, sitemap/robots. Owner chose a separate app over reusing ecommerce routes (ecommerce already has /about, /contact, /faq, …; `/sell` had someone else's uncommitted edits and was not touched).
-- **Copy differs from §13 on purpose:** the owner chose to ship the design's "flat 5 EGP per order, no percentage" copy (2026-10-18). Fee code is unchanged (`platform-fee.lib.ts` still max(5, 2%)). `lib/pricing.lib.ts` only drives the page calculators. Revisit before launch so the site and the charge match.
+- **Copy differs from §13 on purpose:** the owner chose to ship the design's "flat 5 EGP per order, no percentage" copy (2026-10-18). Fee code is unchanged (`platform-fee.lib.ts` still max(5, 2%)). `lib/pricing.lib.ts` only drives the page calculators. Revisit before launch so the site and the charge match. **Resolved 2026-10-18:** the fee code is now the flat EGP 5 too (0067).
 - **Signup:** the "Create your store" dialog creates the account and primary store with the same flow as the dashboard signup (`ensureSellerAccount`, signed `SIGNUP_INTENT_SECRET` cookie, phone required per D6, Google via `/api/auth/callback` on the marketing host), then sends the seller to the dashboard. The live link check uses `checkStoreSubdomain`. Intent helpers are copied from `apps/dashboard/app/signup` (keep in sync). Dashboard `/signup` now also accepts `?subdomain=` to prefill.
 - Contact form writes to `contacts` (same table as the marketplace form). Newsletter is UI only (no table). Careers has no roles listed (owner request).
 - Env / config to finish: `NEXT_PUBLIC_SITE_URL` in `apps/marketing/.env` points at the dashboard; set it to the marketing origin. Add the marketing `/api/auth/callback` URL to the Supabase redirect allow-list. Optional `NEXT_PUBLIC_DASHBOARD_URL`, `NEXT_PUBLIC_MARKETPLACE_URL`.
@@ -2778,3 +2837,238 @@ After P1-08 and P1-01 (`3289639`), typecheck and test match the baseline. `@work
   - Approve it in admin › Store top-ups and confirm the balance rises once.
   - Reject a second one with a reason and confirm the seller sees it.
 - **Production:** needs `0066`.
+
+### 2026-10-18 — Website editor upgrade planned (Phase 4B, owner request)
+
+- Plan written in `docs/website-builder.md`; no code changed.
+- Findings:
+  - `SiteConfig` already stores `componentTree`, node `style` and `breakpointStyles`, and sanitizes them, but nothing renders or edits them yet.
+  - The editor selects whole sections only.
+  - Categories hold 1–6 sections each.
+- Planning calls (listed in §8 of the doc, owner can override):
+  - Pre-built sections stay prop-based, with "convert to custom" for full control.
+  - Superseded sections are hidden from the Add panel, not deleted.
+  - There is no map element and there are no raw form inputs.
+  - YouTube/Vimeo embeds use a fixed template.
+  - Interactive elements are CSS-only.
+  - `@dnd-kit` is added only after a spike.
+
+### 2026-10-18 — Flat EGP 5 fee, 7-day trial from the first store, negative-wallet pop-up (owner decision)
+
+- **Business model changed by the owner** (§13.1 note):
+  - Tallaby's only profit per order is a **flat EGP 5 per seller per order**, taken from the store wallet when the order is delivered. A wallet at 0 or below keeps going down (−5, −10, …).
+  - **7 free days** per seller account, counted from the first store's `created_at`.
+- **Owner answers:**
+  - The trial is per account (later stores don't restart it).
+  - The order's **placed** date decides whether it is free (D4 kept).
+  - The new rule applies to **all** sellers: 0067 ends running 30-day trials and admin extensions.
+  - The pop-up shows **once per browser session** and can be closed.
+- **Code:**
+  - `platform-fee.lib.ts`: plan `flat_5` (`rateBps 0`, `minPiastres 500`). The fee is still capped at the seller's line total under EGP 5, and `FEE_TRIAL_DAYS = 7`. Unknown or old plan keys resolve to `flat_5`.
+  - `creditSellerOnDelivery` is unchanged: it already posts the `fee` entry on delivery, and negative balances are allowed.
+  - Migration **`0067_flat_fee_7_day_trial.sql`** (written, **not applied**):
+    - Moves `fee_plan` to `flat_5` (CHECK and DEFAULT).
+    - Adds the trigger value `store_created`.
+    - Rewrites `start_fee_trial_if_needed` to always use `[min(stores.created_at), +7 days)`.
+    - Adds a `stores` AFTER INSERT trigger.
+    - Backfills every seller with a store (eligible = true, new window).
+  - Schema mirror updated.
+  - Trial reminders: the T-7 stage is no longer sent (it would fire on day one); the T-1 email is kept, and the cron selects only the last day.
+  - Dashboard:
+    - `NegativeWalletDialog` (`components/layout/negative-wallet-dialog.client.tsx`) in the `(main)` layout. It is hidden on `/wallet`, and its **Top up now** button goes to `/wallet?topup=1`, which opens the top-up dialog (`TopUpButton defaultOpen`).
+    - Copy updated in `ar.json`/`en.json` (home trial card, wallet "how the fee works", the new `negativeWalletDialog` strings), the trial reminder emails and the admin labels.
+  - Docs: `PROJECT.md` §8, `CLAUDE.md` rules 6–7, this plan §13.1, §13.5 and §22.
+- **Checks:**
+  - Unit tests: lib 400 pass (fee and trial tests rewritten for flat 5 and 7 days), dashboard 122 pass, ecommerce 126 pass, emails and db pass.
+  - DB integration tests (`fee-trial`, `place-order-fee`, `admin`, `ensure-seller-account`) are updated but **were not run**: no `TEST_DATABASE_URL` in this session, and 0067 must be applied to the test database first.
+  - Typecheck: lib and dashboard are clean. admin (`app/layout.tsx`) and ecommerce (`product-details.tsx`, `profile.chunks.tsx`) fail only on existing errors in files this change didn't touch.
+- **Manual check (owner):**
+  - Apply 0067 on staging.
+  - Place an order with a store created more than 7 days ago, mark it delivered, and confirm the wallet drops by exactly 5.00.
+  - With a 0 balance, confirm it reaches −5.00 and the pop-up opens once per session.
+  - **Top up now** should open the top-up dialog.
+- **Production:** needs `0067`. Sellers on a 30-day trial lose its remaining days when it is applied.
+
+### 2026-10-18 — Sidebar reordered: operations | grow & configure | account & help (owner request)
+
+- **New order** (`components/dashboard/sidebar.config.ts`, `components/layout/dashboard-routes.lib.ts`): Dashboard · Products · Orders · Shipping & Fulfillment · Wallet (Balance & top-ups, Account statements, Reports) · *divider* · Website & Content (flag-gated) · Promotions & Discounts (Coupons, Marketing campaigns) · Apps & integrations · Store settings (General, Payment methods) · *divider* · Account & help (My stores, Business & account, Plan & usage, Help).
+- New `{ kind: "divider" }` sidebar entry; `resolveSidebar` drops leading, trailing and doubled dividers (e.g. a seller with no store).
+- Account-wide pages left the store settings group for the new `accountHelp` group. Store settings now holds only `[storeId]` pages (a test enforces it).
+- Labels: group `finance` → "Wallet"; `/wallet` link → new `nav.walletBalance`; `/coupons` → `nav.coupons` ("Coupons"); `/marketing` → new `nav.campaigns` (`nav.advertiseProducts` stays as that page's heading); store General settings → `nav.general`; `nav.apps` → "Apps & integrations". AR and EN updated. The header breadcrumb and command palette follow `DASHBOARD_ROUTES`.
+- No URL, badge, icon (besides the new group's `CircleUserRound`), flag or permission logic changed.
+- **Customers:** not added. There is no customers route or page in the dashboard; a comment in the config marks where it goes.
+- **Checks:** sidebar config tests 25 pass, dashboard suite passes. Dashboard typecheck: my files are clean; the only errors are in `editor.client.tsx` from the uncommitted `editor.store.ts` work. Lint still blocked by the baseline ESLint crash.
+- **Manual browser check (owner):** AR/RTL and EN, desktop, mobile drawer and collapsed rail (dividers show as short rules); flag on and off; a seller with no store; `/settings/plan` lights only Plan & usage and opens Account & help.
+- **Follow-up:** the groups now work as an accordion. Opening one closes the others; navigating opens the current page's group (state lifted from `SidebarGroup` into `SidebarContent` in `Sidebar.tsx`).
+
+### 2026-10-18 — Categories & brands per seller; the catalog choice moves to Store settings (owner request)
+
+- **Owner decisions:** move the "all products / selected products" choice into Store settings › General; sellers can pick from the Tallaby pack *or* create their own; the lists are extra fields (marketplace `category_id` / `brand_id` unchanged); lists are per seller, shared by all their stores.
+- **Migration `0068_seller_categories_brands.sql`** (written, **not applied**):
+  - New `seller_product_categories` and `seller_product_brands` (seller-owned; `source_category_id` / `source_brand_id` remember the pack item, `ON DELETE SET NULL`). Unique per seller on `lower(btrim(name))` and on the source item. RLS on, no policies.
+  - `products.seller_category_id` / `seller_brand_id` (nullable, FK `ON DELETE SET NULL`), plus trigger `products_seller_taxonomy_same_seller` so a product can only point at its own seller's items.
+  - Schema and relations mirrored.
+- **Dashboard `/products/categories-brands`** (`app/(main)/products/categories-brands/`): Categories and Brands tabs. Add = type to search the pack (`categories` incl. Arabic names and parent, `brands`), click a match to copy it in, or "Create “…”" with an optional Arabic name. Rename and delete (products keep everything else). 300 items per list. Never cached (seller data).
+- **Product form:** optional "My category" / "My brand" selects in the Basic section (add and edit). They're stripped from the `createProduct` / `updateProduct` payload (those spread form keys into the row) and saved by `setProductSellerTaxonomy`, which checks the product and both items belong to the session's seller. `defaultValues` leave them unset so bulk URL import is unaffected. `actions/products.ts` untouched.
+- **Catalog:** the D24 form moved into `stores/[storeId]/settings/` and renders under the General form (saves on its own). `/stores/[storeId]/catalog` now redirects to `…/settings#catalog-mode`; the sitemap "no products" hint links there. Sidebar Products › Catalog → Categories & brands.
+- **Not done yet:** the storefronts don't use the seller lists (e.g. Tallaby Classic category circles still use marketplace categories); no quick-add from inside the product form; no drag-to-reorder (a `position` column is ready).
+- **Checks:** dashboard tests 147 pass (new `categories-brands.lib.test.ts`, sidebar tests updated); db tests pass; typecheck clean for dashboard (except the existing `editor.client.tsx` errors from the uncommitted editor work), db and lib; ecommerce/admin only have their existing errors. Lint still blocked by the baseline ESLint crash. Not run against a database.
+- **Deploy order:** apply `0068` **before** deploying any app. Drizzle lists every `products` column in `select()` / `returning()`, so code with the new columns fails against a database without them.
+- **Manual check (owner, after 0068 on staging):** add a pack category (Arabic UI shows the Arabic name), add your own brand, try a duplicate (error), rename, delete one used by a product; set My category on a new product and on an edit, then clear it; Store settings › General shows the catalog section and `/catalog` redirects there.
+
+### 2026-10-18 — Phase 4B editor first: P4B-01…04, 07…11 (owner request: editor functions and UI; one section per category, reused as-is)
+
+- **Scope agreed with the owner:** reuse the existing sections (one per category in the Add panel; `featured-product`, `spacer`, `contact-info`, `blog-featured-post` get `insertable: false` and keep rendering on old pages); include elements and custom sections; defer variants, previews and "convert to custom" (P4B-05/06/13) to the owner's sections/templates plan.
+- **`@workspace/store-sections`:**
+  - `elements/style.ts`: style whitelist (enums, theme tokens or `COLOR_RE` colors, bounded numbers), `collectPageCss` → one scoped block per page with tablet/phone `max-width` overrides; `hidden` is per device (exact ranges, never inherited); in the editor hidden items are faded, not removed. `PageStyles` renders it (storefront `store-site.tsx` page + chrome, editor canvas).
+  - **Differs from the plan doc §4.6 and from Valorcy:** part styles live on the instance (`style.parts[partKey]`, `breakpointStyles.{tablet,mobile}.parts`), not page-level `elementStyles`, so duplicate, copy/paste and header/footer keep them.
+  - Editable parts: `partOf(instance.id)(key)` adds `data-part="<id>::<key>"` to titles, texts, buttons, images and item fields of the 15 sections (32 parts). Markup was compared with HEAD for every section: identical apart from the attribute. `LinkProps` gained `data-part` (both hosts forward it).
+  - `elements/registry.ts` (19 element types: layout, text, basic), `elements/render.tsx` (server-renderable, links through `SmartLink`/`safeHref`, text never parsed as HTML), `elements/tree.ts` (pure tree ops with link-in-link and list rules), `elements/presets.ts` (the six screenshot layouts), `custom-section` (category `custom`). Node types `divider`, `spacer`, `badge` added (additive, schema version unchanged). Node text overlays: `node.props.translations[locale]`, resolved in `resolveSectionForLocale`.
+  - Sanitizer keeps only whitelisted style keys for sections and nodes; validator adds `tree_too_large` (> 300 elements per section).
+- **Dashboard editor** (`app/(builder)/stores/[storeId]/editor/`): split into `editor-topbar`, `editor-rail`, `panels/{add,layers,media,pages,brand}-panel`, `editor-sidebar` (Content | Style, "Selected element only / Show all", character counters), `style-panel` + `controls/`, `canvas/{editor-overlay,element-popover}`, `editor-dialogs` (Ctrl+K quick insert, `?` shortcuts), `use-editor-shortcuts`; pure `editor-{commands,selection,style,palette}.lib.ts`. Store: selection with `part`/`nodeId`, rail/tabs, and coalesced undo (same edit key within 1 s = one step). `MediaPicker` gained an optional controlled mode (`open`, `onOpenChange`, `hideTrigger`). Strings added to AR and EN (`storeEditor`); the old `panels`/`sections` keys were removed.
+- **Checks:** store-sections 209 tests, dashboard 138, ecommerce 126, lib 400 pass; typecheck clean for store-sections, lib and my dashboard files (the only dashboard errors are in the in-progress `categories-brands.client.tsx`; ecommerce keeps its existing `product-details`/`profile` errors). Lint still blocked by the baseline ESLint crash.
+- **Manual browser check (Claude, dev server, Tester store draft, AR, 1000px window):** inserted a hero from Sections; clicked the subtitle → part outline, "عنصر" badge and TEXT popover; LG + Bold applied; double-click title edited in place, Enter committed, undo restored it; Two Column layout created a custom section; Layers tree, auto-expand and auto-scroll; right-click menu Duplicate; Ctrl+K; sidebar Content/Style; phone override wrote a `max-width:767px` rule only. Fixed during the check: swatches had no colors (store `--sf-*` tokens now also set on the editor root), popover covered its element (now above/below), auto-scroll threshold, popover shown for off-screen elements. Test sections were removed again; nothing was published.
+- **Owner still to check:** a wide screen (right sidebar shows from 1024px; my window could not be resized), English editing, image double-click → media library, publish → storefront shows part styles at desktop and phone widths, a store published before this work looks unchanged.
+- **Not done:** drag and drop (P4B-12), Brand panel fonts/button style (P4B-14), Layers virtualisation, store elements (product card, add to cart) and video.
+
+### 2026-10-18 — Editor: Brand tab (P4B-14), Sections previews + drag and drop (P4B-06, part of P4B-12), Templates / Explore / Forms tabs (owner request)
+
+- **Brand tab** (`panels/brand-panel.client.tsx`, like Valorcy `design-system/brand-panel.tsx`): header with "back to Classic" (confirm), groups for Themes (palette + font pairing + radius, `THEME_PRESETS` in `website/design/design.lib.ts`), Colours (palettes + 7 hex fields), Typography (pairings + heading/body selects limited to `STORE_FONTS`), Buttons & layout (radius, page width, section spacing; numbers kept inside the schema bounds), and a link to logo/favicon/cover on the Design system page. Every change goes through `editDesign` (one undo step; typing coalesces) and autosaves with `saveDesignSystem`, so it is the **same draft** as Website › Design system. **Differs from Valorcy:** no custom CSS, base size, scale ratio or Arabic font (not in `designSystemSchema` / not rendered); no AI palette.
+- **Bug fixed (existed before this work):** the canvas, `SitePreview` and the new thumbnails set the Classic `--sf-*` tokens **inline**, which beat `SiteTheme`'s `.sf-site {…}` stylesheet, so colour edits never showed in the editor or the Design page preview. The design-system tokens are now merged into the inline tokens. The canvas also loads the store fonts (`storeFontVariables`) and the heading-font rule, so typography shows too. The storefront (CSS-module tokens, not inline) is unchanged.
+- **Sections tab** (P4B-06): a plain collapsible group per library category (no trigger background, count, chevron; searching opens all matches), each insertable section drawn live by `panels/section-thumbnail.client.tsx` (real renderer at 1280px scaled down, `inert`, store theme/products/fonts; Classic parts use `SitePreview`'s stand-ins) with a centred name, "in use" for header/footer, and a zoom dialog with "Add section". Still one section per type: layout variants (P4B-05) are not done.
+- **Drag and drop** (part of P4B-12): section cards are `draggable` (`SECTION_DRAG_TYPE`); the canvas frame handles native `dragover`/`drop` (same-origin iframe), shows a drop line between sections, auto-scrolls near the edges and inserts with `addSectionAt` at `dropIndex(...)` (one undo step). Header/footer cards are click-only. No `@dnd-kit` added. Moving existing sections by drag and Layers drag are still open.
+- **Templates tab** (`panels/templates-panel.client.tsx`, `template-preview-dialog.client.tsx`): the Website › Templates gallery (`toTemplateCardViews` now shared in `templates/templates.lib.ts`). A card opens a dialog with the template rendered live (page tabs, AR/EN, desktop/phone) with the store's products, details (pages/sections/version, colour swatches, fonts), pages with their sections, and what is kept. "Use template" saves pending edits first, runs the existing `applyTemplate` (drafts only), then reloads the editor. New read-only action `templatePreview` → lib `getStoreTemplateConfig` (ownership checked; active templates only).
+- **Explore tab** (`panels/explore-panel.client.tsx`, `explore.server.ts`, `lib/stock-photos/*`): Pexels search (key `PEXELS_API_KEY`, server only, added to `apps/dashboard/.env` and as an empty entry in `.env.example`), cached a day with `createCachedQuery` (new tag `searchTags.stockPhotos()`, public data, no seller id). Suggestions come from the store's industry. Clicking a photo **imports** it: the server looks the photo up by id (never a client URL), downloads only from `https://images.pexels.com`, checks type and the 5 MB limit, uploads to `store-media` under the seller's own folder with the seller's session, records it with `recordMediaAsset`, then the editor uses it like the Images tab. "Photos provided by Pexels" and photographer links are shown.
+- **Store industry:** no migration. Store settings › General has an Industry picker (`lib/stores/industries.lib.ts`, 17 industries) that fills the existing `store_category` / `store_category_ar` fields; Explore maps them back to English searches (else the English category, else general terms).
+- **Forms tab** (`panels/forms-panel.client.tsx`, like Valorcy `forms-panel.tsx`): the store's forms with field/message counts, "new" badge, "On this page", edit link, search, refresh (also on tab focus). "Add to page" inserts a `contact-form` section bound to the form (`commands.addFormSection`); "New" creates the same starter form as Website › Forms and adds it. Forms are now editor state, so the canvas and inspector see fresh forms. New action `listForms`.
+- **Checks:** dashboard `tsc` clean; dashboard tests 159 pass (new: `design.lib.test.ts`, `industries.lib.test.ts`, `stock-photos.lib.test.ts`, `editor-palette.lib.test.ts`, forms command test); `packages/lib` and `packages/cache` `tsc` clean; new lib integration test for `getStoreTemplateConfig` (runs only with `TEST_DATABASE_URL`, not run here). ESLint did not run: it crashes on start (`@typescript-eslint/utils` FlatESLint "Class extends value undefined"), a tooling problem not caused by this change. All new i18n keys exist in `ar.json` and `en.json` (422 uses checked).
+- **Manual browser check (Claude, dev server :3002, Tester store, AR):** all 8 rail tabs show; Sections accordion with live previews; drag-and-drop simulated with real `DragEvent`s (synthetic mouse drags can't start native DnD): drop line shown, hero inserted at index 1, line cleared, then undone; Ocean theme set `--sf-brand #0b5cad`, Cairo font and 8px radius on the canvas, then undone; template dialog renders the live preview and details; Explore listed Pexels photos and one import landed in `store-media/<seller>/<store>/…` and on the canvas (the page change was undone; **the imported file stays in Tester's media library**); Forms tab shows its empty state; Industry chips show in Store settings. Not clicked: "Use template" (rewrites drafts) and "New form" (creates a form).
+- **Owner still to check:** a real mouse drag from Sections to the canvas; "Use template" on a test store; "New form" / "Add to page" and the form on the storefront; Explore after choosing an industry; English UI.
+
+### 2026-10-18 — Editor drag and drop on `@dnd-kit` (P4B-12) and page templates in Add (owner request)
+
+- **Library:** `@dnd-kit/core` 6.3.1, `@dnd-kit/sortable` 10.0.0, `@dnd-kit/utilities` 3.2.2 (approved for P4-01). Chose the stable line over the new `@dnd-kit/react` 0.5.x (Valorcy uses 0.5.0; 0.5.1 was 3 days old). The native HTML5 section drag was replaced with the same behaviour (drop line, `dropIndex`, edge auto-scroll, header/footer click-only).
+- **Architecture** (`editor/dnd/`): one `EditorDndProvider` (sensors: mouse 6 px, touch 200 ms hold, keyboard for Layers); `dnd.types.ts` (payloads, probe, plans); `drop-plan.lib.ts` (pure planner + `applyDropPlan`); `canvas-geometry.lib.ts` (reading-order insertion index and lines, RTL); `canvas-probe.client.ts` (reads the iframe's `data-section-id`/`data-node-id`/`data-part` markers, since store-sections can't hold editor hooks). The frame is one droppable; during a canvas drag it gets `pointer-events: none` and the target is resolved once per animation frame. Every drop is one command (`applyDrop`), so one undo step, autosaved; drops re-plan against the current page, so a stale target writes nothing.
+- **Built differently from §4.10 / the brief:** pre-built sections are prop-based and `injectedChildren` is not rendered, so elements dropped on a pre-built section go into a **new custom section** before or after it (nothing is stored that the renderer can't show). Layers sorts elements among siblings only; moves into another container are done on the canvas (checked with `canContain`). An Image element dropped on another image of the page replaces its picture and leaves its old place (one step). The Images tab uses a new `tileWrapper` prop on `MediaLibrary`, whose grids now use container queries (2 columns in the 300 px panel).
+- **Templates:** the Templates rail tab moved into Add (Elements · Sections · Templates). "This page" lists the matching page of each template (home ↔ home, otherwise the same slug; no aliases invented) and applies it to that page only (`applyTemplatePage`: deep copy, new section/element ids, header/footer sections dropped, one undo step; design system, header, footer and other pages untouched). "Whole site" is the existing gallery. Creating a page opens Add › Templates. `templatePreview` now also returns each page's full `content`.
+- **Checks:** dashboard `tsc` clean; dashboard tests 194 pass (new: `drop-plan.lib.test.ts`, `canvas-geometry.lib.test.ts`, `editor-templates.lib.test.ts`, drop commands); `next build` (dashboard) passes. `pnpm lint` **crashes before linting** (`TypeError: Class extends value undefined` in `@typescript-eslint/utils` 8.50 under ESLint 10.9.1; pre-existing, not from this change).
+- **Not checked in a browser** by Claude this time. Owner to check: drag an element, preset, section, Explore photo and Images tile onto the canvas (AR and EN, desktop/mobile widths, touch); move a section and an element with the toolbar grip; sort Layers by mouse and keyboard; create `/about` and apply a template page, then confirm Home and the header are unchanged.
+
+### 2026-10-18 — Content sections: movable parts and items (P4B-16, owner request)
+
+- **What:** in the Content sections (image with text, text, call to action, highlights, FAQ) every part is selectable, styled through the existing inspector/popover, and can be dragged on the canvas (toolbar grip) or stepped with the toolbar ↑/↓: reordered within its container, or moved to another container of the same section that accepts it (image with text: image column ↔ text column). Highlight cards and FAQ questions drag as whole items. Each move is one undo step and autosaves; the inspector shows "Reset layout" when the order differs from the default.
+- **Reusable contract:** `SectionDefinition.slots` (`packages/store-sections/src/core/slots.ts`: `parts` = default parts, `accepts` = parts from other slots). Layout is stored in the existing `instance.slots[key].order` (schema field from the reference, unused until now), so **no migration**, and sections saved without it render in the same order as before. Sections render through `PartSlot` (`data-slot` marker; an emptied slot is a dashed drop area in the editor and nothing on the storefront) and mark items with `itemOf` (`data-item`). Any section opts in by declaring `slots` / using `itemOf`; nothing section-specific in the editor.
+- **Editor:** `editor-slots.lib.ts` (part/item moves; moving an item carries its translations and its `style.parts["items.N.*"]` styles), `dnd/part-drop.lib.ts` + `dnd/part-probe.client.ts` (slot under or nearest the pointer, insertion line from `canvas-geometry.lib.ts`), new `move-part` / `move-item` payloads and plans in the shared DnD (`dnd.types.ts`, `planDrop`, `sampleCanvas`, `markerOf`, `applyDrop`). Parts never leave their section; elsewhere the drop is refused. The inspector's item ↑/↓ now uses the same move (styles follow).
+- **Built differently:** no free nesting of parts (parts are props, not nodes): "containers" are the declared slots. Full element nesting stays in custom sections (P4B-13 eject is still deferred).
+- **Checks:** store-sections tests 229 pass (new `core/slots.test.ts`, `render/slots.test.tsx`), `tsc` clean; dashboard tests 197 pass (new `editor-slots.lib.test.ts`, `dnd/part-drop.lib.test.ts`, part/item cases in `drop-plan.lib.test.ts` and `editor-commands.lib.test.ts`), `tsc` clean. Ecommerce `tsc` has 19 pre-existing errors in `product-details.tsx` and `profile.chunks.tsx` (files not touched). `pnpm lint` still crashes (ESLint 10.9.1 vs `@typescript-eslint/utils` 8, see above).
+- **Browser check (Claude, Tester store, AR, desktop, draft only, not published):** inserted Image with text, set the button text/link in the inspector, selected the title on the canvas and coloured it, dragged it into the image column (drop line on the column's edge), dragged the button above the paragraph, inserted Highlights and dragged the first card to the end and back, used ↑/↓, saved, reloaded: layout, title colour, button and card order all persisted. Synthetic mouse events were used (the browser tool's single-jump drag doesn't reach dnd-kit's 6 px activation). Owner to check with a real mouse and touch, in EN, and on tablet/mobile widths.
+
+### 2026-10-18 — Section library, phases 1–2 (P4B-05, owner's section library brief)
+
+- **Owner decisions (asked before building):** presets over variants (about 22 section definitions with `layout` props; the library lists ~70 presets = section + layout + props + style, so switching design keeps content and data); newsletter/lead capture bind to `store_forms` (no new table); brands read `seller_product_brands` (0068, owner applies it to staging first) with manual logos as a fallback; phased delivery, a commit per phase. The earlier uncommitted P4B editor work was committed first as its own baseline (`8e3e3f5`, builder files only; the other ~70 uncommitted changes were left untouched).
+- **Phase 1 (`64ef692`, `packages/store-sections`):** `src/library/` is the one category tree (15 categories with subcategories), `SectionPreset`, presets for today's layouts (one file per category), search with Arabic spelling folding, capability filters and `instantiatePreset`. The section shell `instance.style.shell` (`elements/shell.ts`: scheme, paddingY, width, background image + overlay, anchor, CSS-only reduced-motion-safe entrance) is applied by `SectionRenderer` on the existing wrapper: CSS variables plus an `<img>` layer, no seller CSS, and **no shell renders byte-identical** (new snapshot test of every section's defaults, AR/EN × edit/public × with/without data). Data contract: new product sources (best-sellers, trending, discounted), sort, brands/reviews/coupon queries and summaries, payment methods, `editorData` (state + host-drawn empty-state actions, so no dashboard route lives in the package), `catalog.counts`, wishlist/account/countdown renderers, new field types (categories, coupon, datetime, layout) and the `data` group. `DataEmpty`/`EmptySection` render editor-only empty, loading and error states (error never says "Add products").
+- **Phase 2 (`264be31`, editor):** Add › Sections is the library (`panels/section-library.client.tsx`). It lists the categories; opening one or searching widens the panel (not a flyout over the canvas, so drop targets stay free) to a two-column grid of lazily mounted live previews with subcategory chips, capability filters, a real-count data chip, preview, click-to-insert and drag (`presetId` in the drag payload). Header/footer presets restyle the shared chrome and keep its content; card presets restyle the selected product section. Inspector groups: Design (preset switcher + visual layout picker), Data, Content, Options, plus `showWhen`. Style tab: Section group for the shell. `editor-library.lib.ts` holds the pure rules (design props never include data or content props).
+- **Built differently from the brief/§4.3:** layouts are presets of a few sections, not separate section types; `insertable: false` no longer gates the library (a preset may start from a hidden section, e.g. contact details).
+- **Checks:** store-sections 321 tests pass, `tsc` clean; dashboard 216 tests pass, `tsc` clean; ecommerce `tsc` unchanged (19 pre-existing errors, none in store-site). `pnpm lint` still crashes before linting (pre-existing).
+- **Browser check (Claude, after the owner signed in; EN UI, desktop, Tester store, draft only, not published):** the category list (empty categories hidden), opening Products (wider panel, subcategory chips, capability filters, real-count chips), Arabic search across categories (واتساب → Contact details), inserting Hero › Centered title (selected, inspector Design chips + groups), the Style tab Section group. Found and fixed: switching back to a preset that relies on the defaults (Full-width image) changed nothing; it now resets unset design props to the defaults (test added). Also fixed a dnd-kit hydration mismatch in the Add panel (fixed `DndContext` id). The test section was deleted again. Seen, to improve later: dynamic previews still show the old tiny "no products" text until phase 3, the data chip counts all products even for Featured, and short sections look thin at the 1280px preview width. Owner to check drag with a real mouse, AR UI, tablet/mobile.
+
+### 2026-10-18 — Section library: one designed section per category, accordion panel (P4B-05, owner request)
+
+- **Owner brief:** pre-built sections like the reference "Footprint" (`about-stats`), fully customizable; one section per category for now (more designs will come from Claude Design); Add › Sections back to simple accordions without a trigger background.
+- **New sections** (`packages/store-sections/src/sections/library/`, registered after the existing ones, additive): `header-bar`, `footer-columns` (chrome), `hero-split`, `category-tiles`, `product-showcase` (grid/carousel, 3 card designs), `brand-logos` (store brands or uploaded), `promo-split` (coupon or manual code, countdown), `feature-grid`, `testimonial-cards` (written quotes or real reviews + rating summary), `about-story`, `stats-cards` (port of the reference Footprint), `faq-split`, `newsletter-card` and `contact-split` (bound to `store_forms`). Shared `_parts.tsx`: an intro block (eyebrow/title/subtitle) in a reorderable part slot, buttons, product card, rail. Every text, image and item is a marked part (`data-part`/`data-item`), so inline editing, part styles, item drag and the section shell (scheme, padding, width, background, animation) apply. New copy keys `verifiedBuyer`, `whatsappChat`.
+- **Built differently from the reference:** no block schema or AI hints; the existing Tallaby contract (props + item collections + slots + shell) already gives the same editing, so no second framework.
+- **Library:** `SECTION_PRESETS` now lists 15 presets, one per category (`library/presets/library.ts`; product cards = a "Minimal card" preset on `product-showcase`). The earlier presets are `LEGACY_PRESETS`: not listed, but `getPreset`/`presetsForSection` still resolve them, so saved drags and the design switcher on old sections keep working. Old sections still render on existing pages (nothing removed, no migration).
+- **Editor:** `panels/section-library.client.tsx` is a plain accordion per category (icon, name, chevron, no background; any number open, Hero open first; search opens every match). Subcategory chips, capability filters and the wide two-column panel were removed.
+- **Checks:** store-sections `tsc` clean, 371 tests pass (14 new default-render snapshots; tests updated for the new list, plus one-per-category and legacy-resolution tests); dashboard `tsc` clean, 230 tests pass; ecommerce `tsc` unchanged (19 existing errors in `product-details.tsx`/`profile.chunks.tsx`). `pnpm lint` still crashes (existing). **No browser check** (the Chrome extension was not connected). Owner to check: each section in the editor AR/EN, desktop/mobile, inserting header/footer, the Minimal card preset, a coupon in Promo banner, and a published page.
+- **Folder layout (2026-10-19, owner request, matches the Valorcy `components/sections/` layout):** `sections/library/` is one folder per library category id (`headers/`, `hero/`, `categories/`, `products/`, `brands/`, `promotions/`, `features/`, `testimonials/`, `about/`, `statistics/`, `content/`, `forms/`, `contact/`, `footers/`), one file per section (`hero/hero-split.tsx` …) and an `index.ts` per folder exporting `<CATEGORY>_SECTIONS`. Shared helpers (`uuid`, `INTRO_ONLY`, `ViewAll`, menu link fields, `formId`/`FormArea`) moved into `library/_parts.tsx`. Code moved unchanged; section ids, order and exports are the same. Checks: store-sections `tsc` clean, 371 tests pass (snapshots unchanged).
+
+### 2026-10-19 — Tree sections: every section is an element tree; coded sections and Tallaby Classic removed (owner request)
+
+- **Owner decisions:** every section and template is built as an element tree so every element, parent and child, is selectable, styleable and movable (CLAUDE.md rule 17); keep only the three trialled designs (hero-split, about-story, stats-cards); remove the old coded sections entirely, Classic included ("Remove Classic too": new stores start empty until rebuilt). Design: [`docs/superpowers/specs/2026-10-19-tree-sections-design.md`](docs/superpowers/specs/2026-10-19-tree-sections-design.md); plan: [`docs/superpowers/plans/2026-10-19-tree-sections-plan-1-foundation.md`](docs/superpowers/plans/2026-10-19-tree-sections-plan-1-foundation.md) (Tasks 1–7 done, 8–10 open).
+- **Built:** `defineDesign` builder + `instantiateDesign` (`packages/store-sections/src/designs/`); `section` root, `card`, `pattern`, `accordion`/`accordionItem` elements; styles for position/inset/z-index/overflow, display sizes, letter spacing, text case, gradients, grid span, order and a hover layer; limits 400 nodes / depth 12; presets with `designId`; new element sections get a `section` root; Layers labels follow the UI language.
+- **Removed:** every coded section (`sections/{blog,chrome,classic,commerce,content,engagement}.tsx`, `sections/library/`, the `contact-form` section; `FormFieldsView`/`formCopy` stay for storefront forms), all legacy presets, the Tallaby Classic template (`templates/tallaby-classic.ts`, `classic-sql.ts`, the `classic:sql` script), `RenderContext.renderClassic` and its editor/storefront/website-preview wiring. Store scaffold now creates an empty home page and no header/footer. Migrations untouched (0062 stays applied on staging; its template rows reference removed sections and render nothing).
+- **Kept:** the storefront fallback for stores without a published builder site (hero, categories, catalog straight from ecommerce components), so unpublished stores still sell.
+- **Not removed yet (dead with no coded sections; next step):** part slots (`core/slots.ts`, `PartSlot`, `editor-slots.lib.ts`, `part-drop.lib.ts`), the prop design switcher / chrome and card presets in `editor-library.lib.ts`, item collections and prop inspector forms, the Forms tab insert (returns false until a `storeForm` node exists, Plan 2).
+- **Sections list (owner request):** one category open at a time, no category or section descriptions, centred section titles, previews now include element styles so they match the canvas.
+- **Checks:** store-sections `tsc` clean, 231 tests; dashboard `tsc` clean, 214 tests; lib `tsc` clean, 421 tests; ecommerce 138 tests, `tsc` unchanged (19 existing errors); admin `tsc` shows 1 existing error in `app/layout.tsx` (not touched). Backup of the removed files: session scratchpad `backup-before-section-removal/files.tar`.
+
+### 2026-10-18 — Admin SaaS alignment planned (Phase 9B, owner request)
+
+- **Owner brief:** bring admin up to date with the dashboard (website, stores, integrations, templates, etc.); hide Pricing calculator and External orders (comment them out); coupons must include all seller coupons; fulfillment must be one row per seller, with Storage, Returns, CS, Packaging and Delivery inside the request page; reorder the sidebar (Customers and Sellers together); full, advanced integrations while keeping performance, caching and revalidation good.
+- **Audit findings:**
+  - The admin sidebar is a flat, untested array.
+  - Admin coupons show only platform coupons (`seller_id IS NULL`).
+  - Admin fulfillment lists one row per service.
+  - There is no admin view of stores across sellers, templates, domains, forms, CMS, media or ad requests (the P6-11 gap is confirmed).
+  - The seller page loads every panel in one `Promise.all`.
+  - `admin_audit_log.seller_id` is `NOT NULL`, which blocks platform-wide audit entries.
+  - `orders/[id]/invoice` imports the external-orders types, so that folder must stay.
+- **Plan:** [`docs/admin-saas.md`](docs/admin-saas.md), tasks P9B-01…14, decisions D-A1…A6 (defaults chosen there). No code changed yet.
+
+### 2026-10-18 — Admin `/wallets`: seller (store) wallets (owner request, outside the task list)
+
+- **Owner brief:** the seller wallet is the most important ledger; `/wallets` in admin must show everything about it (top-up requests, updating the wallet, transactions, balances).
+- **Found:** admin `/wallets` only covered the customer `user_wallets` ledger. The store wallet appeared only on the seller page (latest 50 entries, 20 top-ups) and on `/store-top-ups` (manual top-ups only).
+- **Built (no migration, no new money logic):**
+  - `packages/lib/src/admin/wallet-view.{lib,server}.ts`: strict filter schemas and read models. Platform totals (held, owed, negative count, top-ups to review, 30-day fees net of reversals, top-ups and sales, ledger check that counts wallets whose balance ≠ sum of entries or ≠ the `sellers.wallet_balance` mirror), a paged list of every seller's wallet, the paged ledger across sellers (type, direction, Cairo date range, search), paged top-ups (Kashier + manual, status, method), a per-seller breakdown (by type, by store, seller identity) and the wallet audit trail (`wallet_adjustment`, `set_negative_limit`, `approve_top_up`, `reject_top_up`). Read-only, never cached. Stores are joined only when `stores.seller_id` matches the entry's seller.
+  - Admin `/wallets` now opens on **Seller wallets** (tabs: Wallets · Top-ups · Transactions · Admin log, with KPI cards). The customer wallet tabs are unchanged under `?scope=customers`.
+  - New `/wallets/sellers/[sellerId]`: balance, status, ledger and mirror checks, negative limit, fee plan and trial, totals by type and by store, and paged Transactions / Top-ups / Admin log.
+  - Writes reuse the existing audited actions only: `walletAdjustmentAction` → `adjustStoreWalletByAdmin` → `postStoreWalletEntry` (credit/debit toggle, idempotency key per form), `sellerOverrideAction` (`set_negative_limit`) and `reviewStoreTopUpAction` → `reviewManualStoreTopUp` (the `/store-top-ups` dialog is exported and reused, with a receipt link signed for 30 min). These actions now also revalidate `/wallets`. The seller page wallet card uses the shared adjust button and links to the full wallet.
+- **Not built (needs owner approval, rule 4):** freezing/closing a store wallet. `postStoreWalletEntry` refuses entries on a non-active wallet, so a frozen wallet would make delivery fees fail to post. This needs a decision first.
+- **Checks:** `@workspace/lib` `tsc` clean, `src/admin` tests 12 pass (new `wallet-view.lib.test.ts`), integration tests skipped (no `TEST_DATABASE_URL`). Admin `tsc`: only the existing `app/layout.tsx` `DirectionProvider` error, plus `vitest/config` not found from another session's in-progress admin vitest setup (`apps/admin/vitest.config.ts`, `package.json`; not mine, left untouched). `pnpm lint` still crashes before linting (pre-existing). No browser check yet. Owner to check against staging data.
+
+### 2026-10-18 — Categories and Brands on separate pages, with ordering and images (owner request, outside the task list)
+
+- **Pages:** `/products/categories` and `/products/brands` (thin `page.tsx` files; shared `categories-brands/taxonomy-page.data.tsx` and `TaxonomyManager`). `/products/categories-brands` now redirects to `/products/categories`. Sidebar, the route list and the editor's data links (`editor-data.lib.ts`) point at the new pages; the nav key `categoriesBrands` is now `sellerCategories` / `sellerBrands`. The product form links to both pages.
+- **Ordering:** drag handle on each row (`@dnd-kit`, pointer and keyboard) plus a "Sort A–Z" action (asks first; sorts by the label shown in the current locale). New action `reorderTaxonomyItems(kind, ids)` takes the seller's full id list, refuses a stale list (`notFound`) and writes `position` in one `UPDATE … CASE`. Dragging is off while the filter is in use. No migration: `position` already exists (0068).
+- **Images:** an image field in the Edit dialog (was Rename) and in the "create your own" form. Uses `useSellerUpload` (bucket `sellers`, folder `logos/`, which its policies already allow). The server accepts only `null` or a public URL in that folder of this project's storage (`isSellerTaxonomyImage`). Leaving the image out keeps the current one, so pack image paths are unchanged.
+- **Checks:** dashboard `tsc` clean; vitest for categories-brands, sidebar and editor-data: 46 pass (new tests for the image check, A–Z sort and the reorder/image schemas). Lint still crashes before linting (pre-existing). Not run against a database or in a browser.
+- **Manual check (owner, after 0068):** on both pages: drag to reorder, reload, and the order is kept; Sort A–Z in Arabic and English; upload, change and remove an image on a pack item and on your own item; the old URL redirects; the product form's "Manage categories" and "Manage brands" links work.
+
+### 2026-10-18 — Phase 9B admin SaaS alignment built (P9B-01…14, owner request "Implement")
+
+- **What changed (admin):**
+  - The sidebar is a tested config (`_components/layout/sidebar.config.ts`) with 7 groups; Sellers sit directly above Customers. External orders and Pricing calculator are hidden: their `page.tsx` now calls `notFound()`, with the old code kept in comments.
+  - The sidebar has 4 new badge counts in the same single query; that query is React-`cache()`d and shared with the new home action centre.
+  - Fulfillment shows one row per seller (`listFulfillmentSellerQueue`, one SQL with `jsonb_agg`). `/fulfillment/[sellerId]` has the profile, a tab per service and previous/next seller. The old 738-line seller panel was split into `fulfillment/[sellerId]/*`, and the seller page shows a summary card instead.
+  - `/coupons` has Platform, Sellers and Affiliates tabs. Seller coupons can be deactivated or reactivated with a reason (audited, broadcasts `couponTags.seller`).
+  - New pages: `/stores` (directory) and `/stores/[storeId]` (9 URL tabs; only the open tab loads), `/integrations` (overview / connections / errors; `/integration-errors` redirects here), `/ad-requests`, `/domains`, `/templates` and `/audit`.
+  - The seller page has 8 URL tabs, each with its own loader. The sellers list gains stores/plan, fee trial and last order columns.
+  - The home page has an action centre and SaaS KPIs (one query, not cached).
+- **Library:** new `packages/lib/src/admin/{saas.lib,coupons-admin,stores-admin,integrations-admin,ads-admin,domains-admin,templates-admin,audit-view,overview}*.ts` and `fulfillment/queue*.ts`. Every write re-checks the admin in the database, writes `admin_audit_log` in the same transaction, then calls `applyInvalidation(from: "admin")`.
+- **Cache:** new `templateTags`, `fulfillmentTags` and `adminTags` plus their descriptors (tested). Only the template list (5 min) and the integration summary (60 s) are Data-Cached. Queues, wallets, coupons, audit and KPIs are not.
+- **Migration `0069_admin_saas.sql` (written, not applied anywhere):**
+  - `admin_audit_log.seller_id` becomes nullable, with `target_type` / `target_id` and their checks; the guard trigger is updated so platform rows can never be deleted.
+  - Indexes: `admin_audit_log_created_idx` and `store_integrations_error_idx`.
+  - Until it is applied, template writes return "Apply migration 0069 first". All other features work without it: seller audit rows do not send the new columns, and the audit page reads them through `to_jsonb`. Owner approval is needed before applying it to staging.
+- **Built differently from `docs/admin-saas.md`:**
+  - Platform coupon CRUD stayed in `actions/coupons.ts`; it was not moved.
+  - Fulfillment plans are not Data-Cached (nothing reads them cached yet), but plan saves already broadcast `fulfillmentTags.plans()`.
+  - A domain re-check is not audited, because it changes no setting.
+  - Ad rejection runs the P6-11 refund after the status change commits, because the refund reads the committed status in its own transaction. A failed refund shows "Not refunded" with a "Retry refund" button (the refund is idempotent).
+  - Admin gained `vitest` (`apps/admin/vitest.config.ts`, `test` script; 3 lines in the lockfile).
+  - One-line type cast in the untracked `wallet-view.server.ts` (`seller_id` is now nullable).
+- **Checks:**
+  - `tsc`: lib clean, db clean. Admin is clean except the pre-existing `app/layout.tsx` `DirectionProvider dir` error (file not touched). Use `--incremental false` once, because the stale `tsbuildinfo` lists the deleted panel.
+  - Tests: lib 421 passed (new `saas.lib.test.ts`, `fulfillment/queue.test.ts`); cache 38 passed (3 new); admin 8 passed (new `sidebar.config.test.ts`).
+  - New `admin/admin-saas.integration.test.ts` (fulfillment aggregate, seller coupon toggle + audit, integration disconnect, store directory scoping) was **not run**: `TEST_DATABASE_URL` is not set here. The existing admin integration tests `select()` whole audit rows, so they need `0069` on the test database.
+  - `pnpm lint` still crashes before linting (pre-existing).
+- **Not done:**
+  - Browser check (Claude does not sign in to admin). Owner to check: the sidebar, `/fulfillment` → a seller → each service tab and previous/next, coupon tabs + deactivate, `/stores` and every store tab, `/integrations` disconnect, `/ad-requests` approve/reject (wallet refund), `/domains` re-check, `/templates` (after `0069`), `/audit`, and the home action centre.
+  - Nothing is committed.
+
+### 2026-10-18 — Editor folder reorganised by role (owner request, outside the task list)
+
+- **What:** `apps/dashboard/app/(builder)/stores/[storeId]/editor/` had about 40 files at its top level. They are now grouped by role, and no file was renamed or changed apart from its import paths: `server/` (`editor.{server,data,dto}.ts`, `explore.server.ts`), `state/` (`editor.store.ts`, `use-*` hooks), `lib/` (every `editor*.lib.ts` and its test), `shell/` (topbar, rail, dialogs), `canvas/` (now also `editor-canvas.client.tsx`), `inspector/` (sidebar, inspector, style panel, `controls/`), `panels/` (rail tabs) with `panels/add/` (add panel, section library, thumbnails, page templates, templates gallery and preview), and `dnd/` (unchanged). The folder map is in the editor's `README.md`.
+- The moves used `git mv`, so staged and unstaged edits stay where they were. The Website pages in `(main)` that import editor actions, loaders and the preview hook now import them from `editor/server/…` and `editor/state/…`.
+- **Checks:** dashboard `tsc` is clean; tests: 31 files and 230 passed, the same as before the move. `pnpm lint` still crashes before linting (pre-existing). Nothing is committed.
+
+### 2026-10-19 — Marketing site moved into apps/ecommerce; marketplace pages removed (owner request, replaces P10-03's marketplace move)
+
+- **What:** the owner pointed the tallaby.com Vercel project at the marketing site and asked for one app: tallaby.com serves the marketing pages, `*.tallaby.com` and custom domains serve seller storefronts, and the marketplace pages (`/products`, `/stores`, `/categories`, `/brands`, `/search`, `/wishlist`, `/sell`, `/affiliate`, `/help`, `/sitemap`, the marketplace home, `/cart`, `/onboarding`, the marketplace sitemaps) are gone. URLs of everything kept are unchanged.
+- **Layout:** `app/[locale]/layout.tsx` is a bare shell (fonts, intl, Tallaby pixel/GA). `app/[locale]/(marketing)/` holds the copied marketing pages (`(site)/…`, `follow-us`) with their own `marketing.css` (its palette overrides Tailwind colors, so the groups never share a stylesheet). `app/[locale]/(shop)/` holds storefronts and the customer pages they pass through to (checkout, auth, orders, payment, profile, returns/shipping/cookies) with the old root layout's CSS, providers and metadata. Marketing code lives in `components/marketing/*` and `lib/marketing/*`; messages were merged (marketing `footer` → `siteFooter`).
+- Storefront components the deleted routes owned moved to `components/product-page`, `components/products-list`, `components/store-page`.
+- Marketing signup callback is `/api/auth/signup-callback` (`/api/auth/callback` stays the customer sign-in callback). Needs `SIGNUP_INTENT_SECRET` in the ecommerce env, and the URL in Supabase Auth redirect URLs.
+- Store hosts: `/privacy` and `/terms` are no longer pass-through; they serve the store's own builder page of that slug, or redirect to tallaby.com's. Root `app/not-found.tsx` became `app/global-not-found.tsx` (`experimental.globalNotFound`) plus `app/[locale]/[...rest]` for a localized 404; `/sell` and `/become-seller` redirect to `/`.
+- `apps/marketing` was then deleted (owner request) after checking that every file was carried over, including its uncommitted edits (components and messages compared; only the `siteFooter` rename differs). Its `SIGNUP_INTENT_SECRET` was copied into the local `apps/ecommerce/.env`. The tallaby.com Vercel project must build `apps/ecommerce`. Local port stays 3000 for tallaby.com and `{store}.localhost:3000`.
+- **Checks:** ecommerce tests 138 passed; `tsc` only shows 3 errors in `components/product-page/product-details.tsx`, which was moved unchanged from HEAD (pre-existing). `pnpm lint` still crashes before linting (pre-existing). Dev server smoke test: all marketing pages 200 (ar + en); `/products`, `/stores` 404; checkout/auth/orders/returns 200; `bein-sport.localhost:3000` home/cart/checkout 200, `/privacy` → tallaby.com/privacy. Pre-existing: `/returns` logs a FORMATTING_ERROR (`costFreeBody` is missing `{days}`). Nothing is committed.

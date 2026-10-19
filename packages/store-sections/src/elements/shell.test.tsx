@@ -21,7 +21,13 @@ const ctx: RenderContext = {
   formatPrice: (n) => `${n}`,
 };
 
-const rich: SectionInstance = { id: "s1", sectionId: "rich-text", version: 1, props: {} };
+const rich: SectionInstance = {
+  id: "s1",
+  sectionId: "custom-section",
+  version: 1,
+  props: {},
+  componentTree: [{ id: "r", type: "section", props: {}, children: [{ id: "t", type: "text", props: { text: "x" }, children: [] }] }],
+};
 
 describe("normalizeShell", () => {
   it("keeps valid values and drops defaults and junk", () => {
@@ -71,7 +77,7 @@ describe("normalizeShell", () => {
 describe("shell rendering", () => {
   it("leaves the wrapper untouched without a shell", () => {
     const out = renderToStaticMarkup(<SectionRenderer instance={rich} registry={storeSectionRegistry} ctx={ctx} />);
-    expect(out.startsWith('<div data-section-id="s1" data-section-type="rich-text"><section')).toBe(true);
+    expect(out.startsWith('<div data-section-id="s1" data-section-type="custom-section"><section')).toBe(true);
   });
 
   it("sets spacing and width tokens, the anchor and the scheme", () => {
@@ -139,6 +145,12 @@ describe("DataEmpty", () => {
     expect(out).toContain("Couldn&#x27;t load your store data");
     expect(out).toContain("Try again");
     expect(out).not.toContain("Add products");
+  });
+
+  it("shows the error only for the source that failed", () => {
+    const ctxWithFailure: RenderContext = { ...edit("ready"), editorData: { ...edit("ready").editorData!, failed: ["brands"] } };
+    expect(renderToStaticMarkup(<DataEmpty need="brands" ctx={ctxWithFailure} />)).toContain("Try again");
+    expect(renderToStaticMarkup(<DataEmpty need="products" ctx={ctxWithFailure} />)).toContain("Add products to show here");
   });
 
   it("shows a loading state while refreshing", () => {

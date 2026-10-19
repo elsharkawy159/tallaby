@@ -16,17 +16,12 @@ describe('computePlatformFeePiastres (PLAN.md §13.1)', () => {
   it.each([
     [100, 500],
     [250, 500],
-    [251, 502],
-    [500, 1000],
-    [1000, 2000],
-  ])('EGP %d → %d piastres', (egp, fee) => {
+    [251, 500],
+    [500, 500],
+    [1000, 500],
+    [100_000, 500],
+  ])('EGP %d → %d piastres (flat EGP 5)', (egp, fee) => {
     expect(computePlatformFeePiastres(egp * 100)).toBe(fee)
-  })
-
-  it('charges exactly the minimum at the EGP 250 boundary', () => {
-    expect(computePlatformFeePiastres(25_000)).toBe(500)
-    expect(computePlatformFeePiastres(25_001)).toBe(500)
-    expect(computePlatformFeePiastres(25_025)).toBe(501) // 500.5 rounds half-up
   })
 
   it('charges nothing without a positive subtotal', () => {
@@ -47,8 +42,9 @@ describe('resolveFeePlan', () => {
     expect(resolveFeePlan(null)).toBe(STANDARD_FEE_PLAN)
     expect(resolveFeePlan('')).toBe(STANDARD_FEE_PLAN)
     expect(resolveFeePlan('legacy_5pct')).toBe(STANDARD_FEE_PLAN)
-    expect(resolveFeePlan(' Standard_2pct_Min5 ')).toBe('standard_2pct_min5')
-    expect(FEE_PLANS[STANDARD_FEE_PLAN]).toEqual({ rateBps: 200, minPiastres: 500 })
+    expect(resolveFeePlan('standard_2pct_min5')).toBe(STANDARD_FEE_PLAN)
+    expect(resolveFeePlan(' Flat_5 ')).toBe('flat_5')
+    expect(FEE_PLANS[STANDARD_FEE_PLAN]).toEqual({ rateBps: 0, minPiastres: 500 })
   })
 })
 
@@ -127,30 +123,30 @@ describe('computeSellerPlatformFee', () => {
 
   it('charges a regular seller and splits the fee', () => {
     const result = computeSellerPlatformFee({ feePlan: STANDARD_FEE_PLAN }, [{ total: '300.00' }, { total: '200.00' }], at)
-    expect(result.feePiastres).toBe(1_000)
-    expect(result.lineFeesPiastres).toEqual([600, 400])
-    expect(result.effectiveRate).toBe(0.02)
+    expect(result.feePiastres).toBe(500)
+    expect(result.lineFeesPiastres).toEqual([300, 200])
+    expect(result.effectiveRate).toBe(0.01)
     expect(result.snapshot).toEqual({
-      plan: 'standard_2pct_min5',
-      rateBps: 200,
+      plan: 'flat_5',
+      rateBps: 0,
       minPiastres: 500,
       eligiblePiastres: 50_000,
-      feePiastres: 1_000,
+      feePiastres: 500,
       trial: false,
       exempt: false,
       computedAt: '2026-11-15T12:00:00.000Z',
     })
   })
 
-  it('applies the minimum on small orders', () => {
+  it('charges the flat fee on small orders', () => {
     const result = computeSellerPlatformFee({}, [{ total: 100 }], at)
     expect(result.feePiastres).toBe(500)
     expect(result.effectiveRate).toBe(0.05)
   })
 
-  it('charges nothing during the trial', () => {
+  it('charges nothing during the 7-day trial', () => {
     const result = computeSellerPlatformFee(
-      { feeTrialStartedAt: '2026-11-01T00:00:00Z', feeTrialEndsAt: '2026-12-01T00:00:00Z' },
+      { feeTrialStartedAt: '2026-11-09T00:00:00Z', feeTrialEndsAt: '2026-11-16T00:00:00Z' },
       [{ total: 1_000 }],
       at,
     )
@@ -159,13 +155,13 @@ describe('computeSellerPlatformFee', () => {
     expect(result.snapshot).toMatchObject({ trial: true, exempt: false, eligiblePiastres: 100_000 })
   })
 
-  it('charges after the trial ended', () => {
+  it('charges from day 8', () => {
     const result = computeSellerPlatformFee(
-      { feeTrialStartedAt: '2026-10-01T00:00:00Z', feeTrialEndsAt: '2026-10-31T00:00:00Z' },
+      { feeTrialStartedAt: '2026-11-08T12:00:00Z', feeTrialEndsAt: '2026-11-15T12:00:00Z' },
       [{ total: 1_000 }],
       at,
     )
-    expect(result.feePiastres).toBe(2_000)
+    expect(result.feePiastres).toBe(500)
     expect(result.snapshot.trial).toBe(false)
   })
 
@@ -182,7 +178,7 @@ describe('computeSellerPlatformFee', () => {
   })
 
   it('uses the current time by default', () => {
-    expect(computeSellerPlatformFee({}, [{ total: 500 }]).feePiastres).toBe(1_000)
+    expect(computeSellerPlatformFee({}, [{ total: 500 }]).feePiastres).toBe(500)
   })
 })
 
@@ -199,15 +195,15 @@ describe('computeOrderLineFees (D22)', () => {
       new Map([['b', { isCommissionExempt: true }]]),
       at,
     )
-    expect(fees.map((fee) => fee.commissionAmount)).toEqual(['6.00', '0.00', '1.00'])
-    expect(fees.map((fee) => fee.sellerEarning)).toEqual(['294.00', '100.00', '49.00'])
+    expect(fees.map((fee) => fee.commissionAmount)).toEqual(['4.29', '0.00', '0.71'])
+    expect(fees.map((fee) => fee.sellerEarning)).toEqual(['295.71', '100.00', '49.29'])
     expect(fees[0]!.platformFee).toBe(fees[2]!.platformFee)
-    expect(fees[0]!.platformFee.feePiastres).toBe(700)
+    expect(fees[0]!.platformFee.feePiastres).toBe(500)
     expect(fees[1]!.platformFee.exempt).toBe(true)
-    expect(fees[0]!.commissionRate).toBe(0.02)
+    expect(fees[0]!.commissionRate).toBe(0.0143)
   })
 
-  it('charges the minimum to each seller separately', () => {
+  it('charges the flat fee to each seller separately', () => {
     const fees = computeOrderLineFees(
       [
         { sellerId: 'a', total: 100 },

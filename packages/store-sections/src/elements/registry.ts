@@ -4,9 +4,9 @@
  * Only these node types render; every other `ALLOWED_NODE_TYPES` entry is
  * accepted by the schema (old data) and draws nothing.
  */
-import type { ComponentNode } from "../config/schema";
 import type { Localized, PropDefinition } from "../core/types";
 import type { StyleBreakpoint, StyleValues } from "./style";
+import type { NodeTemplate } from "./tree";
 
 export const ELEMENT_GROUPS = ["layout", "text", "basic"] as const;
 export type ElementGroup = (typeof ELEMENT_GROUPS)[number];
@@ -17,7 +17,11 @@ export const ELEMENT_ICON_NAMES = [
 ] as const;
 export type ElementIconName = (typeof ELEMENT_ICON_NAMES)[number];
 
+export const PATTERN_VARIANTS = ["grid", "dots", "glow"] as const;
+export type PatternVariant = (typeof PATTERN_VARIANTS)[number];
+
 export type ElementType =
+  | "section" | "card" | "pattern" | "accordion" | "accordionItem"
   | "container" | "vFlex" | "hFlex" | "grid" | "div"
   | "heading" | "paragraph" | "text" | "blockQuote"
   | "button" | "image" | "divider" | "spacer" | "icon" | "badge" | "list" | "listItem" | "linkBlock" | "textLink";
@@ -37,7 +41,7 @@ export interface ElementDefinition {
   defaultProps: Record<string, unknown>;
   defaultStyle?: StyleValues;
   defaultBreakpointStyles?: Partial<Record<StyleBreakpoint, StyleValues>>;
-  defaultChildren?: () => Omit<ComponentNode, "id">[];
+  defaultChildren?: () => NodeTemplate[];
   /** Content-tab fields (same contract as section props). */
   fields: PropDefinition[];
 }
@@ -57,7 +61,83 @@ const linkField: PropDefinition = { key: "href", label: L("الرابط", "Link"
 export const LINK_TYPES: readonly ElementType[] = ["button", "linkBlock", "textLink"];
 
 export const ELEMENT_DEFINITIONS: readonly ElementDefinition[] = [
+  // Tree section root: the section itself (background, padding), one per tree.
+  {
+    type: "section",
+    group: "layout",
+    label: L("القسم", "Section"),
+    keywords: ["section", "قسم"],
+    container: true,
+    defaultProps: {},
+    defaultStyle: { paddingTop: 64, paddingBottom: 64 },
+    defaultBreakpointStyles: { mobile: { paddingTop: 40, paddingBottom: 40 } },
+    fields: [],
+  },
   // Layout
+  {
+    type: "card",
+    group: "layout",
+    label: L("بطاقة", "Card"),
+    keywords: ["card", "box", "بطاقة"],
+    container: true,
+    defaultProps: {},
+    defaultStyle: {
+      paddingTop: 24,
+      paddingBottom: 24,
+      paddingStart: 24,
+      paddingEnd: 24,
+      radius: 16,
+      borderWidth: 1,
+      borderColor: "border",
+      background: "background",
+    },
+    fields: [],
+  },
+  {
+    type: "pattern",
+    group: "layout",
+    label: L("زخرفة", "Pattern"),
+    keywords: ["background", "decoration", "grid", "dots", "خلفية", "زخرفة"],
+    container: false,
+    defaultProps: { variant: "grid" },
+    fields: [
+      {
+        key: "variant",
+        label: L("الشكل", "Style"),
+        type: "select",
+        options: [
+          { value: "grid", label: L("شبكة", "Grid") },
+          { value: "dots", label: L("نقاط", "Dots") },
+          { value: "glow", label: L("توهج", "Glow") },
+        ],
+      },
+    ],
+  },
+  {
+    type: "accordion",
+    group: "layout",
+    label: L("أسئلة قابلة للفتح", "Accordion"),
+    keywords: ["faq", "accordion", "collapse", "أسئلة"],
+    container: true,
+    childTypes: ["accordionItem"],
+    defaultProps: {},
+    defaultStyle: { gap: 8 },
+    defaultChildren: () => [
+      { type: "accordionItem", props: { title: "سؤال شائع؟", open: true }, children: [{ type: "paragraph", props: { text: "الإجابة هنا." }, children: [] }] },
+      { type: "accordionItem", props: { title: "سؤال آخر؟" }, children: [{ type: "paragraph", props: { text: "الإجابة هنا." }, children: [] }] },
+    ],
+    fields: [],
+  },
+  {
+    type: "accordionItem",
+    group: "layout",
+    label: L("سؤال", "Accordion item"),
+    keywords: ["question", "سؤال"],
+    container: true,
+    textProp: "title",
+    defaultProps: { title: "سؤال جديد؟" },
+    fields: [textField("title", L("السؤال", "Question"), 200), { key: "open", label: L("مفتوح في البداية", "Open at first"), type: "switch" }],
+  },
   {
     type: "container",
     group: "layout",
@@ -294,9 +374,15 @@ export function getElementDefinition(type: string): ElementDefinition | undefine
   return BY_TYPE.get(type as ElementType);
 }
 
-/** Types shown in the palette (list items come with their list). */
-export const PALETTE_TYPES: readonly ElementType[] = ELEMENT_DEFINITIONS.filter((d) => d.type !== "listItem").map((d) => d.type);
+/**
+ * List items come with their list; a section is only a tree's root. Accordion
+ * items stay in the palette so an emptied accordion can be refilled.
+ */
+const NOT_IN_PALETTE: readonly ElementType[] = ["listItem", "section"];
+
+/** Types shown in the palette. */
+export const PALETTE_TYPES: readonly ElementType[] = ELEMENT_DEFINITIONS.filter((d) => !NOT_IN_PALETTE.includes(d.type)).map((d) => d.type);
 
 /** Limits per custom section (validated on save and publish, checked in the editor). */
-export const MAX_NODES_PER_SECTION = 300;
-export const MAX_ELEMENT_DEPTH = 8;
+export const MAX_NODES_PER_SECTION = 400;
+export const MAX_ELEMENT_DEPTH = 12;

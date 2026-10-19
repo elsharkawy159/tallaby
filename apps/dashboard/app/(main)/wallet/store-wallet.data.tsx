@@ -34,10 +34,12 @@ export async function StoreWalletSection({
   sellerId,
   filter,
   before,
+  openTopUp = false,
 }: {
   sellerId: string;
   filter: EntryFilter;
   before: string | null;
+  openTopUp?: boolean;
 }) {
   const [overview, rows, topUps, t, tStatus, locale] = await Promise.all([
     getStoreWalletOverview(sellerId),
@@ -94,7 +96,7 @@ export async function StoreWalletSection({
                 })}
               </p>
             </div>
-            <TopUpButton sellerId={sellerId} disabled={overview.status !== "active"} />
+            <TopUpButton sellerId={sellerId} disabled={overview.status !== "active"} defaultOpen={openTopUp} />
           </CardContent>
           {balance < 0 && (
             <p className="mx-6 mb-6 flex gap-2 rounded-xl bg-destructive-soft p-3 text-[13px] text-destructive">

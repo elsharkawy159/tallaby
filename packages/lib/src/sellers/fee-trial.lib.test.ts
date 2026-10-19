@@ -48,9 +48,9 @@ describe("feeTrialReminderStage", () => {
   it.each([
     [8 * DAY, null],
     [7 * DAY + 1, null],
-    [7 * DAY, "t7"],
-    [2 * DAY, "t7"],
-    [DAY + 1, "t7"],
+    [7 * DAY, null],
+    [2 * DAY, null],
+    [DAY + 1, null],
     [DAY, "t1"],
     [1, "t1"],
     [0, null],

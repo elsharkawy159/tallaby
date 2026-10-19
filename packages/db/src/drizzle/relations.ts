@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { stores, storeProducts, storeDesignSystems, storePages, storeSiteRevisions, templates, templateVersions, templateInstalls, mediaFolders, mediaAssets, savedBlocks, storeForms, storeFormSubmissions, cmsCollections, cmsItems, cmsItemRevisions, storeIntegrations, storeShippingZones, storeSettingsAudit, sellerWalletTopUps, adminAuditLog } from "./schema";
+import { stores, storeProducts, storeDesignSystems, storePages, storeSiteRevisions, templates, templateVersions, templateInstalls, mediaFolders, mediaAssets, savedBlocks, storeForms, storeFormSubmissions, cmsCollections, cmsItems, cmsItemRevisions, storeIntegrations, storeShippingZones, storeSettingsAudit, sellerWalletTopUps, adminAuditLog, sellerProductCategories, sellerProductBrands } from "./schema";
 import { users, deliveries, shipments, orders, payments, paymentMethods, carts, categories, sellers, coupons, notifications, contacts, userAddresses, products, productVariants, refunds, returns, orderItems, shipmentItems, productQuestions, shippingAddresses, couponUsage, cartItems, reviews, returnItems, reviewVotes, searchLogs, sellerDocuments, sellerPayoutItems, sellerPayouts, reviewComments, userDevices, wishlistItems, wishlists, brands, productAnswers, userRewards, productTranslations, digitalProducts, digitalOrders, sellerCategories, sellerWallet, walletTransactions, digitalFiles, licenseKeys, digitalBundleItems, digitalAccessLogs, shippingProviders, shipmentBatches, shipmentBatchItems, userWallets, userWalletTransactions, walletTopUps, walletPayoutRequests, affiliates, affiliateCommissions } from "./schema";
 
 export const deliveriesRelations = relations(deliveries, ({one}) => ({
@@ -285,7 +285,39 @@ export const productsRelations = relations(products, ({one, many}) => ({
 		fields: [products.sellerId],
 		references: [sellers.id]
 	}),
+	sellerCategory: one(sellerProductCategories, {
+		fields: [products.sellerCategoryId],
+		references: [sellerProductCategories.id]
+	}),
+	sellerBrand: one(sellerProductBrands, {
+		fields: [products.sellerBrandId],
+		references: [sellerProductBrands.id]
+	}),
 	productTranslations: many(productTranslations),
+}));
+
+export const sellerProductCategoriesRelations = relations(sellerProductCategories, ({one, many}) => ({
+	seller: one(sellers, {
+		fields: [sellerProductCategories.sellerId],
+		references: [sellers.id]
+	}),
+	sourceCategory: one(categories, {
+		fields: [sellerProductCategories.sourceCategoryId],
+		references: [categories.id]
+	}),
+	products: many(products),
+}));
+
+export const sellerProductBrandsRelations = relations(sellerProductBrands, ({one, many}) => ({
+	seller: one(sellers, {
+		fields: [sellerProductBrands.sellerId],
+		references: [sellers.id]
+	}),
+	sourceBrand: one(brands, {
+		fields: [sellerProductBrands.sourceBrandId],
+		references: [brands.id]
+	}),
+	products: many(products),
 }));
 
 export const refundsRelations = relations(refunds, ({one}) => ({

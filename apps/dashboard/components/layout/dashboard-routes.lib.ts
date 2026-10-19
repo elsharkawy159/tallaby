@@ -13,6 +13,7 @@ import {
   DollarSign,
   FileBarChart,
   FileText,
+  FolderTree,
   Gem,
   Globe,
   Gift,
@@ -25,6 +26,7 @@ import {
   ShoppingBag,
   Star,
   Store,
+  Tag,
   TrendingUp,
   Truck,
   Wallet,
@@ -48,15 +50,14 @@ export type NavKey =
   | "help"
   | "settings"
   | "fulfillment"
-  | "account"
   // Sidebar groups and items added with the multi-store sitemap (PLAN.md §7.2)
-  | "ordersShipping"
+  | "ordersGroup"
   | "deliveryTracking"
+  | "fulfillmentShipping"
   | "riders"
   | "shippingSettings"
-  | "website"
+  | "websiteContent"
   | "websiteOverview"
-  | "content"
   | "websiteBuilder"
   | "templates"
   | "designSystem"
@@ -69,13 +70,21 @@ export type NavKey =
   | "marketing"
   | "apps"
   | "finance"
+  | "settingsGroup"
   | "storeSettings"
   | "general"
   | "catalog"
   | "paymentMethods"
   | "myStores"
   | "planUsage"
-  | "wallet";
+  | "wallet"
+  // Sidebar regrouping (operations / grow / account & help)
+  | "walletBalance"
+  | "coupons"
+  | "campaigns"
+  | "accountHelp"
+  | "sellerCategories"
+  | "sellerBrands";
 
 export interface DashboardRoute {
   /** A path, or a pattern with `[storeId]` for store-scoped pages. */
@@ -93,37 +102,38 @@ export interface DashboardRoute {
  */
 export const DASHBOARD_ROUTES: DashboardRoute[] = [
   { href: "/", title: "dashboard", icon: BarChart3 },
-  { href: "/orders", title: "orders", parent: "ordersShipping", icon: ShoppingBag },
-  { href: "/orders/delivery", title: "deliveryTracking", parent: "ordersShipping", icon: Truck },
-  { href: "/orders/riders", title: "riders", parent: "ordersShipping", icon: Bike },
-  { href: "/stores/[storeId]/shipping", title: "shippingSettings", parent: "ordersShipping", icon: MapPinned },
   { href: "/products", title: "manageProducts", parent: "products", parentHref: "/products", icon: Package },
   { href: "/products/add", title: "addProducts", parent: "products", parentHref: "/products", icon: PackagePlus },
-  { href: "/stores/[storeId]/catalog", title: "catalog", parent: "products", icon: Package },
+  { href: "/products/categories", title: "sellerCategories", parent: "products", parentHref: "/products", icon: FolderTree },
+  { href: "/products/brands", title: "sellerBrands", parent: "products", parentHref: "/products", icon: Tag },
   { href: "/reviews", title: "reviews", parent: "products", icon: Star },
-  { href: "/stores/[storeId]/website", title: "websiteOverview", parent: "website", icon: Globe },
-  { href: "/stores/[storeId]/editor", title: "websiteBuilder", parent: "website", icon: LayoutTemplate },
-  { href: "/stores/[storeId]/website/templates", title: "templates", parent: "website", icon: LayoutGrid },
-  { href: "/stores/[storeId]/website/design", title: "designSystem", parent: "website", icon: Palette },
-  { href: "/stores/[storeId]/website/domain", title: "domainSeo", parent: "website", icon: Globe },
-  { href: "/stores/[storeId]/website/social", title: "socialMedia", parent: "website", icon: Share2 },
-  { href: "/stores/[storeId]/website/pages", title: "pages", parent: "content", icon: FileText },
-  { href: "/stores/[storeId]/website/blog", title: "blog", parent: "content", icon: Newspaper },
-  { href: "/stores/[storeId]/website/forms", title: "forms", parent: "content", icon: ClipboardList },
-  { href: "/stores/[storeId]/website/media", title: "mediaLibrary", parent: "content", icon: Images },
-  { href: "/coupons", title: "promotions", parent: "marketing", icon: Gift },
-  { href: "/marketing", title: "advertiseProducts", parent: "marketing", icon: TrendingUp },
-  { href: "/stores/[storeId]/apps", title: "apps", icon: AppWindow },
-  { href: "/wallet", title: "wallet", parent: "finance", icon: Wallet },
+  { href: "/orders", title: "orders", parent: "ordersGroup", icon: ShoppingBag },
+  { href: "/orders/delivery", title: "deliveryTracking", parent: "ordersGroup", icon: Truck },
+  { href: "/orders/riders", title: "riders", parent: "fulfillmentShipping", icon: Bike },
+  { href: "/stores/[storeId]/shipping", title: "shippingSettings", parent: "fulfillmentShipping", icon: MapPinned },
+  { href: "/settings/fulfillment", title: "fulfillment", parent: "fulfillmentShipping", icon: Warehouse },
+  { href: "/wallet", title: "walletBalance", parent: "finance", icon: Wallet },
   { href: "/financial", title: "accountStatements", parent: "finance", icon: DollarSign },
   { href: "/reports", title: "reports", parent: "finance", icon: FileBarChart },
-  { href: "/stores/[storeId]/settings", title: "general", parent: "storeSettings", icon: Store },
-  { href: "/stores/[storeId]/settings/payments", title: "paymentMethods", parent: "storeSettings", icon: CreditCard },
-  { href: "/stores", title: "myStores", parent: "account", icon: Store },
-  { href: "/settings", title: "settings", parent: "account", icon: Settings },
-  { href: "/settings/plan", title: "planUsage", parent: "account", icon: Gem },
-  { href: "/settings/fulfillment", title: "fulfillment", parent: "account", icon: Warehouse },
-  { href: "/help", title: "help", parent: "account", icon: CircleHelp },
+  { href: "/stores/[storeId]/website", title: "websiteOverview", parent: "websiteContent", icon: Globe },
+  { href: "/stores/[storeId]/editor", title: "websiteBuilder", parent: "websiteContent", icon: LayoutTemplate },
+  { href: "/stores/[storeId]/website/templates", title: "templates", parent: "websiteContent", icon: LayoutGrid },
+  { href: "/stores/[storeId]/website/design", title: "designSystem", parent: "websiteContent", icon: Palette },
+  { href: "/stores/[storeId]/website/domain", title: "domainSeo", parent: "websiteContent", icon: Globe },
+  { href: "/stores/[storeId]/website/social", title: "socialMedia", parent: "websiteContent", icon: Share2 },
+  { href: "/stores/[storeId]/website/pages", title: "pages", parent: "websiteContent", icon: FileText },
+  { href: "/stores/[storeId]/website/blog", title: "blog", parent: "websiteContent", icon: Newspaper },
+  { href: "/stores/[storeId]/website/forms", title: "forms", parent: "websiteContent", icon: ClipboardList },
+  { href: "/stores/[storeId]/website/media", title: "mediaLibrary", parent: "websiteContent", icon: Images },
+  { href: "/coupons", title: "coupons", parent: "marketing", icon: Gift },
+  { href: "/marketing", title: "campaigns", parent: "marketing", icon: TrendingUp },
+  { href: "/stores/[storeId]/apps", title: "apps", icon: AppWindow },
+  { href: "/stores/[storeId]/settings", title: "general", parent: "settingsGroup", icon: Store },
+  { href: "/stores/[storeId]/settings/payments", title: "paymentMethods", parent: "settingsGroup", icon: CreditCard },
+  { href: "/stores", title: "myStores", parent: "accountHelp", icon: Store },
+  { href: "/settings", title: "settings", parent: "accountHelp", icon: Settings },
+  { href: "/settings/plan", title: "planUsage", parent: "accountHelp", icon: Gem },
+  { href: "/help", title: "help", parent: "accountHelp", icon: CircleHelp },
 ];
 
 const EDIT_PRODUCT: DashboardRoute = {

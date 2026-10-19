@@ -22,6 +22,8 @@ describe("stock photos", () => {
   it("maps search results and drops unsafe ones", () => {
     const mapped = toStockPhoto(photo({ medium: IMG }, { avg_color: "#AABBCC", url: "https://www.pexels.com/photo/42/", alt: " Dress " }));
     expect(mapped).toMatchObject({ id: "42", thumbUrl: IMG, avgColor: "#AABBCC", alt: "Dress", pageUrl: "https://www.pexels.com/photo/42/" });
+    expect(toStockPhoto(photo({ medium: IMG, large2x: "https://evil.test/a.jpg", large: `${IMG}?l` }))?.previewUrl).toBe(`${IMG}?l`);
+    expect(toStockPhoto(photo({ medium: IMG }))?.previewUrl).toBe(IMG);
     expect(toStockPhoto(photo({ medium: "https://evil.test/a.jpg" }))).toBeNull();
     expect(toStockPhoto(photo({ medium: IMG }, { avg_color: "red;}", url: "javascript:alert(1)" }))).toMatchObject({ avgColor: null, pageUrl: "https://www.pexels.com/" });
   });

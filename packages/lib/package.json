@@ -138,6 +138,14 @@
       "types": "./src/store-sites/server.ts",
       "default": "./src/store-sites/server.ts"
     },
+    "./store-sites/catalog-data": {
+      "types": "./src/store-sites/catalog-data.server.ts",
+      "default": "./src/store-sites/catalog-data.server.ts"
+    },
+    "./store-sites/catalog-data.lib": {
+      "types": "./src/store-sites/catalog-data.lib.ts",
+      "default": "./src/store-sites/catalog-data.lib.ts"
+    },
     "./store-sites/preview": {
       "types": "./src/store-sites/preview-token.ts",
       "default": "./src/store-sites/preview-token.ts"

@@ -435,14 +435,14 @@ export const sellers = pgTable("sellers", {
 	planExpiresAt: timestamp("plan_expires_at", { withTimezone: true, mode: 'string' }),
 	/** Audited admin override of the plan's store limit (D27). NULL = plan limit. */
 	maxStoresOverride: integer("max_stores_override"),
-	/** Platform fee plan; rates live in @workspace/lib/orders/platform-fee (0059). */
-	feePlan: text("fee_plan").default('standard_2pct_min5').notNull(),
-	/** New sellers get the 30-day no-fee trial (D5); existing sellers were backfilled false (0059). */
+	/** Platform fee plan (flat EGP 5 since 0067); amounts live in @workspace/lib/orders/platform-fee. */
+	feePlan: text("fee_plan").default('flat_5').notNull(),
+	/** 7-day no-fee trial from the first store's created_at; every seller was backfilled true (0067). */
 	feeTrialEligible: boolean("fee_trial_eligible").default(true).notNull(),
-	/** Set once by startFeeTrialIfNeeded, together with feeTrialEndsAt (0059). */
+	/** Set once by startFeeTrialIfNeeded (stores insert trigger, 0067), with feeTrialEndsAt. */
 	feeTrialStartedAt: timestamp("fee_trial_started_at", { withTimezone: true, mode: 'string' }),
 	feeTrialEndsAt: timestamp("fee_trial_ends_at", { withTimezone: true, mode: 'string' }),
-	/** 'publish' | 'product_active' | 'admin' (0059). */
+	/** 'store_created' (0067) | 'publish' | 'product_active' | 'admin' (0059). */
 	feeTrialStartTrigger: text("fee_trial_start_trigger"),
 	feePlanEffectiveAt: timestamp("fee_plan_effective_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
@@ -1356,10 +1356,73 @@ export const users = pgTable("users", {
 	pgPolicy("Users can read their own profile", { as: "permissive", for: "select", to: ["authenticated"], using: sql`(auth.uid() = id)` }),
 ]);
 
+/**
+ * The seller's own categories (0068): per seller, shared by their stores, never
+ * shared with other sellers. `categories` is only the pack they pick from.
+ */
+export const sellerProductCategories = pgTable("seller_product_categories", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	name: text().notNull(),
+	nameAr: text("name_ar"),
+	/** The pack item it was picked from; null for the seller's own. */
+	sourceCategoryId: uuid("source_category_id"),
+	imageUrl: text("image_url"),
+	position: integer().default(0).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("seller_product_categories_name_key").using("btree", table.sellerId, sql`lower(btrim(${table.name}))`),
+	uniqueIndex("seller_product_categories_source_key").using("btree", table.sellerId, table.sourceCategoryId).where(sql`source_category_id IS NOT NULL`),
+	index("seller_product_categories_seller_idx").using("btree", table.sellerId, table.position),
+	foreignKey({
+			columns: [table.sellerId],
+			foreignColumns: [sellers.id],
+			name: "seller_product_categories_seller_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.sourceCategoryId],
+			foreignColumns: [categories.id],
+			name: "seller_product_categories_source_category_id_fkey"
+		}).onDelete("set null"),
+	check("seller_product_categories_name_check", sql`length(btrim(name)) BETWEEN 1 AND 80`),
+]);
+
+/** The seller's own brands (0068); `brands` is only the pack they pick from. */
+export const sellerProductBrands = pgTable("seller_product_brands", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	name: text().notNull(),
+	nameAr: text("name_ar"),
+	sourceBrandId: uuid("source_brand_id"),
+	logoUrl: text("logo_url"),
+	position: integer().default(0).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("seller_product_brands_name_key").using("btree", table.sellerId, sql`lower(btrim(${table.name}))`),
+	uniqueIndex("seller_product_brands_source_key").using("btree", table.sellerId, table.sourceBrandId).where(sql`source_brand_id IS NOT NULL`),
+	index("seller_product_brands_seller_idx").using("btree", table.sellerId, table.position),
+	foreignKey({
+			columns: [table.sellerId],
+			foreignColumns: [sellers.id],
+			name: "seller_product_brands_seller_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.sourceBrandId],
+			foreignColumns: [brands.id],
+			name: "seller_product_brands_source_brand_id_fkey"
+		}).onDelete("set null"),
+	check("seller_product_brands_name_check", sql`length(btrim(name)) BETWEEN 1 AND 80`),
+]);
+
 export const products = pgTable("products", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	brandId: uuid("brand_id"),
 	categoryId: uuid("category_id").notNull(),
+	/** The seller's own category / brand (0068, optional); the trigger keeps them to this seller's lists. */
+	sellerCategoryId: uuid("seller_category_id"),
+	sellerBrandId: uuid("seller_brand_id"),
 	averageRating: real("average_rating"),
 	reviewCount: integer("review_count").default(0),
 	totalQuestions: integer("total_questions").default(0),
@@ -1392,6 +1455,18 @@ export const products = pgTable("products", {
 }, (table) => [
 	index("product_brand_id_idx").using("btree", table.brandId.asc().nullsLast().op("uuid_ops")),
 	index("product_main_category_id_idx").using("btree", table.categoryId.asc().nullsLast().op("uuid_ops")),
+	index("product_seller_category_id_idx").using("btree", table.sellerCategoryId).where(sql`seller_category_id IS NOT NULL`),
+	index("product_seller_brand_id_idx").using("btree", table.sellerBrandId).where(sql`seller_brand_id IS NOT NULL`),
+	foreignKey({
+			columns: [table.sellerCategoryId],
+			foreignColumns: [sellerProductCategories.id],
+			name: "products_seller_category_id_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.sellerBrandId],
+			foreignColumns: [sellerProductBrands.id],
+			name: "products_seller_brand_id_fkey"
+		}).onDelete("set null"),
 	index("product_seller_id_idx").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops")),
 	index("product_sku_idx").using("btree", table.sku.asc().nullsLast().op("text_ops")),
 	uniqueIndex("unique_product_seller_sku_idx").using("btree", table.sellerId.asc().nullsLast().op("text_ops"), table.sku.asc().nullsLast().op("text_ops")),
@@ -2911,6 +2986,7 @@ export const storeIntegrations = pgTable("store_integrations", {
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
 	unique("store_integrations_store_provider_key").on(table.storeId, table.provider),
+	index("store_integrations_error_idx").using("btree", table.updatedAt.desc().nullsFirst().op("timestamptz_ops")).where(sql`status = 'error'`),
 	index("store_integrations_seller_idx").using("btree", table.sellerId.asc().nullsLast().op("uuid_ops")),
 	foreignKey({
 			columns: [table.storeId],
@@ -3042,8 +3118,12 @@ export const sellerWalletTopUps = pgTable("seller_wallet_top_ups", {
 export const adminAuditLog = pgTable("admin_audit_log", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	actorId: uuid("actor_id"),
-	sellerId: uuid("seller_id").notNull(),
+	/** Null only for platform-wide actions such as template changes (0069). */
+	sellerId: uuid("seller_id"),
 	storeId: uuid("store_id"),
+	/** What a platform row changed, e.g. 'template' + template id (0069). */
+	targetType: text("target_type"),
+	targetId: text("target_id"),
 	action: text().notNull(),
 	before: jsonb().default({}).notNull(),
 	after: jsonb().default({}).notNull(),
@@ -3070,4 +3150,8 @@ export const adminAuditLog = pgTable("admin_audit_log", {
 		}).onDelete("set null"),
 	check("admin_audit_log_action_check", sql`action ~ '^[a-z][a-z_]{2,63}$'`),
 	check("admin_audit_log_reason_check", sql`char_length(btrim(reason)) BETWEEN 3 AND 1000`),
+	check("admin_audit_log_target_check", sql`seller_id IS NOT NULL OR (store_id IS NULL AND target_type IS NOT NULL AND target_id IS NOT NULL)`),
+	check("admin_audit_log_target_type_check", sql`target_type IS NULL OR target_type ~ '^[a-z][a-z_]{2,31}
+`),
+	index("admin_audit_log_created_idx").using("btree", table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
 ]);

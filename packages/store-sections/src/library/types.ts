@@ -47,6 +47,11 @@ export type SectionPreset = {
   /** Stable id, `<category>.<name>`. */
   id: string;
   sectionId: string;
+  /**
+   * A section design (`designs/`): inserting the preset builds that design's
+   * element tree. Design presets use `sectionId: "custom-section"`.
+   */
+  designId?: string;
   category: LibraryCategoryId;
   subcategory: string;
   name: Localized;

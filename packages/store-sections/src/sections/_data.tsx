@@ -69,7 +69,7 @@ export function DataEmpty({ need, ctx, filtered = false }: DataEmptyProps) {
   if (ctx.mode !== "edit") return null;
   const data = ctx.editorData;
   const locale = ctx.locale;
-  if (data?.state === "error") {
+  if (data && (data.state === "error" || data.failed?.includes(need))) {
     return (
       <Frame role="alert">
         <Badge icon={CircleAlert} tone="error" />

@@ -25,11 +25,11 @@ import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { getEventCoordinates } from "@dnd-kit/utilities";
 import { createStore, type StoreApi } from "zustand/vanilla";
 import type { ElementType } from "@workspace/store-sections/render";
-import type { EditorCommands } from "../editor-commands.lib";
-import { ELEMENT_ICONS } from "../editor-icons.lib";
-import { recordUse } from "../editor-palette.lib";
-import type { EditorStore } from "../editor.store";
-import { importStockPhoto } from "../explore.server";
+import type { EditorCommands } from "../lib/editor-commands.lib";
+import { ELEMENT_ICONS } from "../lib/editor-icons.lib";
+import { recordUse } from "../lib/editor-palette.lib";
+import type { EditorStore } from "../state/editor.store";
+import { importStockPhoto } from "../server/explore.server";
 import type { Line, Point, Rect } from "./canvas-geometry.lib";
 import { sampleCanvas, type CanvasSample } from "./canvas-probe.client";
 import { CANVAS_DROP_ID, isCanvasPayload, type CanvasPayload, type DragData, type DragPayload, type DropPlan } from "./dnd.types";
@@ -156,7 +156,8 @@ export function EditorDndProvider({
     const canvas = value.canvas.current;
     if (!payload || !pointer || !canvas) return null;
     const f = canvas.frame.getBoundingClientRect();
-    const local = { x: pointer.x - f.left, y: pointer.y - f.top };
+    // The frame's document starts inside its border.
+    const local = { x: pointer.x - f.left - canvas.frame.clientLeft, y: pointer.y - f.top - canvas.frame.clientTop };
     if (local.x < 0 || local.y < 0 || local.x > f.width || local.y > f.height) return null;
     const sample = sampleCanvas(canvas.doc, local, payload);
     const plan = planDrop(payload, sample.probe, source());

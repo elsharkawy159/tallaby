@@ -48,8 +48,8 @@ export function calculateProductFinalPrice(
 
 /**
  * What the seller is paid for an order of one unit sold at `sellingPrice`,
- * after the platform fee max(EGP 5, 2%) (PLAN.md §13). 0 fee while the
- * seller's trial runs or when exempt. Larger orders pay a lower share.
+ * after the flat EGP 5 platform fee (PLAN.md §13). 0 fee while the seller's
+ * trial runs or when exempt. Larger orders pay a lower share.
  */
 export function calculateSellerEarning(
   sellingPrice: number | string | undefined,

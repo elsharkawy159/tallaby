@@ -8,9 +8,9 @@
  * their boxes, not from droppables. Runs at most once per animation frame.
  */
 import { getElementDefinition } from "@workspace/store-sections/render";
-import { dropIndex } from "../editor-palette.lib";
-import { splitPartAttr } from "../editor-selection.lib";
-import type { SectionRef } from "../editor.store";
+import { dropIndex } from "../lib/editor-palette.lib";
+import { splitPartAttr } from "../lib/editor-selection.lib";
+import type { SectionRef } from "../state/editor.store";
 import { edgeDistance, insertionIndex, insertionLine, type Line, type Point, type Rect } from "./canvas-geometry.lib";
 import type { CanvasPayload, CanvasProbe, ImageCandidate, NodeSlot } from "./dnd.types";
 import { probeItem, probePartSlot } from "./part-probe.client";

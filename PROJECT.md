@@ -12,7 +12,7 @@
 - an independent storefront for every seller at `{subdomain}.tallaby.com` or on the seller's own domain;
 - a seller dashboard, an admin panel, and a shipping/rider app.
 
-**[Planned]** Tallaby becomes a seller SaaS. Sellers sign up in under a minute, design their storefront with a visual builder and templates, connect marketing apps, and pay a per-order platform fee after a 30-day trial. The marketplace keeps working alongside this.
+**[Planned]** Tallaby becomes a seller SaaS. Sellers sign up in under a minute, design their storefront with a visual builder and templates, connect marketing apps, and pay a flat EGP 5 platform fee per delivered order after a 7-day free trial. The marketplace keeps working alongside this.
 
 ## 2. Monorepo
 
@@ -128,11 +128,11 @@ Cart, checkout and coupon lookups are scoped by host through `activeCartWhere(us
 
 ## 8. Commission and trial model
 
-- **[Current]** `placeOrderFromCart` (`packages/lib/src/orders/place-order.ts`) hard-codes a 5% commission per line (`PLATFORM_COMMISSION_RATE = 0.05`). It does not read `sellers.commission_rate` or `sellers.is_commission_exempt`. The seller wallet is credited the net amount on delivery. Admin "delivered" status changes do not credit the seller (known gap).
+- **[Current, owner decision 2026-10-18]** Tallaby's only profit from an order is a **flat EGP 5 per seller per order** (fee plan `flat_5`, `packages/lib/src/orders/platform-fee.lib.ts`). No percentage. Shipping does not change it; it is only capped at the seller's line total for orders under EGP 5. `placeOrderFromCart` computes it in integer piastres and snapshots it per line (`order_items.commission_amount`, `metadata.platformFee`). Orders placed earlier keep their old snapshots (5% or 2%/min 5).
+- **[Current]** The fee is **taken from the seller's store wallet when the order is delivered** (`creditSellerOnDelivery`, a `fee` entry of −5.00). Cancelled or undelivered orders pay nothing. The wallet may go below zero: at 0 the balance becomes −5, then −10, and so on. Fees are never refused.
+- **[Current]** **7-day free trial** for every seller account, counted from the `created_at` of the seller's **first store** (0067: a `stores` insert trigger writes `sellers.fee_trial_started_at/ends_at` once). An order **placed** before `fee_trial_ends_at` pays no fee, even if it is delivered later; orders placed from day 8 pay EGP 5. A second or third store does not restart the trial. 0067 applied this rule to all existing sellers too (running 30-day trials end on their first store's day 7).
+- **[Current]** When the store wallet is negative, the dashboard opens a pop-up once per browser session (`components/layout/negative-wallet-dialog.client.tsx`) with the balance and a **Top up now** button to `/wallet?topup=1`, which opens the top-up dialog.
 - **[Planned, owner-approved]**
-  - The fee for **all sellers, old and new, on every order** is **max(EGP 5, 2% of the eligible subtotal)** per seller per order. Shipping is excluded. It is computed in integer piastres and snapshotted per line. Orders placed before the switch-over keep their 5% snapshots.
-  - The fee is pending until delivery and then posted to the seller's **store wallet**.
-  - **New sellers** get 30 days with no fee from when their store first goes live (first builder Publish or first active product, D20). The trial is set once and never restarted. Existing sellers get no trial.
   - **Store wallet:** the existing `seller_wallet` / `wallet_transactions` are upgraded into one signed ledger per seller (can be negative). It has append-only entries with unique references and a single posting primitive. Entries cover earnings (`sale`), platform fees (`fee`), Kashier top-ups (`top_up`), paid services such as product ads and themes (`service_charge`), payouts and admin adjustments. Refunds are deferred.
   - Kashier is the first provider for new payment work. See `PLAN.md` §13.
 

@@ -75,7 +75,14 @@ function EmptyRow({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function SellerDetailContent({ detail }: { detail: SellerDetail }) {
+export function SellerDetailContent({
+  detail,
+  showBackLink = true,
+}: {
+  detail: SellerDetail;
+  /** The tabbed seller page has its own header with the back link. */
+  showBackLink?: boolean;
+}) {
   const {
     seller,
     owner,
@@ -100,12 +107,14 @@ export function SellerDetailContent({ detail }: { detail: SellerDetail }) {
 
   return (
     <div className="space-y-6">
-      <Link href="/sellers">
-        <Button variant="ghost" size="sm">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Sellers
-        </Button>
-      </Link>
+      {showBackLink && (
+        <Link href="/sellers">
+          <Button variant="ghost" size="sm">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Sellers
+          </Button>
+        </Link>
+      )}
 
       {/* Header */}
       <Card>

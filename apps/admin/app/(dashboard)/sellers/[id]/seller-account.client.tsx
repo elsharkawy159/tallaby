@@ -162,7 +162,7 @@ export function SellerAccountPanel({ sellerId, account }: { sellerId: string; ac
         </Row>
 
         <Row label="Fee plan">
-          <span className="font-medium">{account.feePlan === "standard_2pct_min5" ? "2%, min EGP 5" : account.feePlan}</span>
+          <span className="font-medium">{account.feePlan === "flat_5" ? "Flat EGP 5 per order" : account.feePlan}</span>
           {account.feePlanEffectiveAt && (
             <span className="text-muted-foreground"> · since {formatDate(account.feePlanEffectiveAt)} · the only fee plan today</span>
           )}
@@ -250,7 +250,7 @@ export function SellerAccountPanel({ sellerId, account }: { sellerId: string; ac
               </div>
             )}
             {open === "grant_trial" && (
-              <p className="text-sm">The seller gets the 30-day no-fee trial when their store first goes live.</p>
+              <p className="text-sm">The seller gets the 7-day no-fee trial, counted from their first store's creation date (it may already be over).</p>
             )}
             {open === "revoke_trial" && (
               <p className="text-sm">The trial will not start for this seller. Only possible before it starts.</p>

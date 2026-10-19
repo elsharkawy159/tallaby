@@ -27,6 +27,8 @@ export const SECTION_COPY = {
   pickProduct: { ar: "اختر منتجًا لعرضه هنا.", en: "Choose a product to show here." },
   pickForm: { ar: "اختر نموذجًا لعرضه هنا.", en: "Choose a form to show here." },
   emptyCustom: { ar: "قسم فارغ. أضف عناصر من لوحة الإضافة.", en: "Empty section. Add elements from the Add panel." },
+  emptyContainer: { ar: "اسحب عناصر إلى هنا", en: "Drop elements here" },
+  emptyAccordion: { ar: "اسحب «سؤال» من العناصر إلى هنا", en: "Drop an “Accordion item” from Elements here" },
   formSubmit: { ar: "إرسال", en: "Send" },
   formSuccess: { ar: "شكرًا لك! وصلتنا رسالتك وسنتواصل معك قريبًا.", en: "Thank you! We received your message and will get back to you soon." },
   formSelect: { ar: "اختر…", en: "Choose…" },
@@ -70,6 +72,8 @@ export const SECTION_COPY = {
   dataErrorBody: { ar: "تحقق من اتصالك وحاول مرة أخرى. تعديلاتك محفوظة.", en: "Check your connection and try again. Your edits are safe." },
   dataErrorRetry: { ar: "حاول مرة أخرى", en: "Try again" },
   dataLoading: { ar: "جارٍ تحميل بيانات متجرك…", en: "Loading your store data…" },
+  verifiedBuyer: { ar: "مشترٍ موثّق", en: "Verified buyer" },
+  whatsappChat: { ar: "راسلنا على واتساب", en: "Chat on WhatsApp" },
 } as const satisfies Record<string, Localized>;
 
 export type SectionCopyKey = keyof typeof SECTION_COPY;

@@ -3,12 +3,12 @@ import postgres from "postgres";
 import { and, eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import * as DB_SCHEMA from "@workspace/db/schema";
-import { classicHomeContent } from "@workspace/store-sections/templates";
+import { emptyHomeContent } from "@workspace/store-sections/templates";
 import { createIsolationWorld, type IsolationWorld } from "./isolation.fixtures";
 import { ensureStoreSiteScaffold } from "./server";
 import { getStoreForEditor } from "../store-sites/server";
 
-/** Stores start as Tallaby Classic (PLAN.md P4-03). Skipped without TEST_DATABASE_URL. */
+/** Stores start with an empty home page and no header/footer (Classic removed, 2026-10-19). Skipped without TEST_DATABASE_URL. */
 const TEST_DATABASE_URL = process.env.TEST_DATABASE_URL;
 
 describe.skipIf(!TEST_DATABASE_URL)("site scaffold (integration)", { timeout: 60_000 }, () => {
@@ -30,11 +30,11 @@ describe.skipIf(!TEST_DATABASE_URL)("site scaffold (integration)", { timeout: 60
     (await db.select().from(s.storePages).where(and(eq(s.storePages.storeId, storeId), eq(s.storePages.isHome, true))))[0]!;
   const store = async (storeId: string) => (await db.select().from(s.stores).where(eq(s.stores.id, storeId)))[0]!;
 
-  it("an unpublished store gets the classic header, footer and home page", async () => {
+  it("an unpublished store gets an empty home page and no header or footer", async () => {
     await getStoreForEditor(w.a.sellerId, w.a.a2, db);
-    expect((await store(w.a.a2)).sharedHeader).toMatchObject({ sectionId: "classic-header" });
-    expect((await store(w.a.a2)).sharedFooter).toMatchObject({ sectionId: "classic-footer" });
-    expect((await home(w.a.a2)).draftContent).toEqual(classicHomeContent());
+    expect((await store(w.a.a2)).sharedHeader).toBeNull();
+    expect((await store(w.a.a2)).sharedFooter).toBeNull();
+    expect((await home(w.a.a2)).draftContent).toEqual(emptyHomeContent());
   });
 
   it("never replaces what a seller made or published", async () => {
@@ -57,6 +57,6 @@ describe.skipIf(!TEST_DATABASE_URL)("site scaffold (integration)", { timeout: 60
     await ensureStoreSiteScaffold(db, w.a.a2);
     const pages = await db.select().from(s.storePages).where(eq(s.storePages.storeId, w.a.a2));
     expect(pages.filter((p) => p.isHome)).toHaveLength(1);
-    expect(pages[0]!.draftContent).toEqual(classicHomeContent());
+    expect(pages[0]!.draftContent).toEqual(emptyHomeContent());
   });
 });

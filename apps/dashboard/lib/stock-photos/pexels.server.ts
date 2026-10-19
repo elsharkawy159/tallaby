@@ -27,7 +27,8 @@ async function pexels<T>(path: string): Promise<T> {
 export const pexelsConfigured = () => Boolean(process.env.PEXELS_API_KEY);
 
 export const searchPexels = createCachedQuery<[query: string, page: number], StockPhotoPage>({
-  name: "stock:pexels-search",
+  // Bump the version whenever StockPhoto changes shape: cached pages live for a day (v2 added previewUrl).
+  name: "stock:pexels-search:v2",
   ttl: cacheProfiles.taxonomy,
   tags: () => [searchTags.stockPhotos()],
   query: async (query: string, page: number): Promise<StockPhotoPage> => {

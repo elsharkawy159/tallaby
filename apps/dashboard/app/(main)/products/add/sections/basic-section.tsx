@@ -19,6 +19,7 @@ import {
   TEXTAREA_CLASS,
 } from "@/components/form/form-ui";
 import { CategoryField } from "../category-field";
+import { SellerTaxonomyFields } from "../../categories-brands/seller-taxonomy-fields.client";
 import { useFieldError } from "./fields";
 import type {
   AddProductFormData,
@@ -119,6 +120,7 @@ export function BasicSection({
           selectedBrands={brands ?? []}
         />
       </div>
+      <SellerTaxonomyFields />
 
       {(["en", "ar"] as const).map((loc) => (
         <div key={loc} className={cn("flex flex-col gap-1.5", activeLocale !== loc && "hidden")} lang={loc}>

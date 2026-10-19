@@ -4,7 +4,7 @@ import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { z } from "zod";
 import Link from "next/link";
@@ -19,7 +19,9 @@ import { Separator } from "@workspace/ui/components/separator";
 import { Textarea } from "@workspace/ui/components/textarea";
 import { BUTTON_CLASS, FIELD_CLASS, FieldHint, LabelNote, SectionCard, TEXTAREA_CLASS } from "@/components/form/form-ui";
 import { BannerField, LogoField } from "@/components/stores/brand-image-fields.client";
+import { STORE_INDUSTRIES, findIndustry } from "@/lib/stores/industries.lib";
 import { cn } from "@/lib/utils";
+import { StoreCatalogSections, useStoreCatalog, type StoreCatalogProps } from "./catalog.client";
 import { saveStoreGeneral } from "./store-settings.server";
 import { toGeneralPatch, type StoreGeneralFormValues } from "./store-settings.dto";
 
@@ -31,14 +33,18 @@ export function StoreGeneralForm({
   initial,
   readOnly,
   brandInSettings,
+  catalog: catalogProps,
 }: {
   storeId: string;
   initial: StoreGeneralFormValues;
   readOnly: boolean;
   /** Logo + banner fields; false when Website › Design system owns them. */
   brandInSettings: boolean;
+  /** Which of the seller's products this store shows (D24); saved with the same button. */
+  catalog: StoreCatalogProps;
 }) {
   const t = useTranslations("storeSettings");
+  const uiLocale = useLocale();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -65,18 +71,31 @@ export function StoreGeneralForm({
   const form = useForm<StoreGeneralFormValues>({ resolver: zodResolver(schema), defaultValues: initial });
   const name = useWatch({ control: form.control, name: "name" });
   const description = useWatch({ control: form.control, name: "description" });
+  const [categoryEn, categoryAr] = useWatch({ control: form.control, name: ["storeCategory", "storeCategoryAr"] });
+  const industry = findIndustry({ en: categoryEn, ar: categoryAr });
+  const catalog = useStoreCatalog(storeId, catalogProps);
   const disabled = readOnly || isPending;
+  const dirty = form.formState.isDirty || catalog.dirty;
 
   const onSubmit = (values: StoreGeneralFormValues) =>
     startTransition(async () => {
-      const result = await saveStoreGeneral(storeId, toGeneralPatch(values, { brand: brandInSettings }));
-      if (result.success) {
-        toast.success(t("saved"));
-        form.reset(values);
-        router.refresh();
-      } else {
-        toast.error(t(`errors.${result.error}`));
+      const catalogInvalid = catalog.validate();
+      if (catalogInvalid) {
+        toast.error(catalogInvalid);
+        return;
       }
+      if (form.formState.isDirty) {
+        const result = await saveStoreGeneral(storeId, toGeneralPatch(values, { brand: brandInSettings }));
+        if (!result.success) {
+          toast.error(t(`errors.${result.error}`));
+          return;
+        }
+        form.reset(values);
+      }
+      const catalogError = await catalog.save();
+      if (catalogError) toast.error(catalogError);
+      else toast.success(t("saved"));
+      router.refresh();
     });
 
   const text = (field: keyof StoreGeneralFormValues, label: string, opts: { placeholder?: string; dir?: "ltr"; type?: string } = {}) => (
@@ -150,6 +169,31 @@ export function StoreGeneralForm({
               </FormItem>
             )}
           />
+          <div className="space-y-2">
+            <p className="text-[13px] font-semibold">{t("fields.industry")}</p>
+            <FieldHint>{t("fields.industryHint")}</FieldHint>
+            <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t("fields.industry")}>
+              {STORE_INDUSTRIES.map((option) => (
+                <button
+                  key={option.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={industry?.id === option.id}
+                  disabled={disabled}
+                  onClick={() => {
+                    form.setValue("storeCategory", option.en, { shouldDirty: true });
+                    form.setValue("storeCategoryAr", option.ar, { shouldDirty: true });
+                  }}
+                  className={cn(
+                    "rounded-full border px-3 py-1.5 text-xs transition-colors disabled:opacity-50",
+                    industry?.id === option.id ? "border-primary bg-primary/5 font-medium text-primary" : "hover:border-primary/40",
+                  )}
+                >
+                  {uiLocale === "en" ? option.en : option.ar}
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
             {text("storeCategoryAr", t("fields.categoryAr"), { placeholder: t("fields.categoryArPlaceholder") })}
             {text("storeCategory", t("fields.categoryEn"), { placeholder: t("fields.categoryEnPlaceholder"), dir: "ltr" })}
@@ -259,8 +303,10 @@ export function StoreGeneralForm({
           <FieldHint>{t("currency.hint")}</FieldHint>
         </SectionCard>
 
+        <StoreCatalogSections catalog={catalog} products={catalogProps.products} maxProducts={catalogProps.maxProducts} disabled={disabled} />
+
         <div className="sticky bottom-0 flex justify-end border-t bg-background/95 py-3 backdrop-blur">
-          <Button type="submit" className={BUTTON_CLASS} disabled={disabled || !form.formState.isDirty}>
+          <Button type="submit" className={BUTTON_CLASS} disabled={disabled || !dirty}>
             {isPending ? <LoaderCircle className="animate-spin" /> : <Save />}
             {t("save")}
           </Button>
