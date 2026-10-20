@@ -5,7 +5,7 @@
  */
 import type { SectionInstance, SiteLocale } from "../config/schema";
 import type { SectionRegistry } from "../core/registry";
-import { getDesign, instantiateDesign } from "../designs";
+import { getDesign, instantiateDesign, instantiateTemplate } from "../designs";
 import type { MakeId } from "../elements/tree";
 import { LIBRARY_CATEGORIES } from "./categories";
 import { SECTION_PRESETS } from "./presets";
@@ -14,8 +14,9 @@ import type { LibraryCategoryId, PresetCapability, SectionPreset } from "./types
 const ALL_PRESETS: readonly SectionPreset[] = SECTION_PRESETS;
 const PRESETS_BY_ID = new Map(ALL_PRESETS.map((p) => [p.id, p]));
 
-export function getPreset(id: string): SectionPreset | undefined {
-  return PRESETS_BY_ID.get(id);
+/** A preset by id, from `presets` (the editor's list) or the built-in library. */
+export function getPreset(id: string, presets: readonly SectionPreset[] = SECTION_PRESETS): SectionPreset | undefined {
+  return presets === SECTION_PRESETS ? PRESETS_BY_ID.get(id) : presets.find((p) => p.id === id);
 }
 
 /**
@@ -55,7 +56,13 @@ function haystack(preset: SectionPreset): string {
   );
 }
 
-const HAYSTACKS = new Map(ALL_PRESETS.map((p) => [p.id, haystack(p)]));
+/** Search text per preset object (a database preset may share an id with a code one but not its words). */
+const HAYSTACKS = new WeakMap<SectionPreset, string>();
+function searchText(preset: SectionPreset): string {
+  let text = HAYSTACKS.get(preset);
+  if (text === undefined) HAYSTACKS.set(preset, (text = haystack(preset)));
+  return text;
+}
 
 export type PresetFilter = {
   query?: string;
@@ -75,7 +82,7 @@ export function filterPresets(filter: PresetFilter, presets: readonly SectionPre
     if (filter.subcategory && preset.subcategory !== filter.subcategory) return false;
     if (filter.capabilities?.length && !preset.capabilities.some((c) => filter.capabilities!.includes(c))) return false;
     if (!words.length) return true;
-    const text = HAYSTACKS.get(preset.id) ?? haystack(preset);
+    const text = searchText(preset);
     return words.every((word) => text.includes(word));
   });
 }
@@ -98,6 +105,9 @@ export function instantiatePreset(
   id: string,
   opts: { defaultLocale?: SiteLocale; makeId?: MakeId; industry?: string } = {},
 ): SectionInstance | null {
+  if (preset.tree) {
+    return instantiateTemplate(preset.tree, { id, source: `${preset.designKey ?? preset.id}@${preset.version ?? 1}`, ...opts });
+  }
   if (preset.designId) {
     const design = getDesign(preset.designId);
     return design ? instantiateDesign(design, { id, ...opts }) : null;

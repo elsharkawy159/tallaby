@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, Layers, Loader2, Package, Send, Smartphone } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@workspace/ui/components/button";
 import { Tabs, TabsList, TabsTrigger } from "@workspace/ui/components/tabs";
@@ -34,6 +34,7 @@ const stepId = (n: Step) => `ad-step-${n}`;
 export function AdvertiseProducts({ products, requests, wallet }: Props) {
   const t = useTranslations("advertise");
   const tNav = useTranslations("nav");
+  const dir = useLocale() === "en" ? "ltr" : "rtl";
   const [period, setPeriod] = useState<AdPackagePeriod>("weekly");
   const [packageKey, setPackageKey] = useState<AdPackageKey | null>(null);
   const [productId, setProductId] = useState<string | null>(null);
@@ -142,10 +143,10 @@ export function AdvertiseProducts({ products, requests, wallet }: Props) {
               </>
             }
           >
-            <Tabs value={period} onValueChange={(v) => setPeriod(v as AdPackagePeriod)} className="mb-4">
+            <Tabs value={period} onValueChange={(v) => setPeriod(v as AdPackagePeriod)} dir={dir} className="mb-4">
               <TabsList>
                 {AD_PACKAGE_PERIODS.map((key) => (
-                  <TabsTrigger key={key} value={key} className="min-w-30">
+                  <TabsTrigger key={key} value={key}>
                     {t(`package.periods.${key}`)}
                   </TabsTrigger>
                 ))}

@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { FULFILLMENT_SERVICE_TYPES, TALLABY_SERVICES_ENABLED } from "@workspace/lib/fulfillment";
 import { upsertSellerFulfillmentRequest } from "@workspace/lib/fulfillment/server";
 import { isAccessError, requireSeller } from "@/lib/auth/require-seller.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
@@ -27,6 +28,16 @@ export async function requestFulfillmentServices(input: unknown): Promise<Fulfil
     const seller = await requireSeller({ forWrite: true });
     if (!requestLimiter.check(`fulfillment-request:${seller.sellerId}`)) {
       return { success: false, error: "rateLimited" };
+    }
+
+    // No Tallaby service can be requested while TALLABY_SERVICES_ENABLED is off.
+    if (!TALLABY_SERVICES_ENABLED) {
+      const services = (input as { services?: Record<string, { provider?: unknown } | undefined> } | null)?.services;
+      const errors: Record<string, string> = {};
+      for (const type of FULFILLMENT_SERVICE_TYPES) {
+        if (services?.[type]?.provider === "tallaby") errors[`services.${type}.provider`] = "tallaby_service_unavailable";
+      }
+      if (Object.keys(errors).length) return { success: false, error: "validation", errors };
     }
 
     const result = await upsertSellerFulfillmentRequest({ sellerId: seller.sellerId, request: input });

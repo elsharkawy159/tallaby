@@ -173,7 +173,7 @@ const DEMO = demoStore({
 
 export const ROAST = libraryTemplate({
   key: ROAST_KEY,
-  version: 1,
+  version: 2,
   name: L("روست", "Roast"),
   description: L(
     "محمصة بن: وعود يوم التحميص، تحميص الأسبوع، حكاية من ١٩٨٧ ومن الحباية للفنجان. أربع صفحات جاهزة.",

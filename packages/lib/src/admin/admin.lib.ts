@@ -47,6 +47,24 @@ export const ADMIN_AUDIT_ACTIONS = [
   "create_blog_post",
   "update_blog_post",
   "delete_blog_post",
+  // Admin website builder (store sites)
+  "open_store_editor",
+  "publish_store_site",
+  "unpublish_store_site",
+  "restore_store_revision",
+  "discard_store_draft",
+  "change_store_page",
+  "apply_store_template",
+  // Admin website builder (templates and library sections)
+  "create_template",
+  "publish_template_version",
+  "restore_template_version",
+  "delete_template",
+  "create_library_section",
+  "update_library_section",
+  "publish_library_section",
+  "hide_library_section",
+  "delete_library_section",
 ] as const;
 
 export type AdminAuditAction = (typeof ADMIN_AUDIT_ACTIONS)[number];

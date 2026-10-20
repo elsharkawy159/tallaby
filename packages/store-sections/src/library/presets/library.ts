@@ -11,29 +11,30 @@ import type { NodeTemplate } from "../../elements/tree";
 import type { SectionPreset } from "../types";
 
 /**
+ * The preset id of a design (or a `library_sections` row) by its key:
  * `hero-classic` in `hero` → `hero.classic`; `faq-side` in `faq` → `faq.side`.
  */
-function presetId(design: Design): string {
-  const [, ...rest] = design.id.split("-");
-  return `${design.category}.${rest.length ? rest.join("-") : design.id}`;
+export function presetIdFor(category: string, key: string): string {
+  const [, ...rest] = key.split("-");
+  return `${category}.${rest.length ? rest.join("-") : key}`;
 }
 
-/** Store data the design draws through its data nodes. */
-function dataNeeds(design: Design): DataNeed[] {
+/** Store data a tree draws through its data nodes. */
+export function presetDataNeeds(tree: NodeTemplate): DataNeed[] {
   const out = new Set<DataNeed>();
   const visit = (node: NodeTemplate) => {
     const need = DATA_NODE_NEEDS[node.type];
     if (need) out.add(need);
     node.children?.forEach(visit);
   };
-  visit(design.tree(treeBuilder));
+  visit(tree);
   return [...out];
 }
 
 export function designPreset(design: Design): SectionPreset {
-  const needs = dataNeeds(design);
+  const needs = presetDataNeeds(design.tree(treeBuilder));
   return {
-    id: presetId(design),
+    id: presetIdFor(design.category, design.id),
     sectionId: "custom-section",
     designId: design.id,
     category: design.category,

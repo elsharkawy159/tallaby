@@ -182,6 +182,8 @@
     "onlinePayment": "Online Payment",
     "onlinePaymentDescription": "Pay via InstaPay, Vodafone Cash, or E& Cash.",
     "codUnavailableHighShipping": "Not available for high shipping costs",
+    "codUnavailableAboveMax": "Not available for orders above the store limit",
+    "noPaymentMethodsAvailable": "This store has no payment method available for this order. Please contact the store.",
     "payWithCard": "Pay with Card",
     "payByCard": "Pay by Card",
     "payByCardDescription": "Pay securely with your credit or debit card.",
@@ -2052,6 +2054,9 @@
     "notFoundTitle": "There's no store at this address",
     "notFoundBody": "Check the link you were sent, or find the store on Tallaby.",
     "notFoundCta": "Browse stores on Tallaby",
+    "offlineTitle": "This store is temporarily unavailable",
+    "offlineBody": "{store} isn't taking visitors or orders right now. Please check back later.",
+    "offlineCta": "Go to Tallaby",
     "backToStore": "Back to {store}",
     "previousCategories": "Previous categories",
     "nextCategories": "Next categories",
@@ -2283,14 +2288,16 @@
       "kicker": "Website builder",
       "title": "Design it like you'd sketch it",
       "desc": "Try it: change the colors, layout and device in the preview.",
-      "f1Title": "Visual editing",
-      "f1Body": "Click any section to edit text, images and order. What you see is what customers get.",
-      "f2Title": "Your brand, everywhere",
-      "f2Body": "Logo, colors, corner style and layouts apply across every page at once.",
-      "f3Title": "Mobile-ready",
-      "f3Body": "Every store adapts to phones automatically, where most of your customers shop.",
-      "f4Title": "No-code publishing",
-      "f4Body": "Publish changes instantly. No hosting, servers or developers to manage.",
+      "f1Title": "Ready-made sections",
+      "f1Body": "Hero banners, campaigns, posters and product cards. Pick one and drop it into your page.",
+      "f2Title": "Edit anything visually",
+      "f2Body": "Click any element to change its size, weight, alignment, spacing and color. Layers keep every page organized.",
+      "f3Title": "Arabic and English",
+      "f3Body": "Switch between AR and EN in the editor and write the content for each language.",
+      "f4Title": "Right on every device",
+      "f4Body": "Preview on desktop, tablet and mobile, and hide any element on a specific device.",
+      "f5Title": "AI assistant (coming soon)",
+      "f5Body": "Select an element and tell the assistant what to change.",
       "device": "Device",
       "desktop": "Desktop",
       "mobile": "Mobile",
@@ -2317,64 +2324,220 @@
       }
     },
     "features": {
-      "kicker": "Everything to sell online",
-      "title": "One dashboard for the whole store",
-      "desc": "Pick an area to see what you get.",
-      "dashboard": "Dashboard",
-      "areas": "Dashboard areas",
+      "kicker": "Inside the dashboard",
+      "title": "Everything in your store, from one dashboard",
+      "desc": "From adding a product to delivering the order and seeing the fee in your wallet. Take a quick tour.",
+      "tourLabel": "Dashboard tour",
       "tabs": {
-        "products": {
-          "title": "Products",
-          "sub": "Variants, photos and stock"
+        "home": {
+          "title": "Dashboard",
+          "sub": "Sales, orders and balance at a glance"
         },
-        "orders": {
-          "title": "Orders",
-          "sub": "From new to delivered"
+        "product": {
+          "title": "Add products",
+          "sub": "In Arabic and English, with category suggestions"
         },
-        "checkout": {
-          "title": "Checkout",
-          "sub": "Fast, mobile-first checkout"
+        "delivery": {
+          "title": "Delivery follow-up",
+          "sub": "Assign couriers and track every delivery"
         },
-        "analytics": {
-          "title": "Analytics",
-          "sub": "Sales and top products"
+        "wallet": {
+          "title": "Wallet",
+          "sub": "A flat 5 EGP per delivered order"
         },
-        "seo": {
-          "title": "SEO",
-          "sub": "Titles, descriptions, links"
+        "apps": {
+          "title": "Apps & integrations",
+          "sub": "Meta, Google and TikTok, no code"
         },
-        "marketing": {
-          "title": "Marketing",
-          "sub": "Discount codes and share links"
+        "website": {
+          "title": "Website & social",
+          "sub": "Publish, connect a domain, add socials"
         }
       },
-      "status": {
-        "inStock": "In stock",
-        "low": "Low stock",
-        "draft": "Draft",
-        "new": "New",
-        "packing": "Packing",
-        "shipped": "Shipped",
-        "delivered": "Delivered"
+      "home": {
+        "greeting": "Good morning, Nour",
+        "pending": "You have <count></count> new orders waiting to be prepared.",
+        "addProduct": "Add product",
+        "d7": "7 days",
+        "d30": "30 days",
+        "d90": "90 days",
+        "sales": "Sales",
+        "orders": "Orders",
+        "ordersUnit": "orders",
+        "rating": "Store rating",
+        "wallet": "Wallet balance",
+        "withdraw": "Withdraw",
+        "reviews": "128 reviews",
+        "last30": "Last 30 days",
+        "revenue": "Revenue",
+        "orderCount": "Orders"
       },
-      "checkoutTitle": "Checkout",
-      "fullName": "Full name",
-      "phone": "Phone number",
-      "address": "Address",
-      "payOnline": "Pay online",
-      "cod": "Cash on delivery",
-      "placeOrder": "Place order",
-      "sales": "Sales",
-      "orders": "Orders",
-      "avgOrder": "Avg. order",
-      "pageTitle": "Page title",
-      "description": "Description",
-      "url": "URL",
-      "seoTitle": "Your store | Brand name",
-      "seoDesc": "A short description that shows under the title on Google.",
-      "discountCode": "Discount code",
-      "active": "Active",
-      "shareLink": "Share link"
+      "product": {
+        "title": "New product",
+        "basics": "Basics",
+        "photos": "Photos",
+        "description": "Description",
+        "price": "Price",
+        "inventory": "Inventory",
+        "basicInfo": "Basic information",
+        "basicInfoHint": "Name and category are the first things customers see, and both are used in search.",
+        "name": "Product name",
+        "link": "Link:",
+        "category": "Category",
+        "chooseCategory": "Choose a category",
+        "suggested": "Suggested:",
+        "suggestion": "Fashion › Shirts",
+        "readiness": "Publish readiness",
+        "left6": "6 required fields left",
+        "left5": "5 required fields left",
+        "left4": "4 required fields left",
+        "left2": "2 fields left",
+        "ready": "Ready to publish",
+        "publish": "Publish"
+      },
+      "delivery": {
+        "intro": "Assign your couriers, follow every delivery and keep your customers’ orders moving.",
+        "addCourier": "Add courier",
+        "ready": "Ready to ship",
+        "inProgress": "In progress",
+        "deliveredToday": "Delivered today",
+        "cash": "Cash with couriers",
+        "customer": "Nour · Nasr City, Cairo",
+        "assigned": "Assigned",
+        "out": "Out for delivery",
+        "delivered": "Delivered",
+        "assign": "Assign courier",
+        "courier": "Ahmed Samir",
+        "courierInitial": "A",
+        "courierStatus": "Courier · available",
+        "cod": "Cash on delivery",
+        "toast": "Delivered · courier collected 1,080 EGP"
+      },
+      "wallet": {
+        "title": "Store wallet",
+        "month": "This month: 46 sales, 230 EGP in fees",
+        "topUp": "Top up wallet",
+        "howTitle": "How platform fees work",
+        "howBody": "For every delivered order, Tallaby deducts a flat 5 EGP from your wallet, whatever the order value. If your balance is zero or less, it goes negative. The first 7 days are free. No fees on cancelled or undelivered orders.",
+        "activity": "Wallet activity",
+        "all": "All",
+        "sales": "Sales",
+        "fees": "Fees",
+        "topUps": "Top-ups",
+        "other": "Other",
+        "adjustment": "Adjustment",
+        "opening": "Opening balance",
+        "fee": "Order fee",
+        "delivered": "delivered",
+        "card": "Card",
+        "cancelled": "Cancelled order",
+        "noFee": "no fee"
+      },
+      "apps": {
+        "title": "Apps & integrations",
+        "connected": "Connected",
+        "connect": "Connect",
+        "connecting": "Connecting",
+        "items": {
+          "metaPixel": {
+            "desc": "Measure your Facebook and Instagram ads and build custom audiences.",
+            "kind": "Storefront script"
+          },
+          "ga4": {
+            "desc": "Track your store visits and sales in Google Analytics.",
+            "kind": "Storefront script"
+          },
+          "gtm": {
+            "desc": "Manage your own tags from one GTM container.",
+            "kind": "Storefront script"
+          },
+          "metaCapi": {
+            "desc": "Send purchases to Meta from the server for more accurate tracking.",
+            "kind": "Server-side"
+          },
+          "tiktok": {
+            "desc": "Measure your TikTok ad results.",
+            "kind": "Storefront script"
+          },
+          "sheets": {
+            "desc": "Send your orders to a spreadsheet automatically.",
+            "kind": "Sync"
+          }
+        }
+      },
+      "website": {
+        "address": "Store address",
+        "copy": "Copy",
+        "open": "Open",
+        "publishedYesterday": "Last published: yesterday · 6 pages",
+        "publishedNow": "Last published: just now · 6 pages",
+        "edit": "Edit site",
+        "preview": "Preview",
+        "publish": "Publish changes",
+        "menu": {
+          "design": {
+            "title": "Design system",
+            "sub": "Colors, fonts, logo and buttons"
+          },
+          "pages": {
+            "title": "Pages",
+            "sub": "Add, rename and reorder pages"
+          },
+          "domain": {
+            "title": "Domain & SEO",
+            "sub": "Your address, custom domain and search settings"
+          },
+          "social": {
+            "title": "Social links",
+            "sub": "Links in your header and footer"
+          }
+        },
+        "socialTitle": "Social media",
+        "socialHint": "Your accounts, shown as icons in your store header and footer.",
+        "social": {
+          "facebook": "Facebook",
+          "instagram": "Instagram",
+          "tiktok": "TikTok",
+          "whatsapp": "WhatsApp",
+          "x": "X (Twitter)"
+        },
+        "toast": "Live at nour.tallaby.com"
+      },
+      "moreTitle": "Also in your dashboard",
+      "more": {
+        "coupons": {
+          "title": "Discount coupons",
+          "body": "Discount codes to share with customers"
+        },
+        "reviews": {
+          "title": "Customer reviews",
+          "body": "Product reviews and an overall store rating"
+        },
+        "templates": {
+          "title": "Ready templates",
+          "body": "Tallaby Classic, Atelier and more. Switch any time"
+        },
+        "forms": {
+          "title": "Forms",
+          "body": "Contact and request forms, with submissions in your dashboard"
+        },
+        "blog": {
+          "title": "Store blog",
+          "body": "Write posts that bring in search traffic"
+        },
+        "media": {
+          "title": "Media library",
+          "body": "All your store images in one place"
+        },
+        "reports": {
+          "title": "Statements & reports",
+          "body": "Download sales and fee statements any time"
+        },
+        "stores": {
+          "title": "Up to 3 stores",
+          "body": "Each with its own link and design, from one account"
+        }
+      }
     },
     "pricing": {
       "kicker": "Simple pricing",
@@ -2389,6 +2552,7 @@
       "i5": "Free themes and sections",
       "i6": "Fast 24/7 support",
       "i7": "Up to 3 stores",
+      "i8": "First 7 days with no fees",
       "note": "Payment processing and shipping are charged separately. <link>Full pricing details</link>"
     },
     "faq": {
@@ -2937,6 +3101,18 @@
       {
         "q": "Does the fee change with the order value?",
         "a": "No. A 150 EGP order and a 5,000 EGP order both cost 5 EGP. Cancelled and returned orders aren't charged."
+      },
+      {
+        "q": "How is the fee collected?",
+        "a": "Each store has a wallet. When an order is delivered, 5 EGP is deducted from it. If the balance reaches zero it can go negative, and you can top it up any time from the dashboard. The first 7 days are free."
+      },
+      {
+        "q": "Can I use my own couriers?",
+        "a": "Yes. From Delivery follow-up you add your couriers, assign them to orders, track each delivery, and see how much cash on delivery each courier is holding."
+      },
+      {
+        "q": "Can I connect Meta Pixel or Google Analytics?",
+        "a": "Yes. From Apps and integrations you can connect Meta Pixel, the Meta Conversions API, Google Analytics 4, Google Tag Manager and TikTok Pixel without touching code."
       },
       {
         "q": "Is there a limit on products or orders?",

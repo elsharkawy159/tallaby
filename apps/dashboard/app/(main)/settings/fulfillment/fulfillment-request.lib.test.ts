@@ -48,6 +48,15 @@ describe("initialRequestValues", () => {
     expect(values.details).toMatchObject({ estimatedSkus: "11_50", hasFragileProducts: true, coverageGovernorates: ["CAIRO"] });
     expect(values.pickup).toMatchObject({ governorate: "GIZA", city: "Dokki" });
   });
+
+  it("starts every service as the seller's when no Tallaby plan is on offer", () => {
+    const values = initialRequestValues([], {
+      ...noRequest,
+      services: [{ serviceType: "storage", requestedProvider: "tallaby", requestedPlanId: STORAGE, requestedConfig: {} }],
+    });
+    expect(values.services.storage).toEqual({ provider: "seller", planId: null });
+    expect(values.services.delivery.provider).toBe("seller");
+  });
 });
 
 describe("toFulfillmentRequest", () => {

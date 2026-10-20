@@ -7,6 +7,7 @@ import { StorefrontCatalog } from "./_components/storefront-catalog";
 import s from "./storefront.module.css";
 import { StoreSitePage } from "./_components/store-site";
 import { getStorefrontSite } from "@/lib/store-site/preview.server";
+import { isStoreOfflineForRequest } from "@/lib/store-site/offline.server";
 
 type StorefrontPageProps = {
   params: Promise<{ locale: string; subdomain: string }>;
@@ -20,6 +21,8 @@ export default async function StorefrontPage({ params, searchParams }: Storefron
   const { locale, subdomain } = await params;
   const sp = await searchParams;
   const store = await resolveStorefront(subdomain);
+  // Website offline: the layout shows the offline page instead.
+  if (await isStoreOfflineForRequest(store)) return null;
   const categories = await getStorefrontCategories(store.id, catalogStoreId(store));
 
   const query: StoreQuery = {

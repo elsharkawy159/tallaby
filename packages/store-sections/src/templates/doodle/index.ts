@@ -167,7 +167,7 @@ const DEMO = demoStore({
 
 export const DOODLE = libraryTemplate({
   key: DOODLE_KEY,
-  version: 1,
+  version: 2,
   name: L("دودل", "Doodle"),
   description: L(
     "ألعاب خشب مرحة: افتتاحية بنتو، المفضلة عند الأطفال، كوبون وليه خشب. أربع صفحات جاهزة.",

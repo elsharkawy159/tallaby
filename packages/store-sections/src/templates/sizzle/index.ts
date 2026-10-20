@@ -245,7 +245,7 @@ const DEMO = demoStore({
 
 export const SIZZLE = libraryTemplate({
   key: SIZZLE_KEY,
-  version: 1,
+  version: 2,
   name: L("سيزل", "Sizzle"),
   description: L(
     "برجر وشاورما وبيتزا: الأكل في العنوان، عرض الليلة، بنطبخ إزاي وآراء الزباين. أربع صفحات جاهزة.",

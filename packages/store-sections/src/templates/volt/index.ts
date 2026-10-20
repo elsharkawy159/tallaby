@@ -142,7 +142,7 @@ const DEMO = demoStore({
 
 export const VOLT = libraryTemplate({
   key: VOLT_KEY,
-  version: 1,
+  version: 2,
   name: L("فولت", "Volt"),
   description: L(
     "إكسسوارات موبايل: كلمة كبيرة للمنتج، صفوف شراء سريع، عروض بالمبلغ ومقارنة. أربع صفحات جاهزة.",

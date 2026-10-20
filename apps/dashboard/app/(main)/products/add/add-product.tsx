@@ -245,12 +245,12 @@ export default function AddProduct ({
                 action={
                   <Button
                     type="button"
-                    variant="soft"
-                    className={cn(SMALL_BUTTON_CLASS, "h-8 text-xs")}
+                    variant="default"
+                    className={cn(SMALL_BUTTON_CLASS, "h-9 px-3.5 text-[13px] font-semibold shadow-sm")}
                     onClick={() => setImportOpen(true)}
                   >
                     <FileDown />
-                    <span className="hidden sm:inline">{tBasic("importFromLink")}</span>
+                    {tBasic("importFromLink")}
                   </Button>
                 }
               />

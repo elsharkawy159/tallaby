@@ -22,10 +22,17 @@ export type FulfillmentModel = (typeof FULFILLMENT_MODELS)[number]
 
 /**
  * "Let Tallaby handle fulfillment" is shown as "Soon" and can't be requested
- * yet (owner, 2026-10-19). New sellers start as seller-managed. Individual
- * Tallaby services under "I want to manage fulfillment" are unaffected.
+ * yet (owner, 2026-10-19). New sellers start as seller-managed.
  */
 export const TALLABY_FULFILLMENT_ENABLED = false
+
+/**
+ * Tallaby runs no fulfillment services yet (owner, 2026-10-21): storage,
+ * packaging, delivery, customer service and returns are all the seller's.
+ * The seller dashboard shows each Tallaby service as "Soon", refuses requests
+ * for one, and offers products only as fulfilled by the seller.
+ */
+export const TALLABY_SERVICES_ENABLED = false
 
 export const FULFILLMENT_SERVICE_STATUSES = [
   'requested',

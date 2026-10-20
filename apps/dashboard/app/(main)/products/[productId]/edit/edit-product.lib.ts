@@ -9,6 +9,7 @@ import {
   type VariantLocalizedMap,
 } from "@/lib/utils/variant-types.lib";
 import { parsePriceJson } from "@workspace/lib";
+import { TALLABY_SERVICES_ENABLED } from "@workspace/lib/fulfillment";
 
 type ProductForEdit = {
   id: string;
@@ -199,9 +200,11 @@ export function buildEditDefaultValues(
     },
     condition: (product.condition as AddProductFormData["condition"]) ?? "new",
     conditionDescription: product.conditionDescription ?? "",
+    // Tallaby fulfils nothing yet: a Tallaby-fulfilled product is saved back as the seller's.
     fulfillmentType:
-      (product.fulfillmentType as AddProductFormData["fulfillmentType"]) ??
-      "seller_fulfilled",
+      product.fulfillmentType === "platform_fulfilled" && !TALLABY_SERVICES_ENABLED
+        ? "seller_fulfilled"
+        : ((product.fulfillmentType as AddProductFormData["fulfillmentType"]) ?? "seller_fulfilled"),
     handlingTime:
       typeof product.handlingTime === "string"
         ? parseInt(product.handlingTime, 10) || 1

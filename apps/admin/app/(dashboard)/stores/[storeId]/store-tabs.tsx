@@ -21,6 +21,7 @@ import { auditActionLabel } from "../../sellers/[id]/seller-admin.lib";
 import { storeAdminAction } from "../../sellers/[id]/seller-admin.server";
 import { PAYMENT_METHOD_LABELS, formatAdminDate, formatBytes, localizedText } from "../stores.lib";
 import { unpublishCmsItemAction } from "../stores.server";
+import { discardSiteDraftAction, restoreSiteRevisionAction, unpublishSiteAction } from "./website-actions.server";
 
 type TabProps = { store: AdminStoreHeader };
 
@@ -170,7 +171,11 @@ const MEDIA_COLUMNS: AdminTableColumn[] = [
   { id: "createdAt", header: "Uploaded", sortable: true, descFirst: true },
 ];
 
-export async function StoreWebsiteTab({ store }: TabProps) {
+/**
+ * `canWrite`: admin / super_admin (moderators see the tab read-only). The
+ * site actions re-check the role, the store and the reason on the server.
+ */
+export async function StoreWebsiteTab({ store, canWrite }: TabProps & { canWrite: boolean }) {
   const site = await getStoreWebsiteForAdmin(store.id);
   const colors = (site.design?.colors ?? {}) as Record<string, unknown>;
   return (
@@ -215,9 +220,9 @@ export async function StoreWebsiteTab({ store }: TabProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Published revisions (view only)</CardTitle>
+          <CardTitle className="text-base">Published revisions</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           {site.revisions.length === 0 ? (
             <Empty>Never published.</Empty>
           ) : (
@@ -228,13 +233,50 @@ export async function StoreWebsiteTab({ store }: TabProps) {
                     #{revision.revisionNumber} · {revision.templateKey}
                     {revision.id === site.publishedRevisionId && <Badge className="ml-2">Live</Badge>}
                   </span>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="flex items-center gap-2 text-xs text-muted-foreground">
                     {formatAdminDate(revision.createdAt)}
                     {revision.publishedBy ? ` · ${revision.publishedBy}` : ""}
+                    {canWrite && (
+                      <ReasonActionButton
+                        label="Restore"
+                        title={`Restore revision #${revision.revisionNumber} to the drafts?`}
+                        description="The store's drafts are replaced by this revision. The live site does not change until someone publishes."
+                        confirmLabel="Restore to drafts"
+                        payload={{ storeId: store.id, revisionId: revision.id }}
+                        action={restoreSiteRevisionAction}
+                      />
+                    )}
                   </span>
                 </li>
               ))}
             </ul>
+          )}
+          {canWrite && (site.publishedRevisionId || store.siteStatus === "published") && (
+            <div className="flex flex-wrap items-center gap-2 border-t pt-4">
+              {site.publishedRevisionId && (
+                <ReasonActionButton
+                  label="Discard draft"
+                  title="Discard the unpublished changes?"
+                  description="Every page, the design and the header/footer go back to the live revision. The seller's unpublished edits are lost."
+                  confirmLabel="Discard draft"
+                  destructive
+                  payload={{ storeId: store.id }}
+                  action={discardSiteDraftAction}
+                />
+              )}
+              {store.siteStatus === "published" && (
+                <ReasonActionButton
+                  label="Unpublish website"
+                  title="Unpublish this store's website?"
+                  description="Visitors see the store's offline page until it is published again. The drafts are kept."
+                  confirmLabel="Unpublish"
+                  destructive
+                  payload={{ storeId: store.id }}
+                  action={unpublishSiteAction}
+                />
+              )}
+              <p className="w-full text-xs text-muted-foreground">Every action needs a reason and is saved in the audit log.</p>
+            </div>
           )}
         </CardContent>
       </Card>

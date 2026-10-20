@@ -1,3 +1,4 @@
+import { TALLABY_SERVICES_ENABLED } from "@workspace/lib/fulfillment";
 import {
   parsedProductImportSchema,
   type ImportFormat,
@@ -864,7 +865,8 @@ function parseShippingLines(lines: string[]) {
     const val = kv.value.toLowerCase();
 
     if (/fulfillment/.test(key)) {
-      if (val.includes("platform")) fulfillmentType = "platform_fulfilled";
+      // Tallaby fulfils nothing yet, so a "platform" product imports as the seller's.
+      if (val.includes("platform")) fulfillmentType = TALLABY_SERVICES_ENABLED ? "platform_fulfilled" : "seller_fulfilled";
       else if (val.includes("seller")) fulfillmentType = "seller_fulfilled";
       else if (val.includes("fba")) fulfillmentType = "fba";
       else if (val.includes("digital")) fulfillmentType = "digital";

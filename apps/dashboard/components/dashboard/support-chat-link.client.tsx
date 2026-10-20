@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { getSupportWhatsAppUrl } from "@/lib/constants";
@@ -63,6 +64,20 @@ export const SupportChatLink = ({ isCollapsed, className }: SupportChatLinkProps
 };
 
 /**
+ * Pages with a fixed bottom action bar (save / publish / pay). The button is
+ * lifted above the bar there so it never covers the primary action, which in
+ * RTL sits in the same bottom-left corner.
+ */
+const fabOffsetFor = (pathname: string) => {
+  // Add product (incl. bulk import) and edit product: the bar shows on every
+  // breakpoint. On phones it wraps to full-width buttons, so the button hides.
+  if (/^\/products\/(add|[^/]+\/edit)(\/|$)/.test(pathname)) return "bottom-24 max-sm:hidden";
+  // Advertise products: the summary bar shows below lg only.
+  if (/^\/marketing(\/|$)/.test(pathname)) return "bottom-24 lg:bottom-5";
+  return "bottom-5";
+};
+
+/**
  * Floating WhatsApp support button, a circle in the bottom inline-end corner
  * of every dashboard page: bottom-left in RTL, bottom-right in LTR. The
  * sidebar sits on the inline-start side, so the button never overlaps it.
@@ -70,6 +85,7 @@ export const SupportChatLink = ({ isCollapsed, className }: SupportChatLinkProps
 export const SupportWhatsAppButton = () => {
   const t = useTranslations("nav");
   const href = useSupportWhatsAppUrl();
+  const offset = fabOffsetFor(usePathname() ?? "");
 
   return (
     <a
@@ -78,7 +94,10 @@ export const SupportWhatsAppButton = () => {
       rel="noopener noreferrer"
       title={t("chatWithSupportHint")}
       aria-label={t("chatWithSupport")}
-      className="fixed bottom-5 end-5 z-40 flex size-14 items-center justify-center rounded-full bg-[#25d366] text-white shadow-lg shadow-black/15 transition-[transform,background-color] duration-300 hover:scale-105 hover:bg-[#1fb855] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#25d366] focus-visible:ring-offset-2 focus-visible:ring-offset-background print:hidden"
+      className={cn(
+        "fixed end-5 z-40 flex size-14 items-center justify-center rounded-full bg-[#25d366] text-white shadow-lg shadow-black/15 transition-[transform,background-color] duration-300 hover:scale-105 hover:bg-[#1fb855] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#25d366] focus-visible:ring-offset-2 focus-visible:ring-offset-background print:hidden",
+        offset
+      )}
     >
       <WhatsAppIcon className="size-7" />
     </a>

@@ -31,6 +31,16 @@ export function fromTemplate(template: NodeTemplate, makeId: MakeId): ComponentN
 }
 
 /**
+ * A template from a node: a deep copy without ids, all the way down. The
+ * inverse of `fromTemplate` (the admin section editor saves its canvas tree
+ * back into `library_sections` with it).
+ */
+export function toTemplate(node: ComponentNode): NodeTemplate {
+  const { id: _id, children, ...rest } = node;
+  return { ...structuredClone(rest), children: children.map(toTemplate) };
+}
+
+/**
  * The tree of a new tree section holding `nodes`: a `section` root around
  * them (a moved section root is used as it is).
  */

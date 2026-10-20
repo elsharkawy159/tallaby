@@ -7,6 +7,7 @@ import {
   createStorePage,
   deleteStorePage,
   discardStoreDrafts,
+  getStoreDraftVersions,
   getStoreSiteStatus,
   listStoreRevisions,
   publishStoreSite,
@@ -29,7 +30,7 @@ import { createRateLimiter } from "@/lib/rate-limit.lib";
 import { listStoreForms } from "@workspace/lib/store-forms/server";
 import { getStoreCatalog } from "@workspace/lib/stores/server";
 import { loadEditorForms, loadEditorSnapshot, type EditorCatalogSnapshot, type EditorForm } from "./editor.data";
-import { EDITOR_ERRORS, type EditorErrorKey, type EditorFormSummary, type EditorResult } from "./editor.dto";
+import { EDITOR_ERRORS, type EditorErrorKey, type EditorFormSummary, type EditorResult } from "@workspace/store-editor/editor.dto";
 
 /**
  * Website editor actions (PLAN.md P4-04). Every action takes the store id
@@ -93,10 +94,10 @@ export async function saveDesignSystem(storeId: string, designSystem: unknown, c
   });
 }
 
-export async function saveChrome(storeId: string, part: "header" | "footer", instance: unknown) {
-  return withStore<null>(storeId, { forWrite: true }, async ({ seller, store }) => {
+export async function saveChrome(storeId: string, part: "header" | "footer", instance: unknown, clientVersion: number) {
+  return withStore<{ version: number }>(storeId, { forWrite: true }, async ({ seller, store }) => {
     if (!saveLimiter.check(`editor:${seller.sellerId}`)) return fail("rateLimited");
-    const result = await saveStoreChrome(seller.sellerId, store.id, part, instance, { allowedSections: ALLOWED });
+    const result = await saveStoreChrome(seller.sellerId, store.id, part, instance, Number(clientVersion), { allowedSections: ALLOWED });
     return result.success ? result : fail(result.error);
   });
 }
@@ -109,6 +110,13 @@ const refreshLimiter = createRateLimiter({ limit: 120, windowMs: 10 * 60_000 });
  * brands, reviews, coupons, units sold) when the seller comes back from
  * adding records in another tab. Read-only, never cached, store-checked.
  */
+export async function draftVersions(storeId: string) {
+  return withStore<NonNullable<Awaited<ReturnType<typeof getStoreDraftVersions>>>>(storeId, {}, async ({ seller, store }) => {
+    const versions = await getStoreDraftVersions(seller.sellerId, store.id);
+    return versions ? { success: true, data: versions } : fail("notFound");
+  });
+}
+
 export async function refreshEditorData(storeId: string) {
   return withStore<EditorCatalogSnapshot>(storeId, {}, async ({ seller, store }) => {
     if (!refreshLimiter.check(`${seller.sellerId}:${store.id}`)) return fail("rateLimited");

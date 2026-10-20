@@ -1,5 +1,3 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import type { ComponentNode, SectionInstance, SiteConfig } from "../config/schema";
@@ -13,20 +11,26 @@ import { countNodes, treeDepth } from "../elements/tree";
 import { SectionRenderer } from "../render/render";
 import { storeSectionRegistry } from "../sections";
 import { LIBRARY_TEMPLATES, TEMPLATE_JSON_END, TEMPLATE_JSON_START, getCodeTemplate, getTemplateDesign, templateConfigJson, templatesSeedSql } from "./catalog";
+import { FROZEN_SEEDS, migrationSha256 } from "./frozen-seeds.test-utils";
 import { prepareTemplateForStore, templateFormNeeds } from "./prepare";
 
 /** Each batch's generated seed migration (regenerate with `template:sql <keys> <file>`). */
 const SEEDS: Record<string, readonly string[]> = {
-  "0074_fashion_templates.sql": ["mode", "streetwear", "kasr"],
-  "0075_electronics_templates.sql": ["techhub", "volt", "arcade", "arena"],
-  "0076_beauty_templates.sql": ["pure", "glow", "elixir", "botanica"],
-  "0077_home_kitchen_templates.sql": ["nest", "daily", "hearth", "clay"],
-  "0078_food_templates.sql": ["sizzle", "harvest", "loaf", "roast"],
-  "0079_furniture_templates.sql": ["verdant", "loft", "oak", "sakan"],
-  "0080_jewelry_templates.sql": ["lumiere", "karat", "fadda"],
-  "0081_kids_templates.sql": ["playroom", "bambino", "doodle", "hekaya"],
-  "0082_sports_templates.sql": ["pace", "stride", "core", "basecamp"],
-  "0083_auto_templates.sql": ["garage", "drive", "moto"],
+  // 0074–0083 seeded v1 by category; 0084 (v2, mobile header padding) also seeds Classic and Atelier first.
+  "0084_mobile_header_padding.sql": [
+    ...["mode", "streetwear", "kasr", "techhub", "volt", "arcade", "arena", "pure", "glow", "elixir", "botanica"],
+    ...["nest", "daily", "hearth", "clay", "sizzle", "harvest", "loaf", "roast", "verdant", "loft", "oak", "sakan"],
+    ...["lumiere", "karat", "fadda", "playroom", "bambino", "doodle", "hekaya", "pace", "stride", "core", "basecamp"],
+    ...["garage", "drive", "moto"],
+  ],
+  // Templates 49–100 (v1), one migration for all ten store categories.
+  "0090_library_templates_49_100.sql": [
+    ...["kettan", "zay", "sitara", "shanta", "tasfya", "layali", "kabl", "sada", "zaki", "saa", "tany"],
+    ...["nada", "kohl", "oud", "sabon", "barber", "matbakh", "fokhar", "tawla", "tanzim", "qahwa", "khodar"],
+    ...["lahma", "halawa", "atara", "dokan", "bunn", "mobilia", "zarea", "nour", "mafrash", "rokn", "zahra"],
+    ...["nuqra", "lulu", "saat", "mahr", "lego", "mama", "madrasa", "hikaya", "ahlam", "yoga", "koora"],
+    ...["darraga", "sabaha", "boxing", "tyre", "zeina", "kahraba", "safar", "garagy"],
+  ],
 };
 
 const walk = (nodes: readonly ComponentNode[] | undefined): ComponentNode[] => (nodes ?? []).flatMap((n) => [n, ...walk(n.children)]);
@@ -175,15 +179,22 @@ describe("library template seeds", () => {
     for (const key of seeded) expect(getCodeTemplate(key), key).toBeTruthy();
   });
 
-  it.each(Object.entries(SEEDS))("%s matches the package (regenerate with template:sql)", (file, keys) => {
-    const sql = readFileSync(join(__dirname, "../../../db/migrations", file), "utf8").replace(/\r\n/g, "\n");
+  // frozen: applied on staging and production 2026-10-20; DB is the master copy (admin website builder).
+  it.each(Object.keys(SEEDS))("%s is unchanged (frozen)", (file) => {
+    expect(FROZEN_SEEDS[file], file).toBeTruthy();
+    expect(migrationSha256(file)).toBe(FROZEN_SEEDS[file]);
+  });
+
+  it.each(Object.entries(SEEDS))("%s: the current generator output still passes validateSiteConfig", (file, keys) => {
     const templates = keys.map((k) => getCodeTemplate(k)!);
-    expect(sql).toBe(templatesSeedSql(templates, file));
-    const blocks = sql.split(TEMPLATE_JSON_START).slice(1);
+    const seed = templatesSeedSql(templates, file);
+    const blocks = seed.split(TEMPLATE_JSON_START).slice(1);
     expect(blocks).toHaveLength(templates.length);
     blocks.forEach((block, i) => {
       const json = block.split(TEMPLATE_JSON_END)[0]!.trim().replace(/^'|'::jsonb,$/g, "").replace(/''/g, "'");
       expect(JSON.parse(json)).toEqual(JSON.parse(templateConfigJson(templates[i]!)));
+      const validated = validateSiteConfig(JSON.parse(json));
+      expect(validated.success, `${keys[i]}: ${JSON.stringify(validated.success ? "" : validated.issues)}`).toBe(true);
     });
     // Building every template config takes a while once the list is long.
   }, 60_000);

@@ -183,7 +183,7 @@ const DEMO = demoStore({
 
 export const STRIDE = libraryTemplate({
   key: STRIDE_KEY,
-  version: 1,
+  version: 2,
   name: L("سترايد", "Stride"),
   description: L(
     "جري وريكفري: شريط عروض، شرائح تذاكر، أقسام بنتو ورسايل العملاء. أربع صفحات جاهزة.",

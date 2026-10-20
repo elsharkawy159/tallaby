@@ -98,7 +98,7 @@ export const classicHeader = defineDesign({
   ),
   keywords: ["header", "classic", "tallaby", "menu", "هيدر", "كلاسيك"],
   tree: (t) =>
-    t.section({ label: L("الهيدر", "Header"), style: { paddingTop: 0, paddingBottom: 0, background: "white" } }, [
+    t.section({ label: L("الهيدر", "Header"), style: { paddingTop: 0, paddingBottom: 0, background: "white" }, mobile: { paddingTop: 0, paddingBottom: 0 } }, [
       t.box(
         [
           t.text(L("توصيل لكل المحافظات · الدفع عند الاستلام", "Delivery to every governorate · Cash on delivery"), {

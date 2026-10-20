@@ -51,7 +51,7 @@ export const atelierHeader = defineDesign({
   ),
   keywords: ["header", "atelier", "fashion", "centered", "هيدر", "موضة"],
   tree: (t) =>
-    t.section({ label: L("الهيدر", "Header"), style: { paddingTop: 0, paddingBottom: 0, background: "background" } }, [
+    t.section({ label: L("الهيدر", "Header"), style: { paddingTop: 0, paddingBottom: 0, background: "background" }, mobile: { paddingTop: 0, paddingBottom: 0 } }, [
       t.box(
         [
           t.text(L("وصلت قطع الخريف الجديدة · توصيل لكل محافظات مصر", "The autumn pieces are in · Delivery across Egypt"), {

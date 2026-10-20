@@ -2254,6 +2254,19 @@ Performance comes from streaming, one SQL round-trip per list and per-tab loadin
 
 ---
 
+### Phase 9C — Admin website builder (owner request 2026-10-20)
+
+Design: `docs/superpowers/specs/2026-10-20-admin-website-builder-design.md`. Plan: `docs/superpowers/plans/2026-10-20-admin-website-builder.md`. Admins edit any store's website, the library sections and the templates with the same builder sellers use.
+
+- The seller editor moved out of `apps/dashboard` into `packages/store-editor`. It talks to its host only through an `EditorAdapter` (data, save, publish, media, links, capabilities). The dashboard, the admin store editor, the library-section editor and the template editor each supply an adapter.
+- Library sections (`library_sections`, `0086`) and templates (`0087` drafts and meta) are now mastered in the database. The code seeds are insert-only, so an admin edit is never overwritten by a deploy.
+- Every admin write to a store's site is audited and sets `site_edited_by_admin_at` (`0085`); the seller sees an "admin updated" banner. A chrome (header/footer) version check stops two editors overwriting each other.
+- A new store takes the database default template.
+
+Tasks **AB-01 … AB-15** map to plan Tasks 1–15: AB-01 package and adapter contract; AB-02 move pure logic; AB-03 move the UI behind the adapter; AB-04 chrome version check (`0085`); AB-05 external-change detection; AB-06 admin store-site guard and audit; AB-07 admin store editor; AB-08 photo slots and `instantiateTemplate`; AB-09 `library_sections` (`0086`); AB-10 section palette from the database; AB-11 admin library-section editor; AB-12 template drafts and meta (`0087`); AB-13 default template from the database; AB-14 template studio lib; AB-15 admin template editor.
+
+---
+
 ### Phase 10 — Domain repositioning and marketing content (gated by D8)
 
 **P10-01 · P2** `/sell` content rewrite per §16 (AR first, brand **طلبي**; no unsupported claims).
@@ -2396,7 +2409,7 @@ Tick each box when its acceptance is met, and add the date and commit.
 - [x] P3-04 Home (KPIs, checklist, trial, wallet) — 2026-10-17, `a0b1e6a` (trial banner waits for P6)
 - [x] P3-05 Business & account + Plan & usage — 2026-10-17, `fc88c48`
 - [x] P3-06 Orders & Shipping group (orders, delivery tracking, riders, customer timeline) — 2026-10-17, `73e0197`
-- [~] P3-07 Payment methods (COD default; Vodafone Cash, e& Cash, WE Pay, Orange Cash, InstaPay with details; others Soon) — Part A (settings page) 2026-10-17, `f65ecfb`; **Part B (store checkout, seller confirmation) waits for owner approval** with P6-05
+- [~] P3-07 Payment methods (COD default; Vodafone Cash, e& Cash, WE Pay, Orange Cash, InstaPay with details; others Soon) — Part A (settings page) 2026-10-17, `f65ecfb`; **storefront checkout filter** 2026-10-20 (owner: filter only, see §23); **Part B (seller-collected payment to the seller's own details, seller confirmation, fee-only delivery entry) waits for owner approval**
 - [~] P3-08 Shipping settings (Tallaby vs own delivery, zones) — Part A (settings + zones) 2026-10-17, `ba8e783`; **Part B (checkout charge, D31 fulfillment switch, fee-only debit) waits for owner approval** with P6-05
 
 **Phase 4**
@@ -2434,7 +2447,7 @@ Tick each box when its acceptance is met, and add the date and commit.
 - [ ] P4B-13 Convert section to custom (**deferred** to the sections plan)
 - [x] P4B-14 Brand panel in the editor (2026-10-18; themes, colours, fonts, radius/width/spacing on the same draft as Website › Design system, see §23)
 - [x] P4B-15 Templates, Explore and Forms tabs in the editor (2026-10-18, owner request; not in the original plan, see §23)
-- [~] Storefront templates from Claude Design (owner request 2026-10-19; not in the original plan, see §23): 01 **Atelier** (`0070`) and the library-built templates on staging and production by category batch: Fashion 02–04 (`0074`, 2026-10-20); the other batches follow in registry order
+- [x] Storefront templates from Claude Design (owner request 2026-10-19; not in the original plan, see §23): 01 **Atelier** (`0070`) and the library-built templates 02–38 (`0074`–`0083`, 2026-10-20) and 49–100 (`0090` + `0092`, 2026-10-21) on staging and production. All 90 templates of the design registry are live.
 - [~] Tallaby Classic as the default template, rebuilt as element trees (owner request 2026-10-19, see §23): built; every never-published store starts from it in its drafts; `0071` not applied; awaiting the owner's review
 - [x] P4B-16 Movable parts in pre-built sections: slots + item drag for the Content sections (2026-10-18, owner request; not in the original plan, see §23)
 
@@ -2497,6 +2510,23 @@ Tick each box when its acceptance is met, and add the date and commit.
 - [x] P9B-12 Action centre + SaaS KPIs — 2026-10-18
 - [x] P9B-13 Audit log page — 2026-10-18
 - [x] P9B-14 Security pass on the new admin surface — 2026-10-18 (grep checks; full P9-04 review still open)
+
+**Phase 9C** (admin website builder, [spec](docs/superpowers/specs/2026-10-20-admin-website-builder-design.md); commit ranges from base `245d4a9`)
+- [x] AB-01 `packages/store-editor` scaffold and `EditorAdapter` contract — 2026-10-20 (`245d4a9..2110473`)
+- [x] AB-02 Editor pure logic moved into the package — 2026-10-20 (`2110473..3b76247`)
+- [x] AB-03 Editor UI moved behind the adapter — 2026-10-20 (`3b76247..7a6568c`; browser E2E pending)
+- [x] AB-04 Chrome version check, `0085` — 2026-10-20 (`7a6568c..ce694cd`; applied staging and production)
+- [x] AB-05 External draft change detection — 2026-10-20 (`ce694cd..c17645c`)
+- [x] AB-06 Admin store-site guard and audit — 2026-10-20 (`c17645c..6c9ab5c`)
+- [x] AB-07 Admin edits and publishes a store's website — 2026-10-20 (`6c9ab5c..6ccce5e`; browser E2E pending)
+- [x] AB-08 Photo slots and `instantiateTemplate` — 2026-10-20 (`6ccce5e..4890ec0`)
+- [x] AB-09 `library_sections`, `0086` — 2026-10-20 (`4890ec0..2e813c3`; applied staging and production)
+- [x] AB-10 Section palette from `library_sections` — 2026-10-20 (`2e813c3..97b797c`)
+- [x] AB-11 Admin library-section management and editor — 2026-10-20 (`97b797c..8a37895`; browser E2E pending)
+- [x] AB-12 Template drafts and meta, `0087`, insert-only seeds — 2026-10-20 (`8a37895..132ac4e`; applied staging and production)
+- [x] AB-13 Default template and template meta from the database — 2026-10-20 (`132ac4e..e7062ef`)
+- [x] AB-14 Template studio lib — 2026-10-20 (`e7062ef..f565c3b`)
+- [x] AB-15 Admin template editor — 2026-10-20 (`f565c3b..8b94f62`; browser E2E pending)
 
 **Phase 10**
 - [ ] P10-01 `/sell` rewrite
@@ -3494,3 +3524,125 @@ After P1-08 and P1-01 (`3289639`), typecheck and test match the baseline. `@work
   - Presets: "Airy" is now 96 (was 72, barely different from the 64 tree default); the editor placeholder shows 64.
 - **Brand › Container width:** the code path is correct. Containers use `max-w-(--sf-max-width,1200px)`, no template container overrides `maxWidth`, and the class is in the dashboard and storefront CSS. The editor's desktop canvas is only as wide as the pane (`DEVICE_WIDTH.desktop = "100%"`), so on most screens it is narrower than 1200–1440px and Standard/Wide look the same there. On the storefront they differ. No code change; a scaled real-width desktop preview would be a separate task.
 - Checks: store-sections 2022/2022 and dashboard 229/229 tests pass, both `tsc` clean. `pnpm --filter dashboard lint` crashes inside ESLint at load (`Class extends value undefined`, @typescript-eslint), separate from this change. Not checked in the browser: the dashboard needs a login.
+
+### 2026-10-20 — No header padding-y on mobile; every template re-seeded (`0084`, owner request)
+
+- **Cause:** the `section` element's registry default is 64px top and bottom, and 40px on mobile (`elements/registry.ts`). Every header design set its desktop padding (0, or 16 for Pill and 14 for Ruled) but never its mobile padding, so `withDefaults` (`designs/builder.ts`) kept the 40px. That put a 40px band above and below every header on phones.
+- **Fix:** each header's root section now sets `mobile` to its own desktop padding-y: 0 for the flush headers, 16 for Pill and 14 for Ruled. This covers the 10 library headers (`designs/headers/`), plus `classic/chrome.ts` and `atelier/chrome.ts`. A new test in `designs.test.tsx` checks that every header keeps its padding-y on mobile.
+- **Templates:** seeds are insert-only, so every template's version was bumped: Classic v4, Atelier and the 37 library templates v2. They are all in one generated migration, `0084_mobile_header_padding.sql`. The seed tests now check `0084` (with `toContain`, because one file holds all the batches). `0070`, `0071` and `0074`–`0083` are left as applied history. For a non-default template above v1, the generator's rollback comment now says to restore the previous version, not `DELETE FROM templates`.
+- **Applied:** staging, then a rolled-back production dry run, then production at 2026-10-20T09:23:55Z (owner-approved). The current-version config hash `d090cf4d…` matches across staging, the dry run and production. Classic is still the default.
+- **Not changed:** sites already stored for stores (the 11 production stores' Classic v3 drafts and published revisions) keep their headers. The fix reaches them only when a seller re-applies a template or re-adds a header. Changing them would be a separate data migration on seller content.
+- Checks: store-sections 2014/2014 tests, `tsc` clean; `@workspace/lib` 447 passed and 183 skipped when run alone (out of memory under the parallel `pnpm test`). Existing failures not caused by this change: the `ecommerce` typecheck (`profile.chunks.tsx`, react-hook-form resolver types) and the `@workspace/ui` lint (`eslint` not installed). Not checked in the browser.
+
+### 2026-10-20 — Storefront checkout follows the store's payment methods (P3-07, owner request)
+
+- **Owner decisions (in chat):** (1) *filter only*: a storefront checkout shows only the methods the store enabled in Store settings › Payment methods, but the money flow is unchanged, so enabled wallets and InstaPay still pay to Tallaby's numbers (`apps/ecommerce/lib/manual-payment-methods.ts`). Paying to the seller's own details is still Part B. (2) Card and the customer wallet are hidden on storefronts, because they are "soon" in store settings. This also settles D30: stores with no saved payments settings get the default, which is COD only.
+- **Rule:** `storefrontCheckoutMethods` / `isStorefrontCheckoutMethodAllowed` in `packages/lib/src/payments/store-methods.ts`. COD → `cash_on_delivery` (with its `maxOrder` and `note`); InstaPay, Vodafone Cash and e& Cash → the same manual methods. **WE Pay and Orange Cash map to nothing**, because Tallaby has no account for them. A store with only those enabled shows "no payment method available".
+- **Server:** `getStorefrontCheckoutPayments()` (`apps/ecommerce/lib/storefront.server.ts`) resolves the store from the request host and reads `stores.settings` fresh, not from the cached storefront profile. `createOrder` passes the result to `placeOrderFromCart` (new optional `storefrontPayments`), which refuses any other method, and refuses COD above `maxOrder` judged on the order total. Marketplace and admin flows don't pass it, so they are unchanged.
+- **UI:** `checkout.data.tsx` hides groups and manual children the store hasn't enabled, defaults to the first allowed method, shows the COD note, and labels COD above the store limit (`codUnavailableAboveMax`, plus `noPaymentMethodsAvailable`, in `ar.json` and `en.json`).
+- **Not done:** the COD fee (`cod.fee`) is still not charged, because adding it changes order totals and money.
+- Checks: `store-methods.test.ts` 14/14 (3 new); `@workspace/lib` 450 passed, 183 skipped. The `ecommerce` typecheck has errors only in the existing `profile.chunks.tsx`. The `ecommerce` lint crashes inside ESLint 10 (`scopeManager.addGlobals is not a function`) for the whole app, so it isn't caused by this change. Not checked in the browser.
+
+
+### 2026-10-20 — tallaby.com home page matched to Claude Design "Home v3"
+
+- **What:** the home page now follows `Marketing Website/Home v3.html` (+ `features-v3.css/js`, `home-v3.js`). Hero, how it works, templates, builder studio and final CTA were already built from this design; the differences were in the features, builder, pricing and FAQ sections.
+- **Features ("Inside the dashboard"):** `components/marketing/home/feature-tour.client.tsx` + `feature-tour.module.css` replace `dashboard-tour.client.tsx` (deleted). Six tabs (dashboard, add product, delivery follow-up, wallet, apps & integrations, website & social) auto-advance every 8s with a progress bar, pause on hover or when out of view, and each mock panel acts out its task (count-ups, typing, courier assignment, wallet ledger rows with the app-bar balance in sync, integrations connecting, social links + publish). Arrow keys move between tabs. Reduced motion shows each panel's end state and stops the autoplay. Below it, an "Also in your dashboard" grid of 8 areas (server-rendered in `home-sections.tsx`).
+- **Builder:** five feature rows (sections library, visual editing, AR/EN, devices, AI assistant "coming soon") instead of four. **Pricing:** 8th item "First 7 days with no fees". **FAQ (`faq.home`):** three new answers (how the fee is collected, own couriers, Meta Pixel / GA). Checked against code: rider delivery tracking, and the Meta Pixel, CAPI, GA4, GTM, TikTok and Google Sheets integrations, all exist in the dashboard.
+- **Where the code differs from the design:** Arabic copy keeps "EGP", not "ج.م" (owner rule). The chart draws the revenue area under the order bars (in the design the area hid them). The demo WhatsApp number is a placeholder (`01012345678`). Hero and steps copy kept "من غير كود" where the design says "من غير برمجة".
+- **Messages:** `home.features` was rewritten and `home.builder.f1–f5`, `home.pricing.i8` and `faq.home` were updated, in both `ar.json` and `en.json` (edited in place, other formatting untouched).
+- **Checks:** the `ecommerce` typecheck has errors only in the existing `profile.chunks.tsx`. The `ecommerce` lint crashes inside ESLint 10 for every file (`scopeManager.addGlobals is not a function`). Marketing vitest 26/26. Manual check in Chrome (RTL, desktop): all panels play through, autoplay advances, and the wallet balance syncs. Not checked at phone width. Pre-existing dev warning: missing `key` in `TemplateGallery`'s heading prop.
+
+
+### 2026-10-20 — Admin website builder (Phase 9C, AB-01…15, owner request)
+
+- **What:** the seller editor moved to `packages/store-editor` behind an `EditorAdapter`. Admins edit any store's website (`apps/admin/app/(builder)/stores/[storeId]/editor`), the library sections (`/sections`, `/sections/[id]/editor`) and the templates (`/templates/[id]/editor`), all audited. New stores take the database default template. Spec and plan: `docs/superpowers/specs/2026-10-20-admin-website-builder-design.md`, `docs/superpowers/plans/2026-10-20-admin-website-builder.md`. Commits `245d4a9..8b94f62` on `feat/seller-saas`.
+- **Migrations (all applied to staging `cxqjrwjianxskhzmrkla`, then production `sakwqwocbccpyrmwjowq`, 2026-10-20, each production run after a rolled-back dry run, owner pre-approved):**
+  - `0085` (chrome version check, `site_edited_by_admin_at`): two columns verified on both; re-run idempotent on staging.
+  - `0086` (`library_sections` + `library-media` bucket): 190 rows = `DESIGNS.length` and the bucket present on both; re-run idempotent on staging.
+  - `0087` (template drafts and meta): meta filled 39/39 templates on both; re-run idempotent on staging.
+- **Template seeds are insert-only (controller check on staging, rolled-back transaction):** the seed does nothing for an existing template key; a new key inserts the template, its version and `current_version_id`; there is a single default. So a deploy never overwrites an admin edit.
+- **Tests (Step 1, 2026-10-20):** `pnpm test` exit 0, all green: store-sections 2237, store-editor 127, lib 469 passed (208 skipped), db 7 passed (52 skipped), ecommerce 153 passed (2 skipped), admin 82, dashboard 142, cache 40, emails 3. Integration tests skip because `TEST_DATABASE_URL` is not set (R12). `pnpm typecheck`: 11 of 12 packages clean; the only failure is the existing `apps/ecommerce` `profile.chunks.tsx` (R8), no other errors. `pnpm lint` is broken by the toolchain (R6: dashboard ESLint crashes in `@typescript-eslint/utils`; tiptap and ui have no ESLint), so it was not run.
+- **Still pending (needs a login):** browser E2E is pending for all admin and editor flows (store editor, seller "admin updated" notice, library-section editor, template editor), per R9, and the production smoke check (an admin opens one real store's editor without publishing; Sections and Templates pages load).
+- **Where the code differed from the plan (rulings):**
+  - R1: the T1 adapter has `saveChrome(part, instance, clientVersion)`; the seller adapter ignored clientVersion until T4.
+  - R2: `draftVersions` is optional on `EditorAdapter`; hosts without it (templates, sections) need no watch.
+  - R3: `instantiateTemplate` takes `keepSlots?` (default false); the section editor keeps photo slots in the saved tree.
+  - R4: `useDraftWatch` takes its baseline from the first `draftVersions()` fetch, not from `EditorInitial`.
+  - R5: adapter return types match the dashboard action return types exactly.
+  - R6: `pnpm lint` is broken by the toolchain; typecheck and tests are the gate.
+  - R7: C: was full, so shells use `TEMP`/`TMP` = `F:/tmp-claude`.
+  - R8: the `apps/ecommerce` `profile.chunks.tsx` typecheck failure is existing and out of scope.
+  - R9: the browser E2E could not be run by the implementers, so it stays pending for an owner login.
+  - R10: new required `EditorAdapter.media.uploadFile(path, file)`.
+  - R11: runtime imports of pure client-safe `@workspace/lib` subpaths (`media.lib`, `store-forms.lib`) are allowed in the package.
+  - R12: integration tests are written but skip without `TEST_DATABASE_URL`, and never run against staging or production.
+  - R13: implementers write migrations, the controller applies them (staging, rolled-back production dry run, production).
+  - R14: the DB preset source uses the row key (= design id), `${key}@${version}`.
+  - R15: new or duplicated library sections start at version 0, and sellers see only version above 0.
+  - R16: the HTML sanitizer now keeps `ch` units, so an admin save does not change seeded sections.
+  - R17: because of R16 the applied seeds `0071` and `0084` are frozen (sha256 pins in tests); no re-seed, so live templates keep their `ch`-less styles until an admin edits them.
+  - R18: publishing a template does not change `is_active`; activation stays the Templates-page toggle, and cache invalidation is left to the admin actions.
+  - R19: this `PLAN.md` carries the owner's uncommitted edits, so it was edited in place and not committed.
+- **Also noted:** the owner's staged deletion of `dashboard-tour.client.tsx` went into commit `3b76247` (replaced by their untracked `feature-tour.client.tsx`). `CLAUDE.md` rule 6 still says `0049`–`0073` are the applied range; it should now read `0085`–`0087` as applied and `0088` as next (not changed here).
+
+### 2026-10-21 — Section library: the nine new Claude Design categories, 68 tree designs (owner request)
+
+- **Owner brief:** add the remaining categories and sections of the Claude Design "Section Library" (`Website Builder Sections/Section Library.html`, 29 categories) to the builder.
+- **Categories (`library/types.ts`, `library/categories.ts`):** 29 now, in the design's order. New: `bundles`, `finder`, `payment`, `popups`, `loyalty`, `services`, `about`, `tracking`, `cart`, each with subcategories and an editor icon (`editor-icons.lib.ts`). The design's `collection` category is our `page-header` (`sf-classic.js` renames it; the 10 designs already match), so no new category. The design's `product` category is our `product-page`.
+- **Built (`designs/<folder>/`, all `defineDesign` trees, design order, first = default):** bundles 11 (`bundle-*`, O-a…k), finder 11 (`finder-*`, E-a…k), payment 10 (`pay-*`, U-a…k without U-h), popups 3 (`popup-welcome`, `popup-app`, `popup-sale-end`), loyalty 2 (`rewards-gift`, `rewards-birthday`; named "Gifts & occasions"), services 11 (`service-*`, W-a…k), about 10 (`team-*`, Y-a…j; `about-*` ids already belong to image-text), tracking 6 (`track-*`), cart 3 (`cart-extras`, `cart-free-delivery`, `cart-coupon`), product page +1 (`product-shipping`). Icon `wrench` added.
+- **Store data:** products come only from `productList`/`addToCart`, posts from `postList`, forms from `storeForm`. Bundle prices and savings, zones, methods, plans and steps are seller-typed text. Interactive parts are still layouts (tabs as linked chips, quiz answers and finder buttons as links, switch panes side by side, no countdown).
+- **Skipped (would need data or systems we don't have, or would mislead):** U-h installment table (computed per price); popups PU-b exit intent, PU-c cookie bar, PU-e recent purchase toast, PU-f floating WhatsApp, PU-g back in stock, PU-i region switcher, PU-j scratch card; tracking D-c/d/e/h/i (one live order); loyalty A-a/b/d/e/f/h/i/j/k (no points, tiers, referrals or gift-card balances); cart J-a/b/d/f/g/h/i (cart contents, checkout and order pages aren't builder pages); product page a, c–h, j (need a current-product data node). Follow-up: a product-page data node, cart/order data nodes and a loyalty system would unlock most of these.
+- **Migration:** `0088_library_sections_new_categories.sql` (generated by `section:sql --new-only`, insert-only, 68 rows). **Not applied yet.** Until it is, the Add panel (which reads `library_sections`) does not list the new designs.
+- **Checks:** store-sections `tsc` clean, 2836 tests pass (68 new snapshots); store-editor 127, lib 473 (DB tests skipped), dashboard 142 pass; `tsc` clean for store-editor, lib, dashboard and admin. Visual check of all 68 at 1280 and 390 (AR, 8 also EN) from a headless-Chrome static render with Tailwind's browser build; 22 designs had layout fixes (stretched rows, squeezed discs, mobile padding). Not checked in the editor. Owner to check: insert a few from each new category in the editor after `0088` is applied.
+
+### 2026-10-21 — Section library: the rest of the Claude Design sections, 0088 + 0089 live (owner request)
+
+- **Owner brief:** make sure every section of the Claude Design "Section Library" is in the website builder. The design has 296 sections in 29 categories; 257 were built. Owner chose to build only the missing ones that work with the existing nodes, and to leave the data-bound ones as a follow-up.
+- **Applied `0088`** (the 68 designs of the entry above) to staging, then a rolled-back dry run and the real apply on production (pre-approved for this feature). Both now list them in the Add panel.
+- **Built (8 `defineDesign` trees, in design order):** `gallery-shoppable` (G-d: photo with movable hotspot markers beside featured products), `newsletter-channels` (N-d: WhatsApp and email cards over the form), `pay-installment-table` (U-h: providers × terms with typed rates, not per-product monthly amounts), `popup-exit` (PU-b "Before you go": brand band back to `/cart`, no exit trigger or cart thumbnails), `popup-whatsapp` (PU-f: bubble and round button inline at the end side), `popup-restock` (PU-g: notify card with the store form, names no product), `popup-reward` (PU-j as a revealed reward card with a typed code), `cart-empty` (J-b: bag circle, shop button, categories as chips, `optional`). New subcategories: popups `reminders`, `chat`; cart `empty`. J-j was already `cart-coupon`.
+- **Migration `0089_library_sections_more.sql`** (`section:sql --new-only`, 8 inserts, `sort_order` set by hand between the live rows). Applied to staging and production. `popup-exit` (light button) and `popup-restock` (full-width form) were fixed after that first apply, so the file also has two guarded `UPDATE`s (`version = 1`, no draft, no `updated_by`); re-run on both, 2 rows refreshed each.
+- **Still not built (31), because they would mislead without data or systems:** PU-c cookie bar (no consent store), PU-e recent-purchase toast (no order feed), PU-i region and language (a builder link cannot switch the storefront back to Arabic: the next-intl `Link` keeps the current locale); tracking D-c/d/e/h/i; loyalty A-a/b/c/d/e/f/h/i/j/k (no points, tiers, referrals or gift cards); cart J-a/d/f/g/h/i; product page Pd-a…h, j. Follow-up: a current-product data node with the product page as a builder page, cart and order data nodes, a locale-switch link, and a business decision on loyalty and gift cards.
+- **Checks:** store-sections `tsc` clean, 2908 tests pass (8 new snapshots); store-editor 127 pass; `tsc` clean for admin. Dashboard `tsc` fails only in `components/dashboard/sidebar.config.test.ts`, against the uncommitted sidebar changes already in the tree (not touched here). Visual check of the 8 at 1280 and 390 (AR and EN) from a headless-Chrome static render with Tailwind's browser build; fixed the reminder button's invisible label and the restock form width. Not checked in the editor.
+
+### 2026-10-21 — Seller dashboard: website offline switch, signup redesign, mobile pass (owner request)
+- **Website offline (behaviour change, owner):** Unpublish used to fall back to the Tallaby Classic page. Now `site_status = 'unpublished'` means offline: every `storefront/[subdomain]` route (layout + each page), `/cart/checkout` on the store host, robots and sitemap show the store-offline page or drop the store (`_components/store-offline.tsx`, `lib/store-site/offline.server.ts`, noindex). `createOrder` refuses carts of an offline store (`isCartStoreOffline`; `place-order.ts` untouched). A verified builder preview still sees the draft. Never-published stores keep the Classic fallback, and marketplace listings are unaffected. `getStorefrontBySubdomain` returns `siteStatus` (cache key `storefront-v9`). No migration. Store form submissions on an offline host are not guarded server-side (unreachable from the UI).
+- **Website tab:** the Publish/Unpublish buttons became a "Website live" switch (off asks for confirmation). "Publish changes" and "Discard" stay when the live site has unpublished changes. Copy updated in dashboard ar/en and the admin force-unpublish dialog.
+- **Signup:** `/signup` (including the signed-in store-only step) uses `AuthShell` like `/login`, with shared `app/login/auth-ui.tsx`. Phone inputs (`AuthField type="tel"`, `TextInput type="tel"` in `packages/ui`) are `dir="ltr"` with the icon on the physical left, which fixes the RTL overlap.
+- **Home:** the sales channel and 7/30/90-day period are two dropdowns sharing one row on phones. The plan button is removed from the trial banner.
+- **Settings:** the store logo is the first field in Identity, with a link to Design system under it.
+- **Mobile:**
+  - `TabsList` is `w-full sm:w-fit` and `SegmentedControl` fills the row on phones, as do the hand-built tab rows.
+  - `DialogContent` is capped at the viewport height and scrolls.
+  - `TableSection` supports `meta.hideOnMobile`; orders, products, wallet and financial tables hide secondary columns on phones.
+  - The header puts install, language and theme behind a ⋯ menu below sm. The sidebar drawer locks page scroll.
+  - Product edit and bulk import save bars wrap and clear the sidebar on lg. The WhatsApp button moves or hides where fixed bars are.
+- **Builder on phones (`packages/store-editor`):** below lg, panels open as bottom sheets and the inspector is a bottom sheet with an Edit button. Below md, the rail is a bottom tab bar. The topbar puts extra actions under "More" below sm, the element popover clamps to the canvas, and tapping to insert closes the sheet. Desktop is unchanged.
+- **Checks:**
+  - Tests all pass (dashboard 144, ecommerce 157, store-editor 127, admin 94, lib 473, store-sections 2836).
+  - Typecheck is clean except for errors that predate this work in unmodified files: `apps/dashboard/components/dashboard/sidebar.config.test.ts` (2) and `apps/ecommerce/.../profile/_components/profile.chunks.tsx` (16).
+  - `pnpm lint` crashes in ESLint itself (`Class extends value undefined` in `@typescript-eslint/utils` under ESLint 10.9.1), so lint was not run.
+  - **No manual browser check yet.** Owner to check at 390px: website switch off/on (subdomain and a product URL), signup phone field in ar, home dropdowns, builder add/select/edit/publish, settings logo, header ⋯ menu.
+
+### 2026-10-21 — Publish step on the home checklist; seller-only fulfillment (owner request)
+
+- **Home "Get your store ready" checklist:** new step "Publish your store" (`setup-checklist.lib.ts` key `publish`, done when the selected store's `site_status = 'published'`), after legal details. Its "Publish now" button unlocks once the store profile, first product and legal details are done (`publishReady`) and calls `publishStoreFromHome` (`app/(main)/_components/setup-publish.server.ts`): `requireStore(forPublish)`, ensures the draft scaffold, then the builder's `publish`. On success a dialog shows the live address (`storeHostname`) with Copy and Visit, over a full-screen canvas confetti burst (skipped for reduced motion). The home page refreshes when the dialog closes.
+- **Add product:** "Import from link" in the basic section is now a solid primary button with its label on every screen size.
+- **Seller-only fulfillment:** new `TALLABY_SERVICES_ENABLED = false` (`packages/lib/src/fulfillment/constants.ts`). Settings › Fulfillment: no Tallaby plan is offered, every service shows "Tallaby · Soon" and starts as the seller's, copy reads as the seller's own setup, and `requestFulfillmentServices` refuses any `provider: 'tallaby'` (`tallaby_service_unavailable`). Product form: "Fulfilled by Tallaby" is disabled with a "Soon" tag; editing a `platform_fulfilled` product saves it as `seller_fulfilled`, and text imports map "platform" to seller. Store › Shipping: "Tallaby delivery" shows "Soon"; a store already on it keeps it (checkout unchanged), but no store can switch to it (`updateStoreShippingSettings` → `tallaby_unavailable`). Not changed (owner chose "keep existing"): stores' default shipping method (`tallaby` when unset), existing `platform_fulfilled` products until edited, the CSV bulk import path in `actions/products.ts`, the ecommerce onboarding wizard, and admin-activated Tallaby services.
+- **Checks:** dashboard typecheck clean, dashboard tests 146 pass, lib tests 473 pass, lib and admin typecheck clean; ecommerce typecheck only has the older `profile.chunks.tsx` errors. Lint not run (ESLint crash above). **No manual browser check yet:** publish from home (confetti, dialog, link), fulfillment settings, product shipping card, store shipping method.
+
+### 2026-10-21 — Botanica template renamed to Sage (owner request)
+
+- The Beauty library template "Botanica / بوتانيكا" is now shown as **"Sage / سيج"** (`templates/botanica/index.ts` `name`). Only the display name changed: the key stays `botanica`, so `stores.template_key`, installs and the `/templates/botanica` URL are untouched (owner chose name only).
+- `0091_rename_botanica_sage.sql`: a guarded `UPDATE templates SET name` (only while the name is still the seeded one), applied on **staging and production** 2026-10-21 (`UPDATE 1` on each). `0090` (another session's untracked file) was skipped and not applied by this change.
+- **Checks:** store-sections tests 3378 pass. The marketing gallery cache (`marketing` template queries, 15 min TTL) shows the new name after it expires or the next template revalidation.
+
+### 2026-10-21 — Storefront templates 49–100 from Claude Design, `0090` + `0092` live (owner request)
+
+- **Owner brief:** sync the Claude Design "Storefront Templates" registry (`Templates.html` / `registry.js`) with Supabase and build every template not there yet, from the pre-built library sections so everything stays editable, with no photos of people or body parts. Production had Classic + 01–38; the registry now lists 90 (01–38 and 49–100). The folders 39–48 in the design project (Fixit … Ghorza) are not in the registry, so they were not built.
+- **Built (52, `fromLibrary` like Moto, v1, `sortOrder` = registry number × 10, home/about/contact/faq pages, demo catalog):** Fashion 49–54 Kettan, Zay, Sitara, Shanta, Tasfya, Layali · Electronics 55–59 Kabl, Sada, Zaki, Saa, Tany · Beauty 60–64 Nada, Kohl, Oud, Sabon, Barber · Home & Kitchen 65–69 Matbakh, Fokhar, Tawla, Tanzim, Qahwa · Food 70–75 Khodar, Lahma, Halawa, Atara, Dokan, Bunn · Furniture 76–80 Mobilia, Zarea, Nour, Mafrash, Rokn · Jewelry 81–85 Zahra, Nuqra, Lulu, Saat, Mahr · Kids 86–90 Lego (generic "Tarkib Toys", no LEGO marks), Mama, Madrasa, Hikaya, Ahlam · Sports 91–95 Yoga, Koora, Darraga, Sabaha, Boxing · Auto 96–100 Tyre, Zeina, Kahraba, Safar, Garagy. Registered in `catalog.ts` (`LIBRARY_TEMPLATES`) in registry order.
+- **Section mapping:** every registry section is the library design of the same name (e.g. Split screen = `hero-halves`, Installment calculator = `pay-installments`, Track form = `track-ask`). **Rewards gap:** the library has no points, tier, gift-card or referral designs (see the 0089 entry), so How points work → `text-steps`, Tier ladder → `promo-tiers`, Gift card → `promo-coupon`, Refer a friend → `popup-reward`, all copy only (Nada, Kohl, Oud, Sitara, Mama, Hikaya, Mafrash, Rokn, Zahra, Zeina, Bunn, Garagy). **Price drop band** (`bundle-price-drop`) fails the render check (its products have no links), so Lahma and Madrasa use Plus row instead; the library design needs a fix. Head to head's second side shows the newest product (Sada, Saat): with the default offset it vanishes in a one-product store.
+- **Other deviations:** `#anchor` buttons go to `/contact` or a search (anchors are not allowed links); "On sale" tabs use top rated (no sale sort); bundle and kit totals are typed text; a reused design on two pages uses `as` (`faq-home`); team grids and founder notes use initials; Yoga's booking section uses the contact form (the others keep `booking`, which "Use template" creates from `FORM_TEMPLATES`). Fonts: the design's Latin display fonts are not store fonts, so each template uses its Arabic pair (or the closest `STORE_FONTS` name). New gallery categories `shoes-bags` (Shanta), `handmade` (Fokhar) and `sweets` (Halawa, Bunn) were added to `websiteTemplates.categories` in store-editor `ar.json`/`en.json`.
+- **Photos:** 612 Pexels photos. Almost every design photo with a model, hands or a logo was replaced; each was checked by eye by the batch builders, then all 612 on contact sheets. That pass found two more: Koora's jersey (a printed player name) and Sabaha's beach towel (cartoon swimmers in its print). Both were swapped for photos already used elsewhere (18199559 folded blank shirts, 30982093 striped towel).
+- **Migrations:** `0090_library_templates_49_100.sql` (`template:sql` for the 52 keys + `templatesMetaSql` for their meta; insert-only, never the default). Staging, re-run (no change), production dry run (91 templates, 1 default, rolled back), production at 2026-10-20T23:35:31Z; prod and staging hashes match. Frozen in `frozen-seeds.test-utils.ts` and listed in the seed test's `SEEDS`. `0092_template_photo_fixes.sql` (written as `0091`, renumbered because a parallel session's `0091_rename_botanica_sage.sql` came first; applied by psql, so only the file name changed): guarded `meta` rewrite for Koora and Sabaha (the two photos were only in the demo catalog); staging, re-run (no change), production dry run, production at 2026-10-20T23:45:43Z. After both, all 52 templates' config, meta, version, category and sort order equal the code on staging and production (jsonb compare). Rollback: `DELETE FROM templates WHERE key IN (…)` (cascades to versions and installs).
+- **Checks:** store-sections `tsc` clean, 3376 tests pass (the 52 × 9 template checks included); store-editor `tsc` clean, 127 tests pass. **No browser visual check** of the 52 rendered templates; the owner should look through the gallery previews. Lint not run (ESLint crash noted in the entry above).

@@ -25,6 +25,7 @@ const ERRORS: Record<string, StoreShippingErrorKey> = {
   overlap: "overlap",
   too_many_zones: "tooManyZones",
   no_zones: "noZones",
+  tallaby_unavailable: "tallabyUnavailable",
   store_read_only: "readOnly",
   not_found: "notFound",
 };

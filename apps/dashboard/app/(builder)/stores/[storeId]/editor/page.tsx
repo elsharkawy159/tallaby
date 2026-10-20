@@ -10,8 +10,10 @@ import { storeBuilderEnabled } from "@/components/dashboard/sidebar.config";
 import { loadStorePage } from "@/lib/stores/store-page.server";
 import { storeFontVariables } from "@/app/(main)/stores/[storeId]/website/_components/store-fonts";
 import { toTemplateCardViews } from "@/app/(main)/stores/[storeId]/website/templates/templates.lib";
-import { StoreEditor, type EditorInitial } from "./editor.client";
+import type { EditorInitial } from "@workspace/store-editor/editor.client";
+import { SellerEditor } from "./seller-editor.client";
 import { loadEditorSnapshot } from "./server/editor.data";
+import { loadLibraryPresets } from "./server/library.data";
 
 export const dynamic = "force-dynamic";
 
@@ -32,11 +34,12 @@ export default async function StoreEditorPage({ params }: { params: Promise<{ st
   const store = await loadStorePage(storeId);
   if (!storeBuilderEnabled(store.sellerId)) notFound();
 
-  const [editor, status, catalog, gallery] = await Promise.all([
+  const [editor, status, catalog, gallery, presets] = await Promise.all([
     getStoreForEditor(store.sellerId, store.id),
     getStoreSiteStatus(store.sellerId, store.id),
     loadEditorSnapshot(store.sellerId, store.id, store.catalogMode),
     listStoreTemplates(store.sellerId, store.id),
+    loadLibraryPresets(),
   ]);
   if (!editor) notFound();
 
@@ -75,16 +78,19 @@ export default async function StoreEditorPage({ params }: { params: Promise<{ st
     footer: footer.success ? footer.data : null,
     designSystem: designSystem.success ? designSystem.data : { colors: {}, typography: {}, spacing: {} },
     designVersion: editor.designSystem.version,
+    chromeVersion: editor.store.chromeVersion,
     defaultLocale: asLocale(editor.store.defaultLocale),
     locales: [...new Set(locales)],
     catalog,
     catalogMode: store.catalogMode ?? "all",
     isLive: Boolean(status?.isLive),
+    hasUnpublishedChanges: status?.hasUnpublishedChanges ?? true,
     previewEnabled: storePreviewSecret() !== null,
     templates: { currentKey: gallery?.currentKey ?? "", items: toTemplateCardViews(gallery?.templates ?? []) },
     fontClassName: storeFontVariables,
     category: { en: store.storeCategory ?? null, ar: store.storeCategoryAr ?? null },
+    presets,
   };
 
-  return <StoreEditor initial={initial} />;
+  return <SellerEditor initial={initial} />;
 }

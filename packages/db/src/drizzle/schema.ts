@@ -2525,6 +2525,10 @@ export const stores = pgTable("stores", {
 	schemaVersion: integer("schema_version").default(1).notNull(),
 	sharedHeader: jsonb("shared_header"),
 	sharedFooter: jsonb("shared_footer"),
+	/** Optimistic-concurrency counter for shared_header/shared_footer (0085). */
+	chromeVersion: integer("chrome_version").default(1).notNull(),
+	/** Set when an admin saves this store's site drafts (0085). */
+	siteEditedByAdminAt: timestamp("site_edited_by_admin_at", { withTimezone: true, mode: 'string' }),
 	publishedRevisionId: uuid("published_revision_id"),
 	firstPublishedAt: timestamp("first_published_at", { withTimezone: true, mode: 'string' }),
 	lastPublishedAt: timestamp("last_published_at", { withTimezone: true, mode: 'string' }),
@@ -2656,6 +2660,13 @@ export const templates = pgTable("templates", {
 	price: numeric({ precision: 10, scale: 2 }),
 	sortOrder: integer("sort_order").default(0).notNull(),
 	currentVersionId: uuid("current_version_id"),
+	/** Admin's unpublished edit of the template (SiteConfig); null when there is none. */
+	draftConfig: jsonb("draft_config"),
+	draftVersion: integer("draft_version").default(1).notNull(),
+	draftUpdatedAt: timestamp("draft_updated_at", { withTimezone: true, mode: 'string' }),
+	/** Code-only data (TemplateMeta): pageNames, demo catalog, palette. */
+	meta: jsonb().default({}).notNull(),
+	deletedAt: timestamp("deleted_at", { withTimezone: true, mode: 'string' }),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
@@ -3221,4 +3232,41 @@ export const platformBlogPosts = pgTable("platform_blog_posts", {
 	check("platform_blog_posts_reading_minutes_check", sql`reading_minutes IS NULL OR reading_minutes BETWEEN 1 AND 600`),
 	check("platform_blog_posts_seo_check", sql`jsonb_typeof(seo) = 'object'`),
 	pgPolicy("platform_blog_posts: admins manage", { as: "permissive", for: "all", to: ["authenticated"], using: sql`(SELECT public.is_platform_admin())`, withCheck: sql`(SELECT public.is_platform_admin())` }),
+]);
+
+/** Admin-managed "Add section" library (0086): published `tree` plus an unpublished `draftTree`. */
+export const librarySections = pgTable("library_sections", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	key: text().notNull(),
+	category: text().notNull(),
+	subcategory: text().default('').notNull(),
+	name: jsonb().notNull(),
+	description: jsonb().default({}).notNull(),
+	keywords: text().array().default([]).notNull(),
+	tree: jsonb().notNull(),
+	draftTree: jsonb("draft_tree"),
+	version: integer().default(1).notNull(),
+	draftVersion: integer("draft_version").default(1).notNull(),
+	thumbnailUrl: text("thumbnail_url"),
+	isHidden: boolean("is_hidden").default(false).notNull(),
+	sortOrder: integer("sort_order").default(0).notNull(),
+	createdBy: uuid("created_by"),
+	updatedBy: uuid("updated_by"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	deletedAt: timestamp("deleted_at", { withTimezone: true, mode: 'string' }),
+}, (table) => [
+	unique("library_sections_key_key").on(table.key),
+	index("library_sections_listing_idx").using("btree", table.category.asc().nullsLast().op("text_ops"), table.sortOrder.asc().nullsLast().op("int4_ops")).where(sql`(deleted_at IS NULL AND NOT is_hidden)`),
+	foreignKey({
+			columns: [table.createdBy],
+			foreignColumns: [users.id],
+			name: "library_sections_created_by_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.updatedBy],
+			foreignColumns: [users.id],
+			name: "library_sections_updated_by_fkey"
+		}).onDelete("set null"),
+	check("library_sections_key_check", sql`key ~ '^[a-z0-9-]+$'`),
 ]);

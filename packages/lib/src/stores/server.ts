@@ -43,6 +43,7 @@ import {
   zoneInputSchema,
   type StoreShippingSettings,
 } from "../shipping/store-zones";
+import { TALLABY_SERVICES_ENABLED } from "../fulfillment/constants";
 import { normalizeSubdomain, validateSubdomain } from "../storefront";
 import {
   createStoreInputSchema,
@@ -225,7 +226,7 @@ export async function checkStoreSubdomain(
 /**
  * Design system row + a home page, so the editor always has something to
  * open. A store that has never been published starts from the default
- * template (Tallaby Classic, as trees, owner 2026-10-19) in its drafts;
+ * template (the database row with `is_default`, owner 2026-10-20) in its drafts;
  * anything else gets an empty home page.
  */
 export async function ensureStoreSiteScaffold(q: Queryable, storeId: string): Promise<void> {
@@ -546,7 +547,7 @@ export async function getStorePayments(sellerId: string, storeId: string, q: Que
 /**
  * Store settings › Payment methods (P3-07). Changes one method under a row
  * lock, keeps at least one method enabled, and writes a masked audit row.
- * Storefront checkout does not read these settings yet (P3-07 Part B).
+ * Storefront checkout offers only the enabled methods (storefrontCheckoutMethods).
  */
 export async function updateStorePaymentMethod(
   sellerId: string,
@@ -616,7 +617,7 @@ export type StoreShippingZone = {
   enabled: boolean;
 };
 
-export type StoreShippingError = StoreWriteError | "overlap" | "too_many_zones" | "no_zones";
+export type StoreShippingError = StoreWriteError | "overlap" | "too_many_zones" | "no_zones" | "tallaby_unavailable";
 
 function toZone(row: typeof storeShippingZones.$inferSelect): StoreShippingZone {
   const name = (row.name ?? {}) as { ar?: string; en?: string };
@@ -792,6 +793,10 @@ export async function updateStoreShippingSettings(
       }
       const settings = (store.settings ?? {}) as Record<string, unknown>;
       const before = parseStoreShipping(settings.shipping);
+      // Tallaby delivery is "Soon": a store already on it keeps it, none can switch to it.
+      if (parsed.data.method === "tallaby" && before.method !== "tallaby" && !TALLABY_SERVICES_ENABLED) {
+        throw new StoreActionError("tallaby_unavailable");
+      }
       await tx
         .update(stores)
         .set({ settings: { ...settings, shipping: parsed.data }, updatedAt: sql`now()` })

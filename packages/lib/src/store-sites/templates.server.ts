@@ -39,7 +39,6 @@ import {
 import {
   MAX_PAGES,
   designSystemSchema,
-  getCodeTemplate,
   mergeTemplateIntoDraft,
   pageContentSchema,
   prepareTemplateForStore,
@@ -53,9 +52,13 @@ import {
   type SectionInstance,
   type SiteConfig,
 } from "@workspace/store-sections";
+import { resolveTemplateMeta, type TemplateMeta } from "@workspace/store-sections/templates";
 import { createStoreForm } from "../store-forms/server";
 import type { FormInput } from "../store-forms/store-forms.lib";
 import { ensureStoreSiteScaffold } from "../stores/server";
+import { getPublicTemplate, offeredTemplate } from "./template-rows.server";
+
+export { getPublicTemplate, getTemplateMeta, loadDefaultTemplate, type DbTemplate } from "./template-rows.server";
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 type Queryable = Tx | typeof db;
@@ -128,6 +131,12 @@ export type StoreTemplateCard = {
   isDefault: boolean;
   isPremium: boolean;
   version: number;
+  /** Colour swatches (`templates.meta`, code fallback). */
+  palette: string[];
+  /** Page names in both languages by slug (`templates.meta`, code fallback). */
+  pageNames: TemplateMeta["pageNames"];
+  /** Ready-made forms "Use template" adds (`newsletter`, `contact`…), from the current version. */
+  formKinds: string[];
   /** Section ids per page, for the card's outline preview. */
   outline: { slug: string; isHome: boolean; name: string; sections: string[] }[];
 };
@@ -163,16 +172,18 @@ export async function listStoreTemplates(sellerId: string, storeId: string, q: Q
       isPremium: templates.isPremium,
       version: templateVersions.version,
       config: templateVersions.config,
+      meta: templates.meta,
     })
     .from(templates)
     .innerJoin(templateVersions, eq(templateVersions.id, templates.currentVersionId))
-    .where(eq(templates.isActive, true))
+    .where(offeredTemplate())
     .orderBy(desc(templates.isDefault), asc(templates.sortOrder), asc(templates.createdAt));
 
   const cards: StoreTemplateCard[] = [];
   for (const row of rows) {
     const config = siteConfigSchema.safeParse(row.config);
     if (!config.success) continue; // A broken template version is never offered.
+    const meta = resolveTemplateMeta(row.meta, row.key);
     cards.push({
       id: row.id,
       key: row.key,
@@ -183,6 +194,9 @@ export async function listStoreTemplates(sellerId: string, storeId: string, q: Q
       isDefault: row.isDefault,
       isPremium: row.isPremium,
       version: row.version,
+      palette: meta.palette,
+      pageNames: meta.pageNames,
+      formKinds: [...templateFormNeeds(config.data)],
       outline: templateOutline(config.data),
     });
   }
@@ -223,7 +237,7 @@ export async function getStoreTemplateConfig(sellerId: string, storeId: string, 
     .select({ config: templateVersions.config })
     .from(templates)
     .innerJoin(templateVersions, eq(templateVersions.id, templates.currentVersionId))
-    .where(and(eq(templates.key, templateKey), eq(templates.isActive, true)))
+    .where(and(eq(templates.key, templateKey), offeredTemplate()))
     .limit(1);
   const config = siteConfigSchema.safeParse(row?.config);
   return config.success ? config.data : null;
@@ -232,19 +246,11 @@ export async function getStoreTemplateConfig(sellerId: string, storeId: string, 
 /**
  * One active template's current config with no store involved, for the
  * public template gallery on tallaby.com. Templates are global and
- * admin-authored, so nothing here belongs to a seller. Null for an unknown or
- * inactive key, or a broken version.
+ * admin-authored, so nothing here belongs to a seller. Null for an unknown,
+ * inactive or deleted key, or a broken version.
  */
 export async function getPublicTemplateConfig(templateKey: string, q: Queryable = db): Promise<SiteConfig | null> {
-  if (typeof templateKey !== "string" || !TEMPLATE_KEY_RE.test(templateKey)) return null;
-  const [row] = await q
-    .select({ config: templateVersions.config })
-    .from(templates)
-    .innerJoin(templateVersions, eq(templateVersions.id, templates.currentVersionId))
-    .where(and(eq(templates.key, templateKey), eq(templates.isActive, true)))
-    .limit(1);
-  const config = siteConfigSchema.safeParse(row?.config);
-  return config.success ? config.data : null;
+  return (await getPublicTemplate(templateKey, q))?.config ?? null;
 }
 
 // ---------------------------------------------------------------------------
@@ -292,10 +298,10 @@ export async function applyStoreTemplate(
       if (store.status !== "active") throw new TemplateError("store_read_only");
 
       const [template] = await tx
-        .select({ id: templates.id, key: templates.key, isPremium: templates.isPremium, versionId: templateVersions.id, config: templateVersions.config })
+        .select({ id: templates.id, key: templates.key, isPremium: templates.isPremium, versionId: templateVersions.id, config: templateVersions.config, meta: templates.meta })
         .from(templates)
         .innerJoin(templateVersions, eq(templateVersions.id, templates.currentVersionId))
-        .where(and(eq(templates.key, templateKey), eq(templates.isActive, true)))
+        .where(and(eq(templates.key, templateKey), offeredTemplate()))
         .limit(1);
       if (!template) throw new TemplateError("template_not_found");
       // The theme store (paid templates from the store wallet) is not built yet (§8.1).
@@ -307,7 +313,7 @@ export async function applyStoreTemplate(
       const locale = store.defaultLocale === "en" ? "en" : "ar";
       const formIds = await ensureTemplateForms(tx, sellerId, storeId, templateFormNeeds(config.data), (kind) => options.formInput?.(kind, locale));
       const fitted = prepareTemplateForStore(config.data, { defaultLocale: locale, storeName: store.name, formIds });
-      const pageNames = getCodeTemplate(template.key)?.pageNames ?? {};
+      const pageNames = resolveTemplateMeta(template.meta, template.key).pageNames;
       const [ds] = await tx
         .select({ colors: storeDesignSystems.colors, typography: storeDesignSystems.typography, spacing: storeDesignSystems.spacing })
         .from(storeDesignSystems)
@@ -339,6 +345,7 @@ export async function applyStoreTemplate(
         .set({
           sharedHeader: merged.header,
           sharedFooter: merged.footer,
+          chromeVersion: sql`${stores.chromeVersion} + 1`,
           templateKey: template.key,
           previousTemplateKey: store.templateKey,
           updatedAt: sql`now()`,
@@ -470,6 +477,7 @@ export async function undoStoreTemplate(
         .set({
           sharedHeader: saved.header,
           sharedFooter: saved.footer,
+          chromeVersion: sql`${stores.chromeVersion} + 1`,
           templateKey: saved.templateKey,
           previousTemplateKey: saved.previousTemplateKey,
           updatedAt: sql`now()`,

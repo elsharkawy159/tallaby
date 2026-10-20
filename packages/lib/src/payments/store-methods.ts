@@ -2,10 +2,11 @@
  * Store payment methods (PLAN.md §8.6, P3-07): the catalog every app shows and
  * the rules for stores.settings.payments. Pure; no DB imports.
  *
- * NOT YET USED AT CHECKOUT. Seller-collected methods (wallets, InstaPay) must
- * not be credited to the seller as seller_earning on delivery; that needs the
- * collector-aware store wallet (P6-05, owner approval). Until then storefront
- * checkout is unchanged and this only powers Store settings › Payment methods.
+ * Storefront checkout uses these settings as a FILTER only (owner, 2026-10-20;
+ * see storefrontCheckoutMethods). Seller-collected payment (the seller's own
+ * numbers at checkout, seller confirmation, fee-only delivery entry) is still
+ * P3-07 Part B: seller-collected money must not be credited to the seller as
+ * seller_earning on delivery.
  */
 import { z } from "zod";
 import { EGYPT_MOBILE_REGEX } from "../fulfillment/validate";
@@ -202,6 +203,50 @@ export function validateMethodChange(
     return { success: false, error: last ? "last_method" : "invalid_details" };
   }
   return { success: true, data: result.data };
+}
+
+/** Checkout values (orders.payment_method) a storefront may offer. */
+export type StorefrontCheckoutMethod = "cash_on_delivery" | "instapay" | "vodafone_cash" | "e_cash";
+
+export type StorefrontCheckoutPayments = {
+  methods: StorefrontCheckoutMethod[];
+  /** COD is refused for order totals above this (EGP). */
+  codMaxOrder: number | null;
+  codNote: string | null;
+};
+
+/**
+ * What a storefront's checkout offers, from its saved settings. A filter over
+ * the existing checkout methods, which Tallaby still collects: an enabled
+ * wallet or InstaPay shows Tallaby's matching manual transfer. WE Pay and
+ * Orange Cash have no Tallaby account, so they show nothing until Part B.
+ * Card and the customer wallet are not store options ("soon"), so storefronts
+ * never offer them.
+ */
+export function storefrontCheckoutMethods(payments: StorePayments): StorefrontCheckoutPayments {
+  const methods: StorefrontCheckoutMethod[] = [];
+  if (payments.cod?.enabled) methods.push("cash_on_delivery");
+  if (payments.instapay?.enabled) methods.push("instapay");
+  if (payments.vodafone_cash?.enabled) methods.push("vodafone_cash");
+  if (payments.e_cash?.enabled) methods.push("e_cash");
+  return {
+    methods,
+    codMaxOrder: payments.cod?.enabled ? (payments.cod.maxOrder ?? null) : null,
+    codNote: payments.cod?.enabled ? (payments.cod.note ?? null) : null,
+  };
+}
+
+/** Server-side check for a storefront order: the method, and COD's max order. */
+export function isStorefrontCheckoutMethodAllowed(
+  checkout: StorefrontCheckoutPayments,
+  method: string,
+  orderTotal?: number,
+): boolean {
+  if (!(checkout.methods as string[]).includes(method)) return false;
+  if (method === "cash_on_delivery" && checkout.codMaxOrder != null && orderTotal != null) {
+    return orderTotal <= checkout.codMaxOrder;
+  }
+  return true;
 }
 
 /** For the audit log: identifiers reduced to their last 4 characters. */

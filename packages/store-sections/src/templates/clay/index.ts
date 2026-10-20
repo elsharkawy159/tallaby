@@ -183,7 +183,7 @@ const DEMO = demoStore({
 
 export const CLAY = libraryTemplate({
   key: CLAY_KEY,
-  version: 1,
+  version: 2,
   name: L("كلاي", "Clay"),
   description: L(
     "نحاس وفخار: فيديو طبخ، تسوق بالخامة، العناية بالنحاس وسفرة العملاء. أربع صفحات جاهزة.",

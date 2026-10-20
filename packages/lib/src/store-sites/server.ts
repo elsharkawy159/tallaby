@@ -73,6 +73,7 @@ async function loadOwnStore(q: Queryable, sellerId: string, storeId: string, loc
       supportedLocales: stores.supportedLocales,
       sharedHeader: stores.sharedHeader,
       sharedFooter: stores.sharedFooter,
+      chromeVersion: stores.chromeVersion,
       sellerStatus: sellers.status,
     })
     .from(stores)
@@ -88,10 +89,15 @@ async function loadOwnStore(q: Queryable, sellerId: string, storeId: string, loc
 // ---------------------------------------------------------------------------
 
 export async function getStoreForEditor(sellerId: string, storeId: string, q: Queryable = db) {
-  const store = await loadOwnStore(q, sellerId, storeId);
-  if (!store) return null;
+  const found = await loadOwnStore(q, sellerId, storeId);
+  if (!found) return null;
   // Backfilled stores have no design system or pages yet (0050 only creates the store row).
-  if (store.status === "active") await ensureStoreSiteScaffold(q, storeId);
+  // The scaffold can write the header/footer and bump chrome_version, so re-read the row after it.
+  let store = found;
+  if (found.status === "active") {
+    await ensureStoreSiteScaffold(q, storeId);
+    store = (await loadOwnStore(q, sellerId, storeId)) ?? found;
+  }
 
   const [designSystem] = await q
     .select({
@@ -313,7 +319,12 @@ export async function restoreRevisionToDraft(
         .where(eq(storeDesignSystems.storeId, storeId));
       await tx
         .update(stores)
-        .set({ sharedHeader: config.header, sharedFooter: config.footer, updatedAt: sql`now()` })
+        .set({
+          sharedHeader: config.header,
+          sharedFooter: config.footer,
+          chromeVersion: sql`${stores.chromeVersion} + 1`,
+          updatedAt: sql`now()`,
+        })
         .where(eq(stores.id, storeId));
 
       for (const [index, page] of config.pages.entries()) {
@@ -493,16 +504,22 @@ export async function saveStoreDesignSystem(
   return row ? { success: true, data: { version: row.version } } : { success: false, error: "version_conflict" };
 }
 
-/** The shared header or footer (null removes it). Validated like page content. */
+/**
+ * The shared header or footer (null removes it). Validated like page content.
+ * Optimistic concurrency on `stores.chrome_version` (one counter for both
+ * parts): the UPDATE only applies while it still equals the client's.
+ */
 export async function saveStoreChrome(
   sellerId: string,
   storeId: string,
   part: "header" | "footer",
   instance: unknown,
+  clientVersion: number,
   options: BuilderOptions = {},
   q: Queryable = db,
-): Promise<SiteResult<null, WriteError | "invalid_content">> {
+): Promise<SiteResult<{ version: number }, WriteError | "invalid_content" | "version_conflict">> {
   if (part !== "header" && part !== "footer") return { success: false, error: "invalid_content" };
+  if (!Number.isInteger(clientVersion)) return { success: false, error: "invalid_content" };
   const found = await writableStore(q, sellerId, storeId);
   if ("error" in found) return { success: false, error: found.error };
   let value: unknown = null;
@@ -512,11 +529,13 @@ export async function saveStoreChrome(
     if (validated.data.sections.length !== 1) return { success: false, error: "invalid_content" };
     value = validated.data.sections[0];
   }
-  await q
+  const bump = { chromeVersion: sql`${stores.chromeVersion} + 1`, updatedAt: sql`now()` };
+  const [row] = await q
     .update(stores)
-    .set(part === "header" ? { sharedHeader: value, updatedAt: sql`now()` } : { sharedFooter: value, updatedAt: sql`now()` })
-    .where(and(eq(stores.id, storeId), eq(stores.sellerId, sellerId)));
-  return { success: true, data: null };
+    .set(part === "header" ? { sharedHeader: value, ...bump } : { sharedFooter: value, ...bump })
+    .where(and(eq(stores.id, storeId), eq(stores.sellerId, sellerId), eq(stores.chromeVersion, clientVersion)))
+    .returning({ version: stores.chromeVersion });
+  return row ? { success: true, data: { version: row.version } } : { success: false, error: "version_conflict" };
 }
 
 export type PageWriteError = WriteError | "invalid_input" | "invalid_slug" | "reserved_slug" | "slug_taken" | "too_many_pages";
@@ -660,7 +679,13 @@ export async function reorderStorePages(
   }
 }
 
-/** Takes the builder site offline: the storefront shows the default Tallaby Classic page again. */
+/**
+ * Takes the store's website offline (`site_status` 'unpublished'): every
+ * storefront route of the store shows a "store unavailable" page (noindex)
+ * and the store takes no orders until it is published again. Drafts and
+ * revisions are kept; marketplace listings are unaffected. Only a
+ * never-published store ('draft') falls back to the Tallaby Classic page.
+ */
 export async function unpublishStoreSite(
   sellerId: string,
   storeId: string,
@@ -762,6 +787,27 @@ export async function getStoreSiteStatus(sellerId: string, storeId: string, q: Q
     isLive: Boolean(row?.snapshot),
     lastPublishedAt: row!.lastPublishedAt,
     hasUnpublishedChanges,
+  };
+}
+
+/**
+ * Versions of the saved drafts, so an open editor can notice edits made
+ * elsewhere (another tab, or an admin editing at the seller's request).
+ * Pages are keyed by page id; `editedByAdminAt` is an ISO string or null.
+ */
+export async function getStoreDraftVersions(sellerId: string, storeId: string, q: Queryable = db) {
+  const store = await loadOwnStore(q, sellerId, storeId);
+  if (!store) return null;
+  const [pageRows, [design], [meta]] = await Promise.all([
+    q.select({ id: storePages.id, version: storePages.draftVersion }).from(storePages).where(eq(storePages.storeId, storeId)),
+    q.select({ version: storeDesignSystems.version }).from(storeDesignSystems).where(eq(storeDesignSystems.storeId, storeId)),
+    q.select({ editedByAdminAt: stores.siteEditedByAdminAt }).from(stores).where(eq(stores.id, storeId)),
+  ]);
+  return {
+    pages: Object.fromEntries(pageRows.map((p) => [p.id, p.version])) as Record<string, number>,
+    designVersion: design?.version ?? 0,
+    chromeVersion: store.chromeVersion,
+    editedByAdminAt: meta?.editedByAdminAt ? new Date(meta.editedByAdminAt).toISOString() : null,
   };
 }
 

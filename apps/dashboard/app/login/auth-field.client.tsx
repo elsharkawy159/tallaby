@@ -2,16 +2,22 @@
 
 import { useState, type ReactNode } from "react";
 import type { FieldValues, Path, UseFormReturn } from "react-hook-form";
-import { Eye, EyeOff, Lock, Mail } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, Phone } from "lucide-react";
 
 import {
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@workspace/ui/components/form";
 import { Input } from "@workspace/ui/components/input";
+import { cn } from "@workspace/ui/lib/utils";
+
+import { AUTH_INPUT_BOX } from "./auth-ui";
+
+const ICONS = { email: Mail, password: Lock, tel: Phone } as const;
 
 /** Auth-page input: leading icon, 48px pill-ish box, optional action beside the label. */
 export function AuthField<T extends FieldValues>({
@@ -23,18 +29,26 @@ export function AuthField<T extends FieldValues>({
   autoComplete,
   disabled,
   labelAction,
+  description,
+  autoFocus,
 }: {
   form: UseFormReturn<T>;
   name: Path<T>;
   label: string;
-  type: "email" | "password";
+  type: "email" | "password" | "tel";
   placeholder?: string;
   autoComplete?: string;
   disabled?: boolean;
   labelAction?: ReactNode;
+  description?: string;
+  autoFocus?: boolean;
 }) {
   const [visible, setVisible] = useState(false);
-  const Icon = type === "email" ? Mail : Lock;
+  const Icon = ICONS[type];
+  // Phone numbers are always typed left-to-right, even on the Arabic (RTL)
+  // page, so the tel box is LTR with the icon on the physical left where the
+  // number starts. Logical classes would put the icon on the right instead.
+  const isTel = type === "tel";
 
   return (
     <FormField
@@ -47,16 +61,27 @@ export function AuthField<T extends FieldValues>({
             {labelAction}
           </div>
           <div className="relative flex items-center">
-            <Icon className="pointer-events-none absolute start-3.5 size-[18px] text-muted-foreground" />
+            <Icon
+              className={cn(
+                "pointer-events-none absolute size-[18px] text-muted-foreground",
+                isTel ? "left-3.5" : "start-3.5",
+              )}
+            />
             <FormControl>
               <Input
                 {...field}
                 value={field.value ?? ""}
                 type={type === "password" && visible ? "text" : type}
+                dir={isTel ? "ltr" : undefined}
+                inputMode={isTel ? "tel" : undefined}
                 placeholder={placeholder}
                 autoComplete={autoComplete}
                 disabled={disabled}
-                className="h-12 rounded-[10px] bg-white ps-11 pe-11 text-[15px] md:text-[15px] dark:bg-card"
+                autoFocus={autoFocus}
+                className={cn(
+                  AUTH_INPUT_BOX,
+                  isTel ? "pr-3.5 pl-11 text-left rtl:text-left" : "ps-11 pe-11",
+                )}
               />
             </FormControl>
             {type === "password" && (
@@ -71,6 +96,7 @@ export function AuthField<T extends FieldValues>({
               </button>
             )}
           </div>
+          {description && <FormDescription className="text-[13px]">{description}</FormDescription>}
           <FormMessage className="text-[13px]" />
         </FormItem>
       )}

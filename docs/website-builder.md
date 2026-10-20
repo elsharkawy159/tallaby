@@ -1,5 +1,13 @@
 # Website editor upgrade — plan (Phase 4B)
 
+> **Update 2026-10-20 (Phase 9C, `docs/superpowers/specs/2026-10-20-admin-website-builder-design.md`):** the editor
+> described below no longer lives in `apps/dashboard`. It is `packages/store-editor`, which talks to its host through an
+> `EditorAdapter` and a capabilities object. The dashboard supplies the seller adapter; `apps/admin` supplies adapters
+> for a store's site (`/stores/[storeId]/editor`), library sections (`/sections/[id]/editor`) and templates
+> (`/templates/[id]/editor`). Templates (`templates`, `template_versions`) and library sections (`library_sections`)
+> are mastered in the database; the code in `packages/store-sections` is an insert-only seed. Admin edits are audited
+> and show the seller an "admin updated" banner. Paths below describe the original build.
+
 > **Status (2026-10-18):** P4B-01…04, 06…11 and 14 are built, plus Templates, Explore (Pexels) and Forms tabs
 > (P4B-15, owner request); see `PLAN.md` §23. P4B-05 and 13 (variants, convert to custom) are **deferred** to the
 > owner's separate sections/templates plan. P4B-12 is built on `@dnd-kit/core` + `sortable` (`editor/dnd/`, see

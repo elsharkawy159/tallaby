@@ -172,7 +172,7 @@ const DEMO = demoStore({
 
 export const BAMBINO = libraryTemplate({
   key: BAMBINO_KEY,
-  version: 1,
+  version: 2,
   name: L("بامبينو", "Bambino"),
   description: L(
     "مستلزمات البيبي: افتتاحية ناعمة، قائمة هدايا في ٤ خطوات ووعود الأمان. أربع صفحات جاهزة.",

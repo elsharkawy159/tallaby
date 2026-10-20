@@ -112,7 +112,7 @@ export const CLASSIC_DESIGNS: readonly Design[] = [
 
 export const CLASSIC: TemplateDefinition = {
   key: CLASSIC_KEY,
-  version: 3,
+  version: 4,
   isDefault: true,
   folder: "classic",
   name: { ar: "طلبي الكلاسيكي", en: "Tallaby Classic" },
@@ -122,7 +122,7 @@ export const CLASSIC: TemplateDefinition = {
   },
   category: "general",
   sortOrder: 0,
-  changelog: "Tallaby Classic v3: rebuilt as element trees (header, 9 home sections, About, Contact, FAQ, Privacy, Terms, footer)",
+  changelog: "Tallaby Classic v4: no header padding-y on mobile",
   palette: ["#f7f6f2", "#eef3f3", "#fdad28", "#145163"],
   config: classicConfig,
   pageNames: {

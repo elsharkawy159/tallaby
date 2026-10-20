@@ -15,7 +15,7 @@ export const headerLine = defineDesign({
   description: L("الشعار والقائمة والأيقونات في سطر واحد هادئ.", "Logo, menu and icons on one quiet line."),
   keywords: ["header", "minimal", "menu", "هيدر", "بسيط"],
   tree: (t) =>
-    t.section({ label: L("الهيدر", "Header"), style: { paddingTop: 0, paddingBottom: 0, background: "background" } }, [
+    t.section({ label: L("الهيدر", "Header"), style: { paddingTop: 0, paddingBottom: 0, background: "background" }, mobile: { paddingTop: 0, paddingBottom: 0 } }, [
       t.container(
         [
           t.row(

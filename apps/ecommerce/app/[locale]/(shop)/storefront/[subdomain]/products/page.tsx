@@ -5,6 +5,7 @@ import { cn } from "@workspace/ui/lib/utils";
 import { storeQueryHref, type StoreQuery } from "@/components/store-page/store-products";
 import { catalogStoreId, getStorefrontCategories, resolveStorefront } from "@/lib/storefront.server";
 import { getStorefrontSite } from "@/lib/store-site/preview.server";
+import { isStoreOfflineForRequest } from "@/lib/store-site/offline.server";
 import { CategoryCircles } from "../_components/category-circles";
 import { StorefrontCatalog } from "../_components/storefront-catalog";
 import s from "../storefront.module.css";
@@ -33,6 +34,8 @@ export default async function StoreProductsPage({ params, searchParams }: StoreP
   const { locale, subdomain } = await params;
   const sp = await searchParams;
   const store = await resolveStorefront(subdomain);
+  // Website offline: the layout shows the offline page instead.
+  if (await isStoreOfflineForRequest(store)) return null;
   const categories = await getStorefrontCategories(store.id, catalogStoreId(store));
 
   const query: StoreQuery = {

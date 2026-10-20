@@ -161,7 +161,7 @@ const DEMO = demoStore({
 
 export const HEKAYA = libraryTemplate({
   key: HEKAYA_KEY,
-  version: 1,
+  version: 2,
   name: L("حكاية", "Hekaya"),
   description: L(
     "كتب أطفال: جديد الشهر، اختار سن القارئ، ليه حكاية ودور النشر. أربع صفحات جاهزة.",

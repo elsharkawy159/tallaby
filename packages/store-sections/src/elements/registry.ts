@@ -52,6 +52,7 @@ export const ELEMENT_ICON_NAMES = [
   "calendar",
   "headphones",
   "send",
+  "wrench",
 ] as const;
 export type ElementIconName = (typeof ELEMENT_ICON_NAMES)[number];
 

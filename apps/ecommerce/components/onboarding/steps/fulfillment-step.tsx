@@ -241,7 +241,7 @@ function ServiceRow({
           value={choice.provider}
           onValueChange={setProvider}
           aria-label={t(`service.${type}.name`)}
-          className="ms-13.5 sm:ms-0"
+          className="ms-13.5 w-[calc(100%-3.375rem)] sm:ms-0 sm:w-auto"
         >
           <SegmentedControlItem value="tallaby" disabled={!canUseTallaby}>
             {t("review.handledBy_tallaby")}

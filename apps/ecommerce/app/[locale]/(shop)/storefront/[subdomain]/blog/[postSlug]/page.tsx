@@ -7,6 +7,7 @@ import { Link } from "@/i18n/navigation";
 import { cmsImageUrl, toContentSummary } from "@/lib/store-cms/cms.lib";
 import { getCachedBlogPage, getCachedCmsItem } from "@/lib/store-cms/cms.server";
 import { resolveStorefront } from "@/lib/storefront.server";
+import { isSubdomainOfflineForRequest, STORE_OFFLINE_METADATA } from "@/lib/store-site/offline.server";
 import { ArticleBody, ContentImage, JsonLd, PostCard, PostMeta } from "../../_components/store-content";
 import s from "../../storefront.module.css";
 
@@ -32,6 +33,7 @@ function postUrl(base: string, locale: string, slug: string) {
 
 export async function generateMetadata({ params }: BlogPostProps): Promise<Metadata> {
   const { locale, subdomain, postSlug } = await params;
+  if (await isSubdomainOfflineForRequest(subdomain)) return STORE_OFFLINE_METADATA;
   const { store, item, post } = await loadPost(subdomain, postSlug);
   const url = postUrl(storeUrl(store.subdomain, store.customDomain), locale, item.slug);
   const image = cmsImageUrl(item.seo.ogImage || post.image);
@@ -60,6 +62,8 @@ export async function generateMetadata({ params }: BlogPostProps): Promise<Metad
 
 export default async function StoreBlogPostPage({ params }: BlogPostProps) {
   const { locale, subdomain, postSlug } = await params;
+  // Website offline: the layout shows the offline page instead.
+  if (await isSubdomainOfflineForRequest(subdomain)) return null;
   const { store, item, post } = await loadPost(subdomain, postSlug);
   const [t, recent] = await Promise.all([
     getTranslations({ locale, namespace: "storefrontBlog" }),

@@ -170,7 +170,7 @@ const DEMO = demoStore({
 
 export const KARAT = libraryTemplate({
   key: KARAT_KEY,
-  version: 1,
+  version: 2,
   name: L("قيراط", "Karat"),
   description: L(
     "إكسسوارات يومية: بوستر بستيكر، أقسام دائرية، عرض الأسبوع وصور العميلات. أربع صفحات جاهزة.",

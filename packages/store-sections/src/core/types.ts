@@ -279,6 +279,8 @@ export type LinkProps = {
 export interface RenderContext {
   /** `edit` in the dashboard canvas, `public` on the storefront. */
   mode: "edit" | "public";
+  /** Store industry; picks the photos for library photo slots (`designs/photo-slots.ts`). Editor only. */
+  industry?: string;
   locale: SiteLocale;
   dir: "rtl" | "ltr";
   store: StoreProfile;

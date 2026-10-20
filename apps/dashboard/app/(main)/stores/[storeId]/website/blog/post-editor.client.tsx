@@ -38,7 +38,7 @@ import {
   TEXTAREA_CLASS,
   ToggleRow,
 } from "@/components/form/form-ui";
-import { MediaPicker } from "@/components/media/media-picker.client";
+import { MediaPicker } from "@/components/media/media-adapter.client";
 import { cn } from "@/lib/utils";
 import { parseTags, toPostInput } from "./blog.lib";
 import type { BlogPostForm, BlogPostState, BlogRevision } from "./blog.dto";

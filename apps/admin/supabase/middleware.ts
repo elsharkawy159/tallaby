@@ -5,6 +5,7 @@ import {
   mergeAdminAuthCookieOptions,
 } from "./auth-cookie-options";
 import { createTimeoutFetch } from "./fetch-with-timeout";
+import { canUseBuilder, isBuilderPath } from "../lib/auth/builder-paths.lib";
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -80,6 +81,7 @@ export async function updateSession(request: NextRequest) {
   // it runs the lightweight supabase-js client only.
   if (user && !isPublicPath) {
     let isAdmin = false;
+    let role: string | null = null;
     try {
       // PostgREST queries the literal column name — the real column is
       // is_verified (snake_case), not isVerified. The unaliased select
@@ -91,6 +93,7 @@ export async function updateSession(request: NextRequest) {
         .eq("id", user.id)
         .single();
 
+      role = profile?.role ?? null;
       const adminRoles = ["admin", "super_admin", "moderator"];
       isAdmin = Boolean(
         profile && adminRoles.includes(profile.role) && profile.isVerified,
@@ -103,6 +106,14 @@ export async function updateSession(request: NextRequest) {
       const url = request.nextUrl.clone();
       url.pathname = "/login";
       url.searchParams.set("error", "forbidden");
+      return NextResponse.redirect(url);
+    }
+
+    // The website builder edits sellers' sites: write roles only (a moderator goes home).
+    if (isBuilderPath(request.nextUrl.pathname) && !canUseBuilder(role)) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/";
+      url.search = "";
       return NextResponse.redirect(url);
     }
   }

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { storeBuilderEnabled } from "@/components/dashboard/sidebar.config";
-import { MediaLibrary } from "@/components/media/media-library.client";
+import { MediaLibrary } from "@/components/media/media-adapter.client";
 import { StorePageHeader } from "@/components/stores/store-page-header";
 import { loadStorePage } from "@/lib/stores/store-page.server";
 import { loadMediaLibrary } from "./media.data";

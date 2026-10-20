@@ -94,6 +94,10 @@
       "types": "./src/admin/server.ts",
       "default": "./src/admin/server.ts"
     },
+    "./library-sections/server": {
+      "types": "./src/library-sections/server.ts",
+      "default": "./src/library-sections/server.ts"
+    },
     "./integrations": {
       "types": "./src/integrations/index.ts",
       "default": "./src/integrations/index.ts"

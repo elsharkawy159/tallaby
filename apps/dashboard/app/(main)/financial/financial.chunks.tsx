@@ -182,7 +182,7 @@ export function FinancialDashboardContent({
               <TableHeader>
                 <TableRow>
                   <TableHead>{t("columns.type")}</TableHead>
-                  <TableHead>{t("columns.order")}</TableHead>
+                  <TableHead className="max-sm:hidden">{t("columns.order")}</TableHead>
                   <TableHead>{t("columns.amount")}</TableHead>
                   <TableHead>{t("columns.date")}</TableHead>
                 </TableRow>
@@ -203,7 +203,7 @@ export function FinancialDashboardContent({
                       <TableCell>
                         {translateStatus(tStatus, "transaction", tx.type)}
                       </TableCell>
-                      <TableCell>{tx.order?.orderNumber ?? "—"}</TableCell>
+                      <TableCell className="max-sm:hidden">{tx.order?.orderNumber ?? "—"}</TableCell>
                       <TableCell className="font-semibold text-green-600 dark:text-green-400" dir="ltr">
                         {formatCurrency(tx.amount)}
                       </TableCell>
@@ -228,7 +228,7 @@ export function FinancialDashboardContent({
                 <TableRow>
                   <TableHead>{t("columns.amount")}</TableHead>
                   <TableHead>{t("columns.status")}</TableHead>
-                  <TableHead>{t("columns.method")}</TableHead>
+                  <TableHead className="max-sm:hidden">{t("columns.method")}</TableHead>
                   <TableHead>{t("columns.date")}</TableHead>
                 </TableRow>
               </TableHeader>
@@ -263,7 +263,7 @@ export function FinancialDashboardContent({
                           )}
                         </Badge>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="max-sm:hidden">
                         {payout.method
                           ? t.has(`methods.${payout.method}`)
                             ? t(`methods.${payout.method}`)

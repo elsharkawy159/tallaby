@@ -9,6 +9,7 @@ import { Link } from "@/i18n/navigation";
 import { BASE_URL } from "@/lib/constants";
 import type { ProductLocale } from "@/lib/product-translations";
 import { resolveStorefront, storeShowsProduct } from "@/lib/storefront.server";
+import { isSubdomainOfflineForRequest, STORE_OFFLINE_METADATA } from "@/lib/store-site/offline.server";
 import { ProductDisplay } from "@/components/product-page/product-display.client";
 import { ProductContent } from "@/components/product-page/product-content";
 import { ProductTabsWrapper } from "@/components/product-page/product-tabs-wrapper.client";
@@ -45,6 +46,7 @@ export async function generateMetadata({
   params,
 }: StorefrontProductPageProps): Promise<Metadata> {
   const { locale, subdomain, slug } = await params;
+  if (await isSubdomainOfflineForRequest(subdomain)) return STORE_OFFLINE_METADATA;
   const { product } = await resolveStoreProduct(locale, subdomain, slug);
   const firstImage = (product.images as string[] | undefined)?.find((i) => i?.trim());
 
@@ -63,6 +65,8 @@ export async function generateMetadata({
 
 export default async function StorefrontProductPage({ params }: StorefrontProductPageProps) {
   const { locale, subdomain, slug } = await params;
+  // Website offline: the layout shows the offline page instead.
+  if (await isSubdomainOfflineForRequest(subdomain)) return null;
   const [{ store, product }, t] = await Promise.all([
     resolveStoreProduct(locale, subdomain, slug),
     getTranslations("storefront"),

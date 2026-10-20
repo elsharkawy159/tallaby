@@ -167,7 +167,7 @@ const DEMO = demoStore({
 
 export const VERDANT = libraryTemplate({
   key: VERDANT_KEY,
-  version: 1,
+  version: 2,
   name: L("فيردانت", "Verdant"),
   description: L(
     "محل نباتات: افتتاحية بنتو، لاقي نبتتك، اللي بييجي مع كل نبتة وأسئلة العناية. أربع صفحات جاهزة.",

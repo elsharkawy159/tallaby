@@ -36,7 +36,11 @@ import {
   invalidateProductInventory,
 } from "@workspace/cache";
 import { getCurrentUserId } from "@/lib/get-current-user-id";
-import { getCartScope, getCartStoreSellerId } from "@/lib/storefront.server";
+import {
+  getCartScope,
+  getStorefrontCheckoutPayments,
+  isCartStoreOffline,
+} from "@/lib/storefront.server";
 import { hasStoreTrackingConsent, STORE_TRACKING_CONSENT_COOKIE } from "@/lib/storefront-consent";
 import { cookies } from "next/headers";
 import { after } from "next/server";
@@ -80,12 +84,21 @@ export async function createOrder(data: {
       return { success: false, error: "Online card payment is unavailable" };
     }
 
+    // The seller took this store's website offline: it takes no orders.
+    if (await isCartStoreOffline(data.cartId)) {
+      return { success: false, error: "This store is temporarily unavailable" };
+    }
+
     // A store with a selected catalog (D24) may have dropped a product after it
     // was added to this cart; refuse like an unavailable product.
     const [unsold] = await cartProductsOutsideStoreCatalog(data.cartId);
     if (unsold) {
       return { success: false, error: `Product is no longer available: ${unsold}` };
     }
+
+    // Storefront: only the store's enabled methods (checked again with the
+    // order total inside placeOrderFromCart).
+    const storefrontPayments = await getStorefrontCheckoutPayments();
 
     const result = await placeOrderFromCart({
       userId,
@@ -97,8 +110,9 @@ export async function createOrder(data: {
       notes: data.notes,
       isGift: data.isGift,
       giftMessage: data.giftMessage,
-      orderSource: (await getCartStoreSellerId()) ? "storefront" : "website",
+      orderSource: storefrontPayments ? "storefront" : "website",
       locale: "en",
+      storefrontPayments: storefrontPayments ?? undefined,
     });
 
     if (!result.success) {

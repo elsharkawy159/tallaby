@@ -197,7 +197,7 @@ const DEMO = demoStore({
 
 export const ELIXIR = libraryTemplate({
   key: ELIXIR_KEY,
-  version: 1,
+  version: 2,
   name: L("إليكسير", "Élixir"),
   description: L(
     "جمال وعطور فاخرة: العطر المميز، النوتات حول الزجاجة وحكاية الدار. أربع صفحات جاهزة.",

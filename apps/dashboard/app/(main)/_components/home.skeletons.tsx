@@ -4,7 +4,12 @@ import { HomeCard } from "./home-ui";
 /* Placeholders shaped like each home section, so streaming in causes no layout shift. */
 
 export function RangeTabsSkeleton() {
-  return <Skeleton className="h-[42px] w-[228px] rounded-[11px]" />;
+  return (
+    <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto">
+      <Skeleton className="h-[40px] rounded-[11px] sm:w-[180px]" />
+      <Skeleton className="h-[40px] rounded-[11px] sm:w-[140px]" />
+    </div>
+  );
 }
 
 export function HomeHeaderSkeleton() {
@@ -14,9 +19,9 @@ export function HomeHeaderSkeleton() {
         <Skeleton className="h-7 w-48" />
         <Skeleton className="h-4 w-64" />
       </div>
-      <div className="flex gap-2.5">
+      <div className="flex w-full flex-col gap-2.5 sm:w-auto sm:flex-row">
         <RangeTabsSkeleton />
-        <Skeleton className="h-[42px] w-32 rounded-xl" />
+        <Skeleton className="h-[42px] w-full rounded-xl sm:w-32" />
       </div>
     </div>
   );

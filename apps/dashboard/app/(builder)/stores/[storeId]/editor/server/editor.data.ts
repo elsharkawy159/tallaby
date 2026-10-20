@@ -9,10 +9,22 @@ import {
   storeProductSales,
   storeReviewStats,
   storeReviews,
-  type SellerCouponRow,
 } from "@workspace/lib/store-sites/catalog-data";
-import { BEST_SELLER_DAYS, TRENDING_DAYS, type RatingStats } from "@workspace/lib/store-sites/catalog-data.lib";
-import type { ContentItemSummary, PublicStoreForm } from "@workspace/store-sections/render";
+import { BEST_SELLER_DAYS, TRENDING_DAYS } from "@workspace/lib/store-sites/catalog-data.lib";
+import type {
+  EditorBrand,
+  EditorCatalogSnapshot,
+  EditorCategory,
+  EditorCoupon,
+  EditorForm,
+  EditorProduct,
+  EditorReview,
+  EditorStoreData,
+} from "@workspace/store-editor/editor.dto";
+import type { ContentItemSummary } from "@workspace/store-sections/render";
+
+// The shapes moved to @workspace/store-editor; re-exported so existing imports keep working.
+export type { EditorBrand, EditorCatalogSnapshot, EditorCategory, EditorCoupon, EditorForm, EditorProduct, EditorReview, EditorStoreData };
 
 /**
  * Read-only data the editor canvas needs to preview commerce sections
@@ -20,57 +32,6 @@ import type { ContentItemSummary, PublicStoreForm } from "@workspace/store-secti
  * seller's, or the store's picks in selected catalog mode) and their categories. Loaded once per editor session; the canvas filters it locally.
  * Never cached (seller-specific editor data).
  */
-
-export type EditorProduct = {
-  id: string;
-  title: { ar: string; en: string };
-  slug: string;
-  image: string | null;
-  price: number | null;
-  compareAtPrice: number | null;
-  isFeatured: boolean;
-  categoryId: string;
-  inStock: boolean;
-  createdAt: string;
-  rating: number | null;
-  /** Units sold in this store's orders, last 90 and 14 days (best sellers, trending). */
-  sold90: number;
-  sold14: number;
-};
-
-export type EditorBrand = { id: string; name: { ar: string; en: string }; logo: string | null };
-
-export type EditorReview = {
-  id: string;
-  rating: number;
-  title: string | null;
-  body: string | null;
-  authorName: string | null;
-  verified: boolean;
-  productId: string;
-  productTitle: { ar: string; en: string };
-  createdAt: string | null;
-};
-
-export type EditorCoupon = SellerCouponRow;
-
-/**
- * Store data beyond products and categories. A source that failed to load is
- * `null` and listed in `failed`, so sections show an error with Retry
- * instead of "add records" (a failed query is not an empty store).
- */
-export type EditorStoreData = {
-  brands: EditorBrand[] | null;
-  reviews: EditorReview[] | null;
-  reviewStats: RatingStats | null;
-  coupons: EditorCoupon[] | null;
-  failed: ("sales" | "brands" | "reviews" | "coupons" | "posts")[];
-};
-
-export type EditorCategory = { id: string; name: { ar: string; en: string }; image: string | null; productCount: number };
-
-/** A form of this store for the contact-form picker and its canvas preview (P4-10). */
-export type EditorForm = { id: string; name: string; active: boolean; form: PublicStoreForm };
 
 /** The store's forms (checked against the session seller by the lib). Never cached. */
 export async function loadEditorForms(sellerId: string, storeId: string): Promise<EditorForm[]> {
@@ -113,15 +74,6 @@ export async function loadEditorPosts(sellerId: string, storeId: string): Promis
     };
   });
 }
-
-/** Everything the canvas draws from the store (initial load and refresh). */
-export type EditorCatalogSnapshot = {
-  products: EditorProduct[];
-  categories: EditorCategory[];
-  forms: EditorForm[];
-  /** Published blog posts; null when they failed to load. */
-  posts: ContentItemSummary[] | null;
-} & EditorStoreData;
 
 /** One load of the store data for the editor; `catalogMode` is the store's catalog mode (D24). */
 export async function loadEditorSnapshot(sellerId: string, storeId: string, catalogMode: string | null | undefined): Promise<EditorCatalogSnapshot> {

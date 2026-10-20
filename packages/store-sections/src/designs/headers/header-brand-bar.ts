@@ -25,6 +25,7 @@ export const headerBrandBar = defineDesign({
           background: "primary",
           color: "primaryInk",
         },
+        mobile: { paddingTop: 0, paddingBottom: 0 },
       },
       [
         t.container(

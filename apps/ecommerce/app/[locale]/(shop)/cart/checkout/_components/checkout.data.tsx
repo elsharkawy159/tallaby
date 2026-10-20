@@ -55,6 +55,7 @@ import {
   DEFAULT_MANUAL_PAYMENT_METHOD,
   isManualPaymentMethod,
 } from "@/lib/manual-payment-methods";
+import type { StorefrontCheckoutPayments } from "@workspace/lib/payments/store-methods";
 
 export const CheckoutData = ({
   checkoutData,
@@ -109,13 +110,32 @@ export const CheckoutData = ({
     [t]
   );
 
+  // Storefront: only the store's enabled methods (Store settings › Payment
+  // methods); null on the marketplace, which offers everything.
+  const storePayments: StorefrontCheckoutPayments | null =
+    checkoutData.storePayments ?? null;
+  const codAllowed =
+    !storePayments || storePayments.methods.includes("cash_on_delivery");
+  const manualMethods = useMemo(
+    () =>
+      storePayments
+        ? MANUAL_PAYMENT_METHODS.filter((m) =>
+            (storePayments.methods as string[]).includes(m.value),
+          )
+        : MANUAL_PAYMENT_METHODS,
+    [storePayments],
+  );
+  const defaultManualMethod: string = storePayments
+    ? (manualMethods[0]?.value ?? "")
+    : DEFAULT_MANUAL_PAYMENT_METHOD;
+
   const form = useForm<CheckoutFormData>({
     resolver: zodResolver(checkoutFormSchema),
     mode: "onChange",
     defaultValues: {
       ...checkoutFormDefaults,
       shippingAddressId: activeAddress?.id || "",
-      paymentMethod: "cash_on_delivery",
+      paymentMethod: codAllowed ? "cash_on_delivery" : defaultManualMethod,
       couponCode: initialSummary.appliedCoupon?.code ?? "",
     },
   });
@@ -205,9 +225,13 @@ export const CheckoutData = ({
     0,
     (summary.shippingCost ?? 0) - (summary.shippingDiscount ?? 0),
   );
-  const isCodEligible = isCodEligibleForShipping(
+  const isCodEligibleShipping = isCodEligibleForShipping(
     summary.shippingCost == null ? null : billedShipping,
   );
+  const isCodWithinStoreMax =
+    storePayments?.codMaxOrder == null ||
+    (summary.totalAfterDiscount ?? summary.total) <= storePayments.codMaxOrder;
+  const isCodEligible = isCodEligibleShipping && isCodWithinStoreMax;
 
   const walletAvailableBalance =
     checkoutData.walletAvailableBalance != null
@@ -221,12 +245,12 @@ export const CheckoutData = ({
 
   useEffect(() => {
     if (!isCodEligible && form.getValues("paymentMethod") === "cash_on_delivery") {
-      form.setValue("paymentMethod", DEFAULT_MANUAL_PAYMENT_METHOD, {
+      form.setValue("paymentMethod", defaultManualMethod, {
         shouldValidate: true,
         shouldDirty: true,
       });
     }
-  }, [isCodEligible, form]);
+  }, [isCodEligible, defaultManualMethod, form]);
 
   useEffect(() => {
     const current = form.getValues("paymentMethod");
@@ -269,14 +293,23 @@ export const CheckoutData = ({
 
   const paymentGroups = useMemo(() => {
     const groups = [
-      {
-        id: "cash_on_delivery",
-        value: "cash_on_delivery",
-        title: t("cashOnDelivery"),
-        description: t("cashOnDeliveryDescription"),
-        enabled: isCodEligible,
-        disabledLabel: isCodEligible ? undefined : t("codUnavailableHighShipping"),
-      },
+      ...(codAllowed
+        ? [
+            {
+              id: "cash_on_delivery",
+              value: "cash_on_delivery",
+              title: t("cashOnDelivery"),
+              description:
+                storePayments?.codNote || t("cashOnDeliveryDescription"),
+              enabled: isCodEligible,
+              disabledLabel: !isCodEligibleShipping
+                ? t("codUnavailableHighShipping")
+                : !isCodWithinStoreMax
+                  ? t("codUnavailableAboveMax")
+                  : undefined,
+            },
+          ]
+        : []),
       ...(onlineCardPaymentEnabled
         ? [
             {
@@ -288,13 +321,19 @@ export const CheckoutData = ({
             },
           ]
         : []),
-      {
-        id: "online_manual",
-        value: "online_manual",
-        title: t("onlinePayment"),
-        description: t("onlinePaymentDescription"),
-        enabled: true,
-      },
+      ...(manualMethods.length > 0
+        ? [
+            {
+              id: "online_manual",
+              value: "online_manual",
+              title: t("onlinePayment"),
+              description: storePayments
+                ? manualMethods.map((m) => t(m.titleKey as any)).join(" · ")
+                : t("onlinePaymentDescription"),
+              enabled: true,
+            },
+          ]
+        : []),
     ];
 
     if (hasWallet) {
@@ -312,7 +351,12 @@ export const CheckoutData = ({
     return groups;
   }, [
     onlineCardPaymentEnabled,
+    codAllowed,
     isCodEligible,
+    isCodEligibleShipping,
+    isCodWithinStoreMax,
+    storePayments,
+    manualMethods,
     hasWallet,
     isWalletEligible,
     walletBalanceLabel,
@@ -323,7 +367,7 @@ export const CheckoutData = ({
 
   const handleGroupChange = (group: string) => {
     if (group === "online_manual") {
-      form.setValue("paymentMethod", DEFAULT_MANUAL_PAYMENT_METHOD, {
+      form.setValue("paymentMethod", defaultManualMethod, {
         shouldValidate: true,
         shouldDirty: true,
       });
@@ -511,7 +555,7 @@ export const CheckoutData = ({
                                       onValueChange={field.onChange}
                                       className="ms-4 flex flex-col gap-2 border-s-2 border-primary/20 ps-3"
                                     >
-                                      {MANUAL_PAYMENT_METHODS.map((child) => (
+                                      {manualMethods.map((child) => (
                                         <FieldLabel
                                           key={child.value}
                                           htmlFor={`payment-${child.value}`}
@@ -597,6 +641,12 @@ export const CheckoutData = ({
                           </RadioGroup>
                         </FieldSet>
                       </FieldGroup>
+
+                      {paymentGroups.length === 0 && (
+                        <p className="text-xs md:text-sm text-orange-600">
+                          {t("noPaymentMethodsAvailable")}
+                        </p>
+                      )}
 
                       {form.formState.errors.paymentMethod && (
                         <p className="text-xs md:text-sm text-red-500 mt-2">

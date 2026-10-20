@@ -167,7 +167,7 @@ const DEMO = demoStore({
 
 export const ARCADE = libraryTemplate({
   key: ARCADE_KEY,
-  version: 1,
+  version: 2,
   name: L("أركيد", "Arcade"),
   description: L(
     "جيمنج وسماعات بالوضع الداكن: خصم كبير، عرضين، ترتيب الأكثر مبيعاً وأرقام. أربع صفحات جاهزة.",

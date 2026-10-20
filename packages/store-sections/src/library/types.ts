@@ -1,16 +1,22 @@
 import type { DataNeed, Localized } from "../core/types";
+import type { NodeTemplate } from "../elements/tree";
 
 /**
- * The 20 groups of the section library (Add panel), in display order: the
- * categories of the Claude Design section library (2026-10-19).
+ * The 29 groups of the section library (Add panel), in display order: the
+ * categories of the Claude Design section library (2026-10-19; bundles,
+ * finder, payment, popups, loyalty, services, about, tracking and cart
+ * added 2026-10-20).
  */
 export const LIBRARY_CATEGORY_IDS = [
   "headers",
   "hero",
   "categories",
   "products",
+  "bundles",
+  "finder",
   "promotions",
   "features",
+  "payment",
   "statistics",
   "image-text",
   "video",
@@ -20,10 +26,16 @@ export const LIBRARY_CATEGORY_IDS = [
   "faq",
   "blog",
   "newsletter",
+  "popups",
+  "loyalty",
+  "services",
+  "about",
   "contact",
+  "tracking",
   "rich-text",
   "page-header",
   "product-page",
+  "cart",
   "footers",
 ] as const;
 export type LibraryCategoryId = (typeof LIBRARY_CATEGORY_IDS)[number];
@@ -60,6 +72,16 @@ export type SectionPreset = {
    * element tree. Design presets use `sectionId: "custom-section"`.
    */
   designId?: string;
+  /**
+   * A stored element tree in slot form (`library_sections.tree`, Task 10):
+   * inserting the preset builds this tree, its photo slots resolved for the
+   * store's industry. Takes precedence over `designId`.
+   */
+  tree?: NodeTemplate;
+  /** `library_sections.key` (the design id): names the tree in an instance's `source`. */
+  designKey?: string;
+  /** `library_sections.version` of `tree` (1 when unset). */
+  version?: number;
   category: LibraryCategoryId;
   subcategory: string;
   name: Localized;

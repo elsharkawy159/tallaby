@@ -64,13 +64,20 @@ export const Sidebar = ({ counts, stores, selectedStoreId, maxStores, features }
     setMobileOpen(false);
   }, [pathname, setMobileOpen]);
 
+  // While the drawer is open: Escape closes it and the page behind it does
+  // not scroll.
   useEffect(() => {
     if (!isMobileOpen) return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") setMobileOpen(false);
     };
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
   }, [isMobileOpen, setMobileOpen]);
 
   const entries = useMemo(

@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { stores, storeProducts, storeDesignSystems, storePages, storeSiteRevisions, templates, templateVersions, templateInstalls, mediaFolders, mediaAssets, savedBlocks, storeForms, storeFormSubmissions, cmsCollections, cmsItems, cmsItemRevisions, storeIntegrations, storeShippingZones, storeSettingsAudit, sellerWalletTopUps, adminAuditLog, platformBlogPosts, sellerProductCategories, sellerProductBrands } from "./schema";
+import { stores, storeProducts, storeDesignSystems, storePages, storeSiteRevisions, templates, templateVersions, templateInstalls, mediaFolders, mediaAssets, savedBlocks, storeForms, storeFormSubmissions, cmsCollections, cmsItems, cmsItemRevisions, storeIntegrations, storeShippingZones, storeSettingsAudit, sellerWalletTopUps, adminAuditLog, platformBlogPosts, sellerProductCategories, sellerProductBrands, librarySections } from "./schema";
 import { users, deliveries, shipments, orders, payments, paymentMethods, carts, categories, sellers, coupons, notifications, contacts, userAddresses, products, productVariants, refunds, returns, orderItems, shipmentItems, productQuestions, shippingAddresses, couponUsage, cartItems, reviews, returnItems, reviewVotes, searchLogs, sellerDocuments, sellerPayoutItems, sellerPayouts, reviewComments, userDevices, wishlistItems, wishlists, brands, productAnswers, userRewards, productTranslations, digitalProducts, digitalOrders, sellerCategories, sellerWallet, walletTransactions, digitalFiles, licenseKeys, digitalBundleItems, digitalAccessLogs, shippingProviders, shipmentBatches, shipmentBatchItems, userWallets, userWalletTransactions, walletTopUps, walletPayoutRequests, affiliates, affiliateCommissions } from "./schema";
 
 export const deliveriesRelations = relations(deliveries, ({one}) => ({
@@ -1077,5 +1077,18 @@ export const platformBlogPostsRelations = relations(platformBlogPosts, ({one}) =
 	createdBy: one(users, {
 		fields: [platformBlogPosts.createdBy],
 		references: [users.id]
+	}),
+}));
+
+export const librarySectionsRelations = relations(librarySections, ({one}) => ({
+	createdBy: one(users, {
+		fields: [librarySections.createdBy],
+		references: [users.id],
+		relationName: "librarySectionsCreatedBy"
+	}),
+	updatedBy: one(users, {
+		fields: [librarySections.updatedBy],
+		references: [users.id],
+		relationName: "librarySectionsUpdatedBy"
 	}),
 }));

@@ -16,7 +16,7 @@ export const headerAnnouncement = defineDesign({
   description: L("شريط ملون برسالة وكود خصم فوق هيدر هادئ.", "A coloured strip with a message and coupon over a quiet header."),
   keywords: ["header", "announcement", "coupon", "free shipping", "إعلان", "كوبون", "هيدر"],
   tree: (t) =>
-    t.section({ label: L("الهيدر", "Header"), style: { paddingTop: 0, paddingBottom: 0, background: "background" } }, [
+    t.section({ label: L("الهيدر", "Header"), style: { paddingTop: 0, paddingBottom: 0, background: "background" }, mobile: { paddingTop: 0, paddingBottom: 0 } }, [
       t.row(
         [
           t.text(L("توصيل مجاني للطلبات فوق ١٥٠٠ ج.م", "Free delivery on orders over EGP 1,500"), {

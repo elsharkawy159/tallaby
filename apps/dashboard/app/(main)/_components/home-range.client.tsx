@@ -21,6 +21,9 @@ type RangeContext = {
   setChannel: (channel: HomeChannel) => void;
 };
 
+/** Shared look of the header dropdowns: full width in the phone grid, fixed width from sm. */
+const CONTROL_TRIGGER = "h-[40px] w-full rounded-[11px] bg-card text-[13px]";
+
 const Ctx = createContext<RangeContext | null>(null);
 
 /**
@@ -83,38 +86,24 @@ function useRange() {
   return ctx;
 }
 
-/** Segmented 7 / 30 / 90 day switch. */
-export function RangeTabs() {
+/** 7 / 30 / 90 day period picker. */
+export function RangeSelect() {
   const t = useTranslations("home.range");
   const { range, setRange } = useRange();
 
   return (
-    <div
-      role="radiogroup"
-      aria-label={t("label")}
-      className="inline-flex gap-0.5 rounded-[11px] border bg-card p-[3px]"
-    >
-      {HOME_RANGES.map((r) => {
-        const on = r === range;
-        return (
-          <button
-            key={r}
-            type="button"
-            role="radio"
-            aria-checked={on}
-            onClick={() => setRange(r)}
-            className={cn(
-              "h-[34px] whitespace-nowrap rounded-lg px-3 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
-              on
-                ? "bg-primary-soft font-semibold text-primary-ink"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
+    <Select value={String(range)} onValueChange={(value) => setRange(Number(value) as HomeRange)}>
+      <SelectTrigger className={cn(CONTROL_TRIGGER, "sm:w-[140px]")} aria-label={t("label")}>
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {HOME_RANGES.map((r) => (
+          <SelectItem key={r} value={String(r)}>
             {t("days", { count: r })}
-          </button>
-        );
-      })}
-    </div>
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }
 
@@ -138,7 +127,7 @@ export function ChannelSelect({ stores }: { stores: { id: string; name: string }
 
   return (
     <Select value={channel} onValueChange={(value) => setChannel(value as HomeChannel)}>
-      <SelectTrigger className="h-[40px] w-[180px] rounded-[11px] bg-card text-[13px]" aria-label={t("label")}>
+      <SelectTrigger className={cn(CONTROL_TRIGGER, "sm:w-[180px]")} aria-label={t("label")}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

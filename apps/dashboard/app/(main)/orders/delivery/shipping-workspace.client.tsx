@@ -87,6 +87,7 @@ export function ShippingWorkspace({
   const t = useTranslations("shipping");
   const tStatus = useTranslations("status.shipping");
   const locale = useLocale();
+  const dir = locale === "en" ? "ltr" : "rtl";
   const [view, setView] = useState<"orders" | "riders">(initialView);
   const [bulkPending, startBulk] = useTransition();
 
@@ -313,7 +314,7 @@ export function ShippingWorkspace({
       </div>
 
       {/* View switch */}
-      <Tabs value={view} onValueChange={(v) => setView(v as "orders" | "riders")}>
+      <Tabs value={view} onValueChange={(v) => setView(v as "orders" | "riders")} dir={dir}>
         <TabsList>
           <TabsTrigger value="orders">{t("deliveries", { count: orders.length })}</TabsTrigger>
           <TabsTrigger value="riders">{t("riders", { count: riders.length })}</TabsTrigger>
@@ -322,7 +323,7 @@ export function ShippingWorkspace({
 
       {view === "orders" ? (
         <div className="space-y-4">
-          <Tabs value={tab} onValueChange={(v) => setTab(v as OrderTab)}>
+          <Tabs value={tab} onValueChange={(v) => setTab(v as OrderTab)} dir={dir}>
             <TabsList className="h-auto flex-wrap justify-start">
               {(Object.keys(TAB_FILTER) as OrderTab[]).map((key) => (
                 <TabsTrigger key={key} value={key}>

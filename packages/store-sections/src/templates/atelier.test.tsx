@@ -1,5 +1,3 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import type { ComponentNode, SectionInstance } from "../config/schema";
@@ -12,9 +10,10 @@ import { SectionRenderer } from "../render/render";
 import { storeSectionRegistry } from "../sections";
 import { ATELIER, ATELIER_DESIGNS, atelierConfig } from "./atelier";
 import { CODE_TEMPLATES, TEMPLATE_JSON_END, TEMPLATE_JSON_START, getCodeTemplate, templateConfigJson, templateSeedSql } from "./catalog";
+import { FROZEN_SEEDS, migrationSha256 } from "./frozen-seeds.test-utils";
 import { prepareTemplateForStore, templateFormNeeds } from "./prepare";
 
-const MIGRATION = join(__dirname, "../../../db/migrations/0070_atelier_template.sql");
+const SEED = "0084_mobile_header_padding.sql";
 
 const walk = (nodes: readonly ComponentNode[] | undefined): ComponentNode[] => (nodes ?? []).flatMap((n) => [n, ...walk(n.children)]);
 const sections = (config = atelierConfig()): SectionInstance[] => [config.header!, config.footer!, ...config.pages.flatMap((p) => p.content.sections)];
@@ -150,10 +149,16 @@ describe("Atelier template", () => {
     expect(ATELIER_DESIGNS.every((d) => d.id.startsWith("atelier-"))).toBe(true);
   });
 
-  it("matches the committed 0070 seed (regenerate with template:sql)", () => {
-    const sql = readFileSync(MIGRATION, "utf8").replace(/\r\n/g, "\n");
-    expect(sql).toBe(templateSeedSql(ATELIER, "0070_atelier_template.sql"));
-    const json = sql.split(TEMPLATE_JSON_START)[1]!.split(TEMPLATE_JSON_END)[0]!.trim().replace(/^'|'::jsonb,$/g, "").replace(/''/g, "'");
+  // frozen: applied on staging and production 2026-10-20; DB is the master copy (admin website builder).
+  it("keeps the applied 0084 seed unchanged (frozen)", () => {
+    expect(migrationSha256(SEED)).toBe(FROZEN_SEEDS[SEED]);
+  });
+
+  it("still generates a seed whose config passes validateSiteConfig", () => {
+    const seed = templateSeedSql(ATELIER, SEED);
+    const json = seed.split(TEMPLATE_JSON_START)[1]!.split(TEMPLATE_JSON_END)[0]!.trim().replace(/^'|'::jsonb,$/g, "").replace(/''/g, "'");
     expect(JSON.parse(json)).toEqual(JSON.parse(templateConfigJson(ATELIER)));
+    const validated = validateSiteConfig(JSON.parse(json));
+    expect(validated.success, JSON.stringify(validated.success ? "" : validated.issues)).toBe(true);
   });
 });

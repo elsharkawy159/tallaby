@@ -42,7 +42,8 @@ export default async function StoreGeneralSettingsPage({ params }: { params: Pro
       storeId={store.id}
       initial={initial}
       readOnly={readOnly}
-      // Builder sellers edit logo and banner in Website › Design system.
+      // The logo is always edited here; builder sellers edit the banner (and
+      // favicon) in Website › Design system.
       brandInSettings={!storeBuilderEnabled(store.sellerId)}
       // Which of the seller's products this store shows (D24); moved here from /catalog.
       catalog={{

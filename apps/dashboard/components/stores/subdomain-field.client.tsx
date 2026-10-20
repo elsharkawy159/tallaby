@@ -47,6 +47,9 @@ export function SubdomainField<TFieldValues extends FieldValues>({
   onAvailabilityChange,
   disabled,
   autoFocus,
+  className,
+  inputClassName,
+  labelClassName,
 }: {
   form: UseFormReturn<TFieldValues>;
   name: Path<TFieldValues>;
@@ -54,6 +57,11 @@ export function SubdomainField<TFieldValues extends FieldValues>({
   onAvailabilityChange?: (available: boolean) => void;
   disabled?: boolean;
   autoFocus?: boolean;
+  /** Extra classes for the bordered box (e.g. a taller, rounder auth-page look). */
+  className?: string;
+  /** Extra classes for the text input inside the box. */
+  inputClassName?: string;
+  labelClassName?: string;
 }) {
   const t = useTranslations("signup");
   const value = String(form.watch(name) ?? "");
@@ -99,7 +107,7 @@ export function SubdomainField<TFieldValues extends FieldValues>({
       name={name}
       render={({ field }) => (
         <FormItem>
-          <FormLabel>{t("storeAddress")}</FormLabel>
+          <FormLabel className={labelClassName}>{t("storeAddress")}</FormLabel>
           <FormControl>
             <div
               dir="ltr"
@@ -107,6 +115,7 @@ export function SubdomainField<TFieldValues extends FieldValues>({
                 "flex h-11 items-center overflow-hidden rounded-lg border bg-background shadow-xs transition-[color,box-shadow]",
                 "focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50",
                 disabled && "opacity-50",
+                className,
               )}
             >
               <input
@@ -122,7 +131,10 @@ export function SubdomainField<TFieldValues extends FieldValues>({
                 maxLength={32}
                 placeholder="my-store"
                 aria-describedby={`${String(name)}-status`}
-                className="h-full min-w-0 flex-1 bg-transparent px-3 text-base outline-none md:text-sm"
+                className={cn(
+                  "h-full min-w-0 flex-1 bg-transparent px-3 text-base outline-none md:text-sm",
+                  inputClassName,
+                )}
               />
               <span className="flex h-full items-center border-s bg-muted px-3 text-sm text-muted-foreground">
                 .{ROOT_DOMAIN}

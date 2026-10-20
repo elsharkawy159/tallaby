@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { storeUrl } from "@workspace/lib/storefront";
 import { routing } from "@/i18n/routing";
 import { getStorefrontSite } from "@/lib/store-site/preview.server";
+import { isSubdomainOfflineForRequest, STORE_OFFLINE_METADATA } from "@/lib/store-site/offline.server";
 import { resolveStorefront } from "@/lib/storefront.server";
 import { marketplaceOrigin } from "@/lib/storefront-routing";
 import { STORE_NOINDEX } from "@/lib/store-seo/store-seo.lib";
@@ -31,6 +32,7 @@ async function resolvePage(locale: string, subdomain: string, pageSlug: string) 
 
 export async function generateMetadata({ params }: StorePageProps): Promise<Metadata> {
   const { locale, subdomain, pageSlug } = await params;
+  if (await isSubdomainOfflineForRequest(subdomain)) return STORE_OFFLINE_METADATA;
   const { store, page, preview } = await resolvePage(locale, subdomain, pageSlug);
   const url = `${storeUrl(store.subdomain, store.customDomain)}${locale === routing.defaultLocale ? "" : `/${locale}`}/${page.slug}`;
   return {
@@ -46,6 +48,8 @@ export async function generateMetadata({ params }: StorePageProps): Promise<Meta
 
 export default async function StoreBuilderPage({ params }: StorePageProps) {
   const { locale, subdomain, pageSlug } = await params;
+  // Website offline: the layout shows the offline page; no marketplace redirect.
+  if (await isSubdomainOfflineForRequest(subdomain)) return null;
   const { store, site, page } = await resolvePage(locale, subdomain, pageSlug);
   if (!page) notFound();
   return <StoreSitePage store={store} site={site} page={page} locale={locale} />;

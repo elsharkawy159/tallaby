@@ -162,7 +162,7 @@ const DEMO = demoStore({
 
 export const FADDA = libraryTemplate({
   key: FADDA_KEY,
-  version: 1,
+  version: 2,
   name: L("فضة", "Fadda"),
   description: L(
     "ستوديو فضة: آراء الصحافة، الخامات والعناية، ستاكات العملاء ورسالة الصايغة. أربع صفحات جاهزة.",

@@ -128,7 +128,7 @@ export function TemplateGallery({
               aria-selected={category === value}
               onClick={() => setCategory(value)}
               className={cn(
-                "rounded-full border px-3 py-1.5 text-sm transition-colors",
+                "rounded-full border px-3 py-1.5 text-sm transition-colors max-sm:flex-1",
                 category === value ? "border-primary bg-primary text-primary-foreground" : "hover:bg-muted",
               )}
             >

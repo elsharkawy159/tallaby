@@ -166,7 +166,7 @@ const DEMO = demoStore({
 
 export const GARAGE = libraryTemplate({
   key: GARAGE_KEY,
-  version: 1,
+  version: 2,
   name: L("جراج", "Garage"),
   description: L(
     "إكسسوارات عربيات: بوستر أوكازيون، اختيارات السواقين، مقارنة، عرض الويك إند ورسايل واتساب. أربع صفحات جاهزة.",

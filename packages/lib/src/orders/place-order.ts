@@ -55,6 +55,10 @@ import {
 import { sendOrderConfirmationEmail } from './notify'
 import { computeOrderLineFees, type PlatformFeeSnapshot } from './platform-fee.lib'
 import { isCodEligibleForShipping, parseWalletPartialPaymentMethod } from './payment.lib'
+import {
+  isStorefrontCheckoutMethodAllowed,
+  type StorefrontCheckoutPayments,
+} from '../payments/store-methods'
 
 /** Internal control-flow signal: coupon lost a concurrent usage-limit race. */
 class CouponClaimFailedError extends Error {}
@@ -113,6 +117,12 @@ export interface PlaceOrderFromCartInput {
    * Defaults to true; set false for flows that intentionally stay silent.
    */
   sendConfirmationEmail?: boolean
+  /**
+   * Storefront orders: the store's checkout methods (Store settings › Payment
+   * methods). A method the store has not enabled, or COD above its max order,
+   * is refused. Omit for the marketplace and admin flows.
+   */
+  storefrontPayments?: StorefrontCheckoutPayments
 }
 
 export interface PlaceOrderInventoryItem {
@@ -204,6 +214,7 @@ export async function placeOrderFromCart(
     locale = 'en',
     skipCoupons = false,
     sendConfirmationEmail = true,
+    storefrontPayments,
   } = input
 
   const cart = await db.query.carts.findFirst({
@@ -553,6 +564,20 @@ export async function placeOrderFromCart(
       success: false,
       error:
         'Cash on delivery is not available when shipping cost exceeds 90 EGP',
+    }
+  }
+
+  if (
+    storefrontPayments &&
+    !isStorefrontCheckoutMethodAllowed(
+      storefrontPayments,
+      resolvedPaymentMethod,
+      totalAmount,
+    )
+  ) {
+    return {
+      success: false,
+      error: 'This payment method is not available in this store',
     }
   }
 

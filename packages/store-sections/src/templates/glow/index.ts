@@ -177,7 +177,7 @@ const DEMO = demoStore({
 
 export const GLOW = libraryTemplate({
   key: GLOW_KEY,
-  version: 1,
+  version: 2,
   name: L("جلو", "Glow"),
   description: L(
     "مستحضرات تجميل: كولاج للوك، أقسام دائرية، عرض الأسبوع وصور العميلات. أربع صفحات جاهزة.",

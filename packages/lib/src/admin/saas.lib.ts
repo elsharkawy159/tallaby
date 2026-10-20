@@ -213,6 +213,11 @@ export const SAAS_ADMIN_ERROR_MESSAGES: Record<string, string> = {
   invalid_transition: "That status change is not allowed.",
   premium_without_price: "A premium template needs a price.",
   default_inactive: "Activate the template before making it the default.",
+  default_template: "The default template can't be hidden or deleted.",
+  template_key_taken: "That key is already used.",
+  version_conflict: "Someone else changed this. Reload and try again.",
+  invalid_reason: "Write a reason of 10 to 500 characters.",
+  invalid_config: "The template content is not valid.",
   migration_required: "Apply migration 0069 first (platform audit rows).",
   refund_failed: "The wallet refund failed, so nothing was changed.",
 };

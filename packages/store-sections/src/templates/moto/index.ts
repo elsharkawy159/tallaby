@@ -187,7 +187,7 @@ const DEMO = demoStore({
 
 export const MOTO = libraryTemplate({
   key: MOTO_KEY,
-  version: 1,
+  version: 2,
   name: L("موتو", "Moto"),
   description: L(
     "أدوات ركوب الموتوسيكل: خصم الخوذ، ماركات معتمدة، اسأل رايدر وعنوان الجراج. أربع صفحات جاهزة.",

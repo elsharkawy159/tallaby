@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { MEDIA_BUCKET, MEDIA_MAX_BYTES, buildMediaPath, isMediaMimeType } from "@workspace/lib/media";
 import { recordMediaAsset } from "@workspace/lib/media/server";
-import { toAssetView } from "@/components/media/media.lib";
-import type { MediaAssetView } from "@/components/media/media.dto";
+import { toAssetView } from "@workspace/store-editor/media/media.lib";
+import type { MediaAssetView } from "@workspace/store-editor/editor.dto";
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
 import { PexelsUnavailable, getPexelsPhoto, pexelsConfigured, searchPexels } from "@/lib/stock-photos/pexels.server";
@@ -19,8 +19,9 @@ import { createClient } from "@/supabase/server";
  * store's media library like an upload (same path rules and size limit).
  */
 
-export type ExploreErrorKey = "notFound" | "readOnly" | "unavailable" | "rateLimited" | "invalidInput" | "tooLarge" | "tooMany" | "generic";
-export type ExploreResult<T> = { success: true; data: T } | { success: false; error: ExploreErrorKey };
+import type { ExploreErrorKey, ExploreResult } from "@workspace/store-editor/editor.dto";
+
+export type { ExploreErrorKey, ExploreResult };
 
 const searchLimiter = createRateLimiter({ limit: 120, windowMs: 10 * 60_000 });
 const importLimiter = createRateLimiter({ limit: 40, windowMs: 10 * 60_000 });

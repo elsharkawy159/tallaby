@@ -85,7 +85,7 @@ export function ImportDialog({
               aria-selected={tab === item}
               onClick={() => setTab(item)}
               className={cn(
-                "-mb-px border-b-2 px-1 py-2.5 text-[13px] transition-colors",
+                "-mb-px border-b-2 px-1 py-2.5 text-[13px] transition-colors max-sm:flex-1",
                 tab === item
                   ? "border-primary font-semibold text-primary-ink"
                   : "border-transparent text-muted-foreground hover:text-foreground"

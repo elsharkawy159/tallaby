@@ -1,5 +1,6 @@
 import {
   Banknote,
+  Blocks,
   Globe,
   Handshake,
   History,
@@ -90,6 +91,7 @@ export const sidebarSections: SidebarSection[] = [
     links: [
       { key: "stores", title: "Stores", href: "/stores", icon: Store },
       { key: "templates", title: "Templates", href: "/templates", icon: LayoutTemplate },
+      { key: "sections", title: "Sections", href: "/sections", icon: Blocks },
       {
         key: "domains",
         title: "Domains",

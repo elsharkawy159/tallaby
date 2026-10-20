@@ -7,7 +7,15 @@ import { contentOverrideKeys, storeSectionRegistry } from "@workspace/store-sect
 import { classicConfig } from "@workspace/store-sections/templates";
 import { createIsolationWorld, type IsolationWorld } from "../stores/isolation.fixtures";
 import { getStoreForEditor, saveStoreDesignSystem, saveStorePageDraft } from "./server";
-import { applyStoreTemplate, getStoreTemplateConfig, listStoreTemplates, undoStoreTemplate } from "./templates.server";
+import {
+  applyStoreTemplate,
+  getPublicTemplate,
+  getPublicTemplateConfig,
+  getStoreTemplateConfig,
+  getTemplateMeta,
+  listStoreTemplates,
+  undoStoreTemplate,
+} from "./templates.server";
 
 /**
  * Templates apply/undo (PLAN.md §8.1, P4-05) against the staging copy, which
@@ -49,6 +57,24 @@ describe.skipIf(!TEST_DATABASE_URL)("store templates (integration)", { timeout: 
     expect(await getStoreTemplateConfig(w.a.sellerId, w.a.a2, "../bad", db)).toBeNull();
   });
 
+  it("gallery, previews and meta read the database meta and hide soft-deleted templates", async () => {
+    const card = (await listStoreTemplates(w.a.sellerId, w.a.a2, db))!.templates.find((t) => t.key === "atelier")!;
+    expect(card.palette.length).toBeGreaterThan(0);
+    expect(card.formKinds).toEqual(expect.any(Array));
+    expect((await getTemplateMeta("atelier", db))?.demo.products.length).toBeGreaterThan(0);
+    expect((await getPublicTemplate("atelier", db))?.meta.palette).toEqual(card.palette);
+
+    await db.update(s.templates).set({ deletedAt: new Date().toISOString() }).where(eq(s.templates.key, "atelier"));
+    try {
+      expect((await listStoreTemplates(w.a.sellerId, w.a.a2, db))!.templates.some((t) => t.key === "atelier")).toBe(false);
+      expect(await getPublicTemplateConfig("atelier", db)).toBeNull();
+      expect(await getStoreTemplateConfig(w.a.sellerId, w.a.a2, "atelier", db)).toBeNull();
+      expect(await getTemplateMeta("atelier", db)).toBeNull();
+    } finally {
+      await db.update(s.templates).set({ deletedAt: null }).where(eq(s.templates.key, "atelier"));
+    }
+  });
+
   // Needs 0071 (Tallaby Classic v3, tree sections) on the test database; skipped until it is applied.
   const classicV3 = async () => {
     const [row] = await db
@@ -58,6 +84,14 @@ describe.skipIf(!TEST_DATABASE_URL)("store templates (integration)", { timeout: 
       .where(eq(s.templates.key, "tallaby-classic"));
     return (row?.version ?? 0) >= 3;
   };
+
+  it("applyStoreTemplate bumps chrome_version", async (t) => {
+    if (!(await classicV3())) return t.skip();
+    const before = (await getStoreForEditor(w.a.sellerId, w.a.a2, db))!.store.chromeVersion;
+    expect((await applyStoreTemplate(w.a.sellerId, w.a.a2, "tallaby-classic", w.a.sellerId, OPTIONS, db)).success).toBe(true);
+    expect((await getStoreForEditor(w.a.sellerId, w.a.a2, db))!.store.chromeVersion).toBeGreaterThan(before);
+    expect((await undoStoreTemplate(w.a.sellerId, w.a.a2, db)).success).toBe(true);
+  });
 
   it("applies to drafts only, replaces the home sections, and leaves other stores alone", async (t) => {
     if (!(await classicV3())) return t.skip();

@@ -2,7 +2,7 @@
  * The one category tree of the section library (P4B-05). The Add panel,
  * search and tests read it from here; nothing else lists categories. The
  * categories, their order and names follow the Claude Design section library
- * (2026-10-19); the Add panel hides a category until it has a design (only the product page, for now).
+ * (2026-10-19); the Add panel hides a category until it has a design.
  */
 import type { LibraryCategory, LibraryCategoryId } from "./types";
 
@@ -62,6 +62,32 @@ export const LIBRARY_CATEGORIES: readonly LibraryCategory[] = [
     ],
   },
   {
+    id: "bundles",
+    name: { ar: "الباقات والأطقم", en: "Bundles" },
+    description: { ar: "منتجات بتتباع مع بعض بسعر واحد: أطقم وعلب هدايا وعروض الكمية.", en: "Products sold together at one price: kits, gift boxes and quantity offers." },
+    icon: "boxes",
+    subcategories: [
+      sub("fixed", "باقة ثابتة", "Fixed bundle"),
+      sub("build", "اعمل طقمك", "Build your own"),
+      sub("several", "أكتر من طقم", "Several kits"),
+      sub("quantity", "عروض الكمية", "Quantity offers"),
+      sub("gift", "هدايا", "Gifts"),
+    ],
+  },
+  {
+    id: "finder",
+    name: { ar: "ساعدني أختار", en: "Product finder" },
+    description: { ar: "طرق تودي العميل للمنتج المناسب: بالاستخدام أو الميزانية أو المقارنة.", en: "Guided ways to the right product: by use, by budget or side by side." },
+    icon: "compass",
+    subcategories: [
+      sub("guided", "بالأسئلة", "Guided"),
+      sub("budget", "حسب الميزانية", "By budget"),
+      sub("compare", "مقارنة", "Compare"),
+      sub("picks", "اختياراتنا", "Our picks"),
+      sub("guides", "أدلة الشراء", "Buying guides"),
+    ],
+  },
+  {
     id: "promotions",
     name: { ar: "العروض", en: "Promotions" },
     description: { ar: "عروض ومجموعات وكوبونات وتخفيضات لوقت محدود.", en: "Offers, bundles, coupons and time-limited deals." },
@@ -84,6 +110,18 @@ export const LIBRARY_CATEGORIES: readonly LibraryCategory[] = [
       sub("benefits-bar", "شريط مزايا", "Benefits bar"),
       sub("image-features", "صورة ومزايا", "Image + features"),
       sub("steps", "خطوات", "Numbered steps"),
+    ],
+  },
+  {
+    id: "payment",
+    name: { ar: "الدفع والتوصيل", en: "Payment & delivery" },
+    description: { ar: "العميل هيدفع إزاي والطلب هيوصل إمتى: طرق الدفع والمناطق والمصاريف.", en: "How shoppers pay and when orders arrive: methods, zones and fees." },
+    icon: "credit-card",
+    subcategories: [
+      sub("methods", "طرق الدفع", "Ways to pay"),
+      sub("installments", "التقسيط", "Installments"),
+      sub("delivery", "التوصيل", "Delivery"),
+      sub("cash", "الدفع عند الاستلام", "Cash on delivery"),
     ],
   },
   {
@@ -181,6 +219,56 @@ export const LIBRARY_CATEGORIES: readonly LibraryCategory[] = [
     subcategories: [sub("panel", "لوحة اشتراك", "Sign-up panel"), sub("image", "صورة ونموذج", "Photo split"), sub("coupon", "كوبون ترحيب", "Welcome coupon")],
   },
   {
+    id: "popups",
+    name: { ar: "النوافذ والشرائط", en: "Pop-ups & bars" },
+    description: {
+      ar: "عرض الترحيب وتذكير السلة وزر واتساب وشرائط العروض، جوه الصفحة.",
+      en: "Welcome offers, cart reminders, a WhatsApp button and offer bars, set in the page.",
+    },
+    icon: "message-square-dot",
+    subcategories: [
+      sub("welcome", "عرض ترحيب", "Welcome offer"),
+      sub("reminders", "تذكير", "Reminders"),
+      sub("app", "شريط التطبيق", "App banner"),
+      sub("chat", "زر محادثة", "Chat button"),
+      sub("bars", "شرائط العروض", "Offer bars"),
+    ],
+  },
+  {
+    id: "loyalty",
+    name: { ar: "الهدايا والمناسبات", en: "Gifts & occasions" },
+    description: { ar: "أفكار هدايا تودّي لمنتجاتك، وتجميع أعياد ميلاد عملائك.", en: "Gift ideas that lead to your products, and collecting customers' birthdays." },
+    icon: "crown",
+    subcategories: [sub("gifts", "أفكار هدايا", "Gift ideas"), sub("occasions", "مناسبات", "Occasions")],
+  },
+  {
+    id: "services",
+    name: { ar: "الخدمات", en: "Services" },
+    description: { ar: "اللي بتقدمه غير البيع: تركيب وصيانة واستبدال وضمان.", en: "What you offer besides selling: installation, repair, trade-in and warranty." },
+    icon: "hand-helping",
+    subcategories: [
+      sub("list", "الخدمات والأسعار", "Services & prices"),
+      sub("requests", "طلبات وحجز", "Requests"),
+      sub("process", "إزاي بنشتغل", "How it works"),
+      sub("banners", "بانرات", "Banners"),
+      sub("support", "الدعم", "Support"),
+    ],
+  },
+  {
+    id: "about",
+    name: { ar: "من نحن والفريق", en: "About & team" },
+    description: { ar: "قصة المتجر وفريقه وقيمه وفروعه.", en: "The story behind the store, its team, values and branches." },
+    icon: "store",
+    subcategories: [
+      sub("story", "قصتنا", "Our story"),
+      sub("team", "الفريق", "Team"),
+      sub("values", "القيم والأرقام", "Values & numbers"),
+      sub("branches", "الفروع", "Branches"),
+      sub("press", "الصحافة", "Press"),
+      sub("careers", "الوظائف", "Careers"),
+    ],
+  },
+  {
     id: "contact",
     name: { ar: "التواصل والفروع", en: "Contact" },
     description: { ar: "طرق التواصل والعنوان والفروع ومواعيد العمل.", en: "Ways to reach you, your address, branches and hours." },
@@ -190,6 +278,19 @@ export const LIBRARY_CATEGORIES: readonly LibraryCategory[] = [
       sub("address", "العنوان والفروع", "Address & branches"),
       sub("whatsapp", "واتساب", "WhatsApp"),
       sub("form", "نماذج", "Forms"),
+    ],
+  },
+  {
+    id: "tracking",
+    name: { ar: "تتبع الطلب", en: "Order tracking" },
+    description: { ar: "إزاي الطلب بيمشي، وفين يسأل العميل عن طلبه، والاسترجاع والتقييم.", en: "How orders move, where shoppers ask about an order, returns and feedback." },
+    icon: "map-pin",
+    subcategories: [
+      sub("help", "السؤال عن الطلب", "Order help"),
+      sub("status", "مراحل الطلب", "Order stages"),
+      sub("returns", "الاسترجاع", "Returns"),
+      sub("delivery", "مواعيد التوصيل", "Delivery times"),
+      sub("feedback", "التقييم", "Feedback"),
     ],
   },
   {
@@ -224,6 +325,18 @@ export const LIBRARY_CATEGORIES: readonly LibraryCategory[] = [
     description: { ar: "أقسام صفحة تفاصيل المنتج.", en: "Sections for the product detail page." },
     icon: "package",
     subcategories: [sub("buy-box", "معرض وشراء", "Gallery & buy box"), sub("details", "التفاصيل", "Details"), sub("upsell", "بيتشروا معاه", "Bought together")],
+  },
+  {
+    id: "cart",
+    name: { ar: "السلة والدفع", en: "Cart & checkout" },
+    description: { ar: "إضافات للطلب والسلة الفاضية وهدف التوصيل المجاني وكوبونات.", en: "Order extras, the empty cart, the free-delivery goal and coupons." },
+    icon: "shopping-cart",
+    subcategories: [
+      sub("upsell", "إضافات للطلب", "Order extras"),
+      sub("empty", "السلة الفاضية", "Empty cart"),
+      sub("delivery", "التوصيل المجاني", "Free delivery"),
+      sub("coupon", "كوبونات", "Coupons"),
+    ],
   },
   {
     id: "footers",

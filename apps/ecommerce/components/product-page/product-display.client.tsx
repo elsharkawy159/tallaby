@@ -121,7 +121,7 @@ export const ProductDisplay = ({ product }: ProductDisplayProps) => {
         selectedVariant={selectedVariant}
       />
       {/* Mobile: a sheet that rises over the pinned image. Desktop: plain column. */}
-      <div className="relative z-10 -mx-4 -mt-8 rounded-t-[28px] bg-white px-4 pb-6 pt-3 shadow-[0_-16px_32px_-16px_rgba(20,81,99,0.35)] lg:m-0 lg:rounded-none lg:p-0 lg:shadow-none">
+      <div className="relative z-10 -mx-4 -mt-8 rounded-t-[28px] px-4 pb-6 pt-3 shadow-[0_-16px_32px_-16px_rgba(20,81,99,0.35)] lg:m-0 lg:rounded-none lg:p-0 lg:shadow-none">
         <span
           aria-hidden
           className="mx-auto mb-4 block h-1.5 w-10 rounded-full bg-gray-200 lg:hidden"

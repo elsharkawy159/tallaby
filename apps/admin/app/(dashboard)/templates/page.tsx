@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import { Badge } from "@workspace/ui/components/badge";
+import { Button } from "@workspace/ui/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card";
 import { createCachedQuery, templateTags } from "@workspace/cache";
 import { logServerError } from "@workspace/db/log";
@@ -12,8 +13,9 @@ import { templateGalleryUrl } from "@/lib/site-urls";
 import { AdminTable, type AdminTableColumn } from "../_components/admin-table/admin-table";
 import { ReasonActionButton } from "../_components/dialogs/reason-action.client";
 import { formatAdminDate, localizedText } from "../stores/stores.lib";
+import { DuplicateTemplateButton, NewTemplateButton } from "./new-template-dialog.client";
 import { TemplateEditButton } from "./template-edit.client";
-import { setDefaultTemplateAction } from "./templates.server";
+import { deleteTemplateAction, restoreTemplateVersionToDraftAction, setDefaultTemplateAction } from "./templates.server";
 
 export const dynamic = "force-dynamic";
 
@@ -44,7 +46,12 @@ const TEMPLATE_COLUMNS: AdminTableColumn[] = [
   { id: "actions", header: "Actions", align: "end" },
 ];
 
-/** Store templates in the seller gallery (docs/admin-saas.md §3.6). Metadata only. */
+/**
+ * Store templates in the seller gallery (docs/admin-saas.md §3.6, spec
+ * 2026-10-20-admin-website-builder §5.4): gallery settings, the default, and
+ * the template content itself (Edit design opens the builder; New, Duplicate,
+ * Delete and Restore to draft are audited).
+ */
 export default async function TemplatesPage({ searchParams }: PageProps) {
   await getCurrentAdminUser();
   const versionsFor = firstParam((await searchParams).versions);
@@ -57,16 +64,21 @@ export default async function TemplatesPage({ searchParams }: PageProps) {
   }
   const selected = versionsFor && isUuid(versionsFor) ? rows.find((row) => row.id === versionsFor) : undefined;
   const versions = selected ? await listTemplateVersionsForAdmin(selected.id).catch(() => []) : [];
+  const categories = [...new Set(rows.map((row) => row.category))].sort();
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Templates</h1>
-        <p className="text-sm text-muted-foreground">
-          What sellers see in their template gallery. Template content is shipped with releases; here you
-          control visibility, pricing, order and the default for new stores. A shown template&apos;s name opens
-          its page on tallaby.com in a new tab.
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold">Templates</h1>
+          <p className="text-sm text-muted-foreground">
+            What sellers see in their template gallery. Edit design opens a template in the website builder: saves
+            are a draft, and each Publish adds a version that new stores (for the default template) and the gallery
+            use; stores already on a template keep their site. Settings control visibility (Active), pricing and
+            order. A shown template&apos;s name opens its page on tallaby.com in a new tab.
+          </p>
+        </div>
+        <NewTemplateButton categories={categories} />
       </div>
 
       <Card>
@@ -123,7 +135,14 @@ export default async function TemplatesPage({ searchParams }: PageProps) {
                   gallery: (
                     <div className="flex flex-wrap gap-1">
                       {row.isDefault && <Badge>Default</Badge>}
-                      <Badge variant={row.isActive ? "outline" : "secondary"}>{row.isActive ? "Shown" : "Hidden"}</Badge>
+                      <Badge variant={row.isActive ? "outline" : "secondary"} title={row.isActive ? undefined : "Inactive: turn on Active (Settings) to show it to sellers"}>
+                        {row.isActive ? "Shown" : "Hidden"}
+                      </Badge>
+                      {row.hasDraft && (
+                        <Badge variant="outline" className="border-amber-500 text-amber-700 dark:text-amber-400" title="Unpublished changes in the editor">
+                          Draft
+                        </Badge>
+                      )}
                       {row.isPremium && <Badge variant="outline">Premium</Badge>}
                     </div>
                   ),
@@ -148,7 +167,10 @@ export default async function TemplatesPage({ searchParams }: PageProps) {
                     </div>
                   ),
                   actions: (
-                    <div className="flex justify-end gap-2">
+                    <div className="flex flex-wrap justify-end gap-2">
+                      <Button asChild size="sm">
+                        <Link href={`/templates/${row.id}/editor`}>Edit design</Link>
+                      </Button>
                       <TemplateEditButton
                         template={{
                           id: row.id,
@@ -168,6 +190,18 @@ export default async function TemplatesPage({ searchParams }: PageProps) {
                           confirmLabel="Make default"
                           payload={{ templateId: row.id }}
                           action={setDefaultTemplateAction}
+                        />
+                      )}
+                      <DuplicateTemplateButton template={{ id: row.id, key: row.key, name }} />
+                      {!row.isDefault && (
+                        <ReasonActionButton
+                          label="Delete"
+                          title={`Delete ${name}?`}
+                          description={`It disappears from the seller gallery and from this list. Stores that use it keep their site, and undoing a template change still works. Its key stays taken.${row.storesUsing > 0 ? ` ${row.storesUsing} ${row.storesUsing === 1 ? "store uses" : "stores use"} it now.` : ""}`}
+                          confirmLabel="Delete"
+                          destructive
+                          payload={{ id: row.id }}
+                          action={deleteTemplateAction}
                         />
                       )}
                     </div>
@@ -200,7 +234,17 @@ export default async function TemplatesPage({ searchParams }: PageProps) {
                       <span className="ml-2 text-xs text-muted-foreground">schema {version.schemaVersion}</span>
                       {version.changelog && <span className="block text-xs text-muted-foreground">{version.changelog}</span>}
                     </span>
-                    <span className="text-xs text-muted-foreground">{formatAdminDate(version.publishedAt)}</span>
+                    <span className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground">{formatAdminDate(version.publishedAt)}</span>
+                      <ReasonActionButton
+                        label="Restore to draft"
+                        title={`Restore v${version.version} to the draft?`}
+                        description={`The draft of ${localizedText(selected.name)} becomes v${version.version} (an unpublished draft is replaced). Nothing changes for sellers until you publish it from Edit design.`}
+                        confirmLabel="Restore to draft"
+                        payload={{ id: selected.id, versionId: version.id }}
+                        action={restoreTemplateVersionToDraftAction}
+                      />
+                    </span>
                   </li>
                 ))}
               </ul>

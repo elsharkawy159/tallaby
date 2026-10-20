@@ -3,6 +3,7 @@ import {
   normalizeServiceChoices,
   requiresPickupAddress,
   sellerManagedPreset,
+  tallabyAvailable,
   type FulfillmentModel,
   type FulfillmentPlanView,
   type FulfillmentProvider,
@@ -64,6 +65,8 @@ export function initialRequestValues(
 ): FulfillmentRequestFormValues {
   const services = sellerManagedPreset(plans);
   for (const row of existing.services) {
+    // A Tallaby service with no plan on offer (or none at all) starts as the seller's.
+    if (row.requestedProvider === "tallaby" && !tallabyAvailable(plans, row.serviceType)) continue;
     const choice: ServiceChoice = {
       provider: row.requestedProvider,
       planId: row.requestedProvider === "tallaby" ? row.requestedPlanId : null,

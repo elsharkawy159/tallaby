@@ -30,7 +30,11 @@ describe.skipIf(!TEST_DATABASE_URL)("site scaffold (integration)", { timeout: 60
   const store = async (storeId: string) => (await db.select().from(s.stores).where(eq(s.stores.id, storeId)))[0]!;
 
   it("an unpublished store starts from Tallaby Classic in its drafts, with its forms", async () => {
-    await getStoreForEditor(w.a.sellerId, w.a.a2, db);
+    const editor = await getStoreForEditor(w.a.sellerId, w.a.a2, db);
+    // The editor sees the post-scaffold chrome and version (a stale one would make its first save conflict).
+    const [after] = await db.select().from(s.stores).where(eq(s.stores.id, w.a.a2));
+    expect(editor!.store.chromeVersion).toBe(after!.chromeVersion);
+    expect(editor!.store.sharedHeader).toEqual(after!.sharedHeader);
     const row = await store(w.a.a2);
     expect((row.sharedHeader as { source?: string }).source).toBe("tallaby-header@1");
     expect((row.sharedFooter as { source?: string }).source).toBe("tallaby-footer@1");

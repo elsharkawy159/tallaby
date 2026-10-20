@@ -1,8 +1,6 @@
-import Link from "next/link";
 import { Gift } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getFeeTrialStatus } from "@workspace/lib/sellers";
-import { Button } from "@workspace/ui/components/button";
 import { formatDate } from "@/lib/i18n/format";
 import { getHomeSnapshot } from "./home.queries";
 import { HomeCard, IconTile } from "./home-ui";
@@ -28,7 +26,7 @@ export async function TrialBannerData() {
   return (
     <HomeCard
       aria-labelledby="trial-title"
-      className="flex flex-wrap items-center gap-3.5 px-5 py-4"
+      className="flex items-center gap-3 px-4 py-3 sm:gap-3.5 sm:px-5 sm:py-4"
     >
       <IconTile icon={Gift} tone={endingSoon ? "accent" : "success"} />
       <div className="min-w-0 flex-1">
@@ -39,9 +37,6 @@ export async function TrialBannerData() {
           {active ? t("active", { date: formatDate(status.endsAt, locale) }) : t("notStarted")}
         </p>
       </div>
-      <Button asChild variant="secondary" size="sm" className="rounded-xl">
-        <Link href="/settings/plan">{t("planLink")}</Link>
-      </Button>
     </HomeCard>
   );
 }

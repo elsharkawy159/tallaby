@@ -183,7 +183,7 @@ export function StoreApps({
       </section>
 
       <div className="flex flex-wrap items-center gap-3">
-        <div role="tablist" className="flex gap-1 overflow-x-auto rounded-xl border bg-card p-1">
+        <div role="tablist" className="flex w-full gap-1 overflow-x-auto rounded-xl border bg-card p-1 sm:w-auto">
           {tabs.map(({ key, label, count }) => (
             <button
               key={key}
@@ -192,7 +192,7 @@ export function StoreApps({
               aria-selected={tab === key}
               onClick={() => setTab(key)}
               className={cn(
-                "inline-flex h-[34px] items-center gap-1.5 rounded-[9px] px-3.5 text-[13px] font-semibold whitespace-nowrap text-muted-foreground transition-colors hover:text-foreground",
+                "inline-flex h-[34px] items-center justify-center gap-1.5 rounded-[9px] px-3.5 max-sm:flex-1 text-[13px] font-semibold whitespace-nowrap text-muted-foreground transition-colors hover:text-foreground",
                 tab === key && "bg-primary text-primary-foreground hover:text-primary-foreground",
               )}
             >

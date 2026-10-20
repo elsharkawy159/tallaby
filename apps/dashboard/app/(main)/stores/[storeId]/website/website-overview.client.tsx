@@ -39,10 +39,11 @@ import {
 } from "@workspace/ui/components/alert-dialog";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
+import { Switch } from "@workspace/ui/components/switch";
 import { BUTTON_CLASS, SectionCard, SMALL_BUTTON_CLASS } from "@/components/form/form-ui";
 import { cn } from "@/lib/utils";
 import { discardDraft, publish, restoreRevision, unpublish } from "@/app/(builder)/stores/[storeId]/editor/server/editor.server";
-import { useStorePreview } from "@/app/(builder)/stores/[storeId]/editor/state/use-store-preview.client";
+import { useStorePreview } from "@/app/(builder)/stores/[storeId]/editor/use-store-preview.client";
 import type { WebsiteOverviewData } from "./website.types";
 
 /** The other Website pages (PLAN.md §7.2). Some ship later; their links already point at the final routes. */
@@ -77,7 +78,12 @@ export function WebsiteOverview({ data }: { data: WebsiteOverviewData }) {
   const date = (iso: string) => format.dateTime(new Date(iso), { dateStyle: "medium", timeStyle: "short" });
 
   /** Runs an editor action, shows its error, refreshes the server data. */
-  const run = (key: string, action: () => Promise<{ success: true } | { success: false; error: string }>, done: string) => {
+  const run = (
+    key: string,
+    action: () => Promise<{ success: true } | { success: false; error: string }>,
+    done: string,
+    onFail?: () => void,
+  ) => {
     setBusy(key);
     startTransition(async () => {
       try {
@@ -86,9 +92,11 @@ export function WebsiteOverview({ data }: { data: WebsiteOverviewData }) {
           toast.success(done);
           router.refresh();
         } else {
+          onFail?.();
           toast.error(te(`errors.${result.error}` as "errors.generic"));
         }
       } catch {
+        onFail?.();
         toast.error(te("errors.generic"));
       } finally {
         setBusy(null);
@@ -106,7 +114,21 @@ export function WebsiteOverview({ data }: { data: WebsiteOverviewData }) {
   };
 
   const working = pending || busy !== null;
-  const canPublish = !data.readOnly && (!data.isLive || data.hasUnpublishedChanges);
+
+  // "Website live" switch: optimistic until the refreshed server data
+  // arrives (a new `data.isLive` drops it), reverted when the action fails.
+  const [optimistic, setOptimistic] = useState<{ value: boolean; base: boolean } | null>(null);
+  const [confirmOffline, setConfirmOffline] = useState(false);
+  const live = optimistic && optimistic.base === data.isLive ? optimistic.value : data.isLive;
+  const goLive = () => {
+    setOptimistic({ value: true, base: data.isLive });
+    run("publish", () => publish(data.storeId), t("publishedToast"), () => setOptimistic(null));
+  };
+  const goOffline = () => {
+    setOptimistic({ value: false, base: data.isLive });
+    run("unpublish", () => unpublish(data.storeId), t("unpublishedToast"), () => setOptimistic(null));
+  };
+  const switchHint = live ? "liveSwitchOn" : data.siteStatus === "unpublished" ? "liveSwitchOff" : "liveSwitchDraft";
 
   return (
     <div className="space-y-5">
@@ -119,6 +141,38 @@ export function WebsiteOverview({ data }: { data: WebsiteOverviewData }) {
       >
         <div className="grid gap-5 md:grid-cols-[minmax(0,1fr)_260px]">
           <div className="min-w-0 space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-xl border bg-muted/30 p-3">
+              <div className="min-w-0 flex-1 basis-48">
+                <label htmlFor="website-live" className="text-sm font-semibold">
+                  {t("liveSwitch")}
+                </label>
+                <p id="website-live-hint" className="text-xs text-muted-foreground">
+                  {t(switchHint)}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                {(busy === "publish" || busy === "unpublish") && (
+                  <LoaderCircle className="size-4 animate-spin text-muted-foreground" aria-hidden />
+                )}
+                <Switch
+                  id="website-live"
+                  aria-describedby="website-live-hint"
+                  checked={live}
+                  disabled={data.readOnly || working}
+                  onCheckedChange={(checked) => (checked ? goLive() : setConfirmOffline(true))}
+                />
+              </div>
+              <ConfirmAction
+                open={confirmOffline}
+                onOpenChange={setConfirmOffline}
+                title={t("unpublishTitle")}
+                description={t("unpublishBody")}
+                confirm={t("unpublish")}
+                destructive
+                onConfirm={goOffline}
+              />
+            </div>
+
             <div className="space-y-1.5">
               <p className="text-xs font-medium text-muted-foreground">{t("liveUrl")}</p>
               <div className="flex flex-wrap items-center gap-2">
@@ -175,46 +229,32 @@ export function WebsiteOverview({ data }: { data: WebsiteOverviewData }) {
                   {t("preview")}
                 </Button>
               )}
-              <Button
-                type="button"
-                variant={canPublish ? "default" : "outline"}
-                className={BUTTON_CLASS}
-                disabled={!canPublish || working}
-                onClick={() => run("publish", () => publish(data.storeId), t("publishedToast"))}
-              >
-                {busy === "publish" ? <LoaderCircle className="animate-spin" aria-hidden /> : <UploadCloud aria-hidden />}
-                {t(data.isLive ? "publishChanges" : "publish")}
-              </Button>
+              {!data.readOnly && data.isLive && data.hasUnpublishedChanges && (
+                <Button
+                  type="button"
+                  className={BUTTON_CLASS}
+                  disabled={working}
+                  onClick={() => run("publish", () => publish(data.storeId), t("publishedToast"))}
+                >
+                  {busy === "publish" ? <LoaderCircle className="animate-spin" aria-hidden /> : <UploadCloud aria-hidden />}
+                  {t("publishChanges")}
+                </Button>
+              )}
             </div>
 
-            {!data.readOnly && data.isLive && (
+            {!data.readOnly && data.isLive && data.hasUnpublishedChanges && (
               <div className="flex flex-wrap gap-2 border-t pt-4">
-                {data.hasUnpublishedChanges && (
-                  <ConfirmAction
-                    trigger={
-                      <Button type="button" variant="ghost" size="sm" className={SMALL_BUTTON_CLASS} disabled={working}>
-                        <Undo2 aria-hidden />
-                        {t("discard")}
-                      </Button>
-                    }
-                    title={t("discardTitle")}
-                    description={t("discardBody")}
-                    confirm={t("discard")}
-                    onConfirm={() => run("discard", () => discardDraft(data.storeId), t("discardedToast"))}
-                  />
-                )}
                 <ConfirmAction
                   trigger={
-                    <Button type="button" variant="ghost" size="sm" className={cn(SMALL_BUTTON_CLASS, "text-destructive")} disabled={working}>
-                      <RotateCcw aria-hidden />
-                      {t("unpublish")}
+                    <Button type="button" variant="ghost" size="sm" className={SMALL_BUTTON_CLASS} disabled={working}>
+                      <Undo2 aria-hidden />
+                      {t("discard")}
                     </Button>
                   }
-                  title={t("unpublishTitle")}
-                  description={t("unpublishBody")}
-                  confirm={t("unpublish")}
-                  destructive
-                  onConfirm={() => run("unpublish", () => unpublish(data.storeId), t("unpublishedToast"))}
+                  title={t("discardTitle")}
+                  description={t("discardBody")}
+                  confirm={t("discard")}
+                  onConfirm={() => run("discard", () => discardDraft(data.storeId), t("discardedToast"))}
                 />
               </div>
             )}
@@ -306,13 +346,18 @@ function StatusBadge({ status, label }: { status: StatusKey; label: string }) {
 
 function ConfirmAction({
   trigger,
+  open,
+  onOpenChange,
   title,
   description,
   confirm,
   destructive = false,
   onConfirm,
 }: {
-  trigger: ReactNode;
+  /** The button that opens the dialog; omit it to control the dialog with `open`. */
+  trigger?: ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   title: string;
   description: string;
   confirm: string;
@@ -321,8 +366,8 @@ function ConfirmAction({
 }) {
   const t = useTranslations("websiteOverview");
   return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      {trigger && <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>}
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>

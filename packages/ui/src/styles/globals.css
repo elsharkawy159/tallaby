@@ -4,6 +4,7 @@
 @source "../**/*.{ts,tsx}";
 @source "../../../tiptap/**/*.{ts,tsx,css}";
 @source "../../../store-sections/src/**/*.{ts,tsx}";
+@source "../../../store-editor/src/**/*.{ts,tsx}";
 @import "tw-animate-css";
 @import "../../../tiptap/src/styles/rich-text-content.css";
 

@@ -188,7 +188,7 @@ const DEMO = demoStore({
 
 export const DAILY = libraryTemplate({
   key: DAILY_KEY,
-  version: 1,
+  version: 2,
   name: L("ديلي", "Daily"),
   description: L(
     "أدوات المطبخ والبيت: هدف التوصيل المجاني، عروض الأسبوع وأقسام واضحة. أربع صفحات جاهزة.",

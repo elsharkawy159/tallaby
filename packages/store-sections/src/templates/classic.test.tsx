@@ -1,5 +1,3 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import type { ComponentNode, SectionInstance } from "../config/schema";
@@ -12,9 +10,10 @@ import { SectionRenderer } from "../render/render";
 import { storeSectionRegistry } from "../sections";
 import { CLASSIC, CLASSIC_DESIGNS, classicConfig } from "./classic";
 import { DEFAULT_TEMPLATE, TEMPLATE_JSON_END, TEMPLATE_JSON_START, getCodeTemplate, templateConfigJson, templateSeedSql } from "./catalog";
+import { FROZEN_SEEDS, migrationSha256 } from "./frozen-seeds.test-utils";
 import { prepareTemplateForStore, templateFormNeeds } from "./prepare";
 
-const MIGRATION = join(__dirname, "../../../db/migrations/0071_tallaby_classic_template_v3.sql");
+const SEED = "0084_mobile_header_padding.sql";
 
 const walk = (nodes: readonly ComponentNode[] | undefined): ComponentNode[] => (nodes ?? []).flatMap((n) => [n, ...walk(n.children)]);
 const sections = (config = classicConfig()): SectionInstance[] => [config.header!, config.footer!, ...config.pages.flatMap((p) => p.content.sections)];
@@ -148,11 +147,18 @@ describe("Tallaby Classic template", () => {
     expect(CLASSIC_DESIGNS.every((d) => d.id.startsWith("tallaby-"))).toBe(true);
   });
 
-  it("matches the committed 0071 seed (regenerate with template:sql)", () => {
-    const sql = readFileSync(MIGRATION, "utf8").replace(/\r\n/g, "\n");
-    expect(sql).toBe(templateSeedSql(CLASSIC, "0071_tallaby_classic_template_v3.sql"));
-    expect(sql).toContain("is_default = true");
-    const json = sql.split(TEMPLATE_JSON_START)[1]!.split(TEMPLATE_JSON_END)[0]!.trim().replace(/^'|'::jsonb,$/g, "").replace(/''/g, "'");
+  // frozen: applied on staging and production 2026-10-20; DB is the master copy (admin website builder).
+  it("keeps the applied 0084 seed unchanged (frozen)", () => {
+    expect(migrationSha256(SEED)).toBe(FROZEN_SEEDS[SEED]);
+  });
+
+  it("still generates a seed whose config passes validateSiteConfig", () => {
+    const seed = templateSeedSql(CLASSIC, SEED);
+    expect(seed).not.toContain("DO UPDATE");
+    expect(seed).toMatch(/true,\s+true,\s+false,\s+ids\.version_id/); // is_default, is_active, is_premium
+    const json = seed.split(TEMPLATE_JSON_START)[1]!.split(TEMPLATE_JSON_END)[0]!.trim().replace(/^'|'::jsonb,$/g, "").replace(/''/g, "'");
     expect(JSON.parse(json)).toEqual(JSON.parse(templateConfigJson(CLASSIC)));
+    const validated = validateSiteConfig(JSON.parse(json));
+    expect(validated.success, JSON.stringify(validated.success ? "" : validated.issues)).toBe(true);
   });
 });

@@ -6,6 +6,7 @@ import {
   invalidateSellerCoupons,
   invalidateStoreIntegrationsWithSummary,
   invalidateTemplateCatalog,
+  invalidateLibrarySections,
   invalidatePlatformCoupons,
   invalidateProduct,
   invalidateProductInventory,
@@ -25,6 +26,7 @@ import {
   productTags,
   storeTags,
   templateTags,
+  librarySectionTags,
 } from "./tags";
 
 function snapshot(overrides: Partial<ProductCacheSnapshot> = {}): ProductCacheSnapshot {
@@ -369,6 +371,11 @@ describe("admin invalidations (docs/admin-saas.md §4.3)", () => {
   it("template catalog and fulfillment plans carry no seller data", () => {
     expect(invalidateTemplateCatalog().tags).toEqual([templateTags.catalog()]);
     expect(invalidateFulfillmentPlans().tags).toEqual([fulfillmentTags.plans()]);
+  });
+
+  it("library sections are one platform catalog tag with no seller data", () => {
+    expect(librarySectionTags.catalog()).toBe("library:sections");
+    expect(invalidateLibrarySections()).toEqual({ tags: ["library:sections"], paths: [] });
   });
 
   it("the tallaby.com blog is one platform tag", () => {

@@ -3,23 +3,9 @@
  * shapes and pure helpers for the Pexels API. No secrets and no I/O here.
  */
 
-export type StockPhoto = {
-  /** Pexels photo id (digits). */
-  id: string;
-  /** Small image for the grid. */
-  thumbUrl: string;
-  /** Sharp image for the hover preview on the canvas (large 2x, else large, else the thumb). */
-  previewUrl: string;
-  width: number;
-  height: number;
-  alt: string;
-  avgColor: string | null;
-  photographer: string;
-  /** The photo's page on Pexels (attribution link). */
-  pageUrl: string;
-};
+import type { StockPhoto, StockPhotoPage } from "@workspace/store-editor/editor.dto";
 
-export type StockPhotoPage = { photos: StockPhoto[]; hasMore: boolean };
+export type { StockPhoto, StockPhotoPage };
 
 /** The parts of a Pexels photo we read (https://www.pexels.com/api/documentation/#photos-overview). */
 export type PexelsPhoto = {

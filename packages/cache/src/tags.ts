@@ -91,6 +91,14 @@ export const templateTags = {
   catalog: () => "template:catalog",
 } as const;
 
+/**
+ * The published section library (`library_sections`, 0086) the editor's
+ * Add › Sections lists. Platform data, no seller data; drafts are never cached.
+ */
+export const librarySectionTags = {
+  catalog: () => "library:sections",
+} as const;
+
 /** The tallaby.com blog written in the admin app (0073). Published posts only; no seller data. */
 export const marketingBlogTags = {
   posts: () => "marketing-blog:posts",

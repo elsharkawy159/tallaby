@@ -11,6 +11,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   PaginationState,
+  RowData,
   SortingState,
   Table as TanstackTable,
   Updater,
@@ -18,6 +19,7 @@ import {
   VisibilityState,
   flexRender,
 } from "@tanstack/react-table";
+import { cn } from "@workspace/ui/lib/utils";
 import { Button } from "@workspace/ui/components/button";
 import { Checkbox } from "@workspace/ui/components/checkbox";
 import { Input } from "@workspace/ui/components/input";
@@ -60,6 +62,24 @@ import {
   ListFilterIcon,
   TrashIcon,
 } from "lucide-react";
+
+declare module "@tanstack/react-table" {
+  // TData/TValue must match TanStack's declaration for the interfaces to merge.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface ColumnMeta<TData extends RowData, TValue> {
+    /** Human label for the "View" column toggle (defaults to the column id). */
+    label?: string;
+    /** Hide the column's header and cells below the sm breakpoint (phones). */
+    hideOnMobile?: boolean;
+    /** Set by TableSection on its injected index / select columns. */
+    isIndex?: boolean;
+    isSelect?: boolean;
+  }
+}
+
+/** `max-sm:hidden` for columns flagged `meta.hideOnMobile`. */
+const mobileHiddenClass = <TData,>(column: Column<TData, unknown>) =>
+  column.columnDef.meta?.hideOnMobile ? "max-sm:hidden" : undefined;
 
 /** Injected by TableSection itself; always pinned to the left, never reorderable. */
 export const FIXED_COLUMN_IDS = ["__index__", "__select__"];
@@ -229,7 +249,7 @@ export function TableSection<TData extends { id: string }>(
     },
     enableSorting: false,
     enableHiding: false,
-    meta: { isIndex: true },
+    meta: { isIndex: true, hideOnMobile: true },
   };
 
   // Insert the select column as the second column
@@ -447,7 +467,7 @@ export function TableSection<TData extends { id: string }>(
                   <TableHead
                     key={header.id}
                     style={{ width: `${header.getSize()}px` }}
-                    className="h-12"
+                    className={cn("h-12", mobileHiddenClass(header.column))}
                     aria-sort={
                       header.column.getIsSorted()
                         ? header.column.getIsSorted() === "asc"
@@ -507,7 +527,10 @@ export function TableSection<TData extends { id: string }>(
                   data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="align-middle">
+                    <TableCell
+                      key={cell.id}
+                      className={cn("align-middle", mobileHiddenClass(cell.column))}
+                    >
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()

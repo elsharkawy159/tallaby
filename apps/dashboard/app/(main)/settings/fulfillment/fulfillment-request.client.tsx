@@ -37,6 +37,7 @@ import {
   PRODUCT_SIZE_CATEGORIES,
   SKU_RANGES,
   TALLABY_FULFILLMENT_ENABLED,
+  TALLABY_SERVICES_ENABLED,
   fulfillmentRequestSchema,
   getPlanPricingLabel,
   localizedPlanDescription,
@@ -177,12 +178,14 @@ export function FulfillmentRequestForm({
     <Card>
       <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0">
         <div className="space-y-1">
-          <CardTitle className="text-base">{t("title")}</CardTitle>
-          <CardDescription>{t("description")}</CardDescription>
+          <CardTitle className="text-base">{TALLABY_SERVICES_ENABLED ? t("title") : t("sellerOnly.title")}</CardTitle>
+          <CardDescription>
+            {TALLABY_SERVICES_ENABLED ? t("description") : t("sellerOnly.description")}
+          </CardDescription>
         </div>
         {!open && (
           <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
-            {hasRequest ? t("change") : t("start")}
+            {TALLABY_SERVICES_ENABLED ? (hasRequest ? t("change") : t("start")) : t("sellerOnly.edit")}
           </Button>
         )}
       </CardHeader>
@@ -223,7 +226,7 @@ export function FulfillmentRequestForm({
                 indicator
                 icon={<SlidersHorizontal className="size-5.5" />}
                 title={t("model.manageTitle")}
-                description={t("model.manageDescription")}
+                description={TALLABY_SERVICES_ENABLED ? t("model.manageDescription") : t("sellerOnly.manageDescription")}
               />
             </ChoiceGroup>
             <InlineError message={err("model")} />
@@ -239,9 +242,11 @@ export function FulfillmentRequestForm({
           <div className="space-y-3">
             <div className="flex items-baseline justify-between gap-2">
               <h3 className="text-sm font-semibold">{t("services")}</h3>
-              <span className="text-xs text-muted-foreground">
-                {t("tallabyCount", { count: tallabyCount, total: FULFILLMENT_SERVICE_TYPES.length })}
-              </span>
+              {TALLABY_SERVICES_ENABLED && (
+                <span className="text-xs text-muted-foreground">
+                  {t("tallabyCount", { count: tallabyCount, total: FULFILLMENT_SERVICE_TYPES.length })}
+                </span>
+              )}
             </div>
             <div className="divide-y overflow-hidden rounded-xl border">
               {FULFILLMENT_SERVICE_TYPES.map((type) => (
@@ -371,7 +376,7 @@ export function FulfillmentRequestForm({
               </Button>
             )}
             <Button onClick={submit} disabled={pending}>
-              {pending ? t("sending") : t("submit")}
+              {pending ? t("sending") : TALLABY_SERVICES_ENABLED ? t("submit") : t("sellerOnly.submit")}
             </Button>
           </div>
         </CardContent>
@@ -483,17 +488,17 @@ function ServiceRow({
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold">{t(`service.${type}.name`)}</p>
           <p className="text-[13px] leading-normal text-muted-foreground">
-            {canUseTallaby ? t(`service.${type}.description`) : t("tallabyUnavailable")}
+            {canUseTallaby || !TALLABY_SERVICES_ENABLED ? t(`service.${type}.description`) : t("tallabyUnavailable")}
           </p>
         </div>
         <SegmentedControl
           value={choice.provider}
           onValueChange={setProvider}
           aria-label={t(`service.${type}.name`)}
-          className="ms-13.5 sm:ms-0"
+          className="ms-13.5 w-[calc(100%-3.375rem)] sm:ms-0 sm:w-auto"
         >
           <SegmentedControlItem value="tallaby" disabled={!canUseTallaby}>
-            {t("byTallaby")}
+            {TALLABY_SERVICES_ENABLED ? t("byTallaby") : t("byTallabySoon")}
           </SegmentedControlItem>
           <SegmentedControlItem value="seller">{t("me")}</SegmentedControlItem>
         </SegmentedControl>

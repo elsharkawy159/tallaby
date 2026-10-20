@@ -30,8 +30,11 @@
 | `packages/cache` | TS | Cache-tag registry, `createCachedQuery`, cross-app invalidation |
 | `packages/ui` | React | Shared shadcn/Radix components |
 | `packages/emails`, `packages/tiptap` | React | Email templates, rich-text editor |
+| `packages/store-sections` | React | Site-config schema, section registry and renderer, element-tree designs, the Tallaby Classic template |
+| `packages/store-editor` | React | The website builder UI and logic, shared by the dashboard and the admin app through an `EditorAdapter` |
 
-**[Planned]** `packages/store-sections`: the site-config schema, the section registry and renderer, and the "Tallaby Classic" template. Both the dashboard editor and the ecommerce storefront use it.
+
+**Website editor.** The editor lives in `packages/store-editor`, not in an app. It reaches data, saving, publishing, media and links only through an `EditorAdapter` plus a set of capabilities (for example revisions, media library, design system) that each host turns on or off. Four hosts supply an adapter: the seller dashboard (`apps/dashboard/app/(builder)/stores/[storeId]/editor`), and in `apps/admin` the store editor (`app/(builder)/stores/[storeId]/editor`), the library-section editor (`/sections`, `/sections/[id]/editor`) and the template editor (`/templates/[id]/editor`). Admin writes to a store's site are audited and mark the site as edited by an admin, which shows an "admin updated" notice inside the seller's open editor (on the 30-second or window-focus check, or on a save conflict) and stops autosave until the seller reloads. **Templates and library sections are mastered in the database** (`templates`/`template_versions` with drafts and meta, `library_sections`); the code under `packages/store-sections` is only an insert-only seed, so a deploy never overwrites an admin edit. New stores take the database default template.
 
 Commands: `pnpm lint`, `pnpm typecheck`, `pnpm test` (Vitest), `pnpm build`, and per package `pnpm --filter <name> <script>`. The repository has no E2E runner and no CI configuration.
 
@@ -42,7 +45,7 @@ Commands: `pnpm lint`, `pnpm typecheck`, `pnpm test` (Vitest), `pnpm build`, and
 | Web framework | Next.js 16.3.3 App Router, React 19.2.8, Server Components, Server Actions, `proxy.ts` (replaces `middleware.ts`) |
 | Language | TypeScript (strict) |
 | Styling | Tailwind CSS 4, shadcn/ui, CSS modules for the storefront |
-| Data | Supabase Postgres (eu-central-1), Drizzle ORM. Hand-written idempotent SQL migrations in `packages/db/migrations/` (latest `0048`) |
+| Data | Supabase Postgres (eu-central-1), Drizzle ORM. Hand-written idempotent SQL migrations in `packages/db/migrations/` (latest `0087`) |
 | Auth | Supabase Auth (email/password, Google OAuth). Cookies are scoped to `.${NEXT_PUBLIC_ROOT_DOMAIN}`. Auth handoff codes carry sessions to custom domains |
 | i18n | next-intl, Arabic default plus English (ecommerce, dashboard, shipping) |
 | State | Zustand, TanStack Query, react-hook-form with Zod |

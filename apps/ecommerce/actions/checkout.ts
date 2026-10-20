@@ -12,7 +12,11 @@ import {
 } from "@workspace/db";
 import { getLocale } from "next-intl/server";
 import { getCurrentUserId } from "@/lib/get-current-user-id";
-import { activeCartWhere, getCartScope } from "@/lib/storefront.server";
+import {
+  activeCartWhere,
+  getCartScope,
+  getStorefrontCheckoutPayments,
+} from "@/lib/storefront.server";
 import {
   mergeProductWithTranslation,
   pickTranslationFromArray,
@@ -283,7 +287,12 @@ export async function getCheckoutData() {
       }
     }
 
-    const walletSummary = await getUserWalletSummary(db, userId);
+    // On a storefront only the store's enabled methods are offered; card and
+    // the customer wallet are not store options (Store settings › Payment methods).
+    const storePayments = await getStorefrontCheckoutPayments();
+    const walletSummary = storePayments
+      ? null
+      : await getUserWalletSummary(db, userId);
 
     return {
       success: true,
@@ -297,7 +306,10 @@ export async function getCheckoutData() {
         walletAvailableBalance: walletSummary?.availableBalance ?? null,
         walletCurrency: walletSummary?.currency ?? null,
         onlineCardPaymentEnabled:
-          ONLINE_CARD_PAYMENT_ENABLED && isOnlineCardPaymentEnabled(),
+          !storePayments &&
+          ONLINE_CARD_PAYMENT_ENABLED &&
+          isOnlineCardPaymentEnabled(),
+        storePayments,
       },
     };
   } catch (error) {

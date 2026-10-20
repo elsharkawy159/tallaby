@@ -39,9 +39,9 @@ export function HomeHeaderView({
         <h1 className="text-xl font-bold leading-snug sm:text-2xl">{title}</h1>
         <div className="mt-1 text-pretty text-muted-foreground">{subtitle}</div>
       </div>
-      <div className="flex flex-wrap items-center gap-2.5">
+      <div className="flex w-full flex-col gap-2.5 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
         {rangeControl}
-        <Button asChild variant="secondary" className="h-[42px] rounded-xl px-[18px]">
+        <Button asChild variant="secondary" className="h-[42px] w-full rounded-xl px-[18px] sm:w-auto">
           <Link href="/products/add">
             <Plus aria-hidden />
             {addLabel}
