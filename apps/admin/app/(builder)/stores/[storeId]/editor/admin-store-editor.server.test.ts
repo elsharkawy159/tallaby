@@ -53,9 +53,12 @@ vi.mock("./admin-store-editor.data", () => ({
 
 import { adminActorId } from "@/app/(dashboard)/_lib/saas-admin.server";
 import { auditStoreSite, markSiteEditedByAdmin, resolveStoreForAdmin } from "@workspace/lib/admin/server";
-import { publishStoreSite, saveStorePageDraft } from "@workspace/lib/store-sites/server";
+import { publishStoreSite, saveStorePageDraft, unpublishStoreSite } from "@workspace/lib/store-sites/server";
+import { db } from "@workspace/db";
+import { revalidatePath } from "next/cache";
+import { logServerError } from "@workspace/db/log";
 import { applyInvalidation } from "@workspace/cache";
-import { openStoreEditor, publish, saveDraft } from "./admin-store-editor.server";
+import { openStoreEditor, publish, saveDraft, unpublish } from "./admin-store-editor.server";
 
 const ADMIN = "11111111-1111-4111-8111-111111111111";
 const STORE = "22222222-2222-4222-8222-222222222222";
@@ -91,7 +94,7 @@ describe("admin store editor actions", () => {
     expect(result).toEqual({ success: true, data: { draftVersion: 4 } });
     expect(resolveStoreForAdmin).toHaveBeenCalledWith(ADMIN, STORE);
     expect(vi.mocked(saveStorePageDraft).mock.calls[0]!.slice(0, 2)).toEqual([SELLER, STORE]);
-    expect(markSiteEditedByAdmin).toHaveBeenCalledWith(STORE);
+    expect(markSiteEditedByAdmin).toHaveBeenCalledWith(STORE, tx);
   });
 
   it("does not mark the site when the save fails", async () => {
@@ -137,5 +140,39 @@ describe("admin store editor actions", () => {
     const result = await openStoreEditor(STORE, "  Fix the hero  ");
     expect(result).toEqual({ success: true, data: null });
     expect(auditStoreSite).toHaveBeenCalledWith(tx, expect.objectContaining({ action: "open_store_editor", reason: "Fix the hero", sellerId: SELLER }));
+  });
+
+  it("saves and marks the site in the same transaction", async () => {
+    vi.mocked(saveStorePageDraft).mockResolvedValue({ success: true, data: { draftVersion: 4 } });
+    await saveDraft(STORE, PAGE, { sections: [] }, 3);
+    expect(db.transaction).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(saveStorePageDraft).mock.calls[0]!.at(-1)).toBe(tx);
+    expect(markSiteEditedByAdmin).toHaveBeenCalledWith(STORE, tx);
+  });
+
+  it("a failing mark rolls the save back as one error (nothing committed half-way)", async () => {
+    vi.mocked(saveStorePageDraft).mockResolvedValue({ success: true, data: { draftVersion: 4 } });
+    vi.mocked(markSiteEditedByAdmin).mockRejectedValueOnce(new Error("db down"));
+    const result = await saveDraft(STORE, PAGE, { sections: [] }, 3);
+    expect(result).toEqual({ success: false, error: "generic" });
+    expect(db.transaction).toHaveBeenCalledTimes(1);
+  });
+
+  it("a throwing cache invalidation after a committed publish still returns success", async () => {
+    vi.mocked(publishStoreSite).mockResolvedValue({ success: true, data: { revisionId: "rev-new", revisionNumber: 7 } });
+    vi.mocked(applyInvalidation).mockRejectedValueOnce(new Error("redis down"));
+    const result = await publish(STORE, "Seller asked on WhatsApp");
+    expect(result).toEqual({ success: true, data: { revisionId: "rev-new", revisionNumber: 7 } });
+    expect(logServerError).toHaveBeenCalled();
+  });
+
+  it("a throwing revalidatePath after a committed unpublish still returns success", async () => {
+    vi.mocked(unpublishStoreSite).mockResolvedValue({ success: true, data: null });
+    vi.mocked(revalidatePath).mockImplementationOnce(() => {
+      throw new Error("no static generation store");
+    });
+    const result = await unpublish(STORE, "Seller asked on WhatsApp");
+    expect(result).toEqual({ success: true, data: null });
+    expect(auditStoreSite).toHaveBeenCalledWith(tx, expect.objectContaining({ action: "unpublish_store_site" }));
   });
 });

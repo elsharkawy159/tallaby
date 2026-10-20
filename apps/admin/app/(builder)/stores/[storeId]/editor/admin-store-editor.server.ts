@@ -163,7 +163,9 @@ async function auditedAction<T, R extends { success: true; data: T } | Failure>(
       await auditStoreSite(tx, { actorId, sellerId: ref.sellerId, storeId: ref.storeId, action, before, after, reason: why });
       return { result, ref };
     });
-    await options.onDone?.(ref);
+    // Post-commit steps (cache invalidation, revalidatePath) never turn a
+    // committed write into a failure: the admin would retry and publish twice.
+    if (options.onDone) await afterCommit(`${action} after commit`, String(storeId), () => options.onDone!(ref));
     return result;
   } catch (error) {
     if (error instanceof Rollback) return error.result as R;
@@ -190,8 +192,27 @@ async function invalidate(ref: AdminStoreRef) {
   await applyInvalidation(invalidateStoreSite(ref.sellerId, ref.storeId, ref.subdomain), { from: "admin", mode: "action" });
 }
 
-async function markEdited(ref: AdminStoreRef) {
-  await markSiteEditedByAdmin(ref.storeId);
+/** Runs a step after a committed write; a failure is logged, never returned. */
+async function afterCommit(label: string, storeId: string, step: () => Promise<void> | void): Promise<void> {
+  try {
+    await step();
+  } catch (error) {
+    logServerError("admin", `store editor ${label} failed`, { storeId }, error);
+  }
+}
+
+/**
+ * An autosave and the "admin edited" mark in ONE transaction: a seller's poll
+ * never sees the new version without the admin notice, and a failing mark
+ * rolls the save back (the retry sends the same version, no self-conflict)
+ * instead of reporting an error for a committed save.
+ */
+function saveMarked<R extends { success: boolean }>(ref: AdminStoreRef, save: (q: Queryable) => Promise<R>): Promise<R> {
+  return db.transaction(async (tx) => {
+    const result = await save(tx);
+    if (result.success) await markSiteEditedByAdmin(ref.storeId, tx);
+    return result;
+  });
 }
 
 const refreshAdminStore = (storeId: string) => revalidatePath(`/stores/${storeId}`);
@@ -216,8 +237,9 @@ export async function openStoreEditor(storeId: string, reason: string): Promise<
 export async function saveDraft(storeId: string, pageId: string, content: unknown, clientVersion: number, _reason?: string) {
   return editorAction<{ draftVersion: number }>(storeId, "save draft", async ({ actorId, ref }) => {
     if (!saveLimiter.check(`admin-editor:${actorId}`)) return fail("rateLimited");
-    const result = await saveStorePageDraft(ref.sellerId, ref.storeId, String(pageId), content, Number(clientVersion), { allowedSections: ALLOWED });
-    if (result.success) await markEdited(ref);
+    const result = await saveMarked(ref, (q) =>
+      saveStorePageDraft(ref.sellerId, ref.storeId, String(pageId), content, Number(clientVersion), { allowedSections: ALLOWED }, q),
+    );
     return toEditor(result);
   });
 }
@@ -225,8 +247,7 @@ export async function saveDraft(storeId: string, pageId: string, content: unknow
 export async function saveDesignSystem(storeId: string, designSystem: unknown, clientVersion: number, _reason?: string) {
   return editorAction<{ version: number }>(storeId, "save design", async ({ actorId, ref }) => {
     if (!saveLimiter.check(`admin-editor:${actorId}`)) return fail("rateLimited");
-    const result = await saveStoreDesignSystem(ref.sellerId, ref.storeId, designSystem, Number(clientVersion));
-    if (result.success) await markEdited(ref);
+    const result = await saveMarked(ref, (q) => saveStoreDesignSystem(ref.sellerId, ref.storeId, designSystem, Number(clientVersion), q));
     return toEditor(result);
   });
 }
@@ -234,8 +255,9 @@ export async function saveDesignSystem(storeId: string, designSystem: unknown, c
 export async function saveChrome(storeId: string, part: "header" | "footer", instance: unknown, clientVersion: number, _reason?: string) {
   return editorAction<{ version: number }>(storeId, "save chrome", async ({ actorId, ref }) => {
     if (!saveLimiter.check(`admin-editor:${actorId}`)) return fail("rateLimited");
-    const result = await saveStoreChrome(ref.sellerId, ref.storeId, part, instance, Number(clientVersion), { allowedSections: ALLOWED });
-    if (result.success) await markEdited(ref);
+    const result = await saveMarked(ref, (q) =>
+      saveStoreChrome(ref.sellerId, ref.storeId, part, instance, Number(clientVersion), { allowedSections: ALLOWED }, q),
+    );
     return toEditor(result);
   });
 }
@@ -243,8 +265,7 @@ export async function saveChrome(storeId: string, part: "header" | "footer", ins
 export async function reorderPages(storeId: string, pageIds: string[], _reason?: string) {
   return editorAction<null>(storeId, "reorder pages", async ({ actorId, ref }) => {
     if (!saveLimiter.check(`admin-editor:${actorId}`)) return fail("rateLimited");
-    const result = await reorderStorePages(ref.sellerId, ref.storeId, pageIds);
-    if (result.success) await markEdited(ref);
+    const result = await saveMarked(ref, (q) => reorderStorePages(ref.sellerId, ref.storeId, pageIds, q));
     return toEditor(result);
   });
 }

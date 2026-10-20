@@ -1,7 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-import { applyInvalidation, invalidateLibrarySections } from "@workspace/cache";
 import { logServerError } from "@workspace/db/log";
 import {
   createLibrarySection,
@@ -13,6 +11,7 @@ import {
   type LibrarySectionAdminError,
 } from "@workspace/lib/admin/server";
 import { adminActorId, type AdminActionResult } from "../_lib/saas-admin.server";
+import { refreshLibrarySections } from "./section-cache";
 
 /**
  * Section library actions (spec §5.3, Task 11). admin / super_admin only
@@ -45,16 +44,17 @@ async function run<T>(
 ): Promise<SectionActionResult> {
   const actorId = await adminActorId("canManageUsers");
   if (!actorId) return { success: false, error: MESSAGES.not_admin };
+  let result: LibraryAdminResult<T>;
   try {
-    const result = await write(actorId);
-    if (!result.success) return { success: false, error: MESSAGES[result.error] ?? "Something went wrong. Try again." };
-    await applyInvalidation(invalidateLibrarySections(), { from: "admin", mode: "action" });
-    revalidatePath("/sections");
-    return { success: true, message, ...(id && { id: id(result.data) }) };
+    result = await write(actorId);
   } catch (error) {
     logServerError("admin", `library section ${label} failed`, {}, error);
     return { success: false, error: "Something went wrong. Try again." };
   }
+  if (!result.success) return { success: false, error: MESSAGES[result.error] ?? "Something went wrong. Try again." };
+  // Committed: a failing refresh is logged inside and never reported as a failed write.
+  await refreshLibrarySections(`section ${label}`);
+  return { success: true, message, ...(id && { id: id(result.data) }) };
 }
 
 /** A blank section (unpublished until its first Publish). */

@@ -1,11 +1,10 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-import { applyInvalidation, invalidateLibrarySections } from "@workspace/cache";
 import { logServerError } from "@workspace/db/log";
 import { publishLibrarySection, saveLibrarySectionDraft, type LibrarySectionAdminError } from "@workspace/lib/admin/server";
 import type { EditorErrorKey, EditorResult } from "@workspace/store-editor/editor.dto";
 import { adminActorId } from "@/app/(dashboard)/_lib/saas-admin.server";
+import { refreshLibrarySections } from "@/app/(dashboard)/sections/section-cache";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
 
 /**
@@ -53,14 +52,15 @@ export async function publishSection(id: string, reason: string): Promise<Editor
   const actorId = await adminActorId("canManageUsers");
   if (!actorId) return fail("notFound");
   if (!publishLimiter.check(`section-editor:${actorId}`)) return fail("rateLimited");
+  let result: Awaited<ReturnType<typeof publishLibrarySection>>;
   try {
-    const result = await publishLibrarySection(actorId, String(id), reason);
-    if (!result.success) return fail(result.error);
-    await applyInvalidation(invalidateLibrarySections(), { from: "admin", mode: "action" });
-    revalidatePath("/sections");
-    return { success: true, data: { revisionId: String(id), revisionNumber: result.data.version } };
+    result = await publishLibrarySection(actorId, String(id), reason);
   } catch (error) {
     logServerError("admin", "section editor publish failed", { sectionId: String(id) }, error);
     return fail("generic");
   }
+  if (!result.success) return fail(result.error);
+  // Committed: a failing refresh is logged inside, never a failed publish (a retry would publish again).
+  await refreshLibrarySections("section publish", { sectionId: String(id) });
+  return { success: true, data: { revisionId: String(id), revisionNumber: result.data.version } };
 }

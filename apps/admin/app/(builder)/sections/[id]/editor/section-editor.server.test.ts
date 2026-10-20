@@ -7,6 +7,7 @@ vi.mock("@/app/(dashboard)/_lib/saas-admin.server", () => ({ adminActorId: vi.fn
 vi.mock("@workspace/lib/admin/server", () => ({ publishLibrarySection: vi.fn(), saveLibrarySectionDraft: vi.fn() }));
 
 import { applyInvalidation } from "@workspace/cache";
+import { logServerError } from "@workspace/db/log";
 import { publishLibrarySection, saveLibrarySectionDraft } from "@workspace/lib/admin/server";
 import { adminActorId } from "@/app/(dashboard)/_lib/saas-admin.server";
 import { publishSection, saveSectionDraft } from "./section-editor.server";
@@ -34,5 +35,12 @@ describe("section editor actions", () => {
     vi.mocked(adminActorId).mockResolvedValueOnce(null);
     expect(await publishSection("id", "why")).toEqual({ success: false, error: "notFound" });
     expect(publishLibrarySection).not.toHaveBeenCalled();
+  });
+
+  it("a throwing invalidation after a committed publish still returns success (logged)", async () => {
+    vi.mocked(publishLibrarySection).mockResolvedValueOnce({ success: true, data: { version: 4 } });
+    vi.mocked(applyInvalidation).mockRejectedValueOnce(new Error("redis down"));
+    expect(await publishSection("id", "why")).toEqual({ success: true, data: { revisionId: "id", revisionNumber: 4 } });
+    expect(logServerError).toHaveBeenCalledTimes(1);
   });
 });
