@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
-import { getStorefrontStoreUrl, getSupportWhatsAppUrl } from "@/lib/constants";
+import { getSupportWhatsAppUrl } from "@/lib/constants";
 import { useSiteData } from "@/providers/site-data";
 
 interface SupportChatLinkProps {
@@ -22,15 +22,14 @@ export const WhatsAppIcon = ({ className }: { className?: string }) => (
  */
 export const useSupportWhatsAppUrl = () => {
   const t = useTranslations("nav");
-  const { seller } = useSiteData();
+  const { seller, storeLink } = useSiteData();
   const storeName = seller.data?.businessName;
-  const slug = seller.data?.slug;
 
   const message = [
     storeName
       ? t("supportMessage", { store: storeName })
       : t("supportMessageNoStore"),
-    slug ? t("supportMessageStoreLink", { url: getStorefrontStoreUrl(slug) }) : null,
+    storeLink ? t("supportMessageStoreLink", { url: storeLink }) : null,
     "",
     t("supportMessageQuestion"),
   ]

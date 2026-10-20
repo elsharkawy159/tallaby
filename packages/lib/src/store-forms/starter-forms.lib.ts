@@ -6,7 +6,7 @@
  * dashboard messages (a test keeps them equal). No React here.
  */
 import { buildTemplateForm, getFormTemplate } from "./form-templates.lib";
-import type { FormInput } from "./store-forms.lib";
+import { formInputSchema, type FormDefinitionData, type FormInput } from "./store-forms.lib";
 
 type Copy = Record<string, string | Record<string, string>>;
 
@@ -44,6 +44,20 @@ export const STARTER_FORM_COPY: Record<"contact" | "newsletter", Record<"ar" | "
     },
   },
 };
+
+/**
+ * A starter form as a storefront draws it, for template previews (the
+ * tallaby.com gallery): the same fields and copy a store gets on "Use
+ * template", under a made-up id. Never stored and never submitted.
+ */
+export function starterPreviewForm(kind: string, locale: "ar" | "en", id: string): PreviewForm | undefined {
+  const input = starterFormInput(kind, locale);
+  const parsed = input ? formInputSchema.safeParse(input) : undefined;
+  if (!parsed?.success) return undefined;
+  return { id, fields: parsed.data.fields, submitLabel: parsed.data.settings.submitLabel, successMessage: parsed.data.settings.successMessage };
+}
+
+export type PreviewForm = { id: string; fields: FormDefinitionData["fields"]; submitLabel: string; successMessage: string };
 
 /** A starter form in the store's language, or undefined for a kind the starting site does not use. */
 export function starterFormInput(kind: string, locale: "ar" | "en"): FormInput | undefined {

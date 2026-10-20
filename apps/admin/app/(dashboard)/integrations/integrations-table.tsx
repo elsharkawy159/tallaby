@@ -1,12 +1,5 @@
 import Link from "next/link";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@workspace/ui/components/table";
+import { AdminTable, type AdminTableColumn } from "../_components/admin-table/admin-table";
 import { ReasonActionButton } from "../_components/dialogs/reason-action.client";
 import { IntegrationStatusBadge, PROVIDER_LABELS, formatAdminDate } from "../stores/stores.lib";
 import { integrationAdminAction } from "./integrations.server";
@@ -33,113 +26,120 @@ export interface IntegrationTableRow {
  * §3.5). Credentials are shown as "stored" / "none", never their value.
  */
 export function IntegrationsTable({ rows, showStore = false }: { rows: IntegrationTableRow[]; showStore?: boolean }) {
-  if (rows.length === 0) {
-    return <p className="py-8 text-center text-sm text-muted-foreground">No integrations.</p>;
-  }
+  const columns: AdminTableColumn[] = [
+    { id: "provider", header: "Provider", sortable: true },
+    ...(showStore ? [{ id: "store", header: "Store", sortable: true }] : []),
+    { id: "status", header: "Status", sortable: true },
+    { id: "details", header: "Public details" },
+    { id: "lastSyncedAt", header: "Last sync", sortable: true, descFirst: true },
+    { id: "actions", header: "Actions", align: "end" },
+  ];
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Provider</TableHead>
-          {showStore && <TableHead>Store</TableHead>}
-          <TableHead>Status</TableHead>
-          <TableHead>Public details</TableHead>
-          <TableHead>Last sync</TableHead>
-          <TableHead className="text-right">Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {rows.map((row) => (
-          <TableRow key={row.id} className="align-top">
-            <TableCell className="font-medium">{PROVIDER_LABELS[row.provider] ?? row.provider}</TableCell>
-            {showStore && (
-              <TableCell className="text-sm">
-                {row.storeId ? (
-                  <Link href={`/stores/${row.storeId}?tab=integrations`} className="hover:underline">
-                    {row.storeName}
+    <AdminTable
+      columns={columns}
+      emptyMessage="No integrations."
+      rows={rows.map((row) => ({
+        id: row.id,
+        className: "align-top",
+        sortValues: {
+          provider: PROVIDER_LABELS[row.provider] ?? row.provider,
+          store: row.storeName,
+          status: row.status,
+          lastSyncedAt: row.lastSyncedAt,
+        },
+        cells: {
+          provider: <span className="font-medium">{PROVIDER_LABELS[row.provider] ?? row.provider}</span>,
+          store: (
+            <div className="text-sm">
+              {row.storeId ? (
+                <Link href={`/stores/${row.storeId}?tab=integrations`} className="hover:underline">
+                  {row.storeName}
+                </Link>
+              ) : (
+                row.storeName
+              )}
+              {row.sellerId && (
+                <div>
+                  <Link href={`/sellers/${row.sellerId}`} className="text-xs text-muted-foreground hover:underline">
+                    {row.sellerName ?? "Seller"}
                   </Link>
-                ) : (
-                  row.storeName
-                )}
-                {row.sellerId && (
-                  <div>
-                    <Link href={`/sellers/${row.sellerId}`} className="text-xs text-muted-foreground hover:underline">
-                      {row.sellerName ?? "Seller"}
-                    </Link>
-                  </div>
-                )}
-              </TableCell>
-            )}
-            <TableCell>
+                </div>
+              )}
+            </div>
+          ),
+          status: (
+            <>
               <IntegrationStatusBadge status={row.status} />
               {row.lastError && (
                 <p className="mt-1 max-w-72 break-words text-xs text-destructive" title={row.lastError}>
                   {row.lastError.length > 160 ? `${row.lastError.slice(0, 160)}…` : row.lastError}
                 </p>
               )}
-            </TableCell>
-            <TableCell className="text-xs">
-              <dl className="space-y-0.5">
-                {Object.entries(row.publicConfig).map(([key, value]) => (
-                  <div key={key} className="flex gap-1">
-                    <dt className="text-muted-foreground">{key}:</dt>
-                    <dd className="font-mono" dir="ltr">
-                      {value}
-                    </dd>
-                  </div>
-                ))}
-                {row.externalAccountId && (
-                  <div className="flex gap-1">
-                    <dt className="text-muted-foreground">account:</dt>
-                    <dd className="font-mono" dir="ltr">
-                      {row.externalAccountId}
-                    </dd>
-                  </div>
-                )}
-                <div className="flex gap-1">
-                  <dt className="text-muted-foreground">credentials:</dt>
-                  <dd>{row.hasCredentials ? "stored (encrypted)" : "none"}</dd>
+            </>
+          ),
+          details: (
+            <dl className="space-y-0.5 text-xs">
+              {Object.entries(row.publicConfig).map(([key, value]) => (
+                <div key={key} className="flex gap-1">
+                  <dt className="text-muted-foreground">{key}:</dt>
+                  <dd className="font-mono" dir="ltr">
+                    {value}
+                  </dd>
                 </div>
-                {row.scopes.length > 0 && (
-                  <div className="flex gap-1">
-                    <dt className="text-muted-foreground">scopes:</dt>
-                    <dd>{row.scopes.join(", ")}</dd>
-                  </div>
-                )}
-              </dl>
-            </TableCell>
-            <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
+              ))}
+              {row.externalAccountId && (
+                <div className="flex gap-1">
+                  <dt className="text-muted-foreground">account:</dt>
+                  <dd className="font-mono" dir="ltr">
+                    {row.externalAccountId}
+                  </dd>
+                </div>
+              )}
+              <div className="flex gap-1">
+                <dt className="text-muted-foreground">credentials:</dt>
+                <dd>{row.hasCredentials ? "stored (encrypted)" : "none"}</dd>
+              </div>
+              {row.scopes.length > 0 && (
+                <div className="flex gap-1">
+                  <dt className="text-muted-foreground">scopes:</dt>
+                  <dd>{row.scopes.join(", ")}</dd>
+                </div>
+              )}
+            </dl>
+          ),
+          lastSyncedAt: (
+            <div className="whitespace-nowrap text-xs text-muted-foreground">
               {formatAdminDate(row.lastSyncedAt)}
               <div>changed {formatAdminDate(row.updatedAt)}</div>
-            </TableCell>
-            <TableCell className="text-right">
-              <div className="flex justify-end gap-2">
-                {row.status === "error" && (
-                  <ReasonActionButton
-                    label="Clear error"
-                    title="Clear this error?"
-                    description="The integration goes back to connected (when it still has credentials or an id), so the next sync retries."
-                    confirmLabel="Clear error"
-                    payload={{ action: "clear_integration_error", integrationId: row.id }}
-                    action={integrationAdminAction}
-                  />
-                )}
-                {(row.status !== "disconnected" || row.hasCredentials) && (
-                  <ReasonActionButton
-                    label="Disconnect"
-                    title={`Disconnect ${PROVIDER_LABELS[row.provider] ?? row.provider}?`}
-                    description="Removes the stored credentials and stops its storefront script and syncs. The seller must connect it again."
-                    confirmLabel="Disconnect"
-                    destructive
-                    payload={{ action: "disconnect_integration", integrationId: row.id }}
-                    action={integrationAdminAction}
-                  />
-                )}
-              </div>
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+            </div>
+          ),
+          actions: (
+            <div className="flex justify-end gap-2">
+              {row.status === "error" && (
+                <ReasonActionButton
+                  label="Clear error"
+                  title="Clear this error?"
+                  description="The integration goes back to connected (when it still has credentials or an id), so the next sync retries."
+                  confirmLabel="Clear error"
+                  payload={{ action: "clear_integration_error", integrationId: row.id }}
+                  action={integrationAdminAction}
+                />
+              )}
+              {(row.status !== "disconnected" || row.hasCredentials) && (
+                <ReasonActionButton
+                  label="Disconnect"
+                  title={`Disconnect ${PROVIDER_LABELS[row.provider] ?? row.provider}?`}
+                  description="Removes the stored credentials and stops its storefront script and syncs. The seller must connect it again."
+                  confirmLabel="Disconnect"
+                  destructive
+                  payload={{ action: "disconnect_integration", integrationId: row.id }}
+                  action={integrationAdminAction}
+                />
+              )}
+            </div>
+          ),
+        },
+      }))}
+    />
   );
 }

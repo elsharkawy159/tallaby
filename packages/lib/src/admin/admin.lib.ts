@@ -43,6 +43,10 @@ export const ADMIN_AUDIT_ACTIONS = [
   "set_ad_status",
   "update_template",
   "set_default_template",
+  // tallaby.com blog (0073)
+  "create_blog_post",
+  "update_blog_post",
+  "delete_blog_post",
 ] as const;
 
 export type AdminAuditAction = (typeof ADMIN_AUDIT_ACTIONS)[number];

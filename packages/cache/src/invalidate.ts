@@ -4,6 +4,7 @@ import {
   categoryTags,
   couponTags,
   fulfillmentTags,
+  marketingBlogTags,
   templateTags,
   productTags,
   reviewTags,
@@ -294,6 +295,11 @@ export function invalidateSellerCoupons(sellerId: string): CacheInvalidation {
 /** A template's gallery metadata changed (active, premium, price, order, default). */
 export function invalidateTemplateCatalog(): CacheInvalidation {
   return inv([templateTags.catalog()]);
+}
+
+/** A tallaby.com blog post was created, edited, published or deleted in admin. */
+export function invalidateMarketingBlog(): CacheInvalidation {
+  return inv([marketingBlogTags.posts()]);
 }
 
 /** A fulfillment plan was created, edited or toggled. */

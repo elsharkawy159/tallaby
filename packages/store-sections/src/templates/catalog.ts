@@ -11,9 +11,49 @@ import { validateSiteConfig } from "../config/validate";
 import type { Design } from "../designs/builder";
 import { ATELIER } from "./atelier";
 import { CLASSIC } from "./classic";
+import { MODE } from "./mode";
+import { STREETWEAR } from "./streetwear";
+import { KASR } from "./kasr";
+import { TECHHUB } from "./techhub";
+import { VOLT } from "./volt";
+import { ARCADE } from "./arcade";
+import { ARENA } from "./arena";
+import { PURE } from "./pure";
+import { GLOW } from "./glow";
+import { ELIXIR } from "./elixir";
+import { BOTANICA } from "./botanica";
+import { NEST } from "./nest";
+import { DAILY } from "./daily";
+import { HEARTH } from "./hearth";
+import { CLAY } from "./clay";
+import { SIZZLE } from "./sizzle";
+import { HARVEST } from "./harvest";
+import { LOAF } from "./loaf";
+import { ROAST } from "./roast";
+import { VERDANT } from "./verdant";
+import { LOFT } from "./loft";
+import { OAK } from "./oak";
+import { SAKAN } from "./sakan";
+import { LUMIERE } from "./lumiere";
+import { KARAT } from "./karat";
+import { FADDA } from "./fadda";
+import { PLAYROOM } from "./playroom";
+import { BAMBINO } from "./bambino";
+import { DOODLE } from "./doodle";
+import { HEKAYA } from "./hekaya";
+import { PACE } from "./pace";
+import { STRIDE } from "./stride";
+import { CORE } from "./core";
+import { BASECAMP } from "./basecamp";
+import { GARAGE } from "./garage";
+import { DRIVE } from "./drive";
+import { MOTO } from "./moto";
 import type { TemplateDefinition } from "./types";
 
-export const CODE_TEMPLATES: readonly TemplateDefinition[] = [CLASSIC, ATELIER];
+/** Templates 02–38, built from section-library designs (`library-template.ts`), in registry order. */
+export const LIBRARY_TEMPLATES: readonly TemplateDefinition[] = [MODE, STREETWEAR, KASR, TECHHUB, VOLT, ARCADE, ARENA, PURE, GLOW, ELIXIR, BOTANICA, NEST, DAILY, HEARTH, CLAY, SIZZLE, HARVEST, LOAF, ROAST, VERDANT, LOFT, OAK, SAKAN, LUMIERE, KARAT, FADDA, PLAYROOM, BAMBINO, DOODLE, HEKAYA, PACE, STRIDE, CORE, BASECAMP, GARAGE, DRIVE, MOTO];
+
+export const CODE_TEMPLATES: readonly TemplateDefinition[] = [CLASSIC, ATELIER, ...LIBRARY_TEMPLATES];
 
 /** The default template: a new store's starting site (`templates.is_default`). */
 export const DEFAULT_TEMPLATE: TemplateDefinition = CLASSIC;
@@ -77,6 +117,11 @@ function defaultRollback(template: TemplateDefinition): string {
 --   WHERE t.key = ${sqlText(template.key)} AND v.template_id = t.id AND v.version = ${template.version - 1};
 --   DELETE FROM template_versions v USING templates t
 --   WHERE t.key = ${sqlText(template.key)} AND v.template_id = t.id AND v.version = ${template.version};`;
+}
+
+/** One migration for a batch of templates: each template's seed in turn (`template:sql key1,key2 <file>`). */
+export function templatesSeedSql(templates: readonly TemplateDefinition[], migrationName: string): string {
+  return templates.map((template) => templateSeedSql(template, migrationName)).join("\n");
 }
 
 /** An idempotent migration that adds the template and makes this version current. */

@@ -4,5 +4,6 @@ export * from "./apply";
 export * from "./types";
 export * from "./prepare";
 export * from "./catalog";
+export * from "./demo-catalog";
 export { ATELIER_KEY, ATELIER_DESIGNS, atelierConfig } from "./atelier";
 export { CLASSIC_KEY, CLASSIC_DESIGNS, classicConfig } from "./classic";

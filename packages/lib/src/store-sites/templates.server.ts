@@ -229,6 +229,24 @@ export async function getStoreTemplateConfig(sellerId: string, storeId: string, 
   return config.success ? config.data : null;
 }
 
+/**
+ * One active template's current config with no store involved, for the
+ * public template gallery on tallaby.com. Templates are global and
+ * admin-authored, so nothing here belongs to a seller. Null for an unknown or
+ * inactive key, or a broken version.
+ */
+export async function getPublicTemplateConfig(templateKey: string, q: Queryable = db): Promise<SiteConfig | null> {
+  if (typeof templateKey !== "string" || !TEMPLATE_KEY_RE.test(templateKey)) return null;
+  const [row] = await q
+    .select({ config: templateVersions.config })
+    .from(templates)
+    .innerJoin(templateVersions, eq(templateVersions.id, templates.currentVersionId))
+    .where(and(eq(templates.key, templateKey), eq(templates.isActive, true)))
+    .limit(1);
+  const config = siteConfigSchema.safeParse(row?.config);
+  return config.success ? config.data : null;
+}
+
 // ---------------------------------------------------------------------------
 // Apply / undo
 // ---------------------------------------------------------------------------

@@ -7,6 +7,7 @@ import {
   LayoutTemplate,
   LineChart,
   Megaphone,
+  Newspaper,
   Package,
   PlugZap,
   Settings,
@@ -181,6 +182,11 @@ export const sidebarSections: SidebarSection[] = [
       },
       { key: "payments", title: "Payments", href: "/payments", icon: CreditCard },
     ],
+  },
+  {
+    key: "site",
+    title: "Tallaby site",
+    links: [{ key: "blog", title: "Blog", href: "/blog", icon: Newspaper }],
   },
   {
     key: "system",

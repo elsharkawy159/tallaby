@@ -1,6 +1,6 @@
 # Tallaby Seller SaaS — Implementation Plan
 
-> **Status:** Implementation started 2026-10-17 on branch `feat/seller-saas`. Phase 0 is done except P0-01's remaining audit, P0-04 (d)–(e) and P0-06. Phase 1 is done except P1-06's upload test; migrations `0049`–`0057` are applied to the **staging** project (`cxqjrwjianxskhzmrkla`) and, except `0049`, **not yet to production** (see §22/§23). **Owner decisions applied 2026-10-17** (see §21.3): **a seller can own several stores (Free plan = max 3; `sellers.plan` default `free`, subscriptions later); Supabase is prepared early for all builder, CMS, forms, templates and media tables (§11);** the fee applies to all sellers; there is a store wallet that can go negative; the trial is for new sellers; the default theme is live from signup; refunds and the domain move are deferred; Kashier is the first payment provider.
+> **Status:** Implementation started 2026-10-17 on branch `feat/seller-saas`. Phase 0 is done except P0-01's remaining audit, P0-04 (d)–(e) and P0-06. Phase 1 is done except P1-06's upload test; migrations `0049`–`0073` are applied to the **staging** project (`cxqjrwjianxskhzmrkla`) **and to production** (`sakwqwocbccpyrmwjowq`, 2026-10-20, see §23), so production is ready for the `feat/seller-saas` merge. **Owner decisions applied 2026-10-17** (see §21.3): **a seller can own several stores (Free plan = max 3; `sellers.plan` default `free`, subscriptions later); Supabase is prepared early for all builder, CMS, forms, templates and media tables (§11);** the fee applies to all sellers; there is a store wallet that can go negative; the trial is for new sellers; the default theme is live from signup; refunds and the domain move are deferred; Kashier is the first payment provider.
 > **Audit date:** 2026-10-17 (repository at commit `62fd3ed` plus uncommitted work, see §2.9).
 > **Authority:** This is the main roadmap for turning Tallaby into a multi-tenant seller store platform. It replaces the milestone plans in `.planning/` (Digital Products / Stripe), which are out of date. See §21.4.
 > **Companion docs:** [`CLAUDE.md`](CLAUDE.md) (durable rules), [`PROJECT.md`](PROJECT.md) (technical architecture), [`PROJECT_DESCRIPTION.md`](PROJECT_DESCRIPTION.md) (product), [`docs/wallet.md`](docs/wallet.md), [`docs/fulfillment.md`](docs/fulfillment.md), [`docs/caching-and-data-fetching.md`](docs/caching-and-data-fetching.md).
@@ -2373,11 +2373,11 @@ Tick each box when its acceptance is met, and add the date and commit.
 
 **Phase 1**
 - [x] P1-01 `@workspace/store-sections` config core — 2026-10-17, `3289639`
-- [x] P1-02 Migrations `0050`–`0057` (stores + backfill, builder core, templates, media, forms, CMS, integrations, shipping zones) + Drizzle mirror — 2026-10-17, `6d2287c` (+ `0051` fix in `5e5ac5e`); applied on staging, **not on production**
+- [x] P1-02 Migrations `0050`–`0057` (stores + backfill, builder core, templates, media, forms, CMS, integrations, shipping zones) + Drizzle mirror — 2026-10-17, `6d2287c` (+ `0051` fix in `5e5ac5e`); applied on staging; **on production 2026-10-20**
 - [x] P1-03 `requireSeller` / `requireStore` — 2026-10-17, `19e6a72`
 - [x] P1-04 Stores + store-sites data access (plan-limited `createStore`) — 2026-10-17, `5e5ac5e`
 - [x] P1-05 Isolation harness (multi-store) — 2026-10-17, `59b1f4f` (tests 1, 2, 3, 5, 11)
-- [ ] P1-06 Supabase readiness (branch, advisors, `store-media` bucket + policies, backups) _(staging copy instead of a branch: done; bucket + policies on staging: done; upload test, advisors on staging and backup status: open)_
+- [ ] P1-06 Supabase readiness (branch, advisors, `store-media` bucket + policies, backups) _(staging copy instead of a branch: done; bucket + policies on staging and production: done; pre-apply production backup (`pg_dump`): done 2026-10-20; advisor-style lint by SQL (prod = staging): done, MCP `get_advisors` not run; upload test: open)_
 - [x] P1-07 Seller-to-store compatibility layer — 2026-10-17, `6d2287c` (DB triggers in `0050`, see the P1-07 note)
 - [x] P1-08 Plans module (Free = 3 stores) — 2026-10-17, `06fe285`
 
@@ -2402,7 +2402,7 @@ Tick each box when its acceptance is met, and add the date and commit.
 **Phase 4**
 - [x] P4-01 Editor core (Tallaby-native, no new deps) — 2026-10-18, `3983b6d`
 - [x] P4-02 Shared section library — 2026-10-17, `d2a1fa6`
-- [x] P4-03 Tallaby Classic (no visual change) + template seed — 2026-10-17, `ed282f2` (`0062` on staging only)
+- [x] P4-03 Tallaby Classic (no visual change) + template seed — 2026-10-17, `ed282f2` (`0062` on staging and production)
 - [x] P4-04 Builder actions (store-scoped) — 2026-10-17, `2068c58`
 - [x] P4-05 Templates gallery — 2026-10-18, `91830db` (merge + `0064` in `d24f6da`; see the task note)
 - [x] P4-06 Editor route + pages — 2026-10-18, `3983b6d` (browser check pending)
@@ -2434,7 +2434,7 @@ Tick each box when its acceptance is met, and add the date and commit.
 - [ ] P4B-13 Convert section to custom (**deferred** to the sections plan)
 - [x] P4B-14 Brand panel in the editor (2026-10-18; themes, colours, fonts, radius/width/spacing on the same draft as Website › Design system, see §23)
 - [x] P4B-15 Templates, Explore and Forms tabs in the editor (2026-10-18, owner request; not in the original plan, see §23)
-- [~] Storefront templates from Claude Design (owner request 2026-10-19; not in the original plan, see §23): template 01 **Atelier** built as element trees, awaiting the owner's review; `0070` not applied; templates 02–10 not started
+- [~] Storefront templates from Claude Design (owner request 2026-10-19; not in the original plan, see §23): 01 **Atelier** (`0070`) and the library-built templates on staging and production by category batch: Fashion 02–04 (`0074`, 2026-10-20); the other batches follow in registry order
 - [~] Tallaby Classic as the default template, rebuilt as element trees (owner request 2026-10-19, see §23): built; every never-published store starts from it in its drafts; `0071` not applied; awaiting the owner's review
 - [x] P4B-16 Movable parts in pre-built sections: slots + item drag for the Content sections (2026-10-18, owner request; not in the original plan, see §23)
 
@@ -2448,10 +2448,10 @@ Tick each box when its acceptance is met, and add the date and commit.
 
 **Phase 6**
 - [x] P6-01 Fee function — 2026-10-17, `468fd4e`
-- [x] P6-02 `0059` fee columns — 2026-10-17, `49d4c34`; applied on staging, **not on production**
+- [x] P6-02 `0059` fee columns — 2026-10-17, `49d4c34`; applied on staging; **on production 2026-10-20**
 - [x] P6-03 Trial on first publish or first active product — 2026-10-17, `9765188`
-- [x] P6-04 Order placement integration — 2026-10-17, `8a78df4` (staging; production waits for `0050`–`0059`)
-- [x] P6-05 Store wallet core (`0060`+`0061`, primitive, delivery entries) — 2026-10-17, `6de2d1d`; staging only
+- [x] P6-04 Order placement integration — 2026-10-17, `8a78df4` (staging; production schema ready 2026-10-20, the code goes live with the merge)
+- [x] P6-05 Store wallet core (`0060`+`0061`, primitive, delivery entries) — 2026-10-17, `6de2d1d`; staging, and production 2026-10-20
 - [x] P6-06 Dashboard store-wallet page — 2026-10-17, `69fc584`
 - [x] P6-07 Trial notifications + banner — 2026-10-17, `96499f1`
 - [x] P6-08 Negative-balance policy — 2026-10-17, `9945527`
@@ -2476,7 +2476,7 @@ Tick each box when its acceptance is met, and add the date and commit.
 
 **Phase 9**
 - [x] P9-01 Admin seller site/fee view — 2026-10-18, `ee63c27`
-- [x] P9-02 Admin overrides + audit — 2026-10-18, `ee63c27` (`0063`, staging only)
+- [x] P9-02 Admin overrides + audit — 2026-10-18, `ee63c27` (`0063`, staging and production)
 - [x] P9-03 Monitoring — 2026-10-18, `ee63c27` (structured `[fee]`/`[publish]`/`[integration]` logs; no external service)
 - [ ] P9-04 Security review
 - [ ] P9-05 Pilot rollout
@@ -3267,7 +3267,7 @@ After P1-08 and P1-01 (`3289639`), typecheck and test match the baseline. `@work
 - **Newsletter:** migration `0072_newsletter_subscribers.sql` (RLS on, no policies; **not applied anywhere**), schema mirrored; rate-limited action with honeypot, same answer for new and existing addresses.
 - **Review fixes:** `X-Content-Type-Options` + `Referrer-Policy` headers and `poweredByHeader: false` (no frame headers: the dashboard iframes storefronts); `SITE_URL` falls back to `https://www.tallaby.com` in production instead of localhost; removed browser `console.log`s of customer addresses; `formatLongDate` accepts timestamps.
 - **Checks:** ecommerce `next build` passes; 150 tests pass (new `blog.lib`, `templates.lib` tests); db `tsc` clean; ecommerce `tsc` has only the 19 pre-existing errors (`profile.chunks.tsx`, `product-details.tsx`); `pnpm lint` crashes in ESLint 10.9.1 (`scopeManager.addGlobals`, pre-existing). ar/en key sets identical.
-- **To go live:** apply `0072`; create the platform store and set `MARKETING_BLOG_STORE_SUBDOMAIN`; set `NEXT_PUBLIC_SITE_URL`; manual E2E of blog, templates, newsletter, contact and signup not yet done.
+- **To go live:** apply `0072`; set `NEXT_PUBLIC_SITE_URL`; manual E2E of blog, templates, newsletter, contact and signup not yet done. (Blog source superseded the same day: see "Platform blog managed from admin" below; apply `0073` instead of creating a platform store.)
 
 ### 2026-10-19 — Dashboard Help & support page rebuilt (owner request)
 
@@ -3275,3 +3275,206 @@ After P1-08 and P1-01 (`3289639`), typecheck and test match the baseline. `@work
 - **Contact:** only WhatsApp `0100 327 2830` (pre-filled with store name/link via `useSupportWhatsAppUrl`) and `tallabycommerce@gmail.com` (mailto with subject; copy buttons). New `SUPPORT_PHONE_DISPLAY` / `SUPPORT_EMAIL` in `lib/constants.ts`; `WhatsAppIcon` exported from `support-chat-link.client.tsx`.
 - **FAQ:** 13 answers checked against code (EGP 5 per delivered order + 7-day trial, Free = 3 stores, no product review, manual top-up EGP 100–20,000 by Vodafone Cash/InstaPay, live store payment methods, Classic template + Publish). Each answer links to the real page; store-scoped links use the selected store (navigation only) or fall back to `/stores`; builder links respect `STORE_BUILDER_SELLER_IDS`. Client-side search with Arabic normalisation. Video tutorials shown as "Coming soon" with planned titles.
 - **Checks:** `help.lib.test.ts` (3 tests, incl. ar/en key parity) passes; dashboard `tsc` has no errors in the touched files. `pnpm --filter dashboard lint` crashes before linting (`TypeError: Class extends value undefined` in `@typescript-eslint/utils`, a tooling problem). Manual E2E in a signed-in browser not done yet.
+
+### 2026-10-19 — Platform blog managed from admin (owner request)
+
+- **What:** the tallaby.com blog (`/blog`, `/blog/[slug]`) now has its own table, separate from store blogs, and is written in the admin app (Tallaby site › Blog, `apps/admin/app/(dashboard)/blog/`). This replaces the platform-store CMS source (`MARKETING_BLOG_STORE_SUBDOMAIN` removed). Owner choices: one post holds Arabic and English (a locale with an empty title does not show the post), store-CMS source replaced, static posts in `blog.data.ts` kept as the fallback while the table has no post for the locale.
+- **Migration `0073_platform_blog_posts.sql` (not applied anywhere):** `platform_blog_posts` (slug unique, category check, `*_ar`/`*_en` title/excerpt/body, cover, author, tags, reading minutes, `seo` jsonb, `status` draft|published + `published_at`; a future date schedules), RLS on with no policies; public `platform-blog` bucket (2 MB, jpeg/png/webp/avif) with insert/update/delete policies gated on new `public.is_platform_admin()` (verified, unsuspended `role='admin'`). Schema and relations mirrored.
+- **Code:** `@workspace/lib/platform-blog` (zod input schema, state/locale helpers) and `/platform-blog/server` (live-post reads); audited writes in `packages/lib/src/admin/platform-blog-admin.server.ts` (platform audit rows, `target_type 'blog_post'`, new actions `create/update/delete_blog_post`; bodies sanitized with `sanitizeArticleHtml` on save and render). New tag `marketingBlogTags.posts()` + `invalidateMarketingBlog()`, broadcast from admin actions. Ecommerce `blog.server.ts`/`blog.lib.ts` read the table (`platformPostToMarketing`). Admin editor reuses `@workspace/tiptap` (added to admin), uploads from the browser to `platform-blog`; delete asks for an audit reason. Admin "View" links use `ECOMMERCE_URL`.
+- **Checks:** lib (447), cache (39), ecommerce blog (20) and admin blog/sidebar (13) tests pass; db, cache, lib `tsc` clean; admin `tsc` only has the pre-existing `app/layout.tsx` `DirectionProvider` error; ecommerce `tsc` only the pre-existing `profile.chunks.tsx` / `product-details.tsx` errors. `pnpm lint` still crashes in ESLint 10.9.1 before linting (pre-existing).
+- **To go live:** apply `0073` (after `0069`, which allows platform audit rows); manual E2E not done yet: create draft (not on /blog) → publish Arabic-only (on `/ar/blog`, not `/en/blog`, no redeploy) → schedule (hidden until due) → edit → delete with reason (audit rows) → empty table shows static posts → non-admin cannot upload to `platform-blog`.
+- **Fix (2026-10-20):** an `admin` could not save or delete posts. The actions required `canManageSettings`, which only the app-level `super_admin` role has, and `super_admin` is not in the DB `user_role` enum. The blog now uses `canManageProducts`, like stores, coupons and ads; the lib still re-checks for a verified, unsuspended admin in the transaction. 0073 also gains the table policy `"platform_blog_posts: admins manage"` (FOR ALL TO authenticated, gated on `is_platform_admin()`), applied to the dev DB. Note: `templates.server.ts` has the same `canManageSettings` gate and is unreachable for the same reason.
+
+### 2026-10-19 — tallaby.com /templates shows the real templates (owner request)
+- **Supabase (read-only):** `templates` has 2 active rows, `tallaby-classic` (default, v3, 6 pages) and `atelier` (v1, 4 pages), both without `thumbnail_url`/`preview_url`. The gallery had 7 hand-made mocks; 5 (Volt, Glow, Nook, Charm, Tick) were not real templates.
+- **Change:** the gallery lists only active templates with a valid current version (`lib/marketing/templates.{server,lib}.ts`), default first. Mock cards removed (owner); `templates.data.ts` keeps only the decorative mocks used by the home hero, builder studio and fan. A card shows `thumbnail_url`, or else the template's real home page live: new frame route `app/[locale]/(template-preview)/template-preview/[key]/[[...page]]` (own route group: storefront CSS only, noindex, inert links) rendered with the tree-section renderer and the code template's demo store (`resolveDemoCatalog`, new in `@workspace/store-sections/templates`), config from `getPublicTemplateConfig` (new, `@workspace/lib/store-sites/server`, no store involved), cached under `templateTags.catalog()`. `/templates/[id]` (id = template key) shows every real page in an iframe stage with page tabs and a desktop/phone toggle; details show page count, palette and price. Tallaby tracking skips iframes (`useIsMarketplaceHost`). Mock-only `templates.items.*`, `soon` and detail keys removed from `ar.json`/`en.json`; `detail.pageCount`/`detail.colors` added.
+- **Checks:** store-sections templates (27) and ecommerce `lib/marketing` (20) tests pass; lib and store-sections `tsc` clean; ecommerce `tsc` only the pre-existing `profile.chunks.tsx` / `product-details.tsx` errors; `pnpm lint` still crashes in ESLint 10.9.1 (pre-existing). Dev server: `/templates`, `/en/templates`, `/templates/atelier` 200; `/templates/volt` and `/template-preview/nope` 404; the Atelier and Classic frames render correctly in Chrome (screenshots). Not checked in a browser: the card iframe scaling and stage toggles (Chrome here could not open `localhost`, and Next dev blocks hydration on `127.0.0.1`).
+
+### 2026-10-20 — Admin: real Settings/Payments/Shipping, sortable tables, site links (owner request)
+
+- **Mock data removed:** Settings, Payments and Shipping were hard-coded demo pages (fake customers, `example.com` emails), and the sidebar footer showed "Admin User / admin@example.com". All now read Supabase through new read models in `packages/lib/src/admin/platform-admin.server.ts`:
+  - **Settings:** the signed-in admin, the admin team (`users.role = 'admin'`), platform counts, the default template, seller plans (`@workspace/lib/plans`), the EGP 5 fee and the 7-day trial (`platform-fee.lib.ts`), and whether each service env var is set. No secret values are shown; only `ECOMMERCE_URL` and `DASHBOARD_URL` are printed. Read-only; each rule links to where it is changed.
+  - **Payments:** order payments by method and status (`orders`), the latest 100 gateway transactions (`payments`, empty today) and store top-ups by status. Grouping is in `payments.lib.ts`.
+  - **Shipping:** providers with shipment counts, the shipping app's automation switches, shipments by status, the latest 100 shipments and the store shipping zones count.
+  - The user menu's dead links (`/settings/profile`, `/financial`) and the placeholder "Notifications · Soon" button are removed.
+- **Reusable table:** `_components/admin-table/` (`AdminTable` and `admin-table.lib.ts`) has one column config, sortable headers and an empty state.
+  - **`url` mode** (Stores, Domains, Audit) writes `?sort=id.asc|desc`, goes back to page 1, and the query sorts through an allow-list (`adminOrderBy` in `list-sort.server.ts`; `STORE_SORT_IDS`, `DOMAIN_SORT_IDS`, `AUDIT_SORT_IDS`).
+  - **`client` mode** sorts the rows given to it: Templates, Payments, Shipping, Settings, Fulfillment, Ad campaigns, Integrations, seller coupons and the store detail tabs. On paginated lists (Fulfillment, Ad campaigns, Integrations, coupons) it sorts the current page only.
+  - The TanStack `DataTable` lists already sorted.
+  - Not converted: Blog (others' uncommitted work) and the affiliate order history (paged through a server action).
+- **Links:**
+  - On `/stores`, the Host is a link to `storeUrl()` that opens in a new tab.
+  - On `/templates`, a shown template's name opens `<ecommerce>/templates/<key>` in a new tab (`lib/site-urls.ts`; `getStorefrontBaseUrl` now uses it).
+- **Fix:** template edit and "Make default" required `canManageSettings`, which no DB role has (same bug as the blog). They now use `canManageProducts`, and the lib still re-checks for a verified, unsuspended admin.
+- **Checks:**
+  - Admin tests (23, including new `admin-table.lib` and `payments.lib`) and lib admin tests (21) pass.
+  - The new SQL ran read-only against Supabase.
+  - lib `tsc` is clean. Admin `tsc` only has the pre-existing `app/layout.tsx` `DirectionProvider` error.
+  - ESLint still crashes before linting (pre-existing).
+- **Not checked:** the admin pages in a signed-in browser (manual E2E pending). Locally, `apps/admin/.env` has `ECOMMERCE_DOMAIN=http://localhost:3001`, which is the admin itself, so template links need `ECOMMERCE_URL=http://localhost:3000` there.
+
+### 2026-10-20 — Production database migrated to `0073` (owner-approved)
+
+- **Owner request:** "make production supabase fully ready for our merge to production". After the dry run, the owner chose "Apply now".
+- **Approach:** production keeps its own data, because it is the source of truth; staging was only the test bed. Migrations `0050`–`0073` were replayed on production (`sakwqwocbccpyrmwjowq`) with `psql` through the session pooler. Staging data was **not** copied.
+- **Staging first:** `0072` was applied to staging (twice, idempotent). `0069`, `0070`, `0071` and `0073` were re-run on staging with no errors. Staging is now at `0073`.
+  - Finding: `0050` cannot be re-run **after** `0065`, because its backfill `INSERT` names the dropped `stores.policies` column. A fresh in-order apply is fine. Do not re-run `0050` on a database that already has `0065`.
+- **Read-only production pre-checks:** 0 duplicate sale rows, 0 `seller_wallet` vs `sellers.wallet_balance` mismatches, 0 bad or NULL subdomains, 0 storefront orders, 7 storefront carts, 0 custom domains. One balance vs ledger mismatch: seller "Tallaby", 538.20 with no ledger rows, the same case staging had, handled by `0061` (owner decision 2026-10-17).
+- **Compatibility of the live `main` code with the new schema:**
+  - The changes add things only: new tables and nullable or defaulted columns.
+  - The only column dropped is `stores.policies`, which `0065` adds and drops in the same chain.
+  - `main`'s only ledger write (`credit-seller-on-delivery`) inserts a `sale` once per seller and order, which the new append-only trigger and `wallet_transactions_sale_once` allow.
+  - The fee is computed in code, so `main` keeps its 5% commission until the merge is deployed.
+- **Dry run:** the whole chain (without `0061`, because an enum value can't be used in the transaction that adds it) ran on production in one transaction, then ROLLBACK. There were no errors and all post-checks passed. Afterwards production was confirmed unchanged.
+- **Backup:** `pg_dump -Fc` of `public`, `auth`, `storage`, `shipping_realtime` and `drizzle` (1.6 MB, 106 table-data entries), taken 2026-10-20T03:05:25Z and kept locally on the owner's machine, not in the repo. PITR status was not checked: no Supabase MCP or dashboard access in this session.
+- **Apply** ran as three transactions with `lock_timeout` 5s, all rc=0:
+  - `0050`–`0060`: 03:09:38–03:09:52Z
+  - `0061`: 03:09:52–03:09:53Z
+  - `0062`–`0073`: 03:09:53–03:09:59Z
+- **Fee switch-over:**
+  - `0059`/`0067` stamp `fee_plan_effective_at` with the apply time (2026-10-20 ≈03:10Z). The EGP 5 fee only starts with the deploy of this branch, so **record the deploy time here as the real fee switch-over**.
+  - `0067` set every seller's trial to [first store `created_at`, +7 days). The 4 sellers created 2026-10-14…16 are still inside it; everyone else pays from their next order once the code is live.
+- **Post-checks on production (all pass):**
+  - 11 sellers → 11 primary stores, subdomains equal.
+  - 0 redirects, domains, storefront carts or storefront orders without `store_id`.
+  - 11 wallets, 0 balance vs ledger mismatches, and one ledger row: `adjustment 538.20 (admin:opening_balance)`.
+  - Every seller is on `flat_5`.
+  - Current templates: `atelier` v1, `tallaby-classic` v3.
+  - Buckets `store-media`, `store-top-up-proofs` and `platform-blog` were added with 9 policies.
+  - 0 `public` tables without RLS.
+  - `stores_invariants.sql`: ALL STORE INVARIANTS PASSED (rolled back).
+- **Parity:** `pg_dump -s -n public` of production and staging are **identical** (0 diff lines). The advisor-style SQL lint gives the same counts on both: 70 unindexed FKs, which on the new tables are mostly audit `created_by`/`*_by` columns that are not filtered on (§11.11.5), and 8 functions without a fixed `search_path`, all pre-existing. MCP `get_advisors` was not run.
+- **Still to do at merge time (owner):**
+  1. Deploy all apps from the branch and record the deploy time above.
+  2. Set Vercel env vars for production: `NEXT_PUBLIC_DASHBOARD_URL` if not the default, cron secrets, Kashier keys, and `STORE_BUILDER_SELLER_IDS` if the builder should be gated.
+  3. Check the Vault `shipping_automation` webhook config. Vault is untouched by this work.
+  4. Repoint the local `.env` files deliberately. `apps/admin/.env` now points at staging too.
+  5. Smoke test: one checkout with the fee in admin order detail, a storefront render and a builder publish.
+  6. Run `get_advisors` from the Supabase dashboard.
+
+### 2026-10-20 — Storefront templates 02–38: library-built, Fashion batch live (owner request)
+
+- **Owner decisions (2026-10-20, in chat):**
+  - Build the 37 remaining Claude Design templates in batches by store category.
+  - Keep the app's real cart, checkout, account and order pages, themed through the design system. Don't rebuild them per template.
+  - Template-seed migrations go to production after tests, a render check, staging and a rolled-back production dry run, without asking again per batch. This covers new template rows only: never the default, never Atelier or Classic.
+- **Approach:** the section library already has the sections each template's map names, so templates 02–38 are made from library designs instead of hand-written trees. Every section is still an element tree (rule 17).
+  - `templates/_library.ts` `fromLibrary(templateKey, design, patch)` returns the template's own design (`<key>-<library id>`), changing:
+    - copy, by exact Arabic match, in both languages;
+    - photos, by `photo(i)` / `person(i)` slot;
+    - fixed links, all occurrences or one per occurrence;
+    - data-list settings.
+  - Strict: a swap that doesn't match, or a photo slot without a template photo, throws, so library stock photos never reach a template.
+  - It also gives the library's placeholder name the `storeName` / `storeInitial` / `copyright` roles, binds `storeForm`s to the `newsletter` / `contact` ready-made forms, and clamps corner radii to the template's (`corners`).
+  - Inside `accent` blocks it turns muted text and accent marks to `foreground`, because library designs assume a light accent.
+  - `templates/library-template.ts`: `libraryTemplate(spec)` (look, chrome, pages → `TemplateDefinition`), `demoStore`, `pexels`, and `handle()` (keeps `@name` left-to-right in RTL).
+  - `designs/builder.ts`: `createTreeBuilder(industry, photos?)`, an optional photo set read before stock photos. Library behaviour is otherwise unchanged.
+  - `catalog.ts`: `LIBRARY_TEMPLATES`, and `templatesSeedSql` (one migration per batch: `template:sql key1,key2 <file>`).
+- **Fonts:** 10 Arabic+Latin Google fonts the designs name were added to `STORE_FONTS` and both loaders (ecommerce `storefront-font.ts`, dashboard `store-fonts.ts`): Rubik, Noto Sans Arabic, Alexandria, Changa, Noto Naskh Arabic, Lalezar, Aref Ruqaa, Reem Kufi, Baloo Bhaijaan 2, Lemonada. None are preloaded.
+- **Template previews (tallaby.com gallery, `template-preview/[key]`):** a section with an unbound form is hidden publicly, so footers with a sign-up and every newsletter or contact section were missing from previews (Atelier's too). The preview now binds the template's ready-made forms the way "Use template" does and draws still versions of them (`starterPreviewForm`, new export `@workspace/lib/store-forms/starter`).
+- **Fashion batch (`0074_fashion_templates.sql`):**
+  - **02 Mode** ("Sayra Studio", Readex Pro, 14px corners).
+  - **03 Streetwear** ("Hara Supply", Rubik, square corners).
+  - **04 Kasr** ("Kasr Studio", Amiri / Noto Sans Arabic, square corners).
+  - Each has home, about, contact and FAQ pages and a 10–12 product demo store.
+  - Photos are Pexels, checked by eye on contact sheets: no people, bodies, mannequins or third-party logos.
+  - Design gaps are kept as in the registry notes. There is no sale filter on `/products`, so sale links use `?sort=popularity`, and category tiles link to `/products`.
+- **Checks:**
+  - `library-templates.test.tsx` runs per template: valid config, own designs only, fonts the storefront loads, Arabic copy translated, no placeholder copy, no stock photos, store-only links, forms/name/copyright bound, every section renders, demo store, seed in sync.
+  - `_library.test.ts` (5) covers the helper's strictness.
+  - store-sections 1706/1706 pass. store-sections, lib and dashboard `tsc` are clean. Ecommerce `tsc` only has the 16 pre-existing `profile.chunks.tsx` errors. lib store-forms tests pass.
+  - **Visual:** ecommerce dev server against staging, Chrome at `127.0.0.1:3000/template-preview/<key>` (`localhost` returns 431 because of large local cookies). Checked Mode home, about and English contact, Streetwear home and Kasr home.
+  - Fixed during the check: low-contrast copy on strong accent tiles, rounded corners in square templates, `@handle` order in RTL, and the footer missing from previews.
+  - Phone width wasn't checked: the window wouldn't resize below desktop in this browser. The sections are library designs that were already checked at phone width.
+- **Rollout:** staging applied twice (idempotent), then a production dry run in a rolled-back transaction, then production at 2026-10-20T03:59:07Z. Config hashes are identical on both.
+- **Incident (production write by mistake, fixed):**
+  - A `mode` row (v1, an earlier build of the template) appeared on production at 03:31:25Z, when the first `0074` (Mode only) was applied, which was meant to be staging only. The cause was not found: the env files point where they should, there's no replication between the projects, and nothing in the apps seeds templates.
+  - Nothing referenced it (0 installs, 0 stores). It was deleted in the same transaction that applied the current `0074`.
+  - Every scripted write now goes through guards that check the project ref and a staging-only marker (the `qa-owner-store` store) before running.
+- **Electronics batch (`0075_electronics_templates.sql`), 2026-10-20:**
+  - **05 TechHub** ("Volta Store", Cairo / IBM Plex Sans Arabic, search-first).
+  - **06 Volt** ("Shahn Mobile", Alexandria, industry `mobile-accessories`).
+  - **07 Arcade** and **08 Arena** (dark mode, Changa).
+  - New shared helpers: `templates/_pages.ts` (`pageHeader`, `aboutStory`, `contactPage`, `faqPage`).
+  - **Renderer fix:** the `light` button variant was `bg-white text-(--sf-ink)`, which made white text on a white button in dark themes. It is now `bg-white text-neutral-900`. Light themes look the same (their ink is near-black). Two library snapshots were updated; only that class changed.
+  - The test's link check now also allows `tel:` (the help-first footer's call link).
+  - Gaps kept: "Bought together" (Volt) has no library design, so it was left out. Video sections show no player until the seller pastes a link (existing behaviour). The library's sample phone numbers stay for the seller to edit.
+  - Checks: store-sections 1743/1743, `tsc` clean. Visual check of all four homes (Arcade and Arena in dark mode).
+  - Staging applied twice, then production through the scripted push (refuses existing keys or the default; dry run; apply; config hashes compared): applied 2026-10-20T04:09:42Z, hashes match.
+- **Beauty batch (`0076_beauty_templates.sql`), 2026-10-20:**
+  - **09 Pure** ("Nabta Skin", Noto Naskh Arabic / Almarai).
+  - **10 Glow** ("Wardi Beauty", Lalezar / Tajawal).
+  - **11 Élixir** ("Oud & Rose", Aref Ruqaa / Noto Kufi Arabic).
+  - **12 Botanica** ("Nile Botanics", Noto Naskh Arabic / IBM Plex Sans Arabic).
+  - Photos are products and plants only: no faces, hands or brand labels. The design's model and face shots were replaced.
+  - Left out: Botanica's "Big headline" blog section, because a store without posts would hide it.
+  - Checks: store-sections 1780/1780, `tsc` clean. Visual check of the Glow and Élixir homes.
+  - Production: 2026-10-20T04:16:25Z, hashes match staging.
+- **Home & Kitchen batch (`0077_home_kitchen_templates.sql`), 2026-10-20:**
+  - **13 Nest** ("Sakan Home", Reem Kufi / Noto Sans Arabic, industry `home`).
+  - **14 Daily** ("Matbakhna", Baloo Bhaijaan 2, `kitchen`).
+  - **15 Hearth** ("Hearth & Co.", Readex Pro, `kitchen`).
+  - **16 Clay** ("Copper & Clay", Reem Kufi / Almarai, `kitchen`).
+  - Gaps kept: Nest's "Shoppable photo" has no library design, so it was left out. Clay's recipe "Post bento" was left out (hidden without posts). Clay's "shop by material" uses the brand tiles with material names that search the catalog.
+  - Checks: suite and `tsc` pass. Visual check of Nest and Clay.
+  - Production: 2026-10-20T04:22:47Z, hashes match staging.
+- **Groceries & Food batch (`0078_food_templates.sql`), 2026-10-20:**
+  - **17 Sizzle** ("Sekka Grill", Lalezar / Almarai).
+  - **18 Harvest** ("Souq Akhdar", Tajawal).
+  - **19 Loaf** ("Loaf & Co.", Lalezar / Tajawal).
+  - **20 Roast** ("Bunn House", Lalezar / Tajawal).
+  - All use industry `food`. Photos are food and produce only: no hands or brand marks.
+  - Gaps kept: no live countdown timer (the deal card shows a fixed end date the seller edits). Loaf's subscription is an ordinary product, with no recurring billing.
+  - Checks: store-sections 1854/1854, `tsc` clean. Visual check of Sizzle and Roast.
+  - Production: 2026-10-20T04:28:45Z, hashes match staging.
+- **Furniture & Decor batch (`0079_furniture_templates.sql`), 2026-10-20:**
+  - **21 Verdant**, **22 Loft**, **23 Oak**, **24 Sakan**, all with industry `home`.
+  - The link test now also allows `mailto:` and Google Maps (the contact bento).
+  - Gaps kept: the "Shoppable photo" sections (Verdant, Loft) have no library design and were left out.
+  - Checks: store-sections 1891/1891, `tsc` clean. No visual check for this batch: the usage limit was reached.
+  - Production: 2026-10-20T04:33:29Z, hashes match staging.
+- **Jewelry batch (`0080_jewelry_templates.sql`), 2026-10-20:**
+  - **25 Lumière** ("Dahab House", Aref Ruqaa / Noto Kufi Arabic).
+  - **26 Karat** ("Zeina Accessories", Lalezar / Tajawal).
+  - **27 Fadda** ("Fadda Studio", Readex Pro).
+  - All use industry `jewelry`. Photos show pieces on stands, trays and in boxes: no hands, ears, necks or neck-shaped busts.
+  - Left out: Fadda`s "Big headline" blog section (hidden without posts).
+  - The seed check now has a 60s timeout, since building every template takes longer as the list grows.
+  - Checks: 1919/1919, `tsc` clean. Visual check of Lumière, Fadda, and Verdant from the Furniture batch.
+  - Production: 2026-10-20T05:47:35Z, hashes match staging.
+- **Toys, Kids & Baby batch (`0081_kids_templates.sql`), 2026-10-20:**
+  - **28 Playroom** (Lemonada / Tajawal).
+  - **29 Bambino** (Baloo Bhaijaan 2).
+  - **30 Doodle** (Lemonada / Tajawal).
+  - **31 Hekaya** (Baloo Bhaijaan 2).
+  - Industry `kids`, except Hekaya, which uses `books`.
+  - The design`s photos show children; under the no-people rule they were replaced with toys, blocks, blankets and books only.
+  - Left out: Hekaya`s "Post bento" blog section.
+  - Checks: 1956/1956, `tsc` clean. Visual check of Playroom and Hekaya.
+  - Production: 2026-10-20T05:53:11Z, hashes match staging.
+- **Sports batch (`0082_sports_templates.sql`), 2026-10-20:**
+  - **32 Pace** (Changa), **33 Stride** (Alexandria), **34 Core** (Cairo, square corners), **35 Basecamp** (Changa). Industry `sports`.
+  - Basecamp opens with `hero-poster` instead of the design's `video-film`: a video node with no link renders nothing on the storefront, so the opening had no image. **Follow-up:** Arena, Kasr and Clay (already on production) use `video-film`; check whether their films look empty and, if so, ship a v2 with a photo opening.
+  - Left out: library stock photo 6740821 at 1280px (the test rejects stock photos); Nike/branded and person photos from the contact sheets.
+  - Checks: 1992 store-sections tests plus 316/316 template tests, `tsc` clean. Visual check of all four.
+  - Production: 2026-10-20T06:10:39Z, hashes match staging.
+- **Automotive batch (`0083_auto_templates.sql`), 2026-10-20:**
+  - **36 Garage** (Changa), **37 Drive** (IBM Plex Sans Arabic), **38 Moto** (Changa). Industry `auto`, matching `STORE_INDUSTRIES` (not `automotive`).
+  - Left out: Drive's "Bought together" (a product-page section, as in Volt). Drive's home FAQ is `as: "driver-questions"` so its ids do not clash with the FAQ page's `faq-columns`.
+  - Photos: no car badges, product labels (Motul, Chemical Guys and others), riders or hands. Garage and Moto brand names (Apex Helmets, Ridgeline…) are made up.
+  - Checks: 2021/2021 store-sections tests, `tsc` clean. Visual check of all three.
+  - Production: 2026-10-20T06:18:46Z, hashes match staging. **All 38 Claude Design templates are now on staging and production.**
+- **Owner decision needed:** a `video` node with no link renders nothing on a live storefront (`render-video.tsx`), so Arena's, Kasr's and Clay's `video-film` / `video-shop` blocks show only their text until the seller adds a link. One option is to show the poster photo, with no play button, when there is no link. This changes live storefront behaviour, so it was not done.
+- **Tallaby Classic sites for the current production sellers (owner request), 2026-10-20 ~06:30Z:**
+  - Production had 11 active stores, all approved and never published, with no pages, design systems, forms or store catalogs. Every store uses `catalog_mode = 'all'`.
+  - **What was done:** the app's own `ensureStoreSiteScaffold`, then `publishStoreSite` for stores with active products, run in one transaction against production. A rolled-back dry run came first, and the site tables were backed up first (`pg_dump --data-only`).
+  - **All 11 stores:** Classic v3 in their builder drafts: 6 pages (home, about, contact, faq, privacy, terms), newsletter and contact forms, the design system, and the store name in the header and footer. This is what the builder does automatically on first open.
+  - **Published (revision 1):** Faster (52 active products), Tallaby `store-b61a4987` (3), Qavero (1) and Sherin Handmade (1). `publishedBy` is the seller's own user id.
+  - **Drafts only:** Bein Sport, Abdelrahman Mahmoud, Apex-multi, Mohamed Ayman, Adham Elagnaby, A D Cosmetics and جاليري وانتيكا. None has an active product, and a published site with empty product sections would look broken. They can publish from the builder once they add products.
+  - **Categories and brands:** no data changes. The storefront builds categories (with cover images) from the global categories of a seller's active products (`getStorefrontCategories`), and product sections read the catalog. The per-seller lists from `0068` are empty for every seller; filling them is a dashboard-only tidy-up and was left to the sellers.
+  - **No money effect:** every seller's fee trial had already started from their first store's `created_at` (`start_fee_trial_if_needed` is a no-op), and the trial dates were checked before and after.
+  - **No live effect yet:** `main` (deployed) never reads `published_revision_id`, so customers see these sites only after `feat/seller-saas` is merged and deployed.
+  - **Rollback:** for the 11 stores, delete their `store_site_revisions`, `store_pages`, `store_forms` and `store_design_systems` rows. Then set `published_revision_id`, `first_published_at`, `last_published_at`, `shared_header` and `shared_footer` to NULL and `site_status = 'draft'`.
+- **Still to do (next session):**
+  - Owner: decide on the link-less video behaviour (above).
+  - After the merge to production: open the four published stores on their live hosts and check them by eye. The seven draft-only stores publish from the builder once they add products.

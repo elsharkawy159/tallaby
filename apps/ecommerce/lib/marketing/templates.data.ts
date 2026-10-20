@@ -1,7 +1,8 @@
 /**
- * Template gallery content for the marketing previews. Descriptions live in
- * messages (`templates.items.<id>`); everything here is visual: colours,
- * layout and the demo products shown inside each preview. The demo store copy
+ * Decorative storefront mocks for the marketing home (hero, builder studio,
+ * template fan) and the gallery's category codes. The template gallery shows
+ * the real templates (templates.lib.ts). Everything here is visual: colours,
+ * layout and demo products. The demo store copy
  * ("Shop now", product names) is part of the mock storefront and stays in
  * English in both locales, as in the design.
  */
@@ -55,11 +56,9 @@ export type TemplateCategory = (typeof TEMPLATE_CATEGORIES)[number];
 
 export type StoreTemplate = {
   id: "classic" | "volt" | "atelier" | "glow" | "nook" | "charm" | "tick";
-  /** `templates.key` of the installable template this preview shows. Without one, the preview is "coming soon". */
-  dbKey?: string;
   category: Exclude<TemplateCategory, "all">;
   font: string;
-  /** Preset [accent, background] pairs offered on the template page. */
+  /** Preset [accent, background] pairs. */
   variants: [string, string][];
   look: StoreLook;
 };
@@ -97,7 +96,6 @@ export const TEMPLATES: StoreTemplate[] = [
   },
   {
     id: "atelier",
-    dbKey: "atelier",
     category: "fa",
     font: "Montserrat",
     variants: [
@@ -240,64 +238,3 @@ export const TEMPLATES: StoreTemplate[] = [
     },
   },
 ];
-
-/**
- * Tallaby Classic, every new store's starting site (`tallaby-classic`, 0071).
- * Kept out of TEMPLATES so the home hero and fan, which index TEMPLATES by
- * position, stay as designed. Colours and font are the template's own.
- */
-export const CLASSIC_TEMPLATE: StoreTemplate = {
-  id: "classic",
-  dbKey: "tallaby-classic",
-  category: "ge",
-  font: "Readex Pro",
-  variants: [
-    ["#145163", "#f7f6f2"],
-    ["#fdad28", "#f7f6f2"],
-    ["#1b2629", "#ffffff"],
-  ],
-  look: {
-    name: "CLASSIC",
-    background: "#f7f6f2",
-    foreground: "#1b2629",
-    accent: "#145163",
-    radius: "16px",
-    muted: "#1452630f",
-    layout: "split",
-    hero: "https://images.pexels.com/photos/4397877/pexels-photo-4397877.jpeg?auto=compress&cs=tinysrgb&w=900",
-    headline: "Everything you need, in one place",
-    subline: "Shop now · New arrivals",
-    products: [
-      { image: IMG.mug, name: "Mug", price: "180" },
-      { image: IMG.quencher, name: "Quencher", price: "650" },
-      { image: IMG.travelCup, name: "Travel cup", price: "320" },
-      { image: IMG.watch6, name: "Watch 6", price: "1,080" },
-    ],
-  },
-};
-
-/** Every preview the template gallery and pages can show, Classic first. */
-export const GALLERY_TEMPLATES: StoreTemplate[] = [CLASSIC_TEMPLATE, ...TEMPLATES];
-
-/** "VOLT" → "Volt", "tick." → "Tick". */
-export function displayName(name: string): string {
-  return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase().replace(".", "");
-}
-
-export function findTemplate(id: string): StoreTemplate | undefined {
-  return GALLERY_TEMPLATES.find((t) => t.id === id);
-}
-
-/** Dark backgrounds need dark text on the accent button. */
-const DARK_BACKGROUNDS = new Set(["#0f1315", "#141414"]);
-
-/** The look with a colour preset and corner style applied. */
-export function applyVariant(look: StoreLook, [accent, background]: [string, string], radius: string): StoreLook {
-  return {
-    ...look,
-    accent,
-    background,
-    radius,
-    onAccent: DARK_BACKGROUNDS.has(background) ? background : "#ffffff",
-  };
-}

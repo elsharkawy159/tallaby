@@ -210,7 +210,8 @@ export const ProductDetails = ({
     if (display.option1) optionParts.push(display.option1);
     if (display.option2) optionParts.push(display.option2);
     if (display.option3) optionParts.push(display.option3);
-    const variantLabel = display.title || variant.title;
+    // variant.title is nullable; an empty label must not crash `.charAt` below.
+    const variantLabel = display.title || variant.title || optionParts.join(" ") || "";
     const variantDescription = optionParts.join(" • ");
     const variantThumbnail = getVariantImageUrls(variant)[0];
     // Color variants get outlined in their own color instead of

@@ -14,7 +14,7 @@ async function done(message: string): Promise<AdminActionResult> {
 
 /** Active, premium, price and order of one template (docs/admin-saas.md §3.6). Audited. */
 export async function updateTemplateAction(input: unknown): Promise<AdminActionResult> {
-  const actorId = await adminActorId("canManageSettings");
+  const actorId = await adminActorId("canManageProducts");
   if (!actorId) return saasError("not_admin");
   try {
     const result = await updateTemplateByAdmin(actorId, input);
@@ -28,7 +28,7 @@ export async function updateTemplateAction(input: unknown): Promise<AdminActionR
 
 /** Makes one template the default for new stores. Audited. */
 export async function setDefaultTemplateAction(input: unknown): Promise<AdminActionResult> {
-  const actorId = await adminActorId("canManageSettings");
+  const actorId = await adminActorId("canManageProducts");
   if (!actorId) return saasError("not_admin");
   try {
     const result = await setDefaultTemplateByAdmin(actorId, input);

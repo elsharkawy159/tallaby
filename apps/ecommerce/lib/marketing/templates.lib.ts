@@ -1,12 +1,15 @@
-import type { StoreTemplate, TemplateCategory } from "./templates.data";
+import { routing } from "@/i18n/routing";
+import type { TemplateCategory } from "./templates.data";
 
 /**
- * The template gallery joins the hand-made previews (templates.data.ts) with
- * the installable templates in the `templates` table (owner, 2026-10-19). A
- * preview whose `dbKey` is active is "available"; the other previews are
- * "soon". Active templates without a preview get a card from their own
- * thumbnail, name and description.
+ * The template gallery lists the active templates of the `templates` table
+ * with a valid current version (owner, 2026-10-19). A card shows the
+ * template's thumbnail, or a live render of its home page when it has none
+ * (/template-preview, components/marketing/templates/template-live-thumb).
  */
+
+/** A page of a template version, with its name in both languages when the code template has one. */
+export type CatalogPage = { slug: string; isHome: boolean; name: string; names?: { ar?: string; en?: string } };
 
 export type CatalogTemplate = {
   key: string;
@@ -15,24 +18,30 @@ export type CatalogTemplate = {
   category: string;
   thumbnailUrl: string | null;
   previewUrl: string | null;
+  isDefault: boolean;
   isPremium: boolean;
   price: string | null;
   sortOrder: number;
+  /** Colour swatches (code templates only). */
+  palette: readonly string[];
+  pages: CatalogPage[];
 };
 
+export type GalleryPage = { slug: string; isHome: boolean; name: string };
+
 export type GalleryEntry = {
-  /** Route id: the preview id, or the template key when there is no preview. */
+  /** Route id: the template key. */
   id: string;
   category: Exclude<TemplateCategory, "all">;
-  status: "available" | "soon";
-  preview: StoreTemplate | null;
-  /** Localized name and description from the database (null: use the preview's copy in messages). */
-  name: string | null;
+  name: string;
   description: string | null;
   thumbnailUrl: string | null;
   previewUrl: string | null;
   /** Price in EGP for premium templates, null when free. */
   price: number | null;
+  palette: string[];
+  /** Home page first. */
+  pages: GalleryPage[];
 };
 
 const CATEGORY_CODES: Record<string, Exclude<TemplateCategory, "all">> = {
@@ -69,53 +78,28 @@ function priceOf(row: CatalogTemplate): number | null {
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
-type Ranked = { entry: GalleryEntry; order: number };
+/** The preview frame of a template page (app/[locale]/(template-preview)/template-preview). */
+export function templateFrameSrc(locale: string, key: string, slug?: string, thumb = false): string {
+  const prefix = locale === routing.defaultLocale ? "" : `/${locale}`;
+  const path = `${prefix}/template-preview/${encodeURIComponent(key)}${slug ? `/${encodeURIComponent(slug)}` : ""}`;
+  return thumb ? `${path}?thumb=1` : path;
+}
 
-export function buildGallery(previews: readonly StoreTemplate[], rows: readonly CatalogTemplate[], locale: string): GalleryEntry[] {
-  const byKey = new Map(rows.map((row) => [row.key, row]));
-  const previewKeys = new Set(previews.map((p) => p.dbKey).filter(Boolean));
-  const previewIds = new Set<string>(previews.map((p) => p.id));
-
-  const fromPreviews = previews.map((preview): Ranked => {
-    const row = preview.dbKey ? byKey.get(preview.dbKey) : undefined;
-    return {
-      order: row?.sortOrder ?? Number.MAX_SAFE_INTEGER,
-      entry: {
-        id: preview.id,
-        category: preview.category,
-        status: row ? "available" : "soon",
-        preview,
-        name: null,
-        description: null,
-        thumbnailUrl: safeUrl(row?.thumbnailUrl),
-        previewUrl: safeUrl(row?.previewUrl),
-        price: row ? priceOf(row) : null,
-      },
-    };
-  });
-
-  const fromDb = rows
-    .filter((row) => !previewKeys.has(row.key) && !previewIds.has(row.key) && safeUrl(row.thumbnailUrl))
-    .map(
-      (row): Ranked => ({
-        order: row.sortOrder,
-        entry: {
-          id: row.key,
-          category: categoryCode(row.category),
-          status: "available",
-          preview: null,
-          name: localized(row.name, locale) ?? row.key,
-          description: localized(row.description, locale),
-          thumbnailUrl: safeUrl(row.thumbnailUrl),
-          previewUrl: safeUrl(row.previewUrl),
-          price: priceOf(row),
-        },
-      }),
-    );
-
-  const rank = (e: GalleryEntry) => (e.status === "available" ? 0 : 1);
-  return [...fromPreviews, ...fromDb]
-    .map((ranked, index) => ({ ...ranked, index }))
-    .sort((a, b) => rank(a.entry) - rank(b.entry) || a.order - b.order || a.index - b.index)
-    .map((ranked) => ranked.entry);
+export function buildGallery(rows: readonly CatalogTemplate[], locale: string): GalleryEntry[] {
+  return rows
+    .map((row, index) => ({ row, index }))
+    .sort((a, b) => Number(b.row.isDefault) - Number(a.row.isDefault) || a.row.sortOrder - b.row.sortOrder || a.index - b.index)
+    .map(({ row }) => ({
+      id: row.key,
+      category: categoryCode(row.category),
+      name: localized(row.name, locale) ?? row.key,
+      description: localized(row.description, locale),
+      thumbnailUrl: safeUrl(row.thumbnailUrl),
+      previewUrl: safeUrl(row.previewUrl),
+      price: priceOf(row),
+      palette: [...row.palette],
+      pages: [...row.pages]
+        .sort((a, b) => Number(b.isHome) - Number(a.isHome))
+        .map((page) => ({ slug: page.slug, isHome: page.isHome, name: localized(page.names, locale) ?? page.name })),
+    }));
 }

@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { GALLERY_TEMPLATES } from "./templates.data";
-import { buildGallery, categoryCode, localized, type CatalogTemplate } from "./templates.lib";
+import { buildGallery, categoryCode, localized, templateFrameSrc, type CatalogTemplate } from "./templates.lib";
 
 const row = (over: Partial<CatalogTemplate>): CatalogTemplate => ({
   key: "x",
@@ -9,44 +8,65 @@ const row = (over: Partial<CatalogTemplate>): CatalogTemplate => ({
   category: "general",
   thumbnailUrl: null,
   previewUrl: null,
+  isDefault: false,
   isPremium: false,
   price: null,
   sortOrder: 0,
+  palette: [],
+  pages: [{ slug: "home", isHome: true, name: "الرئيسية" }],
   ...over,
 });
 
 describe("template gallery", () => {
-  it("marks previews with an active template as available, first", () => {
-    const gallery = buildGallery(GALLERY_TEMPLATES, [row({ key: "atelier", sortOrder: 10 }), row({ key: "tallaby-classic", sortOrder: 0 })], "ar");
-    expect(gallery.slice(0, 2).map((e) => [e.id, e.status])).toEqual([
-      ["classic", "available"],
-      ["atelier", "available"],
-    ]);
-    expect(gallery.filter((e) => e.status === "soon").map((e) => e.id)).toEqual(["volt", "glow", "nook", "charm", "tick"]);
-  });
-
-  it("shows every preview as soon without database rows", () => {
-    expect(buildGallery(GALLERY_TEMPLATES, [], "ar").every((e) => e.status === "soon")).toBe(true);
-  });
-
-  it("adds active templates without a preview when they have a thumbnail", () => {
+  it("lists the database templates, default first, then by sort order", () => {
     const gallery = buildGallery(
-      [],
+      [row({ key: "atelier", sortOrder: 10 }), row({ key: "bazaar", sortOrder: 5 }), row({ key: "tallaby-classic", sortOrder: 20, isDefault: true })],
+      "ar",
+    );
+    expect(gallery.map((e) => e.id)).toEqual(["tallaby-classic", "bazaar", "atelier"]);
+  });
+
+  it("is empty without database rows", () => {
+    expect(buildGallery([], "ar")).toEqual([]);
+  });
+
+  it("maps a row to a card: localized copy, category code, premium price", () => {
+    const [entry] = buildGallery(
+      [row({ key: "bazaar", category: "home", thumbnailUrl: "https://x.supabase.co/t.png", isPremium: true, price: "250.00", palette: ["#000"] })],
+      "en",
+    );
+    expect(entry).toEqual(
+      expect.objectContaining({ id: "bazaar", category: "ho", name: "X", description: "Desc", price: 250, thumbnailUrl: "https://x.supabase.co/t.png", palette: ["#000"] }),
+    );
+  });
+
+  it("drops unsafe thumbnail and preview URLs (the card then draws the live preview)", () => {
+    const [entry] = buildGallery([row({ thumbnailUrl: "javascript:alert(1)", previewUrl: "http://x.test" })], "ar");
+    expect(entry?.thumbnailUrl).toBeNull();
+    expect(entry?.previewUrl).toBeNull();
+  });
+
+  it("puts the home page first and names pages in the locale", () => {
+    const [entry] = buildGallery(
       [
-        row({ key: "bazaar", category: "home", thumbnailUrl: "https://x.supabase.co/t.png", isPremium: true, price: "250.00" }),
-        row({ key: "nothumb" }),
-        row({ key: "badthumb", thumbnailUrl: "javascript:alert(1)" }),
+        row({
+          pages: [
+            { slug: "about", isHome: false, name: "من نحن", names: { ar: "من نحن", en: "About" } },
+            { slug: "home", isHome: true, name: "الرئيسية" },
+          ],
+        }),
       ],
       "en",
     );
-    expect(gallery).toEqual([
-      expect.objectContaining({ id: "bazaar", category: "ho", name: "X", description: "Desc", price: 250, status: "available", preview: null }),
+    expect(entry?.pages).toEqual([
+      { slug: "home", isHome: true, name: "الرئيسية" },
+      { slug: "about", isHome: false, name: "About" },
     ]);
   });
 
-  it("drops unsafe preview URLs", () => {
-    const [entry] = buildGallery(GALLERY_TEMPLATES.slice(0, 1), [row({ key: "tallaby-classic", previewUrl: "javascript:alert(1)" })], "ar");
-    expect(entry?.previewUrl).toBeNull();
+  it("builds preview frame URLs", () => {
+    expect(templateFrameSrc("ar", "atelier")).toBe("/template-preview/atelier");
+    expect(templateFrameSrc("en", "atelier", "about", true)).toBe("/en/template-preview/atelier/about?thumb=1");
   });
 
   it("localizes JSON names with a fallback", () => {

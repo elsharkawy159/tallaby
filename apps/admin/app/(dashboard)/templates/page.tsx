@@ -1,20 +1,15 @@
 import Link from "next/link";
+import { ExternalLink } from "lucide-react";
 import { Badge } from "@workspace/ui/components/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@workspace/ui/components/table";
 import { createCachedQuery, templateTags } from "@workspace/cache";
 import { logServerError } from "@workspace/db/log";
 import { firstParam, isUuid } from "@workspace/lib/admin";
 import { listTemplateVersionsForAdmin, listTemplatesForAdmin } from "@workspace/lib/admin/server";
 import { formatCurrency } from "@workspace/lib";
 import { getCurrentAdminUser } from "@/lib/auth/admin-auth";
+import { templateGalleryUrl } from "@/lib/site-urls";
+import { AdminTable, type AdminTableColumn } from "../_components/admin-table/admin-table";
 import { ReasonActionButton } from "../_components/dialogs/reason-action.client";
 import { formatAdminDate, localizedText } from "../stores/stores.lib";
 import { TemplateEditButton } from "./template-edit.client";
@@ -38,6 +33,17 @@ const getCachedTemplates = createCachedQuery({
   query: () => listTemplatesForAdmin(),
 });
 
+const TEMPLATE_COLUMNS: AdminTableColumn[] = [
+  { id: "template", header: "Template", sortable: true },
+  { id: "category", header: "Category", sortable: true },
+  { id: "gallery", header: "Gallery", sortable: true, descFirst: true },
+  { id: "price", header: "Price", sortable: true, align: "end" },
+  { id: "order", header: "Order", sortable: true, align: "end" },
+  { id: "version", header: "Version", sortable: true, descFirst: true },
+  { id: "storesUsing", header: "Stores using", sortable: true, descFirst: true, align: "end" },
+  { id: "actions", header: "Actions", align: "end" },
+];
+
 /** Store templates in the seller gallery (docs/admin-saas.md §3.6). Metadata only. */
 export default async function TemplatesPage({ searchParams }: PageProps) {
   await getCurrentAdminUser();
@@ -58,102 +64,118 @@ export default async function TemplatesPage({ searchParams }: PageProps) {
         <h1 className="text-2xl font-semibold">Templates</h1>
         <p className="text-sm text-muted-foreground">
           What sellers see in their template gallery. Template content is shipped with releases; here you
-          control visibility, pricing, order and the default for new stores.
+          control visibility, pricing, order and the default for new stores. A shown template&apos;s name opens
+          its page on tallaby.com in a new tab.
         </p>
       </div>
 
       <Card>
         <CardContent className="py-4">
-          {rows.length === 0 ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">No templates.</p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Template</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Gallery</TableHead>
-                  <TableHead className="text-right">Price</TableHead>
-                  <TableHead className="text-right">Order</TableHead>
-                  <TableHead>Version</TableHead>
-                  <TableHead className="text-right">Stores using</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rows.map((row) => {
-                  const name = localizedText(row.name);
-                  return (
-                    <TableRow key={row.id} className="align-top">
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          {row.thumbnailUrl ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={row.thumbnailUrl} alt="" className="h-10 w-16 rounded border object-cover" />
-                          ) : (
-                            <div className="h-10 w-16 rounded border bg-muted" />
-                          )}
-                          <div>
-                            <div className="font-medium">{name}</div>
-                            <div className="font-mono text-xs text-muted-foreground">{row.key}</div>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-sm capitalize">{row.category}</TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {row.isDefault && <Badge>Default</Badge>}
-                          <Badge variant={row.isActive ? "outline" : "secondary"}>{row.isActive ? "Shown" : "Hidden"}</Badge>
-                          {row.isPremium && <Badge variant="outline">Premium</Badge>}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">{row.price ? formatCurrency(Number(row.price)) : "Free"}</TableCell>
-                      <TableCell className="text-right tabular-nums">{row.sortOrder}</TableCell>
-                      <TableCell className="text-sm">
-                        {row.currentVersion ? `v${row.currentVersion}` : "—"}
-                        <div>
-                          <Link href={`/templates?versions=${row.id}`} className="text-xs text-muted-foreground hover:underline">
-                            {row.versions} {row.versions === 1 ? "version" : "versions"}
-                          </Link>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        <Link href={`/stores?template=${encodeURIComponent(row.key)}`} className="hover:underline">
-                          {row.storesUsing}
+          <AdminTable
+            columns={TEMPLATE_COLUMNS}
+            defaultSort={{ id: "order", desc: false }}
+            emptyMessage="No templates."
+            rows={rows.map((row) => {
+              const name = localizedText(row.name);
+              // The gallery only lists active templates that have a version.
+              const onSite = row.isActive && row.currentVersion !== null;
+              return {
+                id: row.id,
+                className: "align-top",
+                sortValues: {
+                  template: name,
+                  category: row.category,
+                  gallery: row.isDefault ? 2 : row.isActive ? 1 : 0,
+                  price: row.price ? Number(row.price) : 0,
+                  order: row.sortOrder,
+                  version: row.currentVersion,
+                  storesUsing: row.storesUsing,
+                },
+                cells: {
+                  template: (
+                    <div className="flex items-center gap-3">
+                      {row.thumbnailUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={row.thumbnailUrl} alt="" className="h-10 w-16 rounded border object-cover" />
+                      ) : (
+                        <div className="h-10 w-16 rounded border bg-muted" />
+                      )}
+                      <div>
+                        {onSite ? (
+                          <a
+                            href={templateGalleryUrl(row.key)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="Open this template on tallaby.com in a new tab"
+                            className="inline-flex items-center gap-1 font-medium hover:underline"
+                          >
+                            {name}
+                            <ExternalLink className="size-3 text-muted-foreground" aria-hidden />
+                          </a>
+                        ) : (
+                          <div className="font-medium">{name}</div>
+                        )}
+                        <div className="font-mono text-xs text-muted-foreground">{row.key}</div>
+                      </div>
+                    </div>
+                  ),
+                  category: <span className="text-sm capitalize">{row.category}</span>,
+                  gallery: (
+                    <div className="flex flex-wrap gap-1">
+                      {row.isDefault && <Badge>Default</Badge>}
+                      <Badge variant={row.isActive ? "outline" : "secondary"}>{row.isActive ? "Shown" : "Hidden"}</Badge>
+                      {row.isPremium && <Badge variant="outline">Premium</Badge>}
+                    </div>
+                  ),
+                  price: <span className="tabular-nums">{row.price ? formatCurrency(Number(row.price)) : "Free"}</span>,
+                  order: <span className="tabular-nums">{row.sortOrder}</span>,
+                  version: (
+                    <div className="text-sm">
+                      {row.currentVersion ? `v${row.currentVersion}` : "—"}
+                      <div>
+                        <Link href={`/templates?versions=${row.id}`} className="text-xs text-muted-foreground hover:underline">
+                          {row.versions} {row.versions === 1 ? "version" : "versions"}
                         </Link>
-                        <div className="text-xs text-muted-foreground">{row.installs} installs</div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex justify-end gap-2">
-                          <TemplateEditButton
-                            template={{
-                              id: row.id,
-                              name,
-                              isActive: row.isActive,
-                              isPremium: row.isPremium,
-                              price: row.price,
-                              sortOrder: row.sortOrder,
-                              isDefault: row.isDefault,
-                            }}
-                          />
-                          {!row.isDefault && row.isActive && (
-                            <ReasonActionButton
-                              label="Make default"
-                              title={`Make ${name} the default?`}
-                              description="New stores start with this template. Existing stores keep theirs."
-                              confirmLabel="Make default"
-                              payload={{ templateId: row.id }}
-                              action={setDefaultTemplateAction}
-                            />
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          )}
+                      </div>
+                    </div>
+                  ),
+                  storesUsing: (
+                    <div className="tabular-nums">
+                      <Link href={`/stores?template=${encodeURIComponent(row.key)}`} className="hover:underline">
+                        {row.storesUsing}
+                      </Link>
+                      <div className="text-xs text-muted-foreground">{row.installs} installs</div>
+                    </div>
+                  ),
+                  actions: (
+                    <div className="flex justify-end gap-2">
+                      <TemplateEditButton
+                        template={{
+                          id: row.id,
+                          name,
+                          isActive: row.isActive,
+                          isPremium: row.isPremium,
+                          price: row.price,
+                          sortOrder: row.sortOrder,
+                          isDefault: row.isDefault,
+                        }}
+                      />
+                      {!row.isDefault && row.isActive && (
+                        <ReasonActionButton
+                          label="Make default"
+                          title={`Make ${name} the default?`}
+                          description="New stores start with this template. Existing stores keep theirs."
+                          confirmLabel="Make default"
+                          payload={{ templateId: row.id }}
+                          action={setDefaultTemplateAction}
+                        />
+                      )}
+                    </div>
+                  ),
+                },
+              };
+            })}
+          />
         </CardContent>
       </Card>
 

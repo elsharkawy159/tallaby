@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   invalidateAllCategories,
   invalidateFulfillmentPlans,
+  invalidateMarketingBlog,
   invalidateSellerCoupons,
   invalidateStoreIntegrationsWithSummary,
   invalidateTemplateCatalog,
@@ -20,6 +21,7 @@ import {
   categoryTags,
   couponTags,
   fulfillmentTags,
+  marketingBlogTags,
   productTags,
   storeTags,
   templateTags,
@@ -367,6 +369,10 @@ describe("admin invalidations (docs/admin-saas.md §4.3)", () => {
   it("template catalog and fulfillment plans carry no seller data", () => {
     expect(invalidateTemplateCatalog().tags).toEqual([templateTags.catalog()]);
     expect(invalidateFulfillmentPlans().tags).toEqual([fulfillmentTags.plans()]);
+  });
+
+  it("the tallaby.com blog is one platform tag", () => {
+    expect(invalidateMarketingBlog().tags).toEqual([marketingBlogTags.posts()]);
   });
 
   it("an admin integration change refreshes that store's scripts and the admin summary", () => {

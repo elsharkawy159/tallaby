@@ -3,18 +3,11 @@ import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card";
 import { Input } from "@workspace/ui/components/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@workspace/ui/components/table";
 import { logServerError } from "@workspace/db/log";
 import { COUPON_STATES, isUuid, pageCount, type AdminCouponState } from "@workspace/lib/admin";
 import { listCouponsForAdmin, type AdminCouponScope } from "@workspace/lib/admin/server";
 import { getCurrentAdminUser } from "@/lib/auth/admin-auth";
+import { AdminTable } from "../_components/admin-table/admin-table";
 import { ReasonActionButton } from "../_components/dialogs/reason-action.client";
 import { AdminPager, buildHref } from "../_components/admin-pager";
 import {
@@ -91,105 +84,110 @@ export async function ScopedCouponsData({ scope, q, state, sellerId, page }: Pro
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {rows.length === 0 ? (
-            <p className="py-10 text-center text-sm text-muted-foreground">No coupons match these filters.</p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Code</TableHead>
-                  <TableHead>{scope === "seller" ? "Seller (all stores)" : "Affiliate"}</TableHead>
-                  <TableHead>Discount</TableHead>
-                  <TableHead className="text-right">Used</TableHead>
-                  <TableHead className="text-right">Discount given</TableHead>
-                  <TableHead>State</TableHead>
-                  <TableHead>Dates</TableHead>
-                  {scope === "seller" && <TableHead />}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rows.map((row) => {
-                  const couponState = getCouponState({
-                    isActive: row.isActive ?? false,
-                    startsAt: row.startsAt,
-                    expiresAt: row.expiresAt,
-                  });
-                  return (
-                    <TableRow key={row.id}>
-                      <TableCell>
-                        <div className="font-mono font-medium">{row.code}</div>
-                        <div className="text-xs text-muted-foreground">{row.name}</div>
-                      </TableCell>
-                      <TableCell>
-                        {scope === "seller" && row.sellerId ? (
-                          <div className="flex flex-col">
-                            <Link href={`/sellers/${row.sellerId}`} className="hover:underline">
-                              {row.sellerName ?? "Seller"}
-                            </Link>
-                            <Link href={link({ seller: row.sellerId, page: null })} className="text-xs text-muted-foreground hover:underline">
-                              Only this seller
-                            </Link>
-                          </div>
-                        ) : row.affiliateId ? (
-                          <Link href={`/affiliate/${row.affiliateId}`} className="hover:underline">
-                            {row.affiliateEmail ?? "Affiliate"}
-                          </Link>
-                        ) : (
-                          "—"
-                        )}
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {formatCouponDiscount({
-                          discountType: row.discountType,
-                          discountValue: row.discountValue,
-                          maximumDiscount: row.maximumDiscount,
-                        })}
-                        {row.minimumPurchase && (
-                          <div className="text-xs text-muted-foreground">Min. {formatEgp(row.minimumPurchase)}</div>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {row.usageCount ?? 0}
-                        {row.usageLimit ? ` / ${row.usageLimit}` : ""}
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">{formatEgp(row.discountGiven)}</TableCell>
-                      <TableCell>
-                        <Badge variant={couponState === "active" ? "default" : "secondary"}>
-                          {COUPON_STATE_LABELS[couponState]}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
-                        {formatCouponDate(row.startsAt)} → {formatCouponDate(row.expiresAt)}
-                      </TableCell>
-                      {scope === "seller" && (
-                        <TableCell className="text-right">
-                          {row.isActive ? (
-                            <ReasonActionButton
-                              label="Deactivate"
-                              title={`Deactivate ${row.code}?`}
-                              description="Customers can no longer use this coupon in any of this seller's stores. The seller is not notified automatically."
-                              confirmLabel="Deactivate"
-                              destructive
-                              payload={{ couponId: row.id, active: false }}
-                              action={toggleSellerCouponAction}
-                            />
-                          ) : (
-                            <ReasonActionButton
-                              label="Reactivate"
-                              title={`Reactivate ${row.code}?`}
-                              confirmLabel="Reactivate"
-                              payload={{ couponId: row.id, active: true }}
-                              action={toggleSellerCouponAction}
-                            />
-                          )}
-                        </TableCell>
+          <AdminTable
+            columns={[
+              { id: "code", header: "Code", sortable: true },
+              { id: "owner", header: scope === "seller" ? "Seller (all stores)" : "Affiliate", sortable: true },
+              { id: "discount", header: "Discount" },
+              { id: "used", header: "Used", sortable: true, descFirst: true, align: "end" },
+              { id: "discountGiven", header: "Discount given", sortable: true, descFirst: true, align: "end" },
+              { id: "state", header: "State", sortable: true },
+              { id: "expiresAt", header: "Dates", sortable: true },
+              ...(scope === "seller" ? [{ id: "actions", header: "", align: "end" as const }] : []),
+            ]}
+            emptyMessage="No coupons match these filters."
+            rows={rows.map((row) => {
+              const couponState = getCouponState({
+                isActive: row.isActive ?? false,
+                startsAt: row.startsAt,
+                expiresAt: row.expiresAt,
+              });
+              return {
+                id: row.id,
+                sortValues: {
+                  code: row.code,
+                  owner: scope === "seller" ? row.sellerName : row.affiliateEmail,
+                  used: row.usageCount ?? 0,
+                  discountGiven: Number(row.discountGiven ?? 0),
+                  state: COUPON_STATE_LABELS[couponState],
+                  expiresAt: row.expiresAt,
+                },
+                cells: {
+                  code: (
+                    <>
+                      <div className="font-mono font-medium">{row.code}</div>
+                      <div className="text-xs text-muted-foreground">{row.name}</div>
+                    </>
+                  ),
+                  owner:
+                    scope === "seller" && row.sellerId ? (
+                      <div className="flex flex-col">
+                        <Link href={`/sellers/${row.sellerId}`} className="hover:underline">
+                          {row.sellerName ?? "Seller"}
+                        </Link>
+                        <Link href={link({ seller: row.sellerId, page: null })} className="text-xs text-muted-foreground hover:underline">
+                          Only this seller
+                        </Link>
+                      </div>
+                    ) : row.affiliateId ? (
+                      <Link href={`/affiliate/${row.affiliateId}`} className="hover:underline">
+                        {row.affiliateEmail ?? "Affiliate"}
+                      </Link>
+                    ) : (
+                      "—"
+                    ),
+                  discount: (
+                    <div className="text-sm">
+                      {formatCouponDiscount({
+                        discountType: row.discountType,
+                        discountValue: row.discountValue,
+                        maximumDiscount: row.maximumDiscount,
+                      })}
+                      {row.minimumPurchase && (
+                        <div className="text-xs text-muted-foreground">Min. {formatEgp(row.minimumPurchase)}</div>
                       )}
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          )}
+                    </div>
+                  ),
+                  used: (
+                    <span className="tabular-nums">
+                      {row.usageCount ?? 0}
+                      {row.usageLimit ? ` / ${row.usageLimit}` : ""}
+                    </span>
+                  ),
+                  discountGiven: <span className="tabular-nums">{formatEgp(row.discountGiven)}</span>,
+                  state: (
+                    <Badge variant={couponState === "active" ? "default" : "secondary"}>
+                      {COUPON_STATE_LABELS[couponState]}
+                    </Badge>
+                  ),
+                  expiresAt: (
+                    <span className="whitespace-nowrap text-xs text-muted-foreground">
+                      {formatCouponDate(row.startsAt)} → {formatCouponDate(row.expiresAt)}
+                    </span>
+                  ),
+                  actions: row.isActive ? (
+                    <ReasonActionButton
+                      label="Deactivate"
+                      title={`Deactivate ${row.code}?`}
+                      description="Customers can no longer use this coupon in any of this seller's stores. The seller is not notified automatically."
+                      confirmLabel="Deactivate"
+                      destructive
+                      payload={{ couponId: row.id, active: false }}
+                      action={toggleSellerCouponAction}
+                    />
+                  ) : (
+                    <ReasonActionButton
+                      label="Reactivate"
+                      title={`Reactivate ${row.code}?`}
+                      confirmLabel="Reactivate"
+                      payload={{ couponId: row.id, active: true }}
+                      action={toggleSellerCouponAction}
+                    />
+                  ),
+                },
+              };
+            })}
+          />
           <AdminPager page={page} pages={pageCount(total)} href={(p) => link({ page: p })} />
         </CardContent>
       </Card>

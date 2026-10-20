@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { load } from "cheerio";
 import { z } from "zod";
+import { createClient } from "@/supabase/server";
 
 const bodySchema = z.object({
   url: z.string().url(),
@@ -553,6 +554,13 @@ export async function POST(request: NextRequest) {
         { error: "URL is required" },
         { status: 400 }
       );
+    }
+
+    // `api/` is outside the proxy matcher, so this route checks the session itself.
+    const supabase = await createClient();
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { url, locale } = parsed.data;

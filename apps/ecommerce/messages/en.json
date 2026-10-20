@@ -2416,36 +2416,6 @@
       "ho": "Home",
       "ac": "Accessories"
     },
-    "items": {
-      "classic": {
-        "desc": "The default for every new store",
-        "long": "Simple and modern, with calm colours, rounded cards and six ready pages. Every new store starts with it, and you can change any part in the editor."
-      },
-      "volt": {
-        "desc": "For electronics and gadgets",
-        "long": "A dark, precise template for tech products. Deep backgrounds make product shots glow, and tidy cards put specs and price up front."
-      },
-      "atelier": {
-        "desc": "For apparel and local labels",
-        "long": "A calm editorial template with sharp corners and large imagery, made for labels that tell the story behind each collection."
-      },
-      "glow": {
-        "desc": "For skincare and makeup",
-        "long": "A soft template with rounded corners and warm tones, for skincare and beauty brands that want a clean, gentle feel."
-      },
-      "nook": {
-        "desc": "For home and kitchen",
-        "long": "A warm, natural-toned template for homeware and kitchen goods, with room for product photos and how-to-use notes."
-      },
-      "charm": {
-        "desc": "For jewelry and accessories",
-        "long": "A luxe template on black with gold accents that makes small pieces feel important."
-      },
-      "tick": {
-        "desc": "For smartwatches and phones",
-        "long": "A bright, clean template with a bold accent, built for products customers compare before buying."
-      }
-    },
     "hero": {
       "eyebrow": "Store templates",
       "title": "Pick a look. <em>Make it yours.</em>",
@@ -2456,7 +2426,6 @@
     },
     "count": "{count, plural, one {# template} other {# templates}}",
     "previewTemplate": "Preview template",
-    "soon": "Coming soon",
     "blankTitle": "Start from blank",
     "blankBody": "An empty page. Arrange sections yourself.",
     "blankCta": "Start blank",
@@ -2477,28 +2446,15 @@
       "device": "Device",
       "desktop": "Desktop",
       "mobile": "Mobile",
-      "color": "Color",
-      "colorN": "Color {n}",
-      "corners": "Corners",
-      "sharp": "Sharp",
-      "soft": "Soft",
-      "round": "Round",
-      "start": "Start with this look",
       "about": "About this template",
       "pages": "Pages included",
-      "pHome": "Home page",
-      "pCollection": "Collection and search",
-      "pProduct": "Product page with variants",
-      "pCart": "Cart and checkout",
-      "pPolicies": "About, contact and policies",
       "details": "Details",
       "bestFor": "Best for",
-      "font": "Font",
-      "colorOptions": "Color options",
       "price": "Price",
       "free": "Free",
       "more": "More templates",
-      "soon": "Coming soon"
+      "pageCount": "Pages",
+      "colors": "Colors"
     }
   },
   "pricing": {

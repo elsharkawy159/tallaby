@@ -207,7 +207,8 @@ export function ButtonLink({
         "inline-flex h-11 items-center justify-center rounded-(--sf-radius,12px) px-6 text-sm font-semibold transition-opacity hover:opacity-90",
         variant === "solid" && "bg-(--sf-brand) text-(--sf-brand-ink,#fff)",
         variant === "outline" && "border border-(--sf-line) bg-(--sf-paper) text-(--sf-ink)",
-        variant === "light" && "bg-white text-(--sf-ink)",
+        // A white button always needs dark text: the theme ink is light on dark themes.
+        variant === "light" && "bg-white text-neutral-900",
       )}
     >
       {label}

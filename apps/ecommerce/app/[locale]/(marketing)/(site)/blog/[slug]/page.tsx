@@ -19,8 +19,8 @@ import { localizedUrl, pageMetadata } from "@/lib/marketing/metadata.lib";
 type Props = { params: Promise<{ locale: string; slug: string }> };
 
 /**
- * One blog post. Posts come from the platform store's CMS when it has any for
- * this locale, otherwise from the static list (lib/marketing/blog.server.ts),
+ * One blog post. Posts come from the admin-written platform blog when it has any
+ * for this locale, otherwise from the static list (lib/marketing/blog.server.ts),
  * so slugs are resolved on demand and cached with the posts' cache tags.
  */
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

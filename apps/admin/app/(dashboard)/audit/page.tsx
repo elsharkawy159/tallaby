@@ -4,19 +4,13 @@ import { Button } from "@workspace/ui/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card";
 import { Input } from "@workspace/ui/components/input";
 import { Skeleton } from "@workspace/ui/components/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@workspace/ui/components/table";
 import { logServerError } from "@workspace/db/log";
 import { ADMIN_AUDIT_ACTIONS, firstParam, pageCount, parseAdminListParams, pickEnum } from "@workspace/lib/admin";
-import { listAdminAuditForAdmin, type AdminAuditListInput } from "@workspace/lib/admin/server";
+import { AUDIT_SORT_IDS, listAdminAuditForAdmin, type AdminAuditListInput } from "@workspace/lib/admin/server";
 import { getCurrentAdminUser } from "@/lib/auth/admin-auth";
 import { AdminPager, buildHref } from "../_components/admin-pager";
+import { AdminTable, type AdminTableColumn } from "../_components/admin-table/admin-table";
+import { SORT_PARAM, parseSortParam } from "../_components/admin-table/admin-table.lib";
 import { auditActionLabel, describeChange } from "../sellers/[id]/seller-admin.lib";
 import { formatAdminDate } from "../stores/stores.lib";
 
@@ -25,6 +19,15 @@ export const dynamic = "force-dynamic";
 interface PageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
+
+const AUDIT_COLUMNS: AdminTableColumn[] = [
+  { id: "createdAt", header: "When", sortable: true, descFirst: true },
+  { id: "action", header: "Action", sortable: true },
+  { id: "target", header: "Target", sortable: true },
+  { id: "change", header: "Change" },
+  { id: "reason", header: "Reason" },
+  { id: "actor", header: "By", sortable: true },
+];
 
 /** Every audited admin change, newest first (docs/admin-saas.md §3.11). Read-only. */
 export default async function AuditPage({ searchParams }: PageProps) {
@@ -36,9 +39,19 @@ export default async function AuditPage({ searchParams }: PageProps) {
     action: pickEnum(params.action, ADMIN_AUDIT_ACTIONS),
     sellerId: firstParam(params.seller),
     scope: firstParam(params.scope) === "platform" ? "platform" : null,
+    sort: parseSortParam(params[SORT_PARAM], AUDIT_SORT_IDS),
   };
+  const sortParam = firstParam(params[SORT_PARAM]);
   const link = (next: Record<string, string | number | null>) =>
-    buildHref("/audit", { q, action: input.action, seller: input.sellerId, scope: input.scope, page: null, ...next });
+    buildHref("/audit", {
+      q,
+      action: input.action,
+      seller: input.sellerId,
+      scope: input.scope,
+      sort: sortParam,
+      page: null,
+      ...next,
+    });
 
   return (
     <div className="space-y-6">
@@ -72,6 +85,7 @@ export default async function AuditPage({ searchParams }: PageProps) {
           </select>
           {input.scope && <input type="hidden" name="scope" value={input.scope} />}
           {input.sellerId && <input type="hidden" name="seller" value={input.sellerId} />}
+          {sortParam && <input type="hidden" name="sort" value={sortParam} />}
           <Input name="q" defaultValue={q ?? ""} placeholder="Reason, seller or admin" className="h-8 w-56" />
           <Button type="submit" size="sm" variant="outline">
             Filter
@@ -106,59 +120,52 @@ async function AuditTable({
         <CardTitle className="text-base">{data.total.toLocaleString()} entries</CardTitle>
       </CardHeader>
       <CardContent>
-        {data.rows.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">No entries.</p>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>When</TableHead>
-                <TableHead>Action</TableHead>
-                <TableHead>Target</TableHead>
-                <TableHead>Change</TableHead>
-                <TableHead>Reason</TableHead>
-                <TableHead>By</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data.rows.map((row) => (
-                <TableRow key={row.id} className="align-top">
-                  <TableCell className="whitespace-nowrap text-xs text-muted-foreground">{formatAdminDate(row.createdAt)}</TableCell>
-                  <TableCell className="text-sm font-medium">
-                    <Link href={link({ action: row.action })} className="hover:underline">
-                      {auditActionLabel(row.action)}
-                    </Link>
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    {row.sellerId ? (
-                      <>
-                        <Link href={`/sellers/${row.sellerId}`} className="hover:underline">
-                          {row.sellerName ?? "Seller"}
-                        </Link>
-                        {row.storeId && (
-                          <div>
-                            <Link href={`/stores/${row.storeId}`} className="text-xs text-muted-foreground hover:underline">
-                              {row.storeName ?? "Store"}
-                            </Link>
-                          </div>
-                        )}
-                      </>
-                    ) : (
-                      <span className="text-muted-foreground">
-                        {row.targetType ?? "platform"}: {row.targetId ?? "—"}
-                      </span>
-                    )}
-                  </TableCell>
-                  <TableCell className="max-w-72 text-xs text-muted-foreground">
-                    {describeChange(row.before)} → {describeChange(row.after)}
-                  </TableCell>
-                  <TableCell className="max-w-72 text-sm">{row.reason}</TableCell>
-                  <TableCell className="text-xs text-muted-foreground">{row.actorName ?? "—"}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
+        <AdminTable
+          sortMode="url"
+          columns={AUDIT_COLUMNS}
+          emptyMessage="No entries."
+          rows={data.rows.map((row) => ({
+            id: row.id,
+            className: "align-top",
+            cells: {
+              createdAt: <span className="whitespace-nowrap text-xs text-muted-foreground">{formatAdminDate(row.createdAt)}</span>,
+              action: (
+                <Link href={link({ action: row.action })} className="text-sm font-medium hover:underline">
+                  {auditActionLabel(row.action)}
+                </Link>
+              ),
+              target: (
+                <div className="text-sm">
+                  {row.sellerId ? (
+                    <>
+                      <Link href={`/sellers/${row.sellerId}`} className="hover:underline">
+                        {row.sellerName ?? "Seller"}
+                      </Link>
+                      {row.storeId && (
+                        <div>
+                          <Link href={`/stores/${row.storeId}`} className="text-xs text-muted-foreground hover:underline">
+                            {row.storeName ?? "Store"}
+                          </Link>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-muted-foreground">
+                      {row.targetType ?? "platform"}: {row.targetId ?? "—"}
+                    </span>
+                  )}
+                </div>
+              ),
+              change: (
+                <div className="max-w-72 text-xs text-muted-foreground">
+                  {describeChange(row.before)} → {describeChange(row.after)}
+                </div>
+              ),
+              reason: <div className="max-w-72 text-sm">{row.reason}</div>,
+              actor: <span className="text-xs text-muted-foreground">{row.actorName ?? "—"}</span>,
+            },
+          }))}
+        />
         <AdminPager page={input.page} pages={pageCount(data.total)} href={(p) => link({ page: p })} />
       </CardContent>
     </Card>

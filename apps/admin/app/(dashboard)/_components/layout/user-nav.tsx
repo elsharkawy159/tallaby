@@ -3,12 +3,10 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import {
-  Bell,
   ChevronRight,
   CreditCard,
   LogOut,
   Settings,
-  User,
 } from 'lucide-react'
 import {
   Avatar,
@@ -34,9 +32,8 @@ const ROLE_LABELS: Record<string, string> = {
 }
 
 const NAV_ITEMS = [
-  { href: '/settings/profile', label: 'Profile', icon: User },
-  { href: '/financial', label: 'Billing', icon: CreditCard },
   { href: '/settings', label: 'Settings', icon: Settings },
+  { href: '/payments', label: 'Payments', icon: CreditCard },
 ] as const
 
 function getInitials(name?: string, email?: string): string {
@@ -149,24 +146,6 @@ export function UserNav({ user }: { user: AdminUser }) {
               <ChevronRight className="size-3.5 text-muted-foreground/50 transition-transform group-hover:translate-x-0.5 group-hover:text-muted-foreground" />
             </Link>
           ))}
-
-          <button
-            type="button"
-            onClick={() => setOpen(false)}
-            className={cn(
-              'group flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm',
-              'text-foreground transition-colors',
-              'hover:bg-muted focus-visible:bg-muted focus-visible:outline-none',
-            )}
-          >
-            <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground transition-colors group-hover:bg-background group-hover:text-foreground">
-              <Bell className="size-3.5" />
-            </span>
-            <span className="flex-1 text-left font-medium">Notifications</span>
-            <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
-              Soon
-            </span>
-          </button>
         </nav>
 
         <Separator />

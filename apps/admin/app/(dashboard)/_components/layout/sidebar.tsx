@@ -14,14 +14,14 @@ import {
   SheetTitle,
 } from "@workspace/ui/components/sheet";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import type { SidebarCounts, SidebarProps } from "./sidebar.types";
+import type { SidebarCounts, SidebarProps, SidebarUser } from "./sidebar.types";
 import { SIDEBAR_COUNT_BADGE_CLASS } from "./sidebar.types";
 import { useMobileNav } from "./mobile-nav";
 import { activeHref, visibleSections } from "./sidebar.config";
 
 const sections = visibleSections();
 
-export default function Sidebar({ counts }: SidebarProps) {
+export default function Sidebar({ counts, user }: SidebarProps) {
   const [expanded, setExpanded] = useState(true);
   const { open, setOpen } = useMobileNav();
 
@@ -52,7 +52,7 @@ export default function Sidebar({ counts }: SidebarProps) {
         <ScrollArea className="min-h-0 flex-1">
           <SidebarNav counts={counts} expanded={expanded} />
         </ScrollArea>
-        <SidebarFooter expanded={expanded} />
+        <SidebarFooter expanded={expanded} user={user} />
       </div>
 
       {/* Mobile drawer */}
@@ -69,7 +69,7 @@ export default function Sidebar({ counts }: SidebarProps) {
           <ScrollArea className="min-h-0 flex-1">
             <SidebarNav counts={counts} expanded />
           </ScrollArea>
-          <SidebarFooter expanded />
+          <SidebarFooter expanded user={user} />
         </SheetContent>
       </Sheet>
     </>
@@ -150,17 +150,17 @@ function SidebarNav({
   );
 }
 
-function SidebarFooter({ expanded }: { expanded: boolean }) {
+function SidebarFooter({ expanded, user }: { expanded: boolean; user: SidebarUser }) {
   return (
     <div className="border-t border-sidebar-border p-4">
-      <div className="flex items-center">
-        <div className="flex size-8 items-center justify-center rounded-full bg-primary font-semibold text-primary-foreground">
-          A
+      <div className="flex items-center" title={expanded ? undefined : user.email}>
+        <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary font-semibold uppercase text-primary-foreground">
+          {user.name.charAt(0) || "A"}
         </div>
         {expanded && (
-          <div className="ml-3">
-            <p className="text-sm font-medium">Admin User</p>
-            <p className="text-xs text-muted-foreground">admin@example.com</p>
+          <div className="ml-3 min-w-0">
+            <p className="truncate text-sm font-medium">{user.name}</p>
+            <p className="truncate text-xs text-muted-foreground">{user.email}</p>
           </div>
         )}
       </div>

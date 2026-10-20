@@ -24,6 +24,18 @@ export const STORE_FONTS = [
   { name: "El Messiri", cssVar: "--font-sf-el-messiri" },
   // Naskh serif with Latin glyphs: the editorial display face (Atelier template).
   { name: "Amiri", cssVar: "--font-sf-amiri" },
+  // The storefront templates 02–38 (Claude Design "Storefront Templates", 2026-10-20):
+  // the Arabic-and-Latin faces their designs name.
+  { name: "Rubik", cssVar: "--font-sf-rubik" },
+  { name: "Noto Sans Arabic", cssVar: "--font-sf-noto-sans-arabic" },
+  { name: "Alexandria", cssVar: "--font-sf-alexandria" },
+  { name: "Changa", cssVar: "--font-sf-changa" },
+  { name: "Noto Naskh Arabic", cssVar: "--font-sf-noto-naskh" },
+  { name: "Lalezar", cssVar: "--font-sf-lalezar" },
+  { name: "Aref Ruqaa", cssVar: "--font-sf-aref-ruqaa" },
+  { name: "Reem Kufi", cssVar: "--font-sf-reem-kufi" },
+  { name: "Baloo Bhaijaan 2", cssVar: "--font-sf-baloo-bhaijaan" },
+  { name: "Lemonada", cssVar: "--font-sf-lemonada" },
 ] as const satisfies readonly StoreFont[];
 
 export type StoreFontName = (typeof STORE_FONTS)[number]["name"];

@@ -21,8 +21,15 @@ export interface SidebarCounts {
   failingDomains: number;
 }
 
+/** The signed-in admin, shown in the sidebar footer. */
+export interface SidebarUser {
+  name: string;
+  email: string;
+}
+
 export interface SidebarProps {
   counts: SidebarCounts;
+  user: SidebarUser;
 }
 
 export const SIDEBAR_COUNT_BADGE_CLASS =

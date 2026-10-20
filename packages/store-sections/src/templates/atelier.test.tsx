@@ -145,7 +145,7 @@ describe("Atelier template", () => {
   });
 
   it("is listed by key, with every design id prefixed", () => {
-    expect(CODE_TEMPLATES.map((t) => t.key)).toEqual(["tallaby-classic", "atelier"]);
+    expect(CODE_TEMPLATES.map((t) => t.key).slice(0, 2)).toEqual(["tallaby-classic", "atelier"]);
     expect(getCodeTemplate("atelier")).toBe(ATELIER);
     expect(ATELIER_DESIGNS.every((d) => d.id.startsWith("atelier-"))).toBe(true);
   });

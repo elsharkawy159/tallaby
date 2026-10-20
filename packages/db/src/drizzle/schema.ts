@@ -3175,3 +3175,50 @@ export const newsletterSubscribers = pgTable("newsletter_subscribers", {
 	check("newsletter_subscribers_source_check", sql`source ~ '^[a-z][a-z_-]{1,31}$'`),
 	check("newsletter_subscribers_status_check", sql`status IN ('subscribed', 'unsubscribed')`),
 ]);
+
+/**
+ * tallaby.com blog posts written in the admin app (0073). Platform content, not
+ * a store blog. One row holds both languages; live when status = 'published'
+ * and published_at <= now(). Server-only: RLS on, no policies.
+ */
+export const platformBlogPosts = pgTable("platform_blog_posts", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	slug: text().notNull(),
+	/** 'guides' | 'growth' | 'stories' | 'payments' | 'product' */
+	category: text().default('guides').notNull(),
+	titleAr: text("title_ar").default('').notNull(),
+	titleEn: text("title_en").default('').notNull(),
+	excerptAr: text("excerpt_ar").default('').notNull(),
+	excerptEn: text("excerpt_en").default('').notNull(),
+	/** Sanitized rich-text HTML (sanitized again on render). */
+	bodyAr: text("body_ar").default('').notNull(),
+	bodyEn: text("body_en").default('').notNull(),
+	/** `platform-blog` bucket path or absolute URL. */
+	coverImage: text("cover_image"),
+	authorName: text("author_name"),
+	tags: text().array().default([]).notNull(),
+	readingMinutes: integer("reading_minutes"),
+	/** { titleAr, titleEn, descriptionAr, descriptionEn, ogImage, noindex } */
+	seo: jsonb().default({}).notNull(),
+	/** 'draft' | 'published' */
+	status: text().default('draft').notNull(),
+	publishedAt: timestamp("published_at", { withTimezone: true, mode: 'string' }),
+	createdBy: uuid("created_by"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("platform_blog_posts_slug_key").using("btree", table.slug.asc().nullsLast().op("text_ops")),
+	index("platform_blog_posts_published_idx").using("btree", table.status.asc().nullsLast().op("text_ops"), table.publishedAt.desc().nullsFirst().op("timestamptz_ops")),
+	foreignKey({
+			columns: [table.createdBy],
+			foreignColumns: [users.id],
+			name: "platform_blog_posts_created_by_fkey"
+		}).onDelete("set null"),
+	check("platform_blog_posts_slug_check", sql`slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$' AND length(slug) <= 200`),
+	check("platform_blog_posts_category_check", sql`category IN ('guides', 'growth', 'stories', 'payments', 'product')`),
+	check("platform_blog_posts_status_check", sql`status IN ('draft', 'published')`),
+	check("platform_blog_posts_published_check", sql`status = 'draft' OR (published_at IS NOT NULL AND (title_ar <> '' OR title_en <> ''))`),
+	check("platform_blog_posts_reading_minutes_check", sql`reading_minutes IS NULL OR reading_minutes BETWEEN 1 AND 600`),
+	check("platform_blog_posts_seo_check", sql`jsonb_typeof(seo) = 'object'`),
+	pgPolicy("platform_blog_posts: admins manage", { as: "permissive", for: "all", to: ["authenticated"], using: sql`(SELECT public.is_platform_admin())`, withCheck: sql`(SELECT public.is_platform_admin())` }),
+]);

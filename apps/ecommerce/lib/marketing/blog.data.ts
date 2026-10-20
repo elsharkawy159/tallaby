@@ -34,8 +34,8 @@ export function findPost(id: string): BlogPost | undefined {
 
 /**
  * A post as the marketing blog renders it. `static` posts take their copy from
- * messages; `cms` posts come from the platform store's blog collection
- * (`blog.server.ts`) and carry their own title, excerpt and sanitized-on-render body.
+ * messages; `cms` posts come from the admin-written platform blog
+ * (`blog.server.ts`, 0073) and carry their own title, excerpt and sanitized-on-render body.
  */
 export type MarketingPost = BlogPost & {
   source: "static" | "cms";

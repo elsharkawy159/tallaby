@@ -25,6 +25,9 @@ export const AUDIT_ACTION_LABELS: Record<AdminAuditAction, string> = {
   set_ad_status: "Ad request status changed",
   update_template: "Template updated",
   set_default_template: "Default template changed",
+  create_blog_post: "Blog post created",
+  update_blog_post: "Blog post edited",
+  delete_blog_post: "Blog post deleted",
 };
 
 export function auditActionLabel(action: string): string {

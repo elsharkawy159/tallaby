@@ -1,8 +1,9 @@
 /** Every admin_audit_log row, newest first (docs/admin-saas.md §3.11). Read-only. */
-import { adminAuditLog, and, db, desc, eq, sellers, sql, stores, users } from "@workspace/db";
+import { adminAuditLog, and, db, eq, sellers, sql, stores, users } from "@workspace/db";
 import type { SQL } from "drizzle-orm";
 import { ADMIN_AUDIT_ACTIONS, type AdminAuditAction } from "./admin.lib";
 import type { Queryable } from "./guard.server";
+import { adminOrderBy, type AdminListSort } from "./list-sort.server";
 import { ADMIN_LIST_PAGE_SIZE, isUuid, likePattern } from "./saas.lib";
 
 export interface AdminAuditListInput {
@@ -12,7 +13,18 @@ export interface AdminAuditListInput {
   scope: "platform" | null;
   q: string | null;
   page: number;
+  /** An id from AUDIT_SORT_IDS; default newest first. */
+  sort?: AdminListSort | null;
 }
+
+export const AUDIT_SORT_IDS = ["createdAt", "action", "target", "actor"] as const;
+
+const AUDIT_SORT_COLUMNS: Record<(typeof AUDIT_SORT_IDS)[number], SQL> = {
+  createdAt: sql`${adminAuditLog.createdAt}`,
+  action: sql`${adminAuditLog.action}`,
+  target: sql`lower(coalesce(${stores.name}, ${sellers.businessName}))`,
+  actor: sql`lower(coalesce(${users.fullName}, ${users.email}))`,
+};
 
 export async function listAdminAuditForAdmin(input: AdminAuditListInput, q: Queryable = db) {
   const conditions: SQL[] = [];
@@ -49,7 +61,9 @@ export async function listAdminAuditForAdmin(input: AdminAuditListInput, q: Quer
     .leftJoin(stores, eq(stores.id, adminAuditLog.storeId))
     .leftJoin(users, eq(users.id, adminAuditLog.actorId))
     .where(conditions.length ? and(...conditions) : undefined)
-    .orderBy(desc(adminAuditLog.createdAt), desc(adminAuditLog.id))
+    .orderBy(
+      adminOrderBy(input.sort, AUDIT_SORT_COLUMNS, sql`${adminAuditLog.createdAt} DESC`, sql`${adminAuditLog.id} DESC`),
+    )
     .limit(ADMIN_LIST_PAGE_SIZE)
     .offset((input.page - 1) * ADMIN_LIST_PAGE_SIZE);
 

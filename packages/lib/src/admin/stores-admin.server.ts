@@ -32,6 +32,7 @@ import {
 import type { SQL } from "drizzle-orm";
 import { parseStorePayments } from "../payments/store-methods";
 import { assertAdminActor, AdminActorError, writeAdminAudit, type Queryable } from "./guard.server";
+import { adminOrderBy, type AdminListSort } from "./list-sort.server";
 import {
   ADMIN_LIST_PAGE_SIZE,
   cmsUnpublishSchema,
@@ -49,7 +50,22 @@ export interface AdminStoreListInput {
   template: string | null;
   sellerId: string | null;
   page: number;
+  /** An id from STORE_SORT_IDS; default newest first. */
+  sort?: AdminListSort | null;
 }
+
+/** Sortable columns of the store directory. */
+export const STORE_SORT_IDS = ["name", "seller", "host", "site", "template", "products", "lastPublishedAt"] as const;
+
+const STORE_SORT_COLUMNS: Record<(typeof STORE_SORT_IDS)[number], SQL> = {
+  name: sql`lower(st.name)`,
+  seller: sql`lower(coalesce(nullif(s.display_name, ''), s.business_name))`,
+  host: sql`coalesce(CASE WHEN d.status = 'active' THEN d.domain END, st.subdomain)`,
+  site: sql`st.site_status`,
+  template: sql`st.template_key`,
+  products: sql`product_count`,
+  lastPublishedAt: sql`st.last_published_at`,
+};
 
 /** All stores (not deleted) with seller, host, domain, site and catalog facts. One round trip. */
 export async function listStoresForAdmin(input: AdminStoreListInput, q: Queryable = db) {
@@ -84,7 +100,7 @@ export async function listStoresForAdmin(input: AdminStoreListInput, q: Queryabl
       WHERE cd.store_id = st.id ORDER BY (cd.status = 'active') DESC, cd.created_at LIMIT 1
     ) d ON true
     WHERE ${sql.join(conditions, sql` AND `)}
-    ORDER BY st.created_at DESC, st.id
+    ORDER BY ${adminOrderBy(input.sort, STORE_SORT_COLUMNS, sql`st.created_at DESC`, sql`st.id`)}
     LIMIT ${ADMIN_LIST_PAGE_SIZE} OFFSET ${offset}
   `);
   const raw = [...result] as Record<string, unknown>[];

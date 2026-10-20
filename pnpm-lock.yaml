@@ -62,6 +62,9 @@ importers:
       '@workspace/lib':
         specifier: workspace:*
         version: link:../../packages/lib
+      '@workspace/tiptap':
+        specifier: workspace:*
+        version: link:../../packages/tiptap
       '@workspace/ui':
         specifier: workspace:^
         version: link:../../packages/ui

@@ -11,12 +11,13 @@ const noop = () => () => {}
  *
  * Seller storefronts share the root layout, so Tallaby's own tracking checks
  * the host in the browser. Nothing is rendered on the server, which keeps it
- * out of storefront HTML while the layout stays static.
+ * out of storefront HTML while the layout stays static. Template preview
+ * frames on tallaby.com (/template-preview) are not page views either.
  */
 export function useIsMarketplaceHost (): boolean {
   return useSyncExternalStore(
     noop,
-    () => isMarketplaceHost(window.location.host),
+    () => isMarketplaceHost(window.location.host) && window.self === window.top,
     () => false,
   )
 }

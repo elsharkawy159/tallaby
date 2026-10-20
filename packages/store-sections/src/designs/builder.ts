@@ -114,12 +114,18 @@ function withDefaults(type: ElementType, opts: NodeOptions = {}): NodeOptions {
   };
 }
 
+/** Photos a template puts in a library design's `photo(i)` / `person(i)` slots, by index. */
+export type DesignPhotos = { photo?: readonly (string | undefined)[]; person?: readonly (string | undefined)[] };
+
 /**
  * The `t` helpers. `industry` picks the default photos (`./stock-photos.ts`)
- * that `photo`/`person` put in; everything else is the same for every store.
+ * that `photo`/`person` put in, unless `photos` has one for that index;
+ * everything else is the same for every store.
  */
-export function createTreeBuilder(industry?: string) {
+export function createTreeBuilder(industry?: string, photos?: DesignPhotos) {
   const image = (src: string, alt: DesignText, opts?: NodeOptions) => make("image", { src, alt }, withDefaults("image", opts));
+  const stock = (index: number) => photos?.photo?.[index] ?? stockPhoto(industry, index);
+  const people = (index: number) => photos?.person?.[index] ?? peoplePhoto(index);
   /** Columns per device as styles, like `grid`. */
   const columned = (type: ElementType, props: Record<string, DesignText | boolean | undefined>, opts: GridOptions, children: NodeTemplate[]) => {
     const { columns, ...rest } = opts;
@@ -177,15 +183,15 @@ export function createTreeBuilder(industry?: string) {
       make("button", { label, href, variant }, opts),
     image,
     /** Default photo `index` for the store's industry. */
-    photo: (index: number, alt: DesignText, opts?: NodeOptions) => image(stockPhoto(industry, index), alt, opts),
+    photo: (index: number, alt: DesignText, opts?: NodeOptions) => image(stock(index), alt, opts),
     /** Default photo of people (owner, team, packing). */
-    person: (index: number, alt: DesignText, opts?: NodeOptions) => image(peoplePhoto(index), alt, opts),
+    person: (index: number, alt: DesignText, opts?: NodeOptions) => image(people(index), alt, opts),
     /**
      * A YouTube player (link set by the seller). `poster` is the default photo
      * `index`, shown on the canvas until a link is pasted.
      */
     video: (poster: number, title: DesignText, opts?: NodeOptions) =>
-      make("video", { url: "", thumbnail: "auto", controls: true, poster: stockPhoto(industry, poster), title }, withDefaults("video", opts)),
+      make("video", { url: "", thumbnail: "auto", controls: true, poster: stock(poster), title }, withDefaults("video", opts)),
     /**
      * A playlist: a player beside (or above) its list. Each video gets its
      * link from the seller; `poster` is a default photo used as its thumbnail.
@@ -198,7 +204,7 @@ export function createTreeBuilder(industry?: string) {
         "videoPlaylist",
         { listPosition: opts?.listPosition ?? "end", controls: true },
         withDefaults("videoPlaylist", opts),
-        videos.map((v) => make("videoItem", { url: "", title: v.title, duration: v.duration, poster: stockPhoto(industry, v.poster) })),
+        videos.map((v) => make("videoItem", { url: "", title: v.title, duration: v.duration, poster: stock(v.poster) })),
       ),
     quote: (text: DesignText, opts?: NodeOptions) => make("blockQuote", { text }, opts),
     textLink: (text: DesignText, href: string, opts?: NodeOptions) => make("textLink", { text, href }, opts),

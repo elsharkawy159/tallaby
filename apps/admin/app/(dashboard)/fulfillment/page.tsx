@@ -5,14 +5,6 @@ import { Button } from "@workspace/ui/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card";
 import { Input } from "@workspace/ui/components/input";
 import { Skeleton } from "@workspace/ui/components/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@workspace/ui/components/table";
 import { cn } from "@workspace/ui/lib/utils";
 import {
   FULFILLMENT_REVIEW_STATUSES,
@@ -24,6 +16,7 @@ import {
   type FulfillmentQueueFilters,
 } from "@workspace/lib/fulfillment";
 import { AdminPager } from "../_components/admin-pager";
+import { AdminTable, type AdminTableColumn } from "../_components/admin-table/admin-table";
 import { getFulfillmentSellerQueue } from "./fulfillment.data";
 import {
   MODEL_LABELS,
@@ -39,6 +32,16 @@ export const dynamic = "force-dynamic";
 interface PageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
+
+const QUEUE_COLUMNS: AdminTableColumn[] = [
+  { id: "seller", header: "Seller", sortable: true },
+  { id: "setup", header: "Setup", sortable: true },
+  { id: "services", header: "Services" },
+  { id: "openCount", header: "Open", sortable: true, descFirst: true, align: "end" },
+  // Oldest first: an earlier date is the longer wait.
+  { id: "oldestOpenAt", header: "Oldest open", sortable: true },
+  { id: "updatedAt", header: "Updated", sortable: true, descFirst: true },
+];
 
 const STATE_LABELS = { open: "Open requests", active: "Active services", all: "All sellers" } as const;
 
@@ -119,24 +122,23 @@ async function QueueTable({ filters }: { filters: FulfillmentQueueFilters }) {
       <CardContent>
         {failed ? (
           <p className="py-10 text-center text-sm text-destructive">The queue could not be loaded. Try again.</p>
-        ) : rows.length === 0 ? (
-          <p className="py-10 text-center text-sm text-muted-foreground">No sellers match these filters.</p>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Seller</TableHead>
-                <TableHead>Setup</TableHead>
-                <TableHead>Services</TableHead>
-                <TableHead className="text-right">Open</TableHead>
-                <TableHead>Oldest open</TableHead>
-                <TableHead>Updated</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((row) => (
-                <TableRow key={row.sellerId} className="relative">
-                  <TableCell>
+          <AdminTable
+            columns={QUEUE_COLUMNS}
+            emptyMessage="No sellers match these filters."
+            rows={rows.map((row) => ({
+              id: row.sellerId,
+              className: "relative",
+              sortValues: {
+                seller: row.businessName,
+                setup: row.model ? MODEL_LABELS[row.model] : null,
+                openCount: row.openCount,
+                oldestOpenAt: row.oldestOpenAt,
+                updatedAt: row.updatedAt,
+              },
+              cells: {
+                seller: (
+                  <>
                     <Link
                       href={`/fulfillment/${row.sellerId}${detailQuery}`}
                       className="font-medium after:absolute after:inset-0 hover:underline"
@@ -146,46 +148,48 @@ async function QueueTable({ filters }: { filters: FulfillmentQueueFilters }) {
                     <div className="text-xs text-muted-foreground" dir="ltr">
                       {row.supportPhone ?? row.email ?? ""}
                     </div>
-                  </TableCell>
-                  <TableCell className="text-sm">
+                  </>
+                ),
+                setup: (
+                  <div className="text-sm">
                     {row.model ? MODEL_LABELS[row.model] : <span className="text-muted-foreground">No profile</span>}
                     {row.reviewStatus && (
                       <div className="text-xs text-muted-foreground">{REVIEW_LABELS[row.reviewStatus]}</div>
                     )}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1">
-                      {serviceChips(row.services).map(({ serviceType, service }) => (
-                        <Badge
-                          key={serviceType}
-                          variant="outline"
-                          title={service ? `${SERVICE_LABELS[serviceType]}: ${STATUS_LABELS[service.status]}` : `${SERVICE_LABELS[serviceType]}: not requested`}
-                          className={cn(
-                            "font-normal",
-                            service ? STATUS_CLASSES[service.status] : "border-dashed text-muted-foreground",
-                            filters.service === serviceType && "ring-2 ring-primary/40",
-                          )}
-                        >
-                          {SERVICE_LABELS[serviceType]}
-                        </Badge>
-                      ))}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums">{row.openCount || "—"}</TableCell>
-                  <TableCell className="whitespace-nowrap text-sm">
+                  </div>
+                ),
+                services: (
+                  <div className="flex flex-wrap gap-1">
+                    {serviceChips(row.services).map(({ serviceType, service }) => (
+                      <Badge
+                        key={serviceType}
+                        variant="outline"
+                        title={service ? `${SERVICE_LABELS[serviceType]}: ${STATUS_LABELS[service.status]}` : `${SERVICE_LABELS[serviceType]}: not requested`}
+                        className={cn(
+                          "font-normal",
+                          service ? STATUS_CLASSES[service.status] : "border-dashed text-muted-foreground",
+                          filters.service === serviceType && "ring-2 ring-primary/40",
+                        )}
+                      >
+                        {SERVICE_LABELS[serviceType]}
+                      </Badge>
+                    ))}
+                  </div>
+                ),
+                openCount: <span className="tabular-nums">{row.openCount || "—"}</span>,
+                oldestOpenAt: (
+                  <span className="whitespace-nowrap text-sm">
                     {row.oldestOpenAt ? (
                       <span title={formatDateTime(row.oldestOpenAt)}>{formatAge(row.oldestOpenAt)}</span>
                     ) : (
                       <span className="text-muted-foreground">—</span>
                     )}
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
-                    {formatDateTime(row.updatedAt)}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                  </span>
+                ),
+                updatedAt: <span className="whitespace-nowrap text-sm text-muted-foreground">{formatDateTime(row.updatedAt)}</span>,
+              },
+            }))}
+          />
         )}
         <AdminPager
           page={filters.page}

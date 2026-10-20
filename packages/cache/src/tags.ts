@@ -91,6 +91,11 @@ export const templateTags = {
   catalog: () => "template:catalog",
 } as const;
 
+/** The tallaby.com blog written in the admin app (0073). Published posts only; no seller data. */
+export const marketingBlogTags = {
+  posts: () => "marketing-blog:posts",
+} as const;
+
 /** The Tallaby fulfillment plan catalog. No seller data; seller requests are never cached. */
 export const fulfillmentTags = {
   plans: () => "fulfillment:plans",

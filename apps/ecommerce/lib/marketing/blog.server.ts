@@ -1,63 +1,42 @@
 import { cache } from "react";
 import { getTranslations } from "next-intl/server";
-import { cacheProfiles, createCachedQuery, storeTags } from "@workspace/cache";
-import { getPublicCmsItem, listPublicCmsItems } from "@workspace/lib/cms/server";
-import { cmsImageUrl } from "@/lib/store-cms/cms.lib";
-import { getStorefrontBySubdomain } from "@/lib/storefront.server";
+import { cacheProfiles, createCachedQuery, marketingBlogTags } from "@workspace/cache";
+import { PLATFORM_BLOG_BUCKET, PLATFORM_BLOG_SLUG_RE } from "@workspace/lib/platform-blog";
+import { getPublishedPlatformPost, listPublishedPlatformPosts, type PublicPlatformPost } from "@workspace/lib/platform-blog/server";
+import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { BLOG_POSTS, type MarketingPost } from "./blog.data";
-import { isPostForLocale, toMarketingPost } from "./blog.lib";
+import { platformPostToMarketing } from "./blog.lib";
 
 /**
- * The tallaby.com blog (owner, 2026-10-19). Posts are written in the dashboard
- * blog editor (P4-16) of the platform's own store, named by
- * MARKETING_BLOG_STORE_SUBDOMAIN. Only published, due posts reach these
- * functions, and saving in the dashboard purges `storeTags.cms` for that store,
- * so the blog updates without a deploy. While the variable is unset, the store
- * cannot be found, or it has no posts for the locale, the blog shows the static
- * posts in `blog.data.ts` (copy in messages).
+ * The tallaby.com blog (owner, 2026-10-19). Posts are written in the admin app
+ * (Blog) and stored in platform_blog_posts (0073), separate from store blogs.
+ * Only live posts reach these functions, and every admin save purges
+ * `marketingBlogTags.posts()`, so the blog updates without a deploy. While the
+ * table has no post for the locale (or cannot be read), the blog shows the
+ * static posts in `blog.data.ts` (copy in messages).
  */
-
-const LIST_LIMIT = 50;
 
 /** Listing entries without bodies: a cache entry must stay well under the 2 MB limit. */
 const getCachedPlatformPosts = createCachedQuery({
-  name: "marketing:blog-posts:v1",
+  name: "marketing:platform-blog-posts:v1",
   ttl: cacheProfiles.listing,
-  tags: (sellerId: string, storeId: string) => [storeTags.cms(sellerId, storeId)],
-  query: async (_sellerId: string, storeId: string): Promise<MarketingPost[]> => {
-    const { items } = await listPublicCmsItems(storeId, "blog", { limit: LIST_LIMIT });
-    return items.map((item) => ({ ...toMarketingPost(item, cmsImageUrl), html: undefined }));
-  },
+  tags: () => [marketingBlogTags.posts()],
+  query: (): Promise<PublicPlatformPost[]> => listPublishedPlatformPosts(),
 });
 
 const getCachedPlatformPost = createCachedQuery({
-  name: "marketing:blog-post:v1",
+  name: "marketing:platform-blog-post:v1",
   ttl: cacheProfiles.listing,
-  tags: (sellerId: string, storeId: string, _slug: string) => [storeTags.cms(sellerId, storeId)],
-  query: async (_sellerId: string, storeId: string, slug: string): Promise<MarketingPost | null> => {
-    const item = await getPublicCmsItem(storeId, "blog", slug);
-    return item ? toMarketingPost(item, cmsImageUrl) : null;
-  },
+  tags: (_slug: string) => [marketingBlogTags.posts()],
+  query: (slug: string): Promise<PublicPlatformPost | null> => getPublishedPlatformPost(slug),
 });
 
-const getPlatformStore = cache(async () => {
-  const subdomain = process.env.MARKETING_BLOG_STORE_SUBDOMAIN?.trim().toLowerCase();
-  if (!subdomain) return null;
-  try {
-    const store = await getStorefrontBySubdomain(subdomain);
-    return store ? { sellerId: store.id, storeId: store.storeId } : null;
-  } catch (error) {
-    console.error("[marketing] blog store lookup failed", error);
-    return null;
-  }
-});
+const imageUrl = (src: string) => getPublicUrl(src, PLATFORM_BLOG_BUCKET) || null;
 
-const getCmsPosts = cache(async (locale: string): Promise<MarketingPost[]> => {
-  const store = await getPlatformStore();
-  if (!store) return [];
+const getPlatformPosts = cache(async (locale: string): Promise<MarketingPost[]> => {
   try {
-    const posts = await getCachedPlatformPosts(store.sellerId, store.storeId);
-    return posts.filter((post) => isPostForLocale(post, locale));
+    const posts = await getCachedPlatformPosts();
+    return posts.flatMap((post) => platformPostToMarketing(post, locale, imageUrl) ?? []);
   } catch (error) {
     console.error("[marketing] blog posts failed", error);
     return [];
@@ -76,20 +55,19 @@ async function getStaticPosts(locale: string): Promise<MarketingPost[]> {
 
 /** Newest first; the first post is featured on the index. */
 export const getMarketingPosts = cache(async (locale: string): Promise<MarketingPost[]> => {
-  const cms = await getCmsPosts(locale);
-  return cms.length ? cms : getStaticPosts(locale);
+  const posts = await getPlatformPosts(locale);
+  return posts.length ? posts : getStaticPosts(locale);
 });
 
 /** One post of the blog the index shows for this locale, or null. */
 export const getMarketingPost = cache(async (locale: string, slug: string): Promise<MarketingPost | null> => {
-  const cms = await getCmsPosts(locale);
-  if (!cms.length) return (await getStaticPosts(locale)).find((post) => post.id === slug) ?? null;
+  const posts = await getPlatformPosts(locale);
+  if (!posts.length) return (await getStaticPosts(locale)).find((post) => post.id === slug) ?? null;
 
-  const store = await getPlatformStore();
-  if (!store || !/^[a-z0-9-]{1,200}$/.test(slug)) return null;
+  if (slug.length > 200 || !PLATFORM_BLOG_SLUG_RE.test(slug)) return null;
   try {
-    const post = await getCachedPlatformPost(store.sellerId, store.storeId, slug);
-    return post && isPostForLocale(post, locale) ? post : null;
+    const post = await getCachedPlatformPost(slug);
+    return post ? platformPostToMarketing(post, locale, imageUrl) : null;
   } catch (error) {
     console.error("[marketing] blog post failed", error);
     return null;

@@ -2,24 +2,26 @@
 
 import * as React from "react";
 import { Plus } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { ChoiceGroup } from "@/components/marketing/site/choice-group.client";
 import { CtaButton } from "@/components/marketing/site/cta-button";
 import { ForwardArrow } from "@/components/marketing/site/direction-icons";
 import { SignupTrigger } from "@/components/marketing/signup/signup-trigger.client";
-import { TEMPLATE_CATEGORIES, displayName, type TemplateCategory } from "@/lib/marketing/templates.data";
-import type { GalleryEntry } from "@/lib/marketing/templates.lib";
-import { SoonBadge, TemplateFrame } from "./template-card";
+import { TEMPLATE_CATEGORIES, type TemplateCategory } from "@/lib/marketing/templates.data";
+import { templateFrameSrc, type GalleryEntry } from "@/lib/marketing/templates.lib";
+import { TemplateFrame } from "./template-card";
 
 /**
  * Filterable template grid. `home`: cards with "Use this template" and a
  * preview link. `page`: whole cards link to the template, with colour
  * swatches, a count and a "start from blank" card. `entries` come from
- * getTemplateGallery (installable templates first, then "coming soon" previews).
+ * getTemplateGallery: the active templates, default first. A card shows the
+ * template's thumbnail, or its real home page live when it has none.
  */
 export function TemplateGallery({ entries, variant, heading }: { entries: GalleryEntry[]; variant: "home" | "page"; heading?: React.ReactNode }) {
   const t = useTranslations("templates");
+  const locale = useLocale();
   const th = useTranslations("home.templates");
   const [category, setCategory] = React.useState<TemplateCategory>("all");
 
@@ -52,20 +54,14 @@ export function TemplateGallery({ entries, variant, heading }: { entries: Galler
 
       <div className="grid gap-x-7 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
         {visible.map((tpl) => {
-          const name = tpl.name ?? (tpl.preview ? displayName(tpl.preview.look.name) : tpl.id);
-          const desc = tpl.description ?? (tpl.preview ? t(`items.${tpl.id}.desc`) : "");
-          const soon = tpl.status === "soon";
-          const badge = soon ? <SoonBadge>{t("soon")}</SoonBadge> : null;
+          const name = tpl.name;
+          const desc = tpl.description ?? "";
+          const liveSrc = templateFrameSrc(locale, tpl.id, undefined, true);
 
           if (variant === "home") {
             return (
               <article key={tpl.id} className="group flex flex-col gap-3.5">
-                <TemplateFrame
-                  look={tpl.preview?.look}
-                  image={tpl.thumbnailUrl}
-                  badge={badge}
-                  overlay={soon ? undefined : <SignupTrigger size="sm">{th("use")}</SignupTrigger>}
-                />
+                <TemplateFrame image={tpl.thumbnailUrl} liveSrc={liveSrc} overlay={<SignupTrigger size="sm">{th("use")}</SignupTrigger>} />
                 <div className="flex items-center justify-between gap-2.5">
                   <div>
                     <b className="block font-latin text-base text-teal-900">{name}</b>
@@ -87,9 +83,8 @@ export function TemplateGallery({ entries, variant, heading }: { entries: Galler
           return (
             <Link key={tpl.id} href={`/templates/${tpl.id}`} className="group flex flex-col gap-3.5 hover:no-underline">
               <TemplateFrame
-                look={tpl.preview?.look}
                 image={tpl.thumbnailUrl}
-                badge={badge}
+                liveSrc={liveSrc}
                 url={`${tpl.id}.tallaby.com`}
                 overlay={
                   <span className="inline-flex items-center gap-2 rounded-full bg-white px-[18px] py-2.5 text-sm font-bold text-teal-900">
@@ -104,8 +99,8 @@ export function TemplateGallery({ entries, variant, heading }: { entries: Galler
                   <small className="text-[13px] text-neutral-600">{desc}</small>
                 </div>
                 <div className="flex gap-1">
-                  {tpl.preview?.variants.map(([accent]) => (
-                    <i key={accent} className="block size-4 rounded-full shadow-[inset_0_0_0_1px_rgba(0,0,0,0.12)]" style={{ background: accent }} />
+                  {tpl.palette.slice(0, 4).map((color) => (
+                    <i key={color} className="block size-4 rounded-full shadow-[inset_0_0_0_1px_rgba(0,0,0,0.12)]" style={{ background: color }} />
                   ))}
                 </div>
               </div>

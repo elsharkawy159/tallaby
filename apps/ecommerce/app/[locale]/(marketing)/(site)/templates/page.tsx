@@ -27,7 +27,7 @@ export default async function TemplatesPage({ params }: { params: Promise<{ loca
     { icon: Languages, title: t("why.langTitle"), body: t("why.langBody") },
   ];
   const stats = [
-    { value: String(entries.filter((e) => e.status === "available").length), label: t("hero.statTemplates") },
+    { value: String(entries.length), label: t("hero.statTemplates") },
     { value: "0", label: t("hero.statFree") },
     { value: "100%", label: t("hero.statMobile") },
   ];

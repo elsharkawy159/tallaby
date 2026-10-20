@@ -3,18 +3,30 @@
  * same Vercel calls as the seller's own buttons (apps/dashboard/actions/
  * custom-domain.ts), so the admin app needs the STOREFRONT_VERCEL_* env vars.
  */
-import { and, db, desc, eq, sellerCustomDomains, sellers, sql, stores } from "@workspace/db";
+import { and, db, eq, sellerCustomDomains, sellers, sql, stores } from "@workspace/db";
 import type { SQL } from "drizzle-orm";
 import { refreshCustomDomain } from "../storefront/custom-domains.server";
 import { removeProjectDomain, wwwOf } from "../storefront/vercel-domains";
 import { assertAdminActor, AdminActorError, writeAdminAudit, type Queryable } from "./guard.server";
+import { adminOrderBy, type AdminListSort } from "./list-sort.server";
 import { ADMIN_LIST_PAGE_SIZE, domainAdminActionSchema, likePattern, type SaasAdminError } from "./saas.lib";
 
 export interface AdminDomainListInput {
   status: string | null;
   q: string | null;
   page: number;
+  /** An id from DOMAIN_SORT_IDS; default failing first, then recently updated. */
+  sort?: AdminListSort | null;
 }
+
+export const DOMAIN_SORT_IDS = ["domain", "store", "status", "lastCheckedAt"] as const;
+
+const DOMAIN_SORT_COLUMNS: Record<(typeof DOMAIN_SORT_IDS)[number], SQL> = {
+  domain: sql`${sellerCustomDomains.domain}`,
+  store: sql`lower(${stores.name})`,
+  status: sql`${sellerCustomDomains.status}`,
+  lastCheckedAt: sql`${sellerCustomDomains.lastCheckedAt}`,
+};
 
 export async function listDomainsForAdmin(input: AdminDomainListInput, q: Queryable = db) {
   const conditions: SQL[] = [];
@@ -43,7 +55,14 @@ export async function listDomainsForAdmin(input: AdminDomainListInput, q: Querya
     .innerJoin(sellers, eq(sellers.id, sellerCustomDomains.sellerId))
     .leftJoin(stores, eq(stores.id, sellerCustomDomains.storeId))
     .where(conditions.length ? and(...conditions) : undefined)
-    .orderBy(sql`(${sellerCustomDomains.status} = 'failed') DESC`, desc(sellerCustomDomains.updatedAt))
+    .orderBy(
+      adminOrderBy(
+        input.sort,
+        DOMAIN_SORT_COLUMNS,
+        sql`(${sellerCustomDomains.status} = 'failed') DESC, ${sellerCustomDomains.updatedAt} DESC`,
+        sql`${sellerCustomDomains.id}`,
+      ),
+    )
     .limit(ADMIN_LIST_PAGE_SIZE)
     .offset((input.page - 1) * ADMIN_LIST_PAGE_SIZE);
   return { rows: rows.map(({ totalCount: _total, ...row }) => row), total: Number(rows[0]?.totalCount ?? 0) };

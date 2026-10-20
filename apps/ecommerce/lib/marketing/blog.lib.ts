@@ -1,47 +1,22 @@
+import type { PublicPlatformPost } from "@workspace/lib/platform-blog/server";
 import { BLOG_CATEGORIES, type BlogCategory, type MarketingPost } from "./blog.data";
 
 /**
- * Pure helpers that turn the platform store's published blog posts into
- * marketing posts (owner, 2026-10-19). Writers steer a post with tags:
- * `lang:ar` / `lang:en` limit it to one locale (no lang tag: both), and the
- * first tag that names a blog category ("guides", "growth", …) files it there.
+ * Pure helpers that turn the tallaby.com blog posts written in the admin app
+ * (platform_blog_posts, 0073) into marketing posts (owner, 2026-10-19). One
+ * post holds both languages; a locale whose title is empty does not show it.
  */
 
 const CATEGORIES = BLOG_CATEGORIES.filter((c): c is Exclude<BlogCategory, "all"> => c !== "all");
 const DEFAULT_CATEGORY: Exclude<BlogCategory, "all"> = "guides";
 const FALLBACK_IMAGE = "/banner.jpg";
 
-export type CmsBlogItem = {
-  slug: string;
-  data: Record<string, unknown>;
-  seo: { title?: string; description?: string; ogImage?: string; noindex?: boolean };
-  publishedAt: string;
-  updatedAt: string;
-};
-
-const str = (v: unknown): string => (typeof v === "string" ? v.trim() : "");
-
-function tagsOf(data: Record<string, unknown>): string[] {
-  return Array.isArray(data.tags) ? data.tags.filter((t): t is string => typeof t === "string").map((t) => t.trim().toLowerCase()) : [];
-}
-
-function langsOf(tags: readonly string[]): string[] {
-  return tags.filter((t) => t.startsWith("lang:")).map((t) => t.slice(5));
-}
-
-/** True when the post is meant for this locale (`lang:xx` tags, or none). */
-export function postMatchesLocale(tags: readonly string[], locale: string): boolean {
-  const langs = langsOf(tags);
-  return langs.length === 0 || langs.includes(locale);
-}
-
 export function isPostForLocale(post: Pick<MarketingPost, "langs">, locale: string): boolean {
   return !post.langs?.length || post.langs.includes(locale);
 }
 
-export function postCategory(tags: readonly string[]): Exclude<BlogCategory, "all"> {
-  const tag = tags.find((t) => (CATEGORIES as readonly string[]).includes(t));
-  return (tag as Exclude<BlogCategory, "all"> | undefined) ?? DEFAULT_CATEGORY;
+export function postCategory(category: string): Exclude<BlogCategory, "all"> {
+  return (CATEGORIES as readonly string[]).includes(category) ? (category as Exclude<BlogCategory, "all">) : DEFAULT_CATEGORY;
 }
 
 /** Minutes to read an HTML body (≈200 words a minute, at least 1). */
@@ -55,27 +30,45 @@ export function htmlReadingMinutes(html: string): number {
   return Math.max(1, Math.round(words / 200));
 }
 
-/** `resolveImage` turns a stored path into a public URL (null when empty). */
-export function toMarketingPost(item: CmsBlogItem, resolveImage: (src: string) => string | null): MarketingPost {
-  const tags = tagsOf(item.data);
-  const body = str(item.data.body);
-  const minutes = item.data.readingMinutes;
+const pick = (ar: string, en: string, locale: string) => ((locale === "en" ? en : ar) ?? "").trim();
+
+/**
+ * The post in `locale`, or null when it has no title in that locale.
+ * `resolveImage` turns a stored bucket path into a public URL (null when empty).
+ */
+export function platformPostToMarketing(
+  post: PublicPlatformPost,
+  locale: string,
+  resolveImage: (src: string) => string | null,
+): MarketingPost | null {
+  const title = pick(post.titleAr, post.titleEn, locale);
+  if (!title) return null;
+  const body = pick(post.bodyAr, post.bodyEn, locale);
+  const seo = post.seo ?? {};
+  const seoTitle = pick(seo.titleAr ?? "", seo.titleEn ?? "", locale);
+  const seoDescription = pick(seo.descriptionAr ?? "", seo.descriptionEn ?? "", locale);
+  const ogImage = seo.ogImage ? resolveImage(seo.ogImage) : null;
   return {
-    id: item.slug,
+    id: post.slug,
     source: "cms",
-    category: postCategory(tags),
-    image: resolveImage(str(item.data.coverImage)) ?? FALLBACK_IMAGE,
-    date: item.publishedAt,
-    minutes: typeof minutes === "number" && minutes > 0 ? minutes : htmlReadingMinutes(body),
+    category: postCategory(post.category),
+    image: (post.coverImage ? resolveImage(post.coverImage) : null) ?? FALLBACK_IMAGE,
+    date: post.publishedAt,
+    minutes: post.readingMinutes && post.readingMinutes > 0 ? post.readingMinutes : htmlReadingMinutes(body),
     hasArticle: Boolean(body),
-    title: str(item.data.title) || item.slug,
-    excerpt: str(item.data.excerpt) || str(item.seo.description),
+    title,
+    excerpt: pick(post.excerptAr, post.excerptEn, locale) || seoDescription,
     html: body,
-    authorName: str(item.data.authorName) || null,
-    tags: tags.filter((t) => !t.startsWith("lang:") && !CATEGORIES.includes(t as Exclude<BlogCategory, "all">)),
-    langs: langsOf(tags),
-    updatedAt: item.updatedAt,
-    seo: item.seo,
+    authorName: post.authorName?.trim() || null,
+    tags: post.tags,
+    langs: [post.titleAr.trim() ? "ar" : null, post.titleEn.trim() ? "en" : null].filter((l): l is string => l !== null),
+    updatedAt: post.updatedAt,
+    seo: {
+      ...(seoTitle && { title: seoTitle }),
+      ...(seoDescription && { description: seoDescription }),
+      ...(ogImage && { ogImage }),
+      ...(seo.noindex && { noindex: true }),
+    },
   };
 }
 

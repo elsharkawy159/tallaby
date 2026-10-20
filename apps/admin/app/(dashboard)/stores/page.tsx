@@ -1,18 +1,11 @@
 import { Suspense } from "react";
 import Link from "next/link";
+import { ExternalLink } from "lucide-react";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card";
 import { Input } from "@workspace/ui/components/input";
 import { Skeleton } from "@workspace/ui/components/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@workspace/ui/components/table";
 import { logServerError } from "@workspace/db/log";
 import {
   SITE_STATUSES,
@@ -22,10 +15,17 @@ import {
   parseAdminListParams,
   pickEnum,
 } from "@workspace/lib/admin";
-import { listStoreTemplateKeys, listStoresForAdmin, type AdminStoreListInput } from "@workspace/lib/admin/server";
-import { storeHostname } from "@workspace/lib/storefront";
+import {
+  STORE_SORT_IDS,
+  listStoreTemplateKeys,
+  listStoresForAdmin,
+  type AdminStoreListInput,
+} from "@workspace/lib/admin/server";
+import { storeHostname, storeUrl } from "@workspace/lib/storefront";
 import { getCurrentAdminUser } from "@/lib/auth/admin-auth";
 import { AdminPager, buildHref } from "../_components/admin-pager";
+import { AdminTable, type AdminTableColumn } from "../_components/admin-table/admin-table";
+import { SORT_PARAM, parseSortParam } from "../_components/admin-table/admin-table.lib";
 import { SiteStatusBadge, StoreStatusBadge, formatAdminDate } from "./stores.lib";
 
 export const dynamic = "force-dynamic";
@@ -47,6 +47,7 @@ export default async function StoresPage({ searchParams }: PageProps) {
     hasDomain: domainParam === "yes" ? true : domainParam === "no" ? false : null,
     template: firstParam(params.template)?.slice(0, 64) ?? null,
     sellerId: firstParam(params.seller),
+    sort: parseSortParam(params[SORT_PARAM], STORE_SORT_IDS),
   };
   const keep = {
     q,
@@ -55,6 +56,7 @@ export default async function StoresPage({ searchParams }: PageProps) {
     domain: domainParam,
     template: input.template,
     seller: input.sellerId,
+    sort: firstParam(params[SORT_PARAM]),
   };
   const link = (next: Record<string, string | number | null>) => buildHref("/stores", { ...keep, page: null, ...next });
 
@@ -107,6 +109,16 @@ export default async function StoresPage({ searchParams }: PageProps) {
   );
 }
 
+const STORE_COLUMNS: AdminTableColumn[] = [
+  { id: "name", header: "Store", sortable: true },
+  { id: "seller", header: "Seller", sortable: true },
+  { id: "host", header: "Host", sortable: true },
+  { id: "site", header: "Site", sortable: true },
+  { id: "template", header: "Template", sortable: true },
+  { id: "products", header: "Products", sortable: true, descFirst: true, align: "end" },
+  { id: "lastPublishedAt", header: "Last publish", sortable: true, descFirst: true },
+];
+
 async function TemplateFilter({
   active,
   link,
@@ -151,25 +163,18 @@ async function StoresTable({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {rows.length === 0 ? (
-          <p className="py-10 text-center text-sm text-muted-foreground">No stores match these filters.</p>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Store</TableHead>
-                <TableHead>Seller</TableHead>
-                <TableHead>Host</TableHead>
-                <TableHead>Site</TableHead>
-                <TableHead>Template</TableHead>
-                <TableHead className="text-right">Products</TableHead>
-                <TableHead>Last publish</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((row) => (
-                <TableRow key={row.id} className="relative">
-                  <TableCell>
+        <AdminTable
+          sortMode="url"
+          columns={STORE_COLUMNS}
+          emptyMessage="No stores match these filters."
+          rows={rows.map((row) => {
+            const activeDomain = row.domainStatus === "active" ? row.domain : null;
+            return {
+              id: row.id,
+              className: "relative",
+              cells: {
+                name: (
+                  <>
                     <Link href={`/stores/${row.id}`} className="font-medium after:absolute after:inset-0 hover:underline">
                       {row.name}
                     </Link>
@@ -177,37 +182,50 @@ async function StoresTable({
                       <StoreStatusBadge status={row.status} />
                       {row.isPrimary && <Badge variant="outline" className="font-normal">Primary</Badge>}
                     </div>
-                  </TableCell>
-                  <TableCell className="text-sm">
+                  </>
+                ),
+                seller: (
+                  <div className="text-sm">
                     <Link href={`/sellers/${row.sellerId}`} className="relative z-10 hover:underline">
                       {row.sellerName ?? "Seller"}
                     </Link>
                     <div className="text-xs text-muted-foreground">Plan: {row.plan}</div>
-                  </TableCell>
-                  <TableCell className="text-sm" dir="ltr">
-                    {storeHostname(row.subdomain, row.domainStatus === "active" ? row.domain : null)}
+                  </div>
+                ),
+                host: (
+                  <div className="text-sm" dir="ltr">
+                    <a
+                      href={storeUrl(row.subdomain, activeDomain)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Open the storefront in a new tab"
+                      className="relative z-10 inline-flex items-center gap-1 text-primary hover:underline"
+                    >
+                      {storeHostname(row.subdomain, activeDomain)}
+                      <ExternalLink className="size-3" aria-hidden />
+                    </a>
                     {row.domain && row.domainStatus !== "active" && (
                       <div className="text-xs text-muted-foreground">
                         {row.domain} ({row.domainStatus})
                       </div>
                     )}
-                  </TableCell>
-                  <TableCell>
-                    <SiteStatusBadge status={row.siteStatus} />
-                  </TableCell>
-                  <TableCell className="text-sm">{row.templateKey}</TableCell>
-                  <TableCell className="text-right tabular-nums">
+                  </div>
+                ),
+                site: <SiteStatusBadge status={row.siteStatus} />,
+                template: <span className="text-sm">{row.templateKey}</span>,
+                products: (
+                  <span className="tabular-nums">
                     {row.productCount.toLocaleString()}
-                    <div className="text-xs text-muted-foreground">{row.catalogMode === "selected" ? "selected" : "all"}</div>
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
-                    {formatAdminDate(row.lastPublishedAt)}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
+                    <span className="block text-xs text-muted-foreground">{row.catalogMode === "selected" ? "selected" : "all"}</span>
+                  </span>
+                ),
+                lastPublishedAt: (
+                  <span className="whitespace-nowrap text-sm text-muted-foreground">{formatAdminDate(row.lastPublishedAt)}</span>
+                ),
+              },
+            };
+          })}
+        />
         <AdminPager page={input.page} pages={pageCount(total)} href={(p) => link({ page: p })} />
       </CardContent>
     </Card>

@@ -2,14 +2,6 @@ import Link from "next/link";
 import { Badge } from "@workspace/ui/components/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@workspace/ui/components/table";
-import {
   getStoreCatalogForAdmin,
   getStoreCommerceForAdmin,
   getStoreMediaForAdmin,
@@ -22,6 +14,7 @@ import {
 } from "@workspace/lib/admin/server";
 import { getGovernorateLabel } from "@workspace/lib/shipping";
 import { formatCurrency } from "@workspace/lib";
+import { AdminTable, type AdminTableColumn } from "../../_components/admin-table/admin-table";
 import { ReasonActionButton } from "../../_components/dialogs/reason-action.client";
 import { IntegrationsTable } from "../../integrations/integrations-table";
 import { auditActionLabel } from "../../sellers/[id]/seller-admin.lib";
@@ -138,6 +131,45 @@ export function StoreOverviewTab({ store }: TabProps) {
   );
 }
 
+const PAGE_COLUMNS: AdminTableColumn[] = [
+  { id: "name", header: "Page", sortable: true },
+  { id: "path", header: "Path", sortable: true },
+  { id: "inMenu", header: "In menu", sortable: true, descFirst: true },
+  { id: "draftVersion", header: "Draft version", sortable: true, descFirst: true, align: "end" },
+  { id: "updatedAt", header: "Updated", sortable: true, descFirst: true },
+];
+
+const ZONE_COLUMNS: AdminTableColumn[] = [
+  { id: "name", header: "Zone", sortable: true },
+  { id: "areas", header: "Areas" },
+  { id: "price", header: "Price", sortable: true, align: "end" },
+  { id: "days", header: "Days", sortable: true },
+  { id: "cod", header: "COD", sortable: true, descFirst: true },
+];
+
+const FORM_COLUMNS: AdminTableColumn[] = [
+  { id: "name", header: "Form", sortable: true },
+  { id: "status", header: "Status", sortable: true },
+  { id: "submissions", header: "Submissions", sortable: true, descFirst: true, align: "end" },
+  { id: "lastSubmissionAt", header: "Last submission", sortable: true, descFirst: true },
+  { id: "createdAt", header: "Created", sortable: true, descFirst: true },
+];
+
+const ITEM_COLUMNS: AdminTableColumn[] = [
+  { id: "title", header: "Title", sortable: true },
+  { id: "collection", header: "Collection", sortable: true },
+  { id: "status", header: "Status", sortable: true },
+  { id: "updatedAt", header: "Updated", sortable: true, descFirst: true },
+  { id: "actions", header: "", align: "end" },
+];
+
+const MEDIA_COLUMNS: AdminTableColumn[] = [
+  { id: "filename", header: "Largest files", sortable: true },
+  { id: "type", header: "Type", sortable: true },
+  { id: "size", header: "Size", sortable: true, descFirst: true, align: "end" },
+  { id: "createdAt", header: "Uploaded", sortable: true, descFirst: true },
+];
+
 export async function StoreWebsiteTab({ store }: TabProps) {
   const site = await getStoreWebsiteForAdmin(store.id);
   const colors = (site.design?.colors ?? {}) as Record<string, unknown>;
@@ -148,37 +180,36 @@ export async function StoreWebsiteTab({ store }: TabProps) {
           <CardTitle className="text-base">Pages ({site.pages.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          {site.pages.length === 0 ? (
-            <Empty>No pages yet.</Empty>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Page</TableHead>
-                  <TableHead>Path</TableHead>
-                  <TableHead>In menu</TableHead>
-                  <TableHead className="text-right">Draft version</TableHead>
-                  <TableHead>Updated</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {site.pages.map((page) => (
-                  <TableRow key={page.id}>
-                    <TableCell className="font-medium">
-                      {localizedText(page.name)}
-                      {page.isHome && <Badge variant="outline" className="ml-2 font-normal">Home</Badge>}
-                    </TableCell>
-                    <TableCell dir="ltr" className="font-mono text-xs">
-                      /{page.slug}
-                    </TableCell>
-                    <TableCell>{page.showInNav ? "Yes" : "No"}</TableCell>
-                    <TableCell className="text-right tabular-nums">{page.draftVersion}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{formatAdminDate(page.updatedAt)}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+          <AdminTable
+            columns={PAGE_COLUMNS}
+            emptyMessage={<Empty>No pages yet.</Empty>}
+            rows={site.pages.map((page) => ({
+              id: page.id,
+              sortValues: {
+                name: localizedText(page.name),
+                path: page.slug,
+                inMenu: page.showInNav,
+                draftVersion: page.draftVersion,
+                updatedAt: page.updatedAt,
+              },
+              cells: {
+                name: (
+                  <span className="font-medium">
+                    {localizedText(page.name)}
+                    {page.isHome && <Badge variant="outline" className="ml-2 font-normal">Home</Badge>}
+                  </span>
+                ),
+                path: (
+                  <span dir="ltr" className="font-mono text-xs">
+                    /{page.slug}
+                  </span>
+                ),
+                inMenu: page.showInNav ? "Yes" : "No",
+                draftVersion: <span className="tabular-nums">{page.draftVersion}</span>,
+                updatedAt: <span className="text-sm text-muted-foreground">{formatAdminDate(page.updatedAt)}</span>,
+              },
+            }))}
+          />
         </CardContent>
       </Card>
 
@@ -308,39 +339,40 @@ export async function StoreCommerceTab({ store }: TabProps) {
           <CardTitle className="text-base">Shipping zones ({zones.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          {zones.length === 0 ? (
-            <Empty>No custom zones: platform shipping rates apply.</Empty>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Zone</TableHead>
-                  <TableHead>Areas</TableHead>
-                  <TableHead className="text-right">Price</TableHead>
-                  <TableHead>Days</TableHead>
-                  <TableHead>COD</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {zones.map((zone) => (
-                  <TableRow key={zone.id} className={zone.enabled ? "" : "opacity-60"}>
-                    <TableCell className="font-medium">{localizedText(zone.name)}</TableCell>
-                    <TableCell className="max-w-72 text-xs">
-                      {(zone.governorates ?? []).map((g) => getGovernorateLabel(String(g), "en")).join(", ")}
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {formatCurrency(Number(zone.price))}
-                      {zone.freeOver && <div className="text-xs text-muted-foreground">free over {formatCurrency(Number(zone.freeOver))}</div>}
-                    </TableCell>
-                    <TableCell className="text-sm">
-                      {zone.deliveryDaysMin ?? "?"}–{zone.deliveryDaysMax ?? "?"}
-                    </TableCell>
-                    <TableCell>{zone.codEnabled ? "Yes" : "No"}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+          <AdminTable
+            columns={ZONE_COLUMNS}
+            emptyMessage={<Empty>No custom zones: platform shipping rates apply.</Empty>}
+            rows={zones.map((zone) => ({
+              id: zone.id,
+              className: zone.enabled ? "" : "opacity-60",
+              sortValues: {
+                name: localizedText(zone.name),
+                price: Number(zone.price),
+                days: zone.deliveryDaysMin,
+                cod: zone.codEnabled,
+              },
+              cells: {
+                name: <span className="font-medium">{localizedText(zone.name)}</span>,
+                areas: (
+                  <div className="max-w-72 text-xs">
+                    {(zone.governorates ?? []).map((g) => getGovernorateLabel(String(g), "en")).join(", ")}
+                  </div>
+                ),
+                price: (
+                  <span className="tabular-nums">
+                    {formatCurrency(Number(zone.price))}
+                    {zone.freeOver && <span className="block text-xs text-muted-foreground">free over {formatCurrency(Number(zone.freeOver))}</span>}
+                  </span>
+                ),
+                days: (
+                  <span className="text-sm">
+                    {zone.deliveryDaysMin ?? "?"}–{zone.deliveryDaysMax ?? "?"}
+                  </span>
+                ),
+                cod: zone.codEnabled ? "Yes" : "No",
+              },
+            }))}
+          />
         </CardContent>
       </Card>
     </div>
@@ -367,35 +399,32 @@ export async function StoreFormsTab({ store }: TabProps) {
         <p className="text-sm text-muted-foreground">Submission contents hold customer data and are not shown here.</p>
       </CardHeader>
       <CardContent>
-        {forms.length === 0 ? (
-          <Empty>No forms.</Empty>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Form</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Submissions</TableHead>
-                <TableHead>Last submission</TableHead>
-                <TableHead>Created</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {forms.map((form) => (
-                <TableRow key={form.id}>
-                  <TableCell className="font-medium">
-                    {form.name}
-                    <div className="font-mono text-xs text-muted-foreground">{form.key}</div>
-                  </TableCell>
-                  <TableCell className="capitalize">{form.status}</TableCell>
-                  <TableCell className="text-right tabular-nums">{form.submissions.toLocaleString()}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{formatAdminDate(form.lastSubmissionAt)}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{formatAdminDate(form.createdAt)}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
+        <AdminTable
+          columns={FORM_COLUMNS}
+          emptyMessage={<Empty>No forms.</Empty>}
+          rows={forms.map((form) => ({
+            id: form.id,
+            sortValues: {
+              name: form.name,
+              status: form.status,
+              submissions: form.submissions,
+              lastSubmissionAt: form.lastSubmissionAt,
+              createdAt: form.createdAt,
+            },
+            cells: {
+              name: (
+                <div className="font-medium">
+                  {form.name}
+                  <div className="font-mono text-xs text-muted-foreground">{form.key}</div>
+                </div>
+              ),
+              status: <span className="capitalize">{form.status}</span>,
+              submissions: <span className="tabular-nums">{form.submissions.toLocaleString()}</span>,
+              lastSubmissionAt: <span className="text-sm text-muted-foreground">{formatAdminDate(form.lastSubmissionAt)}</span>,
+              createdAt: <span className="text-sm text-muted-foreground">{formatAdminDate(form.createdAt)}</span>,
+            },
+          }))}
+        />
       </CardContent>
     </Card>
   );
@@ -435,53 +464,48 @@ export async function StoreContentTab({ store }: TabProps) {
           <CardTitle className="text-base">Latest items</CardTitle>
         </CardHeader>
         <CardContent>
-          {items.length === 0 ? (
-            <Empty>No posts or items.</Empty>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Collection</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Updated</TableHead>
-                  <TableHead />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {items.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell className="font-medium">
-                      {item.title}
-                      <div className="font-mono text-xs text-muted-foreground" dir="ltr">
-                        {item.slug}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-sm">{collectionNames.get(item.collectionId) ?? "—"}</TableCell>
-                    <TableCell>
-                      <Badge variant={item.status === "published" ? "default" : "secondary"} className="capitalize">
-                        {item.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{formatAdminDate(item.updatedAt)}</TableCell>
-                    <TableCell className="text-right">
-                      {item.status === "published" && (
-                        <ReasonActionButton
-                          label="Unpublish"
-                          title="Unpublish this item?"
-                          description="It goes back to a draft. The seller can edit and publish it again."
-                          confirmLabel="Unpublish"
-                          destructive
-                          payload={{ sellerId: store.sellerId, storeId: store.id, itemId: item.id }}
-                          action={unpublishCmsItemAction}
-                        />
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+          <AdminTable
+            columns={ITEM_COLUMNS}
+            emptyMessage={<Empty>No posts or items.</Empty>}
+            rows={items.map((item) => ({
+              id: item.id,
+              sortValues: {
+                title: item.title,
+                collection: collectionNames.get(item.collectionId) ?? null,
+                status: item.status,
+                updatedAt: item.updatedAt,
+              },
+              cells: {
+                title: (
+                  <div className="font-medium">
+                    {item.title}
+                    <div className="font-mono text-xs text-muted-foreground" dir="ltr">
+                      {item.slug}
+                    </div>
+                  </div>
+                ),
+                collection: <span className="text-sm">{collectionNames.get(item.collectionId) ?? "—"}</span>,
+                status: (
+                  <Badge variant={item.status === "published" ? "default" : "secondary"} className="capitalize">
+                    {item.status}
+                  </Badge>
+                ),
+                updatedAt: <span className="text-sm text-muted-foreground">{formatAdminDate(item.updatedAt)}</span>,
+                actions:
+                  item.status === "published" ? (
+                    <ReasonActionButton
+                      label="Unpublish"
+                      title="Unpublish this item?"
+                      description="It goes back to a draft. The seller can edit and publish it again."
+                      confirmLabel="Unpublish"
+                      destructive
+                      payload={{ sellerId: store.sellerId, storeId: store.id, itemId: item.id }}
+                      action={unpublishCmsItemAction}
+                    />
+                  ) : null,
+              },
+            }))}
+          />
         </CardContent>
       </Card>
     </div>
@@ -498,30 +522,26 @@ export async function StoreMediaTab({ store }: TabProps) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {media.largest.length === 0 ? (
-          <Empty>No uploads.</Empty>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Largest files</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead className="text-right">Size</TableHead>
-                <TableHead>Uploaded</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {media.largest.map((asset) => (
-                <TableRow key={asset.id}>
-                  <TableCell className="max-w-80 truncate">{asset.filename}</TableCell>
-                  <TableCell className="text-xs text-muted-foreground">{asset.mimeType}</TableCell>
-                  <TableCell className="text-right tabular-nums">{formatBytes(Number(asset.bytes ?? 0))}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{formatAdminDate(asset.createdAt)}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
+        <AdminTable
+          columns={MEDIA_COLUMNS}
+          defaultSort={{ id: "size", desc: true }}
+          emptyMessage={<Empty>No uploads.</Empty>}
+          rows={media.largest.map((asset) => ({
+            id: asset.id,
+            sortValues: {
+              filename: asset.filename,
+              type: asset.mimeType,
+              size: Number(asset.bytes ?? 0),
+              createdAt: asset.createdAt,
+            },
+            cells: {
+              filename: <div className="max-w-80 truncate">{asset.filename}</div>,
+              type: <span className="text-xs text-muted-foreground">{asset.mimeType}</span>,
+              size: <span className="tabular-nums">{formatBytes(Number(asset.bytes ?? 0))}</span>,
+              createdAt: <span className="text-sm text-muted-foreground">{formatAdminDate(asset.createdAt)}</span>,
+            },
+          }))}
+        />
       </CardContent>
     </Card>
   );
