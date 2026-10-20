@@ -1,6 +1,12 @@
 export type SellerStatus = "pending" | "approved" | "suspended" | "restricted";
 
 export interface Seller {
+  /** SaaS account facts (docs/admin-saas.md §3.10). */
+  plan?: string;
+  feeTrialEligible?: boolean;
+  feeTrialEndsAt?: string | null;
+  storeCount?: number;
+  lastOrderAt?: string | null;
   id: string;
   businessName: string;
   displayName: string;

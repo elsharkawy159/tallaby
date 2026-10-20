@@ -1,11 +1,15 @@
 import { roundPriceUpToNearestFive } from '@workspace/lib'
+import { computeSellerPlatformFee } from '@workspace/lib/orders/platform-fee'
 
 export { roundPriceUpToNearestFive }
 
 export interface SellerPricingSettings {
+  /** Legacy percentage (sellers.commission_rate); no longer used for earnings. */
   commissionRate: number
   isCommissionExempt: boolean
   sellerFreeDelivery?: boolean
+  feeTrialStartedAt?: string | null
+  feeTrialEndsAt?: string | null
 }
 
 export const DEFAULT_COMMISSION_RATE = 5
@@ -42,7 +46,11 @@ export function calculateProductFinalPrice(
   return roundPriceUpToNearestFive(discountedPrice)
 }
 
-/** What the seller is paid for one unit sold at `sellingPrice`, after the platform commission. */
+/**
+ * What the seller is paid for an order of one unit sold at `sellingPrice`,
+ * after the flat EGP 5 platform fee (PLAN.md §13). 0 fee while the seller's
+ * trial runs or when exempt. Larger orders pay a lower share.
+ */
 export function calculateSellerEarning(
   sellingPrice: number | string | undefined,
   settings: SellerPricingSettings
@@ -53,8 +61,15 @@ export function calculateSellerEarning(
     return 0
   }
 
-  const commissionRate = getEffectiveCommissionRate(settings)
-  return parseFloat((numericPrice * (1 - commissionRate)).toFixed(2))
+  const { lineFeesPiastres } = computeSellerPlatformFee(
+    {
+      isCommissionExempt: settings.isCommissionExempt,
+      feeTrialStartedAt: settings.feeTrialStartedAt,
+      feeTrialEndsAt: settings.feeTrialEndsAt,
+    },
+    [{ total: numericPrice }]
+  )
+  return parseFloat((numericPrice - (lineFeesPiastres[0] ?? 0) / 100).toFixed(2))
 }
 
 function applyDiscount(

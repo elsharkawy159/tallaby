@@ -1,6 +1,7 @@
 import {
   db,
   orders,
+  sellers,
   orderItems,
   userAddresses,
   couponUsage,
@@ -11,6 +12,7 @@ import {
   eq,
   and,
   sql,
+  inArray,
 } from '@workspace/db'
 import {
   decrementStock,
@@ -41,7 +43,6 @@ import {
   isLineEligibleForCoupon,
 } from './coupon-scope.lib'
 import {
-  PLATFORM_COMMISSION_RATE,
   formatDecimal,
   formatVariantTitleFromCart,
   generateOrderNumber,
@@ -52,6 +53,7 @@ import {
   type OrderDiscountLine,
 } from './order-discounts'
 import { sendOrderConfirmationEmail } from './notify'
+import { computeOrderLineFees, type PlatformFeeSnapshot } from './platform-fee.lib'
 import { isCodEligibleForShipping, parseWalletPartialPaymentMethod } from './payment.lib'
 
 /** Internal control-flow signal: coupon lost a concurrent usage-limit race. */
@@ -318,9 +320,6 @@ export async function placeOrderFromCart(
     const itemSubtotal = Number(item.price) * item.quantity
     subtotal += itemSubtotal
 
-    const itemCommission = itemSubtotal * PLATFORM_COMMISSION_RATE
-    const itemSellerEarning = itemSubtotal - itemCommission
-
     const variant = item.variant as {
       id?: string
       sku?: string
@@ -352,9 +351,11 @@ export async function placeOrderFromCart(
       shippingCost: '0.00',
       total: formatDecimal(itemSubtotal),
       discountAmount: '0.00',
-      commissionRate: PLATFORM_COMMISSION_RATE,
-      commissionAmount: formatDecimal(itemCommission),
-      sellerEarning: formatDecimal(itemSellerEarning),
+      // Set per seller once coupons are applied (platform fee, see below).
+      commissionRate: 0,
+      commissionAmount: '0.00',
+      sellerEarning: formatDecimal(itemSubtotal),
+      metadata: null as { platformFee: PlatformFeeSnapshot } | null,
       currency: cart.currency || 'EGP',
       condition: item.product.condition,
       fulfillmentType: item.product.fulfillmentType,
@@ -447,8 +448,8 @@ export async function placeOrderFromCart(
       }
 
       // A seller-funded discount comes out of that seller's lines: each
-      // eligible line carries its share, and commission is taken on what the
-      // customer actually pays for it.
+      // eligible line carries its share, and the platform fee is taken on
+      // what the customer actually pays for it.
       if (coupon.sellerId && merchandiseDiscount > 0) {
         const shares = allocateDiscountAcrossLines(
           merchandiseDiscount,
@@ -457,17 +458,40 @@ export async function placeOrderFromCart(
         eligibleItems.forEach((item, index) => {
           const lineDiscount = shares[index] ?? 0
           const net = Number(item.subtotal) - lineDiscount
-          const commission = net * PLATFORM_COMMISSION_RATE
           item.discountAmount = formatDecimal(lineDiscount)
           item.total = formatDecimal(net)
-          item.commissionAmount = formatDecimal(commission)
-          item.sellerEarning = formatDecimal(net - commission)
         })
       }
 
       appliedCoupon = coupon
     }
   }
+
+  // Platform fee (PLAN.md §13.2, D1/D2/D22): a flat EGP 5 per seller, capped at
+  // its line totals after its own coupon, 0 during the seller's 7-day trial
+  // or when exempt. Snapshotted per line; never recomputed.
+  const feeSellerIds = [...new Set(orderItemsData.map((item) => item.sellerId))]
+  const feeProfiles = await db
+    .select({
+      id: sellers.id,
+      feePlan: sellers.feePlan,
+      feeTrialStartedAt: sellers.feeTrialStartedAt,
+      feeTrialEndsAt: sellers.feeTrialEndsAt,
+      isCommissionExempt: sellers.isCommissionExempt,
+    })
+    .from(sellers)
+    .where(inArray(sellers.id, feeSellerIds))
+  const lineFees = computeOrderLineFees(
+    orderItemsData,
+    new Map(feeProfiles.map((profile) => [profile.id, profile])),
+  )
+  orderItemsData.forEach((item, index) => {
+    const fee = lineFees[index]!
+    item.commissionRate = fee.commissionRate
+    item.commissionAmount = fee.commissionAmount
+    item.sellerEarning = fee.sellerEarning
+    item.metadata = { platformFee: fee.platformFee }
+  })
 
   const {
     lines: builtDiscountLines,

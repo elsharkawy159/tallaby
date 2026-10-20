@@ -10,6 +10,7 @@ import {
   shipments,
 } from "@workspace/db";
 import { and, eq, inArray, sql } from "drizzle-orm";
+import { countNewFormSubmissions } from "@workspace/lib/store-forms/server";
 import { getUser } from "@/actions/auth";
 import {
   EMPTY_SIDEBAR_COUNTS,
@@ -32,6 +33,7 @@ export async function getSidebarCounts(): Promise<SidebarCounts> {
       couponCountResult,
       payoutCountResult,
       shippingCountResult,
+      formSubmissionCount,
     ] = await Promise.all([
       db
         .select({ count: sql<number>`count(*)` })
@@ -63,6 +65,8 @@ export async function getSidebarCounts(): Promise<SidebarCounts> {
             inArray(shipments.status, ["assigned", "out_for_delivery"])
           )
         ),
+      // New store form submissions across the seller's stores (Website › Forms, P4-10).
+      countNewFormSubmissions(sellerId),
     ]);
 
     const orderCount = Number(orderCountResult[0]?.count ?? 0);
@@ -76,6 +80,7 @@ export async function getSidebarCounts(): Promise<SidebarCounts> {
       promotions: Number(couponCountResult[0]?.count ?? 0),
       marketing: 0,
       financial: Number(payoutCountResult[0]?.count ?? 0),
+      forms: formSubmissionCount,
     };
   } catch (error) {
     console.error("Error fetching sidebar counts:", error);

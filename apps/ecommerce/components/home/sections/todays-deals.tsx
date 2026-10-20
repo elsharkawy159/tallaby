@@ -7,7 +7,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@workspace/ui/components/carousel";
-import ProductCard from "@/app/[locale]/(main)/products/[slug]/_components/ProductCard";
+import ProductCard from "@/components/product-page/ProductCard";
 import { productCardCarouselItemClass } from "../home.lib";
 import { loadCards } from "./home-sections.lib";
 import { SectionHeader } from "./section-header";

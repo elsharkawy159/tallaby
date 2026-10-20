@@ -20,8 +20,10 @@ import {
   type FulfillmentServiceStatus,
   type FulfillmentServiceType,
 } from './constants'
-import { toFulfillmentPlanView } from './plan-view'
-import { buildInitialServiceRows } from './resolve'
+import { normalizeServiceChoices } from './choices'
+import { plansForService, toFulfillmentPlanView } from './plan-view'
+import { nextReviewStatus, planServiceRequests } from './request'
+import { baselineService, buildInitialServiceRows } from './resolve'
 import type {
   AgreementRate,
   FulfillmentPlanView,
@@ -30,7 +32,7 @@ import type {
   SellerServiceRow,
   ServiceConfig,
 } from './types'
-import type { FulfillmentRequest } from './validate'
+import { collectCatalogIssues, fulfillmentRequestSchema, type FulfillmentRequest } from './validate'
 
 /**
  * Server-only fulfillment persistence. Kept out of the `./index` barrel so
@@ -191,6 +193,191 @@ export async function createSellerFulfillmentSetup(
   )
 
   return { needsContact }
+}
+
+// ---------------------------------------------------------------------------
+// Seller requests (dashboard, P8-01)
+// ---------------------------------------------------------------------------
+
+export type FulfillmentRequestResult =
+  | { success: true; changed: boolean; needsContact: boolean }
+  | { success: false; error: 'invalid_input'; errors: Record<string, string> }
+  | { success: false; error: 'service_paused'; serviceTypes: FulfillmentServiceType[] }
+  | { success: false; error: 'seller_not_found' }
+
+/** Key-order-independent JSON, so jsonb read back compares equal to the parsed input. */
+function stableJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`
+  if (value && typeof value === 'object') {
+    const entries = Object.entries(value as Record<string, unknown>)
+      .filter(([, v]) => v !== undefined)
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+    return `{${entries.map(([k, v]) => `${JSON.stringify(k)}:${stableJson(v)}`).join(',')}}`
+  }
+  return JSON.stringify(value ?? null)
+}
+
+/**
+ * Validates a seller's request against the schema and the live catalog.
+ * Error values are the same stable codes the onboarding wizard uses.
+ */
+export async function validateFulfillmentRequest(
+  raw: unknown,
+  q: Queryable = db,
+): Promise<{ success: true; request: FulfillmentRequest } | { success: false; errors: Record<string, string> }> {
+  const errors: Record<string, string> = {}
+  const add = (issues: { path: PropertyKey[]; message: string }[]) => {
+    for (const issue of issues) errors[issue.path.map(String).join('.')] ??= issue.message
+  }
+
+  const parsed = fulfillmentRequestSchema.safeParse(raw)
+  if (!parsed.success) {
+    add(parsed.error.issues)
+    return { success: false, errors }
+  }
+
+  const catalog = await listFulfillmentPlans({ activeOnly: true }, q)
+  add(collectCatalogIssues(parsed.data.services, catalog))
+  // "Tallaby handles it" must be backed by a plan in every service.
+  if (parsed.data.model === 'tallaby_fulfillment') {
+    for (const type of FULFILLMENT_SERVICE_TYPES) {
+      if (plansForService(catalog, type).length === 0) errors[`services.${type}.planId`] ??= 'plan_unavailable'
+    }
+  }
+  if (Object.keys(errors).length) return { success: false, errors }
+  return { success: true, request: { ...parsed.data, services: normalizeServiceChoices(parsed.data.services) } }
+}
+
+/**
+ * A seller asks Tallaby for services, with or without existing fulfillment
+ * rows (signup no longer creates them). Writes the profile (answers + pickup
+ * address) and `requested_*` only; `active_*` is never written except as the
+ * baseline on a brand-new row, which is what the resolver already uses for a
+ * missing row. Idempotent: re-submitting the same request writes nothing.
+ *
+ * `sellerId` must come from the session (the dashboard's requireSeller); it is
+ * the only scope, and every statement filters by it.
+ */
+export async function upsertSellerFulfillmentRequest(
+  input: { sellerId: string; request: unknown },
+  database: typeof db = db,
+): Promise<FulfillmentRequestResult> {
+  const validated = await validateFulfillmentRequest(input.request, database)
+  if (!validated.success) return { success: false, error: 'invalid_input', errors: validated.errors }
+  const request = validated.request
+
+  return database.transaction(async (tx): Promise<FulfillmentRequestResult> => {
+    // Serializes concurrent requests from the same seller (double submits).
+    const [seller] = await tx
+      .select({ id: sellers.id })
+      .from(sellers)
+      .where(eq(sellers.id, input.sellerId))
+      .for('update')
+      .limit(1)
+    if (!seller) return { success: false, error: 'seller_not_found' }
+
+    const baselineDeliveryPlanId = await getBaselineDeliveryPlanId(tx)
+    const [profile] = await tx
+      .select()
+      .from(sellerFulfillmentProfiles)
+      .where(eq(sellerFulfillmentProfiles.sellerId, input.sellerId))
+      .limit(1)
+    const existing = await tx
+      .select()
+      .from(sellerFulfillmentServices)
+      .where(eq(sellerFulfillmentServices.sellerId, input.sellerId))
+
+    const plan = planServiceRequests(existing.map(toSellerServiceRow), request.services, baselineDeliveryPlanId)
+    const blocked = plan.filter((p) => p.kind === 'blocked').map((p) => p.serviceType)
+    if (blocked.length) return { success: false, error: 'service_paused', serviceTypes: blocked }
+
+    const now = new Date().toISOString()
+    const pickupAddress = request.pickupAddress ?? null
+    const profileChanged =
+      !profile ||
+      profile.model !== request.model ||
+      stableJson(profile.operationalDetails) !== stableJson(request.details) ||
+      stableJson(profile.pickupAddress) !== stableJson(pickupAddress)
+    const servicesChanged = plan.some((p) => p.kind !== 'unchanged')
+    if (!profileChanged && !servicesChanged) {
+      return { success: true, changed: false, needsContact: profile?.reviewStatus !== 'configured' }
+    }
+
+    for (const step of plan) {
+      if (step.kind === 'insert') {
+        const baseline = baselineService(step.serviceType, baselineDeliveryPlanId)
+        await tx
+          .insert(sellerFulfillmentServices)
+          .values({
+            sellerId: input.sellerId,
+            serviceType: step.serviceType,
+            requestedProvider: step.requested.provider,
+            requestedPlanId: step.requested.planId,
+            requestedConfig: step.requested.config,
+            requestedAt: now,
+            activeProvider: baseline.provider,
+            activePlanId: baseline.planId,
+            activeConfig: baseline.config,
+            activatedAt: step.status === 'active' ? now : null,
+            status: step.status,
+          })
+          // The seller row lock makes a race impossible; never overwrite a live row anyway.
+          .onConflictDoNothing({ target: [sellerFulfillmentServices.sellerId, sellerFulfillmentServices.serviceType] })
+      } else if (step.kind === 'update') {
+        await tx
+          .update(sellerFulfillmentServices)
+          .set({
+            requestedProvider: step.requested.provider,
+            requestedPlanId: step.requested.planId,
+            requestedConfig: step.requested.config,
+            requestedAt: now,
+            status: step.status,
+            updatedBy: input.sellerId,
+            updatedAt: now,
+          })
+          .where(
+            and(
+              eq(sellerFulfillmentServices.sellerId, input.sellerId),
+              eq(sellerFulfillmentServices.serviceType, step.serviceType),
+            ),
+          )
+      }
+    }
+
+    const statuses = await tx
+      .select({ status: sellerFulfillmentServices.status })
+      .from(sellerFulfillmentServices)
+      .where(eq(sellerFulfillmentServices.sellerId, input.sellerId))
+    const reviewStatus = nextReviewStatus(
+      profile?.reviewStatus ?? null,
+      statuses.map((row) => row.status),
+    )
+
+    if (profile) {
+      await tx
+        .update(sellerFulfillmentProfiles)
+        .set({
+          model: request.model,
+          operationalDetails: request.details,
+          pickupAddress,
+          submittedAt: now,
+          reviewStatus,
+          updatedAt: now,
+        })
+        .where(eq(sellerFulfillmentProfiles.sellerId, input.sellerId))
+    } else {
+      await tx.insert(sellerFulfillmentProfiles).values({
+        sellerId: input.sellerId,
+        model: request.model,
+        operationalDetails: request.details,
+        pickupAddress,
+        submittedAt: now,
+        reviewStatus,
+      })
+    }
+
+    return { success: true, changed: true, needsContact: reviewStatus !== 'configured' }
+  })
 }
 
 // ---------------------------------------------------------------------------
@@ -446,12 +633,13 @@ export async function upsertSellerFulfillmentAgreement(
 
 export async function listOpenFulfillmentRequests(
   options: { status?: FulfillmentServiceStatus; serviceType?: FulfillmentServiceType } = {},
+  database: typeof db = db,
 ) {
   const openStatuses: FulfillmentServiceStatus[] = options.status
     ? [options.status]
     : ['requested', 'under_review', 'awaiting_agreement']
 
-  return db
+  return database
     .select({
       id: sellerFulfillmentServices.id,
       sellerId: sellerFulfillmentServices.sellerId,
@@ -475,3 +663,5 @@ export async function listOpenFulfillmentRequests(
     )
     .orderBy(asc(sellerFulfillmentServices.requestedAt))
 }
+
+export * from './queue.server'

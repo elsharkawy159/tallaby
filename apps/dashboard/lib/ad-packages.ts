@@ -6,7 +6,7 @@
 export const AD_PACKAGE_PERIODS = ["weekly", "monthly"] as const;
 export type AdPackagePeriod = (typeof AD_PACKAGE_PERIODS)[number];
 
-export type AdPackageFeature = "video_social" | "video_ai" | "platforms" | "featured" | "meta";
+export type AdPackageFeature = "video_social" | "video_ai" | "platforms" | "meta";
 
 export type AdPackageKey =
   | "weekly_full"
@@ -47,7 +47,6 @@ export function planColumns(pkg: AdPackage): number {
 
 const includedEverywhere: AdPackageFeatureItem[] = [
   { key: "platforms" },
-  { key: "featured" },
   { key: "meta" },
 ];
 

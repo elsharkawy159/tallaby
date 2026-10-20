@@ -1,0 +1,14 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`default render is unchanged > custom-section 1`] = `
+{
+  "ar/edit/data": "<div data-section-id="s-custom-section" data-section-type="custom-section"><section class="py-(--sf-section-y,48px)"><div class="mx-auto w-full max-w-(--sf-max-width,1200px) px-4 md:px-8"><p class="rounded-(--sf-radius,12px) border border-dashed border-(--sf-line) p-8 text-center text-sm text-(--sf-muted)">قسم فارغ. أضف عناصر من لوحة الإضافة.</p></div></section></div>",
+  "ar/edit/empty": "<div data-section-id="s-custom-section" data-section-type="custom-section"><section class="py-(--sf-section-y,48px)"><div class="mx-auto w-full max-w-(--sf-max-width,1200px) px-4 md:px-8"><p class="rounded-(--sf-radius,12px) border border-dashed border-(--sf-line) p-8 text-center text-sm text-(--sf-muted)">قسم فارغ. أضف عناصر من لوحة الإضافة.</p></div></section></div>",
+  "ar/public/data": "<div data-section-id="s-custom-section" data-section-type="custom-section"></div>",
+  "ar/public/empty": "<div data-section-id="s-custom-section" data-section-type="custom-section"></div>",
+  "en/edit/data": "<div data-section-id="s-custom-section" data-section-type="custom-section"><section class="py-(--sf-section-y,48px)"><div class="mx-auto w-full max-w-(--sf-max-width,1200px) px-4 md:px-8"><p class="rounded-(--sf-radius,12px) border border-dashed border-(--sf-line) p-8 text-center text-sm text-(--sf-muted)">Empty section. Add elements from the Add panel.</p></div></section></div>",
+  "en/edit/empty": "<div data-section-id="s-custom-section" data-section-type="custom-section"><section class="py-(--sf-section-y,48px)"><div class="mx-auto w-full max-w-(--sf-max-width,1200px) px-4 md:px-8"><p class="rounded-(--sf-radius,12px) border border-dashed border-(--sf-line) p-8 text-center text-sm text-(--sf-muted)">Empty section. Add elements from the Add panel.</p></div></section></div>",
+  "en/public/data": "<div data-section-id="s-custom-section" data-section-type="custom-section"></div>",
+  "en/public/empty": "<div data-section-id="s-custom-section" data-section-type="custom-section"></div>",
+}
+`;

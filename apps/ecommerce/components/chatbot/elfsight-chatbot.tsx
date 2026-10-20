@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useIsMarketplaceHost } from "@/lib/marketplace/marketplace-host.client";
 
 const ELFSIGHT_APP_ID = "f5f6fef6-c0f0-41de-b107-072948b80fc4";
 const PLATFORM_SRC = "https://elfsightcdn.com/platform.js";
@@ -60,9 +61,14 @@ const injectLauncherStyle = () => {
  * Elfsight AI Chatbot widget. The script is injected a few seconds after the
  * page has loaded, and the floating launcher is kept above any bottom-docked
  * bars so it never covers navigation or the add-to-cart button.
+ *
+ * Tallaby support chat: marketplace only, not on seller storefronts (PLAN.md P5-05).
  */
 export function ElfsightChatbot() {
+  const onMarketplace = useIsMarketplaceHost();
+
   useEffect(() => {
+    if (!onMarketplace) return;
     const root = document.documentElement;
     let frame = 0;
     let trackUntil = 0;
@@ -132,7 +138,9 @@ export function ElfsightChatbot() {
       window.removeEventListener("resize", track);
       window.removeEventListener("load", load);
     };
-  }, []);
+  }, [onMarketplace]);
+
+  if (!onMarketplace) return null;
 
   return (
     <div className={`elfsight-app-${ELFSIGHT_APP_ID}`} data-elfsight-app-lazy />

@@ -12,6 +12,8 @@ progress:
   percent: 100
 ---
 
+> **Superseded (2026-10-17).** This milestone state is historical. Production uses Paymob/Kashier, not Stripe Checkout, and the 5-step onboarding wizard is being replaced by minimal signup. The current roadmap is [`/PLAN.md`](../PLAN.md). See its §21.4.
+
 # State — Tallaby Digital Products Milestone
 
 ## Project Reference

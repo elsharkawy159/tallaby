@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { trackMetaEvent } from '@/lib/meta/meta.client'
+import { trackCommerceEvent } from '@/lib/storefront-events.client'
 import { toMetaContentIds } from '@/lib/meta/meta.product'
 import { DEFAULT_CURRENCY } from '@/lib/constants'
 
@@ -33,7 +33,7 @@ export function MetaPurchase ({
     if (firedRef.current || !orderId || !productIdsKey) return
 
     const fire = () => {
-      trackMetaEvent(
+      trackCommerceEvent(
         'Purchase',
         {
           content_ids: toMetaContentIds(productIdsKey.split(',')),

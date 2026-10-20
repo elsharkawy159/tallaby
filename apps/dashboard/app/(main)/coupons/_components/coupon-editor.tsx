@@ -26,6 +26,7 @@ import {
   type SellerCouponRow,
 } from "@/actions/coupons";
 import { formatDate } from "@/lib/i18n/format";
+import { CurrencyInput } from "@/components/form/currency-input";
 import { CouponProductPicker } from "./coupon-product-picker";
 import { CouponTicketStub } from "./coupon-ticket";
 import {
@@ -224,33 +225,38 @@ export function CouponEditor({ open, onOpenChange, coupon, products, storeHost, 
                   <Label htmlFor={`${ids}-value`}>
                     {isPercent ? t("percentValue") : t("amountValue")}
                   </Label>
-                  <Input
-                    id={`${ids}-value`}
-                    type="number"
-                    inputMode="decimal"
-                    min={0}
-                    max={isPercent ? 90 : undefined}
-                    step="any"
-                    dir="ltr"
-                    value={form.discountValue}
-                    onChange={(e) => set("discountValue", e.target.value)}
-                    aria-invalid={!!errors.discountValue}
-                    aria-describedby={describedBy("discountValue")}
-                  />
+                  {isPercent ? (
+                    <Input
+                      id={`${ids}-value`}
+                      type="number"
+                      inputMode="decimal"
+                      min={0}
+                      max={90}
+                      step="any"
+                      dir="ltr"
+                      value={form.discountValue}
+                      onChange={(e) => set("discountValue", e.target.value)}
+                      aria-invalid={!!errors.discountValue}
+                      aria-describedby={describedBy("discountValue")}
+                    />
+                  ) : (
+                    <CurrencyInput
+                      id={`${ids}-value`}
+                      value={form.discountValue}
+                      onChange={(v) => set("discountValue", v)}
+                      invalid={!!errors.discountValue}
+                      aria-describedby={describedBy("discountValue")}
+                    />
+                  )}
                   {fieldError("discountValue")}
                 </div>
                 {isPercent && (
                   <div className="space-y-2">
                     <Label htmlFor={`${ids}-max`}>{t("maxDiscount")}</Label>
-                    <Input
+                    <CurrencyInput
                       id={`${ids}-max`}
-                      type="number"
-                      inputMode="decimal"
-                      min={0}
-                      step="any"
-                      dir="ltr"
                       value={form.maximumDiscount}
-                      onChange={(e) => set("maximumDiscount", e.target.value)}
+                      onChange={(v) => set("maximumDiscount", v)}
                       aria-describedby={`${ids}-max-hint`}
                     />
                     <p id={`${ids}-max-hint`} className="text-xs text-muted-foreground">
@@ -502,22 +508,27 @@ function NumberField({
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  /** An EGP amount (static currency addon) rather than a count. */
   decimal?: boolean;
 }) {
   return (
     <div className="space-y-2">
       <Label htmlFor={id}>{label}</Label>
-      <Input
-        id={id}
-        type="number"
-        inputMode={decimal ? "decimal" : "numeric"}
-        min={decimal ? 0 : 1}
-        step={decimal ? "any" : 1}
-        dir="ltr"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-      />
+      {decimal ? (
+        <CurrencyInput id={id} value={value} onChange={onChange} placeholder={placeholder} />
+      ) : (
+        <Input
+          id={id}
+          type="number"
+          inputMode="numeric"
+          min={1}
+          step={1}
+          dir="ltr"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+        />
+      )}
     </div>
   );
 }

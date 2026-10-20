@@ -1,922 +1,301 @@
-import { Button } from "@workspace/ui/components/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@workspace/ui/components/tabs";
-import { Separator } from "@workspace/ui/components/separator";
+import Link from "next/link";
 import { Badge } from "@workspace/ui/components/badge";
-import { Switch } from "@workspace/ui/components/switch";
-import { Label } from "@workspace/ui/components/label";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@workspace/ui/components/avatar";
-import { Input } from "@workspace/ui/components/input";
-import Image from "next/image";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@workspace/ui/components/select";
-import {
-  Save,
-  Users,
-  Store,
-  Bell,
-  Globe,
-  CreditCard,
-  Lock,
-} from "lucide-react";
-import * as z from "zod";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@workspace/ui/components/card";
+import { logServerError } from "@workspace/db/log";
+import { getPlatformSettingsForAdmin, type AdminPlatformSettings } from "@workspace/lib/admin/server";
+import { FEE_TRIAL_DAYS, STANDARD_FEE_MIN_PIASTRES } from "@workspace/lib/orders/platform-fee";
+import { DEFAULT_PLAN, PLANS, type PlanId } from "@workspace/lib/plans";
+import { getCurrentAdminUser } from "@/lib/auth/admin-auth";
+import { AdminTable, type AdminTableColumn } from "../_components/admin-table/admin-table";
+import { formatAdminDate, localizedText } from "../stores/stores.lib";
 
-// General settings validation schema
-const generalSettingsSchema = z.object({
-  siteName: z.string().min(2, "Site name is required"),
-  siteDescription: z.string().optional(),
-  contactEmail: z.string().email("Must be a valid email address"),
-  contactPhone: z.string().optional(),
-  defaultCurrency: z.string().min(1, "Currency is required"),
-  defaultLanguage: z.string().min(1, "Language is required"),
-  timeZone: z.string().min(1, "Time zone is required"),
-  logoUrl: z.string().optional(),
-  faviconUrl: z.string().optional(),
-});
+export const dynamic = "force-dynamic";
 
-// User settings validation schema
-const userSettingsSchema = z
-  .object({
-    firstName: z.string().min(1, "First name is required"),
-    lastName: z.string().min(1, "Last name is required"),
-    email: z.string().email("Must be a valid email address"),
-    role: z.string().min(1, "Role is required"),
-    currentPassword: z.string().optional(),
-    newPassword: z.string().optional(),
-    confirmPassword: z.string().optional(),
-  })
-  .refine(
-    (data) => !data.newPassword || data.newPassword === data.confirmPassword,
-    {
-      message: "Passwords don&apos;t match",
-      path: ["confirmPassword"],
-    }
-  )
-  .refine((data) => !data.newPassword || data.currentPassword, {
-    message: "Current password is required to set a new password",
-    path: ["currentPassword"],
-  });
+const TEAM_COLUMNS: AdminTableColumn[] = [
+  { id: "name", header: "Admin", sortable: true },
+  { id: "status", header: "Status", sortable: true },
+  { id: "lastLoginAt", header: "Last sign-in", sortable: true, descFirst: true },
+  { id: "createdAt", header: "Added", sortable: true, descFirst: true },
+];
 
-// Mock user data
-const currentUser = {
-  firstName: "Admin",
-  lastName: "User",
-  email: "admin@example.com",
-  role: "admin",
-  avatarUrl: null,
+const PLAN_COLUMNS: AdminTableColumn[] = [
+  { id: "plan", header: "Plan" },
+  { id: "maxStores", header: "Stores", align: "end" },
+  { id: "aiCredits", header: "AI credits / month", align: "end" },
+  { id: "features", header: "Features" },
+];
+
+const FEATURE_LABELS: Record<string, string> = {
+  customDomain: "Custom domain",
+  ai: "AI tools",
+  advancedSettings: "Advanced settings",
+  removeTallabyBadge: "Remove Tallaby badge",
 };
 
-export default function SettingsPage() {
-  // Function to handle general settings form submission
-  const handleGeneralSettingsSubmit = async (
-    data: z.infer<typeof generalSettingsSchema>
-  ) => {
-    console.log("General settings submitted:", data);
-    // In a real app, you would send this data to your API
-  };
+/**
+ * Services the admin app talks to, from its environment. Only whether each is
+ * set is shown; values never leave the server (the two app URLs are public).
+ */
+function serviceStatus() {
+  const set = (...keys: string[]) => keys.every((key) => Boolean(process.env[key]?.trim()));
+  return [
+    { name: "Database", detail: "Shared Postgres (Supabase)", ok: set("DATABASE_URL") },
+    { name: "Supabase auth", detail: "Admin sign-in", ok: set("NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY") },
+    { name: "Supabase service role", detail: "Storage uploads and admin-only reads", ok: set("SUPABASE_SERVICE_ROLE_KEY") },
+    {
+      name: "Cache refresh",
+      detail: "Admin changes show on the storefront and dashboard at once",
+      ok: set("ECOMMERCE_URL", "DASHBOARD_URL", "REVALIDATE_SECRET"),
+      urls: [process.env.ECOMMERCE_URL, process.env.DASHBOARD_URL].filter((url): url is string => Boolean(url)),
+    },
+    { name: "PostHog", detail: "Analytics page", ok: set("POSTHOG_HOST", "POSTHOG_PROJECT_ID", "POSTHOG_PERSONAL_API_KEY") },
+    {
+      name: "Vercel domains",
+      detail: "Re-check and remove custom domains",
+      ok: set("STOREFRONT_VERCEL_PROJECT_ID", "STOREFRONT_VERCEL_TOKEN"),
+    },
+  ];
+}
 
-  // Function to handle user settings form submission
-  const handleUserSettingsSubmit = async (
-    data: z.infer<typeof userSettingsSchema>
-  ) => {
-    console.log("User settings submitted:", data);
-    // In a real app, you would send this data to your API
-  };
+/**
+ * Platform settings as they are today: the signed-in admin, the admin team,
+ * the business rules that live in code (plans, fee, trial) and which services
+ * are configured. Read-only; each rule links to where it is changed.
+ */
+export default async function SettingsPage() {
+  const me = await getCurrentAdminUser();
+  let data: AdminPlatformSettings;
+  try {
+    data = await getPlatformSettingsForAdmin();
+  } catch (error) {
+    logServerError("admin", "settings load failed", {}, error);
+    return <p className="text-sm text-destructive">Settings could not be loaded. Try again.</p>;
+  }
+  const services = serviceStatus();
+  const fee = STANDARD_FEE_MIN_PIASTRES / 100;
 
   return (
-    <>
-      <Tabs defaultValue="general" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5 lg:w-auto">
-          <TabsTrigger value="general" className="flex items-center">
-            <Store className="h-4 w-4 mr-2" />
-            <span className="hidden sm:inline">General</span>
-          </TabsTrigger>
-          <TabsTrigger value="account" className="flex items-center">
-            <Users className="h-4 w-4 mr-2" />
-            <span className="hidden sm:inline">Account</span>
-          </TabsTrigger>
-          <TabsTrigger value="notifications" className="flex items-center">
-            <Bell className="h-4 w-4 mr-2" />
-            <span className="hidden sm:inline">Notifications</span>
-          </TabsTrigger>
-          <TabsTrigger value="regional" className="flex items-center">
-            <Globe className="h-4 w-4 mr-2" />
-            <span className="hidden sm:inline">Regional</span>
-          </TabsTrigger>
-          <TabsTrigger value="payments" className="flex items-center">
-            <CreditCard className="h-4 w-4 mr-2" />
-            <span className="hidden sm:inline">Payments</span>
-          </TabsTrigger>
-        </TabsList>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-semibold">Settings</h1>
+        <p className="text-sm text-muted-foreground">
+          Your account, the admin team and the rules every seller is on. Plans, the fee and the trial are set in code
+          (PLAN.md §13), so they are shown here, not edited.
+        </p>
+      </div>
 
-        {/* General Settings Tab */}
-        <TabsContent value="general">
-          <Card>
-            <CardHeader>
-              <CardTitle>General Settings</CardTitle>
-              <CardDescription>
-                Manage your store's general settings and information
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {/* <FormWrapper
-                schema={generalSettingsSchema}
-                defaultValues={{
-                  siteName: "E-Commerce Store",
-                  siteDescription: "Your one-stop shop for all your needs",
-                  contactEmail: "contact@example.com",
-                  contactPhone: "+1 (555) 123-4567",
-                  defaultCurrency: "EGP",
-                  defaultLanguage: "en",
-                  timeZone: "America/New_York",
-                  logoUrl: "",
-                  faviconUrl: "",
-                }}
-                onSubmit={handleGeneralSettingsSubmit}
-                submitText="Save Changes"
-              >
-                <div className="grid gap-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormInputField
-                      control={control}
-                      name="siteName"
-                      label="Site Name"
-                      placeholder="Your store name"
-                    />
-                    <FormInputField
-                      control={control}
-                      name="siteDescription"
-                      label="Site Description"
-                      placeholder="Brief description of your store"
-                    />
-                  </div>
-                  
-                  <Separator />
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormInputField
-                      control={control}
-                      name="contactEmail"
-                      label="Contact Email"
-                      placeholder="contact@example.com"
-                    />
-                    <FormInputField
-                      control={control}
-                      name="contactPhone"
-                      label="Contact Phone"
-                      placeholder="+1 (555) 123-4567"
-                    />
-                  </div>
-                  
-                  <Separator />
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                    <FormInputField
-                      control={control}
-                      name="defaultCurrency"
-                      label="Default Currency"
-                      type="select"
-                      options={[
-                        { label: "EGP - Egyptian Pound", value: "EGP" },
-                      ]}
-                    />
-                    <FormInputField
-                      control={control}
-                      name="defaultLanguage"
-                      label="Default Language"
-                      type="select"
-                      options={[
-                        { label: "English", value: "en" },
-                        { label: "Spanish", value: "es" },
-                        { label: "French", value: "fr" },
-                        { label: "German", value: "de" },
-                        { label: "Japanese", value: "ja" },
-                      ]}
-                    />
-                    <FormInputField
-                      control={control}
-                      name="timeZone"
-                      label="Time Zone"
-                      type="select"
-                      options={[
-                        { label: "UTC (GMT)", value: "UTC" },
-                        { label: "America/New_York (EST/EDT)", value: "America/New_York" },
-                        { label: "America/Los_Angeles (PST/PDT)", value: "America/Los_Angeles" },
-                        { label: "Europe/London (GMT/BST)", value: "Europe/London" },
-                        { label: "Europe/Paris (CET/CEST)", value: "Europe/Paris" },
-                        { label: "Asia/Tokyo (JST)", value: "Asia/Tokyo" },
-                      ]}
-                    />
-                  </div>
-                  
-                  <Separator />
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormInputField
-                      control={control}
-                      name="logoUrl"
-                      label="Logo URL"
-                      placeholder="https://example.com/logo.png"
-                    />
-                    <FormInputField
-                      control={control}
-                      name="faviconUrl"
-                      label="Favicon URL"
-                      placeholder="https://example.com/favicon.ico"
-                    />
-                  </div>
-                </div>
-              </FormWrapper> */}
-            </CardContent>
-          </Card>
-        </TabsContent>
+      <div className="grid gap-4 lg:grid-cols-3">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Your account</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
+              <dt className="text-muted-foreground">Name</dt>
+              <dd>{me.fullName?.trim() || "—"}</dd>
+              <dt className="text-muted-foreground">Email</dt>
+              <dd className="break-all" dir="ltr">
+                {me.email}
+              </dd>
+              <dt className="text-muted-foreground">Role</dt>
+              <dd className="capitalize">{me.role.replace(/_/g, " ")}</dd>
+              <dt className="text-muted-foreground">Member since</dt>
+              <dd>{formatAdminDate(me.createdAt)}</dd>
+            </dl>
+          </CardContent>
+        </Card>
 
-        {/* Account Settings Tab */}
-        <TabsContent value="account">
-          <div className="grid gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Profile Information</CardTitle>
-                <CardDescription>
-                  Update your account profile information
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col md:flex-row gap-8">
-                  <div className="flex flex-col items-center gap-4">
-                    <Avatar className="h-24 w-24">
-                      <AvatarImage src={currentUser.avatarUrl || ""} />
-                      <AvatarFallback className="text-2xl">
-                        {currentUser.firstName.charAt(0)}
-                        {currentUser.lastName.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <Button variant="outline" size="sm">
-                      Change Avatar
-                    </Button>
-                  </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Seller fee</CardTitle>
+            <CardDescription>Taken from the store wallet when an order is delivered.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
+              <dt className="text-muted-foreground">Fee</dt>
+              <dd>EGP {fee.toLocaleString()} per seller per delivered order, shipping excluded</dd>
+              <dt className="text-muted-foreground">Free trial</dt>
+              <dd>
+                {FEE_TRIAL_DAYS} days from the seller&apos;s first store
+              </dd>
+              <dt className="text-muted-foreground">Wallets</dt>
+              <dd>
+                <Link href="/wallets" className="hover:underline">
+                  Store wallets
+                </Link>{" "}
+                ·{" "}
+                <Link href="/store-top-ups" className="hover:underline">
+                  Top-ups
+                </Link>
+              </dd>
+            </dl>
+          </CardContent>
+        </Card>
 
-                  <div className="flex-1">
-                    {/* <FormWrapper
-                      schema={userSettingsSchema}
-                      defaultValues={{
-                        firstName: currentUser.firstName,
-                        lastName: currentUser.lastName,
-                        email: currentUser.email,
-                        role: currentUser.role,
-                        currentPassword: "",
-                        newPassword: "",
-                        confirmPassword: "",
-                      }}
-                      onSubmit={handleUserSettingsSubmit}
-                      submitText="Update Profile"
-                    >
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <FormInputField
-                          control={control}
-                          name="firstName"
-                          label="First Name"
-                          placeholder="John"
-                        />
-                        <FormInputField
-                          control={control}
-                          name="lastName"
-                          label="Last Name"
-                          placeholder="Doe"
-                        />
-                        <FormInputField
-                          control={control}
-                          name="email"
-                          label="Email Address"
-                          placeholder="john.doe@example.com"
-                        />
-                        <FormInputField
-                          control={control}
-                          name="role"
-                          label="Role"
-                          type="select"
-                          options={[
-                            { label: "Admin", value: "admin" },
-                            { label: "Manager", value: "manager" },
-                            { label: "Editor", value: "editor" },
-                            { label: "Viewer", value: "viewer" },
-                          ]}
-                          disabled
-                        />
-                      </div>
-                    </FormWrapper> */}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Platform</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
+              <dt className="text-muted-foreground">Sellers</dt>
+              <dd className="tabular-nums">
+                <Link href="/sellers" className="hover:underline">
+                  {data.counts.sellers.toLocaleString()}
+                </Link>
+              </dd>
+              <dt className="text-muted-foreground">Stores</dt>
+              <dd className="tabular-nums">
+                <Link href="/stores" className="hover:underline">
+                  {data.counts.stores.toLocaleString()}
+                </Link>
+              </dd>
+              <dt className="text-muted-foreground">Templates shown</dt>
+              <dd className="tabular-nums">{data.counts.templates.toLocaleString()}</dd>
+              <dt className="text-muted-foreground">Default template</dt>
+              <dd>
+                <Link href="/templates" className="hover:underline">
+                  {data.defaultTemplate ? localizedText(data.defaultTemplate.name) : "None set"}
+                </Link>
+              </dd>
+            </dl>
+          </CardContent>
+        </Card>
+      </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Change Password</CardTitle>
-                <CardDescription>Update your account password</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form className="grid gap-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="current-password">Current Password</Label>
-                      <Input
-                        id="current-password"
-                        type="password"
-                        placeholder="••••••••"
-                      />
-                    </div>
-                    <div></div> {/* Empty div for grid alignment */}
-                    <div className="space-y-2">
-                      <Label htmlFor="new-password">New Password</Label>
-                      <Input
-                        id="new-password"
-                        type="password"
-                        placeholder="••••••••"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="confirm-password">
-                        Confirm New Password
-                      </Label>
-                      <Input
-                        id="confirm-password"
-                        type="password"
-                        placeholder="••••••••"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex justify-end">
-                    <Button>
-                      <Lock className="h-4 w-4 mr-2" />
-                      Update Password
-                    </Button>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Two-Factor Authentication</CardTitle>
-                <CardDescription>
-                  Add an extra layer of security to your account
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <h3 className="text-lg font-medium">2FA Status</h3>
-                    <p className="text-sm text-gray-500">
-                      Two-factor authentication is currently disabled.
-                    </p>
-                  </div>
-                  <Button variant="outline">Enable 2FA</Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        {/* Notifications Settings Tab */}
-        <TabsContent value="notifications">
-          <Card>
-            <CardHeader>
-              <CardTitle>Notification Settings</CardTitle>
-              <CardDescription>
-                Manage how you receive notifications
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">Email Notifications</h3>
-                <div className="grid gap-4">
-                  <div className="flex items-center justify-between border-b pb-4">
-                    <div>
-                      <Label htmlFor="email-orders" className="font-medium">
-                        Order Updates
-                      </Label>
-                      <p className="text-sm text-gray-500">
-                        Receive email notifications about new orders and status
-                        changes
-                      </p>
-                    </div>
-                    <Switch id="email-orders" defaultChecked />
-                  </div>
-                  <div className="flex items-center justify-between border-b pb-4">
-                    <div>
-                      <Label htmlFor="email-products" className="font-medium">
-                        Product Alerts
-                      </Label>
-                      <p className="text-sm text-gray-500">
-                        Receive email notifications about low stock and price
-                        changes
-                      </p>
-                    </div>
-                    <Switch id="email-products" defaultChecked />
-                  </div>
-                  <div className="flex items-center justify-between border-b pb-4">
-                    <div>
-                      <Label htmlFor="email-customers" className="font-medium">
-                        Customer Activity
-                      </Label>
-                      <p className="text-sm text-gray-500">
-                        Receive email notifications about new customers and
-                        reviews
-                      </p>
-                    </div>
-                    <Switch id="email-customers" defaultChecked />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label htmlFor="email-marketing" className="font-medium">
-                        Marketing Campaigns
-                      </Label>
-                      <p className="text-sm text-gray-500">
-                        Receive email notifications about marketing campaigns
-                        and promotions
-                      </p>
-                    </div>
-                    <Switch id="email-marketing" />
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">Push Notifications</h3>
-                <div className="grid gap-4">
-                  <div className="flex items-center justify-between border-b pb-4">
-                    <div>
-                      <Label htmlFor="push-orders" className="font-medium">
-                        Order Updates
-                      </Label>
-                      <p className="text-sm text-gray-500">
-                        Receive push notifications about new orders and status
-                        changes
-                      </p>
-                    </div>
-                    <Switch id="push-orders" defaultChecked />
-                  </div>
-                  <div className="flex items-center justify-between border-b pb-4">
-                    <div>
-                      <Label htmlFor="push-products" className="font-medium">
-                        Product Alerts
-                      </Label>
-                      <p className="text-sm text-gray-500">
-                        Receive push notifications about low stock and price
-                        changes
-                      </p>
-                    </div>
-                    <Switch id="push-products" />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label htmlFor="push-customers" className="font-medium">
-                        Customer Activity
-                      </Label>
-                      <p className="text-sm text-gray-500">
-                        Receive push notifications about new customers and
-                        reviews
-                      </p>
-                    </div>
-                    <Switch id="push-customers" />
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter className="flex justify-end">
-              <Button>
-                <Save className="h-4 w-4 mr-2" />
-                Save Notification Settings
-              </Button>
-            </CardFooter>
-          </Card>
-        </TabsContent>
-
-        {/* Regional Settings Tab */}
-        <TabsContent value="regional">
-          <Card>
-            <CardHeader>
-              <CardTitle>Regional Settings</CardTitle>
-              <CardDescription>
-                Configure localization and regional preferences
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="currency">Default Currency</Label>
-                  <Select defaultValue="EGP">
-                    <SelectTrigger id="currency">
-                      <SelectValue placeholder="Select currency" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="EGP">EGP - Egyptian Pound</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="language">Default Language</Label>
-                  <Select defaultValue="en">
-                    <SelectTrigger id="language">
-                      <SelectValue placeholder="Select language" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="en">English</SelectItem>
-                      <SelectItem value="es">Spanish</SelectItem>
-                      <SelectItem value="fr">French</SelectItem>
-                      <SelectItem value="de">German</SelectItem>
-                      <SelectItem value="ja">Japanese</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="date-format">Date Format</Label>
-                  <Select defaultValue="MM/DD/YYYY">
-                    <SelectTrigger id="date-format">
-                      <SelectValue placeholder="Select date format" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="MM/DD/YYYY">MM/DD/YYYY</SelectItem>
-                      <SelectItem value="DD/MM/YYYY">DD/MM/YYYY</SelectItem>
-                      <SelectItem value="YYYY-MM-DD">YYYY-MM-DD</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="time-format">Time Format</Label>
-                  <Select defaultValue="12">
-                    <SelectTrigger id="time-format">
-                      <SelectValue placeholder="Select time format" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="12">12-hour (AM/PM)</SelectItem>
-                      <SelectItem value="24">24-hour</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">Tax Settings</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between border-b pb-4">
-                    <div>
-                      <Label
-                        htmlFor="prices-include-tax"
-                        className="font-medium"
-                      >
-                        Show Prices with Tax
-                      </Label>
-                      <p className="text-sm text-gray-500">
-                        Display product prices including tax
-                      </p>
-                    </div>
-                    <Switch id="prices-include-tax" />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="tax-calculation">Tax Calculation</Label>
-                    <Select defaultValue="shipping">
-                      <SelectTrigger id="tax-calculation">
-                        <SelectValue placeholder="Select tax calculation method" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="shipping">
-                          Based on Shipping Address
-                        </SelectItem>
-                        <SelectItem value="billing">
-                          Based on Billing Address
-                        </SelectItem>
-                        <SelectItem value="store">
-                          Based on Store Address
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">Shipping Settings</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between border-b pb-4">
-                    <div>
-                      <Label
-                        htmlFor="shipping-domestic-only"
-                        className="font-medium"
-                      >
-                        Domestic Shipping Only
-                      </Label>
-                      <p className="text-sm text-gray-500">
-                        Restrict shipping to domestic addresses only
-                      </p>
-                    </div>
-                    <Switch id="shipping-domestic-only" />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="weight-unit">Weight Unit</Label>
-                    <Select defaultValue="kg">
-                      <SelectTrigger id="weight-unit">
-                        <SelectValue placeholder="Select weight unit" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="kg">Kilograms (kg)</SelectItem>
-                        <SelectItem value="g">Grams (g)</SelectItem>
-                        <SelectItem value="lb">Pounds (lb)</SelectItem>
-                        <SelectItem value="oz">Ounces (oz)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="dimension-unit">Dimension Unit</Label>
-                    <Select defaultValue="cm">
-                      <SelectTrigger id="dimension-unit">
-                        <SelectValue placeholder="Select dimension unit" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="cm">Centimeters (cm)</SelectItem>
-                        <SelectItem value="m">Meters (m)</SelectItem>
-                        <SelectItem value="in">Inches (in)</SelectItem>
-                        <SelectItem value="ft">Feet (ft)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter className="flex justify-end">
-              <Button>
-                <Save className="h-4 w-4 mr-2" />
-                Save Regional Settings
-              </Button>
-            </CardFooter>
-          </Card>
-        </TabsContent>
-
-        {/* Payment Settings Tab */}
-        <TabsContent value="payments">
-          <Card>
-            <CardHeader>
-              <CardTitle>Payment Settings</CardTitle>
-              <CardDescription>
-                Configure payment methods and processing options
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">Payment Providers</h3>
-                <div className="space-y-4">
-                  <div className="border rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-2">
-                        <Image
-                          src="/api/placeholder/120/40"
-                          alt="Stripe"
-                          width={120}
-                          height={40}
-                          className="h-8 w-auto"
-                        />
-                        <Badge
-                          variant="outline"
-                          className="bg-green-50 text-green-700 border-green-200"
-                        >
-                          Active
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Seller plans</CardTitle>
+          <CardDescription>
+            New sellers start on {planName(DEFAULT_PLAN)}. A seller&apos;s store
+            limit can be raised on their page (audited).
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <AdminTable
+            columns={PLAN_COLUMNS}
+            rows={(Object.keys(PLANS) as PlanId[]).map((id) => {
+              const plan = PLANS[id];
+              const features = Object.entries(FEATURE_LABELS).filter(([key]) => plan[key as keyof typeof plan]);
+              return {
+                id,
+                cells: {
+                  plan: (
+                    <span className="font-medium">
+                      {planName(id)}
+                      {id === DEFAULT_PLAN && (
+                        <Badge variant="outline" className="ml-2 font-normal">
+                          Default
                         </Badge>
-                      </div>
-                      <Button variant="outline" size="sm">
-                        Configure
-                      </Button>
+                      )}
+                    </span>
+                  ),
+                  maxStores: <span className="tabular-nums">{plan.maxStores}</span>,
+                  aiCredits: <span className="tabular-nums">{plan.aiCreditsMonthly}</span>,
+                  features: (
+                    <div className="flex flex-wrap gap-1">
+                      {features.length
+                        ? features.map(([key, label]) => (
+                            <Badge key={key} variant="secondary" className="font-normal">
+                              {label}
+                            </Badge>
+                          ))
+                        : "—"}
                     </div>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">API Key Status:</span>
-                        <span className="font-medium text-green-600">
-                          Verified
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Webhook Status:</span>
-                        <span className="font-medium text-green-600">
-                          Configured
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Account Type:</span>
-                        <span className="font-medium">Live</span>
-                      </div>
-                    </div>
-                  </div>
+                  ),
+                },
+              };
+            })}
+          />
+        </CardContent>
+      </Card>
 
-                  <div className="border rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-2">
-                        <Image
-                          src="/api/placeholder/120/40"
-                          alt="PayPal"
-                          width={120}
-                          height={40}
-                          className="h-8 w-auto"
-                        />
-                        <Badge
-                          variant="outline"
-                          className="bg-amber-50 text-amber-700 border-amber-200"
-                        >
-                          Needs Setup
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Admin team</CardTitle>
+          <CardDescription>Users with access to this admin app.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <AdminTable
+            columns={TEAM_COLUMNS}
+            defaultSort={{ id: "createdAt", desc: false }}
+            emptyMessage="No admins."
+            rows={data.team.map((admin) => ({
+              id: admin.id,
+              sortValues: {
+                name: admin.fullName || admin.email,
+                status: admin.isSuspended ? 0 : admin.isVerified ? 2 : 1,
+                lastLoginAt: admin.lastLoginAt,
+                createdAt: admin.createdAt,
+              },
+              cells: {
+                name: (
+                  <div>
+                    <div className="font-medium">
+                      {admin.fullName || admin.email || "Admin"}
+                      {admin.id === me.id && (
+                        <Badge variant="outline" className="ml-2 font-normal">
+                          You
                         </Badge>
-                      </div>
-                      <Button variant="outline" size="sm">
-                        Set Up
-                      </Button>
+                      )}
                     </div>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">API Key Status:</span>
-                        <span className="font-medium text-amber-600">
-                          Missing
-                        </span>
+                    {admin.fullName && admin.email && (
+                      <div className="text-xs text-muted-foreground" dir="ltr">
+                        {admin.email}
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Webhook Status:</span>
-                        <span className="font-medium text-gray-400">
-                          Not Configured
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Account Type:</span>
-                        <span className="font-medium">N/A</span>
-                      </div>
-                    </div>
+                    )}
                   </div>
+                ),
+                status: (
+                  <Badge variant="outline" className="font-normal">
+                    {admin.isSuspended ? "Suspended" : admin.isVerified ? "Active" : "Not verified"}
+                  </Badge>
+                ),
+                lastLoginAt: <span className="text-sm text-muted-foreground">{formatAdminDate(admin.lastLoginAt)}</span>,
+                createdAt: <span className="text-sm text-muted-foreground">{formatAdminDate(admin.createdAt)}</span>,
+              },
+            }))}
+          />
+        </CardContent>
+      </Card>
 
-                  <div className="border rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-2">
-                        <Image
-                          src="/api/placeholder/120/40"
-                          alt="Bank Transfer"
-                          width={120}
-                          height={40}
-                          className="h-8 w-auto"
-                        />
-                        <Badge
-                          variant="outline"
-                          className="bg-gray-50 text-gray-700 border-gray-200"
-                        >
-                          Inactive
-                        </Badge>
-                      </div>
-                      <Button variant="outline" size="sm">
-                        Enable
-                      </Button>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Connected services</CardTitle>
+          <CardDescription>Whether each service this app needs is configured. Secret values are never shown.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ul className="divide-y text-sm">
+            {services.map((service) => (
+              <li key={service.name} className="flex flex-wrap items-start justify-between gap-2 py-2.5">
+                <div>
+                  <div className="font-medium">{service.name}</div>
+                  <div className="text-xs text-muted-foreground">{service.detail}</div>
+                  {service.urls?.map((url) => (
+                    <div key={url} className="font-mono text-xs text-muted-foreground" dir="ltr">
+                      {url}
                     </div>
-                  </div>
+                  ))}
                 </div>
-              </div>
-
-              <Separator />
-
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">Processing Options</h3>
-                <div className="grid gap-4">
-                  <div className="flex items-center justify-between border-b pb-4">
-                    <div>
-                      <Label htmlFor="capture-payment" className="font-medium">
-                        Auto-Capture Payments
-                      </Label>
-                      <p className="text-sm text-gray-500">
-                        Automatically capture authorized payments
-                      </p>
-                    </div>
-                    <Switch id="capture-payment" defaultChecked />
-                  </div>
-
-                  <div className="flex items-center justify-between border-b pb-4">
-                    <div>
-                      <Label htmlFor="test-mode" className="font-medium">
-                        Test Mode
-                      </Label>
-                      <p className="text-sm text-gray-500">
-                        Process payments in test mode (no real charges)
-                      </p>
-                    </div>
-                    <Switch id="test-mode" />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="payment-action">Payment Action</Label>
-                    <Select defaultValue="capture">
-                      <SelectTrigger id="payment-action">
-                        <SelectValue placeholder="Select payment action" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="capture">
-                          Authorize and Capture
-                        </SelectItem>
-                        <SelectItem value="authorize">
-                          Authorize Only
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">
-                  Available Payment Methods
-                </h3>
-                <div className="grid gap-4">
-                  <div className="flex items-center justify-between border-b pb-4">
-                    <div className="flex items-center gap-2">
-                      <Label htmlFor="credit-card" className="font-medium">
-                        Credit/Debit Cards
-                      </Label>
-                    </div>
-                    <Switch id="credit-card" defaultChecked />
-                  </div>
-
-                  <div className="flex items-center justify-between border-b pb-4">
-                    <div className="flex items-center gap-2">
-                      <Label htmlFor="paypal" className="font-medium">
-                        PayPal
-                      </Label>
-                    </div>
-                    <Switch id="paypal" />
-                  </div>
-
-                  <div className="flex items-center justify-between border-b pb-4">
-                    <div className="flex items-center gap-2">
-                      <Label htmlFor="apple-pay" className="font-medium">
-                        Apple Pay
-                      </Label>
-                    </div>
-                    <Switch id="apple-pay" defaultChecked />
-                  </div>
-
-                  <div className="flex items-center justify-between border-b pb-4">
-                    <div className="flex items-center gap-2">
-                      <Label htmlFor="google-pay" className="font-medium">
-                        Google Pay
-                      </Label>
-                    </div>
-                    <Switch id="google-pay" defaultChecked />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Label htmlFor="bank-transfer" className="font-medium">
-                        Bank Transfer
-                      </Label>
-                    </div>
-                    <Switch id="bank-transfer" />
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter className="flex justify-end">
-              <Button>
-                <Save className="h-4 w-4 mr-2" />
-                Save Payment Settings
-              </Button>
-            </CardFooter>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </>
+                <Badge
+                  variant="outline"
+                  className={
+                    service.ok
+                      ? "border-green-200 bg-green-100 font-normal text-green-900"
+                      : "border-amber-200 bg-amber-100 font-normal text-amber-900"
+                  }
+                >
+                  {service.ok ? "Configured" : "Not set"}
+                </Badge>
+              </li>
+            ))}
+          </ul>
+        </CardContent>
+      </Card>
+    </div>
   );
+}
+
+function planName(id: string): string {
+  return id.charAt(0).toUpperCase() + id.slice(1);
 }

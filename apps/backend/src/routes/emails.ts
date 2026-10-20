@@ -10,6 +10,7 @@ import {
   resolveEmailLocale,
 } from "@workspace/emails";
 import { buildOrderConfirmationEmailData } from "../lib/order-confirmation";
+import { sendFeeTrialReminder } from "../lib/fee-trial-reminder";
 import {
   claimEmailDelivery,
   EMAIL_TYPES,
@@ -18,6 +19,11 @@ import {
 } from "../lib/email-delivery";
 
 const app = new Hono();
+
+const feeTrialReminderSchema = z.object({
+  sellerId: z.string().uuid(),
+  stage: z.enum(["t7", "t1"]),
+});
 
 const orderConfirmationSchema = z.object({
   orderId: z.string().uuid(),
@@ -172,6 +178,26 @@ app.post("/order-confirmation", async (c) => {
     }
     console.error("Error sending order confirmation email:", error);
     return c.json({ error: "Failed to send order confirmation email" }, 500);
+  }
+});
+
+/**
+ * Seller fee trial reminder, 7 days and 1 day before the trial ends (PLAN.md
+ * §13.5, P6-07). Called by the daily ecommerce cron. Each stage is sent once
+ * per seller (email_deliveries claim) and only when it is actually due.
+ */
+app.post("/fee-trial-reminder", async (c) => {
+  const parsed = feeTrialReminderSchema.safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) {
+    return c.json({ error: "Invalid request", details: parsed.error.flatten() }, 400);
+  }
+
+  try {
+    const result = await sendFeeTrialReminder(parsed.data.sellerId, parsed.data.stage);
+    return c.json({ success: true, ...result });
+  } catch (error) {
+    console.error("Error sending fee trial reminder:", error);
+    return c.json({ error: "Failed to send fee trial reminder" }, 500);
   }
 });
 

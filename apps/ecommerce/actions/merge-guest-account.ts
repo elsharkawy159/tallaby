@@ -98,7 +98,12 @@ export async function mergeGuestAccount(): Promise<{
 
         // Get or create authenticated user's cart
         let authCart = await tx.query.carts.findFirst({
-          where: activeCartWhere(authenticatedUserId, guestCart.storeSellerId),
+          where: activeCartWhere(
+            authenticatedUserId,
+            guestCart.storeId && guestCart.storeSellerId
+              ? { storeId: guestCart.storeId, sellerId: guestCart.storeSellerId }
+              : null,
+          ),
         });
 
         if (!authCart) {
@@ -107,6 +112,7 @@ export async function mergeGuestAccount(): Promise<{
             .values({
               userId: authenticatedUserId,
               storeSellerId: guestCart.storeSellerId,
+              storeId: guestCart.storeId,
               status: "active",
               currency: guestCart.currency || "EGP",
             })

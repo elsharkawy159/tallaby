@@ -1,6 +1,7 @@
 'use server'
 
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
+import { isMarketplaceHost } from '@workspace/lib/storefront'
 import { sendMetaCapiEvent } from '@/lib/meta/meta.server'
 import { getMetaCapiUserData } from '@/lib/meta/meta.user'
 import { toMetaContentIds } from '@/lib/meta/meta.product'
@@ -35,6 +36,11 @@ export async function trackMetaInitiateCheckoutAction (
   }
 
   try {
+    // Tallaby's pixel is marketplace-only; storefront checkouts run on the store host (P5-05).
+    if (!isMarketplaceHost((await headers()).get('host'))) {
+      return { success: true, skipped: true }
+    }
+
     const cookieStore = await cookies()
     const cookieName = initiateCheckoutCookieName(cartId)
 

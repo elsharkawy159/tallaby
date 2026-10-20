@@ -13,128 +13,15 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@workspace/ui/components/sheet";
-import {
-  ShoppingCart,
-  ShoppingBag,
-  Users,
-  Package,
-  Tag,
-  Store,
-  Calculator,
-  ChevronLeft,
-  ChevronRight,
-  Home,
-  LineChart,
-  Phone,
-  Wallet,
-  Handshake,
-  Warehouse,
-  TicketPercent,
-} from "lucide-react";
-import type { SidebarCounts, SidebarProps } from "./sidebar.types";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import type { SidebarCounts, SidebarProps, SidebarUser } from "./sidebar.types";
 import { SIDEBAR_COUNT_BADGE_CLASS } from "./sidebar.types";
 import { useMobileNav } from "./mobile-nav";
+import { activeHref, visibleSections } from "./sidebar.config";
 
-interface SidebarLink {
-  title: string;
-  href: string;
-  icon: React.ElementType;
-  /** Omitted for links that have nothing to count, such as tools. */
-  countKey?: keyof SidebarCounts;
-  /** Tooltip explaining what the badge number counts. */
-  countLabel?: string;
-  submenu?: SidebarLink[];
-}
+const sections = visibleSections();
 
-const sidebarLinks: SidebarLink[] = [
-  {
-    title: "Dashboard",
-    href: "/",
-    icon: Home,
-  },
-  {
-    title: "Analytics",
-    href: "/analytics",
-    icon: LineChart,
-  },
-  {
-    title: "Customers",
-    href: "/customers",
-    icon: Users,
-    countKey: "newCustomers",
-    countLabel: "New customers today",
-  },
-  {
-    title: "Pending Carts",
-    href: "/pending-carts",
-    icon: ShoppingBag,
-    countKey: "unremindedCarts",
-    countLabel: "Carts not reminded yet",
-  },
-  {
-    title: "Orders",
-    href: "/orders",
-    icon: ShoppingCart,
-    countKey: "pendingOrders",
-    countLabel: "Pending orders",
-  },
-  {
-    title: "External Orders",
-    href: "/external-orders",
-    icon: Phone,
-  },
-  {
-    title: "Products",
-    href: "/products",
-    icon: Package,
-    countKey: "pendingProducts",
-    countLabel: "Products awaiting approval",
-  },
-  {
-    title: "Pricing Calculator",
-    href: "/pricing-calculator",
-    icon: Calculator,
-  },
-  {
-    title: "Categories",
-    href: "/categories",
-    icon: Tag,
-  },
-  {
-    title: "Brands",
-    href: "/brands",
-    icon: Store,
-  },
-  {
-    title: "Sellers",
-    href: "/sellers",
-    icon: Store,
-    countKey: "pendingSellers",
-    countLabel: "Sellers awaiting approval",
-  },
-  {
-    title: "Fulfillment",
-    href: "/fulfillment",
-    icon: Warehouse,
-  },
-  {
-    title: "Wallets",
-    href: "/wallets",
-    icon: Wallet,
-  },
-  {
-    title: "Affiliates",
-    href: "/affiliate",
-    icon: Handshake,
-  },
-  {
-    title: "Coupons",
-    href: "/coupons",
-    icon: TicketPercent,
-  },
-];
-
-export default function Sidebar({ counts }: SidebarProps) {
+export default function Sidebar({ counts, user }: SidebarProps) {
   const [expanded, setExpanded] = useState(true);
   const { open, setOpen } = useMobileNav();
 
@@ -165,7 +52,7 @@ export default function Sidebar({ counts }: SidebarProps) {
         <ScrollArea className="min-h-0 flex-1">
           <SidebarNav counts={counts} expanded={expanded} />
         </ScrollArea>
-        <SidebarFooter expanded={expanded} />
+        <SidebarFooter expanded={expanded} user={user} />
       </div>
 
       {/* Mobile drawer */}
@@ -182,7 +69,7 @@ export default function Sidebar({ counts }: SidebarProps) {
           <ScrollArea className="min-h-0 flex-1">
             <SidebarNav counts={counts} expanded />
           </ScrollArea>
-          <SidebarFooter expanded />
+          <SidebarFooter expanded user={user} />
         </SheetContent>
       </Sheet>
     </>
@@ -197,132 +84,83 @@ function SidebarNav({
   expanded: boolean;
 }) {
   const pathname = usePathname();
-  const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({});
-
-  const toggleSubmenu = (title: string) => {
-    setOpenSubmenus((prev) => ({
-      ...prev,
-      [title]: !prev[title],
-    }));
-  };
+  const current = activeHref(pathname, sections);
 
   return (
     <nav className="p-2">
-      <ul className="flex flex-col gap-1">
-        {sidebarLinks.map((link) => (
-          <li key={link.title}>
-            {link.submenu ? (
-              <>
-                <button
-                  onClick={() => toggleSubmenu(link.title)}
-                  className={cn(
-                    "flex w-full items-center justify-between rounded-md px-3 py-2 text-sm",
-                    "transition-colors hover:bg-sidebar-accent",
-                    pathname.startsWith(link.href) && "bg-sidebar-accent",
-                  )}
-                >
-                  <span className="flex min-w-0 items-center">
-                    <link.icon className="mr-2 size-5 shrink-0 text-muted-foreground" />
-                    {expanded && (
-                      <span className="truncate">{link.title}</span>
-                    )}
-                  </span>
-                  {expanded && (
-                    <ChevronRight
-                      size={16}
-                      className={cn(
-                        "shrink-0 transition-transform",
-                        openSubmenus[link.title] && "rotate-90",
-                      )}
-                    />
-                  )}
-                </button>
-                {expanded && openSubmenus[link.title] && (
-                  <ul className="mt-1 ml-6 flex flex-col gap-1">
-                    {link.submenu.map((sublink) => (
-                      <li key={sublink.title}>
-                        <Link
-                          href={sublink.href}
-                          className={cn(
-                            "flex items-center justify-between rounded-md px-3 py-2 text-sm",
-                            "transition-colors hover:bg-sidebar-accent",
-                            pathname === sublink.href &&
-                              "bg-sidebar-accent font-medium",
-                          )}
-                        >
-                          <span className="flex min-w-0 items-center">
-                            <sublink.icon className="mr-2 size-4 shrink-0 text-muted-foreground" />
-                            <span className="truncate">
-                              {sublink.title}
-                            </span>
-                          </span>
-                          {sublink.countKey &&
-                            counts[sublink.countKey] > 0 && (
-                              <Badge
-                                variant="outline"
-                                className={SIDEBAR_COUNT_BADGE_CLASS}
-                                title={sublink.countLabel}
-                              >
-                                {counts[sublink.countKey].toLocaleString()}
-                              </Badge>
-                            )}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </>
-            ) : (
-              <Link
-                href={link.href}
-                className={cn(
-                  "flex items-center rounded-md px-3 py-2 text-sm",
-                  "transition-colors hover:bg-sidebar-accent",
-                  expanded && "justify-between",
-                  pathname === link.href &&
-                    "bg-primary font-medium text-primary-foreground hover:bg-primary [&_svg]:text-primary-foreground",
-                )}
-              >
-                <span className="flex min-w-0 items-center">
-                  <link.icon
+      {sections.map((section, index) => (
+        <div key={section.key} className={cn(index > 0 && "mt-3")}>
+          {expanded ? (
+            <p className="px-3 pb-1 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+              {section.title}
+            </p>
+          ) : (
+            index > 0 && <div className="mx-2 mb-3 h-px bg-sidebar-border" />
+          )}
+          <ul className="flex flex-col gap-0.5">
+            {section.links.map((link) => {
+              const active = current === link.href;
+              const count = link.countKey ? counts[link.countKey] : 0;
+              return (
+                <li key={link.key}>
+                  <Link
+                    href={link.href}
+                    title={expanded ? undefined : link.title}
+                    aria-current={active ? "page" : undefined}
                     className={cn(
-                      "size-5 shrink-0 text-muted-foreground",
-                      expanded ? "mr-2" : "mx-auto",
+                      "relative flex items-center rounded-md px-3 py-2 text-sm",
+                      "transition-colors hover:bg-sidebar-accent",
+                      expanded && "justify-between",
+                      active &&
+                        "bg-primary font-medium text-primary-foreground hover:bg-primary [&_svg]:text-primary-foreground",
                     )}
-                  />
-                  {expanded && (
-                    <span className="truncate">{link.title}</span>
-                  )}
-                </span>
-                {expanded && link.countKey && counts[link.countKey] > 0 && (
-                  <Badge
-                    variant="secondary"
-                    className={SIDEBAR_COUNT_BADGE_CLASS}
-                    title={link.countLabel}
                   >
-                    {counts[link.countKey].toLocaleString()}
-                  </Badge>
-                )}
-              </Link>
-            )}
-          </li>
-        ))}
-      </ul>
+                    <span className="flex min-w-0 items-center">
+                      <link.icon
+                        className={cn(
+                          "size-5 shrink-0 text-muted-foreground",
+                          expanded ? "mr-2" : "mx-auto",
+                        )}
+                      />
+                      {expanded && <span className="truncate">{link.title}</span>}
+                    </span>
+                    {count > 0 &&
+                      (expanded ? (
+                        <Badge
+                          variant="secondary"
+                          className={SIDEBAR_COUNT_BADGE_CLASS}
+                          title={link.countLabel}
+                        >
+                          {count.toLocaleString()}
+                        </Badge>
+                      ) : (
+                        <span
+                          className="absolute top-1 right-1 size-2 rounded-full bg-destructive"
+                          aria-label={link.countLabel}
+                        />
+                      ))}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ))}
     </nav>
   );
 }
 
-function SidebarFooter({ expanded }: { expanded: boolean }) {
+function SidebarFooter({ expanded, user }: { expanded: boolean; user: SidebarUser }) {
   return (
     <div className="border-t border-sidebar-border p-4">
-      <div className="flex items-center">
-        <div className="flex size-8 items-center justify-center rounded-full bg-primary font-semibold text-primary-foreground">
-          A
+      <div className="flex items-center" title={expanded ? undefined : user.email}>
+        <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary font-semibold uppercase text-primary-foreground">
+          {user.name.charAt(0) || "A"}
         </div>
         {expanded && (
-          <div className="ml-3">
-            <p className="text-sm font-medium">Admin User</p>
-            <p className="text-xs text-muted-foreground">admin@example.com</p>
+          <div className="ml-3 min-w-0">
+            <p className="truncate text-sm font-medium">{user.name}</p>
+            <p className="truncate text-xs text-muted-foreground">{user.email}</p>
           </div>
         )}
       </div>

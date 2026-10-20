@@ -1,24 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
-import {
-  BarChart3,
-  Package,
-  ShoppingBag,
-  Settings,
-  DollarSign,
-  Star,
-  Gift,
-  TrendingUp,
-  ChevronLeft,
-  ChevronRight,
-  UserIcon,
-  LogOut,
-  MessageSquare,
-  Truck,
-  Warehouse,
-  X,
-} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { ChevronDown, ChevronLeft, ChevronRight, LogOut, UserIcon, X } from "lucide-react";
 import { cn, getPublicUrl } from "@/lib/utils";
 import { Badge } from "@workspace/ui/components/badge";
 import { usePathname } from "next/navigation";
@@ -26,21 +9,29 @@ import Link from "next/link";
 import Image from "next/image";
 import { useFormatter, useTranslations } from "next-intl";
 import { ScrollArea, ScrollBar } from "@workspace/ui/components/scroll-area";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@workspace/ui/components/accordion";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@workspace/ui/components/collapsible";
 import { useSiteData } from "@/providers/site-data";
 import { Avatar, AvatarFallback, AvatarImage } from "@workspace/ui/components";
 import { useSidebarStore } from "@/stores";
 import { logout } from "@/actions/auth";
 import type { SidebarCounts } from "./sidebar.types";
-import { SupportChatLink } from "./support-chat-link.client";
+import {
+  SIDEBAR_CONFIG,
+  findActiveHref,
+  resolveSidebar,
+  type NavFeature,
+  type ResolvedEntry,
+  type ResolvedGroup,
+  type ResolvedLink,
+} from "./sidebar.config";
+import { StoreSwitcher, type SwitcherStore } from "./store-switcher.client";
 
 interface SidebarProps {
   counts: SidebarCounts;
+  stores: SwitcherStore[];
+  selectedStoreId: string | null;
+  maxStores: number;
+  features: Partial<Record<NavFeature, boolean>>;
 }
 
 const SIDEBAR_LINK =
@@ -51,25 +42,20 @@ const SIDEBAR_LINK_ACTIVE =
 const SIDEBAR_ICON = "size-[18px] shrink-0 text-muted-foreground";
 const SIDEBAR_ICON_ACTIVE = "text-primary-ink";
 const SIDEBAR_SUBLINK =
-  "flex items-center px-3 py-2 text-sm rounded-lg transition-colors outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring/40";
+  "flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring/40";
 const SIDEBAR_SUBLINK_ACTIVE = "bg-primary-soft text-primary-ink font-medium";
 const SIDEBAR_SUBLINK_IDLE =
   "text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent";
 const ICON_BUTTON =
   "flex size-9 shrink-0 items-center justify-center rounded-[10px] border border-transparent text-muted-foreground transition-colors hover:border-sidebar-border hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring/40";
 
-type NavItem = {
-  name: string;
-  icon: React.ComponentType<{ className?: string }>;
-  href: string;
-  countKey?: keyof SidebarCounts;
-};
+const groupActive = (activeHref: string | null, group: ResolvedGroup) =>
+  group.items.some((item) => item.href === activeHref);
 
-export const Sidebar = ({ counts }: SidebarProps) => {
+export const Sidebar = ({ counts, stores, selectedStoreId, maxStores, features }: SidebarProps) => {
   const t = useTranslations();
   const { seller } = useSiteData();
-  const { isCollapsed, toggleCollapse, isMobileOpen, setMobileOpen } =
-    useSidebarStore();
+  const { isCollapsed, toggleCollapse, isMobileOpen, setMobileOpen } = useSidebarStore();
   const pathname = usePathname();
   const closeMobile = () => setMobileOpen(false);
 
@@ -87,30 +73,17 @@ export const Sidebar = ({ counts }: SidebarProps) => {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [isMobileOpen, setMobileOpen]);
 
-  const topNavItems: NavItem[] = [
-    { name: t("nav.dashboard"), icon: BarChart3, href: "/", countKey: "dashboard" },
-    { name: t("nav.orders"), icon: ShoppingBag, href: "/orders", countKey: "orders" },
-  ];
-
-  const afterProductsItems: NavItem[] = [
-    { name: t("nav.shipping"), icon: Truck, href: "/shipping", countKey: "shipping" },
-    { name: t("nav.accountStatements"), icon: DollarSign, href: "/financial", countKey: "financial" },
-    { name: t("nav.promotions"), icon: Gift, href: "/coupons", countKey: "promotions" },
-    { name: t("nav.reviews"), icon: Star, href: "/reviews", countKey: "reviews" },
-    { name: t("nav.advertiseProducts"), icon: TrendingUp, href: "/marketing", countKey: "marketing" },
-  ];
-
-  const accountItems: NavItem[] = [
-    { name: t("nav.settings"), icon: Settings, href: "/settings" },
-    { name: t("nav.fulfillment"), icon: Warehouse, href: "/settings/fulfillment" },
-    { name: t("nav.giveFeedback"), icon: MessageSquare, href: "#" },
-  ];
+  const entries = useMemo(
+    () => resolveSidebar(SIDEBAR_CONFIG, { storeId: selectedStoreId, features }),
+    [selectedStoreId, features],
+  );
 
   const content = {
     counts,
-    topNavItems,
-    afterProductsItems,
-    accountItems,
+    entries,
+    stores,
+    selectedStoreId,
+    maxStores,
     seller: seller.data ?? null,
   };
 
@@ -123,11 +96,7 @@ export const Sidebar = ({ counts }: SidebarProps) => {
           isCollapsed ? "lg:w-20" : "lg:w-[280px]"
         )}
       >
-        <SidebarContent
-          {...content}
-          isCollapsed={isCollapsed}
-          onToggleCollapse={toggleCollapse}
-        />
+        <SidebarContent {...content} isCollapsed={isCollapsed} onToggleCollapse={toggleCollapse} />
       </aside>
 
       {/* Mobile Sidebar */}
@@ -144,9 +113,7 @@ export const Sidebar = ({ counts }: SidebarProps) => {
           // visibility is transitioned too, so the drawer slides out before
           // hiding, and its links leave the tab order while closed.
           "fixed inset-y-0 start-0 z-50 flex w-[280px] max-w-[85vw] flex-col border-e border-sidebar-border bg-sidebar shadow-xl transition-[translate,visibility] duration-300 ease-in-out lg:hidden",
-          isMobileOpen
-            ? "translate-x-0"
-            : "invisible -translate-x-full rtl:translate-x-full"
+          isMobileOpen ? "translate-x-0" : "invisible -translate-x-full rtl:translate-x-full"
         )}
       >
         <div className="flex h-16 shrink-0 items-center justify-between gap-2 px-5 border-b border-sidebar-border">
@@ -176,56 +143,93 @@ const SidebarLogo = ({ compact = false }: { compact?: boolean }) => (
 
 interface SidebarContentProps {
   counts: SidebarCounts;
-  topNavItems: NavItem[];
-  afterProductsItems: NavItem[];
-  accountItems: NavItem[];
+  entries: ResolvedEntry[];
+  stores: SwitcherStore[];
+  selectedStoreId: string | null;
+  maxStores: number;
   isCollapsed: boolean;
   onToggleCollapse?: () => void;
   seller: {
     logoUrl?: string | null;
     businessName?: string | null;
-    supportEmail?: string | null;
     [key: string]: unknown;
   } | null;
 }
 
 const SidebarContent = ({
   counts,
-  topNavItems,
-  afterProductsItems,
-  accountItems,
+  entries,
+  stores,
+  selectedStoreId,
+  maxStores,
   isCollapsed,
   onToggleCollapse,
   seller,
 }: SidebarContentProps) => {
   const pathname = usePathname();
   const t = useTranslations();
-  const format = useFormatter();
-  const isProductsSection =
-    pathname === "/products" || pathname.startsWith("/products/");
+  const activeHref = findActiveHref(entries, pathname);
+  const activeGroupKey =
+    entries.find((e): e is ResolvedGroup => e.kind === "group" && groupActive(activeHref, e))?.key ?? null;
+  // Accordion: one group open at a time; the current page's group opens on navigation.
+  const [openGroupKey, setOpenGroupKey] = useState<string | null>(activeGroupKey);
+  useEffect(() => {
+    if (activeGroupKey) setOpenGroupKey(activeGroupKey);
+  }, [activeGroupKey]);
 
-  const renderLink = (item: NavItem) => {
-    const isActive = pathname === item.href;
-    const count = item.countKey ? counts[item.countKey] : 0;
+  const renderTopLink = (link: ResolvedLink) => {
+    const isActive = link.href === activeHref;
+    const Icon = link.icon;
+    const label = t(`nav.${link.key}`);
     return (
-      <li key={item.href + item.name}>
+      <li key={link.href}>
         <Link
-          href={item.href}
+          href={link.disabled ? "#" : link.href}
+          aria-disabled={link.disabled || undefined}
           className={cn(
             SIDEBAR_LINK,
             isActive && SIDEBAR_LINK_ACTIVE,
+            link.disabled && "pointer-events-none opacity-60",
             isCollapsed && "justify-center px-2"
           )}
-          title={isCollapsed ? item.name : undefined}
+          title={isCollapsed ? label : undefined}
           aria-current={isActive ? "page" : undefined}
         >
-          <item.icon className={cn(SIDEBAR_ICON, isActive && SIDEBAR_ICON_ACTIVE)} />
-          {!isCollapsed && <span className="min-w-0 flex-1 truncate">{item.name}</span>}
-          {!isCollapsed && count > 0 && (
-            <Badge variant="count">{format.number(count)}</Badge>
-          )}
+          {Icon && <Icon className={cn(SIDEBAR_ICON, isActive && SIDEBAR_ICON_ACTIVE)} />}
+          {!isCollapsed && <span className="min-w-0 flex-1 truncate">{label}</span>}
+          {!isCollapsed && (link.disabled ? <SoonBadge /> : <CountBadge count={link.countKey ? counts[link.countKey] : 0} />)}
         </Link>
       </li>
+    );
+  };
+
+  const renderGroup = (group: ResolvedGroup) => {
+    const active = groupActive(activeHref, group);
+    const label = t(`nav.${group.key}`);
+    if (isCollapsed) {
+      return (
+        <li key={group.key}>
+          <Link
+            href={group.items.find((i) => !i.disabled)?.href ?? "#"}
+            className={cn(SIDEBAR_LINK, active && SIDEBAR_LINK_ACTIVE, "justify-center px-2")}
+            title={label}
+          >
+            <group.icon className={cn(SIDEBAR_ICON, active && SIDEBAR_ICON_ACTIVE)} />
+          </Link>
+        </li>
+      );
+    }
+    return (
+      <SidebarGroup
+        key={group.key}
+        group={group}
+        label={label}
+        active={active}
+        activeHref={activeHref}
+        counts={counts}
+        open={openGroupKey === group.key}
+        onOpenChange={(open) => setOpenGroupKey(open ? group.key : null)}
+      />
     );
   };
 
@@ -243,9 +247,7 @@ const SidebarContent = ({
           <button
             onClick={onToggleCollapse}
             className={ICON_BUTTON}
-            aria-label={
-              isCollapsed ? t("nav.expandSidebar") : t("nav.collapseSidebar")
-            }
+            aria-label={isCollapsed ? t("nav.expandSidebar") : t("nav.collapseSidebar")}
           >
             {isCollapsed ? (
               <ChevronRight className="size-[18px] rtl:rotate-180" />
@@ -261,123 +263,45 @@ const SidebarContent = ({
         <ScrollBar />
         <nav className="p-3">
           <ul className="space-y-0.5">
-            {topNavItems.map(renderLink)}
-
-            {/* Products accordion */}
-            {!isCollapsed ? (
-              <li>
-                <Accordion
-                  type="single"
-                  collapsible
-                  className="w-full"
-                  value={isProductsSection ? "products" : undefined}
-                >
-                  <AccordionItem value="products" className="border-0">
-                    <AccordionTrigger
-                      className={cn(
-                        SIDEBAR_LINK,
-                        "hover:no-underline [&>svg]:hidden",
-                        isProductsSection && "font-medium text-primary-ink"
-                      )}
-                    >
-                      <span className="flex w-full items-center gap-3">
-                        <Package
-                          className={cn(SIDEBAR_ICON, isProductsSection && SIDEBAR_ICON_ACTIVE)}
-                        />
-                        <span className="min-w-0 flex-1 truncate text-start">
-                          {t("nav.products")}
-                        </span>
-                        {counts.products > 0 && (
-                          <Badge variant="count">{format.number(counts.products)}</Badge>
-                        )}
-                      </span>
-                    </AccordionTrigger>
-                    <AccordionContent className="pt-0.5 pb-1">
-                      <ul className="ms-5 space-y-0.5 border-s border-sidebar-border ps-3">
-                        {[
-                          { href: "/products", label: t("nav.manageProducts") },
-                          { href: "/products/add", label: t("nav.addProducts") },
-                        ].map((sub) => (
-                          <li key={sub.href}>
-                            <Link
-                              href={sub.href}
-                              className={cn(
-                                SIDEBAR_SUBLINK,
-                                pathname === sub.href
-                                  ? SIDEBAR_SUBLINK_ACTIVE
-                                  : SIDEBAR_SUBLINK_IDLE
-                              )}
-                              aria-current={pathname === sub.href ? "page" : undefined}
-                            >
-                              {sub.label}
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
-              </li>
-            ) : (
-              <li>
-                <Link
-                  href="/products"
-                  className={cn(
-                    SIDEBAR_LINK,
-                    isProductsSection && SIDEBAR_LINK_ACTIVE,
-                    "justify-center px-2"
-                  )}
-                  title={t("nav.products")}
-                  aria-current={pathname === "/products" ? "page" : undefined}
-                >
-                  <Package
-                    className={cn(SIDEBAR_ICON, isProductsSection && SIDEBAR_ICON_ACTIVE)}
-                  />
-                </Link>
-              </li>
+            {entries.map((entry, i) =>
+              entry.kind === "divider" ? (
+                <li key={`divider-${i}`} role="separator" className={cn("my-2 border-t border-sidebar-border", isCollapsed ? "mx-2" : "mx-3")} />
+              ) : entry.kind === "group" ? (
+                renderGroup(entry)
+              ) : (
+                renderTopLink(entry)
+              )
             )}
-
-            {afterProductsItems.map(renderLink)}
           </ul>
-
-          <div role="separator" className="mx-1 my-2.5 h-px bg-sidebar-border" />
-          {!isCollapsed && (
-            <p className="px-3 py-1 text-xs text-faint">{t("nav.account")}</p>
-          )}
-          <ul className="space-y-0.5">{accountItems.map(renderLink)}</ul>
         </nav>
       </ScrollArea>
 
-      {/* Support + signed-in store */}
-      <div className="mt-auto flex flex-col gap-2.5 border-t border-sidebar-border p-3">
-        <SupportChatLink isCollapsed={isCollapsed} />
-        <div
-          className={cn(
-            "flex items-center gap-2.5 rounded-xl p-2",
-            isCollapsed && "flex-col p-0"
-          )}
-        >
-          <Avatar className="size-9 shrink-0 border border-sidebar-border">
-            <AvatarImage
-              src={seller?.logoUrl ? getPublicUrl(seller.logoUrl, "sellers") : undefined}
-              alt={
-                seller?.businessName
-                  ? t("nav.logoAlt", { name: seller.businessName })
-                  : t("nav.vendor")
-              }
-            />
-            <AvatarFallback className="bg-primary-soft text-sm font-semibold text-primary-ink">
-              {seller?.businessName?.[0] ?? <UserIcon className="size-4" />}
-            </AvatarFallback>
-          </Avatar>
-          {!isCollapsed && (
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-[13px] font-semibold text-sidebar-foreground">
-                {seller?.businessName ?? t("nav.vendor")}
-              </p>
-              {seller?.supportEmail && (
-                <p dir="ltr" className="truncate text-start text-xs text-muted-foreground rtl:text-end">
-                  {seller.supportEmail}
+      {/* The selected store (opens the store switcher) + sign out */}
+      <div className="mt-auto border-t border-sidebar-border p-3">
+        <div className={cn("flex items-center gap-2", isCollapsed && "flex-col")}>
+          {stores.length > 0 ? (
+            <div className={cn("min-w-0 flex-1", isCollapsed && "w-full")}>
+              <StoreSwitcher
+                stores={stores}
+                selectedId={selectedStoreId}
+                maxStores={maxStores}
+                isCollapsed={isCollapsed}
+              />
+            </div>
+          ) : (
+            <div className={cn("flex min-w-0 flex-1 items-center gap-2.5 p-2", isCollapsed && "flex-none p-0")}>
+              <Avatar className="size-9 shrink-0 border border-sidebar-border">
+                <AvatarImage
+                  src={seller?.logoUrl ? getPublicUrl(seller.logoUrl, "sellers") : undefined}
+                  alt={seller?.businessName ? t("nav.logoAlt", { name: seller.businessName }) : t("nav.vendor")}
+                />
+                <AvatarFallback className="bg-primary-soft text-sm font-semibold text-primary-ink">
+                  {seller?.businessName?.[0] ?? <UserIcon className="size-4" />}
+                </AvatarFallback>
+              </Avatar>
+              {!isCollapsed && (
+                <p className="min-w-0 flex-1 truncate text-[13px] font-semibold text-sidebar-foreground">
+                  {seller?.businessName ?? t("nav.vendor")}
                 </p>
               )}
             </div>
@@ -396,3 +320,74 @@ const SidebarContent = ({
     </div>
   );
 };
+
+function CountBadge({ count }: { count: number }) {
+  const format = useFormatter();
+  return count > 0 ? <Badge variant="count">{format.number(count)}</Badge> : null;
+}
+
+function SoonBadge() {
+  const t = useTranslations("nav");
+  return (
+    <Badge variant="outline" className="text-[10px] font-normal">
+      {t("soon")}
+    </Badge>
+  );
+}
+
+/** A collapsible sidebar section; the parent keeps only one open at a time. */
+function SidebarGroup({
+  group,
+  label,
+  active,
+  activeHref,
+  counts,
+  open,
+  onOpenChange,
+}: {
+  group: ResolvedGroup;
+  label: string;
+  active: boolean;
+  activeHref: string | null;
+  counts: SidebarCounts;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const t = useTranslations("nav");
+
+  return (
+    <li>
+      <Collapsible open={open} onOpenChange={onOpenChange}>
+        <CollapsibleTrigger className={cn(SIDEBAR_LINK, "w-full", active && "font-medium text-primary-ink")}>
+          <group.icon className={cn(SIDEBAR_ICON, active && SIDEBAR_ICON_ACTIVE)} />
+          <span className="min-w-0 flex-1 truncate text-start">{label}</span>
+          <ChevronDown className={cn("size-4 shrink-0 text-muted-foreground transition-transform", open && "rotate-180")} />
+        </CollapsibleTrigger>
+        <CollapsibleContent className="pt-0.5 pb-1">
+          <ul className="ms-5 space-y-0.5 border-s border-sidebar-border ps-3">
+            {group.items.map((item) => {
+              const isActive = item.href === activeHref;
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.disabled ? "#" : item.href}
+                    aria-disabled={item.disabled || undefined}
+                    className={cn(
+                      SIDEBAR_SUBLINK,
+                      isActive ? SIDEBAR_SUBLINK_ACTIVE : SIDEBAR_SUBLINK_IDLE,
+                      item.disabled && "pointer-events-none opacity-60"
+                    )}
+                    aria-current={isActive ? "page" : undefined}
+                  >
+                    <span className="min-w-0 flex-1 truncate">{t(item.key)}</span>
+                    {item.disabled ? <SoonBadge /> : <CountBadge count={item.countKey ? counts[item.countKey] : 0} />}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </CollapsibleContent>
+      </Collapsible>
+    </li>
+  );
+}

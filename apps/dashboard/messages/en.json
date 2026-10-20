@@ -2,18 +2,18 @@
   "nav": {
     "dashboard": "Dashboard",
     "products": "Products",
-    "manageProducts": "Manage Products",
+    "manageProducts": "Manage products",
     "addProducts": "Add products",
     "orders": "Orders",
     "reviews": "Reviews & Q&A",
     "promotions": "Promotions",
     "advertiseProducts": "Advertise your products",
-    "accountStatements": "Account Statements",
-    "coupons": "Coupons & Discounts",
-    "settings": "Store settings",
+    "accountStatements": "Account statements",
+    "coupons": "Coupons",
+    "settings": "Business & account",
     "fulfillment": "Fulfillment setup",
     "financial": "Financial Dashboard",
-    "marketing": "Marketing & Promotions",
+    "marketing": "Promotions & Discounts",
     "shipping": "Shipping & Logistics",
     "reports": "Reports & Analytics",
     "help": "Help & Support",
@@ -40,7 +40,44 @@
     "supportMessageStoreLink": "Store link: {url}",
     "supportMessageQuestion": "I have a question about: ",
     "editProduct": "Edit product",
-    "account": "Account"
+    "settingsGroup": "Store settings",
+    "ordersGroup": "Orders",
+    "deliveryTracking": "Delivery tracking",
+    "riders": "Riders",
+    "shippingSettings": "Shipping settings",
+    "websiteContent": "Website & Content",
+    "websiteOverview": "Overview",
+    "websiteBuilder": "Website builder",
+    "templates": "Templates",
+    "designSystem": "Design system",
+    "pages": "Pages",
+    "domainSeo": "Domain & SEO",
+    "socialMedia": "Social media",
+    "blog": "Blog",
+    "forms": "Forms",
+    "mediaLibrary": "Media library",
+    "apps": "Apps & integrations",
+    "finance": "Wallet",
+    "fulfillmentShipping": "Shipping & Fulfillment",
+    "storeSettings": "Store settings",
+    "general": "General",
+    "paymentMethods": "Payment methods",
+    "myStores": "My stores",
+    "planUsage": "Plan & usage",
+    "soon": "Soon",
+    "switchStore": "Switch store",
+    "yourStores": "Your stores",
+    "createStore": "Create store",
+    "storeUsage": "{count} of {max}",
+    "primaryStore": "Main store",
+    "archived": "Archived",
+    "catalog": "Catalog",
+    "wallet": "Wallet",
+    "walletBalance": "Balance & top-ups",
+    "campaigns": "Marketing campaigns",
+    "accountHelp": "Account & help",
+    "sellerCategories": "Categories",
+    "sellerBrands": "Brands"
   },
   "common": {
     "loading": "Loading...",
@@ -230,8 +267,8 @@
     "ownRiders": "Your own riders",
     "externalCourier": "External courier",
     "pendingNotice": "Some requested services are awaiting setup. Our team will contact you to confirm the details and pricing. Until then, your orders continue to work as they do today.",
-    "noSetup": "No fulfillment setup is recorded for your store yet. Please contact Tallaby support.",
-    "changeNote": "Need to change something? Contact our team. Changes are reviewed first so your active orders are never interrupted.",
+    "noSetup": "You haven't requested any Tallaby services. Your store works as it is: you store, pack and answer customers, and Tallaby's standard delivery ships your orders. Fulfillment services are optional; you can request them below.",
+    "changeNote": "Need to change something? Send a new request below. Changes are reviewed by our team first so your active orders are never interrupted.",
     "pricingDiscussed": "Pricing will be discussed with our team.",
     "agreementTitle": "Agreed terms",
     "agreementStatus": {
@@ -260,6 +297,145 @@
     "noRates": "Rates not set yet",
     "openEnded": "Open-ended",
     "notStarted": "Start date to be confirmed"
+  },
+  "fulfillmentRequest": {
+    "title": "Request Tallaby services",
+    "description": "Choose what you'd like Tallaby to handle. This sends a request to our team; your orders keep working exactly as today until a service is confirmed and activated.",
+    "start": "Request services",
+    "change": "Change request",
+    "cancel": "Cancel",
+    "submit": "Send request",
+    "sending": "Sending…",
+    "saved": "Request sent. Our team will contact you to confirm the details and pricing.",
+    "savedNoReview": "Saved. Your choices match your current setup, so nothing needs review.",
+    "unchanged": "Nothing changed. Your request is already with our team.",
+    "model": {
+      "tallabyTitle": "Let Tallaby handle fulfillment",
+      "soon": "Soon",
+      "tallabyDescription": "Send us your inventory and we'll handle storage, packaging, delivery, customer service and returns.",
+      "manageTitle": "I want to manage fulfillment",
+      "manageDescription": "Keep control of your operations and choose which services you want to handle yourself and which services you want Tallaby to handle.",
+      "switchedToManaged": "You chose to handle a service yourself, so your setup is now \"I want to manage fulfillment\"."
+    },
+    "service": {
+      "storage": {
+        "name": "Storage",
+        "description": "Where your products are kept until they're ordered."
+      },
+      "packaging": {
+        "name": "Packaging",
+        "description": "Preparing and packing each order."
+      },
+      "delivery": {
+        "name": "Delivery",
+        "description": "Getting orders to your customers."
+      },
+      "customer_service": {
+        "name": "Customer service",
+        "description": "Answering your customers' questions about orders."
+      },
+      "returns": {
+        "name": "Returns",
+        "description": "Handling products customers send back."
+      }
+    },
+    "services": "Services",
+    "tallabyCount": "Tallaby handles {count} of {total}",
+    "byTallaby": "Tallaby",
+    "me": "Me",
+    "plan": "Plan",
+    "changePlan": "Change",
+    "done": "Done",
+    "choosePlan": "Choose a plan",
+    "tallabyUnavailable": "Not available yet",
+    "availableIn": "Available in: {areas}",
+    "availabilityConfirmed": "Availability in your area will be confirmed by our team.",
+    "pricingDiscussed": "Pricing will be discussed with our team.",
+    "pricingNote": "Pricing is agreed with our team before anything starts. Nothing is charged now.",
+    "deliveryMode": "How will you deliver?",
+    "deliveryMode_own_riders": "My own riders",
+    "deliveryMode_own_ridersHint": "You can add and manage riders from your seller dashboard.",
+    "deliveryMode_external_courier": "An external courier",
+    "deliveryMode_external_courierHint": "A delivery company you already work with.",
+    "courierName": "Courier name (optional)",
+    "courierNamePlaceholder": "e.g. Bosta",
+    "detailsTitle": "About your business",
+    "details": {
+      "skus": "Roughly how many different products will you sell?",
+      "skusWhy": "Helps us plan catalog and storage capacity.",
+      "dailyOrders": "How many orders do you expect per day?",
+      "dailyOrdersWhy": "Helps us plan pickup and delivery capacity.",
+      "sizeCategory": "What size are most of your products?",
+      "fragile": "Do you sell fragile products?",
+      "fragileWhy": "Fragile items need extra protection when handled.",
+      "yes": "Yes",
+      "no": "No",
+      "inventoryUnits": "How many units would you send to our warehouse?",
+      "inventoryUnitsWhy": "Helps us reserve the right storage space.",
+      "packagingNotes": "Special packaging needs",
+      "packagingNotesPlaceholder": "e.g. glass bottles, items that must stay upright",
+      "coverage": "Where are most of your customers?",
+      "coverageWhy": "Helps us confirm delivery availability in your areas.",
+      "pickupTitle": "Pickup location",
+      "pickupWhy": "Where Tallaby's courier collects your orders from, and where returns are brought back.",
+      "dropOffTitle": "You deliver your inventory to our warehouse",
+      "dropOffBody": "Since Tallaby will store your products, you bring your inventory to the Tallaby warehouse yourself. Our team will share the warehouse address and arrange a drop-off time with you. Your orders will then ship directly from our warehouse.",
+      "street": "Street address",
+      "landmark": "Landmark",
+      "contactName": "Contact person",
+      "contactPhone": "Contact mobile number",
+      "allEgypt": "All Egypt",
+      "sizeShort_small": "Small",
+      "sizeShort_medium": "Medium",
+      "sizeShort_large": "Large",
+      "sizeShort_mixed": "Mixed",
+      "sizeHint_small": "Fits in a hand",
+      "sizeHint_medium": "Shoebox size",
+      "sizeHint_large": "Bulky or heavy",
+      "sizeHint_mixed": "A bit of everything"
+    },
+    "range": {
+      "1_10": "1–10",
+      "11_50": "11–50",
+      "51_200": "51–200",
+      "201_1000": "201–1,000",
+      "1000_plus": "More than 1,000",
+      "0_5": "Up to 5",
+      "6_20": "6–20",
+      "21_50": "21–50",
+      "200_plus": "More than 200",
+      "1_100": "Up to 100",
+      "101_500": "101–500",
+      "501_2000": "501–2,000",
+      "2001_10000": "2,001–10,000",
+      "10000_plus": "More than 10,000"
+    },
+    "governorate": "Governorate",
+    "city": "City",
+    "selectGovernorate": "Select governorate",
+    "optional": "Optional",
+    "errors": {
+      "required": "This field is required.",
+      "too_long": "This is too long.",
+      "phone_invalid": "Please enter a valid Egyptian mobile number.",
+      "street_required": "Please enter the street address.",
+      "city_required": "Please enter the city.",
+      "governorate_invalid": "Please select a governorate.",
+      "model_required": "Please choose how you want to fulfill orders.",
+      "plan_required": "Please choose a plan.",
+      "plan_not_allowed": "Plans only apply to Tallaby services.",
+      "plan_unavailable": "This plan is no longer available. Please choose another.",
+      "tallaby_model_requires_tallaby": "This service must be handled by Tallaby for this option.",
+      "tallaby_fulfillment_unavailable": "This option is coming soon.",
+      "delivery_mode_required": "Please choose how you'll deliver.",
+      "pickup_address_required": "Please add a pickup location.",
+      "invalid": "Please check this field.",
+      "validation": "Please check the highlighted fields.",
+      "servicePaused": "A paused service can't be changed here. Please contact our team.",
+      "forbidden": "You don't have permission to do this.",
+      "rateLimited": "Too many requests. Please try again in a few minutes.",
+      "generic": "Something went wrong. Please try again."
+    }
   },
   "meta": {
     "title": "Seller Dashboard",
@@ -320,6 +496,31 @@
     "tryAnotherEmail": "Try Another Email",
     "sendResetLink": "Send Reset Link",
     "continueWithGoogle": "Continue with Google",
+    "welcomeBack": "Welcome back",
+    "signInSubtitle": "Sign in to manage your products, orders and store.",
+    "tabSignIn": "Sign in",
+    "tabCreateAccount": "Create account",
+    "orWithEmail": "or with email",
+    "newToTallaby": "New to Tallaby?",
+    "createSellerAccount": "Create a seller account",
+    "needHelp": "Need help?",
+    "helpMessage": "Hi, I need help signing in to my Tallaby seller account.",
+    "copyright": "© {year} Tallaby",
+    "panel": {
+      "pill": "Tallaby for Sellers",
+      "title": "Sell to more customers, <em>run it all from one place.</em>",
+      "description": "Tallaby is a multi-vendor marketplace. Open your store, list your products and let shoppers across the platform find you.",
+      "storefrontTitle": "Your own storefront",
+      "storefrontText": "Brand your store with a logo, cover and custom page.",
+      "ordersTitle": "Products & orders",
+      "ordersText": "Add listings, track stock and fulfil orders in one dashboard.",
+      "insightsTitle": "Sales insights",
+      "insightsText": "See what sells, where your visitors come from and how you grow.",
+      "marketingTitle": "Built-in marketing",
+      "marketingText": "Run coupons and promotions to bring shoppers back.",
+      "help": "Questions about selling? <link>Talk to our seller team</link>",
+      "helpMessage": "Hi, I have a question about selling on Tallaby."
+    },
     "errors": {
       "invalidCredentials": "Incorrect email or password.",
       "emailNotConfirmed": "Please confirm your email address before signing in.",
@@ -412,10 +613,19 @@
       "order_payment": "Order payment",
       "adjustment": "Adjustment",
       "bonus": "Bonus",
-      "commission_reversal": "Commission reversal"
+      "commission_reversal": "Commission reversal",
+      "service_charge": "Service charge",
+      "fee_reversal": "Fee reversal"
     }
   },
   "home": {
+    "trial": {
+      "notStartedTitle": "Your 7-day free trial is waiting",
+      "notStarted": "No platform fee for 7 days, counted from the day your first store was created.",
+      "activeTitle": "{days, plural, one {# day} other {# days}} left in your free trial",
+      "active": "No platform fee on orders placed until {date}. After that, the fee is a flat EGP 5 per delivered order.",
+      "planLink": "Plan & usage"
+    },
     "range": {
       "label": "Reporting period",
       "days": "{count} days"
@@ -434,6 +644,10 @@
       "progress": "Progress",
       "done": "done",
       "dismiss": "Hide setup guide",
+      "nextStep": "Next step",
+      "showAll": "Show all {count} steps",
+      "showLess": "Show less",
+      "remaining": "{count, plural, one {# step left} other {# steps left}}",
       "tasks": {
         "profile": {
           "title": "Set up your store profile",
@@ -459,6 +673,21 @@
           "title": "Launch your first ad campaign",
           "description": "Get seen by customers from day one",
           "cta": "Start"
+        },
+        "contact": {
+          "title": "Add your contact details",
+          "description": "Phone or email shown in your store",
+          "cta": "Add"
+        },
+        "legal": {
+          "title": "Add your legal details",
+          "description": "Business type and registered address",
+          "cta": "Add"
+        },
+        "payout": {
+          "title": "Set up your payout account",
+          "description": "Where we send your earnings",
+          "cta": "Set up"
         }
       }
     },
@@ -548,6 +777,11 @@
       "answerPlaceholder": "Write your reply…",
       "send": "Send",
       "reply": "Reply"
+    },
+    "channel": {
+      "label": "Sales channel",
+      "all": "All sales",
+      "marketplace": "Tallaby marketplace"
     }
   },
   "table": {
@@ -1069,6 +1303,9 @@
         "reserved": "This address is reserved by Tallaby. Choose another.",
         "taken": "Another store already uses this address. Choose another.",
         "unauthorized": "Sign in again to change your store address.",
+        "notFound": "This store wasn't found. Reload the page.",
+        "readOnly": "This store is archived or suspended, so its address can't change.",
+        "rateLimited": "Too many checks. Wait a moment.",
         "failed": "Couldn't change the address. Try again."
       },
       "copyFailed": "Couldn’t copy the link",
@@ -1120,6 +1357,7 @@
         "hasDomain": "You already have a domain connected. Remove it first.",
         "notApproved": "Your store must be approved before you can connect a domain.",
         "unauthorized": "Sign in again to manage your domain.",
+        "primaryOnly": "For now, a custom domain can only be connected to your main store.",
         "limit": "We can't connect more domains right now. Contact support.",
         "config": "Custom domains aren't available right now. Contact support.",
         "failed": "Something went wrong. Try again."
@@ -1211,7 +1449,9 @@
       "contact": "Contact & support",
       "link": "Link & domain",
       "policies": "Policies",
-      "docs": "Verification documents"
+      "docs": "Verification documents",
+      "legal": "Legal details",
+      "payout": "Payout account"
     },
     "progress": {
       "title": "Profile completeness",
@@ -1256,6 +1496,62 @@
       "formats": "PNG, JPG or WebP up to 5 MB",
       "changeBanner": "Change",
       "removeBanner": "Remove banner"
+    },
+    "account": {
+      "save": "Save",
+      "saved": "Saved",
+      "cancel": "Cancel",
+      "moved": {
+        "title": "Logo, description and policies moved to Store settings",
+        "description": "Each store now has its own identity and policies. Open your main store's settings to edit them."
+      },
+      "legal": {
+        "title": "Legal details",
+        "description": "Your business type and registered address. Used for invoices and payouts, never shown in your store.",
+        "businessType": "Business type",
+        "governorate": "Governorate",
+        "governoratePlaceholder": "Choose a governorate",
+        "city": "City / area",
+        "postalCode": "Postal code (optional)",
+        "street": "Street address",
+        "streetPlaceholder": "Building, street and district",
+        "hint": "Only your governorate is shown publicly (for delivery estimates)."
+      },
+      "businessTypes": {
+        "individual": "Individual",
+        "company": "Company",
+        "partnership": "Partnership",
+        "corporation": "Corporation"
+      },
+      "payout": {
+        "title": "Payout account",
+        "description": "Where Tallaby sends your earnings.",
+        "method": "Payout method",
+        "accountHolder": "Account holder name",
+        "bankName": "Bank name",
+        "iban": "IBAN",
+        "provider": "Wallet provider",
+        "phone": "Wallet mobile number",
+        "address": "InstaPay address or mobile number",
+        "hint": "For your security, saved details are shown with the last 4 characters only.",
+        "change": "Change",
+        "methods": {
+          "bank_transfer": "Bank transfer",
+          "mobile_wallet": "Mobile wallet",
+          "instapay": "InstaPay"
+        },
+        "providers": {
+          "vodafone_cash": "Vodafone Cash",
+          "etisalat_cash": "e& Cash",
+          "orange_cash": "Orange Cash",
+          "we_pay": "WE Pay"
+        }
+      },
+      "errors": {
+        "invalidInput": "Some details are not valid. Please check them and try again.",
+        "forbidden": "You can't change these details right now.",
+        "generic": "Couldn't save. Please try again."
+      }
     }
   },
   "orders": {
@@ -1305,6 +1601,11 @@
       "orderTotal": "Order total",
       "yourItemsTotal": "Your items total",
       "yourEarnings": "Your earnings"
+    },
+    "channel": {
+      "label": "Sales channel",
+      "all": "All orders",
+      "marketplace": "Tallaby marketplace"
     }
   },
   "shipping": {
@@ -1445,8 +1746,11 @@
       "riderUpdated": "Rider updated",
       "riderActivated": "Rider activated",
       "riderDeactivatedMessage": "Rider deactivated",
-      "saved": "Saved"
-    }
+      "saved": "Saved",
+      "bulkUpdated": "{updated} updated, {skipped} skipped"
+    },
+    "bulkOutForDelivery": "Mark {count} out for delivery",
+    "bulkDelivered": "Mark {count} delivered"
   },
   "reviews": {
     "title": "Reviews",
@@ -1572,8 +1876,8 @@
       "percentage": "Percentage",
       "fixed": "Fixed amount",
       "percentValue": "Percent off",
-      "amountValue": "Amount off (EGP)",
-      "maxDiscount": "Max discount (EGP)",
+      "amountValue": "Amount off",
+      "maxDiscount": "Max discount",
       "maxDiscountHint": "Optional. Caps the discount on big orders.",
       "products": "Products",
       "allProducts": "All my products",
@@ -1591,7 +1895,7 @@
       "storefront": "Your store",
       "storefrontNoHost": "Your own store website",
       "limits": "Conditions",
-      "minPurchase": "Minimum spend (EGP)",
+      "minPurchase": "Minimum spend",
       "minPurchaseHint": "Optional. Only your products count toward it.",
       "usageLimit": "Total uses",
       "perUserLimit": "Uses per customer",
@@ -1642,84 +1946,101 @@
     }
   },
   "help": {
-    "title": "Help & Support",
-    "subtitle": "Find answers and get help with your seller dashboard",
-    "liveChat": "Live Chat",
-    "contactSupport": "Contact Support",
-    "searchTitle": "How can we help you?",
-    "searchSubtitle": "Search our knowledge base or browse common topics",
-    "searchPlaceholder": "Search for help articles, guides, or FAQs...",
-    "browseFaqs": "Browse FAQs",
-    "browseFaqsDescription": "Find quick answers to common questions",
-    "videoTutorials": "Video Tutorials",
-    "videoTutorialsDescription": "Watch step-by-step video guides",
-    "contactSupportDescription": "Get personalized help from our team",
-    "quickLinks": {
-      "title": "Quick Links",
-      "gettingStarted": {
-        "title": "Getting Started Guide",
-        "description": "Complete setup guide for new sellers"
-      },
-      "productManagement": {
-        "title": "Product Management",
-        "description": "Learn how to manage your inventory"
-      },
-      "orderProcessing": {
-        "title": "Order Processing",
-        "description": "Handle orders from start to finish"
-      },
-      "marketingTools": {
-        "title": "Marketing Tools",
-        "description": "Promote your products effectively"
-      },
-      "paymentSetup": {
-        "title": "Payment Setup",
-        "description": "Configure payment methods"
-      },
-      "shippingConfiguration": {
-        "title": "Shipping Configuration",
-        "description": "Set up shipping options"
-      }
+    "contactTitle": "Talk to the Tallaby team",
+    "contactSubtitle": "Questions about your store, orders, wallet or website? Message us on WhatsApp or send an email, in Arabic or English. Include your store name so we can find your account quickly.",
+    "whatsappTitle": "WhatsApp",
+    "whatsappHint": "Fastest way to reach us. Your store name and link are added to the message.",
+    "whatsappAction": "Chat on WhatsApp",
+    "copyNumber": "Copy number",
+    "emailTitle": "Email",
+    "emailHint": "Best for longer questions, documents or screenshots.",
+    "emailAction": "Send email",
+    "copyEmail": "Copy email address",
+    "emailSubject": "Seller support: {store}",
+    "emailSubjectNoStore": "Seller support",
+    "copied": "Copied",
+    "copyFailed": "Couldn't copy. Select the text and copy it yourself.",
+    "faqTitle": "Common questions",
+    "searchLabel": "Search common questions",
+    "searchPlaceholder": "Search, e.g. wallet, shipping",
+    "searchResults": "{count, plural, =0 {No answers} one {# answer} other {# answers}} found",
+    "noResults": "Nothing matches “{query}”",
+    "noResultsHint": "Try a different word, or message us on WhatsApp and we'll answer directly.",
+    "openPage": "Open {page}",
+    "topics": {
+      "start": "Getting started",
+      "products": "Products",
+      "orders": "Orders and delivery",
+      "money": "Wallet, fees and payments",
+      "website": "Your website"
     },
-    "videos": {
-      "dashboardOverview": "Dashboard Overview",
-      "firstProduct": "Adding Your First Product",
-      "managingOrders": "Managing Orders",
-      "promotions": "Setting Up Promotions"
-    },
-    "views": "{count} views",
-    "faqTitle": "Frequently Asked Questions",
     "faqs": {
-      "addProduct": {
-        "question": "How do I add a new product to my store?",
-        "answer": "To add a new product, go to Products Management, click 'Add Product', fill in the required details including title, price, description, and upload product images. Don't forget to set your inventory quantity and shipping details."
+      "createStore": {
+        "question": "How do I open a store?",
+        "answer": "Go to My stores and choose Create store. Creating an account and a store is free. Each store has its own products, website, shipping and payment settings."
       },
-      "trackSales": {
-        "question": "How can I track my sales performance?",
-        "answer": "Visit the Analytics Dashboard to view comprehensive sales data, including total revenue, order counts, and performance trends. You can also access detailed reports in the Reports & Analytics section."
+      "fees": {
+        "question": "What does Tallaby charge?",
+        "answer": "A flat EGP 5 per delivered order, taken from your store wallet. Your first 7 days, counted from when you created your first store, are free: an order placed in that time has no fee, even if it's delivered later. Cancelled or undelivered orders are never charged."
+      },
+      "plan": {
+        "question": "How many stores can I have?",
+        "answer": "The Free plan includes up to 3 stores. You can see how many you're using in Plan & usage. If you need more, contact us."
+      },
+      "addProduct": {
+        "question": "How do I add a product?",
+        "answer": "Open Add products, enter the name, price, stock and photos, then save. Products go live on your store right away, with no review step."
+      },
+      "categories": {
+        "question": "Can I use my own categories and brands?",
+        "answer": "Yes. Products › Categories and Products › Brands hold your own lists. Choose which products each store shows in Store settings › General."
+      },
+      "manageOrders": {
+        "question": "Where do I see and follow up on orders?",
+        "answer": "Orders lists every order across your stores. Open one to see the customer, items, payment and status. Delivery tracking follows each shipment until it reaches the customer."
+      },
+      "delivery": {
+        "question": "Who delivers my orders?",
+        "answer": "By default Tallaby delivers, and customers pay Tallaby's shipping rate for their governorate. You can also add your own riders, and set your store's shipping options in Shipping settings."
+      },
+      "fulfillment": {
+        "question": "Can Tallaby store, pack or handle returns for me?",
+        "answer": "Yes. Request it from Fulfillment setup and choose what you want Tallaby to handle. Our team will contact you to agree the details before anything changes on your orders."
+      },
+      "wallet": {
+        "question": "How does the store wallet work?",
+        "answer": "Fees for delivered orders are taken from your wallet, and every entry is listed in Balance & top-ups. The balance can go below zero; when it does, you'll see a reminder to top up."
+      },
+      "topUp": {
+        "question": "How do I top up my wallet?",
+        "answer": "Open Balance & top-ups and choose Top up. Send between EGP 100 and EGP 20,000 by Vodafone Cash or InstaPay, then upload the transfer receipt. Your balance updates once our team confirms the transfer."
       },
       "paymentMethods": {
-        "question": "What payment methods are supported?",
-        "answer": "We support all major payment methods including credit cards (Visa, MasterCard, American Express), PayPal, Apple Pay, Google Pay, and bank transfers depending on your region."
+        "question": "Which payment methods can my store offer?",
+        "answer": "Cash on delivery is on for every store. In Payment methods you can also save your Vodafone Cash, e& Cash, WE Pay, Orange Cash or InstaPay details. Card payments, Fawry and installments are coming soon."
       },
-      "shippingRates": {
-        "question": "How do I set up shipping rates?",
-        "answer": "Go to Shipping & Logistics, click 'Add Carrier' or 'Shipping Settings' to configure your shipping zones, rates, and delivery options. You can set flat rates, weight-based pricing, or free shipping thresholds."
+      "builder": {
+        "question": "How do I design my store's website?",
+        "answer": "Open Website builder. Every new store starts with the Tallaby Classic template; edit its sections, colours and text, then press Publish. Visitors only see your changes after you publish."
       },
-      "customizeStore": {
-        "question": "Can I customize my store appearance?",
-        "answer": "Yes! In Profile Settings, you can customize your store name, logo, description, and business information. For advanced customization, contact our support team for additional options."
+      "domain": {
+        "question": "Can I use my own domain?",
+        "answer": "Yes. Connect it in Domain & SEO. Until then, your store works on its free Tallaby address."
       }
     },
-    "stillNeedHelp": "Still Need Help?",
-    "liveChatDescription": "Available 24/7 for instant support",
-    "startChat": "Start Chat",
-    "emailSupport": "Email Support",
-    "emailSupportDescription": "Response within 24 hours",
-    "sendEmail": "Send Email",
-    "phoneSupport": "Phone Support",
-    "phoneSupportHours": "Mon-Fri, 9AM-6PM EST",
-    "callNow": "Call Now"
+    "shortcutsTitle": "Go to",
+    "shortcutsSubtitle": "Pages sellers ask about most.",
+    "videosTitle": "Video tutorials",
+    "comingSoon": "Coming soon",
+    "videosSubtitle": "Short walkthroughs of the dashboard are on the way. Until then, message us and we'll guide you step by step.",
+    "videosPlanned": "Planned tutorials",
+    "videos": {
+      "firstStore": "Opening your first store",
+      "firstProduct": "Adding your first product",
+      "orders": "Handling an order from start to delivery",
+      "builder": "Designing your website",
+      "topUp": "Topping up your wallet"
+    }
   },
   "header": {
     "installApp": "Install app",
@@ -1734,7 +2055,16 @@
     "quickActions": "Quick actions",
     "pages": "Pages",
     "language": "Switch language",
-    "toggleTheme": "Toggle dark mode"
+    "toggleTheme": "Toggle dark mode",
+    "walletBalance": "Wallet Balance: {amount}",
+    "walletLabel": "Wallet Balance:"
+  },
+  "negativeWalletDialog": {
+    "title": "Your wallet balance is negative",
+    "description": "Tallaby takes a flat EGP 5 from your wallet for each delivered order. Top up to clear the amount you owe.",
+    "balanceLabel": "Current balance:",
+    "topUp": "Top up now",
+    "later": "Later"
   },
   "advertise": {
     "intro": "Pick the package, choose a product, and pay with Vodafone Cash. Our team checks the transfer and starts your campaign.",
@@ -1778,7 +2108,6 @@
         "video_social": "A promo video for your product made from social-media footage, with a voiceover explaining its features",
         "video_ai": "{count, plural, one {An AI-made promo video} other {# AI-made promo videos}} for your product, with a voiceover explaining its features",
         "platforms": "Your product published on all Tallaby channels",
-        "featured": "Your product placed in Featured Products, the first thing customers see on the website",
         "meta": "A sponsored ad on Meta (Facebook + Instagram) for the whole campaign"
       },
       "periods": {
@@ -1806,7 +2135,6 @@
         "video_social": "Social-media promo video with voiceover",
         "video_ai": "{count, plural, one {AI promo video} other {# AI promo videos}} with voiceover",
         "platforms": "Posted on all Tallaby channels",
-        "featured": "Shown in Featured Products",
         "meta": "Sponsored ad on Meta"
       }
     },
@@ -1843,6 +2171,16 @@
       "optional": "Optional",
       "agree": "I agree that the campaign starts after the transfer is confirmed, and that the amount can't be refunded once the campaign has started."
     },
+    "wallet": {
+      "methodLabel": "Payment method",
+      "method": "Store wallet",
+      "balance": "Wallet balance",
+      "after": "Balance after this ad",
+      "note": "The amount is taken from your store wallet when you send the request. If we reject it, it goes back to your wallet.",
+      "insufficient": "Your wallet balance isn't enough for this package. Top up your wallet or pay with Vodafone Cash.",
+      "notActive": "Your store wallet is frozen, so it can't pay for ads right now.",
+      "agree": "I agree that the amount is taken from my store wallet now, and that it can't be refunded once the campaign has started."
+    },
     "summary": {
       "title": "Order summary",
       "package": "Package",
@@ -1857,7 +2195,8 @@
     },
     "success": {
       "title": "Request sent",
-      "body": "We'll check the transfer and contact you to start the campaign. Track its status in the list below."
+      "body": "We'll check the transfer and contact you to start the campaign. Track its status in the list below.",
+      "walletBody": "The amount was taken from your store wallet. We'll contact you to start the campaign. Track its status in the list below."
     },
     "requests": {
       "title": "Your ad requests",
@@ -1886,7 +2225,9 @@
       "product_not_found": "We couldn't find this product in your store.",
       "product_not_active": "This product isn't published. Publish it, then try again.",
       "already_requested": "This product already has an open ad request.",
-      "unknown": "Couldn't send the request. Try again."
+      "unknown": "Couldn't send the request. Try again.",
+      "insufficient_balance": "Your wallet balance isn't enough for this package. Top up first or pay with Vodafone Cash.",
+      "wallet_not_active": "Your store wallet is frozen, so it can't pay for ads right now."
     },
     "flow": {
       "change": "Change",
@@ -1897,6 +2238,2506 @@
       "nextPayment": "Next: payment",
       "pickPackage": "Choose a package to continue",
       "picked": "{name} selected"
+    }
+  },
+  "signup": {
+    "title": "Create your store",
+    "subtitle": "Choose your store address and start selling in a minute.",
+    "signedInAs": "Signed in as {email}",
+    "storeAddress": "Store address",
+    "storeAddressHint": "Lowercase letters, numbers and dashes. You can change it later.",
+    "checking": "Checking…",
+    "available": "{address} is available",
+    "taken": "This address is taken",
+    "tooShort": "Use at least 3 characters",
+    "tooLong": "Use at most 32 characters",
+    "invalid": "Use lowercase letters, numbers and single dashes",
+    "reserved": "This address is reserved",
+    "rateLimited": "Too many checks. Wait a moment.",
+    "suggestions": "Try:",
+    "phone": "Mobile number",
+    "phonePlaceholder": "01xxxxxxxxx",
+    "phoneHint": "Our team may reach you on WhatsApp to help you get started.",
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
+    "password": "Password",
+    "passwordPlaceholder": "At least 8 characters",
+    "submit": "Create my store",
+    "or": "or",
+    "continueWithGoogle": "Continue with Google",
+    "haveAccount": "Already selling on Tallaby?",
+    "signIn": "Sign in",
+    "confirmTitle": "Check your email",
+    "confirmDescription": "We sent a confirmation link to {email}. Open it to finish creating your store.",
+    "created": "Your store is live at {url}",
+    "errors": {
+      "invalidInput": "Please check the highlighted fields.",
+      "invalidSubdomain": "Choose a valid store address.",
+      "phoneInvalid": "Enter a valid Egyptian mobile number (01xxxxxxxxx).",
+      "subdomainTaken": "This store address was just taken. Choose another one.",
+      "emailTaken": "This email already has an account. Sign in to continue.",
+      "rateLimited": "Too many attempts. Please wait a few minutes and try again.",
+      "notSignedIn": "Your session has ended. Sign in again.",
+      "alreadySeller": "You already have a store.",
+      "generic": "Something went wrong. Please try again.",
+      "invalidEmail": "Enter a valid email address.",
+      "passwordTooShort": "Use at least 8 characters.",
+      "passwordTooLong": "Use at most 72 characters."
+    }
+  },
+  "stores": {
+    "description": "Each store has its own address, design and settings. Your products, wallet and plan are shared.",
+    "usage": "{count} of {max} stores",
+    "create": "Create store",
+    "limitHint": "You have reached your plan's store limit. Archived stores count toward it.",
+    "suspended": "Suspended",
+    "createdOn": "Created {date}",
+    "actions": "Store actions",
+    "makeCurrent": "Manage this store",
+    "selected": "Now managing {name}",
+    "restore": "Restore",
+    "restored": "Store restored",
+    "archive": "Archive",
+    "archived": "Store archived",
+    "archiveTitle": "Archive {name}?",
+    "archiveDescription": "The store goes offline for customers and becomes read-only. You can restore it any time. It still counts toward your store limit.",
+    "cancel": "Cancel",
+    "createTitle": "Create a new store",
+    "createDescription": "It goes live right away with the default theme. You can change everything later.",
+    "name": "Store name",
+    "namePlaceholder": "e.g. My second store",
+    "createdToast": "{name} is live",
+    "errors": {
+      "limitReached": "You have reached your plan's store limit.",
+      "subdomainTaken": "This store address is taken. Choose another one.",
+      "invalidSubdomain": "Choose a valid, available store address.",
+      "invalidInput": "Please check the highlighted fields.",
+      "primaryStore": "Your main store cannot be archived.",
+      "notFound": "Store not found.",
+      "forbidden": "You can't change stores right now.",
+      "rateLimited": "Too many attempts. Please wait and try again.",
+      "generic": "Something went wrong. Please try again.",
+      "nameTooShort": "Use at least 2 characters.",
+      "nameTooLong": "Use at most 80 characters."
+    }
+  },
+  "storeSettings": {
+    "save": "Save changes",
+    "saved": "Store settings saved",
+    "readOnly": "This store is archived or suspended, so its settings are read-only. Restore it from My stores to edit.",
+    "readOnlyBadge": "Read-only",
+    "identity": {
+      "title": "Store identity",
+      "description": "How your store appears to customers: name, logo, description and banner.",
+      "brandMoved": "Your logo and banner are now part of the website builder.",
+      "brandMovedLink": "Edit them in Design system"
+    },
+    "contact": {
+      "title": "Contact",
+      "description": "Shown in your store footer so customers can reach you.",
+      "hint": "Leave a field empty to hide it from your store."
+    },
+    "languages": {
+      "title": "Languages",
+      "description": "The languages your store is shown in."
+    },
+    "locales": {
+      "ar": "Arabic",
+      "en": "English"
+    },
+    "fields": {
+      "name": "Store name",
+      "namePlaceholder": "e.g. Faster Store",
+      "description": "Store description",
+      "descriptionPlaceholder": "What do you sell? What makes your store special?",
+      "categoryAr": "Store category (Arabic)",
+      "categoryArPlaceholder": "مثال: ملابس رياضية",
+      "categoryEn": "Store category (English)",
+      "categoryEnPlaceholder": "e.g. Sportswear",
+      "phone": "Phone",
+      "whatsapp": "WhatsApp",
+      "email": "Email",
+      "supportedLocales": "Store languages",
+      "defaultLocale": "Default language",
+      "industry": "Industry",
+      "industryHint": "Pick the closest one; it fills the category fields below and suggests photos in the website editor."
+    },
+    "errors": {
+      "invalidInput": "Some values are not valid. Please check the form.",
+      "readOnly": "This store is read-only.",
+      "notFound": "Store not found.",
+      "generic": "Couldn't save. Please try again.",
+      "nameTooShort": "Use at least 2 characters.",
+      "nameTooLong": "Use at most 80 characters.",
+      "phoneInvalid": "Enter a valid phone number.",
+      "emailInvalid": "Enter a valid email address.",
+      "localeRequired": "Choose at least one language.",
+      "defaultLocaleNotSupported": "The default language must be one of the store languages."
+    },
+    "catalog": {
+      "title": "Products in this store",
+      "description": "Choose whether this store shows all your products or only the ones you pick. Your products and stock are shared by all your stores.",
+      "modeAll": "All my products",
+      "modeAllHint": "Every active product you add shows in this store automatically.",
+      "modeSelected": "Only selected products",
+      "modeSelectedHint": "This store shows only the products you tick below. New products are not added automatically.",
+      "pickTitle": "Pick products",
+      "pickDescription": "Only active products appear on the store. Draft and pending products show once they are approved.",
+      "search": "Search your products",
+      "selectedCount": "{count, plural, =0 {No products selected} one {1 product selected} other {# products selected}}",
+      "selectShown": "Select shown",
+      "clearShown": "Clear shown",
+      "noProducts": "You have no products yet. Add products first, then pick them here.",
+      "noMatches": "No products match your search.",
+      "status": {
+        "active": "Active",
+        "draft": "Draft",
+        "pending": "Pending review",
+        "rejected": "Rejected"
+      },
+      "tooMany": "You can pick up to {max} products.",
+      "shownLimit": "Showing your {max} newest products.",
+      "emptySelection": "Pick at least one product, or show all your products.",
+      "invalidProduct": "One of the picked products is no longer yours. Reload the page and try again.",
+      "saved": "Catalog saved"
+    },
+    "currency": {
+      "title": "Website currency",
+      "description": "The currency your prices are shown in on your store's website, and how its symbol looks.",
+      "currency": "Currency",
+      "symbol": "Currency symbol",
+      "hint": "Prices are not converted: the amounts you enter are shown with this currency. The dashboard, wallet and shipping fees stay in EGP.",
+      "groups": {
+        "regional": "Egypt and the Gulf",
+        "international": "International"
+      },
+      "names": {
+        "EGP": "Egyptian pound",
+        "SAR": "Saudi riyal",
+        "AED": "UAE dirham",
+        "KWD": "Kuwaiti dinar",
+        "QAR": "Qatari riyal",
+        "BHD": "Bahraini dinar",
+        "OMR": "Omani rial",
+        "USD": "US dollar",
+        "EUR": "Euro",
+        "GBP": "British pound"
+      }
+    }
+  },
+  "planUsage": {
+    "description": "Your plan decides how many stores you can run and which tools you get.",
+    "currentPlan": "Current plan",
+    "currentPlanDescription": "Everyone starts on Free. Paid plans with more stores and tools are coming.",
+    "plans": {
+      "free": "Free"
+    },
+    "stores": "Stores",
+    "storesUsage": "{count} of {max} stores",
+    "storesFull": "You have used all stores on your plan. Archived stores count toward the limit.",
+    "features": {
+      "customDomain": "Connect your own domain",
+      "ai": "AI website builder",
+      "advancedSettings": "Advanced store settings",
+      "removeTallabyBadge": "Remove the “by Tallaby” badge"
+    },
+    "included": "Included",
+    "notOnPlan": "Not on your plan",
+    "upgradesSoon": "Upgrades will be available soon.",
+    "manageStores": "Manage stores"
+  },
+  "storePayments": {
+    "saved": "Payment methods updated.",
+    "readOnly": "This store is read-only, so payment methods can't be changed.",
+    "checkoutNotice": "Your store's website will offer these methods once store checkout launches. Until then, orders are paid the same way as today.",
+    "soonTitle": "Coming soon",
+    "soonDescription": "These will be available in a later update.",
+    "soon": "Soon",
+    "edit": "Edit",
+    "setUp": "Set up",
+    "toggle": "Turn {method} on or off",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saveAndEnable": "Save and turn on",
+    "instapayIdentifiers": "Add at least one way to receive money: InstaPay address, mobile number or IBAN.",
+    "operatorHint": "Numbers starting like this usually belong to {operator}. Make sure this number has a {method} wallet.",
+    "fields": {
+      "holderName": "Account holder name",
+      "phone": "Wallet mobile number",
+      "ipa": "InstaPay address",
+      "iban": "IBAN",
+      "paymentLink": "InstaPay payment link (optional)",
+      "codFeeHelp": "Added to the order total when the customer pays on delivery. Use 0 for no fee.",
+      "codFeeLabel": "Extra fee per order",
+      "codMax": "Maximum order value",
+      "codMaxPlaceholder": "No limit",
+      "codMaxHelp": "Orders above this value won't be offered this method.",
+      "noteLabel": "Instructions for the customer",
+      "notePlaceholder": "Example: please have the exact amount ready for the courier.",
+      "phoneHelp": "The number the wallet is registered to. The customer sends the money here.",
+      "holderHelp": "Shown to the customer so they know they are paying the right person.",
+      "ipaHelp": "You'll find it in the InstaPay app, under your profile."
+    },
+    "fieldErrors": {
+      "holder_invalid": "Enter the account holder's name (at least 2 characters).",
+      "phone_invalid": "Enter a valid Egyptian mobile number, e.g. 01012345678.",
+      "ipa_invalid": "Use an InstaPay address like name@instapay.",
+      "iban_invalid": "An Egyptian IBAN is EG followed by 27 digits.",
+      "iban_checksum": "This IBAN isn't valid. Check the digits.",
+      "link_invalid": "Use an InstaPay link that starts with https://ipn.eg/.",
+      "identifier_required": "Add an InstaPay address, mobile number or IBAN.",
+      "codInvalid": "The fee must be a whole number from 0 to 500.",
+      "invalid": "This value isn't valid.",
+      "codMaxInvalid": "Enter a number from 0 to 1,000,000, or leave it empty."
+    },
+    "errors": {
+      "invalidDetails": "Some details are not valid. Please check them.",
+      "lastMethod": "Keep at least one payment method on.",
+      "notAvailable": "This payment method isn't available yet.",
+      "readOnly": "This store is read-only.",
+      "notFound": "Store not found.",
+      "rateLimited": "Too many changes. Please wait a few minutes and try again.",
+      "generic": "Couldn't save. Please try again."
+    },
+    "methods": {
+      "cod": {
+        "name": "Cash on delivery",
+        "description": "The customer pays the courier when the order arrives.",
+        "setupHelp": "Optional: add a fee or a note for customers."
+      },
+      "vodafone_cash": {
+        "name": "Vodafone Cash",
+        "description": "Customers transfer to your Vodafone Cash wallet.",
+        "setupHelp": "Customers send the money to this wallet. You confirm when it arrives."
+      },
+      "e_cash": {
+        "name": "e& Cash",
+        "description": "Customers transfer to your e& Cash wallet.",
+        "setupHelp": "Customers send the money to this wallet. You confirm when it arrives."
+      },
+      "we_pay": {
+        "name": "WE Pay",
+        "description": "Customers transfer to your WE Pay wallet.",
+        "setupHelp": "Customers send the money to this wallet. You confirm when it arrives."
+      },
+      "orange_cash": {
+        "name": "Orange Cash",
+        "description": "Customers transfer to your Orange Cash wallet.",
+        "setupHelp": "Customers send the money to this wallet. You confirm when it arrives."
+      },
+      "instapay": {
+        "name": "InstaPay",
+        "description": "Customers transfer with InstaPay to your account.",
+        "setupHelp": "Customers send the money with InstaPay. You confirm when it arrives."
+      },
+      "card": {
+        "name": "Debit / credit card"
+      },
+      "fawry": {
+        "name": "Fawry"
+      },
+      "installments": {
+        "name": "Installments"
+      },
+      "apple_google_pay": {
+        "name": "Apple Pay / Google Pay"
+      },
+      "bank_transfer": {
+        "name": "Bank transfer"
+      },
+      "tallaby_wallet": {
+        "name": "Tallaby wallet"
+      }
+    },
+    "cashTitle": "Cash",
+    "cashDescription": "The customer pays when the order arrives.",
+    "walletsTitle": "Mobile wallets & instant transfer",
+    "walletsDescription": "The customer transfers the amount straight to your account, then you confirm it from the order page.",
+    "walletsCount": "{on} of {total} on",
+    "status": {
+      "notSetUp": "Not set up",
+      "on": "On",
+      "off": "Off"
+    },
+    "lastMethodLocked": "Last method that is on",
+    "codFeeLine": "Extra fee {fee} {currency}",
+    "codNoFee": "No extra fee",
+    "codMaxSummary": "Up to {max} {currency} per order",
+    "holderSummary": "Name: {name}",
+    "optional": "Optional",
+    "editTitle": "Edit {method}",
+    "setUpTitle": "Set up {method}",
+    "howItWorks": {
+      "choose": "The customer picks {method} and confirms the order.",
+      "transfer": "They see your payment details and transfer the amount.",
+      "confirm": "You check the transfer and press \"Confirm payment\" on the order page."
+    }
+  },
+  "storeShipping": {
+    "saved": "Shipping settings saved.",
+    "zoneSaved": "Zone saved.",
+    "zoneDeleted": "Zone deleted.",
+    "readOnly": "This store is read-only, so shipping settings can't be changed.",
+    "checkoutNotice": "Your store's website will use these settings once store checkout launches. Until then, shipping is charged the same way as today.",
+    "methodTitle": "Delivery method",
+    "methodDescription": "Choose who delivers your store's orders.",
+    "tallabyTitle": "Tallaby delivery",
+    "tallabyDescription": "Tallaby's couriers deliver. Customers pay Tallaby's rates.",
+    "ownTitle": "My own delivery",
+    "ownDescription": "You deliver with your own riders or courier, at your zone prices.",
+    "ownNeedsZone": "Add at least one enabled zone first.",
+    "handlingDays": "Preparation time (days)",
+    "handlingDaysHelp": "How long you need before the order is ready to ship.",
+    "freeOver": "Free delivery over (optional)",
+    "freeOverPlaceholder": "No free delivery",
+    "freeOverHelp": "You pay the delivery cost for orders at or over this amount.",
+    "showRates": "Show Tallaby's delivery rates",
+    "hideRates": "Hide delivery rates",
+    "governorate": "Governorate",
+    "rateFirstKg": "First kg",
+    "ratesNote": "Each extra kg adds a small charge. Rates are set by Tallaby.",
+    "egp": "EGP {amount}",
+    "free": "Free",
+    "zonesTitle": "Delivery zones",
+    "zonesDescription": "For your own delivery: group governorates and set a price for each group.",
+    "addZone": "Add zone",
+    "editZone": "Edit zone",
+    "zoneSheetDescription": "A governorate can be in only one enabled zone.",
+    "noZones": "No zones yet.",
+    "disabled": "Off",
+    "noCod": "No cash on delivery",
+    "zoneSummary": "EGP {price} · {min}–{max} days",
+    "freeOverSummary": "free over EGP {amount}",
+    "uncovered": "Not delivered ({count}):",
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "save": "Save",
+    "deleteTitle": "Delete zone \"{name}\"?",
+    "deleteDescription": "Customers in these governorates won't be able to order with your own delivery.",
+    "example": "Example: an order of EGP 300 weighing 2.5 kg costs {amount}.",
+    "fields": {
+      "nameAr": "Zone name (Arabic)",
+      "nameEn": "Zone name (English, optional)",
+      "governorates": "Governorates",
+      "price": "Price",
+      "priceHelp": "For the first kg.",
+      "perKgSurcharge": "Extra per kg",
+      "perKgHelp": "For each kg after the first. Leave empty for none.",
+      "freeOver": "Free over",
+      "freeOverHelp": "Optional. Orders at or over this amount ship free.",
+      "deliveryDaysMin": "Min days",
+      "deliveryDaysMax": "Max days",
+      "codEnabled": "Allow cash on delivery in this zone",
+      "enabled": "Zone is on"
+    },
+    "fieldErrors": {
+      "governorates": "Choose at least one governorate.",
+      "generic": "Check the highlighted fields. Prices use up to 2 decimals, and max days can't be less than min days."
+    },
+    "errors": {
+      "invalidInput": "Some values are not valid. Please check them.",
+      "overlap": "A governorate you chose is already in another enabled zone.",
+      "tooManyZones": "You've reached the maximum of 30 zones.",
+      "noZones": "Own delivery needs at least one enabled zone.",
+      "readOnly": "This store is read-only.",
+      "notFound": "Not found.",
+      "rateLimited": "Too many changes. Please wait a few minutes and try again.",
+      "generic": "Couldn't save. Please try again."
+    }
+  },
+  "storeApps": {
+    "title": "Apps",
+    "description": "Connect tracking, export and import tools to this store. Tracking tools load only on this store's website.",
+    "connect": "Connect",
+    "manage": "Manage",
+    "connected": "Connected",
+    "soon": "Soon",
+    "save": "Save",
+    "disconnect": "Disconnect",
+    "saved": "App saved",
+    "removed": "App disconnected",
+    "onlyThisStore": "This app runs only on this store's website, not on the Tallaby marketplace or your other stores.",
+    "gtmWarning": "Google Tag Manager runs whatever tags you add to your container. You are responsible for those tags and for any visitor consent they need.",
+    "errors": {
+      "invalidId": "Check the ID and try again.",
+      "notAvailable": "This app isn't available yet.",
+      "readOnly": "This store is archived, so its apps can't be changed.",
+      "notFound": "Store not found.",
+      "rateLimited": "Too many changes. Try again in a few minutes.",
+      "generic": "Something went wrong. Try again.",
+      "invalidToken": "Check the access token and try again.",
+      "invalidTestCode": "A test event code looks like TEST12345.",
+      "pixelRequired": "Connect this store's Meta Pixel first. The Conversions API sends events to that Pixel.",
+      "tokenRequired": "Paste the access token.",
+      "notConnected": "Connect the app first.",
+      "testFailed": "The connection test failed.",
+      "invalidShopDomain": "Enter your shop address, like my-shop.myshopify.com.",
+      "shopifyAuth": "Shopify refused the token. Check the shop address and the Admin API access token.",
+      "shopifyScope": "The token is missing a permission. Give the app read_products and read_inventory.",
+      "shopifyUnreachable": "Couldn't reach Shopify. Try again in a moment.",
+      "invalidCategory": "Choose a valid category.",
+      "googleFailed": "Google Sheets didn't respond as expected. If it keeps failing, disconnect and connect again.",
+      "noSheet": "Create a spreadsheet first."
+    },
+    "error": "Error",
+    "lastError": "Last error",
+    "metaCapi": {
+      "tokenLabel": "Access token",
+      "tokenHint": "A system user token from Meta Business Settings, with access to this store's Pixel. It is stored encrypted and never shown again.",
+      "tokenKeep": "Token saved. Paste a new one to replace it.",
+      "tokenSaved": "Token saved",
+      "testMode": "test events on",
+      "testCodeLabel": "Test event code (optional)",
+      "testCodeHint": "From Events Manager › Test events. Remove it when you're done testing.",
+      "consentNote": "A server Purchase is sent only for orders placed on this store's website, after the shopper accepts tracking there. It uses the order id as the event id, so Meta counts it once with the Pixel's Purchase.",
+      "test": "Test connection",
+      "testOk": "Connected. Meta accepted the token for this Pixel."
+    },
+    "shopify": {
+      "setupHint": "In your Shopify admin, create a custom app (Settings › Apps and sales channels › Develop apps), give it the read_products and read_inventory Admin API scopes, install it, then paste its Admin API access token here.",
+      "domainLabel": "Shop address",
+      "tokenLabel": "Admin API access token",
+      "tokenHint": "Starts with shpat_. It is stored encrypted and never shown again.",
+      "connectedTo": "Connected to {shop}",
+      "importedSoFar": "{count} products imported so far",
+      "preview": "Check products",
+      "previewCount": "{count} products in Shopify",
+      "currencyWarning": "Your Shopify prices are in {currency}. They are imported as numbers, as if they were EGP. Review them before publishing.",
+      "draftNote": "Products are imported as drafts, so nothing appears on your store until you review and submit them. Products imported before are skipped.",
+      "defaultCategory": "Category for imported products",
+      "chooseCategory": "Choose a category",
+      "mapTypes": "Category per Shopify product type (optional)",
+      "useDefault": "Use the category above",
+      "typesTruncated": "Only the first 5,000 products were checked for product types.",
+      "defaultCategoryRequired": "Choose a category for the imported products.",
+      "start": "Import products",
+      "stop": "Stop after this batch",
+      "done": "Import finished",
+      "progress": "{created} imported, {skipped} skipped, of {total}",
+      "failed": "couldn't be imported",
+      "warnings": {
+        "variants_truncated": "only the first 50 variants were imported",
+        "zero_price": "has no price",
+        "image_skipped": "some images were skipped"
+      }
+    },
+    "googleSheets": {
+      "connect": "Connect Google Sheets",
+      "connected": "Google Sheets connected",
+      "scopeNote": "Tallaby can only open the spreadsheets it creates for you, nothing else in your Google Drive.",
+      "createSheet": "Create spreadsheet",
+      "sheetCreated": "Spreadsheet created",
+      "sheetTitle": "{store} orders (طلبي)",
+      "openSheet": "Open spreadsheet",
+      "export": "Export orders",
+      "exported": "{appended} new orders added, {updated} updated",
+      "lastSync": "Last export: {date}",
+      "rows": "{count} orders in the sheet",
+      "dailyNote": "New orders are also added once a day. Each order has one row, found by its order ID, so exporting again never duplicates it.",
+      "result": {
+        "cancelled": "Google connection cancelled.",
+        "failed": "Couldn't connect Google Sheets. Try again.",
+        "invalid": "That Google connection link expired or wasn't for this account. Start again from the store's Apps page.",
+        "rateLimited": "Too many attempts. Try again in a few minutes."
+      },
+      "columns": {
+        "orderId": "Order ID",
+        "orderNumber": "Order number",
+        "date": "Date (UTC)",
+        "status": "Status",
+        "paymentStatus": "Payment status",
+        "paymentMethod": "Payment method",
+        "customer": "Customer",
+        "phone": "Phone",
+        "city": "City",
+        "items": "Items",
+        "subtotal": "Subtotal",
+        "shipping": "Shipping",
+        "discount": "Discount",
+        "total": "Total",
+        "currency": "Currency"
+      }
+    },
+    "providers": {
+      "meta_pixel": {
+        "name": "Meta Pixel",
+        "description": "Measure your Facebook and Instagram ads and build audiences.",
+        "idLabel": "Pixel ID",
+        "placeholder": "123456789012345",
+        "hint": "15 or 16 digits, from Meta Events Manager › Data sources.",
+        "invalid": "A Pixel ID is 15 or 16 digits.",
+        "vendor": "Meta",
+        "step1": "Open <b>Meta Events Manager</b>",
+        "step2": "Pick your pixel under <b>Data sources</b>",
+        "step3": "Copy the <b>Pixel ID</b> and paste it below"
+      },
+      "google_analytics": {
+        "name": "Google Analytics 4",
+        "description": "See your store's traffic and sales in Google Analytics.",
+        "idLabel": "Measurement ID",
+        "placeholder": "G-XXXXXXXXXX",
+        "hint": "Starts with G-. Find it in Admin › Data streams.",
+        "invalid": "A Measurement ID looks like G-XXXXXXXXXX.",
+        "vendor": "Google",
+        "step1": "Open <b>Admin › Data streams</b> in Google Analytics",
+        "step2": "Select your web stream",
+        "step3": "Copy the <b>Measurement ID</b>"
+      },
+      "google_tag_manager": {
+        "name": "Google Tag Manager",
+        "description": "Manage your own tags from one GTM container.",
+        "idLabel": "Container ID",
+        "placeholder": "GTM-XXXXXXX",
+        "hint": "Starts with GTM-. It's shown at the top of your container.",
+        "invalid": "A Container ID looks like GTM-XXXXXXX.",
+        "vendor": "Google",
+        "step1": "Open your workspace in <b>Tag Manager</b>",
+        "step2": "Find the ID next to the container name",
+        "step3": "Copy the <b>Container ID</b>"
+      },
+      "meta_capi": {
+        "name": "Meta Conversions API",
+        "description": "Send purchases to Meta from the server for more reliable tracking.",
+        "vendor": "Meta"
+      },
+      "tiktok_pixel": {
+        "name": "TikTok Pixel",
+        "description": "Measure your TikTok ads.",
+        "vendor": "TikTok"
+      },
+      "snapchat_pixel": {
+        "name": "Snapchat Pixel",
+        "description": "Measure your Snapchat ads.",
+        "vendor": "Snap Inc."
+      },
+      "google_sheets": {
+        "name": "Google Sheets",
+        "description": "Export your orders to a spreadsheet.",
+        "vendor": "Google"
+      },
+      "shopify_import": {
+        "name": "Shopify import",
+        "description": "Copy your products from a Shopify store.",
+        "vendor": "Shopify"
+      }
+    },
+    "heroTitle": "Connect your tools",
+    "connectedCount": "apps connected",
+    "readOnlyBadge": "Read-only",
+    "tabs": {
+      "all": "All",
+      "connected": "Connected"
+    },
+    "groups": {
+      "tracking": "Tracking & ads",
+      "data": "Import & export"
+    },
+    "groupCount": "{count, plural, one {# app} other {# apps}}",
+    "find": "Find an app",
+    "kinds": {
+      "script": "Storefront script",
+      "server": "Server-side",
+      "import": "One-time import",
+      "account": "Google account"
+    },
+    "comingSoon": "Coming soon",
+    "imported": "Imported",
+    "import": "Import",
+    "view": "View",
+    "cancel": "Cancel",
+    "howTo": "How to connect",
+    "looksGood": "Looks good",
+    "connectedSince": "{state} · {date}",
+    "eventsDelay": "New events can take up to 20 minutes to show in {vendor}.",
+    "empty": {
+      "noneTitle": "Nothing connected yet",
+      "noneBody": "Connect Meta Pixel or Google Analytics to start measuring sales.",
+      "noMatchTitle": "No apps match",
+      "noMatchBody": "Try another name, or request the app below."
+    },
+    "request": {
+      "title": "Missing an app?",
+      "body": "Tell us what you use and we'll prioritise it.",
+      "cta": "Request an app"
+    }
+  },
+  "storeWallet": {
+    "topUp": {
+      "button": "Top up",
+      "title": "Top up your store wallet",
+      "description": "Add money to cover fees and paid services. You pay on Kashier by card or mobile wallet.",
+      "amount": "Amount",
+      "limits": "From 100 to 20,000 EGP.",
+      "continue": "Continue to payment",
+      "refresh": "Check again",
+      "backToWallet": "Back to wallet",
+      "errors": {
+        "invalid": "Enter an amount in pounds, for example 250.",
+        "too_small": "The minimum top-up is 100 EGP.",
+        "too_large": "The maximum top-up is EGP 20,000.",
+        "not_configured": "Online payment isn't available right now. Try again later.",
+        "provider_error": "We couldn't open the payment page. Try again.",
+        "rateLimited": "Too many attempts. Try again in a few minutes.",
+        "notAllowed": "Your account can't top up right now."
+      },
+      "result": {
+        "succeeded": {
+          "title": "Top-up received",
+          "description": "{amount} was added to your store wallet."
+        },
+        "processing": {
+          "title": "Payment is being confirmed",
+          "description": "We'll add {amount} as soon as Kashier confirms the payment. This usually takes a few seconds."
+        },
+        "failed": {
+          "title": "Top-up didn't go through",
+          "description": "{amount} was not charged to your wallet. You can try again."
+        }
+      }
+    },
+    "title": "Store wallet",
+    "thisMonth": "This month: {sales} in sales, {fees} in fees",
+    "negative": "Your balance is below zero. New sales pay it back automatically, or you can top up at any time.",
+    "negativeStrong": "Your balance is well below zero. Top up soon: until it recovers, ads and other paid services can't be paid from the wallet.",
+    "howTitle": "How the platform fee works",
+    "how": "For each delivered order, Tallaby takes a flat EGP 5 from your wallet, whatever the order total. If your balance is zero or less, it goes below zero. Your first 7 days are free. Nothing is charged for cancelled or undelivered orders.",
+    "trialActive": "Free trial: {days, plural, one {# day} other {# days}} left, no fee on orders placed until {date}.",
+    "trialNotStarted": "Your 7-day free trial starts when your first store is created.",
+    "entriesTitle": "Wallet activity",
+    "filterLabel": "Filter activity",
+    "filters": {
+      "all": "All",
+      "sales": "Sales",
+      "fees": "Fees",
+      "topups": "Top-ups",
+      "other": "Other"
+    },
+    "columns": {
+      "date": "Date",
+      "type": "Type",
+      "store": "Store",
+      "order": "Order",
+      "amount": "Amount",
+      "balance": "Balance"
+    },
+    "accountLevel": "Account",
+    "empty": "No wallet activity yet.",
+    "older": "Show older activity",
+    "walletStatus": {
+      "frozen": "Frozen",
+      "closed": "Closed"
+    },
+    "pendingTopUps": "{amount} under review",
+    "requests": {
+      "title": "Top-up requests",
+      "pending": "Under review",
+      "approved": "Added to wallet",
+      "rejected": "Rejected",
+      "methods": {
+        "vodafone_cash": "Vodafone Cash",
+        "instapay": "InstaPay"
+      }
+    },
+    "manualTopUp": {
+      "button": "Top up wallet",
+      "title": "Top up wallet",
+      "description": "Transfer the amount from your wallet or bank, then upload a picture of the receipt.",
+      "progress": "Top-up steps",
+      "steps": {
+        "amount": "Amount",
+        "transfer": "Transfer",
+        "receipt": "Receipt"
+      },
+      "amountLabel": "How much do you want to add?",
+      "limits": "From 100 to 20,000 EGP.",
+      "methodLabel": "Transfer with",
+      "methods": {
+        "vodafone_cash": {
+          "name": "Vodafone Cash",
+          "hint": "From any Vodafone Cash wallet",
+          "to": "To Vodafone Cash number"
+        },
+        "instapay": {
+          "name": "InstaPay",
+          "hint": "From the InstaPay app",
+          "to": "To InstaPay number"
+        }
+      },
+      "slip": {
+        "sendExactly": "Send exactly",
+        "copyAmount": "Copy amount",
+        "copyNumber": "Copy number",
+        "holder": "Account name: {name}",
+        "how": {
+          "open": "Open the {method} app.",
+          "send": "Send exactly {amount} to the number above.",
+          "screenshot": "Take a screenshot of the confirmation screen."
+        }
+      },
+      "senderLabel": "Number you sent from",
+      "optional": "Optional",
+      "senderHint": "Helps us match your transfer faster.",
+      "receipt": {
+        "pick": "Choose the receipt picture",
+        "pickHint": "JPG, PNG or WEBP, up to 5 MB",
+        "replace": "Change picture",
+        "remove": "Remove picture",
+        "previewAlt": "Transfer receipt",
+        "required": "Upload the transfer receipt first.",
+        "wrongType": "Choose a JPG, PNG or WEBP picture.",
+        "tooLarge": "The picture is larger than 5 MB.",
+        "uploadFailed": "Couldn't upload the picture. Try again.",
+        "reviewNote": "{amount} is added to your balance once we check the transfer. Until then it shows in your wallet as under review."
+      },
+      "back": "Back",
+      "next": "Next",
+      "transferred": "I've sent it",
+      "submit": "Send for review",
+      "copyFailed": "Couldn't copy. Copy it by hand.",
+      "done": {
+        "title": "Top-up request sent",
+        "subtitle": "Your request is now under review.",
+        "body": "We'll check your {method} transfer and add the amount to your balance. You can follow it on the wallet page.",
+        "close": "Done"
+      },
+      "errors": {
+        "invalid": "Check the details and try again.",
+        "too_small": "The minimum top-up is 100 EGP.",
+        "too_large": "The maximum top-up is 20,000 EGP.",
+        "invalid_proof": "We couldn't use that receipt. Upload it again.",
+        "too_many_open": "You have 3 top-ups under review. Wait until we check them.",
+        "wallet_not_active": "This wallet isn't active right now.",
+        "rateLimited": "Too many attempts. Wait a few minutes.",
+        "notAllowed": "You can't top up this wallet.",
+        "generic": "Couldn't send the request. Try again."
+      }
+    }
+  },
+  "mediaLibrary": {
+    "title": "Media library",
+    "description": "Images for your website. Files marked shared can be used by all your stores; the others belong to this store only.",
+    "scope": {
+      "label": "Show",
+      "all": "All",
+      "store": "This store",
+      "shared": "Shared"
+    },
+    "badge": {
+      "shared": "Shared by your stores",
+      "store": "This store only"
+    },
+    "viewLabel": "View",
+    "gridView": "Grid",
+    "listView": "List",
+    "breadcrumb": "Folders",
+    "root": "Library",
+    "loading": "Loading",
+    "newFolder": "New folder",
+    "renameFolder": "Rename folder",
+    "deleteFolder": "Delete folder",
+    "deleteFolderConfirm": "Delete the folder “{name}” and its sub-folders? The images inside move to the library root; nothing is deleted from your website.",
+    "folderDeleted": "Folder deleted",
+    "folderName": "Folder name",
+    "folderShared": "Share with all my stores",
+    "folderSharedHint": "Otherwise the folder and its images belong to this store only.",
+    "folderInherits": "A folder inside another folder keeps its sharing setting.",
+    "create": "Create",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saved": "Saved",
+    "delete": "Delete",
+    "deleted": "Image deleted",
+    "dropHere": "Drag images here to upload",
+    "dropNow": "Drop the images to upload them",
+    "dropHint": "JPG, PNG, WebP, GIF or AVIF, up to 5 MB each, 20 at a time. SVG is not accepted.",
+    "browse": "Choose images",
+    "uploadShared": "Share the uploads with all my stores",
+    "uploadIntoShared": "Uploads go to this shared folder.",
+    "uploadIntoStore": "Uploads go to this store's folder.",
+    "uploads": "Uploads",
+    "clear": "Clear",
+    "empty": "No images yet. Upload your first ones above.",
+    "emptyFolder": "This folder is empty.",
+    "usedIn": "Used in {count, plural, one {# place} other {# places}} on this store",
+    "unused": "Not used on this store",
+    "columns": {
+      "file": "File",
+      "size": "Size",
+      "scope": "Available to",
+      "usage": "Usage"
+    },
+    "altAr": "Alt text (Arabic)",
+    "altEn": "Alt text (English)",
+    "altHint": "Describe the image for screen readers and search engines.",
+    "folder": "Folder",
+    "copyUrl": "Copy link",
+    "copied": "Link copied",
+    "deleteTitle": "Delete this image?",
+    "deleteConfirm": "The file is removed from storage and cannot be recovered.",
+    "deleteUsedWarning": "It is used in {count, plural, one {# place} other {# places}} on this store's website, which will show an empty image.",
+    "deleteSharedWarning": "This image is shared: your other stores may use it too.",
+    "chooseFromLibrary": "Choose from library",
+    "pickTitle": "Choose an image",
+    "pickDescription": "Pick an image from the library, or upload new ones and pick one.",
+    "pick": "Use image",
+    "errors": {
+      "notFound": "This image or folder no longer exists.",
+      "readOnly": "This store is archived, so its media cannot be changed.",
+      "invalidInput": "Check the entered values.",
+      "invalidPath": "The upload location is not valid.",
+      "objectMissing": "The upload did not finish. Try again.",
+      "tooLarge": "The image is larger than 5 MB.",
+      "invalidType": "Only JPG, PNG, WebP, GIF and AVIF images are accepted.",
+      "invalidFolder": "Images can only go into folders with the same sharing setting.",
+      "tooMany": "You have reached the media library limit. Delete unused files first.",
+      "rateLimited": "Too many uploads. Wait a few minutes and try again.",
+      "deleteFailed": "The file could not be removed from storage. Try again.",
+      "uploadFailed": "Upload failed. Try again.",
+      "generic": "Something went wrong. Try again."
+    }
+  },
+  "storeEditor": {
+    "title": "Website editor",
+    "legacySectionsDropped": "{count, plural, one {Removed # old section that is no longer supported} other {Removed # old sections that are no longer supported}}. Your next save makes it permanent.",
+    "back": "Back",
+    "pageLabel": "Page",
+    "editingLanguage": "Editing language",
+    "device": "Preview size",
+    "devices": {
+      "desktop": "Desktop",
+      "tablet": "Tablet",
+      "mobile": "Phone"
+    },
+    "undo": "Undo",
+    "redo": "Redo",
+    "viewStore": "View store",
+    "publish": "Publish",
+    "publishChanges": "Publish changes",
+    "published": "Published (version {number}). Your store shows it now.",
+    "conflict": "This website was changed in another tab or by another session. Reload to get the latest version before editing.",
+    "reload": "Reload",
+    "canvas": {
+      "addToCart": "Add to cart",
+      "dragGap": "Drag to change the gap",
+      "dragRadius": "Drag to round the corners",
+      "gapValue": "Gap {value}",
+      "radiusValue": "Radius {value}",
+      "selectParent": "Select parent",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "duplicate": "Duplicate",
+      "delete": "Delete",
+      "insertAbove": "Add a section above",
+      "insertBelow": "Add a section below",
+      "copy": "Copy",
+      "cut": "Cut",
+      "paste": "Paste",
+      "copyStyle": "Copy style",
+      "pasteStyle": "Paste style",
+      "toggleHidden": "Hide/show on this device",
+      "dragToMove": "Drag to move",
+      "dragItemToMove": "Drag to move this item",
+      "itemTitle": "Item {position}"
+    },
+    "inspector": {
+      "empty": "Select a section on the page to edit it.",
+      "imageHint": "Choose an image from the media library, or paste an image link.",
+      "chooseCategory": "Choose a category",
+      "chooseProduct": "Choose a product",
+      "searchProducts": "Search your products",
+      "missingProduct": "Product no longer available",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "remove": "Remove",
+      "addItem": "Add item",
+      "translating": "Editing the {locale} text. Images, links and layout are shared with the Arabic version.",
+      "nothingToEdit": "This part shows your store's own details. Change them in the store settings.",
+      "partsHint": "Drag a part on the page to change its place.",
+      "resetLayout": "Reset layout",
+      "chooseForm": "Choose a form",
+      "formDisabled": "{name} (turned off)",
+      "manageForms": "Create and edit forms",
+      "styleOnly": "This element only has style settings. Open the Style tab.",
+      "boundField": "On the site this shows the record's {field}. The text here only shows when it's outside its list.",
+      "boundFields": {
+        "title": "name",
+        "name": "name",
+        "image": "photo",
+        "href": "page link",
+        "price": "price",
+        "compareAtPrice": "price before discount",
+        "discount": "discount",
+        "rating": "rating",
+        "productCount": "product count",
+        "excerpt": "excerpt",
+        "date": "publish date"
+      },
+      "listTemplate": "Each record shows the elements inside this list. Edit the first card and every card follows.",
+      "groups": {
+        "design": "Design",
+        "data": "Data",
+        "content": "Content",
+        "options": "Options"
+      },
+      "designs": "Designs",
+      "searchCategories": "Search categories…",
+      "missingCategory": "Removed category",
+      "chooseCoupon": "Choose a coupon…",
+      "noCoupons": "You have no active coupons. Create one in Coupons.",
+      "dateHint": "Shown in your visitors’ local time.",
+      "datePast": "This date has passed, so nothing is shown on your store.",
+      "advanced": "Advanced",
+      "advancedCount": "{count} options",
+      "openStyle": "Open the Style tab",
+      "video": {
+        "invalid": "We can't play this link. Use a YouTube, Vimeo, TikTok, Instagram or Facebook video, or an .mp4 file.",
+        "shortLink": "This is a short share link. Open it in your browser and copy the full address from the address bar.",
+        "found": "{site} video found",
+        "open": "Open the video",
+        "verticalHint": "This video is vertical: choose the 9:16 ratio in the Style tab.",
+        "instagramHint": "Instagram shows the post with its own player, so the player options don't apply."
+      },
+      "addChild": "Add {name}",
+      "addChildHint": "Drag rows in Layers to reorder them."
+    },
+    "save": {
+      "saved": "Saved",
+      "saving": "Saving…",
+      "unsaved": "Unsaved changes",
+      "conflict": "Changed elsewhere",
+      "error": "Couldn't save",
+      "retry": "Retry"
+    },
+    "classic": {
+      "note": "Shown exactly like your live store.",
+      "classic-header": {
+        "title": "Store header (logo, name, cart)"
+      },
+      "classic-hero": {
+        "title": "Store front (name, cover, rating)"
+      },
+      "classic-categories": {
+        "title": "Category circles"
+      },
+      "classic-catalog": {
+        "title": "All products, with search and sorting"
+      },
+      "classic-footer": {
+        "title": "Store footer (contact and policies)"
+      }
+    },
+    "pages": {
+      "inMenu": "In menu",
+      "hidden": "Hidden",
+      "delete": "Delete page",
+      "new": "New page",
+      "name": "Name",
+      "slug": "Address",
+      "slugHint": "Lowercase letters, numbers and dashes, e.g. about-us.",
+      "create": "Create page"
+    },
+    "errors": {
+      "notFound": "This store or page wasn't found.",
+      "readOnly": "This store is archived, so it can't be edited.",
+      "publishBlocked": "Your account can't publish right now. Contact support.",
+      "invalidContent": "Something in this section isn't valid. Check it and try again.",
+      "versionConflict": "This website was changed elsewhere. Reload before continuing.",
+      "invalidSlug": "Use lowercase letters, numbers and dashes only.",
+      "reservedSlug": "This address is used by the store. Choose another one.",
+      "slugTaken": "Another page already uses this address.",
+      "tooManyPages": "You've reached the maximum number of pages.",
+      "homePage": "The home page can't be deleted.",
+      "notPublished": "This website isn't published yet.",
+      "invalidSite": "The website has a problem and couldn't be published. Check the highlighted sections.",
+      "invalidInput": "Check the details and try again.",
+      "rateLimited": "Too many changes at once. Wait a moment and try again.",
+      "generic": "Something went wrong. Try again.",
+      "saveFirst": "Wait for your changes to be saved, then try again.",
+      "previewUnavailable": "Preview on your store isn't available right now."
+    },
+    "previewOnStore": "Preview on store",
+    "managePages": "Manage pages…",
+    "gridOverlay": "Column grid",
+    "rail": {
+      "label": "Editor tools",
+      "add": "Add",
+      "layers": "Layers",
+      "media": "Images",
+      "pages": "Pages",
+      "brand": "Brand",
+      "explore": "Explore",
+      "templates": "Templates",
+      "forms": "Forms"
+    },
+    "add": {
+      "tabs": {
+        "elements": "Elements",
+        "sections": "Sections",
+        "templates": "Templates"
+      },
+      "elementsTitle": "Elements",
+      "search": "Search elements…",
+      "searchSections": "Search sections…",
+      "recent": "Recent",
+      "mostUsed": "Most used",
+      "layouts": "Layouts",
+      "groups": {
+        "layout": "Layout",
+        "text": "Text",
+        "basic": "Basic",
+        "data": "Store data"
+      },
+      "noResults": "No results.",
+      "sectionsIntro": "Drag a section onto the page, or click it to add it after the selected section.",
+      "inUse": "In use",
+      "sectionGroups": {
+        "header": "Header",
+        "hero": "Hero",
+        "products": "Products",
+        "categories": "Categories",
+        "features": "Features",
+        "about": "About",
+        "content": "Content",
+        "cta": "Call to action",
+        "faq": "FAQ",
+        "testimonials": "Testimonials",
+        "logos": "Logos",
+        "gallery": "Gallery",
+        "blog": "Blog",
+        "contact": "Contact",
+        "footer": "Footer",
+        "custom": "Custom section"
+      },
+      "categories": {
+        "header": "Headers",
+        "hero": "Hero",
+        "commerce": "Products & categories",
+        "content": "Content",
+        "social-proof": "Reviews & logos",
+        "blog": "Blog",
+        "media": "Gallery",
+        "contact": "Contact",
+        "footer": "Footers",
+        "custom": "Custom"
+      },
+      "previewSection": "Preview section",
+      "cancel": "Cancel",
+      "addSection": "Add section",
+      "useSection": "Use this section",
+      "dragHint": "Drag onto the page, or click to add after the selected section",
+      "dragElementHint": "Drag onto the page, or click to add after the selection",
+      "library": {
+        "intro": "Pick a category, then drag a section onto the page or click it to add it after the selection.",
+        "search": "Search all sections…",
+        "back": "All categories",
+        "all": "All",
+        "filterLabel": "Show",
+        "filters": {
+          "all": "All",
+          "dynamic": "Store data",
+          "interactive": "Interactive",
+          "static": "Static"
+        },
+        "count": "{count, plural, one {# section} other {# sections}}",
+        "noResults": "No sections match. Try another word or clear the filters.",
+        "clearFilters": "Clear filters",
+        "preview": "Preview",
+        "add": "Add to page",
+        "useChrome": "Use on every page",
+        "applyCard": "Apply to selected section",
+        "inUse": "In use",
+        "cardsIntro": "Card designs change how products look. Select a product section first to restyle it, or add a new product grid with this card.",
+        "data": {
+          "products": "{count, plural, =0 {No products yet} one {Shows your # product} other {Shows your # products}}",
+          "categories": "{count, plural, =0 {No categories yet} one {Shows your # category} other {Shows your # categories}}",
+          "brands": "{count, plural, =0 {No brands yet} one {Shows your # brand} other {Shows your # brands}}",
+          "reviews": "{count, plural, =0 {No reviews yet} one {Shows # customer review} other {Shows # customer reviews}}",
+          "promotions": "{count, plural, =0 {No active coupons} one {# active coupon} other {# active coupons}}",
+          "articles": "Shows your blog posts",
+          "storeInfo": "Uses your store details",
+          "navigation": "Uses your site pages",
+          "forms": "{count, plural, =0 {No forms yet} one {Uses one of your # form} other {Uses one of your # forms}}"
+        },
+        "dataUnknown": "Uses your store data"
+      }
+    },
+    "layers": {
+      "title": "Layers",
+      "header": "Header",
+      "footer": "Footer",
+      "everyPage": "every page",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "duplicate": "Duplicate",
+      "delete": "Delete",
+      "show": "Show on this device",
+      "hide": "Hide on this device",
+      "rename": "Double-click to rename",
+      "empty": "This page is empty. Add a section from the Add panel.",
+      "dragHandle": "Drag to reorder {name}",
+      "hiddenHere": "Hidden on this device",
+      "styledHere": "Has its own styles on this device"
+    },
+    "media": {
+      "title": "Media library",
+      "intro": "Drag an image onto an image on the page to replace it, or between elements to add it. Double-click an image to use it on the selection."
+    },
+    "sidebar": {
+      "label": "Properties",
+      "empty": "Select anything on the page to edit it.",
+      "section": "Section",
+      "element": "Element",
+      "tabs": {
+        "content": "Content",
+        "style": "Style"
+      },
+      "selectedOnly": "Selected element only",
+      "showAll": "Show all",
+      "customHint": "Add elements from the Add panel, then click any element on the page to edit it.",
+      "emptyTitle": "Nothing selected",
+      "path": "Where it sits",
+      "actions": {
+        "parent": "Select parent",
+        "duplicate": "Duplicate",
+        "show": "Show on this device",
+        "hide": "Hide on this device",
+        "delete": "Delete"
+      }
+    },
+    "style": {
+      "size": "Size",
+      "sizes": {
+        "xs": "Extra small",
+        "sm": "Small",
+        "md": "Medium",
+        "lg": "Large",
+        "xl": "Extra large",
+        "2xl": "2XL",
+        "3xl": "3XL",
+        "4xl": "4XL"
+      },
+      "weight": "Weight",
+      "weights": {
+        "light": "Light",
+        "normal": "Normal",
+        "medium": "Medium",
+        "bold": "Bold"
+      },
+      "italic": "Italic",
+      "underline": "Underline",
+      "align": "Align",
+      "aligns": {
+        "start": "Start",
+        "center": "Center",
+        "end": "End",
+        "justify": "Justify"
+      },
+      "lineHeight": "Line",
+      "lineHeights": {
+        "tight": "Tight",
+        "snug": "Snug",
+        "normal": "Normal",
+        "relaxed": "Relaxed"
+      },
+      "color": "Color",
+      "tokens": {
+        "foreground": "Text",
+        "muted": "Secondary text",
+        "primary": "Main color",
+        "primaryInk": "Text on main",
+        "accent": "Highlight",
+        "background": "Background",
+        "secondary": "Soft background",
+        "border": "Lines",
+        "white": "White",
+        "black": "Black",
+        "transparent": "Transparent"
+      },
+      "direction": "Direction",
+      "directions": {
+        "column": "Column",
+        "row": "Row"
+      },
+      "columns": "Columns",
+      "gap": "Gap",
+      "alignItems": "Align",
+      "alignItemsOptions": {
+        "start": "Start",
+        "center": "Center",
+        "end": "End",
+        "stretch": "Stretch"
+      },
+      "justify": "Justify",
+      "justifyOptions": {
+        "start": "Start",
+        "center": "Center",
+        "end": "End",
+        "between": "Spread"
+      },
+      "padding": "Padding",
+      "margin": "Margin",
+      "mixed": "Mixed",
+      "background": "Fill",
+      "ratio": "Ratio",
+      "ratios": {
+        "square": "1:1",
+        "landscape": "4:3",
+        "wide": "16:9",
+        "portrait": "3:4",
+        "story": "9:16"
+      },
+      "fit": "Fit",
+      "fits": {
+        "cover": "Cover",
+        "contain": "Contain"
+      },
+      "radius": "Radius",
+      "border": "Border",
+      "borderColor": "Border color",
+      "shadow": "Shadow",
+      "shadows": {
+        "none": "None",
+        "sm": "Soft",
+        "md": "Medium",
+        "lg": "Strong"
+      },
+      "opacity": "Opacity",
+      "width": "Width",
+      "maxWidth": "Max width",
+      "minHeight": "Min height",
+      "sides": {
+        "top": "top",
+        "end": "end",
+        "bottom": "bottom",
+        "start": "start"
+      },
+      "devices": {
+        "desktop": "desktop",
+        "tablet": "tablet",
+        "mobile": "phone"
+      },
+      "resetAll": "Clear",
+      "resetDevice": "Use desktop",
+      "groups": {
+        "typography": "Typography",
+        "layout": "Layout",
+        "image": "Image",
+        "spacing": "Spacing",
+        "size": "Size",
+        "box": "Fill and border",
+        "visibility": "Visibility",
+        "section": "Section"
+      },
+      "hideOn": "Hide on {device}",
+      "hideHint": "It stays visible on the other devices.",
+      "shell": {
+        "scheme": "Colours",
+        "schemes": {
+          "default": "Page",
+          "muted": "Soft",
+          "primary": "Brand",
+          "dark": "Dark"
+        },
+        "spacing": "Spacing",
+        "paddings": {
+          "none": "None",
+          "sm": "S",
+          "md": "M",
+          "lg": "L",
+          "xl": "XL"
+        },
+        "width": "Width",
+        "widths": {
+          "contained": "Contained",
+          "wide": "Wide",
+          "full": "Full"
+        },
+        "background": "Background image",
+        "noImage": "No background image.",
+        "removeImage": "Remove background image",
+        "overlay": "Overlay",
+        "backgroundHint": "Shows behind sections without their own background. The overlay darkens it so text stays readable.",
+        "entrance": "Entrance",
+        "animations": {
+          "none": "None",
+          "fade": "Fade",
+          "rise": "Rise"
+        },
+        "anchor": "Link name",
+        "anchorHint": "Lowercase letters, numbers and dashes. Lets buttons link to this section.",
+        "anchorLink": "Link to it with /#{anchor}",
+        "allDevices": "The section frame is the same on every device."
+      },
+      "editing": {
+        "desktop": "Editing desktop, the base for every device.",
+        "tablet": "Editing tablet. Phones use these too unless they set their own.",
+        "mobile": "Editing phone only."
+      },
+      "resetSectionDevice": "Clear all {device} styles in this section"
+    },
+    "popover": {
+      "kinds": {
+        "section": "Section",
+        "text": "Text",
+        "button": "Button",
+        "image": "Image",
+        "container": "Container",
+        "icon": "Icon",
+        "generic": "Element"
+      },
+      "drag": "Drag to move the panel",
+      "duplicate": "Duplicate",
+      "show": "Show on this device",
+      "hide": "Hide on this device",
+      "delete": "Delete",
+      "close": "Close",
+      "variant": "Style",
+      "variants": {
+        "solid": "Solid",
+        "outline": "Outline",
+        "light": "Light"
+      },
+      "replaceImage": "Replace image",
+      "deviceNote": "Changes here apply to {device} only.",
+      "devices": {
+        "desktop": "desktop",
+        "tablet": "tablet",
+        "mobile": "phone"
+      }
+    },
+    "quickInsert": {
+      "title": "Quick insert",
+      "description": "Search for a section, layout or element to add.",
+      "placeholder": "What do you want to add?"
+    },
+    "shortcuts": {
+      "title": "Keyboard shortcuts",
+      "description": "Shortcuts don't run while you type in a field.",
+      "actions": {
+        "undo": "Undo",
+        "redo": "Redo",
+        "copy": "Copy",
+        "cut": "Cut",
+        "paste": "Paste",
+        "duplicate": "Duplicate",
+        "delete": "Delete",
+        "quickInsert": "Quick insert",
+        "save": "Save now",
+        "deselect": "Deselect / select parent",
+        "siblings": "Previous / next item",
+        "move": "Move up / down",
+        "parentChild": "Parent / child",
+        "help": "This list"
+      }
+    },
+    "brand": {
+      "title": "Brand",
+      "description": "Colors, fonts and layout for your whole website.",
+      "reset": "Back to Tallaby Classic",
+      "themes": "Themes",
+      "sample": "Aa",
+      "headingFont": "Heading font",
+      "bodyFont": "Text font",
+      "classicFont": "Classic (Readex Pro)",
+      "identityHint": "Your logo, favicon and cover image are on the Design system page. They apply to your store right away.",
+      "openDesign": "Logo, favicon and cover",
+      "draftNote": "Changes save automatically as a draft, the same as the Design system page. They go live when you publish.",
+      "resetTitle": "Go back to Tallaby Classic?",
+      "resetDescription": "Colors, fonts, corners, page width and spacing go back to the Classic look. You can undo this.",
+      "resetAction": "Reset",
+      "cancel": "Cancel"
+    },
+    "templates": {
+      "title": "Templates",
+      "description": "Ready-made websites. Click one to preview it with your products.",
+      "empty": "No templates yet.",
+      "current": "Current",
+      "soon": "Soon",
+      "pagesCount": "{count, plural, one {# page} other {# pages}}",
+      "pages": "Template pages",
+      "desktop": "Desktop",
+      "mobile": "Phone",
+      "loading": "Loading preview",
+      "previewFailed": "This preview couldn't be loaded. Try again.",
+      "pagesLabel": "Pages",
+      "sectionsLabel": "Sections",
+      "versionLabel": "Version",
+      "look": "Look",
+      "pagesAndSections": "Pages and sections",
+      "home": "Home",
+      "sectionsCount": "{count, plural, one {# section} other {# sections}}",
+      "saveFirst": "Your latest changes couldn't be saved, so the template wasn't applied. Try again."
+    },
+    "explore": {
+      "title": "Explore photos",
+      "intro": "Free photos from Pexels for your website.",
+      "forIndustry": "Free photos from Pexels picked for {industry}.",
+      "search": "Search photos in English",
+      "setIndustry": "Choose your store's industry for better suggestions",
+      "howTo": "Drag a photo onto an image to replace it or between elements to add it, or click it to use it on the selected image.",
+      "readOnly": "This store is archived, so photos can't be added.",
+      "noResults": "No photos found. Try another word.",
+      "use": "Use",
+      "photoBy": "Photo by {name} on Pexels",
+      "importing": "Adding photo",
+      "loading": "Loading photos",
+      "more": "Load more",
+      "attribution": "Photos provided by Pexels",
+      "imported": "Photo added to your images.",
+      "errors": {
+        "notFound": "This photo isn't available anymore.",
+        "readOnly": "This store is archived, so photos can't be added.",
+        "unavailable": "Photo search isn't set up yet. Contact support.",
+        "rateLimited": "Too many searches at once. Wait a moment and try again.",
+        "invalidInput": "Type something to search.",
+        "tooLarge": "This photo is too large to add.",
+        "tooMany": "Your image library is full. Delete some images first.",
+        "generic": "Something went wrong. Try again."
+      }
+    },
+    "forms": {
+      "title": "Forms",
+      "description": "Your store's forms. Every submission is saved as a lead.",
+      "refresh": "Refresh forms",
+      "search": "Search forms",
+      "emptyTitle": "No forms yet",
+      "emptyText": "Pick a ready-made form below to add one to this page.",
+      "noMatch": "No forms match your search.",
+      "fields": "{count, plural, one {# field} other {# fields}}",
+      "submissions": "{count, plural, one {# message} other {# messages}}",
+      "newSubmissions": "{count, plural, one {# new} other {# new}}",
+      "edit": "Edit {name}",
+      "disabled": "Disabled",
+      "onPage": "On this page",
+      "add": "Add to page",
+      "added": "“{name}” added to the page.",
+      "addFailed": "This page can't take more sections.",
+      "createFailed": "The form couldn't be created. Try again.",
+      "loadFailed": "Your forms couldn't be loaded. Try again.",
+      "hint": "Edit a form's fields on the Forms page; this list refreshes when you come back.",
+      "leads": "Leads",
+      "leadsHint": "Open the leads inbox (Website › Forms › Leads)",
+      "yourForms": "Your forms",
+      "templates": "Ready-made forms",
+      "templatesHint": "One click creates the form and adds it to this page.",
+      "useTemplate": "Create “{name}” and add it to the page",
+      "addedHint": "Submissions will appear in your leads inbox.",
+      "limitReached": "You've reached the maximum number of forms for this store."
+    },
+    "dnd": {
+      "instructions": "To reorder a layer, focus its grip and press Space or Enter, move it with the arrow keys, then press Space or Enter to drop it or Escape to cancel. Elements, sections and photos are added with Enter or a click, or by dragging them onto the page.",
+      "announce": {
+        "start": "Picked up {label}.",
+        "drop": "Dropped {label}.",
+        "cancel": "Cancelled. {label} was not moved.",
+        "noTarget": "{label} is not over the page.",
+        "insertSection": "Will be added as section {position}.",
+        "moveSection": "Will move to position {position}.",
+        "newSection": "Will be added in a new section at position {position}.",
+        "intoSection": "Will be added at position {position} here.",
+        "replaceImage": "Will replace this image.",
+        "movePart": "Will move to position {position} here.",
+        "invalid": "Can't be dropped here.",
+        "noop": "Already here.",
+        "layerOver": "Position {position} of {total}."
+      },
+      "newSection": "New section",
+      "replaceImage": "Replace",
+      "limit": "This page already has the most sections it can hold.",
+      "unsupported": "Can't drop this here",
+      "targetGone": "The page changed before the photo was ready, so it wasn't placed. It's saved in your images."
+    },
+    "pageTemplates": {
+      "scope": {
+        "page": "This page",
+        "site": "Whole site"
+      },
+      "forPage": "Designs for “{name}”",
+      "emptyTitle": "No template has a design for this page yet",
+      "emptyBody": "Templates are matched by the page address. You can still pick any template page, or start from blank.",
+      "showAll": "Show all page designs",
+      "showMatching": "Show only designs for this page",
+      "startBlank": "Start from blank",
+      "more": "+{count} more",
+      "sectionsCount": "{count, plural, one {# section} other {# sections}}",
+      "previewNote": "Shown with your store's colours, fonts, header and footer. Only this page changes.",
+      "replaces": "This replaces the {count, plural, one {# section} other {# sections}} on this page. You can undo it.",
+      "onlyThisPage": "Only this page changes. Your other pages, header, footer and brand stay as they are.",
+      "apply": "Apply to this page",
+      "cancel": "Cancel",
+      "applied": "Design applied to “{name}”.",
+      "undo": "Undo"
+    },
+    "responsive": {
+      "banner": {
+        "tablet": {
+          "title": "Editing tablet.",
+          "body": "Style changes apply to tablets, and to phones unless the phone has its own value."
+        },
+        "mobile": {
+          "title": "Editing phone.",
+          "body": "Style changes apply to phones only."
+        },
+        "shared": "Text, images, links, and adding, moving or deleting elements apply to every device. To remove something from this device only, hide it.",
+        "sharedLabel": "What changes on every device",
+        "backToDesktop": "Desktop"
+      },
+      "override": {
+        "own": "Set for {device} only.",
+        "below": "Won't change on the {devices}: a value is set there.",
+        "and": " and ",
+        "resetHint": "Click to use the inherited value.",
+        "reset": "Remove the {device} value",
+        "devices": {
+          "desktop": "desktop",
+          "tablet": "tablet",
+          "mobile": "phone"
+        }
+      },
+      "remove": {
+        "deleted": "Deleted on every device",
+        "description": "Deleting is never per device. You can hide it on the {device} instead.",
+        "hideInstead": "Hide on {device} only",
+        "expired": "You changed something since then. Use undo first."
+      }
+    },
+    "agent": {
+      "title": "AI assistant",
+      "soon": "Soon",
+      "mentionTitle": "{name} in {context}: the assistant will edit this element",
+      "removeMention": "Remove the selected element from the message",
+      "inputLabel": "Message to the AI assistant",
+      "placeholder": "Describe a change, e.g. “make the title bigger”…",
+      "placeholderMention": "What should change in “{name}”?",
+      "hint": "Select an element to mention it.",
+      "send": "Send",
+      "comingSoon": "The AI assistant is coming soon."
+    }
+  },
+  "websiteDesign": {
+    "title": "Design system",
+    "description": "Colors, fonts, brand and buttons for your whole website.",
+    "unsaved": "Unsaved changes",
+    "draftSaved": "Draft saved",
+    "savedDraft": "Draft saved. Publish to show it on your store.",
+    "published": "Published (version {number}). Your store shows it now.",
+    "readOnly": "This store is archived, so its design can't be changed.",
+    "reload": "Reload",
+    "reset": "Back to Classic",
+    "discard": "Discard changes",
+    "saveDraft": "Save draft",
+    "publish": "Publish",
+    "draftNote": "Colors, fonts and buttons are saved as a draft and go live when you publish.",
+    "openEditor": "Open the website editor",
+    "tabs": {
+      "colors": "Colors",
+      "typography": "Typography",
+      "brand": "Brand",
+      "buttons": "Buttons & layout"
+    },
+    "colors": {
+      "presets": "Color palettes",
+      "custom": "Custom colors",
+      "customHint": "Use a hex color such as #145163. Empty colors keep the Tallaby Classic look.",
+      "preset": {
+        "classic": "Tallaby Classic",
+        "ocean": "Ocean",
+        "forest": "Forest",
+        "sunset": "Sunset",
+        "berry": "Berry",
+        "midnight": "Midnight",
+        "rose": "Rose",
+        "sand": "Sand"
+      },
+      "fields": {
+        "primary": "Main color (buttons)",
+        "accent": "Highlight",
+        "secondary": "Soft background",
+        "background": "Background",
+        "foreground": "Text",
+        "muted": "Secondary text",
+        "border": "Lines"
+      }
+    },
+    "typography": {
+      "hint": "Font pairs that work in Arabic and English. Headings use the first font, text the second.",
+      "sampleHeading": "Welcome to our store",
+      "sampleBody": "Hand-picked products, delivered across Egypt.",
+      "classic": "Tallaby Classic"
+    },
+    "brand": {
+      "hint": "Logo, favicon and cover apply to your store right away; they don't wait for Publish.",
+      "save": "Save brand",
+      "saved": "Brand saved.",
+      "favicon": "Favicon",
+      "faviconHint": "The small square icon in browser tabs. Use a square image, at least 64 × 64.",
+      "uploadFavicon": "Upload favicon",
+      "changeFavicon": "Change favicon",
+      "remove": "Remove"
+    },
+    "buttons": {
+      "radius": "Corner roundness",
+      "sample": "Shop now",
+      "classic": "Classic",
+      "width": "Page width",
+      "widths": {
+        "narrow": "Narrow",
+        "standard": "Standard",
+        "wide": "Wide"
+      },
+      "spacing": "Space between sections",
+      "spacings": {
+        "compact": "Compact",
+        "standard": "Standard",
+        "airy": "Airy"
+      }
+    },
+    "preview": {
+      "title": "Preview",
+      "desktop": "Desktop",
+      "mobile": "Phone"
+    },
+    "errors": {
+      "notFound": "This store wasn't found.",
+      "readOnly": "This store is archived, so it can't be edited.",
+      "publishBlocked": "Your account can't publish right now. Contact support.",
+      "invalidContent": "One of the values isn't valid. Check the colors and try again.",
+      "invalidInput": "Check the details and try again.",
+      "versionConflict": "The design was changed in another tab. Reload before continuing.",
+      "invalidSite": "The website has a problem and couldn't be published. Open the editor to check it.",
+      "rateLimited": "Too many changes at once. Wait a moment and try again.",
+      "generic": "Something went wrong. Try again."
+    }
+  },
+  "websiteSocial": {
+    "title": "Social media",
+    "description": "Your accounts, shown as icons in your store's header and footer.",
+    "readOnly": "This store is archived, so its links can't be changed.",
+    "saved": "Social links saved. Your store shows them now.",
+    "save": "Save links",
+    "show": "Show",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "useStoreNumber": "Use the store's WhatsApp number",
+    "hint": "Links update on your store right away, without publishing. Change the order with the arrows.",
+    "invalid": {
+      "url": "Enter a {platform} link, e.g. the address of your page.",
+      "handle": "Enter your {platform} username or profile link.",
+      "phone": "Enter a mobile number with the country code, e.g. 201012345678."
+    },
+    "preview": {
+      "title": "Preview",
+      "description": "How the icons look in your store footer.",
+      "empty": "No links shown yet."
+    },
+    "errors": {
+      "notFound": "This store wasn't found.",
+      "readOnly": "This store is archived, so it can't be edited.",
+      "invalidInput": "One of the links isn't valid. Check it and try again.",
+      "rateLimited": "Too many changes at once. Wait a moment and try again.",
+      "generic": "Something went wrong. Try again."
+    }
+  },
+  "websiteOverview": {
+    "title": "Website overview",
+    "description": "Your store's address, what shoppers see now, and your unpublished changes.",
+    "status": {
+      "draft": "Draft",
+      "published": "Published",
+      "changes": "Unpublished changes",
+      "unpublished": "Unpublished"
+    },
+    "statusHint": {
+      "draft": "Your website hasn't been published yet. Shoppers see the Tallaby Classic store design until you publish.",
+      "published": "Shoppers see your latest published version.",
+      "changes": "You have changes that shoppers don't see yet. Preview them, then publish.",
+      "unpublished": "Your website is offline. Shoppers see the Tallaby Classic store design until you publish again."
+    },
+    "liveUrl": "Store address",
+    "copy": "Copy",
+    "open": "Open",
+    "copied": "Store address copied",
+    "copyFailed": "Couldn't copy the address",
+    "lastPublished": "Last published",
+    "never": "Never",
+    "pageCount": "{count, plural, =1 {1 page} other {# pages}}",
+    "edit": "Edit website",
+    "preview": "Preview on store",
+    "previewUnavailable": "Preview on your store isn't set up yet.",
+    "publish": "Publish",
+    "publishChanges": "Publish changes",
+    "publishedToast": "Published. Your store shows it now.",
+    "discard": "Discard changes",
+    "discardTitle": "Discard unpublished changes?",
+    "discardBody": "Your drafts go back to the version shoppers see now. This can't be undone.",
+    "discardedToast": "Changes discarded",
+    "unpublish": "Unpublish",
+    "unpublishTitle": "Unpublish your website?",
+    "unpublishBody": "Shoppers will see the Tallaby Classic store design until you publish again. Your pages and drafts are kept.",
+    "unpublishedToast": "Website unpublished",
+    "thumbnail": "Your live store",
+    "manage": "Manage your website",
+    "links": {
+      "design": {
+        "title": "Design system",
+        "body": "Colors, fonts, logo and buttons"
+      },
+      "pages": {
+        "title": "Pages",
+        "body": "Add, rename and order pages, with SEO"
+      },
+      "domain": {
+        "title": "Domain & SEO",
+        "body": "Your address, own domain and search settings"
+      },
+      "social": {
+        "title": "Social media",
+        "body": "Links shown in your header and footer"
+      },
+      "blog": {
+        "title": "Blog",
+        "body": "Write posts for your store"
+      },
+      "forms": {
+        "title": "Forms",
+        "body": "Contact forms and submissions"
+      },
+      "media": {
+        "title": "Media library",
+        "body": "Your images and files"
+      },
+      "templates": {
+        "title": "Templates",
+        "body": "Start from a ready-made design"
+      }
+    },
+    "revisions": "Version history",
+    "revisionsHint": "Every publish saves a version. Restoring copies it into your drafts; publish to make it live.",
+    "noRevisions": "No versions yet. Your first publish creates one.",
+    "version": "Version {number}",
+    "live": "Live",
+    "restore": "Restore",
+    "restoreTitle": "Restore version {number}?",
+    "restoreBody": "Your current drafts are replaced with this version. What shoppers see doesn't change until you publish.",
+    "restoredToast": "Version restored to your drafts. Publish to make it live.",
+    "cancel": "Cancel"
+  },
+  "websitePages": {
+    "title": "Pages",
+    "description": "Your website's pages, their addresses, menu order and search settings.",
+    "draftNote": "Changes here are saved as drafts and go live when you publish.",
+    "publishLink": "Go to publish",
+    "new": "New page",
+    "editTitle": "Edit page",
+    "sheetDescription": "Name, address and how the page shows in search results.",
+    "home": "Home page",
+    "noindexBadge": "Hidden from search",
+    "inMenu": "In menu",
+    "showInNav": "Show in the menu",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "edit": "Edit page",
+    "delete": "Delete page",
+    "deleteTitle": "Delete \"{name}\"?",
+    "deleteBody": "The page is removed from your drafts and leaves your live website when you publish next.",
+    "deleted": "Page deleted",
+    "basics": "Page",
+    "nameAr": "Name (Arabic)",
+    "nameEn": "Name (English)",
+    "nameRequired": "Enter a name in at least one language.",
+    "slug": "Address",
+    "slugHint": "Lowercase English letters, numbers and dashes, e.g. about-us.",
+    "homeSlug": "The home page is always at your store's main address.",
+    "seo": "Search engines",
+    "seoTitle": "Search title",
+    "seoDescription": "Search description",
+    "ogImage": "Share image link",
+    "ogImageHint": "Shown when the page is shared on social media.",
+    "noindex": "Hide from search engines",
+    "noindexHint": "Google won't list this page.",
+    "create": "Create page",
+    "save": "Save",
+    "created": "Page created",
+    "saved": "Page saved",
+    "cancel": "Cancel"
+  },
+  "domainSeo": {
+    "settingsLink": "Store address and domain moved to Website › Domain & SEO",
+    "tabs": {
+      "label": "Domain & SEO sections",
+      "domain": "Domain",
+      "seo": "SEO",
+      "sitemap": "Sitemap & robots"
+    },
+    "domain": {
+      "readOnly": "This store is archived or suspended, so its address can't be changed.",
+      "address": {
+        "title": "Store address",
+        "description": "Your free Tallaby address. Changing it keeps the old address working as a redirect."
+      },
+      "custom": {
+        "title": "Custom domain",
+        "description": "Use your own domain, such as mystore.com, for this store.",
+        "primaryOnly": "For now, a custom domain can only be connected to your main store.",
+        "primaryOnlyBadge": "Main store only",
+        "openPrimary": "Open {store}"
+      },
+      "redirects": {
+        "title": "Old addresses",
+        "description": "Visitors who open an old address are sent to your current one.",
+        "empty": "No old addresses yet.",
+        "since": "Since {date}"
+      }
+    },
+    "seo": {
+      "readOnly": "This store is archived or suspended, so its SEO can't be changed.",
+      "optional": "Optional",
+      "save": "Save SEO",
+      "saved": "SEO settings saved. Your store uses them now.",
+      "search": {
+        "title": "Search results",
+        "description": "How your store's pages appear on Google and other search engines."
+      },
+      "titleTemplate": {
+        "label": "Page title template",
+        "hint": "{token} is replaced by each page's name. Leave empty for \"page name | store name\".",
+        "invalid": "The template must contain %s exactly once.",
+        "tooLong": "Keep the template under 120 characters."
+      },
+      "description": {
+        "label": "Store description",
+        "placeholder": "What your store sells, in one or two sentences.",
+        "hint": "Shown under your store's name in search results. Pages with their own description use that instead.",
+        "tooLong": "Keep the description under 320 characters."
+      },
+      "preview": {
+        "label": "Search preview",
+        "pageTitle": "Home",
+        "noDescription": "Add a description to control the text shown here."
+      },
+      "share": {
+        "title": "Sharing",
+        "description": "The picture shown when your store's link is shared on WhatsApp, Facebook and others.",
+        "imageLabel": "Share image",
+        "imageSize": "Recommended 1200 × 630.",
+        "hint": "Without an image, your store's cover or logo is used."
+      },
+      "indexing": {
+        "title": "Show in search engines",
+        "on": "Search engines can list your store.",
+        "off": "Search engines are asked not to list your store, and it has no sitemap."
+      },
+      "verification": {
+        "title": "Google Search Console",
+        "description": "Verify that you own this store in Google Search Console with the \"HTML tag\" method.",
+        "label": "Verification code",
+        "hint": "Paste the code, or the whole meta tag Google shows you.",
+        "invalid": "This isn't a valid verification code. It has 10 to 100 letters, numbers, dashes or underscores."
+      }
+    },
+    "errors": {
+      "invalidInput": "Some fields aren't valid. Check them and try again.",
+      "readOnly": "This store is archived or suspended, so it can't be changed.",
+      "notFound": "This store wasn't found. Reload the page.",
+      "generic": "Something went wrong. Try again."
+    },
+    "sitemap": {
+      "status": {
+        "title": "Search status",
+        "indexed": "Search engines can find your store.",
+        "indexedBadge": "Visible",
+        "indexedHint": "New pages and products appear in your sitemap automatically.",
+        "notIndexed": "Search engines are asked not to list your store right now.",
+        "notIndexedBadge": "Hidden"
+      },
+      "reasons": {
+        "storeInactive": "The store is archived or suspended.",
+        "indexingOff": "\"Show in search engines\" is off.",
+        "noProducts": "The store has no products to show yet."
+      },
+      "fix": {
+        "storeInactive": "Open My stores",
+        "indexingOff": "Change in SEO",
+        "noProducts": "Choose products"
+      },
+      "files": {
+        "title": "Sitemap and robots",
+        "description": "Files search engines read. They are created automatically for this store.",
+        "sitemap": "Sitemap",
+        "robots": "Robots file",
+        "contents": "Lists your home page, pages, products and blog posts.",
+        "searchConsole": "In Google Search Console, submit the sitemap address to help Google find new pages faster."
+      },
+      "pagesNote": "Hidden pages and drafts are never listed.",
+      "open": "Open",
+      "copy": "Copy",
+      "copied": "Copied",
+      "copyFailed": "Couldn't copy"
+    }
+  },
+  "storeForms": {
+    "readOnly": "This store is archived. You can read and export messages, but forms can't be changed.",
+    "cancel": "Cancel",
+    "tabs": {
+      "label": "Forms",
+      "forms": "Forms",
+      "submissions": "Leads"
+    },
+    "status": {
+      "active": "On",
+      "disabled": "Off"
+    },
+    "submissionStatus": {
+      "new": "New",
+      "read": "Read",
+      "archived": "Archived",
+      "spam": "Spam"
+    },
+    "types": {
+      "text": "Short text",
+      "email": "Email",
+      "phone": "Phone",
+      "textarea": "Long text",
+      "select": "Dropdown",
+      "checkbox": "Checkbox"
+    },
+    "list": {
+      "title": "Store forms",
+      "description": "Forms customers fill in on your website. Messages arrive in your inbox.",
+      "create": "New form",
+      "emptyTitle": "No forms yet",
+      "emptyBody": "Start from a ready-made form, then add it to a page from the Forms tab in the website editor.",
+      "meta": "{fields, plural, one {# field} other {# fields}} · {submissions, plural, one {# message} other {# messages}}",
+      "lastSubmission": "last on {date}",
+      "newCount": "{count} new",
+      "submissions": "Messages",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleted": "Form deleted",
+      "deleteTitle": "Delete \"{name}\"?",
+      "deleteDescription": "Its leads are deleted too, and any section showing this form stops showing it on your website.",
+      "placeHint": "To show a form, open the website editor and add it from the Forms tab (or the Form section under Contact).",
+      "templates": "Start from a ready-made form"
+    },
+    "editor": {
+      "title": "Edit form",
+      "back": "All forms",
+      "save": "Save",
+      "saved": "Form saved",
+      "unsaved": "Unsaved changes",
+      "settingsTitle": "Form details",
+      "settingsDescription": "The name is only for you. The button text and thank-you message are what customers see.",
+      "name": "Form name",
+      "description": "Note (optional)",
+      "descriptionPlaceholder": "Only you see this",
+      "submitLabel": "Button text",
+      "submitLabelPlaceholder": "Send",
+      "successMessage": "Thank-you message",
+      "successMessagePlaceholder": "Thank you! We received your message and will get back to you soon.",
+      "active": "Form is on",
+      "activeHint": "When off, the form disappears from your website and new messages are refused.",
+      "fieldsTitle": "Fields",
+      "fieldsDescription": "What customers fill in, in this order (up to {max}).",
+      "label": "Label",
+      "type": "Type",
+      "placeholder": "Hint inside the field",
+      "helpText": "Help text",
+      "options": "Choices",
+      "optionsHint": "One choice per line.",
+      "optionOne": "First choice",
+      "optionTwo": "Second choice",
+      "width": "Width",
+      "widthFull": "Full row",
+      "widthHalf": "Half row",
+      "key": "Field ID",
+      "keyHint": "Used in exports. Lowercase English letters, numbers and _ only.",
+      "required": "Required",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "removeField": "Remove field",
+      "addField": "Add a field",
+      "errorNoFields": "Add at least one field.",
+      "errorDuplicateKey": "Two fields have the same field ID.",
+      "errorOptions": "Every dropdown needs at least one choice.",
+      "errorInvalid": "Check the fields: every field needs a label and a valid field ID."
+    },
+    "inbox": {
+      "title": "Leads",
+      "description": "Everything visitors send through your website forms. Only you can see it.",
+      "export": "Download CSV",
+      "filterForm": "Form",
+      "filterStatus": "Status",
+      "allForms": "All forms",
+      "allStatuses": "All statuses",
+      "selected": "{count} selected",
+      "selectAll": "Select all on this page",
+      "select": "Select message",
+      "count": "{count, plural, one {# message} other {# messages}}",
+      "markRead": "Mark read",
+      "markNew": "Mark unread",
+      "archive": "Archive",
+      "delete": "Delete",
+      "updated": "{count, plural, one {# message updated} other {# messages updated}}",
+      "deleted": "{count, plural, one {# message deleted} other {# messages deleted}}",
+      "deleteTitle": "Delete {count, plural, one {# message} other {# messages}}?",
+      "deleteDescription": "This can't be undone. Download a CSV first if you want to keep a copy.",
+      "empty": "No messages here yet.",
+      "noForms": "Create a form and add it to your website to start receiving messages.",
+      "anonymous": "No name",
+      "yes": "Yes",
+      "source": "Sent from",
+      "previous": "Previous",
+      "next": "Next",
+      "page": "Page {page} of {pages}",
+      "retention": "Messages are deleted automatically after 12 months.",
+      "csvDate": "Date",
+      "csvForm": "Form",
+      "csvStatus": "Status"
+    },
+    "errors": {
+      "invalidInput": "Some details are invalid. Check the form and try again.",
+      "readOnly": "This store is archived, so it can't be changed.",
+      "notFound": "This form no longer exists.",
+      "limitReached": "You've reached the maximum number of forms for this store.",
+      "rateLimited": "Too many changes in a short time. Wait a few minutes and try again.",
+      "generic": "Something went wrong. Please try again."
+    },
+    "templates": {
+      "contact": {
+        "name": "Contact form",
+        "description": "Name, phone, email and a message. The everyday \"Contact us\" form.",
+        "submit": "Send message",
+        "success": "Thanks! We got your message and will reply soon.",
+        "fields": {
+          "name": "Your name",
+          "phone": "Phone number",
+          "email": "Email",
+          "message": "Your message"
+        }
+      },
+      "newsletter": {
+        "name": "Newsletter sign-up",
+        "description": "Collect emails for new arrivals and offers.",
+        "submit": "Subscribe",
+        "success": "You're on the list. Watch your inbox for our next offer.",
+        "fields": {
+          "email": "Email",
+          "name": "First name",
+          "consent": "I agree to receive emails about offers and new arrivals"
+        }
+      },
+      "callback": {
+        "name": "Call-back request",
+        "description": "Visitors leave their number and a good time to call.",
+        "submit": "Call me back",
+        "success": "Thanks! We'll call you at the time you picked.",
+        "fields": {
+          "name": "Your name",
+          "phone": "Phone number",
+          "best_time": "Best time to call",
+          "message": "What is it about?"
+        },
+        "options": {
+          "morning": "Morning",
+          "afternoon": "Afternoon",
+          "evening": "Evening"
+        }
+      },
+      "quote": {
+        "name": "Request a quote",
+        "description": "Product, quantity and city, for price requests and big orders.",
+        "submit": "Get a quote",
+        "success": "Thanks! We'll send you a price soon.",
+        "fields": {
+          "name": "Your name",
+          "phone": "Phone number",
+          "email": "Email",
+          "product": "Product or service",
+          "quantity": "Quantity",
+          "city": "City",
+          "message": "Details"
+        },
+        "placeholders": {
+          "product": "Product name or link"
+        }
+      },
+      "booking": {
+        "name": "Appointment booking",
+        "description": "A visit, call or video call on the day and time the visitor prefers.",
+        "submit": "Book now",
+        "success": "Thanks! We'll confirm your appointment shortly.",
+        "fields": {
+          "name": "Your name",
+          "phone": "Phone number",
+          "email": "Email",
+          "service": "Appointment type",
+          "preferred_date": "Preferred day",
+          "preferred_time": "Preferred time",
+          "message": "Notes"
+        },
+        "placeholders": {
+          "preferred_date": "e.g. Saturday 12 October"
+        },
+        "options": {
+          "visit": "Store visit",
+          "phone_call": "Phone call",
+          "video_call": "Video call",
+          "morning": "Morning",
+          "afternoon": "Afternoon",
+          "evening": "Evening"
+        }
+      },
+      "productQuestion": {
+        "name": "Product question",
+        "description": "Questions about a product, its size or when it's back in stock.",
+        "submit": "Send question",
+        "success": "Thanks! We'll answer your question soon.",
+        "fields": {
+          "name": "Your name",
+          "phone": "Phone number",
+          "product": "Product",
+          "message": "Your question"
+        },
+        "placeholders": {
+          "product": "Product name or link"
+        }
+      },
+      "wholesale": {
+        "name": "Wholesale inquiry",
+        "description": "Business buyers and resellers asking for bulk prices.",
+        "submit": "Send inquiry",
+        "success": "Thanks! Our team will contact you about wholesale prices.",
+        "fields": {
+          "company": "Business name",
+          "name": "Contact person",
+          "phone": "Phone number",
+          "email": "Email",
+          "city": "City",
+          "volume": "Expected monthly quantity",
+          "message": "What would you like to order?"
+        },
+        "options": {
+          "small": "Under 50 pieces",
+          "medium": "50–200 pieces",
+          "large": "Over 200 pieces"
+        }
+      },
+      "feedback": {
+        "name": "Customer feedback",
+        "description": "A quick rating and comments after an order.",
+        "submit": "Send feedback",
+        "success": "Thank you for your feedback!",
+        "fields": {
+          "name": "Your name",
+          "order_number": "Order number",
+          "rating": "How was your experience?",
+          "message": "Tell us more",
+          "contact_ok": "You can contact me about my feedback"
+        },
+        "placeholders": {
+          "order_number": "Optional"
+        },
+        "options": {
+          "excellent": "Excellent",
+          "good": "Good",
+          "okay": "Okay",
+          "poor": "Poor"
+        }
+      },
+      "returns": {
+        "name": "Return or exchange",
+        "description": "Order number, reason and details for a return or exchange.",
+        "submit": "Send request",
+        "success": "Thanks! We'll contact you about your request.",
+        "fields": {
+          "name": "Your name",
+          "phone": "Phone number",
+          "order_number": "Order number",
+          "request_type": "Request",
+          "reason": "Reason",
+          "message": "Details"
+        },
+        "placeholders": {
+          "order_number": "e.g. 10245"
+        },
+        "options": {
+          "return": "Return",
+          "exchange": "Exchange",
+          "size": "Wrong size",
+          "damaged": "Arrived damaged",
+          "different": "Different from the photos",
+          "changed_mind": "Changed my mind",
+          "other": "Something else"
+        }
+      },
+      "customOrder": {
+        "name": "Custom order",
+        "description": "Made-to-order and personalised requests with a budget and date.",
+        "submit": "Send request",
+        "success": "Thanks! We'll contact you to discuss your order.",
+        "fields": {
+          "name": "Your name",
+          "phone": "Phone number",
+          "email": "Email",
+          "message": "What would you like?",
+          "budget": "Budget",
+          "needed_by": "Needed by"
+        },
+        "placeholders": {
+          "message": "Describe the colours, size, text or anything else",
+          "needed_by": "e.g. end of the month"
+        }
+      }
+    }
+  },
+  "websiteBlog": {
+    "title": "Blog",
+    "subtitle": "Articles on your store, at /blog. Each post is published on its own, without publishing the website.",
+    "viewBlog": "View blog",
+    "newPost": "New post",
+    "search": "Search posts",
+    "tagFilter": "Tag: {tag}",
+    "states": {
+      "all": "All",
+      "published": "Published",
+      "scheduled": "Scheduled",
+      "draft": "Draft"
+    },
+    "emptyTitle": "No posts yet",
+    "emptyText": "Write your first post: news, guides or tips about your products. Blog sections on your website show your latest posts automatically.",
+    "noMatches": "No posts match these filters.",
+    "view": "View",
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "deleteTitle": "Delete this post?",
+    "deleteText": "\"{title}\" will be removed from your store. This can't be undone.",
+    "deleted": "Post deleted.",
+    "errors": {
+      "invalidInput": "Some fields aren't valid. Check the highlighted fields and try again.",
+      "invalidData": "Some fields aren't valid. Check the highlighted fields and try again.",
+      "readOnly": "This store is archived, so its blog can't be changed.",
+      "notFound": "This post wasn't found.",
+      "slugTaken": "Another post already uses this address. Choose another one.",
+      "rateLimited": "Too many changes at once. Wait a moment and try again.",
+      "generic": "Something went wrong. Try again."
+    },
+    "editor": {
+      "back": "All posts",
+      "newTitle": "New post",
+      "untitled": "Untitled post",
+      "viewLive": "View on store",
+      "readOnly": "This store is archived, so this post can't be changed.",
+      "unsaved": "Unsaved changes",
+      "noChanges": "All changes saved",
+      "save": {
+        "draft": "Save draft",
+        "publish": "Publish post",
+        "schedule": "Schedule post"
+      },
+      "saved": {
+        "draft": "Draft saved.",
+        "published": "Post published. It's on your store now.",
+        "scheduled": "Post scheduled. It goes live at the chosen time."
+      },
+      "content": {
+        "title": "Post",
+        "description": "Title, address and the article itself.",
+        "postTitle": "Title",
+        "slug": "Address",
+        "slugHint": "Lowercase English letters, numbers and dashes, e.g. summer-guide.",
+        "slugInvalid": "Use lowercase English letters, numbers and dashes only.",
+        "excerpt": "Summary",
+        "excerptHint": "Shown on post cards and in search results when there's no SEO description.",
+        "body": "Article",
+        "bodyPlaceholder": "Write your post…"
+      },
+      "cover": {
+        "title": "Cover image",
+        "description": "Shown at the top of the post and on its card.",
+        "remove": "Remove image"
+      },
+      "details": {
+        "title": "Details",
+        "description": "Tags, author and when the post appears.",
+        "tags": "Tags",
+        "tagsHint": "Separate tags with commas.",
+        "author": "Author",
+        "visibility": "Visibility",
+        "scheduleAt": "Publish on",
+        "publishedOn": "Published on {date}."
+      },
+      "modes": {
+        "draft": {
+          "title": "Draft",
+          "description": "Only you can see it."
+        },
+        "publish": {
+          "title": "Published",
+          "description": "Visible on your store now."
+        },
+        "schedule": {
+          "title": "Scheduled",
+          "description": "Goes live at a date you choose."
+        }
+      },
+      "seo": {
+        "title": "Search & sharing",
+        "description": "How this post appears on Google and when shared.",
+        "metaTitle": "SEO title",
+        "metaDescription": "SEO description",
+        "hint": "Leave empty to use the title and summary.",
+        "indexTitle": "Show in search engines",
+        "indexDescription": "Turn off to ask search engines not to list this post."
+      },
+      "revisions": {
+        "title": "Earlier versions",
+        "description": "Every save keeps a version you can go back to.",
+        "show": "Show versions",
+        "empty": "No earlier versions yet.",
+        "restore": "Restore",
+        "restored": "Version restored."
+      }
+    }
+  },
+  "websiteTemplates": {
+    "title": "Templates",
+    "description": "Ready-made looks for your website. Your text, images and products stay.",
+    "openEditor": "Open the website editor",
+    "readOnly": "This store is archived, so its template can't be changed.",
+    "current": "Current",
+    "default": "Default",
+    "soon": "Soon",
+    "use": "Use template",
+    "reapply": "Reset to this template",
+    "pagesCount": "{count, plural, one {# page} other {# pages}}",
+    "version": "Version {number}",
+    "empty": "No templates in this category.",
+    "moreSoon": "More templates are on the way.",
+    "cancel": "Cancel",
+    "applied": "{name} applied to your draft. Publish to show it on your store.",
+    "undone": "Template change undone.",
+    "lastApplied": "{name} was applied on {date}.",
+    "undo": "Undo template change",
+    "categories": {
+      "label": "Categories",
+      "all": "All",
+      "general": "General",
+      "fashion": "Fashion"
+    },
+    "confirm": {
+      "title": "Use {name}?",
+      "description": "Your website draft takes this template's layout and look.",
+      "keeps": "Text and images you changed in matching sections are kept.",
+      "draft": "Your live store doesn't change until you publish.",
+      "untouched": "Products, orders, settings, domains and your other stores aren't touched.",
+      "action": "Use template",
+      "forms": "Its newsletter and contact forms are added to Website › Forms."
+    },
+    "undoConfirm": {
+      "title": "Undo the template change?",
+      "description": "Your website draft goes back to how it was just before the template was applied. Edits made since then are replaced too.",
+      "action": "Undo"
+    },
+    "errors": {
+      "notFound": "This store wasn't found.",
+      "readOnly": "This store is archived, so it can't be changed.",
+      "templateNotFound": "This template isn't available anymore. Reload the page.",
+      "premiumTemplate": "This template isn't available yet.",
+      "invalidTemplate": "This template has a problem and can't be used right now.",
+      "tooManyPages": "This template would add more pages than your website can have.",
+      "nothingToUndo": "There's no template change to undo.",
+      "rateLimited": "Too many changes at once. Wait a moment and try again.",
+      "generic": "Something went wrong. Try again."
+    },
+    "preview": {
+      "action": "Preview",
+      "open": "Preview {name}",
+      "pages": "Pages",
+      "desktop": "Desktop",
+      "mobile": "Phone",
+      "loading": "Loading the preview",
+      "failed": "The preview could not be loaded. Close it and try again.",
+      "demoNote": "Shown with demo products from {store}. Your store keeps its own products."
+    }
+  },
+  "categoriesBrands": {
+    "categories": {
+      "title": "Your categories",
+      "description": "Group your products the way your customers shop.",
+      "add": "Add category",
+      "addHint": "Type to search Tallaby's categories, or create your own.",
+      "searchPlaceholder": "Search categories, e.g. Shoes",
+      "filter": "Filter your categories",
+      "empty": "You have no categories yet. Add some from Tallaby's list or create your own.",
+      "pageTitle": "Categories",
+      "pageSubtitle": "Your own categories for organising products. Search Tallaby's ready-made list to add one in a click, or add your own. Other sellers never see your list."
+    },
+    "brands": {
+      "title": "Your brands",
+      "description": "The brands you sell, including your own label.",
+      "add": "Add brand",
+      "addHint": "Type to search Tallaby's brands, or create your own.",
+      "searchPlaceholder": "Search brands, e.g. Nike",
+      "filter": "Filter your brands",
+      "empty": "You have no brands yet. Add some from Tallaby's list or create your own.",
+      "pageTitle": "Brands",
+      "pageSubtitle": "Your own brands for organising products. Search Tallaby's ready-made list to add one in a click, or add your own. Other sellers never see your list."
+    },
+    "productCount": "{count, plural, =0 {No products} one {1 product} other {# products}}",
+    "fromPack": "From Tallaby",
+    "inYourList": "Added",
+    "typeToSearch": "Start typing to see suggestions.",
+    "noPackMatches": "Nothing in Tallaby's list matches.",
+    "noMatches": "Nothing matches.",
+    "createOwn": "Create “{name}”",
+    "nameEn": "Name",
+    "nameAr": "Arabic name (optional)",
+    "back": "Back",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleteTitle": "Delete “{name}”?",
+    "deleteBody": "{count, plural, =0 {No products use it.} one {1 product uses it; the product stays, just without this.} other {# products use it; they stay, just without this.}}",
+    "added": "“{name}” added",
+    "saved": "Saved",
+    "deleted": "Deleted",
+    "edit": "Edit",
+    "editHint": "Changes show everywhere this item is used.",
+    "image": "Image",
+    "imageHint": "PNG, JPG or WebP, up to 5 MB. A square image looks best.",
+    "uploadImage": "Upload image",
+    "changeImage": "Change image",
+    "removeImage": "Remove",
+    "dragHandle": "Drag to reorder “{name}”",
+    "sortAz": "Sort A–Z",
+    "sorted": "Sorted A–Z",
+    "orderSaved": "Order saved",
+    "reorderHint": "Drag the handle to change the order. Your store and product form use this order.",
+    "filteringHint": "Clear the filter to reorder.",
+    "sortAzConfirmTitle": "Sort the list A–Z?",
+    "sortAzConfirmBody": "This replaces your current order.",
+    "sortAzConfirm": "Sort",
+    "errors": {
+      "invalidInput": "Check the name and try again.",
+      "duplicate": "That's already in your list.",
+      "limit": "You can keep up to {max} items in each list.",
+      "notFound": "We couldn't find that item. Refresh and try again.",
+      "readOnly": "Your account can't make changes right now.",
+      "generic": "Something went wrong. Try again.",
+      "invalidImage": "That image can't be used. Upload it again."
+    },
+    "productForm": {
+      "category": "My category",
+      "brand": "My brand",
+      "optional": "Optional",
+      "none": "None",
+      "emptyList": "Your list is empty",
+      "hint": "From your own lists, for grouping products in your store.",
+      "linkFailed": "The product was saved, but your category or brand wasn't. Edit the product to set it again.",
+      "manageCategories": "Manage categories",
+      "manageBrands": "Manage brands"
     }
   }
 }

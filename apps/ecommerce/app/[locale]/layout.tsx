@@ -1,33 +1,24 @@
 import type { Metadata } from "next";
 import { Montserrat, Noto_Kufi_Arabic } from "next/font/google";
-import "@workspace/ui/globals.css";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
-import "./globals.css";
-import { Providers } from "./providers";
-import NextTopLoader from "nextjs-toploader";
-import { Scripts } from "@/components/layout/structured-data";
-import { MetaPixel } from "@/components/meta/meta-pixel";
-import { ElfsightChatbot } from "@/components/chatbot/elfsight-chatbot";
-// import { ZolaiChatbot } from "@/components/chatbot/zolai-chatbot";
-import { getMessages, getTranslations } from "next-intl/server";
-import { Toaster } from "@workspace/ui/components/sonner";
+import { getMessages } from "next-intl/server";
 import { DirectionProvider } from "@workspace/ui/components/direction";
 import { notFound } from "next/navigation";
+import { MetaPixel } from "@/components/meta/meta-pixel";
+import { GoogleAnalytics } from "@/components/layout/google-analytics";
 import { routing } from "@/i18n/routing";
 import { BASE_URL } from "@/lib/constants";
-import { buildLanguageAlternates, localizedUrl } from "@/lib/metadata";
-import { contentParams } from "@/lib/content-params";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
   variable: "--font-montserrat",
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 const notoKufiArabic = Noto_Kufi_Arabic({
   subsets: ["arabic"],
   variable: "--font-noto-kufi-arabic",
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 // This is the app's root layout, which makes `[locale]` a root param — the
@@ -37,80 +28,24 @@ export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "metadata" });
-  const contentValues = contentParams(locale);
-
-  return {
-    // Resolves relative OG/Twitter image paths ("/og-image.jpg") against the
-    // real origin instead of Next's localhost fallback.
-    metadataBase: new URL(BASE_URL || "http://localhost:3000"),
-    title: {
-      default: t("titleDefault"),
-      template: "%s | Tallaby.com",
-    },
-    description: t("description", contentValues),
-    keywords: t("keywords")
-      .split(",")
-      .map((keyword) => keyword.trim()),
-    authors: [{ name: "Tallaby.com" }],
-    creator: "Tallaby.com",
-    publisher: "Tallaby.com",
-    robots: {
-      index: true,
-      follow: true,
-      googleBot: {
-        index: true,
-        follow: true,
-        "max-video-preview": -1,
-        "max-image-preview": "large",
-        "max-snippet": -1,
-      },
-    },
-    openGraph: {
-      type: "website",
-      locale: locale === "ar" ? "ar_EG" : "en_US",
-      url:
-        locale === routing.defaultLocale ? BASE_URL : `${BASE_URL}/${locale}`,
-      siteName: t("siteName"),
-      title: t("ogTitle"),
-      description: t("ogDescription", contentValues),
-    },
-    twitter: {
-      card: "summary_large_image",
-      site: "@tallaby",
-      creator: "@tallaby",
-      title: t("twitterTitle"),
-      description: t("twitterDescription", contentValues),
-    },
-    // app/favicon.ico is served by the file convention; /favicon.png never existed.
-    icons: {
-      apple: [{ url: "/logo/logo.png", sizes: "180x180" }],
-    },
-    manifest: "/manifest.webmanifest",
-    alternates: {
-      canonical:
-        locale === routing.defaultLocale ? BASE_URL : `${BASE_URL}/${locale}`,
-      // ar is the unprefixed default locale; en lives under /en.
-      languages: buildLanguageAlternates({
-        en: localizedUrl("en", ""),
-        ar: localizedUrl("ar", ""),
-      }),
-    },
-    category: "ecommerce",
-  };
-}
+// Resolves relative OG/Twitter image paths ("/og-image.jpg") against the real
+// origin instead of Next's localhost fallback. Titles and descriptions come
+// from the (marketing) and (shop) group layouts.
+export const metadata: Metadata = {
+  metadataBase: new URL(BASE_URL || "http://localhost:3000"),
+};
 
 type RootLayoutProps = {
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
 };
 
+/**
+ * Shared shell only. Styles and providers live in the route groups:
+ * (marketing) is the tallaby.com site, (shop) holds seller storefronts and
+ * the customer pages they use (checkout, auth, orders, profile). Each group
+ * imports its own CSS because the marketing palette overrides Tailwind colors.
+ */
 export default async function RootLayout({
   children,
   params,
@@ -125,31 +60,18 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} dir={direction}>
-      <head>
-        <Scripts />
-      </head>
+      {/* No Kufi variable in English: the shop's body font picks Kufi whenever it is set. */}
       <body
         className={`${
-          locale === "ar" ? notoKufiArabic.variable : montserrat.variable
+          locale === "ar" ? `${notoKufiArabic.variable} ${montserrat.variable}` : montserrat.variable
         } antialiased`}
       >
+        {/* Tallaby's own tracking: both skip seller storefronts (P5-05). */}
         <MetaPixel />
-        <NextTopLoader
-          color="var(--accent)"
-          crawlSpeed={200}
-          height={3}
-          showSpinner={false}
-          easing="ease"
-          speed={200}
-        />
+        <GoogleAnalytics />
         <NextIntlClientProvider messages={messages}>
-          <DirectionProvider dir={direction}>
-            <Providers>{children}</Providers>
-            <Toaster />
-          </DirectionProvider>
+          <DirectionProvider dir={direction}>{children}</DirectionProvider>
         </NextIntlClientProvider>
-        <ElfsightChatbot />
-        {/* <ZolaiChatbot /> */}
       </body>
     </html>
   );

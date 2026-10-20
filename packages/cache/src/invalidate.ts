@@ -1,10 +1,15 @@
 import {
+  adminTags,
   brandTags,
   categoryTags,
   couponTags,
+  fulfillmentTags,
+  marketingBlogTags,
+  templateTags,
   productTags,
   reviewTags,
   sellerTags,
+  storeTags,
 } from "./tags";
 
 /**
@@ -251,9 +256,60 @@ export function invalidateCustomDomain(subdomain: string, domain: string): Cache
   return inv([sellerTags.subdomain(subdomain), sellerTags.customDomain(domain)]);
 }
 
+/** A store published or unpublished its builder site: that store's site and storefront profile only. */
+export function invalidateStoreSite(sellerId: string, storeId: string, subdomain: string): CacheInvalidation {
+  return inv([storeTags.site(sellerId, storeId), sellerTags.subdomain(subdomain)]);
+}
+
+/**
+ * A store changed its catalog mode or selection (P4-07): that store's catalog
+ * lists and its storefront profile (which carries the mode). Never a sibling store.
+ */
+export function invalidateStoreCatalog(sellerId: string, storeId: string, subdomain: string): CacheInvalidation {
+  return inv([storeTags.catalog(sellerId, storeId), sellerTags.subdomain(subdomain)]);
+}
+
+/**
+ * A store saved, published, unpublished or deleted a blog post or CMS item, or
+ * changed a collection (P4-16, P4-11): that store's public content only.
+ */
+export function invalidateStoreCms(sellerId: string, storeId: string): CacheInvalidation {
+  return inv([storeTags.cms(sellerId, storeId)]);
+}
+
+/** A store connected, changed or removed a tracking app (P7-02/P7-03). Only that store. */
+export function invalidateStoreIntegrations(sellerId: string, storeId: string): CacheInvalidation {
+  return inv([storeTags.integrations(sellerId, storeId)]);
+}
+
 /** Platform-wide coupons (no seller) — the storefront's "available coupons". */
 export function invalidatePlatformCoupons(): CacheInvalidation {
   return inv([couponTags.available()]);
+}
+
+/** One seller's coupon changed (admin deactivate/reactivate): that seller's coupons and the available list. */
+export function invalidateSellerCoupons(sellerId: string): CacheInvalidation {
+  return inv([couponTags.seller(sellerId), couponTags.available()]);
+}
+
+/** A template's gallery metadata changed (active, premium, price, order, default). */
+export function invalidateTemplateCatalog(): CacheInvalidation {
+  return inv([templateTags.catalog()]);
+}
+
+/** A tallaby.com blog post was created, edited, published or deleted in admin. */
+export function invalidateMarketingBlog(): CacheInvalidation {
+  return inv([marketingBlogTags.posts()]);
+}
+
+/** A fulfillment plan was created, edited or toggled. */
+export function invalidateFulfillmentPlans(): CacheInvalidation {
+  return inv([fulfillmentTags.plans()]);
+}
+
+/** A store integration changed status (connect, error, admin disconnect): its storefront scripts and the admin summary. */
+export function invalidateStoreIntegrationsWithSummary(sellerId: string, storeId: string): CacheInvalidation {
+  return inv([storeTags.integrations(sellerId, storeId), adminTags.integrationSummary()]);
 }
 
 export function invalidateReviewsForProduct(

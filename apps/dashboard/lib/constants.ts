@@ -16,5 +16,11 @@ export const getStorefrontStoreUrl = (slug: string) =>
 /** Tallaby seller-support WhatsApp line (digits only, international format). */
 export const SUPPORT_WHATSAPP_NUMBER = "201003272830";
 
-export const getSupportWhatsAppUrl = (message: string) =>
+/** The same line as people read and dial it in Egypt. */
+export const SUPPORT_PHONE_DISPLAY = "0100 327 2830";
+
+/** Tallaby seller-support inbox. */
+export const SUPPORT_EMAIL = "tallabycommerce@gmail.com";
+
+export const getSupportWhatsAppUrl =(message: string) =>
   `https://wa.me/${SUPPORT_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;

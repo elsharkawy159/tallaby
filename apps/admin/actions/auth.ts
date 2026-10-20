@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/supabase/server";
+import { db, eq, users } from "@workspace/db";
 import { redirect } from "next/navigation";
 import { getAuthUser, getCurrentAdminUser } from "@/lib/auth/admin-auth";
 
@@ -96,19 +97,20 @@ export const login = async (email: string, password: string) => {
 export const resetPassword = async (email: string) => {
   const supabase = await createClient();
 
-  // First check if the email belongs to an admin user
-  const { data: userProfile, error: profileError } = await supabase
-    .from("users")
-    .select("role")
-    .eq("email", email)
-    .single();
+  // First check if the email belongs to an admin user. Server-side Drizzle:
+  // since migration 0049 the anon key can no longer read other users' rows.
+  const [userProfile] = await db
+    .select({ role: users.role })
+    .from(users)
+    .where(eq(users.email, email))
+    .limit(1);
 
-  if (profileError || !userProfile) {
+  if (!userProfile) {
     throw new Error("No admin account found with this email address.");
   }
 
   const adminRoles = ["admin", "super_admin", "moderator"];
-  if (!adminRoles.includes(userProfile.role)) {
+  if (!userProfile.role || !adminRoles.includes(userProfile.role)) {
     throw new Error("This email is not associated with an admin account.");
   }
 

@@ -77,8 +77,8 @@ async function message(key: string, values?: Record<string, string | number>) {
 }
 
 function refresh() {
-  revalidatePath("/shipping");
-  revalidatePath("/orders");
+  // Delivery tracking + riders live under Orders & Shipping (P3-06).
+  revalidatePath("/orders", "layout");
 }
 
 const ELIGIBLE_ORDER_STATUSES = [
@@ -299,36 +299,88 @@ const updateStatusSchema = z.object({
   failureReason: z.string().trim().max(500).optional(),
 });
 
+/**
+ * One guarded status move for one of the seller's orders: ownership (and the
+ * Tallaby-delivered read-only rule) in loadOwnedOrder, the transition graph,
+ * then applySellerShipmentStatus (shipment + order + items + wallet hooks in
+ * one transaction, with the expected-from-status guard).
+ */
+async function applyStatusChange(
+  sellerId: string,
+  orderId: string,
+  status: ShippingStatus,
+  failureReason?: string
+) {
+  const order = await loadOwnedOrder(orderId, sellerId);
+  if (!order.shipmentId || !order.shipmentStatus) {
+    throw new ShippingError("assignFirst");
+  }
+  const from = order.shipmentStatus as ShippingStatus;
+  if (!canTransition(from, status)) {
+    throw new ShippingError("invalidTransition", { from, to: status });
+  }
+  if (status === "failed" && !failureReason) {
+    throw new ShippingError("reasonRequired");
+  }
+
+  await applySellerShipmentStatus({
+    orderId,
+    sellerId,
+    shipmentId: order.shipmentId,
+    status,
+    expectedFromStatus: from,
+    failureReason,
+  });
+}
+
 export async function updateShipmentStatus(input: unknown): Promise<ActionResult> {
   try {
     const sellerId = await requireSellerId();
     const { orderId, status, failureReason } = updateStatusSchema.parse(input);
-
-    const order = await loadOwnedOrder(orderId, sellerId);
-    if (!order.shipmentId || !order.shipmentStatus) {
-      throw new ShippingError("assignFirst");
-    }
-    const from = order.shipmentStatus as ShippingStatus;
-    if (!canTransition(from, status)) {
-      throw new ShippingError("invalidTransition", { from, to: status });
-    }
-    if (status === "failed" && !failureReason) {
-      throw new ShippingError("reasonRequired");
-    }
-
-    await applySellerShipmentStatus({
-      orderId,
-      sellerId,
-      shipmentId: order.shipmentId,
-      status,
-      expectedFromStatus: from,
-      failureReason,
-    });
-
+    await applyStatusChange(sellerId, orderId, status, failureReason);
     refresh();
     return { success: true, message: await message("shipmentUpdated") };
   } catch (error) {
     return fail("updateShipmentStatus", error);
+  }
+}
+
+const bulkStatusSchema = z.object({
+  orderIds: z.array(z.uuid()).min(1).max(100),
+  // Moves that need no per-order input (a failure needs a reason).
+  status: z.enum(["out_for_delivery", "delivered"]),
+});
+
+/**
+ * Bulk "out for delivery" / "delivered" (PLAN.md P3-06). Each order is its own
+ * guarded transaction through the same path as a single update; orders that
+ * cannot make the move (wrong status, no rider, Tallaby-delivered) are skipped.
+ */
+export async function bulkUpdateShipmentStatus(
+  input: unknown
+): Promise<ActionResult<{ updated: number; skipped: number }>> {
+  try {
+    const sellerId = await requireSellerId();
+    const { orderIds, status } = bulkStatusSchema.parse(input);
+    let updated = 0;
+    let skipped = 0;
+    for (const orderId of new Set(orderIds)) {
+      try {
+        await applyStatusChange(sellerId, orderId, status);
+        updated++;
+      } catch (error) {
+        if (!(error instanceof ShippingError)) console.error("bulkUpdateShipmentStatus:", error);
+        skipped++;
+      }
+    }
+    refresh();
+    return {
+      success: true,
+      data: { updated, skipped },
+      message: await message("bulkUpdated", { updated, skipped }),
+    };
+  } catch (error) {
+    return fail("bulkUpdateShipmentStatus", error);
   }
 }
 

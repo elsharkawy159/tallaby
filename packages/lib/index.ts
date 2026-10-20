@@ -4,6 +4,15 @@ export {
   formatPrice,
   formatPricePlain,
   parseCurrencyAmount,
+  parseStoreCurrency,
+  isStoreCurrency,
+  isCurrencyLabelFor,
+  STORE_CURRENCIES,
+  STORE_CURRENCY_CODES,
+  REGIONAL_CURRENCY_CODES,
+  type StoreCurrency,
+  CURRENCY_LABELS,
+  type CurrencyLabel,
 } from "./src/utils/formatPrice";
 
 export {

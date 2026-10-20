@@ -6,6 +6,7 @@ import { brands, products } from "@workspace/db";
 import { eq, and, desc, sql, ilike, asc, or } from "drizzle-orm";
 import slugify from "slugify";
 import { brandTags, cacheProfiles, createCachedQuery } from "@workspace/cache";
+import { requireSeller } from "@/lib/auth/require-seller.server";
 
 type GetAllBrandsParams = {
   verified?: boolean;
@@ -205,9 +206,15 @@ export async function getAlphabeticalBrands() {
 
 export async function createBrand(name: string) {
   try {
-    const trimmed = (name || "").trim();
+    // Brands are shared marketplace data: only a seller session may add one.
+    await requireSeller();
+
+    const trimmed = (typeof name === "string" ? name : "").trim();
     if (!trimmed) {
       return { success: false, error: "Brand name is required" };
+    }
+    if (trimmed.length > 100) {
+      return { success: false, error: "Brand name is too long" };
     }
 
     const baseSlug = slugify(trimmed, { lower: true, strict: true });

@@ -9,6 +9,7 @@ import {
   PRODUCT_SIZE_CATEGORIES,
   SELLER_DELIVERY_MODES,
   SKU_RANGES,
+  TALLABY_FULFILLMENT_ENABLED,
   type FulfillmentServiceType,
 } from './constants'
 import type { FulfillmentPlanView } from './types'
@@ -111,7 +112,9 @@ export function collectRequestIssues(input: {
     }
   }
 
-  if (model === 'tallaby_fulfillment') {
+  if (model === 'tallaby_fulfillment' && !TALLABY_FULFILLMENT_ENABLED) {
+    issues.push({ path: ['model'], message: 'tallaby_fulfillment_unavailable' })
+  } else if (model === 'tallaby_fulfillment') {
     for (const type of FULFILLMENT_SERVICE_TYPES) {
       if (services[type].provider !== 'tallaby') {
         issues.push({ path: ['services', type, 'provider'], message: 'tallaby_model_requires_tallaby' })

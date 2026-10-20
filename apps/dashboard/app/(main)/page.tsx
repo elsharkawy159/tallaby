@@ -4,8 +4,9 @@ import { Skeleton } from "@workspace/ui/components/skeleton";
 import { AttentionData } from "./_components/attention.data";
 import { HomeGreeting, HomeHeaderView, HomeSubtitle } from "./_components/home-header.data";
 import { HomeKpisData } from "./_components/home-kpis.data";
-import { HomeRangeProvider, RangePending, RangeTabs } from "./_components/home-range.client";
-import { parseHomeRange } from "./_components/home.shared";
+import { ChannelSelect, HomeRangeProvider, RangePending, RangeTabs } from "./_components/home-range.client";
+import { parseHomeChannel, parseHomeRange, resolveHomeChannel } from "./_components/home.shared";
+import { getSellerStores } from "@/lib/stores/current-store.server";
 import {
   ChartSkeleton,
   HomeLayout,
@@ -17,6 +18,7 @@ import { RecentOrdersData } from "./_components/recent-orders.data";
 import { SalesChartData } from "./_components/sales-chart.data";
 import { SetupChecklistData } from "./_components/setup-checklist.data";
 import { TopProductsData } from "./_components/top-products.data";
+import { TrialBannerData } from "./_components/trial-banner.data";
 import { UnansweredQuestionsData } from "./_components/unanswered-questions.data";
 
 // Per-seller data read from the session cookie.
@@ -29,16 +31,22 @@ export const dynamic = "force-dynamic";
 export default async function VendorDashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ range?: string | string[] }>;
+  searchParams: Promise<{ range?: string | string[]; channel?: string | string[] }>;
 }) {
-  const [{ range: rawRange }, t] = await Promise.all([
+  const [{ range: rawRange, channel: rawChannel }, t, { stores }] = await Promise.all([
     searchParams,
     getTranslations("home.header"),
+    getSellerStores(),
   ]);
   const range = parseHomeRange(rawRange);
+  // A store channel must be one of the seller's own stores (never trust the URL).
+  const channel = resolveHomeChannel(
+    parseHomeChannel(rawChannel),
+    stores.map((store) => store.id),
+  );
 
   return (
-    <HomeRangeProvider range={range}>
+    <HomeRangeProvider range={range} channel={channel}>
       <HomeLayout
         header={
           <HomeHeaderView
@@ -53,25 +61,35 @@ export default async function VendorDashboardPage({
               </Suspense>
             }
             addLabel={t("addProduct")}
-            rangeControl={<RangeTabs />}
+            rangeControl={
+              <div className="flex flex-wrap items-center gap-2">
+                <ChannelSelect stores={stores.map(({ id, name }) => ({ id, name }))} />
+                <RangeTabs />
+              </div>
+            }
           />
         }
         setup={
-          <Suspense fallback={null}>
-            <SetupChecklistData />
-          </Suspense>
+          <>
+            <Suspense fallback={null}>
+              <TrialBannerData />
+            </Suspense>
+            <Suspense fallback={null}>
+              <SetupChecklistData />
+            </Suspense>
+          </>
         }
         kpis={
           <RangePending>
             <Suspense fallback={<KpisSkeleton />}>
-              <HomeKpisData range={range} />
+              <HomeKpisData range={range} channel={channel} />
             </Suspense>
           </RangePending>
         }
         chart={
           <RangePending>
             <Suspense fallback={<ChartSkeleton />}>
-              <SalesChartData range={range} />
+              <SalesChartData range={range} channel={channel} />
             </Suspense>
           </RangePending>
         }
@@ -88,7 +106,7 @@ export default async function VendorDashboardPage({
         topProducts={
           <RangePending>
             <Suspense fallback={<ListCardSkeleton />}>
-              <TopProductsData range={range} />
+              <TopProductsData range={range} channel={channel} />
             </Suspense>
           </RangePending>
         }

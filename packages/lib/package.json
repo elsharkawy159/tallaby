@@ -17,7 +17,8 @@
     "@workspace/db": "workspace:*",
     "drizzle-orm": "0.45.1",
     "stripe": "^22.1.1",
-    "zod": "^4.2.1"
+    "zod": "^4.2.1",
+    "@workspace/store-sections": "workspace:*"
   },
   "types": "index.ts",
   "exports": {
@@ -37,6 +38,10 @@
       "types": "./src/shipping/index.ts",
       "default": "./src/shipping/index.ts"
     },
+    "./shipping/store-zones": {
+      "types": "./src/shipping/store-zones.ts",
+      "default": "./src/shipping/store-zones.ts"
+    },
     "./paymob": {
       "types": "./src/paymob/index.ts",
       "default": "./src/paymob/index.ts"
@@ -49,6 +54,10 @@
       "types": "./src/payments/index.ts",
       "default": "./src/payments/index.ts"
     },
+    "./payments/store-methods": {
+      "types": "./src/payments/store-methods.ts",
+      "default": "./src/payments/store-methods.ts"
+    },
     "./orders": {
       "types": "./src/orders/index.ts",
       "default": "./src/orders/index.ts"
@@ -56,6 +65,10 @@
     "./orders/coupon-scope": {
       "types": "./src/orders/coupon-scope.lib.ts",
       "default": "./src/orders/coupon-scope.lib.ts"
+    },
+    "./orders/platform-fee": {
+      "types": "./src/orders/platform-fee.lib.ts",
+      "default": "./src/orders/platform-fee.lib.ts"
     },
     "./orders/payment": {
       "types": "./src/orders/payment.lib.ts",
@@ -68,6 +81,74 @@
     "./fulfillment": {
       "types": "./src/fulfillment/index.ts",
       "default": "./src/fulfillment/index.ts"
+    },
+    "./plans": {
+      "types": "./src/plans/index.ts",
+      "default": "./src/plans/index.ts"
+    },
+    "./admin": {
+      "types": "./src/admin/index.ts",
+      "default": "./src/admin/index.ts"
+    },
+    "./admin/server": {
+      "types": "./src/admin/server.ts",
+      "default": "./src/admin/server.ts"
+    },
+    "./integrations": {
+      "types": "./src/integrations/index.ts",
+      "default": "./src/integrations/index.ts"
+    },
+    "./integrations/server": {
+      "types": "./src/integrations/server.ts",
+      "default": "./src/integrations/server.ts"
+    },
+    "./store-wallet": {
+      "types": "./src/store-wallet/index.ts",
+      "default": "./src/store-wallet/index.ts"
+    },
+    "./store-wallet/server": {
+      "types": "./src/store-wallet/server.ts",
+      "default": "./src/store-wallet/server.ts"
+    },
+    "./sellers": {
+      "types": "./src/sellers/index.ts",
+      "default": "./src/sellers/index.ts"
+    },
+    "./sellers/server": {
+      "types": "./src/sellers/server.ts",
+      "default": "./src/sellers/server.ts"
+    },
+    "./stores": {
+      "types": "./src/stores/stores.lib.ts",
+      "default": "./src/stores/stores.lib.ts"
+    },
+    "./stores/server": {
+      "types": "./src/stores/server.ts",
+      "default": "./src/stores/server.ts"
+    },
+    "./media": {
+      "types": "./src/media/media.lib.ts",
+      "default": "./src/media/media.lib.ts"
+    },
+    "./media/server": {
+      "types": "./src/media/server.ts",
+      "default": "./src/media/server.ts"
+    },
+    "./store-sites/server": {
+      "types": "./src/store-sites/server.ts",
+      "default": "./src/store-sites/server.ts"
+    },
+    "./store-sites/catalog-data": {
+      "types": "./src/store-sites/catalog-data.server.ts",
+      "default": "./src/store-sites/catalog-data.server.ts"
+    },
+    "./store-sites/catalog-data.lib": {
+      "types": "./src/store-sites/catalog-data.lib.ts",
+      "default": "./src/store-sites/catalog-data.lib.ts"
+    },
+    "./store-sites/preview": {
+      "types": "./src/store-sites/preview-token.ts",
+      "default": "./src/store-sites/preview-token.ts"
     },
     "./storefront": {
       "types": "./src/storefront/index.ts",
@@ -84,6 +165,34 @@
     "./fulfillment/server": {
       "types": "./src/fulfillment/server.ts",
       "default": "./src/fulfillment/server.ts"
+    },
+    "./store-forms": {
+      "types": "./src/store-forms/store-forms.lib.ts",
+      "default": "./src/store-forms/store-forms.lib.ts"
+    },
+    "./store-forms/server": {
+      "types": "./src/store-forms/server.ts",
+      "default": "./src/store-forms/server.ts"
+    },
+    "./store-forms/starter": {
+      "types": "./src/store-forms/starter-forms.lib.ts",
+      "default": "./src/store-forms/starter-forms.lib.ts"
+    },
+    "./cms": {
+      "types": "./src/cms/cms.lib.ts",
+      "default": "./src/cms/cms.lib.ts"
+    },
+    "./cms/server": {
+      "types": "./src/cms/cms.server.ts",
+      "default": "./src/cms/cms.server.ts"
+    },
+    "./platform-blog": {
+      "types": "./src/platform-blog/platform-blog.lib.ts",
+      "default": "./src/platform-blog/platform-blog.lib.ts"
+    },
+    "./platform-blog/server": {
+      "types": "./src/platform-blog/platform-blog.server.ts",
+      "default": "./src/platform-blog/platform-blog.server.ts"
     }
   },
   "devDependencies": {

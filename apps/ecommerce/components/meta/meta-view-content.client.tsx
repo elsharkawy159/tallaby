@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { trackMetaEvent } from '@/lib/meta/meta.client'
+import { trackCommerceEvent } from '@/lib/storefront-events.client'
 import { toMetaContentIds } from '@/lib/meta/meta.product'
 import { DEFAULT_CURRENCY } from '@/lib/constants'
 
@@ -25,7 +25,7 @@ export function MetaViewContent ({
     if (firedRef.current || !productId) return
     firedRef.current = true
 
-    trackMetaEvent('ViewContent', {
+    trackCommerceEvent('ViewContent', {
       content_ids: toMetaContentIds([productId]),
       content_type: 'product',
       value: Number.isFinite(value) ? value : 0,

@@ -7,6 +7,8 @@ export interface SidebarCounts {
   promotions: number;
   marketing: number;
   financial: number;
+  /** New (unread) store form submissions across the seller's stores (P4-10). */
+  forms: number;
 }
 
 export interface SidebarProps {
@@ -22,5 +24,6 @@ export const EMPTY_SIDEBAR_COUNTS: SidebarCounts = {
   promotions: 0,
   marketing: 0,
   financial: 0,
+  forms: 0,
 };
 

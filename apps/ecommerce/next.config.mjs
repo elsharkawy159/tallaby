@@ -6,16 +6,38 @@ const nextConfig = {
   transpilePackages: ["@workspace/ui"],
   // Avoid serving stale homepage RSC payloads on client-side navigation.
   experimental: {
+    // app/global-not-found.tsx: the root layout sits under [locale].
+    globalNotFound: true,
     staleTimes: {
       dynamic: 0,
       static: 30,
     },
   },
-  async redirects() {
+  poweredByHeader: false,
+  // Baseline headers for every host. No X-Frame-Options / frame-ancestors:
+  // the dashboard editor and site preview embed storefronts in iframes.
+  async headers() {
     return [
       {
+        source: "/:path*",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+        ],
+      },
+    ];
+  },
+  async redirects() {
+    return [
+      // The marketplace seller pages are gone: the marketing home has the signup.
+      {
         source: "/become-seller",
-        destination: "/sell",
+        destination: "/",
+        permanent: true,
+      },
+      {
+        source: "/sell",
+        destination: "/",
         permanent: true,
       },
     ];
@@ -30,7 +52,15 @@ const nextConfig = {
       },
       {
         protocol: "https",
+        hostname: "cxqjrwjianxskhzmrkla.supabase.co",
+      },
+      {
+        protocol: "https",
         hostname: "images.unsplash.com",
+      },
+      {
+        protocol: "https",
+        hostname: "images.pexels.com",
       },
       {
         protocol: "https",

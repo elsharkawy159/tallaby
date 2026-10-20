@@ -61,6 +61,21 @@ export const sellerTags = {
   customDomain: (domain: string) => `seller:domain:${domain}`,
 } as const;
 
+/**
+ * Store-scoped data (stores table, PLAN.md §8). Every tag carries the owning
+ * seller id as well as the store id (CLAUDE.md rule 8).
+ */
+export const storeTags = {
+  /** Connected tracking apps rendered on that store host (P7-03). */
+  integrations: (sellerId: string, storeId: string) => `store:integrations:${sellerId}:${storeId}`,
+  /** The store's published builder site (P5-01, P5-03). */
+  site: (sellerId: string, storeId: string) => `store:site:${sellerId}:${storeId}`,
+  /** The store's catalog mode and selected products (D24, P4-07). */
+  catalog: (sellerId: string, storeId: string) => `store:catalog:${sellerId}:${storeId}`,
+  /** Published blog posts and CMS items of the store (P4-16, P4-11). Never drafts. */
+  cms: (sellerId: string, storeId: string) => `store:cms:${sellerId}:${storeId}`,
+} as const;
+
 export const reviewTags = {
   product: (productId: string) => `review:product:${productId}`,
   seller: (sellerId: string) => `review:seller:${sellerId}`,
@@ -71,9 +86,35 @@ export const couponTags = {
   seller: (sellerId: string) => `coupon:seller:${sellerId}`,
 } as const;
 
+/** The platform template gallery (templates, versions, install counts). No seller data. */
+export const templateTags = {
+  catalog: () => "template:catalog",
+} as const;
+
+/** The tallaby.com blog written in the admin app (0073). Published posts only; no seller data. */
+export const marketingBlogTags = {
+  posts: () => "marketing-blog:posts",
+} as const;
+
+/** The Tallaby fulfillment plan catalog. No seller data; seller requests are never cached. */
+export const fulfillmentTags = {
+  plans: () => "fulfillment:plans",
+} as const;
+
+/**
+ * Admin-only aggregates that hold no money and no per-customer data
+ * (docs/admin-saas.md §4.2). Wallets, queues and orders are never cached.
+ */
+export const adminTags = {
+  /** Store integration counts per provider and status. */
+  integrationSummary: () => "admin:integration-summary",
+} as const;
+
 export const searchTags = {
   suggestions: () => "search:suggestions",
   trending: () => "search:trending",
+  /** Public stock-photo search results (editor Explore tab); no seller data. */
+  stockPhotos: () => "search:stock-photos",
 } as const;
 
 export type ProductTag = ReturnType<
@@ -86,6 +127,7 @@ export type BrandTag = ReturnType<(typeof brandTags)[keyof typeof brandTags]>;
 export type SellerTag = ReturnType<
   (typeof sellerTags)[keyof typeof sellerTags]
 >;
+export type StoreTag = ReturnType<(typeof storeTags)[keyof typeof storeTags]>;
 export type ReviewTag = ReturnType<
   (typeof reviewTags)[keyof typeof reviewTags]
 >;

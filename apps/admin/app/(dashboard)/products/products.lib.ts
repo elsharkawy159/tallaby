@@ -1,5 +1,6 @@
 import { formatCurrency, getPriceFinal, parsePriceJson } from "@workspace/lib";
 import type { z } from "zod";
+import { ecommerceBaseUrl } from "@/lib/site-urls";
 
 import type { productSchema } from "../_lib/validations/product-schema";
 import type {
@@ -42,13 +43,7 @@ export function parseProductImages(images: unknown): string[] {
 }
 
 export function getStorefrontBaseUrl(): string {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_ECOMMERCE_URL ??
-    process.env.NEXT_PUBLIC_ECOMMERCE_DOMAIN ??
-    process.env.ECOMMERCE_URL ??
-    process.env.ECOMMERCE_DOMAIN ??
-    "http://localhost:3000";
-  return baseUrl.replace(/\/$/, "");
+  return ecommerceBaseUrl();
 }
 
 export function getStorefrontProductUrl(slug: string | null | undefined): string | null {

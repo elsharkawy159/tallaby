@@ -1,11 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   hostnameOf,
+  isMarketplaceHost,
   isPlatformHost,
   normalizeCustomDomain,
   storeHostname,
   storeSubdomainFromHost,
   storeUrl,
+  subdomainFromName,
   validateCustomDomain,
 } from "./index";
 
@@ -65,6 +67,17 @@ describe("isPlatformHost", () => {
   );
 });
 
+describe("isMarketplaceHost", () => {
+  it.each(["tallaby.com", "www.tallaby.com", "localhost:3000", "tallaby-git-main.vercel.app", null])(
+    "%s is the marketplace",
+    (host) => expect(isMarketplaceHost(host)).toBe(true),
+  );
+
+  it.each(["faster.tallaby.com", "faster.localhost:3000", "faster-eg.com"])("%s is a storefront", (host) =>
+    expect(isMarketplaceHost(host)).toBe(false),
+  );
+});
+
 describe("store URLs", () => {
   it("uses the subdomain without a custom domain", () => {
     expect(storeUrl("faster")).toBe("https://faster.tallaby.com");
@@ -79,5 +92,23 @@ describe("store URLs", () => {
   it("custom domains are not mistaken for store subdomains", () => {
     expect(storeSubdomainFromHost("faster-eg.com")).toBeNull();
     expect(hostnameOf("Faster-EG.com:443")).toBe("faster-eg.com");
+  });
+});
+
+describe("subdomainFromName", () => {
+  it("slugifies Latin names", () => {
+    expect(subdomainFromName("Faster Store!")).toBe("faster-store");
+    expect(subdomainFromName("  Ça va -- Shop  ")).toBe("ca-va-shop");
+  });
+
+  it("transliterates Arabic names and digits", () => {
+    expect(subdomainFromName("متجر فاستر")).toBe("mtgr-fastr");
+    expect(subdomainFromName("مَحَلّ ٢٤")).toBe("mhl-24");
+  });
+
+  it("caps the length without a trailing hyphen", () => {
+    const out = subdomainFromName("a".repeat(31) + " b");
+    expect(out).toBe("a".repeat(31));
+    expect(subdomainFromName("!!!")).toBe("");
   });
 });

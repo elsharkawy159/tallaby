@@ -1,9 +1,5 @@
-import { HelpSupport } from "@/components/dashboard/HelpSupport";
+import { HelpData } from "./help.data";
 
-// Force dynamic rendering since this page uses cookies for authentication
-
-const Help = () => {
-  return <HelpSupport />;
-};
-
-export default Help;
+export default function HelpPage() {
+  return <HelpData />;
+}

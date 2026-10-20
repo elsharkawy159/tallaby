@@ -6,14 +6,22 @@ import { SellerSettingsForm } from "./seller-settings.client";
 import { StoreLinkSection } from "./store-link.client";
 import { CustomDomainSection } from "./custom-domain.client";
 import { getCustomDomain } from "@/actions/custom-domain";
+import { getSellerAccountView } from "@workspace/lib/sellers/server";
+import { getPrimaryStore } from "@workspace/lib/stores/server";
+import { requireSeller } from "@/lib/auth/require-seller.server";
+import { DomainPageLink } from "./domain-page-link";
 
 export async function SellerSettingsData() {
-  const [{ profile, documents, error }, customDomainRes] = await Promise.all([
+  const seller = await requireSeller();
+  const [{ profile, documents, error }, account, primaryStore] = await Promise.all([
     fetchSellerSettings(),
-    getCustomDomain(),
+    getSellerAccountView(seller.sellerId),
+    getPrimaryStore(seller.sellerId),
   ]);
-  const customDomain = customDomainRes.success ? customDomainRes.domain : null;
-  if (error || !profile) {
+  // The primary store's domain; every store's lives on Website › Domain & SEO (P4-14).
+  const customDomainRes = primaryStore ? await getCustomDomain(primaryStore.id) : null;
+  const customDomain = customDomainRes?.success ? customDomainRes.domain : null;
+  if (error || !profile || !account) {
     throw new Error(error || "Failed to load seller settings");
   }
   const liveDomain = customDomain?.status === "active" ? customDomain.domain : null;
@@ -44,15 +52,21 @@ export async function SellerSettingsData() {
     <SellerSettingsForm
       initialData={initial}
       storeHref={storeUrl(profile.subdomain, liveDomain)}
+      account={account}
+      primaryStoreId={primaryStore?.id ?? null}
       linkSection={
-        <>
-          <StoreLinkSection
-            initialSubdomain={profile.subdomain}
-            customDomain={liveDomain}
-          />
-          <Separator className="my-1" />
-          <CustomDomainSection initial={customDomain} />
-        </>
+        primaryStore ? (
+          <>
+            <StoreLinkSection
+              storeId={primaryStore.id}
+              initialSubdomain={primaryStore.subdomain}
+              customDomain={liveDomain}
+            />
+            <Separator className="my-1" />
+            <CustomDomainSection storeId={primaryStore.id} initial={customDomain} />
+            <DomainPageLink storeId={primaryStore.id} />
+          </>
+        ) : null
       }
     />
   )

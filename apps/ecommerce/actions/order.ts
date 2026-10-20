@@ -30,12 +30,17 @@ import {
   WALLET_REFERENCE_TYPES,
 } from "@workspace/db/wallet";
 import { placeOrderFromCart } from "@workspace/lib/orders";
+import { cartProductsOutsideStoreCatalog } from "@workspace/lib/stores/server";
 import {
   applyInvalidation,
   invalidateProductInventory,
 } from "@workspace/cache";
 import { getCurrentUserId } from "@/lib/get-current-user-id";
-import { getCartStoreSellerId } from "@/lib/storefront.server";
+import { getCartScope, getCartStoreSellerId } from "@/lib/storefront.server";
+import { hasStoreTrackingConsent, STORE_TRACKING_CONSENT_COOKIE } from "@/lib/storefront-consent";
+import { cookies } from "next/headers";
+import { after } from "next/server";
+import { isMarketplaceRequest } from "@/lib/marketplace/marketplace-host.server";
 import { buildOrderPagePath } from "@/lib/order-access-token";
 import { getUser } from "./auth";
 import { revalidateCartCheckout } from "@/lib/revalidate-cart-checkout";
@@ -75,6 +80,13 @@ export async function createOrder(data: {
       return { success: false, error: "Online card payment is unavailable" };
     }
 
+    // A store with a selected catalog (D24) may have dropped a product after it
+    // was added to this cart; refuse like an unavailable product.
+    const [unsold] = await cartProductsOutsideStoreCatalog(data.cartId);
+    if (unsold) {
+      return { success: false, error: `Product is no longer available: ${unsold}` };
+    }
+
     const result = await placeOrderFromCart({
       userId,
       cartId: data.cartId,
@@ -111,35 +123,60 @@ export async function createOrder(data: {
     await clearPendingCouponCode();
 
     const metaEventId = order.id;
-    try {
-      const { sendMetaCapiEvent } = await import("@/lib/meta/meta.server");
-      const { getMetaCapiUserData } = await import("@/lib/meta/meta.user");
-      const { toMetaContentIds } = await import("@/lib/meta/meta.product");
-      const { DEFAULT_CURRENCY } = await import("@/lib/constants");
+    // Tallaby CAPI is marketplace-only; storefront orders skip it (PLAN.md P5-05).
+    if (await isMarketplaceRequest()) {
+      try {
+        const { sendMetaCapiEvent } = await import("@/lib/meta/meta.server");
+        const { getMetaCapiUserData } = await import("@/lib/meta/meta.user");
+        const { toMetaContentIds } = await import("@/lib/meta/meta.product");
+        const { DEFAULT_CURRENCY } = await import("@/lib/constants");
 
-      const productIds = createdOrderItems.map((item) => item.productId);
-      const numItems = createdOrderItems.reduce(
-        (sum, item) => sum + Number(item.quantity || 0),
-        0
-      );
-      const { userData, eventSourceUrl } = await getMetaCapiUserData();
+        const productIds = createdOrderItems.map((item) => item.productId);
+        const numItems = createdOrderItems.reduce(
+          (sum, item) => sum + Number(item.quantity || 0),
+          0
+        );
+        const { userData, eventSourceUrl } = await getMetaCapiUserData();
 
-      await sendMetaCapiEvent({
-        eventName: "Purchase",
-        eventId: metaEventId,
-        eventSourceUrl: eventSourceUrl ?? undefined,
-        userData,
-        customData: {
-          content_ids: toMetaContentIds(productIds),
-          content_type: "product",
-          value: Number(order.totalAmount),
-          currency: order.currency || DEFAULT_CURRENCY,
-          num_items: numItems,
-          order_id: order.id,
-        },
-      });
-    } catch (metaError) {
-      console.error("Meta CAPI Purchase failed:", metaError);
+        await sendMetaCapiEvent({
+          eventName: "Purchase",
+          eventId: metaEventId,
+          eventSourceUrl: eventSourceUrl ?? undefined,
+          userData,
+          customData: {
+            content_ids: toMetaContentIds(productIds),
+            content_type: "product",
+            value: Number(order.totalAmount),
+            currency: order.currency || DEFAULT_CURRENCY,
+            num_items: numItems,
+            order_id: order.id,
+          },
+        });
+      } catch (metaError) {
+        console.error("Meta CAPI Purchase failed:", metaError);
+      }
+    } else {
+      // The store's own CAPI (PLAN.md P7-05): only for an order of the store
+      // this host serves, only after the visitor accepted tracking on it
+      // (D19), and only after the response, so a slow or failing Meta call
+      // never touches checkout.
+      try {
+        const scope = await getCartScope();
+        const consent = (await cookies()).get(STORE_TRACKING_CONSENT_COOKIE)?.value;
+        if (scope && order.storeId === scope.storeId && hasStoreTrackingConsent(consent)) {
+          const purchase = {
+            storeId: scope.storeId,
+            order: { id: order.id, totalAmount: order.totalAmount, currency: order.currency },
+            items: createdOrderItems.map((item) => ({ productId: item.productId, quantity: item.quantity })),
+          };
+          after(async () => {
+            const { sendStorePurchaseEvent } = await import("@/lib/meta/store-meta-capi.server");
+            await sendStorePurchaseEvent(purchase);
+          });
+        }
+      } catch {
+        console.error("Store Meta CAPI scheduling failed");
+      }
     }
 
     return {

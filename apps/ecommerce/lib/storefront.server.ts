@@ -9,6 +9,7 @@
  */
 
 import { headers } from "next/headers";
+import { parseStoreCurrency } from "@workspace/lib";
 import { unstable_cache } from "next/cache";
 import { notFound, redirect } from "next/navigation";
 import {
@@ -17,12 +18,14 @@ import {
   sellers,
   sellerSubdomainRedirects,
   sellerCustomDomains,
+  storeProducts,
+  stores,
   eq,
   and,
   isNull,
   sql,
 } from "@workspace/db";
-import { categoryTags, productTags, sellerTags } from "@workspace/cache";
+import { categoryTags, productTags, sellerTags, storeTags } from "@workspace/cache";
 import {
   hostnameOf,
   isPlatformHost,
@@ -31,6 +34,9 @@ import {
 } from "@workspace/lib/storefront";
 import { findSubdomainForCustomDomain } from "@workspace/lib/storefront/server";
 import { normalizeGovernorate } from "@workspace/lib/shipping";
+import { publicStoreSocialLinks } from "@workspace/lib/stores";
+import { parseStoreSeo } from "@workspace/lib/stores";
+import { storeHasVisibleProducts } from "@workspace/lib/stores/server";
 
 /**
  * The storefront subdomain of the current request, or null on tallaby.com.
@@ -82,99 +88,156 @@ export function storeCategoryLabel(
   return label?.trim() || null;
 }
 
-/** An approved seller's public storefront profile, by current subdomain. */
+/**
+ * A store's public storefront profile, by its current subdomain (PLAN.md
+ * P5-00). The host resolves to a STORE (active, not deleted, seller approved);
+ * a seller can own several. The shape is unchanged for the storefront pages:
+ * `id` is still the owning SELLER (products and categories are per seller),
+ * `storeId` is the store itself.
+ */
 export function getStorefrontBySubdomain(subdomain: string) {
   return unstable_cache(
     async () => {
-      const seller = await db.query.sellers.findFirst({
-        where: and(eq(sellers.subdomain, subdomain), eq(sellers.status, "approved")),
-        columns: {
-          id: true,
-          displayName: true,
-          slug: true,
-          subdomain: true,
-          description: true,
-          storeDescription: true,
-          logoUrl: true,
-          bannerUrl: true,
-          returnPolicy: true,
-          shippingPolicy: true,
-          storeRating: true,
-          positiveRatingPercent: true,
-          totalRatings: true,
-          isVerified: true,
-          joinDate: true,
-          freeDelivery: true,
-          supportEmail: true,
-          supportPhone: true,
-          legalAddress: true,
-          storeCategory: true,
-          storeCategoryAr: true,
-        },
-      });
-      if (!seller) return null;
+      const [row] = await db
+        .select({
+          storeId: stores.id,
+          isPrimaryStore: stores.isPrimary,
+          catalogMode: stores.catalogMode,
+          name: stores.name,
+          subdomain: stores.subdomain,
+          description: stores.description,
+          logoUrl: stores.logoUrl,
+          faviconUrl: stores.faviconUrl,
+          bannerUrl: stores.bannerUrl,
+          contact: stores.contact,
+          storeCategory: stores.storeCategory,
+          storeCategoryAr: stores.storeCategoryAr,
+          seo: stores.seo,
+          settings: stores.settings,
+          sellerId: sellers.id,
+          slug: sellers.slug,
+          storeRating: sellers.storeRating,
+          positiveRatingPercent: sellers.positiveRatingPercent,
+          totalRatings: sellers.totalRatings,
+          isVerified: sellers.isVerified,
+          joinDate: sellers.joinDate,
+          freeDelivery: sellers.freeDelivery,
+          legalAddress: sellers.legalAddress,
+        })
+        .from(stores)
+        .innerJoin(sellers, eq(sellers.id, stores.sellerId))
+        .where(
+          and(
+            eq(stores.subdomain, subdomain),
+            eq(stores.status, "active"),
+            isNull(stores.deletedAt),
+            eq(sellers.status, "approved"),
+          ),
+        )
+        .limit(1);
+      if (!row) return null;
 
       const [domain] = await db
         .select({ domain: sellerCustomDomains.domain })
         .from(sellerCustomDomains)
-        .where(
-          and(
-            eq(sellerCustomDomains.sellerId, seller.id),
-            eq(sellerCustomDomains.status, "active"),
-          ),
-        )
+        .where(and(eq(sellerCustomDomains.storeId, row.storeId), eq(sellerCustomDomains.status, "active")))
         .limit(1);
 
+      const contact = (row.contact ?? {}) as { email?: string; phone?: string; whatsapp?: string };
       // Only the governorate is public; the rest of the legal address is not.
-      const { legalAddress, ...profile } = seller;
-      const state = (legalAddress as { state?: string } | null)?.state;
+      const state = (row.legalAddress as { state?: string } | null)?.state;
       return {
-        ...profile,
+        id: row.sellerId,
+        storeId: row.storeId,
+        isPrimaryStore: row.isPrimaryStore,
+        catalogMode: row.catalogMode,
+        displayName: row.name,
+        slug: row.slug,
+        subdomain: row.subdomain,
+        description: row.description,
+        storeDescription: row.description,
+        logoUrl: row.logoUrl,
+        faviconUrl: row.faviconUrl,
+        bannerUrl: row.bannerUrl,
+        storeRating: row.storeRating,
+        positiveRatingPercent: row.positiveRatingPercent,
+        totalRatings: row.totalRatings,
+        isVerified: row.isVerified,
+        joinDate: row.joinDate,
+        freeDelivery: row.freeDelivery,
+        supportEmail: contact.email ?? null,
+        supportPhone: contact.phone ?? null,
+        /** Store settings WhatsApp number; sections fall back to the phone. */
+        supportWhatsapp: contact.whatsapp ?? null,
+        storeCategory: row.storeCategory,
+        storeCategoryAr: row.storeCategoryAr,
+        /** Website › Domain & SEO (P4-14), re-validated field by field. */
+        seo: parseStoreSeo(row.seo),
+        /** Store settings › General: the label (symbol) of the store's website currency, "EGP" by default. */
+        currencyLabel: parseStoreCurrency(row.settings).label,
         governorate: normalizeGovernorate(state),
-        /** The seller's own domain once live (faster-eg.com), else null. */
+        /** The store's own domain once live (faster-eg.com), else null. */
         customDomain: domain?.domain ?? null,
+        /** Enabled social links (Website › Social media, P4-15), read live from the store row. */
+        social: publicStoreSocialLinks(row.contact),
       };
     },
-    // v3: adds customDomain.
-    [`storefront-v3-${subdomain}`],
+    // v6: + seo (P4-14) and social links (P4-15). v4: resolves through stores (P5-00).
+    [`storefront-v8-${subdomain}`],
     { tags: ["sellers", sellerTags.subdomain(subdomain)], revalidate: 3600 },
   )();
 }
 
-/** The current subdomain for a subdomain the seller has since replaced. */
+/** The current subdomain of the store a replaced subdomain belonged to. */
 export function getRenamedStoreSubdomain(oldSubdomain: string) {
   return unstable_cache(
     async () => {
       const [row] = await db
-        .select({ subdomain: sellers.subdomain })
+        .select({ subdomain: stores.subdomain })
         .from(sellerSubdomainRedirects)
-        .innerJoin(sellers, eq(sellers.id, sellerSubdomainRedirects.sellerId))
-        .where(eq(sellerSubdomainRedirects.subdomain, oldSubdomain))
+        .innerJoin(stores, eq(stores.id, sellerSubdomainRedirects.storeId))
+        .where(and(eq(sellerSubdomainRedirects.subdomain, oldSubdomain), isNull(stores.deletedAt)))
         .limit(1);
       return row?.subdomain ?? null;
     },
-    [`storefront-redirect-${oldSubdomain}`],
+    [`storefront-redirect-v2-${oldSubdomain}`],
     { tags: ["sellers", sellerTags.subdomain(oldSubdomain)], revalidate: 3600 },
   )();
 }
 
+/** The storefront a cart belongs to: the store, and the seller who owns it. */
+export type CartScope = { storeId: string; sellerId: string };
+
 /**
- * Seller id whose storefront cart the current request uses, or null for the
- * marketplace cart. An unknown subdomain also yields null; its pages 404.
+ * The store whose cart the current request uses, or null for the marketplace
+ * cart. Resolved from the request HOST only, never from the request body. An
+ * unknown subdomain also yields null; its pages 404.
  */
-export async function getCartStoreSellerId(): Promise<string | null> {
+export async function getCartScope(): Promise<CartScope | null> {
   const subdomain = await getRequestStoreSubdomain();
   if (!subdomain) return null;
   const store = await getStorefrontBySubdomain(subdomain);
-  return store?.id ?? null;
+  return store ? { storeId: store.storeId, sellerId: store.id } : null;
 }
 
-/** WHERE clause for a user's active cart in the given storefront scope. */
-export function activeCartWhere(userId: string, storeSellerId: string | null) {
+/**
+ * Seller id whose storefront the current request is on, or null on the
+ * marketplace. Kept for callers that only need "storefront or not".
+ */
+export async function getCartStoreSellerId(): Promise<string | null> {
+  return (await getCartScope())?.sellerId ?? null;
+}
+
+/**
+ * WHERE clause for a user's active cart in the given storefront scope. Each
+ * STORE has its own cart (a seller's two stores do not share one); the
+ * marketplace cart has no store.
+ */
+export function activeCartWhere(userId: string, scope: CartScope | null) {
   return and(
     eq(carts.userId, userId),
     eq(carts.status, "active"),
-    storeSellerId ? eq(carts.storeSellerId, storeSellerId) : isNull(carts.storeSellerId),
+    scope ? eq(carts.storeId, scope.storeId) : isNull(carts.storeSellerId),
   );
 }
 
@@ -190,8 +253,61 @@ export type StorefrontCategory = {
   coverImage: string | null;
 };
 
-/** One seller's root categories, each with one of their own product photos. */
-export function getStorefrontCategories(sellerId: string) {
+/**
+ * The store id to narrow product lists by: set only when the store shows a
+ * selected catalog (D24, `store_products`), else undefined (all the seller's
+ * active products, today's behaviour).
+ */
+export function catalogStoreId(store: Pick<Storefront, "storeId" | "catalogMode">): string | undefined {
+  return store.catalogMode === "selected" ? store.storeId : undefined;
+}
+
+/** Whether the store shows this product of its seller: always in "all" mode, else only its picks. */
+export function storeShowsProduct(
+  store: Pick<Storefront, "id" | "storeId" | "catalogMode">,
+  productId: string,
+): Promise<boolean> {
+  if (store.catalogMode !== "selected") return Promise.resolve(true);
+  return unstable_cache(
+    async () => {
+      const [row] = await db
+        .select({ productId: storeProducts.productId })
+        .from(storeProducts)
+        .where(and(eq(storeProducts.storeId, store.storeId), eq(storeProducts.productId, productId)))
+        .limit(1);
+      return Boolean(row);
+    },
+    [`storefront-catalog-has-${store.storeId}-${productId}`],
+    { tags: [storeTags.catalog(store.id, store.storeId)], revalidate: 3600 },
+  )();
+}
+
+/**
+ * Whether the store shows at least one product (its catalog rules applied).
+ * A store without one is kept out of search: noindex and an empty sitemap
+ * (PLAN.md §10.3, P5-04). Cached with the store's catalog tags.
+ */
+export function storeHasProducts(store: Pick<Storefront, "id" | "storeId">): Promise<boolean> {
+  return unstable_cache(
+    () => storeHasVisibleProducts(store.id, store.storeId),
+    [`storefront-has-products-${store.id}-${store.storeId}`],
+    { tags: [productTags.seller(store.id), storeTags.catalog(store.id, store.storeId)], revalidate: 3600 },
+  )();
+}
+
+/** Whether search engines may index this store: indexing on and something to sell. */
+export async function isStorefrontIndexable(store: Pick<Storefront, "id" | "storeId" | "seo">): Promise<boolean> {
+  return store.seo.indexing && (await storeHasProducts(store));
+}
+
+/**
+ * One seller's root categories, each with one of their own product photos.
+ * With `storeId` (a store in selected mode) only that store's picks count.
+ */
+export function getStorefrontCategories(sellerId: string, storeId?: string) {
+  const selected = storeId
+    ? sql`AND EXISTS (SELECT 1 FROM store_products sp WHERE sp.store_id = ${storeId} AND sp.product_id = p.id)`
+    : sql``;
   return unstable_cache(
     async () => {
       try {
@@ -212,7 +328,7 @@ export function getStorefrontCategories(sellerId: string) {
           FROM products p
           JOIN ancestry a ON a.id = p.category_id AND a.parent_id IS NULL
           JOIN categories r ON r.id = a.root_id
-          WHERE p.seller_id = ${sellerId} AND p.status = 'active'
+          WHERE p.seller_id = ${sellerId} AND p.status = 'active' ${selected}
           GROUP BY 1
           ORDER BY "productCount" DESC, name
         `);
@@ -232,9 +348,9 @@ export function getStorefrontCategories(sellerId: string) {
         return [] as StorefrontCategory[];
       }
     },
-    [`storefront-categories-${sellerId}`],
+    storeId ? [`storefront-categories-${sellerId}-${storeId}`] : [`storefront-categories-${sellerId}`],
     {
-      tags: [productTags.seller(sellerId), categoryTags.all()],
+      tags: [productTags.seller(sellerId), categoryTags.all(), ...(storeId ? [storeTags.catalog(sellerId, storeId)] : [])],
       revalidate: 3600,
     },
   )();

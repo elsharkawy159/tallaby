@@ -4,13 +4,13 @@ import { Banknote, ShoppingBag, Star, Wallet } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { formatNumber } from "@/lib/i18n/format";
 import { getHomeSnapshot, getSalesOverview } from "./home.queries";
-import type { HomeRange } from "./home.shared";
+import type { HomeChannel, HomeRange } from "./home.shared";
 import { DeltaBadge, HomeCard, IconTile, StarRating, percentChange } from "./home-ui";
 
-export async function HomeKpisData({ range }: { range: HomeRange }) {
+export async function HomeKpisData({ range, channel = "all" }: { range: HomeRange; channel?: HomeChannel }) {
   const [snapshot, sales, t, locale] = await Promise.all([
     getHomeSnapshot(),
-    getSalesOverview(range),
+    getSalesOverview(range, channel),
     getTranslations("home.kpis"),
     getLocale(),
   ]);

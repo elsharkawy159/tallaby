@@ -1,13 +1,31 @@
 import { describe, expect, it } from "vitest";
 import {
   invalidateAllCategories,
+  invalidateFulfillmentPlans,
+  invalidateMarketingBlog,
+  invalidateSellerCoupons,
+  invalidateStoreIntegrationsWithSummary,
+  invalidateTemplateCatalog,
   invalidatePlatformCoupons,
   invalidateProduct,
   invalidateProductInventory,
+  invalidateStoreCatalog,
+  invalidateStoreCms,
+  invalidateStoreIntegrations,
+  invalidateStoreSite,
   mergeInvalidations,
   type ProductCacheSnapshot,
 } from "./invalidate";
-import { categoryTags, couponTags, productTags } from "./tags";
+import {
+  adminTags,
+  categoryTags,
+  couponTags,
+  fulfillmentTags,
+  marketingBlogTags,
+  productTags,
+  storeTags,
+  templateTags,
+} from "./tags";
 
 function snapshot(overrides: Partial<ProductCacheSnapshot> = {}): ProductCacheSnapshot {
   return {
@@ -298,5 +316,71 @@ describe("invalidateAllCategories", () => {
 describe("invalidatePlatformCoupons", () => {
   it("emits the storefront's available-coupons tag", () => {
     expect(invalidatePlatformCoupons().tags).toEqual([couponTags.available()]);
+  });
+});
+
+describe("invalidateStoreIntegrations", () => {
+  it("emits only that store's tag, scoped by seller", () => {
+    const result = invalidateStoreIntegrations("seller-a", "store-a1");
+    expect(result.tags).toEqual(["store:integrations:seller-a:store-a1"]);
+    expect(result.tags).toEqual([storeTags.integrations("seller-a", "store-a1")]);
+    expect(result.tags).not.toContain(storeTags.integrations("seller-a", "store-a2"));
+    expect(result.paths).toEqual([]);
+  });
+});
+
+describe("invalidateStoreSite", () => {
+  it("emits that store's site tag and its storefront profile, nothing for sibling stores", () => {
+    expect(invalidateStoreSite("seller-a", "store-a1", "sara").tags).toEqual([
+      "store:site:seller-a:store-a1",
+      "seller:subdomain:sara",
+    ]);
+    expect(invalidateStoreSite("seller-a", "store-a1", "sara").tags).not.toContain(storeTags.site("seller-a", "store-a2"));
+  });
+});
+
+describe("invalidateStoreCms", () => {
+  it("emits only that store's content tag, with the seller id, never a sibling store's", () => {
+    const result = invalidateStoreCms("seller-a", "store-a1");
+    expect(result.tags).toEqual(["store:cms:seller-a:store-a1"]);
+    expect(result.tags).not.toContain(storeTags.cms("seller-a", "store-a2"));
+    expect(result.tags).not.toContain(storeTags.cms("seller-b", "store-a1"));
+    expect(result.paths).toEqual([]);
+  });
+});
+
+describe("invalidateStoreCatalog", () => {
+  it("emits that store's catalog tag and storefront profile, nothing for sibling stores", () => {
+    const result = invalidateStoreCatalog("seller-a", "store-a1", "sara");
+    expect(result.tags).toEqual(["store:catalog:seller-a:store-a1", "seller:subdomain:sara"]);
+    expect(result.tags).not.toContain(storeTags.catalog("seller-a", "store-a2"));
+    expect(result.paths).toEqual([]);
+  });
+});
+
+describe("admin invalidations (docs/admin-saas.md §4.3)", () => {
+  it("seller coupons: that seller's tag and the available list only", () => {
+    expect(invalidateSellerCoupons("seller-a").tags).toEqual([
+      couponTags.seller("seller-a"),
+      couponTags.available(),
+    ]);
+  });
+
+  it("template catalog and fulfillment plans carry no seller data", () => {
+    expect(invalidateTemplateCatalog().tags).toEqual([templateTags.catalog()]);
+    expect(invalidateFulfillmentPlans().tags).toEqual([fulfillmentTags.plans()]);
+  });
+
+  it("the tallaby.com blog is one platform tag", () => {
+    expect(invalidateMarketingBlog().tags).toEqual([marketingBlogTags.posts()]);
+  });
+
+  it("an admin integration change refreshes that store's scripts and the admin summary", () => {
+    const result = invalidateStoreIntegrationsWithSummary("seller-a", "store-a1");
+    expect(result.tags).toEqual([
+      storeTags.integrations("seller-a", "store-a1"),
+      adminTags.integrationSummary(),
+    ]);
+    expect(result.tags).not.toContain(storeTags.integrations("seller-a", "store-a2"));
   });
 });

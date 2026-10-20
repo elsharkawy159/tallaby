@@ -9,10 +9,27 @@ export interface SidebarCounts {
   pendingProducts: number;
   /** Sellers awaiting approval. */
   pendingSellers: number;
+  /** Manual store-wallet top-ups (Vodafone Cash / InstaPay) waiting for review. */
+  pendingStoreTopUps: number;
+  /** Sellers with at least one fulfillment service requested, under review or awaiting agreement. */
+  fulfillmentOpenSellers: number;
+  /** Ad campaign requests in `pending`. */
+  pendingAdRequests: number;
+  /** Store integrations in `error`. */
+  integrationErrors: number;
+  /** Custom domains that are not `active`. */
+  failingDomains: number;
+}
+
+/** The signed-in admin, shown in the sidebar footer. */
+export interface SidebarUser {
+  name: string;
+  email: string;
 }
 
 export interface SidebarProps {
   counts: SidebarCounts;
+  user: SidebarUser;
 }
 
 export const SIDEBAR_COUNT_BADGE_CLASS =
@@ -24,4 +41,9 @@ export const EMPTY_SIDEBAR_COUNTS: SidebarCounts = {
   pendingOrders: 0,
   pendingProducts: 0,
   pendingSellers: 0,
+  pendingStoreTopUps: 0,
+  fulfillmentOpenSellers: 0,
+  pendingAdRequests: 0,
+  integrationErrors: 0,
+  failingDomains: 0,
 };

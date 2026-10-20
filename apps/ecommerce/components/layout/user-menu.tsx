@@ -24,7 +24,7 @@ import {
 import { Button } from "@workspace/ui/components/button";
 import { Separator } from "@workspace/ui/components/separator";
 
-import { getWalletSummaryCardData } from "@/app/[locale]/(main)/profile/wallet/_components/wallet.server";
+import { getWalletSummaryCardData } from "@/app/[locale]/(shop)/(main)/profile/wallet/_components/wallet.server";
 import { AddressManagerDialog } from "@/components/shared/address-dialog";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import type { AddressData } from "@/components/address/address.schema";
@@ -205,7 +205,6 @@ export function UserMenu({
 
             <AddressManagerDialog
               onSuccess={(address: AddressData) => {
-                console.log("Address saved:", address);
               }}
               trigger={
                 <div className="w-full justify-start h-9 px-3 gap-2.5 font-medium flex items-center hover:bg-gray-100 rounded-md cursor-pointer">

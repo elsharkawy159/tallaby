@@ -8,7 +8,7 @@ import {
   getSellerCtaOpensInNewTab,
 } from "@/lib/seller/seller-cta.lib";
 
-/** Guests go through sign-in to onboarding; existing sellers go to their dashboard. */
+/** Guests and customers go to the dashboard signup; existing sellers go to their dashboard. */
 export function StartSellingLink(props: Omit<ComponentProps<typeof Link>, "href">) {
   const { user } = useAuthUser();
   const opensInNewTab = getSellerCtaOpensInNewTab(user);

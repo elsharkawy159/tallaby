@@ -1,5 +1,7 @@
 # Tallaby — Digital Products Milestone
 
+> **Superseded (2026-10-17).** Historical milestone document. Production payments are Paymob/Kashier, not Stripe Checkout. The seller onboarding wizard described here is being replaced by minimal signup. Current architecture: [`/PROJECT.md`](../PROJECT.md). Current roadmap: [`/PLAN.md`](../PLAN.md).
+
 ## What This Is
 
 Tallaby is a multi-vendor digital marketplace platform. This milestone adds a complete Digital Products system to the existing physical-product Turborepo monorepo — covering digital file delivery, Stripe payments with Connect marketplace splits, a vendor onboarding wizard, and a seller wallet/ledger — all without disrupting the existing physical product flows.

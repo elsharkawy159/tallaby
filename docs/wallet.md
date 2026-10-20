@@ -194,6 +194,11 @@ and the amount validation bounds.
 
 ## 12. Deferred
 
+> Note (2026-10-17): wallet checkout is now wired. `packages/lib/src/orders/place-order.ts`
+> posts `order_payment` debits for `wallet` and wallet-plus-remainder payments, so the first
+> item below is out of date. The planned seller platform fee (`/PLAN.md` §13) reuses the
+> **seller** ledger (`seller_wallet` / `wallet_transactions`). It does not touch this user wallet.
+
 - Wallet as a checkout payment method (`order_payment` type exists; no wiring).
 - Marketing commission accrual (`commission` type exists; nothing writes it).
 - Automated external payout execution.

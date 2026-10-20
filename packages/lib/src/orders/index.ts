@@ -67,3 +67,24 @@ export {
   type CouponScopeLine,
   type SellerCouponDiscountType,
 } from './coupon-scope.lib'
+
+export {
+  FEE_PLANS,
+  FEE_TRIAL_DAYS,
+  STANDARD_FEE_MIN_PIASTRES,
+  STANDARD_FEE_PLAN,
+  STANDARD_FEE_RATE_BPS,
+  allocateFeeAcrossLines,
+  computePlatformFeePiastres,
+  computeOrderLineFees,
+  computeSellerPlatformFee,
+  eligibleSubtotalForSeller,
+  isTrialActive,
+  resolveFeePlan,
+  toPiastres,
+  type FeePlanId,
+  type OrderLineFee,
+  type PlatformFeeSnapshot,
+  type SellerFeeProfile,
+  type SellerPlatformFee,
+} from './platform-fee.lib'

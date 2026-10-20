@@ -49,7 +49,9 @@ export async function updateSession(request: NextRequest) {
   const url = request.nextUrl;
   const path = url.pathname;
 
-  if (!user && !path.startsWith("/login")) {
+  // /signup works signed out (new account) and signed in (customer becoming a seller).
+  const isPublic = path.startsWith("/login") || path === "/signup" || path.startsWith("/signup/");
+  if (!user && !isPublic) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 

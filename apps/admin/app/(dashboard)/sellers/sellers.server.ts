@@ -33,6 +33,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getCurrentAdminUser } from "@/lib/auth/admin-auth";
 import { applyInvalidation, invalidateSeller } from "@workspace/cache";
+import { applySellerOverride } from "@workspace/lib/admin/server";
 import {
   sellerStatusUpdateSchema,
   sellerFiltersSchema,
@@ -66,6 +67,8 @@ export interface SellersQuery {
   commission?: string[];
   /** "free" | "paid" */
   delivery?: string[];
+  /** "negative" | "non_negative" store-wallet balance (PLAN.md P6-08) */
+  wallet?: string[];
   joinedFrom?: string;
   joinedTo?: string;
   sort?: { id: SellersSortId; desc: boolean } | null;
@@ -108,6 +111,16 @@ export async function getSellers(query: SellersQuery = {}) {
     booleanFilter(query.verification, sellers.isVerified, "verified");
     booleanFilter(query.commission, sellers.isCommissionExempt, "exempt");
     booleanFilter(query.delivery, sellers.freeDelivery, "free");
+
+    // Store wallet (D21): admins look at negative wallets and decide.
+    const wallet = new Set(query.wallet ?? []);
+    if (wallet.size === 1) {
+      conditions.push(
+        wallet.has("negative")
+          ? sql`coalesce(${sellers.walletBalance}, 0) < 0`
+          : sql`coalesce(${sellers.walletBalance}, 0) >= 0`
+      );
+    }
 
     if (query.joinedFrom) conditions.push(gte(sellers.joinDate, query.joinedFrom));
     if (query.joinedTo) conditions.push(lt(sellers.joinDate, query.joinedTo));
@@ -185,6 +198,12 @@ export async function getSellers(query: SellersQuery = {}) {
         sellerMetrics: sellers.sellerMetrics,
         createdAt: sellers.createdAt,
         updatedAt: sellers.updatedAt,
+        // SaaS account facts (docs/admin-saas.md §3.10).
+        plan: sellers.plan,
+        feeTrialEligible: sellers.feeTrialEligible,
+        feeTrialEndsAt: sellers.feeTrialEndsAt,
+        storeCount: sql<number>`(SELECT count(*)::int FROM stores st WHERE st.seller_id = ${sellers.id} AND st.deleted_at IS NULL)`,
+        lastOrderAt: sql<string | null>`(SELECT max(oi.created_at)::text FROM order_items oi WHERE oi.seller_id = ${sellers.id})`,
       })
       .from(sellers)
       .where(whereClause)
@@ -223,6 +242,7 @@ export async function getSellers(query: SellersQuery = {}) {
       joinDate: seller.joinDate ?? new Date().toISOString(),
       createdAt: seller.createdAt ?? new Date().toISOString(),
       updatedAt: seller.updatedAt ?? new Date().toISOString(),
+      storeCount: Number(seller.storeCount ?? 0),
     }));
 
     return {
@@ -352,7 +372,9 @@ export async function updateSeller(
   try {
     await getCurrentAdminUser();
 
-    const validatedData = sellerUpdateSchema.parse(data);
+    // The fee exemption is an audited override (updateSellerCommissionExempt,
+    // P9-02); this generic update cannot change it.
+    const validatedData = sellerUpdateSchema.omit({ isCommissionExempt: true }).parse(data);
 
     await db
       .update(sellers)
@@ -400,19 +422,21 @@ export async function updateSellerCommissionExempt(
   isCommissionExempt: boolean
 ) {
   try {
-    await getCurrentAdminUser();
+    const admin = await getCurrentAdminUser();
 
-    const validatedData = sellerUpdateSchema.parse({ isCommissionExempt });
-
-    await db
-      .update(sellers)
-      .set({
-        isCommissionExempt: validatedData.isCommissionExempt,
-        updatedAt: new Date().toISOString(),
-      })
-      .where(eq(sellers.id, sellerId));
+    // Audited like every other fee override (P9-02); a repeat is a no-op.
+    const result = await applySellerOverride(admin.id, {
+      action: "set_commission_exempt",
+      sellerId,
+      exempt: Boolean(isCommissionExempt),
+      reason: "Changed with the sellers list toggle",
+    });
+    if (!result.success && result.error !== "no_change") {
+      return { success: false, error: "Failed to update commission exemption" };
+    }
 
     revalidatePath("/sellers");
+    revalidatePath(`/sellers/${sellerId}`);
     await applyInvalidation(invalidateSeller(sellerId), {
       from: "admin",
       mode: "action",

@@ -3,7 +3,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { Button } from "@workspace/ui/components/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@workspace/ui/components/tabs";
 import { Link } from "@/i18n/navigation";
-import ProductCard from "@/app/[locale]/(main)/products/[slug]/_components/ProductCard";
+import ProductCard from "@/components/product-page/ProductCard";
 import { loadTopCategories } from "@/lib/top-categories";
 import { loadCards } from "./home-sections.lib";
 import { SectionHeader } from "./section-header";

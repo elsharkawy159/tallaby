@@ -27,6 +27,8 @@ export type VendorOrderRow = {
   variant?: string | null;
   quantity: number;
   total: string;
+  /** null = Tallaby marketplace order; otherwise the store it was placed on. */
+  storeId: string | null;
   status:
     | "pending"
     | "assigned"
@@ -44,13 +46,34 @@ export type VendorOrderRow = {
     | string;
 };
 
+type ChannelFilter = "all" | "marketplace" | string;
+
 export function VendorOrdersTable({
   rows,
   initialOrderId = null,
+  stores = [],
 }: {
   rows: VendorOrderRow[];
   initialOrderId?: string | null;
+  /** The seller's stores, for the sales-channel filter (P3-06). */
+  stores?: { id: string; name: string }[];
 }) {
+  const tChannel = useTranslations("orders.channel");
+  const [channel, setChannel] = useState<ChannelFilter>("all");
+  const visibleRows = useMemo(
+    () =>
+      channel === "all"
+        ? rows
+        : channel === "marketplace"
+          ? rows.filter((r) => r.storeId === null)
+          : rows.filter((r) => r.storeId === channel),
+    [rows, channel]
+  );
+  const channels: { value: ChannelFilter; label: string }[] = [
+    { value: "all", label: tChannel("all") },
+    { value: "marketplace", label: tChannel("marketplace") },
+    ...stores.map((s) => ({ value: s.id, label: s.name })),
+  ];
   const t = useTranslations("orders.table");
   const tStatus = useTranslations("status");
   const locale = useLocale();
@@ -157,8 +180,26 @@ export function VendorOrdersTable({
 
   return (
     <>
+      <div role="radiogroup" aria-label={tChannel("label")} className="mb-4 flex flex-wrap gap-1.5">
+        {channels.map((c) => (
+          <button
+            key={c.value}
+            type="button"
+            role="radio"
+            aria-checked={channel === c.value}
+            onClick={() => setChannel(c.value)}
+            className={
+              channel === c.value
+                ? "rounded-full border border-primary bg-primary-soft px-3 py-1 text-xs font-medium text-primary-ink"
+                : "rounded-full border px-3 py-1 text-xs text-muted-foreground hover:text-foreground"
+            }
+          >
+            {c.label}
+          </button>
+        ))}
+      </div>
       <TableSection<VendorOrderRow>
-        rows={rows}
+        rows={visibleRows}
         columns={columns}
         searchColumnId="order"
       />

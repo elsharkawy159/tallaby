@@ -10,6 +10,7 @@ import {
   InputAddon,
   InputGroup,
 } from "@/components/form/form-ui";
+import { CURRENCY_CODE, CurrencyAddon } from "@/components/form/currency-input";
 import { getErrorAtPath } from "../add-product.lib";
 import type { AddProductFormData } from "../add-product.schema";
 
@@ -126,7 +127,7 @@ function DecimalText({
   );
 }
 
-/** Price input with the currency addon. */
+/** Price input with the static EGP addon. */
 export function MoneyField({
   id,
   name,
@@ -142,9 +143,9 @@ export function MoneyField({
 }) {
   const t = useTranslations("productForm.sections.pricing");
   return (
-    <InputGroup invalid={invalid}>
+    <InputGroup dir="ltr" invalid={invalid}>
+      <CurrencyAddon />
       <NumberInput id={id} name={name} placeholder={placeholder} roundOnBlur disabled={disabled} />
-      <InputAddon>{t("currency")}</InputAddon>
     </InputGroup>
   );
 }
@@ -175,7 +176,7 @@ export function DiscountField({
             onChange={(e) => field.onChange(e.target.value)}
           >
             <option value="percent">%</option>
-            <option value="amount">{t("currency")}</option>
+            <option value="amount">{CURRENCY_CODE}</option>
           </select>
         )}
       />

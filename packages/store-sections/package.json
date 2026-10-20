@@ -1,0 +1,67 @@
+{
+  "name": "@workspace/store-sections",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Versioned store site schema (SiteConfig), migrations, validation and sanitizing shared by the dashboard editor and the ecommerce storefront renderer",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./config": {
+      "types": "./src/config/index.ts",
+      "default": "./src/config/index.ts"
+    },
+    "./render": {
+      "types": "./src/render/index.ts",
+      "default": "./src/render/index.ts"
+    },
+    "./forms": {
+      "types": "./src/sections/forms.tsx",
+      "default": "./src/sections/forms.tsx"
+    },
+    "./templates": {
+      "types": "./src/templates/index.ts",
+      "default": "./src/templates/index.ts"
+    },
+    "./social": {
+      "types": "./src/social/platforms.ts",
+      "default": "./src/social/platforms.ts"
+    },
+    "./fonts": {
+      "types": "./src/core/fonts.ts",
+      "default": "./src/core/fonts.ts"
+    },
+    "./social-icon": {
+      "types": "./src/social/icon.tsx",
+      "default": "./src/social/icon.tsx"
+    }
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "template:sql": "tsx scripts/template-sql.ts"
+  },
+  "dependencies": {
+    "sanitize-html": "^2.17.0",
+    "zod": "^4.2.1",
+    "lucide-react": "^0.562.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "@types/sanitize-html": "^2.16.0",
+    "@workspace/typescript-config": "workspace:*",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4",
+    "@types/react": "19.2.18",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "@types/react-dom": "19.2.5"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  }
+}

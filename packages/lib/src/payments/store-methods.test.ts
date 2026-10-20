@@ -1,0 +1,134 @@
+import { describe, expect, it } from "vitest";
+import {
+  STORE_PAYMENT_METHODS,
+  defaultStorePayments,
+  ibanChecksumValid,
+  maskPaymentDetails,
+  operatorHint,
+  parseStorePayments,
+  validateMethodChange,
+} from "./store-methods";
+
+describe("catalog", () => {
+  it("has COD live and on by default, wallets and InstaPay live, the rest soon", () => {
+    const byKey = Object.fromEntries(STORE_PAYMENT_METHODS.map((m) => [m.key, m]));
+    expect(byKey.cod).toMatchObject({ status: "live", collector: "delivery" });
+    for (const key of ["vodafone_cash", "e_cash", "we_pay", "orange_cash", "instapay"]) {
+      expect(byKey[key], key).toMatchObject({ status: "live", collector: "seller" });
+    }
+    for (const key of ["card", "fawry", "installments", "apple_google_pay", "bank_transfer", "tallaby_wallet"]) {
+      expect(byKey[key]?.status, key).toBe("soon");
+    }
+    expect(defaultStorePayments()).toEqual({ cod: { enabled: true, fee: 0 } });
+  });
+});
+
+describe("IBAN checksum", () => {
+  it("accepts a valid Egyptian IBAN and rejects a wrong check digit", () => {
+    expect(ibanChecksumValid("EG380019000500000000263180002")).toBe(true);
+    expect(ibanChecksumValid("EG390019000500000000263180002")).toBe(false);
+  });
+});
+
+describe("operatorHint", () => {
+  it("suggests the usual operator by prefix (hint only)", () => {
+    expect(operatorHint("01012345678")).toBe("vodafone_cash");
+    expect(operatorHint("01112345678")).toBe("e_cash");
+    expect(operatorHint("01212345678")).toBe("orange_cash");
+    expect(operatorHint("01512345678")).toBe("we_pay");
+    expect(operatorHint("123")).toBeNull();
+  });
+});
+
+describe("validateMethodChange", () => {
+  const base = defaultStorePayments();
+
+  it("enables a wallet only with a valid number and holder name", () => {
+    const ok = validateMethodChange(base, "vodafone_cash", {
+      enabled: true,
+      details: { holderName: "Omar Ali", phone: "01012345678" },
+    });
+    expect(ok.success).toBe(true);
+    const bad = validateMethodChange(base, "vodafone_cash", { enabled: true, details: { holderName: "Omar", phone: "123" } });
+    expect(bad).toMatchObject({ success: false, error: "invalid_details" });
+    const missing = validateMethodChange(base, "vodafone_cash", { enabled: true });
+    expect(missing).toMatchObject({ success: false, error: "invalid_details" });
+  });
+
+  it("sets and clears the COD order limit", () => {
+    const set = validateMethodChange(base, "cod", { enabled: true, maxOrder: 5000 });
+    expect(set).toMatchObject({ success: true, data: { cod: { maxOrder: 5000 } } });
+    if (!set.success) return;
+    const cleared = validateMethodChange(set.data, "cod", { enabled: true, maxOrder: null });
+    expect(cleared.success && cleared.data.cod?.maxOrder).toBeUndefined();
+    expect(validateMethodChange(base, "cod", { enabled: true, maxOrder: -1 }).success).toBe(false);
+  });
+
+  it("requires at least one InstaPay identifier and validates each", () => {
+    expect(validateMethodChange(base, "instapay", { enabled: true, details: { holderName: "Omar" } }).success).toBe(false);
+    expect(
+      validateMethodChange(base, "instapay", { enabled: true, details: { holderName: "Omar", ipa: "omar@instapay" } }).success,
+    ).toBe(true);
+    expect(
+      validateMethodChange(base, "instapay", { enabled: true, details: { holderName: "Omar", iban: "EG390019000500000000263180002" } })
+        .success,
+    ).toBe(false);
+    expect(
+      validateMethodChange(base, "instapay", {
+        enabled: true,
+        details: { holderName: "Omar", ipa: "omar@instapay", paymentLink: "https://evil.example/pay" },
+      }).success,
+    ).toBe(false);
+    expect(
+      validateMethodChange(base, "instapay", {
+        enabled: true,
+        details: { holderName: "Omar", ipa: "omar@instapay", paymentLink: "https://ipn.eg/S/omar/instapay/abc" },
+      }).success,
+    ).toBe(true);
+  });
+
+  it("never lets the last enabled method be switched off", () => {
+    expect(validateMethodChange(base, "cod", { enabled: false })).toMatchObject({ success: false, error: "last_method" });
+    const two = validateMethodChange(base, "vodafone_cash", {
+      enabled: true,
+      details: { holderName: "Omar", phone: "01012345678" },
+    });
+    if (!two.success) throw new Error("setup");
+    expect(validateMethodChange(two.data, "cod", { enabled: false }).success).toBe(true);
+  });
+
+  it("refuses soon and unknown methods", () => {
+    expect(validateMethodChange(base, "card", { enabled: true })).toMatchObject({ success: false, error: "not_available" });
+    expect(validateMethodChange(base, "bitcoin" as never, { enabled: true })).toMatchObject({ success: false, error: "not_available" });
+  });
+
+  it("validates the COD fee and keeps details when only toggling", () => {
+    expect(validateMethodChange(base, "cod", { enabled: true, fee: -5 }).success).toBe(false);
+    expect(validateMethodChange(base, "cod", { enabled: true, fee: 15 })).toMatchObject({
+      success: true,
+      data: { cod: { enabled: true, fee: 15 } },
+    });
+    const withWallet = validateMethodChange(base, "e_cash", { enabled: true, details: { holderName: "Omar", phone: "01112345678" } });
+    if (!withWallet.success) throw new Error("setup");
+    const off = validateMethodChange(withWallet.data, "e_cash", { enabled: false });
+    expect(off).toMatchObject({ success: true, data: { e_cash: { enabled: false, details: { phone: "01112345678" } } } });
+  });
+});
+
+describe("parseStorePayments", () => {
+  it("falls back to the defaults for missing or broken settings", () => {
+    expect(parseStorePayments(undefined)).toEqual(defaultStorePayments());
+    expect(parseStorePayments({ cod: "yes" })).toEqual(defaultStorePayments());
+  });
+});
+
+describe("maskPaymentDetails", () => {
+  it("masks numbers for the audit log", () => {
+    expect(maskPaymentDetails({ holderName: "Omar", phone: "01012345678" })).toEqual({ holderName: "Omar", phone: "•••5678" });
+    expect(maskPaymentDetails({ holderName: "Omar", iban: "EG380019000500000000263180002", ipa: "omar@instapay" })).toEqual({
+      holderName: "Omar",
+      iban: "•••0002",
+      ipa: "•••apay",
+    });
+  });
+});

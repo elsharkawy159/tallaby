@@ -1,6 +1,6 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@workspace/ui/components/tabs";
-import ProductCard from "@/app/[locale]/(main)/products/[slug]/_components/ProductCard";
+import ProductCard from "@/components/product-page/ProductCard";
 import { loadCards } from "./home-sections.lib";
 import { pillListClass, pillTriggerClass } from "./category-hub";
 import { SectionHeader } from "./section-header";

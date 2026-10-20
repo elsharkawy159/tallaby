@@ -1,4 +1,5 @@
 import { relations } from "drizzle-orm/relations";
+import { stores, storeProducts, storeDesignSystems, storePages, storeSiteRevisions, templates, templateVersions, templateInstalls, mediaFolders, mediaAssets, savedBlocks, storeForms, storeFormSubmissions, cmsCollections, cmsItems, cmsItemRevisions, storeIntegrations, storeShippingZones, storeSettingsAudit, sellerWalletTopUps, adminAuditLog, platformBlogPosts, sellerProductCategories, sellerProductBrands } from "./schema";
 import { users, deliveries, shipments, orders, payments, paymentMethods, carts, categories, sellers, coupons, notifications, contacts, userAddresses, products, productVariants, refunds, returns, orderItems, shipmentItems, productQuestions, shippingAddresses, couponUsage, cartItems, reviews, returnItems, reviewVotes, searchLogs, sellerDocuments, sellerPayoutItems, sellerPayouts, reviewComments, userDevices, wishlistItems, wishlists, brands, productAnswers, userRewards, productTranslations, digitalProducts, digitalOrders, sellerCategories, sellerWallet, walletTransactions, digitalFiles, licenseKeys, digitalBundleItems, digitalAccessLogs, shippingProviders, shipmentBatches, shipmentBatchItems, userWallets, userWalletTransactions, walletTopUps, walletPayoutRequests, affiliates, affiliateCommissions } from "./schema";
 
 export const deliveriesRelations = relations(deliveries, ({one}) => ({
@@ -152,6 +153,10 @@ export const ordersRelations = relations(orders, ({one, many}) => ({
 		fields: [orders.userId],
 		references: [users.id]
 	}),
+	store: one(stores, {
+		fields: [orders.storeId],
+		references: [stores.id]
+	}),
 }));
 
 export const paymentMethodsRelations = relations(paymentMethods, ({one, many}) => ({
@@ -173,6 +178,10 @@ export const cartsRelations = relations(carts, ({one, many}) => ({
 	}),
 	cartItems: many(cartItems),
 	orders: many(orders),
+	store: one(stores, {
+		fields: [carts.storeId],
+		references: [stores.id]
+	}),
 }));
 
 export const categoriesRelations = relations(categories, ({one, many}) => ({
@@ -196,6 +205,7 @@ export const couponsRelations = relations(coupons, ({one, many}) => ({
 }));
 
 export const sellersRelations = relations(sellers, ({one, many}) => ({
+	stores: many(stores),
 	coupons: many(coupons),
 	user: one(users, {
 		fields: [sellers.id],
@@ -214,6 +224,7 @@ export const sellersRelations = relations(sellers, ({one, many}) => ({
 	sellerWallet: many(sellerWallet),
 	sellerCategories: many(sellerCategories),
 	walletTransactions: many(walletTransactions),
+	adminAuditLog: many(adminAuditLog),
 }));
 
 export const notificationsRelations = relations(notifications, ({one}) => ({
@@ -274,7 +285,39 @@ export const productsRelations = relations(products, ({one, many}) => ({
 		fields: [products.sellerId],
 		references: [sellers.id]
 	}),
+	sellerCategory: one(sellerProductCategories, {
+		fields: [products.sellerCategoryId],
+		references: [sellerProductCategories.id]
+	}),
+	sellerBrand: one(sellerProductBrands, {
+		fields: [products.sellerBrandId],
+		references: [sellerProductBrands.id]
+	}),
 	productTranslations: many(productTranslations),
+}));
+
+export const sellerProductCategoriesRelations = relations(sellerProductCategories, ({one, many}) => ({
+	seller: one(sellers, {
+		fields: [sellerProductCategories.sellerId],
+		references: [sellers.id]
+	}),
+	sourceCategory: one(categories, {
+		fields: [sellerProductCategories.sourceCategoryId],
+		references: [categories.id]
+	}),
+	products: many(products),
+}));
+
+export const sellerProductBrandsRelations = relations(sellerProductBrands, ({one, many}) => ({
+	seller: one(sellers, {
+		fields: [sellerProductBrands.sellerId],
+		references: [sellers.id]
+	}),
+	sourceBrand: one(brands, {
+		fields: [sellerProductBrands.sourceBrandId],
+		references: [brands.id]
+	}),
+	products: many(products),
 }));
 
 export const refundsRelations = relations(refunds, ({one}) => ({
@@ -673,6 +716,10 @@ export const walletTransactionsRelations = relations(walletTransactions, ({one})
 		fields: [walletTransactions.orderId],
 		references: [orders.id]
 	}),
+	store: one(stores, {
+		fields: [walletTransactions.storeId],
+		references: [stores.id]
+	}),
 }));
 
 /* Centralized user wallet (migration 0025). */
@@ -781,5 +828,254 @@ export const affiliateCommissionsRelations = relations(affiliateCommissions, ({o
 	walletTransaction: one(userWalletTransactions, {
 		fields: [affiliateCommissions.walletTransactionId],
 		references: [userWalletTransactions.id]
+	}),
+}));
+
+// Multi-store tenant + website builder (0050–0057).
+export const storesRelations = relations(stores, ({one, many}) => ({
+	seller: one(sellers, {
+		fields: [stores.sellerId],
+		references: [sellers.id]
+	}),
+	publishedRevision: one(storeSiteRevisions, {
+		fields: [stores.publishedRevisionId],
+		references: [storeSiteRevisions.id],
+		relationName: "stores_publishedRevisionId_storeSiteRevisions_id"
+	}),
+	designSystem: one(storeDesignSystems),
+	pages: many(storePages),
+	revisions: many(storeSiteRevisions, {
+		relationName: "storeSiteRevisions_storeId_stores_id"
+	}),
+	storeProducts: many(storeProducts),
+	templateInstalls: many(templateInstalls),
+	forms: many(storeForms),
+	cmsCollections: many(cmsCollections),
+	integrations: many(storeIntegrations),
+	shippingZones: many(storeShippingZones),
+	settingsAudit: many(storeSettingsAudit),
+	savedBlocks: many(savedBlocks),
+	adminAuditLog: many(adminAuditLog),
+}));
+
+export const storeProductsRelations = relations(storeProducts, ({one}) => ({
+	store: one(stores, {
+		fields: [storeProducts.storeId],
+		references: [stores.id]
+	}),
+	product: one(products, {
+		fields: [storeProducts.productId],
+		references: [products.id]
+	}),
+}));
+
+export const storeDesignSystemsRelations = relations(storeDesignSystems, ({one}) => ({
+	store: one(stores, {
+		fields: [storeDesignSystems.storeId],
+		references: [stores.id]
+	}),
+}));
+
+export const storePagesRelations = relations(storePages, ({one}) => ({
+	store: one(stores, {
+		fields: [storePages.storeId],
+		references: [stores.id]
+	}),
+}));
+
+export const storeSiteRevisionsRelations = relations(storeSiteRevisions, ({one}) => ({
+	store: one(stores, {
+		fields: [storeSiteRevisions.storeId],
+		references: [stores.id],
+		relationName: "storeSiteRevisions_storeId_stores_id"
+	}),
+	publishedByUser: one(users, {
+		fields: [storeSiteRevisions.publishedBy],
+		references: [users.id]
+	}),
+}));
+
+export const templatesRelations = relations(templates, ({one, many}) => ({
+	currentVersion: one(templateVersions, {
+		fields: [templates.currentVersionId],
+		references: [templateVersions.id],
+		relationName: "templates_currentVersionId_templateVersions_id"
+	}),
+	versions: many(templateVersions, {
+		relationName: "templateVersions_templateId_templates_id"
+	}),
+	installs: many(templateInstalls),
+}));
+
+export const templateVersionsRelations = relations(templateVersions, ({one}) => ({
+	template: one(templates, {
+		fields: [templateVersions.templateId],
+		references: [templates.id],
+		relationName: "templateVersions_templateId_templates_id"
+	}),
+}));
+
+export const templateInstallsRelations = relations(templateInstalls, ({one}) => ({
+	template: one(templates, {
+		fields: [templateInstalls.templateId],
+		references: [templates.id]
+	}),
+	templateVersion: one(templateVersions, {
+		fields: [templateInstalls.templateVersionId],
+		references: [templateVersions.id]
+	}),
+	store: one(stores, {
+		fields: [templateInstalls.storeId],
+		references: [stores.id]
+	}),
+}));
+
+export const mediaFoldersRelations = relations(mediaFolders, ({one, many}) => ({
+	seller: one(sellers, {
+		fields: [mediaFolders.sellerId],
+		references: [sellers.id]
+	}),
+	store: one(stores, {
+		fields: [mediaFolders.storeId],
+		references: [stores.id]
+	}),
+	parent: one(mediaFolders, {
+		fields: [mediaFolders.parentId],
+		references: [mediaFolders.id],
+		relationName: "mediaFolders_parentId_mediaFolders_id"
+	}),
+	children: many(mediaFolders, {
+		relationName: "mediaFolders_parentId_mediaFolders_id"
+	}),
+	assets: many(mediaAssets),
+}));
+
+export const mediaAssetsRelations = relations(mediaAssets, ({one}) => ({
+	seller: one(sellers, {
+		fields: [mediaAssets.sellerId],
+		references: [sellers.id]
+	}),
+	store: one(stores, {
+		fields: [mediaAssets.storeId],
+		references: [stores.id]
+	}),
+	folder: one(mediaFolders, {
+		fields: [mediaAssets.folderId],
+		references: [mediaFolders.id]
+	}),
+}));
+
+export const savedBlocksRelations = relations(savedBlocks, ({one}) => ({
+	store: one(stores, {
+		fields: [savedBlocks.storeId],
+		references: [stores.id]
+	}),
+}));
+
+export const storeFormsRelations = relations(storeForms, ({one, many}) => ({
+	store: one(stores, {
+		fields: [storeForms.storeId],
+		references: [stores.id]
+	}),
+	submissions: many(storeFormSubmissions),
+}));
+
+export const storeFormSubmissionsRelations = relations(storeFormSubmissions, ({one}) => ({
+	store: one(stores, {
+		fields: [storeFormSubmissions.storeId],
+		references: [stores.id]
+	}),
+	form: one(storeForms, {
+		fields: [storeFormSubmissions.formId],
+		references: [storeForms.id]
+	}),
+	user: one(users, {
+		fields: [storeFormSubmissions.userId],
+		references: [users.id]
+	}),
+}));
+
+export const cmsCollectionsRelations = relations(cmsCollections, ({one, many}) => ({
+	store: one(stores, {
+		fields: [cmsCollections.storeId],
+		references: [stores.id]
+	}),
+	items: many(cmsItems),
+}));
+
+export const cmsItemsRelations = relations(cmsItems, ({one, many}) => ({
+	collection: one(cmsCollections, {
+		fields: [cmsItems.collectionId],
+		references: [cmsCollections.id]
+	}),
+	store: one(stores, {
+		fields: [cmsItems.storeId],
+		references: [stores.id]
+	}),
+	revisions: many(cmsItemRevisions),
+}));
+
+export const cmsItemRevisionsRelations = relations(cmsItemRevisions, ({one}) => ({
+	item: one(cmsItems, {
+		fields: [cmsItemRevisions.itemId],
+		references: [cmsItems.id]
+	}),
+}));
+
+export const storeIntegrationsRelations = relations(storeIntegrations, ({one}) => ({
+	store: one(stores, {
+		fields: [storeIntegrations.storeId],
+		references: [stores.id]
+	}),
+	seller: one(sellers, {
+		fields: [storeIntegrations.sellerId],
+		references: [sellers.id]
+	}),
+}));
+
+export const storeShippingZonesRelations = relations(storeShippingZones, ({one}) => ({
+	store: one(stores, {
+		fields: [storeShippingZones.storeId],
+		references: [stores.id]
+	}),
+}));
+
+export const storeSettingsAuditRelations = relations(storeSettingsAudit, ({one}) => ({
+	store: one(stores, {
+		fields: [storeSettingsAudit.storeId],
+		references: [stores.id]
+	}),
+}));
+
+export const sellerWalletTopUpsRelations = relations(sellerWalletTopUps, ({one}) => ({
+	seller: one(sellers, {
+		fields: [sellerWalletTopUps.sellerId],
+		references: [sellers.id]
+	}),
+	transaction: one(walletTransactions, {
+		fields: [sellerWalletTopUps.transactionId],
+		references: [walletTransactions.id]
+	}),
+}));
+
+export const adminAuditLogRelations = relations(adminAuditLog, ({one}) => ({
+	actor: one(users, {
+		fields: [adminAuditLog.actorId],
+		references: [users.id]
+	}),
+	seller: one(sellers, {
+		fields: [adminAuditLog.sellerId],
+		references: [sellers.id]
+	}),
+	store: one(stores, {
+		fields: [adminAuditLog.storeId],
+		references: [stores.id]
+	}),
+}));
+
+export const platformBlogPostsRelations = relations(platformBlogPosts, ({one}) => ({
+	createdBy: one(users, {
+		fields: [platformBlogPosts.createdBy],
+		references: [users.id]
 	}),
 }));

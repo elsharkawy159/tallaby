@@ -1,10 +1,14 @@
 import { SidebarData } from "@/components/dashboard/sidebar.data";
+import { SupportWhatsAppButton } from "@/components/dashboard/support-chat-link.client";
 import { DashboardHeader } from "@/components/layout/dashboard-header.client";
 import { MainContentWrapper } from "@/components/layout/main-content-wrapper";
+import { NegativeWalletDialog } from "@/components/layout/negative-wallet-dialog.client";
 import { SellerAccessBlocked } from "@/components/layout/seller-access-blocked";
 import { getSellerAccess } from "@/lib/auth/seller-access";
+import { getStoreWalletBalance } from "./wallet/store-wallet.server";
 import { createClient } from "@/supabase/server";
 import { getTranslations } from "next-intl/server";
+import { redirect } from "next/navigation";
 
 export default async function DashboardLayout({
   children,
@@ -23,9 +27,17 @@ export default async function DashboardLayout({
 
   const t = await getTranslations();
 
+  // Signed in but not a seller yet (e.g. a customer account): finish signup.
+  if (user && !access.allowed && access.reason === "no_seller") {
+    redirect("/signup");
+  }
+
   if (!access.allowed) {
     return <SellerAccessBlocked access={access} />;
   }
+
+  // sellers.id = users.id; the header shows the store wallet balance.
+  const walletBalance = user ? await getStoreWalletBalance(user.id) : null;
 
   return (
     <div className="min-h-screen flex w-full overflow-x-clip bg-background">
@@ -33,7 +45,7 @@ export default async function DashboardLayout({
 
       {/* Main Content Area */}
       <MainContentWrapper>
-        <DashboardHeader />
+        <DashboardHeader walletBalance={walletBalance} />
         {access.status === "restricted" && (
           <div className="border-b border-amber-200 bg-amber-50 px-6 py-3 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-200">
             <strong>{t("sellerStatus.restricted.title")}.</strong>{" "}
@@ -42,6 +54,8 @@ export default async function DashboardLayout({
         )}
         <main className="min-w-0">{children}</main>
       </MainContentWrapper>
+      <SupportWhatsAppButton />
+      <NegativeWalletDialog balance={walletBalance} />
     </div>
   );
 }

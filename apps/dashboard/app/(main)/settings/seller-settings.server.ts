@@ -28,16 +28,11 @@ export async function handleUpdateSellerProfile(input: unknown) {
   const t = await getTranslations("settings.messages");
   try {
     const data = sellerProfileSchema.parse(input);
+    // Account fields only: store fields are edited (and mirrored) via Store settings.
     const res = await updateSellerProfile({
       businessName: data.businessName,
-      displayName: data.displayName,
-      description: data.description || undefined,
-      logoUrl: data.logoUrl || undefined,
-      bannerUrl: data.bannerUrl || undefined,
       supportEmail: data.supportEmail || undefined,
       supportPhone: data.supportPhone || undefined,
-      returnPolicy: data.returnPolicy || undefined,
-      shippingPolicy: data.shippingPolicy || undefined,
     });
     if (!res.success) {
       return {

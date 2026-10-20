@@ -1,6 +1,5 @@
 import { getTranslations } from "next-intl/server";
 import { logout } from "@/actions/auth";
-import { STOREFRONT_URL } from "@/lib/constants";
 import { getSellerStatusMessage } from "@/lib/utils/seller";
 import type { SellerAccess } from "@/lib/auth/seller-access";
 import { Button } from "@workspace/ui/components/button";
@@ -44,7 +43,7 @@ export async function SellerAccessBlocked({ access }: { access: BlockedAccess })
         <CardFooter className="flex flex-col gap-2 sm:flex-row">
           {noSeller && (
             <Button asChild className="w-full sm:w-auto">
-              <a href={`${STOREFRONT_URL}/onboarding`}>
+              <a href="/signup">
                 {t("sellerAccess.becomeSeller")}
               </a>
             </Button>

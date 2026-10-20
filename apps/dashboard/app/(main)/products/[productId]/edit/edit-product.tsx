@@ -22,6 +22,10 @@ import type { CategoryOption, BrandOption } from "../../add/add-product.schema";
 import type { SellerPricingSettings } from "@/lib/utils/product-pricing.lib";
 import { cn } from "@/lib/utils";
 import { useLocalizedResolver } from "@/lib/i18n/localized-resolver";
+import { setProductSellerTaxonomy } from "../../categories-brands/categories-brands.server";
+import { splitSellerTaxonomy } from "../../categories-brands/categories-brands.lib";
+import { SellerTaxonomyProvider } from "../../categories-brands/seller-taxonomy-fields.client";
+import type { SellerTaxonomyOption } from "../../categories-brands/categories-brands.dto";
 
 const STEPS = [
   // title is a "productForm.steps" key
@@ -41,6 +45,8 @@ interface EditProductProps {
   categories: CategoryOption[];
   brands: BrandOption[];
   sellerPricing: SellerPricingSettings;
+  /** The seller's own lists for "My category" / "My brand". */
+  sellerTaxonomy: { categories: SellerTaxonomyOption[]; brands: SellerTaxonomyOption[] };
 }
 
 export function EditProduct({
@@ -49,6 +55,7 @@ export function EditProduct({
   categories,
   brands,
   sellerPricing,
+  sellerTaxonomy,
 }: EditProductProps) {
   const [isPending, startTransition] = useTransition();
   const [currentStep, setCurrentStep] = useState(1);
@@ -56,6 +63,7 @@ export function EditProduct({
   const router = useRouter();
   const tToast = useTranslations("toast");
   const t = useTranslations("productForm");
+  const tTaxonomy = useTranslations("categoriesBrands.productForm");
   const resolver = useLocalizedResolver(zodResolver(addProductFormSchema) as any);
 
   const form = useForm<AddProductFormData>({
@@ -68,13 +76,16 @@ export function EditProduct({
   const handleSubmit = (data: AddProductFormData) => {
     startTransition(async () => {
       try {
+        const { rest, taxonomy } = splitSellerTaxonomy(data);
         const result = await updateProduct(productId, {
-          ...data,
+          ...rest,
           quantity: String(data.quantity),
           handlingTime: String(data.handlingTime),
         } as unknown as Parameters<typeof updateProduct>[1]);
 
         if (result.success) {
+          const linked = await setProductSellerTaxonomy(productId, taxonomy);
+          if (!linked.success) toast.warning(tTaxonomy("linkFailed"));
           toast.success(tToast("productUpdatedSuccessfully"));
           router.push("/products");
         } else {
@@ -229,29 +240,31 @@ export function EditProduct({
       </div>
 
       <div className="container py-6">
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit as any)}
-            className="space-y-6"
-            id="edit-product-form"
-          >
-            {currentStep === 1 && (
-              <BasicInformationStep
-                categories={categories}
-                brands={brands}
-                sellerPricing={sellerPricing}
-                activeLocale={activeLocale}
-              />
-            )}
-            {currentStep === 2 && (
-              <PriceStockStep
-                sellerPricing={sellerPricing}
-                activeLocale={activeLocale}
-              />
-            )}
-            {currentStep === 3 && <SeoStep activeLocale={activeLocale} />}
-          </form>
-        </Form>
+        <SellerTaxonomyProvider value={sellerTaxonomy}>
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(handleSubmit as any)}
+              className="space-y-6"
+              id="edit-product-form"
+            >
+              {currentStep === 1 && (
+                <BasicInformationStep
+                  categories={categories}
+                  brands={brands}
+                  sellerPricing={sellerPricing}
+                  activeLocale={activeLocale}
+                />
+              )}
+              {currentStep === 2 && (
+                <PriceStockStep
+                  sellerPricing={sellerPricing}
+                  activeLocale={activeLocale}
+                />
+              )}
+              {currentStep === 3 && <SeoStep activeLocale={activeLocale} />}
+            </form>
+          </Form>
+        </SellerTaxonomyProvider>
       </div>
 
       <div className="fixed bottom-0 inset-x-0 z-10 border-t border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">

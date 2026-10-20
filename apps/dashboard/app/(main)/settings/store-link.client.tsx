@@ -44,17 +44,23 @@ type Availability =
 const CHECK_DELAY_MS = 400
 
 /**
- * The seller's own storefront address ({subdomain}.tallaby.com): copy it to
- * share with customers, or change it. Changing is an explicit save, not an
- * autosave like the rest of the page, because it moves a public link.
- * Once the seller connects their own domain, that is the link to share.
+ * A store's address ({subdomain}.tallaby.com): copy it to share with
+ * customers, or change it. Changing is an explicit save, not an autosave like
+ * the rest of the page, because it moves a public link. Once the store has
+ * its own domain, that is the link to share. Used on Website › Domain & SEO
+ * for any store, and on /settings for the primary store (P4-14).
  */
 export function StoreLinkSection ({
+  storeId,
   initialSubdomain,
   customDomain,
+  readOnly = false,
 }: {
+  storeId: string
   initialSubdomain: string
   customDomain?: string | null
+  /** Archived / suspended store: the address can be shared, not changed. */
+  readOnly?: boolean
 }) {
   const t = useTranslations('settings.storeLink')
   const router = useRouter()
@@ -80,7 +86,7 @@ export function StoreLinkSection ({
     setAvailability({ state: 'checking' })
     let cancelled = false
     const timer = setTimeout(async () => {
-      const res = await checkStoreSubdomain(normalizedDraft)
+      const res = await checkStoreSubdomain(storeId, normalizedDraft)
       if (cancelled) return
       setAvailability(
         res.success
@@ -92,7 +98,7 @@ export function StoreLinkSection ({
       cancelled = true
       clearTimeout(timer)
     }
-  }, [editing, normalizedDraft, unchanged, t])
+  }, [editing, normalizedDraft, unchanged, t, storeId])
 
   const copy = async (message = t('copied')) => {
     try {
@@ -110,7 +116,7 @@ export function StoreLinkSection ({
 
   const save = () => {
     startSaving(async () => {
-      const res = await updateStoreSubdomain(normalizedDraft)
+      const res = await updateStoreSubdomain(storeId, normalizedDraft)
       if (!res.success) {
         setAvailability({ state: 'unavailable', reason: t(`errors.${res.error}`) })
         return
@@ -241,15 +247,17 @@ export function StoreLinkSection ({
               {t('open')}
             </a>
           </Button>
-          <Button
-            type='button'
-            variant='soft'
-            className={cn(BUTTON_CLASS, 'flex-1 sm:flex-none')}
-            onClick={() => setEditing(true)}
-          >
-            <Pencil />
-            {t('change')}
-          </Button>
+          {!readOnly && (
+            <Button
+              type='button'
+              variant='soft'
+              className={cn(BUTTON_CLASS, 'flex-1 sm:flex-none')}
+              onClick={() => setEditing(true)}
+            >
+              <Pencil />
+              {t('change')}
+            </Button>
+          )}
         </div>
       </div>
 

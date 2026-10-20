@@ -30,7 +30,7 @@ export function OAuth({ next }: { next?: string }) {
   return (
     <div className="w-full">
       <Button
-        className="flex items-center justify-center py-2.5 min-h-12 border rounded-lg hover:bg-muted/50 duration-150 active:bg-muted transition-colors w-full"
+        className="flex h-[50px] w-full items-center justify-center gap-2 rounded-full border-input bg-white text-[15px] font-semibold text-foreground transition-colors hover:bg-muted dark:bg-card"
         onClick={() => handleOAuthSignin("google")}
         disabled={isPending}
         type="button"
@@ -38,7 +38,7 @@ export function OAuth({ next }: { next?: string }) {
         aria-label={t("continueWithGoogle")}
       >
         <svg
-          className="size-6"
+          className="size-5"
           viewBox="0 0 48 48"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
