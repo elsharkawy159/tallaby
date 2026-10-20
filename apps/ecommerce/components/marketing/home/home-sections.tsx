@@ -1,16 +1,24 @@
 import {
   Check,
+  FileSpreadsheet,
+  FileText,
+  Gift,
   Headset,
+  Images,
+  Languages,
+  LayoutPanelTop,
   LayoutTemplate,
+  MonitorSmartphone,
   MousePointerClick,
+  Newspaper,
   Package,
   Palette,
   Rocket,
-  Send,
   ShoppingBag,
-  Smartphone,
+  Sparkles,
+  Star,
   Store,
-  SwatchBook,
+  TicketPercent,
   Timer,
   Users,
 } from "lucide-react";
@@ -27,7 +35,7 @@ import { TemplateGallery } from "@/components/marketing/templates/template-galle
 import { CONTACT } from "@/lib/marketing/site.lib";
 import { getTemplateGallery } from "@/lib/marketing/templates.server";
 import { BuilderStudio } from "./builder-studio.client";
-import { DashboardTour } from "./dashboard-tour.client";
+import { FeatureTour } from "./feature-tour.client";
 import { HeroStory } from "./hero-story.client";
 
 export async function HomeHero() {
@@ -126,10 +134,11 @@ export async function TemplatesShowcase() {
 export async function BuilderSection() {
   const t = await getTranslations("home.builder");
   const features = [
-    { icon: MousePointerClick, title: t("f1Title"), body: t("f1Body") },
-    { icon: SwatchBook, title: t("f2Title"), body: t("f2Body") },
-    { icon: Smartphone, title: t("f3Title"), body: t("f3Body") },
-    { icon: Send, title: t("f4Title"), body: t("f4Body") },
+    { icon: LayoutPanelTop, title: t("f1Title"), body: t("f1Body") },
+    { icon: MousePointerClick, title: t("f2Title"), body: t("f2Body") },
+    { icon: Languages, title: t("f3Title"), body: t("f3Body") },
+    { icon: MonitorSmartphone, title: t("f4Title"), body: t("f4Body") },
+    { icon: Sparkles, title: t("f5Title"), body: t("f5Body") },
   ];
 
   return (
@@ -161,6 +170,18 @@ export async function BuilderSection() {
   );
 }
 
+/** "Also in your dashboard": the areas the tour above doesn't act out. */
+const MORE = [
+  { key: "coupons", icon: TicketPercent },
+  { key: "reviews", icon: Star },
+  { key: "templates", icon: LayoutTemplate },
+  { key: "forms", icon: FileText },
+  { key: "blog", icon: Newspaper },
+  { key: "media", icon: Images },
+  { key: "reports", icon: FileSpreadsheet },
+  { key: "stores", icon: Store },
+] as const;
+
 export async function FeaturesSection() {
   const t = await getTranslations("home.features");
   return (
@@ -170,7 +191,21 @@ export async function FeaturesSection() {
           <SectionHeading id="features-title" kicker={t("kicker")} title={t("title")} description={t("desc")} />
         </Reveal>
         <Reveal>
-          <DashboardTour />
+          <FeatureTour />
+        </Reveal>
+        <Reveal className="mt-16">
+          <h3 className="mb-[18px] text-xl font-bold text-teal-900">{t("moreTitle")}</h3>
+          <ul className="m-0 grid list-none gap-3 p-0 sm:grid-cols-2 lg:grid-cols-4">
+            {MORE.map((m) => (
+              <li key={m.key} className="grid content-start gap-2 rounded-[18px] border border-neutral-200 bg-paper p-[18px]">
+                <span className="grid size-10 place-items-center rounded-xl bg-teal-50 text-teal-700">
+                  <m.icon className="size-[18px]" aria-hidden />
+                </span>
+                <b className="text-[15px] text-teal-900">{t(`more.${m.key}.title`)}</b>
+                <span className="text-[13.5px] text-slate-ink">{t(`more.${m.key}.body`)}</span>
+              </li>
+            ))}
+          </ul>
         </Reveal>
       </Container>
     </Section>
@@ -188,6 +223,7 @@ export async function PricingTeaser() {
     { icon: LayoutTemplate, label: t("i5") },
     { icon: Headset, label: t("i6") },
     { icon: Store, label: t("i7") },
+    { icon: Gift, label: t("i8") },
   ];
 
   return (

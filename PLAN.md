@@ -2254,6 +2254,19 @@ Performance comes from streaming, one SQL round-trip per list and per-tab loadin
 
 ---
 
+### Phase 9C — Admin website builder (owner request 2026-10-20)
+
+Design: `docs/superpowers/specs/2026-10-20-admin-website-builder-design.md`. Plan: `docs/superpowers/plans/2026-10-20-admin-website-builder.md`. Admins edit any store's website, the library sections and the templates with the same builder sellers use.
+
+- The seller editor moved out of `apps/dashboard` into `packages/store-editor`. It talks to its host only through an `EditorAdapter` (data, save, publish, media, links, capabilities). The dashboard, the admin store editor, the library-section editor and the template editor each supply an adapter.
+- Library sections (`library_sections`, `0086`) and templates (`0087` drafts and meta) are now mastered in the database. The code seeds are insert-only, so an admin edit is never overwritten by a deploy.
+- Every admin write to a store's site is audited and sets `site_edited_by_admin_at` (`0085`); the seller sees an "admin updated" banner. A chrome (header/footer) version check stops two editors overwriting each other.
+- A new store takes the database default template.
+
+Tasks **AB-01 … AB-15** map to plan Tasks 1–15: AB-01 package and adapter contract; AB-02 move pure logic; AB-03 move the UI behind the adapter; AB-04 chrome version check (`0085`); AB-05 external-change detection; AB-06 admin store-site guard and audit; AB-07 admin store editor; AB-08 photo slots and `instantiateTemplate`; AB-09 `library_sections` (`0086`); AB-10 section palette from the database; AB-11 admin library-section editor; AB-12 template drafts and meta (`0087`); AB-13 default template from the database; AB-14 template studio lib; AB-15 admin template editor.
+
+---
+
 ### Phase 10 — Domain repositioning and marketing content (gated by D8)
 
 **P10-01 · P2** `/sell` content rewrite per §16 (AR first, brand **طلبي**; no unsupported claims).
@@ -2497,6 +2510,23 @@ Tick each box when its acceptance is met, and add the date and commit.
 - [x] P9B-12 Action centre + SaaS KPIs — 2026-10-18
 - [x] P9B-13 Audit log page — 2026-10-18
 - [x] P9B-14 Security pass on the new admin surface — 2026-10-18 (grep checks; full P9-04 review still open)
+
+**Phase 9C** (admin website builder, [spec](docs/superpowers/specs/2026-10-20-admin-website-builder-design.md); commit ranges from base `245d4a9`)
+- [x] AB-01 `packages/store-editor` scaffold and `EditorAdapter` contract — 2026-10-20 (`245d4a9..2110473`)
+- [x] AB-02 Editor pure logic moved into the package — 2026-10-20 (`2110473..3b76247`)
+- [x] AB-03 Editor UI moved behind the adapter — 2026-10-20 (`3b76247..7a6568c`; browser E2E pending)
+- [x] AB-04 Chrome version check, `0085` — 2026-10-20 (`7a6568c..ce694cd`; applied staging and production)
+- [x] AB-05 External draft change detection — 2026-10-20 (`ce694cd..c17645c`)
+- [x] AB-06 Admin store-site guard and audit — 2026-10-20 (`c17645c..6c9ab5c`)
+- [x] AB-07 Admin edits and publishes a store's website — 2026-10-20 (`6c9ab5c..6ccce5e`; browser E2E pending)
+- [x] AB-08 Photo slots and `instantiateTemplate` — 2026-10-20 (`6ccce5e..4890ec0`)
+- [x] AB-09 `library_sections`, `0086` — 2026-10-20 (`4890ec0..2e813c3`; applied staging and production)
+- [x] AB-10 Section palette from `library_sections` — 2026-10-20 (`2e813c3..97b797c`)
+- [x] AB-11 Admin library-section management and editor — 2026-10-20 (`97b797c..8a37895`; browser E2E pending)
+- [x] AB-12 Template drafts and meta, `0087`, insert-only seeds — 2026-10-20 (`8a37895..132ac4e`; applied staging and production)
+- [x] AB-13 Default template and template meta from the database — 2026-10-20 (`132ac4e..e7062ef`)
+- [x] AB-14 Template studio lib — 2026-10-20 (`e7062ef..f565c3b`)
+- [x] AB-15 Admin template editor — 2026-10-20 (`f565c3b..8b94f62`; browser E2E pending)
 
 **Phase 10**
 - [ ] P10-01 `/sell` rewrite
@@ -3512,3 +3542,46 @@ After P1-08 and P1-01 (`3289639`), typecheck and test match the baseline. `@work
 - **UI:** `checkout.data.tsx` hides groups and manual children the store hasn't enabled, defaults to the first allowed method, shows the COD note, and labels COD above the store limit (`codUnavailableAboveMax`, plus `noPaymentMethodsAvailable`, in `ar.json` and `en.json`).
 - **Not done:** the COD fee (`cod.fee`) is still not charged, because adding it changes order totals and money.
 - Checks: `store-methods.test.ts` 14/14 (3 new); `@workspace/lib` 450 passed, 183 skipped. The `ecommerce` typecheck has errors only in the existing `profile.chunks.tsx`. The `ecommerce` lint crashes inside ESLint 10 (`scopeManager.addGlobals is not a function`) for the whole app, so it isn't caused by this change. Not checked in the browser.
+
+
+### 2026-10-20 — tallaby.com home page matched to Claude Design "Home v3"
+
+- **What:** the home page now follows `Marketing Website/Home v3.html` (+ `features-v3.css/js`, `home-v3.js`). Hero, how it works, templates, builder studio and final CTA were already built from this design; the differences were in the features, builder, pricing and FAQ sections.
+- **Features ("Inside the dashboard"):** `components/marketing/home/feature-tour.client.tsx` + `feature-tour.module.css` replace `dashboard-tour.client.tsx` (deleted). Six tabs (dashboard, add product, delivery follow-up, wallet, apps & integrations, website & social) auto-advance every 8s with a progress bar, pause on hover or when out of view, and each mock panel acts out its task (count-ups, typing, courier assignment, wallet ledger rows with the app-bar balance in sync, integrations connecting, social links + publish). Arrow keys move between tabs. Reduced motion shows each panel's end state and stops the autoplay. Below it, an "Also in your dashboard" grid of 8 areas (server-rendered in `home-sections.tsx`).
+- **Builder:** five feature rows (sections library, visual editing, AR/EN, devices, AI assistant "coming soon") instead of four. **Pricing:** 8th item "First 7 days with no fees". **FAQ (`faq.home`):** three new answers (how the fee is collected, own couriers, Meta Pixel / GA). Checked against code: rider delivery tracking, and the Meta Pixel, CAPI, GA4, GTM, TikTok and Google Sheets integrations, all exist in the dashboard.
+- **Where the code differs from the design:** Arabic copy keeps "EGP", not "ج.م" (owner rule). The chart draws the revenue area under the order bars (in the design the area hid them). The demo WhatsApp number is a placeholder (`01012345678`). Hero and steps copy kept "من غير كود" where the design says "من غير برمجة".
+- **Messages:** `home.features` was rewritten and `home.builder.f1–f5`, `home.pricing.i8` and `faq.home` were updated, in both `ar.json` and `en.json` (edited in place, other formatting untouched).
+- **Checks:** the `ecommerce` typecheck has errors only in the existing `profile.chunks.tsx`. The `ecommerce` lint crashes inside ESLint 10 for every file (`scopeManager.addGlobals is not a function`). Marketing vitest 26/26. Manual check in Chrome (RTL, desktop): all panels play through, autoplay advances, and the wallet balance syncs. Not checked at phone width. Pre-existing dev warning: missing `key` in `TemplateGallery`'s heading prop.
+
+
+### 2026-10-20 — Admin website builder (Phase 9C, AB-01…15, owner request)
+
+- **What:** the seller editor moved to `packages/store-editor` behind an `EditorAdapter`. Admins edit any store's website (`apps/admin/app/(builder)/stores/[storeId]/editor`), the library sections (`/sections`, `/sections/[id]/editor`) and the templates (`/templates/[id]/editor`), all audited. New stores take the database default template. Spec and plan: `docs/superpowers/specs/2026-10-20-admin-website-builder-design.md`, `docs/superpowers/plans/2026-10-20-admin-website-builder.md`. Commits `245d4a9..8b94f62` on `feat/seller-saas`.
+- **Migrations (all applied to staging `cxqjrwjianxskhzmrkla`, then production `sakwqwocbccpyrmwjowq`, 2026-10-20, each production run after a rolled-back dry run, owner pre-approved):**
+  - `0085` (chrome version check, `site_edited_by_admin_at`): two columns verified on both; re-run idempotent on staging.
+  - `0086` (`library_sections` + `library-media` bucket): 190 rows = `DESIGNS.length` and the bucket present on both; re-run idempotent on staging.
+  - `0087` (template drafts and meta): meta filled 39/39 templates on both; re-run idempotent on staging.
+- **Template seeds are insert-only (controller check on staging, rolled-back transaction):** the seed does nothing for an existing template key; a new key inserts the template, its version and `current_version_id`; there is a single default. So a deploy never overwrites an admin edit.
+- **Tests (Step 1, 2026-10-20):** `pnpm test` exit 0, all green: store-sections 2237, store-editor 127, lib 469 passed (208 skipped), db 7 passed (52 skipped), ecommerce 153 passed (2 skipped), admin 82, dashboard 142, cache 40, emails 3. Integration tests skip because `TEST_DATABASE_URL` is not set (R12). `pnpm typecheck`: 11 of 12 packages clean; the only failure is the existing `apps/ecommerce` `profile.chunks.tsx` (R8), no other errors. `pnpm lint` is broken by the toolchain (R6: dashboard ESLint crashes in `@typescript-eslint/utils`; tiptap and ui have no ESLint), so it was not run.
+- **Still pending (needs a login):** browser E2E is pending for all admin and editor flows (store editor, seller "admin updated" notice, library-section editor, template editor), per R9, and the production smoke check (an admin opens one real store's editor without publishing; Sections and Templates pages load).
+- **Where the code differed from the plan (rulings):**
+  - R1: the T1 adapter has `saveChrome(part, instance, clientVersion)`; the seller adapter ignored clientVersion until T4.
+  - R2: `draftVersions` is optional on `EditorAdapter`; hosts without it (templates, sections) need no watch.
+  - R3: `instantiateTemplate` takes `keepSlots?` (default false); the section editor keeps photo slots in the saved tree.
+  - R4: `useDraftWatch` takes its baseline from the first `draftVersions()` fetch, not from `EditorInitial`.
+  - R5: adapter return types match the dashboard action return types exactly.
+  - R6: `pnpm lint` is broken by the toolchain; typecheck and tests are the gate.
+  - R7: C: was full, so shells use `TEMP`/`TMP` = `F:/tmp-claude`.
+  - R8: the `apps/ecommerce` `profile.chunks.tsx` typecheck failure is existing and out of scope.
+  - R9: the browser E2E could not be run by the implementers, so it stays pending for an owner login.
+  - R10: new required `EditorAdapter.media.uploadFile(path, file)`.
+  - R11: runtime imports of pure client-safe `@workspace/lib` subpaths (`media.lib`, `store-forms.lib`) are allowed in the package.
+  - R12: integration tests are written but skip without `TEST_DATABASE_URL`, and never run against staging or production.
+  - R13: implementers write migrations, the controller applies them (staging, rolled-back production dry run, production).
+  - R14: the DB preset source uses the row key (= design id), `${key}@${version}`.
+  - R15: new or duplicated library sections start at version 0, and sellers see only version above 0.
+  - R16: the HTML sanitizer now keeps `ch` units, so an admin save does not change seeded sections.
+  - R17: because of R16 the applied seeds `0071` and `0084` are frozen (sha256 pins in tests); no re-seed, so live templates keep their `ch`-less styles until an admin edits them.
+  - R18: publishing a template does not change `is_active`; activation stays the Templates-page toggle, and cache invalidation is left to the admin actions.
+  - R19: this `PLAN.md` carries the owner's uncommitted edits, so it was edited in place and not committed.
+- **Also noted:** the owner's staged deletion of `dashboard-tour.client.tsx` went into commit `3b76247` (replaced by their untracked `feature-tour.client.tsx`). `CLAUDE.md` rule 6 still says `0049`–`0073` are the applied range; it should now read `0085`–`0087` as applied and `0088` as next (not changed here).
