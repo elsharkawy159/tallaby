@@ -19,6 +19,8 @@ describe("prepareLibraryTree", () => {
       expect(prepared.ok, design.id).toBe(true);
       if (!prepared.ok) continue;
       expect(slotsOf(prepared.tree), design.id).toEqual(slotsOf(tree));
+      // Nothing of a seeded design is dropped by the sanitizer (styles included).
+      expect(prepared.tree, design.id).toEqual(tree);
       // Saving the stored form again changes nothing (the sanitizer already ran).
       expect(prepareLibraryTree(prepared.tree), design.id).toEqual(prepared);
     }

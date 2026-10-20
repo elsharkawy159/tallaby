@@ -1,5 +1,3 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import type { ComponentNode, SectionInstance, SiteConfig } from "../config/schema";
@@ -13,6 +11,7 @@ import { countNodes, treeDepth } from "../elements/tree";
 import { SectionRenderer } from "../render/render";
 import { storeSectionRegistry } from "../sections";
 import { LIBRARY_TEMPLATES, TEMPLATE_JSON_END, TEMPLATE_JSON_START, getCodeTemplate, getTemplateDesign, templateConfigJson, templatesSeedSql } from "./catalog";
+import { FROZEN_SEEDS, migrationSha256 } from "./frozen-seeds.test-utils";
 import { prepareTemplateForStore, templateFormNeeds } from "./prepare";
 
 /** Each batch's generated seed migration (regenerate with `template:sql <keys> <file>`). */
@@ -172,16 +171,22 @@ describe("library template seeds", () => {
     for (const key of seeded) expect(getCodeTemplate(key), key).toBeTruthy();
   });
 
-  it.each(Object.entries(SEEDS))("%s matches the package (regenerate with template:sql)", (file, keys) => {
-    const sql = readFileSync(join(__dirname, "../../../db/migrations", file), "utf8").replace(/\r\n/g, "\n");
+  // frozen: applied on staging and production 2026-10-20; DB is the master copy (admin website builder).
+  it.each(Object.keys(SEEDS))("%s is unchanged (frozen)", (file) => {
+    expect(FROZEN_SEEDS[file], file).toBeTruthy();
+    expect(migrationSha256(file)).toBe(FROZEN_SEEDS[file]);
+  });
+
+  it.each(Object.entries(SEEDS))("%s: the current generator output still passes validateSiteConfig", (file, keys) => {
     const templates = keys.map((k) => getCodeTemplate(k)!);
     const seed = templatesSeedSql(templates, file);
-    expect(sql).toContain(seed);
     const blocks = seed.split(TEMPLATE_JSON_START).slice(1);
     expect(blocks).toHaveLength(templates.length);
     blocks.forEach((block, i) => {
       const json = block.split(TEMPLATE_JSON_END)[0]!.trim().replace(/^'|'::jsonb,$/g, "").replace(/''/g, "'");
       expect(JSON.parse(json)).toEqual(JSON.parse(templateConfigJson(templates[i]!)));
+      const validated = validateSiteConfig(JSON.parse(json));
+      expect(validated.success, `${keys[i]}: ${JSON.stringify(validated.success ? "" : validated.issues)}`).toBe(true);
     });
     // Building every template config takes a while once the list is long.
   }, 60_000);

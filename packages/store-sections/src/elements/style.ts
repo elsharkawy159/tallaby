@@ -48,8 +48,8 @@ const JUSTIFY = { start: "flex-start", center: "center", end: "flex-end", betwee
 
 // Same plain color syntax the schema accepts for design-system colors.
 const COLOR_RE = /^(?:#[0-9a-f]{3,4}|#[0-9a-f]{6}|#[0-9a-f]{8}|(?:rgba?|hsla?|oklch|oklab)\([0-9.,%\s/+-]+\))$/i;
-// A length: auto, or a bounded number with px / % / rem.
-const LENGTH_RE = /^(?:auto|(\d{1,4}(?:\.\d{1,2})?)(px|%|rem))$/;
+// A length: auto, or a bounded number with px / % / rem / ch.
+const LENGTH_RE = /^(?:auto|(\d{1,4}(?:\.\d{1,2})?)(px|%|rem|ch))$/;
 // An offset (inset): like a length, and may be negative.
 const OFFSET_RE = /^(?:auto|(-?\d{1,4}(?:\.\d{1,2})?)(px|%|rem))$/;
 
@@ -211,7 +211,7 @@ function isLength(value: string, re: RegExp = LENGTH_RE): boolean {
   if (!match) return false;
   if (value === "auto") return true;
   const amount = Math.abs(Number(match[1]));
-  return match[2] === "%" ? amount <= 100 : match[2] === "rem" ? amount <= 200 : amount <= 4000;
+  return match[2] === "%" ? amount <= 100 : match[2] === "rem" || match[2] === "ch" ? amount <= 200 : amount <= 4000;
 }
 
 function normalizeHover(value: unknown): HoverStyle | undefined {
