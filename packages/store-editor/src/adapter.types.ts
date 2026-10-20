@@ -53,12 +53,12 @@ type Localized = { ar?: string; en?: string };
  */
 export type EditorAdapter = {
   capabilities: EditorCapabilities;
-  saveDraft(pageId: string, content: unknown, clientVersion: number): Promise<EditorResult<{ version: number }>>;
+  saveDraft(pageId: string, content: unknown, clientVersion: number): Promise<EditorResult<{ draftVersion: number }>>;
   saveDesignSystem(designSystem: unknown, clientVersion: number): Promise<EditorResult<{ version: number }>>;
-  saveChrome(part: "header" | "footer", instance: unknown, clientVersion: number): Promise<EditorResult<{ version: number }>>;
+  saveChrome(part: "header" | "footer", instance: unknown, clientVersion: number): Promise<EditorResult<null>>;
   draftVersions?(): Promise<EditorResult<DraftVersions>>;
   refreshData(): Promise<EditorResult<EditorCatalogSnapshot>>;
-  publish(): Promise<EditorResult<{ publishedAt: string }>>;
+  publish(): Promise<EditorResult<{ revisionId: string; revisionNumber: number }>>;
 
   // Optional groups; present iff the matching capability is true.
   pages?: {
@@ -73,8 +73,10 @@ export type EditorAdapter = {
     discard(): Promise<EditorResult<{ pages: number }>>;
   };
   unpublish?(): Promise<EditorResult<null>>;
-  siteStatus?(): Promise<EditorResult<{ isLive: boolean; hasUnpublishedChanges: boolean }>>;
-  previewLink?(): Promise<EditorResult<{ url: string }>>;
+  siteStatus?(): Promise<
+    EditorResult<{ siteStatus: "draft" | "published" | "unpublished"; isLive: boolean; lastPublishedAt: string | null; hasUnpublishedChanges: boolean }>
+  >;
+  previewLink?(): Promise<EditorResult<{ url: string; expiresAt: number }>>;
   templates?: {
     apply(key: string): Promise<TemplateActionResult<{ pagesUpdated: number; pagesCreated: number }>>;
     preview(key: string): Promise<TemplateActionResult<TemplatePreviewView>>;
