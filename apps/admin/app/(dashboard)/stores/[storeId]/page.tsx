@@ -101,7 +101,7 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
 
       <Suspense key={tab} fallback={<TabSkeleton />}>
         {tab === "overview" && <StoreOverviewTab store={store} />}
-        {tab === "website" && <StoreWebsiteTab store={store} />}
+        {tab === "website" && <StoreWebsiteTab store={store} canWrite={isAdminWriteRole(admin.role)} />}
         {tab === "catalog" && <StoreCatalogTab store={store} />}
         {tab === "commerce" && <StoreCommerceTab store={store} />}
         {tab === "integrations" && <StoreIntegrationsTab store={store} />}
