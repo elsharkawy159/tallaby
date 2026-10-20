@@ -36,7 +36,10 @@ import {
   invalidateProductInventory,
 } from "@workspace/cache";
 import { getCurrentUserId } from "@/lib/get-current-user-id";
-import { getCartScope, getCartStoreSellerId } from "@/lib/storefront.server";
+import {
+  getCartScope,
+  getStorefrontCheckoutPayments,
+} from "@/lib/storefront.server";
 import { hasStoreTrackingConsent, STORE_TRACKING_CONSENT_COOKIE } from "@/lib/storefront-consent";
 import { cookies } from "next/headers";
 import { after } from "next/server";
@@ -87,6 +90,10 @@ export async function createOrder(data: {
       return { success: false, error: `Product is no longer available: ${unsold}` };
     }
 
+    // Storefront: only the store's enabled methods (checked again with the
+    // order total inside placeOrderFromCart).
+    const storefrontPayments = await getStorefrontCheckoutPayments();
+
     const result = await placeOrderFromCart({
       userId,
       cartId: data.cartId,
@@ -97,8 +104,9 @@ export async function createOrder(data: {
       notes: data.notes,
       isGift: data.isGift,
       giftMessage: data.giftMessage,
-      orderSource: (await getCartStoreSellerId()) ? "storefront" : "website",
+      orderSource: storefrontPayments ? "storefront" : "website",
       locale: "en",
+      storefrontPayments: storefrontPayments ?? undefined,
     });
 
     if (!result.success) {

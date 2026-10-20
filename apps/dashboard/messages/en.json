@@ -2449,7 +2449,7 @@
   "storePayments": {
     "saved": "Payment methods updated.",
     "readOnly": "This store is read-only, so payment methods can't be changed.",
-    "checkoutNotice": "Your store's website will offer these methods once store checkout launches. Until then, orders are paid the same way as today.",
+    "checkoutNotice": "Your store's checkout shows only the methods you turn on here. For now, wallet and InstaPay payments are received by Tallaby and settled to you as today. WE Pay and Orange Cash aren't shown at checkout yet.",
     "soonTitle": "Coming soon",
     "soonDescription": "These will be available in a later update.",
     "soon": "Soon",

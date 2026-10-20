@@ -546,7 +546,7 @@ export async function getStorePayments(sellerId: string, storeId: string, q: Que
 /**
  * Store settings › Payment methods (P3-07). Changes one method under a row
  * lock, keeps at least one method enabled, and writes a masked audit row.
- * Storefront checkout does not read these settings yet (P3-07 Part B).
+ * Storefront checkout offers only the enabled methods (storefrontCheckoutMethods).
  */
 export async function updateStorePaymentMethod(
   sellerId: string,

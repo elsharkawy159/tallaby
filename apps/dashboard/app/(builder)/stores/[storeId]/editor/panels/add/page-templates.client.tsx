@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { FileText, LayoutTemplate, LoaderCircle, Monitor, Smartphone, Sparkles } from "lucide-react";
@@ -11,18 +11,15 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@workspac
 import { cn } from "@workspace/ui/lib/utils";
 import { SitePreview, type PreviewDevice } from "@/app/(main)/stores/[storeId]/website/_components/site-preview.client";
 import type { TemplateCardView, TemplatePreviewView } from "@/app/(main)/stores/[storeId]/website/templates/templates.dto";
-import { templatePreview } from "@/app/(main)/stores/[storeId]/website/templates/templates.server";
 import type { EditorCommands } from "../../lib/editor-commands.lib";
 import { allTemplatePages, templatePagesFor, type TemplatePageOption } from "../../lib/editor-templates.lib";
 import type { EditorStore } from "../../state/editor.store";
 import { nameOf } from "../pages-panel.client";
 import { TemplatesPanel } from "./templates-panel.client";
 import type { TemplatePreviewHost } from "./template-preview-dialog.client";
+import { TemplatePageThumbnail, loadTemplatePreview } from "./template-thumbnail.client";
 
 type Localized = { ar?: string; en?: string };
-
-/** Template content by key, kept for the editor session (templates are read-only here). */
-const previewCache = new Map<string, TemplatePreviewView>();
 
 /**
  * Add › Templates: designs for the page being edited (the matching page of
@@ -52,7 +49,11 @@ export function PageTemplatesTab({
   const [scope, setScope] = useState<"page" | "site">("page");
   const [showAll, setShowAll] = useState(false);
   const [open, setOpen] = useState<{ option: TemplatePageOption; pageId: string } | null>(null);
-  const text = (value: Localized) => (uiLocale === "en" ? value.en || value.ar : value.ar || value.en) || "";
+  // Page designs keep the store's own look, so the cards are drawn with it too.
+  const designSystem = useStore(store, (s) => s.designSystem);
+  const header = useStore(store, (s) => s.header);
+  const look = useMemo(() => ({ designSystem, header }), [designSystem, header]);
+  const text =(value: Localized) => (uiLocale === "en" ? value.en || value.ar : value.ar || value.en) || "";
 
   const matches = templatePagesFor(templates, page);
   const options = showAll ? allTemplatePages(templates) : matches;
@@ -118,26 +119,19 @@ export function PageTemplatesTab({
                     onClick={() => setOpen({ option, pageId: page.id })}
                     className="group w-full overflow-hidden rounded-xl border bg-card text-start transition-colors hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    <span className="flex flex-col gap-1 overflow-hidden border-b bg-muted/50 p-2.5">
-                      <span className="mb-0.5 flex items-center gap-1 text-[10px] font-semibold text-muted-foreground">
-                        <FileText className="size-3" aria-hidden />
-                        {option.page.name}
-                        <span dir="ltr" className="ms-auto font-mono font-normal">
+                    <TemplatePageThumbnail templateKey={option.template.key} page={option.page} host={host} look={look} className="border-b" />
+                    <span className="flex flex-col gap-0.5 p-2.5">
+                      <span className="flex items-center justify-between gap-2">
+                        <span className="truncate text-sm font-semibold">{text(option.template.name)}</span>
+                        <span className="shrink-0 text-[11px] text-muted-foreground">{t("sectionsCount", { count: option.page.sections.length })}</span>
+                      </span>
+                      <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                        <FileText className="size-3 shrink-0" aria-hidden />
+                        <span className="truncate">{option.page.name}</span>
+                        <span dir="ltr" className="ms-auto font-mono">
                           {option.page.isHome ? "/" : `/${option.page.slug}`}
                         </span>
                       </span>
-                      {option.page.sections.slice(0, 5).map((section, index) => (
-                        <span key={index} className="truncate rounded border bg-background px-2 py-1 text-[10px]">
-                          {text(section)}
-                        </span>
-                      ))}
-                      {option.page.sections.length > 5 && (
-                        <span className="text-[10px] text-muted-foreground">{t("more", { count: option.page.sections.length - 5 })}</span>
-                      )}
-                    </span>
-                    <span className="flex items-center justify-between gap-2 p-2.5">
-                      <span className="truncate text-sm font-semibold">{text(option.template.name)}</span>
-                      <span className="shrink-0 text-[11px] text-muted-foreground">{t("sectionsCount", { count: option.page.sections.length })}</span>
                     </span>
                   </button>
                 </li>
@@ -204,16 +198,12 @@ function PageTemplateDialog({
   useEffect(() => {
     if (!key) return;
     setFailed(false);
-    const cached = previewCache.get(key);
-    setPreview(cached ?? null);
-    if (cached) return;
+    setPreview(null);
     let live = true;
-    void templatePreview(host.storeId, key).then((result) => {
+    void loadTemplatePreview(host.storeId, key).then((data) => {
       if (!live) return;
-      if (result.success) {
-        previewCache.set(key, result.data);
-        setPreview(result.data);
-      } else setFailed(true);
+      if (data) setPreview(data);
+      else setFailed(true);
     });
     return () => {
       live = false;

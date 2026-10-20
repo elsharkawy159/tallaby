@@ -182,6 +182,8 @@
     "onlinePayment": "Online Payment",
     "onlinePaymentDescription": "Pay via InstaPay, Vodafone Cash, or E& Cash.",
     "codUnavailableHighShipping": "Not available for high shipping costs",
+    "codUnavailableAboveMax": "Not available for orders above the store limit",
+    "noPaymentMethodsAvailable": "This store has no payment method available for this order. Please contact the store.",
     "payWithCard": "Pay with Card",
     "payByCard": "Pay by Card",
     "payByCardDescription": "Pay securely with your credit or debit card.",

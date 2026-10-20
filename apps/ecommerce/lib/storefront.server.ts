@@ -37,6 +37,11 @@ import { normalizeGovernorate } from "@workspace/lib/shipping";
 import { publicStoreSocialLinks } from "@workspace/lib/stores";
 import { parseStoreSeo } from "@workspace/lib/stores";
 import { storeHasVisibleProducts } from "@workspace/lib/stores/server";
+import {
+  parseStorePayments,
+  storefrontCheckoutMethods,
+  type StorefrontCheckoutPayments,
+} from "@workspace/lib/payments/store-methods";
 
 /**
  * The storefront subdomain of the current request, or null on tallaby.com.
@@ -226,6 +231,23 @@ export async function getCartScope(): Promise<CartScope | null> {
  */
 export async function getCartStoreSellerId(): Promise<string | null> {
   return (await getCartScope())?.sellerId ?? null;
+}
+
+/**
+ * The checkout methods of the storefront this request is on (Store settings ›
+ * Payment methods), or null on the marketplace. Read fresh on every call, not
+ * from the cached storefront profile, so a seller's change applies at once.
+ */
+export async function getStorefrontCheckoutPayments(): Promise<StorefrontCheckoutPayments | null> {
+  const scope = await getCartScope();
+  if (!scope) return null;
+  const [row] = await db
+    .select({ settings: stores.settings })
+    .from(stores)
+    .where(and(eq(stores.id, scope.storeId), eq(stores.sellerId, scope.sellerId)))
+    .limit(1);
+  const settings = row?.settings as Record<string, unknown> | null | undefined;
+  return storefrontCheckoutMethods(parseStorePayments(settings?.payments));
 }
 
 /**

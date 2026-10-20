@@ -33,6 +33,51 @@ function syncStyles(target: Document) {
 }
 
 /**
+ * The render context of a read-only preview: this store's details, the
+ * catalog resolved for `sections`, inert links and stand-in cart buttons.
+ */
+export function previewRenderContext({
+  sections,
+  catalog,
+  locale,
+  store,
+  addToCartLabel,
+}: {
+  /** Every section drawn (page sections, header, footer), for the catalog queries. */
+  sections: SectionInstance[];
+  catalog: PreviewCatalog;
+  locale: SiteLocale;
+  store: StoreProfile;
+  addToCartLabel: string;
+}): RenderContext {
+  const resolved = resolveCanvasCatalog(collectCatalogQueries(sections, storeSectionRegistry), catalog, locale);
+  return {
+    mode: "edit",
+    locale,
+    dir: locale === "ar" ? "rtl" : "ltr",
+    store,
+    pages: [],
+    catalog: resolved,
+    Link: ({ href, className: linkClass, children }) => (
+      <a href={href} className={linkClass}>
+        {children}
+      </a>
+    ),
+    imageUrl: (src) =>
+      src && /^(https?:)?\/\//.test(src) ? src : src ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/sellers/${src}` : null,
+    formatPrice: (amount) =>
+      new Intl.NumberFormat(locale === "ar" ? "ar-EG" : "en-EG", { style: "currency", currency: "EGP", maximumFractionDigits: 0 }).format(amount),
+    renderCartButton: () => <span className="inline-flex h-9 items-center rounded-full border border-(--sf-line) px-3 text-sm">🛒</span>,
+    renderWishlistButton: () => <span aria-hidden className="inline-flex size-8 items-center justify-center rounded-full border border-(--sf-line) bg-(--sf-paper) text-sm">♡</span>,
+    renderAddToCart: () => (
+      <span className="inline-flex h-8 items-center justify-center rounded-(--sf-radius,6px) bg-(--sf-brand) px-3 text-xs font-semibold text-(--sf-brand-ink,#fff)">
+        {addToCartLabel}
+      </span>
+    ),
+  };
+}
+
+/**
  * A read-only store page preview for the Website pages (design system,
  * templates): the real section renderer with this store's products, inside
  * an iframe so the phone width hits the same breakpoints as a phone. Links
@@ -98,34 +143,17 @@ export function SitePreview({
     doc.documentElement.dir = dir;
   }, [locale, dir]);
 
-  const ctx = useMemo<RenderContext>(() => {
-    const all = [...sections, ...(header ? [header] : []), ...(footer ? [footer] : [])];
-    const resolved = resolveCanvasCatalog(collectCatalogQueries(all, storeSectionRegistry), catalog, locale);
-    return {
-      mode: "edit",
-      locale,
-      dir,
-      store,
-      pages: [],
-      catalog: resolved,
-      Link: ({ href, className: linkClass, children }) => (
-        <a href={href} className={linkClass}>
-          {children}
-        </a>
-      ),
-      imageUrl: (src) =>
-        src && /^(https?:)?\/\//.test(src) ? src : src ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/sellers/${src}` : null,
-      formatPrice: (amount) =>
-        new Intl.NumberFormat(locale === "ar" ? "ar-EG" : "en-EG", { style: "currency", currency: "EGP", maximumFractionDigits: 0 }).format(amount),
-      renderCartButton: () => <span className="inline-flex h-9 items-center rounded-full border border-(--sf-line) px-3 text-sm">🛒</span>,
-      renderWishlistButton: () => <span aria-hidden className="inline-flex size-8 items-center justify-center rounded-full border border-(--sf-line) bg-(--sf-paper) text-sm">♡</span>,
-      renderAddToCart: () => (
-        <span className="inline-flex h-8 items-center justify-center rounded-(--sf-radius,6px) bg-(--sf-brand) px-3 text-xs font-semibold text-(--sf-brand-ink,#fff)">
-          {t("addToCart")}
-        </span>
-      ),
-    };
-  }, [sections, header, footer, catalog, locale, dir, store, t]);
+  const ctx = useMemo(
+    () =>
+      previewRenderContext({
+        sections: [...sections, ...(header ? [header] : []), ...(footer ? [footer] : [])],
+        catalog,
+        locale,
+        store,
+        addToCartLabel: t("addToCart"),
+      }),
+    [sections, header, footer, catalog, locale, store, t],
+  );
 
   return (
     <div className={className}>

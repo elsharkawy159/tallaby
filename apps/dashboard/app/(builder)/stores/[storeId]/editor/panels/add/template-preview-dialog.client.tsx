@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Check, FileText, LoaderCircle, Lock, Monitor, RotateCcw, Smartphone, Sparkles } from "lucide-react";
@@ -14,7 +14,8 @@ import { cn } from "@workspace/ui/lib/utils";
 import { SitePreview, type PreviewCatalog, type PreviewDevice } from "@/app/(main)/stores/[storeId]/website/_components/site-preview.client";
 import { COLOR_FIELDS } from "@/app/(main)/stores/[storeId]/website/design/design.lib";
 import type { TemplateCardView, TemplatePreviewView } from "@/app/(main)/stores/[storeId]/website/templates/templates.dto";
-import { applyTemplate, templatePreview } from "@/app/(main)/stores/[storeId]/website/templates/templates.server";
+import { applyTemplate } from "@/app/(main)/stores/[storeId]/website/templates/templates.server";
+import { loadTemplatePreview } from "./template-thumbnail.client";
 
 type Localized = { ar?: string; en?: string };
 
@@ -51,7 +52,6 @@ export function TemplatePreviewDialog({
 }) {
   const t = useTranslations("storeEditor.templates");
   const tw = useTranslations("websiteTemplates");
-  const cache = useRef(new Map<string, TemplatePreviewView>());
   const [preview, setPreview] = useState<TemplatePreviewView | null>(null);
   const [failed, setFailed] = useState(false);
   const [pageSlug, setPageSlug] = useState<string | null>(null);
@@ -64,16 +64,12 @@ export function TemplatePreviewDialog({
     if (!key) return;
     setPageSlug(null);
     setFailed(false);
-    const cached = cache.current.get(key);
-    setPreview(cached ?? null);
-    if (cached) return;
+    setPreview(null);
     let live = true;
-    void templatePreview(host.storeId, key).then((result) => {
+    void loadTemplatePreview(host.storeId, key).then((data) => {
       if (!live) return;
-      if (result.success) {
-        cache.current.set(key, result.data);
-        setPreview(result.data);
-      } else setFailed(true);
+      if (data) setPreview(data);
+      else setFailed(true);
     });
     return () => {
       live = false;

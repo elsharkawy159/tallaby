@@ -7,6 +7,7 @@ import { Badge } from "@workspace/ui/components/badge";
 import { cn } from "@workspace/ui/lib/utils";
 import type { TemplateCardView } from "@/app/(main)/stores/[storeId]/website/templates/templates.dto";
 import { TemplatePreviewDialog, type TemplatePreviewHost } from "./template-preview-dialog.client";
+import { TemplatePageThumbnail } from "./template-thumbnail.client";
 
 type Localized = { ar?: string; en?: string };
 
@@ -56,17 +57,11 @@ export function TemplatesPanel({
                     {template.thumbnailUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element -- admin-managed template image
                       <img src={template.thumbnailUrl} alt="" className="aspect-[16/10] w-full border-b object-cover" />
+                    ) : home ? (
+                      <TemplatePageThumbnail templateKey={template.key} page={home} host={host} className="border-b" />
                     ) : (
-                      <span className="flex aspect-[16/10] w-full flex-col gap-1 overflow-hidden border-b bg-muted/50 p-2.5">
-                        <span className="mb-0.5 flex items-center gap-1 text-[10px] font-semibold text-muted-foreground">
-                          <LayoutTemplate className="size-3" />
-                          {home?.name}
-                        </span>
-                        {home?.sections.slice(0, 4).map((section, index) => (
-                          <span key={index} className="truncate rounded border bg-background px-2 py-1 text-[10px]">
-                            {text(section)}
-                          </span>
-                        ))}
+                      <span className="grid aspect-[16/10] w-full place-items-center border-b bg-muted/50 text-muted-foreground">
+                        <LayoutTemplate className="size-6 opacity-50" />
                       </span>
                     )}
                     <span className="flex flex-col gap-1 p-2.5">
