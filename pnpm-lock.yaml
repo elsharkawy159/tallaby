@@ -32,6 +32,15 @@ importers:
 
   apps/admin:
     dependencies:
+      '@dnd-kit/core':
+        specifier: 6.3.1
+        version: 6.3.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@dnd-kit/sortable':
+        specifier: 10.0.0
+        version: 10.0.0(@dnd-kit/core@6.3.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)
+      '@dnd-kit/utilities':
+        specifier: 3.2.2
+        version: 3.2.2(react@19.2.8)
       '@hello-pangea/dnd':
         specifier: ^18.0.1
         version: 18.0.1(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -62,6 +71,12 @@ importers:
       '@workspace/lib':
         specifier: workspace:*
         version: link:../../packages/lib
+      '@workspace/store-editor':
+        specifier: workspace:*
+        version: link:../../packages/store-editor
+      '@workspace/store-sections':
+        specifier: workspace:*
+        version: link:../../packages/store-sections
       '@workspace/tiptap':
         specifier: workspace:*
         version: link:../../packages/tiptap
@@ -89,6 +104,9 @@ importers:
       next:
         specifier: 16.3.3
         version: 16.3.3(@types/node@25.0.3)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      next-intl:
+        specifier: ^4.6.1
+        version: 4.14.2(@swc/helpers@0.5.23)(next@16.3.3(@types/node@25.0.3)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -119,6 +137,9 @@ importers:
       zod:
         specifier: ^4.2.1
         version: 4.2.1
+      zustand:
+        specifier: ^5.0.9
+        version: 5.0.9(@types/react@19.2.18)(immer@11.1.0)(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8))
     devDependencies:
       '@tailwindcss/postcss':
         specifier: ^4.1.18

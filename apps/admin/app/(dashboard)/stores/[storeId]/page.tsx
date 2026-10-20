@@ -1,11 +1,11 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, PencilRuler } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
 import { Card, CardContent } from "@workspace/ui/components/card";
 import { Skeleton } from "@workspace/ui/components/skeleton";
-import { STORE_DETAIL_TABS } from "@workspace/lib/admin";
+import { STORE_DETAIL_TABS, isAdminWriteRole } from "@workspace/lib/admin";
 import { getStoreForAdmin, getStoreTabCounts } from "@workspace/lib/admin/server";
 import { storeUrl } from "@workspace/lib/storefront";
 import { getCurrentAdminUser } from "@/lib/auth/admin-auth";
@@ -36,7 +36,7 @@ interface PageProps {
  */
 export default async function StoreDetailPage({ params, searchParams }: PageProps) {
   const [{ storeId }, raw] = await Promise.all([params, searchParams]);
-  await getCurrentAdminUser();
+  const admin = await getCurrentAdminUser();
   const [store, counts] = await Promise.all([getStoreForAdmin(storeId), getStoreTabCounts(storeId).catch(() => null)]);
   if (!store) notFound();
 
@@ -65,12 +65,22 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
             {store.plan}
           </p>
         </div>
-        <Button asChild variant="outline" size="sm">
-          <a href={storeUrl(store.subdomain, activeDomain)} target="_blank" rel="noreferrer">
-            Open storefront
-            <ExternalLink className="ml-1 h-3.5 w-3.5" />
-          </a>
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          {isAdminWriteRole(admin.role) && (
+            <Button asChild size="sm">
+              <Link href={`/stores/${storeId}/editor`}>
+                <PencilRuler className="mr-1 h-3.5 w-3.5" />
+                Edit website
+              </Link>
+            </Button>
+          )}
+          <Button asChild variant="outline" size="sm">
+            <a href={storeUrl(store.subdomain, activeDomain)} target="_blank" rel="noreferrer">
+              Open storefront
+              <ExternalLink className="ml-1 h-3.5 w-3.5" />
+            </a>
+          </Button>
+        </div>
       </div>
 
       <UrlTabs

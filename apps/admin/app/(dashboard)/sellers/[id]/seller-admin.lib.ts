@@ -28,6 +28,22 @@ export const AUDIT_ACTION_LABELS: Record<AdminAuditAction, string> = {
   create_blog_post: "Blog post created",
   update_blog_post: "Blog post edited",
   delete_blog_post: "Blog post deleted",
+  open_store_editor: "Website editor opened",
+  publish_store_site: "Website published",
+  unpublish_store_site: "Website unpublished",
+  restore_store_revision: "Website revision restored to draft",
+  discard_store_draft: "Website drafts discarded",
+  change_store_page: "Website page changed",
+  apply_store_template: "Website template applied or undone",
+  create_template: "Template created",
+  publish_template_version: "Template version published",
+  restore_template_version: "Template version restored",
+  delete_template: "Template deleted",
+  create_library_section: "Library section created",
+  update_library_section: "Library section updated",
+  publish_library_section: "Library section published",
+  hide_library_section: "Library section hidden",
+  delete_library_section: "Library section deleted",
 };
 
 export function auditActionLabel(action: string): string {
