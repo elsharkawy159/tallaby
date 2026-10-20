@@ -1,0 +1,44 @@
+{
+  "name": "@workspace/store-editor",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "The website builder (editor) shared by the seller dashboard and the admin app; hosts plug in through an EditorAdapter",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./messages/ar.json": "./src/messages/ar.json",
+    "./messages/en.json": "./src/messages/en.json"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@dnd-kit/core": "6.3.1",
+    "@dnd-kit/sortable": "10.0.0",
+    "@dnd-kit/utilities": "3.2.2",
+    "@workspace/store-sections": "workspace:*",
+    "@workspace/ui": "workspace:*",
+    "zustand": "^5.0.9"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.5",
+    "@workspace/typescript-config": "workspace:*",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  },
+  "peerDependencies": {
+    "next": "^16.3.3",
+    "next-intl": "^4.6.1",
+    "react": "^19.0.0"
+  }
+}
