@@ -53,6 +53,7 @@ import { sectionText } from "../core/copy";
 import type { RenderContext } from "../core/types";
 import { DataEmpty } from "../sections/_data";
 import { FORM_SUBMIT_CLASS, FormFieldsView, formCopy } from "../sections/forms";
+import { resolvePhotoSlot } from "../designs/photo-slots";
 import { ButtonLink, SmartLink, cn } from "../sections/_primitives";
 import { DATA_NODE_NEEDS, boundValue, isDataList, listRecords, nodeFormId, walkNodes, type DataRecord } from "./data";
 import { MAX_ELEMENT_DEPTH, PATTERN_VARIANTS, getElementDefinition, type ElementIconName, type PatternVariant } from "./registry";
@@ -293,7 +294,7 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
       );
     }
     case "image": {
-      const url = ctx.imageUrl(str(props.src, 2048));
+      const url = ctx.imageUrl(resolvePhotoSlot(str(props.src, 2048), ctx.industry));
       if (!url) {
         return ctx.mode === "edit" ? <div {...attrs} aria-hidden className="block w-full bg-(--sf-shelf)" /> : null;
       }

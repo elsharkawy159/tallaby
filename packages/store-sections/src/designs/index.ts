@@ -30,6 +30,7 @@ export {
   createTreeBuilder,
   defineDesign,
   instantiateDesign,
+  instantiateTemplate,
   treeBuilder,
   type Design,
   type DesignText,
@@ -37,6 +38,7 @@ export {
   type NodeOptions,
   type TreeBuilder,
 } from "./builder";
+export { PHOTO_SLOT_RE, designSlotTree, photoSlot, resolvePhotoSlot, resolvePhotoSlots } from "./photo-slots";
 export { STOCK_INDUSTRIES, type StockIndustry } from "./stock-photos";
 
 /** In library category order (`LIBRARY_CATEGORY_IDS`). */

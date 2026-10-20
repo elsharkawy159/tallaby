@@ -14,6 +14,7 @@ import type { LibraryCategoryId } from "../library/types";
 import { getElementDefinition, type ElementIconName, type ElementType, type PatternVariant } from "../elements/registry";
 import type { StyleBreakpoint, StyleValues } from "../elements/style";
 import { fromTemplate, type MakeId, type NodeTemplate } from "../elements/tree";
+import { photoSlot, resolvePhotoSlots } from "./photo-slots";
 import { peoplePhoto, stockPhoto } from "./stock-photos";
 
 /** A plain string is the same in both locales. */
@@ -120,12 +121,13 @@ export type DesignPhotos = { photo?: readonly (string | undefined)[]; person?: r
 /**
  * The `t` helpers. `industry` picks the default photos (`./stock-photos.ts`)
  * that `photo`/`person` put in, unless `photos` has one for that index;
- * everything else is the same for every store.
+ * everything else is the same for every store. With `slots`, they put photo
+ * slot placeholders instead (`./photo-slots.ts`), resolved at insert time.
  */
-export function createTreeBuilder(industry?: string, photos?: DesignPhotos) {
+export function createTreeBuilder(industry?: string, photos?: DesignPhotos, opts: { slots?: boolean } = {}) {
   const image = (src: string, alt: DesignText, opts?: NodeOptions) => make("image", { src, alt }, withDefaults("image", opts));
-  const stock = (index: number) => photos?.photo?.[index] ?? stockPhoto(industry, index);
-  const people = (index: number) => photos?.person?.[index] ?? peoplePhoto(index);
+  const stock = (index: number) => (opts.slots ? photoSlot("photo", index) : (photos?.photo?.[index] ?? stockPhoto(industry, index)));
+  const people = (index: number) => (opts.slots ? photoSlot("person", index) : (photos?.person?.[index] ?? peoplePhoto(index)));
   /** Columns per device as styles, like `grid`. */
   const columned = (type: ElementType, props: Record<string, DesignText | boolean | undefined>, opts: GridOptions, children: NodeTemplate[]) => {
     const { columns, ...rest } = opts;
@@ -250,21 +252,34 @@ function swapToEnglish(node: NodeTemplate): NodeTemplate {
 }
 
 /**
- * A new tree section from a design: fresh node ids (`${id}-n1`, `${id}-n2`…
- * unless `makeId` is given), text in the store's default locale, photos for
- * the store's industry.
+ * A new tree section from a template tree: fresh node ids (`${id}-n1`,
+ * `${id}-n2`… unless `makeId` is given), text in the store's default locale,
+ * photo slots resolved for the store's industry. `keepSlots` leaves the slots
+ * in place (the admin section editor saves slot trees).
  */
-export function instantiateDesign(design: Design, opts: { id: string; defaultLocale?: SiteLocale; makeId?: MakeId; industry?: string }): SectionInstance {
+export function instantiateTemplate(
+  tree: NodeTemplate,
+  opts: { id: string; source?: string; defaultLocale?: SiteLocale; makeId?: MakeId; industry?: string; keepSlots?: boolean },
+): SectionInstance {
   let counter = 0;
   const makeId = opts.makeId ?? (() => `${opts.id}-n${++counter}`);
-  const template = design.tree(opts.industry ? createTreeBuilder(opts.industry) : treeBuilder);
-  const localized = opts.defaultLocale === "en" ? swapToEnglish(template) : template;
+  const resolved = opts.keepSlots ? tree : resolvePhotoSlots(tree, opts.industry);
+  const localized = opts.defaultLocale === "en" ? swapToEnglish(resolved) : resolved;
   return {
     id: opts.id,
     sectionId: "custom-section",
     version: 1,
     props: {},
-    source: `${design.id}@${design.version}`,
+    ...(opts.source !== undefined && { source: opts.source }),
     componentTree: [fromTemplate(localized, makeId)],
   };
+}
+
+/**
+ * A new tree section from a design: fresh node ids, text in the store's
+ * default locale, photos for the store's industry.
+ */
+export function instantiateDesign(design: Design, opts: { id: string; defaultLocale?: SiteLocale; makeId?: MakeId; industry?: string }): SectionInstance {
+  const template = design.tree(opts.industry ? createTreeBuilder(opts.industry) : treeBuilder);
+  return instantiateTemplate(template, { ...opts, source: `${design.id}@${design.version}` });
 }

@@ -10,6 +10,7 @@ import { Facebook, Film, Instagram, Music2, Play, Youtube, type LucideIcon } fro
 import type { ComponentNode } from "../config/schema";
 import { sectionText } from "../core/copy";
 import type { RenderContext } from "../core/types";
+import { resolvePhotoSlot } from "../designs/photo-slots";
 import { cn } from "../sections/_primitives";
 import { readVideoOptions, videoEmbedUrl, videoFacadeDoc, videoStillUrl, type VideoOptions, type VideoProvider } from "./video";
 
@@ -40,7 +41,7 @@ const FRAME_SANDBOX = "allow-scripts allow-same-origin allow-presentation allow-
 
 /** A single video's still: the seller's image when chosen, else the site's own (YouTube). */
 function stillOf(options: VideoOptions | null, props: Record<string, unknown>, ctx: RenderContext, preferCustom: boolean): string | null {
-  const custom = preferCustom ? ctx.imageUrl(str(props.poster, 2048)) : null;
+  const custom = preferCustom ? ctx.imageUrl(resolvePhotoSlot(str(props.poster, 2048), ctx.industry)) : null;
   return custom ?? (options ? videoStillUrl(options.source) : null);
 }
 
@@ -120,7 +121,7 @@ const BOX = "relative block aspect-video w-full overflow-hidden bg-black";
 
 /** A playlist video's still: the site's own (YouTube) first, else its thumbnail image. */
 const itemStill = (options: VideoOptions | null, props: Record<string, unknown>, ctx: RenderContext) =>
-  (options && videoStillUrl(options.source)) ?? ctx.imageUrl(str(props.poster, 2048));
+  (options && videoStillUrl(options.source)) ?? ctx.imageUrl(resolvePhotoSlot(str(props.poster, 2048), ctx.industry));
 
 export function VideoElement({ attrs, props, ctx }: { attrs: Attrs; props: Record<string, unknown>; ctx: RenderContext }) {
   const options = readVideoOptions(props);
