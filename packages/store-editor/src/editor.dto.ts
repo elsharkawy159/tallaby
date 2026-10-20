@@ -36,6 +36,8 @@ export type EditorErrorKey =
   | "rateLimited"
   | "previewUnavailable"
   | "nothingToPublish"
+  /** The host cancelled the publish (e.g. its confirmation dialog); no message is shown. */
+  | "cancelled"
   | "generic";
 
 export type EditorResult<T> = { success: true; data: T } | { success: false; error: EditorErrorKey };

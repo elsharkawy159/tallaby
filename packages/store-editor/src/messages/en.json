@@ -162,7 +162,8 @@
       "generic": "Something went wrong. Try again.",
       "saveFirst": "Wait for your changes to be saved, then try again.",
       "previewUnavailable": "Preview on your store isn't available right now.",
-      "nothingToPublish": "Nothing to publish: the section has no unpublished changes."
+      "nothingToPublish": "Nothing to publish: there are no unpublished changes.",
+      "cancelled": "Publishing was cancelled."
     },
     "previewOnStore": "Preview on store",
     "managePages": "Manage pages…",
@@ -725,6 +726,7 @@
     },
     "publishSection": "Publish section",
     "publishedSection": "Section published (version {number}). Sellers see it in Add › Sections now.",
+    "publishedTemplate": "Template version {number} published. New stores and the template gallery use it now; existing stores keep their site.",
     "industryPreview": {
       "label": "Preview photos for",
       "general": "General",

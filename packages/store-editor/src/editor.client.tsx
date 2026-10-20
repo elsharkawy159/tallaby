@@ -105,6 +105,8 @@ export function StoreEditor({ initial, adapter }: { initial: EditorInitial; adap
   );
 }
 
+const PUBLISHED_MESSAGE = { site: "published", section: "publishedSection", templateVersion: "publishedTemplate" } as const;
+
 function EditorRoot({ initial }: { initial: EditorInitial }) {
   const t = useTranslations("storeEditor");
   const storeRef = useRef<EditorStore | null>(null);
@@ -292,8 +294,8 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
       if (result.success) {
         setIsLive(true);
         setHasChanges(false);
-        toast.success(t(capabilities.publishLabel === "section" ? "publishedSection" : "published", { number: result.data.revisionNumber }));
-      } else {
+        toast.success(t(PUBLISHED_MESSAGE[capabilities.publishLabel], { number: result.data.revisionNumber }));
+      } else if (result.error !== "cancelled") {
         toast.error(t(`errors.${result.error}`));
       }
     } finally {
