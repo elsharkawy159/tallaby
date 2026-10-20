@@ -163,7 +163,7 @@ const DEMO = demoStore({
 
 export const OAK = libraryTemplate({
   key: OAK_KEY,
-  version: 1,
+  version: 2,
   name: L("أوك", "Oak"),
   description: L(
     "ديكور وأثاث صغير: كولاج، أقسام بخط كبير، اسأل ستايلست والأكثر حباً. أربع صفحات جاهزة.",

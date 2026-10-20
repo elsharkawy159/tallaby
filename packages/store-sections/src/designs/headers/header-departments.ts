@@ -25,6 +25,7 @@ export const headerDepartments = defineDesign({
       {
         label: L("الهيدر", "Header"),
         style: { paddingTop: 0, paddingBottom: 0, background: "background" },
+        mobile: { paddingTop: 0, paddingBottom: 0 },
       },
       [
         t.container(

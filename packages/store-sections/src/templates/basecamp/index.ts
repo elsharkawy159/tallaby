@@ -175,7 +175,7 @@ const DEMO = demoStore({
 
 export const BASECAMP = libraryTemplate({
   key: BASECAMP_KEY,
-  version: 1,
+  version: 2,
   name: L("بيس كامب", "Basecamp"),
   description: L(
     "تخييم ورحلات: موسم الصحرا، ليه بيرجعولنا، الماركات وإزاي تأجّر. أربع صفحات جاهزة.",

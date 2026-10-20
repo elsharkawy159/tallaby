@@ -189,7 +189,7 @@ const DEMO = demoStore({
 
 export const TECHHUB = libraryTemplate({
   key: TECHHUB_KEY,
-  version: 1,
+  version: 2,
   name: L("تك هب", "TechHub"),
   description: L(
     "إلكترونيات حديثة: بحث في الأول، أقسام، عرض اليوم وماركات. أربع صفحات جاهزة.",

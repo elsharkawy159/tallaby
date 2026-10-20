@@ -175,7 +175,7 @@ const DEMO = demoStore({
 
 export const NEST = libraryTemplate({
   key: NEST_KEY,
-  version: 1,
+  version: 2,
   name: L("نِست", "Nest"),
   description: L(
     "ديكور البيت: أقسام حسب الأوضة، بتتعمل إزاي، الجديد وحكاية الصنّاع. أربع صفحات جاهزة.",

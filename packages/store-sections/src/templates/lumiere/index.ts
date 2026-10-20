@@ -182,7 +182,7 @@ const DEMO = demoStore({
 
 export const LUMIERE = libraryTemplate({
   key: LUMIERE_KEY,
-  version: 1,
+  version: 2,
   name: L("لوميير", "Lumière"),
   description: L(
     "مجوهرات فاخرة: الدهب في العنوان، المجموعات، حكاية ٤ أجيال والصايغ. أربع صفحات جاهزة.",

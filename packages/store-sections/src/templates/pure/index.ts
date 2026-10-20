@@ -184,7 +184,7 @@ const DEMO = demoStore({
 
 export const PURE = libraryTemplate({
   key: PURE_KEY,
-  version: 1,
+  version: 2,
   name: L("بيور", "Pure"),
   description: L(
     "عناية بالبشرة بهدوء: مكونات واضحة، روتين من ٤ خطوات وتقييمات. أربع صفحات جاهزة.",

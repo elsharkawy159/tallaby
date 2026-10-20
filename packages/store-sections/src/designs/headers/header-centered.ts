@@ -16,7 +16,7 @@ export const headerCentered = defineDesign({
   description: L("اسم المتجر كبير في المنتصف بشعار قصير، والقائمة على الجانبين.", "The store name large in the centre with a tagline, the menu on both sides."),
   keywords: ["header", "centered", "logo", "boutique", "هيدر", "شعار", "منتصف"],
   tree: (t) =>
-    t.section({ label: L("الهيدر", "Header"), style: { paddingTop: 0, paddingBottom: 0, background: "background" } }, [
+    t.section({ label: L("الهيدر", "Header"), style: { paddingTop: 0, paddingBottom: 0, background: "background" }, mobile: { paddingTop: 0, paddingBottom: 0 } }, [
       t.container(
         [
           t.grid(

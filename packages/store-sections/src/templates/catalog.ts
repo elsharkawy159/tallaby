@@ -110,8 +110,8 @@ WHERE is_default AND key <> ${sqlText(template.key)};
 `;
 }
 
-/** The default's row stays (stores point at its key): roll back to the version before. */
-function defaultRollback(template: TemplateDefinition): string {
+/** The default's row stays (stores point at its key), and so does a later version's: roll back to the version before. */
+function versionRollback(template: TemplateDefinition): string {
   return `-- Rollback: make version ${template.version - 1} current again, then remove version ${template.version}:
 --   UPDATE templates t SET current_version_id = v.id FROM template_versions v
 --   WHERE t.key = ${sqlText(template.key)} AND v.template_id = t.id AND v.version = ${template.version - 1};
@@ -163,6 +163,6 @@ FROM template_versions v
 WHERE t.key = ${sqlText(template.key)} AND v.template_id = t.id AND v.version = ${template.version}
   AND t.current_version_id IS DISTINCT FROM v.id;
 
-${template.isDefault ? defaultRollback(template) : `-- Rollback: DELETE FROM templates WHERE key = ${sqlText(template.key)}; (cascades to its versions and installs).`}
+${template.isDefault || template.version > 1 ? versionRollback(template) : `-- Rollback: DELETE FROM templates WHERE key = ${sqlText(template.key)}; (cascades to its versions and installs).`}
 `;
 }

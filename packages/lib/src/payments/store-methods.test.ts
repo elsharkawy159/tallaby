@@ -3,11 +3,46 @@ import {
   STORE_PAYMENT_METHODS,
   defaultStorePayments,
   ibanChecksumValid,
+  isStorefrontCheckoutMethodAllowed,
   maskPaymentDetails,
   operatorHint,
   parseStorePayments,
+  storefrontCheckoutMethods,
   validateMethodChange,
 } from "./store-methods";
+
+describe("storefrontCheckoutMethods", () => {
+  const wallet = { enabled: true, details: { holderName: "Omar", phone: "01012345678" } };
+
+  it("offers only COD for a COD-only store", () => {
+    expect(storefrontCheckoutMethods(defaultStorePayments())).toEqual({
+      methods: ["cash_on_delivery"],
+      codMaxOrder: null,
+      codNote: null,
+    });
+  });
+
+  it("maps enabled wallets and InstaPay to the existing manual methods; WE Pay and Orange show nothing", () => {
+    const out = storefrontCheckoutMethods({
+      cod: { enabled: false, fee: 0, maxOrder: 500 },
+      vodafone_cash: wallet,
+      we_pay: wallet,
+      orange_cash: wallet,
+      instapay: { enabled: true, details: { holderName: "Omar", ipa: "omar@instapay" } },
+    });
+    expect(out.methods).toEqual(["instapay", "vodafone_cash"]);
+    expect(out.codMaxOrder).toBeNull();
+  });
+
+  it("refuses methods the store has not enabled, and COD above the max order", () => {
+    const checkout = storefrontCheckoutMethods({ cod: { enabled: true, fee: 0, maxOrder: 1000 } });
+    expect(isStorefrontCheckoutMethodAllowed(checkout, "cash_on_delivery", 1000)).toBe(true);
+    expect(isStorefrontCheckoutMethodAllowed(checkout, "cash_on_delivery", 1000.01)).toBe(false);
+    for (const m of ["instapay", "online_payment", "wallet", "wallet_instapay"]) {
+      expect(isStorefrontCheckoutMethodAllowed(checkout, m, 10), m).toBe(false);
+    }
+  });
+});
 
 describe("catalog", () => {
   it("has COD live and on by default, wallets and InstaPay live, the rest soon", () => {

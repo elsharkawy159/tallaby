@@ -177,7 +177,7 @@ const DEMO = demoStore({
 
 export const CORE = libraryTemplate({
   key: CORE_KEY,
-  version: 1,
+  version: 2,
   name: L("كور", "Core"),
   description: L(
     "معدات قوة: منتج مميز بتاج عرض، الأرقام، عرضين والأكثر طلباً. أربع صفحات جاهزة.",

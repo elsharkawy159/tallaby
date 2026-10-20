@@ -94,7 +94,7 @@ export const ATELIER_DESIGNS: readonly Design[] = [
 
 export const ATELIER: TemplateDefinition = {
   key: ATELIER_KEY,
-  version: 1,
+  version: 2,
   name: { ar: "أتيليه", en: "Atelier" },
   description: {
     ar: "موضة راقية: خط كلاسيكي كبير وألوان عاجية هادئة وزوايا حادة. أربع صفحات جاهزة.",
@@ -102,7 +102,7 @@ export const ATELIER: TemplateDefinition = {
   },
   category: "fashion",
   sortOrder: 10,
-  changelog: "Atelier v1: centered crest header, 7 home sections, The house, Contact and FAQ pages, centered links footer",
+  changelog: "Atelier v2: no header padding-y on mobile",
   palette: ["#f6f1e9", "#ece4d6", "#b8925a", "#1a1714"],
   config: atelierConfig,
   pageNames: {

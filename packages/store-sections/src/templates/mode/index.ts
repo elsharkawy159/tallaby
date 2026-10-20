@@ -247,7 +247,7 @@ const DEMO = demoStore({
 
 export const MODE = libraryTemplate({
   key: MODE_KEY,
-  version: 1,
+  version: 2,
   name: L("مود", "Mode"),
   description: L(
     "بوتيك موضة عصري: ألوان جريئة وزوايا ناعمة وأزرار دائرية. أربع صفحات جاهزة.",

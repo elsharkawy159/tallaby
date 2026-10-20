@@ -203,7 +203,7 @@ const DEMO = demoStore({
 
 export const BOTANICA = libraryTemplate({
   key: BOTANICA_KEY,
-  version: 1,
+  version: 2,
   name: L("بوتانيكا", "Botanica"),
   description: L(
     "عناية طبيعية بالشعر والجسم: من المزرعة للإزازة، ريفيل، تقييمات ورسالة المؤسسة. أربع صفحات جاهزة.",

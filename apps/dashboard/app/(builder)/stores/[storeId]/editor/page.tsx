@@ -80,6 +80,7 @@ export default async function StoreEditorPage({ params }: { params: Promise<{ st
     catalog,
     catalogMode: store.catalogMode ?? "all",
     isLive: Boolean(status?.isLive),
+    hasUnpublishedChanges: status?.hasUnpublishedChanges ?? true,
     previewEnabled: storePreviewSecret() !== null,
     templates: { currentKey: gallery?.currentKey ?? "", items: toTemplateCardViews(gallery?.templates ?? []) },
     fontClassName: storeFontVariables,

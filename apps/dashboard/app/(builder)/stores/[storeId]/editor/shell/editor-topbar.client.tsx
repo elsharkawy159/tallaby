@@ -53,6 +53,7 @@ export function EditorTopbar({
   readOnly,
   publishing,
   isLive,
+  hasChanges,
   onPublish,
   onShowShortcuts,
 }: {
@@ -68,6 +69,8 @@ export function EditorTopbar({
   readOnly: boolean;
   publishing: boolean;
   isLive: boolean;
+  /** Something to publish: disabled otherwise. */
+  hasChanges: boolean;
   onPublish: () => void;
   onShowShortcuts: () => void;
 }) {
@@ -185,7 +188,7 @@ export function EditorTopbar({
         </IconAction>
         <Divider />
         <SaveState status={saveStatus} onRetry={onRetrySave} />
-        <Button size="sm" className="h-8" onClick={onPublish} disabled={publishing || readOnly || saveStatus === "conflict"}>
+        <Button size="sm" className="h-8" onClick={onPublish} disabled={publishing || readOnly || !hasChanges || saveStatus === "conflict"}>
           {publishing ? <LoaderCircle className="animate-spin" aria-hidden /> : <UploadCloud aria-hidden />}
           {t(isLive ? "publishChanges" : "publish")}
         </Button>

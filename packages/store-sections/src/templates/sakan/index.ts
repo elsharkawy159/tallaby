@@ -169,7 +169,7 @@ const DEMO = demoStore({
 
 export const SAKAN = libraryTemplate({
   key: SAKAN_KEY,
-  version: 1,
+  version: 2,
   name: L("سكن", "Sakan"),
   description: L(
     "أثاث المعيشة والنوم: لوك بوك، تسوق حسب الأوضة، اختار القماش ومواعيد التوصيل. أربع صفحات جاهزة.",

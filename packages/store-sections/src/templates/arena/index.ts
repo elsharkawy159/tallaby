@@ -178,7 +178,7 @@ const DEMO = demoStore({
 
 export const ARENA = libraryTemplate({
   key: ARENA_KEY,
-  version: 1,
+  version: 2,
   name: L("أرينا", "Arena"),
   description: L(
     "أدوات جيمنج بالوضع الداكن: فيلم للمتجر، ماركات، فيديو السيت أب وشروط الضمان. أربع صفحات جاهزة.",

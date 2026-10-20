@@ -184,7 +184,7 @@ const DEMO = demoStore({
 
 export const LOAF = libraryTemplate({
   key: LOAF_KEY,
-  version: 1,
+  version: 2,
   name: L("لوف", "Loaf"),
   description: L(
     "مخبز واشتراكات ساوردو: كلمة كبيرة، رف طازة النهارده واشتراك أسبوعي. أربع صفحات جاهزة.",

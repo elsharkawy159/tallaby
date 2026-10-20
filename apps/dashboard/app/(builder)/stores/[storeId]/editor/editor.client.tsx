@@ -66,6 +66,8 @@ export type EditorInitial = {
   /** `all` or `selected` (D24): where "add products" sends the seller. */
   catalogMode: string;
   isLive: boolean;
+  /** The drafts differ from the live revision (getStoreSiteStatus). */
+  hasUnpublishedChanges: boolean;
   /** STORE_PREVIEW_SECRET is configured (P4-08). */
   previewEnabled: boolean;
   /** Add › Templates: the gallery and this store's current template. */
@@ -121,6 +123,15 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
   const { flush, saveStatus } = useEditorAutosave(initial.storeId, store);
   const [publishing, setPublishing] = useState(false);
   const [isLive, setIsLive] = useState(initial.isLive);
+  // Any draft edit (pages, chrome, design) counts until the next publish; reverted edits still count.
+  const [hasChanges, setHasChanges] = useState(() => initial.hasUnpublishedChanges || store.getState().saveStatus !== "saved");
+  useEffect(
+    () =>
+      store.subscribe((s, prev) => {
+        if (s.pages !== prev.pages || s.header !== prev.header || s.footer !== prev.footer || s.designSystem !== prev.designSystem) setHasChanges(true);
+      }),
+    [store],
+  );
   const [panelOpen, setPanelOpen] = useState(true);
   const [quickInsert, setQuickInsert] = useState<{ open: boolean; index: number | null }>({ open: false, index: null });
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
@@ -244,6 +255,7 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
       const result = await publish(initial.storeId);
       if (result.success) {
         setIsLive(true);
+        setHasChanges(false);
         toast.success(t("published", { number: result.data.revisionNumber }));
       } else {
         toast.error(t(`errors.${result.error}`));
@@ -292,6 +304,7 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
         readOnly={initial.readOnly}
         publishing={publishing}
         isLive={isLive}
+        hasChanges={hasChanges}
         onPublish={() => void onPublish()}
         onShowShortcuts={() => setShortcutsOpen(true)}
       />

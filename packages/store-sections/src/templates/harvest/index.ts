@@ -176,7 +176,7 @@ const DEMO = demoStore({
 
 export const HARVEST = libraryTemplate({
   key: HARVEST_KEY,
-  version: 1,
+  version: 2,
   name: L("هارفست", "Harvest"),
   description: L(
     "بقالة أونلاين: بحث سريع، أقسام، عروض الأسبوع وأساسيات كل يوم. أربع صفحات جاهزة.",

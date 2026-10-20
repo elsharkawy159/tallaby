@@ -17,7 +17,7 @@ export const headerClassic = defineDesign({
   description: L("سطر إعلان، ثم الشعار والقائمة ومربع البحث والسلة.", "An announcement line, then the logo, menu, search box and cart."),
   keywords: ["header", "navigation", "menu", "classic", "هيدر", "قائمة", "كلاسيك"],
   tree: (t) =>
-    t.section({ label: L("الهيدر", "Header"), style: { paddingTop: 0, paddingBottom: 0, background: "background" } }, [
+    t.section({ label: L("الهيدر", "Header"), style: { paddingTop: 0, paddingBottom: 0, background: "background" }, mobile: { paddingTop: 0, paddingBottom: 0 } }, [
       t.text(L("توصيل مجاني للطلبات فوق ١٥٠٠ ج.م", "Free delivery on orders over EGP 1,500"), {
         role: "announcement",
         style: {

@@ -173,7 +173,7 @@ const DEMO = demoStore({
 
 export const PLAYROOM = libraryTemplate({
   key: PLAYROOM_KEY,
-  version: 1,
+  version: 2,
   name: L("بلاي روم", "Playroom"),
   description: L(
     "ألعاب خشب: حملات، تسوق حسب السن، بوكس عيد الميلاد وصور اللعب. أربع صفحات جاهزة.",

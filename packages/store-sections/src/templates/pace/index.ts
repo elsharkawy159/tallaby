@@ -166,7 +166,7 @@ const DEMO = demoStore({
 
 export const PACE = libraryTemplate({
   key: PACE_KEY,
-  version: 1,
+  version: 2,
   name: L("بيس", "Pace"),
   description: L(
     "أدوات رياضة: جيم البيت، اختيارات الكوتشات، مميزات الساعة وعروض بالمبلغ. أربع صفحات جاهزة.",

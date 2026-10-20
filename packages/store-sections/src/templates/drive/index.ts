@@ -171,7 +171,7 @@ const DEMO = demoStore({
 
 export const DRIVE = libraryTemplate({
   key: DRIVE_KEY,
-  version: 1,
+  version: 2,
   name: L("درايف", "Drive"),
   description: L(
     "تكنولوجيا وعناية العربية: بحث الأول، أقسام، أكواد بالمبلغ وأسئلة السواقين. أربع صفحات جاهزة.",

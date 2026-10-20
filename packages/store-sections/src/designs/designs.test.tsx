@@ -187,6 +187,14 @@ describe("section designs", () => {
     for (const need of treeDataNeeds(empty.componentTree)) expect(html).toContain(`data-action="${need}"`);
   });
 
+  it("keeps each header's own padding-y on mobile (not the section's 40px default)", () => {
+    for (const design of DESIGNS.filter((d) => d.category === "headers")) {
+      const [root] = instantiateDesign(design, { id: "d1" }).componentTree!;
+      const { paddingTop, paddingBottom } = root!.style ?? {};
+      expect(root!.breakpointStyles?.mobile, design.id).toMatchObject({ paddingTop, paddingBottom });
+    }
+  });
+
   it("gives two inserted copies of a design no shared node ids", () => {
     for (const design of DESIGNS) {
       const a = new Set(walk(instantiateDesign(design, { id: "a" }).componentTree!).map((n) => n.id));

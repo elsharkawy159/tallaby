@@ -24,7 +24,7 @@ export const headerSearch = defineDesign({
   description: L("مربع بحث عريض وسلة، وتحتهما صف أقسام وملاحظة التوصيل.", "A wide search box and cart, over a row of categories and a delivery note."),
   keywords: ["header", "search", "categories", "mega menu", "بحث", "هيدر", "أقسام"],
   tree: (t) =>
-    t.section({ label: L("الهيدر", "Header"), style: { paddingTop: 0, paddingBottom: 0, background: "background" } }, [
+    t.section({ label: L("الهيدر", "Header"), style: { paddingTop: 0, paddingBottom: 0, background: "background" }, mobile: { paddingTop: 0, paddingBottom: 0 } }, [
       t.container(
         [
           t.row(

@@ -199,7 +199,7 @@ const DEMO = demoStore({
 
 export const STREETWEAR = libraryTemplate({
   key: STREETWEAR_KEY,
-  version: 1,
+  version: 2,
   name: L("ستريت وير", "Streetwear"),
   description: L(
     "موضة شارع جريئة: أبيض وأسود وأخضر ليموني، زوايا حادة وخط عريض. أربع صفحات جاهزة.",

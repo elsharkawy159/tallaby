@@ -243,7 +243,7 @@ const DEMO = demoStore({
 
 export const KASR = libraryTemplate({
   key: KASR_KEY,
-  version: 1,
+  version: 2,
   name: L("قصر", "Kasr"),
   description: L(
     "موضة تحريرية: لوك بوك وفيديو وتقييمات على المنتجات، بخط كلاسيكي وزوايا حادة. أربع صفحات جاهزة.",

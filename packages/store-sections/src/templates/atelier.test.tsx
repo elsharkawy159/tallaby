@@ -14,7 +14,8 @@ import { ATELIER, ATELIER_DESIGNS, atelierConfig } from "./atelier";
 import { CODE_TEMPLATES, TEMPLATE_JSON_END, TEMPLATE_JSON_START, getCodeTemplate, templateConfigJson, templateSeedSql } from "./catalog";
 import { prepareTemplateForStore, templateFormNeeds } from "./prepare";
 
-const MIGRATION = join(__dirname, "../../../db/migrations/0070_atelier_template.sql");
+const SEED = "0084_mobile_header_padding.sql";
+const MIGRATION = join(__dirname, "../../../db/migrations", SEED);
 
 const walk = (nodes: readonly ComponentNode[] | undefined): ComponentNode[] => (nodes ?? []).flatMap((n) => [n, ...walk(n.children)]);
 const sections = (config = atelierConfig()): SectionInstance[] => [config.header!, config.footer!, ...config.pages.flatMap((p) => p.content.sections)];
@@ -150,10 +151,11 @@ describe("Atelier template", () => {
     expect(ATELIER_DESIGNS.every((d) => d.id.startsWith("atelier-"))).toBe(true);
   });
 
-  it("matches the committed 0070 seed (regenerate with template:sql)", () => {
+  it("matches the committed 0084 seed (regenerate with template:sql)", () => {
     const sql = readFileSync(MIGRATION, "utf8").replace(/\r\n/g, "\n");
-    expect(sql).toBe(templateSeedSql(ATELIER, "0070_atelier_template.sql"));
-    const json = sql.split(TEMPLATE_JSON_START)[1]!.split(TEMPLATE_JSON_END)[0]!.trim().replace(/^'|'::jsonb,$/g, "").replace(/''/g, "'");
+    const seed = templateSeedSql(ATELIER, SEED);
+    expect(sql).toContain(seed);
+    const json = seed.split(TEMPLATE_JSON_START)[1]!.split(TEMPLATE_JSON_END)[0]!.trim().replace(/^'|'::jsonb,$/g, "").replace(/''/g, "'");
     expect(JSON.parse(json)).toEqual(JSON.parse(templateConfigJson(ATELIER)));
   });
 });

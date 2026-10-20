@@ -177,7 +177,7 @@ const DEMO = demoStore({
 
 export const HEARTH = libraryTemplate({
   key: HEARTH_KEY,
-  version: 1,
+  version: 2,
   name: L("هيرث", "Hearth"),
   description: L(
     "أدوات طبخ وتقديم: صورة عريضة، إزاي بنختار، كوبون ترحيب وتقييم العملاء. أربع صفحات جاهزة.",

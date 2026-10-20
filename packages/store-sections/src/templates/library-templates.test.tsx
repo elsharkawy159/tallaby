@@ -17,16 +17,13 @@ import { prepareTemplateForStore, templateFormNeeds } from "./prepare";
 
 /** Each batch's generated seed migration (regenerate with `template:sql <keys> <file>`). */
 const SEEDS: Record<string, readonly string[]> = {
-  "0074_fashion_templates.sql": ["mode", "streetwear", "kasr"],
-  "0075_electronics_templates.sql": ["techhub", "volt", "arcade", "arena"],
-  "0076_beauty_templates.sql": ["pure", "glow", "elixir", "botanica"],
-  "0077_home_kitchen_templates.sql": ["nest", "daily", "hearth", "clay"],
-  "0078_food_templates.sql": ["sizzle", "harvest", "loaf", "roast"],
-  "0079_furniture_templates.sql": ["verdant", "loft", "oak", "sakan"],
-  "0080_jewelry_templates.sql": ["lumiere", "karat", "fadda"],
-  "0081_kids_templates.sql": ["playroom", "bambino", "doodle", "hekaya"],
-  "0082_sports_templates.sql": ["pace", "stride", "core", "basecamp"],
-  "0083_auto_templates.sql": ["garage", "drive", "moto"],
+  // 0074–0083 seeded v1 by category; 0084 (v2, mobile header padding) also seeds Classic and Atelier first.
+  "0084_mobile_header_padding.sql": [
+    ...["mode", "streetwear", "kasr", "techhub", "volt", "arcade", "arena", "pure", "glow", "elixir", "botanica"],
+    ...["nest", "daily", "hearth", "clay", "sizzle", "harvest", "loaf", "roast", "verdant", "loft", "oak", "sakan"],
+    ...["lumiere", "karat", "fadda", "playroom", "bambino", "doodle", "hekaya", "pace", "stride", "core", "basecamp"],
+    ...["garage", "drive", "moto"],
+  ],
 };
 
 const walk = (nodes: readonly ComponentNode[] | undefined): ComponentNode[] => (nodes ?? []).flatMap((n) => [n, ...walk(n.children)]);
@@ -178,8 +175,9 @@ describe("library template seeds", () => {
   it.each(Object.entries(SEEDS))("%s matches the package (regenerate with template:sql)", (file, keys) => {
     const sql = readFileSync(join(__dirname, "../../../db/migrations", file), "utf8").replace(/\r\n/g, "\n");
     const templates = keys.map((k) => getCodeTemplate(k)!);
-    expect(sql).toBe(templatesSeedSql(templates, file));
-    const blocks = sql.split(TEMPLATE_JSON_START).slice(1);
+    const seed = templatesSeedSql(templates, file);
+    expect(sql).toContain(seed);
+    const blocks = seed.split(TEMPLATE_JSON_START).slice(1);
     expect(blocks).toHaveLength(templates.length);
     blocks.forEach((block, i) => {
       const json = block.split(TEMPLATE_JSON_END)[0]!.trim().replace(/^'|'::jsonb,$/g, "").replace(/''/g, "'");
