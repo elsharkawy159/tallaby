@@ -125,6 +125,7 @@ describe("editor store", () => {
       footer: null,
       designSystem: { colors: {}, typography: {}, spacing: {} },
       designVersion: 0,
+      chromeVersion: 1,
       defaultLocale: "ar",
     });
 

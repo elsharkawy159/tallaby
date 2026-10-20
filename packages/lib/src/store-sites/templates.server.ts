@@ -339,6 +339,7 @@ export async function applyStoreTemplate(
         .set({
           sharedHeader: merged.header,
           sharedFooter: merged.footer,
+          chromeVersion: sql`${stores.chromeVersion} + 1`,
           templateKey: template.key,
           previousTemplateKey: store.templateKey,
           updatedAt: sql`now()`,
@@ -470,6 +471,7 @@ export async function undoStoreTemplate(
         .set({
           sharedHeader: saved.header,
           sharedFooter: saved.footer,
+          chromeVersion: sql`${stores.chromeVersion} + 1`,
           templateKey: saved.templateKey,
           previousTemplateKey: saved.previousTemplateKey,
           updatedAt: sql`now()`,

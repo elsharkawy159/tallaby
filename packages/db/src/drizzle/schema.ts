@@ -2525,6 +2525,10 @@ export const stores = pgTable("stores", {
 	schemaVersion: integer("schema_version").default(1).notNull(),
 	sharedHeader: jsonb("shared_header"),
 	sharedFooter: jsonb("shared_footer"),
+	/** Optimistic-concurrency counter for shared_header/shared_footer (0085). */
+	chromeVersion: integer("chrome_version").default(1).notNull(),
+	/** Set when an admin saves this store's site drafts (0085). */
+	siteEditedByAdminAt: timestamp("site_edited_by_admin_at", { withTimezone: true, mode: 'string' }),
 	publishedRevisionId: uuid("published_revision_id"),
 	firstPublishedAt: timestamp("first_published_at", { withTimezone: true, mode: 'string' }),
 	lastPublishedAt: timestamp("last_published_at", { withTimezone: true, mode: 'string' }),

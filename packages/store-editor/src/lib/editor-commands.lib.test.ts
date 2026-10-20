@@ -10,6 +10,7 @@ function setup() {
     footer: null,
     designSystem: { colors: {}, typography: {}, spacing: {} },
     designVersion: 1,
+    chromeVersion: 1,
     defaultLocale: "ar",
   });
   const sections = () => store.getState().pages[0]!.content.sections;

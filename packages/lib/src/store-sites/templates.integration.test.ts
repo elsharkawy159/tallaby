@@ -59,6 +59,14 @@ describe.skipIf(!TEST_DATABASE_URL)("store templates (integration)", { timeout: 
     return (row?.version ?? 0) >= 3;
   };
 
+  it("applyStoreTemplate bumps chrome_version", async (t) => {
+    if (!(await classicV3())) return t.skip();
+    const before = (await getStoreForEditor(w.a.sellerId, w.a.a2, db))!.store.chromeVersion;
+    expect((await applyStoreTemplate(w.a.sellerId, w.a.a2, "tallaby-classic", w.a.sellerId, OPTIONS, db)).success).toBe(true);
+    expect((await getStoreForEditor(w.a.sellerId, w.a.a2, db))!.store.chromeVersion).toBeGreaterThan(before);
+    expect((await undoStoreTemplate(w.a.sellerId, w.a.a2, db)).success).toBe(true);
+  });
+
   it("applies to drafts only, replaces the home sections, and leaves other stores alone", async (t) => {
     if (!(await classicV3())) return t.skip();
     // A2 started from Classic (store scaffold); the seller removed all but the hero and added a section.

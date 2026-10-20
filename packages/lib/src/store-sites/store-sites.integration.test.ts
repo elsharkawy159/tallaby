@@ -10,6 +10,7 @@ import {
   getStoreForEditor,
   publishStoreSite,
   restoreRevisionToDraft,
+  saveStoreChrome,
   saveStorePageDraft,
 } from "./server";
 
@@ -147,6 +148,24 @@ describe.skipIf(!TEST_DATABASE_URL)("store sites (integration)", () => {
     const [page] = await db.select().from(s.storePages).where(eq(s.storePages.id, homeA));
     expect(page!.draftContent).toMatchObject({ sections: [{ props: { title: "Published v1" } }] });
     expect((await getPublishedStoreSite(storeA, db))?.pages[0]?.content.sections[0]?.props.title).toBe("Draft v2");
+  });
+
+  it("saveStoreChrome with a stale version returns version_conflict and leaves shared_header unchanged", async () => {
+    const header = { id: "hdr", sectionId: "store-header", version: 1, props: { announcement: "first" } };
+    const stale = { ...header, props: { announcement: "stale" } };
+    const v = (await getStoreForEditor(sellerA, storeA, db))!.store.chromeVersion;
+    expect(await saveStoreChrome(sellerA, storeA, "header", header, v, { allowedSections: ALLOWED }, db)).toEqual({ success: true, data: { version: v + 1 } });
+    expect(await saveStoreChrome(sellerA, storeA, "header", stale, v, { allowedSections: ALLOWED }, db)).toEqual({ success: false, error: "version_conflict" });
+    const [store] = await db.select().from(s.stores).where(eq(s.stores.id, storeA));
+    expect(store!.sharedHeader).toMatchObject({ props: { announcement: "first" } });
+    expect(store!.chromeVersion).toBe(v + 1);
+  });
+
+  it("restoreRevisionToDraft bumps chrome_version", async () => {
+    const revisions = await db.select().from(s.storeSiteRevisions).where(eq(s.storeSiteRevisions.storeId, storeA));
+    const before = (await getStoreForEditor(sellerA, storeA, db))!.store.chromeVersion;
+    expect((await restoreRevisionToDraft(sellerA, storeA, revisions[0]!.id, db)).success).toBe(true);
+    expect((await getStoreForEditor(sellerA, storeA, db))!.store.chromeVersion).toBe(before + 1);
   });
 
   it("refuses restoring another store's revision", async () => {

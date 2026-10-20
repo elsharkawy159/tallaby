@@ -73,6 +73,7 @@ async function loadOwnStore(q: Queryable, sellerId: string, storeId: string, loc
       supportedLocales: stores.supportedLocales,
       sharedHeader: stores.sharedHeader,
       sharedFooter: stores.sharedFooter,
+      chromeVersion: stores.chromeVersion,
       sellerStatus: sellers.status,
     })
     .from(stores)
@@ -313,7 +314,12 @@ export async function restoreRevisionToDraft(
         .where(eq(storeDesignSystems.storeId, storeId));
       await tx
         .update(stores)
-        .set({ sharedHeader: config.header, sharedFooter: config.footer, updatedAt: sql`now()` })
+        .set({
+          sharedHeader: config.header,
+          sharedFooter: config.footer,
+          chromeVersion: sql`${stores.chromeVersion} + 1`,
+          updatedAt: sql`now()`,
+        })
         .where(eq(stores.id, storeId));
 
       for (const [index, page] of config.pages.entries()) {
@@ -493,16 +499,22 @@ export async function saveStoreDesignSystem(
   return row ? { success: true, data: { version: row.version } } : { success: false, error: "version_conflict" };
 }
 
-/** The shared header or footer (null removes it). Validated like page content. */
+/**
+ * The shared header or footer (null removes it). Validated like page content.
+ * Optimistic concurrency on `stores.chrome_version` (one counter for both
+ * parts): the UPDATE only applies while it still equals the client's.
+ */
 export async function saveStoreChrome(
   sellerId: string,
   storeId: string,
   part: "header" | "footer",
   instance: unknown,
+  clientVersion: number,
   options: BuilderOptions = {},
   q: Queryable = db,
-): Promise<SiteResult<null, WriteError | "invalid_content">> {
+): Promise<SiteResult<{ version: number }, WriteError | "invalid_content" | "version_conflict">> {
   if (part !== "header" && part !== "footer") return { success: false, error: "invalid_content" };
+  if (!Number.isInteger(clientVersion)) return { success: false, error: "invalid_content" };
   const found = await writableStore(q, sellerId, storeId);
   if ("error" in found) return { success: false, error: found.error };
   let value: unknown = null;
@@ -512,11 +524,13 @@ export async function saveStoreChrome(
     if (validated.data.sections.length !== 1) return { success: false, error: "invalid_content" };
     value = validated.data.sections[0];
   }
-  await q
+  const bump = { chromeVersion: sql`${stores.chromeVersion} + 1`, updatedAt: sql`now()` };
+  const [row] = await q
     .update(stores)
-    .set(part === "header" ? { sharedHeader: value, updatedAt: sql`now()` } : { sharedFooter: value, updatedAt: sql`now()` })
-    .where(and(eq(stores.id, storeId), eq(stores.sellerId, sellerId)));
-  return { success: true, data: null };
+    .set(part === "header" ? { sharedHeader: value, ...bump } : { sharedFooter: value, ...bump })
+    .where(and(eq(stores.id, storeId), eq(stores.sellerId, sellerId), eq(stores.chromeVersion, clientVersion)))
+    .returning({ version: stores.chromeVersion });
+  return row ? { success: true, data: { version: row.version } } : { success: false, error: "version_conflict" };
 }
 
 export type PageWriteError = WriteError | "invalid_input" | "invalid_slug" | "reserved_slug" | "slug_taken" | "too_many_pages";

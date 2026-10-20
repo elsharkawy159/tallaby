@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useStore } from "zustand";
 import { useEditorAdapter } from "../adapter.client";
+import { saveDirtyChrome } from "./chrome-save.lib";
 import { hasPendingChanges, type EditorStore } from "./editor.store";
 
 const DEBOUNCE_MS = 1500;
@@ -38,16 +39,10 @@ export function useEditorAutosave(store: EditorStore) {
       store.getState().markPageSaved(pageId, result.data.draftVersion, content);
     }
 
-    for (const part of ["header", "footer"] as const) {
-      if (!store.getState().dirtyChrome[part]) continue;
-      const value = store.getState()[part];
-      // Header/footer versions are not tracked yet (0 = none); the seller adapter ignores it.
-      const result = await adapter.saveChrome(part, value, 0);
-      if (!result.success) {
-        store.getState().setSaveStatus("error");
-        return false;
-      }
-      store.getState().markChromeSaved(part, value);
+    const chrome = await saveDirtyChrome(store, adapter);
+    if (chrome !== "ok") {
+      store.getState().setSaveStatus(chrome);
+      return false;
     }
 
     if (store.getState().dirtyDesign) {

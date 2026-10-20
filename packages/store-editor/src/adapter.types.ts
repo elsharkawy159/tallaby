@@ -54,7 +54,7 @@ export type EditorAdapter = {
   capabilities: EditorCapabilities;
   saveDraft(pageId: string, content: unknown, clientVersion: number): Promise<EditorResult<{ draftVersion: number }>>;
   saveDesignSystem(designSystem: unknown, clientVersion: number): Promise<EditorResult<{ version: number }>>;
-  saveChrome(part: "header" | "footer", instance: unknown, clientVersion: number): Promise<EditorResult<null>>;
+  saveChrome(part: "header" | "footer", instance: unknown, clientVersion: number): Promise<EditorResult<{ version: number }>>;
   draftVersions?(): Promise<EditorResult<DraftVersions>>;
   refreshData(): Promise<EditorResult<EditorCatalogSnapshot>>;
   publish(): Promise<EditorResult<{ revisionId: string; revisionNumber: number }>>;

@@ -76,6 +76,7 @@ export default async function StoreEditorPage({ params }: { params: Promise<{ st
     footer: footer.success ? footer.data : null,
     designSystem: designSystem.success ? designSystem.data : { colors: {}, typography: {}, spacing: {} },
     designVersion: editor.designSystem.version,
+    chromeVersion: editor.store.chromeVersion,
     defaultLocale: asLocale(editor.store.defaultLocale),
     locales: [...new Set(locales)],
     catalog,

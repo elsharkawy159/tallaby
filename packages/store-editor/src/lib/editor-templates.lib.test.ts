@@ -94,6 +94,7 @@ describe("applying a template page", () => {
       footer: null,
       designSystem,
       designVersion: 1,
+      chromeVersion: 1,
       defaultLocale: "ar",
     });
     const commands = createEditorCommands(store);

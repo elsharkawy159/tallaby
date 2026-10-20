@@ -63,6 +63,8 @@ export type EditorInitial = {
   footer: SectionInstance | null;
   designSystem: DesignSystem;
   designVersion: number;
+  /** stores.chrome_version: one counter for the header and footer drafts. */
+  chromeVersion: number;
   defaultLocale: SiteLocale;
   locales: SiteLocale[];
   catalog: Catalog;
@@ -113,6 +115,7 @@ function EditorRoot({ initial }: { initial: EditorInitial }) {
       footer: clean.footer,
       designSystem: initial.designSystem,
       designVersion: initial.designVersion,
+      chromeVersion: initial.chromeVersion,
       defaultLocale: initial.defaultLocale,
       industry: initial.industry ?? findIndustry(initial.category)?.id,
     });

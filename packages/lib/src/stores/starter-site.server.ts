@@ -69,10 +69,10 @@ export async function seedStarterSite(q: Queryable, store: StarterStore, withDes
   }
   // A header or footer the store already has stays.
   if (!store.sharedHeader && site.header) {
-    await q.update(stores).set({ sharedHeader: site.header }).where(and(eq(stores.id, store.id), isNull(stores.sharedHeader)));
+    await q.update(stores).set({ sharedHeader: site.header, chromeVersion: sql`${stores.chromeVersion} + 1` }).where(and(eq(stores.id, store.id), isNull(stores.sharedHeader)));
   }
   if (!store.sharedFooter && site.footer) {
-    await q.update(stores).set({ sharedFooter: site.footer }).where(and(eq(stores.id, store.id), isNull(stores.sharedFooter)));
+    await q.update(stores).set({ sharedFooter: site.footer, chromeVersion: sql`${stores.chromeVersion} + 1` }).where(and(eq(stores.id, store.id), isNull(stores.sharedFooter)));
   }
 
   let order = 0;

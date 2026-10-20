@@ -60,14 +60,15 @@ describe.skipIf(!TEST_DATABASE_URL)("store builder (integration)", { timeout: 60
 
   it("saves the header and footer from the section library only", async () => {
     const header = { id: "hdr", sectionId: "store-header", version: 1, props: { announcement: "شحن مجاني" } };
-    expect(await saveStoreChrome(w.a.sellerId, w.a.a2, "header", header, { allowedSections: ALLOWED }, db)).toEqual({ success: true, data: null });
+    const v0 = (await getStoreForEditor(w.a.sellerId, w.a.a2, db))!.store.chromeVersion;
+    expect(await saveStoreChrome(w.a.sellerId, w.a.a2, "header", header, v0, { allowedSections: ALLOWED }, db)).toEqual({ success: true, data: { version: v0 + 1 } });
     const [store] = await db.select().from(s.stores).where(eq(s.stores.id, w.a.a2));
     expect(store!.sharedHeader).toMatchObject({ sectionId: "store-header", props: { announcement: "شحن مجاني" } });
 
     const bad = { id: "x", sectionId: "custom-html", version: 1, props: {} };
-    expect(await saveStoreChrome(w.a.sellerId, w.a.a2, "footer", bad, { allowedSections: ALLOWED }, db)).toMatchObject({ error: "invalid_content" });
-    expect(await saveStoreChrome(w.a.sellerId, w.a.a2, "footer", null, { allowedSections: ALLOWED }, db)).toEqual({ success: true, data: null });
-    expect(await saveStoreChrome(w.b.sellerId, w.a.a2, "header", header, { allowedSections: ALLOWED }, db)).toMatchObject({ error: "not_found" });
+    expect(await saveStoreChrome(w.a.sellerId, w.a.a2, "footer", bad, v0 + 1, { allowedSections: ALLOWED }, db)).toMatchObject({ error: "invalid_content" });
+    expect(await saveStoreChrome(w.a.sellerId, w.a.a2, "footer", null, v0 + 1, { allowedSections: ALLOWED }, db)).toEqual({ success: true, data: { version: v0 + 2 } });
+    expect(await saveStoreChrome(w.b.sellerId, w.a.a2, "header", header, v0 + 2, { allowedSections: ALLOWED }, db)).toMatchObject({ error: "not_found" });
   });
 
   it("creates, renames, reorders and deletes pages with slug rules", async () => {

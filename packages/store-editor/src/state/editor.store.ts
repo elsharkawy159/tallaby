@@ -51,6 +51,8 @@ export type EditorState = {
   footer: SectionInstance | null;
   designSystem: DesignSystem;
   designVersion: number;
+  /** Version of the saved header/footer (shared by both); sent with every chrome save. */
+  chromeVersion: number;
   dirtyPages: Record<string, true>;
   dirtyChrome: { header?: true; footer?: true };
   dirtyDesign: boolean;
@@ -101,7 +103,7 @@ export type EditorActions = {
   setSaveStatus: (status: SaveStatus) => void;
   setImagePreview: (src: string | null) => void;
   markPageSaved: (pageId: string, version: number, content: PageContent) => void;
-  markChromeSaved: (part: "header" | "footer", value: SectionInstance | null) => void;
+  markChromeSaved: (part: "header" | "footer", value: SectionInstance | null, version: number) => void;
   markDesignSaved: (version: number, ds: DesignSystem) => void;
   /** Page list changes from the page manager (not part of undo history). */
   setPages: (pages: EditorPage[]) => void;
@@ -141,7 +143,7 @@ function restore(state: EditorState, snap: Snapshot): Partial<EditorState> {
   };
 }
 
-export function createEditorStore(initial: Pick<EditorState, "pages" | "header" | "footer" | "designSystem" | "designVersion" | "defaultLocale" | "industry">) {
+export function createEditorStore(initial: Pick<EditorState, "pages" | "header" | "footer" | "designSystem" | "designVersion" | "chromeVersion" | "defaultLocale" | "industry">) {
   const home = initial.pages.find((p) => p.isHome) ?? initial.pages[0]!;
   return createStore<EditorState & EditorActions>()((set, get) => {
     /** Applies an undoable change; the same `coalesceKey` in quick succession reuses the last undo step. */
@@ -242,12 +244,13 @@ export function createEditorStore(initial: Pick<EditorState, "pages" | "header" 
           if (page?.content === content) delete dirtyPages[pageId];
           return { pages, dirtyPages };
         }),
-      markChromeSaved: (part, value) =>
+      markChromeSaved: (part, value, version) =>
         set((state) => {
-          if (state[part] !== value) return {};
+          // The server bumped the version even if the seller kept editing meanwhile.
+          if (state[part] !== value) return { chromeVersion: version };
           const dirtyChrome = { ...state.dirtyChrome };
           delete dirtyChrome[part];
-          return { dirtyChrome };
+          return { chromeVersion: version, dirtyChrome };
         }),
       markDesignSaved: (version, ds) =>
         set((state) => ({ designVersion: version, dirtyDesign: state.designSystem === ds ? false : state.dirtyDesign })),

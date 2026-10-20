@@ -93,10 +93,10 @@ export async function saveDesignSystem(storeId: string, designSystem: unknown, c
   });
 }
 
-export async function saveChrome(storeId: string, part: "header" | "footer", instance: unknown) {
-  return withStore<null>(storeId, { forWrite: true }, async ({ seller, store }) => {
+export async function saveChrome(storeId: string, part: "header" | "footer", instance: unknown, clientVersion: number) {
+  return withStore<{ version: number }>(storeId, { forWrite: true }, async ({ seller, store }) => {
     if (!saveLimiter.check(`editor:${seller.sellerId}`)) return fail("rateLimited");
-    const result = await saveStoreChrome(seller.sellerId, store.id, part, instance, { allowedSections: ALLOWED });
+    const result = await saveStoreChrome(seller.sellerId, store.id, part, instance, Number(clientVersion), { allowedSections: ALLOWED });
     return result.success ? result : fail(result.error);
   });
 }

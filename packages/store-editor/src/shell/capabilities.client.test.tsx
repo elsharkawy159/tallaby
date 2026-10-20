@@ -33,6 +33,7 @@ function renderRail(capabilities: EditorCapabilities): string {
     footer: null,
     designSystem: { colors: {}, typography: {}, spacing: {} },
     designVersion: 1,
+    chromeVersion: 1,
     defaultLocale: "en",
     industry: undefined,
   });
