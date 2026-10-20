@@ -30,8 +30,12 @@
 | `packages/cache` | TS | Cache-tag registry, `createCachedQuery`, cross-app invalidation |
 | `packages/ui` | React | Shared shadcn/Radix components |
 | `packages/emails`, `packages/tiptap` | React | Email templates, rich-text editor |
+| `packages/store-sections` | React | Site-config schema, section registry and renderer, element-tree designs, the Tallaby Classic template |
+| `packages/store-editor` | React | The website builder UI and logic, shared by the dashboard and the admin app through an `EditorAdapter` |
 
 **[Planned]** `packages/store-sections`: the site-config schema, the section registry and renderer, and the "Tallaby Classic" template. Both the dashboard editor and the ecommerce storefront use it.
+
+**Website editor.** The editor lives in `packages/store-editor`, not in an app. It reaches data, saving, publishing, media and links only through an `EditorAdapter` plus a set of capabilities (for example revisions, media library, design system) that each host turns on or off. Four hosts supply an adapter: the seller dashboard (`apps/dashboard/app/(builder)/stores/[storeId]/editor`), and in `apps/admin` the store editor (`app/(builder)/stores/[storeId]/editor`), the library-section editor (`/sections`, `/sections/[id]/editor`) and the template editor (`/templates/[id]/editor`). Admin writes to a store's site are audited and mark the site as edited by an admin, which the seller sees as a banner. **Templates and library sections are mastered in the database** (`templates`/`template_versions` with drafts and meta, `library_sections`); the code under `packages/store-sections` is only an insert-only seed, so a deploy never overwrites an admin edit. New stores take the database default template.
 
 Commands: `pnpm lint`, `pnpm typecheck`, `pnpm test` (Vitest), `pnpm build`, and per package `pnpm --filter <name> <script>`. The repository has no E2E runner and no CI configuration.
 
