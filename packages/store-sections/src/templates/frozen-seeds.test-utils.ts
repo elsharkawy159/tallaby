@@ -12,6 +12,9 @@ import { join } from "node:path";
 export const FROZEN_SEEDS: Readonly<Record<string, string>> = {
   "0084_mobile_header_padding.sql": "90f03e8f937287e92573d34b9f75a7fb1bb4a96c1a410cf4c68a14855461fbc5",
   "0087_template_drafts.sql": "79948579f1858e299cda844f40ec9b23354ecbba94d5cf53214bb94676619790",
+  // Section library seed. frozen: applied on staging and production 2026-10-20; DB is the master copy.
+  // New designs go in a new migration from `section:sql --new-only NNNN_name.sql`.
+  "0086_library_sections.sql": "98dd403f0e31efa5ec47f3ff6f80641d54e3103f12e621478c3c3d63a9d9efbe",
 };
 
 /** sha256 of a migration file with CRLF normalised to LF. */
