@@ -154,7 +154,8 @@ describe("Tallaby Classic template", () => {
 
   it("still generates a seed whose config passes validateSiteConfig", () => {
     const seed = templateSeedSql(CLASSIC, SEED);
-    expect(seed).toContain("is_default = true");
+    expect(seed).not.toContain("DO UPDATE");
+    expect(seed).toMatch(/true,\s+true,\s+false,\s+ids\.version_id/); // is_default, is_active, is_premium
     const json = seed.split(TEMPLATE_JSON_START)[1]!.split(TEMPLATE_JSON_END)[0]!.trim().replace(/^'|'::jsonb,$/g, "").replace(/''/g, "'");
     expect(JSON.parse(json)).toEqual(JSON.parse(templateConfigJson(CLASSIC)));
     const validated = validateSiteConfig(JSON.parse(json));

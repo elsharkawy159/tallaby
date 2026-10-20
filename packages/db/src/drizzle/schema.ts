@@ -2660,6 +2660,13 @@ export const templates = pgTable("templates", {
 	price: numeric({ precision: 10, scale: 2 }),
 	sortOrder: integer("sort_order").default(0).notNull(),
 	currentVersionId: uuid("current_version_id"),
+	/** Admin's unpublished edit of the template (SiteConfig); null when there is none. */
+	draftConfig: jsonb("draft_config"),
+	draftVersion: integer("draft_version").default(1).notNull(),
+	draftUpdatedAt: timestamp("draft_updated_at", { withTimezone: true, mode: 'string' }),
+	/** Code-only data (TemplateMeta): pageNames, demo catalog, palette. */
+	meta: jsonb().default({}).notNull(),
+	deletedAt: timestamp("deleted_at", { withTimezone: true, mode: 'string' }),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
