@@ -4,7 +4,7 @@
  * migrations. Deactivating a template never changes stores already on it.
  * Changes are audited as platform rows (seller_id NULL), which needs 0069.
  */
-import { db, desc, eq, sql, stores, templateInstalls, templates, templateVersions } from "@workspace/db";
+import { db, desc, eq, isNull, sql, stores, templateInstalls, templates, templateVersions } from "@workspace/db";
 import { assertAdminActor, AdminActorError, writeAdminAudit, type Queryable } from "./guard.server";
 import { templateDefaultSchema, templateUpdateSchema } from "./saas.lib";
 
@@ -24,12 +24,14 @@ export async function listTemplatesForAdmin(q: Queryable = db) {
       price: templates.price,
       sortOrder: templates.sortOrder,
       updatedAt: templates.updatedAt,
+      hasDraft: sql<boolean>`${templates.draftConfig} IS NOT NULL`,
       currentVersion: sql<number | null>`(SELECT ${templateVersions.version} FROM ${templateVersions} WHERE ${templateVersions.id} = ${templates.currentVersionId})`,
       versions: sql<number>`(SELECT count(*)::int FROM ${templateVersions} WHERE ${templateVersions.templateId} = ${templates.id})`,
       installs: sql<number>`(SELECT count(*)::int FROM ${templateInstalls} WHERE ${templateInstalls.templateId} = ${templates.id} AND ${templateInstalls.undoneAt} IS NULL)`,
       storesUsing: sql<number>`(SELECT count(*)::int FROM ${stores} WHERE ${stores.templateKey} = ${templates.key} AND ${stores.deletedAt} IS NULL)`,
     })
     .from(templates)
+    .where(isNull(templates.deletedAt))
     .orderBy(templates.sortOrder, templates.key);
 }
 
@@ -49,7 +51,7 @@ export async function listTemplateVersionsForAdmin(templateId: string, q: Querya
     .orderBy(desc(templateVersions.version));
 }
 
-export type TemplateAdminError = "not_admin" | "invalid_input" | "not_found" | "no_change" | "default_inactive" | "migration_required";
+export type TemplateAdminError = "not_admin" | "invalid_input" | "not_found" | "no_change" | "default_inactive" | "default_template" | "migration_required";
 
 function isMissingAuditColumns(error: unknown): boolean {
   const code = (error as { code?: string })?.code ?? (error as { cause?: { code?: string } })?.cause?.code;
@@ -69,12 +71,12 @@ export async function updateTemplateByAdmin(
     const outcome = await q.transaction(async (tx): Promise<TemplateAdminError | null> => {
       await assertAdminActor(tx, actorId);
       const [row] = await tx
-        .select({ id: templates.id, key: templates.key, isActive: templates.isActive, isPremium: templates.isPremium, price: templates.price, sortOrder: templates.sortOrder, isDefault: templates.isDefault })
+        .select({ id: templates.id, key: templates.key, isActive: templates.isActive, isPremium: templates.isPremium, price: templates.price, sortOrder: templates.sortOrder, isDefault: templates.isDefault, deletedAt: templates.deletedAt })
         .from(templates)
         .where(eq(templates.id, templateId))
         .for("update");
-      if (!row) return "not_found";
-      if (row.isDefault && !isActive) return "default_inactive";
+      if (!row || row.deletedAt) return "not_found";
+      if (row.isDefault && !isActive) return "default_template";
       const before = { isActive: row.isActive, isPremium: row.isPremium, price: row.price, sortOrder: row.sortOrder };
       const after = { isActive, isPremium, price, sortOrder };
       if (JSON.stringify(before) === JSON.stringify(after)) return "no_change";
@@ -112,11 +114,11 @@ export async function setDefaultTemplateByAdmin(
     const outcome = await q.transaction(async (tx): Promise<TemplateAdminError | null> => {
       await assertAdminActor(tx, actorId);
       const [row] = await tx
-        .select({ id: templates.id, key: templates.key, isActive: templates.isActive, isDefault: templates.isDefault })
+        .select({ id: templates.id, key: templates.key, isActive: templates.isActive, isDefault: templates.isDefault, deletedAt: templates.deletedAt })
         .from(templates)
         .where(eq(templates.id, templateId))
         .for("update");
-      if (!row) return "not_found";
+      if (!row || row.deletedAt) return "not_found";
       if (row.isDefault) return "no_change";
       if (!row.isActive) return "default_inactive";
       const [previous] = await tx
