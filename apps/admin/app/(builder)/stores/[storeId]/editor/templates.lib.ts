@@ -6,7 +6,7 @@
  */
 import type { StoreTemplateCard } from "@workspace/lib/store-sites/server";
 import { getDesign, storeSectionRegistry } from "@workspace/store-sections/render";
-import { getCodeTemplate, getTemplateDesign, templateFormNeeds } from "@workspace/store-sections/templates";
+import { getTemplateDesign } from "@workspace/store-sections/templates";
 import type { TemplateCardView } from "@workspace/store-editor/templates.dto";
 
 /** A section's name: its design (tree sections, `source`) or its registry entry. */
@@ -20,8 +20,8 @@ function sectionName(id: string) {
 }
 
 export function toTemplateCardViews(templates: StoreTemplateCard[]): TemplateCardView[] {
+  // Swatches, page names and form kinds come from the database row (templates.meta, current version).
   return templates.map((template) => {
-    const code = getCodeTemplate(template.key);
     return {
       key: template.key,
       name: template.name,
@@ -31,9 +31,9 @@ export function toTemplateCardViews(templates: StoreTemplateCard[]): TemplateCar
       isDefault: template.isDefault,
       isPremium: template.isPremium,
       version: template.version,
-      palette: code?.palette ?? [],
-      formKinds: code ? templateFormNeeds(code.config()) : [],
-      pageNames: code?.pageNames,
+      palette: template.palette,
+      formKinds: template.formKinds,
+      pageNames: template.pageNames,
       pages: template.outline.map((page) => ({
         slug: page.slug,
         isHome: page.isHome,

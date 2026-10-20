@@ -3,9 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import { buildTemplateForm, getFormTemplate } from "@workspace/lib/store-forms";
-import { applyStoreTemplate, getStoreTemplateConfig, undoStoreTemplate } from "@workspace/lib/store-sites/server";
+import { applyStoreTemplate, getStoreTemplateConfig, getTemplateMeta, undoStoreTemplate } from "@workspace/lib/store-sites/server";
 import { contentOverrideKeys, storeSectionRegistry } from "@workspace/store-sections/render";
-import { getCodeTemplate } from "@workspace/store-sections/templates";
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
 import { TEMPLATE_ERRORS, type TemplateActionResult, type TemplatePreviewView } from "./templates.dto";
@@ -76,7 +75,7 @@ export async function templatePreview(storeId: string, templateKey: string): Pro
         footer: config.footer,
         pages: config.pages.map((page) => ({ slug: page.slug, isHome: page.isHome, name: page.name, sections: page.content.sections, content: page.content })),
         // Code templates bring a demo store, so the preview looks like the template's kind of shop.
-        demo: getCodeTemplate(String(templateKey))?.demo ?? null,
+        demo: (await getTemplateMeta(String(templateKey)))?.demo ?? null,
       },
     };
   } catch (error) {

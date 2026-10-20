@@ -18,6 +18,7 @@ import {
   getStoreDraftVersions,
   getStoreSiteStatus,
   getStoreTemplateConfig,
+  getTemplateMeta,
   listStoreRevisions,
   publishStoreSite,
   reorderStorePages,
@@ -35,7 +36,6 @@ import { storeUrl } from "@workspace/lib/storefront";
 import { findActiveCustomDomainForSubdomain } from "@workspace/lib/storefront/server";
 import { getStoreCatalog } from "@workspace/lib/stores/server";
 import { contentOverrideKeys, storeSectionRegistry } from "@workspace/store-sections/render";
-import { getCodeTemplate } from "@workspace/store-sections/templates";
 import {
   EDITOR_ERRORS,
   type EditorCatalogSnapshot,
@@ -496,7 +496,7 @@ export async function templatePreview(storeId: string, templateKey: string): Pro
           header: config.header,
           footer: config.footer,
           pages: config.pages.map((page) => ({ slug: page.slug, isHome: page.isHome, name: page.name, sections: page.content.sections, content: page.content })),
-          demo: getCodeTemplate(String(templateKey))?.demo ?? null,
+          demo: (await getTemplateMeta(String(templateKey)))?.demo ?? null,
         },
       };
     },

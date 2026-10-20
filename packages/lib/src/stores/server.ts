@@ -225,7 +225,7 @@ export async function checkStoreSubdomain(
 /**
  * Design system row + a home page, so the editor always has something to
  * open. A store that has never been published starts from the default
- * template (Tallaby Classic, as trees, owner 2026-10-19) in its drafts;
+ * template (the database row with `is_default`, owner 2026-10-20) in its drafts;
  * anything else gets an empty home page.
  */
 export async function ensureStoreSiteScaffold(q: Queryable, storeId: string): Promise<void> {

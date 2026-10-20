@@ -1,14 +1,15 @@
 import { cache } from "react";
 import { cacheProfiles, createCachedQuery, templateTags } from "@workspace/cache";
-import { asc, db, desc, eq, templateVersions, templates } from "@workspace/db";
-import { getPublicTemplateConfig } from "@workspace/lib/store-sites/server";
+import { and, asc, db, desc, eq, isNull, templateVersions, templates } from "@workspace/db";
+import { getPublicTemplate } from "@workspace/lib/store-sites/server";
 import { siteConfigSchema, type SiteConfig } from "@workspace/store-sections";
-import { getCodeTemplate, templateOutline } from "@workspace/store-sections/templates";
+import { resolveTemplateMeta, templateOutline, type TemplateMeta } from "@workspace/store-sections/templates";
 import { buildGallery, type CatalogTemplate, type GalleryEntry } from "./templates.lib";
 
 /**
- * Active templates for the tallaby.com gallery, with a valid current version
- * only (the dashboard gallery hides the others too). Admin template edits
+ * Active, not deleted templates for the tallaby.com gallery, with a valid
+ * current version only (the dashboard gallery hides the others too). Swatches
+ * and page names come from `templates.meta` (code fallback per field). Admin template edits
  * purge `templateTags.catalog()` (invalidateTemplateCatalog), so the gallery
  * and the preview frames follow without a deploy.
  */
@@ -30,25 +31,26 @@ const getCachedCatalog = createCachedQuery({
         price: templates.price,
         sortOrder: templates.sortOrder,
         config: templateVersions.config,
+        meta: templates.meta,
       })
       .from(templates)
       .innerJoin(templateVersions, eq(templateVersions.id, templates.currentVersionId))
-      .where(eq(templates.isActive, true))
+      .where(and(eq(templates.isActive, true), isNull(templates.deletedAt)))
       .orderBy(desc(templates.isDefault), asc(templates.sortOrder), asc(templates.createdAt));
 
-    return rows.flatMap(({ config, ...row }) => {
+    return rows.flatMap(({ config, meta: rawMeta, ...row }) => {
       const parsed = siteConfigSchema.safeParse(config);
       if (!parsed.success) return []; // A broken template version is never offered.
-      const code = getCodeTemplate(row.key);
+      const meta = resolveTemplateMeta(rawMeta, row.key);
       return [
         {
           ...row,
-          palette: code?.palette ?? [],
+          palette: meta.palette,
           pages: templateOutline(parsed.data).map((page) => ({
             slug: page.slug,
             isHome: page.isHome,
             name: page.name,
-            ...(code?.pageNames[page.slug] && { names: code.pageNames[page.slug] }),
+            ...(meta.pageNames[page.slug] && { names: meta.pageNames[page.slug] }),
           })),
         },
       ];
@@ -71,20 +73,25 @@ export async function findGalleryEntry(locale: string, id: string): Promise<Gall
   return (await getTemplateGallery(locale)).find((entry) => entry.id === id) ?? null;
 }
 
-const getCachedTemplateConfig = createCachedQuery({
-  name: "marketing:template-config:v1",
+const getCachedTemplatePreview = createCachedQuery({
+  name: "marketing:template-preview:v2",
   ttl: cacheProfiles.listing,
   tags: (_key: string) => [templateTags.catalog()],
-  query: (key: string) => getPublicTemplateConfig(key),
+  query: (key: string) => getPublicTemplate(key),
 });
 
-/** An active template's current site config for the preview frame; null when unknown or unreachable. */
-export const getTemplateConfig = cache(async (key: string): Promise<SiteConfig | null> => {
+export type TemplatePreview = { config: SiteConfig; meta: TemplateMeta };
+
+/**
+ * An active template's current site config and meta (demo store, page names)
+ * for the preview frame; null when unknown, deleted or unreachable.
+ */
+export const getTemplatePreview = cache(async (key: string): Promise<TemplatePreview | null> => {
   try {
-    const config = await getCachedTemplateConfig(key);
+    const stored = await getCachedTemplatePreview(key);
     // Re-parsed: the cache hands back plain JSON.
-    const parsed = siteConfigSchema.safeParse(config);
-    return parsed.success ? parsed.data : null;
+    const parsed = siteConfigSchema.safeParse(stored?.config);
+    return stored && parsed.success ? { config: parsed.data, meta: resolveTemplateMeta(stored.meta, key) } : null;
   } catch (error) {
     console.error("[marketing] template config failed", error);
     return null;

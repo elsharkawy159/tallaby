@@ -32,6 +32,7 @@ vi.mock("@workspace/lib/store-sites/server", () => ({
   applyStoreTemplate: vi.fn(),
   undoStoreTemplate: vi.fn(),
   getStoreTemplateConfig: vi.fn(),
+  getTemplateMeta: vi.fn(async () => null),
 }));
 vi.mock("@workspace/lib/store-sites/preview", () => ({ signStorePreviewToken: vi.fn(), storePreviewSecret: vi.fn(() => null) }));
 vi.mock("@workspace/lib/storefront", () => ({ storeUrl: vi.fn(() => "https://shop.example") }));
@@ -43,7 +44,6 @@ vi.mock("@workspace/store-sections/render", () => ({
   storeSectionRegistry: { allowedSections: () => ({}) },
   contentOverrideKeys: () => [],
 }));
-vi.mock("@workspace/store-sections/templates", () => ({ getCodeTemplate: vi.fn(() => null) }));
 vi.mock("./admin-store-editor.data", () => ({
   loadEditorForms: vi.fn(async () => []),
   loadEditorSnapshot: vi.fn(),
