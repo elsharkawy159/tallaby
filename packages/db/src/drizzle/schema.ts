@@ -3226,3 +3226,40 @@ export const platformBlogPosts = pgTable("platform_blog_posts", {
 	check("platform_blog_posts_seo_check", sql`jsonb_typeof(seo) = 'object'`),
 	pgPolicy("platform_blog_posts: admins manage", { as: "permissive", for: "all", to: ["authenticated"], using: sql`(SELECT public.is_platform_admin())`, withCheck: sql`(SELECT public.is_platform_admin())` }),
 ]);
+
+/** Admin-managed "Add section" library (0086): published `tree` plus an unpublished `draftTree`. */
+export const librarySections = pgTable("library_sections", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	key: text().notNull(),
+	category: text().notNull(),
+	subcategory: text().default('').notNull(),
+	name: jsonb().notNull(),
+	description: jsonb().default({}).notNull(),
+	keywords: text().array().default([]).notNull(),
+	tree: jsonb().notNull(),
+	draftTree: jsonb("draft_tree"),
+	version: integer().default(1).notNull(),
+	draftVersion: integer("draft_version").default(1).notNull(),
+	thumbnailUrl: text("thumbnail_url"),
+	isHidden: boolean("is_hidden").default(false).notNull(),
+	sortOrder: integer("sort_order").default(0).notNull(),
+	createdBy: uuid("created_by"),
+	updatedBy: uuid("updated_by"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	deletedAt: timestamp("deleted_at", { withTimezone: true, mode: 'string' }),
+}, (table) => [
+	unique("library_sections_key_key").on(table.key),
+	index("library_sections_listing_idx").using("btree", table.category.asc().nullsLast().op("text_ops"), table.sortOrder.asc().nullsLast().op("int4_ops")).where(sql`(deleted_at IS NULL AND NOT is_hidden)`),
+	foreignKey({
+			columns: [table.createdBy],
+			foreignColumns: [users.id],
+			name: "library_sections_created_by_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.updatedBy],
+			foreignColumns: [users.id],
+			name: "library_sections_updated_by_fkey"
+		}).onDelete("set null"),
+	check("library_sections_key_check", sql`key ~ '^[a-z0-9-]+$'`),
+]);

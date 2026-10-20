@@ -43,7 +43,8 @@
   "scripts": {
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "template:sql": "tsx scripts/template-sql.ts"
+    "template:sql": "tsx scripts/template-sql.ts",
+    "section:sql": "tsx scripts/section-sql.ts"
   },
   "dependencies": {
     "sanitize-html": "^2.17.0",
