@@ -307,8 +307,23 @@ export function normalizeBreakpointStyles<T>(
 const colorValue = (value: string) => COLOR_TOKEN_VARS[value as ColorToken] ?? value;
 const px = (value: number) => `${value}px`;
 
-/** CSS declarations for a normalized style (`hidden` is handled by the caller). */
-export function styleDeclarations(style: StyleValues): string[] {
+/** The tree section padding that the Brand "section spacing" token (`--sf-section-y`) stands for. */
+export const SECTION_BASE_PADDING = 64;
+
+/**
+ * A section root's vertical padding, scaled by the Brand section spacing:
+ * exactly `value`px while the token is unset, `value × token / 64` once it is
+ * set, so each section keeps its own rhythm (0 stays 0).
+ */
+const sectionPadding = (value: number) =>
+  value === 0 ? "0px" : `calc(var(--sf-section-y,${SECTION_BASE_PADDING}px)*${value / SECTION_BASE_PADDING})`;
+
+/**
+ * CSS declarations for a normalized style (`hidden` is handled by the caller).
+ * `sectionRoot` marks a tree section's root node: its vertical padding follows
+ * the Brand section spacing.
+ */
+export function styleDeclarations(style: StyleValues, sectionRoot = false): string[] {
   const out: string[] = [];
   const add = (prop: string, value: string) => out.push(`${prop}:${value}`);
   if (style.fontSize) {
@@ -324,8 +339,9 @@ export function styleDeclarations(style: StyleValues): string[] {
   if (style.lineHeight) add("line-height", String(LINE_HEIGHTS[style.lineHeight]));
   if (style.color) add("color", colorValue(style.color));
   if (style.background) add("background", colorValue(style.background));
-  if (style.paddingTop !== undefined) add("padding-block-start", px(style.paddingTop));
-  if (style.paddingBottom !== undefined) add("padding-block-end", px(style.paddingBottom));
+  const blockPadding = sectionRoot ? sectionPadding : px;
+  if (style.paddingTop !== undefined) add("padding-block-start", blockPadding(style.paddingTop));
+  if (style.paddingBottom !== undefined) add("padding-block-end", blockPadding(style.paddingBottom));
   if (style.paddingStart !== undefined) add("padding-inline-start", px(style.paddingStart));
   if (style.paddingEnd !== undefined) add("padding-inline-end", px(style.paddingEnd));
   if (style.marginTop !== undefined) add("margin-block-start", px(style.marginTop));
@@ -381,8 +397,8 @@ function hoverDeclarations(hover: HoverStyle): string[] {
 }
 
 /** The element's rule plus its `:hover` rule (the caller wraps both in the device media query). */
-function ruleFor(selector: string, style: StyleValues): string {
-  const declarations = styleDeclarations(style);
+function ruleFor(selector: string, style: StyleValues, sectionRoot = false): string {
+  const declarations = styleDeclarations(style, sectionRoot);
   let css = declarations.length ? `${selector}{${declarations.join(";")}}` : "";
   const hover = style.hover ? hoverDeclarations(style.hover) : [];
   if (hover.length) css += `${selector}:hover{${hover.join(";")}}`;
@@ -399,9 +415,9 @@ function hiddenRule(selector: string, mode: StyleCssMode): string {
   return mode === "edit" ? `${selector}{opacity:0.35;outline:1px dashed currentColor}` : `${selector}{display:none!important}`;
 }
 
-type Responsive = { base?: StyleValues; tablet?: StyleValues; mobile?: StyleValues };
+type Responsive = { base?: StyleValues; tablet?: StyleValues; mobile?: StyleValues; sectionRoot?: boolean };
 
-function collect(target: Map<string, Responsive>, selector: string, slot: keyof Responsive, style: StyleValues | undefined) {
+function collect(target: Map<string, Responsive>, selector: string, slot: "base" | StyleBreakpoint, style: StyleValues | undefined) {
   if (!style || !Object.keys(style).length) return;
   const entry = target.get(selector) ?? {};
   entry[slot] = style;
@@ -414,15 +430,17 @@ function nodeSelector(sectionId: string, node: ComponentNode) {
   return node.type === "button" ? `${selector}>*` : selector;
 }
 
-function collectNodes(target: Map<string, Responsive>, sectionId: string, nodes: ComponentNode[] | undefined) {
+function collectNodes(target: Map<string, Responsive>, sectionId: string, nodes: ComponentNode[] | undefined, depth = 0) {
   for (const node of nodes ?? []) {
     if (ID_RE.test(node.id)) {
       const selector = nodeSelector(sectionId, node);
       collect(target, selector, "base", normalizeStyle(node.style));
       const bps = normalizeBreakpointStyles(node.breakpointStyles, normalizeStyle);
       for (const bp of STYLE_BREAKPOINTS) collect(target, selector, bp, bps[bp]);
+      const entry = target.get(selector);
+      if (entry && depth === 0 && node.type === "section") entry.sectionRoot = true;
     }
-    collectNodes(target, sectionId, node.children);
+    collectNodes(target, sectionId, node.children, depth + 1);
   }
 }
 
@@ -463,12 +481,12 @@ export function collectPageCss(sections: readonly (SectionInstance | null | unde
   const zoomed: string[] = [];
   for (const [selector, entry] of target) {
     if ([entry.base, entry.tablet, entry.mobile].some((style) => (style?.hover?.scale ?? 100) !== 100)) zoomed.push(selector);
-    if (entry.base) base.push(ruleFor(selector, entry.base));
+    if (entry.base) base.push(ruleFor(selector, entry.base, entry.sectionRoot));
     if (entry.base?.hidden) hidden.base.push(hiddenRule(selector, mode));
     for (const bp of STYLE_BREAKPOINTS) {
       const style = entry[bp];
       if (!style) continue;
-      media[bp].push(ruleFor(selector, style));
+      media[bp].push(ruleFor(selector, style, entry.sectionRoot));
       if (style.hidden) hidden[bp].push(hiddenRule(selector, mode));
     }
   }

@@ -13,7 +13,7 @@ import {
   AccordionTrigger,
 } from "@workspace/ui/components/accordion";
 import { cn } from "@/lib/utils";
-import { SUPPORT_EMAIL, SUPPORT_PHONE_DISPLAY, SUPPORT_WHATSAPP_NUMBER } from "@/lib/constants";
+import { SUPPORT_EMAIL, SUPPORT_WHATSAPP_HANDLE } from "@/lib/constants";
 import { useSupportWhatsAppUrl, WhatsAppIcon } from "@/components/dashboard/support-chat-link.client";
 
 export type FaqTopicView = {
@@ -78,11 +78,13 @@ export function ContactDesk({ storeName }: { storeName: string | null }) {
                 {t("whatsappTitle")}
               </h3>
               <a
-                href={`tel:+${SUPPORT_WHATSAPP_NUMBER}`}
+                href={whatsAppUrl}
+                target="_blank"
+                rel="noopener noreferrer"
                 dir="ltr"
                 className="mt-2 block text-start text-[1.75rem] font-semibold leading-none tracking-tight tabular-nums underline-offset-4 hover:underline rtl:text-end sm:text-3xl"
               >
-                {SUPPORT_PHONE_DISPLAY}
+                {SUPPORT_WHATSAPP_HANDLE}
               </a>
               <p className="mt-2 text-[13px] text-primary-foreground/70">{t("whatsappHint")}</p>
             </div>
@@ -96,7 +98,6 @@ export function ContactDesk({ storeName }: { storeName: string | null }) {
                 <WhatsAppIcon className="size-4" />
                 {t("whatsappAction")}
               </a>
-              <CopyButton value={SUPPORT_PHONE_DISPLAY.replace(/\s/g, "")} label={t("copyNumber")} />
             </div>
           </div>
 

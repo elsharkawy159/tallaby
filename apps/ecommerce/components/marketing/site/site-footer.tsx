@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Mail, MapPin, Phone } from "lucide-react";
+import { Mail, MapPin } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { CONTACT, LOGIN_URL, SOCIAL_LINKS } from "@/lib/marketing/site.lib";
@@ -71,12 +71,6 @@ export async function SiteFooter() {
               <li className="flex items-center gap-2.5">
                 <MapPin aria-hidden />
                 <span>{t("location")}</span>
-              </li>
-              <li className="flex items-center gap-2.5">
-                <Phone aria-hidden />
-                <a href={`tel:${CONTACT.phoneIntl}`} className={`font-latin ${link}`}>
-                  <Ltr>{CONTACT.phone}</Ltr>
-                </a>
               </li>
               <li className="flex items-center gap-2.5">
                 <Mail aria-hidden />

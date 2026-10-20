@@ -4624,7 +4624,18 @@
       "label": "Categories",
       "all": "All",
       "general": "General",
-      "fashion": "Fashion"
+      "fashion": "Fashion",
+      "electronics": "Electronics",
+      "mobile-accessories": "Mobile accessories",
+      "beauty": "Beauty",
+      "home": "Home & furniture",
+      "kitchen": "Kitchen",
+      "food": "Food",
+      "jewelry": "Jewelry",
+      "kids": "Kids",
+      "books": "Books",
+      "sports": "Sports",
+      "auto": "Automotive"
     },
     "confirm": {
       "title": "Use {name}?",

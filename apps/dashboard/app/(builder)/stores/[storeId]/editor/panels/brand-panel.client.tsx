@@ -254,7 +254,7 @@ export function BrandPanel({ store, storeId, readOnly }: { store: EditorStore; s
                   value={ds.spacing.sectionPaddingY}
                   min={0}
                   max={400}
-                  placeholder="48"
+                  placeholder="64"
                   onChange={(value, typing) => edit((prev) => setToken(prev, "spacing", "sectionPaddingY", value), typing ? "spacing" : undefined)}
                 />
               </fieldset>

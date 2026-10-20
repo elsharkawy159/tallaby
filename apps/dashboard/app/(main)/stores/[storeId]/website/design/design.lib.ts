@@ -58,7 +58,7 @@ export const WIDTH_OPTIONS = [
 export const SPACING_OPTIONS = [
   { id: "compact", value: 32 },
   { id: "standard", value: undefined },
-  { id: "airy", value: 72 },
+  { id: "airy", value: 96 },
 ] as const;
 
 const HEX = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;
