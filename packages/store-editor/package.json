@@ -17,7 +17,13 @@
     "./state/*": "./src/state/*.ts",
     "./dnd/*": "./src/dnd/*.ts",
     "./canvas/*": "./src/canvas/*.ts",
-    "./templates.dto": "./src/templates.dto.ts"
+    "./templates.dto": "./src/templates.dto.ts",
+    "./editor.dto": "./src/editor.dto.ts",
+    "./editor.client": "./src/editor.client.tsx",
+    "./media/media-library.client": "./src/media/media-library.client.tsx",
+    "./media/media-picker.client": "./src/media/media-picker.client.tsx",
+    "./media/*": "./src/media/*.ts",
+    "./preview/site-preview.client": "./src/preview/site-preview.client.tsx"
   },
   "scripts": {
     "test": "vitest run",
@@ -31,6 +37,8 @@
     "@workspace/store-sections": "workspace:*",
     "@workspace/ui": "workspace:*",
     "lucide-react": "^0.562.0",
+    "react-dropzone": "^14.3.8",
+    "sonner": "^2.0.7",
     "zustand": "^5.0.9"
   },
   "devDependencies": {

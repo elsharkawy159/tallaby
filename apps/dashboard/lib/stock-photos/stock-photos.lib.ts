@@ -3,7 +3,7 @@
  * shapes and pure helpers for the Pexels API. No secrets and no I/O here.
  */
 
-import type { StockPhoto, StockPhotoPage } from "@workspace/store-editor";
+import type { StockPhoto, StockPhotoPage } from "@workspace/store-editor/editor.dto";
 
 export type { StockPhoto, StockPhotoPage };
 

@@ -7,10 +7,16 @@
 import type { MediaAltText } from "@workspace/lib/media";
 import type { SellerCouponRow } from "@workspace/lib/store-sites/catalog-data";
 import type { RatingStats } from "@workspace/lib/store-sites/catalog-data.lib";
-import type { StoreRevisionRow } from "@workspace/lib/store-sites/server";
 import type { ContentItemSummary, PublicStoreForm } from "@workspace/store-sections/render";
 
-export type { MediaAltText, StoreRevisionRow };
+export type { MediaAltText };
+
+/**
+ * One published revision (`StoreRevisionRow` in @workspace/lib/store-sites/server),
+ * by shape: the package never imports server modules, and the host adapters
+ * pass the lib rows, so a drift fails their typecheck.
+ */
+export type StoreRevisionRow = { id: string; revisionNumber: number; createdAt: string; publishedBy: string | null; isLive: boolean };
 
 /** Error keys live under `storeEditor.errors`. */
 export type EditorErrorKey =

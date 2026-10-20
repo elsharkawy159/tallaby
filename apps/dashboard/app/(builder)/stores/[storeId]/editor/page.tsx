@@ -10,7 +10,8 @@ import { storeBuilderEnabled } from "@/components/dashboard/sidebar.config";
 import { loadStorePage } from "@/lib/stores/store-page.server";
 import { storeFontVariables } from "@/app/(main)/stores/[storeId]/website/_components/store-fonts";
 import { toTemplateCardViews } from "@/app/(main)/stores/[storeId]/website/templates/templates.lib";
-import { StoreEditor, type EditorInitial } from "./editor.client";
+import type { EditorInitial } from "@workspace/store-editor/editor.client";
+import { SellerEditor } from "./seller-editor.client";
 import { loadEditorSnapshot } from "./server/editor.data";
 
 export const dynamic = "force-dynamic";
@@ -87,5 +88,5 @@ export default async function StoreEditorPage({ params }: { params: Promise<{ st
     category: { en: store.storeCategory ?? null, ar: store.storeCategoryAr ?? null },
   };
 
-  return <StoreEditor initial={initial} />;
+  return <SellerEditor initial={initial} />;
 }

@@ -4,8 +4,9 @@ import { describe, expect, it } from "vitest";
 import { formInputSchema } from "./store-forms.lib";
 import { STARTER_FORM_COPY, starterFormInput } from "./starter-forms.lib";
 
+// The form templates' copy lives with the website editor (@workspace/store-editor messages, merged into the dashboard's).
 const messages = (locale: "ar" | "en") =>
-  JSON.parse(readFileSync(join(__dirname, `../../../../apps/dashboard/messages/${locale}.json`), "utf8")).storeForms.templates as Record<string, unknown>;
+  JSON.parse(readFileSync(join(__dirname, `../../../store-editor/src/messages/${locale}.json`), "utf8")).storeForms.templates as Record<string, unknown>;
 
 describe("starter forms (a new store's newsletter and contact forms)", () => {
   it("uses the same copy as the dashboard's form templates", () => {

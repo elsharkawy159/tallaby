@@ -20,7 +20,7 @@ import type {
   EditorProduct,
   EditorReview,
   EditorStoreData,
-} from "@workspace/store-editor";
+} from "@workspace/store-editor/editor.dto";
 import type { ContentItemSummary } from "@workspace/store-sections/render";
 
 // The shapes moved to @workspace/store-editor; re-exported so existing imports keep working.

@@ -42,7 +42,7 @@ import { Button } from "@workspace/ui/components/button";
 import { BUTTON_CLASS, SectionCard, SMALL_BUTTON_CLASS } from "@/components/form/form-ui";
 import { cn } from "@/lib/utils";
 import { discardDraft, publish, restoreRevision, unpublish } from "@/app/(builder)/stores/[storeId]/editor/server/editor.server";
-import { useStorePreview } from "@/app/(builder)/stores/[storeId]/editor/state/use-store-preview.client";
+import { useStorePreview } from "@/app/(builder)/stores/[storeId]/editor/use-store-preview.client";
 import type { WebsiteOverviewData } from "./website.types";
 
 /** The other Website pages (PLAN.md §7.2). Some ship later; their links already point at the final routes. */

@@ -15,8 +15,8 @@ import {
 import { isAccessError, requireStore } from "@/lib/auth/require-seller.server";
 import { createRateLimiter } from "@/lib/rate-limit.lib";
 import { createClient } from "@/supabase/server";
-import { toAssetView, toFolderView } from "./media.lib";
-import { MEDIA_ERRORS, type MediaAssetView, type MediaErrorKey, type MediaFolderView, type MediaLibraryView, type MediaResult } from "./media.dto";
+import { toAssetView, toFolderView } from "@workspace/store-editor/media/media.lib";
+import { MEDIA_ERRORS, type MediaAssetView, type MediaErrorKey, type MediaFolderView, type MediaLibraryView, type MediaResult } from "@workspace/store-editor/media/media.dto";
 
 /**
  * Media library actions (PLAN.md P4-09), used by the library page and the

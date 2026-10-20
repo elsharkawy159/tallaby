@@ -90,12 +90,14 @@ export type EditorAdapter = {
     import(photoId: string): Promise<ExploreResult<MediaAssetView>>;
   };
   /**
-   * Upload-only hosts implement createUploadPaths + recordUpload and return
-   * `{ success: false, error: "notFound" }` for the rest.
+   * Upload-only hosts implement createUploadPaths + uploadFile + recordUpload
+   * and return `{ success: false, error: "notFound" }` for the rest.
    */
   media: {
     list(query?: { folderId?: string | null; scope?: "all" | "store" | "shared" }): Promise<MediaResult<MediaLibraryView>>;
     createUploadPaths(input: { shared: boolean; types: string[] }): Promise<MediaResult<string[]>>;
+    /** Puts the file's bytes at a path from createUploadPaths (browser upload); throws on failure. */
+    uploadFile(path: string, file: File): Promise<void>;
     recordUpload(input: {
       storagePath: string;
       filename: string;

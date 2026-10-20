@@ -1,6 +1,6 @@
 import type { FormInput, SubmissionStatus } from "@workspace/lib/store-forms";
 
-export type { FormsActionResult, FormsErrorKey } from "@workspace/store-editor";
+export type { FormsActionResult, FormsErrorKey } from "@workspace/store-editor/editor.dto";
 
 export type FormEditorValue = FormInput;
 
