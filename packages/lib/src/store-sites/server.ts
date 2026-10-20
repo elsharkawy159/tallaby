@@ -679,7 +679,13 @@ export async function reorderStorePages(
   }
 }
 
-/** Takes the builder site offline: the storefront shows the default Tallaby Classic page again. */
+/**
+ * Takes the store's website offline (`site_status` 'unpublished'): every
+ * storefront route of the store shows a "store unavailable" page (noindex)
+ * and the store takes no orders until it is published again. Drafts and
+ * revisions are kept; marketplace listings are unaffected. Only a
+ * never-published store ('draft') falls back to the Tallaby Classic page.
+ */
 export async function unpublishStoreSite(
   sellerId: string,
   storeId: string,

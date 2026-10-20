@@ -43,6 +43,7 @@ import {
   zoneInputSchema,
   type StoreShippingSettings,
 } from "../shipping/store-zones";
+import { TALLABY_SERVICES_ENABLED } from "../fulfillment/constants";
 import { normalizeSubdomain, validateSubdomain } from "../storefront";
 import {
   createStoreInputSchema,
@@ -616,7 +617,7 @@ export type StoreShippingZone = {
   enabled: boolean;
 };
 
-export type StoreShippingError = StoreWriteError | "overlap" | "too_many_zones" | "no_zones";
+export type StoreShippingError = StoreWriteError | "overlap" | "too_many_zones" | "no_zones" | "tallaby_unavailable";
 
 function toZone(row: typeof storeShippingZones.$inferSelect): StoreShippingZone {
   const name = (row.name ?? {}) as { ar?: string; en?: string };
@@ -792,6 +793,10 @@ export async function updateStoreShippingSettings(
       }
       const settings = (store.settings ?? {}) as Record<string, unknown>;
       const before = parseStoreShipping(settings.shipping);
+      // Tallaby delivery is "Soon": a store already on it keeps it, none can switch to it.
+      if (parsed.data.method === "tallaby" && before.method !== "tallaby" && !TALLABY_SERVICES_ENABLED) {
+        throw new StoreActionError("tallaby_unavailable");
+      }
       await tx
         .update(stores)
         .set({ settings: { ...settings, shipping: parsed.data }, updatedAt: sql`now()` })

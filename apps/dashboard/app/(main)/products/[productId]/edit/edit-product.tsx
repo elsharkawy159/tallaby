@@ -21,6 +21,7 @@ import { SeoStep } from "../../add/steps/seo-step";
 import type { CategoryOption, BrandOption } from "../../add/add-product.schema";
 import type { SellerPricingSettings } from "@/lib/utils/product-pricing.lib";
 import { cn } from "@/lib/utils";
+import { useSidebarStore } from "@/stores";
 import { useLocalizedResolver } from "@/lib/i18n/localized-resolver";
 import { setProductSellerTaxonomy } from "../../categories-brands/categories-brands.server";
 import { splitSellerTaxonomy } from "../../categories-brands/categories-brands.lib";
@@ -61,6 +62,7 @@ export function EditProduct({
   const [currentStep, setCurrentStep] = useState(1);
   const [activeLocale, setActiveLocale] = useState<SupportedLocale>("en");
   const router = useRouter();
+  const isSidebarCollapsed = useSidebarStore((state) => state.isCollapsed);
   const tToast = useTranslations("toast");
   const t = useTranslations("productForm");
   const tTaxonomy = useTranslations("categoriesBrands.productForm");
@@ -155,20 +157,20 @@ export function EditProduct({
   return (
     <div className="min-h-screen pb-24">
       <div className="sticky top-16 z-20 bg-card border-b border-border shadow-sm">
-        <div className="container px-6 py-4">
-          <div className="flex items-center gap-4">
+        <div className="container px-4 py-4 sm:px-6">
+          <div className="flex items-center gap-2 sm:gap-4">
             {STEPS.map((step, index) => (
               <div
                 key={step.id}
                 className={cn(
-                  "flex items-center gap-4",
+                  "flex items-center gap-2 sm:gap-4",
                   index < STEPS.length - 1 && "flex-1"
                 )}
               >
                 <button
                   type="button"
                   onClick={() => handleStepClick(step.id)}
-                  className={`flex items-center gap-2 ${
+                  className={`flex shrink-0 items-center gap-2 ${
                     currentStep === step.id
                       ? "text-primary font-semibold"
                       : currentStep > step.id
@@ -217,7 +219,7 @@ export function EditProduct({
               </div>
             ))}
           </div>
-          <div className="mt-4 pt-4 border-t border-border flex items-center justify-between gap-4">
+          <div className="mt-4 pt-4 border-t border-border flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
             <span className="text-sm font-medium text-foreground">
               {t("contentLanguage")}
             </span>
@@ -267,19 +269,26 @@ export function EditProduct({
         </SellerTaxonomyProvider>
       </div>
 
-      <div className="fixed bottom-0 inset-x-0 z-10 border-t border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
-        <div className="px-6 py-4 flex items-center gap-6 justify-end container">
+      {/* Starts after the desktop sidebar, like MainContentWrapper. */}
+      <div
+        className={cn(
+          "fixed bottom-0 inset-x-0 z-10 border-t border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 transition-[inset-inline-start] duration-300 ease-in-out",
+          isSidebarCollapsed ? "lg:start-20" : "lg:start-[280px]"
+        )}
+      >
+        <div className="container px-4 py-3 sm:px-6 sm:py-4 flex flex-wrap items-center gap-3 justify-end">
           <Button
             type="button"
             variant="outline"
             onClick={handlePrevious}
             disabled={currentStep === 1}
+            className="max-sm:flex-1"
           >
             <ChevronLeft className="size-4 rtl:rotate-180" />
             {t("previous")}
           </Button>
           {currentStep < STEPS.length ? (
-            <Button type="button" onClick={handleNext}>
+            <Button type="button" onClick={handleNext} className="max-sm:flex-1">
               {t("next")}
               <ChevronRight className="size-4 rtl:rotate-180" />
             </Button>
@@ -288,6 +297,7 @@ export function EditProduct({
               type="submit"
               form="edit-product-form"
               disabled={isPending || !form.formState.isValid}
+              className="max-sm:flex-1"
             >
               {isPending ? (
                 <span className="flex items-center gap-2">

@@ -21,12 +21,19 @@ import type { CanvasBox } from "./editor-overlay.client";
 
 const WIDTH = 300;
 const GAP = 12;
+const NARROW = 640;
 
-/** Next to the anchor on the inline-end side, else the other side, else below; always inside `bounds`. */
-export function placePopover(anchor: CanvasBox, bounds: CanvasBox, height: number, rtl: boolean): { top: number; left: number } {
+const popoverWidth = (bounds: CanvasBox) => Math.max(0, Math.min(WIDTH, bounds.width - 16));
+
+/**
+ * Next to the anchor on the inline-end side, else the other side, else below; always inside `bounds`.
+ * Narrower than WIDTH when the canvas is (phones).
+ */
+export function placePopover(anchor: CanvasBox, bounds: CanvasBox, height: number, rtl: boolean): { top: number; left: number; width: number } {
+  const width = popoverWidth(bounds);
   const right = anchor.left + anchor.width + GAP;
-  const leftSide = anchor.left - WIDTH - GAP;
-  const fitsRight = right + WIDTH <= bounds.left + bounds.width;
+  const leftSide = anchor.left - width - GAP;
+  const fitsRight = right + width <= bounds.left + bounds.width;
   const fitsLeft = leftSide >= bounds.left;
   const sides = rtl ? [fitsLeft && leftSide, fitsRight && right] : [fitsRight && right, fitsLeft && leftSide];
   const side = sides.find((x): x is number => typeof x === "number");
@@ -37,9 +44,17 @@ export function placePopover(anchor: CanvasBox, bounds: CanvasBox, height: numbe
     const below = anchor.top + anchor.height + GAP;
     top = below + height <= bounds.top + bounds.height ? below : anchor.top - height - GAP;
   }
-  left = Math.max(bounds.left + 8, Math.min(left, bounds.left + bounds.width - WIDTH - 8));
+  left = Math.max(bounds.left + 8, Math.min(left, bounds.left + bounds.width - width - 8));
   top = Math.max(bounds.top + 8, Math.min(top, bounds.top + bounds.height - height - 8));
-  return { top, left };
+  return { top, left, width };
+}
+
+/** Keeps a box of this size inside `bounds`. */
+function clampInto(bounds: CanvasBox, at: { top: number; left: number }, width: number, height: number) {
+  return {
+    left: Math.max(bounds.left, Math.min(at.left, bounds.left + bounds.width - width)),
+    top: Math.max(bounds.top, Math.min(at.top, bounds.top + bounds.height - Math.min(height, bounds.height))),
+  };
 }
 
 /**
@@ -115,7 +130,10 @@ export function ElementPopover({
   };
 
   const rtl = typeof document !== "undefined" && document.documentElement.dir === "rtl";
-  const position = placePopover(anchor, bounds, height, rtl);
+  const placed = placePopover(anchor, bounds, height, rtl);
+  const moved = { top: placed.top + offset.y, left: placed.left + offset.x };
+  // On a narrow canvas (phones) a dragged popover stays on screen.
+  const position = bounds.width < NARROW ? clampInto(bounds, moved, placed.width, height) : moved;
   const startDrag = (event: ReactPointerEvent) => {
     const start = { x: event.clientX - offset.x, y: event.clientY - offset.y };
     const move = (e: PointerEvent) => setOffset({ x: e.clientX - start.x, y: e.clientY - start.y });
@@ -134,8 +152,8 @@ export function ElementPopover({
       ref={ref}
       role="dialog"
       aria-label={title}
-      className="pointer-events-auto absolute z-20 rounded-xl border bg-background p-3 shadow-xl"
-      style={{ top: position.top + offset.y, left: position.left + offset.x, width: WIDTH }}
+      className="pointer-events-auto absolute z-20 overflow-y-auto overscroll-contain rounded-xl border bg-background p-3 shadow-xl"
+      style={{ top: position.top, left: position.left, width: placed.width, maxHeight: Math.max(160, bounds.height - 16) }}
     >
       <div className="mb-2.5 flex items-center gap-1 border-b pb-2">
         <button type="button" aria-label={t("drag")} onPointerDown={startDrag} className="cursor-grab touch-none text-muted-foreground active:cursor-grabbing">

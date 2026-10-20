@@ -33,8 +33,10 @@ export function toGeneralPatch(v: StoreGeneralFormValues, opts: { brand: boolean
     description: v.description.trim() || null,
     storeCategory: v.storeCategory.trim() || null,
     storeCategoryAr: v.storeCategoryAr.trim() || null,
-    // Logo and banner are edited in Website › Design system when the seller has the builder.
-    ...(opts.brand && { logoUrl: v.logoUrl || null, bannerUrl: v.bannerUrl || null }),
+    // The logo is always edited here (and in Website › Design system); the
+    // banner only when the seller has no builder (Design system owns it then).
+    logoUrl: v.logoUrl || null,
+    ...(opts.brand && { bannerUrl: v.bannerUrl || null }),
     contact,
     defaultLocale: v.defaultLocale,
     supportedLocales: v.supportedLocales,

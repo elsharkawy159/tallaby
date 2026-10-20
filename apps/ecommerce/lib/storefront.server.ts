@@ -77,6 +77,13 @@ function getSubdomainForCustomDomain(domain: string) {
   )();
 }
 
+export type StoreSiteStatus = "draft" | "published" | "unpublished";
+
+/** The seller took the store's website offline (Website › "Website live" off). */
+export function isStorefrontOffline(store: Pick<Storefront, "siteStatus">): boolean {
+  return store.siteStatus === "unpublished";
+}
+
 export type Storefront = NonNullable<
   Awaited<ReturnType<typeof getStorefrontBySubdomain>>
 >;
@@ -119,6 +126,7 @@ export function getStorefrontBySubdomain(subdomain: string) {
           storeCategoryAr: stores.storeCategoryAr,
           seo: stores.seo,
           settings: stores.settings,
+          siteStatus: stores.siteStatus,
           sellerId: sellers.id,
           slug: sellers.slug,
           storeRating: sellers.storeRating,
@@ -185,10 +193,16 @@ export function getStorefrontBySubdomain(subdomain: string) {
         customDomain: domain?.domain ?? null,
         /** Enabled social links (Website › Social media, P4-15), read live from the store row. */
         social: publicStoreSocialLinks(row.contact),
+        /**
+         * Builder site state: "draft" (never published: Tallaby Classic
+         * fallback), "published", or "unpublished" (the seller took the
+         * website offline: every storefront route shows "store offline").
+         */
+        siteStatus: row.siteStatus as StoreSiteStatus,
       };
     },
-    // v6: + seo (P4-14) and social links (P4-15). v4: resolves through stores (P5-00).
-    [`storefront-v8-${subdomain}`],
+    // v9: + siteStatus (offline stores). v6: + seo (P4-14) and social links (P4-15). v4: resolves through stores (P5-00).
+    [`storefront-v9-${subdomain}`],
     { tags: ["sellers", sellerTags.subdomain(subdomain)], revalidate: 3600 },
   )();
 }
@@ -231,6 +245,32 @@ export async function getCartScope(): Promise<CartScope | null> {
  */
 export async function getCartStoreSellerId(): Promise<string | null> {
   return (await getCartScope())?.sellerId ?? null;
+}
+
+/**
+ * Whether this cart belongs to a store whose website is offline. Checked
+ * from the cart row (not the request host), so an offline store takes no
+ * orders whatever host the request comes from. Read fresh, never cached.
+ */
+export async function isCartStoreOffline(cartId: string): Promise<boolean> {
+  const [row] = await db
+    .select({ siteStatus: stores.siteStatus })
+    .from(carts)
+    .innerJoin(stores, eq(stores.id, carts.storeId))
+    .where(eq(carts.id, cartId))
+    .limit(1);
+  return row?.siteStatus === "unpublished";
+}
+
+/**
+ * Whether the current request is on the host of a store whose website is
+ * offline (checkout and other pass-through pages on a store host).
+ */
+export async function isRequestStoreOffline(): Promise<boolean> {
+  const subdomain = await getRequestStoreSubdomain();
+  if (!subdomain) return false;
+  const store = await getStorefrontBySubdomain(subdomain);
+  return store ? isStorefrontOffline(store) : false;
 }
 
 /**
@@ -317,8 +357,14 @@ export function storeHasProducts(store: Pick<Storefront, "id" | "storeId">): Pro
   )();
 }
 
-/** Whether search engines may index this store: indexing on and something to sell. */
-export async function isStorefrontIndexable(store: Pick<Storefront, "id" | "storeId" | "seo">): Promise<boolean> {
+/**
+ * Whether search engines may index this store: website online, indexing on
+ * and something to sell. An offline store gets noindex and an empty sitemap.
+ */
+export async function isStorefrontIndexable(
+  store: Pick<Storefront, "id" | "storeId" | "seo" | "siteStatus">,
+): Promise<boolean> {
+  if (isStorefrontOffline(store)) return false;
   return store.seo.indexing && (await storeHasProducts(store));
 }
 

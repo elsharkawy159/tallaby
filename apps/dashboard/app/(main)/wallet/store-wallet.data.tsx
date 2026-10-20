@@ -192,8 +192,8 @@ export async function StoreWalletSection({
               <TableRow>
                 <TableHead>{t("columns.date")}</TableHead>
                 <TableHead>{t("columns.type")}</TableHead>
-                <TableHead>{t("columns.store")}</TableHead>
-                <TableHead>{t("columns.order")}</TableHead>
+                <TableHead className="max-sm:hidden">{t("columns.store")}</TableHead>
+                <TableHead className="max-sm:hidden">{t("columns.order")}</TableHead>
                 <TableHead className="text-end">{t("columns.amount")}</TableHead>
                 <TableHead className="text-end">{t("columns.balance")}</TableHead>
               </TableRow>
@@ -215,8 +215,8 @@ export async function StoreWalletSection({
                         <span className="block">{translateStatus(tStatus, "transaction", entry.type)}</span>
                         {entry.description && <span className="block text-xs text-muted-foreground">{entry.description}</span>}
                       </TableCell>
-                      <TableCell>{entry.storeName ?? t("accountLevel")}</TableCell>
-                      <TableCell>
+                      <TableCell className="max-sm:hidden">{entry.storeName ?? t("accountLevel")}</TableCell>
+                      <TableCell className="max-sm:hidden">
                         {entry.orderId && entry.orderNumber ? (
                           <Link href={`/orders/${entry.orderId}`} className="underline-offset-2 hover:underline">
                             {entry.orderNumber}

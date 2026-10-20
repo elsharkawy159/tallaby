@@ -7,6 +7,7 @@ import {
   Check,
   ChevronsUpDown,
   CircleHelp,
+  Ellipsis,
   ExternalLink,
   Eye,
   Grid3x3,
@@ -22,7 +23,17 @@ import {
 import { useStore } from "zustand";
 import type { SiteLocale } from "@workspace/store-sections";
 import { Button } from "@workspace/ui/components/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@workspace/ui/components/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@workspace/ui/components/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@workspace/ui/components/tooltip";
 import { cn } from "@workspace/ui/lib/utils";
 import { DEVICE_TONE } from "../lib/editor-devices.lib";
@@ -40,7 +51,8 @@ const DEVICES = [
 /**
  * Top bar (P4B-03, like the reference navbar): back, page switcher and store
  * address; device sizes in the middle; history, language, grid, preview,
- * help, save state and publish on the end side.
+ * help, save state and publish on the end side. Below sm, language, grid,
+ * preview, store link and help move into a "More" menu.
  */
 export function EditorTopbar({
   store,
@@ -104,7 +116,7 @@ export function EditorTopbar({
         )}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8 max-w-44 gap-1.5 px-2.5" aria-label={t("pageLabel")}>
+            <Button variant="outline" size="sm" className="h-8 max-w-44 gap-1.5 px-2.5 max-sm:max-w-28" aria-label={t("pageLabel")}>
               <span className="truncate">{nameOf(page.name, uiLocale) || page.slug}</span>
               <ChevronsUpDown className="size-3.5 opacity-60" aria-hidden />
             </Button>
@@ -168,44 +180,93 @@ export function EditorTopbar({
           <Redo2 className="size-4" />
         </IconAction>
         <Divider />
-        {locales.length > 1 && (
-          <div role="group" aria-label={t("editingLanguage")} className="flex rounded-md border p-0.5">
-            {locales.map((value) => (
-              <button
-                key={value}
-                type="button"
-                aria-pressed={locale === value}
-                onClick={() => state.setLocale(value)}
-                className={cn("rounded px-1.5 py-0.5 text-xs font-semibold uppercase text-muted-foreground", locale === value && "bg-muted text-foreground")}
-              >
-                {value}
-              </button>
-            ))}
-          </div>
-        )}
-        <IconAction label={t("gridOverlay")} onClick={() => state.toggleGridOverlay()} pressed={gridOverlay}>
-          <Grid3x3 className="size-4" />
-        </IconAction>
-        {previewEnabled && capabilities.preview && (
-          <IconAction label={t("previewOnStore")} onClick={preview.open} disabled={preview.opening || readOnly || saveStatus === "conflict"}>
-            {preview.opening ? <LoaderCircle className="size-4 animate-spin" /> : <Eye className="size-4" />}
+        <div className="hidden items-center gap-1 sm:flex">
+          {locales.length > 1 && (
+            <div role="group" aria-label={t("editingLanguage")} className="flex rounded-md border p-0.5">
+              {locales.map((value) => (
+                <button
+                  key={value}
+                  type="button"
+                  aria-pressed={locale === value}
+                  onClick={() => state.setLocale(value)}
+                  className={cn("rounded px-1.5 py-0.5 text-xs font-semibold uppercase text-muted-foreground", locale === value && "bg-muted text-foreground")}
+                >
+                  {value}
+                </button>
+              ))}
+            </div>
+          )}
+          <IconAction label={t("gridOverlay")} onClick={() => state.toggleGridOverlay()} pressed={gridOverlay}>
+            <Grid3x3 className="size-4" />
           </IconAction>
-        )}
-        {hasStore && (
-          <IconAction label={t("viewStore")} asChild>
-            <a href={storeUrl} target="_blank" rel="noopener noreferrer">
-              <ExternalLink className="size-4" aria-hidden />
-            </a>
+          {previewEnabled && capabilities.preview && (
+            <IconAction label={t("previewOnStore")} onClick={preview.open} disabled={preview.opening || readOnly || saveStatus === "conflict"}>
+              {preview.opening ? <LoaderCircle className="size-4 animate-spin" /> : <Eye className="size-4" />}
+            </IconAction>
+          )}
+          {hasStore && (
+            <IconAction label={t("viewStore")} asChild>
+              <a href={storeUrl} target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="size-4" aria-hidden />
+              </a>
+            </IconAction>
+          )}
+          <IconAction label={t("shortcuts.title")} onClick={onShowShortcuts}>
+            <CircleHelp className="size-4" />
           </IconAction>
-        )}
-        <IconAction label={t("shortcuts.title")} onClick={onShowShortcuts}>
-          <CircleHelp className="size-4" />
-        </IconAction>
+        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="size-8 sm:hidden" aria-label={t("more")}>
+              <Ellipsis className="size-4" aria-hidden />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            {locales.length > 1 && (
+              <>
+                <DropdownMenuLabel className="text-xs text-muted-foreground">{t("editingLanguage")}</DropdownMenuLabel>
+                <DropdownMenuRadioGroup value={locale} onValueChange={(value) => state.setLocale(value as SiteLocale)}>
+                  {locales.map((value) => (
+                    <DropdownMenuRadioItem key={value} value={value} className="uppercase">
+                      {value}
+                    </DropdownMenuRadioItem>
+                  ))}
+                </DropdownMenuRadioGroup>
+                <DropdownMenuSeparator />
+              </>
+            )}
+            <DropdownMenuCheckboxItem checked={gridOverlay} onCheckedChange={() => state.toggleGridOverlay()}>
+              <Grid3x3 aria-hidden />
+              {t("gridOverlay")}
+            </DropdownMenuCheckboxItem>
+            {previewEnabled && capabilities.preview && (
+              <DropdownMenuItem onSelect={preview.open} disabled={preview.opening || readOnly || saveStatus === "conflict"}>
+                {preview.opening ? <LoaderCircle className="animate-spin" aria-hidden /> : <Eye aria-hidden />}
+                {t("previewOnStore")}
+              </DropdownMenuItem>
+            )}
+            {hasStore && (
+              <DropdownMenuItem asChild>
+                <a href={storeUrl} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink aria-hidden />
+                  {t("viewStore")}
+                </a>
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuItem onSelect={onShowShortcuts}>
+              <CircleHelp aria-hidden />
+              {t("shortcuts.title")}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
         <Divider />
         <SaveState status={saveStatus} onRetry={onRetrySave} />
         <Button size="sm" className="h-8" onClick={onPublish} disabled={publishing || readOnly || !hasChanges || saveStatus === "conflict"}>
           {publishing ? <LoaderCircle className="animate-spin" aria-hidden /> : <UploadCloud aria-hidden />}
-          {t(capabilities.publishLabel === "section" ? "publishSection" : isLive ? "publishChanges" : "publish")}
+          <span className={cn(isLive && capabilities.publishLabel !== "section" && "max-sm:hidden")}>
+            {t(capabilities.publishLabel === "section" ? "publishSection" : isLive ? "publishChanges" : "publish")}
+          </span>
+          {isLive && capabilities.publishLabel !== "section" && <span className="sm:hidden">{t("publish")}</span>}
         </Button>
       </div>
     </header>
@@ -223,13 +284,13 @@ function IndustrySwitcher({ store, uiLocale }: { store: EditorStore; uiLocale: s
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <label className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
+        <label className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground sm:shrink-0">
           <span className="hidden xl:inline">{t("label")}</span>
           <select
             aria-label={t("label")}
             value={industry ?? ""}
             onChange={(e) => store.getState().setIndustry(e.target.value || undefined)}
-            className="h-8 max-w-40 rounded-md border border-input bg-background px-2 text-xs text-foreground"
+            className="h-8 max-w-40 rounded-md border border-input bg-background px-2 text-xs text-foreground max-sm:max-w-24"
           >
             <option value="">{t("general")}</option>
             {STORE_INDUSTRIES.map((option) => (
@@ -299,13 +360,13 @@ function SaveState({ status, onRetry }: { status: SaveStatus; onRetry: () => voi
     <span
       role="status"
       className={cn(
-        "hidden items-center gap-1 whitespace-nowrap px-1 text-xs sm:inline-flex",
+        "inline-flex items-center gap-1 whitespace-nowrap px-1 text-xs",
         status === "conflict" ? "text-destructive" : "text-muted-foreground",
       )}
     >
       {status === "saving" && <LoaderCircle className="size-3 animate-spin" aria-hidden />}
       {status === "saved" && <Check className="size-3" aria-hidden />}
-      {t(status)}
+      <span className="max-sm:sr-only">{t(status)}</span>
     </span>
   );
 }

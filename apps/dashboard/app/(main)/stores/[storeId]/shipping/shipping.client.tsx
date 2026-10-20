@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Info, LoaderCircle, MapPinned, Pencil, Plus, Save, Trash2, Truck } from "lucide-react";
 
+import { TALLABY_SERVICES_ENABLED } from "@workspace/lib/fulfillment";
 import { applyShippingFeesAndRound, getBaseRateForGovernorate, getGovernorateLabel } from "@workspace/lib/shipping";
 import {
   ZONE_GOVERNORATES,
@@ -213,7 +214,27 @@ function MethodCard({
     <SectionCard id="shipping-method" icon={Truck} title={t("methodTitle")} description={t("methodDescription")}>
       <div className="space-y-5">
         <ChoiceGroup value={method} onValueChange={(v) => setMethod(v as Settings["method"])} columns={2} stack disabled={readOnly}>
-          <ChoiceCard value="tallaby" indicator title={t("tallabyTitle")} description={t("tallabyDescription")} />
+          {/* Tallaby delivery is "Soon": a store already on it keeps it until it switches to its own zones. */}
+          <ChoiceCard
+            value="tallaby"
+            indicator
+            title={t("tallabyTitle")}
+            description={
+              TALLABY_SERVICES_ENABLED
+                ? t("tallabyDescription")
+                : saved.method === "tallaby"
+                  ? t("tallabyLegacy")
+                  : t("tallabySoonDescription")
+            }
+            disabled={!TALLABY_SERVICES_ENABLED && saved.method !== "tallaby"}
+            badge={
+              !TALLABY_SERVICES_ENABLED && (
+                <span className="rounded-full bg-muted px-2.5 py-0.5 text-[11.5px] font-semibold text-muted-foreground">
+                  {t("soon")}
+                </span>
+              )
+            }
+          />
           <ChoiceCard
             value="own"
             indicator

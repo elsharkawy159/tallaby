@@ -44,6 +44,7 @@ import {
   Truck,
   User,
   Users,
+  Wrench,
   Youtube,
   Zap,
   type LucideIcon,
@@ -99,6 +100,7 @@ const ICONS: Record<ElementIconName, LucideIcon> = {
   calendar: Calendar,
   headphones: Headphones,
   send: Send,
+  wrench: Wrench,
 };
 
 const str = (value: unknown, max: number) => (typeof value === "string" ? value.slice(0, max) : "");

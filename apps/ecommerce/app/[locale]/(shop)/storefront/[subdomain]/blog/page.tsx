@@ -7,6 +7,11 @@ import { Link } from "@/i18n/navigation";
 import { toContentSummary } from "@/lib/store-cms/cms.lib";
 import { BLOG_PAGE_SIZE, getCachedBlogPage, getCachedBlogTags } from "@/lib/store-cms/cms.server";
 import { resolveStorefront } from "@/lib/storefront.server";
+import {
+  isStoreOfflineForRequest,
+  isSubdomainOfflineForRequest,
+  STORE_OFFLINE_METADATA,
+} from "@/lib/store-site/offline.server";
 import { PostCard } from "../_components/store-content";
 import s from "../storefront.module.css";
 
@@ -38,6 +43,7 @@ function blogHref(page: number, tag: string | null) {
 
 export async function generateMetadata({ params, searchParams }: BlogPageProps): Promise<Metadata> {
   const { locale, subdomain } = await params;
+  if (await isSubdomainOfflineForRequest(subdomain)) return STORE_OFFLINE_METADATA;
   const { page, tag } = parseQuery(await searchParams);
   const [store, t] = await Promise.all([resolveStorefront(subdomain), getTranslations({ locale, namespace: "storefrontBlog" })]);
   const prefix = locale === routing.defaultLocale ? "" : `/${locale}`;
@@ -55,6 +61,8 @@ export default async function StoreBlogPage({ params, searchParams }: BlogPagePr
   const { locale, subdomain } = await params;
   const { page, tag } = parseQuery(await searchParams);
   const store = await resolveStorefront(subdomain);
+  // Website offline: the layout shows the offline page instead.
+  if (await isStoreOfflineForRequest(store)) return null;
   const [t, list, tags] = await Promise.all([
     getTranslations({ locale, namespace: "storefrontBlog" }),
     getCachedBlogPage(store.id, store.storeId, page, tag),

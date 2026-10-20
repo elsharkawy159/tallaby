@@ -141,7 +141,7 @@ export function VendorProductsSection({
       {
         id: "category",
         header: t("columns.category"),
-        meta: { label: t("columns.category") },
+        meta: { label: t("columns.category"), hideOnMobile: true },
         cell: ({ row }) => (
           <span className="text-sm text-foreground">
             {row.original.category?.name || "-"}
@@ -152,7 +152,7 @@ export function VendorProductsSection({
       {
         id: "brand",
         header: t("columns.brand"),
-        meta: { label: t("columns.brand") },
+        meta: { label: t("columns.brand"), hideOnMobile: true },
         cell: ({ row }) => (
           <span className="text-sm text-foreground">
             {row.original.brand?.name || "-"}
@@ -191,7 +191,7 @@ export function VendorProductsSection({
       {
         id: "rating",
         header: t("columns.rating"),
-        meta: { label: t("columns.rating") },
+        meta: { label: t("columns.rating"), hideOnMobile: true },
         cell: ({ row }) => {
           const rating = row.original.averageRating ?? 0;
           const count = row.original.reviewCount ?? 0;

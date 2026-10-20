@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { ChevronRight, Menu, Search, Wallet } from "lucide-react";
+import { ChevronRight, Ellipsis, Menu, Search, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatMoney } from "@/lib/i18n/format";
 import { useSidebarStore } from "@/stores";
@@ -27,6 +27,10 @@ export function DashboardHeader({ walletBalance }: { walletBalance: number | nul
   const [paletteOpen, setPaletteOpen] = useState(false);
   // The shortcut hint depends on the OS; resolve after mount to keep SSR markup stable.
   const [isMac, setIsMac] = useState(false);
+  const tCommon = useTranslations("common");
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const toolsRef = useRef<HTMLDivElement>(null);
+  const toolsId = useId();
 
   useEffect(() => {
     setIsMac(/Mac|iPhone|iPad/.test(navigator.userAgent));
@@ -39,6 +43,27 @@ export function DashboardHeader({ walletBalance }: { walletBalance: number | nul
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
+
+  // The phone "⋯" tools menu closes on navigation, outside taps and Escape.
+  useEffect(() => {
+    setToolsOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!toolsOpen) return;
+    const onPointerDown = (event: PointerEvent) => {
+      if (!toolsRef.current?.contains(event.target as Node)) setToolsOpen(false);
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setToolsOpen(false);
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [toolsOpen]);
 
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center gap-1 border-b border-sidebar-border bg-sidebar/90 px-3 text-sidebar-foreground backdrop-blur-md sm:gap-3 sm:px-6">
@@ -119,9 +144,33 @@ export function DashboardHeader({ walletBalance }: { walletBalance: number | nul
           </Link>
         )}
 
-        <InstallAppButton />
-        <LanguageToggle />
-        <ThemeToggle />
+        {/* Install, language and theme: inline from sm up; on phones they sit
+            behind a "⋯" button so the page title keeps its width. One set of
+            buttons serves both layouts, so the install prompt is caught once. */}
+        <div ref={toolsRef} className="relative flex shrink-0 items-center">
+          <button
+            type="button"
+            onClick={() => setToolsOpen((open) => !open)}
+            className={`${ICON_BUTTON} sm:hidden`}
+            aria-label={tCommon("actions")}
+            aria-expanded={toolsOpen}
+            aria-controls={toolsId}
+          >
+            <Ellipsis className="size-[18px]" />
+          </button>
+          <div
+            id={toolsId}
+            className={cn(
+              "flex items-center gap-1 sm:gap-3",
+              "max-sm:absolute max-sm:end-0 max-sm:top-full max-sm:mt-2 max-sm:rounded-xl max-sm:border max-sm:border-sidebar-border max-sm:bg-popover max-sm:p-1 max-sm:shadow-lg",
+              !toolsOpen && "max-sm:hidden"
+            )}
+          >
+            <InstallAppButton />
+            <LanguageToggle />
+            <ThemeToggle />
+          </div>
+        </div>
       </div>
 
       <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />

@@ -15,7 +15,9 @@ import {
   type SectionPreset,
   type StoreProfile,
 } from "@workspace/store-sections/render";
+import { PenLine } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
+import { Sheet, SheetContent, SheetTitle } from "@workspace/ui/components/sheet";
 import { cn } from "@workspace/ui/lib/utils";
 import { MediaPicker } from "./media/media-picker.client";
 import { findIndustry } from "./lib/industries.lib";
@@ -51,6 +53,7 @@ import { useEditorAutosave } from "./state/use-editor-autosave.client";
 import { useDraftWatch } from "./state/use-draft-watch.client";
 import { useEditorShortcuts } from "./state/use-editor-shortcuts.client";
 import { useStorePreview } from "./state/use-store-preview.client";
+import { useIsBelowLg } from "./state/use-media-query.client";
 
 type Catalog = EditorCatalogSnapshot;
 
@@ -170,6 +173,11 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
     [store],
   );
   const [panelOpen, setPanelOpen] = useState(true);
+  // Below lg (phones, small tablets) the panel and the inspector are bottom sheets.
+  const compact = useIsBelowLg();
+  const [inspectorOpen, setInspectorOpen] = useState(false);
+  // An insert from a sheet selects what it added: the canvas shows it, the inspector stays shut.
+  const insertingRef = useRef(false);
   const [quickInsert, setQuickInsert] = useState<{ open: boolean; index: number | null }>({ open: false, index: null });
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [imagePickerOpen, setImagePickerOpen] = useState(false);
@@ -179,6 +187,48 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
   const forms = catalog.forms;
   const baseCommands = useMemo(() => createEditorCommands(store), [store]);
   const commands = useDeviceCommands(store, baseCommands);
+
+  // The panel opens closed on small screens, so the canvas keeps the whole width.
+  useEffect(() => {
+    if (compact) setPanelOpen(false);
+    else setInspectorOpen(false);
+  }, [compact]);
+  // Small screens: selecting on the canvas opens the inspector sheet (a selection made from a
+  // panel sheet, e.g. Layers, leaves it to the Edit button); clearing the selection closes it.
+  const panelSheetOpen = compact && panelOpen && railEnabled(rail, capabilities);
+  useEffect(() => {
+    if (!compact) return;
+    return store.subscribe((s, prev) => {
+      if (s.selection === prev.selection) return;
+      if (!s.selection) setInspectorOpen(false);
+      else if (!insertingRef.current && !panelSheetOpen) setInspectorOpen(true);
+    });
+  }, [store, compact, panelSheetOpen]);
+  // Small screens: a tap that inserts from a panel sheet closes the sheet.
+  const panelCommands = useMemo(() => {
+    if (!compact) return commands;
+    const closeAfter =
+      <A extends unknown[], R>(run: (...args: A) => R) =>
+      (...args: A): R => {
+        insertingRef.current = true;
+        try {
+          const result = run(...args);
+          if (result !== false) setPanelOpen(false);
+          return result;
+        } finally {
+          insertingRef.current = false;
+        }
+      };
+    return {
+      ...commands,
+      addElement: closeAfter(commands.addElement),
+      addPreset: closeAfter(commands.addPreset),
+      addLibraryPreset: closeAfter(commands.addLibraryPreset),
+      addFormSection: closeAfter(commands.addFormSection),
+      applyImage: closeAfter(commands.applyImage),
+      applyTemplatePage: closeAfter(commands.applyTemplatePage),
+    };
+  }, [compact, commands]);
 
   const shortcutActions = useMemo(
     () => ({
@@ -303,10 +353,11 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
     }
   };
 
-  // Selecting an image opens Explore, so a photo can be dropped onto it right away.
+  // Selecting an image opens Explore, so a photo can be dropped onto it right away
+  // (not on small screens: the inspector sheet opens there instead).
   useEffect(
     () =>
-      store.subscribe((state, prev) => {
+      compact ? undefined : store.subscribe((state, prev) => {
         const { selection } = state;
         if (!selection || selection === prev.selection) return;
         const page = state.pages.find((p) => p.id === state.activePageId) ?? state.pages[0];
@@ -316,7 +367,7 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
         if (state.rail !== "explore") state.setRail("explore");
         setPanelOpen(true);
       }),
-    [store, capabilities.explore],
+    [store, capabilities.explore, compact],
   );
 
   const toggleRail = (next: Rail) => {
@@ -324,8 +375,58 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
     else {
       store.getState().setRail(next);
       setPanelOpen(true);
+      setInspectorOpen(false);
     }
   };
+
+  const panelBody = (
+    <>
+      {rail === "add" && (
+        <AddPanel
+          store={store}
+          commands={panelCommands}
+          uiLocale={uiLocale}
+          preview={{ ctx: baseCtx, catalog, posts: catalog.posts, designSystem, defaultLocale, fontClassName: initial.fontClassName, counts }}
+          templates={initial.templates}
+          templateHost={{
+            storeId: initial.storeId,
+            store: initial.store,
+            catalog,
+            fontClassName: initial.fontClassName,
+            defaultLocale,
+            readOnly: initial.readOnly,
+            flush,
+          }}
+        />
+      )}
+      {rail === "forms" && (
+        <FormsPanel
+          storeId={initial.storeId}
+          readOnly={initial.readOnly}
+          store={store}
+          commands={panelCommands}
+          forms={forms}
+          onForms={setForms}
+          preview={{ ctx: baseCtx, catalog, posts: catalog.posts, designSystem, defaultLocale, fontClassName: initial.fontClassName, counts }}
+        />
+      )}
+      {rail === "explore" && (
+        <ExplorePanel storeId={initial.storeId} readOnly={initial.readOnly} category={initial.category} uiLocale={uiLocale} commands={panelCommands} />
+      )}
+      {rail === "layers" && <LayersPanel store={store} commands={panelCommands} uiLocale={uiLocale} />}
+      {rail === "media" && <MediaPanel readOnly={initial.readOnly} commands={panelCommands} />}
+      {rail === "pages" && (
+        <div className="min-h-0 flex-1 overflow-y-auto p-3">
+          <PagesPanel store={store} uiLocale={uiLocale} />
+        </div>
+      )}
+      {rail === "brand" && <BrandPanel store={store} storeId={initial.storeId} readOnly={initial.readOnly} />}
+    </>
+  );
+  const sidebar = (
+    <EditorSidebar store={store} commands={commands} storeId={initial.storeId} readOnly={initial.readOnly} catalog={catalog} uiLocale={uiLocale} />
+  );
+  const hasSelection = selection !== null;
 
   return (
     <div className={`flex h-dvh flex-col bg-background ${initial.fontClassName}`} style={themeVars as React.CSSProperties}>
@@ -365,58 +466,35 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
       <EditorDndProvider store={store} commands={commands} readOnly={initial.readOnly}>
       <div className="flex min-h-0 flex-1">
         <EditorRail store={store} panelOpen={panelOpen} onToggle={toggleRail} />
-        {panelOpen && railEnabled(rail, capabilities) && (
+        {!compact && panelOpen && railEnabled(rail, capabilities) && (
           <aside
             aria-label={t(`rail.${rail}`)}
             className={cn(
-              "flex shrink-0 flex-col border-e bg-background transition-[width] duration-200 ease-out motion-reduce:transition-none",
+              "flex shrink-0 flex-col border-e bg-background transition-[width] duration-200 ease-out max-lg:hidden motion-reduce:transition-none",
               libraryWide ? "w-[min(560px,calc(100vw-30rem))]" : "w-[300px]",
             )}
           >
-            {rail === "add" && (
-              <AddPanel
-                store={store}
-                commands={commands}
-                uiLocale={uiLocale}
-                preview={{ ctx: baseCtx, catalog, posts: catalog.posts, designSystem, defaultLocale, fontClassName: initial.fontClassName, counts }}
-                templates={initial.templates}
-                templateHost={{
-                  storeId: initial.storeId,
-                  store: initial.store,
-                  catalog,
-                  fontClassName: initial.fontClassName,
-                  defaultLocale,
-                  readOnly: initial.readOnly,
-                  flush,
-                }}
-              />
-            )}
-            {rail === "forms" && (
-              <FormsPanel
-                storeId={initial.storeId}
-                readOnly={initial.readOnly}
-                store={store}
-                commands={commands}
-                forms={forms}
-                onForms={setForms}
-                preview={{ ctx: baseCtx, catalog, posts: catalog.posts, designSystem, defaultLocale, fontClassName: initial.fontClassName, counts }}
-              />
-            )}
-            {rail === "explore" && (
-              <ExplorePanel storeId={initial.storeId} readOnly={initial.readOnly} category={initial.category} uiLocale={uiLocale} commands={commands} />
-            )}
-            {rail === "layers" && <LayersPanel store={store} commands={commands} uiLocale={uiLocale} />}
-            {rail === "media" && <MediaPanel readOnly={initial.readOnly} commands={commands} />}
-            {rail === "pages" && (
-              <div className="min-h-0 flex-1 overflow-y-auto p-3">
-                <PagesPanel store={store} uiLocale={uiLocale} />
-              </div>
-            )}
-            {rail === "brand" && <BrandPanel store={store} storeId={initial.storeId} readOnly={initial.readOnly} />}
+            {panelBody}
           </aside>
         )}
+        {compact && (
+          <Sheet open={panelSheetOpen} onOpenChange={setPanelOpen}>
+            <SheetContent
+              side="bottom"
+              aria-describedby={undefined}
+              onOpenAutoFocus={(event) => event.preventDefault()}
+              className={cn("h-[85dvh] gap-0 rounded-t-xl p-0", initial.fontClassName)}
+              style={themeVars as React.CSSProperties}
+            >
+              <div className="flex h-12 shrink-0 items-center border-b px-4 pe-12">
+                <SheetTitle className="text-sm">{t(`rail.${rail}`)}</SheetTitle>
+              </div>
+              <div className="flex min-h-0 flex-1 flex-col pb-[env(safe-area-inset-bottom)]">{panelBody}</div>
+            </SheetContent>
+          </Sheet>
+        )}
 
-        <main className="flex min-w-0 flex-1 flex-col">
+        <main className="flex min-w-0 flex-1 flex-col max-md:pb-[calc(3.5rem+env(safe-area-inset-bottom))]">
           <DeviceBanner store={store} />
           <div className="min-h-0 flex-1">
             <EditorCanvas
@@ -438,9 +516,37 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
           </div>
         </main>
 
-        <aside aria-label={t("sidebar.label")} className="hidden w-[320px] shrink-0 border-s bg-background lg:block">
-          <EditorSidebar store={store} commands={commands} storeId={initial.storeId} readOnly={initial.readOnly} catalog={catalog} uiLocale={uiLocale} />
-        </aside>
+        {!compact && (
+          <aside aria-label={t("sidebar.label")} className="hidden w-[320px] shrink-0 border-s bg-background lg:block">
+            {sidebar}
+          </aside>
+        )}
+        {compact && (
+          // Not modal: the canvas above stays usable, and a tap there selects something else.
+          <Sheet open={inspectorOpen && hasSelection} onOpenChange={setInspectorOpen} modal={false}>
+            <SheetContent
+              side="bottom"
+              aria-describedby={undefined}
+              onOpenAutoFocus={(event) => event.preventDefault()}
+              onInteractOutside={(event) => event.preventDefault()}
+              className={cn("h-[65dvh] gap-0 rounded-t-xl p-0 pt-2 shadow-[0_-8px_30px_rgb(0_0_0/0.12)]", initial.fontClassName)}
+              style={themeVars as React.CSSProperties}
+            >
+              <SheetTitle className="sr-only">{t("sidebar.label")}</SheetTitle>
+              <div className="min-h-0 flex-1 pb-[env(safe-area-inset-bottom)]">{sidebar}</div>
+            </SheetContent>
+          </Sheet>
+        )}
+        {compact && hasSelection && !inspectorOpen && !panelSheetOpen && (
+          <Button
+            type="button"
+            className="fixed end-4 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-40 h-11 rounded-full px-4 shadow-lg md:bottom-6"
+            onClick={() => setInspectorOpen(true)}
+          >
+            <PenLine aria-hidden />
+            {t("sidebar.edit")}
+          </Button>
+        )}
       </div>
       </EditorDndProvider>
 

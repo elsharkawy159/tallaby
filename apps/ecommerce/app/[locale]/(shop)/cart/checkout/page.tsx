@@ -10,7 +10,8 @@ import { getTranslations } from "next-intl/server";
 import { getUser } from "@/actions/auth";
 import { MetaInitiateCheckout } from "@/components/meta/meta-initiate-checkout.client";
 import { HostStoreTracking } from "@/components/storefront/host-store-tracking";
-import { DEFAULT_CURRENCY } from "@/lib/constants";
+import { BASE_URL, DEFAULT_CURRENCY } from "@/lib/constants";
+import { isRequestStoreOffline } from "@/lib/storefront.server";
 
 export const metadata: Metadata = generateNoIndexMetadata();
 
@@ -18,6 +19,24 @@ export const metadata: Metadata = generateNoIndexMetadata();
 export const dynamic = "force-dynamic";
 
 export default async function Checkout() {
+  // On the host of a store whose website is offline: no checkout.
+  if (await isRequestStoreOffline()) {
+    const ts = await getTranslations("storefront");
+    return (
+      <div className="min-h-screen flex items-center justify-center px-6 text-center">
+        <div>
+          <h1 className="text-xl md:text-2xl font-bold mb-2">{ts("offlineTitle")}</h1>
+          <a
+            href={BASE_URL || "https://tallaby.com"}
+            className="mt-6 inline-flex h-11 items-center rounded-full bg-primary px-6 font-semibold text-primary-foreground"
+          >
+            {ts("offlineCta")}
+          </a>
+        </div>
+      </div>
+    );
+  }
+
   const [result, addressesResult, user, t] = await Promise.all([
     getCheckoutData(),
     getAddresses(),

@@ -3,6 +3,7 @@
 import { Controller, useFormContext } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import { Info, Store, Truck, Warehouse } from "lucide-react";
+import { TALLABY_SERVICES_ENABLED } from "@workspace/lib/fulfillment";
 import type { SellerPricingSettings } from "@/lib/utils/product-pricing.lib";
 import { cn } from "@/lib/utils";
 import {
@@ -64,6 +65,8 @@ export function ShippingSection({
                 description={t("platformDescription")}
                 selected={field.value === "platform_fulfilled"}
                 onSelect={() => field.onChange("platform_fulfilled")}
+                disabled={!TALLABY_SERVICES_ENABLED}
+                badge={!TALLABY_SERVICES_ENABLED && t("soon")}
               />
             </div>
           )}

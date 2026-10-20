@@ -58,7 +58,7 @@ export function StoreGeneralForm({
   storeId: string;
   initial: StoreGeneralFormValues;
   readOnly: boolean;
-  /** Logo + banner fields; false when Website › Design system owns them. */
+  /** Banner field here; false when Website › Design system owns it (the logo is always here). */
   brandInSettings: boolean;
   /** Which of the seller's products this store shows (D24); saved with the same button. */
   catalog: StoreCatalogProps;
@@ -153,26 +153,23 @@ export function StoreGeneralForm({
         {/* Two columns on desktop: the store's identity, then contact, languages and currency. */}
         <div className="grid items-start gap-5 lg:grid-cols-2">
         <SectionCard id="identity" icon={Store} title={t("identity.title")} description={t("identity.description")}>
-          {brandInSettings ? (
-            <>
-              <Controller
-                control={form.control}
-                name="logoUrl"
-                render={({ field }) => <LogoField value={field.value} onChange={field.onChange} name={name} disabled={disabled} />}
-              />
-              <Separator className="my-1" />
-            </>
-          ) : (
-            <p className="flex items-start gap-2.5 rounded-xl bg-primary-soft px-4 py-3 text-[13px] text-primary-ink">
-              <Palette className="mt-0.5 size-4 shrink-0" aria-hidden />
-              <span>
-                {t("identity.brandMoved")}{" "}
-                <Link href={`/stores/${storeId}/website/design`} className="font-medium underline underline-offset-2">
-                  {t("identity.brandMovedLink")}
-                </Link>
-              </span>
-            </p>
-          )}
+          <div className="space-y-2">
+            <Controller
+              control={form.control}
+              name="logoUrl"
+              render={({ field }) => <LogoField value={field.value} onChange={field.onChange} name={name} disabled={disabled} />}
+            />
+            {!brandInSettings && (
+              <Link
+                href={`/stores/${storeId}/website/design`}
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-primary underline-offset-2 hover:underline"
+              >
+                <Palette className="size-3.5 shrink-0" aria-hidden />
+                {t("identity.designLink")}
+              </Link>
+            )}
+          </div>
+          <Separator className="my-1" />
           {text("name", t("fields.name"), { placeholder: t("fields.namePlaceholder") })}
           <FormField
             control={form.control}

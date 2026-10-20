@@ -49,10 +49,64 @@ import { BASECAMP } from "./basecamp";
 import { GARAGE } from "./garage";
 import { DRIVE } from "./drive";
 import { MOTO } from "./moto";
+import { KETTAN } from "./kettan";
+import { ZAY } from "./zay";
+import { SITARA } from "./sitara";
+import { SHANTA } from "./shanta";
+import { TASFYA } from "./tasfya";
+import { LAYALI } from "./layali";
+import { KABL } from "./kabl";
+import { SADA } from "./sada";
+import { ZAKI } from "./zaki";
+import { SAA } from "./saa";
+import { TANY } from "./tany";
+import { NADA } from "./nada";
+import { KOHL } from "./kohl";
+import { OUD } from "./oud";
+import { SABON } from "./sabon";
+import { BARBER } from "./barber";
+import { MATBAKH } from "./matbakh";
+import { FOKHAR } from "./fokhar";
+import { TAWLA } from "./tawla";
+import { TANZIM } from "./tanzim";
+import { QAHWA } from "./qahwa";
+import { KHODAR } from "./khodar";
+import { LAHMA } from "./lahma";
+import { HALAWA } from "./halawa";
+import { ATARA } from "./atara";
+import { DOKAN } from "./dokan";
+import { BUNN } from "./bunn";
+import { MOBILIA } from "./mobilia";
+import { ZAREA } from "./zarea";
+import { NOUR } from "./nour";
+import { MAFRASH } from "./mafrash";
+import { ROKN } from "./rokn";
+import { ZAHRA } from "./zahra";
+import { NUQRA } from "./nuqra";
+import { LULU } from "./lulu";
+import { SAAT } from "./saat";
+import { MAHR } from "./mahr";
+import { LEGO } from "./lego";
+import { MAMA } from "./mama";
+import { MADRASA } from "./madrasa";
+import { HIKAYA } from "./hikaya";
+import { AHLAM } from "./ahlam";
+import { YOGA } from "./yoga";
+import { KOORA } from "./koora";
+import { DARRAGA } from "./darraga";
+import { SABAHA } from "./sabaha";
+import { BOXING } from "./boxing";
+import { TYRE } from "./tyre";
+import { ZEINA } from "./zeina";
+import { KAHRABA } from "./kahraba";
+import { SAFAR } from "./safar";
+import { GARAGY } from "./garagy";
 import type { TemplateDefinition, TemplateDemo } from "./types";
 
-/** Templates 02–38, built from section-library designs (`library-template.ts`), in registry order. */
-export const LIBRARY_TEMPLATES: readonly TemplateDefinition[] = [MODE, STREETWEAR, KASR, TECHHUB, VOLT, ARCADE, ARENA, PURE, GLOW, ELIXIR, BOTANICA, NEST, DAILY, HEARTH, CLAY, SIZZLE, HARVEST, LOAF, ROAST, VERDANT, LOFT, OAK, SAKAN, LUMIERE, KARAT, FADDA, PLAYROOM, BAMBINO, DOODLE, HEKAYA, PACE, STRIDE, CORE, BASECAMP, GARAGE, DRIVE, MOTO];
+/** Templates 02–38 and 49–100, built from section-library designs (`library-template.ts`), in registry order. */
+export const LIBRARY_TEMPLATES: readonly TemplateDefinition[] = [MODE, STREETWEAR, KASR, TECHHUB, VOLT, ARCADE, ARENA, PURE, GLOW, ELIXIR, BOTANICA, NEST, DAILY, HEARTH, CLAY, SIZZLE, HARVEST, LOAF, ROAST, VERDANT, LOFT, OAK, SAKAN, LUMIERE, KARAT, FADDA, PLAYROOM, BAMBINO, DOODLE, HEKAYA, PACE, STRIDE, CORE, BASECAMP, GARAGE, DRIVE, MOTO,
+  KETTAN, ZAY, SITARA, SHANTA, TASFYA, LAYALI, KABL, SADA, ZAKI, SAA, TANY, NADA, KOHL, OUD, SABON, BARBER, MATBAKH, FOKHAR, TAWLA, TANZIM, QAHWA, KHODAR, LAHMA, HALAWA, ATARA, DOKAN, BUNN, MOBILIA, ZAREA, NOUR, MAFRASH, ROKN, ZAHRA, NUQRA, LULU, SAAT, MAHR, LEGO, MAMA, MADRASA, HIKAYA, AHLAM, YOGA, KOORA, DARRAGA, SABAHA, BOXING, TYRE, ZEINA, KAHRABA, SAFAR, GARAGY,
+];
 
 export const CODE_TEMPLATES: readonly TemplateDefinition[] = [CLASSIC, ATELIER, ...LIBRARY_TEMPLATES];
 

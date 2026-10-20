@@ -22,9 +22,7 @@ import {
 import { OAuth } from "@/components/auth/o-auth";
 import { AuthShell, AuthTabs } from "./auth-shell.client";
 import { AuthField } from "./auth-field.client";
-
-const PRIMARY_BUTTON =
-  "h-[50px] w-full rounded-full bg-accent text-[15px] font-semibold text-[#171717] hover:bg-[#e89318]";
+import { AuthHeading, OUTLINE_BUTTON, PRIMARY_BUTTON } from "./auth-ui";
 
 export default function AuthPage() {
   const [showResetForm, setShowResetForm] = useState(false);
@@ -127,7 +125,7 @@ export default function AuthPage() {
             <Button
               type="button"
               variant="outline"
-              className="h-[50px] w-full rounded-full text-[15px] font-semibold"
+              className={OUTLINE_BUTTON}
               onClick={() => setResetSuccess(false)}
             >
               {t("tryAnotherEmail")}
@@ -239,29 +237,5 @@ export default function AuthPage() {
         })}
       </p>
     </AuthShell>
-  );
-}
-
-function AuthHeading({
-  eyebrow,
-  title,
-  subtitle,
-}: {
-  eyebrow: string;
-  title: string;
-  subtitle: string;
-}) {
-  return (
-    <div>
-      <div className="text-[12.5px] font-semibold tracking-[0.08em] text-[#2c6e80] uppercase rtl:tracking-normal">
-        {eyebrow}
-      </div>
-      <h1 className="mt-1.5 mb-2 text-[26px] leading-tight font-bold tracking-[-0.01em] text-foreground rtl:tracking-normal lg:text-[32px]">
-        {title}
-      </h1>
-      <p className="m-0 text-[15px] leading-relaxed text-pretty text-muted-foreground">
-        {subtitle}
-      </p>
-    </div>
   );
 }

@@ -39,6 +39,7 @@ import { getCurrentUserId } from "@/lib/get-current-user-id";
 import {
   getCartScope,
   getStorefrontCheckoutPayments,
+  isCartStoreOffline,
 } from "@/lib/storefront.server";
 import { hasStoreTrackingConsent, STORE_TRACKING_CONSENT_COOKIE } from "@/lib/storefront-consent";
 import { cookies } from "next/headers";
@@ -81,6 +82,11 @@ export async function createOrder(data: {
       !(ONLINE_CARD_PAYMENT_ENABLED && isOnlineCardPaymentEnabled())
     ) {
       return { success: false, error: "Online card payment is unavailable" };
+    }
+
+    // The seller took this store's website offline: it takes no orders.
+    if (await isCartStoreOffline(data.cartId)) {
+      return { success: false, error: "This store is temporarily unavailable" };
     }
 
     // A store with a selected catalog (D24) may have dropped a product after it

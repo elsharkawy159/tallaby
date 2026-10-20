@@ -23,6 +23,14 @@ const SEEDS: Record<string, readonly string[]> = {
     ...["lumiere", "karat", "fadda", "playroom", "bambino", "doodle", "hekaya", "pace", "stride", "core", "basecamp"],
     ...["garage", "drive", "moto"],
   ],
+  // Templates 49–100 (v1), one migration for all ten store categories.
+  "0090_library_templates_49_100.sql": [
+    ...["kettan", "zay", "sitara", "shanta", "tasfya", "layali", "kabl", "sada", "zaki", "saa", "tany"],
+    ...["nada", "kohl", "oud", "sabon", "barber", "matbakh", "fokhar", "tawla", "tanzim", "qahwa", "khodar"],
+    ...["lahma", "halawa", "atara", "dokan", "bunn", "mobilia", "zarea", "nour", "mafrash", "rokn", "zahra"],
+    ...["nuqra", "lulu", "saat", "mahr", "lego", "mama", "madrasa", "hikaya", "ahlam", "yoga", "koora"],
+    ...["darraga", "sabaha", "boxing", "tyre", "zeina", "kahraba", "safar", "garagy"],
+  ],
 };
 
 const walk = (nodes: readonly ComponentNode[] | undefined): ComponentNode[] => (nodes ?? []).flatMap((n) => [n, ...walk(n.children)]);

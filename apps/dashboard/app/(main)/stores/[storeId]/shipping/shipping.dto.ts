@@ -4,6 +4,7 @@ export type StoreShippingErrorKey =
   | "overlap"
   | "tooManyZones"
   | "noZones"
+  | "tallabyUnavailable"
   | "readOnly"
   | "notFound"
   | "rateLimited"

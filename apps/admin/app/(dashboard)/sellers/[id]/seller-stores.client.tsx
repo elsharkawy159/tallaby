@@ -28,7 +28,7 @@ const ACTION_COPY: Record<StoreAction, { label: string; title: string; body: str
   unpublish_store: {
     label: "Unpublish site",
     title: "Force-unpublish this store's site",
-    body: "The storefront falls back to the default Tallaby Classic page. The seller can publish again.",
+    body: "The store's website goes offline: visitors see a \"store unavailable\" page and it takes no orders. Drafts are kept and the seller can publish again.",
   },
   suspend_store: {
     label: "Suspend",

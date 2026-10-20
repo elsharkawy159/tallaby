@@ -3,8 +3,7 @@
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowRight, Loader2, MailCheck } from "lucide-react";
-import Image from "next/image";
+import { ArrowRight, Loader2, MailCheck, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -12,13 +11,13 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { Button } from "@workspace/ui/components/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@workspace/ui/components/card";
 import { Form } from "@workspace/ui/components/form";
-import { Separator } from "@workspace/ui/components/separator";
-import { TextInput } from "@workspace/ui/components/inputs/text-input";
 
 import { SubdomainField } from "@/components/stores/subdomain-field.client";
 import { createClient } from "@/supabase/client";
+import { AuthField } from "../login/auth-field.client";
+import { AuthShell, AuthTabs } from "../login/auth-shell.client";
+import { AUTH_INPUT_BOX, AuthHeading, OUTLINE_BUTTON, PRIMARY_BUTTON } from "../login/auth-ui";
 import {
   checkSignupSubdomain,
   createStoreForCurrentUser,
@@ -27,8 +26,6 @@ import {
 } from "./signup.server";
 import type { SignupErrorKey, SignupResult } from "./signup.dto";
 
-const BACKGROUND =
-  "https://images.unsplash.com/photo-1496917756835-20cb06e75b4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1908&q=80";
 const EGYPT_MOBILE = /^(?:\+20|0020|0)?1[0125]\d{8}$/;
 
 type FormValues = { subdomain: string; phone: string; email: string; password: string };
@@ -44,6 +41,7 @@ export function SignupForm({
   initialSubdomain?: string;
 }) {
   const t = useTranslations("signup");
+  const tAuth = useTranslations("auth");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isGooglePending, setGooglePending] = useState(false);
@@ -130,121 +128,126 @@ export function SignupForm({
 
   const busy = isPending || isGooglePending;
 
+  if (confirmEmail !== null) {
+    return (
+      <AuthShell>
+        <div className="grid size-12 place-items-center rounded-full bg-primary-soft">
+          <MailCheck className="size-6 text-primary" />
+        </div>
+        <AuthHeading
+          eyebrow={tAuth("title")}
+          title={t("confirmTitle")}
+          subtitle={t("confirmDescription", { email: confirmEmail })}
+        />
+        <Button asChild variant="outline" className={OUTLINE_BUTTON}>
+          <Link href="/login">{t("signIn")}</Link>
+        </Button>
+      </AuthShell>
+    );
+  }
+
   return (
-    <div className="relative flex min-h-screen items-center justify-center p-4">
-      <Image src={BACKGROUND} alt="" fill priority sizes="100vw" className="-z-10 object-cover" />
-      <div className="absolute inset-0 z-[-1] h-full w-full bg-gradient-to-b from-black/30 from-70% to-black" />
-      <Card className="w-full max-w-md">
-        {confirmEmail !== null ? (
-          <>
-            <CardHeader className="space-y-3 text-center">
-              <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900">
-                <MailCheck className="size-6 text-emerald-600 dark:text-emerald-400" />
+    <AuthShell>
+      <AuthHeading eyebrow={tAuth("title")} title={t("title")} subtitle={t("subtitle")} />
+      {signedIn ? (
+        <div className="flex items-center gap-2.5 rounded-xl bg-muted px-3.5 py-2.5 text-sm text-muted-foreground">
+          <UserRound className="size-4 shrink-0" />
+          <span className="min-w-0 truncate">{t("signedInAs", { email: signedInEmail })}</span>
+        </div>
+      ) : (
+        <AuthTabs active="signup" />
+      )}
+
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-[22px]" noValidate>
+          <div className="flex flex-col gap-4">
+            <SubdomainField
+              form={form}
+              name="subdomain"
+              check={checkSignupSubdomain}
+              onAvailabilityChange={setAvailable}
+              disabled={busy}
+              autoFocus
+              className={AUTH_INPUT_BOX}
+              inputClassName="px-3.5 text-[15px] md:text-[15px]"
+              labelClassName="text-sm font-semibold text-foreground"
+            />
+            <AuthField
+              form={form}
+              name="phone"
+              type="tel"
+              label={t("phone")}
+              placeholder={t("phonePlaceholder")}
+              description={t("phoneHint")}
+              autoComplete="tel"
+              disabled={busy}
+            />
+            {!signedIn && (
+              <>
+                <AuthField
+                  form={form}
+                  name="email"
+                  type="email"
+                  label={t("email")}
+                  placeholder={t("emailPlaceholder")}
+                  autoComplete="email"
+                  disabled={busy}
+                />
+                <AuthField
+                  form={form}
+                  name="password"
+                  type="password"
+                  label={t("password")}
+                  placeholder={t("passwordPlaceholder")}
+                  autoComplete="new-password"
+                  disabled={busy}
+                />
+              </>
+            )}
+          </div>
+          <Button type="submit" className={PRIMARY_BUTTON} disabled={busy}>
+            {isPending && <Loader2 className="size-[18px] animate-spin" />}
+            {t("submit")}
+            {!isPending && <ArrowRight className="size-[18px] rtl:rotate-180" />}
+          </Button>
+
+          {!signedIn && (
+            <>
+              <div className="flex items-center gap-3.5 text-[13px] text-muted-foreground before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border">
+                {t("or")}
               </div>
-              <CardTitle className="text-2xl font-bold">{t("confirmTitle")}</CardTitle>
-              <CardDescription>{t("confirmDescription", { email: confirmEmail })}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button asChild variant="outline" className="w-full">
-                <Link href="/login">{t("signIn")}</Link>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-[50px] w-full gap-2 rounded-full border-input bg-white text-[15px] font-semibold text-foreground hover:bg-muted dark:bg-card"
+                onClick={onGoogle}
+                disabled={busy}
+              >
+                {isGooglePending ? <Loader2 className="size-[18px] animate-spin" /> : <GoogleIcon />}
+                {t("continueWithGoogle")}
               </Button>
-            </CardContent>
-          </>
-        ) : (
-          <>
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-center text-2xl font-bold">{t("title")}</CardTitle>
-              <CardDescription className="text-center">
-                {signedIn ? t("signedInAs", { email: signedInEmail }) : t("subtitle")}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" noValidate>
-                  <SubdomainField
-                    form={form}
-                    name="subdomain"
-                    check={checkSignupSubdomain}
-                    onAvailabilityChange={setAvailable}
-                    disabled={busy}
-                    autoFocus
-                  />
-                  <div className="space-y-1">
-                    <TextInput
-                      form={form}
-                      name="phone"
-                      type="tel"
-                      label={t("phone")}
-                      placeholder={t("phonePlaceholder")}
-                      description={t("phoneHint")}
-                      disabled={busy}
-                      className="text-start [direction:ltr]"
-                      required
-                    />
-                  </div>
-                  {!signedIn && (
-                    <>
-                      <TextInput
-                        form={form}
-                        name="email"
-                        type="email"
-                        label={t("email")}
-                        placeholder={t("emailPlaceholder")}
-                        disabled={busy}
-                        required
-                      />
-                      <TextInput
-                        form={form}
-                        name="password"
-                        type="password"
-                        label={t("password")}
-                        placeholder={t("passwordPlaceholder")}
-                        disabled={busy}
-                        required
-                      />
-                    </>
-                  )}
-                  <Button type="submit" className="w-full" disabled={busy}>
-                    {isPending && <Loader2 className="size-4 animate-spin" />}
-                    {t("submit")}
-                    <ArrowRight className="size-4 rtl:rotate-180" />
-                  </Button>
+            </>
+          )}
+        </form>
+      </Form>
 
-                  {!signedIn && (
-                    <>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                        <Separator className="flex-1" />
-                        {t("or")}
-                        <Separator className="flex-1" />
-                      </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="min-h-12 w-full"
-                        onClick={onGoogle}
-                        disabled={busy}
-                      >
-                        {isGooglePending ? <Loader2 className="size-4 animate-spin" /> : <GoogleIcon />}
-                        {t("continueWithGoogle")}
-                      </Button>
-                    </>
-                  )}
-                </form>
-              </Form>
-
-              {!signedIn && (
-                <p className="mt-6 text-center text-sm text-muted-foreground">
-                  {t("haveAccount")}{" "}
-                  <Link href="/login" className="font-medium text-primary underline-offset-4 hover:underline">
-                    {t("signIn")}
-                  </Link>
-                </p>
-              )}
-            </CardContent>
-          </>
-        )}
-      </Card>
-    </div>
+      {!signedIn && (
+        <>
+          <p className="m-0 text-center text-sm text-muted-foreground">
+            {t("haveAccount")}{" "}
+            <Link href="/login" className="font-semibold text-primary hover:underline">
+              {t("signIn")}
+            </Link>
+          </p>
+          <p className="m-0 text-[12.5px] leading-relaxed text-muted-foreground">
+            {tAuth.rich("legal", {
+              terms: (chunks) => <span className="font-semibold text-primary">{chunks}</span>,
+              privacy: (chunks) => <span className="font-semibold text-primary">{chunks}</span>,
+            })}
+          </p>
+        </>
+      )}
+    </AuthShell>
   );
 }
 

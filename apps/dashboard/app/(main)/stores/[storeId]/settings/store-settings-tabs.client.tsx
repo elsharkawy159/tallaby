@@ -25,7 +25,8 @@ export function StoreSettingsTabs({ storeId }: { storeId: string }) {
             href={tab.href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "shrink-0 border-b-2 px-3 py-2.5 text-sm transition-colors",
+              // Two tabs: they share the row on phones.
+              "shrink-0 border-b-2 px-3 py-2.5 text-center text-sm transition-colors max-sm:flex-1",
               active
                 ? "border-primary font-medium text-primary-ink"
                 : "border-transparent text-muted-foreground hover:text-foreground",

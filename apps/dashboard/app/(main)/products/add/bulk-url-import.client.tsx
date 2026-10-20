@@ -18,6 +18,7 @@ import {
   AccordionTrigger,
 } from "@workspace/ui/components/accordion"
 import { cn, getPublicUrl } from "@/lib/utils"
+import { useSidebarStore } from "@/stores"
 import { bulkCreateProductsAction } from "@/actions/products"
 import type { SellerPricingSettings } from "@/lib/utils/product-pricing.lib"
 import {
@@ -164,6 +165,7 @@ export function BulkUrlImport ({
   onExit,
 }: BulkUrlImportProps) {
   const router = useRouter()
+  const isSidebarCollapsed = useSidebarStore((state) => state.isCollapsed)
   const t = useTranslations("productForm.bulk")
   const errorText = (message: string | undefined) =>
     message && t.has(`errors.${message}`) ? t(`errors.${message}`) : message
@@ -367,9 +369,9 @@ export function BulkUrlImport ({
   }
 
   return (
-    <div className="min-h-screen pb-24">
+    <div className="min-h-screen pb-36 sm:pb-24">
       <div className="sticky top-16 z-20 bg-card border-b border-border shadow-sm">
-        <div className="container px-6 py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="container px-4 py-4 sm:px-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-lg font-semibold text-foreground">
               {t("title")}
@@ -536,15 +538,22 @@ export function BulkUrlImport ({
         )}
       </div>
 
-      <div className="fixed bottom-0 inset-x-0 z-10 border-t border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
-        <div className="px-6 py-4 flex items-center justify-between container gap-3">
-          <p className="text-sm text-muted-foreground">
+      {/* Starts after the desktop sidebar, like MainContentWrapper. */}
+      <div
+        className={cn(
+          "fixed bottom-0 inset-x-0 z-10 border-t border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 transition-[inset-inline-start] duration-300 ease-in-out",
+          isSidebarCollapsed ? "lg:start-20" : "lg:start-[280px]"
+        )}
+      >
+        <div className="container px-4 py-3 sm:px-6 sm:py-4 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+          <p className="min-w-0 flex-1 text-sm text-muted-foreground max-sm:basis-full">
             {t("footerHint")}
           </p>
           <Button
             type="button"
             onClick={handleSaveAll}
             disabled={isPending || isFetching || readyCount === 0}
+            className="max-sm:w-full"
           >
             {isPending ? (
               <span className="flex items-center gap-2">

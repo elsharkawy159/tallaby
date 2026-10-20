@@ -7,6 +7,7 @@ import { routing } from "@/i18n/routing";
 import { cmsImageUrl } from "@/lib/store-cms/cms.lib";
 import { getCachedCmsCollection, getCachedCmsItem } from "@/lib/store-cms/cms.server";
 import { resolveStorefront } from "@/lib/storefront.server";
+import { isSubdomainOfflineForRequest, STORE_OFFLINE_METADATA } from "@/lib/store-site/offline.server";
 import { marketplaceOrigin } from "@/lib/storefront-routing";
 import { ArticleBody, ContentImage, JsonLd } from "../../../_components/store-content";
 import s from "../../../storefront.module.css";
@@ -36,6 +37,7 @@ async function load(locale: string, subdomain: string, collectionSlug: string, i
 
 export async function generateMetadata({ params }: CmsItemPageProps): Promise<Metadata> {
   const { locale, subdomain, collection: collectionSlug, itemSlug } = await params;
+  if (await isSubdomainOfflineForRequest(subdomain)) return STORE_OFFLINE_METADATA;
   const { store, collection, item, summary } = await load(locale, subdomain, collectionSlug, itemSlug);
   const url = `${storeUrl(store.subdomain, store.customDomain)}${locale === routing.defaultLocale ? "" : `/${locale}`}/${collection.slug}/${item.slug}`;
   const image = cmsImageUrl(item.seo.ogImage || summary.image);
@@ -99,6 +101,8 @@ function FieldValue({ field, value, format }: { field: CmsFieldDef; value: unkno
 
 export default async function StoreCmsItemPage({ params }: CmsItemPageProps) {
   const { locale, subdomain, collection: collectionSlug, itemSlug } = await params;
+  // Website offline: the layout shows the offline page; no marketplace redirect.
+  if (await isSubdomainOfflineForRequest(subdomain)) return null;
   const [{ store, collection, item, summary }, format] = await Promise.all([
     load(locale, subdomain, collectionSlug, itemSlug),
     getFormatter({ locale }),

@@ -27,7 +27,11 @@ function SegmentedControl({
       type="single"
       value={value}
       onValueChange={(next) => next && onValueChange(next)}
-      className={cn("inline-flex shrink-0 rounded-full bg-muted p-[3px] dark:bg-input/40", className)}
+      className={cn(
+        // Fills the row on phones (items share it equally); hugs its content from sm.
+        "flex w-full shrink-0 rounded-full bg-muted p-[3px] sm:inline-flex sm:w-auto dark:bg-input/40",
+        className
+      )}
       {...props}
     />
   );
@@ -41,7 +45,7 @@ function SegmentedControlItem({
     <ToggleGroupPrimitive.Item
       data-slot="segmented-control-item"
       className={cn(
-        "cursor-pointer rounded-full px-3.5 py-1.5 text-[13px] font-semibold text-muted-foreground transition-[color,background-color,box-shadow] outline-none",
+        "flex-1 cursor-pointer rounded-full px-3.5 py-1.5 text-[13px] sm:flex-none font-semibold text-muted-foreground transition-[color,background-color,box-shadow] outline-none",
         "hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-primary/30",
         "data-[state=on]:bg-card data-[state=on]:text-primary data-[state=on]:shadow-sm",
         "disabled:cursor-not-allowed disabled:opacity-50",

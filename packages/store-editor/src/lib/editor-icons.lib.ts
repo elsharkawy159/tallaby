@@ -52,6 +52,14 @@ import {
   Text,
   Type,
   type LucideIcon,
+  Boxes,
+  Compass,
+  CreditCard,
+  MessageSquareDot,
+  Crown,
+  HandHelping,
+  Store,
+  MapPin,
 } from "lucide-react";
 import type { ElementType, SectionCategory } from "@workspace/store-sections/render";
 import type { SectionGroupKey } from "./editor-palette.lib";
@@ -156,4 +164,13 @@ export const LIBRARY_ICONS: Record<string, LucideIcon> = {
   newspaper: Newspaper,
   heading: Heading2,
   package: Package,
+  boxes: Boxes,
+  compass: Compass,
+  "credit-card": CreditCard,
+  "message-square-dot": MessageSquareDot,
+  crown: Crown,
+  "hand-helping": HandHelping,
+  store: Store,
+  "map-pin": MapPin,
+  "shopping-cart": ShoppingCart,
 };

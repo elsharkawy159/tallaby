@@ -1,5 +1,5 @@
 /**
- * Botanica (template 12, natural hair and body care; Claude Design
+ * Sage, formerly Botanica (template 12, natural hair and body care; Claude Design
  * "Storefront Templates"): cream paper, a deep olive for actions and a
  * honey highlight, Noto Naskh Arabic headings over IBM Plex Sans Arabic and
  * soft 24px corners. A farm-to-bottle store: the farm panel, the promise,
@@ -204,7 +204,7 @@ const DEMO = demoStore({
 export const BOTANICA = libraryTemplate({
   key: BOTANICA_KEY,
   version: 2,
-  name: L("بوتانيكا", "Botanica"),
+  name: L("سيج", "Sage"),
   description: L(
     "عناية طبيعية بالشعر والجسم: من المزرعة للإزازة، ريفيل، تقييمات ورسالة المؤسسة. أربع صفحات جاهزة.",
     "Natural hair and body care: farm to bottle, refills, reviews and the founder's letter. Four ready pages.",

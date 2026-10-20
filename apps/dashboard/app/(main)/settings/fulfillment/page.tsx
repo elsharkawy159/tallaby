@@ -7,6 +7,7 @@ import { Badge } from "@workspace/ui/components/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@workspace/ui/components/card";
 import {
   FULFILLMENT_SERVICE_TYPES,
+  TALLABY_SERVICES_ENABLED,
   choiceMatchesService,
   getPlanPricingLabel,
   localizedPlanName,
@@ -55,9 +56,12 @@ export default async function FulfillmentSetupPage() {
   const { profile, services, plans, agreements } = await getSellerFulfillmentOverview(user!.id, {
     includeAgreements: true,
   });
+  // No Tallaby plan is on offer while Tallaby services are "Soon": every
+  // service in the form is the seller's.
+  const formPlans = TALLABY_SERVICES_ENABLED ? plans : [];
   // The request form starts from the seller's current request (requested_*),
   // or from today's setup when they never asked for anything (P8-01).
-  const initialRequest = initialRequestValues(plans, {
+  const initialRequest = initialRequestValues(formPlans, {
     model: profile?.model ?? null,
     operationalDetails: profile?.operationalDetails,
     pickupAddress: profile?.pickupAddress,
@@ -175,7 +179,7 @@ export default async function FulfillmentSetupPage() {
         </>
       )}
 
-      <FulfillmentRequestForm plans={plans} initial={initialRequest} hasRequest={services.length > 0} />
+      <FulfillmentRequestForm plans={formPlans} initial={initialRequest} hasRequest={services.length > 0} />
     </div>
   );
 }

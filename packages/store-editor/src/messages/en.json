@@ -14,6 +14,7 @@
     "undo": "Undo",
     "redo": "Redo",
     "viewStore": "View store",
+    "more": "More",
     "publish": "Publish",
     "publishChanges": "Publish changes",
     "published": "Published (version {number}). Your store shows it now.",
@@ -305,6 +306,7 @@
       "showAll": "Show all",
       "customHint": "Add elements from the Add panel, then click any element on the page to edit it.",
       "emptyTitle": "Nothing selected",
+      "edit": "Edit",
       "path": "Where it sits",
       "actions": {
         "parent": "Select parent",
@@ -951,7 +953,10 @@
       "kids": "Kids",
       "books": "Books",
       "sports": "Sports",
-      "auto": "Automotive"
+      "auto": "Automotive",
+      "shoes-bags": "Shoes & bags",
+      "sweets": "Sweets & coffee",
+      "handmade": "Handmade & gifts"
     },
     "confirm": {
       "title": "Use {name}?",

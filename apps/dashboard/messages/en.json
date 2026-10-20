@@ -267,7 +267,7 @@
     "ownRiders": "Your own riders",
     "externalCourier": "External courier",
     "pendingNotice": "Some requested services are awaiting setup. Our team will contact you to confirm the details and pricing. Until then, your orders continue to work as they do today.",
-    "noSetup": "You haven't requested any Tallaby services. Your store works as it is: you store, pack and answer customers, and Tallaby's standard delivery ships your orders. Fulfillment services are optional; you can request them below.",
+    "noSetup": "You handle your own fulfillment: you store, pack and deliver your orders and answer your customers. Tallaby fulfillment services are coming soon.",
     "changeNote": "Need to change something? Send a new request below. Changes are reviewed by our team first so your active orders are never interrupted.",
     "pricingDiscussed": "Pricing will be discussed with our team.",
     "agreementTitle": "Agreed terms",
@@ -434,8 +434,17 @@
       "servicePaused": "A paused service can't be changed here. Please contact our team.",
       "forbidden": "You don't have permission to do this.",
       "rateLimited": "Too many requests. Please try again in a few minutes.",
-      "generic": "Something went wrong. Please try again."
-    }
+      "generic": "Something went wrong. Please try again.",
+      "tallaby_service_unavailable": "Tallaby doesn't offer this service yet. Choose \"Me\"."
+    },
+    "sellerOnly": {
+      "title": "Your fulfillment setup",
+      "description": "Tallaby doesn't offer fulfillment services yet, so you handle storage, packaging, delivery, customer service and returns for your orders. Tell us how you deliver.",
+      "manageDescription": "You store, pack and deliver your orders and look after your customers. Tallaby services are coming soon.",
+      "edit": "Edit setup",
+      "submit": "Save"
+    },
+    "byTallabySoon": "Tallaby · Soon"
   },
   "meta": {
     "title": "Seller Dashboard",
@@ -623,8 +632,7 @@
       "notStartedTitle": "Your 7-day free trial is waiting",
       "notStarted": "No platform fee for 7 days, counted from the day your first store was created.",
       "activeTitle": "{days, plural, one {# day} other {# days}} left in your free trial",
-      "active": "No platform fee on orders placed until {date}. After that, the fee is a flat EGP 5 per delivered order.",
-      "planLink": "Plan & usage"
+      "active": "No platform fee on orders placed until {date}. After that, the fee is a flat EGP 5 per delivered order."
     },
     "range": {
       "label": "Reporting period",
@@ -684,11 +692,26 @@
           "description": "Business type and registered address",
           "cta": "Add"
         },
+        "publish": {
+          "title": "Publish your store",
+          "description": "Go live so customers can visit and order",
+          "cta": "Publish now"
+        },
         "payout": {
           "title": "Set up your payout account",
           "description": "Where we send your earnings",
           "cta": "Set up"
         }
+      },
+      "publish": {
+        "cta": "Publish now",
+        "locked": "Finish your store profile, first product and legal details first",
+        "successTitle": "Your store is live! 🎉",
+        "successBody": "Congratulations! Customers can now visit your store and place orders. Share your link:",
+        "copy": "Copy link",
+        "copied": "Link copied",
+        "copyFailed": "Couldn't copy the link",
+        "visit": "Visit store"
       }
     },
     "kpis": {
@@ -1237,7 +1260,8 @@
         "heightShort": "H",
         "freeTitle": "Free delivery on this product",
         "freeDescription": "You cover the shipping cost and customers see a “Free delivery” tag",
-        "storeFreeDelivery": "Your store already offers free delivery on every product."
+        "storeFreeDelivery": "Your store already offers free delivery on every product.",
+        "soon": "Soon"
       },
       "visibility": {
         "title": "Promotion & search visibility",
@@ -2329,8 +2353,7 @@
     "identity": {
       "title": "Store identity",
       "description": "How your store appears to customers: name, logo, description and banner.",
-      "brandMoved": "Your logo and banner are now part of the website builder.",
-      "brandMovedLink": "Edit them in Design system"
+      "designLink": "Customize colors, fonts and your brand in Design system"
     },
     "contact": {
       "title": "Contact",
@@ -2643,8 +2666,12 @@
       "readOnly": "This store is read-only.",
       "notFound": "Not found.",
       "rateLimited": "Too many changes. Please wait a few minutes and try again.",
-      "generic": "Couldn't save. Please try again."
-    }
+      "generic": "Couldn't save. Please try again.",
+      "tallabyUnavailable": "Tallaby delivery isn't available yet. Use your own delivery."
+    },
+    "soon": "Soon",
+    "tallabyLegacy": "Your store still uses Tallaby's rates. Tallaby delivery is coming soon, so add your own zones and switch to own delivery.",
+    "tallabySoonDescription": "Tallaby's couriers will deliver your orders. Coming soon."
   },
   "storeApps": {
     "title": "Apps",
@@ -3050,13 +3077,13 @@
       "draft": "Draft",
       "published": "Published",
       "changes": "Unpublished changes",
-      "unpublished": "Unpublished"
+      "unpublished": "Offline"
     },
     "statusHint": {
       "draft": "Your website hasn't been published yet. Shoppers see the Tallaby Classic store design until you publish.",
       "published": "Shoppers see your latest published version.",
       "changes": "You have changes that shoppers don't see yet. Preview them, then publish.",
-      "unpublished": "Your website is offline. Shoppers see the Tallaby Classic store design until you publish again."
+      "unpublished": "Your website is offline. Shoppers see a \"store unavailable\" page and can't place orders until you turn it back on."
     },
     "liveUrl": "Store address",
     "copy": "Copy",
@@ -3076,10 +3103,14 @@
     "discardTitle": "Discard unpublished changes?",
     "discardBody": "Your drafts go back to the version shoppers see now. This can't be undone.",
     "discardedToast": "Changes discarded",
-    "unpublish": "Unpublish",
-    "unpublishTitle": "Unpublish your website?",
-    "unpublishBody": "Shoppers will see the Tallaby Classic store design until you publish again. Your pages and drafts are kept.",
-    "unpublishedToast": "Website unpublished",
+    "unpublish": "Take offline",
+    "unpublishTitle": "Take your website offline?",
+    "unpublishBody": "Shoppers will see a \"store unavailable\" page and can't place orders until you turn it back on. Your pages and drafts are kept, and your products stay on the Tallaby marketplace.",
+    "unpublishedToast": "Your website is offline",
+    "liveSwitch": "Website live",
+    "liveSwitchOn": "Shoppers can visit your store and place orders.",
+    "liveSwitchOff": "Your website is offline. Turn it on to publish it.",
+    "liveSwitchDraft": "Not published yet. Turn it on to publish your website.",
     "thumbnail": "Your live store",
     "manage": "Manage your website",
     "links": {

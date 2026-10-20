@@ -184,7 +184,7 @@ export function MediaLibrary({
               {t("newFolder")}
             </Button>
           )}
-          <SegmentedControl value={view} onValueChange={(value) => setView(value as "grid" | "list")} aria-label={t("viewLabel")}>
+          <SegmentedControl className="inline-flex w-auto" value={view} onValueChange={(value) => setView(value as "grid" | "list")} aria-label={t("viewLabel")}>
             <SegmentedControlItem value="grid" aria-label={t("gridView")}>
               <LayoutGrid className="size-4" />
             </SegmentedControlItem>

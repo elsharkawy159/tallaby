@@ -72,6 +72,10 @@ export function TextInput<TFieldValues extends FieldValues>({
   // Determine input type for password visibility toggle
   const inputType =
     type === "password" ? (isVisible ? "text" : "password") : type;
+  // Phone numbers are always written left-to-right, even in Arabic (RTL)
+  // layouts. Logical classes (start-3 / ps-10) would put the icon on the right
+  // while the digits start on the left, so tel inputs use physical classes.
+  const isTel = type === "tel";
   return (
     <FormField
       control={form.control}
@@ -86,7 +90,12 @@ export function TextInput<TFieldValues extends FieldValues>({
           <FormControl>
             <div className="relative">
               {inputIcon && (
-                <div className="absolute start-3 top-1/2 transform -translate-y-1/2 text-muted-foreground flex items-center gap-1">
+                <div
+                  className={cn(
+                    "absolute top-1/2 transform -translate-y-1/2 text-muted-foreground flex items-center gap-1",
+                    isTel ? "left-3" : "start-3"
+                  )}
+                >
                   {inputIcon}
                 </div>
               )}
@@ -95,9 +104,13 @@ export function TextInput<TFieldValues extends FieldValues>({
                 {...field}
                 placeholder={placeholder}
                 type={inputType}
+                dir={isTel ? "ltr" : undefined}
                 className={cn(
                   "h-11 rounded-lg",
-                  inputIcon && "ps-10",
+                  // `rtl:text-left` overrides Input's `rtl:text-right`, which
+                  // still matches inside an RTL page despite dir="ltr" here.
+                  isTel && "text-left rtl:text-left",
+                  inputIcon && (isTel ? "pl-10" : "ps-10"),
                   type === "password" && "pe-9",
                   className
                 )}

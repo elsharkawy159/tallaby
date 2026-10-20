@@ -4,7 +4,7 @@ import { Skeleton } from "@workspace/ui/components/skeleton";
 import { AttentionData } from "./_components/attention.data";
 import { HomeGreeting, HomeHeaderView, HomeSubtitle } from "./_components/home-header.data";
 import { HomeKpisData } from "./_components/home-kpis.data";
-import { ChannelSelect, HomeRangeProvider, RangePending, RangeTabs } from "./_components/home-range.client";
+import { ChannelSelect, HomeRangeProvider, RangePending, RangeSelect } from "./_components/home-range.client";
 import { parseHomeChannel, parseHomeRange, resolveHomeChannel } from "./_components/home.shared";
 import { getSellerStores } from "@/lib/stores/current-store.server";
 import {
@@ -62,9 +62,9 @@ export default async function VendorDashboardPage({
             }
             addLabel={t("addProduct")}
             rangeControl={
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:items-center">
                 <ChannelSelect stores={stores.map(({ id, name }) => ({ id, name }))} />
-                <RangeTabs />
+                <RangeSelect />
               </div>
             }
           />

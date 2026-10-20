@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
-import { Check, Headphones, Landmark, Megaphone, Package, Rocket, Store, TicketPercent, Wallet } from "lucide-react";
+import { Check, Globe, Headphones, Landmark, Megaphone, Package, Rocket, Store, TicketPercent, Wallet } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Button } from "@workspace/ui/components/button";
@@ -10,14 +10,16 @@ import { SETUP_DISMISS_COOKIE } from "./home.shared";
 import { HomeCard, IconTile } from "./home-ui";
 import { SetupAccordion } from "./setup-accordion.client";
 import { SetupDismissible } from "./setup-dismiss.client";
+import { SetupPublishButton } from "./setup-publish.client";
 
-import { buildSetupTasks, isSetupDone, type SetupKey } from "./setup-checklist.lib";
+import { buildSetupTasks, isSetupDone, publishReady, type SetupKey } from "./setup-checklist.lib";
 
 const ICONS: Record<SetupKey, LucideIcon> = {
   profile: Store,
   product: Package,
   contact: Headphones,
   legal: Landmark,
+  publish: Globe,
   payout: Wallet,
   coupon: TicketPercent,
   campaign: Megaphone,
@@ -46,6 +48,7 @@ export async function SetupChecklistData() {
   // Open steps first (in their recommended order), so the visible half is what is left to do.
   const ordered = [...TASKS.filter((task) => !task.done), ...TASKS.filter((task) => task.done)];
   const nextKey = ordered[0]?.key;
+  const canPublish = publishReady(snapshot.setup);
 
   return (
     <SetupDismissible>
@@ -134,11 +137,19 @@ export async function SetupChecklistData() {
                     </b>
                     {!done && (
                       <small className="block truncate text-xs text-muted-foreground">
-                        {t(`tasks.${task.key}.description`)}
+                        {task.key === "publish" && !canPublish
+                          ? t("publish.locked")
+                          : t(`tasks.${task.key}.description`)}
                       </small>
                     )}
                   </div>
-                  {!done && (
+                  {!done && task.key === "publish" && snapshot.setupStoreId ? (
+                    <SetupPublishButton
+                      storeId={snapshot.setupStoreId}
+                      ready={canPublish}
+                      variant={next ? "secondary" : "neutral"}
+                    />
+                  ) : !done && (
                     <Button asChild size="sm" variant={next ? "secondary" : "neutral"} className="rounded-[9px]">
                       <Link href={task.href}>{t(`tasks.${task.key}.cta`)}</Link>
                     </Button>

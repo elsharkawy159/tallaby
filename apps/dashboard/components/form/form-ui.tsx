@@ -370,24 +370,30 @@ export function ChoiceCard ({
   description,
   selected,
   onSelect,
+  disabled = false,
+  badge,
 }: {
   icon: LucideIcon
   title: React.ReactNode
   description?: React.ReactNode
   selected: boolean
   onSelect: () => void
+  disabled?: boolean
+  /** Small tag beside the title, e.g. "Soon". */
+  badge?: React.ReactNode
 }) {
   return (
     <button
       type='button'
       role='radio'
       aria-checked={selected}
+      disabled={disabled}
       onClick={onSelect}
       className={cn(
-        'flex items-start gap-3 rounded-xl border-[1.5px] bg-card p-3.5 text-start transition-[border-color,box-shadow]',
+        'flex items-start gap-3 rounded-xl border-[1.5px] bg-card p-3.5 text-start transition-[border-color,box-shadow] disabled:cursor-not-allowed disabled:opacity-60',
         selected
           ? 'border-primary ring-[3px] ring-primary/20'
-          : 'border-border hover:border-input'
+          : 'border-border enabled:hover:border-input'
       )}
     >
       <span
@@ -399,7 +405,14 @@ export function ChoiceCard ({
         <Icon className='size-[17px]' />
       </span>
       <span className='min-w-0'>
-        <span className='block text-sm font-semibold'>{title}</span>
+        <span className='flex flex-wrap items-center gap-1.5 text-sm font-semibold'>
+          {title}
+          {badge && (
+            <span className='rounded-full bg-muted px-2 py-px text-[11px] font-semibold text-muted-foreground'>
+              {badge}
+            </span>
+          )}
+        </span>
         {description && (
           <span className='block text-xs leading-relaxed text-muted-foreground'>{description}</span>
         )}

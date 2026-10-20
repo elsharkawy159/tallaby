@@ -30,7 +30,7 @@ const ctx: RenderContext = {
 };
 
 describe("library catalog", () => {
-  it("lists all 20 categories once, in order, each with subcategories", () => {
+  it("lists all 29 categories once, in order, each with subcategories", () => {
     expect(LIBRARY_CATEGORIES.map((c) => c.id)).toEqual([...LIBRARY_CATEGORY_IDS]);
     for (const category of LIBRARY_CATEGORIES) {
       expect(category.subcategories.length, category.id).toBeGreaterThan(0);
@@ -145,7 +145,7 @@ describe("search and filters", () => {
   it("filters by category, subcategory and capability", () => {
     expect(filterPresets({ category: "hero" }).map((p) => p.id)).toEqual(HERO_DESIGNS.map((d) => d.id.replace("hero-", "hero.")));
     expect(filterPresets({ category: "hero", subcategory: "split" }).map((p) => p.id)).toEqual(["hero.classic", "hero.halves"]);
-    expect(filterPresets({ category: "product-page" }).map((p) => p.id)).toEqual(["product-page.perks"]);
+    expect(filterPresets({ category: "product-page" }).map((p) => p.id)).toEqual(["product-page.perks", "product-page.shipping"]);
     // Designs with data nodes are dynamic and list the store data they need.
     const dynamic = filterPresets({ capabilities: ["dynamic"] });
     expect(dynamic.map((p) => p.category)).toContain("products");
