@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { sectionInstanceSchema } from "../config/schema";
 import { DATA_NEEDS, type RenderContext } from "../core/types";
-import { DESIGNS, getDesign } from "../designs";
+import { DESIGNS, designSlotTree, getDesign } from "../designs";
 import { HERO_DESIGNS } from "../designs/hero";
 import { normalizeSectionStyle } from "../elements/style";
 import { SectionRenderer } from "../render/render";
@@ -10,7 +10,8 @@ import { storeSectionRegistry } from "../sections";
 import { LIBRARY_CATEGORIES } from "./categories";
 import { filterPresets, getPreset, instantiatePreset, normalizeSearch, presetCountByCategory, presetsForSection } from "./library";
 import { SECTION_PRESETS } from "./presets";
-import { LIBRARY_CATEGORY_IDS } from "./types";
+import { designPreset, presetDataNeeds, presetIdFor } from "./presets/library";
+import { LIBRARY_CATEGORY_IDS, type SectionPreset } from "./types";
 
 const ctx: RenderContext = {
   mode: "edit",
@@ -156,5 +157,61 @@ describe("search and filters", () => {
 
   it("offers no design switcher for tree sections yet", () => {
     expect(presetsForSection("custom-section")).toEqual([]);
+  });
+});
+
+describe("presets with a stored tree (library_sections, Task 10)", () => {
+  /** What a library_sections row seeded from `design` becomes (no designId: the tree is the source of truth). */
+  const treePreset = (design: (typeof DESIGNS)[number]): SectionPreset => {
+    const { designId: _code, ...preset } = designPreset(design);
+    return { ...preset, designKey: design.id, tree: designSlotTree(design), version: design.version };
+  };
+
+  it.each(["fashion", undefined])("instantiates exactly like the design preset (industry %s)", (industry) => {
+    for (const design of DESIGNS) {
+      let a = 0;
+      let b = 0;
+      const fromDb = instantiatePreset(treePreset(design), storeSectionRegistry, "s1", { industry, makeId: () => `n${++a}` });
+      const fromCode = instantiatePreset(designPreset(design), storeSectionRegistry, "s1", { industry, makeId: () => `n${++b}` });
+      expect(fromDb, design.id).toEqual(fromCode);
+    }
+  });
+
+  it("names the design and the stored version in source", () => {
+    const design = getDesign("hero-classic")!;
+    const instance = instantiatePreset({ ...treePreset(design), version: 7 }, storeSectionRegistry, "s1")!;
+    expect(instance.source).toBe("hero-classic@7");
+    const { designKey: _key, ...noKey } = treePreset(design);
+    expect(instantiatePreset({ ...noKey, version: undefined }, storeSectionRegistry, "s2")!.source).toBe("hero.classic@1");
+  });
+
+  it("resolves every photo slot for the store's industry", () => {
+    for (const design of DESIGNS) {
+      for (const industry of ["food", undefined]) {
+        const instance = instantiatePreset(treePreset(design), storeSectionRegistry, "s1", { industry })!;
+        expect(JSON.stringify(instance.componentTree), design.id).not.toContain('"stock:');
+      }
+    }
+  });
+
+  it("finds presets in a custom list, and lists and counts it", () => {
+    const custom = [treePreset(getDesign("hero-classic")!)];
+    expect(getPreset("hero.classic", custom)).toBe(custom[0]);
+    expect(getPreset("hero.poster", custom)).toBeUndefined();
+    expect(getPreset("hero.poster")?.designId).toBe("hero-poster");
+    expect(filterPresets({ query: "banner" }, custom)).toEqual(custom);
+    expect(presetCountByCategory(custom).hero).toBe(1);
+    // An admin-edited row keeps the code id but searches by its own words.
+    const edited = [{ ...custom[0]!, keywords: ["zebra-word"] }];
+    expect(filterPresets({ query: "zebra-word" }, edited)).toEqual(edited);
+    expect(filterPresets({ query: "zebra-word" })).toEqual([]);
+  });
+
+  it("computes data needs from a tree like the design preset does", () => {
+    for (const design of DESIGNS) expect(presetDataNeeds(designSlotTree(design)), design.id).toEqual(designPreset(design).dataNeeds ?? []);
+  });
+
+  it("builds preset ids from a design key", () => {
+    for (const design of DESIGNS) expect(presetIdFor(design.category, design.id)).toBe(designPreset(design).id);
   });
 });

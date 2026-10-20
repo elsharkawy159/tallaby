@@ -2,6 +2,7 @@
 
 import { createStore } from "zustand/vanilla";
 import type { DesignSystem, PageContent, SectionInstance, SiteLocale } from "@workspace/store-sections";
+import type { SectionPreset } from "@workspace/store-sections/render";
 import { MAX_HISTORY } from "../lib/editor.lib";
 
 /**
@@ -61,6 +62,8 @@ export type EditorState = {
   defaultLocale: SiteLocale;
   /** Store industry id (Store settings › General); picks the default photos of inserted sections. */
   industry?: string;
+  /** Add › Sections presets (`library_sections`, Task 10); the built-in library when unset. */
+  presets?: readonly SectionPreset[];
   device: Device;
   past: Snapshot[];
   future: Snapshot[];
@@ -143,7 +146,7 @@ function restore(state: EditorState, snap: Snapshot): Partial<EditorState> {
   };
 }
 
-export function createEditorStore(initial: Pick<EditorState, "pages" | "header" | "footer" | "designSystem" | "designVersion" | "chromeVersion" | "defaultLocale" | "industry">) {
+export function createEditorStore(initial: Pick<EditorState, "pages" | "header" | "footer" | "designSystem" | "designVersion" | "chromeVersion" | "defaultLocale" | "industry" | "presets">) {
   const home = initial.pages.find((p) => p.isHome) ?? initial.pages[0]!;
   return createStore<EditorState & EditorActions>()((set, get) => {
     /** Applies an undoable change; the same `coalesceKey` in quick succession reuses the last undo step. */

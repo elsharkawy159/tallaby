@@ -8,6 +8,7 @@ import { useStore } from "zustand";
 import type { SectionInstance } from "@workspace/store-sections";
 import {
   LIBRARY_CATEGORIES,
+  SECTION_PRESETS,
   SITE_ROOT_CLASS,
   collectCatalogQueries,
   collectContentQueries,
@@ -66,6 +67,7 @@ export function SectionLibrary({
   const footer = useStore(store, (s) => s.footer);
   const defaultLocale = useStore(store, (s) => s.defaultLocale);
   const industry = useStore(store, (s) => s.industry);
+  const presets = useStore(store, (s) => s.presets) ?? SECTION_PRESETS;
   const selection = useStore(store, (s) => s.selection);
   const selectedInstance = useStore(store, (s) => {
     if (!s.selection) return null;
@@ -81,12 +83,12 @@ export function SectionLibrary({
   // One preview instance per preset, with the props a fresh insert gets; previews never fetch.
   const instances = useMemo(() => {
     const out = new Map<string, SectionInstance>();
-    for (const preset of filterPresets({})) {
+    for (const preset of presets) {
       const instance = presetInstance(preset, `preview-${preset.id.replace(/[^A-Za-z0-9_-]/g, "-")}`, defaultLocale, industry);
       if (instance) out.set(preset.id, instance);
     }
     return out;
-  }, [defaultLocale, industry]);
+  }, [presets, defaultLocale, industry]);
   const ctx = useMemo<RenderContext>(
     () => ({
       ...preview.ctx,
@@ -126,7 +128,7 @@ export function SectionLibrary({
   const actionLabel = (preset: SectionPreset) =>
     storeSectionRegistry.get(preset.sectionId)?.chrome ? t("useChrome") : cardTarget(preset) ? t("applyCard") : t("add");
 
-  const matches = useMemo(() => filterPresets({ query }), [query]);
+  const matches = useMemo(() => filterPresets({ query }, presets), [query, presets]);
   const searching = query.trim() !== "";
   const groups = LIBRARY_CATEGORIES.map((c) => ({ category: c, presets: matches.filter((p) => p.category === c.id) })).filter((g) => g.presets.length > 0);
   const isOpen = (id: LibraryCategoryId) => searching || open === id;

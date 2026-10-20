@@ -105,6 +105,20 @@ describe("helpers", () => {
     expect(payloadPreset("custom-section", "nope")).toBeUndefined();
     expect(payloadPreset("custom-section", undefined)).toBeUndefined();
   });
+
+  it("resolves a dragged preset from the editor list first, then the built-in library", () => {
+    const custom = { ...getPreset("hero.classic")!, id: "hero.only-in-db", designId: undefined, tree: { type: "section" as const, props: {}, children: [] } };
+    expect(payloadPreset("custom-section", "hero.only-in-db", [custom])).toBe(custom);
+    // Hidden in the database (not in the list): the code design still inserts.
+    expect(payloadPreset("custom-section", "hero.poster", [custom])?.designId).toBe("hero-poster");
+    expect(payloadPreset("custom-section", "hero.only-in-db")).toBeUndefined();
+  });
+
+  it("never applies a stored-tree preset as a design switch", () => {
+    const instance: SectionInstance = { id: "s1", sectionId: "custom-section", version: 1, props: {}, style: { shell: { scheme: "muted" } } };
+    const preset = { ...getPreset("hero.classic")!, designId: undefined, tree: { type: "section" as const, props: {}, children: [] } };
+    expect(applyPresetDesign(instance, preset)).toBe(instance);
+  });
 });
 
 describe("formSectionInstance", () => {

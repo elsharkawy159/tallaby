@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { LAYOUT_PRESETS, storeSectionRegistry } from "@workspace/store-sections/render";
+import { LAYOUT_PRESETS, designSlotTree, getDesign, getPreset, storeSectionRegistry } from "@workspace/store-sections/render";
+import { presetInstance } from "./editor-library.lib";
 import { createEditorCommands } from "./editor-commands.lib";
 import { createEditorStore } from "../state/editor.store";
 
@@ -97,6 +98,19 @@ describe("canvas drops through commands (P4B-12)", () => {
     expect(store.getState().selection).toEqual({ target: "page", sectionId: sections()[0]!.id });
     store.getState().undo();
     expect(sections().map((s) => s.id)).toEqual([first]);
+  });
+
+  it("drops a preset from the editor's library list with the store's industry photos", () => {
+    const { store, commands, sections } = setup();
+    const design = getDesign("hero-classic")!;
+    const { designId: _code, ...base } = getPreset("hero.classic")!;
+    store.setState({ industry: "food", presets: [{ ...base, id: "hero.db-only", designKey: design.id, tree: designSlotTree(design), version: 3 }] });
+    expect(commands.applyDrop({ kind: "section", sectionId: "custom-section", presetId: "hero.db-only" }, { kind: "insert-section", index: 0 })).toBe(true);
+    expect(sections()[0]!.source).toBe("hero-classic@3");
+    const srcs = (value: unknown) => JSON.stringify(value).match(/"src":"[^"]*"/g);
+    expect(JSON.stringify(sections()[0]!.componentTree)).not.toContain("\"stock:");
+    expect(srcs(sections()[0]!.componentTree)).toEqual(srcs(presetInstance(getPreset("hero.classic")!, "x", "ar", "food")!.componentTree));
+    expect(srcs(sections()[0]!.componentTree)).not.toEqual(srcs(presetInstance(getPreset("hero.classic")!, "x", "ar", "fashion")!.componentTree));
   });
 
   it("refuses a stale plan without writing anything", () => {

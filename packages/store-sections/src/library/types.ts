@@ -1,4 +1,5 @@
 import type { DataNeed, Localized } from "../core/types";
+import type { NodeTemplate } from "../elements/tree";
 
 /**
  * The 20 groups of the section library (Add panel), in display order: the
@@ -60,6 +61,16 @@ export type SectionPreset = {
    * element tree. Design presets use `sectionId: "custom-section"`.
    */
   designId?: string;
+  /**
+   * A stored element tree in slot form (`library_sections.tree`, Task 10):
+   * inserting the preset builds this tree, its photo slots resolved for the
+   * store's industry. Takes precedence over `designId`.
+   */
+  tree?: NodeTemplate;
+  /** `library_sections.key` (the design id): names the tree in an instance's `source`. */
+  designKey?: string;
+  /** `library_sections.version` of `tree` (1 when unset). */
+  version?: number;
   category: LibraryCategoryId;
   subcategory: string;
   name: Localized;

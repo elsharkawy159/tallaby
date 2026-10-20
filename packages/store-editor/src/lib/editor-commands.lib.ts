@@ -512,7 +512,7 @@ export function createEditorCommands(store: EditorStore) {
       const result = applyDropPlan(page.content, plan, payload, {
         makeNodeId,
         makeSection: (sectionId, presetId) => {
-          const preset = payloadPreset(sectionId, presetId);
+          const preset = payloadPreset(sectionId, presetId, state().presets);
           if (preset) return presetInstance(preset, newId(), state().defaultLocale, state().industry);
           const definition = storeSectionRegistry.get(sectionId);
           return definition ? createInstance(definition) : null;

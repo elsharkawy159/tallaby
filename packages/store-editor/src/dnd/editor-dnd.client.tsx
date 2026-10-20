@@ -146,7 +146,7 @@ export function EditorDndProvider({
   const source = () => {
     const s = store.getState();
     const page = s.pages.find((p) => p.id === s.activePageId) ?? s.pages[0]!;
-    return { content: page.content, header: s.header, footer: s.footer };
+    return { content: page.content, header: s.header, footer: s.footer, presets: s.presets };
   };
 
   /** The plan and marker for the pointer now (null when it is not over the frame). */

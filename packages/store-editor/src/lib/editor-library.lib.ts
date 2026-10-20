@@ -150,7 +150,7 @@ export function formSectionInstance(
  */
 export function applyPresetDesign(instance: SectionInstance, preset: SectionPreset): SectionInstance {
   // Tree sections have no design props to switch; carrying content by role comes later (tree-sections plan 4).
-  if (preset.sectionId !== instance.sectionId || preset.designId) return instance;
+  if (preset.sectionId !== instance.sectionId || preset.designId || preset.tree) return instance;
   const definition = storeSectionRegistry.get(instance.sectionId);
   if (!definition) return instance;
   // Every design prop takes the preset's value, or the section default when the preset relies on it.
@@ -232,8 +232,12 @@ export function storeDataCounts(input: {
   };
 }
 
-/** The preset a library drag carries, when it still matches its section. */
-export function payloadPreset(sectionId: string, presetId: string | undefined): SectionPreset | undefined {
-  const preset = presetId ? getPreset(presetId) : undefined;
+/**
+ * The preset a library drag carries, when it still matches its section: from
+ * the editor's list (`library_sections`), else the built-in library, so an id
+ * the database hides or lacks still inserts its code design.
+ */
+export function payloadPreset(sectionId: string, presetId: string | undefined, presets?: readonly SectionPreset[]): SectionPreset | undefined {
+  const preset = presetId ? ((presets && getPreset(presetId, presets)) ?? getPreset(presetId)) : undefined;
   return preset && preset.sectionId === sectionId ? preset : undefined;
 }

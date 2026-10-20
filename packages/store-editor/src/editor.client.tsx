@@ -119,6 +119,7 @@ function EditorRoot({ initial }: { initial: EditorInitial }) {
       chromeVersion: initial.chromeVersion,
       defaultLocale: initial.defaultLocale,
       industry: initial.industry ?? findIndustry(initial.category)?.id,
+      presets: initial.presets,
     });
     if (clean.dropped) store.setState({ dirtyPages: clean.dirtyPages, dirtyChrome: clean.dirtyChrome, saveStatus: "unsaved" });
     storeRef.current = store;

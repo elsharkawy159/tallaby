@@ -13,6 +13,7 @@ import { toTemplateCardViews } from "@/app/(main)/stores/[storeId]/website/templ
 import type { EditorInitial } from "@workspace/store-editor/editor.client";
 import { SellerEditor } from "./seller-editor.client";
 import { loadEditorSnapshot } from "./server/editor.data";
+import { loadLibraryPresets } from "./server/library.data";
 
 export const dynamic = "force-dynamic";
 
@@ -33,11 +34,12 @@ export default async function StoreEditorPage({ params }: { params: Promise<{ st
   const store = await loadStorePage(storeId);
   if (!storeBuilderEnabled(store.sellerId)) notFound();
 
-  const [editor, status, catalog, gallery] = await Promise.all([
+  const [editor, status, catalog, gallery, presets] = await Promise.all([
     getStoreForEditor(store.sellerId, store.id),
     getStoreSiteStatus(store.sellerId, store.id),
     loadEditorSnapshot(store.sellerId, store.id, store.catalogMode),
     listStoreTemplates(store.sellerId, store.id),
+    loadLibraryPresets(),
   ]);
   if (!editor) notFound();
 
@@ -87,6 +89,7 @@ export default async function StoreEditorPage({ params }: { params: Promise<{ st
     templates: { currentKey: gallery?.currentKey ?? "", items: toTemplateCardViews(gallery?.templates ?? []) },
     fontClassName: storeFontVariables,
     category: { en: store.storeCategory ?? null, ar: store.storeCategoryAr ?? null },
+    presets,
   };
 
   return <SellerEditor initial={initial} />;

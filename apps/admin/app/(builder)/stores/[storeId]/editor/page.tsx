@@ -10,6 +10,7 @@ import { designSystemSchema, sectionInstanceSchema, type SiteLocale } from "@wor
 import type { EditorInitial } from "@workspace/store-editor/editor.client";
 import { adminActorId } from "@/app/(dashboard)/_lib/saas-admin.server";
 import { loadEditorSnapshot } from "./admin-store-editor.data";
+import { loadLibraryPresets } from "./library.data";
 import { ReasonGate } from "./reason-gate.client";
 import { storeFontVariables } from "./store-fonts";
 import { toTemplateCardViews } from "./templates.lib";
@@ -35,11 +36,12 @@ export default async function AdminStoreEditorPage({ params }: { params: Promise
   const store = await getStore(ref.sellerId, ref.storeId);
   if (!store) notFound();
 
-  const [editor, status, catalog, gallery] = await Promise.all([
+  const [editor, status, catalog, gallery, presets] = await Promise.all([
     getStoreForEditor(ref.sellerId, store.id),
     getStoreSiteStatus(ref.sellerId, store.id),
     loadEditorSnapshot(ref.sellerId, store.id, store.catalogMode),
     listStoreTemplates(ref.sellerId, store.id),
+    loadLibraryPresets(),
   ]);
   if (!editor) notFound();
 
@@ -88,6 +90,7 @@ export default async function AdminStoreEditorPage({ params }: { params: Promise
     templates: { currentKey: gallery?.currentKey ?? "", items: toTemplateCardViews(gallery?.templates ?? []) },
     fontClassName: storeFontVariables,
     category: { en: store.storeCategory ?? null, ar: store.storeCategoryAr ?? null },
+    presets,
   };
 
   return <ReasonGate initial={initial} storeName={store.name} />;
