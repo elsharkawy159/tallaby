@@ -8,7 +8,7 @@ import { cn } from "@workspace/ui/lib/utils";
 import type { MediaAssetView } from "@/components/media/media.dto";
 import { MediaLibrary } from "@/components/media/media-library.client";
 import { useDragData } from "../dnd/editor-dnd.client";
-import type { EditorCommands } from "../lib/editor-commands.lib";
+import type { EditorCommands } from "@workspace/store-editor/lib/editor-commands.lib";
 
 /**
  * Media rail tab (P4B-03/12): this store's media library (P4-09). Picking an

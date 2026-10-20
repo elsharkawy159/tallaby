@@ -25,9 +25,9 @@ import { Button } from "@workspace/ui/components/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@workspace/ui/components/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@workspace/ui/components/tooltip";
 import { cn } from "@workspace/ui/lib/utils";
-import { DEVICE_TONE } from "../lib/editor-devices.lib";
+import { DEVICE_TONE } from "@workspace/store-editor/lib/editor-devices.lib";
 import { nameOf } from "../panels/pages-panel.client";
-import type { EditorStore, SaveStatus } from "../state/editor.store";
+import type { EditorStore, SaveStatus } from "@workspace/store-editor/state/editor.store";
 
 const DEVICES = [
   ["desktop", Monitor],

@@ -23,13 +23,13 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@workspace/ui/components/input";
 import { cn } from "@workspace/ui/lib/utils";
 import { useDragData } from "../../dnd/editor-dnd.client";
-import type { EditorCommands } from "../../lib/editor-commands.lib";
-import { LIBRARY_ICONS } from "../../lib/editor-icons.lib";
-import { acceptsCardPreset, presetDataStatus, presetInstance } from "../../lib/editor-library.lib";
-import { recordUse } from "../../lib/editor-palette.lib";
-import { getInstance, refOf } from "../../lib/editor-selection.lib";
-import { resolveCanvasCatalog, resolveCanvasContent } from "../../lib/editor.lib";
-import type { EditorStore } from "../../state/editor.store";
+import type { EditorCommands } from "@workspace/store-editor/lib/editor-commands.lib";
+import { LIBRARY_ICONS } from "@workspace/store-editor/lib/editor-icons.lib";
+import { acceptsCardPreset, presetDataStatus, presetInstance } from "@workspace/store-editor/lib/editor-library.lib";
+import { recordUse } from "@workspace/store-editor/lib/editor-palette.lib";
+import { getInstance, refOf } from "@workspace/store-editor/lib/editor-selection.lib";
+import { resolveCanvasCatalog, resolveCanvasContent } from "@workspace/store-editor/lib/editor.lib";
+import type { EditorStore } from "@workspace/store-editor/state/editor.store";
 import type { SectionPreviewHost } from "./add-panel.client";
 import { SectionThumbnail } from "./section-thumbnail.client";
 

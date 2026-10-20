@@ -19,7 +19,7 @@ import {
   type StylePatch,
 } from "./controls/style-groups.client";
 import { StyleOverrideProvider, type StyleOverrides } from "./controls/style-override.client";
-import { DEVICE_TONE } from "../lib/editor-devices.lib";
+import { DEVICE_TONE } from "@workspace/store-editor/lib/editor-devices.lib";
 import {
   hasDeviceOverrides,
   hasOwnStyle,
@@ -28,8 +28,8 @@ import {
   readOwnStyle,
   type StyleKind,
   type StyleTarget,
-} from "../lib/editor-style.lib";
-import type { Device } from "../state/editor.store";
+} from "@workspace/store-editor/lib/editor-style.lib";
+import type { Device } from "@workspace/store-editor/state/editor.store";
 
 const DEVICE_ICON = { desktop: Monitor, tablet: Tablet, mobile: Smartphone } as const;
 

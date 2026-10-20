@@ -1,16 +1,16 @@
 /**
- * Minimal local copies of the dashboard's editor result types (Task 1).
- * Task 2 moves the originals here and removes the dashboard copies:
- * - EditorErrorKey, EditorResult, EditorFormSummary: dashboard editor/server/editor.dto.ts
- * - EditorForm, EditorCatalogSnapshot and the product/brand/review/coupon types: dashboard editor/server/editor.data.ts
- * - Media*: dashboard components/media/media.dto.ts
- * - Template*: dashboard website/templates/templates.dto.ts
- * - Forms*: dashboard website/forms/forms.dto.ts
- * - Explore*, StockPhoto*: dashboard explore.server.ts and lib/stock-photos/stock-photos.lib.ts
- * - StoreRevisionRow: packages/lib/src/store-sites/server.ts
+ * Shapes shared by the editor, its adapters and the host apps' server code.
+ * The package is the single source: the dashboard files that used to define
+ * these (editor.dto.ts, editor.data.ts, media.dto.ts, forms.dto.ts,
+ * explore.server.ts, stock-photos.lib.ts) re-export them.
  */
+import type { MediaAltText } from "@workspace/lib/media";
+import type { SellerCouponRow } from "@workspace/lib/store-sites/catalog-data";
+import type { RatingStats } from "@workspace/lib/store-sites/catalog-data.lib";
+import type { StoreRevisionRow } from "@workspace/lib/store-sites/server";
 import type { ContentItemSummary, PublicStoreForm } from "@workspace/store-sections/render";
-import type { DesignSystem, PageContent, SectionInstance, TemplateDemo } from "@workspace/store-sections";
+
+export type { MediaAltText, StoreRevisionRow };
 
 /** Error keys live under `storeEditor.errors`. */
 export type EditorErrorKey =
@@ -32,6 +32,23 @@ export type EditorErrorKey =
   | "generic";
 
 export type EditorResult<T> = { success: true; data: T } | { success: false; error: EditorErrorKey };
+
+/** lib error codes → message keys. */
+export const EDITOR_ERRORS: Record<string, EditorErrorKey> = {
+  not_found: "notFound",
+  store_read_only: "readOnly",
+  publish_blocked: "publishBlocked",
+  invalid_content: "invalidContent",
+  version_conflict: "versionConflict",
+  invalid_slug: "invalidSlug",
+  reserved_slug: "reservedSlug",
+  slug_taken: "slugTaken",
+  too_many_pages: "tooManyPages",
+  home_page: "homePage",
+  not_published: "notPublished",
+  invalid_site: "invalidSite",
+  invalid_input: "invalidInput",
+};
 
 /** Forms tab row: a store form with its counts. */
 export type EditorFormSummary = { id: string; fieldCount: number; submissionCount: number; newCount: number };
@@ -69,20 +86,15 @@ export type EditorReview = {
   createdAt: string | null;
 };
 
-/** Copy of RatingStats (packages/lib catalog-data.lib.ts). */
-export type EditorRatingStats = { average: number; count: number; distribution: Record<"1" | "2" | "3" | "4" | "5", number> };
+export type EditorRatingStats = RatingStats;
 
-/** Copy of SellerCouponRow (packages/lib catalog-data.server.ts). */
-export type EditorCoupon = {
-  id: string;
-  code: string;
-  name: string;
-  discountType: "percentage" | "fixed" | "free-shipping" | "other";
-  discountValue: number;
-  endsAt: string;
-  live: boolean;
-};
+export type EditorCoupon = SellerCouponRow;
 
+/**
+ * Store data beyond products and categories. A source that failed to load is
+ * `null` and listed in `failed`, so sections show an error with Retry
+ * instead of "add records" (a failed query is not an empty store).
+ */
 export type EditorStoreData = {
   brands: EditorBrand[] | null;
   reviews: EditorReview[] | null;
@@ -102,17 +114,7 @@ export type EditorCatalogSnapshot = {
   posts: ContentItemSummary[] | null;
 } & EditorStoreData;
 
-export type StoreRevisionRow = {
-  id: string;
-  revisionNumber: number;
-  createdAt: string;
-  publishedBy: string | null;
-  isLive: boolean;
-};
-
-// Media library (media.dto.ts)
-export type MediaAltText = { ar?: string; en?: string };
-
+// Media library (dashboard components/media/media.dto.ts re-exports these)
 export type MediaAssetView = {
   id: string;
   /** null = shared by all of the seller's stores. */
@@ -148,28 +150,6 @@ export type MediaErrorKey =
   | "generic";
 
 export type MediaResult<T> = { success: true; data: T } | { success: false; error: MediaErrorKey };
-
-// Templates (templates.dto.ts)
-export type TemplatePreviewView = {
-  designSystem: DesignSystem;
-  header: SectionInstance | null;
-  footer: SectionInstance | null;
-  pages: { slug: string; isHome: boolean; name: string; sections: SectionInstance[]; content: PageContent }[];
-  demo: TemplateDemo | null;
-};
-
-export type TemplateErrorKey =
-  | "notFound"
-  | "readOnly"
-  | "templateNotFound"
-  | "premiumTemplate"
-  | "invalidTemplate"
-  | "tooManyPages"
-  | "nothingToUndo"
-  | "rateLimited"
-  | "generic";
-
-export type TemplateActionResult<T> = { success: true; data: T } | { success: false; error: TemplateErrorKey };
 
 // Forms (forms.dto.ts)
 export type FormsErrorKey = "invalidInput" | "readOnly" | "notFound" | "limitReached" | "rateLimited" | "generic";

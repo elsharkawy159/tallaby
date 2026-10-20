@@ -40,16 +40,16 @@ import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { cn } from "@workspace/ui/lib/utils";
 import { createFormFromTemplate } from "@/app/(main)/stores/[storeId]/website/forms/forms.server";
-import type { EditorCommands } from "../lib/editor-commands.lib";
-import { formSectionInstance } from "../lib/editor-library.lib";
-import { resolveCanvasCatalog, resolveCanvasContent } from "../lib/editor.lib";
+import type { EditorCommands } from "@workspace/store-editor/lib/editor-commands.lib";
+import { formSectionInstance } from "@workspace/store-editor/lib/editor-library.lib";
+import { resolveCanvasCatalog, resolveCanvasContent } from "@workspace/store-editor/lib/editor.lib";
 import type { SectionPreviewHost } from "./add/add-panel.client";
 import { LazyMount } from "./add/section-library.client";
 import { SectionThumbnail } from "./add/section-thumbnail.client";
 import type { EditorForm } from "../server/editor.data";
-import type { EditorFormSummary } from "../server/editor.dto";
+import type { EditorFormSummary } from "@workspace/store-editor";
 import { listForms } from "../server/editor.server";
-import type { EditorStore } from "../state/editor.store";
+import type { EditorStore } from "@workspace/store-editor/state/editor.store";
 
 const TEMPLATE_ICONS: Record<string, LucideIcon> = {
   contact: MessageSquare,

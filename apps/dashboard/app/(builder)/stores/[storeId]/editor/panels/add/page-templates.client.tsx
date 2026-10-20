@@ -11,9 +11,9 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@workspac
 import { cn } from "@workspace/ui/lib/utils";
 import { SitePreview, type PreviewDevice } from "@/app/(main)/stores/[storeId]/website/_components/site-preview.client";
 import type { TemplateCardView, TemplatePreviewView } from "@/app/(main)/stores/[storeId]/website/templates/templates.dto";
-import type { EditorCommands } from "../../lib/editor-commands.lib";
-import { allTemplatePages, templatePagesFor, type TemplatePageOption } from "../../lib/editor-templates.lib";
-import type { EditorStore } from "../../state/editor.store";
+import type { EditorCommands } from "@workspace/store-editor/lib/editor-commands.lib";
+import { allTemplatePages, templatePagesFor, type TemplatePageOption } from "@workspace/store-editor/lib/editor-templates.lib";
+import type { EditorStore } from "@workspace/store-editor/state/editor.store";
 import { nameOf } from "../pages-panel.client";
 import { TemplatesPanel } from "./templates-panel.client";
 import type { TemplatePreviewHost } from "./template-preview-dialog.client";

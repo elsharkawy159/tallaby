@@ -1,9 +1,6 @@
 import type { FormInput, SubmissionStatus } from "@workspace/lib/store-forms";
 
-/** Error keys under `storeForms.errors.*`. */
-export type FormsErrorKey = "invalidInput" | "readOnly" | "notFound" | "limitReached" | "rateLimited" | "generic";
-
-export type FormsActionResult<T = undefined> = { success: true; data: T } | { success: false; error: FormsErrorKey };
+export type { FormsActionResult, FormsErrorKey } from "@workspace/store-editor";
 
 export type FormEditorValue = FormInput;
 

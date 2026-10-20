@@ -11,9 +11,8 @@ import type {
   MediaResult,
   StockPhotoPage,
   StoreRevisionRow,
-  TemplateActionResult,
-  TemplatePreviewView,
 } from "./editor.dto";
+import type { TemplateActionResult, TemplatePreviewView } from "./templates.dto";
 
 export type EditorCapabilities = {
   /** Pages panel + page CRUD (false for a section). */

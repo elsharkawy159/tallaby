@@ -3,10 +3,10 @@
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { styleTargetOf, type EditorCommands } from "../lib/editor-commands.lib";
-import { refOf } from "../lib/editor-selection.lib";
-import { setStyle } from "../lib/editor-style.lib";
-import type { EditorStore } from "./editor.store";
+import { styleTargetOf, type EditorCommands } from "@workspace/store-editor/lib/editor-commands.lib";
+import { refOf } from "@workspace/store-editor/lib/editor-selection.lib";
+import { setStyle } from "@workspace/store-editor/lib/editor-style.lib";
+import type { EditorStore } from "@workspace/store-editor/state/editor.store";
 
 /**
  * Deleting is never per device, so a delete while a tablet or phone is shown

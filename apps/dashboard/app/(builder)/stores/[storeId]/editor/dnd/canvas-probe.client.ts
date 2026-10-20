@@ -8,11 +8,11 @@
  * their boxes, not from droppables. Runs at most once per animation frame.
  */
 import { getElementDefinition } from "@workspace/store-sections/render";
-import { dropIndex } from "../lib/editor-palette.lib";
-import { splitPartAttr } from "../lib/editor-selection.lib";
-import type { SectionRef } from "../state/editor.store";
-import { edgeDistance, insertionIndex, insertionLine, type Line, type Point, type Rect } from "./canvas-geometry.lib";
-import type { CanvasPayload, CanvasProbe, ImageCandidate, NodeSlot } from "./dnd.types";
+import { dropIndex } from "@workspace/store-editor/lib/editor-palette.lib";
+import { splitPartAttr } from "@workspace/store-editor/lib/editor-selection.lib";
+import type { SectionRef } from "@workspace/store-editor/state/editor.store";
+import { edgeDistance, insertionIndex, insertionLine, type Line, type Point, type Rect } from "@workspace/store-editor/dnd/canvas-geometry.lib";
+import type { CanvasPayload, CanvasProbe, ImageCandidate, NodeSlot } from "@workspace/store-editor/dnd/dnd.types";
 import { probeItem, probePartSlot } from "./part-probe.client";
 
 /** Boxes for the markers, in frame viewport coordinates, matching the probe's lists. */

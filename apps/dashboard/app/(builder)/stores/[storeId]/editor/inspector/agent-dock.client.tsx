@@ -6,9 +6,9 @@ import { AtSign, ChevronDown, SendHorizontal, Sparkles, X } from "lucide-react";
 import { useStore } from "zustand";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@workspace/ui/components/tooltip";
 import { cn } from "@workspace/ui/lib/utils";
-import { mentionOf } from "../lib/editor-agent.lib";
-import { getInstance, refOf } from "../lib/editor-selection.lib";
-import type { EditorStore } from "../state/editor.store";
+import { mentionOf } from "@workspace/store-editor/lib/editor-agent.lib";
+import { getInstance, refOf } from "@workspace/store-editor/lib/editor-selection.lib";
+import type { EditorStore } from "@workspace/store-editor/state/editor.store";
 
 /**
  * AI assistant input at the foot of the right sidebar (UI only, "soon"). The

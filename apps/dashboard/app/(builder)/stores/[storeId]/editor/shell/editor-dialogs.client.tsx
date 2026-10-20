@@ -4,9 +4,9 @@ import { useTranslations } from "next-intl";
 import { LAYOUT_PRESETS, PALETTE_TYPES, getElementDefinition } from "@workspace/store-sections/render";
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@workspace/ui/components/command";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@workspace/ui/components/dialog";
-import type { EditorCommands } from "../lib/editor-commands.lib";
-import { ELEMENT_ICONS, PRESET_ICONS, SECTION_GROUP_ICONS } from "../lib/editor-icons.lib";
-import { recordUse, sectionGroups } from "../lib/editor-palette.lib";
+import type { EditorCommands } from "@workspace/store-editor/lib/editor-commands.lib";
+import { ELEMENT_ICONS, PRESET_ICONS, SECTION_GROUP_ICONS } from "@workspace/store-editor/lib/editor-icons.lib";
+import { recordUse, sectionGroups } from "@workspace/store-editor/lib/editor-palette.lib";
 import { SHORTCUTS } from "../state/use-editor-shortcuts.client";
 
 const pick = (value: { ar: string; en: string }, locale: string) => (locale === "en" ? value.en : value.ar) || value.ar;

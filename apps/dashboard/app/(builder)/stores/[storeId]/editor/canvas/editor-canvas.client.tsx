@@ -18,15 +18,15 @@ import {
   type RenderContext,
 } from "@workspace/store-sections/render";
 import { cn } from "@workspace/ui/lib/utils";
-import { gapLines, type SelectionHandles } from "./canvas-handles.lib";
+import { gapLines, type SelectionHandles } from "@workspace/store-editor/canvas/canvas-handles.lib";
 import { EditorOverlay, elementDragKey, type CanvasBox, type CanvasBoxes } from "./editor-overlay.client";
-import { DEVICE_TONE } from "../lib/editor-devices.lib";
-import { styleKindOf } from "../lib/editor-style.lib";
-import type { EditorCommands } from "../lib/editor-commands.lib";
-import { CANVAS_DROP_ID, isCanvasPayload } from "../dnd/dnd.types";
+import { DEVICE_TONE } from "@workspace/store-editor/lib/editor-devices.lib";
+import { styleKindOf } from "@workspace/store-editor/lib/editor-style.lib";
+import type { EditorCommands } from "@workspace/store-editor/lib/editor-commands.lib";
+import { CANVAS_DROP_ID, isCanvasPayload } from "@workspace/store-editor/dnd/dnd.types";
 import { InvalidBadge, useEditorDnd, type DropMarker } from "../dnd/editor-dnd.client";
-import { getInstance, inlineTextInfo, isImageSelection, refOf, sameRef, splitPartAttr } from "../lib/editor-selection.lib";
-import type { Device, EditorStore, SectionRef, Selection } from "../state/editor.store";
+import { getInstance, inlineTextInfo, isImageSelection, refOf, sameRef, splitPartAttr } from "@workspace/store-editor/lib/editor-selection.lib";
+import type { Device, EditorStore, SectionRef, Selection } from "@workspace/store-editor/state/editor.store";
 
 const DEVICE_WIDTH: Record<Device, string> = { desktop: "100%", tablet: "820px", mobile: "390px" };
 

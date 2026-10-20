@@ -2,7 +2,7 @@
 
 import { ExternalLink, PanelsTopLeft, RotateCw } from "lucide-react";
 import { DATA_ACTION_CLASS, type DataNeed } from "@workspace/store-sections/render";
-import { dataAction } from "../lib/editor-data.lib";
+import { dataAction } from "@workspace/store-editor/lib/editor-data.lib";
 
 /**
  * The buttons inside canvas empty states (P4B-05). Management pages open in

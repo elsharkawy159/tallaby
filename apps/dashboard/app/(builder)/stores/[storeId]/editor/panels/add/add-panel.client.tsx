@@ -20,13 +20,13 @@ import {
 import { Input } from "@workspace/ui/components/input";
 import { cn } from "@workspace/ui/lib/utils";
 import type { TemplateCardView } from "@/app/(main)/stores/[storeId]/website/templates/templates.dto";
-import type { DragPayload } from "../../dnd/dnd.types";
+import type { DragPayload } from "@workspace/store-editor/dnd/dnd.types";
 import { useDragData } from "../../dnd/editor-dnd.client";
-import type { EditorCommands } from "../../lib/editor-commands.lib";
+import type { EditorCommands } from "@workspace/store-editor/lib/editor-commands.lib";
 import type { PreviewCatalog } from "@/app/(main)/stores/[storeId]/website/_components/site-preview.client";
-import { ELEMENT_ICONS, PRESET_ICONS } from "../../lib/editor-icons.lib";
-import { matchesSearch, mostUsedItems, recentItems, recordUse, type PaletteKey } from "../../lib/editor-palette.lib";
-import type { EditorStore } from "../../state/editor.store";
+import { ELEMENT_ICONS, PRESET_ICONS } from "@workspace/store-editor/lib/editor-icons.lib";
+import { matchesSearch, mostUsedItems, recentItems, recordUse, type PaletteKey } from "@workspace/store-editor/lib/editor-palette.lib";
+import type { EditorStore } from "@workspace/store-editor/state/editor.store";
 import { PageTemplatesTab } from "./page-templates.client";
 import { SectionLibrary } from "./section-library.client";
 import type { TemplatePreviewHost } from "./template-preview-dialog.client";

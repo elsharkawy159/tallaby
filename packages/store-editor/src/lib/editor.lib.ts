@@ -14,8 +14,7 @@ import {
   type RenderContext,
   type ReviewSummary,
 } from "@workspace/store-sections/render";
-import type { RatingStats } from "@workspace/lib/store-sites/catalog-data.lib";
-import type { EditorBrand, EditorCategory, EditorCoupon, EditorProduct, EditorReview } from "../server/editor.data";
+import type { EditorBrand, EditorCategory, EditorCoupon, EditorProduct, EditorRatingStats, EditorReview } from "../editor.dto";
 
 export const MAX_HISTORY = 50;
 
@@ -241,7 +240,7 @@ export function resolveCanvasContent(
 export type CanvasStoreData = {
   brands?: EditorBrand[] | null;
   reviews?: EditorReview[] | null;
-  reviewStats?: RatingStats | null;
+  reviewStats?: EditorRatingStats | null;
   coupons?: EditorCoupon[] | null;
 };
 

@@ -3,11 +3,11 @@
 import { useState, type PointerEvent as ReactPointerEvent } from "react";
 import { useTranslations } from "next-intl";
 import { cn } from "@workspace/ui/lib/utils";
-import { styleTargetOf } from "../lib/editor-commands.lib";
-import { refOf } from "../lib/editor-selection.lib";
-import { setStyle } from "../lib/editor-style.lib";
-import type { EditorStore, Selection } from "../state/editor.store";
-import { CORNERS, draggedGap, showsRadiusDots, draggedRadius, radiusDot, type Corner, type GapLine, type SelectionHandles } from "./canvas-handles.lib";
+import { styleTargetOf } from "@workspace/store-editor/lib/editor-commands.lib";
+import { refOf } from "@workspace/store-editor/lib/editor-selection.lib";
+import { setStyle } from "@workspace/store-editor/lib/editor-style.lib";
+import type { EditorStore, Selection } from "@workspace/store-editor/state/editor.store";
+import { CORNERS, draggedGap, showsRadiusDots, draggedRadius, radiusDot, type Corner, type GapLine, type SelectionHandles } from "@workspace/store-editor/canvas/canvas-handles.lib";
 import type { CanvasBox } from "./editor-overlay.client";
 
 /** Hit area across a gap divider, in pixels. */

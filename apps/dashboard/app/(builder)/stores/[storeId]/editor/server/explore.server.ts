@@ -19,8 +19,9 @@ import { createClient } from "@/supabase/server";
  * store's media library like an upload (same path rules and size limit).
  */
 
-export type ExploreErrorKey = "notFound" | "readOnly" | "unavailable" | "rateLimited" | "invalidInput" | "tooLarge" | "tooMany" | "generic";
-export type ExploreResult<T> = { success: true; data: T } | { success: false; error: ExploreErrorKey };
+import type { ExploreErrorKey, ExploreResult } from "@workspace/store-editor";
+
+export type { ExploreErrorKey, ExploreResult };
 
 const searchLimiter = createRateLimiter({ limit: 120, windowMs: 10 * 60_000 });
 const importLimiter = createRateLimiter({ limit: 40, windowMs: 10 * 60_000 });

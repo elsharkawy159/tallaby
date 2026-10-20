@@ -7,13 +7,13 @@ import type { SectionInstance } from "@workspace/store-sections";
 import { findNode, getElementDefinition, type ElementType } from "@workspace/store-sections/render";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@workspace/ui/components/tooltip";
 import { cn } from "@workspace/ui/lib/utils";
-import { ancestorsOf } from "../lib/editor-agent.lib";
-import type { EditorCommands } from "../lib/editor-commands.lib";
-import { styleTargetOf } from "../lib/editor-commands.lib";
-import { ELEMENT_ICONS } from "../lib/editor-icons.lib";
-import { nodeLabel, refOf } from "../lib/editor-selection.lib";
-import { readOwnStyle } from "../lib/editor-style.lib";
-import type { Device, EditorStore, Selection } from "../state/editor.store";
+import { ancestorsOf } from "@workspace/store-editor/lib/editor-agent.lib";
+import type { EditorCommands } from "@workspace/store-editor/lib/editor-commands.lib";
+import { styleTargetOf } from "@workspace/store-editor/lib/editor-commands.lib";
+import { ELEMENT_ICONS } from "@workspace/store-editor/lib/editor-icons.lib";
+import { nodeLabel, refOf } from "@workspace/store-editor/lib/editor-selection.lib";
+import { readOwnStyle } from "@workspace/store-editor/lib/editor-style.lib";
+import type { Device, EditorStore, Selection } from "@workspace/store-editor/state/editor.store";
 
 const pick = (value: { ar: string; en: string }, locale: string) => (locale === "en" ? value.en : value.ar) || value.ar;
 

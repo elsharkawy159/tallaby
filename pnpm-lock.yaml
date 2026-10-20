@@ -241,6 +241,9 @@ importers:
       '@workspace/lib':
         specifier: workspace:*
         version: link:../../packages/lib
+      '@workspace/store-editor':
+        specifier: workspace:*
+        version: link:../../packages/store-editor
       '@workspace/store-sections':
         specifier: workspace:*
         version: link:../../packages/store-sections
@@ -763,12 +766,18 @@ importers:
       '@dnd-kit/utilities':
         specifier: 3.2.2
         version: 3.2.2(react@19.2.8)
+      '@workspace/lib':
+        specifier: workspace:*
+        version: link:../lib
       '@workspace/store-sections':
         specifier: workspace:*
         version: link:../store-sections
       '@workspace/ui':
         specifier: workspace:*
         version: link:../ui
+      lucide-react:
+        specifier: ^0.562.0
+        version: 0.562.0(react@19.2.8)
       next:
         specifier: ^16.3.3
         version: 16.3.3(@types/node@25.0.6)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)

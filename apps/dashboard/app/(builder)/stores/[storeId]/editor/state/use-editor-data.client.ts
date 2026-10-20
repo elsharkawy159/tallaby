@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { STORE_DATA_CHANNEL, shouldRefresh } from "../lib/editor-data.lib";
+import { STORE_DATA_CHANNEL, shouldRefresh } from "@workspace/store-editor/lib/editor-data.lib";
 import type { EditorCatalogSnapshot } from "../server/editor.data";
 import { refreshEditorData } from "../server/editor.server";
 

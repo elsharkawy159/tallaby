@@ -23,6 +23,7 @@
     "@workspace/cache": "workspace:*",
     "@workspace/db": "workspace:*",
     "@workspace/lib": "workspace:*",
+    "@workspace/store-editor": "workspace:*",
     "@workspace/store-sections": "workspace:*",
     "@workspace/tiptap": "workspace:*",
     "@workspace/ui": "workspace:*",

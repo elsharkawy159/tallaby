@@ -7,7 +7,9 @@
 import type { DesignSystem } from "@workspace/store-sections";
 import { FONT_PAIRINGS, findFontPairing, type FontPairing } from "@workspace/store-sections/fonts";
 
-export type ColorKey = keyof DesignSystem["colors"];
+import { COLOR_FIELDS, type ColorKey } from "@workspace/store-editor/lib/design-fields.lib";
+
+export { COLOR_FIELDS, type ColorKey };
 
 /** Brand colors a preset sets. `secondary` is the light panel color (`--sf-shelf`). */
 export const PALETTE_PRESETS: readonly { id: string; colors: Partial<Record<"primary" | "secondary" | "accent", string>> }[] = [
@@ -36,17 +38,6 @@ export const THEME_PRESETS: readonly { id: string; pairing: string; radius?: num
   { id: "midnight", pairing: "almarai", radius: 4 },
   { id: "rose", pairing: "messiri", radius: 24 },
   { id: "sand", pairing: "kufi", radius: 8 },
-];
-
-/** Every color token the page edits, with the Tallaby Classic value shown when unset. */
-export const COLOR_FIELDS: readonly { key: ColorKey; classic: string }[] = [
-  { key: "primary", classic: "#145163" },
-  { key: "accent", classic: "#fdad28" },
-  { key: "secondary", classic: "#f2f5f4" },
-  { key: "background", classic: "#ffffff" },
-  { key: "foreground", classic: "#10242b" },
-  { key: "muted", classic: "#5c6d72" },
-  { key: "border", classic: "#e2e8e7" },
 ];
 
 export const RADIUS_OPTIONS = [0, 4, 8, 12, 16, 24] as const;

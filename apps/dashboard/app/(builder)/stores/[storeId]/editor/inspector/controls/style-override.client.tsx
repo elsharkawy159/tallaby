@@ -5,8 +5,8 @@ import { useTranslations } from "next-intl";
 import { Smartphone, Tablet } from "lucide-react";
 import type { StyleKey } from "@workspace/store-sections/render";
 import { cn } from "@workspace/ui/lib/utils";
-import { DEVICE_TONE } from "../../lib/editor-devices.lib";
-import type { Device } from "../../state/editor.store";
+import { DEVICE_TONE } from "@workspace/store-editor/lib/editor-devices.lib";
+import type { Device } from "@workspace/store-editor/state/editor.store";
 
 /**
  * Which style values the edited device sets itself (P4B responsive). The

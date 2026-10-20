@@ -1,49 +1,6 @@
-import type { MediaAltText } from "@workspace/lib/media";
+import type { MediaErrorKey } from "@workspace/store-editor";
 
-/** One file in the library, as the browser sees it. */
-export type MediaAssetView = {
-  id: string;
-  /** null = shared by all of the seller's stores. */
-  storeId: string | null;
-  folderId: string | null;
-  storagePath: string;
-  url: string;
-  filename: string;
-  mimeType: string;
-  bytes: number;
-  width: number | null;
-  height: number | null;
-  altText: MediaAltText;
-  createdAt: string;
-  /** Places in this store's draft site that use the file. */
-  usage: number;
-};
-
-export type MediaFolderView = {
-  id: string;
-  name: string;
-  parentId: string | null;
-  storeId: string | null;
-};
-
-export type MediaLibraryView = { folders: MediaFolderView[]; assets: MediaAssetView[] };
-
-/** Error keys live under `mediaLibrary.errors`. */
-export type MediaErrorKey =
-  | "notFound"
-  | "readOnly"
-  | "invalidInput"
-  | "invalidPath"
-  | "objectMissing"
-  | "tooLarge"
-  | "invalidType"
-  | "invalidFolder"
-  | "tooMany"
-  | "rateLimited"
-  | "deleteFailed"
-  | "generic";
-
-export type MediaResult<T> = { success: true; data: T } | { success: false; error: MediaErrorKey };
+export type { MediaAssetView, MediaErrorKey, MediaFolderView, MediaLibraryView, MediaResult } from "@workspace/store-editor";
 
 /** lib error codes → message keys. */
 export const MEDIA_ERRORS: Record<string, MediaErrorKey> = {

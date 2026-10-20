@@ -25,15 +25,15 @@ import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { getEventCoordinates } from "@dnd-kit/utilities";
 import { createStore, type StoreApi } from "zustand/vanilla";
 import type { ElementType } from "@workspace/store-sections/render";
-import type { EditorCommands } from "../lib/editor-commands.lib";
-import { ELEMENT_ICONS } from "../lib/editor-icons.lib";
-import { recordUse } from "../lib/editor-palette.lib";
-import type { EditorStore } from "../state/editor.store";
+import type { EditorCommands } from "@workspace/store-editor/lib/editor-commands.lib";
+import { ELEMENT_ICONS } from "@workspace/store-editor/lib/editor-icons.lib";
+import { recordUse } from "@workspace/store-editor/lib/editor-palette.lib";
+import type { EditorStore } from "@workspace/store-editor/state/editor.store";
 import { importStockPhoto } from "../server/explore.server";
-import type { Line, Point, Rect } from "./canvas-geometry.lib";
+import type { Line, Point, Rect } from "@workspace/store-editor/dnd/canvas-geometry.lib";
 import { sampleCanvas, type CanvasSample } from "./canvas-probe.client";
-import { CANVAS_DROP_ID, isCanvasPayload, type CanvasPayload, type DragData, type DragPayload, type DropPlan } from "./dnd.types";
-import { planDrop } from "./drop-plan.lib";
+import { CANVAS_DROP_ID, isCanvasPayload, type CanvasPayload, type DragData, type DragPayload, type DropPlan } from "@workspace/store-editor/dnd/dnd.types";
+import { planDrop } from "@workspace/store-editor/dnd/drop-plan.lib";
 
 /** What the canvas draws for the current target, in frame viewport coordinates. */
 export type DropMarker =

@@ -5,8 +5,8 @@ import { Info, Monitor, Smartphone, Tablet } from "lucide-react";
 import { useStore } from "zustand";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@workspace/ui/components/tooltip";
 import { cn } from "@workspace/ui/lib/utils";
-import { DEVICE_TONE } from "../lib/editor-devices.lib";
-import type { EditorStore } from "../state/editor.store";
+import { DEVICE_TONE } from "@workspace/store-editor/lib/editor-devices.lib";
+import type { EditorStore } from "@workspace/store-editor/state/editor.store";
 
 /**
  * Strip above the canvas while a tablet or phone is shown: style edits now

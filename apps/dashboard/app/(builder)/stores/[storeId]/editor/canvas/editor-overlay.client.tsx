@@ -15,13 +15,13 @@ import {
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu";
 import { cn } from "@workspace/ui/lib/utils";
-import type { DragPayload } from "../dnd/dnd.types";
+import type { DragPayload } from "@workspace/store-editor/dnd/dnd.types";
 import { useDragData } from "../dnd/editor-dnd.client";
-import type { EditorCommands } from "../lib/editor-commands.lib";
-import { getInstance, refOf, selectionLabel } from "../lib/editor-selection.lib";
-import { movableOf } from "../lib/editor-slots.lib";
-import type { EditorStore, Selection } from "../state/editor.store";
-import type { SelectionHandles } from "./canvas-handles.lib";
+import type { EditorCommands } from "@workspace/store-editor/lib/editor-commands.lib";
+import { getInstance, refOf, selectionLabel } from "@workspace/store-editor/lib/editor-selection.lib";
+import { movableOf } from "@workspace/store-editor/lib/editor-slots.lib";
+import type { EditorStore, Selection } from "@workspace/store-editor/state/editor.store";
+import type { SelectionHandles } from "@workspace/store-editor/canvas/canvas-handles.lib";
 import { ElementPopover } from "./element-popover.client";
 import { SelectionHandlesLayer } from "./selection-handles.client";
 

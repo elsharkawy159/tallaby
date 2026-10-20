@@ -12,7 +12,7 @@ import { cn } from "@workspace/ui/lib/utils";
 import { findIndustry, industryQueries } from "@/lib/stores/industries.lib";
 import type { StockPhoto } from "@/lib/stock-photos/stock-photos.lib";
 import { useDragData } from "../dnd/editor-dnd.client";
-import type { EditorCommands } from "../lib/editor-commands.lib";
+import type { EditorCommands } from "@workspace/store-editor/lib/editor-commands.lib";
 import { importStockPhoto, searchStockPhotos, type ExploreErrorKey } from "../server/explore.server";
 
 /**

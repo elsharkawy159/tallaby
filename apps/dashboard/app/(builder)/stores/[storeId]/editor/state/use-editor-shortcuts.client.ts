@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useEffect } from "react";
-import type { EditorCommands } from "../lib/editor-commands.lib";
-import type { EditorStore } from "./editor.store";
+import type { EditorCommands } from "@workspace/store-editor/lib/editor-commands.lib";
+import type { EditorStore } from "@workspace/store-editor/state/editor.store";
 
 /** Typing in a field (or editing text on the canvas) never triggers editor shortcuts. */
 function isTyping(target: EventTarget | null): boolean {

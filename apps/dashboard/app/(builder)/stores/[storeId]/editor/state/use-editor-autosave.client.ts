@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useStore } from "zustand";
 import { saveChrome, saveDesignSystem, saveDraft } from "../server/editor.server";
-import { hasPendingChanges, type EditorStore } from "./editor.store";
+import { hasPendingChanges, type EditorStore } from "@workspace/store-editor/state/editor.store";
 
 const DEBOUNCE_MS = 1500;
 

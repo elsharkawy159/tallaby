@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { PageContent } from "@workspace/store-sections";
-import type { TemplateCardView } from "@/app/(main)/stores/[storeId]/website/templates/templates.dto";
+import type { TemplateCardView } from "../templates.dto";
 import { createEditorCommands } from "./editor-commands.lib";
 import { allTemplatePages, instantiateTemplatePage, templatePagesFor } from "./editor-templates.lib";
 import { createEditorStore } from "../state/editor.store";

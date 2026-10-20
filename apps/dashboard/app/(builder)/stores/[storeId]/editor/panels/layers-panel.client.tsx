@@ -9,15 +9,15 @@ import { useStore } from "zustand";
 import type { ComponentNode, SectionInstance } from "@workspace/store-sections";
 import { findPath, getElementDefinition, storeSectionRegistry, type ElementType } from "@workspace/store-sections/render";
 import { cn } from "@workspace/ui/lib/utils";
-import type { DragPayload } from "../dnd/dnd.types";
+import type { DragPayload } from "@workspace/store-editor/dnd/dnd.types";
 import { useDragData, useReducedMotion } from "../dnd/editor-dnd.client";
-import type { EditorCommands } from "../lib/editor-commands.lib";
-import { ELEMENT_ICONS, SECTION_GROUP_ICONS } from "../lib/editor-icons.lib";
-import { SECTION_GROUPS } from "../lib/editor-palette.lib";
-import { DEVICE_TONE } from "../lib/editor-devices.lib";
-import { hasDeviceOverrides, readOwnStyle, type StyleTarget } from "../lib/editor-style.lib";
-import { nodeLabel, renameNode, sameRef, withTree } from "../lib/editor-selection.lib";
-import type { EditorStore, SectionRef, Selection } from "../state/editor.store";
+import type { EditorCommands } from "@workspace/store-editor/lib/editor-commands.lib";
+import { ELEMENT_ICONS, SECTION_GROUP_ICONS } from "@workspace/store-editor/lib/editor-icons.lib";
+import { SECTION_GROUPS } from "@workspace/store-editor/lib/editor-palette.lib";
+import { DEVICE_TONE } from "@workspace/store-editor/lib/editor-devices.lib";
+import { hasDeviceOverrides, readOwnStyle, type StyleTarget } from "@workspace/store-editor/lib/editor-style.lib";
+import { nodeLabel, renameNode, sameRef, withTree } from "@workspace/store-editor/lib/editor-selection.lib";
+import type { EditorStore, SectionRef, Selection } from "@workspace/store-editor/state/editor.store";
 
 const pick = (value: { ar: string; en: string }, locale: string) => (locale === "en" ? value.en : value.ar) || value.ar;
 

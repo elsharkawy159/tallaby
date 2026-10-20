@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { ClipboardList, Compass, FileText, Image as ImageIcon, Layers, Palette, Plus } from "lucide-react";
 import { useStore } from "zustand";
 import { cn } from "@workspace/ui/lib/utils";
-import type { EditorStore, Rail } from "../state/editor.store";
+import type { EditorStore, Rail } from "@workspace/store-editor/state/editor.store";
 
 const ITEMS = [
   ["add", Plus],

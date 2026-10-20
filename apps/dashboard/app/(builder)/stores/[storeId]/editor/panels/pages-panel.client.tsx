@@ -10,7 +10,7 @@ import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { cn } from "@workspace/ui/lib/utils";
 import { createPage, deletePage, updatePage } from "../server/editor.server";
-import { hasPendingChanges, type EditorPage, type EditorStore } from "../state/editor.store";
+import { hasPendingChanges, type EditorPage, type EditorStore } from "@workspace/store-editor/state/editor.store";
 
 export const nameOf = (value: { ar?: string; en?: string }, locale: string) => (locale === "en" ? value.en || value.ar : value.ar || value.en) || "";
 

@@ -12,7 +12,7 @@
  */
 import { MAX_SECTIONS_PER_PAGE, type ComponentNode, type PageContent, type SectionInstance } from "@workspace/store-sections";
 import { storeSectionRegistry, type MakeId } from "@workspace/store-sections/render";
-import type { TemplateCardView } from "@/app/(main)/stores/[storeId]/website/templates/templates.dto";
+import type { TemplateCardView } from "../templates.dto";
 
 type OutlinePage = TemplateCardView["pages"][number];
 

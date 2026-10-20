@@ -7,16 +7,16 @@ import { useStore } from "zustand";
 import type { ComponentNode } from "@workspace/store-sections";
 import { getElementDefinition, storeSectionRegistry, updateNode } from "@workspace/store-sections/render";
 import { cn } from "@workspace/ui/lib/utils";
-import { styleTargetOf, type EditorCommands } from "../lib/editor-commands.lib";
+import { styleTargetOf, type EditorCommands } from "@workspace/store-editor/lib/editor-commands.lib";
 import { AgentDock } from "./agent-dock.client";
 import { SidebarHeader } from "./sidebar-header.client";
 import { ElementInspector, SectionInspector } from "./editor-inspector.client";
-import { getInstance, getNode, partField, refOf, selectionLabel, withTree } from "../lib/editor-selection.lib";
-import { clearDeviceOverrides, clearStyle, setStyle, styleKindOf } from "../lib/editor-style.lib";
+import { getInstance, getNode, partField, refOf, selectionLabel, withTree } from "@workspace/store-editor/lib/editor-selection.lib";
+import { clearDeviceOverrides, clearStyle, setStyle, styleKindOf } from "@workspace/store-editor/lib/editor-style.lib";
 import type { EditorCategory, EditorForm, EditorProduct } from "../server/editor.data";
-import type { EditorStore } from "../state/editor.store";
+import type { EditorStore } from "@workspace/store-editor/state/editor.store";
 import { StylePanel } from "./style-panel.client";
-import { readShell, setShell } from "../lib/editor-library.lib";
+import { readShell, setShell } from "@workspace/store-editor/lib/editor-library.lib";
 
 type Catalog = { products: EditorProduct[]; categories: EditorCategory[]; forms: EditorForm[] };
 

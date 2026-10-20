@@ -33,10 +33,10 @@ import { cn } from "@workspace/ui/lib/utils";
 import { MediaPicker } from "@/components/media/media-picker.client";
 import { LayoutDiagram } from "./controls/layout-diagram.client";
 import type { EditorCategory, EditorForm, EditorProduct } from "../server/editor.data";
-import { applyPresetDesign, currentPreset, distinctDesigns, fieldGroups } from "../lib/editor-library.lib";
-import { addItem, newId, readItemProp, readProp, removeItem, setItemProp, setSectionProp } from "../lib/editor.lib";
-import { placeItem } from "../lib/editor-slots.lib";
-import { partField, readNodeProp, readPart, setNodeProp, writePart } from "../lib/editor-selection.lib";
+import { applyPresetDesign, currentPreset, distinctDesigns, fieldGroups } from "@workspace/store-editor/lib/editor-library.lib";
+import { addItem, newId, readItemProp, readProp, removeItem, setItemProp, setSectionProp } from "@workspace/store-editor/lib/editor.lib";
+import { placeItem } from "@workspace/store-editor/lib/editor-slots.lib";
+import { partField, readNodeProp, readPart, setNodeProp, writePart } from "@workspace/store-editor/lib/editor-selection.lib";
 
 type Catalog = {
   products: EditorProduct[];

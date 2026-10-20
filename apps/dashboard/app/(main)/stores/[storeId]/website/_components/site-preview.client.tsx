@@ -16,7 +16,7 @@ import {
   type RenderContext,
   type StoreProfile,
 } from "@workspace/store-sections/render";
-import { resolveCanvasCatalog } from "@/app/(builder)/stores/[storeId]/editor/lib/editor.lib";
+import { resolveCanvasCatalog } from "@workspace/store-editor/lib/editor.lib";
 import type { EditorCategory, EditorProduct } from "@/app/(builder)/stores/[storeId]/editor/server/editor.data";
 
 export type PreviewCatalog = { products: EditorProduct[]; categories: EditorCategory[] };

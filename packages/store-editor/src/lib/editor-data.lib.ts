@@ -8,7 +8,7 @@
  * store-scoped ones carry the store id from the editor URL.
  */
 import type { DataNeed } from "@workspace/store-sections/render";
-import type { EditorStoreData } from "../server/editor.data";
+import type { EditorStoreData } from "../editor.dto";
 
 export type DataAction = { kind: "link"; href: string } | { kind: "pages" };
 

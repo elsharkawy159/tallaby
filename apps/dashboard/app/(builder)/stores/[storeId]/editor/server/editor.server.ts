@@ -29,7 +29,7 @@ import { createRateLimiter } from "@/lib/rate-limit.lib";
 import { listStoreForms } from "@workspace/lib/store-forms/server";
 import { getStoreCatalog } from "@workspace/lib/stores/server";
 import { loadEditorForms, loadEditorSnapshot, type EditorCatalogSnapshot, type EditorForm } from "./editor.data";
-import { EDITOR_ERRORS, type EditorErrorKey, type EditorFormSummary, type EditorResult } from "./editor.dto";
+import { EDITOR_ERRORS, type EditorErrorKey, type EditorFormSummary, type EditorResult } from "@workspace/store-editor";
 
 /**
  * Website editor actions (PLAN.md P4-04). Every action takes the store id

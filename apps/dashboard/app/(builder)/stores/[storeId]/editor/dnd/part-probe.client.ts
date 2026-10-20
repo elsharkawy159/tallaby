@@ -7,10 +7,10 @@
  * The slot under the pointer wins; otherwise the nearest slot of that
  * section, so the gaps between columns still give a precise target.
  */
-import { splitPartAttr } from "../lib/editor-selection.lib";
-import type { SectionRef } from "../state/editor.store";
-import { insertionIndex, insertionLine, type Line, type Point, type Rect } from "./canvas-geometry.lib";
-import type { PartSlotHit } from "./part-drop.lib";
+import { splitPartAttr } from "@workspace/store-editor/lib/editor-selection.lib";
+import type { SectionRef } from "@workspace/store-editor/state/editor.store";
+import { insertionIndex, insertionLine, type Line, type Point, type Rect } from "@workspace/store-editor/dnd/canvas-geometry.lib";
+import type { PartSlotHit } from "@workspace/store-editor/dnd/part-drop.lib";
 
 export type PartProbe = { hit: PartSlotHit; line: Line; container: Rect };
 export type ItemProbe = { insertAt: number; line: Line; container: Rect };
