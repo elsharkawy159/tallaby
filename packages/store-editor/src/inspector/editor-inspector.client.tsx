@@ -31,6 +31,7 @@ import { Switch } from "@workspace/ui/components/switch";
 import { Textarea } from "@workspace/ui/components/textarea";
 import { cn } from "@workspace/ui/lib/utils";
 import { MediaPicker } from "../media/media-picker.client";
+import { useEditorLinks } from "../adapter.client";
 import { LayoutDiagram } from "./controls/layout-diagram.client";
 import type { EditorCategory, EditorForm, EditorProduct } from "../editor.dto";
 import { applyPresetDesign, currentPreset, distinctDesigns, fieldGroups } from "../lib/editor-library.lib";
@@ -82,6 +83,7 @@ export function Field({
 }) {
   const t = useTranslations("storeEditor.inspector");
   const inspectorStore = useContext(InspectorStore);
+  const manageForms = useEditorLinks(inspectorStore?.storeId ?? "").manageForms;
   const text = typeof value === "string" ? value : "";
 
   switch (prop.type) {
@@ -196,10 +198,11 @@ export function Field({
               </option>
             ))}
           </select>
-          {/* Relative to /stores/[storeId]/editor → /stores/[storeId]/website/forms */}
-          <a href="website/forms" target="_blank" rel="noopener" className="text-xs text-primary underline-offset-2 hover:underline">
-            {t("manageForms")}
-          </a>
+          {manageForms && (
+            <a href={manageForms} target="_blank" rel="noopener" className="text-xs text-primary underline-offset-2 hover:underline">
+              {t("manageForms")}
+            </a>
+          )}
         </div>
       );
     case "products":

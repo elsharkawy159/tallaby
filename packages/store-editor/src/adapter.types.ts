@@ -13,6 +13,9 @@ import type {
   StoreRevisionRow,
 } from "./editor.dto";
 import type { TemplateActionResult, TemplatePreviewView } from "./templates.dto";
+import type { EditorLinkOverrides } from "./lib/editor-links.lib";
+
+export type { EditorLinkOverrides, EditorLinks } from "./lib/editor-links.lib";
 
 export type EditorCapabilities = {
   /** Pages panel + page CRUD (false for a section). */
@@ -52,6 +55,8 @@ type Localized = { ar?: string; en?: string };
  */
 export type EditorAdapter = {
   capabilities: EditorCapabilities;
+  /** Links to the host's own pages; absent = the seller dashboard's (editor-links.lib), null hides one. */
+  links?: EditorLinkOverrides;
   saveDraft(pageId: string, content: unknown, clientVersion: number): Promise<EditorResult<{ draftVersion: number }>>;
   saveDesignSystem(designSystem: unknown, clientVersion: number): Promise<EditorResult<{ version: number }>>;
   saveChrome(part: "header" | "footer", instance: unknown, clientVersion: number): Promise<EditorResult<{ version: number }>>;

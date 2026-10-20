@@ -38,6 +38,7 @@ import {
   type ColorKey,
 } from "../lib/design.lib";
 import type { EditorStore } from "../state/editor.store";
+import { useEditorLinks } from "../adapter.client";
 
 const CLASSIC = { primary: "#145163", secondary: "#f2f5f4", accent: "#fdad28", background: "#ffffff", foreground: "#10242b" };
 const EMPTY: DesignSystem = { colors: {}, typography: {}, spacing: {} };
@@ -56,6 +57,7 @@ const TRIGGER = "rounded-none border-b bg-transparent px-1 py-3! text-sm font-me
 export function BrandPanel({ store, storeId, readOnly }: { store: EditorStore; storeId: string; readOnly: boolean }) {
   const t = useTranslations("storeEditor.brand");
   const td = useTranslations("websiteDesign");
+  const designHref = useEditorLinks(storeId).design;
   const ds = useStore(store, (s) => s.designSystem);
   const [resetOpen, setResetOpen] = useState(false);
 
@@ -261,18 +263,20 @@ export function BrandPanel({ store, storeId, readOnly }: { store: EditorStore; s
             </AccordionContent>
           </AccordionItem>
 
-          <AccordionItem value="identity">
-            <AccordionTrigger className={TRIGGER}>{td("tabs.brand")}</AccordionTrigger>
-            <AccordionContent className="flex flex-col gap-2">
-              <p className="text-xs text-muted-foreground">{t("identityHint")}</p>
-              <Button asChild variant="outline" size="sm" className="w-full gap-1.5">
-                <Link href={`/stores/${storeId}/website/design`} target="_blank">
-                  <ExternalLink className="size-3.5" />
-                  {t("openDesign")}
-                </Link>
-              </Button>
-            </AccordionContent>
-          </AccordionItem>
+          {designHref && (
+            <AccordionItem value="identity">
+              <AccordionTrigger className={TRIGGER}>{td("tabs.brand")}</AccordionTrigger>
+              <AccordionContent className="flex flex-col gap-2">
+                <p className="text-xs text-muted-foreground">{t("identityHint")}</p>
+                <Button asChild variant="outline" size="sm" className="w-full gap-1.5">
+                  <Link href={designHref} target="_blank">
+                    <ExternalLink className="size-3.5" />
+                    {t("openDesign")}
+                  </Link>
+                </Button>
+              </AccordionContent>
+            </AccordionItem>
+          )}
         </Accordion>
       </div>
 

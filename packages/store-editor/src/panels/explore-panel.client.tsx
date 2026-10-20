@@ -11,7 +11,7 @@ import { Input } from "@workspace/ui/components/input";
 import { cn } from "@workspace/ui/lib/utils";
 import { findIndustry, industryQueries } from "../lib/industries.lib";
 import type { ExploreErrorKey, StockPhoto } from "../editor.dto";
-import { useEditorAdapter } from "../adapter.client";
+import { useEditorAdapter, useEditorLinks } from "../adapter.client";
 import { useDragData } from "../dnd/editor-dnd.client";
 import type { EditorCommands } from "../lib/editor-commands.lib";
 
@@ -40,6 +40,7 @@ export function ExplorePanel({
 }) {
   // Only rendered when the host has stock photos (capabilities.explore).
   const exploreApi = useEditorAdapter().explore;
+  const settingsHref = useEditorLinks(storeId).settings;
   const t = useTranslations("storeEditor.explore");
   const suggestions = useMemo(() => industryQueries(category), [category]);
   const industry = findIndustry(category);
@@ -137,8 +138,8 @@ export function ExplorePanel({
             </button>
           ))}
         </div>
-        {!categoryLabel && (
-          <Link href={`/stores/${storeId}/settings`} target="_blank" className="flex items-center gap-1.5 text-[11px] font-medium text-primary hover:underline">
+        {!categoryLabel && settingsHref && (
+          <Link href={settingsHref} target="_blank" className="flex items-center gap-1.5 text-[11px] font-medium text-primary hover:underline">
             <Settings2 className="size-3.5" />
             {t("setIndustry")}
           </Link>

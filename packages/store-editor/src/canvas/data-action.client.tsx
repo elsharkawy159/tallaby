@@ -3,6 +3,7 @@
 import { ExternalLink, PanelsTopLeft, RotateCw } from "lucide-react";
 import { DATA_ACTION_CLASS, type DataNeed } from "@workspace/store-sections/render";
 import { dataAction } from "../lib/editor-data.lib";
+import { useEditorLinks } from "../adapter.client";
 
 /**
  * The buttons inside canvas empty states (P4B-05). Management pages open in
@@ -23,6 +24,7 @@ export function DataActionButton({
   onOpenPages: () => void;
 }) {
   const action = dataAction(need, store);
+  const { dataActions } = useEditorLinks(store.id);
   if (action.kind === "pages") {
     return (
       <button type="button" className={DATA_ACTION_CLASS} onClick={onOpenPages} data-editor-action={need}>
@@ -31,6 +33,8 @@ export function DataActionButton({
       </button>
     );
   }
+  // A host without the dashboard's management pages (admin) shows no link.
+  if (!dataActions) return null;
   return (
     // Same dashboard origin: the session (and store) carry over; noopener keeps the tabs independent.
     <a href={absolute(action.href)} target="_blank" rel="noopener noreferrer" className={DATA_ACTION_CLASS} data-editor-action={need}>

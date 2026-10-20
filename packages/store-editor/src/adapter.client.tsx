@@ -1,7 +1,8 @@
 "use client";
 
-import { createContext, useContext, type ReactNode } from "react";
+import { createContext, useContext, useMemo, type ReactNode } from "react";
 import type { EditorAdapter } from "./adapter.types";
+import { resolveEditorLinks, type EditorLinks } from "./lib/editor-links.lib";
 
 const EditorAdapterContext = createContext<EditorAdapter | null>(null);
 
@@ -14,4 +15,10 @@ export function useEditorAdapter(): EditorAdapter {
   const adapter = useContext(EditorAdapterContext);
   if (!adapter) throw new Error("EditorAdapterProvider missing");
   return adapter;
+}
+
+/** The host's links for this store: the dashboard's pages unless the adapter overrides them (null = hidden). */
+export function useEditorLinks(storeId: string): EditorLinks {
+  const links = useEditorAdapter().links;
+  return useMemo(() => resolveEditorLinks(storeId, links), [storeId, links]);
 }

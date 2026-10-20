@@ -47,7 +47,7 @@ import { LazyMount } from "./add/section-library.client";
 import { SectionThumbnail } from "./add/section-thumbnail.client";
 import type { EditorForm } from "../editor.dto";
 import type { EditorFormSummary } from "../editor.dto";
-import { useEditorAdapter } from "../adapter.client";
+import { useEditorAdapter, useEditorLinks } from "../adapter.client";
 import type { EditorStore } from "../state/editor.store";
 
 const TEMPLATE_ICONS: Record<string, LucideIcon> = {
@@ -104,7 +104,8 @@ export function FormsPanel({
   const activePageId = useStore(store, (s) => s.activePageId);
   const industry = useStore(store, (s) => s.industry);
   const page = pages.find((p) => p.id === activePageId) ?? pages[0];
-  const inbox = `/stores/${storeId}/website/forms/submissions`;
+  const links = useEditorLinks(storeId);
+  const inbox = links.formSubmissions;
 
   const reload = useCallback(async () => {
     if (!formsApi) return null;
@@ -213,7 +214,7 @@ export function FormsPanel({
     }
     toast.success(t("added", { name: form.name }), {
       description: t("addedHint"),
-      action: { label: t("leads"), onClick: () => window.open(`${inbox}?form=${form.id}`, "_blank", "noopener") },
+      ...(inbox ? { action: { label: t("leads"), onClick: () => window.open(`${inbox}?form=${form.id}`, "_blank", "noopener") } } : {}),
     });
   };
 
@@ -249,12 +250,14 @@ export function FormsPanel({
             <Button type="button" variant="ghost" size="icon" className="size-7" disabled={loading} onClick={() => void reload()} aria-label={t("refresh")} title={t("refresh")}>
               <RefreshCw className={cn("size-3.5", loading && "animate-spin")} />
             </Button>
-            <Button asChild variant="outline" size="sm" className="h-7 gap-1 px-2 text-xs">
-              <a href={inbox} target="_blank" rel="noreferrer" title={t("leadsHint")}>
-                <Inbox className="size-3.5" />
-                {t("leads")}
-              </a>
-            </Button>
+            {inbox && (
+              <Button asChild variant="outline" size="sm" className="h-7 gap-1 px-2 text-xs">
+                <a href={inbox} target="_blank" rel="noreferrer" title={t("leadsHint")}>
+                  <Inbox className="size-3.5" />
+                  {t("leads")}
+                </a>
+              </Button>
+            )}
           </div>
         </div>
         <div className="relative">
@@ -279,7 +282,7 @@ export function FormsPanel({
           ) : (
             shown.map((form) => {
               const summary = summaries[form.id];
-              const leads = `${inbox}?form=${form.id}`;
+              const leads = inbox ? `${inbox}?form=${form.id}` : null;
               return (
                 <div key={form.id} className="group/card rounded-lg border bg-card p-2.5 transition-colors hover:border-primary/40">
                   <button
@@ -303,23 +306,29 @@ export function FormsPanel({
                         {summary && (
                           <>
                             {" · "}
-                            <a href={leads} target="_blank" rel="noreferrer" className="underline-offset-2 hover:text-foreground hover:underline">
-                              {t("submissions", { count: summary.submissionCount })}
-                            </a>
+                            {leads ? (
+                              <a href={leads} target="_blank" rel="noreferrer" className="underline-offset-2 hover:text-foreground hover:underline">
+                                {t("submissions", { count: summary.submissionCount })}
+                              </a>
+                            ) : (
+                              t("submissions", { count: summary.submissionCount })
+                            )}
                           </>
                         )}
                       </p>
                     </div>
-                    <a
-                      href={`/stores/${storeId}/website/forms/${form.id}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="grid size-6 shrink-0 place-items-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
-                      aria-label={t("edit", { name: form.name })}
-                      title={t("edit", { name: form.name })}
-                    >
-                      <ExternalLink className="size-3.5" />
-                    </a>
+                    {links.formEditBase && (
+                      <a
+                        href={`${links.formEditBase}/${form.id}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="grid size-6 shrink-0 place-items-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
+                        aria-label={t("edit", { name: form.name })}
+                        title={t("edit", { name: form.name })}
+                      >
+                        <ExternalLink className="size-3.5" />
+                      </a>
+                    )}
                   </div>
                   <div className="mt-2 flex flex-wrap items-center gap-1.5">
                     {!form.active && (
@@ -332,11 +341,14 @@ export function FormsPanel({
                         {t("onPage")}
                       </Badge>
                     )}
-                    {summary && summary.newCount > 0 && (
-                      <a href={leads} target="_blank" rel="noreferrer">
+                    {summary && summary.newCount > 0 &&
+                      (leads ? (
+                        <a href={leads} target="_blank" rel="noreferrer">
+                          <Badge className="h-5 px-1.5 text-[10px]">{t("newSubmissions", { count: summary.newCount })}</Badge>
+                        </a>
+                      ) : (
                         <Badge className="h-5 px-1.5 text-[10px]">{t("newSubmissions", { count: summary.newCount })}</Badge>
-                      </a>
-                    )}
+                      ))}
                     <Button type="button" size="sm" variant="secondary" className="ms-auto h-7 gap-1 px-2 text-xs" onClick={() => insert(form)}>
                       <Plus className="size-3.5" />
                       {t("add")}

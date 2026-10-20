@@ -28,7 +28,7 @@ import { cn } from "@workspace/ui/lib/utils";
 import { DEVICE_TONE } from "../lib/editor-devices.lib";
 import { nameOf } from "../panels/pages-panel.client";
 import type { EditorStore, SaveStatus } from "../state/editor.store";
-import { useEditorAdapter } from "../adapter.client";
+import { useEditorAdapter, useEditorLinks } from "../adapter.client";
 
 const DEVICES = [
   ["desktop", Monitor],
@@ -77,6 +77,7 @@ export function EditorTopbar({
 }) {
   const t = useTranslations("storeEditor");
   const { capabilities } = useEditorAdapter();
+  const links = useEditorLinks(storeId);
   const pages = useStore(store, (s) => s.pages);
   const activePageId = useStore(store, (s) => s.activePageId);
   const locale = useStore(store, (s) => s.locale);
@@ -91,11 +92,13 @@ export function EditorTopbar({
   return (
     <header className="flex h-12 shrink-0 items-center gap-1.5 border-b bg-background px-2">
       <div className="flex min-w-0 flex-1 items-center gap-1.5">
-        <IconAction label={t("back")} asChild>
-          <Link href={`/stores/${storeId}/website`}>
-            <ArrowRight className="size-4 ltr:rotate-180" aria-hidden />
-          </Link>
-        </IconAction>
+        {links.back && (
+          <IconAction label={t("back")} asChild>
+            <Link href={links.back}>
+              <ArrowRight className="size-4 ltr:rotate-180" aria-hidden />
+            </Link>
+          </IconAction>
+        )}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm" className="h-8 max-w-44 gap-1.5 px-2.5" aria-label={t("pageLabel")}>
