@@ -7,6 +7,7 @@ import {
   createStorePage,
   deleteStorePage,
   discardStoreDrafts,
+  getStoreDraftVersions,
   getStoreSiteStatus,
   listStoreRevisions,
   publishStoreSite,
@@ -109,6 +110,13 @@ const refreshLimiter = createRateLimiter({ limit: 120, windowMs: 10 * 60_000 });
  * brands, reviews, coupons, units sold) when the seller comes back from
  * adding records in another tab. Read-only, never cached, store-checked.
  */
+export async function draftVersions(storeId: string) {
+  return withStore<NonNullable<Awaited<ReturnType<typeof getStoreDraftVersions>>>>(storeId, {}, async ({ seller, store }) => {
+    const versions = await getStoreDraftVersions(seller.sellerId, store.id);
+    return versions ? { success: true, data: versions } : fail("notFound");
+  });
+}
+
 export async function refreshEditorData(storeId: string) {
   return withStore<EditorCatalogSnapshot>(storeId, {}, async ({ seller, store }) => {
     if (!refreshLimiter.check(`${seller.sellerId}:${store.id}`)) return fail("rateLimited");

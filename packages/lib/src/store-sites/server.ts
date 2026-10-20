@@ -784,5 +784,26 @@ export async function getStoreSiteStatus(sellerId: string, storeId: string, q: Q
   };
 }
 
+/**
+ * Versions of the saved drafts, so an open editor can notice edits made
+ * elsewhere (another tab, or an admin editing at the seller's request).
+ * Pages are keyed by page id; `editedByAdminAt` is an ISO string or null.
+ */
+export async function getStoreDraftVersions(sellerId: string, storeId: string, q: Queryable = db) {
+  const store = await loadOwnStore(q, sellerId, storeId);
+  if (!store) return null;
+  const [pageRows, [design], [meta]] = await Promise.all([
+    q.select({ id: storePages.id, version: storePages.draftVersion }).from(storePages).where(eq(storePages.storeId, storeId)),
+    q.select({ version: storeDesignSystems.version }).from(storeDesignSystems).where(eq(storeDesignSystems.storeId, storeId)),
+    q.select({ editedByAdminAt: stores.siteEditedByAdminAt }).from(stores).where(eq(stores.id, storeId)),
+  ]);
+  return {
+    pages: Object.fromEntries(pageRows.map((p) => [p.id, p.version])) as Record<string, number>,
+    designVersion: design?.version ?? 0,
+    chromeVersion: store.chromeVersion,
+    editedByAdminAt: meta?.editedByAdminAt ? new Date(meta.editedByAdminAt).toISOString() : null,
+  };
+}
+
 // Templates gallery and apply (P4-05).
 export * from "./templates.server";

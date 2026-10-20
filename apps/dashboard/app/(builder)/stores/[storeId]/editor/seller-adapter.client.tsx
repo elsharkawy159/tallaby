@@ -14,6 +14,7 @@ import {
   previewLink,
   publish,
   refreshEditorData,
+  draftVersions,
   reorderPages,
   restoreRevision,
   saveChrome,
@@ -57,6 +58,7 @@ export function useSellerEditorAdapter(storeId: string, capabilities?: Partial<E
       saveDraft: (pageId, content, clientVersion) => saveDraft(storeId, pageId, content, clientVersion),
       saveDesignSystem: (designSystem, clientVersion) => saveDesignSystem(storeId, designSystem, clientVersion),
       saveChrome: (part, instance, clientVersion) => saveChrome(storeId, part, instance, clientVersion),
+      draftVersions: () => draftVersions(storeId),
       refreshData: () => refreshEditorData(storeId),
       publish: () => publish(storeId),
       pages: {

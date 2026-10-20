@@ -7,6 +7,7 @@ import * as DB_SCHEMA from "@workspace/db/schema";
 import { storeSectionRegistry } from "@workspace/store-sections/render";
 import {
   getPublishedStoreSite,
+  getStoreDraftVersions,
   getStoreForEditor,
   publishStoreSite,
   restoreRevisionToDraft,
@@ -182,5 +183,20 @@ describe.skipIf(!TEST_DATABASE_URL)("store sites (integration)", () => {
 
   it("returns no public site for a store that never published", async () => {
     expect(await getPublishedStoreSite(storeB, db)).toBeNull();
+  });
+
+  it("getStoreDraftVersions returns page, design and chrome versions, and refuses another seller", async () => {
+    const versions = await getStoreDraftVersions(sellerA, storeA, db);
+    expect(versions).not.toBeNull();
+    expect(Object.keys(versions!.pages).length).toBeGreaterThan(0);
+    expect(versions!.designVersion).toBeGreaterThanOrEqual(0);
+    expect(versions!.chromeVersion).toBeGreaterThanOrEqual(1);
+    expect(versions!.editedByAdminAt).toBeNull();
+
+    const at = new Date("2026-10-20T10:00:00.000Z");
+    await db.update(s.stores).set({ siteEditedByAdminAt: at.toISOString() }).where(eq(s.stores.id, storeA));
+    expect((await getStoreDraftVersions(sellerA, storeA, db))!.editedByAdminAt).toBe(at.toISOString());
+
+    expect(await getStoreDraftVersions(sellerB, storeA, db)).toBeNull();
   });
 });

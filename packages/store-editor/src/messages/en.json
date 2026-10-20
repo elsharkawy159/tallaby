@@ -18,6 +18,11 @@
     "publishChanges": "Publish changes",
     "published": "Published (version {number}). Your store shows it now.",
     "conflict": "This website was changed in another tab or by another session. Reload to get the latest version before editing.",
+    "adminUpdated": {
+      "title": "Updated by Tallaby",
+      "body": "An admin updated your website at your request. Reload to see the latest version.",
+      "reload": "Reload now"
+    },
     "reload": "Reload",
     "canvas": {
       "addToCart": "Add to cart",

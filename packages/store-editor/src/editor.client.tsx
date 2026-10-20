@@ -48,6 +48,7 @@ import { railEnabled } from "./shell/capabilities.lib";
 import type { TemplateCardView } from "./templates.dto";
 import { useDeviceCommands } from "./state/use-device-commands.client";
 import { useEditorAutosave } from "./state/use-editor-autosave.client";
+import { useDraftWatch } from "./state/use-draft-watch.client";
 import { useEditorShortcuts } from "./state/use-editor-shortcuts.client";
 import { useStorePreview } from "./state/use-store-preview.client";
 
@@ -148,6 +149,7 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
   const device = useStore(store, (s) => s.device);
   const rail = useStore(store, (s) => s.rail);
   const { flush, saveStatus } = useEditorAutosave(store);
+  const { byAdmin: changedByAdmin } = useDraftWatch(store, adapter);
   const [publishing, setPublishing] = useState(false);
   const [isLive, setIsLive] = useState(initial.isLive);
   // Any draft edit (pages, chrome, design) counts until the next publish; reverted edits still count.
@@ -338,9 +340,15 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
 
       {saveStatus === "conflict" && (
         <div role="alert" className="flex items-center justify-between gap-3 bg-amber-50 px-4 py-2 text-sm text-amber-900">
-          {t("conflict")}
+          {changedByAdmin ? (
+            <span>
+              <strong className="font-semibold">{t("adminUpdated.title")}</strong> {t("adminUpdated.body")}
+            </span>
+          ) : (
+            t("conflict")
+          )}
           <Button size="sm" variant="outline" onClick={() => window.location.reload()}>
-            {t("reload")}
+            {changedByAdmin ? t("adminUpdated.reload") : t("reload")}
           </Button>
         </div>
       )}
