@@ -4624,7 +4624,18 @@
       "label": "التصنيفات",
       "all": "الكل",
       "general": "عام",
-      "fashion": "الموضة"
+      "fashion": "الموضة",
+      "electronics": "الإلكترونيات",
+      "mobile-accessories": "إكسسوارات الموبايل",
+      "beauty": "الجمال",
+      "home": "البيت والأثاث",
+      "kitchen": "المطبخ",
+      "food": "الأكل",
+      "jewelry": "المجوهرات",
+      "kids": "الأطفال",
+      "books": "الكتب",
+      "sports": "الرياضة",
+      "auto": "السيارات"
     },
     "confirm": {
       "title": "استخدام {name}؟",

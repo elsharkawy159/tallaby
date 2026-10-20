@@ -1,11 +1,9 @@
 /** Contact details and outbound links shared by the header, footer and pages. */
 
 export const CONTACT = {
-  phone: "01003272830",
-  phoneIntl: "+201003272830",
-  phoneDisplay: "+20 100 327 2830",
   email: "tallabycommerce@gmail.com",
-  whatsapp: "https://wa.me/201003272830",
+  whatsapp: "https://wa.me/@tallaby",
+  whatsappHandle: "@tallaby",
 } as const;
 
 export const ROOT_DOMAIN = "tallaby.com";

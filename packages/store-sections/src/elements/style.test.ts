@@ -106,6 +106,30 @@ describe("collectPageCss", () => {
     expect(css).toBe('.sf-site [data-section-id="s1"] [data-node-id="n2"]{color:var(--sf-muted)}');
   });
 
+  it("scales a section root's vertical padding by the Brand section spacing", () => {
+    const css = collectPageCss([
+      section({
+        sectionId: "custom-section",
+        componentTree: [
+          {
+            id: "n1",
+            type: "section",
+            props: {},
+            style: { paddingTop: 64, paddingBottom: 0, paddingStart: 8 },
+            breakpointStyles: { mobile: { paddingTop: 40 } },
+            children: [{ id: "n2", type: "card", props: {}, children: [], style: { paddingTop: 24 } }],
+          },
+        ],
+      }),
+    ]);
+    expect(css).toContain(
+      '[data-node-id="n1"]{padding-block-start:calc(var(--sf-section-y,64px)*1);padding-block-end:0px;padding-inline-start:8px}',
+    );
+    expect(css).toContain('[data-node-id="n1"]{padding-block-start:calc(var(--sf-section-y,64px)*0.625)}');
+    // Only the section root follows the token; inner elements keep plain pixels.
+    expect(css).toContain('[data-node-id="n2"]{padding-block-start:24px');
+  });
+
   it("skips ids that could break the selector", () => {
     expect(collectPageCss([section({ id: 'a"]{}', style: { marginTop: 1 } })])).toBe("");
   });

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ArrowUpRight, Clock, Headset, LifeBuoy, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
+import { ArrowUpRight, Clock, Headset, LifeBuoy, Mail, MapPin, MessageCircle } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { cn } from "@workspace/ui/lib/utils";
 import { Link } from "@/i18n/navigation";
@@ -19,9 +19,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 export default async function ContactPage() {
   const t = await getTranslations("contact");
   const channels = [
-    { href: CONTACT.whatsapp, icon: MessageCircle, title: t("whatsapp"), body: t("whatsappBody"), value: CONTACT.phoneDisplay, highlight: true, ltr: true },
+    { href: CONTACT.whatsapp, icon: MessageCircle, title: t("whatsapp"), body: t("whatsappBody"), value: CONTACT.whatsappHandle, highlight: true, ltr: true },
     { href: `mailto:${CONTACT.email}`, icon: Mail, title: t("email"), body: t("emailBody"), value: CONTACT.email },
-    { href: `tel:${CONTACT.phoneIntl}`, icon: Phone, title: t("phone"), body: t("phoneBody"), value: CONTACT.phone, ltr: true },
   ];
 
   return (
@@ -34,7 +33,7 @@ export default async function ContactPage() {
       </PageHero>
 
       <Container>
-        <div className="relative -mt-[130px] grid gap-4 lg:grid-cols-[1.3fr_1fr_1fr]">
+        <div className="relative -mt-[130px] grid gap-4 lg:grid-cols-[1.3fr_1fr]">
           {channels.map((c) => (
             <a
               key={c.title}

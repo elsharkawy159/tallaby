@@ -1,4 +1,4 @@
-import { Mail, MapPin, Phone } from "lucide-react";
+import { Mail, MapPin, MessageCircle } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { Logo } from "../logo";
 import { getTranslations } from "next-intl/server";
@@ -39,14 +39,14 @@ const Footer = async () => {
                 <span>{t("address")}</span>
               </div>
               <div className="flex items-center gap-3">
-                <Phone className="h-4 w-4 text-accent flex-shrink-0" />
+                <MessageCircle className="h-4 w-4 text-accent flex-shrink-0" />
                 <a
-                  href={`https://wa.me/201003272830`}
+                  href="https://wa.me/@tallaby"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-white transition-colors"
                 >
-                  {t("phone")}
+                  {t("whatsapp")}
                 </a>
               </div>
               <div className="flex items-center gap-3">
