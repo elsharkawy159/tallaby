@@ -56,7 +56,6 @@ export function useSellerEditorAdapter(storeId: string, capabilities?: Partial<E
       capabilities: merged,
       saveDraft: (pageId, content, clientVersion) => saveDraft(storeId, pageId, content, clientVersion),
       saveDesignSystem: (designSystem, clientVersion) => saveDesignSystem(storeId, designSystem, clientVersion),
-      // Header/footer versions arrive with Task 4; until then the action has none to check.
       saveChrome: (part, instance, clientVersion) => saveChrome(storeId, part, instance, clientVersion),
       refreshData: () => refreshEditorData(storeId),
       publish: () => publish(storeId),

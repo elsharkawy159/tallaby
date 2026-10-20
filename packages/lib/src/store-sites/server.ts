@@ -89,10 +89,15 @@ async function loadOwnStore(q: Queryable, sellerId: string, storeId: string, loc
 // ---------------------------------------------------------------------------
 
 export async function getStoreForEditor(sellerId: string, storeId: string, q: Queryable = db) {
-  const store = await loadOwnStore(q, sellerId, storeId);
-  if (!store) return null;
+  const found = await loadOwnStore(q, sellerId, storeId);
+  if (!found) return null;
   // Backfilled stores have no design system or pages yet (0050 only creates the store row).
-  if (store.status === "active") await ensureStoreSiteScaffold(q, storeId);
+  // The scaffold can write the header/footer and bump chrome_version, so re-read the row after it.
+  let store = found;
+  if (found.status === "active") {
+    await ensureStoreSiteScaffold(q, storeId);
+    store = (await loadOwnStore(q, sellerId, storeId)) ?? found;
+  }
 
   const [designSystem] = await q
     .select({
