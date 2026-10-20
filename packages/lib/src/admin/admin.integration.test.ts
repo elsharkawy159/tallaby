@@ -6,6 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import * as DB_SCHEMA from "@workspace/db/schema";
 import { createIsolationWorld, type IsolationWorld } from "../stores/isolation.fixtures";
 import { AdminActorError, assertAdminActor } from "./guard.server";
+import { auditStoreSite, markSiteEditedByAdmin, resolveStoreForAdmin } from "./store-site-admin.server";
 import { adjustStoreWalletByAdmin, applyAdminStoreAction, applySellerOverride } from "./overrides.server";
 import {
   getSellerAccountForAdmin,
@@ -337,5 +338,42 @@ describe.skipIf(!TEST_DATABASE_URL)("admin overrides (integration)", { timeout: 
       expect(Object.keys(row)).not.toContain("config");
     }
     expect(await listSellerIntegrationsForAdmin(w.b.sellerId, db)).toHaveLength(0);
+  });
+
+  it("store-site guard: moderators blocked, deleted stores null, audit row has store_id", async () => {
+    const moderatorId = randomUUID();
+    await db.insert(s.users).values({ id: moderatorId, isGuest: false, role: "moderator", isVerified: true });
+    try {
+      await expect(resolveStoreForAdmin(moderatorId, w.a.a1, db)).rejects.toBeInstanceOf(AdminActorError);
+
+      expect(await resolveStoreForAdmin(adminId, "not-a-uuid", db)).toBeNull();
+      expect(await resolveStoreForAdmin(adminId, randomUUID(), db)).toBeNull();
+
+      const live = await resolveStoreForAdmin(adminId, w.a.a1, db);
+      expect(live).toMatchObject({ sellerId: w.a.sellerId, storeId: w.a.a1, subdomain: w.a.a1Sub });
+
+      await markSiteEditedByAdmin(w.a.a1, db);
+      const [flag] = await db.select({ t: s.stores.siteEditedByAdminAt }).from(s.stores).where(eq(s.stores.id, w.a.a1));
+      expect(flag!.t).not.toBeNull();
+
+      const id = await auditStoreSite(db, {
+        actorId: adminId,
+        sellerId: w.a.sellerId,
+        storeId: w.a.a1,
+        action: "open_store_editor",
+        before: {},
+        after: {},
+        reason: "Support request",
+      });
+      const [row] = await db.select().from(s.adminAuditLog).where(eq(s.adminAuditLog.id, id));
+      expect(row).toMatchObject({ storeId: w.a.a1, sellerId: w.a.sellerId, reason: "Support request", action: "open_store_editor" });
+
+      // A soft-deleted store resolves to null.
+      await db.update(s.stores).set({ deletedAt: new Date().toISOString() }).where(eq(s.stores.id, w.a.a2));
+      expect(await resolveStoreForAdmin(adminId, w.a.a2, db)).toBeNull();
+      await db.update(s.stores).set({ deletedAt: null }).where(eq(s.stores.id, w.a.a2));
+    } finally {
+      await db.delete(s.users).where(eq(s.users.id, moderatorId));
+    }
   });
 });

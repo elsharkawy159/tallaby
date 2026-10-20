@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  ADMIN_AUDIT_ACTIONS,
   adminStoreActionSchema,
   decimalToPiastres,
   isAdminWriteRole,
@@ -114,5 +115,22 @@ describe("walletAdjustmentSchema", () => {
     expect(walletAdjustmentSchema.safeParse({ ...base, amount: "5", idempotencyKey: "abc" }).success).toBe(false);
     expect(walletAdjustmentSchema.safeParse({ ...base, amount: "5", reason: "" }).success).toBe(false);
     expect(walletAdjustmentSchema.safeParse({ ...base, amount: "5", type: "sale" }).success).toBe(false);
+  });
+});
+
+describe("store-site admin audit actions", () => {
+  const NEW_ACTIONS = [
+    "open_store_editor", "publish_store_site", "unpublish_store_site", "restore_store_revision",
+    "discard_store_draft", "change_store_page", "apply_store_template",
+    "create_template", "publish_template_version", "restore_template_version", "delete_template",
+    "create_library_section", "update_library_section", "publish_library_section",
+    "hide_library_section", "delete_library_section",
+  ];
+  it("lists every store-site action once and each fits the DB check (^[a-z][a-z_]{2,63}$)", () => {
+    for (const action of NEW_ACTIONS) {
+      expect((ADMIN_AUDIT_ACTIONS as readonly string[]).filter((a) => a === action)).toHaveLength(1);
+      expect(action).toMatch(/^[a-z][a-z_]{2,63}$/);
+    }
+    expect(new Set(ADMIN_AUDIT_ACTIONS).size).toBe(ADMIN_AUDIT_ACTIONS.length);
   });
 });
