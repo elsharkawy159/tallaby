@@ -97,6 +97,8 @@ export type EditorActions = {
   setActivePage: (pageId: string) => void;
   setLocale: (locale: SiteLocale) => void;
   setDevice: (device: Device) => void;
+  /** Industry for photo slots (section/template editing preview); never written into a draft. */
+  setIndustry: (industry: string | undefined) => void;
   setRail: (rail: Rail) => void;
   setAddTab: (tab: EditorState["addTab"]) => void;
   setLibraryWide: (value: boolean) => void;
@@ -229,6 +231,7 @@ export function createEditorStore(initial: Pick<EditorState, "pages" | "header" 
       setActivePage: (pageId) => set({ activePageId: pageId, selection: null, imagePreview: null }),
       setLocale: (locale) => set({ locale }),
       setDevice: (device) => set({ device }),
+      setIndustry: (industry) => set({ industry }),
       setRail: (rail) => set({ rail }),
       setAddTab: (addTab) => set({ addTab }),
       setLibraryWide: (libraryWide) => set({ libraryWide }),

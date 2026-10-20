@@ -26,6 +26,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Tooltip, TooltipContent, TooltipTrigger } from "@workspace/ui/components/tooltip";
 import { cn } from "@workspace/ui/lib/utils";
 import { DEVICE_TONE } from "../lib/editor-devices.lib";
+import { STORE_INDUSTRIES } from "../lib/industries.lib";
 import { nameOf } from "../panels/pages-panel.client";
 import type { EditorStore, SaveStatus } from "../state/editor.store";
 import { useEditorAdapter, useEditorLinks } from "../adapter.client";
@@ -88,6 +89,8 @@ export function EditorTopbar({
   const state = store.getState();
   const page = pages.find((p) => p.id === activePageId) ?? pages[0]!;
   const host = storeUrl.replace(/^https?:\/\//, "").replace(/\/$/, "");
+  // Template and section editing have no store to open.
+  const hasStore = capabilities.publishLabel === "site";
 
   return (
     <header className="flex h-12 shrink-0 items-center gap-1.5 border-b bg-background px-2">
@@ -123,16 +126,19 @@ export function EditorTopbar({
             )}
           </DropdownMenuContent>
         </DropdownMenu>
-        <a
-          href={storeUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          dir="ltr"
-          className="hidden min-w-0 items-center gap-1 truncate text-sm text-muted-foreground hover:text-foreground lg:inline-flex"
-        >
-          <span className="truncate">{host}</span>
-          <ExternalLink className="size-3.5 shrink-0" aria-hidden />
-        </a>
+        {hasStore && (
+          <a
+            href={storeUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            dir="ltr"
+            className="hidden min-w-0 items-center gap-1 truncate text-sm text-muted-foreground hover:text-foreground lg:inline-flex"
+          >
+            <span className="truncate">{host}</span>
+            <ExternalLink className="size-3.5 shrink-0" aria-hidden />
+          </a>
+        )}
+        {capabilities.industrySwitcher && <IndustrySwitcher store={store} uiLocale={uiLocale} />}
       </div>
 
       <div role="group" aria-label={t("device")} className="hidden items-center rounded-lg border bg-muted/40 p-0.5 sm:flex">
@@ -185,11 +191,13 @@ export function EditorTopbar({
             {preview.opening ? <LoaderCircle className="size-4 animate-spin" /> : <Eye className="size-4" />}
           </IconAction>
         )}
-        <IconAction label={t("viewStore")} asChild>
-          <a href={storeUrl} target="_blank" rel="noopener noreferrer">
-            <ExternalLink className="size-4" aria-hidden />
-          </a>
-        </IconAction>
+        {hasStore && (
+          <IconAction label={t("viewStore")} asChild>
+            <a href={storeUrl} target="_blank" rel="noopener noreferrer">
+              <ExternalLink className="size-4" aria-hidden />
+            </a>
+          </IconAction>
+        )}
         <IconAction label={t("shortcuts.title")} onClick={onShowShortcuts}>
           <CircleHelp className="size-4" />
         </IconAction>
@@ -197,10 +205,43 @@ export function EditorTopbar({
         <SaveState status={saveStatus} onRetry={onRetrySave} />
         <Button size="sm" className="h-8" onClick={onPublish} disabled={publishing || readOnly || !hasChanges || saveStatus === "conflict"}>
           {publishing ? <LoaderCircle className="animate-spin" aria-hidden /> : <UploadCloud aria-hidden />}
-          {t(isLive ? "publishChanges" : "publish")}
+          {t(capabilities.publishLabel === "section" ? "publishSection" : isLive ? "publishChanges" : "publish")}
         </Button>
       </div>
     </header>
+  );
+}
+
+/**
+ * Section/template editing: which industry's photos the canvas shows for the
+ * tree's photo slots. Preview only: it sets the render-context industry and
+ * never touches the tree, so the saved section keeps its slots.
+ */
+function IndustrySwitcher({ store, uiLocale }: { store: EditorStore; uiLocale: string }) {
+  const t = useTranslations("storeEditor.industryPreview");
+  const industry = useStore(store, (s) => s.industry);
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <label className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
+          <span className="hidden xl:inline">{t("label")}</span>
+          <select
+            aria-label={t("label")}
+            value={industry ?? ""}
+            onChange={(e) => store.getState().setIndustry(e.target.value || undefined)}
+            className="h-8 max-w-40 rounded-md border border-input bg-background px-2 text-xs text-foreground"
+          >
+            <option value="">{t("general")}</option>
+            {STORE_INDUSTRIES.map((option) => (
+              <option key={option.id} value={option.id}>
+                {uiLocale === "en" ? option.en : option.ar}
+              </option>
+            ))}
+          </select>
+        </label>
+      </TooltipTrigger>
+      <TooltipContent className="max-w-64">{t("hint")}</TooltipContent>
+    </Tooltip>
   );
 }
 

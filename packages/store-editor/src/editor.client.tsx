@@ -148,6 +148,8 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
   const locale = useStore(store, (s) => s.locale);
   const defaultLocale = useStore(store, (s) => s.defaultLocale);
   const device = useStore(store, (s) => s.device);
+  // Section/template editing: the industry switcher picks the photos for slots (canvas only).
+  const slotIndustry = useStore(store, (s) => (capabilities.industrySwitcher ? (s.industry ?? "general") : undefined));
   const rail = useStore(store, (s) => s.rail);
   const { flush, saveStatus } = useEditorAutosave(store);
   const { byAdmin: changedByAdmin } = useDraftWatch(store, adapter);
@@ -243,8 +245,9 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
       renderWishlistButton: () => <span aria-hidden className="inline-flex size-8 items-center justify-center rounded-full border border-(--sf-line) bg-(--sf-paper) text-sm">♡</span>,
       // Static preview of this store's forms (no renderForm in the canvas).
       forms: Object.fromEntries(forms.map((f) => [f.id, f.form])),
+      ...(slotIndustry && { industry: slotIndustry }),
     }),
-    [locale, forms, initial.store, t],
+    [locale, forms, initial.store, t, slotIndustry],
   );
 
   const ctx = useMemo<RenderContext>(() => {
@@ -286,7 +289,7 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
       if (result.success) {
         setIsLive(true);
         setHasChanges(false);
-        toast.success(t("published", { number: result.data.revisionNumber }));
+        toast.success(t(capabilities.publishLabel === "section" ? "publishedSection" : "published", { number: result.data.revisionNumber }));
       } else {
         toast.error(t(`errors.${result.error}`));
       }

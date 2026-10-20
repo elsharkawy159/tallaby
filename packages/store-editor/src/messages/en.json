@@ -720,6 +720,13 @@
       "hint": "Select an element to mention it.",
       "send": "Send",
       "comingSoon": "The AI assistant is coming soon."
+    },
+    "publishSection": "Publish section",
+    "publishedSection": "Section published (version {number}). Sellers see it in Add › Sections now.",
+    "industryPreview": {
+      "label": "Preview photos for",
+      "general": "General",
+      "hint": "Only changes the photos on this canvas. The section keeps its photo slots and each store gets photos for its own industry."
     }
   },
   "mediaLibrary": {
@@ -803,7 +810,13 @@
       "deleteFailed": "The file could not be removed from storage. Try again.",
       "uploadFailed": "Upload failed. Try again.",
       "generic": "Something went wrong. Try again."
-    }
+    },
+    "uploadImage": "Upload image",
+    "uploadTitle": "Upload an image",
+    "uploadDescription": "Upload a JPG, PNG, WebP, GIF or AVIF image up to 5 MB. It is used right away.",
+    "uploadDrop": "Drag an image here, or choose a file",
+    "uploadChoose": "Choose file",
+    "uploading": "Uploading…"
   },
   "websiteDesign": {
     "title": "Design system",
