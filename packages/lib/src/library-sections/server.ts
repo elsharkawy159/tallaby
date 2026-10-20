@@ -5,7 +5,7 @@
  * `librarySectionTags.catalog()`; admin library writes invalidate that tag.
  * Drafts (`draft_tree`) are never read here.
  */
-import { and, asc, db, eq, isNull, librarySections } from "@workspace/db";
+import { and, asc, db, eq, gt, isNull, librarySections } from "@workspace/db";
 import type { SectionPreset } from "@workspace/store-sections/render";
 import { toLibraryPreset, type LibrarySectionRow } from "./library-sections.lib";
 
@@ -14,7 +14,11 @@ export { toLibraryPreset, type LibrarySectionRow } from "./library-sections.lib"
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 type Queryable = Tx | typeof db;
 
-/** Published rows: not deleted, not hidden, in `sort_order` (then key, for a stable order). */
+/**
+ * Published rows: not deleted, not hidden and published at least once
+ * (`version > 0`: an admin-created section starts at 0), in `sort_order`
+ * (then key, for a stable order).
+ */
 export async function listPublishedLibrarySections(q: Queryable = db): Promise<LibrarySectionRow[]> {
   return q
     .select({
@@ -28,7 +32,7 @@ export async function listPublishedLibrarySections(q: Queryable = db): Promise<L
       version: librarySections.version,
     })
     .from(librarySections)
-    .where(and(isNull(librarySections.deletedAt), eq(librarySections.isHidden, false)))
+    .where(and(isNull(librarySections.deletedAt), eq(librarySections.isHidden, false), gt(librarySections.version, 0)))
     .orderBy(asc(librarySections.sortOrder), asc(librarySections.key));
 }
 
