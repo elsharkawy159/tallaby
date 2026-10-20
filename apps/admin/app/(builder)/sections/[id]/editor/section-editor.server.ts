@@ -26,7 +26,7 @@ const ERRORS: Partial<Record<LibrarySectionAdminError, EditorErrorKey>> = {
   invalid_tree: "invalidContent",
   invalid_input: "invalidInput",
   invalid_reason: "invalidInput",
-  no_change: "invalidInput",
+  no_change: "nothingToPublish",
 };
 
 const fail = <T,>(error: LibrarySectionAdminError | EditorErrorKey): EditorResult<T> => ({

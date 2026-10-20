@@ -34,6 +34,11 @@ export type EditorCapabilities = {
   preview: boolean;
   /** Section/template canvas: pick the industry used for photo slots. */
   industrySwitcher: boolean;
+  /**
+   * The host saves the design system and the shared header/footer: the Brand
+   * tab and header/footer entry points show only then (false for a section).
+   */
+  designSystem: boolean;
   publishLabel: "site" | "templateVersion" | "section";
 };
 

@@ -30,7 +30,14 @@ import type { CanvasPayload, CanvasProbe, DropPlan, ImageCandidate, NodeSlot } f
 import { planItemMove, planPartMove } from "./part-drop.lib";
 
 /** `presets`: the editor's library list (Task 10); the built-in library when unset. */
-type Source = { content: PageContent; header: SectionInstance | null; footer: SectionInstance | null; presets?: readonly SectionPreset[] };
+type Source = {
+  content: PageContent;
+  header: SectionInstance | null;
+  footer: SectionInstance | null;
+  presets?: readonly SectionPreset[];
+  /** A host that holds fewer sections (the section editor: 1); MAX_SECTIONS_PER_PAGE otherwise. */
+  maxSections?: number;
+};
 
 const CUSTOM = "custom-section";
 
@@ -110,7 +117,9 @@ export function planDrop(payload: CanvasPayload, probe: CanvasProbe | null, sour
   if (!probe) return null;
   const sections = source.content.sections;
   const at = probe.sectionIndex;
-  const full = sections.length >= MAX_SECTIONS_PER_PAGE;
+  const full = sections.length >= (source.maxSections ?? MAX_SECTIONS_PER_PAGE);
+  // In a one-section host the refusal says to add inside the section instead.
+  const limit = source.maxSections !== undefined ? ("oneSection" as const) : ("limit" as const);
   const over = probe.overSectionId ? sections.find((s) => s.id === probe.overSectionId) : undefined;
   const custom = over?.sectionId === CUSTOM ? over : undefined;
 
@@ -120,7 +129,7 @@ export function planDrop(payload: CanvasPayload, probe: CanvasProbe | null, sour
     const listed = definition?.insertable !== false || Boolean(payloadPreset(payload.sectionId, payload.presetId, source.presets));
     // Header and footer belong to every page; they are chosen with a click, not dropped.
     if (!definition || definition.chrome || !listed) return { kind: "invalid", reason: "unsupported", index: at };
-    return full ? { kind: "invalid", reason: "limit", index: at } : { kind: "insert-section", index: at };
+    return full ? { kind: "invalid", reason: limit, index: at } : { kind: "insert-section", index: at };
   }
 
   if (payload.kind === "move-section") {
@@ -177,7 +186,7 @@ export function planDrop(payload: CanvasPayload, probe: CanvasProbe | null, sour
       // Over its own section with nowhere new to go (e.g. its own place): nothing to do.
       if (custom.id === from.id) return { kind: "invalid", reason: "noop", index: at };
     }
-    return full ? { kind: "invalid", reason: "limit", index: at } : { kind: "move-node-new-section", fromSectionId: from.id, nodeId: node.id, index: at };
+    return full ? { kind: "invalid", reason: limit, index: at } : { kind: "move-node-new-section", fromSectionId: from.id, nodeId: node.id, index: at };
   }
 
   if (payload.kind === "photo" || payload.kind === "media") {
@@ -198,7 +207,7 @@ export function planDrop(payload: CanvasPayload, probe: CanvasProbe | null, sour
       }
     }
   }
-  return full ? { kind: "invalid", reason: "limit", index: at } : { kind: "new-section", index: at };
+  return full ? { kind: "invalid", reason: limit, index: at } : { kind: "new-section", index: at };
 }
 
 export type DropDeps = {
@@ -207,6 +216,8 @@ export type DropDeps = {
   makeSection: (sectionId: string, presetId?: string) => SectionInstance | null;
   /** Image `src` for a photo drop (the imported media path; media drops carry their own). */
   src?: string;
+  /** Same as Source.maxSections. */
+  maxSections?: number;
 };
 
 const withSections = (content: PageContent, sections: SectionInstance[]): PageContent => ({ ...content, sections });
@@ -236,7 +247,7 @@ export function applyDropPlan(
   deps: DropDeps,
 ): { content: PageContent; select: NonNullable<Selection> } | null {
   const sections = content.sections;
-  const room = sections.length < MAX_SECTIONS_PER_PAGE;
+  const room = sections.length < (deps.maxSections ?? MAX_SECTIONS_PER_PAGE);
   switch (plan.kind) {
     case "insert-section": {
       if (payload.kind !== "section" || !room) return null;

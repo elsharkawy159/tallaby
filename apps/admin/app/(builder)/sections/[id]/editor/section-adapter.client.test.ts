@@ -37,6 +37,7 @@ describe("section adapter", () => {
       unpublish: false,
       preview: false,
       industrySwitcher: true,
+      designSystem: false,
       publishLabel: "section",
     });
     const adapter = createSectionAdapter(SECTION_ID, "why", catalog);

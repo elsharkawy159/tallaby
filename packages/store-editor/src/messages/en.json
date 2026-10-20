@@ -161,7 +161,8 @@
       "rateLimited": "Too many changes at once. Wait a moment and try again.",
       "generic": "Something went wrong. Try again.",
       "saveFirst": "Wait for your changes to be saved, then try again.",
-      "previewUnavailable": "Preview on your store isn't available right now."
+      "previewUnavailable": "Preview on your store isn't available right now.",
+      "nothingToPublish": "Nothing to publish: the section has no unpublished changes."
     },
     "previewOnStore": "Preview on store",
     "managePages": "Manage pages…",
@@ -653,7 +654,8 @@
       "replaceImage": "Replace",
       "limit": "This page already has the most sections it can hold.",
       "unsupported": "Can't drop this here",
-      "targetGone": "The page changed before the photo was ready, so it wasn't placed. It's saved in your images."
+      "targetGone": "The page changed before the photo was ready, so it wasn't placed. It's saved in your images.",
+      "oneSection": "A library section is one section: drop it inside the section."
     },
     "pageTemplates": {
       "scope": {

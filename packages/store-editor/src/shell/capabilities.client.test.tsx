@@ -18,6 +18,7 @@ const ALL: EditorCapabilities = {
   unpublish: true,
   preview: true,
   industrySwitcher: false,
+  designSystem: true,
   publishLabel: "site",
 };
 

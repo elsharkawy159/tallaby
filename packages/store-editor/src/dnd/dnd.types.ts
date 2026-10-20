@@ -94,4 +94,4 @@ export type DropPlan =
    * Nothing happens on drop: refused (`limit`, `unsupported`), or the item
    * is already there (`noop`). `index` = the section boundary under the pointer.
    */
-  | { kind: "invalid"; reason: "limit" | "unsupported" | "noop"; index: number };
+  | { kind: "invalid"; reason: "limit" | "oneSection" | "unsupported" | "noop"; index: number };

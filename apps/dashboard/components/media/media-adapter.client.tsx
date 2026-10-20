@@ -46,6 +46,7 @@ function mediaOnlyAdapter(storeId: string): EditorAdapter {
       unpublish: false,
       preview: false,
       industrySwitcher: false,
+      designSystem: true,
       publishLabel: "site",
     },
     saveDraft: notAvailable,

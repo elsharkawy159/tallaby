@@ -9,6 +9,7 @@ import { useStore } from "zustand";
 import type { ComponentNode, SectionInstance } from "@workspace/store-sections";
 import { findPath, getElementDefinition, storeSectionRegistry, type ElementType } from "@workspace/store-sections/render";
 import { cn } from "@workspace/ui/lib/utils";
+import { useEditorAdapter } from "../adapter.client";
 import type { DragPayload } from "../dnd/dnd.types";
 import { useDragData, useReducedMotion } from "../dnd/editor-dnd.client";
 import type { EditorCommands } from "../lib/editor-commands.lib";
@@ -77,8 +78,9 @@ export function LayersPanel({ store, commands, uiLocale }: { store: EditorStore;
     action();
   };
 
+  const keepsChrome = useEditorAdapter().capabilities.designSystem;
   const chromeRow = (part: "header" | "footer", instance: SectionInstance | null) => {
-    if (!instance) return null;
+    if (!instance || !keepsChrome) return null;
     const definition = storeSectionRegistry.get(instance.sectionId);
     const Icon = part === "header" ? PanelTop : Footprints;
     return (

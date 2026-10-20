@@ -92,6 +92,8 @@ export function sectionEditorInitial(
     category: { en: null, ar: null },
     // Add › Sections stays empty: a section holds no other sections.
     presets: [],
+    // One section only: drops and inserts that would add a second one are refused with a clear message.
+    maxSections: 1,
     title: name.en ?? row.key,
   };
 }

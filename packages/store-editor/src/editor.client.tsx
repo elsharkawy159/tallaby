@@ -86,6 +86,8 @@ export type EditorInitial = {
   presets?: SectionPreset[];
   /** Industry id for photo slots; found from `category` when unset. */
   industry?: string;
+  /** Most sections the page may hold (section editing: 1). */
+  maxSections?: number;
   /** Top-bar label when editing a template or a section. */
   title?: string;
 };
@@ -120,6 +122,7 @@ function EditorRoot({ initial }: { initial: EditorInitial }) {
       defaultLocale: initial.defaultLocale,
       industry: initial.industry ?? findIndustry(initial.category)?.id,
       presets: initial.presets,
+      maxSections: initial.maxSections,
     });
     if (clean.dropped) store.setState({ dirtyPages: clean.dirtyPages, dirtyChrome: clean.dirtyChrome, saveStatus: "unsaved" });
     storeRef.current = store;

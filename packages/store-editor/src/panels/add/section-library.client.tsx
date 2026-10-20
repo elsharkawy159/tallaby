@@ -23,6 +23,7 @@ import { Button } from "@workspace/ui/components/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@workspace/ui/components/dialog";
 import { Input } from "@workspace/ui/components/input";
 import { cn } from "@workspace/ui/lib/utils";
+import { useEditorAdapter } from "../../adapter.client";
 import { useDragData } from "../../dnd/editor-dnd.client";
 import type { EditorCommands } from "../../lib/editor-commands.lib";
 import { LIBRARY_ICONS } from "../../lib/editor-icons.lib";
@@ -67,7 +68,13 @@ export function SectionLibrary({
   const footer = useStore(store, (s) => s.footer);
   const defaultLocale = useStore(store, (s) => s.defaultLocale);
   const industry = useStore(store, (s) => s.industry);
-  const presets = useStore(store, (s) => s.presets) ?? SECTION_PRESETS;
+  const allPresets = useStore(store, (s) => s.presets) ?? SECTION_PRESETS;
+  // Header/footer presets replace the shared chrome: only for hosts that save it.
+  const keepsChrome = useEditorAdapter().capabilities.designSystem;
+  const presets = useMemo(
+    () => (keepsChrome ? allPresets : allPresets.filter((p) => !storeSectionRegistry.get(p.sectionId)?.chrome)),
+    [allPresets, keepsChrome],
+  );
   const selection = useStore(store, (s) => s.selection);
   const selectedInstance = useStore(store, (s) => {
     if (!s.selection) return null;

@@ -28,7 +28,7 @@ describe("sectionEditorInitial", () => {
     expect(section.sectionId).toBe("custom-section");
     expect(section.componentTree?.[0]?.type).toBe("section");
     expect(JSON.stringify(section)).toContain("stock:photo:");
-    expect(initial).toMatchObject({ header: null, footer: null, defaultLocale: "ar", isLive: true, hasUnpublishedChanges: true, presets: [] });
+    expect(initial).toMatchObject({ header: null, footer: null, defaultLocale: "ar", isLive: true, hasUnpublishedChanges: true, presets: [], maxSections: 1 });
     expect(initial.catalog.products.length).toBeGreaterThan(0);
   });
 

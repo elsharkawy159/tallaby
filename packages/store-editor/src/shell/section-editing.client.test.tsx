@@ -18,6 +18,7 @@ const SELLER: EditorCapabilities = {
   unpublish: true,
   preview: true,
   industrySwitcher: false,
+  designSystem: true,
   publishLabel: "site",
 };
 
@@ -31,6 +32,7 @@ const SECTION: EditorCapabilities = {
   unpublish: false,
   preview: false,
   industrySwitcher: true,
+  designSystem: false,
   publishLabel: "section",
 };
 

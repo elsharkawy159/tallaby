@@ -35,6 +35,7 @@ export type EditorErrorKey =
   | "invalidInput"
   | "rateLimited"
   | "previewUnavailable"
+  | "nothingToPublish"
   | "generic";
 
 export type EditorResult<T> = { success: true; data: T } | { success: false; error: EditorErrorKey };

@@ -85,7 +85,7 @@ export function createEditorCommands(store: EditorStore) {
     const index = sections.findIndex((s) => s.id === sel.sectionId);
     return index < 0 ? sections.length : index + 1;
   };
-  const canAddSection = () => activePage().content.sections.length < MAX_SECTIONS_PER_PAGE;
+  const canAddSection = () => activePage().content.sections.length < (state().maxSections ?? MAX_SECTIONS_PER_PAGE);
 
   function insertSectionInstance(instance: SectionInstance, index = insertIndex()) {
     if (!canAddSection()) return false;
@@ -117,6 +117,20 @@ export function createEditorCommands(store: EditorStore) {
       if (!findNode(next, nodes[0]!.id)) return false;
       state().editSection(refOf(sel), (i) => ({ ...i, componentTree: next }));
       state().select({ target: "page", sectionId: instance.id, nodeId: nodes[0]!.id });
+      return true;
+    }
+    // A one-section host (section editor) that is full: new elements go at the end of its section root.
+    if (!canAddSection()) {
+      const sections = activePage().content.sections;
+      const only = sections.length === 1 && sections[0]!.sectionId === "custom-section" ? sections[0]! : null;
+      const root = only?.componentTree?.length === 1 ? only.componentTree[0]! : null;
+      if (!only || !root) return false;
+      let next = only.componentTree!;
+      for (const node of nodes) next = insertNode(next, root.id, node);
+      if (!findNode(next, nodes[0]!.id)) return false;
+      const ref = { target: "page" as const, sectionId: only.id };
+      state().editSection(ref, (i) => ({ ...i, componentTree: next }));
+      state().select({ ...ref, nodeId: nodes[0]!.id });
       return true;
     }
     const definition = storeSectionRegistry.get("custom-section")!;
@@ -511,6 +525,7 @@ export function createEditorCommands(store: EditorStore) {
       if (!page) return false;
       const result = applyDropPlan(page.content, plan, payload, {
         makeNodeId,
+        maxSections: state().maxSections,
         makeSection: (sectionId, presetId) => {
           const preset = payloadPreset(sectionId, presetId, state().presets);
           if (preset) return presetInstance(preset, newId(), state().defaultLocale, state().industry);

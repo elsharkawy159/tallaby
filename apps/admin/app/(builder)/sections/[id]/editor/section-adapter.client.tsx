@@ -20,6 +20,7 @@ export const SECTION_CAPABILITIES: EditorCapabilities = {
   unpublish: false,
   preview: false,
   industrySwitcher: true,
+  designSystem: false,
   publishLabel: "section",
 };
 

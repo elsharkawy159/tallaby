@@ -7,6 +7,7 @@ const RAIL_CAPABILITY: Partial<Record<Rail, keyof EditorCapabilities>> = {
   explore: "explore",
   forms: "forms",
   pages: "pages",
+  brand: "designSystem",
 };
 
 /** Whether the host supports a rail tab (EditorAdapter capabilities). */

@@ -40,7 +40,7 @@ export type DropMarker =
   | { kind: "line"; line: Line; note?: "newSection" }
   | { kind: "slot"; line: Line; container: Rect }
   | { kind: "image"; rect: Rect }
-  | { kind: "invalid"; line: Line; reason: "limit" | "unsupported" };
+  | { kind: "invalid"; line: Line; reason: "limit" | "oneSection" | "unsupported" };
 
 export type DndState = { active: DragData | null; plan: DropPlan | null; marker: DropMarker | null };
 
@@ -146,7 +146,7 @@ export function EditorDndProvider({
   const source = () => {
     const s = store.getState();
     const page = s.pages.find((p) => p.id === s.activePageId) ?? s.pages[0]!;
-    return { content: page.content, header: s.header, footer: s.footer, presets: s.presets };
+    return { content: page.content, header: s.header, footer: s.footer, presets: s.presets, maxSections: s.maxSections };
   };
 
   /** The plan and marker for the pointer now (null when it is not over the frame). */
@@ -299,7 +299,7 @@ export function EditorDndProvider({
     if (!payload || !target) return;
     const { plan } = target;
     if (plan.kind === "invalid") {
-      if (plan.reason === "limit") toast.error(t("limit"));
+      if (plan.reason === "limit" || plan.reason === "oneSection") toast.error(t(plan.reason));
       return;
     }
     if (payload.kind === "photo") {
