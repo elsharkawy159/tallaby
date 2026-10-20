@@ -56,21 +56,25 @@ export function TemplateEditButton({
   return (
     <>
       <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
-        Edit
+        Settings
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{template.name}</DialogTitle>
             <DialogDescription>
-              Gallery settings only. Stores already using this template are not changed.
+              Gallery settings only (edit the pages with Edit design). Stores already using this template are not changed.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <label className="flex items-center justify-between gap-3">
               <span className="text-sm">
-                Shown in the gallery
-                {template.isDefault && <span className="block text-xs text-muted-foreground">The default template must stay active.</span>}
+                Active (shown in the seller gallery)
+                {template.isDefault ? (
+                  <span className="block text-xs text-muted-foreground">The default template must stay active.</span>
+                ) : (
+                  !template.isActive && <span className="block text-xs text-muted-foreground">Inactive: turn this on to show it to sellers. Publishing a version does not.</span>
+                )}
               </span>
               <Switch checked={isActive} onCheckedChange={setIsActive} disabled={template.isDefault} />
             </label>
