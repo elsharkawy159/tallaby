@@ -74,7 +74,7 @@ describe("template adapter", () => {
     const adapter = make();
     const content = { sections: [], elementStyles: { a: { color: "red" } } };
     expect(await adapter.saveDraft("page:home", content, 99)).toEqual({ success: true, data: { draftVersion: 4 } });
-    expect(saveTemplateDraftAction).toHaveBeenLastCalledWith(ID, expect.anything(), 3);
+    expect(saveTemplateDraftAction).toHaveBeenLastCalledWith(ID, expect.anything(), 3, { home: { ar: "الرئيسية", en: "الرئيسية" } });
     expect(lastConfig().pages[0]!.content).toEqual(content);
 
     const designSystem = { colors: { primary: "#112233" }, typography: {}, spacing: {} };

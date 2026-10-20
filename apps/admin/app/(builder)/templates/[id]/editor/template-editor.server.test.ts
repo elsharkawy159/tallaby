@@ -41,7 +41,11 @@ describe("template editor actions", () => {
   it("saves the draft (not audited, no cache refresh) and maps a version conflict to the reload banner", async () => {
     vi.mocked(saveTemplateDraft).mockResolvedValueOnce({ success: true, data: { draftVersion: 4 } });
     expect(await saveTemplateDraftAction(ID, { pages: [] }, 3)).toEqual({ success: true, data: { draftVersion: 4 } });
-    expect(saveTemplateDraft).toHaveBeenCalledWith("actor", ID, { pages: [] }, 3);
+    expect(saveTemplateDraft).toHaveBeenCalledWith("actor", ID, { pages: [] }, 3, undefined, undefined);
+    vi.mocked(saveTemplateDraft).mockResolvedValueOnce({ success: true, data: { draftVersion: 5 } });
+    const names = { home: { ar: "الرئيسية", en: "Home" } };
+    await saveTemplateDraftAction(ID, { pages: [] }, 4, names);
+    expect(saveTemplateDraft).toHaveBeenLastCalledWith("actor", ID, { pages: [] }, 4, undefined, names);
     vi.mocked(saveTemplateDraft).mockResolvedValueOnce({ success: false, error: "version_conflict" });
     expect(await saveTemplateDraftAction(ID, {}, 3)).toEqual({ success: false, error: "versionConflict" });
     vi.mocked(saveTemplateDraft).mockResolvedValueOnce({ success: false, error: "invalid_config" });

@@ -131,6 +131,30 @@ describe("applyEditorChange", () => {
     expect(again.working.pageIds["page:about"]).toBe("about-us");
   });
 
+  it("keeps both languages of every page name through create, rename, slug change and remove", () => {
+    let working = templateWorking(blank(), { home: { ar: "الرئيسية", en: "Home" } });
+    expect(working.pageNames).toEqual({ home: { ar: "الرئيسية", en: "Home" } });
+    working = apply(working, { kind: "pages", op: "create", name: { ar: "عنا", en: "About" }, slug: "about" });
+    expect(working.pageNames.about).toEqual({ ar: "عنا", en: "About" });
+
+    // Rename in one language only: the other keeps its value.
+    working = apply(working, { kind: "pages", op: "update", pageId: "page:home", name: { en: "Start" } });
+    expect(working.pageNames.home).toEqual({ ar: "الرئيسية", en: "Start" });
+    working = apply(working, { kind: "pages", op: "update", pageId: "page:about", name: { ar: "من نحن", en: "About us" }, slug: "about-us" });
+    expect(working.pageNames).toEqual({ home: { ar: "الرئيسية", en: "Start" }, "about-us": { ar: "من نحن", en: "About us" } });
+
+    // The renamed names round-trip into the editor's initial state (what a reload opens).
+    const reopened = siteConfigToEditorInitial(working.config, { ...meta, pageNames: working.pageNames }, 2);
+    expect(reopened.pages.map((p) => [p.slug, p.name])).toEqual([
+      ["home", { ar: "الرئيسية", en: "Start" }],
+      ["about-us", { ar: "من نحن", en: "About us" }],
+    ]);
+    expect(templateWorking(working.config, working.pageNames)).toEqual({ ...working, pageIds: { "page:home": "home", "page:about-us": "about-us" } });
+
+    working = apply(working, { kind: "pages", op: "remove", pageId: "page:about" });
+    expect(working.pageNames).toEqual({ home: { ar: "الرئيسية", en: "Start" } });
+  });
+
   it("refuses to remove the home page", () => {
     expect(applyEditorChange(templateWorking(blank()), { kind: "pages", op: "remove", pageId: "page:home" })).toEqual({ ok: false, error: "home_page" });
   });

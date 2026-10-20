@@ -14,6 +14,8 @@ import { useTemplateAdapter } from "./template-adapter.client";
 type Props = {
   initial: EditorInitial;
   config: SiteConfig;
+  /** Every page's names in both languages (the draft's, else the published ones). */
+  pageNames: Record<string, { ar: string; en: string }>;
   draftVersion: number;
   templateName: string;
   isDefault: boolean;
@@ -31,7 +33,7 @@ export function TemplateEditorGate(props: Props) {
   return <ReasonForm templateName={props.templateName} isDefault={props.isDefault} isActive={props.isActive} onSubmit={setReason} />;
 }
 
-function TemplateEditor({ initial, config, draftVersion, reason }: Props & { reason: string }) {
+function TemplateEditor({ initial, config, pageNames, draftVersion, reason }: Props & { reason: string }) {
   const [changelogOpen, setChangelogOpen] = useState(false);
   const [changelog, setChangelog] = useState("");
   const resolver = useRef<((value: string | null) => void) | null>(null);
@@ -56,6 +58,7 @@ function TemplateEditor({ initial, config, draftVersion, reason }: Props & { rea
     templateId: initial.storeId,
     reason,
     config,
+    pageNames,
     draftVersion,
     catalog: initial.catalog,
     askChangelog,

@@ -48,7 +48,7 @@ export default async function TemplateEditorPage({ params }: { params: Promise<{
 
   const demo = template.meta.demo;
   const initial: EditorInitial = {
-    ...siteConfigToEditorInitial(template.config, template.meta, template.draftVersion),
+    ...siteConfigToEditorInitial(template.config, { ...template.meta, pageNames: template.pageNames }, template.draftVersion),
     storeId: template.id,
     storeUrl: "",
     readOnly: false,
@@ -70,6 +70,7 @@ export default async function TemplateEditorPage({ params }: { params: Promise<{
     <TemplateEditorGate
       initial={initial}
       config={template.config}
+      pageNames={template.pageNames}
       draftVersion={template.draftVersion}
       templateName={title}
       isDefault={template.isDefault}

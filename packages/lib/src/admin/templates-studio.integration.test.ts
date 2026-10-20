@@ -171,6 +171,35 @@ describe.skipIf(!TEST_DATABASE_URL)("template studio (integration)", { timeout: 
     });
   });
 
+  it("publish writes meta.pageNames from the draft's page names (renames kept, removed slugs dropped)", async () => {
+    await inRollback(async (tx) => {
+      const { id } = await create(tx, "zz-t14-names");
+      const q = tx as never;
+      const config = blankTemplateConfig();
+      config.pages.push({ slug: "shop", isHome: false, name: "متجر", showInNav: true, seo: {}, content: { sections: [] } });
+      const names = { home: { ar: "البداية", en: "Start" }, shop: { ar: "متجر", en: "Shop" }, gone: { ar: "x", en: "x" } };
+      expect((await saveTemplateDraft(adminId, id, config, 1, q, names)).success).toBe(true);
+      // The draft names reach the studio, not the published meta.
+      const studio = await getTemplateForStudio(id, q);
+      expect(studio?.pageNames).toEqual({ home: names.home, shop: names.shop });
+      expect(studio?.meta.pageNames.home).not.toEqual(names.home);
+
+      expect(await publishTemplateVersion(adminId, id, null, REASON, q)).toMatchObject({ success: true, data: { version: 2 } });
+      const [row] = await tx.select({ meta: s.templates.meta }).from(s.templates).where(eq(s.templates.id, id));
+      const meta = row!.meta as Record<string, unknown>;
+      expect(meta.pageNames).toEqual({ home: names.home, shop: names.shop });
+      expect(meta).not.toHaveProperty("draftPageNames");
+      expect(meta).toHaveProperty("demo");
+
+      // Removing the page and publishing drops its slug.
+      const second = blankTemplateConfig();
+      expect((await saveTemplateDraft(adminId, id, second, 3, q, { home: names.home })).success).toBe(true);
+      expect((await publishTemplateVersion(adminId, id, null, REASON, q)).success).toBe(true);
+      const [after] = await tx.select({ meta: s.templates.meta }).from(s.templates).where(eq(s.templates.id, id));
+      expect((after!.meta as Record<string, unknown>).pageNames).toEqual({ home: names.home });
+    });
+  });
+
   it("refuses to delete or hide the default template and leaves the row unchanged", async () => {
     await inRollback(async (tx) => {
       const q = tx as never;

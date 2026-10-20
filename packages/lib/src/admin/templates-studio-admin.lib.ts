@@ -44,3 +44,81 @@ export function prepareTemplateConfig(raw: unknown): { ok: true; config: SiteCon
   const result = validateSiteConfig(raw, { allowedSections: ALLOWED });
   return result.success ? { ok: true, config: result.data } : { ok: false };
 }
+
+// ---------------------------------------------------------------------------
+// Page names (both languages). A SiteConfig page has one `name`; the
+// localized names live in `templates.meta.pageNames` (what sellers and new
+// stores read). The studio keeps the working draft's names in
+// `meta.draftPageNames` (never read by sellers) and Publish turns them into
+// `meta.pageNames` in the same transaction.
+// ---------------------------------------------------------------------------
+
+export type TemplatePageNames = Record<string, { ar: string; en: string }>;
+
+const pageNameInput = z.object({ ar: z.string(), en: z.string() });
+const asRecord = (value: unknown): Record<string, unknown> =>
+  value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
+
+/**
+ * Untrusted page names → one entry per page of `pages` that has a valid
+ * `{ ar, en }` (trimmed, max 80; an empty side falls back to the page's
+ * name). Slugs not in `pages` are dropped.
+ */
+export function templatePageNamesFor(raw: unknown, pages: readonly { slug: string; name: string }[]): TemplatePageNames {
+  const input = asRecord(raw);
+  const names: TemplatePageNames = {};
+  for (const page of pages) {
+    if (!Object.hasOwn(input, page.slug)) continue;
+    const parsed = pageNameInput.safeParse(input[page.slug]);
+    if (!parsed.success) continue;
+    const clean = (value: string) => value.trim().slice(0, 80) || page.name;
+    names[page.slug] = { ar: clean(parsed.data.ar), en: clean(parsed.data.en) };
+  }
+  return names;
+}
+
+/**
+ * `meta.pageNames` after publishing `pages`, keyed by slug: the draft's names
+ * for a page, else the names it was published with, else its name in both
+ * languages. Slugs that are no longer pages are dropped.
+ */
+export function publishedPageNames(
+  previous: Readonly<Record<string, { ar: string; en: string }>>,
+  draft: Readonly<TemplatePageNames>,
+  pages: readonly { slug: string; name: string }[],
+): TemplatePageNames {
+  const names: TemplatePageNames = {};
+  for (const page of pages) {
+    const own = (record: Readonly<Record<string, { ar: string; en: string }>>) => (Object.hasOwn(record, page.slug) ? record[page.slug] : undefined);
+    const chosen = own(draft) ?? own(previous);
+    names[page.slug] = chosen ? { ar: chosen.ar, en: chosen.en } : { ar: page.name, en: page.name };
+  }
+  return names;
+}
+
+/** `templates.meta` after Publish: `pageNames` from the published pages, no draft names. */
+export function publishedTemplateMeta(
+  rawMeta: unknown,
+  previousNames: Readonly<Record<string, { ar: string; en: string }>>,
+  pages: readonly { slug: string; name: string }[],
+): Record<string, unknown> {
+  const { draftPageNames, ...rest } = asRecord(rawMeta);
+  return { ...rest, pageNames: publishedPageNames(previousNames, templatePageNamesFor(draftPageNames, pages), pages) };
+}
+
+/** `templates.meta` with the working draft's page names (or without any, for `null`). */
+export function withDraftPageNames(rawMeta: unknown, names: TemplatePageNames | null): Record<string, unknown> {
+  const { draftPageNames: _old, ...rest } = asRecord(rawMeta);
+  return names ? { ...rest, draftPageNames: names } : rest;
+}
+
+/** The names the studio opens with: the published names, overlaid by the draft's while there is a draft. */
+export function studioPageNames(
+  rawMeta: unknown,
+  publishedNames: Readonly<Record<string, { ar: string; en: string }>>,
+  pages: readonly { slug: string; name: string }[],
+  hasDraft: boolean,
+): TemplatePageNames {
+  const published = Object.fromEntries(Object.entries(publishedNames).map(([slug, name]) => [slug, { ar: name.ar, en: name.en }]));
+  return hasDraft ? { ...published, ...templatePageNamesFor(asRecord(rawMeta).draftPageNames, pages) } : published;
+}

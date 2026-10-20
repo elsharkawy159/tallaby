@@ -44,6 +44,8 @@ export type TemplateAdapterOptions = {
   reason: string;
   /** The config the editor opened with (draft, or the published version). */
   config: SiteConfig;
+  /** The pages' names in both languages, keyed by slug (missing: the page's own name). */
+  pageNames?: Record<string, { ar?: string; en?: string }>;
   draftVersion: number;
   catalog: EditorCatalogSnapshot;
   /** Asks for the optional changelog before publishing: the text (may be empty), or null when cancelled. */
@@ -54,7 +56,7 @@ export type TemplateAdapterOptions = {
 
 /**
  * The EditorAdapter for one library template. It keeps the working
- * `SiteConfig` (the last saved one) and the template's `draft_version`
+ * `SiteConfig` (the last saved one), the pages' names in both languages and the template's `draft_version`
  * itself: every editor save (page, design system, header/footer, page list)
  * is applied with `applyEditorChange` and the whole config is saved as the
  * draft, one save at a time. The editor's own per-page / design / chrome
@@ -64,7 +66,7 @@ export type TemplateAdapterOptions = {
  */
 export function createTemplateAdapter(options: TemplateAdapterOptions): EditorAdapter {
   const { templateId, reason } = options;
-  let working = templateWorking(options.config);
+  let working = templateWorking(options.config, options.pageNames);
   let draftVersion = options.draftVersion;
   let queue: Promise<unknown> = Promise.resolve();
 
@@ -79,7 +81,7 @@ export function createTemplateAdapter(options: TemplateAdapterOptions): EditorAd
     serial(async () => {
       const next = applyEditorChange(working, change);
       if (!next.ok) return { success: false, error: TEMPLATE_CHANGE_ERRORS[next.error] };
-      const result = await saveTemplateDraftAction(templateId, next.working.config, draftVersion);
+      const result = await saveTemplateDraftAction(templateId, next.working.config, draftVersion, next.working.pageNames);
       if (!result.success) return result;
       working = next.working;
       draftVersion = result.data.draftVersion;

@@ -26,14 +26,26 @@ import { DEFAULT_TEMPLATE, resolveTemplateMeta, templateMeta, type TemplateMeta 
 import { assertAdminActor, AdminActorError, writeAdminAudit, type Queryable } from "./guard.server";
 import type { AdminAuditAction } from "./admin.lib";
 import { libraryReason } from "./library-sections-admin.lib";
-import { blankTemplateConfig, prepareTemplateConfig, templateCreateSchema, templateKeySchema } from "./templates-studio-admin.lib";
+import {
+  blankTemplateConfig,
+  prepareTemplateConfig,
+  publishedTemplateMeta,
+  studioPageNames,
+  templateCreateSchema,
+  templateKeySchema,
+  templatePageNamesFor,
+  withDraftPageNames,
+  type TemplatePageNames,
+} from "./templates-studio-admin.lib";
 
 export {
   blankTemplateConfig,
   prepareTemplateConfig,
+  publishedPageNames,
   templateCreateSchema,
   templateKeySchema,
   type TemplateCreateInput,
+  type TemplatePageNames,
 } from "./templates-studio-admin.lib";
 
 export type TemplateStudioError =
@@ -161,6 +173,8 @@ export type TemplateForStudio = {
   /** The published version number, or null if none. */
   version: number | null;
   meta: TemplateMeta;
+  /** The page names (both languages) the studio opens with: the draft's while there is one, else `meta.pageNames`. */
+  pageNames: TemplatePageNames;
 };
 
 /** One non-deleted template for the editor, or null. */
@@ -176,6 +190,8 @@ export async function getTemplateForStudio(id: string, q: Queryable = db): Promi
   const t = row.template;
   const raw = t.draftConfig ?? row.config;
   const prepared = raw ? prepareTemplateConfig(raw) : null;
+  const meta = resolveTemplateMeta(t.meta, t.key);
+  const config = prepared?.ok ? prepared.config : null;
   return {
     id: t.id,
     key: t.key,
@@ -184,11 +200,12 @@ export async function getTemplateForStudio(id: string, q: Queryable = db): Promi
     category: t.category,
     isDefault: t.isDefault,
     isActive: t.isActive,
-    config: prepared?.ok ? prepared.config : null,
+    config,
     hasDraft: t.draftConfig !== null,
     draftVersion: t.draftVersion,
     version: row.version ?? null,
-    meta: resolveTemplateMeta(t.meta, t.key),
+    meta,
+    pageNames: studioPageNames(t.meta, meta.pageNames, config?.pages ?? [], t.draftConfig !== null),
   };
 }
 
@@ -261,13 +278,19 @@ export async function duplicateTemplate(
   });
 }
 
-/** Autosave of the studio: validated config, optimistic on `draft_version`. Not audited; sellers see nothing. */
+/**
+ * Autosave of the studio: validated config, optimistic on `draft_version`.
+ * Not audited; sellers see nothing. `pageNames` (both languages, keyed by
+ * slug) are the working draft's page names, kept in `meta.draftPageNames`
+ * until Publish; omitted, the stored draft names stay.
+ */
 export async function saveTemplateDraft(
   actorId: string,
   id: string,
   config: unknown,
   clientVersion: number,
   q: Queryable = db,
+  pageNames?: unknown,
 ): Promise<TemplateStudioResult<{ draftVersion: number }>> {
   const prepared = prepareTemplateConfig(config);
   if (!prepared.ok) return { success: false, error: "invalid_config" };
@@ -277,7 +300,12 @@ export async function saveTemplateDraft(
     if (row.draftVersion !== clientVersion) throw new Outcome("version_conflict");
     const [updated] = await tx
       .update(templates)
-      .set({ draftConfig: prepared.config, draftVersion: sql`${templates.draftVersion} + 1`, draftUpdatedAt: sql`now()` })
+      .set({
+        draftConfig: prepared.config,
+        draftVersion: sql`${templates.draftVersion} + 1`,
+        draftUpdatedAt: sql`now()`,
+        ...(pageNames !== undefined && { meta: withDraftPageNames(row.meta, templatePageNamesFor(pageNames, prepared.config.pages)) }),
+      })
       .where(and(eq(templates.id, row.id), eq(templates.draftVersion, clientVersion)))
       .returning({ draftVersion: templates.draftVersion });
     if (!updated) throw new Outcome("version_conflict");
@@ -290,6 +318,9 @@ export async function saveTemplateDraft(
  * validated draft), `current_version_id` moves to it and the draft is cleared
  * (`draft_version` + 1, so an editor holding the old draft conflicts). No
  * draft: `no_change`. Does not touch `is_active`. Audited: publish_template_version.
+ * `meta.pageNames` is rewritten from the published pages in the same
+ * transaction (the draft's names, else the previous ones; removed slugs
+ * dropped), so "Use template" and new stores get the renamed pages.
  */
 export async function publishTemplateVersion(
   actorId: string,
@@ -318,6 +349,7 @@ export async function publishTemplateVersion(
       .update(templates)
       .set({
         currentVersionId: inserted!.id,
+        meta: publishedTemplateMeta(row.meta, resolveTemplateMeta(row.meta, row.key).pageNames, prepared.config.pages),
         draftConfig: null,
         draftVersion: sql`${templates.draftVersion} + 1`,
         draftUpdatedAt: null,
@@ -351,7 +383,8 @@ export async function restoreTemplateVersionToDraft(
     if (!prepared.ok) throw new Outcome("invalid_config");
     const [updated] = await tx
       .update(templates)
-      .set({ draftConfig: prepared.config, draftVersion: sql`${templates.draftVersion} + 1`, draftUpdatedAt: sql`now()` })
+      // The restored draft opens with the published page names (no draft names).
+      .set({ draftConfig: prepared.config, draftVersion: sql`${templates.draftVersion} + 1`, draftUpdatedAt: sql`now()`, meta: withDraftPageNames(row.meta, null) })
       .where(eq(templates.id, row.id))
       .returning({ draftVersion: templates.draftVersion });
     await audit(tx, {

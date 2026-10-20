@@ -47,13 +47,18 @@ const fail = <T,>(error: TemplateStudioError | EditorErrorKey): EditorResult<T> 
 const reasonOk = (reason: unknown): reason is string =>
   typeof reason === "string" && reason.trim().length >= ADMIN_REASON_MIN && reason.trim().length <= ADMIN_REASON_MAX;
 
-/** Autosave: the whole working SiteConfig (pages, design system, header, footer). */
-export async function saveTemplateDraftAction(id: string, config: unknown, clientVersion: number): Promise<EditorResult<{ draftVersion: number }>> {
+/** Autosave: the whole working SiteConfig (pages, design system, header, footer) and the pages' names in both languages. */
+export async function saveTemplateDraftAction(
+  id: string,
+  config: unknown,
+  clientVersion: number,
+  pageNames?: unknown,
+): Promise<EditorResult<{ draftVersion: number }>> {
   const actorId = await adminActorId("canManageUsers");
   if (!actorId) return fail("notFound");
   if (!saveLimiter.check(`template-editor:${actorId}`)) return fail("rateLimited");
   try {
-    const result = await saveTemplateDraft(actorId, String(id), config, Number(clientVersion));
+    const result = await saveTemplateDraft(actorId, String(id), config, Number(clientVersion), undefined, pageNames);
     return result.success ? result : fail(result.error);
   } catch (error) {
     logServerError("admin", "template editor save failed", { templateId: String(id) }, error);
