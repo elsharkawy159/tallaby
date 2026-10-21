@@ -42,6 +42,10 @@
       "types": "./src/shipping/store-zones.ts",
       "default": "./src/shipping/store-zones.ts"
     },
+    "./places": {
+      "types": "./src/places/index.ts",
+      "default": "./src/places/index.ts"
+    },
     "./paymob": {
       "types": "./src/paymob/index.ts",
       "default": "./src/paymob/index.ts"
