@@ -859,7 +859,13 @@ export async function applyStoreShippingTemplate(
         action: "template_applied",
         changes: {
           template,
-          replaced: existing.length,
+          // The deleted zones in full, so a replaced setup can be reviewed and restored.
+          replaced: existing.map((z) => ({
+            zoneId: z.id,
+            name: { ar: z.nameAr, en: z.nameEn },
+            places: z.places,
+            price: z.price,
+          })),
           zones: rows.map((r) => ({ zoneId: r.id, places: r.places, price: r.price })),
         },
       });

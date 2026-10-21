@@ -130,10 +130,18 @@ describe.skipIf(!TEST_DATABASE_URL)("store shipping (integration)", () => {
     expect(await applyStoreShippingTemplate(w.a.sellerId, w.a.sellerId, w.a.a2, { template: "egypt_flat", names: [], replace: true }, db)).toEqual({ success: false, error: "invalid_input" });
     expect((await getStoreShipping(w.a.sellerId, w.a.a2, db))?.zones).toHaveLength(1);
     const audit = await db
-      .select({ action: DB_SCHEMA.storeSettingsAudit.action })
+      .select({ action: DB_SCHEMA.storeSettingsAudit.action, changes: DB_SCHEMA.storeSettingsAudit.changes })
       .from(DB_SCHEMA.storeSettingsAudit)
-      .where(and(eq(DB_SCHEMA.storeSettingsAudit.storeId, w.a.a2), eq(DB_SCHEMA.storeSettingsAudit.section, "shipping")));
+      .where(and(eq(DB_SCHEMA.storeSettingsAudit.storeId, w.a.a2), eq(DB_SCHEMA.storeSettingsAudit.section, "shipping")))
+      .orderBy(DB_SCHEMA.storeSettingsAudit.createdAt);
     expect(audit.map((x) => x.action)).toEqual(["template_applied", "template_applied"]);
+    // The first apply replaced nothing; the replace records every deleted zone in full.
+    expect((audit[0]!.changes as { replaced: unknown[] }).replaced).toEqual([]);
+    const replaced = (audit[1]!.changes as { replaced: Array<Record<string, unknown>> }).replaced;
+    expect(replaced).toHaveLength(groups.length);
+    expect(replaced.map((z) => ({ places: z.places, price: z.price }))).toEqual(expect.arrayContaining(groups));
+    expect(replaced.map((z) => z.zoneId).sort()).toEqual(res.data.map((z) => z.id).sort());
+    expect(replaced.map((z) => z.name)).toEqual(expect.arrayContaining(names.map((n) => ({ ar: n.nameAr, en: n.nameEn }))));
     // Clean up so the other tests on a2 start empty.
     await db.delete(DB_SCHEMA.storeShippingZones).where(eq(DB_SCHEMA.storeShippingZones.storeId, w.a.a2));
   });
