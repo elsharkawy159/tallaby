@@ -119,11 +119,6 @@ export const sellerSchema = z.object({
     .email("Support email must be a valid email address")
     .min(1, "Support email is required"),
   supportPhone: z.string().max(20).optional(),
-  commissionRate: z
-    .number()
-    .min(0, "Commission rate must be a positive number")
-    .max(100, "Commission rate must be less than or equal to 100")
-    .default(15),
   feeStructure: z.record(z.string(), z.any()).optional(),
   taxInformation: z.record(z.string(), z.any()).optional(),
   paymentDetails: z.record(z.string(), z.any()).optional(),

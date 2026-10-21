@@ -6,6 +6,8 @@ import { Button } from "@workspace/ui/components/button";
 import { formatCurrency, formatDate } from "../../customers.lib";
 import { Eye } from "lucide-react";
 import type { CustomerOrder } from "../customer-profile.types";
+import { EntityChip } from "../../../_components/entity/entity-chip";
+import { orderHref, storeHref } from "../../../_components/entity/entity-href.lib";
 
 interface CustomerOrdersListProps {
   orders: CustomerOrder[];
@@ -74,8 +76,18 @@ export function CustomerOrdersList({ orders }: CustomerOrdersListProps) {
                 </Badge>
               )}
             </div>
-            <div className="text-sm text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
               {formatDate(order.createdAt)}
+              {order.store ? (
+                <EntityChip
+                  href={storeHref(order.store.id)}
+                  name={order.store.name}
+                  kind="store"
+                  src={order.store.logoUrl}
+                  seed={order.store.id}
+                  className="h-6 text-xs"
+                />
+              ) : null}
             </div>
           </div>
           <div className="flex items-center gap-4">
@@ -84,7 +96,7 @@ export function CustomerOrdersList({ orders }: CustomerOrdersListProps) {
                 {formatCurrency(Number(order.totalAmount))}
               </div>
             </div>
-            <Link href={`/orders/${order.id}`}>
+            <Link href={orderHref(order.id)}>
               <Button variant="outline" size="sm">
                 <Eye className="h-4 w-4 mr-2" />
                 View

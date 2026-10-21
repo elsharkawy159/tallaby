@@ -20,6 +20,8 @@ import {
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu";
 import Link from "next/link";
+import { Store } from "lucide-react";
+import { sellerHref } from "@/app/(dashboard)/_components/entity/entity-href.lib";
 import {
   Avatar,
   AvatarImage,
@@ -162,10 +164,23 @@ export function getCustomersColumns({
             badgeVariant = "outline";
         }
 
+        const sellerId = row.original.sellerId;
         return (
-          <Badge variant={badgeVariant} className="capitalize">
-            {role}
-          </Badge>
+          <div className="flex flex-wrap items-center gap-1">
+            {role !== "seller" || !sellerId ? (
+              <Badge variant={badgeVariant} className="capitalize">
+                {role}
+              </Badge>
+            ) : null}
+            {sellerId ? (
+              <Badge asChild variant="secondary" className="hover:bg-primary-soft">
+                <Link href={sellerHref(sellerId)} title="Open seller account">
+                  <Store className="me-1 size-3" aria-hidden />
+                  Seller
+                </Link>
+              </Badge>
+            ) : null}
+          </div>
         );
       },
     },

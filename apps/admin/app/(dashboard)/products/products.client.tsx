@@ -4,7 +4,7 @@ import { useCallback, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@workspace/ui/components/button";
-import { CheckCheck, Plus, RefreshCw } from "lucide-react";
+import { CheckCheck, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import {
   approveAllPendingProducts,
@@ -201,12 +201,6 @@ export function ProductsClient({
                 className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`}
               />
               Refresh
-            </Button>
-            <Button asChild size="sm">
-              <Link href="/products/new">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Product
-              </Link>
             </Button>
           </div>
         </div>

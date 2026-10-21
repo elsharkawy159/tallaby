@@ -80,7 +80,11 @@ export async function signUpWithEmail(input: EmailSignupInput): Promise<SignupRe
   return { status: "done", storeUrl: done.storeUrl!, subdomain: done.data.subdomain };
 }
 
-/** Saves the choice in a signed cookie before the browser goes to Google. */
+/**
+ * Saves the choice in a signed cookie before the browser goes to Google. If
+ * the cookie can't be signed, Google sign-in still goes ahead: the callback
+ * finds no intent and sends the seller to the dashboard signup to pick the store.
+ */
 export async function startGoogleSignup(input: StoreChoiceInput): Promise<SignupResult> {
   if (!signupLimiter.check(await clientKey())) return fail("rateLimited");
   const choice = await checkChoice(input);
@@ -89,7 +93,6 @@ export async function startGoogleSignup(input: StoreChoiceInput): Promise<Signup
     await setSignupIntentCookie(choice.intent);
   } catch (error) {
     console.error("[marketing signup] cannot sign intent cookie (SIGNUP_INTENT_SECRET?)", error);
-    return fail("generic");
   }
   return { status: "ok" };
 }

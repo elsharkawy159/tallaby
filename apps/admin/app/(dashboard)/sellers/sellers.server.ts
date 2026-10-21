@@ -176,7 +176,8 @@ export async function getSellers(query: SellersQuery = {}) {
         approvedCategories: sellers.approvedCategories,
         supportEmail: sellers.supportEmail,
         supportPhone: sellers.supportPhone,
-        commissionRate: sellers.commissionRate,
+        feePlan: sellers.feePlan,
+        feeTrialStartedAt: sellers.feeTrialStartedAt,
         isCommissionExempt: sellers.isCommissionExempt,
         freeDelivery: sellers.freeDelivery,
         feeStructure: sellers.feeStructure,
@@ -233,7 +234,6 @@ export async function getSellers(query: SellersQuery = {}) {
       positiveRatingPercent: seller.positiveRatingPercent ?? 0,
       totalRatings: seller.totalRatings ?? 0,
       productCount: Number(seller.productCount ?? 0),
-      commissionRate: seller.commissionRate ?? 5,
       isCommissionExempt: seller.isCommissionExempt ?? false,
       freeDelivery: seller.freeDelivery ?? false,
       payoutSchedule: seller.payoutSchedule ?? "biweekly",
@@ -432,7 +432,7 @@ export async function updateSellerCommissionExempt(
       reason: "Changed with the sellers list toggle",
     });
     if (!result.success && result.error !== "no_change") {
-      return { success: false, error: "Failed to update commission exemption" };
+      return { success: false, error: "Failed to update fee exemption" };
     }
 
     revalidatePath("/sellers");
@@ -444,14 +444,14 @@ export async function updateSellerCommissionExempt(
     return {
       success: true,
       message: isCommissionExempt
-        ? "Seller is now exempt from platform commission"
-        : "Platform commission re-enabled for seller",
+        ? "Seller is now exempt from the platform fee"
+        : "Platform fee re-enabled for seller",
     };
   } catch (error) {
     console.error("Error updating seller commission exemption:", error);
     return {
       success: false,
-      error: "Failed to update commission exemption",
+      error: "Failed to update fee exemption",
     };
   }
 }
@@ -667,7 +667,6 @@ export async function getSellerDetail(
         positiveRatingPercent: seller.positiveRatingPercent ?? 0,
         totalRatings: seller.totalRatings ?? 0,
         productCount: productCounts.total,
-        commissionRate: seller.commissionRate ?? 5,
         isCommissionExempt: seller.isCommissionExempt ?? false,
         freeDelivery: seller.freeDelivery ?? false,
         payoutSchedule: seller.payoutSchedule ?? "biweekly",

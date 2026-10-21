@@ -146,6 +146,7 @@ export async function getOrderById(orderId: string) {
         },
         payments: true,
         shipments: true,
+        store: { columns: { id: true, name: true, subdomain: true, logoUrl: true, siteStatus: true, status: true } },
       },
     });
 

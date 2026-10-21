@@ -16,6 +16,7 @@ import {
   DropdownMenuSubTrigger,
 } from "@workspace/ui/components/dropdown-menu";
 import Link from "next/link";
+import { customerHref, storeHref } from "../../_components/entity/entity-href.lib";
 import { DataTableColumnHeader } from "../../_components/data-table/data-table-column-header";
 import { getSelectColumn } from "../../_components/data-table/data-table-select-column";
 import type { DataTableFilter } from "../../_components/data-table/data-table.types";
@@ -140,9 +141,31 @@ export function getOrdersColumns(
 
         return (
           <div className="flex flex-col">
-            <span className="font-medium">{customerName}</span>
-            <span className="text-xs text-gray-500">{customerEmail}</span>
+            {order.user?.id ? (
+              <Link href={customerHref(order.user.id)} className="font-medium hover:underline">
+                {customerName}
+              </Link>
+            ) : (
+              <span className="font-medium">{customerName}</span>
+            )}
+            <span className="text-xs text-muted-foreground">{customerEmail}</span>
           </div>
+        );
+      },
+    },
+    {
+      id: "store",
+      header: "Store",
+      enableSorting: false,
+      meta: { label: "Store" },
+      cell: ({ row }) => {
+        const store = row.original.store;
+        return store ? (
+          <Link href={storeHref(store.id)} className="text-sm hover:underline">
+            {store.name}
+          </Link>
+        ) : (
+          <span className="text-sm text-muted-foreground">—</span>
         );
       },
     },

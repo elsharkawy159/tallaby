@@ -56,6 +56,10 @@ import type { CustomerOrder } from "./customer-profile.types";
 
 interface CustomerProfileContentProps {
   customer: CustomerWithDetails;
+  /** Server-rendered identity header with relation chips; replaces the plain header. */
+  header?: React.ReactNode;
+  /** Server-rendered seller account section, shown when this customer also sells. */
+  sellerAccount?: React.ReactNode;
 }
 
 function yesNo(value: boolean | null | undefined): string {
@@ -65,6 +69,8 @@ function yesNo(value: boolean | null | undefined): string {
 
 export function CustomerProfileContent({
   customer,
+  header,
+  sellerAccount,
 }: CustomerProfileContentProps) {
   const displayName = getCustomerDisplayName(customer);
   const fullName = getCustomerFullName(customer);
@@ -79,66 +85,71 @@ export function CustomerProfileContent({
     paymentStatus: order.paymentStatus ?? null,
     createdAt: order.createdAt,
     updatedAt: order.updatedAt ?? null,
+    store: (order as { store?: CustomerOrder["store"] }).store ?? null,
   }));
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Link href="/customers">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Customers
-          </Button>
-        </Link>
-      </div>
-
-      <Card>
-        <CardContent>
-          <div className="flex items-start gap-4">
-            <Avatar className="h-20 w-20">
-              {customer.avatarUrl && (
-                <AvatarImage src={customer.avatarUrl} alt={fullName} />
-              )}
-              <AvatarFallback className="bg-primary text-primary-foreground text-lg">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 space-y-2">
-              <div className="flex items-center gap-2">
-                <h1 className="text-3xl font-semibold">{displayName}</h1>
-                {customer.isSuspended && (
-                  <AlertTriangle className="h-5 w-5 text-red-500" />
-                )}
-                {!customer.isVerified && !customer.isSuspended && (
-                  <AlertTriangle className="h-5 w-5 text-amber-500" />
-                )}
-                {customer.isVerified && !customer.isSuspended && (
-                  <CheckCircle2 className="h-5 w-5 text-green-500" />
-                )}
-              </div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <Badge
-                  variant={getRoleBadgeVariant(customer.role || "customer")}
-                >
-                  {customer.role || "customer"}
-                </Badge>
-                {customer.isVerified && (
-                  <Badge variant="outline" className="text-green-600">
-                    Verified
-                  </Badge>
-                )}
-                {customer.isSuspended && (
-                  <Badge variant="destructive">Suspended</Badge>
-                )}
-                {customer.isGuest && <Badge variant="outline">Guest</Badge>}
-                {customer.isAvailable === false && (
-                  <Badge variant="secondary">Unavailable</Badge>
-                )}
-              </div>
-            </div>
+      {header ?? (
+        <>
+          <div className="flex items-center gap-4">
+            <Link href="/customers">
+              <Button variant="ghost" size="sm">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Customers
+              </Button>
+            </Link>
           </div>
-        </CardContent>
-      </Card>
+
+          <Card>
+            <CardContent>
+              <div className="flex items-start gap-4">
+                <Avatar className="h-20 w-20">
+                  {customer.avatarUrl && (
+                    <AvatarImage src={customer.avatarUrl} alt={fullName} />
+                  )}
+                  <AvatarFallback className="bg-primary text-primary-foreground text-lg">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-3xl font-semibold">{displayName}</h1>
+                    {customer.isSuspended && (
+                      <AlertTriangle className="h-5 w-5 text-red-500" />
+                    )}
+                    {!customer.isVerified && !customer.isSuspended && (
+                      <AlertTriangle className="h-5 w-5 text-amber-500" />
+                    )}
+                    {customer.isVerified && !customer.isSuspended && (
+                      <CheckCircle2 className="h-5 w-5 text-green-500" />
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Badge
+                      variant={getRoleBadgeVariant(customer.role || "customer")}
+                    >
+                      {customer.role || "customer"}
+                    </Badge>
+                    {customer.isVerified && (
+                      <Badge variant="outline" className="text-green-600">
+                        Verified
+                      </Badge>
+                    )}
+                    {customer.isSuspended && (
+                      <Badge variant="destructive">Suspended</Badge>
+                    )}
+                    {customer.isGuest && <Badge variant="outline">Guest</Badge>}
+                    {customer.isAvailable === false && (
+                      <Badge variant="secondary">Unavailable</Badge>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </>
+      )}
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <Card>
@@ -190,6 +201,8 @@ export function CustomerProfileContent({
           </CardContent>
         </Card>
       </div>
+
+      {sellerAccount}
 
       <Card>
         <CardHeader>
