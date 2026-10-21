@@ -614,6 +614,9 @@
     "cancelOrderDisabledOutForDelivery": "الطلب في الطريق للتوصيل ولا يمكن إلغاؤه."
   },
   "addresses": {
+    "searchGovernorate": "ابحث عن المحافظة",
+    "searchCity": "ابحث عن المدينة أو المنطقة",
+    "noPlaceMatch": "لا نتائج. يمكنك الإبقاء على ما كتبته.",
     "addresses": "العناوين",
     "deliveryAddresses": "عناوين التوصيل",
     "manageShippingBillingAddresses": "إدارة عناوين الشحن والفواتير الخاصة بك",

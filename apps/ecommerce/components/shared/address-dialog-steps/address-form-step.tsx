@@ -20,6 +20,7 @@ import {
   type AddressData,
 } from "../../address/address.schema";
 import { addAddress, updateAddress } from "@/actions/customer";
+import { PlaceFormField } from "../../address/place-combobox";
 
 export const ADDRESS_FORM_ID = "address-form-step";
 
@@ -210,19 +211,23 @@ export const AddressFormStep = forwardRef<
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                <TextInput
+                <PlaceFormField
                   form={form as any}
                   name="city"
                   label={t("city")}
-                  placeholder={t("enterCity")}
+                  placeholder={t("searchCity")}
+                  level="city"
+                  scope={{ country: form.watch("country"), state: form.watch("state") }}
                   required
                 />
 
-                <TextInput
+                <PlaceFormField
                   form={form as any}
                   name="state"
                   label={t("stateProvince")}
-                  placeholder={t("enterStateProvince")}
+                  placeholder={t("searchGovernorate")}
+                  level="region"
+                  scope={{ country: form.watch("country") }}
                   required
                 />
 

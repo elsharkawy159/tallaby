@@ -30,6 +30,7 @@ import {
   type AddressData,
 } from "./address.schema";
 import { LocationMap } from "./location-map";
+import { PlaceFormField } from "./place-combobox";
 import { addAddress, updateAddress } from "@/actions/customer";
 import posthog from "posthog-js";
 // Server actions will be imported from the consuming app
@@ -210,19 +211,23 @@ export const AddressForm = ({
               />
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <TextInput
+                <PlaceFormField
                   form={form as any}
                   name="city"
                   label="City"
-                  placeholder="Enter city"
+                  placeholder="Search city or area"
+                  level="city"
+                  scope={{ country: form.watch("country"), state: form.watch("state") }}
                   required
                 />
 
-                <TextInput
+                <PlaceFormField
                   form={form as any}
                   name="state"
                   label="State/Province"
-                  placeholder="Enter state or province"
+                  placeholder="Search governorate"
+                  level="region"
+                  scope={{ country: form.watch("country") }}
                   required
                 />
 

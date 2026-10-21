@@ -614,6 +614,9 @@
     "cancelOrderDisabledOutForDelivery": "This order is out for delivery and can no longer be cancelled."
   },
   "addresses": {
+    "searchGovernorate": "Search governorate",
+    "searchCity": "Search city or area",
+    "noPlaceMatch": "No match. You can keep what you typed.",
     "addresses": "Addresses",
     "deliveryAddresses": "Delivery Addresses",
     "manageShippingBillingAddresses": "Manage your shipping and billing addresses",
