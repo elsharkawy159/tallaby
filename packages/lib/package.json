@@ -42,6 +42,10 @@
       "types": "./src/shipping/store-zones.ts",
       "default": "./src/shipping/store-zones.ts"
     },
+    "./shipping/store-quote": {
+      "types": "./src/shipping/store-quote.ts",
+      "default": "./src/shipping/store-quote.ts"
+    },
     "./places": {
       "types": "./src/places/index.ts",
       "default": "./src/places/index.ts"
