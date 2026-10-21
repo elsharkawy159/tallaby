@@ -50,6 +50,7 @@ export const AddressForm = ({
 }: AddressFormProps) => {
   const [isPending, startTransition] = useTransition();
   const tToast = useTranslations("toast");
+  const tAddresses = useTranslations("addresses");
 
   // Handle location selection from map
   const handleLocationSelect = (locationData: {
@@ -215,7 +216,7 @@ export const AddressForm = ({
                   form={form as any}
                   name="city"
                   label="City"
-                  placeholder="Search city or area"
+                  placeholder={tAddresses("searchCity")}
                   level="city"
                   scope={{ country: form.watch("country"), state: form.watch("state") }}
                   required
@@ -225,7 +226,7 @@ export const AddressForm = ({
                   form={form as any}
                   name="state"
                   label="State/Province"
-                  placeholder="Search governorate"
+                  placeholder={tAddresses("searchGovernorate")}
                   level="region"
                   scope={{ country: form.watch("country") }}
                   required

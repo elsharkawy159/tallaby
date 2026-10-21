@@ -49,7 +49,7 @@ export interface PlaceComboboxProps {
   /** Receives plain text: a picked place's name in the current locale, or whatever was typed. */
   onChange: (text: string) => void;
   level: "region" | "city";
-  /** Place key to search under (e.g. `EG`, `EG/Cairo`). */
+  /** Place key to search under (e.g. `EG`, `EG/CAIRO`). */
   within?: string;
   /**
    * Free-text country/state of the address form. Once the place data is loaded
