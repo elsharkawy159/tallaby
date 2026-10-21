@@ -25,14 +25,13 @@ import {
 import { validateCoupon } from "./coupons";
 import { isOnlineCardPaymentEnabled } from "@workspace/lib/payments";
 import { ONLINE_CARD_PAYMENT_ENABLED } from "@/lib/constants";
-import {
-  calculateOrderSellerFreeDeliveryDiscount,
-  calculateOrderShippingCost,
-} from "@/lib/shipping";
+import { getCheckoutShipping } from "@/lib/shipping.server";
 import {
   buildSummaryWithCoupon,
+  type CheckoutStoreShipping,
   type CheckoutSummary,
 } from "@/lib/coupon-utils";
+import type { ShippingAddress } from "@workspace/lib/shipping/store-quote";
 import { getUserWalletSummary } from "@workspace/db/wallet";
 import { getPendingCouponCode } from "@/lib/affiliate-coupon-cookie";
 
@@ -100,10 +99,11 @@ function localizeCartItems<
   })
 }
 
-async function getDestinationState(
+/** The customer's own address fields shipping is priced on, or null. */
+async function getShippingAddress(
   userId: string,
   shippingAddressId?: string,
-): Promise<string | null> {
+): Promise<ShippingAddress | null> {
   if (!shippingAddressId) {
     return null;
   }
@@ -113,16 +113,17 @@ async function getDestinationState(
       eq(userAddresses.id, shippingAddressId),
       eq(userAddresses.userId, userId),
     ),
-    columns: { state: true },
+    columns: { state: true, city: true, country: true, addressLine1: true },
   });
 
-  return address?.state ?? null;
+  return address ?? null;
 }
 
 function buildBaseSummary(
   cartItems: Array<{ quantity: number; price: string | number }>,
   shippingCost: number | null,
   sellerFreeDeliveryDiscount = 0,
+  storeShipping: CheckoutStoreShipping = null,
 ): CheckoutSummary {
   const subtotal = cartItems.reduce(
     (sum, item) => sum + Number(item.price) * item.quantity,
@@ -140,6 +141,7 @@ function buildBaseSummary(
       total,
       itemCount: cartItems.reduce((sum, item) => sum + item.quantity, 0),
       sellerFreeDeliveryDiscount,
+      storeShipping,
     },
     null,
     null,
@@ -156,8 +158,9 @@ export async function recalculateCheckoutSummary(data: {
       return { success: false, error: "Unable to get user ID" };
     }
 
+    const scope = await getCartScope();
     const cart = await db.query.carts.findFirst({
-      where: activeCartWhere(userId, await getCartScope()),
+      where: activeCartWhere(userId, scope),
       with: cartWithShippingItems,
     });
 
@@ -165,23 +168,15 @@ export async function recalculateCheckoutSummary(data: {
       return { success: false, error: "Cart is empty" };
     }
 
-    const destinationState = await getDestinationState(
-      userId,
-      data.shippingAddressId,
-    );
-
-    const shippingCost = calculateOrderShippingCost(cart.cartItems, {
-      destinationState,
-    });
-    const sellerFreeDeliveryDiscount =
-      calculateOrderSellerFreeDeliveryDiscount(cart.cartItems, {
-        destinationState,
-      });
+    const address = await getShippingAddress(userId, data.shippingAddressId);
+    const { shippingCost, sellerFreeDeliveryDiscount, storeShipping } =
+      await getCheckoutShipping(cart.cartItems, address, scope);
 
     const baseSummary = buildBaseSummary(
       cart.cartItems,
       shippingCost,
       sellerFreeDeliveryDiscount,
+      storeShipping,
     );
 
     if (data.couponCode?.trim()) {
@@ -211,8 +206,9 @@ export async function getCheckoutData() {
       return { success: false, error: "Unable to get user ID" };
     }
 
+    const scope = await getCartScope();
     const cart = await db.query.carts.findFirst({
-      where: activeCartWhere(userId, await getCartScope()),
+      where: activeCartWhere(userId, scope),
       with: cartWithShippingItems,
     });
 
@@ -254,18 +250,14 @@ export async function getCheckoutData() {
     const defaultAddress =
       addresses.find((address) => address.isDefault) ?? addresses[0] ?? null;
 
-    const shippingCost = calculateOrderShippingCost(localizedCartItems, {
-      destinationState: defaultAddress?.state,
-    });
-    const sellerFreeDeliveryDiscount =
-      calculateOrderSellerFreeDeliveryDiscount(localizedCartItems, {
-        destinationState: defaultAddress?.state,
-      });
+    const { shippingCost, sellerFreeDeliveryDiscount, storeShipping } =
+      await getCheckoutShipping(localizedCartItems, defaultAddress, scope);
 
     let summary = buildBaseSummary(
       localizedCartItems,
       shippingCost,
       sellerFreeDeliveryDiscount,
+      storeShipping,
     );
 
     // Auto-apply a pending coupon captured from `?coupon=` (affiliate share)

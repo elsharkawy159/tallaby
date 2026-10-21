@@ -143,8 +143,18 @@ export const CheckoutData = ({
   const shippingAddressId = form.watch("shippingAddressId");
   const paymentMethod = form.watch("paymentMethod");
 
+  // Store websites: the seller's zones may not cover the chosen address.
+  const storeShipping = summary.storeShipping ?? null;
+  const shippingRefusal =
+    storeShipping?.kind === "not_covered"
+      ? t("notDeliveredHere")
+      : storeShipping?.kind === "outside_egypt"
+        ? t("egyptOnly")
+        : null;
+  const isZoneShipping = storeShipping?.kind === "zone";
+
   const canPlaceOrder = Boolean(
-    shippingAddressId?.trim() && paymentMethod?.trim()
+    shippingAddressId?.trim() && paymentMethod?.trim() && !shippingRefusal
   );
 
   // Sync form with address changes from hook
@@ -179,6 +189,7 @@ export const CheckoutData = ({
           shippingDiscount: 0,
           total,
           totalAfterDiscount,
+          storeShipping: null,
         };
       });
       return;
@@ -225,9 +236,12 @@ export const CheckoutData = ({
     0,
     (summary.shippingCost ?? 0) - (summary.shippingDiscount ?? 0),
   );
-  const isCodEligibleShipping = isCodEligibleForShipping(
-    summary.shippingCost == null ? null : billedShipping,
-  );
+  // A seller zone decides COD itself; the 90 EGP cap is a Tallaby-rider rule.
+  const isCodEligibleShipping = isZoneShipping
+    ? storeShipping?.codEnabled === true
+    : isCodEligibleForShipping(
+        summary.shippingCost == null ? null : billedShipping,
+      );
   const isCodWithinStoreMax =
     storePayments?.codMaxOrder == null ||
     (summary.totalAfterDiscount ?? summary.total) <= storePayments.codMaxOrder;
@@ -303,7 +317,9 @@ export const CheckoutData = ({
                 storePayments?.codNote || t("cashOnDeliveryDescription"),
               enabled: isCodEligible,
               disabledLabel: !isCodEligibleShipping
-                ? t("codUnavailableHighShipping")
+                ? isZoneShipping
+                  ? t("zoneNoCod")
+                  : t("codUnavailableHighShipping")
                 : !isCodWithinStoreMax
                   ? t("codUnavailableAboveMax")
                   : undefined,
@@ -355,6 +371,7 @@ export const CheckoutData = ({
     isCodEligible,
     isCodEligibleShipping,
     isCodWithinStoreMax,
+    isZoneShipping,
     storePayments,
     manualMethods,
     hasWallet,
@@ -712,6 +729,20 @@ export const CheckoutData = ({
               onCouponRemoved={handleCouponRemoved}
               appliedCoupon={appliedCoupon}
             >
+              {shippingRefusal ? (
+                <p role="alert" className="text-xs md:text-sm text-orange-600">
+                  {shippingRefusal}
+                </p>
+              ) : isZoneShipping &&
+                storeShipping?.daysMin != null &&
+                storeShipping.daysMax != null ? (
+                <p className="text-xs md:text-sm text-gray-600">
+                  {t("arrivesIn", {
+                    min: storeShipping.daysMin,
+                    max: storeShipping.daysMax,
+                  })}
+                </p>
+              ) : null}
               <Button
                 type="submit"
                 size="lg"

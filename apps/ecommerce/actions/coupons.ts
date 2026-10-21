@@ -17,10 +17,8 @@ import {
   type CartItemForCoupon,
   type CheckoutSummary
 } from "@/lib/coupon-utils"
-import {
-  calculateOrderSellerFreeDeliveryDiscount,
-  calculateOrderShippingCost,
-} from "@/lib/shipping"
+import { getCheckoutShipping } from "@/lib/shipping.server"
+import type { ShippingAddress } from "@workspace/lib/shipping/store-quote"
 import {
   clearPendingCouponCode,
   setPendingCouponCode,
@@ -64,10 +62,10 @@ interface CouponValidationOptions {
   shippingAddressId?: string
 }
 
-async function resolveDestinationState(
+async function resolveShippingAddress(
   userId: string | undefined,
   shippingAddressId?: string,
-): Promise<string | null> {
+): Promise<ShippingAddress | null> {
   if (!userId || !shippingAddressId) {
     return null
   }
@@ -77,10 +75,10 @@ async function resolveDestinationState(
       eq(userAddresses.id, shippingAddressId),
       eq(userAddresses.userId, userId),
     ),
-    columns: { state: true },
+    columns: { state: true, city: true, country: true, addressLine1: true },
   })
 
-  return address?.state ?? null
+  return address ?? null
 }
 
 /**
@@ -209,7 +207,8 @@ export async function validateCoupon(
       0
     )
 
-    const channel = (await getCartScope()) ? "storefront" : "marketplace"
+    const scope = await getCartScope()
+    const channel = scope ? "storefront" : "marketplace"
     if (!isCouponAllowedOnChannel(coupon, channel)) {
       return { success: false, error: "couponNotForThisStore" }
     }
@@ -236,18 +235,12 @@ export async function validateCoupon(
     }
 
     // Calculate discount
-    const destinationState = await resolveDestinationState(
+    const address = await resolveShippingAddress(
       userId,
       options.shippingAddressId,
     )
-
-    const shippingCost = calculateOrderShippingCost(cart.cartItems, {
-      destinationState,
-    })
-    const sellerFreeDeliveryDiscount = calculateOrderSellerFreeDeliveryDiscount(
-      cart.cartItems,
-      { destinationState },
-    )
+    const { shippingCost, sellerFreeDeliveryDiscount, storeShipping } =
+      await getCheckoutShipping(cart.cartItems, address, scope)
     const calculationResult = calculateCouponDiscount(
       coupon as CouponData,
       cartItemsForCoupon,
@@ -268,6 +261,7 @@ export async function validateCoupon(
       total: subtotal + tax + billedShipping,
       itemCount: cart.cartItems.reduce((sum, i) => sum + i.quantity, 0),
       sellerFreeDeliveryDiscount,
+      storeShipping,
     }
 
     const summary = buildSummaryWithCoupon(
@@ -380,8 +374,9 @@ export async function removeCouponFromCart(data?: {
     }
 
     // Get the user's active cart
+    const scope = await getCartScope()
     const cart = await db.query.carts.findFirst({
-      where: activeCartWhere(userId, await getCartScope()),
+      where: activeCartWhere(userId, scope),
       with: {
         cartItems: {
           where: eq(cartItems.savedForLater, false),
@@ -416,17 +411,12 @@ export async function removeCouponFromCart(data?: {
       0
     )
     const tax = 0
-    const destinationState = await resolveDestinationState(
+    const address = await resolveShippingAddress(
       userId,
       data?.shippingAddressId,
     )
-    const shippingCost = calculateOrderShippingCost(cart.cartItems, {
-      destinationState,
-    })
-    const sellerFreeDeliveryDiscount = calculateOrderSellerFreeDeliveryDiscount(
-      cart.cartItems,
-      { destinationState },
-    )
+    const { shippingCost, sellerFreeDeliveryDiscount, storeShipping } =
+      await getCheckoutShipping(cart.cartItems, address, scope)
     const billedShipping = shippingCost ?? 0
     const total = subtotal + tax + billedShipping
 
@@ -438,6 +428,7 @@ export async function removeCouponFromCart(data?: {
         total,
         itemCount: cart.cartItems.reduce((sum, i) => sum + i.quantity, 0),
         sellerFreeDeliveryDiscount,
+        storeShipping,
       },
       null,
       null,

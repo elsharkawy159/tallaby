@@ -43,12 +43,20 @@ import {
 } from "@/lib/storefront.server";
 import { hasStoreTrackingConsent, STORE_TRACKING_CONSENT_COOKIE } from "@/lib/storefront-consent";
 import { cookies } from "next/headers";
+import { getTranslations } from "next-intl/server";
 import { after } from "next/server";
 import { isMarketplaceRequest } from "@/lib/marketplace/marketplace-host.server";
 import { buildOrderPagePath } from "@/lib/order-access-token";
 import { getUser } from "./auth";
 import { revalidateCartCheckout } from "@/lib/revalidate-cart-checkout";
 import { clearPendingCouponCode } from "@/lib/affiliate-coupon-cookie";
+
+/** placeOrderFromCart's store-shipping refusals → checkout message keys. */
+const STORE_SHIPPING_ERRORS: Record<string, "notDeliveredHere" | "egyptOnly" | "zoneNoCod"> = {
+  storeShippingNotCovered: "notDeliveredHere",
+  storeShippingOutsideEgypt: "egyptOnly",
+  storeShippingNoCod: "zoneNoCod",
+};
 
 /** Internal control-flow signal: a concurrent request already transitioned this order (cancel idempotency guard). */
 class OrderAlreadyTransitionedError extends Error {}
@@ -122,6 +130,11 @@ export async function createOrder(data: {
           error: "minPurchase",
           minimumPurchase: result.minimumPurchase,
         };
+      }
+      const shippingKey = STORE_SHIPPING_ERRORS[result.error];
+      if (shippingKey) {
+        const t = await getTranslations("checkout");
+        return { success: false, error: t(shippingKey) };
       }
       return { success: false, error: result.error };
     }

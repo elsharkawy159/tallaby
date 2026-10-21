@@ -60,6 +60,17 @@ export interface CouponCalculationResult {
   error?: string
 }
 
+/**
+ * Store-website shipping for the chosen address (store shipping spec §6.5);
+ * null or absent on the marketplace and before an address is chosen.
+ */
+export type CheckoutStoreShipping = {
+  kind: 'zone' | 'tallaby_rates' | 'not_covered' | 'outside_egypt'
+  daysMin?: number
+  daysMax?: number
+  codEnabled?: boolean
+} | null
+
 export interface CheckoutSummary {
   subtotal: number
   tax: number
@@ -79,6 +90,7 @@ export interface CheckoutSummary {
     discountType: string
     discountValue?: string | number
   } | null
+  storeShipping?: CheckoutStoreShipping
 }
 
 /**
@@ -309,15 +321,20 @@ export function buildSummaryWithCoupon(
     itemCount: number
     /** Shipping waived by sellers flagged sellers.free_delivery. */
     sellerFreeDeliveryDiscount?: number
+    storeShipping?: CheckoutStoreShipping
   },
   coupon: CouponData | null,
   calculationResult: CouponCalculationResult | null
 ): CheckoutSummary {
   const shippingCost = baseSummary.shippingCost ?? 0
-  const thresholdShippingDiscount = getThresholdShippingDiscount(
-    baseSummary.subtotal,
-    baseSummary.shippingCost
-  )
+  // A seller zone has its own free-over; Tallaby's cart threshold does not apply.
+  const thresholdShippingDiscount =
+    baseSummary.storeShipping?.kind === 'zone'
+      ? 0
+      : getThresholdShippingDiscount(
+          baseSummary.subtotal,
+          baseSummary.shippingCost
+        )
   const sellerFreeDeliveryDiscount = Math.min(
     Math.max(0, baseSummary.sellerFreeDeliveryDiscount ?? 0),
     shippingCost

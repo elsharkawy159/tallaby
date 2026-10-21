@@ -34,13 +34,13 @@ import {
 } from "../payments/store-methods";
 import { emptyHomeContent } from "@workspace/store-sections/templates";
 import { seedStarterSite } from "./starter-site.server";
+import { toShippingZone, type StoreShippingZone } from "./shipping-context.server";
 import { canCreateStore } from "../plans";
 import { z } from "zod";
 import {
   MAX_ZONES_PER_STORE,
   SHIPPING_TEMPLATES,
   templateZones,
-  type ZoneForQuote,
   findZoneOverlap,
   parseStoreShipping,
   storeShippingSettingsSchema,
@@ -608,25 +608,11 @@ export async function updateStorePaymentMethod(
 // Tallaby's governorate rates, which are also the default seller-delivery rates.
 // ---------------------------------------------------------------------------
 
-export type StoreShippingZone = ZoneForQuote;
+export type { StoreShippingZone };
 
 export type StoreShippingError = StoreWriteError | "overlap" | "too_many_zones" | "no_zones" | "tallaby_unavailable";
 
-function toZone(row: typeof storeShippingZones.$inferSelect): StoreShippingZone {
-  const name = (row.name ?? {}) as { ar?: string; en?: string };
-  return {
-    id: row.id,
-    nameAr: name.ar ?? "",
-    nameEn: name.en ?? null,
-    places: row.places.length ? row.places : row.governorates.map((g) => `EG/${g}`),
-    price: Number(row.price),
-    freeOver: row.freeOver === null ? null : Number(row.freeOver),
-    deliveryDaysMin: row.deliveryDaysMin,
-    deliveryDaysMax: row.deliveryDaysMax,
-    codEnabled: row.codEnabled,
-    enabled: row.enabled,
-  };
-}
+const toZone = toShippingZone;
 
 const egp = (n: number) => n.toFixed(2);
 
@@ -886,26 +872,5 @@ export async function applyStoreShippingTemplate(
   }
 }
 
-/**
- * Customer-side loader: the store's shipping settings and enabled zones by store
- * id alone. The caller passes a server-trusted id (resolved from the request host).
- */
-export async function getStorefrontShippingContext(
-  storeId: string,
-  q: Queryable = db,
-): Promise<{ settings: StoreShippingSettings; zones: StoreShippingZone[] } | null> {
-  if (!UUID_RE.test(storeId)) return null;
-  const [store] = await q.select({ settings: stores.settings }).from(stores).where(eq(stores.id, storeId)).limit(1);
-  if (!store) return null;
-  const rows = await q
-    .select()
-    .from(storeShippingZones)
-    .where(and(eq(storeShippingZones.storeId, storeId), eq(storeShippingZones.enabled, true)))
-    .orderBy(asc(storeShippingZones.sortOrder), asc(storeShippingZones.createdAt));
-  return {
-    settings: parseStoreShipping((store.settings as Record<string, unknown> | null)?.shipping),
-    zones: rows.map(toZone),
-  };
-}
-
+export { getStorefrontShippingContext } from "./shipping-context.server";
 export * from "./catalog.server";

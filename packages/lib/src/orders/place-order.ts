@@ -59,6 +59,26 @@ import {
   isStorefrontCheckoutMethodAllowed,
   type StorefrontCheckoutPayments,
 } from '../payments/store-methods'
+import {
+  resolveStorefrontShipping,
+  zoneSellerFreeDeliveryDiscount,
+  type StorefrontShipping,
+} from '../shipping/store-quote'
+import { getStorefrontShippingContext } from '../stores/shipping-context.server'
+
+/**
+ * Snapshot on every store-website order placed while the store delivers itself
+ * (store shipping spec §6.5): how the shipping was priced and what the
+ * customer paid for it. Drives the seller shipping credit (§6.8).
+ */
+export interface StoreShippingSnapshot {
+  method: 'own'
+  pricedBy: 'zone' | 'tallaby_rates'
+  zoneId?: string
+  zoneName?: { ar: string; en: string | null }
+  place: string | null
+  billedPiastres: number
+}
 
 /** Internal control-flow signal: coupon lost a concurrent usage-limit race. */
 class CouponClaimFailedError extends Error {}
@@ -246,7 +266,9 @@ export async function placeOrderFromCart(
     (item) => item.product.productType === 'digital',
   )
 
-  let shippingAddress: { id: string; state: string } | undefined
+  let shippingAddress:
+    | { id: string; state: string; city: string; country: string; addressLine1: string }
+    | undefined
   if (!isDigitalOnlyCart) {
     if (!shippingAddressId) {
       return { success: false, error: 'Shipping address is required' }
@@ -302,11 +324,47 @@ export async function placeOrderFromCart(
     ? shippingAddress.state
     : '__missing_state__'
 
-  const calculatedShippingCost = calculateLocationShippingCost({
+  const tallabyShippingCost = calculateLocationShippingCost({
     items: shippingItems,
     destinationState,
     cartSubtotal,
   })!
+
+  // Store websites: when the seller delivers, the store's own zones price the
+  // order (store shipping spec §6.5); places no zone covers fall back to the
+  // rate above or are refused. The marketplace, admin-set shipping and
+  // digital-only carts keep the rate table untouched.
+  let storeQuote: StorefrontShipping | null = null
+  if (
+    orderSource === 'storefront' &&
+    cart.storeId &&
+    pricingOverrides?.shippingCost == null &&
+    !isDigitalOnlyCart &&
+    shippingAddress
+  ) {
+    const context = await getStorefrontShippingContext(cart.storeId)
+    if (context && context.settings.method === 'own') {
+      storeQuote = resolveStorefrontShipping({
+        settings: context.settings,
+        zones: context.zones,
+        address: shippingAddress,
+        items: shippingItems,
+        subtotal: cartSubtotal,
+        tallabyRate: () => tallabyShippingCost,
+      })
+      if (storeQuote.kind === 'not_covered') {
+        return { success: false, error: 'storeShippingNotCovered' }
+      }
+      if (storeQuote.kind === 'outside_egypt') {
+        return { success: false, error: 'storeShippingOutsideEgypt' }
+      }
+    }
+  }
+  const zoneQuote = storeQuote?.kind === 'zone' ? storeQuote : null
+
+  const calculatedShippingCost = zoneQuote
+    ? zoneQuote.shippingCost
+    : tallabyShippingCost
 
   // An admin-entered shipping fee replaces the rate table outright, and every
   // downstream waiver (threshold / seller free delivery) is then measured
@@ -318,13 +376,17 @@ export async function placeOrderFromCart(
 
   // sellers.free_delivery waives that seller's shipment entirely — recorded as
   // a discount so the order still stores the real shipping cost.
+  // On a zone-priced order the zone is one shipment, so the seller flag waives
+  // all of it or nothing.
   const sellerFreeDeliveryDiscount = Math.min(
     shippingCost,
-    calculateSellerFreeDeliveryDiscount({
-      items: shippingItems,
-      destinationState,
-      cartSubtotal,
-    }),
+    zoneQuote
+      ? zoneSellerFreeDeliveryDiscount(zoneQuote, shippingItems)
+      : calculateSellerFreeDeliveryDiscount({
+          items: shippingItems,
+          destinationState,
+          cartSubtotal,
+        }),
   )
 
   const orderItemsData = cart.cartItems.map((item) => {
@@ -375,10 +437,10 @@ export async function placeOrderFromCart(
   })
 
   let merchandiseDiscount = 0
-  const thresholdShippingDiscount = getThresholdShippingDiscount(
-    subtotal,
-    shippingCost,
-  )
+  // Tallaby's cart threshold is a platform promotion; a zone has its own free-over.
+  const thresholdShippingDiscount = zoneQuote
+    ? 0
+    : getThresholdShippingDiscount(subtotal, shippingCost)
   let shippingDiscount = Math.max(
     thresholdShippingDiscount,
     sellerFreeDeliveryDiscount,
@@ -556,16 +618,36 @@ export async function placeOrderFromCart(
       : shippingDiscount
   const billedShipping = Math.max(0, shippingCost - effectiveShippingDiscount)
 
-  if (
-    resolvedPaymentMethod === 'cash_on_delivery' &&
-    !isCodEligibleForShipping(billedShipping)
-  ) {
-    return {
-      success: false,
-      error:
-        'Cash on delivery is not available when shipping cost exceeds 90 EGP',
+  // The 90 EGP cap is a Tallaby-rider rule; a seller zone decides COD itself.
+  if (resolvedPaymentMethod === 'cash_on_delivery') {
+    if (zoneQuote) {
+      if (!zoneQuote.codEnabled) {
+        return { success: false, error: 'storeShippingNoCod' }
+      }
+    } else if (!isCodEligibleForShipping(billedShipping)) {
+      return {
+        success: false,
+        error:
+          'Cash on delivery is not available when shipping cost exceeds 90 EGP',
+      }
     }
   }
+
+  const storeShipping: StoreShippingSnapshot | null =
+    storeQuote && (storeQuote.kind === 'zone' || storeQuote.kind === 'tallaby_rates')
+      ? {
+          method: 'own',
+          pricedBy: storeQuote.kind,
+          ...(storeQuote.kind === 'zone'
+            ? { zoneId: storeQuote.zoneId, zoneName: storeQuote.zoneName }
+            : {}),
+          place: storeQuote.place,
+          billedPiastres: Math.round(billedShipping * 100),
+        }
+      : null
+  const baseOrderMetadata: Record<string, unknown> | null = storeShipping
+    ? { storeShipping }
+    : null
 
   if (
     storefrontPayments &&
@@ -606,7 +688,7 @@ export async function placeOrderFromCart(
         parseWalletPartialPaymentMethod(resolvedPaymentMethod)
 
       let insertPaymentMethod = resolvedPaymentMethod
-      let insertMetadata: Record<string, unknown> | null = null
+      let insertMetadata: Record<string, unknown> | null = baseOrderMetadata
       let partialWalletAmount: string | null = null
       let upgradeToFullWallet = false
       let walletForPayment: Awaited<
@@ -637,6 +719,7 @@ export async function placeOrderFromCart(
           partialWalletAmount = formatDecimal(available)
           insertPaymentMethod = walletPartialRemainder
           insertMetadata = {
+            ...baseOrderMetadata,
             walletPaidAmount: partialWalletAmount,
             paymentMix: 'wallet_partial',
           }
@@ -729,7 +812,7 @@ export async function placeOrderFromCart(
             paidAt: paidNow,
             updatedAt: paidNow,
             paymentMethod: 'wallet',
-            metadata: null,
+            metadata: baseOrderMetadata,
           })
           .where(eq(orders.id, newOrder!.id))
           .returning()
