@@ -89,7 +89,7 @@ export function PlaceCombobox({
   "data-slot": dataSlot,
 }: PlaceComboboxProps) {
   const listId = useId();
-  const optionId = (key: string) => `${listId}-${key.replace(/[^w-]/g, "_")}`;
+  const optionId = (key: string) => `${listId}-opt-${results.findIndex((r) => r.key === key)}`;
   const t = useTranslations("addresses");
   const activeLocale = useLocale();
   const locale = localeProp ?? activeLocale;
