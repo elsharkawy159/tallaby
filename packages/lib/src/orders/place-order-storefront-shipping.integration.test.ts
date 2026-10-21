@@ -182,6 +182,7 @@ describe.skipIf(!TEST_DATABASE_URL)('storefront shipping at order placement (int
       zoneId: cairoZone,
       zoneName: { ar: 'القاهرة', en: 'Cairo' },
       billedPiastres: 5500,
+      collector: 'tallaby',
     })
     expect(String(snap.place)).toMatch(/^EG\/CAIRO/)
   })
@@ -236,6 +237,21 @@ describe.skipIf(!TEST_DATABASE_URL)('storefront shipping at order placement (int
   it('(g) accepts COD on a zone priced above the 90 EGP rider cap', async () => {
     const order = await placeOk(await cart(w.a.a1, '100.00'), addr.alex, { paymentMethod: 'cash_on_delivery' })
     expect(order).toMatchObject({ shippingCost: '120.00', paymentMethod: 'cash_on_delivery' })
+    // The seller's rider collects the cash, shipping included.
+    expect((order.metadata as { storeShipping: Record<string, unknown> }).storeShipping).toMatchObject({
+      billedPiastres: 12000,
+      collector: 'seller',
+    })
+  })
+
+  it('(g2) snapshots a seller receiving method (InstaPay) as seller-collected', async () => {
+    const order = await placeOk(await cart(w.a.a1, '100.00'), addr.cairo, { paymentMethod: 'instapay' })
+    expect(order).toMatchObject({ shippingCost: '55.00', paymentMethod: 'instapay' })
+    expect((order.metadata as { storeShipping: Record<string, unknown> }).storeShipping).toMatchObject({
+      pricedBy: 'zone',
+      billedPiastres: 5500,
+      collector: 'seller',
+    })
   })
 
   it('(h) leaves a marketplace order of the same cart on Tallaby rates with no snapshot', async () => {

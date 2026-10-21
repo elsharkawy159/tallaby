@@ -57,6 +57,7 @@ import { computeOrderLineFees, type PlatformFeeSnapshot } from './platform-fee.l
 import { isCodEligibleForShipping, parseWalletPartialPaymentMethod } from './payment.lib'
 import {
   isStorefrontCheckoutMethodAllowed,
+  storeShippingCollector,
   type StorefrontCheckoutPayments,
 } from '../payments/store-methods'
 import {
@@ -78,6 +79,12 @@ export interface StoreShippingSnapshot {
   zoneName?: { ar: string; en: string | null }
   place: string | null
   billedPiastres: number
+  /**
+   * Who collects the customer's money (`storeShippingCollector`). The seller
+   * shipping credit is posted only for `tallaby`; COD and the seller's own
+   * receiving methods are `seller` (they already hold the shipping).
+   */
+  collector: 'tallaby' | 'seller'
 }
 
 /** Internal control-flow signal: coupon lost a concurrent usage-limit race. */
@@ -643,6 +650,7 @@ export async function placeOrderFromCart(
             : {}),
           place: storeQuote.place,
           billedPiastres: Math.round(billedShipping * 100),
+          collector: storeShippingCollector(resolvedPaymentMethod),
         }
       : null
   const baseOrderMetadata: Record<string, unknown> | null = storeShipping

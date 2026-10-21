@@ -11,13 +11,19 @@ type Tx = Parameters<Parameters<typeof dbType.transaction>[0]>[0];
 const toPiastres = (value: string | number | null | undefined) => Math.round(Number(value ?? 0) * 100);
 const fromPiastres = (piastres: number) => (piastres / 100).toFixed(2);
 
-/** Billed own-shipping in piastres from the order snapshot; anything malformed is 0. */
+/**
+ * Billed own-shipping in piastres from the order snapshot, only when the
+ * snapshot says Tallaby collected the customer's money (`collector:
+ * "tallaby"`). When the seller collected (COD by their own rider, their own
+ * InstaPay / wallet numbers) they already hold the shipping; a missing or
+ * unknown collector counts as the seller's. Anything malformed is 0.
+ */
 function billedShippingPiastres(metadata: unknown): number {
   if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) return 0;
   const snap = (metadata as Record<string, unknown>).storeShipping;
   if (!snap || typeof snap !== "object" || Array.isArray(snap)) return 0;
-  const { method, billedPiastres } = snap as Record<string, unknown>;
-  if (method !== "own") return 0;
+  const { method, billedPiastres, collector } = snap as Record<string, unknown>;
+  if (method !== "own" || collector !== "tallaby") return 0;
   return typeof billedPiastres === "number" && Number.isInteger(billedPiastres) && billedPiastres > 0
     ? billedPiastres
     : 0;
@@ -45,8 +51,9 @@ const hasFeeSnapshot = (line: DeliveredLine) =>
  *   collected the money; only the `fee` when the seller did.
  * - Store-website orders whose snapshot says the store ships itself
  *   (`metadata.storeShipping.method === "own"`): the shipping the customer was
- *   billed (`billedPiastres`) is added to the owning seller's `sale` when
- *   Tallaby collected the money (the seller keeps it when they collected). The
+ *   billed (`billedPiastres`) is added to the owning seller's `sale` only when
+ *   the snapshot's `collector` is `tallaby` and the delivery resolves to
+ *   Tallaby (the seller keeps it when they collected). The
  *   fee is computed on goods only. Same single claim, no new entry type.
  * - Older orders (5% snapshot): the legacy single net `sale`
  *   (Σ seller_earning), as before.

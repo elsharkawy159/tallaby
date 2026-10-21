@@ -52,6 +52,20 @@ export function getStorePaymentMethod(key: string) {
   return STORE_PAYMENT_METHODS.find((m) => m.key === key);
 }
 
+/**
+ * Who holds the shipping money of a store-website order whose store delivers
+ * itself (store shipping spec §6.8), from the checkout value
+ * (orders.payment_method). Cash on delivery: the seller's rider collects it.
+ * Card / online / customer wallet: Tallaby. A store receiving method uses its
+ * catalogue `collector`. Anything unknown is the seller's, so shipping is
+ * never credited to a seller who may already hold it.
+ */
+export function storeShippingCollector(paymentMethod: string): "tallaby" | "seller" {
+  if (paymentMethod === "cash_on_delivery") return "seller";
+  if (paymentMethod === "online_payment" || paymentMethod === "wallet") return "tallaby";
+  return getStorePaymentMethod(paymentMethod)?.collector === "tallaby" ? "tallaby" : "seller";
+}
+
 /** Usual operator by mobile prefix. A HINT only: numbers can be ported between operators. */
 export function operatorHint(phone: string): (typeof WALLET_KEYS)[number] | null {
   const p = phone.replace(/[\s-]/g, "").replace(/^\+?20/, "0");

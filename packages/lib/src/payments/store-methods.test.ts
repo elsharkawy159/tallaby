@@ -7,6 +7,7 @@ import {
   maskPaymentDetails,
   operatorHint,
   parseStorePayments,
+  storeShippingCollector,
   storefrontCheckoutMethods,
   validateMethodChange,
 } from "./store-methods";
@@ -165,5 +166,26 @@ describe("maskPaymentDetails", () => {
       iban: "•••0002",
       ipa: "•••apay",
     });
+  });
+});
+
+describe("storeShippingCollector", () => {
+  it("COD is collected by the store's own rider", () => {
+    expect(storeShippingCollector("cash_on_delivery")).toBe("seller");
+  });
+  it("online payment and the customer wallet are Tallaby's", () => {
+    expect(storeShippingCollector("online_payment")).toBe("tallaby");
+    expect(storeShippingCollector("wallet")).toBe("tallaby");
+    expect(storeShippingCollector("card")).toBe("tallaby");
+  });
+  it("seller receiving methods are the seller's", () => {
+    for (const key of ["instapay", "vodafone_cash", "e_cash", "we_pay", "orange_cash"]) {
+      expect(storeShippingCollector(key)).toBe("seller");
+    }
+  });
+  it("anything unknown is the seller's", () => {
+    expect(storeShippingCollector("")).toBe("seller");
+    expect(storeShippingCollector("wallet_partial:cash_on_delivery")).toBe("seller");
+    expect(storeShippingCollector("something_new")).toBe("seller");
   });
 });

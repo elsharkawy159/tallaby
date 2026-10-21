@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import { eq, inArray, sql } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import * as DB_SCHEMA from "../drizzle/schema";
 import * as DB_RELATIONS from "../drizzle/relations";
@@ -145,7 +145,15 @@ describe.skipIf(!TEST_DATABASE_URL)("store shipping credit (integration)", { tim
   });
 
 
-  const own = (billedPiastres: unknown) => ({ storeShipping: { method: "own", pricedBy: "zone", place: "x", billedPiastres } });
+  const own = (billedPiastres: unknown, collector: unknown = "tallaby", withCollector = true) => ({
+    storeShipping: {
+      method: "own",
+      pricedBy: "zone",
+      place: "x",
+      billedPiastres,
+      ...(withCollector ? { collector } : {}),
+    },
+  });
   const run = async (orderId: string) => {
     await db.transaction((tx) => creditSellerOnDelivery(tx, orderId));
     await db.transaction((tx) => creditSellerOnDelivery(tx, orderId));
@@ -165,9 +173,49 @@ describe.skipIf(!TEST_DATABASE_URL)("store shipping credit (integration)", { tim
     const [sale] = await db
       .select({ m: s.walletTransactions.metadata })
       .from(s.walletTransactions)
-      .where(eq(s.walletTransactions.orderId, orderId));
+      .where(and(eq(s.walletTransactions.orderId, orderId), eq(s.walletTransactions.type, "sale")));
     expect(sale?.m).toMatchObject({ shippingPiastres: 5500, collectedBy: "tallaby" });
     expect(await balance(a.id)).toBe("349.00");
+  });
+
+  it("snapshot collector 'seller' credits goods only (seller already holds the shipping)", async () => {
+    const a = await newSeller();
+    // A seller receiving method (InstaPay) with no shipment row resolves the
+    // party to tallaby; the snapshot collector still keeps shipping out.
+    const orderId = await deliveredOrder({
+      lines: [[a, "300.00", "6.00"]],
+      paymentMethod: "instapay",
+      storeId: a.storeId,
+      metadata: own(5500, "seller"),
+    });
+    await run(orderId);
+    expect((await entries(a.id)).map((x) => `${x.type}:${x.amount}`)).toEqual(["sale:300.00", "fee:-6.00"]);
+    expect(await balance(a.id)).toBe("294.00");
+  });
+
+  it("COD delivered without a seller shipment row and collector 'seller' credits goods only", async () => {
+    const a = await newSeller();
+    const orderId = await deliveredOrder({
+      lines: [[a, "200.00", "4.00"]],
+      storeId: a.storeId,
+      metadata: own(3000, "seller"),
+    });
+    await run(orderId);
+    expect((await entries(a.id)).map((x) => `${x.type}:${x.amount}`)).toEqual(["sale:200.00", "fee:-4.00"]);
+    expect(await balance(a.id)).toBe("196.00");
+  });
+
+  it("snapshot without a collector credits goods only", async () => {
+    const a = await newSeller();
+    const orderId = await deliveredOrder({
+      lines: [[a, "300.00", "6.00"]],
+      paymentMethod: "online_payment",
+      storeId: a.storeId,
+      metadata: own(5500, undefined, false),
+    });
+    await run(orderId);
+    expect((await entries(a.id)).map((x) => `${x.type}:${x.amount}`)).toEqual(["sale:300.00", "fee:-6.00"]);
+    expect(await balance(a.id)).toBe("294.00");
   });
 
   it("seller's own COD delivery posts no sale, only the fee", async () => {
@@ -214,6 +262,7 @@ describe.skipIf(!TEST_DATABASE_URL)("store shipping credit (integration)", { tim
     const orderId = await deliveredOrder({ lines: [[a, "100.00", "2.00"]], paymentMethod: "online_payment", metadata: own(5500) });
     await run(orderId);
     expect((await entries(a.id)).map((x) => `${x.type}:${x.amount}`)).toEqual(["sale:100.00", "fee:-2.00"]);
+    expect(await balance(a.id)).toBe("98.00");
   });
 
   it("another seller's line on a store order gets no shipping", async () => {
@@ -228,5 +277,7 @@ describe.skipIf(!TEST_DATABASE_URL)("store shipping credit (integration)", { tim
     await run(orderId);
     expect((await entries(a.id))[0]).toMatchObject({ type: "sale", amount: "120.00" });
     expect((await entries(b.id))[0]).toMatchObject({ type: "sale", amount: "40.00" });
+    expect(await balance(a.id)).toBe("118.00");
+    expect(await balance(b.id)).toBe("39.00");
   });
 });
