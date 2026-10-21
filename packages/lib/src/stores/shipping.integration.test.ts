@@ -159,6 +159,22 @@ describe.skipIf(!TEST_DATABASE_URL)("store shipping (integration)", () => {
     expect(await deleteStoreShippingZone(w.b.sellerId, w.b.sellerId, w.b.b1, cairoZone, db)).toEqual({ success: false, error: "not_found" });
   });
 
+  it("reads a governorates-only row written by older code, and refuses a new-code overlap with it", async () => {
+    await db.insert(DB_SCHEMA.storeShippingZones).values({ storeId: w.a.a2, name: { ar: "قديم" }, governorates: ["CAIRO"], price: "10.00" });
+    const shipping = await getStoreShipping(w.a.sellerId, w.a.a2, db);
+    expect(shipping?.zones.map((z) => z.places)).toEqual([["EG/CAIRO"]]);
+    expect((await getStorefrontShippingContext(w.a.a2, db))?.zones.map((z) => z.places)).toEqual([["EG/CAIRO"]]);
+    const overlap = await saveStoreShippingZone(w.a.sellerId, w.a.sellerId, w.a.a2, null, zone({ places: ["EG/CAIRO"] }), db);
+    expect(overlap).toEqual({ success: false, error: "overlap" });
+    // The DB trigger catches it too when the new-code row is written around the app.
+    await expect(
+      db.transaction(async (tx) => {
+        await tx.insert(DB_SCHEMA.storeShippingZones).values({ storeId: w.a.a2, name: { ar: "x" }, places: ["EG/CAIRO"], price: "10.00" });
+      }),
+    ).rejects.toThrow();
+    await db.delete(DB_SCHEMA.storeShippingZones).where(eq(DB_SCHEMA.storeShippingZones.storeId, w.a.a2));
+  });
+
   it("rejects invalid zone input", async () => {
     expect(await saveStoreShippingZone(w.a.sellerId, w.a.sellerId, w.a.a2, null, zone({ price: -1 }), db)).toEqual({
       success: false,

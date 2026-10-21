@@ -618,7 +618,7 @@ function toZone(row: typeof storeShippingZones.$inferSelect): StoreShippingZone 
     id: row.id,
     nameAr: name.ar ?? "",
     nameEn: name.en ?? null,
-    places: row.places,
+    places: row.places.length ? row.places : row.governorates.map((g) => `EG/${g}`),
     price: Number(row.price),
     freeOver: row.freeOver === null ? null : Number(row.freeOver),
     deliveryDaysMin: row.deliveryDaysMin,

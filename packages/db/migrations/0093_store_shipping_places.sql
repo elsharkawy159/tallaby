@@ -11,7 +11,7 @@ WHERE places = '{}' AND cardinality(governorates) > 0;
 ALTER TABLE store_shipping_zones ALTER COLUMN governorates SET DEFAULT '{}';
 ALTER TABLE store_shipping_zones DROP CONSTRAINT IF EXISTS store_shipping_zones_governorates_check;
 
--- Same-key overlap guard, now over places as well as governorates (a place and its child may be in different zones).
+-- Same-key overlap guard over both columns (legacy governorates read as EG/<g>), so rows written by older code still count.
 CREATE OR REPLACE FUNCTION store_shipping_zones_no_overlap()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -24,7 +24,8 @@ BEGIN
   IF FOUND AND cur.enabled AND EXISTS (
     SELECT 1 FROM store_shipping_zones z
     WHERE z.store_id = cur.store_id AND z.id <> cur.id AND z.enabled
-      AND (z.governorates && cur.governorates OR z.places && cur.places)
+      AND (z.places || ARRAY(SELECT 'EG/' || g FROM unnest(z.governorates) AS g))
+          && (cur.places || ARRAY(SELECT 'EG/' || g FROM unnest(cur.governorates) AS g))
   ) THEN
     RAISE EXCEPTION 'store_shipping_zones: a place is already in another enabled zone of store %', cur.store_id
       USING ERRCODE = 'exclusion_violation';
