@@ -4,7 +4,6 @@ import { db, coupons, couponUsage, products, sellers } from "@workspace/db";
 import { uniqueViolationConstraint } from "@workspace/lib/fulfillment/server";
 import { parsePriceJson } from "@workspace/lib";
 import {
-  COUPON_CHANNELS,
   SELLER_COUPON_DISCOUNT_TYPES,
   getCouponChannels,
   getCouponProductIds,
@@ -81,9 +80,9 @@ const couponInputSchema = z
     usageLimit: optionalCount,
     perUserLimit: optionalCount,
     productIds: z.array(z.string().uuid()).max(500).nullable(),
-    channels: z
-      .array(z.enum(COUPON_CHANNELS as [CouponChannel, ...CouponChannel[]]))
-      .min(1),
+    // Seller coupons work on the seller's own store(s) only (owner,
+    // 2026-10-21): a marketplace channel is refused, not silently kept.
+    channels: z.array(z.literal("storefront")).min(1),
     startsAt: z.string().datetime({ offset: true }),
     expiresAt: z.string().datetime({ offset: true }),
   })

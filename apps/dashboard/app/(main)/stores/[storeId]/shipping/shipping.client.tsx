@@ -6,11 +6,16 @@ import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Info, LoaderCircle, MapPinned, Pencil, Plus, Save, Trash2, Truck } from "lucide-react";
 
-import { TALLABY_SERVICES_ENABLED } from "@workspace/lib/fulfillment";
-import { applyShippingFeesAndRound, getBaseRateForGovernorate, getGovernorateLabel } from "@workspace/lib/shipping";
+// Tallaby delivery UI is disabled (owner, 2026-10-21); these imports only served it. See MethodCard.
+// import { TALLABY_SERVICES_ENABLED } from "@workspace/lib/fulfillment";
+// import { applyShippingFeesAndRound, getBaseRateForGovernorate } from "@workspace/lib/shipping";
+import { getGovernorateLabel } from "@workspace/lib/shipping";
 import {
   ZONE_GOVERNORATES,
+  DEFAULT_PER_KG_SURCHARGE,
+  defaultRateForGovernorate,
   quoteZone,
+  type DefaultZoneGroup,
   uncoveredGovernorates,
   zoneInputSchema,
   type StoreShippingSettings as Settings,
@@ -29,7 +34,7 @@ import {
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import { Checkbox } from "@workspace/ui/components/checkbox";
-import { ChoiceCard, ChoiceGroup } from "@workspace/ui/components/choice-card";
+// import { ChoiceCard, ChoiceGroup } from "@workspace/ui/components/choice-card"; // Tallaby delivery disabled, see MethodCard
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@workspace/ui/components/sheet";
@@ -37,7 +42,9 @@ import { Switch } from "@workspace/ui/components/switch";
 import { BUTTON_CLASS, FIELD_CLASS, LabelNote, SectionCard, SMALL_BUTTON_CLASS } from "@/components/form/form-ui";
 import { CurrencyInput } from "@/components/form/currency-input";
 import { cn } from "@/lib/utils";
-import { deleteShippingZone, saveShippingSettings, saveShippingZone } from "./shipping.server";
+import { applyDefaultShippingZones, deleteShippingZone, saveShippingSettings, saveShippingZone } from "./shipping.server";
+
+type DefaultZone = DefaultZoneGroup & { nameAr: string; nameEn: string };
 import { toZoneInput, type ZoneFormValues } from "./shipping.dto";
 
 const EMPTY_ZONE: ZoneFormValues = {
@@ -45,7 +52,8 @@ const EMPTY_ZONE: ZoneFormValues = {
   nameEn: "",
   governorates: [],
   price: "",
-  perKgSurcharge: "",
+  // Default seller rates = Tallaby's (owner, 2026-10-21): extra kg as Tallaby charges it; the price follows the governorates.
+  perKgSurcharge: String(DEFAULT_PER_KG_SURCHARGE),
   freeOver: "",
   deliveryDaysMin: "1",
   deliveryDaysMax: "3",
@@ -59,15 +67,33 @@ const fmt = (locale: string, egp: number) =>
 export function StoreShippingSettings({
   storeId,
   initial,
+  defaultZones,
   readOnly,
 }: {
   storeId: string;
   initial: { settings: Settings; zones: StoreShippingZone[] };
+  /** Tallaby's rates grouped into zones: the default seller-delivery rates. */
+  defaultZones: DefaultZone[];
   readOnly: boolean;
 }) {
   const t = useTranslations("storeShipping");
   const router = useRouter();
   const [zones, setZones] = useState(initial.zones);
+
+  const applyDefaults = () =>
+    startTransition(async () => {
+      const result = await applyDefaultShippingZones(
+        storeId,
+        defaultZones.map((z) => ({ nameAr: z.nameAr, nameEn: z.nameEn })),
+      );
+      if (result.success) {
+        setZones(result.data);
+        toast.success(t("defaultsSaved"));
+        router.refresh();
+      } else {
+        toast.error(t(`errors.${result.error}`));
+      }
+    });
   const [editing, setEditing] = useState<StoreShippingZone | "new" | null>(null);
   const [deleting, setDeleting] = useState<StoreShippingZone | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -93,7 +119,7 @@ export function StoreShippingSettings({
         <span>{t("checkoutNotice")}</span>
       </p>
 
-      <MethodCard storeId={storeId} initial={initial.settings} hasEnabledZone={zones.some((z) => z.enabled)} readOnly={readOnly} />
+      <MethodCard storeId={storeId} initial={initial.settings} readOnly={readOnly} />
 
       <SectionCard
         id="shipping-zones"
@@ -114,7 +140,7 @@ export function StoreShippingSettings({
         }
       >
         {zones.length === 0 ? (
-          <p className="py-6 text-center text-sm text-muted-foreground">{t("noZones")}</p>
+          <DefaultRates zones={defaultZones} disabled={readOnly || isPending} pending={isPending} onApply={applyDefaults} />
         ) : (
           <ul className="divide-y">
             {zones.map((zone) => (
@@ -170,25 +196,37 @@ export function StoreShippingSettings({
   );
 }
 
+/*
+ * Delivery card. TALLABY DELIVERY IS DISABLED (owner decision, 2026-10-21):
+ * Tallaby will not deliver orders for a long time, so every store uses seller
+ * (own) delivery and the Tallaby-delivery choice, its free-delivery offer and
+ * its read-only rate table are commented out below, not deleted.
+ * To re-enable: set TALLABY_SERVICES_ENABLED in packages/lib/src/fulfillment/
+ * constants.ts (parseStoreShipping and updateStoreShippingSettings follow it),
+ * restore the commented imports at the top of this file, and uncomment the
+ * ChoiceGroup, the free-over field and the rates table here (plus the
+ * `method`/`setMethod`, `freeOver` setter, `showRates` and `locale` state).
+ */
 function MethodCard({
   storeId,
   initial,
-  hasEnabledZone,
   readOnly,
 }: {
   storeId: string;
   initial: Settings;
-  hasEnabledZone: boolean;
   readOnly: boolean;
 }) {
   const t = useTranslations("storeShipping");
-  const locale = useLocale();
+  // const locale = useLocale(); // Tallaby rates table only
   const router = useRouter();
   const [saved, setSaved] = useState(initial);
-  const [method, setMethod] = useState(initial.method);
+  // Seller delivery only while Tallaby delivery is disabled.
+  // const [method, setMethod] = useState(initial.method);
+  const method: Settings["method"] = "own";
   const [handlingDays, setHandlingDays] = useState(String(initial.handlingDays));
-  const [freeOver, setFreeOver] = useState(initial.freeShippingOver === null ? "" : String(initial.freeShippingOver));
-  const [showRates, setShowRates] = useState(false);
+  // Tallaby's seller-funded free delivery; kept as stored while hidden.
+  const [freeOver] = useState(initial.freeShippingOver === null ? "" : String(initial.freeShippingOver));
+  // const [showRates, setShowRates] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   const next: Settings = {
@@ -213,8 +251,8 @@ function MethodCard({
   return (
     <SectionCard id="shipping-method" icon={Truck} title={t("methodTitle")} description={t("methodDescription")}>
       <div className="space-y-5">
+        {/* Tallaby delivery disabled (owner, 2026-10-21); see the comment above MethodCard.
         <ChoiceGroup value={method} onValueChange={(v) => setMethod(v as Settings["method"])} columns={2} stack disabled={readOnly}>
-          {/* Tallaby delivery is "Soon": a store already on it keeps it until it switches to its own zones. */}
           <ChoiceCard
             value="tallaby"
             indicator
@@ -235,14 +273,9 @@ function MethodCard({
               )
             }
           />
-          <ChoiceCard
-            value="own"
-            indicator
-            title={t("ownTitle")}
-            description={hasEnabledZone ? t("ownDescription") : t("ownNeedsZone")}
-            disabled={!hasEnabledZone && method !== "own"}
-          />
+          <ChoiceCard value="own" indicator title={t("ownTitle")} description={t("ownDescription")} />
         </ChoiceGroup>
+        */}
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="grid gap-1.5">
@@ -260,6 +293,7 @@ function MethodCard({
             />
             <LabelNote>{t("handlingDaysHelp")}</LabelNote>
           </div>
+          {/* Tallaby delivery disabled (owner, 2026-10-21): seller-funded free delivery on Tallaby's rates.
           {method === "tallaby" && (
             <div className="grid gap-1.5">
               <Label htmlFor="free-over">{t("freeOver")}</Label>
@@ -273,8 +307,11 @@ function MethodCard({
               <LabelNote>{t("freeOverHelp")}</LabelNote>
             </div>
           )}
+          */}
         </div>
 
+        {/* Tallaby delivery disabled (owner, 2026-10-21): Tallaby's read-only rate table. The same rates are now
+            the default seller-delivery zones (DefaultRates below).
         {method === "tallaby" && (
           <div>
             <Button type="button" variant="link" className="h-auto p-0" onClick={() => setShowRates((s) => !s)}>
@@ -305,6 +342,7 @@ function MethodCard({
             )}
           </div>
         )}
+        */}
 
         <div className="flex justify-end">
           <Button type="button" className={BUTTON_CLASS} disabled={readOnly || isPending || !dirty} onClick={submit}>
@@ -314,6 +352,56 @@ function MethodCard({
         </div>
       </div>
     </SectionCard>
+  );
+}
+
+/** Tallaby's rates as the default seller-delivery zones, shown while the store has none. */
+function DefaultRates({
+  zones,
+  disabled,
+  pending,
+  onApply,
+}: {
+  zones: DefaultZone[];
+  disabled: boolean;
+  pending: boolean;
+  onApply: () => void;
+}) {
+  const t = useTranslations("storeShipping");
+  const locale = useLocale();
+  return (
+    <div className="space-y-3">
+      <p className="text-sm text-muted-foreground">{t("defaultsIntro")}</p>
+      <div className="overflow-hidden rounded-xl border">
+        <table className="w-full text-sm">
+          <thead className="bg-muted/50 text-muted-foreground">
+            <tr>
+              <th className="px-3 py-2 text-start font-medium">{t("fields.governorates")}</th>
+              <th className="px-3 py-2 text-end font-medium">{t("rateFirstKg")}</th>
+              <th className="px-3 py-2 text-end font-medium">{t("fields.perKgSurcharge")}</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y">
+            {zones.map((z) => (
+              <tr key={z.price}>
+                <td className="px-3 py-1.5">{z.governorates.map((g) => getGovernorateLabel(g, locale)).join("، ")}</td>
+                <td className="whitespace-nowrap px-3 py-1.5 text-end tabular-nums">{t("egp", { amount: fmt(locale, z.price) })}</td>
+                <td className="whitespace-nowrap px-3 py-1.5 text-end tabular-nums">
+                  {t("egp", { amount: fmt(locale, z.perKgSurcharge) })}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <LabelNote>{t("defaultsNote")}</LabelNote>
+        <Button type="button" size="sm" className={SMALL_BUTTON_CLASS} disabled={disabled} onClick={onApply}>
+          {pending ? <LoaderCircle className="animate-spin" /> : <Save />}
+          {t("useDefaults")}
+        </Button>
+      </div>
+    </div>
   );
 }
 
@@ -424,6 +512,7 @@ function ZoneSheet({
       : EMPTY_ZONE,
   );
   const [submitted, setSubmitted] = useState(false);
+  const [priceTouched, setPriceTouched] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   // Governorate → the other enabled zone that already has it.
@@ -480,7 +569,10 @@ function ZoneSheet({
             invalid={invalid}
             placeholder={opts.placeholder}
             value={values[key]}
-            onChange={(v) => set(key, v)}
+            onChange={(v) => {
+              if (key === "price") setPriceTouched(true);
+              set(key, v);
+            }}
           />
         )}
         {opts.help && <LabelNote>{opts.help}</LabelNote>}
@@ -533,9 +625,16 @@ function ZoneSheet({
                     <Checkbox
                       checked={checked}
                       disabled={!!other && !checked && values.enabled}
-                      onCheckedChange={(on) =>
-                        set("governorates", on ? [...values.governorates, g] : values.governorates.filter((x) => x !== g))
-                      }
+                      onCheckedChange={(on) => {
+                        const governorates = on ? [...values.governorates, g] : values.governorates.filter((x) => x !== g);
+                        // Until the seller types a price, a new zone's price is Tallaby's rate (the highest among its governorates).
+                        if (!zone && !priceTouched) {
+                          const price = governorates.length ? Math.max(...governorates.map(defaultRateForGovernorate)) : null;
+                          setValues((v) => ({ ...v, governorates, price: price === null ? "" : String(price) }));
+                        } else {
+                          set("governorates", governorates);
+                        }
+                      }}
                     />
                     <span className="min-w-0 truncate">
                       {getGovernorateLabel(g, locale)}

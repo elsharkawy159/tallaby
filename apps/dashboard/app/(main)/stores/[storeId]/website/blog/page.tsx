@@ -11,6 +11,7 @@ import { loadStorePage } from "@/lib/stores/store-page.server";
 import { cn } from "@/lib/utils";
 import type { BlogPostListItem, BlogPostState } from "./blog.dto";
 import { DeletePostButton } from "./delete-post-button.client";
+import { RemoteImage } from "@/components/media/remote-image";
 
 const STATES = ["all", "published", "scheduled", "draft"] as const;
 type StateFilter = (typeof STATES)[number];
@@ -141,8 +142,7 @@ export default async function StoreBlogPage({
             <li key={post.id} className="flex items-center gap-3 p-3 sm:p-4">
               <div className="grid size-14 shrink-0 place-items-center overflow-hidden rounded-lg bg-muted">
                 {post.coverImage ? (
-                  // eslint-disable-next-line @next/next/no-img-element -- seller upload URL
-                  <img src={post.coverImage} alt="" className="size-full object-cover" />
+                  <RemoteImage src={post.coverImage} alt="" width={56} height={56} className="size-full object-cover" />
                 ) : (
                   <ImageOff className="size-5 text-muted-foreground" />
                 )}

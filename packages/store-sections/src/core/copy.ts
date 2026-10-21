@@ -27,7 +27,6 @@ export const SECTION_COPY = {
   pickProduct: { ar: "اختر منتجًا لعرضه هنا.", en: "Choose a product to show here." },
   pickForm: { ar: "اختر نموذجًا لعرضه هنا.", en: "Choose a form to show here." },
   emptyCustom: { ar: "قسم فارغ. أضف عناصر من لوحة الإضافة.", en: "Empty section. Add elements from the Add panel." },
-  emptyContainer: { ar: "اسحب عناصر إلى هنا", en: "Drop elements here" },
   videoEmpty: { ar: "الصق رابط الفيديو في تبويب المحتوى", en: "Paste a video link in the Content tab" },
   emptyPlaylist: { ar: "لا توجد فيديوهات. كرّر فيديو أو أضف واحدًا من تبويب المحتوى.", en: "No videos yet. Add one from the Content tab." },
   videoTitle: { ar: "فيديو", en: "Video" },

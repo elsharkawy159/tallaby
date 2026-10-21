@@ -86,7 +86,7 @@ export default async function StoreEditorPage({ params }: { params: Promise<{ st
     isLive: Boolean(status?.isLive),
     hasUnpublishedChanges: status?.hasUnpublishedChanges ?? true,
     previewEnabled: storePreviewSecret() !== null,
-    templates: { currentKey: gallery?.currentKey ?? "", items: toTemplateCardViews(gallery?.templates ?? []) },
+    templates: { currentKey: gallery?.currentKey ?? "", items: toTemplateCardViews(gallery?.templates ?? [], { en: store.storeCategory, ar: store.storeCategoryAr }) },
     fontClassName: storeFontVariables,
     category: { en: store.storeCategory ?? null, ar: store.storeCategoryAr ?? null },
     presets,

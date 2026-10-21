@@ -7,6 +7,7 @@ import { Input } from "@workspace/ui/components/input";
 import { cn } from "@workspace/ui/lib/utils";
 import type { CouponProductOption } from "@/actions/coupons";
 import { formatMoney } from "@/lib/i18n/format";
+import { RemoteImage } from "@/components/media/remote-image";
 
 type Props = {
   products: CouponProductOption[];
@@ -84,9 +85,8 @@ export function CouponProductPicker({ products, selectedIds, onChange, invalid }
                 >
                   <span className="relative size-11 shrink-0 overflow-hidden rounded-md bg-muted">
                     {p.image ? (
-                      // Product images come from many hosts (imports), so skip next/image.
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={p.image} alt="" loading="lazy" className="size-full object-cover" />
+                      // Imported product images can be on any host; RemoteImage serves those as is.
+                      <RemoteImage src={p.image} alt="" fill sizes="44px" className="object-cover" />
                     ) : (
                       <span className="flex size-full items-center justify-center text-muted-foreground">
                         <ImageOff className="size-4" aria-hidden />

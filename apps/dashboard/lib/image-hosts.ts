@@ -10,9 +10,13 @@ export const OPTIMIZED_IMAGE_HOSTS = [
   "images.pexels.com",
 ] as const;
 
-/** True when next/image can optimize `src` (relative paths count as local). */
+/**
+ * True when next/image can optimize `src` (relative paths count as local).
+ * SVG and GIF are served as is (vectors and animations don't benefit).
+ */
 export function isOptimizableImage(src: string): boolean {
-  if (src.startsWith("/")) return true;
+  if (/\.(svg|gif)(?:[?#]|$)/i.test(src)) return false;
+  if (src.startsWith("/")) return !src.startsWith("//");
   try {
     const url = new URL(src);
     return (

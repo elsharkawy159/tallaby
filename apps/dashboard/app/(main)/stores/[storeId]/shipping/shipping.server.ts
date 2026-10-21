@@ -5,6 +5,7 @@ import type { StoreShippingSettings as Settings } from "@workspace/lib/shipping/
 import {
   deleteStoreShippingZone,
   saveStoreShippingZone,
+  seedDefaultStoreShippingZones,
   updateStoreShippingSettings,
   type StoreShippingZone,
 } from "@workspace/lib/stores/server";
@@ -26,6 +27,7 @@ const ERRORS: Record<string, StoreShippingErrorKey> = {
   too_many_zones: "tooManyZones",
   no_zones: "noZones",
   tallaby_unavailable: "tallabyUnavailable",
+  zones_exist: "zonesExist",
   store_read_only: "readOnly",
   not_found: "notFound",
 };
@@ -60,6 +62,14 @@ export async function saveShippingZone(
   return run(storeId, (sellerId, actorId, id) =>
     saveStoreShippingZone(sellerId, actorId, id, zoneId === null ? null : String(zoneId), input),
   );
+}
+
+/** Saves Tallaby's rates as this store's delivery zones (stores with no zones only). Prices are computed server-side. */
+export async function applyDefaultShippingZones(
+  storeId: string,
+  names: unknown,
+): Promise<StoreShippingResult<StoreShippingZone[]>> {
+  return run(storeId, (sellerId, actorId, id) => seedDefaultStoreShippingZones(sellerId, actorId, id, names));
 }
 
 export async function deleteShippingZone(storeId: string, zoneId: string): Promise<StoreShippingResult<{ id: string }>> {

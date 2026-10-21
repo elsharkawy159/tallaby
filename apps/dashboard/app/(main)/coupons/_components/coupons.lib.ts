@@ -73,7 +73,7 @@ export function emptyCouponForm(): CouponFormState {
     perUserLimit: "1",
     productScope: "all",
     productIds: [],
-    channels: ["marketplace", "storefront"],
+    channels: ["storefront"],
     startDate: toDateInput(now),
     endDate: toDateInput(now + 30 * DAY_MS),
   };
@@ -92,7 +92,8 @@ export function couponToForm(coupon: SellerCouponRow): CouponFormState {
     perUserLimit: str(coupon.perUserLimit),
     productScope: coupon.productIds ? "selected" : "all",
     productIds: coupon.productIds ?? [],
-    channels: coupon.channels,
+    // Saving moves an older marketplace coupon onto the store only.
+    channels: ["storefront"],
     startDate: toDateInput(coupon.startsAt),
     endDate: toDateInput(coupon.expiresAt),
   };
@@ -135,7 +136,6 @@ export function validateCouponForm(
   if (value == null) errors.discountValue = "value";
   else if (form.discountType === "percentage" && value > 90) errors.discountValue = "percentMax";
   if (form.productScope === "selected" && form.productIds.length === 0) errors.productIds = "products";
-  if (form.channels.length === 0) errors.channels = "channels";
   if (!form.startDate || !form.endDate) errors.dates = "dates";
   else if (form.endDate < form.startDate) errors.dates = "invalid_dates";
 
@@ -153,7 +153,7 @@ export function validateCouponForm(
       usageLimit: toCount(form.usageLimit),
       perUserLimit: toCount(form.perUserLimit),
       productIds: form.productScope === "selected" ? form.productIds : null,
-      channels: form.channels,
+      channels: ["storefront"],
       // Whole days in the seller's timezone: from the first moment of the
       // start day to the last moment of the end day.
       startsAt: new Date(`${form.startDate}T00:00:00`).toISOString(),

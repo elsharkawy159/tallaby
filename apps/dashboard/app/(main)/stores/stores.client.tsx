@@ -51,6 +51,7 @@ import { Progress } from "@workspace/ui/components/progress";
 import { TextInput } from "@workspace/ui/components/inputs/text-input";
 
 import { SubdomainField } from "@/components/stores/subdomain-field.client";
+import { StoreSiteStatusNote } from "@/components/stores/store-site-status-note";
 import { StoreLogo } from "@/components/stores/store-logo.client";
 import { selectStore } from "@/components/dashboard/store-switcher.server";
 import { cn } from "@/lib/utils";
@@ -193,6 +194,7 @@ function StoreCard({ store, isSelected }: { store: StoreCardData; isSelected: bo
           <p dir="ltr" className="truncate text-start text-sm text-muted-foreground rtl:text-end">
             {host}
           </p>
+          {!archived && <StoreSiteStatusNote siteStatus={store.siteStatus} />}
           <p className="text-xs text-muted-foreground">
             {t("createdOn", { date: format.dateTime(new Date(store.createdAt), { dateStyle: "medium" }) })}
           </p>

@@ -14,6 +14,7 @@ import { prepareTemplateForStore, resolveDemoCatalog, templateFormNeeds, type Te
 import { starterPreviewForm } from "@workspace/lib/store-forms/starter";
 import { cn, getPublicUrl } from "@workspace/ui/lib/utils";
 import { templateFrameSrc } from "@/lib/marketing/templates.lib";
+import { optimizeStoreImage } from "@/lib/store-site/optimize-image.lib";
 import { getTemplatePreview } from "@/lib/marketing/templates.server";
 import { storeFontVariables, storefrontFont } from "../../../../(shop)/storefront/[subdomain]/_components/storefront-font";
 import s from "../../../../(shop)/storefront/[subdomain]/storefront.module.css";
@@ -114,6 +115,7 @@ function buildContext(
     ),
     // Template images are URLs or paths in the shared media bucket, as on the storefront.
     imageUrl: (src) => (src ? getPublicUrl(src, "sellers") || null : null),
+    optimizeImage: optimizeStoreImage,
     formatPrice: (amount) => formatPricePlain(amount, locale),
     renderCartButton: () => (
       <span aria-hidden className="inline-flex h-9 items-center rounded-full border border-(--sf-line) px-3 text-sm">

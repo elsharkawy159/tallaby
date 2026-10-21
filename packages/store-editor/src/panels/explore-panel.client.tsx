@@ -14,6 +14,7 @@ import type { ExploreErrorKey, StockPhoto } from "../editor.dto";
 import { useEditorAdapter, useEditorLinks } from "../adapter.client";
 import { useDragData } from "../dnd/editor-dnd.client";
 import type { EditorCommands } from "../lib/editor-commands.lib";
+import { EditorImage } from "../media/editor-image";
 
 /**
  * Explore tab (owner request 2026-10-18, like the reference
@@ -170,8 +171,7 @@ export function ExplorePanel({
                       label={photo.alt || t("photoBy", { name: photo.photographer })}
                       onPick={() => void onPick(photo)}
                     >
-                      {/* eslint-disable-next-line @next/next/no-img-element -- Pexels CDN thumbnail */}
-                      <img src={photo.thumbUrl} alt="" loading="lazy" className="size-full object-cover transition-transform duration-200 group-hover:scale-105" />
+                      <EditorImage src={photo.thumbUrl} alt="" fill sizes="140px" className="object-cover transition-transform duration-200 group-hover:scale-105" />
                       <span className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/25" />
                       {!readOnly && (
                         <span className="absolute inset-x-0 top-1/2 mx-auto w-fit -translate-y-1/2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-foreground opacity-0 shadow transition-opacity group-hover:opacity-100">

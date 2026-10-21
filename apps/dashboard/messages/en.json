@@ -210,7 +210,7 @@
     "productHiddenDraft": "Product hidden (draft)",
     "productPublished": "Product published",
     "productUnpublished": "Product unpublished",
-    "productSubmittedForReview": "Product submitted for review",
+    "productSavedAsDraft": "Product saved as a draft. Add an image to publish it.",
     "failedToUpdateProductStatus": "Failed to update product status",
     "productUpdatedSuccessfully": "Product updated successfully!",
     "failedToUpdateProduct": "Failed to update product",
@@ -598,9 +598,9 @@
     },
     "product": {
       "draft": "Draft",
-      "pending": "Pending review",
+      "pending": "Not published",
       "active": "Active",
-      "rejected": "Rejected"
+      "rejected": "Removed by Tallaby"
     },
     "payout": {
       "pending": "Pending",
@@ -657,55 +657,30 @@
       "showLess": "Show less",
       "remaining": "{count, plural, one {# step left} other {# steps left}}",
       "tasks": {
-        "profile": {
-          "title": "Set up your store profile",
-          "description": "Logo and store description",
-          "cta": "Set up"
-        },
-        "fulfillment": {
-          "title": "Set up shipping & fulfillment",
-          "description": "Pickup address and delivery method",
-          "cta": "Set up"
-        },
         "product": {
           "title": "Add your first product",
           "description": "Photos, price and stock",
           "cta": "Add product"
         },
-        "coupon": {
-          "title": "Create a discount coupon",
-          "description": "Give new customers a reason to order",
-          "cta": "Create"
+        "template": {
+          "title": "Choose your template",
+          "description": "Pick a design for your store's website",
+          "cta": "Choose"
         },
-        "campaign": {
-          "title": "Launch your first ad campaign",
-          "description": "Get seen by customers from day one",
-          "cta": "Start"
-        },
-        "contact": {
-          "title": "Add your contact details",
-          "description": "Phone or email shown in your store",
-          "cta": "Add"
-        },
-        "legal": {
-          "title": "Add your legal details",
-          "description": "Business type and registered address",
-          "cta": "Add"
+        "shipping": {
+          "title": "Set up shipping",
+          "description": "How and where you deliver orders",
+          "cta": "Set up"
         },
         "publish": {
           "title": "Publish your store",
           "description": "Go live so customers can visit and order",
           "cta": "Publish now"
-        },
-        "payout": {
-          "title": "Set up your payout account",
-          "description": "Where we send your earnings",
-          "cta": "Set up"
         }
       },
       "publish": {
         "cta": "Publish now",
-        "locked": "Finish your store profile, first product and legal details first",
+        "locked": "Add your first product first",
         "successTitle": "Your store is live! 🎉",
         "successBody": "Congratulations! Customers can now visit your store and place orders. Share your link:",
         "copy": "Copy link",
@@ -868,7 +843,7 @@
       "unpublishProduct": "Unpublish product",
       "publish": "Publish",
       "unpublish": "Unpublish",
-      "onlyToggleable": "Only published or draft products can be toggled"
+      "onlyToggleable": "Products removed by Tallaby can't be published"
     },
     "imageUpload": {
       "dropHere": "Drag and drop images here",
@@ -1146,6 +1121,8 @@
     "saveChanges": "Save changes",
     "page": {
       "newTitle": "New product",
+      "editTitle": "Edit product",
+      "saveShort": "Save",
       "notSaved": "Not saved yet",
       "unsaved": "Unsaved changes",
       "autosaved": "Draft saved on this device",
@@ -1430,7 +1407,7 @@
     },
     "documents": {
       "title": "Verification Documents",
-      "description": "Upload your business license and tax certificate. Files save as soon as they upload.",
+      "description": "You can upload your business license and tax certificate (optional). Files save as soon as they upload.",
       "type": {
         "general": "General document",
         "business_license": "Business license",
@@ -1445,7 +1422,6 @@
       },
       "expires": "Expires {date}",
       "uploadedOn": "Uploaded {date}",
-      "required": "Required",
       "optional": "Optional",
       "formats": "PNG, JPG or WebP · max 5 MB",
       "generalHint": "Any other supporting document · max 5 MB",
@@ -1453,7 +1429,7 @@
       "replace": "Replace",
       "view": "View",
       "tag": {
-        "required": "Required for verification",
+        "optional": "Optional",
         "review": "Under review",
         "verified": "Verified"
       }
@@ -1843,7 +1819,7 @@
   },
   "coupons": {
     "title": "Coupons",
-    "intro": "Give customers a code that takes money off your products on tallaby.com, your own store, or both. Other sellers' items in the same cart stay full price.",
+    "intro": "Give customers a code that takes money off your products on your own store.",
     "create": "Create coupon",
     "filters": {
       "all": "All",
@@ -1914,8 +1890,6 @@
       "noProducts": "You don't have products yet.",
       "notActive": "Not live",
       "channels": "Where it works",
-      "marketplace": "tallaby.com",
-      "marketplaceHint": "The Tallaby marketplace",
       "storefront": "Your store",
       "storefrontNoHost": "Your own store website",
       "limits": "Conditions",
@@ -2345,6 +2319,12 @@
       "nameTooLong": "Use at most 80 characters."
     }
   },
+  "storeSiteStatus": {
+    "offline": "Your store is offline: visitors see the \"store unavailable\" page and can't order. Turn on \"Website live\" on the Website page.",
+    "offlineShort": "Offline",
+    "draft": "Your website isn't published yet: visitors see a basic default storefront of your products until you publish.",
+    "draftShort": "Not published"
+  },
   "storeSettings": {
     "save": "Save changes",
     "saved": "Store settings saved",
@@ -2405,7 +2385,7 @@
       "modeSelected": "Only selected products",
       "modeSelectedHint": "This store shows only the products you tick below. New products are not added automatically.",
       "pickTitle": "Pick products",
-      "pickDescription": "Only active products appear on the store. Draft and pending products show once they are approved.",
+      "pickDescription": "Only active products appear on the store. Publish a draft to show it.",
       "search": "Search your products",
       "selectedCount": "{count, plural, =0 {No products selected} one {1 product selected} other {# products selected}}",
       "selectShown": "Select shown",
@@ -2415,8 +2395,8 @@
       "status": {
         "active": "Active",
         "draft": "Draft",
-        "pending": "Pending review",
-        "rejected": "Rejected"
+        "pending": "Not published",
+        "rejected": "Removed by Tallaby"
       },
       "tooMany": "You can pick up to {max} products.",
       "shownLimit": "Showing your {max} newest products.",
@@ -2601,9 +2581,9 @@
     "zoneSaved": "Zone saved.",
     "zoneDeleted": "Zone deleted.",
     "readOnly": "This store is read-only, so shipping settings can't be changed.",
-    "checkoutNotice": "Your store's website will use these settings once store checkout launches. Until then, shipping is charged the same way as today.",
-    "methodTitle": "Delivery method",
-    "methodDescription": "Choose who delivers your store's orders.",
+    "checkoutNotice": "You deliver your store's orders yourself. Until store checkout launches, customers are charged the default rates shown below.",
+    "methodTitle": "Your delivery",
+    "methodDescription": "You deliver your store's orders with your own riders or courier.",
     "tallabyTitle": "Tallaby delivery",
     "tallabyDescription": "Tallaby's couriers deliver. Customers pay Tallaby's rates.",
     "ownTitle": "My own delivery",
@@ -2622,7 +2602,12 @@
     "egp": "EGP {amount}",
     "free": "Free",
     "zonesTitle": "Delivery zones",
-    "zonesDescription": "For your own delivery: group governorates and set a price for each group.",
+    "zonesDescription": "Group governorates and set your delivery price for each group.",
+    "defaultZoneName": "Delivery EGP {price}",
+    "defaultsIntro": "You haven't set your delivery prices yet, so these default rates apply. Save them as your zones, then edit any price.",
+    "defaultsNote": "Default rates by governorate, for the first kg plus each extra kg.",
+    "useDefaults": "Use these rates",
+    "defaultsSaved": "Default rates saved as your delivery zones.",
     "addZone": "Add zone",
     "editZone": "Edit zone",
     "zoneSheetDescription": "A governorate can be in only one enabled zone.",
@@ -2631,13 +2616,13 @@
     "noCod": "No cash on delivery",
     "zoneSummary": "EGP {price} · {min}–{max} days",
     "freeOverSummary": "free over EGP {amount}",
-    "uncovered": "Not delivered ({count}):",
+    "uncovered": "Not in a zone, so the default rate applies ({count}):",
     "edit": "Edit",
     "delete": "Delete",
     "cancel": "Cancel",
     "save": "Save",
     "deleteTitle": "Delete zone \"{name}\"?",
-    "deleteDescription": "Customers in these governorates won't be able to order with your own delivery.",
+    "deleteDescription": "Customers in these governorates will be charged the default delivery rate.",
     "example": "Example: an order of EGP 300 weighing 2.5 kg costs {amount}.",
     "fields": {
       "nameAr": "Zone name (Arabic)",
@@ -2667,7 +2652,8 @@
       "notFound": "Not found.",
       "rateLimited": "Too many changes. Please wait a few minutes and try again.",
       "generic": "Couldn't save. Please try again.",
-      "tallabyUnavailable": "Tallaby delivery isn't available yet. Use your own delivery."
+      "tallabyUnavailable": "Tallaby delivery isn't available yet. Use your own delivery.",
+      "zonesExist": "This store already has delivery zones. Refresh the page."
     },
     "soon": "Soon",
     "tallabyLegacy": "Your store still uses Tallaby's rates. Tallaby delivery is coming soon, so add your own zones and switch to own delivery.",

@@ -938,6 +938,12 @@
     "undone": "تم التراجع عن تغيير القالب.",
     "lastApplied": "تم تطبيق {name} في {date}.",
     "undo": "التراجع عن تغيير القالب",
+    "pagination": {
+      "label": "صفحات القوالب",
+      "previous": "السابق",
+      "next": "التالي",
+      "page": "صفحة {page} من {pageCount}"
+    },
     "categories": {
       "label": "التصنيفات",
       "all": "الكل",

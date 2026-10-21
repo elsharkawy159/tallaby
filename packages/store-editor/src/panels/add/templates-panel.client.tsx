@@ -8,6 +8,7 @@ import { cn } from "@workspace/ui/lib/utils";
 import type { TemplateCardView } from "../../templates.dto";
 import { TemplatePreviewDialog, type TemplatePreviewHost } from "./template-preview-dialog.client";
 import { TemplatePageThumbnail } from "./template-thumbnail.client";
+import { EditorImage } from "../../media/editor-image";
 
 type Localized = { ar?: string; en?: string };
 
@@ -55,8 +56,9 @@ export function TemplatesPanel({
                     )}
                   >
                     {template.thumbnailUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element -- admin-managed template image
-                      <img src={template.thumbnailUrl} alt="" className="aspect-[16/10] w-full border-b object-cover" />
+                      <span className="relative block aspect-[7/6] w-full border-b">
+                        <EditorImage src={template.thumbnailUrl} alt="" fill sizes="320px" className="object-cover" />
+                      </span>
                     ) : home ? (
                       <TemplatePageThumbnail templateKey={template.key} page={home} host={host} className="border-b" />
                     ) : (

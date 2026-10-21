@@ -1,11 +1,11 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Check, Eye, LayoutTemplate, LoaderCircle, Lock, Pencil, RotateCcw, Sparkles } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Eye, LayoutTemplate, LoaderCircle, Lock, Pencil, RotateCcw, Sparkles } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,8 +23,12 @@ import { cn } from "@/lib/utils";
 import { TemplateLiveThumbnail, TemplatePreview } from "./template-preview.client";
 import { applyTemplate, undoTemplate } from "./templates.server";
 import type { TemplateCardView, TemplateInstallView } from "./templates.dto";
+import { RemoteImage } from "@/components/media/remote-image";
 
 type Localized = { ar?: string; en?: string };
+
+/** Cards per page: fills whole rows of the 2, 3 and 4-column grids. */
+const PAGE_SIZE = 12;
 
 /**
  * Website › Templates gallery (PLAN.md §8.1, P4-05). Works with a single
@@ -52,6 +56,8 @@ export function TemplateGallery({
   const format = useFormatter();
   const router = useRouter();
   const [category, setCategory] = useState<string>("all");
+  const [page, setPage] = useState(1);
+  const listRef = useRef<HTMLDivElement>(null);
   const [confirming, setConfirming] = useState<TemplateCardView | null>(null);
   const [previewing, setPreviewing] = useState<TemplateCardView | null>(null);
   const [confirmUndo, setConfirmUndo] = useState(false);
@@ -59,7 +65,15 @@ export function TemplateGallery({
 
   const text = (value: Localized) => value[locale] || value.ar || value.en || "";
   const categories = useMemo(() => [...new Set(templates.map((tpl) => tpl.category))], [templates]);
-  const shown = category === "all" ? templates : templates.filter((tpl) => tpl.category === category);
+  const filtered = category === "all" ? templates : templates.filter((tpl) => tpl.category === category);
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  // Clamped: a refresh can shrink the list under the current page.
+  const currentPage = Math.min(page, pageCount);
+  const shown = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const goToPage = (next: number) => {
+    setPage(next);
+    listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
   const nameOf = (key: string) => text(templates.find((tpl) => tpl.key === key)?.name ?? {}) || key;
 
   const onApply = (template: TemplateCardView) =>
@@ -93,7 +107,7 @@ export function TemplateGallery({
           <h2 className="text-lg font-bold">{t("title")}</h2>
           <p className="text-sm text-muted-foreground">{t("description")}</p>
         </div>
-        <Button asChild variant="outline" className={BUTTON_CLASS}>
+        <Button asChild variant="outline" className={cn(BUTTON_CLASS, "max-sm:w-full")}>
           <Link href={`/stores/${storeId}/editor`}>
             <Pencil />
             {t("openEditor")}
@@ -119,16 +133,19 @@ export function TemplateGallery({
       )}
 
       {categories.length > 1 && (
-        <div className="flex flex-wrap gap-2" role="tablist" aria-label={t("categories.label")}>
+        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0" role="tablist" aria-label={t("categories.label")}>
           {["all", ...categories].map((value) => (
             <button
               key={value}
               type="button"
               role="tab"
               aria-selected={category === value}
-              onClick={() => setCategory(value)}
+              onClick={() => {
+                setCategory(value);
+                setPage(1);
+              }}
               className={cn(
-                "rounded-full border px-3 py-1.5 text-sm transition-colors max-sm:flex-1",
+                "shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-sm transition-colors",
                 category === value ? "border-primary bg-primary text-primary-foreground" : "hover:bg-muted",
               )}
             >
@@ -141,7 +158,8 @@ export function TemplateGallery({
       {shown.length === 0 ? (
         <p className="rounded-2xl border border-dashed p-10 text-center text-sm text-muted-foreground">{t("empty")}</p>
       ) : (
-        <ul className={cn("grid gap-4", shown.length > 1 && "sm:grid-cols-2")}>
+        <div ref={listRef} className="scroll-mt-4 space-y-4">
+        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {shown.map((template) => {
             const current = template.key === currentKey;
             return (
@@ -163,9 +181,9 @@ export function TemplateGallery({
                     />
                   )}
                 </button>
-                <div className="flex flex-1 flex-col gap-3 p-4">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="font-bold">{text(template.name)}</h3>
+                <div className="flex min-w-0 flex-1 flex-col gap-2 p-3">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <h3 className="min-w-0 truncate font-bold">{text(template.name)}</h3>
                     {current && (
                       <Badge className="gap-1">
                         <Check className="size-3" />
@@ -180,7 +198,7 @@ export function TemplateGallery({
                       </Badge>
                     )}
                   </div>
-                  {text(template.description) && <p className="text-sm text-muted-foreground">{text(template.description)}</p>}
+                  {text(template.description) && <p className="line-clamp-2 text-sm text-muted-foreground">{text(template.description)}</p>}
                   {template.palette.length > 0 && (
                     <div className="flex h-5 w-28 overflow-hidden rounded-md border" aria-hidden>
                       {template.palette.map((color) => (
@@ -191,15 +209,15 @@ export function TemplateGallery({
                   <p className="text-xs text-muted-foreground">
                     {t("pagesCount", { count: template.pages.length })} · {t("version", { number: template.version })}
                   </p>
-                  <div className="mt-auto flex flex-wrap justify-end gap-2">
-                    <Button type="button" variant="outline" className={BUTTON_CLASS} onClick={() => setPreviewing(template)}>
+                  <div className="mt-auto grid grid-cols-2 gap-2 pt-1">
+                    <Button type="button" variant="outline" className={cn(SMALL_BUTTON_CLASS, "w-full")} onClick={() => setPreviewing(template)}>
                       <Eye />
                       {t("preview.action")}
                     </Button>
                     <Button
                       type="button"
                       variant={current ? "neutral" : "default"}
-                      className={BUTTON_CLASS}
+                      className={cn(SMALL_BUTTON_CLASS, "w-full")}
                       disabled={readOnly || isPending || template.isPremium}
                       onClick={() => setConfirming(template)}
                     >
@@ -212,6 +230,34 @@ export function TemplateGallery({
             );
           })}
         </ul>
+        {pageCount > 1 && (
+          <nav className="flex items-center justify-center gap-3" aria-label={t("pagination.label")}>
+            <Button
+              type="button"
+              variant="outline"
+              className={SMALL_BUTTON_CLASS}
+              disabled={currentPage <= 1}
+              onClick={() => goToPage(currentPage - 1)}
+            >
+              <ChevronLeft className="rtl:rotate-180" />
+              {t("pagination.previous")}
+            </Button>
+            <span className="text-sm text-muted-foreground" aria-live="polite">
+              {t("pagination.page", { page: currentPage, pageCount })}
+            </span>
+            <Button
+              type="button"
+              variant="outline"
+              className={SMALL_BUTTON_CLASS}
+              disabled={currentPage >= pageCount}
+              onClick={() => goToPage(currentPage + 1)}
+            >
+              {t("pagination.next")}
+              <ChevronRight className="rtl:rotate-180" />
+            </Button>
+          </nav>
+        )}
+        </div>
       )}
 
       <p className="text-xs text-muted-foreground">{t("moreSoon")}</p>
@@ -286,8 +332,17 @@ export function TemplateGallery({
 /** The template's image, or an outline of its pages and sections when it has none. */
 function TemplateThumbnail({ template, text }: { template: TemplateCardView; text: (value: Localized) => string }) {
   if (template.thumbnailUrl) {
-    // eslint-disable-next-line @next/next/no-img-element -- admin-managed template image
-    return <img src={template.thumbnailUrl} alt="" className="aspect-[16/9] w-full border-b object-cover" />;
+    return (
+      <div className="relative aspect-[7/6] w-full border-b">
+        <RemoteImage
+          src={template.thumbnailUrl}
+          alt=""
+          fill
+          sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+          className="object-cover"
+        />
+      </div>
+    );
   }
   return (
     <div className="flex aspect-[16/9] w-full flex-col gap-1.5 overflow-hidden border-b bg-muted/50 p-4">

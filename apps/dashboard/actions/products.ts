@@ -28,6 +28,18 @@ import {
 } from "@workspace/db/categories";
 import { syncProductVariants } from "@workspace/db/products";
 import { roundPriceUpToNearestFive } from "@workspace/lib";
+import { getSellerAccess } from "@/lib/auth/seller-access";
+import {
+  hasProductImage,
+  nextProductStatus,
+  type ProductStatus,
+} from "@/lib/products/product-status.lib";
+
+/** Only approved sellers can make products live; restricted ones keep drafts. */
+async function canPublishProducts(sellerId: string): Promise<boolean> {
+  const access = await getSellerAccess(sellerId);
+  return access.allowed && access.status === "approved";
+}
 
 function normalizeRichTextContent(html?: string | null): string | null {
   if (!html?.trim()) return null;
@@ -1196,13 +1208,17 @@ export async function createProduct(
     };
 
     // products table: shared data only (content lives in product_translations).
-    // status is always seller-set to 'pending' here — it is not a field the
-    // seller form is allowed to set directly, regardless of what `rest` carries.
+    // Products go live without admin review; status comes from
+    // nextProductStatus, never from what `rest` carries.
     const productPayload = {
       ...sharedOnly,
       sku,
       sellerId: session.user.id,
-      status: (rest as CreateProductLegacy).status ?? ("pending" as const),
+      status: nextProductStatus({
+        previous: null,
+        hasImage: hasProductImage((sharedOnly as { images?: unknown }).images),
+        canPublish: await canPublishProducts(session.user.id),
+      }),
     } as any;
 
     if (productPayload.price != null) {
@@ -1317,6 +1333,13 @@ export async function createProduct(
     });
 
     if (createdProduct) {
+      if (createdProduct.categoryId) {
+        await syncCategoryProductCountForProductChange({
+          categoryId: createdProduct.categoryId,
+          previousStatus: null,
+          nextStatus: createdProduct.status,
+        });
+      }
       await applyInvalidation(
         invalidateProduct(null, {
           id: createdProduct.id,
@@ -1418,6 +1441,7 @@ export async function updateProduct(
     if (!before || before.sellerId !== session.user.id) {
       throw new Error("Product not found or unauthorized");
     }
+    const canPublish = await canPublishProducts(session.user.id);
 
     // Extract variants, localized, notes and content columns (content lives in product_translations)
     type FormOnly = {
@@ -1453,14 +1477,27 @@ export async function updateProduct(
     }
 
     const updatedProduct = await db.transaction(async (tx) => {
-      // Update the main product (shared fields only). Any seller edit sends
-      // the product back to review — status is never left as-is here, and
-      // it is never taken from `productData` (the seller form cannot set it).
+      // Update the main product (shared fields only). Status comes from
+      // nextProductStatus, never from `productData` (the seller form cannot
+      // set it): a live product stays live, a draft stays a draft.
+      const images =
+        productData.images !== undefined
+          ? productData.images
+          : (
+              await tx.query.products.findFirst({
+                where: eq(products.id, productId),
+                columns: { images: true },
+              })
+            )?.images;
       const updated = await tx
         .update(products)
         .set({
           ...productData,
-          status: "pending",
+          status: nextProductStatus({
+            previous: before.status as ProductStatus,
+            hasImage: hasProductImage(images),
+            canPublish,
+          }),
           updatedAt: new Date().toISOString(),
         })
         .where(
@@ -1606,69 +1643,24 @@ export async function updateProduct(
 }
 
 export async function toggleProductStatus(productId: string) {
-  try {
-    const session = await getUser();
-    if (!session?.user?.id) {
-      throw new Error("Unauthorized");
-    }
-
-    const product = await db.query.products.findFirst({
-      where: and(
-        eq(products.id, productId),
-        eq(products.sellerId, session.user.id)
-      ),
-    });
-
-    if (!product) {
-      throw new Error("Product not found");
-    }
-
-    if (product.status !== "active" && product.status !== "draft") {
-      return {
-        success: false,
-        error: `Cannot toggle product with status "${product.status}"`,
-      };
-    }
-
-    const before = await toSnapshot(productId);
-
-    const nextStatus = product.status === "active" ? "draft" : "pending";
-
-    const updatedProduct = await db
-      .update(products)
-      .set({
-        status: nextStatus,
-        updatedAt: new Date().toISOString(),
-      })
-      .where(eq(products.id, productId))
-      .returning();
-
-    if (before?.categoryId) {
-      await syncCategoryProductCountForProductChange({
-        categoryId: before.categoryId,
-        previousStatus: before.status,
-        nextStatus,
-      });
-    }
-
-    const after = await toSnapshot(productId);
-    await applyInvalidation(invalidateProduct(before, after), {
-      from: "dashboard",
-      mode: "action",
-    });
-
-    return { success: true, data: updatedProduct[0] };
-  } catch (error) {
-    console.error("Error toggling product status:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
-    };
+  const session = await getUser();
+  if (!session?.user?.id) {
+    return { success: false, error: "Unauthorized" };
   }
-}
 
-function hasProductImage(images: unknown): boolean {
-  return Array.isArray(images) && images.length > 0;
+  const product = await db.query.products.findFirst({
+    where: and(
+      eq(products.id, productId),
+      eq(products.sellerId, session.user.id)
+    ),
+    columns: { status: true },
+  });
+
+  if (!product) {
+    return { success: false, error: "Product not found" };
+  }
+
+  return setProductPublished(productId, product.status !== "active");
 }
 
 export async function setProductPublished(productId: string, published: boolean) {
@@ -1695,7 +1687,9 @@ export async function setProductPublished(productId: string, published: boolean)
       return { success: true, data: product };
     }
 
-    if (product.status !== "active" && product.status !== "draft") {
+    // "pending" rows are legacy approval-era products the seller can publish
+    // now; "rejected" is an admin takedown and stays locked.
+    if (product.status === "rejected") {
       return {
         success: false,
         error: `Cannot publish or unpublish a product with status "${product.status}"`,
@@ -1706,6 +1700,13 @@ export async function setProductPublished(productId: string, published: boolean)
       return {
         success: false,
         error: "Add at least one image before publishing",
+      };
+    }
+
+    if (published && !(await canPublishProducts(session.user.id))) {
+      return {
+        success: false,
+        error: "Your account can't publish products right now",
       };
     }
 

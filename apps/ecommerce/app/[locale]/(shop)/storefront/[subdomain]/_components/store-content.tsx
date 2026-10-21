@@ -2,6 +2,7 @@ import { sanitizeArticleHtml } from "@workspace/store-sections/config";
 import type { ContentItemSummary } from "@workspace/store-sections/render";
 import { Link } from "@/i18n/navigation";
 import { cmsImageUrl, formatContentDate } from "@/lib/store-cms/cms.lib";
+import { optimizeStoreImage } from "@/lib/store-site/optimize-image.lib";
 
 /**
  * Blog and CMS pages on a store host (PLAN.md P4-16, P4-11). Styled with the
@@ -9,11 +10,24 @@ import { cmsImageUrl, formatContentDate } from "@/lib/store-cms/cms.lib";
  * Classic. Seller HTML is sanitized here again right before render.
  */
 
-export function ContentImage({ src, alt, className, eager = false }: { src: string | null | undefined; alt: string; className?: string; eager?: boolean }) {
+export function ContentImage({
+  src,
+  alt,
+  className,
+  eager = false,
+  sizes = "(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw",
+}: {
+  src: string | null | undefined;
+  alt: string;
+  className?: string;
+  eager?: boolean;
+  /** Rendered width hint for next/image (defaults to a post card in a grid). */
+  sizes?: string;
+}) {
   const url = cmsImageUrl(src);
   if (!url) return <div aria-hidden className={`bg-(--sf-shelf) ${className ?? ""}`} />;
-  // eslint-disable-next-line @next/next/no-img-element -- seller images from storage or any allowed host
-  return <img src={url} alt={alt} className={`object-cover ${className ?? ""}`} loading={eager ? "eager" : "lazy"} decoding="async" />;
+  // eslint-disable-next-line @next/next/no-img-element -- seller images from storage or any host; optimized when the host allows it
+  return <img {...optimizeStoreImage(url, sizes)} alt={alt} className={`object-cover ${className ?? ""}`} loading={eager ? "eager" : "lazy"} decoding="async" />;
 }
 
 export function PostMeta({ post, locale, minutesLabel }: { post: ContentItemSummary; locale: string; minutesLabel: (n: number) => string }) {

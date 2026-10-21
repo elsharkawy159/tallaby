@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { getStoreForEditor } from "@workspace/lib/store-sites/server";
 import { publicStoreSocialLinks } from "@workspace/lib/stores";
 import { storeUrl } from "@workspace/lib/storefront";
-import { designSystemSchema } from "@workspace/store-sections";
+import { designSystemSchema, sectionInstanceSchema, type SectionInstance } from "@workspace/store-sections";
 import { StorePageHeader } from "@/components/stores/store-page-header";
 import { loadWebsiteStorePage } from "@/lib/stores/website-page.server";
 import { loadEditorCatalog } from "@/app/(builder)/stores/[storeId]/editor/server/editor.data";
@@ -34,6 +34,13 @@ export default async function WebsiteDesignPage({ params }: { params: Promise<{ 
   if (!editor) notFound();
 
   const parsed = designSystemSchema.safeParse(editor.designSystem);
+  // The preview draws the store's own draft home page, header and footer.
+  const home = editor.pages.find((page) => page.isHome) ?? editor.pages[0];
+  const homeSections = ((home?.draftContent as { sections?: unknown[] } | null)?.sections ?? [])
+    .map((section) => sectionInstanceSchema.safeParse(section))
+    .flatMap((result) => (result.success ? [result.data as SectionInstance] : []));
+  const header = sectionInstanceSchema.safeParse(editor.store.sharedHeader);
+  const footer = sectionInstanceSchema.safeParse(editor.store.sharedFooter);
   const contact = (store.contact ?? {}) as { phone?: string; email?: string };
 
   return (
@@ -59,6 +66,11 @@ export default async function WebsiteDesignPage({ params }: { params: Promise<{ 
         }}
         defaultLocale={store.defaultLocale === "en" ? "en" : "ar"}
         catalog={catalog}
+        preview={{
+          sections: homeSections,
+          header: header.success ? header.data : null,
+          footer: footer.success ? footer.data : null,
+        }}
         fontClassName={storeFontVariables}
       />
     </section>

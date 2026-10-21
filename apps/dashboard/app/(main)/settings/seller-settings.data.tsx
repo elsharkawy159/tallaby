@@ -61,6 +61,7 @@ export async function SellerSettingsData() {
               storeId={primaryStore.id}
               initialSubdomain={primaryStore.subdomain}
               customDomain={liveDomain}
+              siteStatus={primaryStore.siteStatus}
             />
             <Separator className="my-1" />
             <CustomDomainSection storeId={primaryStore.id} initial={customDomain} />

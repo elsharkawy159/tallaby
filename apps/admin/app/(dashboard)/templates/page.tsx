@@ -16,6 +16,7 @@ import { formatAdminDate, localizedText } from "../stores/stores.lib";
 import { DuplicateTemplateButton, NewTemplateButton } from "./new-template-dialog.client";
 import { TemplateEditButton } from "./template-edit.client";
 import { deleteTemplateAction, restoreTemplateVersionToDraftAction, setDefaultTemplateAction } from "./templates.server";
+import { RemoteImage } from "@/components/media/remote-image";
 
 export const dynamic = "force-dynamic";
 
@@ -107,8 +108,7 @@ export default async function TemplatesPage({ searchParams }: PageProps) {
                   template: (
                     <div className="flex items-center gap-3">
                       {row.thumbnailUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={row.thumbnailUrl} alt="" className="h-10 w-16 rounded border object-cover" />
+                        <RemoteImage src={row.thumbnailUrl} alt="" width={56} height={48} className="h-12 w-14 rounded border object-cover" />
                       ) : (
                         <div className="h-10 w-16 rounded border bg-muted" />
                       )}

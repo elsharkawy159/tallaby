@@ -83,14 +83,13 @@ export const getHomeSnapshot = cache(async (): Promise<HomeSnapshot | null> => {
       s.fee_trial_eligible,
       s.fee_trial_started_at,
       s.fee_trial_ends_at,
-      coalesce(st.logo_url IS NOT NULL AND nullif(st.description, '') IS NOT NULL, false) AS setup_profile,
-      coalesce(st.contact ? 'phone' OR st.contact ? 'email', false) AS setup_contact,
       EXISTS (SELECT 1 FROM products p WHERE p.seller_id = s.id AND p.status = 'active') AS setup_product,
-      (nullif(s.legal_address->>'street', '') IS NOT NULL AND nullif(s.legal_address->>'state', '') IS NOT NULL) AS setup_legal,
+      -- st is already limited to this seller (join below), so st.id scopes the child rows.
+      coalesce(st.site_status IN ('published', 'unpublished')
+        OR EXISTS (SELECT 1 FROM template_installs ti WHERE ti.store_id = st.id AND ti.undone_at IS NULL), false) AS setup_template,
+      coalesce(st.settings ? 'shipping'
+        OR EXISTS (SELECT 1 FROM store_shipping_zones z WHERE z.store_id = st.id), false) AS setup_shipping,
       coalesce(st.site_status = 'published', false) AS setup_publish,
-      coalesce(s.payment_details ? 'method', false) AS setup_payout,
-      EXISTS (SELECT 1 FROM coupons c WHERE c.seller_id = s.id) AS setup_coupon,
-      EXISTS (SELECT 1 FROM ad_campaign_requests a WHERE a.seller_id = s.id) AS setup_campaign,
       EXISTS (SELECT 1 FROM order_items oi WHERE oi.seller_id = s.id) AS has_orders,
       (SELECT count(DISTINCT oi.order_id)::int FROM order_items oi
         WHERE oi.seller_id = s.id AND oi.status IN ${AWAITING_PREP}) AS pending_orders,
@@ -119,14 +118,10 @@ export const getHomeSnapshot = cache(async (): Promise<HomeSnapshot | null> => {
       row.positive_rating_percent == null ? null : Number(row.positive_rating_percent),
     totalRatings: Number(row.total_ratings),
     setup: {
-      profile: Boolean(row.setup_profile),
-      contact: Boolean(row.setup_contact),
       product: Boolean(row.setup_product),
-      legal: Boolean(row.setup_legal),
+      template: Boolean(row.setup_template),
+      shipping: Boolean(row.setup_shipping),
       publish: Boolean(row.setup_publish),
-      payout: Boolean(row.setup_payout),
-      coupon: Boolean(row.setup_coupon),
-      campaign: Boolean(row.setup_campaign),
     },
     setupStoreId: storeId,
     feeTrial: {

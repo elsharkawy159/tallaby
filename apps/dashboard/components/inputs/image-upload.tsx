@@ -9,6 +9,7 @@ import { useTranslations } from "next-intl";
 
 import { createClient } from "@/supabase/client";
 import { cn, generateImageName, getPublicUrl, validateImage } from "@/lib/utils";
+import { RemoteImage } from "@/components/media/remote-image";
 
 interface FileToUpload {
   file?: File;
@@ -327,8 +328,7 @@ function Tile({
       )}
     >
       {src && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={src} alt="" className="size-full object-cover" draggable={false} />
+        <RemoteImage src={src} alt="" fill sizes={compact ? "64px" : "(min-width: 768px) 240px, 50vw"} className="object-cover" draggable={false} />
       )}
 
       {isUploading && (

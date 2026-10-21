@@ -27,6 +27,7 @@ import {
 } from '@workspace/lib/storefront'
 import { cn } from '@/lib/utils'
 import { checkStoreSubdomain, updateStoreSubdomain } from '@/actions/seller'
+import { StoreSiteStatusNote } from '@/components/stores/store-site-status-note'
 import {
   ADDON_CLASS,
   BUTTON_CLASS,
@@ -55,12 +56,15 @@ export function StoreLinkSection ({
   initialSubdomain,
   customDomain,
   readOnly = false,
+  siteStatus,
 }: {
   storeId: string
   initialSubdomain: string
   customDomain?: string | null
   /** Archived / suspended store: the address can be shared, not changed. */
   readOnly?: boolean
+  /** `stores.site_status`: an unpublished or offline store gets a note under its link. */
+  siteStatus?: string
 }) {
   const t = useTranslations('settings.storeLink')
   const router = useRouter()
@@ -259,6 +263,7 @@ export function StoreLinkSection ({
             </Button>
           )}
         </div>
+        <StoreSiteStatusNote siteStatus={siteStatus} />
       </div>
 
       <div className='flex flex-wrap items-center gap-2'>

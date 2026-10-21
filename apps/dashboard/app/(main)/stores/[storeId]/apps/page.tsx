@@ -32,7 +32,7 @@ export default async function StoreAppsPage({ params }: { params: Promise<{ stor
     <section className="mx-auto w-full max-w-[1120px] px-3.5 pt-[22px] pb-20 sm:px-6 sm:pt-8 sm:pb-24">
       <StoreApps
         storeId={store.id}
-        store={{ name: store.name, logoUrl: store.logoUrl, hostname: storeHostname(store.subdomain) }}
+        store={{ name: store.name, logoUrl: store.logoUrl, hostname: storeHostname(store.subdomain), siteStatus: store.siteStatus }}
         initial={integrations}
         readOnly={store.status !== "active"}
         googleSheetsEnabled={isGoogleSheetsConfigured()}

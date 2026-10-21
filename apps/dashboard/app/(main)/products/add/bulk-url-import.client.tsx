@@ -38,6 +38,7 @@ import {
   scrapeBulkUrls,
   type BulkProductItem,
 } from "./bulk-url-import.lib"
+import { RemoteImage } from "@/components/media/remote-image";
 
 interface BulkUrlImportProps {
   urls: string[]
@@ -433,14 +434,9 @@ export function BulkUrlImport ({
                   <div className="flex items-center gap-2">
                     <AccordionTrigger className="flex-1 hover:no-underline py-3">
                       <div className="flex items-center gap-3 text-start min-w-0">
-                        <div className="size-12 rounded-md border border-border bg-muted/50 overflow-hidden shrink-0">
+                        <div className="relative size-12 rounded-md border border-border bg-muted/50 overflow-hidden shrink-0">
                           {thumb ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={thumb}
-                              alt=""
-                              className="size-full object-cover"
-                            />
+                            <RemoteImage src={thumb} alt="" fill sizes="48px" className="object-cover" />
                           ) : (
                             <div className="size-full flex items-center justify-center text-[10px] text-muted-foreground">
                               {item.status === "fetching" ? "…" : t("noImage")}

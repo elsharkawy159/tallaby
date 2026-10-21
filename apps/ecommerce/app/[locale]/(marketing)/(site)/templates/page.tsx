@@ -26,6 +26,12 @@ export default async function TemplatesPage({ params }: { params: Promise<{ loca
     { icon: Gauge, title: t("why.fastTitle"), body: t("why.fastBody") },
     { icon: Languages, title: t("why.langTitle"), body: t("why.langBody") },
   ];
+  // The hero fan shows real thumbnails: Atelier, Glow and Kasr, else the first ones that have one.
+  const withImage = entries.filter((e) => e.thumbnailUrl);
+  const fan = [...["atelier", "glow", "kasr"].flatMap((key) => withImage.filter((e) => e.id === key)), ...withImage]
+    .map((e) => e.thumbnailUrl!)
+    .filter((url, i, all) => all.indexOf(url) === i)
+    .slice(0, 3);
   const stats = [
     { value: String(entries.length), label: t("hero.statTemplates") },
     { value: "0", label: t("hero.statFree") },
@@ -38,7 +44,7 @@ export default async function TemplatesPage({ params }: { params: Promise<{ loca
         eyebrow={t("hero.eyebrow")}
         title={t.rich("hero.title", richTags)}
         lead={t("hero.lead")}
-        aside={<TemplateFan />}
+        aside={<TemplateFan images={fan} />}
       >
         <div className="mt-8 flex flex-wrap gap-7">
           {stats.map((s) => (

@@ -31,22 +31,22 @@ import type { SellerDocument } from './seller-settings.types'
 import { handleUploadDocument } from './seller-settings.server'
 import { SMALL_BUTTON_CLASS, SectionCard } from './settings-ui'
 
-const DOCUMENT_SLOTS: { type: string; icon: LucideIcon; required: boolean }[] = [
-  { type: 'business_license', icon: FileBadge, required: true },
-  { type: 'tax_certificate', icon: Receipt, required: true },
-  { type: 'general', icon: File, required: false },
+/**
+ * Every document is optional (owner, 2026-10-21): sellers may upload the
+ * business license and tax certificate, but nothing requires them.
+ */
+const DOCUMENT_SLOTS: { type: string; icon: LucideIcon }[] = [
+  { type: 'business_license', icon: FileBadge },
+  { type: 'tax_certificate', icon: Receipt },
+  { type: 'general', icon: File },
 ]
 
-const REQUIRED_TYPES = DOCUMENT_SLOTS.filter((s) => s.required).map((s) => s.type)
+const LEGAL_TYPES = ['business_license', 'tax_certificate']
 const VERIFIED_STATUSES = new Set(['approved', 'verified'])
 
 /** Documents arrive newest first, so the first match is the current one. */
 function latestOf (documents: SellerDocument[], type: string) {
   return documents.find((doc) => doc.documentType === type)
-}
-
-export function requiredDocumentsUploaded (documents: SellerDocument[]) {
-  return REQUIRED_TYPES.every((type) => latestOf(documents, type))
 }
 
 export function DocumentsSection ({
@@ -63,27 +63,28 @@ export function DocumentsSection ({
     setDocuments(initialDocuments)
   }, [initialDocuments])
 
-  const required = REQUIRED_TYPES.map((type) => latestOf(documents, type))
-  const tag = required.every((doc) => doc && VERIFIED_STATUSES.has(doc.status ?? ''))
+  const uploaded = LEGAL_TYPES.map((type) => latestOf(documents, type)).filter(
+    (doc): doc is SellerDocument => Boolean(doc)
+  )
+  const tag = uploaded.length === 0
+    ? (
+      <Badge variant='muted' className='h-6 px-2.5'>
+        {t('tag.optional')}
+      </Badge>
+      )
+    : uploaded.every((doc) => VERIFIED_STATUSES.has(doc.status ?? ''))
     ? (
       <Badge variant='success' className='h-6 px-2.5'>
         <CircleCheck />
         {t('tag.verified')}
       </Badge>
       )
-    : required.every(Boolean)
-      ? (
-        <Badge variant='info' className='h-6 px-2.5'>
-          <Clock />
-          {t('tag.review')}
-        </Badge>
-        )
-      : (
-        <Badge variant='warning' className='h-6 px-2.5'>
-          <Clock />
-          {t('tag.required')}
-        </Badge>
-        )
+    : (
+      <Badge variant='info' className='h-6 px-2.5'>
+        <Clock />
+        {t('tag.review')}
+      </Badge>
+      )
 
   return (
     <SectionCard
@@ -113,13 +114,11 @@ export function DocumentsSection ({
 function DocumentRow ({
   type,
   icon: Icon,
-  required,
   document,
   onUploaded,
 }: {
   type: string
   icon: LucideIcon
-  required: boolean
   document: SellerDocument | undefined
   onUploaded: (doc: SellerDocument) => void
 }) {
@@ -171,9 +170,7 @@ function DocumentRow ({
           {document && statusLabel ? (
             <Badge variant={statusVariant}>{statusLabel}</Badge>
           ) : (
-            <Badge variant={required ? 'warning' : 'muted'}>
-              {required ? t('required') : t('optional')}
-            </Badge>
+            <Badge variant='muted'>{t('optional')}</Badge>
           )}
         </p>
         <p className='truncate text-xs text-muted-foreground'>

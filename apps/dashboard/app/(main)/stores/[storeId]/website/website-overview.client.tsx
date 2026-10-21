@@ -42,6 +42,7 @@ import { Button } from "@workspace/ui/components/button";
 import { Switch } from "@workspace/ui/components/switch";
 import { BUTTON_CLASS, SectionCard, SMALL_BUTTON_CLASS } from "@/components/form/form-ui";
 import { cn } from "@/lib/utils";
+import { StoreSiteStatusNote } from "@/components/stores/store-site-status-note";
 import { discardDraft, publish, restoreRevision, unpublish } from "@/app/(builder)/stores/[storeId]/editor/server/editor.server";
 import { useStorePreview } from "@/app/(builder)/stores/[storeId]/editor/use-store-preview.client";
 import type { WebsiteOverviewData } from "./website.types";
@@ -196,6 +197,10 @@ export function WebsiteOverview({ data }: { data: WebsiteOverviewData }) {
                   </a>
                 </Button>
               </div>
+              {/* Follows the optimistic switch; a store that was ever live is "unpublished" once off. */}
+              <StoreSiteStatusNote
+                siteStatus={live ? "published" : data.siteStatus === "draft" ? "draft" : "unpublished"}
+              />
             </div>
 
             <p className="text-sm text-muted-foreground">{t(`statusHint.${status}`)}</p>

@@ -308,5 +308,7 @@ describe("tree section elements", () => {
     const tree = [node("section", {}, [node("grid")])];
     expect(render(custom(tree), { mode: "edit" })).toContain("data-editor-only");
     expect(render(custom(tree))).not.toContain("data-editor-only");
+    expect(render(custom(tree), { mode: "edit" })).not.toContain("اسحب عناصر");
+    expect(render(custom(tree), { mode: "edit", locale: "en" })).not.toContain("Drop elements here");
   });
 });

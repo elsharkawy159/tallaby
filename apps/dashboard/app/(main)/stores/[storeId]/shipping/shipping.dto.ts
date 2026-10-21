@@ -5,6 +5,7 @@ export type StoreShippingErrorKey =
   | "tooManyZones"
   | "noZones"
   | "tallabyUnavailable"
+  | "zonesExist"
   | "readOnly"
   | "notFound"
   | "rateLimited"

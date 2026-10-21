@@ -38,6 +38,7 @@ import { applyPresetDesign, currentPreset, distinctDesigns, fieldGroups } from "
 import { addItem, newId, readItemProp, readProp, removeItem, setItemProp, setSectionProp } from "../lib/editor.lib";
 import { placeItem } from "../lib/editor-slots.lib";
 import { partField, readNodeProp, readPart, setNodeProp, writePart } from "../lib/editor-selection.lib";
+import { EditorImage } from "../media/editor-image";
 
 type Catalog = {
   products: EditorProduct[];
@@ -158,8 +159,7 @@ export function Field({
           {inspectorStore && <MediaPicker readOnly={inspectorStore.readOnly} onPick={(asset) => onChange(asset.url)} />}
           <Input id={id} dir="ltr" placeholder="https://…" value={text} onChange={(e) => onChange(e.target.value)} />
           {/^https?:\/\//.test(text) && (
-            // eslint-disable-next-line @next/next/no-img-element -- seller-entered preview
-            <img src={text} alt="" className="h-20 w-full rounded-md border object-cover" />
+            <EditorImage src={text} alt="" width={320} height={80} sizes="320px" className="h-20 w-full rounded-md border object-cover" />
           )}
           <p className="text-xs text-muted-foreground">{t("imageHint")}</p>
         </div>
@@ -286,8 +286,7 @@ function VideoField({ id, value, onChange, placeholder }: { id: string; value: s
       {source && (
         <div className="flex items-center gap-2.5 rounded-md border p-1.5">
           {still ? (
-            // eslint-disable-next-line @next/next/no-img-element -- the site's own still
-            <img src={still} alt="" className="h-10 w-16 shrink-0 rounded object-cover" />
+            <EditorImage src={still} alt="" width={64} height={40} className="h-10 w-16 shrink-0 rounded object-cover" />
           ) : (
             <span className="grid h-10 w-16 shrink-0 place-items-center rounded bg-muted text-[10px] font-semibold text-muted-foreground">
               {PROVIDER_NAMES[source.provider]}

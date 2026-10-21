@@ -5,7 +5,6 @@ import { Shuffle } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@workspace/ui/components/button";
-import { Checkbox } from "@workspace/ui/components/checkbox";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { RadioGroup, RadioGroupItem } from "@workspace/ui/components/radio-group";
@@ -19,7 +18,6 @@ import {
 } from "@workspace/ui/components/sheet";
 import { Spinner } from "@workspace/ui/components/spinner";
 import { cn } from "@workspace/ui/lib/utils";
-import type { CouponChannel } from "@workspace/lib/orders/coupon-scope";
 import {
   saveSellerCoupon,
   type CouponProductOption,
@@ -74,14 +72,6 @@ export function CouponEditor({ open, onOpenChange, coupon, products, storeHost, 
     const field = key === "startDate" || key === "endDate" ? "dates" : key;
     setErrors((e) => (field in e ? { ...e, [field]: undefined } : e));
   };
-
-  const toggleChannel = (channel: CouponChannel, checked: boolean) =>
-    set(
-      "channels",
-      checked
-        ? [...new Set([...form.channels, channel])]
-        : form.channels.filter((c) => c !== channel)
-    );
 
   const submit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -304,36 +294,16 @@ export function CouponEditor({ open, onOpenChange, coupon, products, storeHost, 
             {/* Where it works */}
             <fieldset className="space-y-3">
               <legend className="mb-3 text-sm font-semibold">{t("channels")}</legend>
-              <div className="grid gap-2 sm:grid-cols-2">
-                <ChoiceCard
-                  id={`${ids}-ch-marketplace`}
-                  title={t("marketplace")}
-                  hint={t("marketplaceHint")}
-                  checked={form.channels.includes("marketplace")}
-                  control={
-                    <Checkbox
-                      id={`${ids}-ch-marketplace`}
-                      checked={form.channels.includes("marketplace")}
-                      onCheckedChange={(c) => toggleChannel("marketplace", c === true)}
-                    />
-                  }
-                />
-                <ChoiceCard
-                  id={`${ids}-ch-storefront`}
-                  title={t("storefront")}
-                  hint={storeHost ?? t("storefrontNoHost")}
-                  hintDir={storeHost ? "ltr" : undefined}
-                  checked={form.channels.includes("storefront")}
-                  control={
-                    <Checkbox
-                      id={`${ids}-ch-storefront`}
-                      checked={form.channels.includes("storefront")}
-                      onCheckedChange={(c) => toggleChannel("storefront", c === true)}
-                    />
-                  }
-                />
+              {/* Seller coupons work on the seller's own store only (owner, 2026-10-21). */}
+              <div className="rounded-lg border border-primary bg-primary/5 p-3">
+                <span className="block text-sm font-medium">{t("storefront")}</span>
+                <span
+                  dir={storeHost ? "ltr" : undefined}
+                  className="block truncate text-xs text-muted-foreground"
+                >
+                  {storeHost ?? t("storefrontNoHost")}
+                </span>
               </div>
-              {fieldError("channels")}
             </fieldset>
 
             {/* Conditions */}

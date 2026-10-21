@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
+import { calculateLocationShippingCost } from "./shipping.lib";
 import {
+  DEFAULT_PER_KG_SURCHARGE,
+  ZONE_GOVERNORATES,
+  defaultRateForGovernorate,
   defaultStoreShipping,
+  defaultZoneGroups,
   findZoneForGovernorate,
   findZoneOverlap,
   parseStoreShipping,
@@ -20,6 +25,8 @@ const zone = (over: Partial<ZoneForQuote> = {}): ZoneForQuote => ({
   enabled: true,
   ...over,
 });
+
+const item = () => ({ quantity: 1, sellerId: "s1", product: { productType: "physical", dimensions: { weight: 1, weightUnit: "kg" } } });
 
 const input = {
   nameAr: "القاهرة الكبرى",
@@ -96,11 +103,49 @@ describe("quoteZone", () => {
   });
 });
 
+describe("default seller rates (Tallaby's rates)", () => {
+  it("matches what checkout bills for the first kg", () => {
+    for (const g of ZONE_GOVERNORATES) {
+      expect(defaultRateForGovernorate(g)).toBe(calculateLocationShippingCost({ items: [item()], destinationState: g }));
+    }
+    expect(defaultRateForGovernorate("CAIRO")).toBe(60);
+    expect(defaultRateForGovernorate("SOUTH SINAI")).toBe(125);
+  });
+
+  it("groups every governorate exactly once into valid zones, cheapest first", () => {
+    const groups = defaultZoneGroups();
+    expect(groups.flatMap((g) => g.governorates).sort()).toEqual([...ZONE_GOVERNORATES].sort());
+    expect(groups.map((g) => g.price)).toEqual([...groups.map((g) => g.price)].sort((a, b) => a - b));
+    expect(DEFAULT_PER_KG_SURCHARGE).toBe(8);
+    for (const g of groups) {
+      const parsed = zoneInputSchema.safeParse({
+        nameAr: "x",
+        governorates: g.governorates,
+        price: g.price,
+        perKgSurcharge: g.perKgSurcharge,
+        freeOver: null,
+        deliveryDaysMin: 1,
+        deliveryDaysMax: 3,
+        codEnabled: true,
+        enabled: true,
+      });
+      expect(parsed.success).toBe(true);
+    }
+    expect(findZoneOverlap(groups.map((g, i) => ({ id: String(i), governorates: g.governorates, enabled: true })))).toBeNull();
+  });
+});
+
 describe("store shipping settings", () => {
-  it("defaults to Tallaby delivery", () => {
-    expect(defaultStoreShipping()).toEqual({ method: "tallaby", handlingDays: 1, freeShippingOver: null });
+  it("defaults to seller (own) delivery while Tallaby delivery is disabled", () => {
+    expect(defaultStoreShipping()).toEqual({ method: "own", handlingDays: 1, freeShippingOver: null });
     expect(parseStoreShipping(undefined)).toEqual(defaultStoreShipping());
     expect(parseStoreShipping({ method: "drone" })).toEqual(defaultStoreShipping());
+    // A store saved on Tallaby delivery before 2026-10-21 reads as own delivery, keeping its other settings.
+    expect(parseStoreShipping({ method: "tallaby", handlingDays: 3, freeShippingOver: 500 })).toEqual({
+      method: "own",
+      handlingDays: 3,
+      freeShippingOver: 500,
+    });
   });
 
   it("validates the settings strictly", () => {

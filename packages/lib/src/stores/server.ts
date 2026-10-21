@@ -35,8 +35,10 @@ import {
 import { emptyHomeContent } from "@workspace/store-sections/templates";
 import { seedStarterSite } from "./starter-site.server";
 import { canCreateStore } from "../plans";
+import { z } from "zod";
 import {
   MAX_ZONES_PER_STORE,
+  defaultZoneGroups,
   findZoneOverlap,
   parseStoreShipping,
   storeShippingSettingsSchema,
@@ -600,7 +602,8 @@ export async function updateStorePaymentMethod(
 }
 
 // ---------------------------------------------------------------------------
-// Shipping (P3-08 Part A). Checkout does not read these yet (Part B).
+// Shipping (P3-08 Part A). Checkout does not read these yet (Part B): it bills
+// Tallaby's governorate rates, which are also the default seller-delivery rates.
 // ---------------------------------------------------------------------------
 
 export type StoreShippingZone = {
@@ -705,15 +708,14 @@ export async function saveStoreShippingZone(
   };
   try {
     const data = await q.transaction(async (tx) => {
-      const store = await lockActiveStore(tx, sellerId, storeId);
+      await lockActiveStore(tx, sellerId, storeId);
       const existing = await zonesOf(tx, storeId);
       if (zoneId !== null && !existing.some((e) => e.id === zoneId)) throw new StoreActionError("not_found");
       if (zoneId === null && existing.length >= MAX_ZONES_PER_STORE) throw new StoreActionError("too_many_zones");
       const id = zoneId ?? "new";
       const next = [...existing.filter((e) => e.id !== id), { id, governorates: z.governorates, enabled: z.enabled }];
       if (findZoneOverlap(next)) throw new StoreActionError("overlap");
-      const settings = parseStoreShipping((store.settings as Record<string, unknown> | null)?.shipping);
-      if (settings.method === "own" && !next.some((e) => e.enabled)) throw new StoreActionError("no_zones");
+      // Own delivery no longer needs a zone (owner, 2026-10-21): an uncovered governorate uses the default (Tallaby) rate.
 
       const [row] =
         zoneId === null
@@ -742,7 +744,7 @@ export async function saveStoreShippingZone(
   }
 }
 
-/** Deletes one zone. The last enabled zone of an own-delivery store cannot go. */
+/** Deletes one zone. */
 export async function deleteStoreShippingZone(
   sellerId: string,
   actorId: string,
@@ -753,12 +755,11 @@ export async function deleteStoreShippingZone(
   if (!UUID_RE.test(zoneId)) return { success: false, error: "not_found" };
   try {
     await q.transaction(async (tx) => {
-      const store = await lockActiveStore(tx, sellerId, storeId);
+      await lockActiveStore(tx, sellerId, storeId);
       const zones = await zonesOf(tx, storeId);
       const zone = zones.find((z) => z.id === zoneId);
       if (!zone) throw new StoreActionError("not_found");
-      const settings = parseStoreShipping((store.settings as Record<string, unknown> | null)?.shipping);
-      if (settings.method === "own" && !zones.some((z) => z.enabled && z.id !== zoneId)) throw new StoreActionError("no_zones");
+      // The last zone may go: uncovered governorates use the default (Tallaby) rates.
       await tx.delete(storeShippingZones).where(and(eq(storeShippingZones.id, zoneId), eq(storeShippingZones.storeId, storeId)));
       await tx.insert(storeSettingsAudit).values({
         storeId,
@@ -775,7 +776,10 @@ export async function deleteStoreShippingZone(
   }
 }
 
-/** Store-level shipping settings. "Own delivery" needs at least one enabled zone. */
+/**
+ * Store-level shipping settings. Own (seller) delivery is the default and needs
+ * no zone; "tallaby" is refused while TALLABY_SERVICES_ENABLED is off.
+ */
 export async function updateStoreShippingSettings(
   sellerId: string,
   actorId: string,
@@ -788,13 +792,10 @@ export async function updateStoreShippingSettings(
   try {
     const data = await q.transaction(async (tx) => {
       const store = await lockActiveStore(tx, sellerId, storeId);
-      if (parsed.data.method === "own" && !(await zonesOf(tx, storeId)).some((z) => z.enabled)) {
-        throw new StoreActionError("no_zones");
-      }
       const settings = (store.settings ?? {}) as Record<string, unknown>;
       const before = parseStoreShipping(settings.shipping);
-      // Tallaby delivery is "Soon": a store already on it keeps it, none can switch to it.
-      if (parsed.data.method === "tallaby" && before.method !== "tallaby" && !TALLABY_SERVICES_ENABLED) {
+      // Tallaby delivery is disabled (owner, 2026-10-21); parseStoreShipping already reads a stored "tallaby" as "own".
+      if (parsed.data.method === "tallaby" && !TALLABY_SERVICES_ENABLED) {
         throw new StoreActionError("tallaby_unavailable");
       }
       await tx
@@ -813,6 +814,69 @@ export async function updateStoreShippingSettings(
     });
     return { success: true, data };
   } catch (error) {
+    return shippingFailure(error);
+  }
+}
+
+const defaultZoneNamesSchema = z
+  .array(z.object({ nameAr: z.string().trim().min(1).max(60), nameEn: z.string().trim().max(60).optional() }).strict())
+  .min(1)
+  .max(MAX_ZONES_PER_STORE);
+
+/**
+ * Saves Tallaby's delivery rates (`defaultZoneGroups`) as the store's own
+ * delivery zones, one per price group (owner, 2026-10-21). Only for a store
+ * with no zones yet. Governorates and prices are computed here; the client
+ * sends only the translated zone names, by group index.
+ */
+export async function seedDefaultStoreShippingZones(
+  sellerId: string,
+  actorId: string,
+  storeId: string,
+  names: unknown,
+  q: Queryable = db,
+): Promise<StoreResult<StoreShippingZone[], StoreShippingError | "zones_exist">> {
+  const groups = defaultZoneGroups();
+  const parsedNames = defaultZoneNamesSchema.safeParse(names);
+  if (!parsedNames.success || parsedNames.data.length !== groups.length) return { success: false, error: "invalid_input" };
+  try {
+    const data = await q.transaction(async (tx) => {
+      await lockActiveStore(tx, sellerId, storeId);
+      if ((await zonesOf(tx, storeId)).length > 0) throw new StoreActionError("zones_exist");
+      const rows = await tx
+        .insert(storeShippingZones)
+        .values(
+          groups.map((g, i) => {
+            const n = parsedNames.data[i]!;
+            return {
+              storeId,
+              sortOrder: i,
+              name: { ar: n.nameAr, ...(n.nameEn && { en: n.nameEn }) },
+              governorates: g.governorates,
+              price: egp(g.price),
+              perKgSurcharge: egp(g.perKgSurcharge),
+              freeOver: null,
+              deliveryDaysMin: 1,
+              deliveryDaysMax: 3,
+              codEnabled: true,
+              enabled: true,
+            };
+          }),
+        )
+        .returning();
+      await tx.insert(storeSettingsAudit).values({
+        storeId,
+        sellerId,
+        actorId,
+        section: "shipping",
+        action: "zones_defaults_applied",
+        changes: { zones: rows.map((r) => ({ zoneId: r.id, governorates: r.governorates, price: r.price, perKgSurcharge: r.perKgSurcharge })) },
+      });
+      return rows.sort((a, b) => a.sortOrder - b.sortOrder).map(toZone);
+    });
+    return { success: true, data };
+  } catch (error) {
+    if (error instanceof StoreActionError && error.code === "zones_exist") return { success: false, error: "zones_exist" };
     return shippingFailure(error);
   }
 }

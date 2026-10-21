@@ -51,7 +51,7 @@ import {
 } from "lucide-react";
 import type { ComponentNode } from "../config/schema";
 import { sectionText } from "../core/copy";
-import type { RenderContext } from "../core/types";
+import { IMAGE_SIZES, imageSource, type RenderContext } from "../core/types";
 import { DataEmpty } from "../sections/_data";
 import { FORM_SUBMIT_CLASS, FormFieldsView, formCopy } from "../sections/forms";
 import { resolvePhotoSlot } from "../designs/photo-slots";
@@ -174,9 +174,12 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
   const kids = () => {
     if (!definition.container) return null;
     if (!node.children.length && ctx.mode === "edit") {
+      // Templates leave decorative boxes empty, so an empty container keeps
+      // only an invisible drop area, no "drop elements here" text (owner, 2026-10-21).
+      if (node.type !== "accordion") return <span data-editor-only aria-hidden className="block min-h-6" />;
       return (
         <span data-editor-only className="block rounded-(--sf-radius,12px) border border-dashed border-(--sf-line) p-4 text-center text-xs text-(--sf-muted)">
-          {sectionText(node.type === "accordion" ? "emptyAccordion" : "emptyContainer", ctx.locale)}
+          {sectionText("emptyAccordion", ctx.locale)}
         </span>
       );
     }
@@ -300,8 +303,8 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
       if (!url) {
         return ctx.mode === "edit" ? <div {...attrs} aria-hidden className="block w-full bg-(--sf-shelf)" /> : null;
       }
-      // eslint-disable-next-line @next/next/no-img-element -- shared by both apps; no next/image here
-      return <img {...attrs} src={url} alt={str(props.alt, 160)} className="block w-full" loading="lazy" decoding="async" />;
+      // eslint-disable-next-line @next/next/no-img-element -- shared by both apps; the host optimizes through ctx.optimizeImage
+      return <img {...attrs} {...imageSource(ctx, url, IMAGE_SIZES.content)} alt={str(props.alt, 160)} className="block w-full" loading="lazy" decoding="async" />;
     }
     case "video":
       return <VideoElement attrs={attrs} props={props} ctx={ctx} />;

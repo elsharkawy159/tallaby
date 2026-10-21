@@ -36,8 +36,6 @@ import {
 
 type Brand = { logoUrl: string; faviconUrl: string; bannerUrl: string };
 
-const sample = (id: string, sectionId: string, props: Record<string, unknown> = {}): SectionInstance => ({ id, sectionId, version: 1, props });
-
 export function DesignSystemEditor({
   storeId,
   readOnly,
@@ -45,6 +43,7 @@ export function DesignSystemEditor({
   store,
   defaultLocale,
   catalog,
+  preview,
   fontClassName,
 }: {
   storeId: string;
@@ -53,6 +52,8 @@ export function DesignSystemEditor({
   store: StoreProfile;
   defaultLocale: SiteLocale;
   catalog: PreviewCatalog;
+  /** The store's draft home page, header and footer. */
+  preview: { sections: SectionInstance[]; header: SectionInstance | null; footer: SectionInstance | null };
   fontClassName: string;
 }) {
   const t = useTranslations("websiteDesign");
@@ -80,29 +81,6 @@ export function DesignSystemEditor({
     () => ({ ...store, logoUrl: brand.logoUrl || null, bannerUrl: brand.bannerUrl || null }),
     [store, brand.logoUrl, brand.bannerUrl],
   );
-  const sections = useMemo(
-    () => [
-      sample("design-hero", "hero-banner", {
-        title: store.name,
-        subtitle: store.description || (previewLocale === "en" ? "Hand-picked products, delivered across Egypt." : "منتجات مختارة بعناية وتوصيل لكل محافظات مصر."),
-        image: brand.bannerUrl,
-        ctaLabel: previewLocale === "en" ? "Shop now" : "تسوّق الآن",
-        ctaHref: "/",
-      }),
-      sample("design-products", "product-grid", {
-        title: previewLocale === "en" ? "New arrivals" : "أحدث المنتجات",
-        source: "newest",
-        limit: 4,
-        columns: "4",
-        showViewAll: true,
-      }),
-      sample("design-features", "features"),
-      sample("design-cta", "cta-banner", previewLocale === "en" ? { title: "Limited-time offer", ctaLabel: "Shop now", ctaHref: "/" } : {}),
-    ],
-    [store.name, store.description, brand.bannerUrl, previewLocale],
-  );
-  const header = useMemo(() => sample("design-header", "store-header", { showLogo: true, showName: true, showNav: true, announcement: "" }), []);
-  const footer = useMemo(() => sample("design-footer", "store-footer"), []);
 
   const onSave = (then?: () => void) =>
     startSaving(async () => {
@@ -401,9 +379,9 @@ export function DesignSystemEditor({
           className="h-[70vh] min-h-[480px] rounded-xl bg-muted/40 p-2"
           store={previewStore}
           catalog={catalog}
-          sections={sections}
-          header={header}
-          footer={footer}
+          sections={preview.sections}
+          header={preview.header}
+          footer={preview.footer}
           designSystem={ds}
           locale={previewLocale}
           defaultLocale={previewLocale}
