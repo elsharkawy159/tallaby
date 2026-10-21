@@ -1,13 +1,10 @@
 -- 0093: store shipping zones cover places (EG, EG/CAIRO, EG/CAIRO/nasr-city), not only governorates.
 -- Additive and idempotent. `governorates` stays (older code still writes it); `per_kg_surcharge` is left alone.
 -- No cardinality(places) > 0 CHECK: older code inserts zones without places. The app (zod) enforces non-empty places.
+-- Order matters: the backfill UPDATE fires the deferred overlap trigger, and Postgres refuses ALTER TABLE on a
+-- table with pending trigger events in the same transaction (55006). So every ALTER runs first, the UPDATE last.
 
 ALTER TABLE store_shipping_zones ADD COLUMN IF NOT EXISTS places text[] NOT NULL DEFAULT '{}';
-
-UPDATE store_shipping_zones
-SET places = ARRAY(SELECT 'EG/' || g FROM unnest(governorates) AS g)
-WHERE places = '{}' AND cardinality(governorates) > 0;
-
 ALTER TABLE store_shipping_zones ALTER COLUMN governorates SET DEFAULT '{}';
 ALTER TABLE store_shipping_zones DROP CONSTRAINT IF EXISTS store_shipping_zones_governorates_check;
 
@@ -33,5 +30,9 @@ BEGIN
   RETURN NULL;
 END;
 $$;
+
+UPDATE store_shipping_zones
+SET places = ARRAY(SELECT 'EG/' || g FROM unnest(governorates) AS g)
+WHERE places = '{}' AND cardinality(governorates) > 0;
 
 -- Rollback: ALTER TABLE store_shipping_zones DROP COLUMN places; restore the 0057 function and governorates check.
