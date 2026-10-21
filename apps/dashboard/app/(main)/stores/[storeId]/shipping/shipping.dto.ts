@@ -19,7 +19,6 @@ export type ZoneFormValues = {
   nameEn: string;
   governorates: string[];
   price: string;
-  perKgSurcharge: string;
   freeOver: string;
   deliveryDaysMin: string;
   deliveryDaysMax: string;
@@ -34,9 +33,8 @@ export function toZoneInput(v: ZoneFormValues) {
   return {
     nameAr: v.nameAr.trim(),
     ...(v.nameEn.trim() && { nameEn: v.nameEn.trim() }),
-    governorates: v.governorates,
+    places: v.governorates.map((g) => `EG/${g}`),
     price: num(v.price),
-    perKgSurcharge: v.perKgSurcharge.trim() === "" ? 0 : num(v.perKgSurcharge),
     freeOver: v.freeOver.trim() === "" ? null : num(v.freeOver),
     deliveryDaysMin: num(v.deliveryDaysMin),
     deliveryDaysMax: num(v.deliveryDaysMax),

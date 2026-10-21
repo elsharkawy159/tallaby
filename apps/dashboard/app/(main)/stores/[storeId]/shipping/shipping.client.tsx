@@ -12,7 +12,6 @@ import { Info, LoaderCircle, MapPinned, Pencil, Plus, Save, Trash2, Truck } from
 import { getGovernorateLabel } from "@workspace/lib/shipping";
 import {
   ZONE_GOVERNORATES,
-  DEFAULT_PER_KG_SURCHARGE,
   defaultRateForGovernorate,
   quoteZone,
   type DefaultZoneGroup,
@@ -43,17 +42,19 @@ import { BUTTON_CLASS, FIELD_CLASS, LabelNote, SectionCard, SMALL_BUTTON_CLASS }
 import { CurrencyInput } from "@/components/form/currency-input";
 import { cn } from "@/lib/utils";
 import { applyDefaultShippingZones, deleteShippingZone, saveShippingSettings, saveShippingZone } from "./shipping.server";
+import { toZoneInput, type ZoneFormValues } from "./shipping.dto";
 
 type DefaultZone = DefaultZoneGroup & { nameAr: string; nameEn: string };
-import { toZoneInput, type ZoneFormValues } from "./shipping.dto";
+
+/** Minimal adaptation until the places-based redesign: the page edits whole governorates ("EG/<g>"). */
+const governoratesOf = (places: string[]) => places.filter((p) => p.startsWith("EG/") && !p.slice(3).includes("/")).map((p) => p.slice(3));
 
 const EMPTY_ZONE: ZoneFormValues = {
   nameAr: "",
   nameEn: "",
   governorates: [],
   price: "",
-  // Default seller rates = Tallaby's (owner, 2026-10-21): extra kg as Tallaby charges it; the price follows the governorates.
-  perKgSurcharge: String(DEFAULT_PER_KG_SURCHARGE),
+  // Default seller rates = Tallaby's (owner, 2026-10-21): the price follows the governorates.
   freeOver: "",
   deliveryDaysMin: "1",
   deliveryDaysMax: "3",
@@ -233,6 +234,7 @@ function MethodCard({
     method,
     handlingDays: Number(handlingDays),
     freeShippingOver: freeOver.trim() === "" ? null : Number(freeOver.replace(",", ".")),
+    otherPlaces: initial.otherPlaces,
   };
   const dirty = JSON.stringify(next) !== JSON.stringify(saved);
 
@@ -378,17 +380,13 @@ function DefaultRates({
             <tr>
               <th className="px-3 py-2 text-start font-medium">{t("fields.governorates")}</th>
               <th className="px-3 py-2 text-end font-medium">{t("rateFirstKg")}</th>
-              <th className="px-3 py-2 text-end font-medium">{t("fields.perKgSurcharge")}</th>
             </tr>
           </thead>
           <tbody className="divide-y">
             {zones.map((z) => (
               <tr key={z.price}>
-                <td className="px-3 py-1.5">{z.governorates.map((g) => getGovernorateLabel(g, locale)).join("، ")}</td>
+                <td className="px-3 py-1.5">{governoratesOf(z.places).map((g) => getGovernorateLabel(g, locale)).join("، ")}</td>
                 <td className="whitespace-nowrap px-3 py-1.5 text-end tabular-nums">{t("egp", { amount: fmt(locale, z.price) })}</td>
-                <td className="whitespace-nowrap px-3 py-1.5 text-end tabular-nums">
-                  {t("egp", { amount: fmt(locale, z.perKgSurcharge) })}
-                </td>
               </tr>
             ))}
           </tbody>
@@ -436,7 +434,7 @@ function ZoneRow({
           )}
         </p>
         <p className="truncate text-sm text-muted-foreground">
-          {zone.governorates.map((g) => getGovernorateLabel(g, locale)).join("، ")}
+          {governoratesOf(zone.places).map((g) => getGovernorateLabel(g, locale)).join("، ")}
         </p>
         <LabelNote>
           {t("zoneSummary", {
@@ -500,9 +498,8 @@ function ZoneSheet({
       ? {
           nameAr: zone.nameAr,
           nameEn: zone.nameEn ?? "",
-          governorates: zone.governorates,
+          governorates: governoratesOf(zone.places),
           price: String(zone.price),
-          perKgSurcharge: zone.perKgSurcharge ? String(zone.perKgSurcharge) : "",
           freeOver: zone.freeOver === null ? "" : String(zone.freeOver),
           deliveryDaysMin: String(zone.deliveryDaysMin),
           deliveryDaysMax: String(zone.deliveryDaysMax),
@@ -518,17 +515,17 @@ function ZoneSheet({
   // Governorate → the other enabled zone that already has it.
   const taken = useMemo(() => {
     const map = new Map<string, string>();
-    for (const z of otherZones) if (z.enabled) for (const g of z.governorates) map.set(g, z.nameAr);
+    for (const z of otherZones) if (z.enabled) for (const g of governoratesOf(z.places)) map.set(g, z.nameAr);
     return map;
   }, [otherZones]);
 
   const input = toZoneInput(values);
   const parsed = zoneInputSchema.safeParse(input);
-  const issues = new Set(parsed.success ? [] : parsed.error.issues.map((i) => String(i.path[0] ?? "")));
+  const issues = new Set(parsed.success ? [] : parsed.error.issues.map((i) => (i.path[0] === "places" ? "governorates" : String(i.path[0] ?? ""))));
   const overlap = values.enabled && values.governorates.some((g) => taken.has(g));
   const set = <K extends keyof ZoneFormValues>(key: K, value: ZoneFormValues[K]) => setValues((v) => ({ ...v, [key]: value }));
 
-  const example = parsed.success ? quoteZone(parsed.data, { subtotal: 300, weightGrams: 2500 }) : null;
+  const example = parsed.success ? quoteZone(parsed.data, 300) : null;
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -545,7 +542,7 @@ function ZoneSheet({
     });
   };
 
-  const num = (key: "price" | "perKgSurcharge" | "freeOver" | "deliveryDaysMin" | "deliveryDaysMax", opts: { help?: string; placeholder?: string } = {}) => {
+  const num = (key: "price" | "freeOver" | "deliveryDaysMin" | "deliveryDaysMax", opts: { help?: string; placeholder?: string } = {}) => {
     const invalid = submitted && issues.has(key);
     return (
       <div className="grid gap-1.5">
@@ -650,7 +647,6 @@ function ZoneSheet({
 
           <div className="grid gap-4 sm:grid-cols-2">
             {num("price", { help: t("fields.priceHelp") })}
-            {num("perKgSurcharge", { help: t("fields.perKgHelp"), placeholder: "0" })}
             {num("freeOver", { help: t("fields.freeOverHelp"), placeholder: t("freeOverPlaceholder") })}
             <div className="grid grid-cols-2 gap-3">
               {num("deliveryDaysMin")}

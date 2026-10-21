@@ -1,0 +1,36 @@
+-- 0093: store shipping zones cover places (EG, EG/CAIRO, EG/CAIRO/nasr-city), not only governorates.
+-- Additive and idempotent. `governorates` stays (older code still writes it); `per_kg_surcharge` is left alone.
+-- No cardinality(places) > 0 CHECK: older code inserts zones without places. The app (zod) enforces non-empty places.
+
+ALTER TABLE store_shipping_zones ADD COLUMN IF NOT EXISTS places text[] NOT NULL DEFAULT '{}';
+
+UPDATE store_shipping_zones
+SET places = ARRAY(SELECT 'EG/' || g FROM unnest(governorates) AS g)
+WHERE places = '{}' AND cardinality(governorates) > 0;
+
+ALTER TABLE store_shipping_zones ALTER COLUMN governorates SET DEFAULT '{}';
+ALTER TABLE store_shipping_zones DROP CONSTRAINT IF EXISTS store_shipping_zones_governorates_check;
+
+-- Same-key overlap guard, now over places as well as governorates (a place and its child may be in different zones).
+CREATE OR REPLACE FUNCTION store_shipping_zones_no_overlap()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = public
+AS $$
+DECLARE
+  cur store_shipping_zones%ROWTYPE;
+BEGIN
+  SELECT * INTO cur FROM store_shipping_zones WHERE id = NEW.id;
+  IF FOUND AND cur.enabled AND EXISTS (
+    SELECT 1 FROM store_shipping_zones z
+    WHERE z.store_id = cur.store_id AND z.id <> cur.id AND z.enabled
+      AND (z.governorates && cur.governorates OR z.places && cur.places)
+  ) THEN
+    RAISE EXCEPTION 'store_shipping_zones: a place is already in another enabled zone of store %', cur.store_id
+      USING ERRCODE = 'exclusion_violation';
+  END IF;
+  RETURN NULL;
+END;
+$$;
+
+-- Rollback: ALTER TABLE store_shipping_zones DROP COLUMN places; restore the 0057 function and governorates check.

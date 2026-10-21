@@ -5,7 +5,7 @@ import type { StoreShippingSettings as Settings } from "@workspace/lib/shipping/
 import {
   deleteStoreShippingZone,
   saveStoreShippingZone,
-  seedDefaultStoreShippingZones,
+  applyStoreShippingTemplate,
   updateStoreShippingSettings,
   type StoreShippingZone,
 } from "@workspace/lib/stores/server";
@@ -69,7 +69,7 @@ export async function applyDefaultShippingZones(
   storeId: string,
   names: unknown,
 ): Promise<StoreShippingResult<StoreShippingZone[]>> {
-  return run(storeId, (sellerId, actorId, id) => seedDefaultStoreShippingZones(sellerId, actorId, id, names));
+  return run(storeId, (sellerId, actorId, id) => applyStoreShippingTemplate(sellerId, actorId, id, { template: "tallaby_rates", names, replace: false }));
 }
 
 export async function deleteShippingZone(storeId: string, zoneId: string): Promise<StoreShippingResult<{ id: string }>> {

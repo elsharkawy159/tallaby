@@ -3055,7 +3055,10 @@ export const storeShippingZones = pgTable("store_shipping_zones", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	storeId: uuid("store_id").notNull(),
 	name: jsonb().notNull(),
-	governorates: text().array().notNull(),
+	/** Legacy (pre-0093); zones now cover `places`. */
+	governorates: text().array().default([]).notNull(),
+	/** Place keys the zone covers: "EG", "EG/CAIRO", "EG/CAIRO/nasr-city" (0093). */
+	places: text().array().default([]).notNull(),
 	price: numeric({ precision: 10, scale: 2 }).notNull(),
 	perKgSurcharge: numeric("per_kg_surcharge", { precision: 10, scale: 2 }).default('0').notNull(),
 	freeOver: numeric("free_over", { precision: 10, scale: 2 }),
@@ -3077,7 +3080,6 @@ export const storeShippingZones = pgTable("store_shipping_zones", {
 	check("store_shipping_zones_per_kg_check", sql`per_kg_surcharge >= 0`),
 	check("store_shipping_zones_free_over_check", sql`free_over IS NULL OR free_over >= 0`),
 	check("store_shipping_zones_days_check", sql`delivery_days_min >= 0 AND delivery_days_max >= delivery_days_min`),
-	check("store_shipping_zones_governorates_check", sql`cardinality(governorates) > 0`),
 ]);
 
 /** Store-wallet top-ups, confirmed only by the provider webhook (0060, P6-09/P6-10). */
