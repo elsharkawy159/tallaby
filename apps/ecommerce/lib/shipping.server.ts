@@ -10,7 +10,7 @@ import {
   type ShippingAddress,
   type StorefrontShipping,
 } from "@workspace/lib/shipping/store-quote";
-import { resolveCartSubtotal } from "@workspace/lib/shipping";
+import { cartHasPhysicalItems, resolveCartSubtotal } from "@workspace/lib/shipping";
 import { getStorefrontShippingContext } from "@workspace/lib/stores/server";
 import type { CheckoutSummary } from "@/lib/coupon-utils";
 import type { CartScope } from "@/lib/storefront.server";
@@ -22,7 +22,8 @@ import {
 
 /**
  * The store-website shipping quote for an address, or null when there is no
- * address yet or the store does not deliver itself (Tallaby rates then apply).
+ * address yet, the cart has nothing to ship, or the store does not deliver
+ * itself (Tallaby rates then apply).
  * `storeId` must be server-trusted (the cart scope from the request host).
  */
 export async function getStorefrontShippingQuote(
@@ -30,7 +31,8 @@ export async function getStorefrontShippingQuote(
   address: ShippingAddress | null,
   items: OrderShippingCartItem[],
 ): Promise<StorefrontShipping | null> {
-  if (!address) return null;
+  // A digital-only cart ships nothing: placeOrderFromCart skips the quote too.
+  if (!address || !cartHasPhysicalItems(items)) return null;
   const context = await getStorefrontShippingContext(storeId);
   if (!context || context.settings.method !== "own") return null;
   const subtotal = resolveCartSubtotal(items);
