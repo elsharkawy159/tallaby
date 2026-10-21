@@ -204,3 +204,18 @@ and the amount validation bounds.
 - Automated external payout execution.
 - Admin manual credit/adjustment UI (`adjustment` type and the primitive exist).
 - Converging `seller_wallet` onto `user_wallets`.
+
+## 13. Store-website shipping in the seller `sale` entry (2026-10-21)
+
+Seller (store) wallet, not the user wallet. When an order has
+`metadata.storeShipping.method = 'own'` (store-website checkout priced from the
+seller's shipping zones), the seller delivers, so the shipping the customer paid
+belongs to the seller. `creditSellerOnDelivery`
+(`packages/db/src/wallet/credit-seller-on-delivery.ts`) folds `billedPiastres`
+into the existing `sale` entry for the order: amount = goods + billed shipping,
+`metadata.shippingPiastres` records the shipping part. It uses the same claim
+(`order:<orderId>`), so it stays idempotent: no new entry type, enum or
+reference type. It applies only when Tallaby collected the payment; when the
+seller collected (own-rider COD) nothing extra is posted. The EGP 5 fee is
+unchanged and never computed on shipping. Marketplace orders and older orders
+without the snapshot are untouched.

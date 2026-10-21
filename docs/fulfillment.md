@@ -32,8 +32,10 @@ CHECK forbids a plan on a seller-handled service.
    table directly. It reads only `active_*`; a missing or `paused` row falls
    back to the baseline.
 4. **Baseline = today's behavior**: seller stores, packs, answers customers and
-   handles returns; delivery is Tallaby `delivery_standard` (checkout bills
-   Tallaby's governorate rates, the shipping app dispatches). Sellers signing up
+   handles returns; delivery is Tallaby `delivery_standard` (marketplace
+   checkout bills Tallaby's governorate rates, the shipping app dispatches;
+   store-website checkout bills the store's own shipping zones, see
+   `docs/superpowers/specs/2026-10-21-store-shipping-design.md`). Sellers signing up
    from the dashboard get no rows at all (the resolver falls back to the
    baseline); a row created later by a request also starts with the baseline as
    `active_*`, so orders behave exactly like existing sellers' until an admin
