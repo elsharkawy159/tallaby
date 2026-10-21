@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import type { StoreShippingSettings as Settings } from "@workspace/lib/shipping/store-zones";
+import type { ShippingTemplate, StoreShippingSettings as Settings } from "@workspace/lib/shipping/store-zones";
 import {
   deleteStoreShippingZone,
   saveStoreShippingZone,
@@ -64,12 +64,20 @@ export async function saveShippingZone(
   );
 }
 
-/** Saves Tallaby's rates as this store's delivery zones (stores with no zones only). Prices are computed server-side. */
-export async function applyDefaultShippingZones(
+/**
+ * Saves a template's zones (Tallaby's rates, one price for all Egypt, Cairo & Giza).
+ * Places and prices are built server-side; the client sends the template id, the
+ * zone names, the price for "one price" only, and `replace` once the seller confirmed
+ * deleting the current zones. Without `replace`, a store that has zones gets `zonesExist`.
+ */
+export async function applyShippingTemplate(
   storeId: string,
-  names: unknown,
+  input: { template: ShippingTemplate; names: { nameAr: string; nameEn?: string }[]; price?: number; replace: boolean },
 ): Promise<StoreShippingResult<StoreShippingZone[]>> {
-  return run(storeId, (sellerId, actorId, id) => applyStoreShippingTemplate(sellerId, actorId, id, { template: "tallaby_rates", names, replace: false }));
+  const raw = (input ?? {}) as Record<string, unknown>;
+  // Pass only the known fields on; the library schema validates each one strictly.
+  const payload = { template: raw.template, names: raw.names, price: raw.price, replace: raw.replace };
+  return run(storeId, (sellerId, actorId, id) => applyStoreShippingTemplate(sellerId, actorId, id, payload));
 }
 
 export async function deleteShippingZone(storeId: string, zoneId: string): Promise<StoreShippingResult<{ id: string }>> {

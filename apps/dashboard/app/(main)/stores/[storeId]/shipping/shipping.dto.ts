@@ -1,3 +1,6 @@
+import type { ShippingTemplate } from "@workspace/lib/shipping/store-zones";
+import type { StoreShippingZone } from "@workspace/lib/stores/server";
+
 /** Error keys live under `storeShipping.errors`. */
 export type StoreShippingErrorKey =
   | "invalidInput"
@@ -17,7 +20,8 @@ export type StoreShippingResult<T> = { success: true; data: T } | { success: fal
 export type ZoneFormValues = {
   nameAr: string;
   nameEn: string;
-  governorates: string[];
+  /** Place keys: `EG`, `EG/CAIRO`, `EG/CAIRO/nasr-city`, `SA/RIYADH`… */
+  places: string[];
   price: string;
   freeOver: string;
   deliveryDaysMin: string;
@@ -33,7 +37,7 @@ export function toZoneInput(v: ZoneFormValues) {
   return {
     nameAr: v.nameAr.trim(),
     ...(v.nameEn.trim() && { nameEn: v.nameEn.trim() }),
-    places: v.governorates.map((g) => `EG/${g}`),
+    places: v.places,
     price: num(v.price),
     freeOver: v.freeOver.trim() === "" ? null : num(v.freeOver),
     deliveryDaysMin: num(v.deliveryDaysMin),
@@ -42,3 +46,20 @@ export function toZoneInput(v: ZoneFormValues) {
     enabled: v.enabled,
   };
 }
+
+/** A saved zone as the list shows it; labels and the override hint are computed on the server. */
+export type ZoneView = {
+  zone: StoreShippingZone;
+  /** Place key → label with its parent ("New Cairo · Cairo"), in the page locale. */
+  chips: { key: string; label: string }[];
+  /** Name of the enabled zone this one carves places out of (one of its places sits inside that zone's place), or null. */
+  overrides: string | null;
+};
+
+/** One applicable template, with the zone names (both languages) the server will save. */
+export type TemplateOption = {
+  id: ShippingTemplate;
+  names: { nameAr: string; nameEn: string }[];
+  /** Price range of the template's zones; null for "one price for all Egypt" (the seller types it). */
+  prices: { min: number; max: number } | null;
+};
