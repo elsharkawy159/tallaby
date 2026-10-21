@@ -36,6 +36,8 @@ import {
   getStatusOptions,
 } from "../sellers.lib";
 import type { Seller } from "../sellers.types";
+import { customerHref, ordersHref, sellerHref, sellerWalletHref } from "../../_components/entity/entity-href.lib";
+import { PlatformFeeSummary } from "../../_components/entity/platform-fee.chunks";
 
 /** Server-side filters (URL params) for the sellers table. */
 export const sellersFilters: DataTableFilter[] = [
@@ -55,10 +57,10 @@ export const sellersFilters: DataTableFilter[] = [
   },
   {
     id: "commission",
-    title: "Commission",
+    title: "Platform fee",
     options: [
       { value: "exempt", label: "Fee exempt" },
-      { value: "charged", label: "Commission charged" },
+      { value: "charged", label: "EGP 5 per order" },
     ],
   },
   {
@@ -101,7 +103,7 @@ export function getSellersColumns(
             </Avatar>
             <div className="min-w-0">
               <Link
-                href={`/sellers/${seller.id}`}
+                href={sellerHref(seller.id)}
                 className="block max-w-52 truncate font-medium hover:underline"
                 title={seller.businessName}
               >
@@ -153,27 +155,11 @@ export function getSellersColumns(
       ),
     },
     {
-      id: "trial",
-      header: "Fee trial",
+      id: "platformFee",
+      header: "Platform fee",
       enableSorting: false,
-      meta: { label: "Fee trial" },
-      cell: ({ row }) => {
-        const ends = row.original.feeTrialEndsAt;
-        if (row.original.isCommissionExempt) return <span className="text-sm text-muted-foreground">Exempt</span>;
-        if (!ends) {
-          return (
-            <span className="text-sm text-muted-foreground">
-              {row.original.feeTrialEligible === false ? "Not eligible" : "Not started"}
-            </span>
-          );
-        }
-        const active = new Date(ends) > new Date();
-        return (
-          <span className={active ? "text-sm text-green-700" : "text-sm text-muted-foreground"}>
-            {active ? `Until ${formatDate(ends)}` : "Ended"}
-          </span>
-        );
-      },
+      meta: { label: "Platform fee" },
+      cell: ({ row }) => <PlatformFeeSummary seller={row.original} compact />,
     },
     {
       id: "lastOrder",
@@ -205,20 +191,6 @@ export function getSellersColumns(
           </div>
         </div>
       ),
-    },
-    {
-      id: "commission",
-      accessorFn: (seller) =>
-        seller.isCommissionExempt ? 0 : seller.commissionRate,
-      header: "Commission",
-      enableSorting: false,
-      meta: { label: "Commission" },
-      cell: ({ row }) =>
-        row.original.isCommissionExempt ? (
-          <span className="text-sm text-muted-foreground">0%</span>
-        ) : (
-          <span>{row.original.commissionRate}%</span>
-        ),
     },
     {
       accessorKey: "isCommissionExempt",
@@ -300,13 +272,13 @@ export function getSellersColumns(
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                 <DropdownMenuItem asChild>
-                  <Link href={`/sellers/${seller.id}`} className="w-full">
+                  <Link href={sellerHref(seller.id)} className="w-full">
                     View details
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href={`/sellers/${seller.id}/edit`} className="w-full">
-                    Edit seller
+                  <Link href={customerHref(seller.id)} className="w-full">
+                    Owner account
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -319,13 +291,13 @@ export function getSellersColumns(
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href={`/sellers/${seller.id}/orders`} className="w-full">
+                  <Link href={ordersHref({ seller: seller.id })} className="w-full">
                     View orders
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href={`/sellers/${seller.id}/payouts`} className="w-full">
-                    Manage payouts
+                  <Link href={sellerWalletHref(seller.id)} className="w-full">
+                    Store wallet
                   </Link>
                 </DropdownMenuItem>
                 {(canSuspendSeller(seller) || canReactivateSeller(seller)) && (

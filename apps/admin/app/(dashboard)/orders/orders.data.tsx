@@ -1,6 +1,8 @@
 import { getOrderStats } from "@/actions/orders";
 import { getAdminOrders, getOrderPaymentMethods } from "@/actions/orders-list";
 import type { RawSearchParams } from "../_components/data-table/search-params";
+import { RelationFilterBar } from "../_components/entity/relation-filter-bar";
+import { getRelationFilterLabels } from "../_components/entity/relations.server";
 import { OrderStatsCards } from "./orders.chunks";
 import { OrdersClientWrapper } from "./orders.client";
 import { parseOrdersParams } from "./orders.params";
@@ -16,6 +18,10 @@ export async function OrdersPageData({
   const statsResult = await getOrderStats();
   const ordersResult = await getAdminOrders(query);
   const methodsResult = await getOrderPaymentMethods();
+  const filterLabels =
+    query.sellerId || query.storeId || query.customerId
+      ? await getRelationFilterLabels(query).catch(() => null)
+      : null;
 
   return (
     <div className="space-y-6">
@@ -26,6 +32,7 @@ export async function OrdersPageData({
           {statsResult.error || "Failed to load order stats"}
         </p>
       )}
+      {filterLabels ? <RelationFilterBar labels={filterLabels} clearHref="/orders" noun="orders" /> : null}
       {!ordersResult.success && (
         <p className="text-center text-red-600">
           {ordersResult.error || "Failed to load orders"}

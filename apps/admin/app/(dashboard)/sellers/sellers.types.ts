@@ -26,7 +26,9 @@ export interface Seller {
   approvedCategories?: string[] | null;
   supportEmail: string;
   supportPhone?: string | null;
-  commissionRate: number;
+  /** Fee plan (`flat_5`): EGP 5 per delivered order. `commission_rate` is legacy and not read. */
+  feePlan?: string;
+  feeTrialStartedAt?: string | null;
   isCommissionExempt: boolean;
   freeDelivery: boolean;
   feeStructure?: Record<string, unknown> | null;

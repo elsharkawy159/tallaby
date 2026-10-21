@@ -127,6 +127,7 @@ export async function getCustomerById(customerId: string) {
     const customerOrders = await db.query.orders.findMany({
       where: eq(orders.userId, customerId),
       orderBy: [desc(orders.createdAt)],
+      with: { store: { columns: { id: true, name: true, logoUrl: true } } },
     });
 
     // Get order statistics

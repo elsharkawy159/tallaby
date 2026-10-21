@@ -43,6 +43,8 @@ export interface Customer {
   createdAt: string | null;
   updatedAt: string | null;
   isAvailable: boolean | null;
+  /** Set when this account also owns a seller account (`sellers.id = users.id`). */
+  sellerId?: string | null;
   totalOrders?: number;
   totalSpent?: number;
   lastOrderDate?: string | null;

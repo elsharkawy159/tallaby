@@ -2322,7 +2322,7 @@
   "storeSiteStatus": {
     "offline": "Your store is offline: visitors see the \"store unavailable\" page and can't order. Turn on \"Website live\" on the Website page.",
     "offlineShort": "Offline",
-    "draft": "Your website isn't published yet: visitors see a basic default storefront of your products until you publish.",
+    "draft": "Your website isn't published yet: visitors see the \"store unavailable\" page and can't order until you publish.",
     "draftShort": "Not published"
   },
   "storeSettings": {
@@ -3066,7 +3066,7 @@
       "unpublished": "Offline"
     },
     "statusHint": {
-      "draft": "Your website hasn't been published yet. Shoppers see the Tallaby Classic store design until you publish.",
+      "draft": "Your website hasn't been published yet. Shoppers see the \"store unavailable\" page until you publish.",
       "published": "Shoppers see your latest published version.",
       "changes": "You have changes that shoppers don't see yet. Preview them, then publish.",
       "unpublished": "Your website is offline. Shoppers see a \"store unavailable\" page and can't place orders until you turn it back on."

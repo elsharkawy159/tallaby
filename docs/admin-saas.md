@@ -68,6 +68,19 @@ Why this order: overview → who → what they built → what they sell → serv
 
 Badge counts stay in one SQL round-trip (`getSidebarCounts`), with 4 new subqueries: `fulfillment_open_sellers`, `pending_ad_requests`, `integration_errors`, `failing_domains`.
 
+**2026-10-21 regroup (owner request).** Nine collapsible groups: Overview (always open), People, Stores (Stores, Domains, Integrations), Catalog (Products, Categories, Brands), Sales (Orders, Pending carts, Coupons), Money (Store wallets, Store top-ups, Payments), Services (Fulfillment, Shipping, Ad campaigns), Design library (Templates, Sections) and Tallaby site & system (Blog, Audit log, Settings). The group holding the current page opens on load; open/closed choices are kept per browser (`sidebar-groups.client.ts`, localStorage with an in-memory fallback). A closed group shows the sum of its badges. The collapsed icon rail stays flat.
+
+### 2.1a Entity relations (2026-10-21)
+
+Every detail page links to what it connects to, through shared pieces in `apps/admin/app/(dashboard)/_components/entity/`:
+
+- `entity-href.lib.ts`: the only place admin entity routes are built (`customerHref`, `sellerHref`, `storeHref`, `orderHref`, `productHref`, `sellerWalletHref`, `ordersHref({ seller | store | customer })`).
+- `relations.server.ts`: `getAccountRelations(userId)` (user, seller account, stores, store-wallet balance; `React.cache`d), `sellerIdsAmong` for list badges, `getRelationFilterLabels` for the orders filter bar.
+- UI: `EntityAvatar` (people round, stores rounded-square), `EntityChip`/`EntityChipList`, `RoleBadges`, `PersonCard` (owner/customer mini profile), `StoreCard`, `IdentityHeader` (title + relation chips), `RelationFilterBar`, `PlatformFeeSummary`.
+- Customer ↔ seller ↔ stores: a customer who sells shows a Seller badge and a "This customer is also a seller" section; the seller page and store page show the owner card linking back to the customer. Orders link customer, store and every seller on the order; products link their seller, owner and stores.
+- `/orders` accepts `?seller=`, `?store=`, `?customer=` (UUIDs only; a seller matches through `order_items.seller_id`) and lists the store of each order.
+- The platform fee shows as "EGP 5 per delivered order", "Free trial until …" or "Fee exempt" (`platform-fee.lib.ts`). `sellers.commission_rate` is legacy and no longer shown or editable in admin; the column stays in the DB.
+
 ### 2.2 Hiding marketplace-only pages ("comment them for now")
 
 - **Pricing calculator** and **External orders**: comment out their sidebar entries. Replace each `page.tsx` body with `notFound()` and keep the original code in a block comment marked `// Hidden 2026-10-18 (SaaS pivot), see docs/admin-saas.md §2.2`.

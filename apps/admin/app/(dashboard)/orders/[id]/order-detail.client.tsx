@@ -50,6 +50,8 @@ import {
 } from "../orders.lib";
 import { parseProductImages } from "../../products/products.lib";
 import Image from "next/image";
+import { EntityChip } from "../../_components/entity/entity-chip";
+import { customerHref, productHref, sellerHref } from "../../_components/entity/entity-href.lib";
 
 function getDiscountTypeLabel(type: string): string {
   switch (type) {
@@ -107,9 +109,13 @@ const PAYMENT_STATUSES = [
 
 interface OrderDetailContentProps {
   order: OrderDetailWithRelations;
+  /** Server-rendered identity header with store, seller and customer chips. */
+  header?: React.ReactNode;
+  /** Server-rendered profile card of the buyer; replaces the plain customer card. */
+  customerCard?: React.ReactNode;
 }
 
-export function OrderDetailContent({ order }: OrderDetailContentProps) {
+export function OrderDetailContent({ order, header, customerCard }: OrderDetailContentProps) {
   const router = useRouter();
   const [orderStatus, setOrderStatus] = useState(order.status);
   const [paymentStatus, setPaymentStatus] = useState(order.paymentStatus);
@@ -180,36 +186,38 @@ export function OrderDetailContent({ order }: OrderDetailContentProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link href="/orders">
-            <Button variant="ghost" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Orders
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-3xl font-bold">Order {order.orderNumber}</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Created on {formatDate(order.createdAt)}
-            </p>
+      {header ?? (
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link href="/orders">
+              <Button variant="ghost" size="sm">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Orders
+              </Button>
+            </Link>
+            <div>
+              <h1 className="text-3xl font-bold">Order {order.orderNumber}</h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                Created on {formatDate(order.createdAt)}
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Link href={`/orders/${order.id}/invoice`}>
+              <Button variant="outline" size="sm">
+                <Receipt className="h-4 w-4 mr-2" />
+                Invoice
+              </Button>
+            </Link>
+            <Link href={`/orders/${order.id}/edit`}>
+              <Button size="sm">
+                <Pencil className="h-4 w-4 mr-2" />
+                Edit prices
+              </Button>
+            </Link>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Link href={`/orders/${order.id}/invoice`}>
-            <Button variant="outline" size="sm">
-              <Receipt className="h-4 w-4 mr-2" />
-              Invoice
-            </Button>
-          </Link>
-          <Link href={`/orders/${order.id}/edit`}>
-            <Button size="sm">
-              <Pencil className="h-4 w-4 mr-2" />
-              Edit prices
-            </Button>
-          </Link>
-        </div>
-      </div>
+      )}
 
       {/* Status Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -337,15 +345,31 @@ export function OrderDetailContent({ order }: OrderDetailContentProps) {
                       </div>
 
                       <div className="flex-1 space-y-1">
-                        <h4 className="font-medium">{item.productName}</h4>
+                        <h4 className="font-medium">
+                          {item.productId ? (
+                            <Link href={productHref(item.productId)} className="hover:underline">
+                              {item.productName}
+                            </Link>
+                          ) : (
+                            item.productName
+                          )}
+                        </h4>
                         {item.variantName && (
                           <p className="text-sm text-muted-foreground">
                             Variant: {item.variantName}
                           </p>
                         )}
                         {item.seller && (
-                          <p className="text-sm text-muted-foreground">
-                            Sold by {item.seller.displayName}
+                          <p className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                            Sold by
+                            <EntityChip
+                              href={sellerHref(item.seller.id)}
+                              name={item.seller.displayName || item.seller.businessName}
+                              kind="store"
+                              src={item.seller.logoUrl}
+                              seed={item.seller.id}
+                              className="h-6 text-xs"
+                            />
                           </p>
                         )}
                         <p className="text-sm text-muted-foreground">SKU: {item.sku}</p>
@@ -457,50 +481,52 @@ export function OrderDetailContent({ order }: OrderDetailContentProps) {
         {/* Right Column - Customer & Addresses */}
         <div className="space-y-6">
           {/* Customer Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Customer Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <p className="font-medium">{customerName}</p>
-                {order.user && (
-                  <>
-                    <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
-                      <Mail className="h-4 w-4" />
-                      <a
-                        href={`mailto:${order.user.email}`}
-                        className="hover:underline"
-                      >
-                        {order.user.email}
-                      </a>
-                    </div>
-                    {order.user.phone && (
-                      <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-                        <Phone className="h-4 w-4" />
+          {customerCard ?? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  Customer Information
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <p className="font-medium">{customerName}</p>
+                  {order.user && (
+                    <>
+                      <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
+                        <Mail className="h-4 w-4" />
                         <a
-                          href={`tel:${order.user.phone}`}
+                          href={`mailto:${order.user.email}`}
                           className="hover:underline"
                         >
-                          {order.user.phone}
+                          {order.user.email}
                         </a>
                       </div>
-                    )}
-                  </>
+                      {order.user.phone && (
+                        <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                          <Phone className="h-4 w-4" />
+                          <a
+                            href={`tel:${order.user.phone}`}
+                            className="hover:underline"
+                          >
+                            {order.user.phone}
+                          </a>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+                {order.user && (
+                  <Link href={customerHref(order.user.id)}>
+                    <Button variant="outline" size="sm" className="w-full">
+                      View Customer Profile
+                    </Button>
+                  </Link>
                 )}
-              </div>
-              {order.user && (
-                <Link href={`/customers/${order.user.id}`}>
-                  <Button variant="outline" size="sm" className="w-full">
-                    View Customer Profile
-                  </Button>
-                </Link>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Shipping Address */}
           <Card>

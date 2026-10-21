@@ -29,8 +29,9 @@ import type { SidebarCounts } from "./sidebar.types";
 
 /**
  * Admin sidebar map (docs/admin-saas.md §2.1). The order reads overview →
- * people → what sellers built → what they sell → Tallaby services → money →
- * system. `sidebar.tsx` and the mobile drawer only render this.
+ * people → their stores → what they sell → sales → money → Tallaby services →
+ * the design library → system. Every section but Overview renders as a
+ * collapsible group. `sidebar.tsx` and the mobile drawer only render this.
  */
 export interface SidebarLink {
   key: string;
@@ -87,11 +88,9 @@ export const sidebarSections: SidebarSection[] = [
   },
   {
     key: "stores",
-    title: "Stores & websites",
+    title: "Stores",
     links: [
       { key: "stores", title: "Stores", href: "/stores", icon: Store },
-      { key: "templates", title: "Templates", href: "/templates", icon: LayoutTemplate },
-      { key: "sections", title: "Sections", href: "/sections", icon: Blocks },
       {
         key: "domains",
         title: "Domains",
@@ -111,17 +110,9 @@ export const sidebarSections: SidebarSection[] = [
     ],
   },
   {
-    key: "commerce",
-    title: "Commerce",
+    key: "catalog",
+    title: "Catalog",
     links: [
-      {
-        key: "orders",
-        title: "Orders",
-        href: "/orders",
-        icon: ShoppingCart,
-        countKey: "pendingOrders",
-        countLabel: "Pending orders",
-      },
       {
         key: "products",
         title: "Products",
@@ -132,7 +123,20 @@ export const sidebarSections: SidebarSection[] = [
       },
       { key: "categories", title: "Categories", href: "/categories", icon: Tag },
       { key: "brands", title: "Brands", href: "/brands", icon: Award },
-      { key: "coupons", title: "Coupons", href: "/coupons", icon: TicketPercent },
+    ],
+  },
+  {
+    key: "sales",
+    title: "Sales",
+    links: [
+      {
+        key: "orders",
+        title: "Orders",
+        href: "/orders",
+        icon: ShoppingCart,
+        countKey: "pendingOrders",
+        countLabel: "Pending orders",
+      },
       {
         key: "pendingCarts",
         title: "Pending carts",
@@ -141,8 +145,26 @@ export const sidebarSections: SidebarSection[] = [
         countKey: "unremindedCarts",
         countLabel: "Carts not reminded yet",
       },
+      { key: "coupons", title: "Coupons", href: "/coupons", icon: TicketPercent },
       // Hidden 2026-10-18 (SaaS pivot), see docs/admin-saas.md §2.2.
       { key: "externalOrders", title: "External orders", href: "/external-orders", icon: ShoppingCart, hidden: true },
+    ],
+  },
+  {
+    key: "money",
+    title: "Money",
+    links: [
+      { key: "wallets", title: "Store wallets", href: "/wallets", icon: Wallet },
+      {
+        key: "storeTopUps",
+        title: "Store top-ups",
+        href: "/store-top-ups",
+        icon: Banknote,
+        countKey: "pendingStoreTopUps",
+        countLabel: "Store top-ups waiting for review",
+      },
+      { key: "payments", title: "Payments", href: "/payments", icon: CreditCard },
+      // Hidden 2026-10-18 (SaaS pivot), see docs/admin-saas.md §2.2.
       { key: "pricingCalculator", title: "Pricing calculator", href: "/pricing-calculator", icon: Banknote, hidden: true },
     ],
   },
@@ -158,6 +180,7 @@ export const sidebarSections: SidebarSection[] = [
         countKey: "fulfillmentOpenSellers",
         countLabel: "Sellers with open fulfillment requests",
       },
+      { key: "shipping", title: "Shipping", href: "/shipping", icon: Truck },
       {
         key: "adRequests",
         title: "Ad campaigns",
@@ -166,39 +189,29 @@ export const sidebarSections: SidebarSection[] = [
         countKey: "pendingAdRequests",
         countLabel: "Ad requests waiting for review",
       },
-      { key: "shipping", title: "Shipping", href: "/shipping", icon: Truck },
     ],
   },
   {
-    key: "finance",
-    title: "Finance",
+    key: "library",
+    title: "Design library",
     links: [
-      { key: "wallets", title: "Store wallets", href: "/wallets", icon: Wallet },
-      {
-        key: "storeTopUps",
-        title: "Store top-ups",
-        href: "/store-top-ups",
-        icon: Banknote,
-        countKey: "pendingStoreTopUps",
-        countLabel: "Store top-ups waiting for review",
-      },
-      { key: "payments", title: "Payments", href: "/payments", icon: CreditCard },
+      { key: "templates", title: "Templates", href: "/templates", icon: LayoutTemplate },
+      { key: "sections", title: "Sections", href: "/sections", icon: Blocks },
     ],
-  },
-  {
-    key: "site",
-    title: "Tallaby site",
-    links: [{ key: "blog", title: "Blog", href: "/blog", icon: Newspaper }],
   },
   {
     key: "system",
-    title: "System",
+    title: "Tallaby site & system",
     links: [
+      { key: "blog", title: "Blog", href: "/blog", icon: Newspaper },
       { key: "audit", title: "Audit log", href: "/audit", icon: History },
       { key: "settings", title: "Settings", href: "/settings", icon: Settings },
     ],
   },
 ];
+
+/** The one section that is always open: it renders without a group trigger. */
+export const PINNED_SECTION_KEY = "overview";
 
 /** Sections with their hidden links removed; empty sections are dropped. */
 export function visibleSections(sections: SidebarSection[] = sidebarSections): SidebarSection[] {
@@ -223,4 +236,19 @@ export function activeHref(pathname: string, sections: SidebarSection[] = sideba
     }
   }
   return best;
+}
+
+/** The key of the section holding the active link, so that group opens on load. */
+export function activeSectionKey(pathname: string, sections: SidebarSection[] = sidebarSections): string | null {
+  const href = activeHref(pathname, sections);
+  if (!href) return null;
+  return sections.find((section) => section.links.some((link) => !link.hidden && link.href === href))?.key ?? null;
+}
+
+/** Sum of a section's visible badge counts, shown on its trigger while it is closed. */
+export function sectionCount(section: SidebarSection, counts: SidebarCounts): number {
+  return section.links.reduce(
+    (sum, link) => sum + (link.countKey && !link.hidden ? counts[link.countKey] : 0),
+    0,
+  );
 }

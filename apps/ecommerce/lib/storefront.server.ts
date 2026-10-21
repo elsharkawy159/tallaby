@@ -79,9 +79,13 @@ function getSubdomainForCustomDomain(domain: string) {
 
 export type StoreSiteStatus = "draft" | "published" | "unpublished";
 
-/** The seller took the store's website offline (Website › "Website live" off). */
+/**
+ * The store's website is offline: never published yet ('draft', every new
+ * store) or switched off by the seller ('unpublished', "Website live" off).
+ * Visitors only ever see a published site (owner, 2026-10-21).
+ */
 export function isStorefrontOffline(store: Pick<Storefront, "siteStatus">): boolean {
-  return store.siteStatus === "unpublished";
+  return store.siteStatus !== "published";
 }
 
 export type Storefront = NonNullable<
@@ -194,9 +198,9 @@ export function getStorefrontBySubdomain(subdomain: string) {
         /** Enabled social links (Website › Social media, P4-15), read live from the store row. */
         social: publicStoreSocialLinks(row.contact),
         /**
-         * Builder site state: "draft" (never published: Tallaby Classic
-         * fallback), "published", or "unpublished" (the seller took the
-         * website offline: every storefront route shows "store offline").
+         * Builder site state: "draft" (never published), "published", or
+         * "unpublished" (the seller took the website offline). Both "draft"
+         * and "unpublished" show "store offline" on every storefront route.
          */
         siteStatus: row.siteStatus as StoreSiteStatus,
       };
@@ -259,7 +263,7 @@ export async function isCartStoreOffline(cartId: string): Promise<boolean> {
     .innerJoin(stores, eq(stores.id, carts.storeId))
     .where(eq(carts.id, cartId))
     .limit(1);
-  return row?.siteStatus === "unpublished";
+  return row ? isStorefrontOffline({ siteStatus: row.siteStatus as StoreSiteStatus }) : false;
 }
 
 /**

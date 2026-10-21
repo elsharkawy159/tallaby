@@ -2,10 +2,13 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Card, CardContent } from "@workspace/ui/components/card";
-import { db, eq, sellers } from "@workspace/db";
 import { isUuid } from "@workspace/lib/admin";
 import { listAdRequestsForAdmin, listIntegrationsForAdmin } from "@workspace/lib/admin/server";
 import { getCurrentAdminUser } from "@/lib/auth/admin-auth";
+import { IdentityHeader } from "../../_components/entity/identity-header";
+import { accountChips } from "../../_components/entity/relation-chips.lib";
+import { getAccountRelations, type AccountRelations } from "../../_components/entity/relations.server";
+import { RoleBadges } from "../../_components/entity/role-badges";
 import { UrlTabs, pickTab } from "../../_components/url-tabs";
 import { AdRequestsTable } from "../../ad-requests/ad-requests-table";
 import { ScopedCouponsData } from "../../coupons/seller-coupons.data";
@@ -51,28 +54,33 @@ export default async function SellerDetailPage({ params, searchParams }: SellerP
   const [{ id }, raw] = await Promise.all([params, searchParams]);
   if (!isUuid(id)) notFound();
   await getCurrentAdminUser();
-  const [seller] = await db
-    .select({ businessName: sellers.businessName, status: sellers.status, plan: sellers.plan })
-    .from(sellers)
-    .where(eq(sellers.id, id))
-    .limit(1);
-  if (!seller) notFound();
+  const account = await getAccountRelations(id);
+  const seller = account?.seller;
+  if (!account || !seller) notFound();
   const tab = pickTab(raw.tab, TABS);
 
   return (
     <div className="space-y-6">
-      <div>
-        <Link href="/sellers" className="text-sm text-muted-foreground hover:underline">
-          ← Sellers
-        </Link>
-        <h1 className="text-2xl font-semibold">{seller.businessName}</h1>
-        <p className="text-sm text-muted-foreground capitalize">
-          {seller.status ?? "pending"} · plan {seller.plan}
-        </p>
-      </div>
+      <IdentityHeader
+        back={{ href: "/sellers", label: "Sellers" }}
+        title={seller.businessName}
+        avatar={{ kind: "store", name: seller.businessName, src: seller.logoUrl, seed: seller.id }}
+        badges={<RoleBadges role={account.user.role} seller={seller} />}
+        subtitle={
+          <span className="inline-flex flex-wrap items-center gap-x-3 gap-y-1">
+            {seller.displayName && seller.displayName !== seller.businessName ? <span>{seller.displayName}</span> : null}
+            <span dir="ltr">/{seller.slug}</span>
+            <span className="capitalize">{seller.plan} plan</span>
+            <span>
+              {account.stores.length} store{account.stores.length === 1 ? "" : "s"}
+            </span>
+          </span>
+        }
+        relations={accountChips(account, { personRole: "Owner", omit: ["seller"], ordersFilter: "seller" })}
+      />
       <UrlTabs baseHref={`/sellers/${id}`} active={tab} tabs={TABS.map((key) => ({ key, label: TAB_LABELS[key] }))} />
       <Suspense key={tab} fallback={<SellerDetailSkeleton />}>
-        <SellerTabContent sellerId={id} tab={tab} raw={raw} />
+        <SellerTabContent sellerId={id} tab={tab} raw={raw} relations={account} />
       </Suspense>
     </div>
   );
@@ -82,10 +90,12 @@ async function SellerTabContent({
   sellerId,
   tab,
   raw,
+  relations,
 }: {
   sellerId: string;
   tab: SellerTab;
   raw: Record<string, string | string[] | undefined>;
+  relations: AccountRelations;
 }) {
   switch (tab) {
     case "overview": {
@@ -98,7 +108,7 @@ async function SellerTabContent({
           ) : (
             <Unavailable what="Plan, trial and fee settings" />
           )}
-          <SellerDetailContent detail={detail.data} showBackLink={false} />
+          <SellerDetailContent detail={detail.data} account={relations} />
         </div>
       );
     }

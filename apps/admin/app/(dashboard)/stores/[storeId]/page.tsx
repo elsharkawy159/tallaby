@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ExternalLink, PencilRuler } from "lucide-react";
+import { ExternalLink, Globe, PencilRuler, ShoppingCart } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
 import { Card, CardContent } from "@workspace/ui/components/card";
 import { Skeleton } from "@workspace/ui/components/skeleton";
@@ -9,6 +9,10 @@ import { STORE_DETAIL_TABS, isAdminWriteRole } from "@workspace/lib/admin";
 import { getStoreForAdmin, getStoreTabCounts } from "@workspace/lib/admin/server";
 import { storeUrl } from "@workspace/lib/storefront";
 import { getCurrentAdminUser } from "@/lib/auth/admin-auth";
+import { ordersHref } from "../../_components/entity/entity-href.lib";
+import { IdentityHeader } from "../../_components/entity/identity-header";
+import { accountChips } from "../../_components/entity/relation-chips.lib";
+import { getAccountRelations } from "../../_components/entity/relations.server";
 import { UrlTabs, pickTab } from "../../_components/url-tabs";
 import { SiteStatusBadge, StoreStatusBadge } from "../stores.lib";
 import {
@@ -39,49 +43,62 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
   const admin = await getCurrentAdminUser();
   const [store, counts] = await Promise.all([getStoreForAdmin(storeId), getStoreTabCounts(storeId).catch(() => null)]);
   if (!store) notFound();
+  const owner = await getAccountRelations(store.sellerId).catch(() => null);
 
   const tab = pickTab(raw.tab, STORE_DETAIL_TABS);
   const activeDomain = store.domains.find((domain) => domain.status === "active")?.domain ?? null;
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <Link href="/stores" className="text-sm text-muted-foreground hover:underline">
-            ← Stores
-          </Link>
-          <h1 className="flex flex-wrap items-center gap-2 text-2xl font-semibold">
-            {store.name}
+      <IdentityHeader
+        back={{ href: "/stores", label: "Stores" }}
+        title={store.name}
+        avatar={{ kind: "store", name: store.name, src: store.logoUrl, seed: store.id }}
+        badges={
+          <>
             <SiteStatusBadge status={store.siteStatus} />
             <StoreStatusBadge status={store.status} />
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            <Link href={`/sellers/${store.sellerId}`} className="hover:underline">
-              {store.sellerName ?? "Seller"}
-            </Link>
-            {" · "}
-            <span dir="ltr">{activeDomain ?? `${store.subdomain}`}</span>
-            {" · plan "}
-            {store.plan}
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {isAdminWriteRole(admin.role) && (
-            <Button asChild size="sm">
-              <Link href={`/stores/${storeId}/editor`}>
-                <PencilRuler className="mr-1 h-3.5 w-3.5" />
-                Edit website
-              </Link>
+          </>
+        }
+        subtitle={
+          <span className="inline-flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span className="inline-flex items-center gap-1" dir="ltr">
+              <Globe className="size-3.5" aria-hidden />
+              {activeDomain ?? store.subdomain}
+            </span>
+            <span className="capitalize">{store.plan} plan</span>
+            {store.isPrimary ? <span>Primary store</span> : null}
+          </span>
+        }
+        relations={
+          owner
+            ? accountChips(owner, { personRole: "Owner", excludeStoreId: store.id, omit: ["orders"] }).concat({
+                href: ordersHref({ store: store.id }),
+                role: "Orders",
+                name: "Placed in this store",
+                icon: ShoppingCart,
+              })
+            : []
+        }
+        actions={
+          <>
+            {isAdminWriteRole(admin.role) && (
+              <Button asChild size="sm">
+                <Link href={`/stores/${storeId}/editor`}>
+                  <PencilRuler className="mr-1 h-3.5 w-3.5" />
+                  Edit website
+                </Link>
+              </Button>
+            )}
+            <Button asChild variant="outline" size="sm">
+              <a href={storeUrl(store.subdomain, activeDomain)} target="_blank" rel="noreferrer">
+                Open storefront
+                <ExternalLink className="ml-1 h-3.5 w-3.5" />
+              </a>
             </Button>
-          )}
-          <Button asChild variant="outline" size="sm">
-            <a href={storeUrl(store.subdomain, activeDomain)} target="_blank" rel="noreferrer">
-              Open storefront
-              <ExternalLink className="ml-1 h-3.5 w-3.5" />
-            </a>
-          </Button>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       <UrlTabs
         baseHref={`/stores/${storeId}`}

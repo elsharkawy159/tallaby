@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { ChevronDown, ChevronRight, ExternalLink } from "lucide-react";
@@ -17,6 +18,7 @@ import {
   DialogTitle,
 } from "@workspace/ui/components/dialog";
 import type { AdminStoreRow } from "@workspace/lib/admin/server";
+import { storeHref } from "../../_components/entity/entity-href.lib";
 import { formatDate, formatDateTime } from "../sellers.lib";
 import { SITE_STATUS_LABELS, STORE_STATUS_CLASSES } from "./seller-admin.lib";
 import { storeAdminAction } from "./seller-admin.server";
@@ -98,7 +100,9 @@ export function SellerStoresPanel({ sellerId, stores }: { sellerId: string; stor
                     <tr className="border-b align-top">
                       <td className="py-2 pr-3">
                         <div className="font-medium">
-                          {store.name}
+                          <Link href={storeHref(store.id)} className="hover:underline">
+                            {store.name}
+                          </Link>
                           {store.isPrimary && <Badge variant="outline" className="ml-2">Primary</Badge>}
                         </div>
                         <a
