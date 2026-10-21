@@ -276,6 +276,24 @@ export type LinkProps = {
   "data-part"?: string;
 };
 
+/** `<img>` source attributes from the host's image optimizer. */
+export type OptimizedImage = { src: string; srcSet?: string; sizes?: string };
+
+/** Typical `sizes` for storefront images, so the browser picks a fitting width. */
+export const IMAGE_SIZES = {
+  /** Full-width media: section backgrounds. */
+  full: "100vw",
+  /** Content images and video posters, capped by the page width. */
+  content: "(min-width: 1280px) 1280px, 100vw",
+  /** Product cards in a grid (2 columns on phones, up to 4 on desktop). */
+  card: "(min-width: 1024px) 25vw, 50vw",
+} as const;
+
+/** `src`/`srcSet`/`sizes` for a resolved image URL: optimized when the host can, else the URL as is. */
+export function imageSource(ctx: Pick<RenderContext, "optimizeImage">, url: string, sizes: string): OptimizedImage {
+  return ctx.optimizeImage?.(url, sizes) ?? { src: url };
+}
+
 export interface RenderContext {
   /** `edit` in the dashboard canvas, `public` on the storefront. */
   mode: "edit" | "public";
@@ -314,6 +332,12 @@ export interface RenderContext {
   Link: ComponentType<LinkProps>;
   /** Resolves a stored image (storage path or URL) to a URL. */
   imageUrl: (src: string | null | undefined) => string | null;
+  /**
+   * Host image optimizer (the storefront's next/image `getImageProps`): a
+   * resized `src` plus `srcSet`/`sizes` for a resolved URL, or the URL as is
+   * when the host can't optimize it. Without it, images keep their URL.
+   */
+  optimizeImage?: (url: string, sizes: string) => OptimizedImage;
   formatPrice: (amount: number) => string;
   /** Host-provided interactive pieces (the storefront cart, or editor placeholders). */
   renderCartButton?: () => ReactNode;

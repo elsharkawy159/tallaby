@@ -23,14 +23,14 @@ import {
   type VariantTypeFormValue,
 } from "@/lib/utils/variant-types.lib";
 import { ImageUpload } from "@/components/inputs/image-upload";
-import { FIELD_CLASS, SMALL_BUTTON_CLASS } from "@/components/form/form-ui";
-import { NumberInput } from "./fields";
+import { FIELD_CLASS, NumberStepper, SMALL_BUTTON_CLASS } from "@/components/form/form-ui";
 import { VariantPricingFields } from "../steps/variant-pricing-fields";
 import type {
   AddProductFormData,
   SupportedLocale,
   VariantOptionKind,
 } from "../add-product.schema";
+import { RemoteImage } from "@/components/media/remote-image";
 
 const MAX_OPTION_TYPES = 3;
 const DEFAULT_KINDS: VariantOptionKind[] = ["color", "size", "material"];
@@ -653,6 +653,7 @@ function VariantsTable({
 }) {
   const t = useTranslations("productForm.variants");
   const tPricing = useTranslations("productForm.variantPricing");
+  const tStock = useTranslations("productForm.sections.stock");
   const locale = useLocale();
   const form = useFormContext<AddProductFormData>();
 
@@ -756,20 +757,24 @@ function VariantsTable({
                     )}
                   </td>
                   <td className="border-b px-3 py-3">
-                    <div className="w-24">
-                      <div
-                        className={cn(
-                          "flex h-9 overflow-hidden rounded-[10px] border border-input bg-card",
-                          isDefault && "opacity-60"
+                    <div className="w-32">
+                      {/* The default variant's stock follows the main quantity. */}
+                      <Controller
+                        name={`variants.${index}.stock`}
+                        control={form.control}
+                        render={({ field }) => (
+                          <NumberStepper
+                            size="sm"
+                            value={field.value}
+                            onChange={(value) => field.onChange(value ?? 0)}
+                            onBlur={field.onBlur}
+                            disabled={isDefault}
+                            inputLabel={t("columns.stock")}
+                            decrementLabel={tStock("decrease")}
+                            incrementLabel={tStock("increase")}
+                          />
                         )}
-                      >
-                        <NumberInput
-                          name={`variants.${index}.stock`}
-                          placeholder="0"
-                          disabled={isDefault}
-                          className="px-2.5 text-start font-sans text-[13px] tabular-nums rtl:text-right"
-                        />
-                      </div>
+                      />
                     </div>
                   </td>
                   <td className="border-b px-3 py-3">
@@ -804,13 +809,7 @@ function MainImagesPreview({ images }: { images: string[] }) {
       <span className="text-xs text-muted-foreground">{tPricing("usesMainImages")}</span>
       <div className="flex flex-wrap gap-1">
         {images.slice(0, 4).map((image) => (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            key={image}
-            src={getPublicUrl(image, "products")}
-            alt=""
-            className="size-9 rounded-md border object-cover"
-          />
+          <RemoteImage key={image} src={getPublicUrl(image, "products")} alt="" width={36} height={36} className="size-9 rounded-md border object-cover" />
         ))}
       </div>
     </div>

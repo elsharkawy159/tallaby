@@ -1,40 +1,34 @@
 /**
  * The home "get your store ready" checklist (PLAN.md §6.6, P3-04), computed
- * from data, never stored. Store steps belong to the store selected in the
- * sidebar; account steps (legal details, payout account) link to /settings.
- * "Publish your store" runs the builder's Publish from the home page and is
- * offered once the profile, first product and legal details are done.
- * Fulfillment is optional (minimal signup) and no longer a required step.
+ * from data, never stored. Only the steps a store needs for its first order:
+ * a product, a website template, shipping, then publishing. Store steps
+ * belong to the store selected in the sidebar. "Publish your store" runs the
+ * builder's Publish from the home page and is offered once there is an
+ * active product.
  */
 
 export type SetupFlags = {
-  profile: boolean;
-  contact: boolean;
+  /** The seller has an active product. */
   product: boolean;
-  /** Account: legal address (street + governorate) and a payout account (P3-05). */
-  legal: boolean;
+  /** The selected store installed a template (not undone) or has published its site. */
+  template: boolean;
+  /** The selected store saved its shipping settings or has a delivery zone. */
+  shipping: boolean;
   /** The selected store's website is live (`site_status = 'published'`). */
   publish: boolean;
-  payout: boolean;
-  coupon: boolean;
-  campaign: boolean;
 };
 
 export type SetupKey = keyof SetupFlags;
 
 export type SetupTask = { key: SetupKey; href: string; done: boolean };
 
-const STORE_STEPS = new Set<SetupKey>(["profile", "contact", "publish"]);
+const STORE_STEPS = new Set<SetupKey>(["template", "shipping", "publish"]);
 
 const STEPS: { key: SetupKey; href: (storeId: string) => string }[] = [
-  { key: "profile", href: (id) => `/stores/${id}/settings` },
   { key: "product", href: () => "/products/add" },
-  { key: "contact", href: (id) => `/stores/${id}/settings` },
-  { key: "legal", href: () => "/settings#legal" },
+  { key: "template", href: (id) => `/stores/${id}/website/templates` },
+  { key: "shipping", href: (id) => `/stores/${id}/shipping` },
   { key: "publish", href: (id) => `/stores/${id}/website` },
-  { key: "payout", href: () => "/settings#payout" },
-  { key: "coupon", href: () => "/coupons" },
-  { key: "campaign", href: () => "/marketing" },
 ];
 
 export function buildSetupTasks(flags: SetupFlags, storeId: string | null): SetupTask[] {
@@ -51,5 +45,5 @@ export function isSetupDone(flags: SetupFlags, storeId: string | null): boolean 
 
 /** The steps a store needs before the checklist offers to publish it. */
 export function publishReady(flags: SetupFlags): boolean {
-  return flags.profile && flags.product && flags.legal;
+  return flags.product;
 }

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
-import { Check, Globe, Headphones, Landmark, Megaphone, Package, Rocket, Store, TicketPercent, Wallet } from "lucide-react";
+import { Check, Globe, LayoutTemplate, Package, Rocket, Truck } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Button } from "@workspace/ui/components/button";
@@ -15,14 +15,10 @@ import { SetupPublishButton } from "./setup-publish.client";
 import { buildSetupTasks, isSetupDone, publishReady, type SetupKey } from "./setup-checklist.lib";
 
 const ICONS: Record<SetupKey, LucideIcon> = {
-  profile: Store,
   product: Package,
-  contact: Headphones,
-  legal: Landmark,
+  template: LayoutTemplate,
+  shipping: Truck,
   publish: Globe,
-  payout: Wallet,
-  coupon: TicketPercent,
-  campaign: Megaphone,
 };
 
 export function isSetupComplete(snapshot: HomeSnapshot) {
@@ -100,7 +96,7 @@ export async function SetupChecklistData() {
         </div>
 
         <SetupAccordion showAllLabel={t("showAll", { count: TASKS.length })} showLessLabel={t("showLess")}>
-          <ol className="grid gap-2 px-5 pb-3 lg:grid-cols-2">
+          <ol className="grid grid-cols-1 gap-2 px-5 pb-3 lg:grid-cols-2">
             {ordered.map((task) => {
               const done = task.done;
               const next = task.key === nextKey;
@@ -136,7 +132,7 @@ export async function SetupChecklistData() {
                       {done && <span className="sr-only"> — {t("done")}</span>}
                     </b>
                     {!done && (
-                      <small className="block truncate text-xs text-muted-foreground">
+                      <small className="line-clamp-2 text-xs text-muted-foreground">
                         {task.key === "publish" && !canPublish
                           ? t("publish.locked")
                           : t(`tasks.${task.key}.description`)}

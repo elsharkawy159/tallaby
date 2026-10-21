@@ -1,14 +1,15 @@
 "use client"
 
-import { useEffect, useState, useTransition } from "react"
+import { useEffect, useRef, useState, useTransition } from "react"
 import { useForm, useFormContext, useFormState, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
 import { useTranslations } from "next-intl"
-import { FileDown, LoaderCircle, Rocket } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { FileDown, LoaderCircle, Rocket, Save } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
 import { Form } from "@workspace/ui/components/form"
-import { createProduct } from "@/actions/products"
+import { createProduct, updateProduct } from "@/actions/products"
 import { cn } from "@/lib/utils"
 import { useLocalizedResolver } from "@/lib/i18n/localized-resolver"
 import type { SellerPricingSettings } from "@/lib/utils/product-pricing.lib"
@@ -52,6 +53,11 @@ interface AddProductProps {
   sellerPricing: SellerPricingSettings
   /** The seller's own lists for "My category" / "My brand". */
   sellerTaxonomy: { categories: SellerTaxonomyOption[]; brands: SellerTaxonomyOption[] }
+  /**
+   * Edit mode: the same form, prefilled from an existing product and saved
+   * with updateProduct. No local draft, import or bulk mode.
+   */
+  edit?: { productId: string; defaultValues: AddProductFormData }
 }
 
 const LOCALE_LABELS: Record<SupportedLocale, string> = {
@@ -64,7 +70,10 @@ export default function AddProduct ({
   brands,
   sellerPricing,
   sellerTaxonomy,
+  edit,
 }: AddProductProps) {
+  const isEdit = Boolean(edit)
+  const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [activeLocale, setActiveLocale] = useState<SupportedLocale>("en")
   const [mode, setMode] = useState<"single" | "bulk">("single")
@@ -73,19 +82,20 @@ export default function AddProduct ({
   const [activeSection, setActiveSection] = useState<string>(PRODUCT_SECTIONS[0].id)
   const tToast = useTranslations("toast")
   const t = useTranslations("productForm.page")
+  const tForm = useTranslations("productForm")
   const tBasic = useTranslations("productForm.sections.basic")
   const tTaxonomy = useTranslations("categoriesBrands.productForm")
   const resolver = useLocalizedResolver(zodResolver(addProductFormSchema) as any)
 
   const form = useForm<AddProductFormData>({
     resolver: resolver as any,
-    defaultValues: defaultValues as any,
+    defaultValues: (edit?.defaultValues ?? defaultValues) as any,
     mode: "onChange",
     shouldUnregister: false,
   })
 
   const draft = useProductDraft(form, {
-    enabled: mode === "single",
+    enabled: mode === "single" && !isEdit,
     onRestore: () =>
       toast.message(t("draftRestored"), {
         action: {
@@ -117,6 +127,7 @@ export default function AddProduct ({
   }, [mode])
 
   const handleSubmit = (data: AddProductFormData) => {
+    if (edit) return handleUpdate(edit.productId, data)
     startTransition(async () => {
       try {
         const { rest, taxonomy } = splitSellerTaxonomy(prepareProductForSubmit(data))
@@ -129,7 +140,8 @@ export default function AddProduct ({
           }
           draft.pause()
           draft.clear()
-          toast.success(tToast("productCreatedSuccessfully"))
+          if (result.data?.status === "draft") toast.info(tToast("productSavedAsDraft"))
+          else toast.success(tToast("productCreatedSuccessfully"))
           // Full reload clears stuck pending UI and resets the form cleanly
           window.location.reload()
         } else {
@@ -142,7 +154,35 @@ export default function AddProduct ({
     })
   }
 
-  const publish = form.handleSubmit(handleSubmit, (errors) => {
+  const handleUpdate = (productId: string, data: AddProductFormData) => {
+    startTransition(async () => {
+      try {
+        const { rest, taxonomy } = splitSellerTaxonomy(prepareProductForSubmit(data))
+        const result = await updateProduct(productId, {
+          ...rest,
+          quantity: String(data.quantity),
+          handlingTime: String(data.handlingTime),
+        } as unknown as Parameters<typeof updateProduct>[1])
+
+        if (result.success) {
+          // Always sent on edit, so clearing "My category" / "My brand" sticks.
+          const linked = await setProductSellerTaxonomy(productId, taxonomy)
+          if (!linked.success) toast.warning(tTaxonomy("linkFailed"))
+          toast.success(tToast("productUpdatedSuccessfully"))
+          router.push("/products")
+        } else {
+          toast.error(result.error || tToast("failedToUpdateProduct"))
+        }
+      } catch (error) {
+        console.error("Form submission error:", error)
+        toast.error(tToast("somethingWentWrong"))
+      }
+    })
+  }
+
+  // Never disabled for validation: clicking runs it, shows the errors and
+  // scrolls to the first invalid section. Only an in-flight save disables it.
+  const validateAndSubmit = form.handleSubmit(handleSubmit, (errors) => {
     toast.error(t("fixRequired"))
     const first = getFirstInvalidSection(errors)
     if (first) {
@@ -155,6 +195,18 @@ export default function AddProduct ({
       scrollToSection(first)
     }
   })
+  // Validation is async, so a quick double click could submit twice before
+  // isPending turns on.
+  const validating = useRef(false)
+  const publish = async () => {
+    if (validating.current || isPending) return
+    validating.current = true
+    try {
+      await validateAndSubmit()
+    } finally {
+      validating.current = false
+    }
+  }
 
   const saveDraft = () => {
     draft.saveNow()
@@ -182,10 +234,21 @@ export default function AddProduct ({
       variant="accent"
       onClick={publish}
       disabled={isPending}
+      aria-busy={isPending}
       className={cn(BUTTON_CLASS, "rounded-xl font-semibold", compact && "px-4")}
     >
-      {isPending ? <LoaderCircle className="animate-spin" /> : !compact && <Rocket />}
-      {isPending ? t("publishing") : compact ? t("publishShort") : t("publish")}
+      {isPending ? <LoaderCircle className="animate-spin" /> : !compact && (isEdit ? <Save /> : <Rocket />)}
+      {isEdit
+        ? isPending
+          ? tForm("saving")
+          : compact
+            ? t("saveShort")
+            : tForm("saveChanges")
+        : isPending
+          ? t("publishing")
+          : compact
+            ? t("publishShort")
+            : t("publish")}
     </Button>
   )
 
@@ -199,29 +262,33 @@ export default function AddProduct ({
           className="sticky top-16 z-20 border-b bg-background/95 backdrop-blur-md"
         >
           <div className="mx-auto flex max-w-[1240px] flex-wrap items-center gap-x-4 gap-y-2.5 px-4 py-3 sm:px-6 sm:py-3.5">
-            <h1 className="text-[17px] leading-snug font-bold sm:text-xl">{t("newTitle")}</h1>
-            <SaveStatus status={draft.status} />
+            <h1 className="text-[17px] leading-snug font-bold sm:text-xl">{isEdit ? t("editTitle") : t("newTitle")}</h1>
+            {!isEdit && <SaveStatus status={draft.status} />}
             <div className="flex w-full items-center gap-2 sm:ms-auto sm:w-auto">
               <LocaleSwitch value={activeLocale} onChange={setActiveLocale} />
-              <Button
-                type="button"
-                variant="soft"
-                size="icon"
-                className="ms-auto size-10 rounded-[10px] sm:ms-0"
-                onClick={() => setImportOpen(true)}
-                title={t("importProduct")}
-                aria-label={t("importProduct")}
-              >
-                <FileDown className="size-[18px]" />
-              </Button>
-              <Button
-                type="button"
-                variant="neutral"
-                className={cn(BUTTON_CLASS, "hidden rounded-xl lg:inline-flex")}
-                onClick={saveDraft}
-              >
-                {t("saveDraft")}
-              </Button>
+              {!isEdit && (
+                <>
+                  <Button
+                    type="button"
+                    variant="soft"
+                    size="icon"
+                    className="ms-auto size-10 rounded-[10px] sm:ms-0"
+                    onClick={() => setImportOpen(true)}
+                    title={t("importProduct")}
+                    aria-label={t("importProduct")}
+                  >
+                    <FileDown className="size-[18px]" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="neutral"
+                    className={cn(BUTTON_CLASS, "hidden rounded-xl lg:inline-flex")}
+                    onClick={saveDraft}
+                  >
+                    {t("saveDraft")}
+                  </Button>
+                </>
+              )}
               <div className="hidden lg:block">{publishButton()}</div>
             </div>
           </div>
@@ -229,7 +296,7 @@ export default function AddProduct ({
         </div>
 
         <form
-          id="add-product-form"
+          id={isEdit ? "edit-product-form" : "add-product-form"}
           onSubmit={(e) => {
             e.preventDefault()
             void publish()
@@ -243,15 +310,17 @@ export default function AddProduct ({
                 brands={brands}
                 activeLocale={activeLocale}
                 action={
-                  <Button
-                    type="button"
-                    variant="default"
-                    className={cn(SMALL_BUTTON_CLASS, "h-9 px-3.5 text-[13px] font-semibold shadow-sm")}
-                    onClick={() => setImportOpen(true)}
-                  >
-                    <FileDown />
-                    {tBasic("importFromLink")}
-                  </Button>
+                  isEdit ? undefined : (
+                    <Button
+                      type="button"
+                      variant="default"
+                      className={cn(SMALL_BUTTON_CLASS, "h-9 px-3.5 text-[13px] font-semibold shadow-sm")}
+                      onClick={() => setImportOpen(true)}
+                    >
+                      <FileDown />
+                      {tBasic("importFromLink")}
+                    </Button>
+                  )
                 }
               />
               <MediaSection />
@@ -275,24 +344,28 @@ export default function AddProduct ({
         <ProgressMobileBar
           actions={
             <>
-              <Button type="button" variant="soft" className={cn(BUTTON_CLASS, "hidden sm:inline-flex")} onClick={saveDraft}>
-                {t("draftShort")}
-              </Button>
+              {!isEdit && (
+                <Button type="button" variant="soft" className={cn(BUTTON_CLASS, "hidden sm:inline-flex")} onClick={saveDraft}>
+                  {t("draftShort")}
+                </Button>
+              )}
               {publishButton(true)}
             </>
           }
         />
 
-        <ImportDialog
-          open={importOpen}
-          onOpenChange={setImportOpen}
-          categories={categories}
-          sellerPricing={sellerPricing}
-          onBulkUrls={(urls) => {
-            setBulkUrls(urls)
-            setMode("bulk")
-          }}
-        />
+        {!isEdit && (
+          <ImportDialog
+            open={importOpen}
+            onOpenChange={setImportOpen}
+            categories={categories}
+            sellerPricing={sellerPricing}
+            onBulkUrls={(urls) => {
+              setBulkUrls(urls)
+              setMode("bulk")
+            }}
+          />
+        )}
         <StickyOffsetVar />
       </div>
     </Form>

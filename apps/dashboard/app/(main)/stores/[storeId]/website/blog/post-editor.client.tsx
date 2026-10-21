@@ -43,6 +43,7 @@ import { cn } from "@/lib/utils";
 import { parseTags, toPostInput } from "./blog.lib";
 import type { BlogPostForm, BlogPostState, BlogRevision } from "./blog.dto";
 import { listPostRevisions, restorePostRevision, savePost } from "./blog.server";
+import { RemoteImage } from "@/components/media/remote-image";
 
 const TITLE_MAX = 200;
 const EXCERPT_MAX = 500;
@@ -231,10 +232,9 @@ export function PostEditor({
 
       <SectionCard id="cover" icon={ImageIcon} title={t("cover.title")} description={t("cover.description")}>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-          <div className="grid aspect-[16/9] w-full shrink-0 place-items-center overflow-hidden rounded-xl border bg-muted sm:w-56">
+          <div className="relative grid aspect-[16/9] w-full shrink-0 place-items-center overflow-hidden rounded-xl border bg-muted sm:w-56">
             {form.coverImage ? (
-              // eslint-disable-next-line @next/next/no-img-element -- seller media URL
-              <img src={form.coverImage} alt="" className="size-full object-cover" />
+              <RemoteImage src={form.coverImage} alt="" fill sizes="(min-width: 640px) 224px, 100vw" className="object-cover" />
             ) : (
               <ImageIcon className="size-6 text-muted-foreground" />
             )}

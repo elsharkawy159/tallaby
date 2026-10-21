@@ -1,7 +1,9 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import { cn } from "@workspace/ui/lib/utils";
+import { isOptimizableStoreImage } from "@/lib/store-site/optimize-image.lib";
 import { BrowserBar } from "@/components/marketing/site/browser-frame";
 import { TEMPLATES } from "@/lib/marketing/templates.data";
 import { MiniStore } from "./store-preview";
@@ -15,8 +17,13 @@ const POSITIONS = [
   "z-[1] -translate-x-[88%] -translate-y-[42%] -rotate-[8deg] scale-[0.88]",
 ];
 
-/** Three template cards that rotate to the front every few seconds. */
-export function TemplateFan() {
+/**
+ * Three template cards that rotate to the front every few seconds: the
+ * templates' thumbnails (`images`, 7:6, each with its own window and phone)
+ * when three are given, else the drawn mini stores.
+ */
+export function TemplateFan({ images = [] }: { images?: readonly string[] }) {
+  const thumbs = images.length >= 3 ? images.slice(0, 3) : null;
   const [order, setOrder] = React.useState([0, 1, 2]);
 
   React.useEffect(() => {
@@ -35,8 +42,24 @@ export function TemplateFan() {
             POSITIONS[order.indexOf(i)],
           )}
         >
-          <BrowserBar />
-          <MiniStore look={tpl.look} />
+          {thumbs ? (
+            <div className="relative aspect-[7/6] w-full">
+              <Image
+                src={thumbs[i]!}
+                alt=""
+                fill
+                preload={i === 0}
+                sizes="(min-width: 1024px) 360px, 62vw"
+                unoptimized={!isOptimizableStoreImage(thumbs[i]!)}
+                className="object-cover"
+              />
+            </div>
+          ) : (
+            <>
+              <BrowserBar />
+              <MiniStore look={tpl.look} />
+            </>
+          )}
         </div>
       ))}
     </div>

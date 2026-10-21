@@ -114,7 +114,7 @@ export default async function StoreBlogPostPage({ params }: BlogPostProps) {
         </header>
         {post.image && (
           <div className="mt-8 aspect-[16/9] overflow-hidden rounded-(--sf-radius,12px) bg-(--sf-shelf)">
-            <ContentImage src={post.image} alt={post.title} className="size-full" eager />
+            <ContentImage src={post.image} alt={post.title} className="size-full" eager sizes="(min-width: 768px) 768px, 100vw" />
           </div>
         )}
         <ArticleBody html={item.data.body as string | undefined} className="mt-8" />

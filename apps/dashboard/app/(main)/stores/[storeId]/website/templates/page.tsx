@@ -27,7 +27,7 @@ export default async function WebsiteTemplatesPage({ params }: { params: Promise
   const gallery = await listStoreTemplates(store.sellerId, store.id);
   if (!gallery) notFound();
 
-  const templates = toTemplateCardViews(gallery.templates);
+  const templates = toTemplateCardViews(gallery.templates, { en: store.storeCategory, ar: store.storeCategoryAr });
 
   return (
     <section className="mx-auto w-full space-y-5 p-4 sm:p-6">

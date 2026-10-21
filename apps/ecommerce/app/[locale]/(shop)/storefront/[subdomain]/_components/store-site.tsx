@@ -19,6 +19,7 @@ import { Link } from "@/i18n/navigation";
 import { formatContentDate, toContentSummary } from "@/lib/store-cms/cms.lib";
 import { getCachedSectionContent } from "@/lib/store-cms/cms.server";
 import { resolveStoreCatalog, type ResolvedCatalog } from "@/lib/store-site/catalog.server";
+import { optimizeStoreImage } from "@/lib/store-site/optimize-image.lib";
 import { catalogStoreId, type Storefront } from "@/lib/storefront.server";
 import { CartSheet } from "./cart-sheet.client";
 import { StoreForm } from "./store-form.client";
@@ -94,6 +95,7 @@ async function buildContext(
     ),
     // Builder images live in the seller's media; product images are already URLs.
     imageUrl: (src) => (src ? getPublicUrl(src, "sellers") || null : null),
+    optimizeImage: optimizeStoreImage,
     formatPrice: (amount) => formatPricePlain(amount, locale, store.currencyLabel),
     renderCartButton: () => <CartSheet storeName={store.displayName} fontClassName={storefrontFont.variable} />,
     renderAddToCart: (product) =>

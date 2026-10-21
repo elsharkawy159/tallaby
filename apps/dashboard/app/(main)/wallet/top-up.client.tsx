@@ -160,15 +160,16 @@ export function TopUpButton({
       </Button>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
-          className="gap-0 overflow-hidden p-0 sm:max-w-[560px]"
+          // Header and footer stay put; only the body scrolls, so Next/Submit is always on screen.
+          className="flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-[520px]"
           // No autofocus on the amount field (owner request): the keyboard stays closed on phones.
           onOpenAutoFocus={(event) => event.preventDefault()}
         >
-          <DialogHeader className="gap-1 border-b px-6 pb-4 pt-6 text-start">
+          <DialogHeader className="shrink-0 gap-1 border-b px-5 pb-3 pt-5 text-start">
             <DialogTitle className="text-lg">{step === "done" ? t("done.title") : t("title")}</DialogTitle>
             <DialogDescription>{step === "done" ? t("done.subtitle") : t("description")}</DialogDescription>
             {step !== "done" && (
-              <ol className="mt-3 grid grid-cols-3 gap-2" aria-label={t("progress")}>
+              <ol className="mt-2 grid grid-cols-3 gap-2" aria-label={t("progress")}>
                 {STEPS.map((s, i) => (
                   <li key={s} aria-current={i === stepIndex ? "step" : undefined} className="min-w-0">
                     <span
@@ -191,9 +192,9 @@ export function TopUpButton({
             )}
           </DialogHeader>
 
-          <div className="max-h-[min(70vh,620px)] overflow-y-auto px-6 py-5">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-4">
             {step === "amount" && (
-              <div className="flex flex-col gap-5">
+              <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-2">
                   <Label htmlFor={`${ids}-amount`} className="text-[13px] font-semibold">
                     {t("amountLabel")}
@@ -205,7 +206,7 @@ export function TopUpButton({
                     decimals={false}
                     invalid={!!amountError}
                     aria-describedby={`${ids}-amount-hint`}
-                    className="h-14 rounded-xl"
+                    className="h-12 rounded-xl"
                     addonClassName="px-4 text-sm"
                     inputClassName="text-2xl font-bold tabular-nums"
                     onChange={(value) => {
@@ -277,16 +278,16 @@ export function TopUpButton({
             )}
 
             {step === "transfer" && (
-              <div className="flex flex-col gap-5">
+              <div className="flex flex-col gap-4">
                 {/* The transfer slip: what to send, and where. */}
                 <div
                   className="relative overflow-hidden rounded-2xl border bg-card"
                   style={{ borderInlineStartWidth: 4, borderInlineStartColor: METHOD_COLOR[method] }}
                 >
-                  <div className="flex items-start justify-between gap-3 px-5 pb-4 pt-5">
+                  <div className="flex items-start justify-between gap-3 px-4 pb-3 pt-4">
                     <div className="min-w-0">
                       <p className="text-xs text-muted-foreground">{t("slip.sendExactly")}</p>
-                      <p dir="ltr" className="mt-1 text-start text-[34px] font-bold leading-none tabular-nums rtl:text-end">
+                      <p dir="ltr" className="mt-1 text-start text-[28px] font-bold leading-none tabular-nums rtl:text-end">
                         {money}
                       </p>
                     </div>
@@ -300,7 +301,7 @@ export function TopUpButton({
                     <span className="absolute -start-2.5 -top-2.5 size-5 rounded-full border bg-background" />
                     <span className="absolute -end-2.5 -top-2.5 size-5 rounded-full border bg-background" />
                   </div>
-                  <div className="flex items-center justify-between gap-3 px-5 pb-5 pt-4">
+                  <div className="flex items-center justify-between gap-3 px-4 pb-4 pt-3">
                     <div className="flex min-w-0 items-center gap-3">
                       <PaymentMethodLogo method={method} label={methodLabel} className="size-10" />
                       <div className="min-w-0">
@@ -315,7 +316,7 @@ export function TopUpButton({
                   </div>
                 </div>
 
-                <ol className="flex flex-col gap-2 text-[13px] text-muted-foreground">
+                <ol className="flex flex-col gap-1.5 text-[13px] text-muted-foreground">
                   {(["open", "send", "screenshot"] as const).map((key, i) => (
                     <li key={key} className="flex gap-2.5">
                       <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-muted text-[11px] font-bold text-foreground">
@@ -361,7 +362,7 @@ export function TopUpButton({
                 {preview && file ? (
                   <div className="flex items-center gap-4 rounded-2xl border p-3">
                     {/* eslint-disable-next-line @next/next/no-img-element -- a local object URL */}
-                    <img src={preview} alt={t("receipt.previewAlt")} className="h-28 w-20 shrink-0 rounded-lg border object-cover" />
+                    <img src={preview} alt={t("receipt.previewAlt")} className="h-20 w-16 shrink-0 rounded-lg border object-cover" />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium" dir="auto">
                         {file.name}
@@ -400,7 +401,7 @@ export function TopUpButton({
                       pickFile(e.dataTransfer.files?.[0]);
                     }}
                     className={cn(
-                      "flex flex-col items-center gap-2 rounded-2xl border-2 border-dashed px-6 py-9 text-center transition-colors hover:border-primary/50 hover:bg-primary-soft/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
+                      "flex flex-col items-center gap-2 rounded-2xl border-2 border-dashed px-6 py-6 text-center transition-colors hover:border-primary/50 hover:bg-primary-soft/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
                       fileError && "border-destructive/60",
                     )}
                   >
@@ -412,14 +413,14 @@ export function TopUpButton({
                   </button>
                 )}
                 {fileError && <p className="text-xs text-destructive">{fileError}</p>}
-                <p className="rounded-xl bg-muted/50 px-4 py-3 text-[13px] text-muted-foreground">
+                <p className="rounded-xl bg-muted/50 px-3.5 py-2.5 text-[13px] text-muted-foreground">
                   {t("receipt.reviewNote", { amount: money })}
                 </p>
               </div>
             )}
 
             {step === "done" && (
-              <div className="flex flex-col items-center gap-3 py-4 text-center">
+              <div className="flex flex-col items-center gap-3 py-2 text-center">
                 <span className="grid size-14 place-items-center rounded-full bg-accent-soft text-accent-ink">
                   <LoaderCircle className="size-6 motion-safe:animate-[spin_2.4s_linear_infinite]" aria-hidden />
                 </span>
@@ -431,7 +432,7 @@ export function TopUpButton({
             )}
           </div>
 
-          <div className="flex items-center gap-2 border-t bg-muted/30 px-6 py-4">
+          <div className="flex shrink-0 items-center gap-2 border-t bg-muted/30 px-5 py-3">
             {step === "done" ? (
               <Button type="button" className={cn(BUTTON_CLASS, "ms-auto")} onClick={() => onOpenChange(false)}>
                 {t("done.close")}

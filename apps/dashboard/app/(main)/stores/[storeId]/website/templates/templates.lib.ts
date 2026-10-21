@@ -6,6 +6,7 @@
 import type { StoreTemplateCard } from "@workspace/lib/store-sites/server";
 import { getDesign, storeSectionRegistry } from "@workspace/store-sections/render";
 import { getTemplateDesign } from "@workspace/store-sections/templates";
+import { findIndustry } from "@/lib/stores/industries.lib";
 import type { TemplateCardView } from "./templates.dto";
 
 /** A section's name: its design (tree sections, `source`) or its registry entry. */
@@ -18,9 +19,23 @@ function sectionName(id: string) {
   return storeSectionRegistry.get(id)?.displayName ?? { ar: id, en: id };
 }
 
-export function toTemplateCardViews(templates: StoreTemplateCard[]): TemplateCardView[] {
+/**
+ * The store's industry templates first (owner request 2026-10-21): template
+ * categories use the industry ids (`electronics`, `fashion`, …). Stable, so
+ * each group keeps the gallery order (default first, then sort order).
+ */
+export function sortByIndustry<T extends { category: string }>(templates: T[], industryId: string | null | undefined): T[] {
+  if (!industryId) return templates;
+  return [...templates.filter((tpl) => tpl.category === industryId), ...templates.filter((tpl) => tpl.category !== industryId)];
+}
+
+export function toTemplateCardViews(
+  templates: StoreTemplateCard[],
+  storeCategory?: { en?: string | null; ar?: string | null },
+): TemplateCardView[] {
+  const industry = storeCategory ? findIndustry(storeCategory) : null;
   // Swatches, page names and form kinds come from the database row (templates.meta, current version).
-  return templates.map((template) => {
+  return sortByIndustry(templates, industry?.id).map((template) => {
     return {
       key: template.key,
       name: template.name,

@@ -17,6 +17,7 @@ import {
 } from "@workspace/ui/components/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { StoreLogo } from "@/components/stores/store-logo.client";
+import { StoreSiteStatusNote } from "@/components/stores/store-site-status-note";
 import { selectStore } from "./store-switcher.server";
 
 export type SwitcherStore = {
@@ -26,6 +27,7 @@ export type SwitcherStore = {
   isPrimary: boolean;
   status: string;
   logoUrl: string | null;
+  siteStatus: string;
 };
 
 /**
@@ -86,6 +88,7 @@ export function StoreSwitcher({
               <span dir="ltr" className="block truncate text-start text-xs text-muted-foreground rtl:text-end">
                 {storeHostname(selected.subdomain)}
               </span>
+              <StoreSiteStatusNote siteStatus={selected.siteStatus} compact />
             </span>
             <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground" />
           </>
@@ -106,6 +109,7 @@ export function StoreSwitcher({
               <span dir="ltr" className="block truncate text-start text-xs text-muted-foreground rtl:text-end">
                 {storeHostname(store.subdomain)}
               </span>
+              {store.status !== "archived" && <StoreSiteStatusNote siteStatus={store.siteStatus} compact />}
             </span>
             {store.isPrimary && <Badge variant="secondary">{t("primaryStore")}</Badge>}
             {store.status === "archived" && <Badge variant="outline">{t("archived")}</Badge>}

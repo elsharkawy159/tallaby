@@ -938,6 +938,12 @@
     "undone": "Template change undone.",
     "lastApplied": "{name} was applied on {date}.",
     "undo": "Undo template change",
+    "pagination": {
+      "label": "Template pages",
+      "previous": "Previous",
+      "next": "Next",
+      "page": "Page {page} of {pageCount}"
+    },
     "categories": {
       "label": "Categories",
       "all": "All",

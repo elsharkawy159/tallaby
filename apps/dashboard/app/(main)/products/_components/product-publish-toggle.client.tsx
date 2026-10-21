@@ -45,7 +45,7 @@ export function ProductStatusCell({
   }, [status]);
 
   const isPublished = currentStatus === "active";
-  const canToggle = currentStatus === "active" || currentStatus === "draft";
+  const canToggle = currentStatus !== "rejected";
 
   const handleCheckedChange = (checked: boolean) => {
     if (!canToggle || isPending) return;

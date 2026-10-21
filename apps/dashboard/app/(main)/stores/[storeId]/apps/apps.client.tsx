@@ -32,6 +32,7 @@ import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetT
 import { cn } from "@workspace/ui/lib/utils";
 import { BUTTON_CLASS } from "@/components/form/form-ui";
 import { StoreLogo } from "@/components/stores/store-logo.client";
+import { StoreSiteStatusNote } from "@/components/stores/store-site-status-note";
 import { APP_BRANDS, groupOf, kindLabelOf, type AppGroup } from "./apps-brand.lib";
 import { connectStoreApp, disconnectStoreApp } from "./apps.server";
 import type { AppCategoryOption } from "./apps.types";
@@ -61,7 +62,7 @@ const STEP_KEYS = ["step1", "step2", "step3"] as const;
 /** Result of the Google OAuth round-trip, passed back as `?google=…` (P7-06). */
 const GOOGLE_RESULTS = new Set(["connected", "cancelled", "failed", "invalid", "rateLimited"]);
 
-export type AppsStore = { name: string; logoUrl: string | null; hostname: string };
+export type AppsStore = { name: string; logoUrl: string | null; hostname: string; siteStatus: string };
 
 export function StoreApps({
   storeId,
@@ -150,6 +151,7 @@ export function StoreApps({
             <span dir="ltr" className="truncate">
               {store.hostname}
             </span>
+            <StoreSiteStatusNote siteStatus={store.siteStatus} compact className="items-center" />
             {readOnly && (
               <Badge variant="outline" className="h-5">
                 {t("readOnlyBadge")}

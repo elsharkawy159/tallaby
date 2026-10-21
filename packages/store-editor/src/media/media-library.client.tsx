@@ -43,6 +43,7 @@ import { useEditorAdapter } from "../adapter.client";
 import { folderTrail, formatBytes } from "./media.lib";
 import { useMediaUpload } from "./use-media-upload.client";
 import type { MediaAssetView, MediaErrorKey, MediaFolderView, MediaLibraryView } from "./media.dto";
+import { EditorImage } from "./editor-image";
 
 const SELECT_CLASS =
   "h-9 w-full rounded-md border border-input bg-background px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
@@ -314,8 +315,7 @@ export function MediaLibrary({
                 )}
               >
                 <div className="relative aspect-square bg-muted">
-                  {/* eslint-disable-next-line @next/next/no-img-element -- public store-media object */}
-                  <img src={asset.url} alt={mediaAlt(asset.altText, locale)} loading="lazy" className="size-full object-cover" />
+                  <EditorImage src={asset.url} alt={mediaAlt(asset.altText, locale)} fill sizes="(min-width: 768px) 160px, 33vw" className="object-cover" />
                   <span className="absolute end-1.5 top-1.5 rounded-full bg-background/90 p-1">
                     <ScopeIcon shared={asset.storeId === null} />
                   </span>
@@ -355,8 +355,7 @@ export function MediaLibrary({
                   >
                     <td className="p-2">
                       <div className="flex items-center gap-2">
-                        {/* eslint-disable-next-line @next/next/no-img-element -- public store-media object */}
-                        <img src={asset.url} alt="" loading="lazy" className="size-10 rounded object-cover" />
+                        <EditorImage src={asset.url} alt="" width={40} height={40} className="size-10 rounded object-cover" />
                         <span className="min-w-0 truncate" dir="auto">
                           {asset.filename}
                         </span>
@@ -502,8 +501,14 @@ function AssetDetails({
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 sm:grid-cols-2">
-          {/* eslint-disable-next-line @next/next/no-img-element -- public store-media object */}
-          <img src={asset.url} alt={mediaAlt(asset.altText, locale)} className="max-h-72 w-full rounded-lg border bg-muted object-contain" />
+          <EditorImage
+            src={asset.url}
+            alt={mediaAlt(asset.altText, locale)}
+            width={asset.width || 640}
+            height={asset.height || 480}
+            sizes="(min-width: 640px) 320px, 100vw"
+            className="max-h-72 w-full rounded-lg border bg-muted object-contain"
+          />
           <fieldset disabled={readOnly || pending} className="space-y-3">
             <div className="space-y-1">
               <Label htmlFor="media-alt-ar">{t("altAr")}</Label>

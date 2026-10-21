@@ -9,7 +9,7 @@ import type { ReactNode } from "react";
 import { Facebook, Film, Instagram, Music2, Play, Youtube, type LucideIcon } from "lucide-react";
 import type { ComponentNode } from "../config/schema";
 import { sectionText } from "../core/copy";
-import type { RenderContext } from "../core/types";
+import { IMAGE_SIZES, imageSource, type RenderContext } from "../core/types";
 import { resolvePhotoSlot } from "../designs/photo-slots";
 import { cn } from "../sections/_primitives";
 import { readVideoOptions, videoEmbedUrl, videoFacadeDoc, videoStillUrl, type VideoOptions, type VideoProvider } from "./video";
@@ -87,8 +87,8 @@ function Still({ options, poster, ctx, compact = false }: { options: VideoOption
   return (
     <>
       {poster && (
-        // eslint-disable-next-line @next/next/no-img-element -- shared by both apps; no next/image here
-        <img src={poster} alt="" className={cn("absolute inset-0 size-full object-cover", !options && "opacity-40")} loading="lazy" />
+        // eslint-disable-next-line @next/next/no-img-element -- shared by both apps; the host optimizes through ctx.optimizeImage
+        <img {...imageSource(ctx, poster, IMAGE_SIZES.content)} alt="" className={cn("absolute inset-0 size-full object-cover", !options && "opacity-40")} loading="lazy" />
       )}
       <span
         aria-hidden
@@ -162,8 +162,8 @@ function PlaylistRow({ item, ctx, frame, controls }: { item: ComponentNode; ctx:
     <>
       <span className="relative block aspect-video w-28 shrink-0 overflow-hidden rounded-[calc(var(--sf-radius,12px)*0.75)] bg-black">
         {poster ? (
-          // eslint-disable-next-line @next/next/no-img-element -- shared by both apps; no next/image here
-          <img src={poster} alt="" className="absolute inset-0 size-full object-cover" loading="lazy" />
+          // eslint-disable-next-line @next/next/no-img-element -- shared by both apps; the host optimizes through ctx.optimizeImage
+          <img {...imageSource(ctx, poster, "112px")} alt="" className="absolute inset-0 size-full object-cover" loading="lazy" />
         ) : (
           <Icon className="absolute left-1/2 top-1/2 size-5 -translate-x-1/2 -translate-y-1/2 text-white/80" aria-hidden />
         )}

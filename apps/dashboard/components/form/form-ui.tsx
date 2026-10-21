@@ -247,11 +247,19 @@ export function GroupInput ({ className, ...props }: React.ComponentProps<'input
   )
 }
 
-/** − value + control for small counts (quantity, handling days). */
+/** Arabic-Indic and Persian digits typed on an Arabic keyboard count as digits. */
+const toAsciiDigits = (text: string) =>
+  text.replace(/[\u0660-\u0669\u06F0-\u06F9]/g, (d) => String(d.charCodeAt(0) & 0xf))
+
+/**
+ * − value + control for whole-number counts (stock, handling days). The
+ * number in the middle is a normal input: click it and type a value.
+ */
 export function NumberStepper ({
   id,
   value,
   onChange,
+  onBlur,
   min = 0,
   max,
   suffix,
@@ -259,10 +267,13 @@ export function NumberStepper ({
   invalid,
   decrementLabel,
   incrementLabel,
+  inputLabel,
+  size = 'default',
 }: {
   id?: string
   value: number | undefined
   onChange: (value: number | undefined) => void
+  onBlur?: () => void
   min?: number
   max?: number
   suffix?: React.ReactNode
@@ -270,16 +281,26 @@ export function NumberStepper ({
   invalid?: boolean
   decrementLabel: string
   incrementLabel: string
+  /** Accessible name for the number when no <label htmlFor> points at it. */
+  inputLabel?: string
+  /** 'sm' fits table cells such as the variant rows. */
+  size?: 'default' | 'sm'
 }) {
   const current = typeof value === 'number' && !Number.isNaN(value) ? value : undefined
   const clamp = (n: number) => Math.max(min, max != null ? Math.min(max, n) : n)
   const bump = (delta: number) => onChange(clamp((current ?? min) + delta))
+  const small = size === 'sm'
+  const buttonClass = cn(
+    'grid shrink-0 place-items-center bg-muted text-muted-foreground transition-colors hover:text-primary-ink disabled:cursor-not-allowed disabled:opacity-50',
+    small ? 'w-8' : 'w-11'
+  )
+  const iconClass = small ? 'size-3.5' : 'size-4'
 
   return (
     <div
       className={cn(
         INPUT_GROUP_CLASS,
-        'h-11',
+        small ? 'h-9 rounded-[10px]' : 'h-11',
         disabled && 'opacity-60',
         invalid && INVALID_FIELD_CLASS
       )}
@@ -289,20 +310,28 @@ export function NumberStepper ({
         onClick={() => bump(-1)}
         disabled={disabled || (current ?? min) <= min}
         aria-label={decrementLabel}
-        className='grid w-11 shrink-0 place-items-center bg-muted text-muted-foreground transition-colors hover:text-primary-ink disabled:cursor-not-allowed disabled:opacity-50'
+        className={buttonClass}
       >
-        <Minus className='size-4' />
+        <Minus className={iconClass} />
       </button>
       <input
         id={id}
+        dir='ltr'
         inputMode='numeric'
+        aria-label={inputLabel}
         value={current ?? ''}
         disabled={disabled}
+        // Clicking the number selects it, so typing replaces it.
+        onFocus={(e) => e.currentTarget.select()}
         onChange={(e) => {
-          const digits = e.target.value.replace(/\D/g, '')
+          const digits = toAsciiDigits(e.target.value).replace(/\D/g, '')
           onChange(digits === '' ? undefined : clamp(Number(digits)))
         }}
-        className='min-w-0 flex-1 bg-transparent text-center font-sans font-semibold tabular-nums outline-none'
+        onBlur={onBlur}
+        className={cn(
+          'min-w-0 flex-1 bg-transparent text-center font-sans font-semibold tabular-nums outline-none disabled:cursor-not-allowed',
+          small && 'text-[13px]'
+        )}
       />
       {suffix && (
         <span className='flex items-center border-s border-border px-3 text-xs text-muted-foreground'>
@@ -314,9 +343,9 @@ export function NumberStepper ({
         onClick={() => bump(1)}
         disabled={disabled || (max != null && (current ?? min) >= max)}
         aria-label={incrementLabel}
-        className='grid w-11 shrink-0 place-items-center bg-muted text-muted-foreground transition-colors hover:text-primary-ink disabled:cursor-not-allowed disabled:opacity-50'
+        className={buttonClass}
       >
-        <Plus className='size-4' />
+        <Plus className={iconClass} />
       </button>
     </div>
   )

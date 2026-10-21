@@ -6,7 +6,7 @@ import type { PageContent, SectionInstance, SiteLocale } from "../config/schema"
 import { resolveSectionForLocale } from "../core/locale";
 import { applyMigrations, resolveSectionProps, type SectionRegistry } from "../core/registry";
 import { SITE_ROOT_CLASS, designSystemToCss, type ThemeInput } from "../core/theme";
-import type { RenderContext } from "../core/types";
+import { IMAGE_SIZES, imageSource, type RenderContext } from "../core/types";
 import { shellLayout } from "../elements/shell";
 import { collectPageCss, escapeStyleBlock, normalizeSectionStyle, type StyleCssMode } from "../elements/style";
 
@@ -43,7 +43,7 @@ export function SectionRenderer({
       {shell.bgImage && (
         <>
           {/* eslint-disable-next-line @next/next/no-img-element -- shared by both apps; no next/image here */}
-          <img src={shell.bgImage} alt="" aria-hidden className="pointer-events-none absolute inset-0 -z-10 size-full object-cover" loading="lazy" decoding="async" />
+          <img {...imageSource(ctx, shell.bgImage, IMAGE_SIZES.full)} alt="" aria-hidden className="pointer-events-none absolute inset-0 -z-10 size-full object-cover" loading="lazy" decoding="async" />
           {shell.overlay > 0 && <div aria-hidden className="absolute inset-0 -z-10" style={{ background: `rgb(0 0 0 / ${shell.overlay}%)` }} />}
         </>
       )}

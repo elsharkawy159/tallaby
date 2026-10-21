@@ -50,7 +50,7 @@ import {
 import { handleUpdateSellerProfile } from './seller-settings.server'
 import type { SellerAccountView } from '@workspace/lib/sellers/server'
 import { LegalDetailsSection, PayoutDetailsSection, StoreDetailsMovedCard } from './account-sections.client'
-import { DocumentsSection, requiredDocumentsUploaded } from './seller-documents.client'
+import { DocumentsSection } from './seller-documents.client'
 import {
   FIELD_CLASS,
   INPUT_GROUP_CLASS,
@@ -214,7 +214,8 @@ export function SellerSettingsForm ({
     legal: Boolean(account.legalAddress.state && account.legalAddress.street),
     payout: account.payout !== null,
     link: true,
-    docs: requiredDocumentsUploaded(initialData.documents),
+    // Documents are optional, so the section never blocks completion.
+    docs: true,
   }
 
   return (

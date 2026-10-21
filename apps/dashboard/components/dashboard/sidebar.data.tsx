@@ -15,13 +15,14 @@ export async function SidebarData() {
   return (
     <Sidebar
       counts={counts}
-      stores={stores.map(({ id, name, subdomain, isPrimary, status, logoUrl }) => ({
+      stores={stores.map(({ id, name, subdomain, isPrimary, status, logoUrl, siteStatus }) => ({
         id,
         name,
         subdomain,
         isPrimary,
         status,
         logoUrl,
+        siteStatus,
       }))}
       selectedStoreId={selected?.id ?? null}
       maxStores={maxStores}

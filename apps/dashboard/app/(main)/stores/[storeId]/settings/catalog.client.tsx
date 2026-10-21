@@ -13,6 +13,7 @@ import { FIELD_CLASS, LabelNote, SMALL_BUTTON_CLASS, SectionCard } from "@/compo
 import { cn } from "@/lib/utils";
 import { saveStoreCatalog } from "./catalog.server";
 import type { CatalogMode, CatalogProduct } from "./catalog.dto";
+import { RemoteImage } from "@/components/media/remote-image";
 
 const SHARED_ERRORS = new Set(["invalidInput", "readOnly", "notFound", "generic"]);
 
@@ -175,8 +176,7 @@ export function StoreCatalogSections({
                             aria-label={title}
                           />
                           {product.image ? (
-                            // eslint-disable-next-line @next/next/no-img-element -- remote storage thumbnails
-                            <img src={product.image} alt="" className="size-10 shrink-0 rounded-md border object-cover" loading="lazy" />
+                            <RemoteImage src={product.image} alt="" width={40} height={40} className="size-10 shrink-0 rounded-md border object-cover" />
                           ) : (
                             <span className="flex size-10 shrink-0 items-center justify-center rounded-md border bg-muted">
                               <ImageOff className="size-4 text-muted-foreground" aria-hidden />

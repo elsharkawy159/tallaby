@@ -10,6 +10,7 @@ import { getPublicUrl } from "@/lib/utils";
 import { flattenCategoryTree } from "./add-product.lib";
 import type { AddProductFormData, CategoryOption, SupportedLocale } from "./add-product.schema";
 import type { VariantTypeFormValue } from "@/lib/utils/variant-types.lib";
+import { RemoteImage } from "@/components/media/remote-image";
 
 const MAX_SWATCHES = 5;
 
@@ -89,10 +90,9 @@ export function ProductPreview({
             dir={activeLocale === "ar" ? "rtl" : "ltr"}
             title={title || t("previewName")}
             image={cover ? getPublicUrl(cover, "products") : ""}
-            renderImage={({ src, alt, className }) =>
+            renderImage={({ src, alt, ...image }) =>
               src ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={src} alt={alt} className={className} />
+                <RemoteImage src={src} alt={alt} width={image.width ?? 270} height={image.height ?? 310} sizes={image.sizes} className={image.className} />
               ) : (
                 <div className="grid aspect-[2.6/3] w-full place-items-center rounded-md bg-[repeating-linear-gradient(135deg,transparent_0_8px,rgba(0,0,0,0.04)_8px_9px)] text-gray-400">
                   <ImageIcon className="size-8" aria-hidden />

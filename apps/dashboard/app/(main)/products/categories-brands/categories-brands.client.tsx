@@ -83,6 +83,7 @@ import {
   taxonomyLabel,
   taxonomyNameKey,
 } from "./categories-brands.lib";
+import { RemoteImage } from "@/components/media/remote-image";
 
 const KEY: Record<TaxonomyKind, "categories" | "brands"> = { category: "categories", brand: "brands" };
 
@@ -130,8 +131,7 @@ function ItemImage({
       )}
     >
       {src ? (
-        // eslint-disable-next-line @next/next/no-img-element -- pack images come from several storage buckets
-        <img src={src} alt="" className="size-full object-contain" loading="lazy" />
+        <RemoteImage src={src} alt="" width={40} height={40} className="size-full object-contain" />
       ) : (
         item.name.slice(0, 1).toUpperCase()
       )}

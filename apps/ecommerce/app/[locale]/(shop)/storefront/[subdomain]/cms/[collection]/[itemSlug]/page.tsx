@@ -61,7 +61,7 @@ function FieldValue({ field, value, format }: { field: CmsFieldDef; value: unkno
     case "image":
       return (
         <div className="overflow-hidden rounded-(--sf-radius,12px) bg-(--sf-shelf)">
-          <ContentImage src={String(value)} alt={field.label} className="h-auto w-full" />
+          <ContentImage src={String(value)} alt={field.label} className="h-auto w-full" sizes="(min-width: 768px) 768px, 100vw" />
         </div>
       );
     case "boolean":

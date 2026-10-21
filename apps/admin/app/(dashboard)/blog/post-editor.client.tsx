@@ -26,6 +26,7 @@ import type { BlogPostForm } from "./blog.dto";
 import { EMPTY_BLOG_FORM, formToInput, isoToLocalInput, postToForm } from "./blog.lib";
 import { saveBlogPostAction } from "./blog.server";
 import { blogImageUrl, uploadBlogImage } from "./blog-upload.client";
+import { RemoteImage } from "@/components/media/remote-image";
 
 const CATEGORY_LABELS: Record<(typeof PLATFORM_BLOG_CATEGORIES)[number], string> = {
   guides: "Guides",
@@ -329,8 +330,7 @@ function ImageField({ value, onChange, error }: { value: string; onChange: (valu
     <div className="space-y-2">
       {value ? (
         <div className="relative overflow-hidden rounded-md border">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={blogImageUrl(value)} alt="" className="aspect-[16/9] w-full object-cover" />
+          <RemoteImage src={blogImageUrl(value)} alt="" width={640} height={360} sizes="(min-width: 768px) 640px, 100vw" className="aspect-[16/9] w-full object-cover" />
           <Button
             type="button"
             size="icon"

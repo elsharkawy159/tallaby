@@ -6,7 +6,7 @@
 import { Fragment, type ReactNode } from "react";
 import { z } from "zod";
 import { isExternalHref, safeHref } from "../core/links";
-import type { ProductSummary, RenderContext } from "../core/types";
+import { IMAGE_SIZES, imageSource, type ProductSummary, type RenderContext } from "../core/types";
 import { sectionText } from "../core/copy";
 
 // ---------------------------------------------------------------------------
@@ -226,6 +226,7 @@ export function SectionImage({
   alt,
   className,
   eager = false,
+  sizes = IMAGE_SIZES.card,
   part,
 }: {
   ctx: RenderContext;
@@ -233,12 +234,14 @@ export function SectionImage({
   alt: string;
   className?: string;
   eager?: boolean;
+  /** Rendered width hint for the host optimizer (defaults to a grid card). */
+  sizes?: string;
   part?: PartAttr;
 }) {
   const url = ctx.imageUrl(src);
   if (!url) return <div {...part} aria-hidden className={cn("bg-(--sf-shelf)", className)} />;
-  // eslint-disable-next-line @next/next/no-img-element -- shared by both apps; no next/image here
-  return <img {...part} src={url} alt={alt} className={cn("object-cover", className)} loading={eager ? "eager" : "lazy"} decoding="async" />;
+  // eslint-disable-next-line @next/next/no-img-element -- shared by both apps; the host optimizes through ctx.optimizeImage
+  return <img {...part} {...imageSource(ctx, url, sizes)} alt={alt} className={cn("object-cover", className)} loading={eager ? "eager" : "lazy"} decoding="async" />;
 }
 
 // ---------------------------------------------------------------------------

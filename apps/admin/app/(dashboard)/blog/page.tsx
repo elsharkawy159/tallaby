@@ -11,6 +11,7 @@ import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { getCurrentAdminUser } from "@/lib/auth/admin-auth";
 import { ReasonActionButton } from "../_components/dialogs/reason-action.client";
 import { deleteBlogPostAction } from "./blog.server";
+import { RemoteImage } from "@/components/media/remote-image";
 
 export const dynamic = "force-dynamic";
 
@@ -83,8 +84,7 @@ export default async function BlogPostsPage() {
                       <TableCell>
                         <div className="flex items-center gap-3">
                           {cover ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={cover} alt="" className="h-10 w-16 rounded border object-cover" />
+                            <RemoteImage src={cover} alt="" width={64} height={40} className="h-10 w-16 rounded border object-cover" />
                           ) : (
                             <div className="h-10 w-16 rounded border bg-muted" />
                           )}

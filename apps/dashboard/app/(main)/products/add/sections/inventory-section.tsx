@@ -89,6 +89,7 @@ export function InventorySection({
                 id="quantity"
                 value={field.value}
                 onChange={(value) => field.onChange(value ?? 0)}
+                onBlur={field.onBlur}
                 invalid={Boolean(quantityError)}
                 decrementLabel={t("decrease")}
                 incrementLabel={t("increase")}
