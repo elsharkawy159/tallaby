@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import type { UseFormReturn, FieldValues, Path } from "react-hook-form";
 
@@ -64,6 +64,10 @@ export interface PlaceComboboxProps {
   id?: string;
   name?: string;
   disabled?: boolean;
+  /** Injected by `FormControl` (invalid styling and the link to `FormMessage`). */
+  "aria-invalid"?: boolean | "true" | "false";
+  "aria-describedby"?: string;
+  "data-slot"?: string;
 }
 
 /** Searchable text field: suggestions come from the places list, typing free text keeps working. */
@@ -80,7 +84,12 @@ export function PlaceCombobox({
   id,
   name,
   disabled,
+  "aria-invalid": ariaInvalid,
+  "aria-describedby": ariaDescribedBy,
+  "data-slot": dataSlot,
 }: PlaceComboboxProps) {
+  const listId = useId();
+  const optionId = (key: string) => `${listId}-${key.replace(/[^w-]/g, "_")}`;
   const t = useTranslations("addresses");
   const activeLocale = useLocale();
   const locale = localeProp ?? activeLocale;
@@ -148,7 +157,13 @@ export function PlaceCombobox({
             autoComplete="off"
             role="combobox"
             aria-expanded={showList}
+            aria-haspopup="listbox"
+            aria-controls={showList ? listId : undefined}
+            aria-activedescendant={showList && active ? optionId(active) : undefined}
             aria-autocomplete="list"
+            aria-invalid={ariaInvalid}
+            aria-describedby={ariaDescribedBy}
+            data-slot={dataSlot}
             className={className ?? "h-11 rounded-lg"}
             onFocus={ensureLib}
             onChange={(e) => {
@@ -193,13 +208,14 @@ export function PlaceCombobox({
         onMouseDown={(e) => e.preventDefault()}
       >
         <Command shouldFilter={false} value={active} onValueChange={setActive}>
-          <CommandList>
+          <CommandList id={listId}>
             <CommandEmpty className="px-2 py-3 text-center text-muted-foreground text-xs">
               {t("noPlaceMatch")}
             </CommandEmpty>
             {results.map((place) => (
               <CommandItem
                 key={place.key}
+                id={optionId(place.key)}
                 value={place.key}
                 onSelect={() => pick(place)}
               >
