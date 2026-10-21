@@ -244,13 +244,13 @@ describe.skipIf(!TEST_DATABASE_URL)('storefront shipping at order placement (int
     })
   })
 
-  it('(g2) snapshots a seller receiving method (InstaPay) as seller-collected', async () => {
+  it('(g2) snapshots InstaPay as Tallaby-collected (Tallaby\'s own transfer account until P3-07 Part B)', async () => {
     const order = await placeOk(await cart(w.a.a1, '100.00'), addr.cairo, { paymentMethod: 'instapay' })
     expect(order).toMatchObject({ shippingCost: '55.00', paymentMethod: 'instapay' })
     expect((order.metadata as { storeShipping: Record<string, unknown> }).storeShipping).toMatchObject({
       pricedBy: 'zone',
       billedPiastres: 5500,
-      collector: 'seller',
+      collector: 'tallaby',
     })
   })
 

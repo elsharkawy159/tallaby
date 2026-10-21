@@ -10,6 +10,7 @@
  */
 import { z } from "zod";
 import { EGYPT_MOBILE_REGEX } from "../fulfillment/validate";
+import { MANUAL_PAYMENT_METHOD_VALUES } from "../orders/payment.lib";
 
 export type PaymentCollector = "seller" | "tallaby" | "delivery";
 export type PaymentMethodStatus = "live" | "soon";
@@ -52,18 +53,30 @@ export function getStorePaymentMethod(key: string) {
   return STORE_PAYMENT_METHODS.find((m) => m.key === key);
 }
 
+const TALLABY_RECEIVED_METHODS: readonly string[] = ["online_payment", "card", "wallet", ...MANUAL_PAYMENT_METHOD_VALUES];
+
 /**
  * Who holds the shipping money of a store-website order whose store delivers
  * itself (store shipping spec §6.8), from the checkout value
- * (orders.payment_method). Cash on delivery: the seller's rider collects it.
- * Card / online / customer wallet: Tallaby. A store receiving method uses its
- * catalogue `collector`. Anything unknown is the seller's, so shipping is
- * never credited to a seller who may already hold it.
+ * (orders.payment_method as placed, before a wallet-partial split).
+ *
+ * - `seller`: the customer pays cash to the deliverer (`cash_on_delivery`, or
+ *   a wallet-partial order whose remainder is cash on delivery).
+ * - `tallaby`: every method Tallaby receives TODAY: online / card, the
+ *   customer wallet, and the manual transfers (InstaPay, Vodafone Cash, e&
+ *   Cash), alone or as a wallet-partial remainder. Storefronts still show
+ *   Tallaby's own transfer accounts for these (see storefrontCheckoutMethods),
+ *   so this deliberately does NOT use the catalogue `collector`, which
+ *   describes P3-07 Part B. When Part B sends the money to the seller's own
+ *   numbers, the receiving methods must switch to `seller` here.
+ * - anything unknown: `seller`, so shipping is never over-credited.
  */
 export function storeShippingCollector(paymentMethod: string): "tallaby" | "seller" {
   if (paymentMethod === "cash_on_delivery") return "seller";
-  if (paymentMethod === "online_payment" || paymentMethod === "wallet") return "tallaby";
-  return getStorePaymentMethod(paymentMethod)?.collector === "tallaby" ? "tallaby" : "seller";
+  if (TALLABY_RECEIVED_METHODS.includes(paymentMethod)) return "tallaby";
+  const remainder = paymentMethod.startsWith("wallet_") ? paymentMethod.slice("wallet_".length) : null;
+  if (remainder && TALLABY_RECEIVED_METHODS.includes(remainder)) return "tallaby";
+  return "seller";
 }
 
 /** Usual operator by mobile prefix. A HINT only: numbers can be ported between operators. */

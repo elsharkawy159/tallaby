@@ -170,22 +170,26 @@ describe("maskPaymentDetails", () => {
 });
 
 describe("storeShippingCollector", () => {
-  it("COD is collected by the store's own rider", () => {
+  it("cash paid to the deliverer is the seller's", () => {
     expect(storeShippingCollector("cash_on_delivery")).toBe("seller");
+    expect(storeShippingCollector("wallet_cash_on_delivery")).toBe("seller");
   });
-  it("online payment and the customer wallet are Tallaby's", () => {
+  it("online payment, card and the customer wallet are Tallaby's", () => {
     expect(storeShippingCollector("online_payment")).toBe("tallaby");
     expect(storeShippingCollector("wallet")).toBe("tallaby");
     expect(storeShippingCollector("card")).toBe("tallaby");
   });
-  it("seller receiving methods are the seller's", () => {
-    for (const key of ["instapay", "vodafone_cash", "e_cash", "we_pay", "orange_cash"]) {
-      expect(storeShippingCollector(key)).toBe("seller");
+  it("the manual transfers are Tallaby's today (Tallaby's own accounts until P3-07 Part B)", () => {
+    for (const key of ["instapay", "vodafone_cash", "e_cash"]) {
+      expect(storeShippingCollector(key)).toBe("tallaby");
+      expect(storeShippingCollector(`wallet_${key}`)).toBe("tallaby");
     }
   });
-  it("anything unknown is the seller's", () => {
+  it("anything unknown is the seller's, never over-credited", () => {
     expect(storeShippingCollector("")).toBe("seller");
-    expect(storeShippingCollector("wallet_partial:cash_on_delivery")).toBe("seller");
+    expect(storeShippingCollector("we_pay")).toBe("seller");
+    expect(storeShippingCollector("orange_cash")).toBe("seller");
+    expect(storeShippingCollector("wallet_something")).toBe("seller");
     expect(storeShippingCollector("something_new")).toBe("seller");
   });
 });

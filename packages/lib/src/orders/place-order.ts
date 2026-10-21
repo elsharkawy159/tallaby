@@ -81,8 +81,8 @@ export interface StoreShippingSnapshot {
   billedPiastres: number
   /**
    * Who collects the customer's money (`storeShippingCollector`). The seller
-   * shipping credit is posted only for `tallaby`; COD and the seller's own
-   * receiving methods are `seller` (they already hold the shipping).
+   * shipping credit is posted only for `tallaby`; cash paid to the deliverer
+   * (COD) is `seller` (the seller already holds the shipping).
    */
   collector: 'tallaby' | 'seller'
 }

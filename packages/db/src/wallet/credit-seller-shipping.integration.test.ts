@@ -178,13 +178,25 @@ describe.skipIf(!TEST_DATABASE_URL)("store shipping credit (integration)", { tim
     expect(await balance(a.id)).toBe("349.00");
   });
 
-  it("snapshot collector 'seller' credits goods only (seller already holds the shipping)", async () => {
+  it("store-website InstaPay order (Tallaby's transfer account today, collector 'tallaby') credits goods + shipping", async () => {
     const a = await newSeller();
-    // A seller receiving method (InstaPay) with no shipment row resolves the
-    // party to tallaby; the snapshot collector still keeps shipping out.
     const orderId = await deliveredOrder({
       lines: [[a, "300.00", "6.00"]],
       paymentMethod: "instapay",
+      storeId: a.storeId,
+      metadata: own(5500, "tallaby"),
+    });
+    await run(orderId);
+    expect((await entries(a.id)).map((x) => `${x.type}:${x.amount}`)).toEqual(["sale:355.00", "fee:-6.00"]);
+    expect(await balance(a.id)).toBe("349.00");
+  });
+
+  it("snapshot collector 'seller' credits goods only (seller already holds the shipping)", async () => {
+    const a = await newSeller();
+    // Even when the party resolves to tallaby, the snapshot collector keeps shipping out.
+    const orderId = await deliveredOrder({
+      lines: [[a, "300.00", "6.00"]],
+      paymentMethod: "online_payment",
       storeId: a.storeId,
       metadata: own(5500, "seller"),
     });
