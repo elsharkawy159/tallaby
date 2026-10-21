@@ -264,11 +264,10 @@ export async function getDashboardAnalytics() {
     }
 
     const today = new Date().toDateString();
-    const thisMonth = new Date();
-    thisMonth.setDate(1);
-    const lastMonth = new Date();
-    lastMonth.setMonth(lastMonth.getMonth() - 1);
-    lastMonth.setDate(1);
+    // Midnight on the 1st; same boundary as the /financial sales-sources card.
+    const now = new Date();
+    const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
     // Sales Analytics
     const salesStats = await db

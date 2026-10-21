@@ -1815,6 +1815,38 @@
       "cash": "Cash",
       "instapay": "InstaPay",
       "vodafone_cash": "Vodafone Cash"
+    },
+    "sources": {
+      "title": "Where your sales came from",
+      "subtitle": "Your earnings by sales channel and by how customers paid",
+      "periodLabel": "Period",
+      "period": {
+        "month": "This month",
+        "allTime": "All time"
+      },
+      "total": "<strong>{amount}</strong> from {count, plural, one {# order} other {# orders}}",
+      "byChannel": "By sales channel",
+      "byPaymentMethod": "By payment method",
+      "marketplace": "Tallaby marketplace",
+      "marketplaceHint": "tallaby.com",
+      "storeHint": "Your website",
+      "unknownStore": "Removed store",
+      "orders": "{count, plural, one {# order} other {# orders}}",
+      "share": "{value}% of sales",
+      "empty": "No sales yet",
+      "emptyMonth": "No sales this month yet",
+      "methods": {
+        "cod": "Cash on delivery",
+        "wallet": "Wallet",
+        "card": "Card",
+        "credit_card": "Credit card",
+        "instapay": "InstaPay",
+        "vodafone_cash": "Vodafone Cash",
+        "e_cash": "e& Cash",
+        "orange_cash": "Orange Cash",
+        "we_pay": "WE Pay",
+        "bank_transfer": "Bank transfer"
+      }
     }
   },
   "coupons": {

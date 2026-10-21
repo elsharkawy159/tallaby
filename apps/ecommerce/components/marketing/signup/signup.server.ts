@@ -7,7 +7,7 @@ import { createRateLimiter } from "@/lib/rate-limit.lib";
 import { SITE_URL } from "@/lib/marketing/site.lib";
 import { createClient } from "@/supabase/server";
 import { completeSignup } from "./signup-complete.server";
-import { setSignupIntentCookie } from "./signup-intent.server";
+import { clearSignupIntentCookie, setSignupIntentCookie } from "./signup-intent.server";
 import { emailSignupSchema, type EmailSignupInput, type SignupErrorKey, type SignupResult, type StoreChoiceInput } from "./signup.dto";
 
 /**
@@ -81,18 +81,12 @@ export async function signUpWithEmail(input: EmailSignupInput): Promise<SignupRe
 }
 
 /**
- * Saves the choice in a signed cookie before the browser goes to Google. If
- * the cookie can't be signed, Google sign-in still goes ahead: the callback
- * finds no intent and sends the seller to the dashboard signup to pick the store.
+ * Google only signs the user in; the store is chosen afterwards in the
+ * dashboard signup (the callback finds no intent and sends the user there).
+ * Clears any intent left by an earlier email attempt so it isn't reused.
  */
-export async function startGoogleSignup(input: StoreChoiceInput): Promise<SignupResult> {
+export async function startGoogleSignup(): Promise<SignupResult> {
   if (!signupLimiter.check(await clientKey())) return fail("rateLimited");
-  const choice = await checkChoice(input);
-  if (!choice.ok) return fail(choice.error);
-  try {
-    await setSignupIntentCookie(choice.intent);
-  } catch (error) {
-    console.error("[marketing signup] cannot sign intent cookie (SIGNUP_INTENT_SECRET?)", error);
-  }
+  await clearSignupIntentCookie();
   return { status: "ok" };
 }

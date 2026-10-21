@@ -17,6 +17,8 @@ import { Badge } from "@workspace/ui/components/badge";
 import { useLocale, useTranslations } from "next-intl";
 import { formatDate, formatMoney, formatNumber } from "@/lib/i18n/format";
 import { humanizeStatus, translateStatus } from "@/lib/i18n/status";
+import type { SalesSources } from "./financial.lib";
+import { SalesSourcesCard } from "./sales-sources.client";
 
 interface FinancialDashboardContentProps {
   wallet: {
@@ -57,6 +59,7 @@ interface FinancialDashboardContentProps {
     thisMonthSales?: number;
     lastMonthSales?: number;
   } | null;
+  sources: { month: SalesSources; allTime: SalesSources } | null;
 }
 
 export function FinancialDashboardContent({
@@ -66,6 +69,7 @@ export function FinancialDashboardContent({
   stats,
   transactions,
   analytics,
+  sources,
 }: FinancialDashboardContentProps) {
   const t = useTranslations("financial");
   const tStatus = useTranslations("status");
@@ -171,6 +175,8 @@ export function FinancialDashboardContent({
           </CardContent>
         </Card>
       </div>
+
+      {sources ? <SalesSourcesCard sources={sources} /> : null}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>

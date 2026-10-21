@@ -3,7 +3,7 @@ import { COUPON_STATES, firstParam, parseAdminListParams, pickEnum } from "@work
 import { UrlTabs, pickTab } from "../_components/url-tabs";
 import { CouponsData } from "./coupons.data";
 import { CouponsSkeleton } from "./coupons.skeleton";
-import { ScopedCouponsData } from "./seller-coupons.data";
+import { SELLER_COUPON_VIEWS, ScopedCouponsData } from "./seller-coupons.data";
 import type { CouponsPageProps } from "./coupons.types";
 
 export const dynamic = "force-dynamic";
@@ -17,13 +17,14 @@ export default async function CouponsPage({ searchParams }: CouponsPageProps) {
   const { q, page } = parseAdminListParams(params);
   const state = pickEnum(params.state, COUPON_STATES);
   const seller = firstParam(params.seller);
+  const view = pickEnum(params.view, SELLER_COUPON_VIEWS);
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold">Coupons</h1>
         <p className="text-sm text-muted-foreground">
-          Platform coupons are managed here. Seller coupons can be switched off or back on with a logged
+          Platform coupons are managed here. Seller coupons are grouped by seller and can be switched off or back on with a logged
           reason; sellers edit them in their dashboard.
         </p>
       </div>
@@ -39,13 +40,14 @@ export default async function CouponsPage({ searchParams }: CouponsPageProps) {
       {tab === "platform" ? (
         <CouponsData searchParams={Promise.resolve(params)} />
       ) : (
-        <Suspense key={JSON.stringify({ tab, q, page, state, seller })} fallback={<CouponsSkeleton />}>
+        <Suspense key={JSON.stringify({ tab, view, q, page, state, seller })} fallback={<CouponsSkeleton />}>
           <ScopedCouponsData
             scope={tab === "sellers" ? "seller" : "affiliate"}
             q={q}
             state={state}
             sellerId={seller}
             page={page}
+            view={view}
           />
         </Suspense>
       )}

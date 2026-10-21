@@ -92,8 +92,6 @@ function SignupForm({ initialSlug, initialError }: { initialSlug: string; initia
   const [phone, setPhone] = React.useState("");
   const [showPassword, setShowPassword] = React.useState(false);
   const [touched, setTouched] = React.useState(false);
-  // Google only needs the store link + phone; don't flag email/password for it.
-  const [choiceTouched, setChoiceTouched] = React.useState(false);
   const [formError, setFormError] = React.useState<SignupErrorKey | null>(initialError);
   const [pending, startTransition] = React.useTransition();
   const [googlePending, setGooglePending] = React.useState(false);
@@ -113,7 +111,7 @@ function SignupForm({ initialSlug, initialError }: { initialSlug: string; initia
     if (next !== raw && hasArabic(raw)) setSlugState({ kind: "local", message: "arabic" });
   };
 
-  /** Store link + phone, needed by both signup paths. */
+  /** Store link + phone for the email signup. */
   const storeChoiceValid = () => {
     if (!slug) setSlugState({ kind: "local", message: "required" });
     const ok = Boolean(slug) && slugOk && phoneOk;
@@ -130,7 +128,6 @@ function SignupForm({ initialSlug, initialError }: { initialSlug: string; initia
   const onSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     setTouched(true);
-    setChoiceTouched(true);
     setFormError(null);
     if (!storeChoiceValid() || !emailOk || password.length < 8) return;
     startTransition(async () => {
@@ -138,12 +135,11 @@ function SignupForm({ initialSlug, initialError }: { initialSlug: string; initia
     });
   };
 
+  // Google signs in only; the callback sends the user to the dashboard to create the store.
   const onGoogle = async () => {
-    setChoiceTouched(true);
     setFormError(null);
-    if (!storeChoiceValid()) return;
     setGooglePending(true);
-    const result = await startGoogleSignup({ subdomain: slug, phone });
+    const result = await startGoogleSignup();
     if (result.status !== "ok") {
       setGooglePending(false);
       handleResult(result);
@@ -293,7 +289,7 @@ function SignupForm({ initialSlug, initialError }: { initialSlug: string; initia
       <FieldLabel htmlFor="signup-phone" className="mt-1.5">
         {t("phone")}
       </FieldLabel>
-      <div className={cn(inputBox, choiceTouched && !phoneOk ? "border-destructive" : "border-neutral-200")}>
+      <div className={cn(inputBox, touched && !phoneOk ? "border-destructive" : "border-neutral-200")}>
         <input
           id="signup-phone"
           type="tel"
@@ -304,12 +300,12 @@ function SignupForm({ initialSlug, initialError }: { initialSlug: string; initia
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           aria-describedby="signup-phone-hint"
-          aria-invalid={(choiceTouched && !phoneOk) || undefined}
+          aria-invalid={(touched && !phoneOk) || undefined}
           className={cn(inputEl, "font-latin")}
         />
       </div>
-      <Hint id="signup-phone-hint" tone={choiceTouched && !phoneOk ? "bad" : "muted"}>
-        {choiceTouched && !phoneOk ? t("errors.phoneInvalid") : t("phoneHint")}
+      <Hint id="signup-phone-hint" tone={touched && !phoneOk ? "bad" : "muted"}>
+        {touched && !phoneOk ? t("errors.phoneInvalid") : t("phoneHint")}
       </Hint>
 
       {formError ? (

@@ -22,7 +22,7 @@ import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { BUTTON_CLASS, FIELD_CLASS } from "@/components/form/form-ui";
 import { CURRENCY_CODE, CurrencyInput } from "@/components/form/currency-input";
-import { uploadSellerFile } from "@/components/inputs/use-seller-upload";
+import { uploadOwnFolderFile } from "@/components/inputs/use-seller-upload";
 import { PaymentMethodLogo } from "@/components/payments/payment-method-logo";
 import { formatMoney } from "@/lib/i18n/format";
 import { cn } from "@/lib/utils";
@@ -135,7 +135,7 @@ export function TopUpButton({
 
     startTransition(async () => {
       try {
-        await uploadSellerFile(file, { bucket: TOP_UP_PROOF_BUCKET, path });
+        await uploadOwnFolderFile(file, { bucket: TOP_UP_PROOF_BUCKET, path });
       } catch (error) {
         console.error("Top-up receipt upload failed:", error);
         setFileError(t("receipt.uploadFailed"));

@@ -5,7 +5,7 @@ import { MEDIA_BUCKET } from "@workspace/lib/media";
 import { EditorAdapterProvider, type EditorAdapter } from "@workspace/store-editor";
 import { MediaLibrary as PackageMediaLibrary } from "@workspace/store-editor/media/media-library.client";
 import { MediaPicker as PackageMediaPicker } from "@workspace/store-editor/media/media-picker.client";
-import { uploadSellerFile } from "@/components/inputs/use-seller-upload";
+import { uploadOwnFolderFile } from "@/components/inputs/use-seller-upload";
 import { createFolder, createUploadPaths, deleteFolder, deleteMedia, listMedia, recordUpload, renameFolder, updateMedia } from "./media.server";
 
 /**
@@ -18,9 +18,9 @@ export function sellerMediaAdapter(storeId: string): EditorAdapter["media"] {
   return {
     list: (query) => listMedia(storeId, query),
     createUploadPaths: (input) => createUploadPaths(storeId, input),
-    // The browser uploads with the seller's session: `store-media` only accepts paths under their own folder.
+    // Signed by the server for a path in the seller's own `store-media` folder (the browser has no readable session).
     uploadFile: async (path, file) => {
-      await uploadSellerFile(file, { bucket: MEDIA_BUCKET, path, cacheControl: "31536000" });
+      await uploadOwnFolderFile(file, { bucket: MEDIA_BUCKET, path, cacheControl: "31536000" });
     },
     recordUpload: (input) => recordUpload(storeId, input),
     update: (assetId, input) => updateMedia(storeId, assetId, input),

@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl'
 
 import { createClient } from '@/supabase/client'
 import { generateImageName, getPublicUrl } from '@/lib/utils'
+import { createSellerUploadUrl } from './seller-upload.server'
 
 const MAX_SIZE = 5 * 1024 * 1024
 
@@ -29,6 +30,26 @@ export async function uploadSellerFile (
   const { data, error } = await createClient()
     .storage.from(bucket)
     .upload(path, file, { cacheControl, upsert: false, contentType: file.type || undefined })
+  if (error) throw error
+  return data.path
+}
+
+/**
+ * Uploads one file into the seller's own folder of a private bucket
+ * (`store-media`, `store-top-up-proofs`) through a signed upload URL from the
+ * server, which checks the session and the path. The browser has no readable
+ * session in production (httpOnly cookies), so a plain upload would be `anon`.
+ * Resolves to the stored path; throws on failure.
+ */
+export async function uploadOwnFolderFile (
+  file: File,
+  { bucket, path, cacheControl = '3600' }: { bucket: string; path: string; cacheControl?: string }
+): Promise<string> {
+  const signed = await createSellerUploadUrl(bucket, path)
+  if (!signed.success) throw new Error(`upload not signed: ${signed.error}`)
+  const { data, error } = await createClient()
+    .storage.from(bucket)
+    .uploadToSignedUrl(path, signed.token, file, { cacheControl, contentType: file.type || undefined })
   if (error) throw error
   return data.path
 }

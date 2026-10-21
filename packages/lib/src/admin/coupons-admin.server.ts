@@ -3,7 +3,24 @@
  * Platform coupons keep their own CRUD in apps/admin/actions/coupons.ts.
  * Seller coupons are seller-wide (coupons has no store_id).
  */
-import { affiliates, and, coupons, couponUsage, db, desc, eq, isNotNull, or, sellers, sql, users } from "@workspace/db";
+import {
+  affiliates,
+  and,
+  asc,
+  coupons,
+  couponUsage,
+  db,
+  desc,
+  eq,
+  inArray,
+  isNotNull,
+  isNull,
+  or,
+  sellers,
+  sql,
+  stores,
+  users,
+} from "@workspace/db";
 import type { SQL } from "drizzle-orm";
 import { assertAdminActor, AdminActorError, writeAdminAudit, type Queryable } from "./guard.server";
 import {
@@ -110,6 +127,123 @@ export async function listCouponsForAdmin(input: AdminCouponListInput, q: Querya
 }
 
 export type AdminCouponRow = Awaited<ReturnType<typeof listCouponsForAdmin>>["rows"][number];
+
+/** Sellers per page in the grouped seller-coupons view. */
+export const SELLER_COUPON_GROUPS_PAGE_SIZE = 10;
+
+export interface SellerCouponGroupsInput {
+  q: string | null;
+  state: AdminCouponState | null;
+  page: number;
+}
+
+const discountGivenSql = sql<string>`coalesce((SELECT sum(${couponUsage.discountAmount}) FROM ${couponUsage} WHERE ${couponUsage.couponId} = ${coupons.id}), 0)`;
+
+/**
+ * Seller coupons grouped by seller: one page of sellers (most active coupons
+ * first), each with its totals, its stores and every coupon matching the
+ * filters. Four queries whatever the page size.
+ */
+export async function listSellerCouponGroupsForAdmin(input: SellerCouponGroupsInput, q: Queryable = db) {
+  const scope: SQL[] = [isNotNull(coupons.sellerId), sql`NOT ${isAffiliateCoupon}`];
+  const conditions: SQL[] = [...scope];
+  if (input.state) conditions.push(STATE_SQL[input.state]);
+  if (input.q) {
+    const like = likePattern(input.q);
+    conditions.push(
+      or(
+        sql`${coupons.code} ILIKE ${like}`,
+        sql`${coupons.name} ILIKE ${like}`,
+        sql`${sellers.businessName} ILIKE ${like}`,
+        sql`${sellers.displayName} ILIKE ${like}`,
+        sql`${users.email} ILIKE ${like}`,
+      )!,
+    );
+  }
+  const where = and(...conditions);
+  const offset = (input.page - 1) * SELLER_COUPON_GROUPS_PAGE_SIZE;
+  const activeCount = sql<number>`count(*) FILTER (WHERE ${STATE_SQL.active})::int`;
+
+  const groups = await q
+    .select({
+      sellerId: sql<string>`${coupons.sellerId}`,
+      sellerName: sql<string | null>`max(coalesce(nullif(${sellers.displayName}, ''), ${sellers.businessName}))`,
+      sellerEmail: sql<string | null>`max(${users.email})`,
+      couponCount: sql<number>`count(*)::int`,
+      activeCount,
+      redemptions: sql<number>`coalesce(sum(${coupons.usageCount}), 0)::int`,
+      discountGiven: sql<string>`sum(${discountGivenSql})::numeric(12,2)::text`,
+      totalCount: sql<number>`count(*) OVER ()::int`,
+    })
+    .from(coupons)
+    .leftJoin(sellers, eq(sellers.id, coupons.sellerId))
+    .leftJoin(users, eq(users.id, coupons.sellerId))
+    .where(where)
+    .groupBy(coupons.sellerId)
+    .orderBy(desc(activeCount), desc(sql`count(*)`), desc(sql`max(${coupons.createdAt})`), asc(coupons.sellerId))
+    .limit(SELLER_COUPON_GROUPS_PAGE_SIZE)
+    .offset(offset);
+
+  const sellerIds = groups.map((group) => group.sellerId);
+  const [couponRows, storeRows] = sellerIds.length
+    ? await Promise.all([
+        q
+          .select({
+            id: coupons.id,
+            sellerId: sql<string>`${coupons.sellerId}`,
+            code: coupons.code,
+            name: coupons.name,
+            discountType: coupons.discountType,
+            discountValue: coupons.discountValue,
+            maximumDiscount: coupons.maximumDiscount,
+            minimumPurchase: coupons.minimumPurchase,
+            usageCount: coupons.usageCount,
+            usageLimit: coupons.usageLimit,
+            isActive: coupons.isActive,
+            startsAt: coupons.startsAt,
+            expiresAt: coupons.expiresAt,
+            discountGiven: sql<string>`${discountGivenSql}::numeric(12,2)::text`,
+          })
+          .from(coupons)
+          .leftJoin(sellers, eq(sellers.id, coupons.sellerId))
+          .leftJoin(users, eq(users.id, coupons.sellerId))
+          .where(and(where, inArray(coupons.sellerId, sellerIds)))
+          .orderBy(desc(coupons.createdAt), desc(coupons.id)),
+        q
+          .select({ sellerId: stores.sellerId, id: stores.id, name: stores.name, isPrimary: stores.isPrimary })
+          .from(stores)
+          .where(and(inArray(stores.sellerId, sellerIds), isNull(stores.deletedAt)))
+          .orderBy(desc(stores.isPrimary), asc(stores.name)),
+      ])
+    : [[], []];
+
+  const [stats] = await q
+    .select({
+      total: sql<number>`count(*)::int`,
+      active: sql<number>`count(*) FILTER (WHERE ${STATE_SQL.active})::int`,
+      sellers: sql<number>`count(DISTINCT ${coupons.sellerId})::int`,
+      redemptions: sql<number>`coalesce(sum(${coupons.usageCount}), 0)::int`,
+    })
+    .from(coupons)
+    .where(and(...scope));
+
+  return {
+    groups: groups.map(({ totalCount: _total, ...group }) => ({
+      ...group,
+      stores: storeRows.filter((store) => store.sellerId === group.sellerId),
+      coupons: couponRows.filter((coupon) => coupon.sellerId === group.sellerId),
+    })),
+    totalSellers: Number(groups[0]?.totalCount ?? 0),
+    stats: {
+      total: Number(stats?.total ?? 0),
+      active: Number(stats?.active ?? 0),
+      sellers: Number(stats?.sellers ?? 0),
+      redemptions: Number(stats?.redemptions ?? 0),
+    },
+  };
+}
+
+export type SellerCouponGroup = Awaited<ReturnType<typeof listSellerCouponGroupsForAdmin>>["groups"][number];
 
 export type SellerCouponToggleResult = { sellerId: string; auditId: string };
 

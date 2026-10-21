@@ -1815,6 +1815,38 @@
       "cash": "نقدًا",
       "instapay": "إنستاباي",
       "vodafone_cash": "فودافون كاش"
+    },
+    "sources": {
+      "title": "مصادر مبيعاتك",
+      "subtitle": "أرباحك حسب قناة البيع وطريقة دفع العملاء",
+      "periodLabel": "الفترة",
+      "period": {
+        "month": "هذا الشهر",
+        "allTime": "كل الوقت"
+      },
+      "total": "<strong>{amount}</strong> من {count, plural, zero {# طلب} one {طلب واحد} two {طلبين} few {# طلبات} many {# طلبًا} other {# طلب}}",
+      "byChannel": "حسب قناة البيع",
+      "byPaymentMethod": "حسب طريقة الدفع",
+      "marketplace": "سوق طلبي",
+      "marketplaceHint": "tallaby.com",
+      "storeHint": "موقعك",
+      "unknownStore": "متجر محذوف",
+      "orders": "{count, plural, zero {# طلب} one {طلب واحد} two {طلبين} few {# طلبات} many {# طلبًا} other {# طلب}}",
+      "share": "{value}% من المبيعات",
+      "empty": "لا توجد مبيعات بعد",
+      "emptyMonth": "لا توجد مبيعات هذا الشهر بعد",
+      "methods": {
+        "cod": "الدفع عند الاستلام",
+        "wallet": "المحفظة",
+        "card": "بطاقة",
+        "credit_card": "بطاقة ائتمان",
+        "instapay": "إنستاباي",
+        "vodafone_cash": "فودافون كاش",
+        "e_cash": "اتصالات كاش",
+        "orange_cash": "أورنج كاش",
+        "we_pay": "وي باي",
+        "bank_transfer": "تحويل بنكي"
+      }
     }
   },
   "coupons": {
