@@ -2,7 +2,7 @@ import { OrderConfirmationSkeleton } from "./_components/order-confirmation.skel
 
 export default function OrderConfirmationLoading() {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+    <main className="min-h-screen">
       <div className="container py-8">
         <OrderConfirmationSkeleton />
       </div>

@@ -134,13 +134,13 @@ export function OrdersClient({
               <AccordionItem
                 key={order.id}
                 value={order.id}
-                className="border-t border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg sm:border"
+                className="border-t border-b border-border bg-background shadow-sm sm:rounded-lg sm:border"
               >
                 <AccordionTrigger className="hover:no-underline bg-transparent hover:bg-transparent px-0 py-0 [&>svg]:ml-auto items-center pr-6">
                   <div className="flex items-center w-full p-4 sm:grid sm:grid-cols-4 sm:gap-x-6 sm:p-6">
                     <dl className="grid flex-1 grid-cols-2 gap-x-6 text-sm sm:col-span-3 sm:grid-cols-3 lg:col-span-2">
                       <div>
-                        <dt className="font-medium text-gray-900 dark:text-gray-100">
+                        <dt className="font-medium text-foreground">
                           {tOrders("orderNumber")}
                         </dt>
                         <dd className="mt-1 text-gray-500 dark:text-gray-400">
@@ -148,7 +148,7 @@ export function OrdersClient({
                         </dd>
                       </div>
                       <div className="hidden sm:block">
-                        <dt className="font-medium text-gray-900 dark:text-gray-100">
+                        <dt className="font-medium text-foreground">
                           {tOrders("datePlaced")}
                         </dt>
                         <dd className="mt-1 text-gray-500 dark:text-gray-400">
@@ -158,11 +158,11 @@ export function OrdersClient({
                         </dd>
                       </div>
                       <div>
-                        <dt className="font-medium text-gray-900 dark:text-gray-100">
+                        <dt className="font-medium text-foreground">
                           {tOrders("totalAmount")}
                         </dt>
                         <dd
-                          className="mt-1 font-medium text-gray-900 dark:text-gray-100"
+                          className="mt-1 font-medium text-foreground"
                           dangerouslySetInnerHTML={{
                             __html: formatPrice(
                               Number(order.totalAmount),
@@ -274,7 +274,7 @@ export function OrdersClient({
                               )}
                             </div>
                             <div className="ml-6 flex-1 text-sm">
-                              <div className="font-medium text-gray-900 dark:text-gray-100 sm:flex text-sm sm:justify-between">
+                              <div className="font-medium text-foreground sm:flex text-sm sm:justify-between">
                                 <h5>{item.productName}</h5>
                                 <p
                                   className="mt-2 sm:mt-0"
@@ -302,23 +302,23 @@ export function OrdersClient({
                               </div>
                             )}
 
-                            <div className="mt-6 flex flex-wrap items-center gap-4 text-sm font-medium sm:mt-0 border-t border-gray-200 dark:border-gray-700 pt-4 sm:border-none sm:pt-0">
+                            <div className="mt-6 flex flex-wrap items-center gap-4 text-sm font-medium sm:mt-0 border-t border-border pt-4 sm:border-none sm:pt-0">
                               <Link
                                 href={`/products/${item.product.slug}`}
-                                className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500"
+                                className="text-primary hover:text-primary/80"
                               >
                                 {tOrders("viewProduct")}
                               </Link>
                               <Link
                                 href={`/products/${item.product.slug}`}
-                                className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500"
+                                className="text-primary hover:text-primary/80"
                               >
                                 {tOrders("buyAgain")}
                               </Link>
                               {showReviewActions && !item.hasReview && (
                                 <Link
                                   href={`/orders/${order.id}#review-item-${item.id}`}
-                                  className="inline-flex items-center gap-1 text-indigo-600 dark:text-indigo-400 hover:text-indigo-500"
+                                  className="inline-flex items-center gap-1 text-primary hover:text-primary/80"
                                 >
                                   <Star className="h-4 w-4" />
                                   {tOrders("reviewProduct")}
@@ -327,7 +327,7 @@ export function OrdersClient({
                               {showReviewActions && item.hasReview && (
                                 <Link
                                   href={`/orders/${order.id}?review=${item.id}#review-item-${item.id}`}
-                                  className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500"
+                                  className="text-primary hover:text-primary/80"
                                 >
                                   {tOrders("editReview")}
                                 </Link>
@@ -337,7 +337,7 @@ export function OrdersClient({
                                 !storeSeller.hasStoreReview && (
                                   <Link
                                     href={`/orders/${order.id}#store-review-${item.sellerId}`}
-                                    className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500"
+                                    className="text-primary hover:text-primary/80"
                                   >
                                     {tOrders("rateStore")}
                                   </Link>
@@ -353,12 +353,12 @@ export function OrdersClient({
             ))}
           </Accordion>
         ) : (
-          <div className="border-t border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg sm:border p-12">
+          <div className="border-t border-b border-border bg-background shadow-sm sm:rounded-lg sm:border p-12">
             <div className="flex flex-col items-center justify-center text-center">
               <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
                 <ShoppingBag className="h-8 w-8 text-gray-400" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+              <h3 className="text-lg font-semibold text-foreground mb-2">
                 {tOrders("noOrders")}
               </h3>
               <p className="text-gray-500 dark:text-gray-400 mb-6">

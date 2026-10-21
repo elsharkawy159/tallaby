@@ -19,7 +19,7 @@ import {
   formatDate,
   getOrderStatusStyle,
   getPaymentStatusStyle,
-  canShowCancelOrderButton,
+  isCancelOrderEnabled,
 } from "./order-confirmation.lib";
 import { Button } from "@workspace/ui/components/button";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
@@ -37,14 +37,18 @@ interface OrderConfirmationContentProps {
   data: OrderConfirmationData;
   locale: string;
   autoExpandReviewItemId?: string;
-  isAuthenticated: boolean;
+  /** The verified access link the page was opened with (guest orders). */
+  accessToken?: string;
+  /** Where "Need help?" leads: the store's WhatsApp or phone, or Tallaby's. */
+  supportHref: string | null;
 }
 
 export async function OrderConfirmationContent({
   data,
   locale,
   autoExpandReviewItemId,
-  isAuthenticated,
+  accessToken,
+  supportHref,
 }: OrderConfirmationContentProps) {
   const t = await getTranslations("orders");
   const { order, orderItems, storeSellers, shipments, shippingAddress, summary } = data;
@@ -124,7 +128,7 @@ export async function OrderConfirmationContent({
               className={cn(
                 "w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center",
                 order.status === "pending"
-                  ? "bg-green-100"
+                  ? "bg-primary/10"
                   : getOrderStatusStyle(order.status).bg
               )}
             >
@@ -132,7 +136,7 @@ export async function OrderConfirmationContent({
                 className={cn(
                   "w-8 h-8 md:w-12 md:h-12",
                   order.status === "pending"
-                    ? "text-green-500"
+                    ? "text-primary"
                     : getOrderStatusStyle(order.status).text
                 )}
               />
@@ -141,15 +145,15 @@ export async function OrderConfirmationContent({
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-xl md:text-3xl font-bold text-gray-900">
+          <h1 className="text-xl md:text-3xl font-bold text-foreground">
             {order.status === "pending"
               ? t("orderPlaced")
               : getStatusLabel(order.status)}
           </h1>
-          <p className="text-xs md:text-lg text-gray-600">
+          <p className="text-xs md:text-lg text-muted-foreground">
             {t("thankYouForPurchase")}
           </p>
-          <div className="flex items-center justify-center space-x-2 text-xs md:text-sm text-gray-500">
+          <div className="flex items-center justify-center space-x-2 text-xs md:text-sm text-muted-foreground">
             <Calendar className="w-3 h-3 md:w-4 md:h-4" />
             <span>
               {t("orderPlacedOn")} {formatDate(order.createdAt)}
@@ -160,9 +164,9 @@ export async function OrderConfirmationContent({
 
       {/* Order Summary Card */}
 
-      <Card className="rounded-xl md:rounded-2xl border overflow-hidden pt-0 border-green-200 bg-green-50/50">
-        <div className="bg-green-50/50 px-4 md:px-6 py-3 md:py-5 border-b border-green-200">
-          <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-gray-900">
+      <Card className="rounded-xl md:rounded-2xl border overflow-hidden pt-0 border-primary/20 bg-primary/5">
+        <div className="bg-primary/5 px-4 md:px-6 py-3 md:py-5 border-b border-primary/20">
+          <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-foreground">
             {t("orderSummary")}
           </CardTitle>
         </div>
@@ -170,15 +174,15 @@ export async function OrderConfirmationContent({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
             <div className="space-y-2 md:space-y-3">
               <div className="flex justify-between">
-                <span className="text-xs md:text-sm font-medium text-gray-600">
+                <span className="text-xs md:text-sm font-medium text-muted-foreground">
                   {t("orderNumber")}:
                 </span>
-                <span className="text-xs md:text-sm font-mono font-bold text-gray-900">
+                <span className="text-xs md:text-sm font-mono font-bold text-foreground">
                   {order.orderNumber}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-xs md:text-sm font-medium text-gray-600">
+                <span className="text-xs md:text-sm font-medium text-muted-foreground">
                   {t("status")}:
                 </span>
                 <Badge
@@ -189,7 +193,7 @@ export async function OrderConfirmationContent({
                 </Badge>
               </div>
               {/* <div className="flex justify-between">
-                <span className="text-xs md:text-sm font-medium text-gray-600">
+                <span className="text-xs md:text-sm font-medium text-muted-foreground">
                   Payment:
                 </span>
                 <Badge
@@ -203,18 +207,18 @@ export async function OrderConfirmationContent({
             </div>
             <div className="space-y-2 md:space-y-3">
               <div className="flex justify-between">
-                <span className="text-xs md:text-sm font-medium text-gray-600">
+                <span className="text-xs md:text-sm font-medium text-muted-foreground">
                   {t("paymentMethod")}:
                 </span>
-                <span className="text-xs md:text-sm text-gray-900">
+                <span className="text-xs md:text-sm text-foreground">
                   {getPaymentMethodLabel(order.paymentMethod)}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-xs md:text-sm font-medium text-gray-600">
+                <span className="text-xs md:text-sm font-medium text-muted-foreground">
                   {t("items")}:
                 </span>
-                <span className="text-xs md:text-sm text-gray-900">
+                <span className="text-xs md:text-sm text-foreground">
                   {summary.itemCount}{" "}
                   {summary.itemCount !== 1 ? t("items") : t("item")}
                 </span>
@@ -222,12 +226,12 @@ export async function OrderConfirmationContent({
             </div>
           </div>
 
-          {isAuthenticated && canShowCancelOrderButton(order.status) && (
-            <div className="mt-4 pt-4 border-t border-green-200 flex justify-end">
+          {isCancelOrderEnabled(order.status) && (
+            <div className="mt-4 pt-4 border-t border-primary/20 flex justify-end">
               <OrderCancelButton
                 orderId={order.id}
                 status={order.status}
-                isAuthenticated={isAuthenticated}
+                accessToken={accessToken}
               />
             </div>
           )}
@@ -251,9 +255,9 @@ export async function OrderConfirmationContent({
       <DeliveryTimeline placedAt={order.createdAt} shipments={shipments} />
 
       {shipments.length > 0 && shipments.some((s) => s.trackingNumber) && (
-        <Card className="rounded-xl md:rounded-2xl border overflow-hidden pt-0 bg-white">
-          <div className="bg-linear-to-r from-gray-50 to-gray-100 px-4 md:px-6 py-3 md:py-5 border-b border-gray-200">
-            <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-gray-900">
+        <Card className="rounded-xl md:rounded-2xl border overflow-hidden pt-0 bg-background">
+          <div className="bg-primary/5 px-4 md:px-6 py-3 md:py-5 border-b border-border">
+            <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-foreground">
               <Truck className="h-4 w-4 md:h-5 md:w-5" /> {t("trackingInfo")}
             </CardTitle>
           </div>
@@ -262,7 +266,7 @@ export async function OrderConfirmationContent({
               <div key={index} className="text-xs md:text-sm space-y-1">
                 {shipment.carrier && (
                   <p>
-                    <span className="font-medium text-gray-600">
+                    <span className="font-medium text-muted-foreground">
                       {t("carrier")}:
                     </span>{" "}
                     {shipment.carrier}
@@ -270,7 +274,7 @@ export async function OrderConfirmationContent({
                 )}
                 {shipment.trackingNumber && (
                   <p>
-                    <span className="font-medium text-gray-600">
+                    <span className="font-medium text-muted-foreground">
                       {t("trackingNumber")}:
                     </span>{" "}
                     {shipment.trackingNumber}
@@ -283,9 +287,9 @@ export async function OrderConfirmationContent({
       )}
 
       {/* Order Items */}
-      <Card className="rounded-xl md:rounded-2xl border overflow-hidden pt-0 bg-white">
-        <div className="bg-linear-to-r from-gray-50 to-gray-100 px-4 md:px-6 py-3 md:py-5 border-b border-gray-200">
-          <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-gray-900">
+      <Card className="rounded-xl md:rounded-2xl border overflow-hidden pt-0 bg-background">
+        <div className="bg-primary/5 px-4 md:px-6 py-3 md:py-5 border-b border-border">
+          <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-foreground">
             <Package className="h-4 w-4 md:h-5 md:w-5" /> {t("orderItems")}
           </CardTitle>
         </div>
@@ -301,9 +305,9 @@ export async function OrderConfirmationContent({
             {/* Invoice Breakdown */}
             <div className="mt-4 md:mt-6 pt-4 md:pt-6 border-t space-y-2 md:space-y-3">
               <div className="flex justify-between text-xs md:text-sm">
-                <span className="text-gray-600">{t("subtotal")}:</span>
+                <span className="text-muted-foreground">{t("subtotal")}:</span>
                 <span
-                  className="text-gray-900 font-medium"
+                  className="text-foreground font-medium"
                   dangerouslySetInnerHTML={{
                     __html: formatPrice(summary.subtotal, locale),
                   }}
@@ -312,9 +316,9 @@ export async function OrderConfirmationContent({
 
               {summary.shippingCost > 0 && (
                 <div className="flex justify-between text-xs md:text-sm">
-                  <span className="text-gray-600">{t("deliveryFee")}:</span>
+                  <span className="text-muted-foreground">{t("deliveryFee")}:</span>
                   <span
-                    className="text-gray-900 font-medium"
+                    className="text-foreground font-medium"
                     dangerouslySetInnerHTML={{
                       __html: formatPrice(summary.shippingCost, locale),
                     }}
@@ -324,9 +328,9 @@ export async function OrderConfirmationContent({
 
               {summary.tax > 0 && (
                 <div className="flex justify-between text-xs md:text-sm">
-                  <span className="text-gray-600">{t("tax")}:</span>
+                  <span className="text-muted-foreground">{t("tax")}:</span>
                   <span
-                    className="text-gray-900 font-medium"
+                    className="text-foreground font-medium"
                     dangerouslySetInnerHTML={{
                       __html: formatPrice(summary.tax, locale),
                     }}
@@ -340,7 +344,7 @@ export async function OrderConfirmationContent({
                       key={`${line.type}-${line.code ?? line.label}-${index}`}
                       className="flex justify-between text-xs md:text-sm"
                     >
-                      <span className="text-gray-600">{line.label}:</span>
+                      <span className="text-muted-foreground">{line.label}:</span>
                       <span
                         className="text-green-600 font-medium"
                         dangerouslySetInnerHTML={{
@@ -351,7 +355,7 @@ export async function OrderConfirmationContent({
                   ))
                 : summary.discountAmount > 0 && (
                     <div className="flex justify-between text-xs md:text-sm">
-                      <span className="text-gray-600">{t("discount")}:</span>
+                      <span className="text-muted-foreground">{t("discount")}:</span>
                       <span
                         className="text-green-600 font-medium"
                         dangerouslySetInnerHTML={{
@@ -362,11 +366,11 @@ export async function OrderConfirmationContent({
                   )}
 
               <div className="flex justify-between pt-2 md:pt-3 border-t">
-                <span className="text-sm md:text-base font-semibold text-gray-900">
+                <span className="text-sm md:text-base font-semibold text-foreground">
                   {t("totalAmount")}:
                 </span>
                 <span
-                  className="text-base md:text-lg font-bold text-gray-900"
+                  className="text-base md:text-lg font-bold text-foreground"
                   dangerouslySetInnerHTML={{
                     __html: formatPrice(summary.totalAmount, locale),
                   }}
@@ -377,9 +381,9 @@ export async function OrderConfirmationContent({
       </Card>
 
       {order.status === "delivered" && storeSellers.length > 0 && (
-        <Card className="rounded-xl md:rounded-2xl border overflow-hidden pt-0 bg-white">
-          <div className="bg-linear-to-r from-gray-50 to-gray-100 px-4 md:px-6 py-3 md:py-5 border-b border-gray-200">
-            <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-gray-900">
+        <Card className="rounded-xl md:rounded-2xl border overflow-hidden pt-0 bg-background">
+          <div className="bg-primary/5 px-4 md:px-6 py-3 md:py-5 border-b border-border">
+            <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-foreground">
               <Package className="h-4 w-4 md:h-5 md:w-5" /> {t("rateTheStore")}
             </CardTitle>
           </div>
@@ -397,33 +401,33 @@ export async function OrderConfirmationContent({
 
       {/* Shipping & Billing Information */}
       {/* Shipping Address */}
-      <Card className="rounded-xl md:rounded-2xl border overflow-hidden pt-0 bg-white">
-        <div className="bg-linear-to-r from-gray-50 to-gray-100 px-4 md:px-6 py-3 md:py-5 border-b border-gray-200">
-          <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-gray-900">
+      <Card className="rounded-xl md:rounded-2xl border overflow-hidden pt-0 bg-background">
+        <div className="bg-primary/5 px-4 md:px-6 py-3 md:py-5 border-b border-border">
+          <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-foreground">
             <Truck className="h-4 w-4 md:h-5 md:w-5" /> {t("shippingAddress")}
           </CardTitle>
         </div>
         <CardContent>
-          <p className="text-xs md:text-sm font-medium text-gray-900">
+          <p className="text-xs md:text-sm font-medium text-foreground">
             {shippingAddress.fullName}
           </p>
-          <p className="text-xs md:text-sm text-gray-600">
+          <p className="text-xs md:text-sm text-muted-foreground">
             {shippingAddress.addressLine1}
           </p>
           {shippingAddress.addressLine2 && (
-            <p className="text-xs md:text-sm text-gray-600">
+            <p className="text-xs md:text-sm text-muted-foreground">
               {shippingAddress.addressLine2}
             </p>
           )}
-          <p className="text-xs md:text-sm text-gray-600">
+          <p className="text-xs md:text-sm text-muted-foreground">
             {shippingAddress.city}, {shippingAddress.state}{" "}
             {shippingAddress.postalCode}
           </p>
-          <p className="text-xs md:text-sm text-gray-600">
+          <p className="text-xs md:text-sm text-muted-foreground">
             {shippingAddress.country}
           </p>
           {shippingAddress.phone && (
-            <p className="text-xs md:text-sm text-gray-600">
+            <p className="text-xs md:text-sm text-muted-foreground">
               {t("phone")}: {shippingAddress.phone}
             </p>
           )}
@@ -440,33 +444,33 @@ export async function OrderConfirmationContent({
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <p className="font-medium text-gray-900">
+              <p className="font-medium text-foreground">
                 {billingAddress.fullName}
               </p>
-              <p className="text-gray-600">{billingAddress.addressLine1}</p>
+              <p className="text-muted-foreground">{billingAddress.addressLine1}</p>
               {billingAddress.addressLine2 && (
-                <p className="text-gray-600">{billingAddress.addressLine2}</p>
+                <p className="text-muted-foreground">{billingAddress.addressLine2}</p>
               )}
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 {billingAddress.city}, {billingAddress.state}{" "}
                 {billingAddress.postalCode}
               </p>
-              <p className="text-gray-600">{billingAddress.country}</p>
+              <p className="text-muted-foreground">{billingAddress.country}</p>
             </CardContent>
           </Card>
         )} */}
 
       {/* Gift Message */}
       {order.isGift && order.giftMessage && (
-        <Card className="rounded-xl md:rounded-2xl border overflow-hidden pt-0 bg-white">
-          <div className="bg-linear-to-r from-gray-50 to-gray-100 px-4 md:px-6 py-3 md:py-5 border-b border-gray-200">
-            <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-gray-900">
+        <Card className="rounded-xl md:rounded-2xl border overflow-hidden pt-0 bg-background">
+          <div className="bg-primary/5 px-4 md:px-6 py-3 md:py-5 border-b border-border">
+            <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-foreground">
               <span className="text-base md:text-xl">🎁</span>{" "}
               {t("giftMessage")}
             </CardTitle>
           </div>
           <CardContent>
-            <p className="text-xs md:text-sm text-pink-700 italic">
+            <p className="text-xs md:text-sm text-foreground italic">
               "{order.giftMessage}"
             </p>
           </CardContent>
@@ -475,14 +479,14 @@ export async function OrderConfirmationContent({
 
       {/* Order Notes */}
       {order.notes && (
-        <Card className="rounded-xl md:rounded-2xl border overflow-hidden pt-0 bg-white">
-          <div className="bg-linear-to-r from-gray-50 to-gray-100 px-4 md:px-6 py-3 md:py-5 border-b border-gray-200">
-            <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-gray-900">
+        <Card className="rounded-xl md:rounded-2xl border overflow-hidden pt-0 bg-background">
+          <div className="bg-primary/5 px-4 md:px-6 py-3 md:py-5 border-b border-border">
+            <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-foreground">
               <span className="text-base md:text-xl">📝</span> {t("orderNotes")}
             </CardTitle>
           </div>
           <CardContent className="p-4 md:p-6">
-            <p className="text-xs md:text-sm text-gray-700">{order.notes}</p>
+            <p className="text-xs md:text-sm text-muted-foreground">{order.notes}</p>
           </CardContent>
         </Card>
       )}
@@ -530,9 +534,9 @@ export async function OrderConfirmationContent({
       </Card> */}
 
       {/* Next Steps */}
-      <Card className="rounded-xl md:rounded-2xl border overflow-hidden pt-0 bg-white">
-        <div className="bg-linear-to-r from-gray-50 to-gray-100 px-4 md:px-6 py-3 md:py-5 border-b border-gray-200">
-          <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-gray-900">
+      <Card className="rounded-xl md:rounded-2xl border overflow-hidden pt-0 bg-background">
+        <div className="bg-primary/5 px-4 md:px-6 py-3 md:py-5 border-b border-border">
+          <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-foreground">
             <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
             {t("whatsNext")}
           </CardTitle>
@@ -540,40 +544,40 @@ export async function OrderConfirmationContent({
         <CardContent>
           <div className="space-y-2 md:space-y-3">
             <div className="flex items-start space-x-2 md:space-x-3">
-              <div className="w-5 h-5 md:w-6 md:h-6 bg-blue-100 rounded-full flex items-center justify-center shrink-0 mt-0.5">
-                <span className="text-blue-600 text-xs font-bold">1</span>
+              <div className="w-5 h-5 md:w-6 md:h-6 bg-primary/10 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                <span className="text-primary text-xs font-bold">1</span>
               </div>
               <div>
-                <p className="text-xs md:text-sm font-medium text-blue-900">
+                <p className="text-xs md:text-sm font-medium text-foreground">
                   {t("orderProcessing")}
                 </p>
-                <p className="text-xs md:text-sm text-blue-700">
+                <p className="text-xs md:text-sm text-muted-foreground">
                   {t("orderProcessingDescription")}
                 </p>
               </div>
             </div>
             <div className="flex items-start space-x-2 md:space-x-3">
-              <div className="w-5 h-5 md:w-6 md:h-6 bg-blue-100 rounded-full flex items-center justify-center shrink-0 mt-0.5">
-                <span className="text-blue-600 text-xs font-bold">2</span>
+              <div className="w-5 h-5 md:w-6 md:h-6 bg-primary/10 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                <span className="text-primary text-xs font-bold">2</span>
               </div>
               <div>
-                <p className="text-xs md:text-sm font-medium text-blue-900">
+                <p className="text-xs md:text-sm font-medium text-foreground">
                   {t("shippingNotification")}
                 </p>
-                <p className="text-xs md:text-sm text-blue-700">
+                <p className="text-xs md:text-sm text-muted-foreground">
                   {t("shippingNotificationDescription")}
                 </p>
               </div>
             </div>
             <div className="flex items-start space-x-2 md:space-x-3">
-              <div className="w-5 h-5 md:w-6 md:h-6 bg-blue-100 rounded-full flex items-center justify-center shrink-0 mt-0.5">
-                <span className="text-blue-600 text-xs font-bold">3</span>
+              <div className="w-5 h-5 md:w-6 md:h-6 bg-primary/10 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                <span className="text-primary text-xs font-bold">3</span>
               </div>
               <div>
-                <p className="text-xs md:text-sm font-medium text-blue-900">
+                <p className="text-xs md:text-sm font-medium text-foreground">
                   {t("delivery")}
                 </p>
-                <p className="text-xs md:text-sm text-blue-700">
+                <p className="text-xs md:text-sm text-muted-foreground">
                   {t("deliveryDescription")}
                 </p>
               </div>
@@ -584,7 +588,7 @@ export async function OrderConfirmationContent({
 
       {/* Security & Support */}
       {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="border-green-200 bg-green-50/50">
+        <Card className="border-primary/20 bg-primary/5">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2 text-green-800">
               <Shield className="w-5 h-5" />
@@ -644,8 +648,9 @@ export async function OrderConfirmationContent({
       </div>
 
       {/* Support Information */}
+      {supportHref && (
       <div className="text-center py-6 md:py-8 border-t">
-        <p className="text-xs md:text-sm text-gray-600 mb-2 md:mb-3">
+        <p className="text-xs md:text-sm text-muted-foreground mb-2 md:mb-3">
           {t("needHelpWithOrder")}
         </p>
         <div className="flex justify-center">
@@ -656,7 +661,7 @@ export async function OrderConfirmationContent({
             className="flex items-center gap-2 text-xs md:text-sm"
           >
             <Link
-              href="https://wa.me/@tallaby"
+              href={supportHref}
               target="_blank"
               rel="noopener noreferrer"
               aria-label={t("chatWithUs")}
@@ -674,6 +679,7 @@ export async function OrderConfirmationContent({
           </Button>
         </div>
       </div>
+      )}
     </div>
   );
 }

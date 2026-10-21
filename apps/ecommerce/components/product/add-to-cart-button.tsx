@@ -4,7 +4,7 @@ import { Button } from "@workspace/ui/components/button";
 import { ShoppingCart, Loader2, Zap } from "lucide-react";
 import type { AddToCartButtonProps } from "./product-card.types";
 import { useTranslations } from "next-intl";
-import { useCart } from "@/providers/cart-provider";
+import { notifyCartItemAdded, useCart } from "@/providers/cart-provider";
 import posthog from "posthog-js";
 import { trackCommerceEvent } from "@/lib/storefront-events.client";
 import { toMetaContentIds } from "@/lib/meta/meta.product";
@@ -73,6 +73,7 @@ export const AddToCartButton = ({
       );
 
       if (buyNow) router.push("/cart/checkout");
+      else notifyCartItemAdded();
     }
   };
 

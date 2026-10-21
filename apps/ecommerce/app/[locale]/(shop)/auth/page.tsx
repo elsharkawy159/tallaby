@@ -5,10 +5,23 @@ import { SignupFormWrapper } from "@/components/signup/signup-form-wrapper";
 import { Logo } from "@/components/logo";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { generateNoIndexMetadata } from "@/lib/metadata";
+import { getRequestStoreSubdomain } from "@/lib/storefront.server";
 
 export const metadata: Metadata = generateNoIndexMetadata();
 
-export default function AuthPage() {
+export default async function AuthPage() {
+  // A store's website: the store's header and footer frame the form (auth/layout.tsx),
+  // with no Tallaby logo or artwork.
+  if (await getRequestStoreSubdomain()) {
+    return (
+      <div className="mx-auto w-full max-w-md px-4 py-10 md:py-16">
+        <Suspense fallback={<div>{/* Loading... */}</div>}>
+          <SignupFormWrapper />
+        </Suspense>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen relative">
       <div className="absolute rtl:right-4 ltr:left-4 top-4 z-10 flex items-center gap-2">

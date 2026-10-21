@@ -22,7 +22,7 @@ export default async function OrderConfirmationPage({
   const { review: autoExpandReviewItemId, access: accessToken } = await searchParams;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-4 md:py-8">
+    <div className="py-4 md:py-8">
       <Suspense fallback={<OrderConfirmationSkeleton />}>
         <OrderConfirmationData
           orderId={orderId}

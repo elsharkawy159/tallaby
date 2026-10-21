@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ShoppingBag } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@workspace/ui/lib/utils";
@@ -12,7 +12,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@workspace/ui/components/sheet";
-import { useCart } from "@/providers/cart-provider";
+import { onCartItemAdded, useCart } from "@/providers/cart-provider";
 import { StorefrontCart } from "./storefront-cart.client";
 import s from "../storefront.module.css";
 
@@ -29,6 +29,8 @@ export function CartSheet({
   const locale = useLocale();
   const [open, setOpen] = useState(false);
   const { cartItems } = useCart();
+  // Show the shopper what they just added.
+  useEffect(() => onCartItemAdded(() => setOpen(true)), []);
   const count = cartItems
     .filter((item) => !item.savedForLater)
     .reduce((sum, item) => sum + item.quantity, 0);

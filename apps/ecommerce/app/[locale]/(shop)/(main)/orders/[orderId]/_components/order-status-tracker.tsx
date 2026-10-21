@@ -175,12 +175,12 @@ export function OrderStatusTracker({
     <Card
       id="order-status-tracking"
       className={cn(
-        "scroll-mt-24 rounded-xl md:rounded-2xl border overflow-hidden bg-white gap-2",
+        "scroll-mt-24 rounded-xl md:rounded-2xl border overflow-hidden bg-background gap-2",
         className
       )}
     >
       <CardHeader className="pb-4">
-        <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-gray-900">
+        <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-foreground">
           <Package className="h-4 w-4 md:h-5 md:w-5" />
           {t("orderStatusTracking")}
         </CardTitle>
@@ -192,7 +192,7 @@ export function OrderStatusTracker({
             <Progress
               value={progressValue}
               className={cn(
-                "h-3 bg-gray-200",
+                "h-3 bg-foreground/10",
                 isErrorState && "bg-red-100",
                 isCompleted && "bg-green-100"
               )}
@@ -205,8 +205,8 @@ export function OrderStatusTracker({
             )}
           </div>
           <div className="flex justify-between items-center text-xs md:text-sm">
-            <span className="text-gray-600">{t("progress")}</span>
-            <span className="font-medium text-gray-900">{Math.round(progressValue)}%</span>
+            <span className="text-muted-foreground">{t("progress")}</span>
+            <span className="font-medium text-foreground">{Math.round(progressValue)}%</span>
           </div>
         </div>
 
@@ -230,11 +230,11 @@ export function OrderStatusTracker({
                     step.isActive &&
                       !step.isCompleted &&
                       !isDeliveredStepAndCompleted &&
-                      "bg-blue-100 text-blue-600 border-2 border-blue-400 animate-pulse",
+                      "bg-primary/10 text-primary border-2 border-primary animate-pulse",
                     !step.isActive &&
                       !step.isCompleted &&
                       !isDeliveredStepAndCompleted &&
-                      "bg-gray-100 text-gray-400 border-2 border-gray-200",
+                      "bg-foreground/5 text-muted-foreground/60 border-2 border-border",
                     isErrorState && "bg-red-100 text-red-600 border-2 border-red-300"
                   )}
                 >
@@ -248,8 +248,8 @@ export function OrderStatusTracker({
                       className={cn(
                         "text-sm font-semibold",
                         (step.isCompleted || isDeliveredStepAndCompleted) && "text-green-700",
-                        step.isActive && !step.isCompleted && !isDeliveredStepAndCompleted && "text-blue-700",
-                        !step.isActive && !step.isCompleted && !isDeliveredStepAndCompleted && "text-gray-500",
+                        step.isActive && !step.isCompleted && !isDeliveredStepAndCompleted && "text-primary",
+                        !step.isActive && !step.isCompleted && !isDeliveredStepAndCompleted && "text-muted-foreground",
                         isErrorState && "text-red-700"
                       )}
                     >
@@ -260,8 +260,8 @@ export function OrderStatusTracker({
                     )}
                     {step.isActive && !step.isCompleted && !isDeliveredStepAndCompleted && !isErrorState && (
                       <div className="flex-shrink-0">
-                        <div className="w-2 h-2 bg-blue-600 rounded-full animate-ping" />
-                        <div className="w-2 h-2 bg-blue-600 rounded-full -mt-2" />
+                        <div className="w-2 h-2 bg-primary rounded-full animate-ping" />
+                        <div className="w-2 h-2 bg-primary rounded-full -mt-2" />
                       </div>
                     )}
                   </div>

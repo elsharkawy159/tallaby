@@ -9,7 +9,7 @@ import { StoreLogo } from "./store-logo";
 import s from "../storefront.module.css";
 
 /** Egyptian numbers as wa.me expects them: country code, digits only. */
-function whatsappNumber(phone: string): string | null {
+export function whatsappNumber(phone: string): string | null {
   let digits = phone.replace(/\D/g, "");
   if (digits.startsWith("00")) digits = digits.slice(2);
   if (digits.length === 11 && digits.startsWith("0")) digits = `20${digits.slice(1)}`;

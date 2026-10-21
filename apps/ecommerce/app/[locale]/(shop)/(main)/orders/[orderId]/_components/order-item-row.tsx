@@ -36,10 +36,10 @@ export function OrderItemRow({
   return (
     <div
       id={`review-item-${item.id}`}
-      className="scroll-mt-24 border rounded-lg hover:bg-gray-50 transition-colors"
+      className="scroll-mt-24 border rounded-lg hover:bg-primary/5 transition-colors"
     >
       <div className="flex items-center space-x-2 md:space-x-4 p-3 md:p-4">
-        <div className="relative w-12 h-12 md:w-16 md:h-16 rounded-lg overflow-hidden bg-gray-100 shrink-0">
+        <div className="relative w-12 h-12 md:w-16 md:h-16 rounded-lg overflow-hidden bg-foreground/5 shrink-0">
           {(() => {
             const imageUrl =
               item.variant?.imageUrl ||
@@ -57,7 +57,7 @@ export function OrderItemRow({
                 className="object-contain"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-gray-400">
+              <div className="w-full h-full flex items-center justify-center text-muted-foreground/60">
                 <Package className="w-6 h-6 md:w-8 md:h-8" />
               </div>
             );
@@ -69,37 +69,37 @@ export function OrderItemRow({
             <Link
               href={`/products/${item.product.slug}`}
               target="_blank"
-              className="text-xs md:text-sm font-medium text-gray-900 line-clamp-2"
+              className="text-xs md:text-sm font-medium text-foreground line-clamp-2"
             >
               {item.productName}
             </Link>
           ) : (
-            <p className="text-xs md:text-sm font-medium text-gray-900 line-clamp-2">
+            <p className="text-xs md:text-sm font-medium text-foreground line-clamp-2">
               {item.productName}
             </p>
           )}
           {item.variantName && (
-            <p className="text-xs text-gray-600">
+            <p className="text-xs text-muted-foreground">
               {t("variant")}: {item.variantName}
             </p>
           )}
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-muted-foreground">
             {t("soldBy")} {item.seller.displayName}
           </p>
         </div>
 
         <div className="text-right space-y-1 shrink-0">
           <p
-            className="text-xs md:text-sm font-medium text-gray-900"
+            className="text-xs md:text-sm font-medium text-foreground"
             dangerouslySetInnerHTML={{
               __html: formatPrice(Number(item.price), locale),
             }}
           />
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-muted-foreground">
             {tCommon("quantity")}: {item.quantity}
           </p>
           <p
-            className="text-xs md:text-sm font-semibold text-gray-900"
+            className="text-xs md:text-sm font-semibold text-foreground"
             dangerouslySetInnerHTML={{
               __html: formatPrice(Number(item.subtotal), locale),
             }}

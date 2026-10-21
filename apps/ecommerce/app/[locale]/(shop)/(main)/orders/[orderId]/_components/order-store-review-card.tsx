@@ -155,7 +155,7 @@ export function OrderStoreReviewCard({
             />
             <label
               htmlFor={`store-anonymous-${seller.sellerId}`}
-              className="text-xs text-gray-600 cursor-pointer"
+              className="text-xs text-muted-foreground cursor-pointer"
             >
               {t("postAsAnonymous")}
             </label>

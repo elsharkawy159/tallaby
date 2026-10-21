@@ -38,3 +38,5 @@ npm-debug.log*
 
 # Claude Code subagent scratch (specs, briefs, reports)
 .superpowers/
+
+brag-output

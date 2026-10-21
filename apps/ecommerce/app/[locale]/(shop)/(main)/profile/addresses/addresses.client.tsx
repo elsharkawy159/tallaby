@@ -111,7 +111,7 @@ export function AddressesClient({ initialAddresses }: AddressesClientProps) {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <div className="text-center space-y-4">
-              <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto">
+              <div className="w-16 h-16 bg-foreground/5 rounded-full flex items-center justify-center mx-auto">
                 <Plus className="h-8 w-8 text-gray-400" />
               </div>
               <div>

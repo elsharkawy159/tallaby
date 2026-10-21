@@ -243,14 +243,14 @@ export function OrderItemReviewForm({
   };
 
   return (
-    <div className="mt-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
+    <div className="mt-4 p-4 border border-border rounded-lg bg-primary/5">
       <h4 className="font-semibold text-sm mb-3">
         {mode === "edit" ? t("editReview") : t("writeReview")}
       </h4>
 
       {/* Rating Stars */}
       <div className="mb-3">
-        <label className="text-xs text-gray-600 mb-2 block">Rating *</label>
+        <label className="text-xs text-muted-foreground mb-2 block">Rating *</label>
         <div className="flex gap-1">
           {[1, 2, 3, 4, 5].map((star) => (
             <button
@@ -300,7 +300,7 @@ export function OrderItemReviewForm({
 
       {/* File Upload Section */}
       <div className="mb-3">
-        <label className="text-xs text-gray-600 mb-2 block">
+        <label className="text-xs text-muted-foreground mb-2 block">
           Add Photos or Videos (Optional)
         </label>
         <div className="space-y-2">
@@ -309,7 +309,7 @@ export function OrderItemReviewForm({
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={isPending || isUploading || uploadedFiles.length >= 5}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm text-gray-600"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm text-muted-foreground"
           >
             {isUploading ? (
               <>
@@ -343,7 +343,7 @@ export function OrderItemReviewForm({
               {filePreviews.map((preview, index) => (
                 <div
                   key={index}
-                  className="relative aspect-square rounded-lg overflow-hidden border border-gray-200 group"
+                  className="relative aspect-square rounded-lg overflow-hidden border border-border group"
                 >
                   {preview.type === "image" ? (
                     <Image
@@ -380,7 +380,7 @@ export function OrderItemReviewForm({
             </div>
           )}
           {uploadedFiles.length > 0 && (
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-muted-foreground">
               {uploadedFiles.length} of 5 files uploaded
             </p>
           )}
@@ -397,7 +397,7 @@ export function OrderItemReviewForm({
         />
         <label
           htmlFor={`anonymous-${orderItemId}`}
-          className="text-xs text-gray-600 cursor-pointer"
+          className="text-xs text-muted-foreground cursor-pointer"
         >
           Post as anonymous
         </label>

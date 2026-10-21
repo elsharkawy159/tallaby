@@ -7,30 +7,13 @@ const CANCELLABLE_STATUSES = [
   "confirmed",
 ] as const;
 
-const TERMINAL_ORDER_STATUSES = [
-  "cancelled",
-  "delivered",
-  "refunded",
-  "returned",
-  "refund_requested",
-] as const;
-
 export type CancellableOrderStatus = (typeof CANCELLABLE_STATUSES)[number];
 
-export function canShowCancelOrderButton(status: string): boolean {
-  return !TERMINAL_ORDER_STATUSES.includes(
-    status as (typeof TERMINAL_ORDER_STATUSES)[number]
-  );
-}
-
+/** Mirrors cancelOrder (actions/order.ts): only before the order ships. */
 export function isCancelOrderEnabled(status: string): boolean {
   return CANCELLABLE_STATUSES.includes(
     status as CancellableOrderStatus
   );
-}
-
-export function isCancelOrderDisabledForDelivery(status: string): boolean {
-  return status === "out_for_delivery";
 }
 
 /**

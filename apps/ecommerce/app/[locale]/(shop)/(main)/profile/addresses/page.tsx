@@ -22,7 +22,7 @@ export const metadata: Metadata = generateNoIndexMetadata();
 function AddressesLoading() {
   return (
     <div className="space-y-6">
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6">
+      <div className="bg-background rounded-lg p-6">
         <div className="space-y-4">
           <div className="space-y-2">
             <Skeleton className="h-6 w-48" />

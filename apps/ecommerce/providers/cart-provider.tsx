@@ -15,6 +15,20 @@ import type { CartState } from "@/types/cart";
 
 const CartContext = createContext<CartState | undefined>(undefined);
 
+const CART_ITEM_ADDED_EVENT = "tallaby:cart-item-added";
+
+/** Tell the page an item was just added (the storefront opens its cart sheet). */
+export function notifyCartItemAdded() {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(CART_ITEM_ADDED_EVENT));
+}
+
+/** Runs `handler` after each `notifyCartItemAdded`; returns the unsubscribe. */
+export function onCartItemAdded(handler: () => void): () => void {
+  window.addEventListener(CART_ITEM_ADDED_EVENT, handler);
+  return () => window.removeEventListener(CART_ITEM_ADDED_EVENT, handler);
+}
+
 export function CartProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const tToast = useTranslations("toast");

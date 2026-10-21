@@ -5,6 +5,20 @@ import { OrderRealtime } from "./order-realtime";
 import { OrderPolling } from "./order-polling";
 import { getAuthUser } from "@/lib/auth/current-user";
 import { getLocale, getTranslations } from "next-intl/server";
+import { verifyOrderAccess } from "@/lib/order-access-token";
+import { getRequestStoreSubdomain, getStorefrontBySubdomain } from "@/lib/storefront.server";
+import { CONTACT } from "@/lib/marketing/site.lib";
+import { whatsappNumber } from "@/app/[locale]/(shop)/storefront/[subdomain]/_components/storefront-footer";
+
+/** "Need help?" goes to the store on its own website, to Tallaby elsewhere. */
+async function getSupportHref(): Promise<string | null> {
+  const subdomain = await getRequestStoreSubdomain();
+  if (!subdomain) return CONTACT.whatsapp;
+  const store = await getStorefrontBySubdomain(subdomain);
+  const whatsapp = store?.supportWhatsapp ? whatsappNumber(store.supportWhatsapp) : null;
+  if (whatsapp) return `https://wa.me/${whatsapp}`;
+  return store?.supportPhone ? `tel:${store.supportPhone.replace(/[^d+]/g, "")}` : null;
+}
 
 interface OrderConfirmationDataProps {
   orderId: string;
@@ -36,10 +50,10 @@ export async function OrderConfirmationData({
       <div className="text-center py-8 md:py-16 max-w-4xl mx-auto">
         <div className="space-y-3 md:space-y-4">
           <div className="text-4xl md:text-6xl">❌</div>
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900">
+          <h1 className="text-xl md:text-2xl font-bold text-foreground">
             {t("orderNotFound")}
           </h1>
-          <p className="text-xs md:text-sm text-gray-600">
+          <p className="text-xs md:text-sm text-muted-foreground">
             {result.error || t("orderNotFoundDescription")}
           </p>
         </div>
@@ -55,7 +69,8 @@ export async function OrderConfirmationData({
         data={result.data}
         locale={locale}
         autoExpandReviewItemId={autoExpandReviewItemId}
-        isAuthenticated={Boolean(authUser?.id)}
+        accessToken={accessToken && verifyOrderAccess(orderId, accessToken) ? accessToken : undefined}
+        supportHref={await getSupportHref()}
       />
     </>
   );

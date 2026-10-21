@@ -32,21 +32,21 @@ export async function DeliveryTimeline({ placedAt, shipments }: { placedAt: stri
   const failed = shipment.status === "failed";
 
   return (
-    <Card className="rounded-xl md:rounded-2xl border overflow-hidden pt-0 bg-white">
-      <div className="bg-linear-to-r from-gray-50 to-gray-100 px-4 md:px-6 py-3 md:py-5 border-b border-gray-200">
-        <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-gray-900">
+    <Card className="rounded-xl md:rounded-2xl border overflow-hidden pt-0 bg-background">
+      <div className="bg-primary/5 px-4 md:px-6 py-3 md:py-5 border-b border-border">
+        <CardTitle className="flex items-center gap-2 text-sm md:text-xl font-bold text-foreground">
           <Truck className="h-4 w-4 md:h-5 md:w-5" /> {t("deliveryUpdates")}
         </CardTitle>
       </div>
       <CardContent>
-        <ol className="relative space-y-4 border-s border-gray-200 ps-5">
+        <ol className="relative space-y-4 border-s border-border ps-5">
           {reached.map((step) => (
             <li key={step.key} className="relative">
               <span className="absolute -start-[29px] flex size-6 items-center justify-center rounded-full bg-green-100 text-green-700">
                 <step.icon className="size-3.5" aria-hidden />
               </span>
-              <p className="text-xs md:text-sm font-medium text-gray-900">{t(step.key)}</p>
-              <time dateTime={step.at!} className="text-xs text-gray-500">
+              <p className="text-xs md:text-sm font-medium text-foreground">{t(step.key)}</p>
+              <time dateTime={step.at!} className="text-xs text-muted-foreground">
                 {format(step.at!)}
               </time>
             </li>

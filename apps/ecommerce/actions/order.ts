@@ -46,7 +46,7 @@ import { cookies } from "next/headers";
 import { getTranslations } from "next-intl/server";
 import { after } from "next/server";
 import { isMarketplaceRequest } from "@/lib/marketplace/marketplace-host.server";
-import { buildOrderPagePath } from "@/lib/order-access-token";
+import { buildOrderPagePath, verifyOrderAccess } from "@/lib/order-access-token";
 import { getUser } from "./auth";
 import { revalidateCartCheckout } from "@/lib/revalidate-cart-checkout";
 import { clearPendingCouponCode } from "@/lib/affiliate-coupon-cookie";
@@ -448,15 +448,21 @@ export async function reportManualPaymentSent(orderId: string) {
 
 const CANCELLABLE_STATUSES = ["pending", "payment_processing", "confirmed"] as const;
 
-export async function cancelOrder(orderId: string, reason?: string) {
+/**
+ * Cancels an order that has not shipped yet. The shopper is its owner
+ * (signed in, or the guest cookie that placed it), or holds the signed
+ * access link of the order page (guest checkout, order emails).
+ */
+export async function cancelOrder(orderId: string, reason?: string, accessToken?: string) {
   try {
-    const user = await getUser();
-    if (!user) {
+    const hasAccessLink = accessToken ? verifyOrderAccess(orderId, accessToken) : false;
+    const userId = hasAccessLink ? null : await getCurrentUserId();
+    if (!hasAccessLink && !userId) {
       return { success: false, error: "Authentication required" };
     }
 
     const order = await db.query.orders.findFirst({
-      where: and(eq(orders.id, orderId), eq(orders.userId, user.user.id)),
+      where: userId ? and(eq(orders.id, orderId), eq(orders.userId, userId)) : eq(orders.id, orderId),
     });
 
     if (!order) {

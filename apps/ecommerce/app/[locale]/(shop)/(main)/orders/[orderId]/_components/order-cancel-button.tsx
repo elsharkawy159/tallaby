@@ -17,30 +17,21 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@workspace/ui/components/alert-dialog";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@workspace/ui/components/tooltip";
 import { cancelOrder } from "@/actions/order";
-import {
-  canShowCancelOrderButton,
-  isCancelOrderDisabledForDelivery,
-  isCancelOrderEnabled,
-} from "./order-confirmation.lib";
+import { isCancelOrderEnabled } from "./order-confirmation.lib";
 import posthog from "posthog-js";
 
 interface OrderCancelButtonProps {
   orderId: string;
   status: string;
-  isAuthenticated: boolean;
+  /** The order page's signed access link, for a guest without the cookie. */
+  accessToken?: string;
 }
 
 export function OrderCancelButton({
   orderId,
   status,
-  isAuthenticated,
+  accessToken,
 }: OrderCancelButtonProps) {
   const t = useTranslations("orders");
   const tToast = useTranslations("toast");
@@ -48,21 +39,14 @@ export function OrderCancelButton({
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  if (!isAuthenticated || !canShowCancelOrderButton(status)) {
+  // Shown until the order is on its way; then it can no longer be cancelled.
+  if (!isCancelOrderEnabled(status)) {
     return null;
   }
 
-  const isEnabled = isCancelOrderEnabled(status);
-  const isOutForDelivery = isCancelOrderDisabledForDelivery(status);
-  const isDisabled = !isEnabled || isOutForDelivery;
-
-  const disabledReason = isOutForDelivery
-    ? t("cancelOrderDisabledOutForDelivery")
-    : t("cancelOrderDisabled");
-
   const handleCancel = () => {
     startTransition(async () => {
-      const result = await cancelOrder(orderId);
+      const result = await cancelOrder(orderId, undefined, accessToken);
 
       if (!result.success) {
         toast.error(result.error || tToast("failedToCancelOrder"));
@@ -81,7 +65,7 @@ export function OrderCancelButton({
       type="button"
       variant="outline"
       size="sm"
-      disabled={isDisabled || isPending}
+      disabled={isPending}
       className="gap-2 text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
     >
       {isPending ? (
@@ -92,21 +76,6 @@ export function OrderCancelButton({
       {isPending ? t("cancellingOrder") : t("cancelOrder")}
     </Button>
   );
-
-  if (isDisabled) {
-    return (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span className="inline-flex">{button}</span>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{disabledReason}</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    );
-  }
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
