@@ -256,3 +256,16 @@ export const COUNTRIES: readonly CountryRow[] = [
   ['ZM', 'زامبيا', 'Zambia'],
   ['ZW', 'زيمبابوي', 'Zimbabwe'],
 ]
+
+/**
+ * ISO 3166-1 alpha-3 → alpha-2 for the Arab countries and major origins, so typed or
+ * geocoded codes like "SAU" resolve. Kept out of the search aliases on purpose:
+ * "MAR" or "CAN" as exact aliases would outrank real places in search.
+ */
+export const ISO3_TO_ISO2: Readonly<Record<string, string>> = {
+  EGY: 'EG', SAU: 'SA', ARE: 'AE', KWT: 'KW', QAT: 'QA', BHR: 'BH', OMN: 'OM', JOR: 'JO',
+  IRQ: 'IQ', LBN: 'LB', PSE: 'PS', SYR: 'SY', YEM: 'YE', LBY: 'LY', SDN: 'SD', TUN: 'TN',
+  DZA: 'DZ', MAR: 'MA', MRT: 'MR', SOM: 'SO', DJI: 'DJ', COM: 'KM', USA: 'US', GBR: 'GB',
+  CAN: 'CA', AUS: 'AU', DEU: 'DE', FRA: 'FR', ITA: 'IT', ESP: 'ES', NLD: 'NL', TUR: 'TR',
+  CHN: 'CN', IND: 'IN', PAK: 'PK', RUS: 'RU', JPN: 'JP', KOR: 'KR',
+}

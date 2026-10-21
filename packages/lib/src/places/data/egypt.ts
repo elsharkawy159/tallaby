@@ -123,6 +123,7 @@ export const EGYPT_REGIONS: readonly RegionRow[] = [
       ['baltim', 'بلطيم', 'Baltim'],
       ['fuwwah', 'فوه', 'Fuwwah', 'Fowa', 'فوة'],
       ['qallin', 'قلين', 'Qallin', 'Qellin'],
+      ['el-riyad', 'الرياض', 'El Riyad', 'مركز الرياض'],
       ['burullus', 'البرلس', 'El Burullus', 'Burullus', 'Borollos'],
     ],
   },

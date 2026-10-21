@@ -55,7 +55,9 @@ describe('place dataset', () => {
   it('covers the countries and depth the spec names', () => {
     expect(childrenOf('SA').length).toBe(13)
     expect(searchPlaces('riyadh')[0]!.key.startsWith('SA')).toBe(true)
-    expect(searchPlaces('الرياض')[0]!.key.startsWith('SA')).toBe(true)
+    const riyadh = searchPlaces('الرياض').slice(0, 3).map((p) => p.key)
+    expect(riyadh.some((k) => k.startsWith('SA/'))).toBe(true)
+    expect(searchPlaces('الرياض').some((p) => p.key === 'EG/KAFR EL SHEIKH/el-riyad')).toBe(true)
     expect(childrenOf('EG').length).toBe(27)
     expect(childrenOf('EG/CAIRO').length).toBeGreaterThanOrEqual(25)
     expect(childrenOf('EG/GIZA').length).toBeGreaterThanOrEqual(12)
@@ -140,6 +142,8 @@ describe('resolveAddressPlace', () => {
   it('accepts ISO country codes', () => {
     expect(resolveAddressPlace({ country: 'ae', state: 'Dubai' })).toBe('AE/DUBAI')
     expect(resolveAddressPlace({ country: 'FR' })).toBe('FR')
+    expect(resolveAddressPlace({ country: 'SAU', state: 'Riyadh' })).toBe('SA/RIYADH')
+    expect(resolveAddressPlace({ country: 'egy', state: 'Giza' })).toBe('EG/GIZA')
   })
 })
 

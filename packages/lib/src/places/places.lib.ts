@@ -1,6 +1,6 @@
 import { normalizeGovernorate } from '../shipping/governorate.lib'
 import { ARAB_WORLD } from './data/arab-world'
-import { COUNTRIES } from './data/countries'
+import { COUNTRIES, ISO3_TO_ISO2 } from './data/countries'
 import { EGYPT_REGIONS } from './data/egypt'
 import type { Place, PlaceLevel, RegionRow } from './places.types'
 
@@ -263,6 +263,10 @@ function resolveCountry(text: string | null | undefined): string | null {
   if (/^[a-z]{2}$/i.test(raw)) {
     const code = raw.toUpperCase()
     if (BY_KEY.get(code)?.level === 'country') return code
+  }
+  if (/^[a-z]{3}$/i.test(raw)) {
+    const code = ISO3_TO_ISO2[raw.toUpperCase()]
+    if (code) return code
   }
   return bestMatch(raw, '', 'country')?.key ?? null
 }
