@@ -42,6 +42,10 @@ import {
   transformProductForDetail,
 } from "../products.lib";
 import { ProductDetailSkeleton } from "./product-detail.skeleton";
+import { EntityChip } from "../../_components/entity/entity-chip";
+import { sellerHref } from "../../_components/entity/entity-href.lib";
+import { accountChips } from "../../_components/entity/relation-chips.lib";
+import { getAccountRelations } from "../../_components/entity/relations.server";
 import { ProductStatusActions } from "../_components/product-status-actions.client";
 import { ProductDirectCheckoutToggle } from "../_components/product-direct-checkout-toggle.client";
 
@@ -163,9 +167,23 @@ async function ProductDetailContent({ productId }: ProductDetailDataProps) {
       };
 
   const product = transformProductForDetail(productResult.data, salesSummary);
+  // Products reach a store only through their seller (no products.store_id).
+  const sellerAccount = product.seller
+    ? await getAccountRelations(product.seller.id).catch(() => null)
+    : null;
+  const relations = sellerAccount
+    ? accountChips(sellerAccount, { personRole: "Owner", omit: ["wallet", "orders"] })
+    : [];
 
   return (
     <>
+      {relations.length > 0 && (
+        <nav aria-label="Related" className="mb-4 flex flex-wrap items-center gap-2">
+          {relations.map((chip) => (
+            <EntityChip key={`${chip.role}${chip.href}`} {...chip} />
+          ))}
+        </nav>
+      )}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{product.title}</h1>
@@ -393,7 +411,7 @@ async function ProductDetailContent({ productId }: ProductDetailDataProps) {
                 {product.seller && (
                   <div>
                     <h3 className="text-sm font-medium mb-2">Seller</h3>
-                    <Link href={`/sellers?seller=${product.seller.id}`}>
+                    <Link href={sellerHref(product.seller.id)}>
                       <p className="text-sm text-blue-600 hover:underline">
                         {product.seller.displayName ??
                           product.seller.businessName ??

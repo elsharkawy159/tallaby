@@ -3,12 +3,12 @@ import { isStorefrontOffline, resolveStorefront, type Storefront } from "@/lib/s
 import { getStorefrontSite } from "./preview.server";
 
 /**
- * Offline stores (the seller switched "Website live" off; `stores.site_status`
- * = 'unpublished'). Every storefront route of the store shows the "store
- * offline" page instead of its content, and is never indexed. A verified
- * "Preview on my store" session (P4-08) still sees the draft, so the seller
- * can keep building while the store is offline. Never-published stores
- * ('draft') keep the Tallaby Classic fallback.
+ * Offline stores: never published (`stores.site_status` = 'draft', every new
+ * store) or switched off by the seller ("Website live" off; 'unpublished').
+ * Every storefront route of the store shows the "store offline" page instead
+ * of its content, and is never indexed. A verified "Preview on my store"
+ * session (P4-08) still sees the draft, so the seller can keep building while
+ * the store is offline.
  */
 
 /** Robots for an offline store: kept out of search entirely. */

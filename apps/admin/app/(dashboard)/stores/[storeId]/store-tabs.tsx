@@ -17,6 +17,9 @@ import { formatCurrency } from "@workspace/lib";
 import { AdminTable, type AdminTableColumn } from "../../_components/admin-table/admin-table";
 import { ReasonActionButton } from "../../_components/dialogs/reason-action.client";
 import { IntegrationsTable } from "../../integrations/integrations-table";
+import { sellerWalletHref } from "../../_components/entity/entity-href.lib";
+import { PersonCard } from "../../_components/entity/person-card";
+import { getAccountRelations } from "../../_components/entity/relations.server";
 import { auditActionLabel } from "../../sellers/[id]/seller-admin.lib";
 import { storeAdminAction } from "../../sellers/[id]/seller-admin.server";
 import { PAYMENT_METHOD_LABELS, formatAdminDate, formatBytes, localizedText } from "../stores.lib";
@@ -38,8 +41,9 @@ function Empty({ children }: { children: React.ReactNode }) {
   return <p className="py-8 text-center text-sm text-muted-foreground">{children}</p>;
 }
 
-export function StoreOverviewTab({ store }: TabProps) {
+export async function StoreOverviewTab({ store }: TabProps) {
   const base = { sellerId: store.sellerId, storeId: store.id };
+  const owner = await getAccountRelations(store.sellerId).catch(() => null);
   return (
     <div className="grid gap-6 lg:grid-cols-3">
       <Card className="lg:col-span-2">
@@ -58,12 +62,11 @@ export function StoreOverviewTab({ store }: TabProps) {
             <Fact label="First published">{formatAdminDate(store.firstPublishedAt)}</Fact>
             <Fact label="Last published">{formatAdminDate(store.lastPublishedAt)}</Fact>
             <Fact label="Created">{formatAdminDate(store.createdAt)}</Fact>
-            <Fact label="Seller email">{store.sellerEmail ?? "—"}</Fact>
             <Fact label="Store wallet (seller)">
               {store.walletBalance === null ? (
                 "—"
               ) : (
-                <Link href={`/sellers/${store.sellerId}?tab=wallet`} className={Number(store.walletBalance) < 0 ? "text-destructive hover:underline" : "hover:underline"}>
+                <Link href={sellerWalletHref(store.sellerId)} className={Number(store.walletBalance) < 0 ? "text-destructive hover:underline" : "hover:underline"}>
                   {formatCurrency(Number(store.walletBalance))}
                 </Link>
               )}
@@ -90,44 +93,47 @@ export function StoreOverviewTab({ store }: TabProps) {
           )}
         </CardContent>
       </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Admin actions</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col items-start gap-3">
-          {store.siteStatus === "published" && (
-            <ReasonActionButton
-              label="Force-unpublish site"
-              title="Unpublish this store's website?"
-              description="Visitors see the store's offline page until the seller publishes again."
-              confirmLabel="Unpublish"
-              destructive
-              payload={{ ...base, action: "unpublish_store" }}
-              action={storeAdminAction}
-            />
-          )}
-          {store.status === "suspended" ? (
-            <ReasonActionButton
-              label="Lift suspension"
-              title="Lift the suspension?"
-              confirmLabel="Unsuspend"
-              payload={{ ...base, action: "unsuspend_store" }}
-              action={storeAdminAction}
-            />
-          ) : (
-            <ReasonActionButton
-              label="Suspend store"
-              title="Suspend this store?"
-              description="The storefront and its custom domain stop resolving. The seller keeps dashboard access."
-              confirmLabel="Suspend"
-              destructive
-              payload={{ ...base, action: "suspend_store" }}
-              action={storeAdminAction}
-            />
-          )}
-          <p className="text-xs text-muted-foreground">Every action needs a reason and is saved in the audit log.</p>
-        </CardContent>
-      </Card>
+      <div className="space-y-6">
+        {owner ? <PersonCard title="Store owner" account={owner} excludeStoreId={store.id} /> : null}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Admin actions</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col items-start gap-3">
+            {store.siteStatus === "published" && (
+              <ReasonActionButton
+                label="Force-unpublish site"
+                title="Unpublish this store's website?"
+                description="Visitors see the store's offline page until the seller publishes again."
+                confirmLabel="Unpublish"
+                destructive
+                payload={{ ...base, action: "unpublish_store" }}
+                action={storeAdminAction}
+              />
+            )}
+            {store.status === "suspended" ? (
+              <ReasonActionButton
+                label="Lift suspension"
+                title="Lift the suspension?"
+                confirmLabel="Unsuspend"
+                payload={{ ...base, action: "unsuspend_store" }}
+                action={storeAdminAction}
+              />
+            ) : (
+              <ReasonActionButton
+                label="Suspend store"
+                title="Suspend this store?"
+                description="The storefront and its custom domain stop resolving. The seller keeps dashboard access."
+                confirmLabel="Suspend"
+                destructive
+                payload={{ ...base, action: "suspend_store" }}
+                action={storeAdminAction}
+              />
+            )}
+            <p className="text-xs text-muted-foreground">Every action needs a reason and is saved in the audit log.</p>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

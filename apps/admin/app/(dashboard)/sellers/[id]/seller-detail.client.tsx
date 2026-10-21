@@ -39,6 +39,10 @@ import {
 } from "../sellers.lib";
 import type { SellerDetail } from "../sellers.types";
 import { SellerInfoSections } from "./seller-info.chunks";
+import { customerHref, orderHref, productHref } from "../../_components/entity/entity-href.lib";
+import { PersonCard } from "../../_components/entity/person-card";
+import type { AccountRelations } from "../../_components/entity/relations.server";
+import { platformFeeState } from "../../_components/entity/platform-fee.lib";
 
 interface MetricProps {
   label: string;
@@ -77,12 +81,16 @@ function EmptyRow({ children }: { children: React.ReactNode }) {
 
 export function SellerDetailContent({
   detail,
-  showBackLink = true,
+  account,
 }: {
   detail: SellerDetail;
-  /** The tabbed seller page has its own header with the back link. */
-  showBackLink?: boolean;
+  /**
+   * The owner and their stores. When given, the tabbed seller page already
+   * shows the identity header, so only the contact actions are drawn here.
+   */
+  account?: AccountRelations | null;
 }) {
+  const embedded = account !== undefined;
   const {
     seller,
     owner,
@@ -107,7 +115,7 @@ export function SellerDetailContent({
 
   return (
     <div className="space-y-6">
-      {showBackLink && (
+      {!embedded && (
         <Link href="/sellers">
           <Button variant="ghost" size="sm">
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -116,69 +124,103 @@ export function SellerDetailContent({
         </Link>
       )}
 
-      {/* Header */}
-      <Card>
-        <CardContent>
-          <div className="flex flex-wrap items-start gap-4">
-            <Avatar className="h-20 w-20">
-              <AvatarImage src={seller.logoUrl || undefined} />
-              <AvatarFallback className="text-lg">{initials}</AvatarFallback>
-            </Avatar>
-            <div className="flex-1 space-y-2">
-              <div className="flex items-center gap-2">
-                <h1 className="text-3xl font-semibold">{seller.businessName}</h1>
-                {seller.isVerified && (
-                  <CheckCircle className="h-5 w-5 text-blue-500" />
-                )}
-              </div>
-              <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                <span>{seller.displayName}</span>
-                <span>·</span>
-                <span>/{seller.slug}</span>
-                <Badge className={getStatusColor(seller.status ?? "pending")}>
-                  {getStatusLabel(seller.status ?? "pending")}
-                </Badge>
-                <Badge variant="outline" className="capitalize">
-                  {seller.sellerLevel}
-                </Badge>
-                <span>· Joined {formatDate(seller.joinDate)}</span>
-              </div>
-              <div className="flex flex-wrap gap-4 text-sm">
-                <span className="flex items-center gap-1">
-                  <Mail className="h-4 w-4" />
-                  {seller.supportEmail}
-                </span>
-                {seller.supportPhone && (
+      {embedded ? (
+        <div className="flex flex-wrap items-center gap-2">
+          {whatsAppPhone ? (
+            <WhatsAppButton
+              phone={whatsAppPhone}
+              text={buildSellerWelcomeMessage(seller, owner?.fullName)}
+              label="Contact on WhatsApp"
+              size="default"
+            />
+          ) : (
+            <Button variant="outline" disabled title="No valid phone number on file">
+              No WhatsApp number
+            </Button>
+          )}
+          <Button asChild variant="outline">
+            <Link href={productsHref}>
+              <Package className="mr-2 h-4 w-4" />
+              View products ({products.total})
+            </Link>
+          </Button>
+          <span className="ms-auto flex flex-wrap gap-4 text-sm text-muted-foreground">
+            <span className="flex items-center gap-1" dir="ltr">
+              <Mail className="h-4 w-4" />
+              {seller.supportEmail}
+            </span>
+            {seller.supportPhone && (
+              <span className="flex items-center gap-1" dir="ltr">
+                <Phone className="h-4 w-4" />
+                {seller.supportPhone}
+              </span>
+            )}
+          </span>
+        </div>
+      ) : (
+        <Card>
+          <CardContent>
+            <div className="flex flex-wrap items-start gap-4">
+              <Avatar className="h-20 w-20">
+                <AvatarImage src={seller.logoUrl || undefined} />
+                <AvatarFallback className="text-lg">{initials}</AvatarFallback>
+              </Avatar>
+              <div className="flex-1 space-y-2">
+                <div className="flex items-center gap-2">
+                  <h1 className="text-3xl font-semibold">{seller.businessName}</h1>
+                  {seller.isVerified && (
+                    <CheckCircle className="h-5 w-5 text-blue-500" />
+                  )}
+                </div>
+                <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                  <span>{seller.displayName}</span>
+                  <span>·</span>
+                  <span>/{seller.slug}</span>
+                  <Badge className={getStatusColor(seller.status ?? "pending")}>
+                    {getStatusLabel(seller.status ?? "pending")}
+                  </Badge>
+                  <Badge variant="outline" className="capitalize">
+                    {seller.sellerLevel}
+                  </Badge>
+                  <span>· Joined {formatDate(seller.joinDate)}</span>
+                </div>
+                <div className="flex flex-wrap gap-4 text-sm">
                   <span className="flex items-center gap-1">
-                    <Phone className="h-4 w-4" />
-                    {seller.supportPhone}
+                    <Mail className="h-4 w-4" />
+                    {seller.supportEmail}
                   </span>
+                  {seller.supportPhone && (
+                    <span className="flex items-center gap-1">
+                      <Phone className="h-4 w-4" />
+                      {seller.supportPhone}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {whatsAppPhone ? (
+                  <WhatsAppButton
+                    phone={whatsAppPhone}
+                    text={buildSellerWelcomeMessage(seller, owner?.fullName)}
+                    label="Contact on WhatsApp"
+                    size="default"
+                  />
+                ) : (
+                  <Button variant="outline" disabled title="No valid phone number on file">
+                    No WhatsApp number
+                  </Button>
                 )}
+                <Button asChild>
+                  <Link href={productsHref}>
+                    <Package className="mr-2 h-4 w-4" />
+                    View products ({products.total})
+                  </Link>
+                </Button>
               </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {whatsAppPhone ? (
-                <WhatsAppButton
-                  phone={whatsAppPhone}
-                  text={buildSellerWelcomeMessage(seller, owner?.fullName)}
-                  label="Contact on WhatsApp"
-                  size="default"
-                />
-              ) : (
-                <Button variant="outline" disabled title="No valid phone number on file">
-                  No WhatsApp number
-                </Button>
-              )}
-              <Button asChild>
-                <Link href={productsHref}>
-                  <Package className="mr-2 h-4 w-4" />
-                  View products ({products.total})
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Metrics */}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
@@ -210,17 +252,13 @@ export function SellerDetailContent({
         <Metric
           label="Seller earnings"
           value={formatCurrency(sales.earnings)}
-          hint="After commission"
+          hint="After platform fees"
           icon={Banknote}
         />
         <Metric
-          label="Platform commission"
+          label="Platform fees"
           value={formatCurrency(sales.commission)}
-          hint={
-            seller.isCommissionExempt
-              ? "Exempt"
-              : `${seller.commissionRate}% rate`
-          }
+          hint={platformFeeState(seller).label}
           icon={Percent}
         />
         <Metric
@@ -245,33 +283,37 @@ export function SellerDetailContent({
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Owner */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Owner account</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {owner ? (
-              <div className="space-y-1 text-sm">
-                <Link
-                  href={`/customers/${owner.id}`}
-                  className="text-base font-medium hover:underline"
-                >
-                  {owner.fullName ?? owner.email ?? owner.id}
-                </Link>
-                {owner.email && <div>{owner.email}</div>}
-                {owner.phone && <div>{owner.phone}</div>}
-                <div className="text-muted-foreground">
-                  {owner.isSuspended ? "Suspended · " : ""}
-                  {owner.lastLoginAt
-                    ? `Last login ${formatDate(owner.lastLoginAt)}`
-                    : "Never logged in"}
+        {account ? (
+          <PersonCard title="Owner account" account={account} />
+        ) : (
+          <Card>
+            <CardHeader>
+              <CardTitle>Owner account</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {owner ? (
+                <div className="space-y-1 text-sm">
+                  <Link
+                    href={customerHref(owner.id)}
+                    className="text-base font-medium hover:underline"
+                  >
+                    {owner.fullName ?? owner.email ?? owner.id}
+                  </Link>
+                  {owner.email && <div>{owner.email}</div>}
+                  {owner.phone && <div>{owner.phone}</div>}
+                  <div className="text-muted-foreground">
+                    {owner.isSuspended ? "Suspended · " : ""}
+                    {owner.lastLoginAt
+                      ? `Last login ${formatDate(owner.lastLoginAt)}`
+                      : "Never logged in"}
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <EmptyRow>No linked user account.</EmptyRow>
-            )}
-          </CardContent>
-        </Card>
+              ) : (
+                <EmptyRow>No linked user account.</EmptyRow>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Top customers */}
         <Card>
@@ -290,7 +332,7 @@ export function SellerDetailContent({
                   >
                     <div className="min-w-0">
                       <Link
-                        href={`/customers/${c.id}`}
+                        href={customerHref(c.id)}
                         className="block truncate font-medium hover:underline"
                       >
                         {c.fullName ?? c.email ?? c.id}
@@ -327,7 +369,7 @@ export function SellerDetailContent({
                   >
                     <div className="min-w-0">
                       <Link
-                        href={`/products/${p.productId}`}
+                        href={productHref(p.productId)}
                         className="block truncate font-medium hover:underline"
                       >
                         {p.name}
@@ -363,7 +405,7 @@ export function SellerDetailContent({
                   >
                     <div className="min-w-0">
                       <Link
-                        href={`/orders/${o.id}`}
+                        href={orderHref(o.id)}
                         className="block truncate font-medium hover:underline"
                       >
                         #{o.orderNumber}

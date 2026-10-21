@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@workspace/db";
-import { orderItems, orders, users } from "@workspace/db";
+import { orderItems, orders, stores, users } from "@workspace/db";
 import {
   and,
   asc,
@@ -56,7 +56,13 @@ export interface AdminOrdersQuery {
   createdFrom?: string;
   createdTo?: string;
   sort?: { id: AdminOrdersSortId; desc: boolean } | null;
+  /** Relation filters from entity pages: only valid UUIDs are applied. */
+  sellerId?: string;
+  storeId?: string;
+  customerId?: string;
 }
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function allowed<T extends string>(values: string[] | undefined, list: readonly T[]) {
   return (values ?? []).filter((value): value is T =>
@@ -92,6 +98,15 @@ export async function getAdminOrders(query: AdminOrdersQuery = {}) {
       conditions.push(gte(orders.createdAt, query.createdFrom));
     }
     if (query.createdTo) conditions.push(lt(orders.createdAt, query.createdTo));
+
+    // Orders have no seller column: a seller is on the order when one of its lines is theirs.
+    if (query.sellerId && UUID_RE.test(query.sellerId)) {
+      conditions.push(
+        sql`exists (select 1 from ${orderItems} where ${orderItems.orderId} = ${orders.id} and ${orderItems.sellerId} = ${query.sellerId})`
+      );
+    }
+    if (query.storeId && UUID_RE.test(query.storeId)) conditions.push(eq(orders.storeId, query.storeId));
+    if (query.customerId && UUID_RE.test(query.customerId)) conditions.push(eq(orders.userId, query.customerId));
 
     const search = query.search?.trim();
     if (search) {
@@ -136,9 +151,11 @@ export async function getAdminOrders(query: AdminOrdersQuery = {}) {
           email: users.email,
           phone: users.phone,
         },
+        store: { id: stores.id, name: stores.name },
       })
       .from(orders)
       .leftJoin(users, eq(users.id, orders.userId))
+      .leftJoin(stores, eq(stores.id, orders.storeId))
       .where(where)
       .orderBy(sql`${direction(sortColumn)} nulls last`, desc(orders.id))
       .limit(limit)
@@ -157,6 +174,7 @@ export async function getAdminOrders(query: AdminOrdersQuery = {}) {
         totalAmount: Number(row.totalAmount ?? 0),
         itemsCount: Number(row.itemsCount ?? 0),
         user: row.user?.id ? row.user : undefined,
+        store: row.store?.id ? row.store : undefined,
       })),
       totalCount: Number(countRow?.count ?? 0),
     };

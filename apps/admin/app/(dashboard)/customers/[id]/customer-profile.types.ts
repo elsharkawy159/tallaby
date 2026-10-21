@@ -10,4 +10,6 @@ export interface CustomerOrder {
   paymentStatus?: string | null;
   createdAt: string | null;
   updatedAt?: string | null;
+  /** The store it was placed in; marketplace orders have none. */
+  store?: { id: string; name: string; logoUrl: string | null } | null;
 }

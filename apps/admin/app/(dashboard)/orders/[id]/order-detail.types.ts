@@ -136,8 +136,18 @@ export interface OrderDetailWithRelations {
       id: string;
       businessName: string;
       displayName: string;
+      logoUrl?: string | null;
     } | null;
   }>;
+  /** The store the order was placed in (orders.store_id); null for marketplace orders. */
+  store?: {
+    id: string;
+    name: string;
+    subdomain: string;
+    logoUrl: string | null;
+    siteStatus: string;
+    status: string;
+  } | null;
   payments: Array<{
     id: string;
     orderId: string;

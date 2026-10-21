@@ -2,10 +2,13 @@ export interface Order {
   id: string;
   orderNumber: string;
   user?: {
+    id?: string;
     fullName?: string | null;
     email?: string | null;
     phone?: string | null;
   };
+  /** The store it was placed in (orders.store_id). */
+  store?: { id: string; name: string };
   totalAmount: number;
   status:
     | "pending"

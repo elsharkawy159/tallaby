@@ -51,5 +51,13 @@ export function parseOrdersParams(searchParams: RawSearchParams): AdminOrdersQue
     ...query.filters,
     createdFrom: parseDateParam(searchParams.createdFrom),
     createdTo: parseDateParam(searchParams.createdTo, true),
+    sellerId: single(searchParams.seller),
+    storeId: single(searchParams.store),
+    customerId: single(searchParams.customer),
   };
+}
+
+function single(value: RawSearchParams[string]): string | undefined {
+  const first = Array.isArray(value) ? value[0] : value;
+  return first?.trim() || undefined;
 }

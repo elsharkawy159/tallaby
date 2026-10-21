@@ -36,6 +36,7 @@ import {
   CreditCard,
 } from "lucide-react";
 import type { Seller, SellerStatus } from "./sellers.types";
+import { customerHref, ordersHref, sellerHref, sellerWalletHref } from "../_components/entity/entity-href.lib";
 import type { SellerStats } from "./sellers.types";
 import {
   getStatusColor,
@@ -71,7 +72,7 @@ export const CommissionExemptToggle = ({
         toast.success(result.message);
       } else {
         setIsExempt(previousValue);
-        toast.error(result.error || "Failed to update commission exemption");
+        toast.error(result.error || "Failed to update fee exemption");
       }
     });
   };
@@ -84,12 +85,12 @@ export const CommissionExemptToggle = ({
         disabled={isPending}
         aria-label={
           isExempt
-            ? "Disable platform commission exemption"
-            : "Enable platform commission exemption"
+            ? "Charge the EGP 5 platform fee again"
+            : "Exempt from the EGP 5 platform fee"
         }
       />
       <span className="text-xs text-muted-foreground">
-        {isExempt ? "Exempt" : "Standard"}
+        {isExempt ? "Exempt" : "EGP 5 / order"}
       </span>
     </div>
   );
@@ -231,13 +232,13 @@ export const SellerCard = ({ seller, onAction }: SellerCardProps) => {
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem asChild>
-              <Link href={`/sellers/${seller.id}`} className="w-full">
+              <Link href={sellerHref(seller.id)} className="w-full">
                 View details
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href={`/sellers/${seller.id}/edit`} className="w-full">
-                Edit seller
+              <Link href={customerHref(seller.id)} className="w-full">
+                Owner account
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
@@ -247,13 +248,13 @@ export const SellerCard = ({ seller, onAction }: SellerCardProps) => {
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href={`/sellers/${seller.id}/orders`} className="w-full">
+              <Link href={ordersHref({ seller: seller.id })} className="w-full">
                 View orders
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href={`/sellers/${seller.id}/payouts`} className="w-full">
-                Manage payouts
+              <Link href={sellerWalletHref(seller.id)} className="w-full">
+                Store wallet
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />

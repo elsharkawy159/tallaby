@@ -7,6 +7,7 @@ import {
 import { getGovernorateLabel } from "@workspace/lib/shipping";
 import { formatCurrency, formatDate } from "../sellers.lib";
 import type { Seller } from "../sellers.types";
+import { PlatformFeeSummary } from "../../_components/entity/platform-fee.chunks";
 
 type Value = React.ReactNode;
 
@@ -154,11 +155,8 @@ export function SellerInfoSections({
         <Row label="Fulfillment options" value={formatValue(seller.fulfillmentOptions)} />
       </Section>
 
-      <Section title="Payouts & commission">
-        <Row
-          label="Commission"
-          value={seller.isCommissionExempt ? "Exempt" : `${seller.commissionRate}%`}
-        />
+      <Section title="Payouts & platform fee">
+        <Row label="Platform fee" value={<PlatformFeeSummary seller={seller} compact />} />
         <Row label="Free delivery" value={yesNo(seller.freeDelivery)} />
         <Row label="Payouts enabled" value={yesNo(seller.payoutEnabled)} />
         <Row label="Payout schedule" value={humanize(seller.payoutSchedule)} />
