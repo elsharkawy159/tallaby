@@ -11,6 +11,18 @@ type Tx = Parameters<Parameters<typeof dbType.transaction>[0]>[0];
 const toPiastres = (value: string | number | null | undefined) => Math.round(Number(value ?? 0) * 100);
 const fromPiastres = (piastres: number) => (piastres / 100).toFixed(2);
 
+/** Billed own-shipping in piastres from the order snapshot; anything malformed is 0. */
+function billedShippingPiastres(metadata: unknown): number {
+  if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) return 0;
+  const snap = (metadata as Record<string, unknown>).storeShipping;
+  if (!snap || typeof snap !== "object" || Array.isArray(snap)) return 0;
+  const { method, billedPiastres } = snap as Record<string, unknown>;
+  if (method !== "own") return 0;
+  return typeof billedPiastres === "number" && Number.isInteger(billedPiastres) && billedPiastres > 0
+    ? billedPiastres
+    : 0;
+}
+
 type DeliveredLine = {
   sellerId: string;
   total: string;
@@ -31,6 +43,11 @@ const hasFeeSnapshot = (line: DeliveredLine) =>
  * - Orders placed with the platform fee (P6-04 snapshot on the lines): a
  *   gross `sale` (the seller's line totals) and a `fee` debit when Tallaby
  *   collected the money; only the `fee` when the seller did.
+ * - Store-website orders whose snapshot says the store ships itself
+ *   (`metadata.storeShipping.method === "own"`): the shipping the customer was
+ *   billed (`billedPiastres`) is added to the owning seller's `sale` when
+ *   Tallaby collected the money (the seller keeps it when they collected). The
+ *   fee is computed on goods only. Same single claim, no new entry type.
  * - Older orders (5% snapshot): the legacy single net `sale`
  *   (Σ seller_earning), as before.
  *
@@ -123,13 +140,15 @@ async function postDeliveryEntries(tx: Tx, orderId: string): Promise<void> {
     const gross = lines.reduce((sum, line) => sum + Math.max(0, toPiastres(line.total)), 0);
     const fee = lines.reduce((sum, line) => sum + Math.max(0, toPiastres(line.commissionAmount)), 0);
 
-    if (party === "tallaby" && gross > 0) {
+    const shipping = party === "tallaby" && store?.sellerId === sellerId ? billedShippingPiastres(order.metadata) : 0;
+
+    if (party === "tallaby" && gross + shipping > 0) {
       await postStoreWalletEntryOnce(tx, {
         ...base,
         type: "sale",
-        amount: fromPiastres(gross),
+        amount: fromPiastres(gross + shipping),
         description: "Sale from delivered order",
-        metadata: { collectedBy: party },
+        metadata: shipping > 0 ? { collectedBy: party, shippingPiastres: shipping } : { collectedBy: party },
       });
     }
     if (fee > 0) {
