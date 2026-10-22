@@ -3,6 +3,7 @@ import {
   AD_STATUS_TRANSITIONS,
   canMoveAdRequest,
   domainAdminActionSchema,
+  domainAssignSchema,
   likePattern,
   pageCount,
   parseAdminListParams,
@@ -74,6 +75,13 @@ describe("schemas", () => {
     expect(domainAdminActionSchema.safeParse({ action: "recheck", domainId: ID }).success).toBe(true);
     expect(domainAdminActionSchema.safeParse({ action: "remove_domain", domainId: ID }).success).toBe(false);
     expect(domainAdminActionSchema.safeParse({ action: "remove_domain", domainId: ID, reason: "phishing" }).success).toBe(true);
+  });
+
+  it("domain assign needs a store, a domain and a reason", () => {
+    expect(domainAssignSchema.safeParse({ storeId: ID, domain: "example.com", reason: "owner asked" }).success).toBe(true);
+    expect(domainAssignSchema.safeParse({ storeId: ID, domain: "example.com" }).success).toBe(false);
+    expect(domainAssignSchema.safeParse({ storeId: ID, domain: "  ", reason: "owner asked" }).success).toBe(false);
+    expect(domainAssignSchema.safeParse({ storeId: "x", domain: "example.com", reason: "owner asked" }).success).toBe(false);
   });
 
   it("template price is normalised and required for premium", () => {

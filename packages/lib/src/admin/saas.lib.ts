@@ -142,6 +142,13 @@ export const domainAdminActionSchema = z.strictObject({
   path: ["reason"],
 });
 
+/** An admin connects a custom domain to a store; the action normalizes and validates `domain`. */
+export const domainAssignSchema = z.strictObject({
+  storeId: uuid,
+  domain: z.string().trim().min(1).max(300),
+  reason,
+});
+
 // ---------------------------------------------------------------------------
 // Ad campaigns (§3.8)
 // ---------------------------------------------------------------------------
@@ -220,4 +227,9 @@ export const SAAS_ADMIN_ERROR_MESSAGES: Record<string, string> = {
   invalid_config: "The template content is not valid.",
   migration_required: "Apply migration 0069 first (platform audit rows).",
   refund_failed: "The wallet refund failed, so nothing was changed.",
+  domain_invalid: "Enter a domain like example.com.",
+  domain_platform: "Tallaby domains can't be used as a custom domain.",
+  domain_taken: "That domain is already connected to a store.",
+  store_has_domain: "This store already has a custom domain. Remove it first.",
+  seller_has_domain: "The seller already has a custom domain on another store (one per seller for now). Remove it first.",
 };

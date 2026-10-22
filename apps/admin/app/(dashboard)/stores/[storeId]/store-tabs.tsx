@@ -24,6 +24,14 @@ import { auditActionLabel } from "../../sellers/[id]/seller-admin.lib";
 import { storeAdminAction } from "../../sellers/[id]/seller-admin.server";
 import { PAYMENT_METHOD_LABELS, formatAdminDate, formatBytes, localizedText } from "../stores.lib";
 import { unpublishCmsItemAction } from "../stores.server";
+import {
+  VERCEL_APEX_A_RECORD,
+  VERCEL_CNAME_TARGET,
+  wwwOf,
+  type VercelVerificationRecord,
+} from "@workspace/lib/storefront/vercel-domains";
+import { domainAdminAction } from "../../domains/domains.server";
+import { AssignDomainButton } from "./assign-domain.client";
 import { discardSiteDraftAction, restoreSiteRevisionAction, unpublishSiteAction } from "./website-actions.server";
 
 type TabProps = { store: AdminStoreHeader };
@@ -41,7 +49,36 @@ function Empty({ children }: { children: React.ReactNode }) {
   return <p className="py-8 text-center text-sm text-muted-foreground">{children}</p>;
 }
 
-export async function StoreOverviewTab({ store }: TabProps) {
+/** The DNS records a pending domain still needs (same as the seller's domain tab). */
+function DomainDnsRecords({ domain, verification }: { domain: string; verification: unknown }) {
+  const records = [
+    { type: "A", name: domain, value: VERCEL_APEX_A_RECORD },
+    { type: "CNAME", name: wwwOf(domain), value: VERCEL_CNAME_TARGET },
+    ...(Array.isArray(verification) ? (verification as VercelVerificationRecord[]) : []).map((record) => ({
+      type: record.type,
+      name: record.domain,
+      value: record.value,
+    })),
+  ];
+  return (
+    <div className="rounded-md border p-2 text-xs" dir="ltr">
+      <p className="mb-1 text-muted-foreground">DNS records the domain owner must set:</p>
+      <table className="w-full">
+        <tbody>
+          {records.map((record) => (
+            <tr key={`${record.type}-${record.name}-${record.value}`} className="align-top">
+              <td className="pe-3 font-medium">{record.type}</td>
+              <td className="pe-3 break-all">{record.name}</td>
+              <td className="break-all font-mono">{record.value}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+export async function StoreOverviewTab({ store, canWrite }: TabProps & { canWrite: boolean }) {
   const base = { sellerId: store.sellerId, storeId: store.id };
   const owner = await getAccountRelations(store.sellerId).catch(() => null);
   return (
@@ -72,25 +109,53 @@ export async function StoreOverviewTab({ store }: TabProps) {
               )}
             </Fact>
           </dl>
-          {store.domains.length > 0 && (
-            <div className="mt-6">
-              <h3 className="mb-2 text-sm font-semibold">Custom domains</h3>
-              <ul className="space-y-1 text-sm">
+          <div className="mt-6">
+            <h3 className="mb-2 text-sm font-semibold">Custom domain</h3>
+            {store.domains.length === 0 ? (
+              <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                <span>None. The store is served at its tallaby.com subdomain.</span>
+                {canWrite && <AssignDomainButton storeId={store.id} />}
+              </div>
+            ) : (
+              <ul className="space-y-3 text-sm">
                 {store.domains.map((domain) => (
-                  <li key={domain.id} className="flex flex-wrap items-center gap-2">
-                    <span dir="ltr">{domain.domain}</span>
-                    <Badge variant="outline" className="font-normal capitalize">
-                      {domain.status}
-                    </Badge>
-                    {domain.lastError && <span className="text-xs text-destructive">{domain.lastError}</span>}
-                    <Link href={`/domains?q=${encodeURIComponent(domain.domain)}`} className="text-xs text-muted-foreground hover:underline">
-                      Manage
-                    </Link>
+                  <li key={domain.id} className="space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span dir="ltr">{domain.domain}</span>
+                      <Badge variant="outline" className="font-normal capitalize">
+                        {domain.status}
+                      </Badge>
+                      {domain.lastError && <span className="text-xs text-destructive">{domain.lastError}</span>}
+                      <Link href={`/domains?q=${encodeURIComponent(domain.domain)}`} className="text-xs text-muted-foreground hover:underline">
+                        Manage
+                      </Link>
+                      {canWrite && (
+                        <>
+                          <ReasonActionButton
+                            label="Re-check"
+                            title="Re-check"
+                            reasonRequired={false}
+                            payload={{ action: "recheck", domainId: domain.id }}
+                            action={domainAdminAction}
+                          />
+                          <ReasonActionButton
+                            label="Remove"
+                            title={`Remove ${domain.domain}?`}
+                            description="Detaches the domain from Tallaby. The store goes back to its tallaby.com subdomain."
+                            confirmLabel="Remove"
+                            destructive
+                            payload={{ action: "remove_domain", domainId: domain.id }}
+                            action={domainAdminAction}
+                          />
+                        </>
+                      )}
+                    </div>
+                    {domain.status !== "active" && <DomainDnsRecords domain={domain.domain} verification={domain.verification} />}
                   </li>
                 ))}
               </ul>
-            </div>
-          )}
+            )}
+          </div>
         </CardContent>
       </Card>
       <div className="space-y-6">

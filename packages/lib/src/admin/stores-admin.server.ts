@@ -178,6 +178,7 @@ export async function getStoreForAdmin(storeId: string, q: Queryable = db) {
       status: sellerCustomDomains.status,
       lastError: sellerCustomDomains.lastError,
       verifiedAt: sellerCustomDomains.verifiedAt,
+      verification: sellerCustomDomains.verification,
     })
     .from(sellerCustomDomains)
     .where(eq(sellerCustomDomains.storeId, storeId));

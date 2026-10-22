@@ -21,6 +21,7 @@ export const AUDIT_ACTION_LABELS: Record<AdminAuditAction, string> = {
   disconnect_integration: "Integration disconnected",
   clear_integration_error: "Integration error cleared",
   remove_domain: "Custom domain removed",
+  assign_domain: "Custom domain assigned",
   unpublish_cms_item: "Blog/CMS item unpublished",
   set_ad_status: "Ad request status changed",
   update_template: "Template updated",

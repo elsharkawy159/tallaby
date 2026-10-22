@@ -39,6 +39,7 @@ export const ADMIN_AUDIT_ACTIONS = [
   "disconnect_integration",
   "clear_integration_error",
   "remove_domain",
+  "assign_domain",
   "unpublish_cms_item",
   "set_ad_status",
   "update_template",
