@@ -43,9 +43,17 @@ export function routeStoreCrawlFile(request: NextRequest, subdomain: string): Ne
   const { pathname } = request.nextUrl;
   if (!isCrawlFilePath(pathname)) return null;
   const url = request.nextUrl.clone();
-  url.pathname = `/${routing.defaultLocale}/${STOREFRONT_SEGMENT}/${subdomain}${pathname}`;
+  url.pathname = `/${routing.defaultLocale}/${STOREFRONT_SEGMENT}/${subdomain}${STORE_CRAWL_ROUTES[pathname] ?? pathname}`;
   return NextResponse.rewrite(url);
 }
+
+/**
+ * Crawl files whose route folder can't carry the public name. A folder named
+ * `sitemap.xml` is a Next.js metadata route: the build flattens its dynamic
+ * segments (`/-/storefront/-/sitemap.xml`), so on Vercel the rewrite matched
+ * nothing and every store sitemap was a 500.
+ */
+const STORE_CRAWL_ROUTES: Record<string, string> = { "/sitemap.xml": "/sitemap-index" };
 
 /** Paths that keep their normal app behaviour on a store host. */
 const PASS_THROUGH = [

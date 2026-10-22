@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { NextRequest } from "next/server";
-import { routeStorefrontRequest } from "./storefront-routing";
+import { routeStoreCrawlFile, routeStorefrontRequest } from "./storefront-routing";
 
 const req = (path: string) => new NextRequest(new URL(`https://sara.tallaby.com${path}`));
 const rewriteOf = (path: string) => routeStorefrontRequest(req(path), "sara")?.headers.get("x-middleware-rewrite");
@@ -56,5 +56,19 @@ describe("store host routing (P5-01)", () => {
   it("serves /privacy and /terms as the store's own pages (Tallaby's live on the marketing site)", () => {
     expect(rewriteOf("/privacy")).toContain("/ar/storefront/sara/pages/privacy");
     expect(rewriteOf("/en/terms")).toContain("/en/storefront/sara/pages/terms");
+  });
+});
+
+describe("store crawl files (P5-04)", () => {
+  const crawlRewrite = (path: string) => routeStoreCrawlFile(req(path), "sara")?.headers.get("x-middleware-rewrite");
+
+  it("serves /sitemap.xml from sitemap-index, not a folder named sitemap.xml (a Next.js metadata route)", () => {
+    expect(crawlRewrite("/sitemap.xml")).toMatch(/\/ar\/storefront\/sara\/sitemap-index$/);
+  });
+
+  it("serves robots.txt and sitemap chunks under their own names", () => {
+    expect(crawlRewrite("/robots.txt")).toMatch(/\/ar\/storefront\/sara\/robots\.txt$/);
+    expect(crawlRewrite("/sitemaps/2.xml")).toMatch(/\/ar\/storefront\/sara\/sitemaps\/2\.xml$/);
+    expect(crawlRewrite("/about")).toBeUndefined();
   });
 });
