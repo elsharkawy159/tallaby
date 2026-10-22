@@ -27,7 +27,6 @@ import { unpublishCmsItemAction } from "../stores.server";
 import {
   VERCEL_APEX_A_RECORD,
   VERCEL_CNAME_TARGET,
-  wwwOf,
   type VercelVerificationRecord,
 } from "@workspace/lib/storefront/vercel-domains";
 import { domainAdminAction } from "../../domains/domains.server";
@@ -49,21 +48,37 @@ function Empty({ children }: { children: React.ReactNode }) {
   return <p className="py-8 text-center text-sm text-muted-foreground">{children}</p>;
 }
 
-/** The DNS records a pending domain still needs (same as the seller's domain tab). */
+/**
+ * The DNS records a pending domain still needs, as registrars want them (the
+ * same as the seller's domain tab): the Host is relative to the domain, so
+ * `@`, `www`, `_vercel`. Typing the full name there makes Namecheap and others
+ * create `faster-eg.com.faster-eg.com`.
+ */
 function DomainDnsRecords({ domain, verification }: { domain: string; verification: unknown }) {
+  const host = (name: string) => (name.endsWith(`.${domain}`) ? name.slice(0, -(domain.length + 1)) : name);
   const records = [
-    { type: "A", name: domain, value: VERCEL_APEX_A_RECORD },
-    { type: "CNAME", name: wwwOf(domain), value: VERCEL_CNAME_TARGET },
+    { type: "A", name: "@", value: VERCEL_APEX_A_RECORD },
+    { type: "CNAME", name: "www", value: VERCEL_CNAME_TARGET },
     ...(Array.isArray(verification) ? (verification as VercelVerificationRecord[]) : []).map((record) => ({
       type: record.type,
-      name: record.domain,
+      name: host(record.domain),
       value: record.value,
     })),
   ];
   return (
     <div className="rounded-md border p-2 text-xs" dir="ltr">
-      <p className="mb-1 text-muted-foreground">DNS records the domain owner must set:</p>
+      <p className="mb-1 text-muted-foreground">
+        DNS records the domain owner must set. Type the Host exactly as shown (<code>@</code> is the domain itself), and
+        delete any other <code>@</code> or <code>www</code> records such as the registrar&apos;s parking or redirect.
+      </p>
       <table className="w-full">
+        <thead className="text-muted-foreground">
+          <tr className="text-start">
+            <th className="pe-3 text-start font-normal">Type</th>
+            <th className="pe-3 text-start font-normal">Host</th>
+            <th className="text-start font-normal">Value</th>
+          </tr>
+        </thead>
         <tbody>
           {records.map((record) => (
             <tr key={`${record.type}-${record.name}-${record.value}`} className="align-top">
