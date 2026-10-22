@@ -18,6 +18,7 @@ import {
   users,
 } from "@workspace/db";
 import { getServiceClient } from "@workspace/db/supabase/service";
+import { getBostaShippingContext } from "@workspace/lib/integrations/server";
 
 import { applySellerShipmentStatus } from "@/lib/shipping/apply-seller-shipment";
 import {
@@ -207,7 +208,7 @@ export async function getShippingOverview(): Promise<ActionResult<ShippingOvervi
 
     const ids = eligible.map((e) => e.id);
 
-    const [orderRows, riders] = await Promise.all([
+    const [orderRows, riders, bosta] = await Promise.all([
       ids.length === 0
         ? Promise.resolve([])
         : db.query.orders.findMany({
@@ -221,6 +222,7 @@ export async function getShippingOverview(): Promise<ActionResult<ShippingOvervi
               paymentMethod: true,
               paymentStatus: true,
               createdAt: true,
+              storeId: true,
             },
             with: {
               user: { columns: { fullName: true, phone: true } },
@@ -233,7 +235,9 @@ export async function getShippingOverview(): Promise<ActionResult<ShippingOvervi
             },
           }),
       loadRiders(sellerId),
+      getBostaShippingContext(sellerId),
     ]);
+    const bostaStores = new Set(bosta.connectedStoreIds);
 
     const riderNames = new Map(riders.map((r) => [r.id, r.fullName]));
 
@@ -254,9 +258,17 @@ export async function getShippingOverview(): Promise<ActionResult<ShippingOvervi
           ? shipment.status
           : (orderFinal ?? "pending");
 
+      // Storefront orders ship on their store's Bosta account, marketplace orders on the primary store's.
+      const bostaStoreId = o.storeId ?? bosta.primaryStoreId;
+
       return {
         id: o.id,
         orderNumber: o.orderNumber,
+        storeId: o.storeId ?? null,
+        carrier: shipment?.carrier ?? null,
+        trackingNumber: shipment?.trackingNumber ?? null,
+        bostaStoreId,
+        bostaConnected: bostaStoreId !== null && bostaStores.has(bostaStoreId),
         createdAt: o.createdAt ?? new Date().toISOString(),
         orderStatus,
         shipmentId: shipment?.id ?? null,

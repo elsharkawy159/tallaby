@@ -1,3 +1,4 @@
+import { listStoreIntegrations } from "@workspace/lib/integrations/server";
 import { getStoreShipping } from "@workspace/lib/stores/server";
 import { placeChain, placeLabel } from "@workspace/lib/places";
 import {
@@ -11,13 +12,23 @@ import { notFound } from "next/navigation";
 import { loadStorePage } from "@/lib/stores/store-page.server";
 import { StorePageHeader } from "@/components/stores/store-page-header";
 import { StoreShippingSettings } from "./shipping.client";
-import type { TemplateOption, ZoneView } from "./shipping.dto";
+import type { CourierView, TemplateOption, ZoneView } from "./shipping.dto";
 
 export default async function StoreShippingPage({ params }: { params: Promise<{ storeId: string }> }) {
   const { storeId } = await params;
   const store = await loadStorePage(storeId);
-  const shipping = await getStoreShipping(store.sellerId, store.id);
+  const [shipping, integrations] = await Promise.all([
+    getStoreShipping(store.sellerId, store.id),
+    listStoreIntegrations(store.sellerId, store.id),
+  ]);
   if (!shipping) notFound();
+  const bostaRow = integrations?.find((i) => i.provider === "bosta");
+  const bosta: CourierView = {
+    connected: Boolean(bostaRow?.credentialsSaved),
+    failing: bostaRow?.status === "error",
+    pickupLocationName: bostaRow?.details.pickupLocationName ?? null,
+    shippedOrders: bostaRow?.details.shippedOrders ?? 0,
+  };
 
   const locale = await getLocale();
   // Template zone names are saved in both languages, so build them with both translators.
@@ -71,6 +82,7 @@ export default async function StoreShippingPage({ params }: { params: Promise<{ 
         zones={zones}
         uncovered={uncovered}
         templates={templates}
+        bosta={bosta}
         readOnly={store.status !== "active"}
       />
     </section>

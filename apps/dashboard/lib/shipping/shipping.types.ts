@@ -4,6 +4,15 @@ export interface ShippingOrderRow {
   /** orders.id (also the row id for the table). */
   id: string;
   orderNumber: string;
+  /** null = Tallaby marketplace order. */
+  storeId: string | null;
+  /** "seller" (own rider), "bosta", …; null while no shipment exists. */
+  carrier: string | null;
+  /** The courier's tracking number (Bosta). */
+  trackingNumber: string | null;
+  /** The store whose Bosta account ships this order (its own store, or the primary store for marketplace orders). */
+  bostaStoreId: string | null;
+  bostaConnected: boolean;
   createdAt: string;
   orderStatus: string;
   shipmentId: string | null;

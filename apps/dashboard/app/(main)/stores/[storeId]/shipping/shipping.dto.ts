@@ -63,3 +63,12 @@ export type TemplateOption = {
   /** Price range of the template's zones; null for "one price for all Egypt" (the seller types it). */
   prices: { min: number; max: number } | null;
 };
+
+/** A courier app (Bosta) as the Shipping page shows it; the key itself never reaches the page. */
+export type CourierView = {
+  connected: boolean;
+  /** Bosta refused the saved key on the last call. */
+  failing: boolean;
+  pickupLocationName: string | null;
+  shippedOrders: number;
+};

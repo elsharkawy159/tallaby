@@ -15,11 +15,12 @@ export const INTEGRATION_PROVIDERS = [
   "snapchat_pixel",
   "google_sheets",
   "shopify_import",
+  "bosta",
 ] as const;
 
 export type IntegrationProvider = (typeof INTEGRATION_PROVIDERS)[number];
 
-export type IntegrationCategory = "tracking" | "export" | "import";
+export type IntegrationCategory = "tracking" | "export" | "import" | "shipping";
 
 /**
  * - `identifier`: the seller pastes a public id, which is validated and
@@ -64,6 +65,7 @@ export const INTEGRATIONS: Record<IntegrationProvider, IntegrationDefinition> = 
   snapchat_pixel: { provider: "snapchat_pixel", category: "tracking", kind: "identifier", availability: "soon", idField: "pixelId" },
   google_sheets: { provider: "google_sheets", category: "export", kind: "oauth", availability: "available" },
   shopify_import: { provider: "shopify_import", category: "import", kind: "credentials", availability: "available" },
+  bosta: { provider: "bosta", category: "shipping", kind: "credentials", availability: "available" },
 };
 
 export function isIntegrationProvider(value: unknown): value is IntegrationProvider {

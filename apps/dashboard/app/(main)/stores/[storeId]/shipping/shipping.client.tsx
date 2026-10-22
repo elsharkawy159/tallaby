@@ -1,10 +1,25 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Info, LayoutTemplate, LoaderCircle, MapPinned, Pencil, Plus, Save, Settings2, Trash2 } from "lucide-react";
+import {
+  ChevronRight,
+  Info,
+  LayoutTemplate,
+  LoaderCircle,
+  MapPinned,
+  Package,
+  Pencil,
+  Plug,
+  Plus,
+  Save,
+  Settings2,
+  Trash2,
+  Truck,
+} from "lucide-react";
 
 // Tallaby delivery UI is disabled (owner, 2026-10-21); these imports only served it. See SettingsCard.
 // import { TALLABY_SERVICES_ENABLED } from "@workspace/lib/fulfillment";
@@ -32,7 +47,7 @@ import { BUTTON_CLASS, FIELD_CLASS, LabelNote, SectionCard, SMALL_BUTTON_CLASS }
 import { cn } from "@/lib/utils";
 import { CheckPrice } from "./check-price.client";
 import { deleteShippingZone, saveShippingSettings } from "./shipping.server";
-import type { TemplateOption, ZoneView } from "./shipping.dto";
+import type { CourierView, TemplateOption, ZoneView } from "./shipping.dto";
 import { ShippingTemplates, TemplatesSheet } from "./templates.client";
 import { formatEgp, ZoneSheet } from "./zone-sheet.client";
 
@@ -45,6 +60,7 @@ export function StoreShippingSettings({
   zones,
   uncovered,
   templates,
+  bosta,
   readOnly,
 }: {
   storeId: string;
@@ -54,6 +70,7 @@ export function StoreShippingSettings({
   /** Labels of Egypt's governorates no enabled zone covers (empty while no zone is on). */
   uncovered: string[];
   templates: TemplateOption[];
+  bosta: CourierView;
   readOnly: boolean;
 }) {
   const t = useTranslations("storeShipping");
@@ -162,6 +179,8 @@ export function StoreShippingSettings({
 
       <CheckPrice zones={raw} settings={settings} />
 
+      <CouriersCard storeId={storeId} bosta={bosta} readOnly={readOnly} />
+
       <SettingsCard storeId={storeId} initial={settings} readOnly={readOnly} />
 
       {zones.length > 0 && <TemplatesSheet open={templatesOpen} onOpenChange={setTemplatesOpen} {...templateProps} />}
@@ -202,6 +221,63 @@ export function StoreShippingSettings({
         </AlertDialogContent>
       </AlertDialog>
     </div>
+  );
+}
+
+/** Shipping companies: connect Bosta, then ship each order from the Delivery page. */
+function CouriersCard({ storeId, bosta, readOnly }: { storeId: string; bosta: CourierView; readOnly: boolean }) {
+  const t = useTranslations("storeShipping.couriers");
+  const appHref = `/stores/${storeId}/apps?app=bosta`;
+  return (
+    <SectionCard id="shipping-couriers" icon={Truck} title={t("title")} description={t("description")}>
+      <div className="flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-center">
+        <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#E30613] text-white" aria-hidden>
+          <Package className="size-5" />
+        </span>
+        <div className="min-w-0 flex-1 space-y-0.5">
+          <p className="flex flex-wrap items-center gap-2 font-semibold">
+            {t("bosta.name")}
+            {bosta.connected && (
+              <Badge variant={bosta.failing ? "destructive" : "outline"} className="text-[11px] font-normal">
+                {bosta.failing ? t("bosta.failing") : t("bosta.connected")}
+              </Badge>
+            )}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            {bosta.connected
+              ? [
+                  bosta.pickupLocationName && t("bosta.pickupFrom", { name: bosta.pickupLocationName }),
+                  t("bosta.shippedCount", { count: bosta.shippedOrders }),
+                ]
+                  .filter(Boolean)
+                  .join(" · ")
+              : t("bosta.description")}
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {bosta.connected ? (
+            <>
+              <Button asChild variant="outline" size="sm" className={SMALL_BUTTON_CLASS}>
+                <Link href={appHref}>{t("manage")}</Link>
+              </Button>
+              <Button asChild size="sm" className={SMALL_BUTTON_CLASS}>
+                <Link href="/orders/delivery">
+                  {t("shipOrders")}
+                  <ChevronRight className="rtl:rotate-180" />
+                </Link>
+              </Button>
+            </>
+          ) : readOnly ? null : (
+            <Button asChild size="sm" className={SMALL_BUTTON_CLASS}>
+              <Link href={appHref}>
+                <Plug />
+                {t("connect")}
+              </Link>
+            </Button>
+          )}
+        </div>
+      </div>
+    </SectionCard>
   );
 }
 

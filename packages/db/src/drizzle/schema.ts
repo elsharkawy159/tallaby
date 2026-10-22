@@ -3015,7 +3015,7 @@ export const storeIntegrations = pgTable("store_integrations", {
 			name: "store_integrations_connected_by_fkey"
 		}).onDelete("set null"),
 	check("store_integrations_status_check", sql`status IN ('connected', 'error', 'disconnected')`),
-	check("store_integrations_provider_check", sql`provider IN ('meta_pixel', 'meta_capi', 'google_analytics', 'google_tag_manager', 'tiktok_pixel', 'snapchat_pixel', 'google_sheets', 'shopify_import')`),
+	check("store_integrations_provider_check", sql`provider IN ('meta_pixel', 'meta_capi', 'google_analytics', 'google_tag_manager', 'tiktok_pixel', 'snapchat_pixel', 'google_sheets', 'shopify_import', 'bosta')`),
 ]);
 
 /** Append-only audit of sensitive store settings changes (0058). Details are masked. */

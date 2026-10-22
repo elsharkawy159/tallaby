@@ -37,11 +37,13 @@ import { APP_BRANDS, groupOf, kindLabelOf, type AppGroup } from "./apps-brand.li
 import { connectStoreApp, disconnectStoreApp } from "./apps.server";
 import type { AppCategoryOption } from "./apps.types";
 import { GoogleSheetsPanel } from "./google-sheets.client";
+import { BostaPanel } from "./bosta.client";
 import { MetaCapiPanel } from "./meta-capi.client";
 import { ShopifyImportPanel } from "./shopify-import.client";
 
 /** Shown in the order sellers are most likely to need them. */
 const ORDER: IntegrationProvider[] = [
+  "bosta",
   "meta_pixel",
   "google_analytics",
   "google_tag_manager",
@@ -52,7 +54,7 @@ const ORDER: IntegrationProvider[] = [
   "shopify_import",
 ];
 
-const GROUPS: AppGroup[] = ["tracking", "data"];
+const GROUPS: AppGroup[] = ["shipping", "tracking", "data"];
 
 type Tab = "all" | AppGroup | "connected";
 
@@ -84,7 +86,11 @@ export function StoreApps({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [items, setItems] = useState(initial);
-  const [editing, setEditing] = useState<IntegrationProvider | null>(null);
+  // `?app=bosta` (from the Shipping page) opens that app's sheet.
+  const [editing, setEditing] = useState<IntegrationProvider | null>(() => {
+    const app = searchParams.get("app");
+    return app && INTEGRATION_PROVIDERS.includes(app as IntegrationProvider) ? (app as IntegrationProvider) : null;
+  });
   const [tab, setTab] = useState<Tab>("all");
   const [query, setQuery] = useState("");
   const byProvider = new Map(items.map((item) => [item.provider, item]));
@@ -112,7 +118,7 @@ export function StoreApps({
   const q = query.trim().toLowerCase();
   const matches = sorted.filter((provider) => {
     if (tab === "connected" && !isConnected(provider)) return false;
-    if ((tab === "tracking" || tab === "data") && groupOf(INTEGRATIONS[provider].category) !== tab) return false;
+    if (tab !== "all" && tab !== "connected" && groupOf(INTEGRATIONS[provider].category) !== tab) return false;
     if (!q) return true;
     const text = `${t(`providers.${provider}.name`)} ${t(`providers.${provider}.vendor`)} ${t(`providers.${provider}.description`)}`;
     return text.toLowerCase().includes(q);
@@ -371,6 +377,9 @@ function AppCard({
               {current?.identifier ?? current?.details.shopDomain}
             </p>
           )}
+          {connected && current?.details.pickupLocationName && (
+            <p className="mt-1 truncate text-xs text-faint">{current.details.pickupLocationName}</p>
+          )}
         </div>
       </div>
       <p className="flex-1 text-pretty text-[13px] leading-relaxed text-muted-foreground">
@@ -461,6 +470,15 @@ function AppSheet({
                 storeId={storeId}
                 current={current}
                 categories={categories}
+                readOnly={readOnly}
+                onSaved={onSaved}
+                onRemoved={() => onRemoved(provider)}
+                onClose={onClose}
+              />
+            ) : provider === "bosta" ? (
+              <BostaPanel
+                storeId={storeId}
+                current={current}
                 readOnly={readOnly}
                 onSaved={onSaved}
                 onRemoved={() => onRemoved(provider)}

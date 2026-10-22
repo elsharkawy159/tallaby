@@ -75,12 +75,17 @@ export type IntegrationPublicDetails = {
   spreadsheetTitle?: string;
   exportedOrders?: number;
   importedProducts?: number;
+  /** Bosta (shipping): the default pickup location deliveries are collected from. */
+  pickupLocationName?: string;
+  allowOpenPackage?: boolean;
+  shippedOrders?: number;
 };
 
 const DETAIL_KEYS: Partial<Record<IntegrationProvider, Array<keyof IntegrationPublicDetails>>> = {
   meta_capi: ["testMode"],
   shopify_import: ["shopDomain", "shopName", "shopCurrency", "importedProducts"],
   google_sheets: ["spreadsheetId", "spreadsheetTitle", "exportedOrders"],
+  bosta: ["pickupLocationName", "allowOpenPackage", "shippedOrders"],
 };
 
 export function readPublicDetails(provider: IntegrationProvider, config: unknown): IntegrationPublicDetails {

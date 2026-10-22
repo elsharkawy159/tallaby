@@ -25,6 +25,7 @@ import { Textarea } from "@workspace/ui/components/textarea";
 import { updateShipmentStatus } from "@/actions/shipping";
 import { nextStatuses, type ShippingStatus } from "@/lib/shipping/shipping-status";
 import type { ShippingOrderRow } from "@/lib/shipping/shipping.types";
+import { ShipWithBostaButton } from "./ship-with-bosta.client";
 
 const DESTRUCTIVE: ShippingStatus[] = ["cancelled", "returned", "failed"];
 
@@ -47,7 +48,11 @@ export function StatusActions({ row, onAssign }: Props) {
   const moves = row.shipmentId
     ? nextStatuses(row.status).filter((s) => s !== "assigned" && s !== "pending")
     : [];
-  const canAssign = row.status === "pending" || row.status === "assigned" || row.status === "failed" || row.status === "out_for_delivery";
+  const onBosta = row.carrier === "bosta";
+  // A Bosta shipment is Bosta's to deliver; riders are for the seller's own deliveries.
+  const canAssign = !onBosta && (row.status === "pending" || row.status === "assigned" || row.status === "failed" || row.status === "out_for_delivery");
+  // Hand an order to Bosta while nobody is on the way with it yet.
+  const canBosta = !onBosta && (row.status === "assigned" || row.status === "failed");
   const isFinal = row.status === "delivered" || row.status === "returned" || row.status === "cancelled";
 
   if (isFinal) return <span className="text-xs text-muted-foreground">—</span>;
@@ -78,16 +83,21 @@ export function StatusActions({ row, onAssign }: Props) {
     <>
       <div className="flex items-center justify-end gap-1.5">
         {row.status === "pending" ? (
-          <Button size="sm" onClick={() => onAssign(row)}>
-            <UserPlus className="me-1.5 h-3.5 w-3.5" />
-            {t("assignRider")}
-          </Button>
+          <>
+            <ShipWithBostaButton row={row} />
+            <Button size="sm" variant="outline" onClick={() => onAssign(row)}>
+              <UserPlus className="me-1.5 h-3.5 w-3.5" />
+              {t("assignRider")}
+            </Button>
+          </>
         ) : primary ? (
           <Button size="sm" onClick={() => apply(primary)} disabled={isPending}>
             <Truck className="me-1.5 h-3.5 w-3.5" />
             {t("outForDelivery")}
           </Button>
         ) : null}
+
+        {canBosta && <ShipWithBostaButton row={row} variant="outline" />}
 
         {(moves.length > 0 || canAssign) && row.status !== "pending" && (
           <DropdownMenu>

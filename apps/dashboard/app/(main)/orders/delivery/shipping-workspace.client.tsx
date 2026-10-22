@@ -29,6 +29,7 @@ import { SHIPPING_STATUS_BADGE } from "@/lib/shipping/shipping-status";
 import type { SellerRider, ShippingOrderRow } from "@/lib/shipping/shipping.types";
 import { AssignRiderDialog } from "./assign-rider-dialog.client";
 import { RiderFormDialog } from "./rider-form-dialog.client";
+import { BostaTracking } from "./ship-with-bosta.client";
 import { StatusActions } from "./status-actions.client";
 
 type OrderTab = "all" | "ready" | "assigned" | "out_for_delivery" | "delivered" | "issues";
@@ -224,7 +225,9 @@ export function ShippingWorkspace({
         size: 150,
         accessorFn: (r) => r.riderName ?? "",
         cell: ({ row }) =>
-          row.original.riderName ? (
+          row.original.carrier === "bosta" && row.original.trackingNumber ? (
+            <BostaTracking trackingNumber={row.original.trackingNumber} />
+          ) : row.original.riderName ? (
             <span className="text-sm">{row.original.riderName}</span>
           ) : (
             <span className="text-xs text-muted-foreground">{t("unassigned")}</span>
@@ -254,7 +257,7 @@ export function ShippingWorkspace({
       {
         id: "actions",
         header: "",
-        size: 220,
+        size: 300,
         enableSorting: false,
         enableHiding: false,
         cell: ({ row }) => (

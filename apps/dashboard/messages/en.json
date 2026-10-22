@@ -1750,7 +1750,37 @@
       "bulkUpdated": "{updated} updated, {skipped} skipped"
     },
     "bulkOutForDelivery": "Mark {count} out for delivery",
-    "bulkDelivered": "Mark {count} delivered"
+    "bulkDelivered": "Mark {count} delivered",
+    "bosta": {
+      "button": "Ship with Bosta",
+      "carrier": "Bosta",
+      "title": "Ship order #{number} with Bosta",
+      "description": "Bosta will pick this order up from your pickup location and deliver it to:",
+      "connectFirst": "Connect your Bosta account to this store first. It takes a minute: you only need your Bosta API key.",
+      "receiver": "Customer",
+      "address": "Address",
+      "cod": "Bosta collects",
+      "prepaid": "Nothing (prepaid)",
+      "cancel": "Cancel",
+      "confirm": "Ship with Bosta",
+      "connect": "Connect Bosta",
+      "shipped": "Sent to Bosta. Tracking number {tracking}",
+      "alreadyShipped": "This order is already with Bosta (tracking {tracking})",
+      "errors": {
+        "orderNotFound": "Order not found.",
+        "handledByOther": "This order is delivered by someone else.",
+        "notReady": "This order can't be sent to Bosta now. Only confirmed orders that aren't out for delivery can be.",
+        "notConnected": "Connect Bosta to this store first.",
+        "noAddress": "This order has no delivery address.",
+        "invalidPhone": "Bosta needs an Egyptian mobile number (01…) for the customer.",
+        "unsupportedCity": "Bosta doesn't deliver to this governorate.",
+        "auth": "Bosta refused your API key. Update it in Apps › Bosta.",
+        "rejected": "Bosta refused this order.",
+        "rateLimited": "Too many requests. Try again in a few minutes.",
+        "unreachable": "Couldn't reach Bosta. Try again in a moment.",
+        "generic": "Something went wrong. Try again."
+      }
+    }
   },
   "reviews": {
     "title": "Reviews",
@@ -2766,7 +2796,22 @@
     "governorate": "Governorate",
     "soon": "Soon",
     "tallabyLegacy": "Your store still uses Tallaby's rates. Tallaby delivery is coming soon, so add your own zones and switch to own delivery.",
-    "tallabySoonDescription": "Tallaby's couriers will deliver your orders. Coming soon."
+    "tallabySoonDescription": "Tallaby's couriers will deliver your orders. Coming soon.",
+    "couriers": {
+      "title": "Shipping companies",
+      "description": "Connect a shipping company, then send each order with one click from Orders › Delivery.",
+      "connect": "Connect",
+      "manage": "Manage",
+      "shipOrders": "Ship orders",
+      "bosta": {
+        "name": "Bosta",
+        "description": "Bosta picks up your orders, delivers them across Egypt and collects cash on delivery.",
+        "connected": "Connected",
+        "failing": "Key refused",
+        "pickupFrom": "Picked up from {name}",
+        "shippedCount": "{count, plural, =0 {no orders shipped yet} one {# order shipped} other {# orders shipped}}"
+      }
+    }
   },
   "storeApps": {
     "title": "Apps",
@@ -2800,7 +2845,11 @@
       "shopifyUnreachable": "Couldn't reach Shopify. Try again in a moment.",
       "invalidCategory": "Choose a valid category.",
       "googleFailed": "Google Sheets didn't respond as expected. If it keeps failing, disconnect and connect again.",
-      "noSheet": "Create a spreadsheet first."
+      "noSheet": "Create a spreadsheet first.",
+      "bostaAuth": "Bosta refused this API key. Copy it again from Bosta.",
+      "bostaRejected": "Bosta refused the request.",
+      "bostaUnreachable": "Couldn't reach Bosta. Try again in a moment.",
+      "bostaNoPickup": "Add a pickup location in your Bosta account first, then connect again."
     },
     "error": "Error",
     "lastError": "Last error",
@@ -2942,6 +2991,11 @@
         "name": "Shopify import",
         "description": "Copy your products from a Shopify store.",
         "vendor": "Shopify"
+      },
+      "bosta": {
+        "name": "Bosta",
+        "vendor": "Bosta",
+        "description": "Send your orders with Bosta in one click. Bosta picks up, delivers and collects cash on delivery."
       }
     },
     "heroTitle": "Connect your tools",
@@ -2953,7 +3007,8 @@
     },
     "groups": {
       "tracking": "Tracking & ads",
-      "data": "Import & export"
+      "data": "Import & export",
+      "shipping": "Shipping companies"
     },
     "groupCount": "{count, plural, one {# app} other {# apps}}",
     "find": "Find an app",
@@ -2961,7 +3016,8 @@
       "script": "Storefront script",
       "server": "Server-side",
       "import": "One-time import",
-      "account": "Google account"
+      "account": "Google account",
+      "courier": "Shipping company"
     },
     "comingSoon": "Coming soon",
     "imported": "Imported",
@@ -2982,6 +3038,26 @@
       "title": "Missing an app?",
       "body": "Tell us what you use and we'll prioritise it.",
       "cta": "Request an app"
+    },
+    "bosta": {
+      "step1": "Sign in to your <b>Bosta business account</b>",
+      "step2": "Open <b>Settings › API integration</b> and create an API key",
+      "step3": "Copy the <b>API key</b> and paste it below",
+      "openBosta": "Open Bosta",
+      "keyLabel": "Bosta API key",
+      "keyPlaceholder": "Paste your API key",
+      "keyKeep": "Saved. Leave empty to keep it",
+      "keyHint": "We check the key with Bosta and store it encrypted. It is never shown again.",
+      "keyRequired": "Paste your Bosta API key.",
+      "keySaved": "API key saved",
+      "keyRejected": "Bosta refused the saved key on the last order. Paste a new key.",
+      "connected": "Bosta connected",
+      "pickupFrom": "Picked up from: {name}",
+      "shippedCount": "{count, plural, =0 {No orders shipped yet} one {# order shipped} other {# orders shipped}}",
+      "allowOpen": "Let customers open the package",
+      "allowOpenHint": "Customers can check the items before they pay.",
+      "goShip": "Ship your orders from Orders › Delivery",
+      "onlyThisStore": "This Bosta account is used for this store's orders only. Marketplace orders use your main store's Bosta account."
     }
   },
   "storeWallet": {
