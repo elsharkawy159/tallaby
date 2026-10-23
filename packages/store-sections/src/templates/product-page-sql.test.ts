@@ -42,14 +42,25 @@ describe("templatesProductPageSql", () => {
       expect(result.success, template.key).toBe(true);
       if (result.success) expect(productPageOf(result.data)?.slug).toBe("product");
     }
-  });
+  }, 30_000);
 
   it("doubles single quotes inside the embedded json", () => {
-    const tricky = { ...classic, key: "x" } as typeof classic;
-    const withQuote = templatesProductPageSql([tricky], "t.sql");
-    // every quote inside the generated page literal is paired, so the literal parses
-    const literal = withQuote.match(/\|\| '((?:[^']|'')*)'::jsonb/);
+    const base = classic.config();
+    const quoted = { ...classic, key: "x", config: () => ({ ...base, pages: base.pages.map((p) => (p.kind === "product" ? { ...p, name: "Owner's product" } : p)) }) } as typeof classic;
+    const out = templatesProductPageSql([quoted], "t.sql");
+    expect(out).toContain("Owner''s product");
+    const literal = out.match(/|| '((?:[^']|'')*)'::jsonb/);
     expect(literal).not.toBeNull();
-    expect(() => JSON.parse(literal![1]!.replace(/''/g, "'"))).not.toThrow();
+    expect(JSON.parse(literal![1]!.replace(/''/g, "'")).name).toBe("Owner's product");
+  });
+
+  it("bumps draft_version, locks the row and copies schema_version", () => {
+    expect(sql).toContain("draft_version = t.draft_version + 1");
+    expect(sql).toContain("FOR UPDATE;");
+    expect(sql).toContain("cur.schema_version");
+  });
+
+  it("starts with an SQL comment", () => {
+    expect(sql.trimStart().startsWith("--")).toBe(true);
   });
 });

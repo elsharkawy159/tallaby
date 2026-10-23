@@ -22,9 +22,13 @@ function templateBlock(template: TemplateDefinition): string {
   const page = sqlText(productPageJson(template));
   const name = sqlText(JSON.stringify(template.pageNames.product ?? PRODUCT_PAGE_NAME));
   return `-- ${template.key}
+-- Lock the template row (as publishTemplateVersion does) before max(version) + 1.
+SELECT 1 FROM templates WHERE key = ${key} AND deleted_at IS NULL FOR UPDATE;
+
 -- Draft: the page is appended to an admin draft that has none.
 UPDATE templates t
 SET draft_config = jsonb_set(t.draft_config, '{pages}', (t.draft_config->'pages') || ${page}::jsonb),
+    draft_version = t.draft_version + 1,
     draft_updated_at = now()
 WHERE t.key = ${key} AND t.deleted_at IS NULL
   AND t.draft_config IS NOT NULL AND jsonb_typeof(t.draft_config->'pages') = 'array'
@@ -33,7 +37,7 @@ WHERE t.key = ${key} AND t.deleted_at IS NULL
 
 -- Version: current config + the page, as version max + 1, made current.
 WITH cur AS (
-  SELECT t.id AS template_id, v.config
+  SELECT t.id AS template_id, v.config, v.schema_version
   FROM templates t
   JOIN template_versions v ON v.id = t.current_version_id
   WHERE t.key = ${key} AND t.deleted_at IS NULL
@@ -42,7 +46,7 @@ WITH cur AS (
   INSERT INTO template_versions (template_id, version, schema_version, config, changelog)
   SELECT cur.template_id,
     (SELECT max(v.version) + 1 FROM template_versions v WHERE v.template_id = cur.template_id),
-    1,
+    cur.schema_version,
     jsonb_set(cur.config, '{pages}', (cur.config->'pages') || ${page}::jsonb),
     'product page'
   FROM cur
@@ -74,7 +78,7 @@ export function templatesProductPageSql(templates: readonly TemplateDefinition[]
 --
 -- Adds each template's product page (kind = 'product', slug 'product') to the
 -- database copy, generated from the code templates by
--- \`pnpm --filter @workspace/store-sections template:product-page-sql ${migrationName}\`.
+-- \`pnpm --filter @workspace/store-sections template:product-page-sql ../db/migrations/${migrationName}\`.
 -- Per template, in one transaction:
 --   1. an admin draft (draft_config) without a product page gets it appended;
 --   2. the current version gets a new version (max + 1, "product page") with
