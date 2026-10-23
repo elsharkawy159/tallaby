@@ -156,6 +156,7 @@
       "slugTaken": "Another page already uses this address.",
       "tooManyPages": "You've reached the maximum number of pages.",
       "homePage": "The home page can't be deleted.",
+      "productPageLocked": "The product page can't be deleted or have its address changed.",
       "notPublished": "This website isn't published yet.",
       "invalidSite": "The website has a problem and couldn't be published. Check the highlighted sections.",
       "invalidInput": "Check the details and try again.",

@@ -30,6 +30,7 @@ export type EditorErrorKey =
   | "slugTaken"
   | "tooManyPages"
   | "homePage"
+  | "productPageLocked"
   | "notPublished"
   | "invalidSite"
   | "invalidInput"
@@ -54,6 +55,7 @@ export const EDITOR_ERRORS: Record<string, EditorErrorKey> = {
   slug_taken: "slugTaken",
   too_many_pages: "tooManyPages",
   home_page: "homePage",
+  product_page_locked: "productPageLocked",
   not_published: "notPublished",
   invalid_site: "invalidSite",
   invalid_input: "invalidInput",
