@@ -111,7 +111,7 @@ describe.each(LIBRARY_TEMPLATES.map((t) => [t.key, t] as const))("library templa
     // The effective surface read from the built tree: flat has no background, card "background", shelf "secondary".
     const surface = column.style?.background === undefined ? "flat" : column.style.background === "secondary" ? "shelf" : "card";
     expect(["flat", "card", "shelf"]).toContain(surface);
-    expect(column.style?.background === undefined || ["background", "secondary"].includes(column.style.background)).toBe(true);
+    expect(column.style?.background === undefined || ["background", "secondary"].includes(String(column.style.background))).toBe(true);
     // Templates whose spec sets a surface that differs from the corner default (square → flat, rounded → card).
     const EXPLICIT: Record<string, string> = { arena: "shelf", pure: "shelf", hearth: "shelf", elixir: "flat" };
     if (key in EXPLICIT) expect(surface).toBe(EXPLICIT[key]);
