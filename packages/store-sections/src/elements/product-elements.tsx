@@ -15,6 +15,7 @@ import type { ReactNode } from "react";
 import { ChevronDown, Image as ImageIcon, Minus, Plus, ShoppingBag, Star, Store, Truck } from "lucide-react";
 import { sectionText } from "../core/copy";
 import { DEMO_PRODUCT } from "../core/demo-product";
+import { decodeTextEntities } from "../core/text";
 import { IMAGE_SIZES, imageSource, type ProductDetail, type ProductElementHook, type RenderContext } from "../core/types";
 import { cn } from "../sections/_primitives";
 import type { ComponentNode } from "../config/schema";
@@ -320,8 +321,8 @@ function BuyBox({ product, props, attrs, ctx }: StillProps) {
 
 /** Description and key features as collapsible rows, drawn like the accordion element. */
 function Details({ product, props, attrs, ctx }: StillProps) {
-  const description = props.showDescription !== false ? product.description?.trim() : "";
-  const bullets = props.showBullets !== false ? product.bulletPoints.filter((point) => point.trim()) : [];
+  const description = props.showDescription !== false ? decodeTextEntities(product.description?.trim() ?? "") : "";
+  const bullets = props.showBullets !== false ? product.bulletPoints.filter((point) => point.trim()).map(decodeTextEntities) : [];
   if (!description && !bullets.length) return ctx.mode === "edit" ? <EditorNote attrs={attrs}>{sectionText("productNoDetails", ctx.locale)}</EditorNote> : null;
   const row = (title: string, open: boolean, body: ReactNode) => (
     <details open={open} className="group border-b border-(--sf-line) py-4">
