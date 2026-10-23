@@ -75,16 +75,16 @@ export default async function StorefrontProductPage({ params }: StorefrontProduc
   const { locale, subdomain, slug } = await params;
   // Website offline: the layout shows the offline page instead.
   if (await isSubdomainOfflineForRequest(subdomain)) return null;
-  const [{ store, product }, t] = await Promise.all([
+  const [{ store, product }, t, tBreadcrumb] = await Promise.all([
     resolveStoreProduct(locale, subdomain, slug),
     getTranslations("storefront"),
+    getTranslations("breadcrumb"),
   ]);
 
   // The site's own product page (spec §5.4): the published site, or the
   // verified draft in a builder preview, as every other store page.
   const { site } = await getStorefrontSite(store.id, store.storeId, store.subdomain);
   if (site && productPageOf(site)) {
-    const tBreadcrumb = await getTranslations("breadcrumb");
     // ViewContent carries the price shown on load: the default variant's, else the product's.
     const { price } = productPricing(product, getDefaultProductVariant(product.productVariants));
     return (

@@ -11,10 +11,12 @@ import { ProductTabsWrapper } from "@/components/product-page/product-tabs-wrapp
 import { VariantPicker } from "@/components/product-page/variant-picker";
 import { useProductPage } from "@/components/product-page/product-page-provider.client";
 import {
+  LOW_STOCK_THRESHOLD,
   discountExpiryDate,
   pricingDiscountPercent,
   productHasFreeDelivery,
   productPricing,
+  stickyBuyBarClass,
 } from "@/components/product-page/product-page.lib";
 import type { ProductLocale } from "@/lib/product-translations";
 import { getVariantImageUrls } from "@/lib/variant-images";
@@ -26,9 +28,6 @@ import { getVariantImageUrls } from "@/lib/variant-images";
  * buy box stay in sync wherever the seller placed them. Layout and spacing
  * come from the element's own box (the node's style).
  */
-
-/** At or below this, stock reads as "Only N left" (as in ProductDetails). */
-const LOW_STOCK_THRESHOLD = 5;
 
 /** The selected variant's price and stock, else the base product's. */
 function useSelectedPricing() {
@@ -138,7 +137,7 @@ export function StoreProductBuyBox({
   return (
     <>
       <HideBottomNavOnScroll />
-      <div data-chat-avoid className="fixed right-0 bottom-[79px] left-0 z-50 transition-[bottom] duration-300 ease-out [html[data-bottom-nav=hidden]_&]:bottom-0 border-t border-gray-200 bg-white px-3 py-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] md:relative md:bottom-0 md:z-auto md:border-0 md:bg-transparent md:p-0 md:shadow-none">
+      <div data-chat-avoid className={stickyBuyBarClass()}>
         {actions}
       </div>
     </>

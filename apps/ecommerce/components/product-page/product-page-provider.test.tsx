@@ -8,7 +8,7 @@ vi.mock("@/providers/cart-provider", () => ({ useCart: () => ({ cartItems }) }))
 vi.mock("next-intl", () => ({ useLocale: () => "en" }));
 vi.mock("./variant-deep-link.client", () => ({ VariantDeepLink: () => null }));
 
-const { createVariantStore } = await import("./product-page.lib");
+const { createVariantStore, stickyBuyBarClass } = await import("./product-page.lib");
 const { ProductPageProvider, useProductPage } = await import("./product-page-provider.client");
 
 const variants = [
@@ -58,6 +58,15 @@ function Probe({ name }: { name: string }) {
     </i>
   );
 }
+
+describe("stickyBuyBarClass", () => {
+  it("keeps the marketplace bar's classes exactly, and the store bar without its md margins", () => {
+    expect(stickyBuyBarClass("md:mb-2 md:mt-6")).toBe(
+      "fixed right-0 bottom-[79px] left-0 z-50 transition-[bottom] duration-300 ease-out [html[data-bottom-nav=hidden]_&]:bottom-0 border-t border-gray-200 bg-white px-3 py-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] md:relative md:bottom-0 md:z-auto md:mb-2 md:mt-6 md:border-0 md:bg-transparent md:p-0 md:shadow-none",
+    );
+    expect(stickyBuyBarClass()).not.toContain("md:mt-6");
+  });
+});
 
 describe("ProductPageProvider", () => {
   it("gives every part the default variant and its cart status", () => {

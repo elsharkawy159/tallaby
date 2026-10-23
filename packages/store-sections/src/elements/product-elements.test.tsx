@@ -194,6 +194,16 @@ describe("product sections with nothing to show", () => {
     expect(publicDraw(section([node("productContent"), node("productReviews")]), empty)).toContain("<section");
   });
 
+  it("keep the band when it holds the seller's own content beside an empty product part", () => {
+    const paragraph = { id: "p-1", type: "paragraph", props: { text: "Free returns for 14 days." }, children: [] } as unknown as ComponentNode;
+    const photo = { id: "i-1", type: "image", props: { src: "https://cdn.test/x.jpg", alt: "" }, children: [] } as unknown as ComponentNode;
+    expect(publicDraw(section([heading, paragraph, node("productContent")]), empty)).toContain("Free returns for 14 days.");
+    expect(publicDraw(section([photo, node("productRating")]), empty)).toContain("<section");
+    // Layout around the heading and the part is still only a frame.
+    const box = { id: "b-1", type: "vFlex", props: {}, children: [heading, node("productContent")] } as unknown as ComponentNode;
+    expect(publicDraw(section([box]), empty)).toBe("");
+  });
+
   it("count a product part hidden on every device as empty", () => {
     const hidden = {
       ...node("productReviews"),

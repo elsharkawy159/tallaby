@@ -434,11 +434,19 @@ function productPartEmpty(node: ComponentNode & { type: ProductElementType }, pr
 }
 
 /**
- * A storefront section whose product parts all draw nothing for this
- * product (no content, no variants, no reviews yet…) would be an empty
- * padded band, so it is not drawn at all; its headings only label the
- * missing part. Sections without product parts, pages without a product,
- * and the editor are unaffected.
+ * What a section may hold besides its product parts and still be only a
+ * frame for them: layout, decoration and headings (which label the part).
+ * Anything else (text, photos, buttons, links, lists, forms, video…) is the
+ * seller's own content and keeps the section.
+ */
+const FRAME_TYPES: ReadonlySet<string> = new Set(["section", "container", "vFlex", "hFlex", "grid", "div", "card", "pattern", "divider", "spacer", "heading"]);
+
+/**
+ * A storefront section made only of product parts that all draw nothing
+ * for this product (no content, no variants, no reviews yet…) plus its
+ * frame (`FRAME_TYPES`) would be an empty padded band, so it is not drawn
+ * at all. Sections with any other content, sections without product parts,
+ * pages without a product, and the editor are unaffected.
  */
 export function productSectionEmpty(section: ComponentNode, ctx: RenderContext, scope?: DataRecord): boolean {
   if (ctx.mode === "edit") return false;
@@ -446,12 +454,16 @@ export function productSectionEmpty(section: ComponentNode, ctx: RenderContext, 
   if (!product) return false;
   let parts = 0;
   let empty = 0;
+  let content = false;
   walkNodes([section], (node) => {
-    if (!isProductElement(node.type)) return;
+    if (!isProductElement(node.type)) {
+      if (!FRAME_TYPES.has(node.type)) content = true;
+      return;
+    }
     parts += 1;
     if (productPartEmpty(node as ComponentNode & { type: ProductElementType }, product)) empty += 1;
   });
-  return parts > 0 && empty === parts;
+  return !content && parts > 0 && empty === parts;
 }
 
 const STILLS: Record<ProductElementType, (p: StillProps) => ReactNode> = {

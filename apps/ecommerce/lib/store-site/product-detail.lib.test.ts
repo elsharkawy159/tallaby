@@ -80,6 +80,12 @@ describe("toProductDetail", () => {
     expect(detail.category).toEqual({ id: "c-1", name: "قمصان" });
   });
 
+  it("takes a single image path as the gallery does", () => {
+    const detail = toProductDetail({ ...base, images: "https://cdn.test/only.jpg", productVariants: [] } as unknown as Product, "en");
+    expect(detail.images).toEqual(["https://cdn.test/only.jpg"]);
+    expect(detail.image).toBe("https://cdn.test/only.jpg");
+  });
+
   it("has no content, brand, category or seller rating when the product has none", () => {
     const detail = toProductDetail(
       { ...base, content: "<p> </p>", brand: null, category: null, seller: null, quantity: null, images: null } as unknown as Product,

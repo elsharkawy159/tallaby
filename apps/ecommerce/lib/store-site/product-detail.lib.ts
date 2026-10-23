@@ -38,7 +38,8 @@ function variantDetail(product: Product, variant: NonNullable<Product["productVa
 
 export function toProductDetail(product: Product, locale: ProductLocale): ProductDetail {
   const pricing = productPricing(product, null);
-  const images = strings(product.images).map(productImage).filter((url): url is string => Boolean(url));
+  // As the gallery (ProductHero): a list of paths, or a single path.
+  const images = strings(typeof product.images === "string" ? [product.images] : product.images).map(productImage).filter((url): url is string => Boolean(url));
   const variants = (product.productVariants ?? []).map((variant) => variantDetail(product, variant, locale));
   // Total stock: what the variants hold when there are variants, else the product's own count.
   const quantity = variants.length ? variants.reduce((sum, v) => sum + Math.max(0, v.quantity), 0) : Math.max(0, pricing.stock);

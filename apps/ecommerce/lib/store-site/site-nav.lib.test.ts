@@ -5,7 +5,7 @@ import { siteNavPages } from "./site-nav.lib";
 const page = (fields: Partial<SiteConfig["pages"][number]>) => ({ name: "", slug: "", isHome: false, ...fields }) as SiteConfig["pages"][number];
 
 describe("siteNavPages", () => {
-  it("buildContext excludes product page from nav", () => {
+  it("siteNavPages leaves the product page out of the nav", () => {
     const site = {
       pages: [
         page({ name: "الرئيسية", slug: "home", isHome: true }),
