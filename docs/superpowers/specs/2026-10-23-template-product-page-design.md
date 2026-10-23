@@ -232,8 +232,8 @@ A builder preview (verified preview mode) renders the draft, as other pages do.
   demo product (no store catalog). The Admin library-section editor previews
   `product-page` designs with the same demo product. Nothing else in Admin
   changes.
-- Migrations: `0098` (`store_pages.kind`), `0099` (product-page library
-  sections), `0100` (template versions). They go to staging first, then to
+- Migrations: `0098` (`store_pages.kind`), `0100` (product-page library
+  sections), `0101` (template versions). They go to staging first, then to
   production with owner approval (rule 6). CLAUDE.md's migration notes are
   updated.
 - **New stores:** `seedStarterSite` already inserts every template page.
@@ -306,7 +306,7 @@ Where the code differs from the spec text above:
 - The buy box element has a `variant` prop (`solid` or `outline`) that carries the template's button style; the storefront hook honours it.
 - Product sections that draw nothing in public (all their product elements render null) are hidden; sections with seller content stay.
 - Template previews use a template-specific demo product (`templateDemoProduct`) instead of one shared product.
-- The migrations are numbered `0099` (`store_pages.kind`), `0100` (product-page library sections) and `0101` (template product pages), because `0098` was taken by the notifications migration.
+- The migrations are numbered `0100` (`store_pages.kind`), `0101` (product-page library sections) and `0102` (template product pages), because `0098` was taken by the notifications migration.
 - The product page is never added to the navigation when a template is applied (`showInNav` is forced to false for it).
 - The builder's preview product comes from `getStorePreviewProduct` in `packages/lib`; the storefront maps its own row with `toProductDetail` in `apps/ecommerce`, so there are two mappers to keep in sync.
 - `ProductDetail.quantity` is the total stock (sum of variant quantities when variants exist).
@@ -315,4 +315,4 @@ Where the code differs from the spec text above:
 - A section made only of product parts and frame is hidden in public on a page without a product too (a product section pasted onto a normal page).
 - Template undo never deletes the product page: one the install created keeps the template's content; one that existed before gets its previous content back.
 - On store hosts the phone buy bar docks at the bottom edge with safe-area padding (`stickyBuyBarClass(…, { bottomNav: false })`); the marketplace bar is unchanged.
-- Deploy order: `0096`–`0099` before deploying, then `0100` and `0101`, then the backfill; run the read-only `packages/db/scripts/check-unscoped-bound-nodes.sql` before deploying (a bound node outside a list or the product page renders nothing in public).
+- Deploy order: `0096`–`0100` before deploying, then `0101` and `0102`, then the backfill; run the read-only `packages/db/scripts/check-unscoped-bound-nodes.sql` before deploying (a bound node outside a list or the product page renders nothing in public).

@@ -1,8 +1,8 @@
--- 0101_template_product_pages.sql (storefront templates, 2026-10-23)
+-- 0102_template_product_pages.sql (storefront templates, 2026-10-23)
 --
 -- Adds each template's product page (kind = 'product', slug 'product') to the
 -- database copy, generated from the code templates by
--- `pnpm --filter @workspace/store-sections template:product-page-sql ../db/migrations/0101_template_product_pages.sql`.
+-- `pnpm --filter @workspace/store-sections template:product-page-sql ../db/migrations/0102_template_product_pages.sql`.
 -- Per template, in one transaction:
 --   1. an admin draft (draft_config) without a product page gets it appended;
 --   2. the current version gets a new version (max + 1, "product page") with

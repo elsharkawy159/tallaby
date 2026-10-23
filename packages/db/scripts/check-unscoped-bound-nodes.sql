@@ -25,7 +25,7 @@ roots(source, ref, doc) AS (
   SELECT 'store_pages.draft_content', p.id::text, p.draft_content
   FROM store_pages p
   JOIN stores s ON s.id = p.store_id AND s.deleted_at IS NULL
-  -- to_jsonb: works before 0099 too (no kind column: every page is a normal page).
+  -- to_jsonb: works before 0100 too (no kind column: every page is a normal page).
   WHERE coalesce(to_jsonb(p)->>'kind', 'page') <> 'product'
   UNION ALL
   SELECT 'stores.shared_header/footer', s.id::text, jsonb_build_array(s.shared_header, s.shared_footer)

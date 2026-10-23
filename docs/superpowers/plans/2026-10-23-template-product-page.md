@@ -24,7 +24,7 @@
   - rule 14: the feature file split
   - rule 16: never touch others' uncommitted work; check `git status` before each task and stage only your own files
   - rule 17: element trees only
-- Migrations are hand-written, idempotent, and numbered from `0099`. Mirror each in `packages/db/src/drizzle/schema.ts`. Never run `drizzle-kit generate`. Staging first; production only with the owner's go-ahead at run time.
+- Migrations are hand-written, idempotent, and numbered from `0100`. Mirror each in `packages/db/src/drizzle/schema.ts`. Never run `drizzle-kit generate`. Staging first; production only with the owner's go-ahead at run time.
 - `SITE_CONFIG_VERSION` stays `1`. Every schema addition is optional and additive.
 - The product page's slug is exactly `product`. It has `kind: "product"`, `showInNav: false` and `isHome: false`, and a config holds at most one.
 - Marketplace (tallaby.com) product page look and behaviour: unchanged.
@@ -109,7 +109,7 @@
   - The write guards check `kind = 'product'` on the row loaded with the ownership check.
   - The restore upsert writes `kind`.
 - [ ] **Step 4:** Run `pnpm --filter @workspace/lib test` and `pnpm --filter @workspace/db typecheck`.
-- [ ] **Step 5:** Apply `0099` on staging only, then log it in PLAN.md §23.
+- [ ] **Step 5:** Apply `0100` on staging only, then log it in PLAN.md §23.
 - [ ] **Step 6: Commit** `feat(db,lib): store_pages.kind for the product page`.
 
 ### Task 3: `ProductDetail`, `ctx.product` and the `product` scope
@@ -246,7 +246,7 @@
   - `product-reviews`: a section heading, then `productReviews`.
   - `product-related`: a section head, then `productList` with `source: "related"`, `limit: 4`, and the `productCard` used by `products-grid`.
 - [ ] **Step 3:** Tests pass. Update the snapshots and review their diffs.
-- [ ] **Step 4:** Generate `0100`. Apply on staging. Log it.
+- [ ] **Step 4:** Generate `0101`. Apply on staging. Log it.
 - [ ] **Step 5: Commit** `feat(store-sections): product page library sections`.
 
 ### Task 7: Shared `productPage` builder and `libraryTemplate` support
@@ -436,8 +436,8 @@ Each batch is one task with the same steps. Batches follow the `LIBRARY_TEMPLATE
   - updates `templates.current_version_id`
   - also sets `meta = jsonb_set(meta, '{pageNames,product}', …)`
 
-  Generate `0101`.
-- [ ] **Step 4:** Tests pass. Apply `0101` on staging. Run it a second time and confirm it changes nothing. Log both.
+  Generate `0102`.
+- [ ] **Step 4:** Tests pass. Apply `0102` on staging. Run it a second time and confirm it changes nothing. Log both.
 - [ ] **Step 5: Commit** `feat(db): add product pages to DB templates`.
 
 ### Task 14: Backfill existing stores
@@ -467,12 +467,12 @@ Each batch is one task with the same steps. Batches follow the `LIBRARY_TEMPLATE
   - Update the latest `store_site_revisions.snapshot` in place by appending the page. This is not a new revision, so it doesn't count as a publish by the seller. Re-validate with `validateSiteConfig` before writing.
   - After commit, bust the store's published-site cache tags (`packages/cache/src/tags.ts`).
 - [ ] **Step 4:** Tests pass. Run `--dry-run`, then the real run, on staging. Check two stores live. Log the counts.
-- [ ] **Step 5:** **Stop and ask the owner** before running `0099`–`0101` and the backfill on production. Then run them and log the result.
+- [ ] **Step 5:** **Stop and ask the owner** before running `0100`–`0102` and the backfill on production. Then run them and log the result.
 - [ ] **Step 6: Commit** `feat: backfill product pages for existing stores`.
 
 ### Task 15: Docs and final verification
 
-**Files:** `PLAN.md` (§22 checklist task, §23 log), `CLAUDE.md` (rule 6 migration notes: next number `0102`, plus the `0099`–`0101` status), the spec (any deviations), `docs/superpowers/specs/2026-10-19-tree-sections-design.md` §6 (product elements note).
+**Files:** `PLAN.md` (§22 checklist task, §23 log), `CLAUDE.md` (rule 6 migration notes: next number `0103`, plus the `0100`–`0102` status), the spec (any deviations), `docs/superpowers/specs/2026-10-19-tree-sections-design.md` §6 (product elements note).
 
 - [ ] **Step 1:** Update the docs.
 - [ ] **Step 2:** Run `pnpm lint && pnpm typecheck && pnpm test`. Everything passes.

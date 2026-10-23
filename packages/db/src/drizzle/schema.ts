@@ -2604,7 +2604,7 @@ export const storePages = pgTable("store_pages", {
 	useSharedHeader: boolean("use_shared_header").default(true).notNull(),
 	useSharedFooter: boolean("use_shared_footer").default(true).notNull(),
 	showInNav: boolean("show_in_nav").default(true).notNull(),
-	/** 'page' (default) or 'product': the store's single product-page template (0099). */
+	/** 'page' (default) or 'product': the store's single product-page template (0100). */
 	kind: text().default('page').notNull(),
 	orderIndex: integer("order_index").default(0).notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),

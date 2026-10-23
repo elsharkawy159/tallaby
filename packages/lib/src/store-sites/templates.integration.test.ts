@@ -152,7 +152,7 @@ describe.skipIf(!TEST_DATABASE_URL)("store templates (integration)", { timeout: 
     await db.delete(s.storePages).where(and(eq(s.storePages.storeId, w.a.a2), eq(s.storePages.kind, "product")));
     expect((await applyStoreTemplate(w.a.sellerId, w.a.a2, "tallaby-classic", w.a.sellerId, OPTIONS, db)).success).toBe(true);
     const created = await productRows();
-    if (!created.length) return t.skip(); // The DB Classic has no product page yet (0101 not applied).
+    if (!created.length) return t.skip(); // The DB Classic has no product page yet (0102 not applied).
     expect(await undoStoreTemplate(w.a.sellerId, w.a.a2, db)).toMatchObject({ success: true });
     expect(await productRows()).toEqual(created);
   });
