@@ -288,6 +288,9 @@ function BuyBox({ product, props, attrs, ctx }: StillProps) {
   const addLabel = out ? sectionText("outOfStock", ctx.locale) : str(props.addLabel, 60) || sectionText("addToCart", ctx.locale);
   const buyLabel = str(props.buyLabel, 60) || sectionText("buyNow", ctx.locale);
   const step = "pointer-events-none flex size-11 items-center justify-center text-(--sf-ink) disabled:opacity-60";
+  // Outline: the cart button is drawn in brand lines and "buy now" is the filled one, so the two stay apart.
+  const outline = props.variant === "outline";
+  const filled = "bg-(--sf-brand) text-(--sf-brand-ink,#fff)";
   return (
     <div {...attrs} className="flex min-w-0 flex-col gap-3">
       <div className="flex items-stretch gap-3">
@@ -300,13 +303,13 @@ function BuyBox({ product, props, attrs, ctx }: StillProps) {
             <Plus className="size-4" aria-hidden />
           </button>
         </div>
-        <button type="button" disabled tabIndex={-1} className={cn(BUTTON_BASE, "min-w-0 flex-1 bg-(--sf-brand) text-(--sf-brand-ink,#fff)", out && "opacity-50")}>
+        <button type="button" disabled tabIndex={-1} className={cn(BUTTON_BASE, "min-w-0 flex-1", outline ? "border border-(--sf-brand) bg-transparent text-(--sf-brand)" : filled, out && "opacity-50")}>
           <ShoppingBag className="size-4 shrink-0" aria-hidden />
           <span className="truncate">{addLabel}</span>
         </button>
       </div>
       {props.buyNow !== false && !out && (
-        <button type="button" disabled tabIndex={-1} className={cn(BUTTON_BASE, "w-full border border-(--sf-ink) bg-transparent text-(--sf-ink)")}>
+        <button type="button" disabled tabIndex={-1} className={cn(BUTTON_BASE, "w-full", outline ? filled : "border border-(--sf-ink) bg-transparent text-(--sf-ink)")}>
           {buyLabel}
         </button>
       )}

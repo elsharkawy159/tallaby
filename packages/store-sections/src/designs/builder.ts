@@ -192,9 +192,11 @@ export function createTreeBuilder(industry?: string, photos?: DesignPhotos, opts
     },
     productVariants: (opts?: NodeOptions) => make("productVariants", {}, opts),
     /** Quantity, add to cart and (optionally) buy now; the labels default to the package's copy. */
-    productBuyBox: (opts?: NodeOptions & { buyNow?: boolean; stickyMobile?: boolean; addLabel?: DesignText; buyLabel?: DesignText }) => {
-      const { buyNow = true, stickyMobile = true, addLabel, buyLabel, ...rest } = opts ?? {};
-      return make("productBuyBox", { buyNow, stickyMobile, addLabel, buyLabel }, rest);
+    productBuyBox: (
+      opts?: NodeOptions & { buyNow?: boolean; stickyMobile?: boolean; variant?: "solid" | "outline"; addLabel?: DesignText; buyLabel?: DesignText },
+    ) => {
+      const { buyNow = true, stickyMobile = true, variant = "solid", addLabel, buyLabel, ...rest } = opts ?? {};
+      return make("productBuyBox", { buyNow, stickyMobile, variant, addLabel, buyLabel }, rest);
     },
     productDetails: (opts?: NodeOptions & { showDescription?: boolean; showBullets?: boolean }) => {
       const { showDescription = true, showBullets = true, ...rest } = opts ?? {};

@@ -114,6 +114,19 @@ describe("product elements", () => {
     expect(draw(node("productBuyBox", {}), soldOut)).toContain("Out of stock");
   });
 
+  it("productBuyBox outline variant draws the cart button in brand lines and fills buy now", () => {
+    const buttons = (html: string) => html.match(/<button[^>]*class="[^"]*h-12[^"]*"/g) ?? [];
+    const [solidCart, solidBuy] = buttons(draw(node("productBuyBox", { buyNow: true })));
+    expect(solidCart).toContain("bg-(--sf-brand)");
+    expect(solidBuy).toContain("border-(--sf-ink)");
+    const [cart, buy] = buttons(draw(node("productBuyBox", { buyNow: true, variant: "outline" })));
+    expect(cart).toContain("border-(--sf-brand)");
+    expect(cart).toContain("bg-transparent");
+    expect(cart).toContain("text-(--sf-brand)");
+    expect(cart).not.toContain("bg-(--sf-brand)");
+    expect(buy).toContain("bg-(--sf-brand)");
+  });
+
   it("public mode uses host hook when given", () => {
     const html = draw(node("productBuyBox", { buyNow: true }), product, {
       mode: "public",
@@ -145,6 +158,7 @@ describe("product elements", () => {
     expect(treeBuilder.productBuyBox({ buyNow: false, addLabel: { ar: "اطلب", en: "Order" } }).props).toEqual({
       buyNow: false,
       stickyMobile: true,
+      variant: "solid",
       addLabel: "اطلب",
       translations: { en: { addLabel: "Order" } },
     });

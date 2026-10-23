@@ -867,9 +867,18 @@ export const ELEMENT_DEFINITIONS: readonly ElementDefinition[] = [
     label: L("الكمية وأزرار الشراء", "Buy buttons"),
     keywords: ["buy", "cart", "quantity", "checkout", "شراء", "سلة", "كمية"],
     container: false,
-    defaultProps: { buyNow: true, stickyMobile: true },
+    defaultProps: { buyNow: true, stickyMobile: true, variant: "solid" },
     fields: [
       { ...textField("addLabel", L("نص زر السلة", "Add to cart label"), 60), placeholder: L("أضف للسلة", "Add to cart") },
+      {
+        key: "variant",
+        label: L("شكل الزر", "Button style"),
+        type: "select",
+        options: [
+          { value: "solid", label: L("ممتلئ", "Solid") },
+          { value: "outline", label: L("محدد", "Outline") },
+        ],
+      },
       { key: "buyNow", label: L("زر «اشترِ الآن»", "“Buy now” button"), type: "switch" },
       {
         ...textField("buyLabel", L("نص زر الشراء", "Buy now label"), 60),

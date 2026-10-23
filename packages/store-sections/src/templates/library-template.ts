@@ -57,7 +57,7 @@ const section = (design: Design) => instantiateDesign(design, { id: design.id, d
 export function libraryTemplate(spec: LibraryTemplateSpec): TemplateDefinition {
   const lib: Lib = spec.lib ?? ((id, patch) => fromLibrary(spec.key, getDesign(id)!, { corners: spec.radius, ...patch }));
   // Square templates get a flat buy column, rounded ones a card.
-  const product = productPage(lib, { surface: spec.radius === 0 ? "flat" : "card", ...spec.productPage });
+  const product = productPage(lib, { ...spec.productPage, surface: spec.productPage?.surface ?? (spec.radius === 0 ? "flat" : "card") });
   const config = (): SiteConfig => ({
     schemaVersion: SITE_CONFIG_VERSION,
     designSystem: {

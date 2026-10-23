@@ -46,6 +46,12 @@ describe("productPage", () => {
     expect(byLabel(designs[2]!, "التقييمات")[0]!.style?.background).toBe("secondary");
   });
 
+  it("spec button sets the buy box variant", () => {
+    const variant = (spec?: Parameters<typeof productPage>[1]) => byLabel(productPage(lib, spec)[0]!, "زر الشراء")[0]!.props.variant;
+    expect(variant()).toBe("solid");
+    expect(variant({ button: "outline" })).toBe("outline");
+  });
+
   it("spec gallery end puts gallery second", () => {
     const [main] = productPage(lib, { gallery: "end", thumbs: "side" });
     const [gallery] = byLabel(main!, "صور المنتج");

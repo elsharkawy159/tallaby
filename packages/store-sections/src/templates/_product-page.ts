@@ -28,10 +28,7 @@ export type ProductPageSpec = {
   headingCase?: "none" | "upper";
   /** Heading letter-spacing in em, drawn with the nearest style step; default 0. */
   tracking?: number;
-  /**
-   * Buy box primary button; default "solid". Not drawn yet: the buy box
-   * element has no button style of its own (see the task 7 report).
-   */
+  /** Buy box primary button (the buy box `variant`); default "solid". */
   button?: "solid" | "outline";
   /** Reviews section background; default "shelf". */
   band?: "paper" | "shelf" | "brand";
@@ -48,6 +45,7 @@ export const PRODUCT_PAGE_NAME = L("صفحة المنتج", "Product page");
 const GALLERY = "صور المنتج";
 const BUY_COLUMN = "عمود الشراء";
 const TITLE = "اسم المنتج";
+const BUY_BOX = "زر الشراء";
 const REVIEWS = "التقييمات";
 const REVIEWS_COLUMN = "العمود";
 const SECTION_TITLE = "العنوان";
@@ -103,6 +101,7 @@ export function productPage(lib: Lib, spec: ProductPageSpec = {}): Design[] {
   const mainNodes: Record<string, NodePatch> = {
     [GALLERY]: { props: { thumbs: spec.thumbs ?? "bottom" }, ...(spec.gallery === "end" && { style: { order: 2 }, tablet: { order: 0 } }) },
   };
+  if (spec.button === "outline") mainNodes[BUY_BOX] = { props: { variant: "outline" } };
   const surface = spec.surface ?? "card";
   if (surface !== "flat") mainNodes[BUY_COLUMN] = SURFACES[surface];
 
