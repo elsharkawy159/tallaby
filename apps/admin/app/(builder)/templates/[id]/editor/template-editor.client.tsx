@@ -1,8 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import Link from "next/link";
-import { ADMIN_REASON_MAX, ADMIN_REASON_MIN } from "@workspace/lib/admin";
+import { ADMIN_DEFAULT_REASON } from "@workspace/lib/admin";
 import type { SiteConfig } from "@workspace/store-sections";
 import { StoreEditor, type EditorInitial } from "@workspace/store-editor/editor.client";
 import { Button } from "@workspace/ui/components/button";
@@ -23,14 +22,12 @@ type Props = {
 };
 
 /**
- * Asks why the admin is editing this template before the editor mounts; the
- * reason stays in memory for the session and goes into the audit log with
- * Publish and Restore (draft saves are not audited).
+ * Opens the template editor straight away (owner, 2026-10-24: no reason
+ * prompt); Publish and Restore are audited with ADMIN_DEFAULT_REASON (draft
+ * saves are not audited).
  */
 export function TemplateEditorGate(props: Props) {
-  const [reason, setReason] = useState<string | null>(null);
-  if (reason) return <TemplateEditor {...props} reason={reason} />;
-  return <ReasonForm templateName={props.templateName} isDefault={props.isDefault} isActive={props.isActive} onSubmit={setReason} />;
+  return <TemplateEditor {...props} reason={ADMIN_DEFAULT_REASON} />;
 }
 
 function TemplateEditor({ initial, config, pageNames, draftVersion, reason }: Props & { reason: string }) {
@@ -95,7 +92,6 @@ function TemplateEditor({ initial, config, pageNames, draftVersion, reason }: Pr
                 placeholder="New hero and tighter product grid"
                 autoFocus
               />
-              <p className="text-xs text-muted-foreground">Logged with your reason: “{reason}”.</p>
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => answer(null)}>
@@ -107,73 +103,5 @@ function TemplateEditor({ initial, config, pageNames, draftVersion, reason }: Pr
         </DialogContent>
       </Dialog>
     </>
-  );
-}
-
-function ReasonForm({
-  templateName,
-  isDefault,
-  isActive,
-  onSubmit,
-}: {
-  templateName: string;
-  isDefault: boolean;
-  isActive: boolean;
-  onSubmit: (reason: string) => void;
-}) {
-  const [value, setValue] = useState("");
-  const trimmed = value.trim();
-  const valid = trimmed.length >= ADMIN_REASON_MIN && trimmed.length <= ADMIN_REASON_MAX;
-
-  return (
-    <div className="grid min-h-dvh place-items-center bg-muted/40 p-4">
-      <form
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="template-reason-title"
-        onSubmit={(event) => {
-          event.preventDefault();
-          if (valid) onSubmit(trimmed);
-        }}
-        className="w-full max-w-md space-y-4 rounded-lg border bg-background p-6 shadow-lg"
-      >
-        <div className="space-y-1">
-          <h1 id="template-reason-title" className="text-lg font-semibold">
-            Edit the template “{templateName}”
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Changes save as a draft that sellers do not see. Publishing adds a new version: stores created afterwards
-            {isDefault ? " (this is the default template)" : ""} and the seller gallery use it; existing stores keep their site. Publish and
-            restore are logged with this reason.
-          </p>
-          {!isActive && (
-            <p className="text-sm text-amber-700 dark:text-amber-400">Inactive: turn on Active on the Templates page to show it to sellers.</p>
-          )}
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="template-edit-reason">Reason</Label>
-          <Textarea
-            id="template-edit-reason"
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            maxLength={ADMIN_REASON_MAX}
-            rows={3}
-            placeholder="Refresh the hero for the new season"
-            autoFocus
-          />
-          <p className="text-xs text-muted-foreground">
-            {trimmed.length}/{ADMIN_REASON_MAX} · at least {ADMIN_REASON_MIN} characters
-          </p>
-        </div>
-        <div className="flex justify-end gap-2">
-          <Button asChild variant="outline" type="button">
-            <Link href="/templates">Cancel</Link>
-          </Button>
-          <Button type="submit" disabled={!valid}>
-            Open editor
-          </Button>
-        </div>
-      </form>
-    </div>
   );
 }

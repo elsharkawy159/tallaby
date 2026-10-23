@@ -7,6 +7,7 @@ import {
   resolveAvatarUrl,
   type AvatarSubject,
 } from "@/lib/auth/avatar";
+import { AFFILIATE_PROGRAM_ENABLED } from "@/lib/constants";
 import { UserAddress, ProfileTabType } from "./profile.types";
 
 // Profile navigation tabs
@@ -29,12 +30,16 @@ export const profileTabs: ProfileTabType[] = [
     icon: Wallet,
     href: "/profile/wallet",
   },
-  {
-    id: "affiliate",
-    label: "Affiliate",
-    icon: Users,
-    href: "/profile/affiliate",
-  },
+  ...(AFFILIATE_PROGRAM_ENABLED
+    ? [
+        {
+          id: "affiliate" as const,
+          label: "Affiliate",
+          icon: Users,
+          href: "/profile/affiliate",
+        },
+      ]
+    : []),
   {
     id: "addresses",
     label: "Addresses",

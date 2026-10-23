@@ -1,6 +1,8 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 
+import { AFFILIATE_PROGRAM_ENABLED } from "@/lib/constants";
 import { generateNoIndexMetadata } from "@/lib/metadata";
 import {
   getMyAffiliateOverview,
@@ -23,6 +25,8 @@ export const revalidate = 0;
 export const fetchCache = "force-no-store";
 
 export default async function AffiliatePage() {
+  if (!AFFILIATE_PROGRAM_ENABLED) notFound();
+
   const overview = await getMyAffiliateOverview();
 
   if (!overview.success) {

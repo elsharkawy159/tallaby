@@ -2,7 +2,7 @@ import {
   Banknote,
   Blocks,
   Globe,
-  Handshake,
+  // Handshake, // affiliates tab is commented out below
   History,
   Home,
   LayoutTemplate,
@@ -83,7 +83,8 @@ export const sidebarSections: SidebarSection[] = [
         countKey: "newCustomers",
         countLabel: "New customers today",
       },
-      { key: "affiliates", title: "Affiliates", href: "/affiliate", icon: Handshake },
+      // Affiliate program is disabled for now.
+      // { key: "affiliates", title: "Affiliates", href: "/affiliate", icon: Handshake },
     ],
   },
   {

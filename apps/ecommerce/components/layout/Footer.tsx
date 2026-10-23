@@ -79,7 +79,8 @@ const Footer = async () => {
                 { href: "/categories", label: t("categories") },
                 { href: "/stores", label: t("storeLocator") },
                 { href: "/careers", label: t("careers") },
-                { href: "/affiliate", label: t("affiliateProgram") },
+                // Affiliate program is off for now (AFFILIATE_PROGRAM_ENABLED).
+                // { href: "/affiliate", label: t("affiliateProgram") },
               ].map((link) => (
                 <li key={link.href}>
                   <Link

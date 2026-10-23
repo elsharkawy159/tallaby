@@ -24,7 +24,8 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select";
 
-import { ReasonField, reasonIsValid } from "../sellers/[id]/seller-account.client";
+import { ADMIN_DEFAULT_REASON, reasonOrDefault } from "@workspace/lib/admin";
+import { ReasonField } from "../sellers/[id]/seller-account.client";
 import { sellerOverrideAction, walletAdjustmentAction } from "../sellers/[id]/seller-admin.server";
 import { ReviewDialog } from "../store-top-ups/store-top-ups.client";
 import type { StoreTopUpWithProof } from "./store-wallets.data";
@@ -77,7 +78,7 @@ export function AdjustStoreWalletButton({
         sellerId,
         storeId: storeId === ACCOUNT_LEVEL ? null : storeId,
         amount: signed,
-        reason,
+        reason: reasonOrDefault(reason),
         idempotencyKey,
       });
       if (result.success) {
@@ -158,7 +159,7 @@ export function AdjustStoreWalletButton({
             <Button
               variant={direction === "debit" ? "destructive" : "default"}
               onClick={submit}
-              disabled={pending || !reasonIsValid(reason) || cleanAmount === ""}
+              disabled={pending || cleanAmount === ""}
             >
               {pending ? "Posting…" : "Post adjustment"}
             </Button>
@@ -174,12 +175,10 @@ export function NegativeLimitButton({ sellerId, current }: { sellerId: string; c
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
-  const [reason, setReason] = useState("");
   const [pending, startTransition] = useTransition();
 
   const openDialog = () => {
     setValue(current ?? "");
-    setReason("");
     setOpen(true);
   };
 
@@ -188,7 +187,7 @@ export function NegativeLimitButton({ sellerId, current }: { sellerId: string; c
       const result = await sellerOverrideAction({
         action: "set_negative_limit",
         sellerId,
-        reason,
+        reason: ADMIN_DEFAULT_REASON,
         negativeLimit: value.trim() === "" ? null : value.trim(),
       });
       if (result.success) {
@@ -225,13 +224,12 @@ export function NegativeLimitButton({ sellerId, current }: { sellerId: string; c
                 placeholder="e.g. 500"
               />
             </div>
-            <ReasonField value={reason} onChange={setReason} />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)} disabled={pending}>
               Cancel
             </Button>
-            <Button onClick={submit} disabled={pending || !reasonIsValid(reason)}>
+            <Button onClick={submit} disabled={pending}>
               {pending ? "Saving…" : "Save"}
             </Button>
           </DialogFooter>

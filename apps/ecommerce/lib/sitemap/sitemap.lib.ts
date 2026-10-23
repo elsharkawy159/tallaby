@@ -119,7 +119,8 @@ export const STATIC_PAGES: StaticPageDef[] = [
   { path: "/brands", changeFrequency: "weekly", priority: 0.6 },
   { path: "/stores", changeFrequency: "weekly", priority: 0.6 },
   { path: "/sell", changeFrequency: "weekly", priority: 0.7 },
-  { path: "/affiliate", changeFrequency: "monthly", priority: 0.5 },
+  // Affiliate program is off for now (AFFILIATE_PROGRAM_ENABLED).
+  // { path: "/affiliate", changeFrequency: "monthly", priority: 0.5 },
   { path: "/about", changeFrequency: "monthly", priority: 0.5 },
   { path: "/contact", changeFrequency: "monthly", priority: 0.5 },
   { path: "/help", changeFrequency: "weekly", priority: 0.6 },

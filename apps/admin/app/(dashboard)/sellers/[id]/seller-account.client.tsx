@@ -18,7 +18,7 @@ import {
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { Textarea } from "@workspace/ui/components/textarea";
-import { ADMIN_REASON_MAX, ADMIN_REASON_MIN, MAX_STORES_OVERRIDE_LIMIT, type SellerOverrideInput } from "@workspace/lib/admin";
+import { ADMIN_DEFAULT_REASON, ADMIN_REASON_MAX, MAX_STORES_OVERRIDE_LIMIT, type SellerOverrideInput } from "@workspace/lib/admin";
 import type { SellerAccountForAdmin } from "@workspace/lib/admin/server";
 import { formatCurrency, formatDate, formatDateTime } from "../sellers.lib";
 import { TRIAL_STATE_LABELS } from "./seller-admin.lib";
@@ -41,11 +41,11 @@ const DIALOG_TITLES: Record<OverrideKind, string> = {
   set_negative_limit: "Wallet negative limit",
 };
 
-/** A required reason field shared by every admin override dialog. */
+/** An optional note for the audit log (wallet adjustments); send it through reasonOrDefault. */
 export function ReasonField({ value, onChange }: { value: string; onChange: (value: string) => void }) {
   return (
     <div className="space-y-1.5">
-      <Label htmlFor="admin-reason">Reason (required, saved in the audit log)</Label>
+      <Label htmlFor="admin-reason">Note (optional, saved in the audit log)</Label>
       <Textarea
         id="admin-reason"
         value={value}
@@ -58,7 +58,6 @@ export function ReasonField({ value, onChange }: { value: string; onChange: (val
   );
 }
 
-export const reasonIsValid = (reason: string) => reason.trim().length >= ADMIN_REASON_MIN;
 
 function Row({ label, children, action }: { label: string; children: React.ReactNode; action?: React.ReactNode }) {
   return (
@@ -76,18 +75,16 @@ function Row({ label, children, action }: { label: string; children: React.React
 export function SellerAccountPanel({ sellerId, account }: { sellerId: string; account: SellerAccountForAdmin }) {
   const router = useRouter();
   const [open, setOpen] = useState<OverrideKind | null>(null);
-  const [reason, setReason] = useState("");
   const [value, setValue] = useState("");
   const [pending, startTransition] = useTransition();
 
   const openDialog = (kind: OverrideKind, initial = "") => {
-    setReason("");
     setValue(initial);
     setOpen(kind);
   };
 
   const buildInput = (kind: OverrideKind): SellerOverrideInput | null => {
-    const base = { sellerId, reason };
+    const base = { sellerId, reason: ADMIN_DEFAULT_REASON };
     switch (kind) {
       case "set_store_limit": {
         if (value.trim() === "") return { action: kind, ...base, maxStoresOverride: null };
@@ -232,7 +229,7 @@ export function SellerAccountPanel({ sellerId, account }: { sellerId: string; ac
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{open ? DIALOG_TITLES[open] : ""}</DialogTitle>
-            <DialogDescription>Every change is saved with your name and the reason in the audit trail.</DialogDescription>
+            <DialogDescription>Every change is saved with your name in the audit trail.</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
@@ -268,14 +265,13 @@ export function SellerAccountPanel({ sellerId, account }: { sellerId: string; ac
                 <Input id="negative-limit" inputMode="decimal" value={value} onChange={(e) => setValue(e.target.value)} placeholder="e.g. 500" />
               </div>
             )}
-            <ReasonField value={reason} onChange={setReason} />
           </div>
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(null)} disabled={pending}>
               Cancel
             </Button>
-            <Button onClick={submit} disabled={pending || !reasonIsValid(reason)}>
+            <Button onClick={submit} disabled={pending}>
               {pending ? "Saving…" : "Save"}
             </Button>
           </DialogFooter>

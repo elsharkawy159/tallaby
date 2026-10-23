@@ -50,12 +50,14 @@ describe("store host routing (P5-01)", () => {
   it("lets shared pages through untouched", () => {
     expect(routeStorefrontRequest(req("/cart/checkout"), "sara")).toBeNull();
     expect(routeStorefrontRequest(req("/orders/123"), "sara")).toBeNull();
-    expect(routeStorefrontRequest(req("/returns"), "sara")).toBeNull();
+    expect(routeStorefrontRequest(req("/cookies"), "sara")).toBeNull();
   });
 
-  it("serves /privacy and /terms as the store's own pages (Tallaby's live on the marketing site)", () => {
+  it("serves /privacy, /terms, /shipping and /returns as the store's own pages", () => {
     expect(rewriteOf("/privacy")).toContain("/ar/storefront/sara/pages/privacy");
     expect(rewriteOf("/en/terms")).toContain("/en/storefront/sara/pages/terms");
+    expect(rewriteOf("/shipping")).toContain("/ar/storefront/sara/pages/shipping");
+    expect(rewriteOf("/en/returns/")).toContain("/en/storefront/sara/pages/returns");
   });
 });
 

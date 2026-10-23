@@ -10,6 +10,7 @@ import {
   type AffiliateOverview,
   type AffiliateOrderView,
 } from "@workspace/db/affiliates";
+import { AFFILIATE_PROGRAM_ENABLED } from "@/lib/constants";
 import { getUser } from "./auth";
 import { createNotification } from "./notifications";
 
@@ -61,6 +62,10 @@ export async function getMyAffiliateAccount(): Promise<AffiliateAccountData | nu
 export async function joinAffiliateProgramAction(): Promise<
   AffiliateActionResult<AffiliateAccountData>
 > {
+  if (!AFFILIATE_PROGRAM_ENABLED) {
+    return { success: false, error: "affiliateProgramDisabled" };
+  }
+
   try {
     const userId = await getAuthenticatedUserId();
     if (!userId) {

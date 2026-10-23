@@ -72,6 +72,14 @@ export type AdminAuditAction = (typeof ADMIN_AUDIT_ACTIONS)[number];
 
 export const ADMIN_REASON_MIN = 3;
 export const ADMIN_REASON_MAX = 500;
+/** Audit reason sent when the admin UI does not ask for one (owner, 2026-10-24: no reason prompts). */
+export const ADMIN_DEFAULT_REASON = "Admin edit";
+
+/** The typed reason when it is long enough, else ADMIN_DEFAULT_REASON. */
+export function reasonOrDefault(reason?: string | null): string {
+  const trimmed = (reason ?? "").trim();
+  return trimmed.length >= ADMIN_REASON_MIN ? trimmed.slice(0, ADMIN_REASON_MAX) : ADMIN_DEFAULT_REASON;
+}
 /** Highest per-seller store-limit exception (D27). */
 export const MAX_STORES_OVERRIDE_LIMIT = 100;
 /** A trial can be extended to at most this many days from now. */

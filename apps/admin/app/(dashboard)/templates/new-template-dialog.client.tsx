@@ -3,12 +3,11 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ADMIN_REASON_MAX, ADMIN_REASON_MIN } from "@workspace/lib/admin";
+import { ADMIN_DEFAULT_REASON } from "@workspace/lib/admin";
 import { Button } from "@workspace/ui/components/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@workspace/ui/components/dialog";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
-import { Textarea } from "@workspace/ui/components/textarea";
 import { createTemplateAction, duplicateTemplateAction, type TemplateActionResult } from "./templates.server";
 
 // Same rule as templateKeySchema (templates-studio-admin.lib.ts).
@@ -22,7 +21,7 @@ const INACTIVE_NOTE = "It starts inactive: sellers do not see it until you turn 
 /**
  * New template (blank: one empty home page, Classic's design system) or a
  * duplicate of one (its current version and meta under a new key). Both are
- * audited with a reason, start inactive and open in the template editor.
+ * audited, start inactive and open in the template editor.
  */
 function TemplateFormDialog({ mode, categories, open, onOpenChange }: { mode: Mode; categories: readonly string[]; open: boolean; onOpenChange: (open: boolean) => void }) {
   const router = useRouter();
@@ -30,12 +29,10 @@ function TemplateFormDialog({ mode, categories, open, onOpenChange }: { mode: Mo
   const [nameEn, setNameEn] = useState("");
   const [nameAr, setNameAr] = useState("");
   const [category, setCategory] = useState(categories[0] ?? "general");
-  const [reason, setReason] = useState("");
   const [pending, startTransition] = useTransition();
 
   const creating = mode.kind === "create";
-  const reasonOk = reason.trim().length >= ADMIN_REASON_MIN && reason.trim().length <= ADMIN_REASON_MAX;
-  const valid = reasonOk && KEY_RE.test(key.trim()) && (!creating || (nameEn.trim() && nameAr.trim() && CATEGORY_RE.test(category.trim())));
+  const valid = KEY_RE.test(key.trim()) && (!creating || (nameEn.trim() && nameAr.trim() && CATEGORY_RE.test(category.trim())));
 
   const save = () =>
     startTransition(async () => {
@@ -46,10 +43,10 @@ function TemplateFormDialog({ mode, categories, open, onOpenChange }: { mode: Mo
           name: { ar: nameAr.trim(), en: nameEn.trim() },
           description: { ar: "", en: "" },
           category: category.trim(),
-          reason: reason.trim(),
+          reason: ADMIN_DEFAULT_REASON,
         });
       } else {
-        result = await duplicateTemplateAction({ id: mode.source.id, key: key.trim(), reason: reason.trim() });
+        result = await duplicateTemplateAction({ id: mode.source.id, key: key.trim(), reason: ADMIN_DEFAULT_REASON });
       }
       if (!result.success) {
         toast.error(result.error);
@@ -107,10 +104,6 @@ function TemplateFormDialog({ mode, categories, open, onOpenChange }: { mode: Mo
               </div>
             </>
           )}
-          <div className="space-y-1.5">
-            <Label htmlFor="template-new-reason">Reason (saved in the audit log)</Label>
-            <Textarea id="template-new-reason" rows={2} maxLength={ADMIN_REASON_MAX} value={reason} onChange={(e) => setReason(e.target.value)} />
-          </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={pending}>

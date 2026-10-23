@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { getMyAffiliateAccount } from '@/actions/affiliate'
 import { useAuthUser } from '@/lib/auth/use-auth-user'
+import { AFFILIATE_PROGRAM_ENABLED } from '@/lib/constants'
 
 /**
  * Resolves the signed-in viewer's own active affiliate coupon for product
@@ -18,7 +19,7 @@ export function useAffiliateShareCoupon (): {
   const { data, isLoading: isAffiliateLoading, isFetched } = useQuery({
     queryKey: ['affiliate-account', user?.id ?? 'anonymous'],
     queryFn: () => getMyAffiliateAccount(),
-    enabled: Boolean(user?.id),
+    enabled: AFFILIATE_PROGRAM_ENABLED && Boolean(user?.id),
     staleTime: 5 * 60_000,
     gcTime: 30 * 60_000,
   })
@@ -26,10 +27,11 @@ export function useAffiliateShareCoupon (): {
   // Guests: ready as soon as auth settles (no coupon).
   // Signed-in: wait until the affiliate lookup finishes (or is cached).
   const isReady =
-    !isAuthLoading && (!user?.id || isFetched || !isAffiliateLoading)
+    !AFFILIATE_PROGRAM_ENABLED ||
+    (!isAuthLoading && (!user?.id || isFetched || !isAffiliateLoading))
 
   const coupon =
-    data?.status === 'active' && data.code ? data.code : null
+    AFFILIATE_PROGRAM_ENABLED && data?.status === 'active' && data.code ? data.code : null
 
   return { coupon, isReady }
 }

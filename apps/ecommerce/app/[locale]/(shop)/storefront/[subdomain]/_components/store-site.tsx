@@ -17,7 +17,6 @@ import {
   type RenderContext,
 } from "@workspace/store-sections/render";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
-import { AddToCartButton } from "@/components/product/add-to-cart-button";
 import { Link } from "@/i18n/navigation";
 import { formatContentDate, toContentSummary } from "@/lib/store-cms/cms.lib";
 import { getCachedSectionContent } from "@/lib/store-cms/cms.server";
@@ -26,6 +25,7 @@ import { optimizeStoreImage } from "@/lib/store-site/optimize-image.lib";
 import { siteNavPages } from "@/lib/store-site/site-nav.lib";
 import { catalogStoreId, type Storefront } from "@/lib/storefront.server";
 import { CartSheet } from "./cart-sheet.client";
+import { StoreCardAddToCart } from "./store-card-add-to-cart.client";
 import { StoreCartBadge } from "./store-cart-badge.client";
 import { StoreSearchBox, StoreSearchButton } from "./store-search.client";
 import { StoreForm } from "./store-form.client";
@@ -150,8 +150,9 @@ async function buildContext(
         <StoreSearchButton icon={icon} fontClassName={storefrontFont.variable} />
       ),
     renderLanguageSwitcher: () => <StorefrontLanguageSwitcher variant="site" />,
-    renderAddToCart: (product) =>
-      catalog.withVariants.has(product.id) ? null : <AddToCartButton productId={product.id} size="sm" stock={product.inStock ? 1 : 0} />,
+    renderAddToCart: (product) => (
+      <StoreCardAddToCart productId={product.id} href={product.href} inStock={!!product.inStock} hasVariants={catalog.withVariants.has(product.id)} />
+    ),
     renderWishlistButton: (product) => <StoreWishlistButton productId={product.id} />,
     forms,
     renderForm: (form, instanceId) => <StoreForm form={form} instanceId={instanceId} />,
@@ -174,12 +175,15 @@ export async function StoreSiteChrome({
   const instance = part === "header" ? withLanguageSwitcher(flushHeaderOnMobile(site.header), new Set(store.supportedLocales).size > 1) : site.footer;
   if (!instance) return null;
   const ctx = await buildContext(store, site, locale, [instance]);
-  return (
+  const chrome = (
     <>
       <PageStyles sections={[instance]} />
       <SectionRenderer instance={instance} registry={storeSectionRegistry} ctx={ctx} defaultLocale={site.settings.defaultLocale} />
     </>
   );
+  // Every section is its own stacking context (`relative isolate`), so the header's search
+  // results would paint under the sections after it; lift the whole header above the page.
+  return part === "header" ? <div className="relative z-40">{chrome}</div> : chrome;
 }
 
 /**
@@ -204,8 +208,9 @@ export async function StoreSiteProductGrid({
   const ctx: RenderContext = {
     ...base,
     catalog: { ...base.catalog, products: { [CATALOG_LIST_ID]: products } },
-    renderAddToCart: (product) =>
-      withVariants.has(product.id) ? null : <AddToCartButton productId={product.id} size="sm" stock={product.inStock ? 1 : 0} />,
+    renderAddToCart: (product) => (
+      <StoreCardAddToCart productId={product.id} href={product.href} inStock={!!product.inStock} hasVariants={withVariants.has(product.id)} />
+    ),
   };
   return (
     <>

@@ -9,7 +9,7 @@
  *   faster.tallaby.com/cart             → /ar/storefront/faster/cart
  *   faster.tallaby.com/products?q=x     → /ar/storefront/faster/products?q=x
  *
- * Checkout, sign-in, orders and the policy pages run as-is on the store host
+ * Checkout, sign-in, orders and the cookies page run as-is on the store host
  * (cart actions are scoped by host, so they act on the storefront cart).
  * Anything else redirects to tallaby.com, which is now the marketing site
  * (app/[locale]/(marketing)).
@@ -63,11 +63,9 @@ const PASS_THROUGH = [
   "/payment",
   "/profile",
   "/error",
-  // /privacy and /terms are not here: on tallaby.com they are the marketing
-  // pages, so a store host serves its own builder page of that slug, or the
-  // page route redirects to Tallaby's.
-  "/returns",
-  "/shipping",
+  // /privacy, /terms, /shipping and /returns are not here: a store host
+  // serves its own builder page of that slug, or the page route redirects to
+  // Tallaby's.
   "/cookies",
 ];
 

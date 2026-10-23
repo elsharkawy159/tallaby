@@ -9,8 +9,7 @@ import { Button } from "@workspace/ui/components/button";
 import { Checkbox } from "@workspace/ui/components/checkbox";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@workspace/ui/components/dialog";
 import { Input } from "@workspace/ui/components/input";
-import { Label } from "@workspace/ui/components/label";
-import { Textarea } from "@workspace/ui/components/textarea";
+import { ADMIN_DEFAULT_REASON } from "@workspace/lib/admin";
 import { cn } from "@workspace/ui/lib/utils";
 import { RemoteImage } from "@/components/media/remote-image";
 import { applyStoreThemeAction } from "./website-actions.server";
@@ -45,8 +44,7 @@ export function PaletteBand({ palette, className }: { palette: readonly string[]
 const categoryLabel = (category: string) => (category ? category.charAt(0).toUpperCase() + category.slice(1).replace(/[-_]/g, " ") : "Other");
 
 /**
- * "Change theme": every offered theme with its colours, then a reason (saved
- * in the audit log) and, on a live site, whether to publish at once.
+ * "Change theme": every offered theme with its colours, then, on a live site, whether to publish at once.
  */
 export function ChangeThemeButton({
   storeId,
@@ -66,7 +64,6 @@ export function ChangeThemeButton({
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
-  const [reason, setReason] = useState("");
   const [publishNow, setPublishNow] = useState(false);
   const [pending, startTransition] = useTransition();
 
@@ -81,14 +78,13 @@ export function ChangeThemeButton({
 
   const reset = () => {
     setSelected(null);
-    setReason("");
     setPublishNow(false);
   };
 
   const apply = () =>
     startTransition(async () => {
       if (!choice) return;
-      const result = await applyStoreThemeAction({ storeId, templateKey: choice.key, reason: reason.trim(), publishNow: siteLive && publishNow });
+      const result = await applyStoreThemeAction({ storeId, templateKey: choice.key, reason: ADMIN_DEFAULT_REASON, publishNow: siteLive && publishNow });
       if (result.success) {
         toast.success(result.message);
         setOpen(false);
@@ -215,10 +211,6 @@ export function ChangeThemeButton({
                     {choice.key === currentKey ? " again. The store's edits to this theme are replaced." : "."}
                   </p>
                 </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="theme-reason">Reason (saved in the audit log)</Label>
-                  <Textarea id="theme-reason" rows={2} maxLength={500} value={reason} onChange={(event) => setReason(event.target.value)} />
-                </div>
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   {siteLive ? (
                     <label className="flex items-center gap-2 text-sm">
@@ -232,7 +224,7 @@ export function ChangeThemeButton({
                     <Button variant="outline" onClick={() => setOpen(false)} disabled={pending}>
                       Cancel
                     </Button>
-                    <Button onClick={apply} disabled={pending || reason.trim().length < 3}>
+                    <Button onClick={apply} disabled={pending}>
                       {pending ? "Applying…" : publishNow && siteLive ? "Apply and publish" : "Apply theme"}
                     </Button>
                   </div>

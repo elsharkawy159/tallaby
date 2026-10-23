@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ADMIN_REASON_MAX, ADMIN_REASON_MIN } from "@workspace/lib/admin";
+import { ADMIN_DEFAULT_REASON } from "@workspace/lib/admin";
 import { Button } from "@workspace/ui/components/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@workspace/ui/components/dialog";
 import { Input } from "@workspace/ui/components/input";
@@ -27,7 +27,7 @@ type Mode = { kind: "create" } | { kind: "duplicate"; source: SectionDetails } |
 
 /**
  * One dialog for a new blank section, a duplicate (new key) and the details
- * of an existing one. Every save asks for a reason (audit log). A new or
+ * of an existing one. Every save is audited. A new or
  * duplicated section opens in the section editor; sellers only see it after
  * its first Publish.
  */
@@ -41,13 +41,11 @@ function SectionFormDialog({ mode, categories, open, onOpenChange }: { mode: Mod
   const [nameEn, setNameEn] = useState(base?.name.en ?? "");
   const [descriptionAr, setDescriptionAr] = useState(base?.description.ar ?? "");
   const [descriptionEn, setDescriptionEn] = useState(base?.description.en ?? "");
-  const [reason, setReason] = useState("");
   const [pending, startTransition] = useTransition();
 
   const needsKey = mode.kind !== "edit";
   const editsMeta = mode.kind !== "duplicate";
-  const reasonOk = reason.trim().length >= ADMIN_REASON_MIN && reason.trim().length <= ADMIN_REASON_MAX;
-  const valid = reasonOk && (!needsKey || KEY_RE.test(key.trim())) && (!editsMeta || (nameAr.trim() && nameEn.trim()));
+  const valid = (!needsKey || KEY_RE.test(key.trim())) && (!editsMeta || (nameAr.trim() && nameEn.trim()));
 
   const title = mode.kind === "create" ? "New section" : mode.kind === "duplicate" ? `Duplicate ${mode.source.name.en || mode.source.key}` : `Details of ${mode.section.name.en || mode.section.key}`;
 
@@ -58,11 +56,11 @@ function SectionFormDialog({ mode, categories, open, onOpenChange }: { mode: Mod
         subcategory: subcategory.trim(),
         name: { ar: nameAr.trim(), en: nameEn.trim() },
         description: { ar: descriptionAr.trim(), en: descriptionEn.trim() },
-        reason: reason.trim(),
+        reason: ADMIN_DEFAULT_REASON,
       };
       let result: SectionActionResult;
       if (mode.kind === "create") result = await createSectionAction({ key: key.trim(), ...meta });
-      else if (mode.kind === "duplicate") result = await duplicateSectionAction({ id: mode.source.id, key: key.trim(), reason: reason.trim() });
+      else if (mode.kind === "duplicate") result = await duplicateSectionAction({ id: mode.source.id, key: key.trim(), reason: ADMIN_DEFAULT_REASON });
       else result = await updateSectionMetaAction({ id: mode.section.id, ...meta });
       if (!result.success) {
         toast.error(result.error);
@@ -133,10 +131,6 @@ function SectionFormDialog({ mode, categories, open, onOpenChange }: { mode: Mod
               </div>
             </>
           )}
-          <div className="space-y-1.5">
-            <Label htmlFor="section-reason">Reason (saved in the audit log)</Label>
-            <Textarea id="section-reason" rows={2} maxLength={ADMIN_REASON_MAX} value={reason} onChange={(e) => setReason(e.target.value)} />
-          </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={pending}>

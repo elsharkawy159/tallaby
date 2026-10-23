@@ -22,7 +22,7 @@ import { storeHref } from "../../_components/entity/entity-href.lib";
 import { formatDate, formatDateTime } from "../sellers.lib";
 import { SITE_STATUS_LABELS, STORE_STATUS_CLASSES } from "./seller-admin.lib";
 import { storeAdminAction } from "./seller-admin.server";
-import { ReasonField, reasonIsValid } from "./seller-account.client";
+import { ADMIN_DEFAULT_REASON } from "@workspace/lib/admin";
 
 type StoreAction = "unpublish_store" | "suspend_store" | "unsuspend_store";
 
@@ -44,23 +44,21 @@ const ACTION_COPY: Record<StoreAction, { label: string; title: string; body: str
   },
 };
 
-/** The seller's stores with site status and view-only revisions; single-store actions need a reason (P9-01). */
+/** The seller's stores with site status and view-only revisions; single-store actions are audited (P9-01). */
 export function SellerStoresPanel({ sellerId, stores }: { sellerId: string; stores: AdminStoreRow[] }) {
   const router = useRouter();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [target, setTarget] = useState<{ store: AdminStoreRow; action: StoreAction } | null>(null);
-  const [reason, setReason] = useState("");
   const [pending, startTransition] = useTransition();
 
   const openAction = (store: AdminStoreRow, action: StoreAction) => {
-    setReason("");
     setTarget({ store, action });
   };
 
   const submit = () => {
     if (!target) return;
     startTransition(async () => {
-      const result = await storeAdminAction({ action: target.action, sellerId, storeId: target.store.id, reason });
+      const result = await storeAdminAction({ action: target.action, sellerId, storeId: target.store.id, reason: ADMIN_DEFAULT_REASON });
       if (result.success) {
         toast.success(result.message);
         setTarget(null);
@@ -199,7 +197,6 @@ export function SellerStoresPanel({ sellerId, stores }: { sellerId: string; stor
               {target ? `${target.store.name} (${target.store.host}). ${ACTION_COPY[target.action].body}` : ""}
             </DialogDescription>
           </DialogHeader>
-          <ReasonField value={reason} onChange={setReason} />
           <DialogFooter>
             <Button variant="outline" onClick={() => setTarget(null)} disabled={pending}>
               Cancel
@@ -207,7 +204,7 @@ export function SellerStoresPanel({ sellerId, stores }: { sellerId: string; stor
             <Button
               variant={target?.action === "suspend_store" ? "destructive" : "default"}
               onClick={submit}
-              disabled={pending || !reasonIsValid(reason)}
+              disabled={pending}
             >
               {pending ? "Saving…" : target ? ACTION_COPY[target.action].label : "Confirm"}
             </Button>

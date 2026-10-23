@@ -15,10 +15,10 @@ import {
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { Switch } from "@workspace/ui/components/switch";
-import { Textarea } from "@workspace/ui/components/textarea";
+import { ADMIN_DEFAULT_REASON } from "@workspace/lib/admin";
 import { updateTemplateAction } from "./templates.server";
 
-/** Gallery settings of one template: active, premium + price, order. A reason is required. */
+/** Gallery settings of one template: active, premium + price, order. Saves are audited. */
 export function TemplateEditButton({
   template,
 }: {
@@ -30,7 +30,6 @@ export function TemplateEditButton({
   const [isPremium, setIsPremium] = useState(template.isPremium);
   const [price, setPrice] = useState(template.price ?? "");
   const [sortOrder, setSortOrder] = useState(String(template.sortOrder));
-  const [reason, setReason] = useState("");
   const [pending, startTransition] = useTransition();
 
   const save = () =>
@@ -41,12 +40,11 @@ export function TemplateEditButton({
         isPremium,
         price: price.trim() ? price.trim() : null,
         sortOrder: Number.parseInt(sortOrder, 10) || 0,
-        reason: reason.trim(),
+        reason: ADMIN_DEFAULT_REASON,
       });
       if (result.success) {
         toast.success(result.message);
         setOpen(false);
-        setReason("");
         router.refresh();
       } else {
         toast.error(result.error);
@@ -92,16 +90,12 @@ export function TemplateEditButton({
                 <Input id="template-order" inputMode="numeric" value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} />
               </div>
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="template-reason">Reason (saved in the audit log)</Label>
-              <Textarea id="template-reason" rows={2} maxLength={500} value={reason} onChange={(e) => setReason(e.target.value)} />
-            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)} disabled={pending}>
               Cancel
             </Button>
-            <Button onClick={save} disabled={pending || reason.trim().length < 3 || (isPremium && !price.trim())}>
+            <Button onClick={save} disabled={pending || (isPremium && !price.trim())}>
               Save
             </Button>
           </DialogFooter>

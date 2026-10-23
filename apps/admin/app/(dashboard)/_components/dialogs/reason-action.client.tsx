@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { ADMIN_DEFAULT_REASON } from "@workspace/lib/admin";
 import { Button } from "@workspace/ui/components/button";
 import {
   Dialog,
@@ -12,15 +13,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@workspace/ui/components/dialog";
-import { Label } from "@workspace/ui/components/label";
-import { Textarea } from "@workspace/ui/components/textarea";
 
 type ActionResult = { success: true; message: string } | { success: false; error: string };
 
 /**
- * A button that opens a dialog asking for a reason, then calls a Server
- * Action with `{ ...payload, reason }`. Used by every audited Phase 9B admin
- * write (docs/admin-saas.md): the reason is stored in admin_audit_log.
+ * A button that calls an audited Server Action with `{ ...payload, reason }`.
+ * The admin is no longer asked for a reason (owner, 2026-10-24): the audit
+ * log gets ADMIN_DEFAULT_REASON. A destructive action still asks for a plain
+ * confirmation first.
  */
 export function ReasonActionButton({
   label,
@@ -42,30 +42,27 @@ export function ReasonActionButton({
   action: (input: unknown) => Promise<ActionResult>;
   variant?: "outline" | "default" | "ghost" | "secondary";
   destructive?: boolean;
-  /** A re-check or similar read-only action needs no reason. */
+  /** A re-check or similar read-only action sends no reason. */
   reasonRequired?: boolean;
   size?: "sm" | "default";
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [reason, setReason] = useState("");
   const [pending, startTransition] = useTransition();
-  const tooShort = reasonRequired && reason.trim().length < 3;
 
   const run = () =>
     startTransition(async () => {
-      const result = await action({ ...payload, ...(reasonRequired || reason.trim() ? { reason: reason.trim() } : {}) });
+      const result = await action({ ...payload, ...(reasonRequired ? { reason: ADMIN_DEFAULT_REASON } : {}) });
       if (result.success) {
         toast.success(result.message);
         setOpen(false);
-        setReason("");
         router.refresh();
       } else {
         toast.error(result.error);
       }
     });
 
-  if (!reasonRequired) {
+  if (!destructive) {
     return (
       <Button variant={variant} size={size} disabled={pending} onClick={run}>
         {label}
@@ -75,7 +72,7 @@ export function ReasonActionButton({
 
   return (
     <>
-      <Button variant={destructive ? "destructive" : variant} size={size} onClick={() => setOpen(true)}>
+      <Button variant="destructive" size={size} onClick={() => setOpen(true)}>
         {label}
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
@@ -84,21 +81,11 @@ export function ReasonActionButton({
             <DialogTitle>{title}</DialogTitle>
             {description && <DialogDescription>{description}</DialogDescription>}
           </DialogHeader>
-          <div className="space-y-1.5">
-            <Label htmlFor="admin-reason">Reason (saved in the audit log)</Label>
-            <Textarea
-              id="admin-reason"
-              rows={3}
-              maxLength={500}
-              value={reason}
-              onChange={(event) => setReason(event.target.value)}
-            />
-          </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)} disabled={pending}>
               Cancel
             </Button>
-            <Button variant={destructive ? "destructive" : "default"} onClick={run} disabled={pending || tooShort}>
+            <Button variant="destructive" onClick={run} disabled={pending}>
               {confirmLabel}
             </Button>
           </DialogFooter>
