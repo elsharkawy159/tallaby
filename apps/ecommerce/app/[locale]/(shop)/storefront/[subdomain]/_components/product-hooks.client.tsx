@@ -133,11 +133,11 @@ export function StoreProductBuyBox({
   );
   if (!stickyMobile) return actions;
 
-  // Phones: docked at the bottom of the screen, as on today's product page.
+  // Phones: docked at the bottom edge (a store host has no bottom nav to clear).
   return (
     <>
       <HideBottomNavOnScroll />
-      <div data-chat-avoid className={stickyBuyBarClass()}>
+      <div data-chat-avoid className={stickyBuyBarClass(undefined, { bottomNav: false })}>
         {actions}
       </div>
     </>

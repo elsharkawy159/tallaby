@@ -66,6 +66,15 @@ describe("stickyBuyBarClass", () => {
     );
     expect(stickyBuyBarClass()).not.toContain("md:mt-6");
   });
+
+  it("docks the store bar on the bottom edge with safe-area padding (no bottom nav to clear)", () => {
+    const store = stickyBuyBarClass(undefined, { bottomNav: false });
+    expect(store).toContain("bottom-0");
+    expect(store).not.toContain("bottom-[79px]");
+    expect(store).toContain("pb-[calc(0.75rem+env(safe-area-inset-bottom))]");
+    expect(store).toContain("md:relative");
+    expect(store).toContain("md:p-0");
+  });
 });
 
 describe("ProductPageProvider", () => {

@@ -1,5 +1,5 @@
 import type { ProductDetail, ProductVariantDetail } from "@workspace/store-sections/render";
-import { isRichTextEmpty, sanitizeRichTextHtml } from "@workspace/tiptap/content";
+import { isRichTextEmpty, sanitizeRichTextHtml } from "@workspace/tiptap/sanitize";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
 import { pricingDiscountPercent, productHasFreeDelivery, productPricing } from "@/components/product-page/product-page.lib";
 import type { Product } from "@/components/product-page/product-page.types";

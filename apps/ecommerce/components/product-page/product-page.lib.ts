@@ -18,12 +18,17 @@ export type ProductVariant = NonNullable<Product["productVariants"]>[number];
 export const LOW_STOCK_THRESHOLD = 5;
 
 /**
- * The buy row docked to the bottom of the screen on phones (above the
- * storefront's cart pill / the marketplace bottom nav, dropping when that
- * hides) and back in the flow from md up. `desktop`: extra md classes.
+ * The buy row docked to the bottom of the screen on phones and back in the
+ * flow from md up. `desktop`: extra md classes. On the marketplace it sits
+ * above the bottom nav (dropping when that hides); a store host has no bottom
+ * nav (`bottomNav: false`), so it sits on the bottom edge, padded for the
+ * phone's safe area.
  */
-export function stickyBuyBarClass(desktop?: string): string {
-  return ["fixed right-0 bottom-[79px] left-0 z-50 transition-[bottom] duration-300 ease-out [html[data-bottom-nav=hidden]_&]:bottom-0 border-t border-gray-200 bg-white px-3 py-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] md:relative md:bottom-0 md:z-auto", desktop, "md:border-0 md:bg-transparent md:p-0 md:shadow-none"].filter(Boolean).join(" ");
+export function stickyBuyBarClass(desktop?: string, { bottomNav = true }: { bottomNav?: boolean } = {}): string {
+  const dock = bottomNav
+    ? "fixed right-0 bottom-[79px] left-0 z-50 transition-[bottom] duration-300 ease-out [html[data-bottom-nav=hidden]_&]:bottom-0 border-t border-gray-200 bg-white px-3 py-3"
+    : "fixed right-0 bottom-0 left-0 z-50 border-t border-gray-200 bg-white px-3 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]";
+  return [`${dock} shadow-[0_-4px_16px_rgba(0,0,0,0.06)] md:relative md:bottom-0 md:z-auto`, desktop, "md:border-0 md:bg-transparent md:p-0 md:shadow-none"].filter(Boolean).join(" ");
 }
 
 export type ProductPricing = {
