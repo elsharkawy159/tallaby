@@ -107,7 +107,7 @@ describe.skipIf(!TEST_DATABASE_URL)("store templates (integration)", { timeout: 
     const [a2Store] = await db.select({ live: s.stores.publishedRevisionId }).from(s.stores).where(eq(s.stores.id, w.a.a2));
 
     const applied = await applyStoreTemplate(w.a.sellerId, w.a.a2, "tallaby-classic", w.a.sellerId, OPTIONS, db);
-    expect(applied).toMatchObject({ success: true, data: { templateKey: "tallaby-classic", pagesUpdated: 6, pagesCreated: 0 } });
+    expect(applied).toMatchObject({ success: true, data: { templateKey: "tallaby-classic", pagesUpdated: 7, pagesCreated: 0 } });
 
     const after = await home(w.a.sellerId, w.a.a2);
     const sections = (after.draftContent as { sections: { id: string }[] }).sections;
