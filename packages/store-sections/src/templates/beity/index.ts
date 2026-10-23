@@ -201,7 +201,9 @@ const DEMO = demoStore({
 
 export const BEITY = libraryTemplate({
   key: BEITY_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Beity v2: product page",
+  productPage: { thumbs: "side", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للمطبخ", "Back to the kitchen"), reviews: L("جربوه في بيوتهم", "Tried in their homes"), related: L("حاجات للمطبخ كمان", "More for your kitchen") } },
   name: L("بيتي", "Beity"),
   description: L(
     "متجر البيت والمطبخ: بانرات متحركة، الأقسام، رف الأسبوع، على قد الميزانية، عروض الأسبوع وافتح قبل ما تدفع. أربع صفحات جاهزة.",

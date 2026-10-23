@@ -234,7 +234,9 @@ const DEMO = demoStore({
 
 export const KHOLKHAL = libraryTemplate({
   key: KHOLKHAL_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Kholkhal v2: product page",
+  productPage: { thumbs: "side", gallery: "end", button: "outline", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للمجموعة", "Back to the collection"), reviews: L("كلام العميلات", "Words from our customers"), related: L("قطع تحلّي معاها", "Wear it with") } },
   name: L("خلخال", "Kholkhal"),
   description: L(
     "إكسسوارات مطلية دهب: بانرات متحركة، أقسام دائرية، هدايا حسب الميزانية، ادّي وخدي وآراء العميلات. أربع صفحات جاهزة.",

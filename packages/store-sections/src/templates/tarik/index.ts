@@ -221,7 +221,9 @@ const DEMO = demoStore({
 
 export const TARIK = libraryTemplate({
   key: TARIK_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Tarik v2: product page",
+  productPage: { thumbs: "side", band: "paper", extras: ["product-perks"], copy: { back: L("رجوع للعربية", "Back to the car"), reviews: L("من جوّا عربياتهم", "From inside their cars"), related: L("إكسسوارات تكمّل العربية", "More for your car") } },
   name: L("طريق", "Tarik"),
   description: L(
     "إكسسوارات العربيات: بانرات متحركة، تسوق بالمكان، طقم الراحة، شارك ووفّر وآراء العملاء. أربع صفحات جاهزة.",

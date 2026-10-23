@@ -170,7 +170,9 @@ const DEMO = demoStore({
 
 export const NASHAT = libraryTemplate({
   key: NASHAT_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Nashat v2: product page",
+  productPage: { thumbs: "side", band: "brand", extras: ["product-perks"], copy: { back: L("رجوع للجيم", "Back to the gym"), reviews: L("كلام الكباتن", "Words from the captains"), related: L("كمّل تمرينتك", "Complete your workout") } },
   name: L("نشاط", "Nashat"),
   description: L(
     "لياقة في البيت: بانرات متحركة، الأكثر مبيعاً، كل ما تزود توفّر ورسايل الكباتن. أربع صفحات جاهزة.",
