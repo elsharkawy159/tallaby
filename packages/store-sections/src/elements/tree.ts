@@ -110,7 +110,7 @@ export function canContain(nodes: readonly ComponentNode[], parentId: string | n
   if (!childDef) return false;
   // A section is the single root of a tree section, never nested.
   if (child.type === "section") return parentId === null && nodes.length === 0;
-  if (parentId === null) return child.type !== "listItem" && child.type !== "accordionItem" && child.type !== "videoItem";
+  if (parentId === null) return child.type !== "listItem" && child.type !== "accordionItem" && child.type !== "videoItem" && child.type !== "slide";
   const parent = findNode(nodes, parentId);
   const parentDef = parent && getElementDefinition(parent.type);
   if (!parent || !parentDef?.container) return false;
@@ -118,6 +118,7 @@ export function canContain(nodes: readonly ComponentNode[], parentId: string | n
   if (child.type === "listItem" && parent.type !== "list") return false;
   if (child.type === "accordionItem" && parent.type !== "accordion") return false;
   if (child.type === "videoItem" && parent.type !== "videoPlaylist") return false;
+  if (child.type === "slide" && parent.type !== "carousel") return false;
   const path = findPath(nodes, parentId) ?? [];
   const insideLink = path.some((id) => LINK_TYPES.includes(findNode(nodes, id)?.type as ElementType));
   if (insideLink && (LINK_TYPES.includes(childDef.type) || isLinkInside(child.children))) return false;

@@ -79,6 +79,8 @@ export type ElementType =
   | "video"
   | "videoPlaylist"
   | "videoItem"
+  | "carousel"
+  | "slide"
   | "divider"
   | "spacer"
   | "icon"
@@ -538,6 +540,46 @@ export const ELEMENT_DEFINITIONS: readonly ElementDefinition[] = [
         hint: L("فيديوهات يوتيوب تأخذ صورتها تلقائيًا.", "YouTube videos get their own still automatically."),
       },
     ],
+  },
+  // Banner carousel (Claude Design "Banner carousel" hero, 2026-10-23): one slide in view at a time,
+  // swiped on phones; with JS (CarouselRuntime on the host) it autoplays, pausing on hover, focus,
+  // the pause button, a hidden tab or off-screen, and starts paused with reduced motion.
+  {
+    type: "carousel",
+    group: "layout",
+    label: L("شرائح متحركة", "Carousel"),
+    keywords: ["carousel", "slider", "slides", "banner", "سلايدر", "شرائح", "بانر"],
+    container: true,
+    childTypes: ["slide"],
+    defaultProps: { autoplay: true, interval: 5 },
+    defaultChildren: () =>
+      [1, 2].map((n) => ({
+        type: "slide",
+        props: {},
+        style: { minHeight: 360, justifyContent: "center", gap: 12, paddingTop: 40, paddingBottom: 40, paddingStart: 40, paddingEnd: 40, background: "secondary" },
+        children: [{ type: "heading", props: { text: `الشريحة ${n}`, level: "h2", translations: { en: { text: `Slide ${n}` } } }, children: [] }],
+      })),
+    fields: [
+      { key: "autoplay", label: L("تشغيل تلقائي", "Autoplay"), type: "switch" },
+      {
+        key: "interval",
+        label: L("مدة كل شريحة (ثانية)", "Seconds per slide"),
+        type: "number",
+        min: 3,
+        max: 15,
+        showWhen: { key: "autoplay", equals: [true] },
+      },
+    ],
+  },
+  {
+    type: "slide",
+    group: "layout",
+    label: L("شريحة", "Slide"),
+    keywords: ["slide", "شريحة"],
+    container: true,
+    defaultProps: {},
+    defaultStyle: { minHeight: 360, gap: 12 },
+    fields: [],
   },
   {
     type: "divider",

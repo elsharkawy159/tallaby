@@ -396,6 +396,7 @@
         "landscape": "4:3",
         "wide": "16:9",
         "portrait": "3:4",
+        "banner": "21:9",
         "story": "9:16"
       },
       "fit": "الملاءمة",

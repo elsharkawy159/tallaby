@@ -16,7 +16,7 @@ export const headerPill = defineDesign({
   description: L("كبسولة داكنة عائمة بالشعار وقائمة قصيرة وزر السلة.", "A floating dark capsule with the logo, a short menu and the cart."),
   keywords: ["header", "floating", "pill", "app", "هيدر", "عائم"],
   tree: (t) =>
-    t.section({ label: L("الهيدر", "Header"), style: { paddingTop: 16, paddingBottom: 16 }, mobile: { paddingTop: 16, paddingBottom: 16 } }, [
+    t.section({ label: L("الهيدر", "Header"), style: { paddingTop: 16, paddingBottom: 16 }, mobile: { paddingTop: 0, paddingBottom: 0 } }, [
       t.container(
         [
           t.row(

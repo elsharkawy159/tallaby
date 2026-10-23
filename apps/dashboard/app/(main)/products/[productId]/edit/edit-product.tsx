@@ -17,6 +17,7 @@ interface EditProductProps {
   sellerPricing: SellerPricingSettings;
   /** The seller's own lists for "My category" / "My brand". */
   sellerTaxonomy: { categories: SellerTaxonomyOption[]; brands: SellerTaxonomyOption[] };
+  linkHost: string | null;
 }
 
 /** The add-product form in edit mode, so both pages look and behave the same. */
@@ -27,6 +28,7 @@ export function EditProduct({
   brands,
   sellerPricing,
   sellerTaxonomy,
+  linkHost,
 }: EditProductProps) {
   return (
     <AddProduct
@@ -34,6 +36,7 @@ export function EditProduct({
       brands={brands}
       sellerPricing={sellerPricing}
       sellerTaxonomy={sellerTaxonomy}
+      linkHost={linkHost}
       edit={{ productId, defaultValues }}
     />
   );

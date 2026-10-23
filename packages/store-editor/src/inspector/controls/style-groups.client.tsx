@@ -179,7 +179,7 @@ export function ImageControls({ style, set, fit = true }: GroupProps & { fit?: b
           label={t("ratio")}
           value={style.aspectRatio}
           onChange={(aspectRatio) => set({ aspectRatio })}
-          options={(["square", "landscape", "wide", "portrait", "story"] as const).map((v) => ({ value: v, label: t(`ratios.${v}`) }))}
+          options={(["square", "landscape", "wide", "banner", "portrait", "story"] as const).map((v) => ({ value: v, label: t(`ratios.${v}`) }))}
         />
       </ControlRow>
       {fit && (

@@ -82,7 +82,7 @@ function localize(values: Record<string, DesignText | undefined>): Record<string
   return props;
 }
 
-function make(type: ElementType, props: Record<string, DesignText | boolean | undefined>, opts: NodeOptions = {}, children: NodeTemplate[] = []): NodeTemplate {
+function make(type: ElementType, props: Record<string, DesignText | boolean | number | undefined>, opts: NodeOptions = {}, children: NodeTemplate[] = []): NodeTemplate {
   const text: Record<string, DesignText | undefined> = { label: opts.label };
   const plain: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(props)) {
@@ -208,6 +208,16 @@ export function createTreeBuilder(industry?: string, photos?: DesignPhotos, opts
         withDefaults("videoPlaylist", opts),
         videos.map((v) => make("videoItem", { url: "", title: v.title, duration: v.duration, poster: stock(v.poster) })),
       ),
+    /**
+     * A banner carousel: one full-width slide in view, autoplaying every
+     * `interval` seconds (pauses on hover, focus, off-screen, reduced motion).
+     */
+    carousel: (slides: NodeTemplate[], opts?: NodeOptions & { autoplay?: boolean; interval?: number }) => {
+      const { autoplay = true, interval = 5, ...rest } = opts ?? {};
+      return make("carousel", { autoplay, interval }, rest, slides);
+    },
+    /** One carousel slide (a column: position its photo and copy inside). */
+    slide: (children: NodeTemplate[], opts?: NodeOptions) => make("slide", {}, withDefaults("slide", opts), children),
     quote: (text: DesignText, opts?: NodeOptions) => make("blockQuote", { text }, opts),
     textLink: (text: DesignText, href: string, opts?: NodeOptions) => make("textLink", { text, href }, opts),
     link: (href: string, children: NodeTemplate[], opts?: NodeOptions) => make("linkBlock", { href }, withDefaults("linkBlock", opts), children),

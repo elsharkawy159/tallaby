@@ -42,7 +42,7 @@ const SHADOWS = {
   md: "0 4px 12px rgb(0 0 0 / 0.08)",
   lg: "0 12px 32px rgb(0 0 0 / 0.12)",
 } as const;
-const ASPECT_RATIOS = { auto: "auto", square: "1 / 1", landscape: "4 / 3", wide: "16 / 9", portrait: "3 / 4", story: "9 / 16" } as const;
+const ASPECT_RATIOS = { auto: "auto", square: "1 / 1", landscape: "4 / 3", wide: "16 / 9", banner: "21 / 9", portrait: "3 / 4", story: "9 / 16" } as const;
 const ALIGN = { start: "flex-start", center: "center", end: "flex-end", stretch: "stretch" } as const;
 const JUSTIFY = { start: "flex-start", center: "center", end: "flex-end", between: "space-between", around: "space-around" } as const;
 

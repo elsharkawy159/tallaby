@@ -3,6 +3,7 @@
  * imports, so the storefront renders it as a server component.
  */
 import type { PageContent, SectionInstance, SiteLocale } from "../config/schema";
+import { flushHeaderOnMobile } from "../config/header";
 import { resolveSectionForLocale } from "../core/locale";
 import { applyMigrations, resolveSectionProps, type SectionRegistry } from "../core/registry";
 import { SITE_ROOT_CLASS, designSystemToCss, type ThemeInput } from "../core/theme";
@@ -69,7 +70,7 @@ export function PageRenderer({
 }) {
   return (
     <>
-      {header && <SectionRenderer instance={header} registry={registry} ctx={ctx} defaultLocale={defaultLocale} />}
+      {header && <SectionRenderer instance={flushHeaderOnMobile(header)} registry={registry} ctx={ctx} defaultLocale={defaultLocale} />}
       <main className="flex-1">
         {content.sections.map((instance) => (
           <SectionRenderer key={instance.id} instance={instance} registry={registry} ctx={ctx} defaultLocale={defaultLocale} />

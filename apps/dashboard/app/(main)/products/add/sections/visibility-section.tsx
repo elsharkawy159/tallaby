@@ -7,7 +7,7 @@ import { Input } from "@workspace/ui/components/input";
 import { Textarea } from "@workspace/ui/components/textarea";
 import { cn } from "@/lib/utils";
 import { contentDirClass } from "@/lib/i18n/content-dir";
-import { STOREFRONT_URL } from "@/lib/constants";
+import { useProductLinkHost } from "../product-link-host.client";
 import {
   FIELD_CLASS,
   FieldHint,
@@ -23,7 +23,6 @@ import type { AddProductFormData, SupportedLocale } from "../add-product.schema"
 
 const META_TITLE = { min: 50, max: 60 };
 const META_DESCRIPTION = { min: 150, max: 160 };
-const STOREFRONT_HOST = STOREFRONT_URL.replace(/^https?:\/\/(www\.)?/, "");
 
 export function VisibilitySection({
   id = "sec-visibility",
@@ -152,13 +151,14 @@ function SearchPreview({ locale }: { locale: SupportedLocale }) {
       "localized.en.slug",
     ],
   });
+  const linkHost = useProductLinkHost();
   const heading = (metaTitle || title || "").trim();
   const body = (metaDescription || description || "").trim();
 
   return (
     <div className="rounded-xl border bg-muted p-4" dir={locale === "ar" ? "rtl" : "ltr"}>
       <div dir="ltr" className="truncate font-sans text-xs text-muted-foreground rtl:text-right">
-        {STOREFRONT_HOST} › products › {slug || "product"}
+        {linkHost} › products › {slug || "product"}
       </div>
       <div className="my-0.5 truncate text-[17px] leading-normal text-[#1a0dab] dark:text-[#8ab4f8]">
         {heading ? heading.slice(0, META_TITLE.max) + (heading.length > META_TITLE.max ? "…" : "") : t("serpTitle")}

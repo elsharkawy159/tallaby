@@ -19,6 +19,7 @@ import {
   isStoreCurrency,
   type StoreCurrency,
 } from "@workspace/lib";
+import { formatPhone } from "@workspace/store-sections/social";
 
 import { Button } from "@workspace/ui/components/button";
 import { Checkbox } from "@workspace/ui/components/checkbox";
@@ -46,7 +47,6 @@ import { toGeneralPatch, type StoreGeneralFormValues } from "./store-settings.dt
 
 const DESCRIPTION_MAX = 2000;
 const INTERNATIONAL_CURRENCY_CODES = STORE_CURRENCY_CODES.filter((c) => !REGIONAL_CURRENCY_CODES.includes(c));
-const PHONE = /^[+()\d\s-]{7,24}$/;
 
 export function StoreGeneralForm({
   storeId,
@@ -76,8 +76,8 @@ export function StoreGeneralForm({
       storeCategoryAr: z.string().max(80),
       logoUrl: z.string(),
       bannerUrl: z.string(),
-      phone: z.string().refine((v) => !v.trim() || PHONE.test(v.trim()), t("errors.phoneInvalid")),
-      whatsapp: z.string().refine((v) => !v.trim() || PHONE.test(v.trim()), t("errors.phoneInvalid")),
+      phone: z.string().refine((v) => !v.trim() || formatPhone(v) !== null, t("errors.phoneInvalid")),
+      whatsapp: z.string().refine((v) => !v.trim() || formatPhone(v) !== null, t("errors.phoneInvalid")),
       email: z.string().refine((v) => !v.trim() || z.email().safeParse(v.trim()).success, t("errors.emailInvalid")),
       defaultLocale: z.enum(["ar", "en"]),
       supportedLocales: z.array(z.enum(["ar", "en"])).min(1, t("errors.localeRequired")),

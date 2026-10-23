@@ -2404,7 +2404,7 @@
       "generic": "Couldn't save. Please try again.",
       "nameTooShort": "Use at least 2 characters.",
       "nameTooLong": "Use at most 80 characters.",
-      "phoneInvalid": "Enter a valid phone number.",
+      "phoneInvalid": "Enter a valid number, e.g. 01012345678.",
       "emailInvalid": "Enter a valid email address.",
       "localeRequired": "Choose at least one language.",
       "defaultLocaleNotSupported": "The default language must be one of the store languages."
@@ -3150,7 +3150,7 @@
     "invalid": {
       "url": "Enter a {platform} link, e.g. the address of your page.",
       "handle": "Enter your {platform} username or profile link.",
-      "phone": "Enter a mobile number with the country code, e.g. 201012345678."
+      "phone": "Enter a mobile number, e.g. 01012345678 (add the country code only for numbers outside Egypt)."
     },
     "preview": {
       "title": "Preview",

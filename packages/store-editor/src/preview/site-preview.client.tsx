@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
+import { CarouselRuntime } from "@workspace/store-sections/client";
 import { useTranslations } from "next-intl";
 import type { DesignSystem, SectionInstance, SiteLocale } from "@workspace/store-sections";
 import {
@@ -12,6 +13,7 @@ import {
   SiteTheme,
   collectCatalogQueries,
   designSystemToTokens,
+  flushHeaderOnMobile,
   storeSectionRegistry,
   type RenderContext,
   type StoreProfile,
@@ -163,6 +165,7 @@ export function SitePreview({
         className="mx-auto block h-full rounded-lg border bg-white shadow-sm transition-[width]"
         style={{ width: device === "mobile" ? "390px" : "100%", maxWidth: "100%" }}
       />
+      {body && <CarouselRuntime doc={body.ownerDocument} />}
       {body &&
         createPortal(
           <div
@@ -178,9 +181,9 @@ export function SitePreview({
           >
             <SiteTheme designSystem={designSystem} />
             {/* Element styles of tree sections, as on the storefront. */}
-            <PageStyles sections={[header, ...sections, footer]} mode="public" />
+            <PageStyles sections={[flushHeaderOnMobile(header), ...sections, footer]} mode="public" />
             <style>{`.${SITE_ROOT_CLASS} :where(h1,h2,h3,h4){font-family:var(--sf-font-heading,var(--sf-font-body,var(--font-storefront))),system-ui,sans-serif}`}</style>
-            {header && <SectionRenderer instance={header} registry={storeSectionRegistry} ctx={ctx} defaultLocale={defaultLocale} />}
+            {header && <SectionRenderer instance={flushHeaderOnMobile(header)} registry={storeSectionRegistry} ctx={ctx} defaultLocale={defaultLocale} />}
             <main className="flex-1">
               {sections.map((section) => (
                 <SectionRenderer key={section.id} instance={section} registry={storeSectionRegistry} ctx={ctx} defaultLocale={defaultLocale} />

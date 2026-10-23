@@ -60,6 +60,8 @@ import {
   HandHelping,
   Store,
   MapPin,
+  GalleryHorizontal,
+  RectangleHorizontal,
 } from "lucide-react";
 import type { ElementType, SectionCategory } from "@workspace/store-sections/render";
 import type { SectionGroupKey } from "./editor-palette.lib";
@@ -84,6 +86,8 @@ export const ELEMENT_ICONS: Record<ElementType, LucideIcon> = {
   video: MonitorPlay,
   videoPlaylist: ListVideo,
   videoItem: Youtube,
+  carousel: GalleryHorizontal,
+  slide: RectangleHorizontal,
   divider: Minus,
   spacer: Rows3,
   icon: Star,

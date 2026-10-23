@@ -14,6 +14,7 @@ import {
   SectionRenderer,
   SiteTheme,
   designSystemToTokens,
+  flushHeaderOnMobile,
   storeSectionRegistry,
   type RenderContext,
 } from "@workspace/store-sections/render";
@@ -542,7 +543,7 @@ export function EditorCanvas({
             <SiteTheme designSystem={designSystem} />
             {/* Heading font like the storefront (and SitePreview). */}
             <style>{`.${SITE_ROOT_CLASS} :where(h1,h2,h3,h4){font-family:var(--sf-font-heading,var(--sf-font-body,var(--font-storefront))),system-ui,sans-serif}`}</style>
-            <PageStyles sections={[header, ...sections, footer]} mode="edit" />
+            <PageStyles sections={[flushHeaderOnMobile(header), ...sections, footer]} mode="edit" />
             <style>{`[data-section-id],[data-part],[data-node-id]{cursor:default}[contenteditable]{cursor:text;caret-color:var(--sf-brand)}`}</style>
             {/* The section or element being moved stays in place, faded, until it is dropped. */}
             {canvasDrag?.kind === "move-section" && <style>{`main [data-section-id="${esc(canvasDrag.instanceId)}"]{opacity:.35}`}</style>}
@@ -555,7 +556,7 @@ export function EditorCanvas({
             )}
             {header && (
               <div data-editor-chrome="header">
-                <SectionRenderer key={`hdr:${nonce.header ?? 0}`} instance={header} registry={storeSectionRegistry} ctx={ctx} defaultLocale={defaultLocale} />
+                <SectionRenderer key={`hdr:${nonce.header ?? 0}`} instance={flushHeaderOnMobile(header)} registry={storeSectionRegistry} ctx={ctx} defaultLocale={defaultLocale} />
               </div>
             )}
             <main className="flex-1">

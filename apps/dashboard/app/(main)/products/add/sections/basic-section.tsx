@@ -9,7 +9,7 @@ import { Input } from "@workspace/ui/components/input";
 import { Textarea } from "@workspace/ui/components/textarea";
 import { cn } from "@/lib/utils";
 import { contentDirClass } from "@/lib/i18n/content-dir";
-import { STOREFRONT_URL } from "@/lib/constants";
+import { useProductLinkHost } from "../product-link-host.client";
 import { BrandSearchInput } from "@/components/inputs/brand-search-input";
 import {
   FIELD_CLASS,
@@ -30,7 +30,6 @@ import type {
 
 const TITLE_MAX = 255;
 const SHORT_DESCRIPTION_SOFT_MAX = 300;
-const STOREFRONT_HOST = STOREFRONT_URL.replace(/^https?:\/\/(www\.)?/, "");
 
 const toSlug = (value: string) => slugify(value, { lower: true, strict: true });
 
@@ -161,6 +160,7 @@ function SlugLine({ onEdited }: { onEdited: () => void }) {
   const t = useTranslations("productForm.sections.basic");
   const form = useFormContext<AddProductFormData>();
   const slug = useWatch({ control: form.control, name: "localized.en.slug" });
+  const linkHost = useProductLinkHost();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
 
@@ -196,7 +196,7 @@ function SlugLine({ onEdited }: { onEdited: () => void }) {
           dir="ltr"
           className="rounded-md border bg-muted px-1.5 py-px font-mono text-xs text-foreground"
         >
-          {STOREFRONT_HOST}/products/{slug || "…"}
+          {linkHost}/products/{slug || "…"}
         </code>
       )}
       <button

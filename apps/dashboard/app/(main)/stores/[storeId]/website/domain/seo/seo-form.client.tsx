@@ -44,12 +44,15 @@ export function StoreSeoForm({
   storeId,
   storeName,
   storeHost,
+  hasCustomDomain,
   initial,
   readOnly,
 }: {
   storeId: string;
   storeName: string;
   storeHost: string;
+  /** A live custom domain is verified in Search Console through its DNS, so the meta-tag field is hidden. */
+  hasCustomDomain: boolean;
   initial: StoreSeoFormValues;
   readOnly: boolean;
 }) {
@@ -194,43 +197,45 @@ export function StoreSeoForm({
           <FieldHint>{t("share.hint")}</FieldHint>
         </SectionCard>
 
-        <SectionCard
-          id="verification"
-          icon={BadgeCheck}
-          title={t("verification.title")}
-          description={t("verification.description")}
-        >
-          <FormField
-            control={form.control}
-            name="googleSiteVerification"
-            render={({ field }) => (
-              <FormItem className="gap-1.5">
-                <FormLabel className="justify-between text-[13px] font-semibold">
-                  {t("verification.label")}
-                  <LabelNote>{t("optional")}</LabelNote>
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    dir="ltr"
-                    className={`${FIELD_CLASS} font-mono text-[13px]`}
-                    autoComplete="off"
-                    spellCheck={false}
-                    disabled={disabled}
-                    placeholder="abc123XYZ_-…"
-                    {...field}
-                    onBlur={(e) => {
-                      // A pasted <meta …> tag keeps only its content value.
-                      field.onChange(extractVerificationToken(e.target.value));
-                      field.onBlur();
-                    }}
-                  />
-                </FormControl>
-                <FieldHint>{t("verification.hint")}</FieldHint>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </SectionCard>
+        {!hasCustomDomain && (
+          <SectionCard
+            id="verification"
+            icon={BadgeCheck}
+            title={t("verification.title")}
+            description={t("verification.description")}
+          >
+            <FormField
+              control={form.control}
+              name="googleSiteVerification"
+              render={({ field }) => (
+                <FormItem className="gap-1.5">
+                  <FormLabel className="justify-between text-[13px] font-semibold">
+                    {t("verification.label")}
+                    <LabelNote>{t("optional")}</LabelNote>
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      dir="ltr"
+                      className={`${FIELD_CLASS} font-mono text-[13px]`}
+                      autoComplete="off"
+                      spellCheck={false}
+                      disabled={disabled}
+                      placeholder="abc123XYZ_-…"
+                      {...field}
+                      onBlur={(e) => {
+                        // A pasted <meta …> tag keeps only its content value.
+                        field.onChange(extractVerificationToken(e.target.value));
+                        field.onBlur();
+                      }}
+                    />
+                  </FormControl>
+                  <FieldHint>{t("verification.hint")}</FieldHint>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </SectionCard>
+        )}
 
         <div className="sticky bottom-0 flex justify-end border-t bg-background/95 py-3 backdrop-blur">
           <Button type="submit" className={BUTTON_CLASS} disabled={disabled || !form.formState.isDirty}>

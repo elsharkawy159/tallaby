@@ -29,7 +29,7 @@ export const headerRuled = defineDesign({
       {
         label: L("الهيدر", "Header"),
         style: { paddingTop: 14, paddingBottom: 14, background: "background" },
-        mobile: { paddingTop: 14, paddingBottom: 14 },
+        mobile: { paddingTop: 0, paddingBottom: 0 },
       },
       [
         t.container(

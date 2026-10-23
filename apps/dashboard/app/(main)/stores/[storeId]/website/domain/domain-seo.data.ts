@@ -37,6 +37,12 @@ export async function loadDomainTab(store: StoreRow): Promise<DomainTabData> {
   };
 }
 
+/** The store's live (active) custom domain, or null when it only has its subdomain. */
+export async function loadLiveDomain(store: StoreRow): Promise<string | null> {
+  const res = await getCustomDomain(store.id);
+  return res.success && res.domain?.status === "active" ? res.domain.domain : null;
+}
+
 /** Why a store is kept out of search; empty = indexable. */
 export type NoindexReason = "storeInactive" | "indexingOff" | "noProducts";
 
@@ -52,11 +58,10 @@ export type CrawlStatus = {
  * store is indexed when indexing is on and it shows at least one product.
  */
 export async function loadCrawlStatus(store: StoreRow): Promise<CrawlStatus> {
-  const [domainRes, hasProducts] = await Promise.all([
-    getCustomDomain(store.id),
+  const [live, hasProducts] = await Promise.all([
+    loadLiveDomain(store),
     storeHasVisibleProducts(store.sellerId, store.id),
   ]);
-  const live = domainRes.success && domainRes.domain?.status === "active" ? domainRes.domain.domain : null;
   const baseUrl = storeUrl(store.subdomain, live);
   const reasons: NoindexReason[] = [];
   if (store.status !== "active") reasons.push("storeInactive");

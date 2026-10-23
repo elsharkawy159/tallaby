@@ -4,7 +4,7 @@
  */
 import { z } from "zod";
 import { CURRENCY_LABELS, STORE_CURRENCY_CODES, isCurrencyLabelFor } from "../utils/formatPrice";
-import { SOCIAL_PLATFORM_KEYS, SOCIAL_VALUE_MAX, normalizeSocialLink } from "@workspace/store-sections/social";
+import { SOCIAL_PLATFORM_KEYS, SOCIAL_VALUE_MAX, formatPhone, normalizeSocialLink } from "@workspace/store-sections/social";
 import { SUBDOMAIN_MAX_LENGTH, normalizeSubdomain, validateSubdomain, type SubdomainProblem } from "../storefront";
 
 export const STORE_STATUSES = ["active", "archived", "suspended"] as const;
@@ -58,11 +58,21 @@ const httpUrl = z
 
 const optionalText = (max: number) => z.string().trim().max(max).nullable().optional();
 
+// Any way an Egyptian types a number (01…, +20…, Arabic digits) is accepted
+// and saved as `01xxxxxxxxx`; other countries as `+<code><number>`.
+const contactPhone = z
+  .string()
+  .max(40)
+  .transform((v, ctx) => {
+    const phone = formatPhone(v);
+    if (!phone) ctx.addIssue({ code: "custom", message: "invalid_phone" });
+    return phone ?? v;
+  });
+
 export const storeContactSchema = z
   .object({
-    // Same characters the existing seller settings accept (values are mirrored both ways).
-    phone: z.string().trim().regex(/^[+()\d\s-]{7,24}$/, "invalid_phone").optional(),
-    whatsapp: z.string().trim().regex(/^[+()\d\s-]{7,24}$/, "invalid_phone").optional(),
+    phone: contactPhone.optional(),
+    whatsapp: contactPhone.optional(),
     email: z.email().max(254).optional(),
   })
   .strict();

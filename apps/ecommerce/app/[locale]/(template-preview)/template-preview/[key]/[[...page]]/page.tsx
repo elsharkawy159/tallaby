@@ -7,9 +7,11 @@ import {
   SectionRenderer,
   SiteTheme,
   collectCatalogQueries,
+  flushHeaderOnMobile,
   storeSectionRegistry,
   type RenderContext,
 } from "@workspace/store-sections/render";
+import { CarouselRuntime } from "@workspace/store-sections/client";
 import { prepareTemplateForStore, resolveDemoCatalog, templateFormNeeds, type TemplateMeta } from "@workspace/store-sections/templates";
 import { starterPreviewForm } from "@workspace/lib/store-forms/starter";
 import { cn, getPublicUrl } from "@workspace/ui/lib/utils";
@@ -49,7 +51,7 @@ export default async function TemplatePreviewFrame({ params, searchParams }: Pro
   const locale = routeLocale === "en" ? "en" : "ar";
   const isThumb = thumb === "1";
   const sections = isThumb ? page.content.sections.slice(0, 3) : page.content.sections;
-  const header = site.header ?? null;
+  const header = flushHeaderOnMobile(site.header) ?? null;
   const footer = isThumb ? null : (site.footer ?? null);
   const all = [...(header ? [header] : []), ...sections, ...(footer ? [footer] : [])];
   const ctx = buildContext(site, meta, key, routeLocale, locale, all, formIds);
@@ -57,6 +59,7 @@ export default async function TemplatePreviewFrame({ params, searchParams }: Pro
   return (
     <div className={cn(storefrontFont.variable, s.root, SITE_ROOT_CLASS, storeFontVariables)} dir={ctx.dir} lang={locale}>
       <FrameGuard allowPrefix={templateFrameSrc(routeLocale, key)} />
+      <CarouselRuntime />
       <SiteTheme designSystem={site.designSystem} />
       <PageStyles sections={all} />
       {header && <SectionRenderer instance={header} registry={storeSectionRegistry} ctx={ctx} defaultLocale={site.settings.defaultLocale} />}

@@ -101,11 +101,33 @@ import { ZEINA } from "./zeina";
 import { KAHRABA } from "./kahraba";
 import { SAFAR } from "./safar";
 import { GARAGY } from "./garagy";
+import { FIXIT } from "./fixit";
+import { BASHRA } from "./bashra";
+import { SUFRA } from "./sufra";
+import { SABAHO } from "./sabaho";
+import { DAR } from "./dar";
+import { SHABKA } from "./shabka";
+import { HADAYA } from "./hadaya";
+import { REP } from "./rep";
+import { PITSTOP } from "./pitstop";
+import { GHORZA } from "./ghorza";
+import { MAWSEM } from "./mawsem";
+import { SHASHA } from "./shasha";
+import { WARD } from "./ward";
+import { BEITY } from "./beity";
+import { SOUQ } from "./souq";
+import { SALON } from "./salon";
+import { KHOLKHAL } from "./kholkhal";
+import { FARHA } from "./farha";
+import { NASHAT } from "./nashat";
+import { TARIK } from "./tarik";
 import type { TemplateDefinition, TemplateDemo } from "./types";
 
-/** Templates 02–38 and 49–100, built from section-library designs (`library-template.ts`), in registry order. */
+/** Templates 02–110, built from section-library designs (`library-template.ts`), in registry order. */
 export const LIBRARY_TEMPLATES: readonly TemplateDefinition[] = [MODE, STREETWEAR, KASR, TECHHUB, VOLT, ARCADE, ARENA, PURE, GLOW, ELIXIR, BOTANICA, NEST, DAILY, HEARTH, CLAY, SIZZLE, HARVEST, LOAF, ROAST, VERDANT, LOFT, OAK, SAKAN, LUMIERE, KARAT, FADDA, PLAYROOM, BAMBINO, DOODLE, HEKAYA, PACE, STRIDE, CORE, BASECAMP, GARAGE, DRIVE, MOTO,
+  FIXIT, BASHRA, SUFRA, SABAHO, DAR, SHABKA, HADAYA, REP, PITSTOP, GHORZA,
   KETTAN, ZAY, SITARA, SHANTA, TASFYA, LAYALI, KABL, SADA, ZAKI, SAA, TANY, NADA, KOHL, OUD, SABON, BARBER, MATBAKH, FOKHAR, TAWLA, TANZIM, QAHWA, KHODAR, LAHMA, HALAWA, ATARA, DOKAN, BUNN, MOBILIA, ZAREA, NOUR, MAFRASH, ROKN, ZAHRA, NUQRA, LULU, SAAT, MAHR, LEGO, MAMA, MADRASA, HIKAYA, AHLAM, YOGA, KOORA, DARRAGA, SABAHA, BOXING, TYRE, ZEINA, KAHRABA, SAFAR, GARAGY,
+  MAWSEM, SHASHA, WARD, BEITY, SOUQ, SALON, KHOLKHAL, FARHA, NASHAT, TARIK,
 ];
 
 export const CODE_TEMPLATES: readonly TemplateDefinition[] = [CLASSIC, ATELIER, ...LIBRARY_TEMPLATES];

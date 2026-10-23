@@ -19,6 +19,10 @@
       "types": "./src/render/index.ts",
       "default": "./src/render/index.ts"
     },
+    "./client": {
+      "types": "./src/render/client.ts",
+      "default": "./src/render/client.ts"
+    },
     "./forms": {
       "types": "./src/sections/forms.tsx",
       "default": "./src/sections/forms.tsx"

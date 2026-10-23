@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { SOCIAL_PLATFORMS, SOCIAL_PLATFORM_KEYS, normalizeSocialLink, whatsappDigits } from "./platforms";
+import { SOCIAL_PLATFORMS, SOCIAL_PLATFORM_KEYS, formatPhone, normalizeSocialLink, phoneDigits, whatsappDigits } from "./platforms";
 
 describe("social platforms (P4-15)", () => {
   it("lists every platform once, each with an icon and AR/EN labels", () => {
@@ -63,5 +63,30 @@ describe("social platforms (P4-15)", () => {
     expect(normalizeSocialLink("whatsapp", "12")).toBeNull();
     expect(normalizeSocialLink("whatsapp", "https://evil.com/201012345678")).toBeNull();
     expect(whatsappDigits("0101-234-5678")).toBe("201012345678");
+  });
+
+  it.each([
+    "201207341113",
+    "+201207341113",
+    "+20 120 734 1113",
+    "00201207341113",
+    "2001207341113",
+    "01207341113",
+    "1207341113",
+    "٠١٢٠٧٣٤١١١٣",
+    "٢٠١٢٠٧٣٤١١١٣",
+    "‎+20 120 734 1113‏",
+  ])("reads the Egyptian mobile %j", (input) => {
+    expect(phoneDigits(input)).toBe("201207341113");
+    expect(formatPhone(input)).toBe("01207341113");
+    expect(normalizeSocialLink("whatsapp", input)).toBe("https://wa.me/201207341113");
+  });
+
+  it("keeps landlines and other countries, refuses junk", () => {
+    expect(formatPhone("0223456789")).toBe("0223456789");
+    expect(formatPhone("+971 50 123 4567")).toBe("+971501234567");
+    expect(phoneDigits("0123")).toBeNull();
+    expect(phoneDigits("abc")).toBeNull();
+    expect(formatPhone("")).toBeNull();
   });
 });

@@ -9,6 +9,7 @@ import { heroPoster } from "./hero-poster";
 import { heroProduct } from "./hero-product";
 import { heroSearch } from "./hero-search";
 import { heroTicket } from "./hero-ticket";
+import { heroCarousel } from "./hero-carousel";
 
 /** First is the default for new stores (the Classic template's hero). */
-export const HERO_DESIGNS: readonly Design[] = [heroClassic, heroTicket, heroPoster, heroInline, heroProduct, heroCollage, heroBento, heroHalves, heroBigWord, heroSearch];
+export const HERO_DESIGNS: readonly Design[] = [heroClassic, heroTicket, heroPoster, heroInline, heroProduct, heroCollage, heroBento, heroHalves, heroBigWord, heroSearch, heroCarousel];

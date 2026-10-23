@@ -78,6 +78,9 @@ describe("storeGeneralSettingsSchema", () => {
     expect(
       storeGeneralSettingsSchema.safeParse({ contact: { email: "a@b.co", phone: "01012345678" } }).success,
     ).toBe(true);
+    const parsed = storeGeneralSettingsSchema.parse({ contact: { phone: "٠١١٥٢٣٧٢٣٥٨", whatsapp: "+20 115 237 2358" } });
+    expect(parsed.contact).toEqual({ phone: "01152372358", whatsapp: "01152372358" });
+    expect(storeGeneralSettingsSchema.safeParse({ contact: { phone: "12" } }).success).toBe(false);
   });
 
   it("only accepts http(s) image URLs", () => {

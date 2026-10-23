@@ -312,3 +312,42 @@ describe("tree section elements", () => {
     expect(render(custom(tree), { mode: "edit", locale: "en" })).not.toContain("Drop elements here");
   });
 });
+
+describe("carousel element", () => {
+  const slides = () => [node("slide", {}, [node("heading", { text: "S1" })]), node("slide", {}, [node("heading", { text: "S2" })])];
+
+  it("renders a snapping track with hidden controls for the runtime, and only static markup in the editor", () => {
+    const tree = [node("section", {}, [node("carousel", { autoplay: true, interval: 7 }, slides())])];
+    const html = render(custom(tree));
+    expect(html).toContain('data-carousel=""');
+    expect(html).toContain('data-interval="7000"');
+    expect(html).toContain("snap-x");
+    expect(html.match(/data-carousel-slide/g)).toHaveLength(2);
+    expect(html.match(/data-carousel-dot=/g)).toHaveLength(2);
+    expect(html).toContain("group-data-[carousel-ready]/carousel:flex");
+    const edit = render(custom(tree), { mode: "edit" });
+    expect(edit).not.toContain("data-carousel=");
+    expect(edit).not.toContain("data-carousel-dot");
+  });
+
+  it("clamps the interval and keeps a single slide without controls", () => {
+    const html = render(custom([node("section", {}, [node("carousel", { interval: 999, autoplay: false }, [node("slide", {}, [node("text", { text: "x" })])])])]));
+    expect(html).toContain('data-interval="15000"');
+    expect(html).toContain('data-autoplay="0"');
+    expect(html).not.toContain("data-carousel-dot");
+  });
+
+  it("keeps slides in carousels and carousels holding only slides", () => {
+    const tree = [node("section", {}, [node("carousel", {}, slides())])];
+    const carousel = tree[0]!.children[0]!;
+    expect(canContain(tree, carousel.id, node("slide"))).toBe(true);
+    expect(canContain(tree, carousel.id, node("heading"))).toBe(false);
+    expect(canContain(tree, tree[0]!.id, node("slide"))).toBe(false);
+    expect(canContain(tree, carousel.children[0]!.id, node("image"))).toBe(true);
+  });
+
+  it("passes validation", () => {
+    const tree = [node("section", {}, [node("carousel", {}, slides())])];
+    expect(validateSiteConfig(withHomeSections([custom(tree)])).success).toBe(true);
+  });
+});

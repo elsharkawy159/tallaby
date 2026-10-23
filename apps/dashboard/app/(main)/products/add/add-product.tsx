@@ -45,6 +45,7 @@ import { prepareProductForSubmit } from "./prepare-product-submit.lib"
 import { setProductSellerTaxonomy } from "../categories-brands/categories-brands.server"
 import { splitSellerTaxonomy } from "../categories-brands/categories-brands.lib"
 import { SellerTaxonomyProvider } from "../categories-brands/seller-taxonomy-fields.client"
+import { ProductLinkHostProvider } from "./product-link-host.client"
 import type { SellerTaxonomyOption } from "../categories-brands/categories-brands.dto"
 
 interface AddProductProps {
@@ -53,6 +54,8 @@ interface AddProductProps {
   sellerPricing: SellerPricingSettings
   /** The seller's own lists for "My category" / "My brand". */
   sellerTaxonomy: { categories: SellerTaxonomyOption[]; brands: SellerTaxonomyOption[] }
+  /** The seller's live custom domain, shown in the product link preview. */
+  linkHost?: string | null
   /**
    * Edit mode: the same form, prefilled from an existing product and saved
    * with updateProduct. No local draft, import or bulk mode.
@@ -70,6 +73,7 @@ export default function AddProduct ({
   brands,
   sellerPricing,
   sellerTaxonomy,
+  linkHost = null,
   edit,
 }: AddProductProps) {
   const isEdit = Boolean(edit)
@@ -254,6 +258,7 @@ export default function AddProduct ({
 
   return (
     <SellerTaxonomyProvider value={sellerTaxonomy}>
+    <ProductLinkHostProvider value={linkHost}>
     <Form {...form}>
       <div className="min-h-screen pb-32 lg:pb-24">
         {/* Page header */}
@@ -369,6 +374,7 @@ export default function AddProduct ({
         <StickyOffsetVar />
       </div>
     </Form>
+    </ProductLinkHostProvider>
     </SellerTaxonomyProvider>
   )
 }

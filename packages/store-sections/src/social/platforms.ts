@@ -174,17 +174,50 @@ export function getSocialPlatform(key: string): SocialPlatform | undefined {
 
 export const SOCIAL_VALUE_MAX = 300;
 
+// Invisible direction / zero-width marks that phones add when a number is pasted.
+const INVISIBLE_MARKS = /[​-‏‪-‮⁦-⁩﻿]/g;
+
+/** Arabic-Indic (٠١٢) and Persian (۰۱۲) digits → 0-9, invisible marks removed. */
+export function toLatinDigits(input: string): string {
+  return input
+    .replace(INVISIBLE_MARKS, "")
+    .replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x0660))
+    .replace(/[۰-۹]/g, (d) => String(d.charCodeAt(0) - 0x06f0));
+}
+
 /**
- * An Egyptian or international phone number as wa.me expects it: country
- * code and digits only (`01xxxxxxxxx` → `201xxxxxxxxx`). Null when it is not
- * a plausible number.
+ * A phone number as country code + digits (wa.me's form), Egypt first: our
+ * sellers type `01xxxxxxxxx`, `1xxxxxxxxx`, `201xxxxxxxxx`, `+20 1xx…`,
+ * `00201…` or `2001…`, in Latin or Arabic digits, and all become
+ * `201xxxxxxxxx`. Egyptian landlines (`02xxxxxxxx`) get `20` too. Any other
+ * number with its country code (8–15 digits) is kept. Null when it is not a
+ * plausible number.
  */
-export function whatsappDigits(input: string): string | null {
-  if (!/^[+()\d\s.-]+$/.test(input)) return null;
-  let digits = input.replace(/\D/g, "");
+export function phoneDigits(input: string): string | null {
+  const value = toLatinDigits(input).trim();
+  if (!/^[+()\d\s.-]+$/.test(value)) return null;
+  let digits = value.replace(/\D/g, "");
   if (digits.startsWith("00")) digits = digits.slice(2);
-  if (/^01[0125]\d{8}$/.test(digits)) digits = `20${digits.slice(1)}`;
+  // Egyptian mobile, local or with the country code (and a stray trunk zero).
+  const mobile = /^(?:20)?0?(1[0125]\d{8})$/.exec(digits);
+  if (mobile) return `20${mobile[1]}`;
+  // Egyptian landline written locally: 0 + area code + number.
+  if (/^0[2-9]\d{7,8}$/.test(digits)) return `20${digits.slice(1)}`;
   return /^[1-9]\d{7,14}$/.test(digits) ? digits : null;
+}
+
+/** WhatsApp takes the same numbers (kept for existing callers). */
+export const whatsappDigits = phoneDigits;
+
+/**
+ * How a contact number is saved and shown: Egyptian numbers in the local form
+ * people read (`01xxxxxxxxx`), others as `+<country code><number>`. Null when
+ * it is not a plausible number.
+ */
+export function formatPhone(input: string): string | null {
+  const digits = phoneDigits(input);
+  if (!digits) return null;
+  return digits.startsWith("20") ? `0${digits.slice(2)}` : `+${digits}`;
 }
 
 function onDomain(host: string, domains: readonly string[]): boolean {

@@ -14,7 +14,7 @@ import { DESIGNS, STOCK_INDUSTRIES, getDesign, instantiateDesign } from ".";
 /** Designs this test expects to exist; each later design adds its id here. */
 const EXPECTED = [
   ...["header-classic", "header-line", "header-centered", "header-announcement", "header-search", "header-pill", "header-ruled", "header-chips", "header-brand-bar", "header-departments"],
-  ...["hero-classic", "hero-ticket", "hero-poster", "hero-inline", "hero-product", "hero-collage", "hero-bento", "hero-halves", "hero-big-word", "hero-search"],
+  ...["hero-classic", "hero-ticket", "hero-poster", "hero-inline", "hero-product", "hero-collage", "hero-bento", "hero-halves", "hero-big-word", "hero-search", "hero-carousel"],
   ...["categories-classic", "categories-tiles", "categories-stories", "categories-rail", "categories-bento", "categories-index", "categories-ruled", "categories-chips", "categories-feature-list", "categories-big-type"],
   ...["products-classic", "products-grid", "products-rail", "products-feature", "products-shelf", "products-list", "products-tabbed", "products-bento", "products-rows", "products-panel-rail"],
   ...["bundle-plus", "bundle-builder", "bundle-poster", "bundle-tabs", "bundle-list", "bundle-box", "bundle-quantity", "bundle-rail", "bundle-price-drop", "bundle-gifts", "bundle-together"],
@@ -196,11 +196,10 @@ describe("section designs", () => {
     for (const need of treeDataNeeds(empty.componentTree)) expect(html).toContain(`data-action="${need}"`);
   });
 
-  it("keeps each header's own padding-y on mobile (not the section's 40px default)", () => {
+  it("gives every header no padding-y on mobile (owner: the header is flush on phones)", () => {
     for (const design of DESIGNS.filter((d) => d.category === "headers")) {
       const [root] = instantiateDesign(design, { id: "d1" }).componentTree!;
-      const { paddingTop, paddingBottom } = root!.style ?? {};
-      expect(root!.breakpointStyles?.mobile, design.id).toMatchObject({ paddingTop, paddingBottom });
+      expect(root!.breakpointStyles?.mobile, design.id).toMatchObject({ paddingTop: 0, paddingBottom: 0 });
     }
   });
 

@@ -9,6 +9,7 @@ import {
   collectCatalogQueries,
   collectFormIds,
   collectContentQueries,
+  flushHeaderOnMobile,
   storeSectionRegistry,
   type NavPage,
   type RenderContext,
@@ -118,7 +119,7 @@ export async function StoreSiteChrome({
   locale: string;
   part: "header" | "footer";
 }): Promise<ReactNode> {
-  const instance = part === "header" ? site.header : site.footer;
+  const instance = part === "header" ? flushHeaderOnMobile(site.header) : site.footer;
   if (!instance) return null;
   const ctx = await buildContext(store, site, locale, [instance]);
   return (

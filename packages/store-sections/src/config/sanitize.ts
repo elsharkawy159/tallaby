@@ -7,6 +7,7 @@
 import sanitizeHtml from "sanitize-html";
 import type { ComponentNode, SectionInstance, SiteConfig } from "./schema";
 import { hasDangerousScheme } from "./url";
+import { flushHeaderOnMobile } from "./header";
 import { normalizeBreakpointStyles, normalizeSectionBreakpointStyle, normalizeSectionStyle, normalizeStyle } from "../elements/style";
 
 const RICH_TEXT_OPTIONS: sanitizeHtml.IOptions = {
@@ -155,7 +156,7 @@ export function sanitizeSiteConfig(input: SiteConfig): SiteConfig {
   const config = structuredClone(input);
   return {
     ...config,
-    header: config.header && sanitizeSection(config.header),
+    header: config.header && flushHeaderOnMobile(sanitizeSection(config.header)),
     footer: config.footer && sanitizeSection(config.footer),
     pages: config.pages.map((page) => ({
       ...page,

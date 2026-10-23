@@ -53,6 +53,7 @@ import type { ComponentNode } from "../config/schema";
 import { sectionText } from "../core/copy";
 import { IMAGE_SIZES, imageSource, type RenderContext } from "../core/types";
 import { DataEmpty } from "../sections/_data";
+import { CarouselElement, SlideElement } from "./render-carousel";
 import { FORM_SUBMIT_CLASS, FormFieldsView, formCopy } from "../sections/forms";
 import { resolvePhotoSlot } from "../designs/photo-slots";
 import { ButtonLink, SmartLink, cn } from "../sections/_primitives";
@@ -313,6 +314,14 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
     case "videoItem":
       // Drawn by its playlist; on its own it has no player to play in.
       return null;
+    case "carousel":
+      return (
+        <CarouselElement attrs={attrs} node={node} props={props} ctx={ctx}>
+          {kids()}
+        </CarouselElement>
+      );
+    case "slide":
+      return <SlideElement attrs={attrs}>{kids()}</SlideElement>;
     case "divider":
       return <hr {...attrs} className="border-(--sf-line)" />;
     case "spacer":

@@ -40,6 +40,8 @@ export const ALLOWED_NODE_TYPES = [
   "wishlistButton",
   // Video playlist (owner request 2026-10-19); additive.
   "videoPlaylist", "videoItem",
+  // Banner carousel (Claude Design templates 101–110, 2026-10-23); additive.
+  "carousel", "slide",
 ] as const;
 export type AllowedNodeType = (typeof ALLOWED_NODE_TYPES)[number];
 

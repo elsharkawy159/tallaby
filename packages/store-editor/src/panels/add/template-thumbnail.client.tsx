@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react"
 import { useTranslations } from "next-intl";
 import { LayoutTemplate } from "lucide-react";
 import type { DesignSystem, SectionInstance } from "@workspace/store-sections";
-import { CLASSIC_TOKENS, PageStyles, SITE_ROOT_CLASS, SectionRenderer, SiteTheme, designSystemToTokens, storeSectionRegistry } from "@workspace/store-sections/render";
+import { CLASSIC_TOKENS, PageStyles, flushHeaderOnMobile, SITE_ROOT_CLASS, SectionRenderer, SiteTheme, designSystemToTokens, storeSectionRegistry } from "@workspace/store-sections/render";
 import { cn } from "@workspace/ui/lib/utils";
 import { previewRenderContext } from "../../preview/site-preview.client";
 import type { TemplatePreviewView } from "../../templates.dto";
@@ -89,7 +89,7 @@ export function TemplatePageThumbnail({
 
   const templatePage = preview?.pages.find((p) => p.slug === page.slug && p.isHome === page.isHome);
   const designSystem = look?.designSystem ?? preview?.designSystem;
-  const header = look ? look.header : (preview?.header ?? null);
+  const header = flushHeaderOnMobile(look ? look.header : (preview?.header ?? null));
   const locale = host.defaultLocale;
   const addToCart = t("addToCart");
 

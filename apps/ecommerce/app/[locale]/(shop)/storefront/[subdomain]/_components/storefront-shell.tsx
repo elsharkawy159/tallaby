@@ -1,5 +1,6 @@
 import { cn } from "@workspace/ui/lib/utils";
 import { SITE_ROOT_CLASS, SiteTheme } from "@workspace/store-sections/render";
+import { CarouselRuntime } from "@workspace/store-sections/client";
 import { AuthDialogProvider } from "@/components/auth/auth-dialog-provider";
 import { CurrencyLabelProvider } from "@/lib/currency-label.client";
 import type { Storefront } from "@/lib/storefront.server";
@@ -68,6 +69,7 @@ export async function StorefrontShell({
         {!shared && <MobileCartBar />}
         <ByTallabyBadge />
         <AuthDialogProvider />
+        {site && <CarouselRuntime />}
         {!shared && <StorefrontTracking store={store} />}
       </div>
     </CurrencyLabelProvider>

@@ -31,6 +31,11 @@ const SEEDS: Record<string, readonly string[]> = {
     ...["nuqra", "lulu", "saat", "mahr", "lego", "mama", "madrasa", "hikaya", "ahlam", "yoga", "koora"],
     ...["darraga", "sabaha", "boxing", "tyre", "zeina", "kahraba", "safar", "garagy"],
   ],
+  // Templates 39–48 and 101–110 (v1; 101–110 open with the carousel hero).
+  "0095_library_templates_39_48_101_110.sql": [
+    ...["fixit", "bashra", "sufra", "sabaho", "dar", "shabka", "hadaya", "rep", "pitstop", "ghorza"],
+    ...["mawsem", "shasha", "ward", "beity", "souq", "salon", "kholkhal", "farha", "nashat", "tarik"],
+  ],
 };
 
 const walk = (nodes: readonly ComponentNode[] | undefined): ComponentNode[] => (nodes ?? []).flatMap((n) => [n, ...walk(n.children)]);

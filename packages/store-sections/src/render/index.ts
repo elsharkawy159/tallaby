@@ -22,3 +22,4 @@ export * from "../core/catalog-resolve";
 export * from "../designs";
 export * from "../elements/data";
 export * from "../elements/video";
+export { flushHeaderOnMobile } from "../config/header";

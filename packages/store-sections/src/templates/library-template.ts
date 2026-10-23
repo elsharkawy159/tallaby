@@ -1,5 +1,5 @@
 /**
- * Storefront templates 02–38 and 49–100 (Claude Design "Storefront Templates"), built
+ * Storefront templates 02–110 (Claude Design "Storefront Templates"), built
  * from section-library designs with `fromLibrary` (`./_library.ts`): this
  * turns a compact description (look, chrome, pages, demo store) into a
  * `TemplateDefinition` like Atelier's. No React here.
