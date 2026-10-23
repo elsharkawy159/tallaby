@@ -12,7 +12,7 @@
  * `collectFormIds`), so the storefront and the editor need no new plumbing.
  * Props are untrusted JSON: every value is checked or clamped here.
  */
-import type { ComponentNode } from "../config/schema";
+import type { ComponentNode, SectionInstance, SitePage } from "../config/schema";
 import {
   PRODUCT_SORTS,
   PRODUCT_SOURCES,
@@ -68,22 +68,30 @@ const idsOf = (value: unknown) =>
 /** Records a list skips first (a "lead and list" design shows the first record once). */
 const offsetOf = (value: unknown) => (typeof value === "number" && Number.isFinite(value) ? Math.min(10, Math.max(0, Math.round(value))) : 0);
 
+/** A product list split into pages with page links (`paginate`), e.g. the home page's main grid. */
+export function isPaginated(node: ComponentNode): boolean {
+  return node.type === "productList" && node.props?.paginate === true;
+}
+
 /** The catalog query of a data node, or null (not a catalog node, or not set up yet). */
 export function nodeCatalogQuery(node: ComponentNode): CatalogQuery | null {
   const props = node.props ?? {};
   if (node.type === "productList") {
     const source = PRODUCT_SOURCES.find((s) => s === props.source) ?? ("newest" satisfies ProductSource);
     const sort = PRODUCT_SORTS.find((s) => s === props.sort) ?? ("default" satisfies ProductSort);
-    const limit = clampLimit(props.limit, 8) + offsetOf(props.offset);
+    // A paginated list shows `limit` products per page (the host picks the page) and skips no lead record.
+    const paginate = isPaginated(node);
+    const limit = clampLimit(props.limit, 8) + (paginate ? 0 : offsetOf(props.offset));
+    const extra = paginate ? { paginate: true } : {};
     if (source === "category") {
       const categoryId = idOf(props.categoryId);
-      return categoryId ? { kind: "products", source, categoryId, sort, limit } : null;
+      return categoryId ? { kind: "products", source, categoryId, sort, limit, ...extra } : null;
     }
     if (source === "selected") {
       const productIds = idsOf(props.productIds);
-      return productIds.length ? { kind: "products", source, productIds, sort, limit } : null;
+      return productIds.length ? { kind: "products", source, productIds, sort, limit, ...extra } : null;
     }
-    return { kind: "products", source, sort, limit };
+    return { kind: "products", source, sort, limit, ...extra };
   }
   if (node.type === "categoryList") {
     // Picked categories may sit anywhere in the store's list: load them all.
@@ -110,6 +118,56 @@ export function walkNodes(nodes: readonly ComponentNode[] | undefined, visit: (n
   }
 }
 
+/** The id of the product list in `productCatalogSection`; its records go in `ctx.catalog.products[CATALOG_LIST_ID]`. */
+export const CATALOG_LIST_ID = "catalog-products";
+
+/**
+ * The site's own product card on pages the builder does not lay out (the
+ * /products catalog): the item template of the first product list on the
+ * home page, else on any page, repeated in a plain catalog grid (4/3/2
+ * columns, the list's own gaps). Null when the site has no product list.
+ */
+export function productCatalogSection(pages: readonly SitePage[]): SectionInstance | null {
+  const ordered = [...pages.filter((p) => p.isHome), ...pages.filter((p) => !p.isHome)];
+  let list: ComponentNode | undefined;
+  for (const page of ordered) {
+    for (const instance of page.content.sections) {
+      walkNodes(instance.componentTree, (node) => {
+        if (!list && node.type === "productList" && node.children.length) list = node;
+      });
+      if (list) break;
+    }
+    if (list) break;
+  }
+  if (!list) return null;
+  const gap = list.style?.gap ?? 16;
+  const tablet = list.breakpointStyles?.tablet?.gap;
+  const mobile = list.breakpointStyles?.mobile?.gap;
+  return {
+    id: "products-catalog",
+    sectionId: "custom-section",
+    version: 1,
+    props: {},
+    componentTree: [
+      {
+        id: "products-catalog-root",
+        type: "section",
+        props: {},
+        children: [
+          {
+            id: CATALOG_LIST_ID,
+            type: "productList",
+            props: { source: "newest", limit: MAX_LIST_LIMIT },
+            style: { columns: 4, gap },
+            breakpointStyles: { tablet: { columns: 3, ...(tablet != null && { gap: tablet }) }, mobile: { columns: 2, ...(mobile != null && { gap: mobile }) } },
+            children: list.children,
+          },
+        ],
+      },
+    ],
+  };
+}
+
 /** The store data a tree draws (for presets and empty-state chips). */
 export function treeDataNeeds(nodes: readonly ComponentNode[] | undefined): DataNeed[] {
   const out = new Set<DataNeed>();
@@ -125,7 +183,8 @@ export function listRecords(node: ComponentNode, ctx: RenderContext): DataRecord
   const props = node.props ?? {};
   if (node.type === "productList") {
     if (!nodeCatalogQuery(node)) return [];
-    const offset = offsetOf(props.offset);
+    // The host already resolved the current page of a paginated list.
+    const offset = isPaginated(node) ? 0 : offsetOf(props.offset);
     return (ctx.catalog.products[node.id] ?? []).slice(offset, offset + clampLimit(props.limit, 8)).map((record) => ({ kind: "productList", record }));
   }
   if (node.type === "categoryList") {

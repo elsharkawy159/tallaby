@@ -1312,7 +1312,8 @@ export async function createProduct(
           (localizedData.ar?.metaDescription ?? "").trim() !== "";
 
         if (arHasContent) {
-          const arSlug = localizedData.ar?.slug?.trim() || null;
+          // One slug per product: the English one, in both languages.
+          const arSlug = enSlug;
           const arRow = {
             productId: created.id,
             locale: "ar" as const,
@@ -1554,7 +1555,8 @@ export async function updateProduct(
           });
           const arPayload = {
             title: (localizedData.ar.title ?? "").trim() || enTitle,
-            slug: localizedData.ar.slug?.trim() || null,
+            // One slug per product: the English one, in both languages.
+            slug: enSlug,
             description: localizedData.ar.description?.trim() || null,
             content: normalizeRichTextContent(localizedData.ar.content),
             bulletPoints: localizedData.ar.bulletPoints ?? [],
@@ -1578,6 +1580,17 @@ export async function updateProduct(
               ...arPayload,
             });
           }
+        } else {
+          // An older Arabic row keeps no slug of its own either.
+          await tx
+            .update(productTranslations)
+            .set({ slug: enSlug })
+            .where(
+              and(
+                eq(productTranslations.productId, productId),
+                eq(productTranslations.locale, "ar")
+              )
+            );
         }
       }
 

@@ -15,6 +15,7 @@ import { Input } from "@workspace/ui/components/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@workspace/ui/components/tabs";
 import { FieldHint, SMALL_BUTTON_CLASS, BUTTON_CLASS } from "@/components/form/form-ui";
 import { SELLER_IMAGE_ACCEPT_ATTR, useSellerUpload } from "@/components/inputs/use-seller-upload";
+import { PageActionBar } from "@/components/layout/page-action-bar";
 import { BannerField, LogoField } from "@/components/stores/brand-image-fields.client";
 import { storeLogoSrc } from "@/components/stores/store-logo.client";
 import { cn } from "@/lib/utils";
@@ -122,6 +123,21 @@ export function DesignSystemEditor({
   const color = (key: ColorKey, value: string) => setDs((prev) => setToken(prev, "colors", key, value));
 
   return (
+    <div className="space-y-5">
+    <PageActionBar title={t("draftNote")}>
+      <Button type="button" variant="neutral" className={BUTTON_CLASS} disabled={disabled || !dirty} onClick={() => setDs(JSON.parse(savedDs))}>
+        <RotateCcw />
+        {t("discard")}
+      </Button>
+      <Button type="button" variant="neutral" className={BUTTON_CLASS} disabled={disabled || !dirty || conflict} onClick={() => onSave()}>
+        {saving ? <LoaderCircle className="animate-spin" /> : <Save />}
+        {t("saveDraft")}
+      </Button>
+      <Button type="button" className={BUTTON_CLASS} disabled={disabled || conflict} onClick={() => (dirty ? onSave(onPublish) : onPublish())}>
+        {publishing ? <LoaderCircle className="animate-spin" /> : <UploadCloud />}
+        {t("publish")}
+      </Button>
+    </PageActionBar>
     <div className={cn("grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]", fontClassName)}>
       <div className="min-w-0 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -336,21 +352,6 @@ export function DesignSystemEditor({
           </TabsContent>
         </Tabs>
 
-        <div className="sticky bottom-0 flex flex-wrap items-center justify-end gap-2 border-t bg-background/95 py-3 backdrop-blur">
-          <FieldHint className="me-auto">{t("draftNote")}</FieldHint>
-          <Button type="button" variant="neutral" className={BUTTON_CLASS} disabled={disabled || !dirty} onClick={() => setDs(JSON.parse(savedDs))}>
-            <RotateCcw />
-            {t("discard")}
-          </Button>
-          <Button type="button" variant="neutral" className={BUTTON_CLASS} disabled={disabled || !dirty || conflict} onClick={() => onSave()}>
-            {saving ? <LoaderCircle className="animate-spin" /> : <Save />}
-            {t("saveDraft")}
-          </Button>
-          <Button type="button" className={BUTTON_CLASS} disabled={disabled || conflict} onClick={() => (dirty ? onSave(onPublish) : onPublish())}>
-            {publishing ? <LoaderCircle className="animate-spin" /> : <UploadCloud />}
-            {t("publish")}
-          </Button>
-        </div>
         <p className="text-xs text-muted-foreground">
           <Link href={`/stores/${storeId}/editor`} className="font-medium text-primary hover:underline">
             {t("openEditor")}
@@ -358,7 +359,8 @@ export function DesignSystemEditor({
         </p>
       </div>
 
-      <div className="min-w-0 lg:sticky lg:top-4 lg:self-start">
+      {/* Parks below the dashboard header and the page's action bar. */}
+      <div className="min-w-0 lg:sticky lg:top-36 lg:self-start">
         <div className="mb-2 flex items-center justify-between gap-2">
           <p className="text-sm font-semibold">{t("preview.title")}</p>
           <div className="flex items-center gap-1">
@@ -389,6 +391,7 @@ export function DesignSystemEditor({
           fontClassName={fontClassName}
         />
       </div>
+    </div>
     </div>
   );
 }

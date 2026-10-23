@@ -23,6 +23,7 @@ import {
   TEXTAREA_CLASS,
   ToggleRow,
 } from "@/components/form/form-ui";
+import { PageActionBar } from "@/components/layout/page-action-bar";
 import { BannerField } from "@/components/stores/brand-image-fields.client";
 import { saveStoreSeo } from "../domain-seo.server";
 import {
@@ -97,6 +98,12 @@ export function StoreSeoForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5" noValidate>
+        <PageActionBar>
+          <Button type="submit" className={BUTTON_CLASS} disabled={disabled || !form.formState.isDirty}>
+            {isPending ? <LoaderCircle className="animate-spin" /> : <Save />}
+            {t("save")}
+          </Button>
+        </PageActionBar>
         {readOnly && <p className="rounded-lg border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">{t("readOnly")}</p>}
 
         <SectionCard id="search" icon={Search} title={t("search.title")} description={t("search.description")}>
@@ -237,12 +244,6 @@ export function StoreSeoForm({
           </SectionCard>
         )}
 
-        <div className="sticky bottom-0 flex justify-end border-t bg-background/95 py-3 backdrop-blur">
-          <Button type="submit" className={BUTTON_CLASS} disabled={disabled || !form.formState.isDirty}>
-            {isPending ? <LoaderCircle className="animate-spin" /> : <Save />}
-            {t("save")}
-          </Button>
-        </div>
       </form>
     </Form>
   );

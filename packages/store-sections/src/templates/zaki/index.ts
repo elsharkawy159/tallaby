@@ -2,8 +2,8 @@
  * Zaki (template 57, smart home and TV; Claude Design "Storefront
  * Templates"): pale green-grey paper, deep green ink, a teal for actions and
  * a warm yellow highlight, Noto Kufi Arabic throughout and 14px corners. An
- * installer's shop: smart TV in an afternoon, what our technicians do, book
- * a technician, installation prices, extend your warranty and questions.
+ * installer's shop: smart TV in an afternoon, what our technicians do,
+ * devices we install, book a technician, installation prices, extend your warranty and questions.
  * Built from section library designs (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-21): wall-mounted TVs in empty
@@ -114,6 +114,14 @@ const home: Design[] = [
       "سنة أو سنتين زيادة على ضمان الوكيل.": L("سنة أو سنتين زيادة على ضمان الجهاز.", "One or two extra years on top of the device warranty."),
     },
   }),
+  lib("products-grid", {
+    text: {
+      "وصل حديثًا": L("أجهزة بنركبها", "Devices we install"),
+      "أحدث المنتجات اللي نزلت المتجر.": L("شاشات وكاميرات وبيت ذكي، والتركيب علينا.", "TVs, cameras and smart home, installation included."),
+    },
+    links: { "/products": SHOP },
+    lists: [{ source: "featured", limit: 4 }],
+  }),
   lib("service-booking", {
     text: {
       "احجز معاد الفني": L("احجز فني", "Book a technician"),
@@ -205,7 +213,7 @@ const DEMO = demoStore({
 
 export const ZAKI = libraryTemplate({
   key: ZAKI_KEY,
-  version: 1,
+  version: 2,
   name: L("زكي", "Zaki"),
   description: L(
     "البيت الذكي والتلفزيون مع التركيب: خدمات الفنيين، احجز فني، أسعار التركيب ومد الضمان. أربع صفحات جاهزة.",

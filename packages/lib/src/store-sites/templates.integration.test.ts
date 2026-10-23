@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import * as DB_SCHEMA from "@workspace/db/schema";
 import { contentOverrideKeys, storeSectionRegistry } from "@workspace/store-sections/render";
-import { classicConfig } from "@workspace/store-sections/templates";
+import { classicConfig, templateEssentials } from "@workspace/store-sections/templates";
 import { createIsolationWorld, type IsolationWorld } from "../stores/isolation.fixtures";
 import { getStoreForEditor, saveStoreDesignSystem, saveStorePageDraft } from "./server";
 import {
@@ -111,7 +111,9 @@ describe.skipIf(!TEST_DATABASE_URL)("store templates (integration)", { timeout: 
 
     const after = await home(w.a.sellerId, w.a.a2);
     const sections = (after.draftContent as { sections: { id: string }[] }).sections;
-    expect(sections.map((x) => x.id)).toEqual(classicConfig().pages[0]!.content.sections.map((x) => x.id));
+    // Only the hero and the sections with store data (owner, 2026-10-23).
+    expect(sections.map((x) => x.id)).toEqual(templateEssentials(classicConfig()).pages[0]!.content.sections.map((x) => x.id));
+    expect(sections.length).toBeLessThan(classicConfig().pages[0]!.content.sections.length);
 
     const [a1After] = await db.select().from(s.storePages).where(eq(s.storePages.id, a1Before!.id));
     expect(a1After!.draftVersion).toBe(a1Before!.draftVersion);
@@ -138,7 +140,7 @@ describe.skipIf(!TEST_DATABASE_URL)("store templates (integration)", { timeout: 
   });
 
   // Needs 0070 (Atelier seed) on the test database; skipped until it is applied.
-  it("Atelier: creates and binds its forms, names the pages, fills in the store name; a re-apply reuses the forms", async (t) => {
+  it("Atelier: creates and binds the forms of the sections it keeps, names the pages, fills in the store name; a re-apply reuses the forms", async (t) => {
     const [row] = await db.select({ id: s.templates.id }).from(s.templates).where(eq(s.templates.key, "atelier"));
     if (!row) return t.skip();
     const form = (name: string) => ({ name, fields: [{ id: "email", key: "email", type: "email" as const, label: "Email", required: true, width: "full" as const }], settings: { submitLabel: "Send", successMessage: "Thanks" } });
@@ -150,12 +152,12 @@ describe.skipIf(!TEST_DATABASE_URL)("store templates (integration)", { timeout: 
 
     const storeForms = await db.select({ id: s.storeForms.id, name: s.storeForms.name }).from(s.storeForms).where(eq(s.storeForms.storeId, w.b.b1));
     const ids = Object.fromEntries(storeForms.map((f) => [f.name, f.id]));
-    expect(ids["Atelier newsletter test"]).toBeTruthy();
+    // The home newsletter is not applied (owner, 2026-10-23), so no newsletter form is made.
+    expect(ids["Atelier newsletter test"]).toBeUndefined();
     expect(ids["Atelier contact test"]).toBeTruthy();
 
     const editor = (await getStoreForEditor(w.b.sellerId, w.b.b1, db))!;
     const json = JSON.stringify(editor.pages.map((p) => p.draftContent));
-    expect(json).toContain(ids["Atelier newsletter test"]!);
     expect(json).toContain(ids["Atelier contact test"]!);
     expect(json).not.toContain("formTemplate");
     const about = editor.pages.find((p) => p.slug === "about")!;

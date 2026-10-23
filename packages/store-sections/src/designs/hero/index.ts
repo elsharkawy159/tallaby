@@ -10,6 +10,20 @@ import { heroProduct } from "./hero-product";
 import { heroSearch } from "./hero-search";
 import { heroTicket } from "./hero-ticket";
 import { heroCarousel } from "./hero-carousel";
+import { heroCarouselImages } from "./hero-carousel-images";
 
-/** First is the default for new stores (the Classic template's hero). */
-export const HERO_DESIGNS: readonly Design[] = [heroClassic, heroTicket, heroPoster, heroInline, heroProduct, heroCollage, heroBento, heroHalves, heroBigWord, heroSearch, heroCarousel];
+/** In Add › Sections order: the two carousels first (owner, 2026-10-23). */
+export const HERO_DESIGNS: readonly Design[] = [
+  heroCarousel,
+  heroCarouselImages,
+  heroClassic,
+  heroTicket,
+  heroPoster,
+  heroInline,
+  heroProduct,
+  heroCollage,
+  heroBento,
+  heroHalves,
+  heroBigWord,
+  heroSearch,
+];

@@ -14,7 +14,7 @@ import { DESIGNS, STOCK_INDUSTRIES, getDesign, instantiateDesign } from ".";
 /** Designs this test expects to exist; each later design adds its id here. */
 const EXPECTED = [
   ...["header-classic", "header-line", "header-centered", "header-announcement", "header-search", "header-pill", "header-ruled", "header-chips", "header-brand-bar", "header-departments"],
-  ...["hero-classic", "hero-ticket", "hero-poster", "hero-inline", "hero-product", "hero-collage", "hero-bento", "hero-halves", "hero-big-word", "hero-search", "hero-carousel"],
+  ...["hero-carousel", "hero-carousel-images", "hero-classic", "hero-ticket", "hero-poster", "hero-inline", "hero-product", "hero-collage", "hero-bento", "hero-halves", "hero-big-word", "hero-search"],
   ...["categories-classic", "categories-tiles", "categories-stories", "categories-rail", "categories-bento", "categories-index", "categories-ruled", "categories-chips", "categories-feature-list", "categories-big-type"],
   ...["products-classic", "products-grid", "products-rail", "products-feature", "products-shelf", "products-list", "products-tabbed", "products-bento", "products-rows", "products-panel-rail"],
   ...["bundle-plus", "bundle-builder", "bundle-poster", "bundle-tabs", "bundle-list", "bundle-box", "bundle-quantity", "bundle-rail", "bundle-price-drop", "bundle-gifts", "bundle-together"],

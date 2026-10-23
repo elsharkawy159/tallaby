@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import createMiddleware from "next-intl/middleware";
 import {
   hostnameOf,
+  isLocalHost,
   isPlatformHost,
   storeSubdomainFromHost,
 } from "@workspace/lib/storefront";
@@ -40,8 +41,9 @@ export async function proxy(request: NextRequest) {
   // Seller storefronts: {subdomain}.tallaby.com
   const storeSubdomain = storeSubdomainFromHost(host);
   if (storeSubdomain) {
-    // A store that has its own domain lives there; the subdomain forwards.
-    const customDomain = await customDomainForSubdomain(storeSubdomain);
+    // A store that has its own domain lives there; the subdomain forwards
+    // (not in local development: the custom domain is production).
+    const customDomain = isLocalHost(host) ? null : await customDomainForSubdomain(storeSubdomain);
     if (customDomain) {
       const { pathname, search } = request.nextUrl;
       return NextResponse.redirect(`https://${customDomain}${pathname}${search}`, 308);

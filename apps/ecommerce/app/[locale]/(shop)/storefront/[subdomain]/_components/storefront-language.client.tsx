@@ -18,8 +18,12 @@ const PRODUCT_PATH = /^\/products\/([^/]+)\/?$/;
  * Switches the storefront to the other language. Works from the address-bar
  * path (`/`, `/en/products/x`), not the rewritten internal one, so it uses a
  * full navigation: the page's `lang`/`dir` change with it.
+ *
+ * `site`: inside a builder header (`languageSwitcher` node), it takes the
+ * header's colours instead of the default chrome's bordered pill, and shows
+ * only the globe on phones.
  */
-export function StorefrontLanguageSwitcher() {
+export function StorefrontLanguageSwitcher({ variant = "chrome" }: { variant?: "chrome" | "site" }) {
   const locale = useLocale() as ProductLocale;
   const target: ProductLocale = locale === "ar" ? "en" : "ar";
   const [isPending, startTransition] = useTransition();
@@ -50,10 +54,14 @@ export function StorefrontLanguageSwitcher() {
       lang={target}
       onClick={switchLocale}
       disabled={isPending}
-      className={s.iconButton}
+      className={
+        variant === "site"
+          ? "inline-flex h-10 items-center gap-1.5 rounded-full px-2.5 text-sm font-medium hover:opacity-75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--sf-brand) disabled:opacity-60"
+          : s.iconButton
+      }
     >
       <Globe className="size-4" aria-hidden />
-      {LABELS[target]}
+      <span className={variant === "site" ? "max-sm:sr-only" : undefined}>{LABELS[target]}</span>
     </button>
   );
 }

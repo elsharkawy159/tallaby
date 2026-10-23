@@ -37,7 +37,7 @@ export default async function StorefrontPage({ params, searchParams }: Storefron
   const { site } = await getStorefrontSite(store.id, store.storeId, store.subdomain);
   const home = site?.pages.find((page) => page.isHome);
   if (site && home) {
-    return <StoreSitePage store={store} site={site} page={home} locale={locale} />;
+    return <StoreSitePage store={store} site={site} page={home} locale={locale} productPage={query.page} />;
   }
 
   return (

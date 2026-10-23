@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
+import { productCatalogSection } from "@workspace/store-sections/render";
 import { cn } from "@workspace/ui/lib/utils";
 import { storeQueryHref, type StoreQuery } from "@/components/store-page/store-products";
 import { catalogStoreId, getStorefrontCategories, resolveStorefront } from "@/lib/storefront.server";
 import { getStorefrontSite } from "@/lib/store-site/preview.server";
 import { isStoreOfflineForRequest } from "@/lib/store-site/offline.server";
 import { CategoryCircles } from "../_components/category-circles";
+import { StoreSiteProductGrid } from "../_components/store-site";
 import { StorefrontCatalog } from "../_components/storefront-catalog";
 import s from "../storefront.module.css";
 
@@ -50,6 +52,8 @@ export default async function StoreProductsPage({ params, searchParams }: StoreP
     // The classic storefront's home is its catalog.
     redirect(`${storeQueryHref(locale === "en" ? "/en" : "/", query)}#products`);
   }
+  // Products in the template's own card: the item template of the site's first product list.
+  const grid = productCatalogSection(site.pages);
 
   return (
     <div className={cn(s.wrap, "space-y-10 py-10 md:space-y-12 md:py-14")}>
@@ -61,6 +65,9 @@ export default async function StoreProductsPage({ params, searchParams }: StoreP
         categories={categories}
         query={query}
         basePath="/products"
+        renderProducts={
+          grid ? (rows) => <StoreSiteProductGrid store={store} site={site} locale={locale} instance={grid} rows={rows} /> : undefined
+        }
       />
     </div>
   );

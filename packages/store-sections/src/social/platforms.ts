@@ -4,7 +4,8 @@
  *
  * Each platform accepts a URL on its own domains, or a handle / phone number
  * where that is how people share it, and `normalizeSocialLink` turns the input
- * into one canonical https URL (WhatsApp → `https://wa.me/<digits>`). Anything
+ * into one canonical https URL (WhatsApp → `https://wa.me/<digits>`, or
+ * `https://wa.me/@<username>` for a WhatsApp username). Anything
  * on another domain, another scheme, or with credentials/ports is refused, so
  * a stored link can never point somewhere else. No React here: the dashboard,
  * @workspace/lib and the storefront all use it.
@@ -37,7 +38,7 @@ export type SocialPlatform = {
   input: SocialInputType;
   /** Allowed hosts (subdomains included). */
   domains: readonly string[];
-  /** Handle pattern (without a leading @) for `handle` inputs. */
+  /** Handle pattern (without a leading @) for `handle` inputs and WhatsApp usernames. */
   handle?: RegExp;
   /** URL for a bare handle. */
   fromHandle?: (handle: string) => string;
@@ -85,7 +86,10 @@ export const SOCIAL_PLATFORMS: readonly SocialPlatform[] = [
     label: { ar: "واتساب", en: "WhatsApp" },
     input: "phone",
     domains: ["wa.me", "whatsapp.com"],
-    placeholder: "01xxxxxxxxx",
+    // WhatsApp usernames: at least one letter, so a mistyped number is not taken for one.
+    handle: /^(?=.*[A-Za-z])[A-Za-z0-9._]{3,35}$/,
+    fromHandle: (h) => `https://wa.me/@${h}`,
+    placeholder: "01xxxxxxxxx / @yourstore",
     color: "#25D366",
     icon: "M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z",
   },
@@ -249,7 +253,7 @@ export function normalizeSocialLink(platformKey: string, value: string): string 
   // Phone numbers may contain spaces; handles and URLs may not.
   if (/\s/.test(input)) return null;
 
-  if (platform.input === "handle" && platform.handle && platform.fromHandle) {
+  if (platform.handle && platform.fromHandle) {
     const handle = input.replace(/^@/, "");
     if (!input.includes("/") && !input.includes(":") && platform.handle.test(handle)) {
       return platform.fromHandle(handle);
@@ -266,7 +270,9 @@ export function normalizeSocialLink(platformKey: string, value: string): string 
   const path = url.pathname.replace(/\/+$/, "");
 
   if (platform.key === "whatsapp") {
-    // wa.me/<digits>, or api.whatsapp.com/send?phone=<digits>.
+    // wa.me/@<username>, wa.me/<digits>, or api.whatsapp.com/send?phone=<digits>.
+    const username = host === "wa.me" ? /^\/@([^/]+)$/.exec(path)?.[1] : undefined;
+    if (username) return platform.handle!.test(username) ? platform.fromHandle!(username) : null;
     const digits = host === "wa.me" ? whatsappDigits(path.slice(1)) : whatsappDigits(url.searchParams.get("phone") ?? "");
     return digits ? `https://wa.me/${digits}` : null;
   }

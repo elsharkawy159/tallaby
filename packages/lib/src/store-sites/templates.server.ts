@@ -44,7 +44,9 @@ import {
   prepareTemplateForStore,
   sectionInstanceSchema,
   siteConfigSchema,
+  templateEssentials,
   templateFormNeeds,
+  templateLibraryKeys,
   templateOutline,
   validateSiteConfig,
   type OverrideKeys,
@@ -244,6 +246,18 @@ export async function getStoreTemplateConfig(sellerId: string, storeId: string, 
 }
 
 /**
+ * The library design keys of the store's current template, first use first,
+ * so the editor's Add › Sections lists them first in each category (owner,
+ * 2026-10-23; `preferTemplatePresets`). Empty for a foreign store, a store
+ * with no offered template or a broken version.
+ */
+export async function getStoreTemplateLibraryKeys(sellerId: string, storeId: string, templateKey: string, q: Queryable = db): Promise<string[]> {
+  if (!templateKey) return [];
+  const config = await getStoreTemplateConfig(sellerId, storeId, templateKey, q);
+  return config ? templateLibraryKeys(config, templateKey) : [];
+}
+
+/**
  * One active template's current config with no store involved, for the
  * public template gallery on tallaby.com. Templates are global and
  * admin-authored, so nothing here belongs to a seller. Null for an unknown,
@@ -311,8 +325,10 @@ export async function applyStoreTemplate(
 
       await ensureStoreSiteScaffold(tx, storeId);
       const locale = store.defaultLocale === "en" ? "en" : "ar";
-      const formIds = await ensureTemplateForms(tx, sellerId, storeId, templateFormNeeds(config.data), (kind) => options.formInput?.(kind, locale));
-      const fitted = prepareTemplateForStore(config.data, { defaultLocale: locale, storeName: store.name, formIds });
+      // Only the hero and the sections with the store's own data (owner, 2026-10-23); forms only for sections kept.
+      const essentials = templateEssentials(config.data);
+      const formIds = await ensureTemplateForms(tx, sellerId, storeId, templateFormNeeds(essentials), (kind) => options.formInput?.(kind, locale));
+      const fitted = prepareTemplateForStore(essentials, { defaultLocale: locale, storeName: store.name, formIds });
       const pageNames = resolveTemplateMeta(template.meta, template.key).pageNames;
       const [ds] = await tx
         .select({ colors: storeDesignSystems.colors, typography: storeDesignSystems.typography, spacing: storeDesignSystems.spacing })

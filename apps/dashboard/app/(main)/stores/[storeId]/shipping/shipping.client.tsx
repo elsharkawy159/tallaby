@@ -29,6 +29,7 @@ import { ChoiceCard, ChoiceGroup } from "@workspace/ui/components/choice-card";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { BUTTON_CLASS, FIELD_CLASS, LabelNote, SectionCard, SMALL_BUTTON_CLASS } from "@/components/form/form-ui";
+import { PageActionBar } from "@/components/layout/page-action-bar";
 import { cn } from "@/lib/utils";
 import { CheckPrice } from "./check-price.client";
 import { deleteShippingZone, saveShippingSettings } from "./shipping.server";
@@ -62,6 +63,7 @@ export function StoreShippingSettings({
   const [deleting, setDeleting] = useState<StoreShippingZone | null>(null);
   const [templatesOpen, setTemplatesOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const settingsForm = useSettingsForm(storeId, settings);
   const raw = zones.map((z) => z.zone);
   const disabled = readOnly || isPending;
 
@@ -94,6 +96,9 @@ export function StoreShippingSettings({
 
   return (
     <div className="space-y-5">
+      <PageActionBar>
+        <SettingsSaveButton form={settingsForm} readOnly={readOnly} />
+      </PageActionBar>
       {readOnly && <p className="rounded-lg border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">{t("readOnly")}</p>}
       <div className="flex gap-2.5 rounded-lg border border-primary/25 bg-primary/5 px-4 py-3 text-sm">
         <Info className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
@@ -162,7 +167,7 @@ export function StoreShippingSettings({
 
       <CheckPrice zones={raw} settings={settings} />
 
-      <SettingsCard storeId={storeId} initial={settings} readOnly={readOnly} />
+      <SettingsCard form={settingsForm} readOnly={readOnly} />
 
       {zones.length > 0 && <TemplatesSheet open={templatesOpen} onOpenChange={setTemplatesOpen} {...templateProps} />}
 
@@ -301,7 +306,7 @@ function ZoneRow({
  * `method`/`setMethod`, `freeOver` setter, `showRates` and `locale` state, and
  * the `fmt` helper: `formatEgp`).
  */
-function SettingsCard({ storeId, initial, readOnly }: { storeId: string; initial: Settings; readOnly: boolean }) {
+function useSettingsForm(storeId: string, initial: Settings) {
   const t = useTranslations("storeShipping");
   // const locale = useLocale(); // Tallaby rates table only
   const router = useRouter();
@@ -335,6 +340,26 @@ function SettingsCard({ storeId, initial, readOnly }: { storeId: string; initial
         toast.error(t(`errors.${result.error}`));
       }
     });
+
+  return { saved, handlingDays, setHandlingDays, otherPlaces, setOtherPlaces, dirty, isPending, submit };
+}
+
+type SettingsForm = ReturnType<typeof useSettingsForm>;
+
+/** The page's Save button, shown in its top action bar; it saves the settings card. */
+function SettingsSaveButton({ form, readOnly }: { form: SettingsForm; readOnly: boolean }) {
+  const t = useTranslations("storeShipping");
+  return (
+    <Button type="button" className={BUTTON_CLASS} disabled={readOnly || form.isPending || !form.dirty} onClick={form.submit}>
+      {form.isPending ? <LoaderCircle className="animate-spin" /> : <Save />}
+      {t("save")}
+    </Button>
+  );
+}
+
+function SettingsCard({ form, readOnly }: { form: SettingsForm; readOnly: boolean }) {
+  const t = useTranslations("storeShipping");
+  const { handlingDays, setHandlingDays, otherPlaces, setOtherPlaces } = form;
 
   return (
     <SectionCard id="shipping-settings" icon={Settings2} title={t("settingsTitle")} description={t("settingsDescription")}>
@@ -452,13 +477,6 @@ function SettingsCard({ storeId, initial, readOnly }: { storeId: string; initial
           </div>
         )}
         */}
-
-        <div className="flex justify-end">
-          <Button type="button" className={BUTTON_CLASS} disabled={readOnly || isPending || !dirty} onClick={submit}>
-            {isPending ? <LoaderCircle className="animate-spin" /> : <Save />}
-            {t("save")}
-          </Button>
-        </div>
       </div>
     </SectionCard>
   );

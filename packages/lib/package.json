@@ -122,6 +122,14 @@
       "types": "./src/store-wallet/server.ts",
       "default": "./src/store-wallet/server.ts"
     },
+    "./notifications": {
+      "types": "./src/notifications/index.ts",
+      "default": "./src/notifications/index.ts"
+    },
+    "./notifications/server": {
+      "types": "./src/notifications/server.ts",
+      "default": "./src/notifications/server.ts"
+    },
     "./sellers": {
       "types": "./src/sellers/index.ts",
       "default": "./src/sellers/index.ts"

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   hostnameOf,
+  isLocalHost,
   isMarketplaceHost,
   isPlatformHost,
   normalizeCustomDomain,
@@ -87,6 +88,21 @@ describe("store URLs", () => {
   it("prefers the custom domain once live", () => {
     expect(storeUrl("faster", "faster-eg.com")).toBe("https://faster-eg.com");
     expect(storeHostname("faster", "faster-eg.com")).toBe("faster-eg.com");
+  });
+
+  it("keeps the localhost subdomain in local development", () => {
+    process.env.NEXT_PUBLIC_ROOT_DOMAIN = "localhost:3000";
+    expect(storeUrl("faster", "faster-eg.com")).toBe("http://faster.localhost:3000");
+    expect(storeHostname("faster", "faster-eg.com")).toBe("faster.localhost:3000");
+    // The domain itself (no store subdomain) still links to the domain.
+    expect(storeUrl("", "faster-eg.com")).toBe("https://faster-eg.com");
+  });
+
+  it("knows local development hosts", () => {
+    expect(isLocalHost("faster.localhost:3000")).toBe(true);
+    expect(isLocalHost("localhost:3000")).toBe(true);
+    expect(isLocalHost("faster.tallaby.com")).toBe(false);
+    expect(isLocalHost("evil-localhost.com")).toBe(false);
   });
 
   it("custom domains are not mistaken for store subdomains", () => {

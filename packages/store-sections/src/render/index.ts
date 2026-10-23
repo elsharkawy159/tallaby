@@ -22,4 +22,4 @@ export * from "../core/catalog-resolve";
 export * from "../designs";
 export * from "../elements/data";
 export * from "../elements/video";
-export { flushHeaderOnMobile } from "../config/header";
+export { LANGUAGE_SWITCHER_PROP, flushHeaderOnMobile, languageSwitcherOn, withLanguageSwitcher } from "../config/header";

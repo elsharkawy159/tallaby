@@ -84,6 +84,8 @@ export const SECTION_COPY = {
   dataLoading: { ar: "جارٍ تحميل بيانات متجرك…", en: "Loading your store data…" },
   addToCart: { ar: "أضف للسلة", en: "Add to cart" },
   addToWishlist: { ar: "أضف للمفضلة", en: "Add to wishlist" },
+  /** The language switcher shows the language it switches TO. */
+  otherLanguage: { ar: "English", en: "عربي" },
   verifiedBuyer: { ar: "مشترٍ موثّق", en: "Verified buyer" },
   whatsappChat: { ar: "راسلنا على واتساب", en: "Chat on WhatsApp" },
 } as const satisfies Record<string, Localized>;

@@ -31,9 +31,18 @@ import {
 } from "@workspace/lib/storefront/vercel-domains";
 import { domainAdminAction } from "../../domains/domains.server";
 import { AssignDomainButton } from "./assign-domain.client";
-import { discardSiteDraftAction, restoreSiteRevisionAction, unpublishSiteAction } from "./website-actions.server";
+import { logServerError } from "@workspace/db/log";
+import { listStoreTemplates } from "@workspace/lib/store-sites/server";
+import { RemoteImage } from "@/components/media/remote-image";
+import { ChangeThemeButton, PaletteBand, type ThemeOption } from "./store-theme.client";
+import {
+  discardSiteDraftAction,
+  restoreSiteRevisionAction,
+  undoStoreThemeAction,
+  unpublishSiteAction,
+} from "./website-actions.server";
 
-type TabProps = { store: AdminStoreHeader };
+type SectionProps = { store: AdminStoreHeader };
 
 function Fact({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -93,7 +102,7 @@ function DomainDnsRecords({ domain, verification }: { domain: string; verificati
   );
 }
 
-export async function StoreOverviewTab({ store, canWrite }: TabProps & { canWrite: boolean }) {
+export async function StoreOverviewSection({ store, canWrite }: SectionProps & { canWrite: boolean }) {
   const base = { sellerId: store.sellerId, storeId: store.id };
   const owner = await getAccountRelations(store.sellerId).catch(() => null);
   return (
@@ -110,7 +119,6 @@ export async function StoreOverviewTab({ store, canWrite }: TabProps & { canWrit
             </Fact>
             <Fact label="Default language">{store.defaultLocale.toUpperCase()}</Fact>
             <Fact label="Catalog">{store.catalogMode === "selected" ? "Selected products" : "All seller products"}</Fact>
-            <Fact label="Template">{store.templateKey}</Fact>
             <Fact label="First published">{formatAdminDate(store.firstPublishedAt)}</Fact>
             <Fact label="Last published">{formatAdminDate(store.lastPublishedAt)}</Fact>
             <Fact label="Created">{formatAdminDate(store.createdAt)}</Fact>
@@ -180,17 +188,6 @@ export async function StoreOverviewTab({ store, canWrite }: TabProps & { canWrit
             <CardTitle className="text-base">Admin actions</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col items-start gap-3">
-            {store.siteStatus === "published" && (
-              <ReasonActionButton
-                label="Force-unpublish site"
-                title="Unpublish this store's website?"
-                description="Visitors see the store's offline page until the seller publishes again."
-                confirmLabel="Unpublish"
-                destructive
-                payload={{ ...base, action: "unpublish_store" }}
-                action={storeAdminAction}
-              />
-            )}
             {store.status === "suspended" ? (
               <ReasonActionButton
                 label="Lift suspension"
@@ -210,7 +207,9 @@ export async function StoreOverviewTab({ store, canWrite }: TabProps & { canWrit
                 action={storeAdminAction}
               />
             )}
-            <p className="text-xs text-muted-foreground">Every action needs a reason and is saved in the audit log.</p>
+            <p className="text-xs text-muted-foreground">
+              Every action needs a reason and is saved in the audit log. Website actions (theme, unpublish) are in Website.
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -261,11 +260,80 @@ const MEDIA_COLUMNS: AdminTableColumn[] = [
  * `canWrite`: admin / super_admin (moderators see the tab read-only). The
  * site actions re-check the role, the store and the reason on the server.
  */
-export async function StoreWebsiteTab({ store, canWrite }: TabProps & { canWrite: boolean }) {
-  const site = await getStoreWebsiteForAdmin(store.id);
+export async function StoreWebsiteSection({ store, canWrite }: SectionProps & { canWrite: boolean }) {
+  const [site, gallery] = await Promise.all([
+    getStoreWebsiteForAdmin(store.id),
+    listStoreTemplates(store.sellerId, store.id).catch((error) => {
+      logServerError("admin", "store page theme gallery failed", { storeId: store.id }, error);
+      return null;
+    }),
+  ]);
   const colors = (site.design?.colors ?? {}) as Record<string, unknown>;
+  const themes: ThemeOption[] = (gallery?.templates ?? []).map((template) => ({
+    key: template.key,
+    name: localizedText(template.name),
+    category: template.category,
+    thumbnailUrl: template.thumbnailUrl,
+    isPremium: template.isPremium,
+    isDefault: template.isDefault,
+    palette: template.palette,
+    pageCount: template.outline.length,
+  }));
+  const currentKey = gallery?.currentKey ?? store.templateKey;
+  const current = themes.find((theme) => theme.key === currentKey) ?? null;
+  const install = gallery?.lastInstall ?? null;
   return (
     <div className="grid gap-6 lg:grid-cols-2">
+      <Card className="overflow-hidden py-0 lg:col-span-2">
+        <div className="flex flex-col sm:flex-row">
+          <PaletteBand palette={current?.palette ?? []} className="h-3 shrink-0 sm:h-auto sm:w-3" />
+          <div className="flex flex-1 flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-4">
+              {current?.thumbnailUrl ? (
+                <RemoteImage
+                  src={current.thumbnailUrl}
+                  alt=""
+                  width={96}
+                  height={72}
+                  className="hidden h-[72px] w-24 shrink-0 rounded-md border object-cover object-top sm:block"
+                />
+              ) : null}
+              <div className="space-y-0.5">
+                <p className="text-xs text-muted-foreground">Theme</p>
+                <p className="text-lg font-semibold leading-tight">{current?.name ?? currentKey}</p>
+                <p className="text-sm text-muted-foreground">
+                  {current ? `${current.category.charAt(0).toUpperCase()}${current.category.slice(1)}, ${current.pageCount} pages` : "No longer offered in the gallery"}
+                  {install && install.templateKey === currentKey ? `. Applied ${formatAdminDate(install.installedAt)}` : ""}
+                </p>
+              </div>
+            </div>
+            {canWrite && (
+              <div className="flex flex-wrap items-center gap-2">
+                {install?.canUndo && (
+                  <ReasonActionButton
+                    label="Undo theme change"
+                    title="Undo the last theme change?"
+                    description="The drafts go back to how they were before the theme was applied, and pages it added are removed. Edits made since then are lost. The live site does not change."
+                    confirmLabel="Undo"
+                    payload={{ storeId: store.id }}
+                    action={undoStoreThemeAction}
+                  />
+                )}
+                {themes.length > 0 && (
+                  <ChangeThemeButton
+                    storeId={store.id}
+                    storeName={store.name}
+                    currentKey={currentKey}
+                    themes={themes}
+                    siteLive={store.siteStatus === "published"}
+                  />
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </Card>
+
       <Card className="lg:col-span-2">
         <CardHeader>
           <CardTitle className="text-base">Pages ({site.pages.length})</CardTitle>
@@ -417,7 +485,7 @@ export async function StoreWebsiteTab({ store, canWrite }: TabProps & { canWrite
   );
 }
 
-export async function StoreCatalogTab({ store }: TabProps) {
+export async function StoreCatalogSection({ store }: SectionProps) {
   const catalog = await getStoreCatalogForAdmin(store.id, store.sellerId);
   return (
     <Card>
@@ -440,7 +508,7 @@ export async function StoreCatalogTab({ store }: TabProps) {
   );
 }
 
-export async function StoreCommerceTab({ store }: TabProps) {
+export async function StoreCommerceSection({ store }: SectionProps) {
   const { methods, zones } = await getStoreCommerceForAdmin(store.id);
   return (
     <div className="grid gap-6 lg:grid-cols-3">
@@ -507,7 +575,7 @@ export async function StoreCommerceTab({ store }: TabProps) {
   );
 }
 
-export async function StoreIntegrationsTab({ store }: TabProps) {
+export async function StoreIntegrationsSection({ store }: SectionProps) {
   const rows = await listStoreIntegrationsForAdmin(store.id);
   return (
     <Card>
@@ -518,7 +586,7 @@ export async function StoreIntegrationsTab({ store }: TabProps) {
   );
 }
 
-export async function StoreFormsTab({ store }: TabProps) {
+export async function StoreFormsSection({ store }: SectionProps) {
   const forms = await listStoreFormsForAdmin(store.id);
   return (
     <Card>
@@ -558,14 +626,14 @@ export async function StoreFormsTab({ store }: TabProps) {
   );
 }
 
-export async function StoreContentTab({ store }: TabProps) {
+export async function StoreContentSection({ store }: SectionProps) {
   const { collections, items } = await listStoreContentForAdmin(store.id);
   const collectionNames = new Map(collections.map((collection) => [collection.id, collection.name]));
   return (
     <div className="grid gap-6 lg:grid-cols-3">
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Collections</CardTitle>
+          <CardTitle className="text-base">Blog & CMS collections</CardTitle>
         </CardHeader>
         <CardContent>
           {collections.length === 0 ? (
@@ -640,14 +708,15 @@ export async function StoreContentTab({ store }: TabProps) {
   );
 }
 
-export async function StoreMediaTab({ store }: TabProps) {
+export async function StoreMediaSection({ store }: SectionProps) {
   const media = await getStoreMediaForAdmin(store.id);
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">
-          {media.count.toLocaleString()} files · {formatBytes(media.bytes)}
-        </CardTitle>
+        <CardTitle className="text-base">Media</CardTitle>
+        <p className="text-sm text-muted-foreground">
+          {media.count.toLocaleString()} files, {formatBytes(media.bytes)} in all
+        </p>
       </CardHeader>
       <CardContent>
         <AdminTable
@@ -675,7 +744,7 @@ export async function StoreMediaTab({ store }: TabProps) {
   );
 }
 
-export async function StoreAuditTab({ store }: TabProps) {
+export async function StoreAuditSection({ store }: SectionProps) {
   const { settings, admin } = await listStoreAuditForAdmin(store.id);
   return (
     <div className="grid gap-6 lg:grid-cols-2">

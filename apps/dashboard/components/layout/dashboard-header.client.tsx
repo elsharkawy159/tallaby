@@ -12,6 +12,7 @@ import { CommandPalette } from "./command-palette.client";
 import { resolveDashboardRoute } from "./dashboard-routes.lib";
 import { InstallAppButton } from "./install-app-button.client";
 import { LanguageToggle } from "./language-toggle.client";
+import { NotificationBell } from "./notification-bell.client";
 import { ThemeToggle } from "./theme-toggle.client";
 
 const ICON_BUTTON =
@@ -125,6 +126,8 @@ export function DashboardHeader({ walletBalance }: { walletBalance: number | nul
         >
           <Search className="size-[18px]" />
         </button>
+
+        <NotificationBell className={ICON_BUTTON} />
 
         {walletBalance != null && (
           <Link

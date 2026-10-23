@@ -22,7 +22,7 @@ export async function StorefrontHeader({ store }: { store: Storefront }) {
           <StoreLogo name={store.displayName} logoUrl={store.logoUrl} />
           <span className="truncate">{store.displayName}</span>
         </Link>
-        <StorefrontLanguageSwitcher />
+        {new Set(store.supportedLocales).size > 1 && <StorefrontLanguageSwitcher />}
         <CartSheet storeName={store.displayName} fontClassName={storefrontFont.variable} />
       </div>
     </header>

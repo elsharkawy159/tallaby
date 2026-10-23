@@ -3272,3 +3272,72 @@ export const librarySections = pgTable("library_sections", {
 		}).onDelete("set null"),
 	check("library_sections_key_check", sql`key ~ '^[a-z0-9-]+$'`),
 ]);
+
+/**
+ * The admin app's header bell (0098). One shared inbox for the admin team:
+ * rows are written by triggers on the source tables, one per `dedupe_key`.
+ * Server-only (RLS on, no policies).
+ */
+export const adminNotifications = pgTable("admin_notifications", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	/** seller_created | store_created | store_published | top_up_requested */
+	type: text().notNull(),
+	data: jsonb().$type<Record<string, unknown>>().default({}).notNull(),
+	sellerId: uuid("seller_id"),
+	storeId: uuid("store_id"),
+	dedupeKey: text("dedupe_key").notNull(),
+	readAt: timestamp("read_at", { withTimezone: true, mode: 'string' }),
+	readBy: uuid("read_by"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	unique("admin_notifications_dedupe_key").on(table.dedupeKey),
+	index("admin_notifications_created_idx").using("btree", table.createdAt.desc()),
+	index("admin_notifications_unread_idx").using("btree", table.createdAt.desc()).where(sql`read_at IS NULL`),
+	foreignKey({
+			columns: [table.sellerId],
+			foreignColumns: [sellers.id],
+			name: "admin_notifications_seller_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.storeId],
+			foreignColumns: [stores.id],
+			name: "admin_notifications_store_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.readBy],
+			foreignColumns: [users.id],
+			name: "admin_notifications_read_by_fkey"
+		}).onDelete("set null"),
+	check("admin_notifications_type_check", sql`type IN ('seller_created', 'store_created', 'store_published', 'top_up_requested')`),
+]);
+
+/**
+ * The seller dashboard's header bell (0098). Written by triggers on the source
+ * tables, one row per (seller_id, dedupe_key). Server-only (RLS on, no policies).
+ */
+export const sellerNotifications = pgTable("seller_notifications", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	sellerId: uuid("seller_id").notNull(),
+	storeId: uuid("store_id"),
+	/** order_created | top_up_approved | top_up_rejected | question_received | review_received */
+	type: text().notNull(),
+	data: jsonb().$type<Record<string, unknown>>().default({}).notNull(),
+	dedupeKey: text("dedupe_key").notNull(),
+	readAt: timestamp("read_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	unique("seller_notifications_dedupe_key").on(table.sellerId, table.dedupeKey),
+	index("seller_notifications_seller_created_idx").using("btree", table.sellerId, table.createdAt.desc()),
+	index("seller_notifications_seller_unread_idx").using("btree", table.sellerId).where(sql`read_at IS NULL`),
+	foreignKey({
+			columns: [table.sellerId],
+			foreignColumns: [sellers.id],
+			name: "seller_notifications_seller_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.storeId],
+			foreignColumns: [stores.id],
+			name: "seller_notifications_store_id_fkey"
+		}).onDelete("set null"),
+	check("seller_notifications_type_check", sql`type IN ('order_created', 'top_up_approved', 'top_up_rejected', 'question_received', 'review_received')`),
+]);

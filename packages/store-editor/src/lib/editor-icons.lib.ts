@@ -1,6 +1,7 @@
 /** Palette and layer icons for elements, presets and section groups (editor only). */
 import {
   Heart,
+  Languages,
   BadgeCheck,
   BookOpen,
   ChartNoAxesColumn,
@@ -102,6 +103,7 @@ export const ELEMENT_ICONS: Record<ElementType, LucideIcon> = {
   storeForm: Mail,
   addToCart: ShoppingCart,
   wishlistButton: Heart,
+  languageSwitcher: Languages,
 };
 
 export const PRESET_ICONS: Record<string, LucideIcon> = {

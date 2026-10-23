@@ -23,7 +23,7 @@ describe("entity hrefs", () => {
     expect(sellerHref(id)).toBe(`/sellers/${id}`);
     expect(sellerHref(id, "overview")).toBe(`/sellers/${id}`);
     expect(sellerHref(id, "wallet")).toBe(`/sellers/${id}?tab=wallet`);
-    expect(storeHref(id, "website")).toBe(`/stores/${id}?tab=website`);
+    expect(storeHref(id, "website")).toBe(`/stores/${id}#website`);
   });
 
   it("filters the orders list", () => {

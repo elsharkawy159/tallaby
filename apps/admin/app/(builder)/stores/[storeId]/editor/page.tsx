@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { resolveStoreForAdmin } from "@workspace/lib/admin/server";
-import { getStoreForEditor, getStoreSiteStatus, listStoreTemplates } from "@workspace/lib/store-sites/server";
+import { getStoreForEditor, getStoreSiteStatus, getStoreTemplateLibraryKeys, listStoreTemplates } from "@workspace/lib/store-sites/server";
 import { storePreviewSecret } from "@workspace/lib/store-sites/preview";
 import { storeUrl } from "@workspace/lib/storefront";
+import { findActiveCustomDomainForSubdomain } from "@workspace/lib/storefront/server";
 import { publicStoreSocialLinks } from "@workspace/lib/stores";
 import { getStore } from "@workspace/lib/stores/server";
-import { designSystemSchema, sectionInstanceSchema, type SiteLocale } from "@workspace/store-sections";
+import { designSystemSchema, preferTemplatePresets, sectionInstanceSchema, type SiteLocale } from "@workspace/store-sections";
 import type { EditorInitial } from "@workspace/store-editor/editor.client";
 import { adminActorId } from "@/app/(dashboard)/_lib/saas-admin.server";
 import { loadEditorSnapshot } from "./admin-store-editor.data";
@@ -36,14 +37,19 @@ export default async function AdminStoreEditorPage({ params }: { params: Promise
   const store = await getStore(ref.sellerId, ref.storeId);
   if (!store) notFound();
 
-  const [editor, status, catalog, gallery, presets] = await Promise.all([
+  const [editor, status, catalog, gallery, presets, customDomain] = await Promise.all([
     getStoreForEditor(ref.sellerId, store.id),
     getStoreSiteStatus(ref.sellerId, store.id),
     loadEditorSnapshot(ref.sellerId, store.id, store.catalogMode),
     listStoreTemplates(ref.sellerId, store.id),
     loadLibraryPresets(),
+    findActiveCustomDomainForSubdomain(store.subdomain),
   ]);
+  // The store's live address: its active custom domain, else its subdomain.
+  const liveUrl = storeUrl(store.subdomain, customDomain);
   if (!editor) notFound();
+  // Add › Sections lists the designs of the store's template first in each category.
+  const templateKeys = await getStoreTemplateLibraryKeys(ref.sellerId, store.id, gallery?.currentKey ?? "").catch(() => []);
 
   const header = sectionInstanceSchema.safeParse(editor.store.sharedHeader);
   const footer = sectionInstanceSchema.safeParse(editor.store.sharedFooter);
@@ -53,14 +59,14 @@ export default async function AdminStoreEditorPage({ params }: { params: Promise
 
   const initial: EditorInitial = {
     storeId: store.id,
-    storeUrl: storeUrl(store.subdomain),
+    storeUrl: liveUrl,
     readOnly: store.status !== "active",
     store: {
       name: store.name,
       description: store.description,
       logoUrl: store.logoUrl,
       bannerUrl: store.bannerUrl,
-      url: storeUrl(store.subdomain),
+      url: liveUrl,
       contact: { phone: contact.phone ?? null, email: contact.email ?? null, whatsapp: contact.whatsapp ?? null },
       social: publicStoreSocialLinks(store.contact),
       policies: [],
@@ -90,7 +96,7 @@ export default async function AdminStoreEditorPage({ params }: { params: Promise
     templates: { currentKey: gallery?.currentKey ?? "", items: toTemplateCardViews(gallery?.templates ?? []) },
     fontClassName: storeFontVariables,
     category: { en: store.storeCategory ?? null, ar: store.storeCategoryAr ?? null },
-    presets,
+    presets: presets && preferTemplatePresets(presets, templateKeys),
   };
 
   return <ReasonGate initial={initial} storeName={store.name} />;

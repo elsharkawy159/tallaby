@@ -142,10 +142,31 @@ export function WebsiteOverview({ data }: { data: WebsiteOverviewData }) {
       >
         <div className="grid gap-5 md:grid-cols-[minmax(0,1fr)_260px]">
           <div className="min-w-0 space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-xl border bg-muted/30 p-3">
+            <div
+              className={cn(
+                "flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-xl border-2 p-3 transition-colors",
+                live ? "border-emerald-500/40 bg-emerald-500/10" : "border-amber-500/50 bg-amber-500/10",
+              )}
+            >
               <div className="min-w-0 flex-1 basis-48">
-                <label htmlFor="website-live" className="text-sm font-semibold">
-                  {t("liveSwitch")}
+                <label
+                  htmlFor="website-live"
+                  className={cn(
+                    "flex items-center gap-2 text-base font-bold",
+                    live ? "text-emerald-700 dark:text-emerald-400" : "text-amber-700 dark:text-amber-400",
+                  )}
+                >
+                  {/* Pulsing status dot, so the switch is easy to spot. */}
+                  <span className="relative flex size-2.5 shrink-0" aria-hidden>
+                    <span
+                      className={cn(
+                        "absolute inline-flex size-full rounded-full opacity-75 motion-safe:animate-ping",
+                        live ? "bg-emerald-500" : "bg-amber-500",
+                      )}
+                    />
+                    <span className={cn("relative inline-flex size-2.5 rounded-full", live ? "bg-emerald-500" : "bg-amber-500")} />
+                  </span>
+                  {t(live ? "liveSwitchOnline" : "liveSwitchOffline")}
                 </label>
                 <p id="website-live-hint" className="text-xs text-muted-foreground">
                   {t(switchHint)}

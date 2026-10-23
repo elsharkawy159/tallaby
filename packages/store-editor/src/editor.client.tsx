@@ -424,7 +424,15 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
     </>
   );
   const sidebar = (
-    <EditorSidebar store={store} commands={commands} storeId={initial.storeId} readOnly={initial.readOnly} catalog={catalog} uiLocale={uiLocale} />
+    <EditorSidebar
+      store={store}
+      commands={commands}
+      storeId={initial.storeId}
+      readOnly={initial.readOnly}
+      catalog={catalog}
+      uiLocale={uiLocale}
+      translated={new Set(initial.locales).size > 1}
+    />
   );
   const hasSelection = selection !== null;
 
@@ -512,6 +520,7 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
               onRequestImage={() => setImagePickerOpen(true)}
               onQuickInsert={(index) => setQuickInsert({ open: true, index })}
               onFrameKeyDown={onFrameKeyDown}
+              translated={new Set(initial.locales).size > 1}
             />
           </div>
         </main>

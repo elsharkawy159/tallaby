@@ -746,7 +746,8 @@ export function SectionInspector({
     <InspectorStore.Provider value={mediaStore}>
       <div className="space-y-4">
         {locale !== defaultLocale && <p className="rounded-md bg-muted p-2 text-xs">{t("translating", { locale: locale.toUpperCase() })}</p>}
-        {definition.propDefinitions.length === 0 && !definition.itemCollections?.length && (
+        {/* A custom section's content is its elements (the sidebar's hint and section options), not store details. */}
+        {definition.propDefinitions.length === 0 && !definition.itemCollections?.length && definition.id !== "custom-section" && (
           <p className="text-sm text-muted-foreground">{t("nothingToEdit")}</p>
         )}
         {(designs.length > 1 || groups.design.length > 0) && (

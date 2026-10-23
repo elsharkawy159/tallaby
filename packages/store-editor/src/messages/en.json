@@ -305,6 +305,18 @@
       "selectedOnly": "Selected element only",
       "showAll": "Show all",
       "customHint": "Add elements from the Add panel, then click any element on the page to edit it.",
+      "settings": {
+        "title": "Section options",
+        "selectOnPage": "Select on page",
+        "slides": "Slides ({count})",
+        "slide": "Slide {number}",
+        "addSlide": "Add slide",
+        "removeSlide": "Remove slide {number}",
+        "noImage": "This slide has no photo. Select it on the page to add one."
+      },
+      "navbar": "Navbar",
+      "languageSwitcher": "Language switcher",
+      "languageSwitcherHint": "Lets visitors switch your website between Arabic and English.",
       "emptyTitle": "Nothing selected",
       "edit": "Edit",
       "path": "Where it sits",

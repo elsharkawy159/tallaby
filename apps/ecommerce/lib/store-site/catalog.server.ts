@@ -42,6 +42,8 @@ export type ResolvedCatalog = {
   reviews?: Record<string, ReviewSummary[]>;
   reviewStats?: ReviewStats;
   coupons?: Record<string, CouponSummary>;
+  /** The page each paginated product list shows (`paginate` queries). */
+  productPages?: Record<string, { page: number; totalPages: number }>;
 };
 
 function firstImage(images: unknown): string | null {
@@ -63,6 +65,15 @@ function toSummary(product: RawProduct): ProductSummary {
     compareAtPrice: list != null && final != null && list > final ? list : null,
     rating: product.averageRating ?? null,
     inStock: Number(product.quantity ?? 0) > 0,
+  };
+}
+
+/** `getProducts` rows as product-list records, and the ids that need a variant choice. */
+export function toProductSummaries(rows: readonly unknown[]): { products: ProductSummary[]; withVariants: Set<string> } {
+  const list = rows as RawProduct[];
+  return {
+    products: list.map(toSummary),
+    withVariants: new Set(list.filter((row) => (row.productVariants?.length ?? 0) > 0).map((row) => row.id)),
   };
 }
 
@@ -113,7 +124,8 @@ export async function resolveStoreCatalog(
   const storeCategories = needsCategories ? await getStorefrontCategories(sellerId, catalogStoreId) : [];
 
   const products: Record<string, ProductSummary[]> = {};
-  const fetchProducts = async (instanceId: string, filters: Partial<Parameters<typeof getProducts>[0]>, limit: number) => {
+  const productPages: Record<string, { page: number; totalPages: number }> = {};
+  const fetchPage = async (filters: Partial<Parameters<typeof getProducts>[0]>, limit: number) => {
     const result = await getProducts({
       sellerId,
       catalogStoreId,
@@ -124,28 +136,37 @@ export async function resolveStoreCatalog(
     });
     const rows = (result.success ? (result.data ?? []) : []) as unknown as RawProduct[];
     for (const row of rows) if ((row.productVariants?.length ?? 0) > 0) withVariants.add(row.id);
-    return rows.map(toSummary);
+    return { summaries: rows.map(toSummary), total: result.success ? Number(result.totalCount ?? 0) : 0 };
   };
   await Promise.all(
     entries.map(async ([instanceId, query]) => {
       if (query.kind !== "products") return;
       const sortBy = query.sort && query.sort !== "default" ? SORT_BY[query.sort] : undefined;
+      // A paginated list (the home page's main grid): page `query.page` of `query.limit` products.
+      const page = query.paginate ? Math.max(1, Math.floor(query.page ?? 1)) : 1;
+      const offset = (page - 1) * query.limit;
+      const setPages = (total: number) => {
+        if (query.paginate) productPages[instanceId] = { page, totalPages: Math.max(1, Math.ceil(total / query.limit)) };
+      };
       // Ranked by units sold in this store's orders: never a product without sales.
       if (query.source === "best-sellers" || query.source === "trending") {
         const sales = await getCachedStoreSales(sellerId, storeId, SALES_DAYS[query.source]);
         const ranked = sales.filter(([, units]) => units > 0).sort((a, b) => b[1] - a[1]);
-        const ids = ranked.slice(0, Math.min(query.limit * 2, 96)).map(([id]) => id);
+        const ids = (query.paginate ? ranked.slice(0, 96).slice(offset, offset + query.limit) : ranked.slice(0, Math.min(query.limit * 2, 96))).map(([id]) => id);
+        setPages(Math.min(ranked.length, 96));
         if (!ids.length) {
           products[instanceId] = [];
           return;
         }
         const rank = new Map(ids.map((id, index) => [id, index]));
-        const list = (await fetchProducts(instanceId, { productIds: ids }, ids.length)).sort((a, b) => (rank.get(a.id) ?? 0) - (rank.get(b.id) ?? 0));
+        const list = (await fetchPage({ productIds: ids }, ids.length)).summaries.sort((a, b) => (rank.get(a.id) ?? 0) - (rank.get(b.id) ?? 0));
         products[instanceId] = sortSummaries(list.slice(0, query.limit), query.sort);
         return;
       }
       if (query.source === "discounted") {
-        products[instanceId] = await fetchProducts(instanceId, { onSale: true, ...(sortBy && { sortBy }) }, query.limit);
+        const result = await fetchPage({ onSale: true, ...(sortBy && { sortBy }), ...(offset > 0 && { offset }) }, query.limit);
+        setPages(result.total);
+        products[instanceId] = result.summaries;
         return;
       }
       let categoryIds: string[] | undefined;
@@ -157,9 +178,9 @@ export async function resolveStoreCatalog(
         }
         categoryIds = category.categoryIds;
       }
-      let summaries = await fetchProducts(
-        instanceId,
+      const result = await fetchPage(
         {
+          ...(offset > 0 && { offset }),
           ...(query.source === "featured" && { isFeatured: true }),
           ...(categoryIds && { categoryIds }),
           ...(query.source === "selected" && { productIds: query.productIds ?? [] }),
@@ -168,6 +189,8 @@ export async function resolveStoreCatalog(
         },
         query.limit,
       );
+      setPages(result.total);
+      let summaries = result.summaries;
       if (query.source === "selected" && query.productIds) {
         const order = new Map(query.productIds.map((id, index) => [id, index]));
         summaries = summaries.sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
@@ -182,6 +205,7 @@ export async function resolveStoreCatalog(
     products,
     categories: storeCategories.slice(0, Math.max(categoryLimit, 0) || storeCategories.length).map((c) => categorySummary(c, locale)),
     withVariants,
+    productPages,
     ...extra,
   };
 }

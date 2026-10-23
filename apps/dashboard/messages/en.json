@@ -1146,6 +1146,10 @@
       "previewName": "Product name",
       "previewCategory": "Listed in {category}",
       "contentLanguageHint": "Fields marked AR/EN are written once per language",
+      "previewOnStore": "Preview",
+      "previewOnStoreHint": "Open this product on your store in a new tab",
+      "previewNeedsPublish": "Publish the product to preview it on your store",
+      "previewNoStore": "None of your stores shows this product",
       "nav": {
         "basic": "Basics",
         "media": "Images",
@@ -2352,7 +2356,7 @@
     }
   },
   "storeSiteStatus": {
-    "offline": "Your store is offline: visitors see the \"store unavailable\" page and can't order. Turn on \"Website live\" on the Website page.",
+    "offline": "Your store is offline: visitors see the \"store unavailable\" page and can't order. Turn on the website status switch on the Website page.",
     "offlineShort": "Offline",
     "draft": "Your website isn't published yet: visitors see the \"store unavailable\" page and can't order until you publish.",
     "draftShort": "Not published"
@@ -3150,7 +3154,7 @@
     "invalid": {
       "url": "Enter a {platform} link, e.g. the address of your page.",
       "handle": "Enter your {platform} username or profile link.",
-      "phone": "Enter a mobile number, e.g. 01012345678 (add the country code only for numbers outside Egypt)."
+      "phone": "Enter a mobile number, e.g. 01012345678 (add the country code only for numbers outside Egypt), or a {platform} username like @yourstore."
     },
     "preview": {
       "title": "Preview",
@@ -3202,7 +3206,8 @@
     "unpublishTitle": "Take your website offline?",
     "unpublishBody": "Shoppers will see a \"store unavailable\" page and can't place orders until you turn it back on. Your pages and drafts are kept, and your products stay on the Tallaby marketplace.",
     "unpublishedToast": "Your website is offline",
-    "liveSwitch": "Website live",
+    "liveSwitchOnline": "Website is Online",
+    "liveSwitchOffline": "Website is Offline",
     "liveSwitchOn": "Shoppers can visit your store and place orders.",
     "liveSwitchOff": "Your website is offline. Turn it on to publish it.",
     "liveSwitchDraft": "Not published yet. Turn it on to publish your website.",
@@ -3720,6 +3725,36 @@
       "linkFailed": "The product was saved, but your category or brand wasn't. Edit the product to set it again.",
       "manageCategories": "Manage categories",
       "manageBrands": "Manage brands"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "open": "Notifications",
+    "openUnread": "Notifications ({count} unread)",
+    "markAllRead": "Mark all read",
+    "empty": "You're all caught up.",
+    "loading": "Loading…",
+    "types": {
+      "order_created": {
+        "title": "New order",
+        "body": "Order #{orderNumber} is waiting to be prepared."
+      },
+      "top_up_approved": {
+        "title": "Top-up approved",
+        "body": "{amount} was added to your wallet."
+      },
+      "top_up_rejected": {
+        "title": "Top-up rejected",
+        "body": "Your {amount} top-up was not approved."
+      },
+      "question_received": {
+        "title": "New product question",
+        "body": "A customer asked about one of your products."
+      },
+      "review_received": {
+        "title": "New review",
+        "body": "A customer left a {rating}-star review."
+      }
     }
   }
 }
