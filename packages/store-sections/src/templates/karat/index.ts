@@ -170,7 +170,8 @@ const DEMO = demoStore({
 
 export const KARAT = libraryTemplate({
   key: KARAT_KEY,
-  version: 2,
+  version: 3,
+  changelog: "Karat v3: product page",
   name: L("قيراط", "Karat"),
   description: L(
     "إكسسوارات يومية: بوستر بستيكر، أقسام دائرية، عرض الأسبوع وصور العميلات. أربع صفحات جاهزة.",
@@ -217,4 +218,5 @@ export const KARAT = libraryTemplate({
     },
   ],
   demo: DEMO,
+  productPage: { surface: "card", thumbs: "bottom", band: "brand", copy: { back: L("رجوع للمتجر", "Back to the shop"), reviews: L("بنات قالوا إيه", "What you said"), related: L("كمل الإطلالة", "Finish the look") } },
 });

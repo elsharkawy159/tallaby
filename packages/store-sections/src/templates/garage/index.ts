@@ -166,7 +166,8 @@ const DEMO = demoStore({
 
 export const GARAGE = libraryTemplate({
   key: GARAGE_KEY,
-  version: 2,
+  version: 3,
+  changelog: "Garage v3: product page",
   name: L("جراج", "Garage"),
   description: L(
     "إكسسوارات عربيات: بوستر أوكازيون، اختيارات السواقين، مقارنة، عرض الويك إند ورسايل واتساب. أربع صفحات جاهزة.",
@@ -213,4 +214,5 @@ export const GARAGE = libraryTemplate({
     },
   ],
   demo: DEMO,
+  productPage: { surface: "card", thumbs: "side", headingCase: "upper", tracking: 0.06, band: "brand", extras: ["product-perks"], copy: { back: L("رجوع للجراج", "Back to the garage"), reviews: L("سواقين بيقولوا إيه", "What drivers say"), related: L("ترقيات صغيرة كمان", "More small upgrades") } },
 });

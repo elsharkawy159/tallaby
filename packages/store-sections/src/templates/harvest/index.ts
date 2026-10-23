@@ -176,7 +176,8 @@ const DEMO = demoStore({
 
 export const HARVEST = libraryTemplate({
   key: HARVEST_KEY,
-  version: 2,
+  version: 3,
+  changelog: "Harvest v3: product page",
   name: L("هارفست", "Harvest"),
   description: L(
     "بقالة أونلاين: بحث سريع، أقسام، عروض الأسبوع وأساسيات كل يوم. أربع صفحات جاهزة.",
@@ -226,4 +227,5 @@ export const HARVEST = libraryTemplate({
     },
   ],
   demo: DEMO,
+  productPage: { surface: "card", thumbs: "side", band: "paper", extras: ["product-shipping"], copy: { back: L("رجوع للأقسام", "Back to the aisles"), reviews: L("آراء المتسوقين", "Shopper reviews"), related: L("إضافات لسلتك", "Add to your basket") } },
 });

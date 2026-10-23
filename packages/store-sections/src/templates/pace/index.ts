@@ -166,7 +166,8 @@ const DEMO = demoStore({
 
 export const PACE = libraryTemplate({
   key: PACE_KEY,
-  version: 2,
+  version: 3,
+  changelog: "Pace v3: product page",
   name: L("بيس", "Pace"),
   description: L(
     "أدوات رياضة: جيم البيت، اختيارات الكوتشات، مميزات الساعة وعروض بالمبلغ. أربع صفحات جاهزة.",
@@ -213,4 +214,5 @@ export const PACE = libraryTemplate({
     },
   ],
   demo: DEMO,
+  productPage: { surface: "card", thumbs: "side", headingCase: "upper", tracking: 0.06, band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للجيم", "Back to the gym"), reviews: L("آراء المتدرّبين", "Athlete reviews"), related: L("كمّل تجهيزك", "Complete your kit") } },
 });

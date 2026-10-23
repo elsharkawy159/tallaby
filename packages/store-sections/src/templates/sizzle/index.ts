@@ -245,7 +245,8 @@ const DEMO = demoStore({
 
 export const SIZZLE = libraryTemplate({
   key: SIZZLE_KEY,
-  version: 2,
+  version: 3,
+  changelog: "Sizzle v3: product page",
   name: L("سيزل", "Sizzle"),
   description: L(
     "برجر وشاورما وبيتزا: الأكل في العنوان، عرض الليلة، بنطبخ إزاي وآراء الزباين. أربع صفحات جاهزة.",
@@ -292,4 +293,5 @@ export const SIZZLE = libraryTemplate({
     },
   ],
   demo: DEMO,
+  productPage: { surface: "card", thumbs: "bottom", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للمنيو", "Back to the menu"), reviews: L("الزباين بتقول إيه", "What regulars say"), related: L("كمان ممكن تطلب", "Add to your order") } },
 });

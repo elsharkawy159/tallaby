@@ -173,7 +173,8 @@ const DEMO = demoStore({
 
 export const PLAYROOM = libraryTemplate({
   key: PLAYROOM_KEY,
-  version: 2,
+  version: 3,
+  changelog: "Playroom v3: product page",
   name: L("بلاي روم", "Playroom"),
   description: L(
     "ألعاب خشب: حملات، تسوق حسب السن، بوكس عيد الميلاد وصور اللعب. أربع صفحات جاهزة.",
@@ -220,4 +221,5 @@ export const PLAYROOM = libraryTemplate({
     },
   ],
   demo: DEMO,
+  productPage: { surface: "card", thumbs: "bottom", band: "brand", extras: ["product-shipping"], copy: { back: L("رجوع لغرفة اللعب", "Back to the playroom"), reviews: L("آراء الأهالي", "Parents say"), related: L("ألعاب تحبها كمان", "More toys to love") } },
 });

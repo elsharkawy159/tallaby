@@ -163,7 +163,8 @@ const DEMO = demoStore({
 
 export const OAK = libraryTemplate({
   key: OAK_KEY,
-  version: 2,
+  version: 3,
+  changelog: "Oak v3: product page",
   name: L("أوك", "Oak"),
   description: L(
     "ديكور وأثاث صغير: كولاج، أقسام بخط كبير، اسأل ستايلست والأكثر حباً. أربع صفحات جاهزة.",
@@ -210,4 +211,5 @@ export const OAK = libraryTemplate({
     },
   ],
   demo: DEMO,
+  productPage: { surface: "flat", gallery: "end", thumbs: "bottom", button: "outline", band: "paper", copy: { back: L("رجوع للمجموعة", "Back to the collection"), reviews: L("كلمة من اشتروها", "Words from our buyers"), related: L("قطع أخرى مختارة", "More picked pieces") } },
 });

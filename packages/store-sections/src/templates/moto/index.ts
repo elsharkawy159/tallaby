@@ -187,7 +187,8 @@ const DEMO = demoStore({
 
 export const MOTO = libraryTemplate({
   key: MOTO_KEY,
-  version: 2,
+  version: 3,
+  changelog: "Moto v3: product page",
   name: L("موتو", "Moto"),
   description: L(
     "أدوات ركوب الموتوسيكل: خصم الخوذ، ماركات معتمدة، اسأل رايدر وعنوان الجراج. أربع صفحات جاهزة.",
@@ -234,4 +235,5 @@ export const MOTO = libraryTemplate({
     },
   ],
   demo: DEMO,
+  productPage: { surface: "shelf", thumbs: "side", headingCase: "upper", tracking: 0.06, band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للجراج", "Back to the garage"), reviews: L("آراء الراكبين", "Riders' reviews"), related: L("جهّز قبل الطريق", "Gear up before the ride") } },
 });

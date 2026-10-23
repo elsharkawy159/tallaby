@@ -173,7 +173,8 @@ const DEMO = demoStore({
 
 export const ROAST = libraryTemplate({
   key: ROAST_KEY,
-  version: 2,
+  version: 3,
+  changelog: "Roast v3: product page",
   name: L("روست", "Roast"),
   description: L(
     "محمصة بن: وعود يوم التحميص، تحميص الأسبوع، حكاية من ١٩٨٧ ومن الحباية للفنجان. أربع صفحات جاهزة.",
@@ -223,4 +224,5 @@ export const ROAST = libraryTemplate({
     },
   ],
   demo: DEMO,
+  productPage: { surface: "card", thumbs: "side", band: "paper", extras: ["product-perks"], copy: { back: L("رجوع للمحمصة", "Back to the roastery"), reviews: L("رأي شاربي القهوة", "What coffee drinkers say"), related: L("محاصيل تانية للتجربة", "More roasts to try") } },
 });

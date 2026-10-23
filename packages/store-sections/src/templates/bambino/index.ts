@@ -172,7 +172,8 @@ const DEMO = demoStore({
 
 export const BAMBINO = libraryTemplate({
   key: BAMBINO_KEY,
-  version: 2,
+  version: 3,
+  changelog: "Bambino v3: product page",
   name: L("بامبينو", "Bambino"),
   description: L(
     "مستلزمات البيبي: افتتاحية ناعمة، قائمة هدايا في ٤ خطوات ووعود الأمان. أربع صفحات جاهزة.",
@@ -219,4 +220,5 @@ export const BAMBINO = libraryTemplate({
     },
   ],
   demo: DEMO,
+  productPage: { surface: "shelf", thumbs: "bottom", band: "paper", extras: ["product-perks"], copy: { back: L("رجوع للمتجر", "Back to the shop"), reviews: L("آراء الأمهات والآباء", "Parents' reviews"), related: L("محتاجينها لبيبي كمان", "More for baby") } },
 });

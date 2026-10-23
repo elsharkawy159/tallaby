@@ -167,7 +167,8 @@ const DEMO = demoStore({
 
 export const DOODLE = libraryTemplate({
   key: DOODLE_KEY,
-  version: 2,
+  version: 3,
+  changelog: "Doodle v3: product page",
   name: L("دودل", "Doodle"),
   description: L(
     "ألعاب خشب مرحة: افتتاحية بنتو، المفضلة عند الأطفال، كوبون وليه خشب. أربع صفحات جاهزة.",
@@ -214,4 +215,5 @@ export const DOODLE = libraryTemplate({
     },
   ],
   demo: DEMO,
+  productPage: { surface: "card", thumbs: "bottom", band: "brand", copy: { back: L("رجوع للعب", "Back to the toys"), reviews: L("صور من الأطفال السعداء", "Happy playtime reviews"), related: L("العب بحاجة تانية", "Play with something else") } },
 });

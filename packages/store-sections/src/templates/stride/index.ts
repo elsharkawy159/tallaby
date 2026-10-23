@@ -183,7 +183,8 @@ const DEMO = demoStore({
 
 export const STRIDE = libraryTemplate({
   key: STRIDE_KEY,
-  version: 2,
+  version: 3,
+  changelog: "Stride v3: product page",
   name: L("سترايد", "Stride"),
   description: L(
     "جري وريكفري: شريط عروض، شرائح تذاكر، أقسام بنتو ورسايل العملاء. أربع صفحات جاهزة.",
@@ -230,4 +231,5 @@ export const STRIDE = libraryTemplate({
     },
   ],
   demo: DEMO,
+  productPage: { surface: "card", thumbs: "bottom", band: "brand", extras: ["product-shipping"], copy: { back: L("رجوع للمتجر", "Back to the store"), reviews: L("آراء العدّائين", "Runners' reviews"), related: L("جهّز لجريتك الجاية", "Gear for your next run") } },
 });

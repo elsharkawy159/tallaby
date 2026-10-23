@@ -167,7 +167,8 @@ const DEMO = demoStore({
 
 export const VERDANT = libraryTemplate({
   key: VERDANT_KEY,
-  version: 2,
+  version: 3,
+  changelog: "Verdant v3: product page",
   name: L("فيردانت", "Verdant"),
   description: L(
     "محل نباتات: افتتاحية بنتو، لاقي نبتتك، اللي بييجي مع كل نبتة وأسئلة العناية. أربع صفحات جاهزة.",
@@ -217,4 +218,5 @@ export const VERDANT = libraryTemplate({
     },
   ],
   demo: DEMO,
+  productPage: { surface: "card", thumbs: "bottom", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للمشتل", "Back to the nursery"), reviews: L("حكايات أصحاب النباتات", "Plant owners' stories"), related: L("نباتات ترافقها", "Plants that pair well") } },
 });

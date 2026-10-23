@@ -182,7 +182,8 @@ const DEMO = demoStore({
 
 export const LUMIERE = libraryTemplate({
   key: LUMIERE_KEY,
-  version: 2,
+  version: 3,
+  changelog: "Lumière v3: product page",
   name: L("لوميير", "Lumière"),
   description: L(
     "مجوهرات فاخرة: الدهب في العنوان، المجموعات، حكاية ٤ أجيال والصايغ. أربع صفحات جاهزة.",
@@ -229,4 +230,5 @@ export const LUMIERE = libraryTemplate({
     },
   ],
   demo: DEMO,
+  productPage: { surface: "flat", thumbs: "side", tracking: 0.06, button: "outline", band: "paper", copy: { back: L("العودة للمجموعة", "Back to the collection"), reviews: L("كلمات من عملائنا", "Words from our clients"), related: L("قطع قد تعجبك", "Pieces you may love") } },
 });
