@@ -49,7 +49,7 @@ describe("templatesProductPageSql", () => {
     const quoted = { ...classic, key: "x", config: () => ({ ...base, pages: base.pages.map((p) => (p.kind === "product" ? { ...p, name: "Owner's product" } : p)) }) } as typeof classic;
     const out = templatesProductPageSql([quoted], "t.sql");
     expect(out).toContain("Owner''s product");
-    const literal = out.match(/|| '((?:[^']|'')*)'::jsonb/);
+    const literal = out.match(/\|\| '((?:[^']|'')*)'::jsonb/);
     expect(literal).not.toBeNull();
     expect(JSON.parse(literal![1]!.replace(/''/g, "'")).name).toBe("Owner's product");
   });
