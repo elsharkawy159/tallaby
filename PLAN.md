@@ -2537,9 +2537,9 @@ Tick each box when its acceptance is met, and add the date and commit.
 - [x] TPP-04 Storefront renders the store product page from the site; the builder edits it (preview product, product-page-only library category)
 - [x] TPP-05 `0102` adds the product page to the DB templates; `backfill:product-pages` script for existing stores
 - [x] TPP-06 Visual QA of all 111 template product pages (desktop 1280, 4 at 520); template-specific demo product
-- [ ] TPP-07 Staging, then production with the owner's go-ahead: run `check-unscoped-bound-nodes.sql`; apply `0096`–`0100`; deploy; apply `0101`, `0102`; run `backfill:product-pages` (dry run, then `--apply`)
+- [x] TPP-07 (done 2026-10-24, staging and production) Staging, then production with the owner's go-ahead: run `check-unscoped-bound-nodes.sql`; apply `0096`–`0100`; deploy; apply `0101`, `0102`; run `backfill:product-pages` (dry run, then `--apply`)
 - [ ] TPP-08 Run the DB integration tests with `TEST_DATABASE_URL`; manual E2E on staging (storefront product page, builder edit and publish, apply template, undo)
-- [ ] TPP-09 Backfill dry run, then `--apply`, on staging, then on production with the owner's go-ahead
+- [x] TPP-09 (done 2026-10-24: staging 27 stores; production 19 added, 2 already had one, 4 new live revisions) Backfill dry run, then `--apply`, on staging, then on production with the owner's go-ahead
 
 **Phase 10**
 - [ ] P10-01 `/sell` rewrite
@@ -3877,3 +3877,12 @@ After P1-08 and P1-01 (`3289639`), typecheck and test match the baseline. `@work
 - **Elfsight:** `components/chatbot/elfsight-chatbot.tsx` (and the unused `zolai-chatbot.tsx`) deleted, unmounted from the `(shop)` layout; the `data-chat-avoid` markers on the bottom nav and sticky add-to-cart bar removed.
 - **Kept:** Tallaby's Meta Pixel + CAPI and GA4 on the marketplace, and sellers' own Pixel/GA4/GTM on storefronts.
 - **Checks:** `tsc` clean in admin; ecommerce only has the 16 known errors in `profile.chunks.tsx`. Tests: ecommerce 170, admin 107 pass. Lint still cannot run. Not checked in a browser.
+
+### 2026-10-24 — Template product pages applied on staging and production (owner: "apply everything to staging and production")
+
+- **State before:** production had `0096`–`0099`; staging had `0097` and `0099`. `main` (with this feature) was already deployed to production by Vercel (~22:33Z), so `store_pages.kind` was missing for a few minutes until `0100` landed.
+- **Applied:** staging `0100`, `0096`, `0098`, `0101`, `0102` (each re-run once: no change); production `0100` (after a rolled-back dry run), then `0101` and `0102` (after a rolled-back dry run of both). Result on both: the 4 product-page library sections, 111 templates whose current version has exactly one product page (154 → 265 template versions).
+- **Check:** `check-unscoped-bound-nodes.sql` on both: no seller content affected (only the product-page library section's own bound title).
+- **Backfill:** staging 27 stores added (1 published store got a new live revision); production 19 added, 2 skipped (`tallabya`, `helmetledli` already had a product page from applying a template after the deploy; their live sites get it when they publish), 4 published stores (faster, qavero, sherin-handmade, fsala) got a new live revision with the page. Re-runs: nothing left. Cache broadcast sent to https://tallaby.com.
+- **Live check:** `faster.tallaby.com/products/vibra-v5-earbuds` and a sherin-handmade product render the template product page (gallery, price, buy box, details, reviews and questions). Follow-up fix `8bd961d6`: descriptions with `&nbsp;` entities are decoded on the product page.
+- **Still open:** TPP-08 (DB integration tests with `TEST_DATABASE_URL`, manual builder E2E).
