@@ -101,7 +101,6 @@ export const SECTION_COPY = {
   productNoDetails: { ar: "أضف وصفًا أو مميزات للمنتج لتظهر هنا.", en: "Add a description or key features to the product to show them here." },
   productNoContent: { ar: "أضف محتوى للمنتج من صفحة المنتج في لوحة التحكم ليظهر هنا.", en: "Add content to the product in your dashboard to show it here." },
   soldBy: { ar: "يبيعه", en: "Sold by" },
-  reviewsTitle: { ar: "آراء العملاء", en: "Customer reviews" },
   reviewsCount: { ar: "{n} تقييم", en: "{n} reviews" },
   reviewsNone: { ar: "لا توجد تقييمات بعد", en: "No reviews yet" },
   reviewsEmpty: { ar: "لا توجد تقييمات بعد. كن أول من يقيّم هذا المنتج.", en: "No reviews yet. Be the first to review this product." },

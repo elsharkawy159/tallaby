@@ -388,7 +388,6 @@ function Reviews({ product, attrs, ctx }: StillProps) {
   const count = product.reviewCount;
   return (
     <div {...attrs} className="flex min-w-0 flex-col gap-6">
-      <h2 className="text-2xl font-bold text-(--sf-ink)">{sectionText("reviewsTitle", ctx.locale)}</h2>
       <div className="flex flex-wrap items-center gap-4">
         <span className="text-5xl font-bold tabular-nums text-(--sf-ink)">{count > 0 ? rating.toFixed(1) : "0.0"}</span>
         <div className="flex flex-col gap-1">
