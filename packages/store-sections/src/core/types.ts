@@ -189,6 +189,10 @@ export type ProductVariantDetail = {
 export type ProductDetail = ProductSummary & {
   slug: string;
   description: string | null;
+  /**
+   * HTML already sanitised by the host (server) when the ProductDetail is
+   * built; never seller- or client-supplied raw HTML. `productContent` prints it as is.
+   */
   contentHtml: string | null;
   bulletPoints: string[];
   images: string[];

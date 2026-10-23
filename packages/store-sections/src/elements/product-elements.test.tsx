@@ -6,6 +6,7 @@ import type { ProductDetail, RenderContext } from "../core/types";
 import { treeBuilder } from "../designs/builder";
 import { PALETTE_TYPES, getElementDefinition } from "./registry";
 import { renderElementTree } from "./render";
+import { canContain } from "./tree";
 
 const node = (type: string, props: Record<string, unknown> = {}): ComponentNode => ({ id: `n-${type}`, type, props, children: [] }) as ComponentNode;
 
@@ -58,6 +59,17 @@ describe("product elements", () => {
       for (const field of definition!.fields) expect(field.label.ar && field.label.en, `${type}.${field.key}`).toBeTruthy();
       expect(draw(node(type, definition!.defaultProps)), type).toContain(`data-node-type="${type}"`);
     }
+  });
+
+  it("interactive product parts never go inside a link", () => {
+    const link = { ...node("linkBlock", { href: "/" }), id: "link" };
+    const tree = [{ ...node("section"), id: "root", children: [link] }];
+    for (const type of ["productGallery", "productRating", "productVariants", "productBuyBox", "productDetails", "productContent", "productReviews"]) {
+      expect(canContain(tree, "link", node(type)), type).toBe(false);
+      expect(canContain(tree, "root", node(type)), type).toBe(true);
+    }
+    // Plain text parts may sit in a link card.
+    for (const type of ["productPrice", "productStock", "productSeller"]) expect(canContain(tree, "link", node(type)), type).toBe(true);
   });
 
   it("productGallery without images draws placeholder", () => {
@@ -120,11 +132,11 @@ describe("product elements", () => {
     expect(draw(node("productPrice"), null)).toContain('data-node-type="productPrice"');
   });
 
-  it("productContent sanitises html", () => {
-    const html = draw(node("productContent"), { ...product, contentHtml: '<p onclick="x()">Hi</p><script>alert(1)</script>' });
-    expect(html).toContain("<p>Hi</p>");
-    expect(html).not.toContain("<script");
-    expect(html).not.toContain("onclick");
+  it("productContent prints the host-sanitised html verbatim inside its box", () => {
+    const contentHtml = '<h2>Specs</h2><p>Hi <a href="https://x.test">there</a></p>';
+    const html = draw(node("productContent"), { ...product, contentHtml });
+    expect(html).toMatch(new RegExp(`^<div data-node-id="n-productContent" data-node-type="productContent" class="[^"]*">${contentHtml.replace(/[.?]/g, "\\$&")}</div>$`));
+    expect(draw(node("productContent"), { ...product, contentHtml: null }, { mode: "public" })).toBe("");
   });
 
   it("tree builder makes product nodes with their default props", () => {

@@ -179,11 +179,14 @@ export const LINK_TYPES: readonly ElementType[] = [
   "addToCart",
   "wishlistButton",
   "videoPlaylist",
-  // Product parts with buttons or links of their own (zoom, swatches, cart, #reviews, tabs).
+  // Product parts with links or interactive content of their own (zoom, #reviews, swatches,
+  // cart buttons, collapsible rows, links in the product's content, review tabs).
   "productGallery",
   "productRating",
   "productVariants",
   "productBuyBox",
+  "productDetails",
+  "productContent",
   "productReviews",
 ];
 

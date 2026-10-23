@@ -7,11 +7,12 @@
  * style (scoped CSS on `data-node-id`); its buttons do nothing. On the
  * storefront, a host hook (`ctx.renderProductBuyBox`…) draws the interactive
  * copy inside the node's box; without one the still rendering is the
- * fallback. Publicly, no product means nothing is drawn.
+ * fallback. Publicly, no product means nothing is drawn. Product content
+ * html is printed as given: the host sanitises it on the server (no
+ * sanitizer here, so it stays out of the editor's client bundle).
  */
 import type { ReactNode } from "react";
 import { ChevronDown, Image as ImageIcon, Minus, Plus, ShoppingBag, Star, Store, Truck } from "lucide-react";
-import { sanitizeArticleHtml } from "../config/sanitize";
 import { sectionText } from "../core/copy";
 import { DEMO_PRODUCT } from "../core/demo-product";
 import { IMAGE_SIZES, imageSource, type ProductDetail, type ProductElementHook, type RenderContext } from "../core/types";
@@ -354,9 +355,9 @@ const CONTENT_CLASS = cn(
 );
 
 function Content({ product, attrs, ctx }: StillProps) {
-  const html = sanitizeArticleHtml(product.contentHtml ?? "");
+  const html = product.contentHtml?.trim() ?? "";
   if (!html) return ctx.mode === "edit" ? <EditorNote attrs={attrs}>{sectionText("productNoContent", ctx.locale)}</EditorNote> : null;
-  // Sanitised with the article allow-list (no scripts, handlers, classes or iframes).
+  // `contentHtml` is sanitised by the host on the server when it builds the ProductDetail (core/types.ts).
   return <div {...attrs} className={CONTENT_CLASS} dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
