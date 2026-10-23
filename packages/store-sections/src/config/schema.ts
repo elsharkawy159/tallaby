@@ -45,6 +45,9 @@ export const ALLOWED_NODE_TYPES = [
   "carousel", "slide",
   // Header language switch of translated stores (owner, 2026-10-23); additive.
   "languageSwitcher",
+  // Product page elements (template product page, 2026-10-23); additive.
+  "productGallery", "productPrice", "productStock", "productRating", "productVariants",
+  "productBuyBox", "productDetails", "productContent", "productSeller", "productReviews",
 ] as const;
 export type AllowedNodeType = (typeof ALLOWED_NODE_TYPES)[number];
 

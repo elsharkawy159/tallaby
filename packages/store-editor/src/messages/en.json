@@ -197,7 +197,8 @@
         "layout": "Layout",
         "text": "Text",
         "basic": "Basic",
-        "data": "Store data"
+        "data": "Store data",
+        "product": "Product page"
       },
       "noResults": "No results.",
       "sectionsIntro": "Drag a section onto the page, or click it to add it after the selected section.",

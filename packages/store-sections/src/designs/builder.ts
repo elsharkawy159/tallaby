@@ -176,6 +176,33 @@ export function createTreeBuilder(industry?: string, photos?: DesignPhotos, opts
     addToCart: (opts?: NodeOptions) => make("addToCart", {}, opts),
     /** The wishlist heart of the product a list card shows. */
     wishlistButton: (opts?: NodeOptions) => make("wishlistButton", {}, opts),
+    // Product page parts (template product page spec §5.3): they show the page's product.
+    productGallery: (opts?: NodeOptions & { thumbs?: "side" | "bottom" | "none"; zoom?: boolean }) => {
+      const { thumbs = "side", zoom = true, ...rest } = opts ?? {};
+      return make("productGallery", { thumbs, zoom }, rest);
+    },
+    productPrice: (opts?: NodeOptions & { showDiscount?: boolean; showCountdown?: boolean }) => {
+      const { showDiscount = true, showCountdown = true, ...rest } = opts ?? {};
+      return make("productPrice", { showDiscount, showCountdown }, rest);
+    },
+    productStock: (opts?: NodeOptions) => make("productStock", {}, opts),
+    productRating: (opts?: NodeOptions & { showCount?: boolean }) => {
+      const { showCount = true, ...rest } = opts ?? {};
+      return make("productRating", { showCount }, rest);
+    },
+    productVariants: (opts?: NodeOptions) => make("productVariants", {}, opts),
+    /** Quantity, add to cart and (optionally) buy now; the labels default to the package's copy. */
+    productBuyBox: (opts?: NodeOptions & { buyNow?: boolean; stickyMobile?: boolean; addLabel?: DesignText; buyLabel?: DesignText }) => {
+      const { buyNow = true, stickyMobile = true, addLabel, buyLabel, ...rest } = opts ?? {};
+      return make("productBuyBox", { buyNow, stickyMobile, addLabel, buyLabel }, rest);
+    },
+    productDetails: (opts?: NodeOptions & { showDescription?: boolean; showBullets?: boolean }) => {
+      const { showDescription = true, showBullets = true, ...rest } = opts ?? {};
+      return make("productDetails", { showDescription, showBullets }, rest);
+    },
+    productContent: (opts?: NodeOptions) => make("productContent", {}, opts),
+    productSeller: (opts?: NodeOptions) => make("productSeller", {}, opts),
+    productReviews: (opts?: NodeOptions) => make("productReviews", {}, opts),
     card: (children: NodeTemplate[], opts?: NodeOptions) => make("card", {}, withDefaults("card", opts), children),
     box: (children: NodeTemplate[], opts?: NodeOptions) => make("div", {}, opts, children),
     pattern: (variant: PatternVariant, opts?: NodeOptions) => make("pattern", { variant }, opts),

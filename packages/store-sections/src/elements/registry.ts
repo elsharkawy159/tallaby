@@ -9,7 +9,7 @@ import type { StyleBreakpoint, StyleValues } from "./style";
 import type { NodeTemplate } from "./tree";
 import { VIDEO_CAPABILITIES, parseVideoUrl } from "./video";
 
-export const ELEMENT_GROUPS = ["layout", "text", "basic", "data"] as const;
+export const ELEMENT_GROUPS = ["layout", "text", "basic", "data", "product"] as const;
 export type ElementGroup = (typeof ELEMENT_GROUPS)[number];
 
 export const ELEMENT_ICON_NAMES = [
@@ -95,7 +95,17 @@ export type ElementType =
   | "storeForm"
   | "addToCart"
   | "wishlistButton"
-  | "languageSwitcher";
+  | "languageSwitcher"
+  | "productGallery"
+  | "productPrice"
+  | "productStock"
+  | "productRating"
+  | "productVariants"
+  | "productBuyBox"
+  | "productDetails"
+  | "productContent"
+  | "productSeller"
+  | "productReviews";
 
 export interface ElementDefinition {
   type: ElementType;
@@ -162,7 +172,20 @@ function hideUnsupported(key: string, props: Record<string, unknown>): boolean {
 }
 
 /** Elements that open a link or act on click (a playlist's rows are links); they never nest inside each other (no `<a>` in `<a>`). */
-export const LINK_TYPES: readonly ElementType[] = ["button", "linkBlock", "textLink", "addToCart", "wishlistButton", "videoPlaylist"];
+export const LINK_TYPES: readonly ElementType[] = [
+  "button",
+  "linkBlock",
+  "textLink",
+  "addToCart",
+  "wishlistButton",
+  "videoPlaylist",
+  // Product parts with buttons or links of their own (zoom, swatches, cart, #reviews, tabs).
+  "productGallery",
+  "productRating",
+  "productVariants",
+  "productBuyBox",
+  "productReviews",
+];
 
 const SOURCE_LABELS: Record<(typeof PRODUCT_SOURCES)[number], Localized> = {
   all: L("كل المنتجات", "All products"),
@@ -767,6 +790,131 @@ export const ELEMENT_DEFINITIONS: readonly ElementDefinition[] = [
     group: "data",
     label: L("تبديل اللغة", "Language switcher"),
     keywords: ["language", "translation", "locale", "لغة", "ترجمة"],
+    container: false,
+    defaultProps: {},
+    fields: [],
+  },
+  // Product page (template product page spec §5.3): parts of the page's product. The storefront
+  // swaps the interactive ones for the host's components; the editor draws still renderings.
+  {
+    type: "productGallery",
+    group: "product",
+    label: L("صور المنتج", "Product gallery"),
+    keywords: ["gallery", "images", "photos", "media", "صور", "معرض"],
+    container: false,
+    defaultProps: { thumbs: "side", zoom: true },
+    fields: [
+      {
+        key: "thumbs",
+        label: L("الصور المصغّرة", "Thumbnails"),
+        type: "select",
+        options: [
+          { value: "side", label: L("بجانب الصورة", "Beside") },
+          { value: "bottom", label: L("تحت الصورة", "Below") },
+          { value: "none", label: L("بدون", "None") },
+        ],
+        hint: L("على الموبايل تكون الصور المصغّرة تحت الصورة.", "On phones the thumbnails sit below the image."),
+      },
+      { key: "zoom", label: L("تكبير عند المرور", "Zoom on hover"), type: "switch" },
+    ],
+  },
+  {
+    type: "productPrice",
+    group: "product",
+    label: L("سعر المنتج", "Product price"),
+    keywords: ["price", "discount", "sale", "سعر", "خصم"],
+    container: false,
+    defaultProps: { showDiscount: true, showCountdown: true },
+    fields: [
+      { key: "showDiscount", label: L("نسبة الخصم", "Discount badge"), type: "switch" },
+      { key: "showCountdown", label: L("العدّ التنازلي للعرض", "Offer countdown"), type: "switch" },
+    ],
+  },
+  {
+    type: "productStock",
+    group: "product",
+    label: L("حالة المخزون", "Stock status"),
+    keywords: ["stock", "inventory", "availability", "مخزون", "متوفر"],
+    container: false,
+    defaultProps: {},
+    fields: [],
+  },
+  {
+    type: "productRating",
+    group: "product",
+    label: L("تقييم المنتج", "Product rating"),
+    keywords: ["rating", "stars", "reviews", "تقييم", "نجوم"],
+    container: false,
+    defaultProps: { showCount: true },
+    fields: [{ key: "showCount", label: L("عدد التقييمات", "Review count"), type: "switch" }],
+  },
+  {
+    type: "productVariants",
+    group: "product",
+    label: L("اختيارات المنتج", "Variant picker"),
+    keywords: ["variants", "options", "color", "size", "اختيارات", "لون", "مقاس"],
+    container: false,
+    defaultProps: {},
+    fields: [],
+  },
+  {
+    type: "productBuyBox",
+    group: "product",
+    label: L("الكمية وأزرار الشراء", "Buy buttons"),
+    keywords: ["buy", "cart", "quantity", "checkout", "شراء", "سلة", "كمية"],
+    container: false,
+    defaultProps: { buyNow: true, stickyMobile: true },
+    fields: [
+      { ...textField("addLabel", L("نص زر السلة", "Add to cart label"), 60), placeholder: L("أضف للسلة", "Add to cart") },
+      { key: "buyNow", label: L("زر «اشترِ الآن»", "“Buy now” button"), type: "switch" },
+      {
+        ...textField("buyLabel", L("نص زر الشراء", "Buy now label"), 60),
+        placeholder: L("اشترِ الآن", "Buy now"),
+        showWhen: { key: "buyNow", equals: [true] },
+      },
+      {
+        key: "stickyMobile",
+        label: L("شريط ثابت على الموبايل", "Sticky bar on phones"),
+        type: "switch",
+        hint: L("يبقى زر الشراء ظاهرًا أسفل الشاشة أثناء التمرير.", "Keeps the buy button at the bottom of the screen while scrolling."),
+      },
+    ],
+  },
+  {
+    type: "productDetails",
+    group: "product",
+    label: L("تفاصيل المنتج", "Product details"),
+    keywords: ["description", "details", "features", "accordion", "وصف", "تفاصيل", "مميزات"],
+    container: false,
+    defaultProps: { showDescription: true, showBullets: true },
+    fields: [
+      { key: "showDescription", label: L("الوصف", "Description"), type: "switch" },
+      { key: "showBullets", label: L("المميزات", "Key features"), type: "switch" },
+    ],
+  },
+  {
+    type: "productContent",
+    group: "product",
+    label: L("محتوى المنتج", "Product content"),
+    keywords: ["content", "rich text", "article", "محتوى"],
+    container: false,
+    defaultProps: {},
+    fields: [],
+  },
+  {
+    type: "productSeller",
+    group: "product",
+    label: L("البائع", "Seller"),
+    keywords: ["seller", "store", "vendor", "بائع", "متجر"],
+    container: false,
+    defaultProps: {},
+    fields: [],
+  },
+  {
+    type: "productReviews",
+    group: "product",
+    label: L("آراء العملاء", "Reviews"),
+    keywords: ["reviews", "questions", "ratings", "آراء", "تقييمات", "أسئلة"],
     container: false,
     defaultProps: {},
     fields: [],

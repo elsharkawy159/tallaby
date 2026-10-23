@@ -203,6 +203,9 @@ export type ProductDetail = ProductSummary & {
   seller: { name: string; rating: number | null; ratingCount: number; freeDelivery: boolean };
 };
 
+/** A host's interactive copy of a product element: the product plus the node's props. */
+export type ProductElementHook = (product: ProductDetail, props: Record<string, unknown>) => ReactNode;
+
 export type CategorySummary = {
   id: string;
   key: string;
@@ -389,6 +392,17 @@ export interface RenderContext {
    */
   renderSearch?: (search: { placeholder?: string; icon: ReactNode; iconFirst: boolean }) => ReactNode;
   renderAddToCart?: (product: ProductSummary) => ReactNode;
+  /**
+   * Interactive product page parts (storefront only). Each gets the page's
+   * product and the node's props; without one, the element's still rendering
+   * is drawn (`elements/product-elements.tsx`).
+   */
+  renderProductGallery?: ProductElementHook;
+  renderProductPrice?: ProductElementHook;
+  renderProductStock?: ProductElementHook;
+  renderProductVariants?: ProductElementHook;
+  renderProductBuyBox?: ProductElementHook;
+  renderProductReviews?: ProductElementHook;
   /** Wishlist toggle, when the host supports it on this store. */
   renderWishlistButton?: (product: ProductSummary) => ReactNode;
   /** The header's switch to the store's other language (`languageSwitcher` node). */

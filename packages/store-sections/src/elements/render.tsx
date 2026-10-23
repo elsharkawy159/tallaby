@@ -60,6 +60,7 @@ import { ButtonLink, SmartLink, cn } from "../sections/_primitives";
 import { DATA_NODE_NEEDS, boundValue, isDataList, isPaginated, listRecords, nodeFormId, walkNodes, type DataRecord } from "./data";
 import { MAX_ELEMENT_DEPTH, PATTERN_VARIANTS, getElementDefinition, type ElementIconName, type PatternVariant } from "./registry";
 import { VideoElement, VideoPlaylist } from "./render-video";
+import { renderProductElement } from "./product-elements";
 import { SocialIcon } from "../social/icon";
 import { contactRowGone, storeSocialLinks, withStoreContact } from "./store-contact";
 
@@ -575,6 +576,18 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
         </div>
       ) : null;
     }
+    // Product page parts: the page's product (`product-elements.tsx`).
+    case "productGallery":
+    case "productPrice":
+    case "productStock":
+    case "productRating":
+    case "productVariants":
+    case "productBuyBox":
+    case "productDetails":
+    case "productContent":
+    case "productSeller":
+    case "productReviews":
+      return renderProductElement(definition.type, props, attrs, ctx, scope);
   }
 }
 

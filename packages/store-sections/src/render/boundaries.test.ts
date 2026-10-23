@@ -25,8 +25,16 @@ describe("package boundaries", () => {
     expect(offenders.map((o) => o.path)).toEqual([]);
   });
 
-  it("never uses dangerouslySetInnerHTML except for the theme <style>", () => {
-    const offenders = sources.filter(({ path, code }) => code.includes("dangerouslySetInnerHTML") && !/render[\\/]render\.tsx$/.test(path));
+  it("never uses dangerouslySetInnerHTML except for the theme <style> and sanitised product content", () => {
+    // The product content element prints the product's rich html, through the article allow-list only.
+    const sanitisedProductContent = (path: string, code: string) =>
+      /elements[\\/]product-elements\.tsx$/.test(path) &&
+      code.split("dangerouslySetInnerHTML").length === 2 &&
+      /const html = sanitizeArticleHtml\(/.test(code) &&
+      code.includes("dangerouslySetInnerHTML={{ __html: html }}");
+    const offenders = sources.filter(
+      ({ path, code }) => code.includes("dangerouslySetInnerHTML") && !/render[\\/]render\.tsx$/.test(path) && !sanitisedProductContent(path, code),
+    );
     expect(offenders.map((o) => o.path)).toEqual([]);
   });
 });
