@@ -5,12 +5,13 @@
  * hairlines. Every section is an element tree (CLAUDE.md rule 17), so the
  * seller can select, restyle and move every part after using it.
  *
- * Pages: home, The house (about), Contact and FAQ. Products, product pages,
- * the catalog (/products), cart, checkout, sign-in, wishlist and orders are
+ * Pages: home, The house (about), Contact, FAQ and the hidden product page
+ * (the layout of every /products/[slug]). Products, the catalog (/products), cart, checkout, sign-in, wishlist and orders are
  * the store's system pages; the header, footer and sections link to them.
  */
 import { SITE_CONFIG_VERSION, type SiteConfig, type SitePage } from "../../config/schema";
 import { instantiateDesign, type Design } from "../../designs/builder";
+import { PRODUCT_PAGE_NAME, productSitePage } from "../_product-page";
 import type { TemplateDefinition } from "../types";
 import { atelierFooter, atelierHeader } from "./chrome";
 import { ATELIER_DEMO } from "./demo";
@@ -25,6 +26,7 @@ import {
   atelierFaq,
   atelierFaqHeader,
 } from "./pages";
+import { ATELIER_PRODUCT } from "./product";
 
 export const ATELIER_KEY = "atelier";
 
@@ -73,6 +75,7 @@ export function atelierConfig(): SiteConfig {
         title: "الأسئلة الشائعة",
         description: "المقاسات والتوصيل والاستبدال والعناية بالقطع.",
       }),
+      productSitePage(ATELIER_PRODUCT),
     ],
   };
 }
@@ -89,12 +92,13 @@ export const ATELIER_DESIGNS: readonly Design[] = [
   atelierContact,
   atelierFaqHeader,
   atelierFaq,
+  ...ATELIER_PRODUCT,
   atelierFooter,
 ];
 
 export const ATELIER: TemplateDefinition = {
   key: ATELIER_KEY,
-  version: 2,
+  version: 3,
   name: { ar: "أتيليه", en: "Atelier" },
   description: {
     ar: "موضة راقية: خط كلاسيكي كبير وألوان عاجية هادئة وزوايا حادة. أربع صفحات جاهزة.",
@@ -102,7 +106,7 @@ export const ATELIER: TemplateDefinition = {
   },
   category: "fashion",
   sortOrder: 10,
-  changelog: "Atelier v2: no header padding-y on mobile",
+  changelog: "Atelier v3: product page",
   palette: ["#f6f1e9", "#ece4d6", "#b8925a", "#1a1714"],
   config: atelierConfig,
   pageNames: {
@@ -110,6 +114,7 @@ export const ATELIER: TemplateDefinition = {
     about: { ar: "عن الدار", en: "The house" },
     contact: { ar: "تواصل", en: "Contact" },
     faq: { ar: "الأسئلة الشائعة", en: "FAQ" },
+    product: PRODUCT_PAGE_NAME,
   },
   demo: ATELIER_DEMO,
   designs: ATELIER_DESIGNS,

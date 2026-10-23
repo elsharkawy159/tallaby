@@ -6,8 +6,8 @@
  * section is an element tree (CLAUDE.md rule 17) and every colour is a
  * design-system token, so the seller can restyle all of it.
  *
- * Pages: home, About, Contact, FAQ, Privacy and Terms. The catalog
- * (/products), product pages, cart, checkout, sign-in, account, wishlist,
+ * Pages: home, About, Contact, FAQ, Privacy, Terms and the hidden product
+ * page (the layout of every /products/[slug]). The catalog (/products), cart, checkout, sign-in, account, wishlist,
  * orders, shipping, returns and the blog are the store's system pages; the
  * header, footer and sections link to them.
  *
@@ -17,6 +17,7 @@
  */
 import { SITE_CONFIG_VERSION, type SiteConfig, type SitePage } from "../../config/schema";
 import { instantiateDesign, type Design } from "../../designs/builder";
+import { PRODUCT_PAGE_NAME, productSitePage } from "../_product-page";
 import type { TemplateDefinition } from "../types";
 import { classicFooter, classicHeader } from "./chrome";
 import { CLASSIC_DEMO } from "./demo";
@@ -36,6 +37,7 @@ import {
   classicTerms,
   classicTermsHeader,
 } from "./pages";
+import { CLASSIC_PRODUCT } from "./product";
 
 export const CLASSIC_KEY = "tallaby-classic";
 
@@ -86,6 +88,7 @@ export function classicConfig(): SiteConfig {
       }),
       page("privacy", "سياسة الخصوصية", [classicPrivacyHeader, classicPrivacy], { title: "سياسة الخصوصية" }, { showInNav: false }),
       page("terms", "الشروط والأحكام", [classicTermsHeader, classicTerms], { title: "الشروط والأحكام" }, { showInNav: false }),
+      productSitePage(CLASSIC_PRODUCT),
     ],
   };
 }
@@ -107,12 +110,13 @@ export const CLASSIC_DESIGNS: readonly Design[] = [
   classicPrivacy,
   classicTermsHeader,
   classicTerms,
+  ...CLASSIC_PRODUCT,
   classicFooter,
 ];
 
 export const CLASSIC: TemplateDefinition = {
   key: CLASSIC_KEY,
-  version: 4,
+  version: 5,
   isDefault: true,
   folder: "classic",
   name: { ar: "طلبي الكلاسيكي", en: "Tallaby Classic" },
@@ -122,7 +126,7 @@ export const CLASSIC: TemplateDefinition = {
   },
   category: "general",
   sortOrder: 0,
-  changelog: "Tallaby Classic v4: no header padding-y on mobile",
+  changelog: "Tallaby Classic v5: product page",
   palette: ["#f7f6f2", "#eef3f3", "#fdad28", "#145163"],
   config: classicConfig,
   pageNames: {
@@ -132,6 +136,7 @@ export const CLASSIC: TemplateDefinition = {
     faq: { ar: "الأسئلة الشائعة", en: "FAQs" },
     privacy: { ar: "سياسة الخصوصية", en: "Privacy Policy" },
     terms: { ar: "الشروط والأحكام", en: "Terms & Conditions" },
+    product: PRODUCT_PAGE_NAME,
   },
   demo: CLASSIC_DEMO,
   designs: CLASSIC_DESIGNS,

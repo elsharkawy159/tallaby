@@ -59,13 +59,14 @@ describe("Atelier template", () => {
     }
   });
 
-  it("has home, about, contact and faq pages with unique node ids", () => {
+  it("has home, about, contact, faq and product pages with unique node ids", () => {
     const config = atelierConfig();
     expect(config.pages.map((p) => [p.slug, p.isHome])).toEqual([
       ["home", true],
       ["about", false],
       ["contact", false],
       ["faq", false],
+      ["product", false],
     ]);
     for (const page of config.pages) expect(ATELIER.pageNames[page.slug]?.ar).toBe(page.name);
     const ids = sections().flatMap((s) => walk(s.componentTree).map((n) => n.id));

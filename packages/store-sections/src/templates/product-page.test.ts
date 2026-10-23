@@ -8,7 +8,7 @@ import { storeSectionRegistry } from "../sections";
 import { fromLibrary } from "./_library";
 import type { Lib } from "./_pages";
 import { productPage, productSitePage } from "./_product-page";
-import { LIBRARY_TEMPLATES } from "./catalog";
+import { CODE_TEMPLATES, LIBRARY_TEMPLATES } from "./catalog";
 
 const walk = (nodes: readonly ComponentNode[] | undefined): ComponentNode[] => (nodes ?? []).flatMap((n) => [n, ...walk(n.children)]);
 const nodesOf = (design: Design) => walk(instantiateDesign(design, { id: "s" }).componentTree);
@@ -93,15 +93,17 @@ describe("productPage", () => {
   });
 });
 
-describe.each(LIBRARY_TEMPLATES.map((t) => [t.key, t] as const))("library template %s", (key, template) => {
-  it("every library template config has exactly one product page and validates", () => {
+describe.each(CODE_TEMPLATES.map((t) => [t.key, t] as const))("code template %s", (_key, template) => {
+  it("every code template config has exactly one product page and validates", () => {
     const config = template.config();
     expect(config.pages.filter((p) => p.kind === "product")).toHaveLength(1);
     const result = validateSiteConfig(config, { allowedSections: storeSectionRegistry.allowedSections() });
     expect(result.success, JSON.stringify(result.success ? "" : result.issues)).toBe(true);
     expect(template.pageNames[PRODUCT_PAGE_SLUG]).toEqual({ ar: "صفحة المنتج", en: "Product page" });
   });
+});
 
+describe.each(LIBRARY_TEMPLATES.map((t) => [t.key, t] as const))("library template %s", (key, template) => {
   it("buy column is flat on square templates, a card otherwise (default surface)", () => {
     const config = template.config();
     const main = productPageOf(config)!.content.sections[0]!;

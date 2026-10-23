@@ -66,7 +66,7 @@ describe("Tallaby Classic template", () => {
     }
   });
 
-  it("has home, about, contact, faq, privacy and terms pages with unique node ids", () => {
+  it("has home, about, contact, faq, privacy, terms and product pages with unique node ids", () => {
     const config = classicConfig();
     expect(config.pages.map((p) => [p.slug, p.isHome])).toEqual([
       ["home", true],
@@ -75,6 +75,7 @@ describe("Tallaby Classic template", () => {
       ["faq", false],
       ["privacy", false],
       ["terms", false],
+      ["product", false],
     ]);
     for (const page of config.pages) expect(CLASSIC.pageNames[page.slug]?.ar).toBe(page.name);
     const ids = sections().flatMap((s) => walk(s.componentTree).map((n) => n.id));
