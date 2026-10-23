@@ -311,3 +311,8 @@ Where the code differs from the spec text above:
 - The builder's preview product comes from `getStorePreviewProduct` in `packages/lib`; the storefront maps its own row with `toProductDetail` in `apps/ecommerce`, so there are two mappers to keep in sync.
 - `ProductDetail.quantity` is the total stock (sum of variant quantities when variants exist).
 - Backfill step 3 inserts a new `store_site_revisions` row (number = max + 1 under the store row lock, the live revision's `schema_version` and `template_key`, `published_by` NULL) and repoints `stores.published_revision_id`, because the 0051 trigger makes revisions append-only. The old revision is untouched. It does not change `last_published_at`. The dry run reports the same outcome, revision number included.
+- A plain `addToCart` element placed on the product page draws nothing in public (the still preview in the editor) when the product has variants: only the buy box picks a variant.
+- A section made only of product parts and frame is hidden in public on a page without a product too (a product section pasted onto a normal page).
+- Template undo never deletes the product page: one the install created keeps the template's content; one that existed before gets its previous content back.
+- On store hosts the phone buy bar docks at the bottom edge with safe-area padding (`stickyBuyBarClass(…, { bottomNav: false })`); the marketplace bar is unchanged.
+- Deploy order: `0096`–`0099` before deploying, then `0100` and `0101`, then the backfill; run the read-only `packages/db/scripts/check-unscoped-bound-nodes.sql` before deploying (a bound node outside a list or the product page renders nothing in public).
