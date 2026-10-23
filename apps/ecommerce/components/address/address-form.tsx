@@ -32,7 +32,6 @@ import {
 import { LocationMap } from "./location-map";
 import { PlaceFormField } from "./place-combobox";
 import { addAddress, updateAddress } from "@/actions/customer";
-import posthog from "posthog-js";
 // Server actions will be imported from the consuming app
 
 interface AddressFormProps {
@@ -105,7 +104,6 @@ export const AddressForm = ({
             : await updateAddress(data.id!, data);
 
         if (result.success) {
-          posthog.capture("address_saved", { mode });
           toast.success(
             mode === "create"
               ? tToast("addressAddedSuccessfully")

@@ -22,7 +22,7 @@
 |---|---|---|
 | `apps/ecommerce` | Next.js 16.3.3 | Marketplace, seller storefronts (host-routed), cart and checkout, `/sell` landing page, legacy seller signup wizard (`/onboarding`), Meta Pixel and CAPI, custom-domain cron |
 | `apps/dashboard` | Next.js 16.3.3 | Seller dashboard: products, orders, shipping, financial, coupons, reviews, ad requests, settings (subdomain, custom domain), fulfillment view |
-| `apps/admin` | Next.js 16.3.3 | Platform operations: sellers, products, orders, payments, wallets, fulfillment plans, affiliates, external orders, analytics (PostHog) |
+| `apps/admin` | Next.js 16.3.3 | Platform operations: sellers, products, orders, payments, wallets, fulfillment plans, affiliates, external orders, analytics (from the database) |
 | `apps/shipping` | Next.js 16.3.3 | Dispatch admin and rider app (cash-on-delivery collection, shipment status → delivery credit) |
 | `apps/backend` | Hono on Vercel | Paymob and Kashier webhooks, wallet top-up webhook, transactional email (Resend) |
 | `packages/db` | Drizzle 0.45.1 | `schema.ts`, `relations.ts`, Supabase clients, primitives for stock, coupons, wallets and affiliates |

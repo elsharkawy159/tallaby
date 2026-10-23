@@ -152,7 +152,7 @@ Packages: `@workspace/db` (schema, Drizzle client, Supabase clients, wallet/inve
 ### 2.8 Integrations and analytics [Verified]
 
 - Meta Pixel (marketplace-wide, client) in `apps/ecommerce/components/meta/meta-pixel.tsx`. Meta CAPI and catalog feed in `apps/ecommerce/lib/meta/*` and `app/api/meta/catalog`. Env: `META_PIXEL_ID`, `META_CONVERSIONS_API_ACCESS_TOKEN`.
-- PostHog for admin analytics (`apps/admin/lib/analytics/posthog.server.ts`).
+- Admin analytics read only our own database (`apps/admin/lib/analytics/commerce.server.ts`). PostHog and the Elfsight support chat were removed on 2026-10-24 (§23).
 - No Google Tag Manager, GA4, Google Sheets or Shopify integration exists. Only legacy traces: `0027_drop_categories_shopify_id.sql`, and a product-from-URL scraper at `apps/dashboard/app/api/fetch-product/route.ts` (cheerio).
 - Seller ad packages: `ad_campaign_requests` (paid by Vodafone Cash, reviewed manually) at `apps/dashboard/app/(main)/marketing/`.
 
@@ -3836,3 +3836,11 @@ After P1-08 and P1-01 (`3289639`), typecheck and test match the baseline. `@work
 - **Pagination:** the `productList` element has a `paginate` switch ("Split into pages"). The storefront home page and builder pages read `?page=N`; `resolveStoreCatalog` fetches that page with its total (`productPages`), and the list draws page links (`ProductPager` in `elements/render.tsx`). A paginated list ignores the `offset` lead. Ranked sources (best sellers, trending) page through at most 96 products. The editor canvas shows page 1, with page links estimated from the store's product count. No migration and no change to stored templates: pagination is set when a template is applied, and a seller can switch it on for any list.
 - **Code:** `packages/store-sections/src/templates/{essentials,library-order}.ts` (+ `essentials.test.ts`, 114 tests), `elements/{data,registry,render}.ts(x)`, `core/types.ts`, `designs/builder.ts`; `packages/lib/src/store-sites/templates.server.ts` (+ integration test expectations); `apps/ecommerce/lib/store-site/catalog.server.ts`, storefront `store-site.tsx`, home and `[pageSlug]` pages; both `editor/page.tsx`.
 - **Checks:** `tsc` clean in store-sections, lib, store-editor, dashboard and admin. In ecommerce the only `tsc` errors are the 16 already in `profile.chunks.tsx` (file unchanged). Tests: store-sections 4073 and lib 522 pass. In the parallel run one test in each package timed out at 5s; both pass alone. store-editor 132 and ecommerce 170 pass. DB integration tests not run (no `TEST_DATABASE_URL`). Lint still cannot run (ESLint crashes on load). Not checked in a browser.
+
+### 2026-10-24 — PostHog and the Elfsight chat removed (owner request, for performance)
+
+- **PostHog:** `posthog-js` uninstalled from ecommerce; `instrumentation-client.ts` (its only content was the PostHog init) deleted; every `posthog.capture/identify/reset` call removed (cart, checkout, wishlist, coupons, auth, address, reviews, wallet, affiliate, onboarding, order cancel, share popover). The share popover lost its tracking-only `productId` prop (and `ProductImages`/`product-hero` stopped passing it). The PostHog wizard skill in `apps/ecommerce/.claude/` was deleted.
+- **Admin analytics simplified:** `apps/admin/lib/analytics/posthog.server.ts` deleted (it was already switched off); `getAdminAnalytics` returns the database `CommerceAnalytics` only; the commented-out PostHog card and its types are gone; the PostHog row left the Settings env check. `POSTHOG_*` removed from `turbo.json` and both `.env.example` files. The PostHog env vars can be deleted from Vercel.
+- **Elfsight:** `components/chatbot/elfsight-chatbot.tsx` (and the unused `zolai-chatbot.tsx`) deleted, unmounted from the `(shop)` layout; the `data-chat-avoid` markers on the bottom nav and sticky add-to-cart bar removed.
+- **Kept:** Tallaby's Meta Pixel + CAPI and GA4 on the marketplace, and sellers' own Pixel/GA4/GTM on storefronts.
+- **Checks:** `tsc` clean in admin; ecommerce only has the 16 known errors in `profile.chunks.tsx`. Tests: ecommerce 170, admin 107 pass. Lint still cannot run. Not checked in a browser.

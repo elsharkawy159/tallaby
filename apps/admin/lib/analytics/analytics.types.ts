@@ -100,24 +100,3 @@ export interface CommerceAnalytics
     DashboardTables,
     CategoryAndActivity,
     MonthlySeries {}
-
-export interface PosthogFunnelStep {
-  event: string
-  label: string
-  users: number
-}
-
-export interface PosthogAnalytics {
-  configured: boolean
-  hasEvents: boolean
-  message: string | null
-  uniqueVisitors: number
-  pageviews: number
-  dailyPageviews: ChartPoint[]
-  funnel: PosthogFunnelStep[]
-}
-
-export interface AdminAnalyticsPayload {
-  commerce: CommerceAnalytics
-  posthog: PosthogAnalytics
-}

@@ -24,7 +24,6 @@ import { forgotPasswordAction, signInAction, signUpUser } from "@/actions/auth";
 import { notifyAuthChanged, useAuthUser } from "@/lib/auth/use-auth-user";
 import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
-import posthog from "posthog-js";
 
 // Sign In Form Component
 export function SignInForm({
@@ -67,7 +66,6 @@ export function SignInForm({
         const result = await signInAction(data);
 
         if (result.success) {
-          posthog.capture("sign_in_completed");
           // Paint the navbar from the user returned by the same request that
           // set the session cookies, then broadcast so other mounts refresh.
           if (result.user) {
@@ -154,7 +152,6 @@ export function SignUpForm({
       try {
         const result = await signUpUser(data);
         if (result.success) {
-          posthog.capture("account_created");
           toast.success(t("accountCreated"));
           // Store credentials before resetting
           const credentials = {
@@ -253,7 +250,6 @@ export function ForgotPasswordForm({
         const result = await forgotPasswordAction(data);
 
         if (result.success) {
-          posthog.capture("password_reset_requested");
           toast.success(result.message);
           form.reset();
           onSuccess();

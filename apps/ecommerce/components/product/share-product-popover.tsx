@@ -13,7 +13,6 @@ import {
 import { Check, Copy, Mail, MoreHorizontal, Share2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import posthog from "posthog-js";
 import { Button } from "@workspace/ui/components/button";
 import {
   Popover,
@@ -51,7 +50,6 @@ interface ShareProductPopoverProps {
    * share a non-affiliate URL and then swap it.
    */
   isUrlReady?: boolean;
-  productId?: string;
   className?: string;
 }
 
@@ -94,7 +92,6 @@ export const ShareProductPopover = ({
   bulletPoints,
   coupon = null,
   isUrlReady = true,
-  productId,
   className,
 }: ShareProductPopoverProps) => {
   const t = useTranslations("product.share");
@@ -151,22 +148,11 @@ export const ShareProductPopover = ({
     [bulletPoints, description, resolvedUrl, t, title]
   );
 
-  const track = useCallback(
-    (channel: string) => {
-      posthog.capture("product_shared", {
-        product_id: productId,
-        channel,
-      });
-    },
-    [productId]
-  );
-
   const copyLink = useCallback(
-    async (channel: string, message?: string) => {
+    async (message?: string) => {
       if (!resolvedUrl) return false;
       try {
         await navigator.clipboard.writeText(resolvedUrl);
-        track(channel);
         setCopied(true);
         toast.success(message ?? t("linkCopied"));
         window.setTimeout(() => setCopied(false), 1800);
@@ -176,20 +162,19 @@ export const ShareProductPopover = ({
         return false;
       }
     },
-    [resolvedUrl, t, track]
+    [resolvedUrl, t]
   );
 
   const nativeShare = useCallback(
-    async (channel: string) => {
+    async () => {
       try {
         await navigator.share({ title, text: shareText, url: resolvedUrl });
-        track(channel);
         setOpen(false);
       } catch {
         // The user dismissed the share sheet — not an error.
       }
     },
-    [resolvedUrl, shareText, title, track]
+    [resolvedUrl, shareText, title]
   );
 
   const channels = useMemo<ShareChannel[]>(() => {
@@ -245,10 +230,10 @@ export const ShareProductPopover = ({
         // where the app can be picked, otherwise copy the link to paste.
         onClick: () => {
           if (canNativeShare) {
-            void nativeShare("instagram");
+            void nativeShare();
             return;
           }
-          void copyLink("instagram", t("instagramHint"));
+          void copyLink(t("instagramHint"));
         },
       },
       {
@@ -266,7 +251,7 @@ export const ShareProductPopover = ({
         label: t("more"),
         className: "bg-gray-100 text-gray-700",
         render: (c) => <MoreHorizontal className={c} strokeWidth={2.2} />,
-        onClick: () => void nativeShare("native"),
+        onClick: () => void nativeShare(),
       });
     }
 
@@ -344,7 +329,6 @@ export const ShareProductPopover = ({
                   rel="noopener noreferrer"
                   aria-label={channel.label}
                   onClick={() => {
-                    track(channel.id);
                     setOpen(false);
                   }}
                   className={itemClassName}
@@ -379,7 +363,7 @@ export const ShareProductPopover = ({
             type="button"
             size="sm"
             variant={copied ? "secondary" : "outline"}
-            onClick={() => void copyLink("copy_link")}
+            onClick={() => void copyLink()}
             className="shrink-0"
           >
             {copied ? (

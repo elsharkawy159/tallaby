@@ -6,7 +6,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useTranslations, useLocale } from "next-intl";
-import posthog from "posthog-js";
 
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -286,7 +285,7 @@ export function ProfileSidebar({
               </Link>
             ) : (
               /* Sign Out */
-              <form action={signOutAction} onSubmit={() => posthog.reset()}>
+              <form action={signOutAction}>
                 <Button
                   type="submit"
                   variant="ghost"

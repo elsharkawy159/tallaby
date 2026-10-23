@@ -11,7 +11,6 @@ import { createClient } from "@/supabase/client";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import type { OrderItemReview } from "./order-confirmation.types";
-import posthog from "posthog-js";
 
 interface OrderItemReviewFormProps {
   orderId: string;
@@ -197,12 +196,6 @@ export function OrderItemReviewForm({
           });
 
           if (result.success) {
-            posthog.capture("product_review_updated", {
-              product_id: productId,
-              rating,
-              is_anonymous: isAnonymous,
-              attachment_count: uploadedFiles.length,
-            });
             toast.success(t("reviewUpdated"));
             router.refresh();
           } else {
@@ -224,12 +217,6 @@ export function OrderItemReviewForm({
         });
 
         if (result.success) {
-          posthog.capture("product_review_submitted", {
-            product_id: productId,
-            rating,
-            is_anonymous: isAnonymous,
-            attachment_count: uploadedFiles.length,
-          });
           toast.success(t("reviewSubmitted"));
           router.refresh();
         } else {

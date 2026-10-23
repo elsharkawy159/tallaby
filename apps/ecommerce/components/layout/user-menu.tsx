@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { useLocale, useTranslations } from "next-intl";
-import posthog from "posthog-js";
 
 import { formatPricePlain } from "@workspace/lib";
 import {
@@ -84,7 +83,6 @@ export function UserMenu({
   }, [user?.id]);
 
   const handleLogout = async () => {
-    posthog.reset();
     // Clear the shared navbar state immediately — do not re-fetch, or a
     // hung /api/auth/me can leave a stale signed-in avatar on screen.
     applyUser(null);

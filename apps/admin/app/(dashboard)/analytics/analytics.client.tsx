@@ -25,7 +25,7 @@ import {
   TrendingUp,
   Users,
 } from "lucide-react";
-import type { AdminAnalyticsPayload } from "@/lib/analytics/analytics.types";
+import type { CommerceAnalytics } from "@/lib/analytics/analytics.types";
 import { AreaChart } from "../_components/charts/area-chart";
 import { BarChart } from "../_components/charts/bar-chart";
 import { LineChart } from "../_components/charts/line-chart";
@@ -56,11 +56,7 @@ function stockStatus(quantity: number) {
   return { label: "In Stock", className: "bg-green-100 text-green-800" };
 }
 
-export function AnalyticsDashboard({ data }: { data: AdminAnalyticsPayload }) {
-  const { commerce } = data;
-  // PostHog UI temporarily disabled — see analytics.server.ts
-  // const { posthog } = data
-
+export function AnalyticsDashboard({ data: commerce }: { data: CommerceAnalytics }) {
   return (
     <>
       <div className="mb-6 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -116,48 +112,6 @@ export function AnalyticsDashboard({ data }: { data: AdminAnalyticsPayload }) {
         </Card>
       </div>
 
-      {/* Temporarily disabled — PostHog storefront traffic card
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Storefront traffic (PostHog)</CardTitle>
-          <CardDescription>
-            Unique visitors, pageviews, and checkout funnel for the last 30 days
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {posthog.message && (
-            <p className="text-sm text-muted-foreground">{posthog.message}</p>
-          )}
-          <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <p className="text-sm text-muted-foreground">Unique visitors</p>
-              <p className="text-2xl font-bold">
-                {posthog.uniqueVisitors.toLocaleString('en-EG')}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Pageviews</p>
-              <p className="text-2xl font-bold">
-                {posthog.pageviews.toLocaleString('en-EG')}
-              </p>
-            </div>
-          </div>
-          <div className="h-[240px]">
-            <LineChart data={posthog.dailyPageviews} valueKind="number" />
-          </div>
-          <div className="grid gap-3 md:grid-cols-4">
-            {posthog.funnel.map((step) => (
-              <div key={step.event} className="rounded-md border p-3">
-                <p className="text-xs text-muted-foreground">{step.label}</p>
-                <p className="text-lg font-semibold">
-                  {step.users.toLocaleString('en-EG')}
-                </p>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-      */}
 
       <Tabs defaultValue="sales">
         <TabsList>

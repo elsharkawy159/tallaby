@@ -4,7 +4,6 @@ import "./globals.css";
 import { Providers } from "./providers";
 import NextTopLoader from "nextjs-toploader";
 import { Scripts } from "@/components/layout/structured-data";
-import { ElfsightChatbot } from "@/components/chatbot/elfsight-chatbot";
 import { getTranslations } from "next-intl/server";
 import { Toaster } from "@workspace/ui/components/sonner";
 import { routing } from "@/i18n/routing";
@@ -97,7 +96,6 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
       />
       <Providers>{children}</Providers>
       <Toaster />
-      <ElfsightChatbot />
     </>
   );
 }

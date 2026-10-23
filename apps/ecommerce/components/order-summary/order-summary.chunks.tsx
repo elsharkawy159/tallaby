@@ -12,7 +12,6 @@ import { Ticket, X, Loader2, LogIn, Truck, Sparkles, PartyPopper } from 'lucide-
 import { applyCouponToCart, removeCouponFromCart } from '@/actions/coupons'
 import { toast } from 'sonner'
 import { formatVariantTitle } from '@/lib/variant-utils'
-import posthog from 'posthog-js'
 import { cn } from '@workspace/ui/lib/utils'
 import type {
   AppliedCouponInfo,
@@ -422,7 +421,6 @@ export function OrderSummaryCoupon ({
       })
 
       if (result.success && result.data) {
-        posthog.capture('coupon_applied', { item_count: itemCount })
         toast.success(t('couponApplied'))
         setCode('')
         onCouponApplied?.({
@@ -453,7 +451,6 @@ export function OrderSummaryCoupon ({
       const result = await removeCouponFromCart({ shippingAddressId })
 
       if (result.success && result.data) {
-        posthog.capture('coupon_removed', { item_count: itemCount })
         toast.success(t('couponRemoved'))
         onCouponRemoved?.(result.data.summary)
       } else {

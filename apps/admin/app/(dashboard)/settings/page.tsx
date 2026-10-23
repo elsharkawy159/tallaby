@@ -48,7 +48,6 @@ function serviceStatus() {
       ok: set("ECOMMERCE_URL", "DASHBOARD_URL", "REVALIDATE_SECRET"),
       urls: [process.env.ECOMMERCE_URL, process.env.DASHBOARD_URL].filter((url): url is string => Boolean(url)),
     },
-    { name: "PostHog", detail: "Analytics page", ok: set("POSTHOG_HOST", "POSTHOG_PROJECT_ID", "POSTHOG_PERSONAL_API_KEY") },
     {
       name: "Vercel domains",
       detail: "Re-check and remove custom domains",

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import posthog from "posthog-js";
 import { Check, Copy, Share2, Wallet } from "lucide-react";
 
 import { formatPricePlain } from "@workspace/lib";
@@ -69,7 +68,6 @@ export function AffiliateClient({
     try {
       await navigator.clipboard.writeText(overview.code);
       setCopied(true);
-      posthog.capture("affiliate_code_copied");
       toast.success(t("codeCopied"));
       window.setTimeout(() => setCopied(false), 1800);
     } catch {
@@ -79,7 +77,6 @@ export function AffiliateClient({
 
   const handleShare = async () => {
     const text = t("shareText", { code: overview.code });
-    posthog.capture("affiliate_code_shared");
     if (navigator.share) {
       try {
         await navigator.share({ text, url: shareUrl });

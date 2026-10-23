@@ -5,7 +5,6 @@ import { ShoppingCart, Loader2, Zap } from "lucide-react";
 import type { AddToCartButtonProps } from "./product-card.types";
 import { useTranslations } from "next-intl";
 import { notifyCartItemAdded, useCart } from "@/providers/cart-provider";
-import posthog from "posthog-js";
 import { trackCommerceEvent } from "@/lib/storefront-events.client";
 import { toMetaContentIds } from "@/lib/meta/meta.product";
 import { DEFAULT_CURRENCY } from "@/lib/constants";
@@ -52,12 +51,6 @@ export const AddToCartButton = ({
     });
 
     if (result.success) {
-      posthog.capture("product_added_to_cart", {
-        product_id: productId,
-        quantity,
-        has_variant: Boolean(variantId),
-      });
-
       const unitPrice = Number(result.data?.price ?? 0);
       const value = unitPrice * quantity;
 

@@ -48,7 +48,6 @@ export const ProductHero = ({
       <ProductImages
         images={images}
         productName={product.title}
-        productId={product.id}
         description={product.description}
         bulletPoints={bulletPoints}
       />

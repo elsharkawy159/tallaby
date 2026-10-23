@@ -10,7 +10,6 @@ import { useAffiliateShareCoupon } from "@/hooks/use-affiliate-share-coupon";
 interface ProductImagesProps {
   images: string[];
   productName: string;
-  productId?: string;
   description?: string | null;
   bulletPoints?: string[];
 }
@@ -18,7 +17,6 @@ interface ProductImagesProps {
 export const ProductImages = ({
   images,
   productName,
-  productId,
   description,
   bulletPoints,
 }: ProductImagesProps) => {
@@ -72,7 +70,6 @@ export const ProductImages = ({
         <ShareProductPopover
           title={productName}
           image={shareImage}
-          productId={productId}
           description={description}
           bulletPoints={bulletPoints}
           coupon={affiliateCoupon}
@@ -153,7 +150,6 @@ export const ProductImages = ({
           <ShareProductPopover
             title={productName}
             image={shareImage}
-            productId={productId}
             description={description}
             bulletPoints={bulletPoints}
             coupon={affiliateCoupon}

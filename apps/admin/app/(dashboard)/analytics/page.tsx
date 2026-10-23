@@ -8,7 +8,7 @@ import { AnalyticsDashboard } from './analytics.client'
  * This page's dashboard is a single client component that needs every series
  * at once, so the fetch cannot be split the way the main dashboard is. It can
  * still stream: the header renders immediately and the Suspense boundary keeps
- * the (slower) commerce + PostHog round-trip off the critical path.
+ * the (slower) commerce queries off the critical path.
  */
 export default function AnalyticsPage () {
   return (

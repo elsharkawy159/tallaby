@@ -6,7 +6,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import posthog from "posthog-js";
 import {
   ArrowDownLeft,
   ArrowUpRight,
@@ -238,10 +237,6 @@ export function TopUpDialog({ disabled }: { disabled?: boolean }) {
         return;
       }
 
-      posthog.capture("wallet_top_up_started", {
-        amount: data.amount,
-        payment_method: data.paymentMethod,
-      });
       setPendingTopUp(result.data);
     });
   };
@@ -538,7 +533,6 @@ export function PayoutRequestDialog({
         return;
       }
 
-      posthog.capture("wallet_payout_requested", { amount: data.amount });
       toast.success(t("payoutRequested"));
       form.reset(payoutFormDefaults);
       setIsOpen(false);

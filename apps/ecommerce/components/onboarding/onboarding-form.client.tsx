@@ -5,7 +5,6 @@ import { useForm, type FieldPath } from "react-hook-form";
 import { toast } from "sonner";
 import { ChevronRight, CircleCheck, CircleHelp, RotateCcw } from "lucide-react";
 import { useTranslations } from "next-intl";
-import posthog from "posthog-js";
 
 import { Link, useRouter } from "@/i18n/navigation";
 import { useDebounce } from "@/hooks/use-debounce";
@@ -162,10 +161,6 @@ export function OnboardingFormClient({ user, plans, signInOptions }: OnboardingF
         const result = await submitSellerApplication(toSubmission(values));
 
         if (result.success) {
-          posthog.capture("seller_application_submitted", {
-            business_type: values.businessType,
-            fulfillment_model: values.model,
-          });
           draft.clear();
           toast.success(t(result.messageKey));
           router.push("/onboarding/success");
