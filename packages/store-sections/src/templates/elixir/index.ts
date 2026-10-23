@@ -197,7 +197,8 @@ const DEMO = demoStore({
 
 export const ELIXIR = libraryTemplate({
   key: ELIXIR_KEY,
-  version: 2,
+  version: 3,
+  changelog: "Élixir v3: product page",
   name: L("إليكسير", "Élixir"),
   description: L(
     "جمال وعطور فاخرة: العطر المميز، النوتات حول الزجاجة وحكاية الدار. أربع صفحات جاهزة.",
@@ -247,4 +248,5 @@ export const ELIXIR = libraryTemplate({
     },
   ],
   demo: DEMO,
+  productPage: { gallery: "end", thumbs: "side", tracking: 0.06, button: "outline", band: "shelf", copy: { back: L("العودة إلى الدار", "Back to the house"), reviews: L("ما قاله عملاؤنا", "What our clients say"), related: L("عطور من الدار", "From the house") } },
 });

@@ -142,7 +142,8 @@ const DEMO = demoStore({
 
 export const VOLT = libraryTemplate({
   key: VOLT_KEY,
-  version: 2,
+  version: 3,
+  changelog: "Volt v3: product page",
   name: L("فولت", "Volt"),
   description: L(
     "إكسسوارات موبايل: كلمة كبيرة للمنتج، صفوف شراء سريع، عروض بالمبلغ ومقارنة. أربع صفحات جاهزة.",
@@ -192,4 +193,5 @@ export const VOLT = libraryTemplate({
     },
   ],
   demo: DEMO,
+  productPage: { thumbs: "bottom", band: "brand", extras: ["product-shipping"], copy: { back: L("رجوع للمتجر", "Back to the shop"), reviews: L("آراء الزباين", "What buyers say"), related: L("اشتريها معاها", "Grab it with") } },
 });

@@ -177,7 +177,8 @@ const DEMO = demoStore({
 
 export const GLOW = libraryTemplate({
   key: GLOW_KEY,
-  version: 2,
+  version: 3,
+  changelog: "Glow v3: product page",
   name: L("جلو", "Glow"),
   description: L(
     "مستحضرات تجميل: كولاج للوك، أقسام دائرية، عرض الأسبوع وصور العميلات. أربع صفحات جاهزة.",
@@ -227,4 +228,5 @@ export const GLOW = libraryTemplate({
     },
   ],
   demo: DEMO,
+  productPage: { thumbs: "bottom", band: "brand", copy: { back: L("رجوع للشيدات", "Back to the shades"), reviews: L("صور وآراء حقيقية", "Real photos and reviews"), related: L("شيدات تحبيها كمان", "Shades you may love too") } },
 });

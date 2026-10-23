@@ -104,12 +104,12 @@ describe.each(CODE_TEMPLATES.map((t) => [t.key, t] as const))("code template %s"
 });
 
 describe.each(LIBRARY_TEMPLATES.map((t) => [t.key, t] as const))("library template %s", (key, template) => {
-  it("buy column is flat on square templates, a card otherwise (default surface)", () => {
+  it("buy column is flat on square templates, a card or a shelf otherwise", () => {
     const config = template.config();
     const main = productPageOf(config)!.content.sections[0]!;
     const column = walk(main.componentTree).find((n) => n.props.label === "عمود الشراء")!;
     if (config.designSystem.spacing.borderRadius === 0) expect(column.style?.background).toBeUndefined();
-    else expect(column.style?.background).toBe("background");
+    else expect(["background", "secondary"]).toContain(column.style?.background); // card or shelf
   });
 
   it("template product page design ids are <key>-product-*", () => {

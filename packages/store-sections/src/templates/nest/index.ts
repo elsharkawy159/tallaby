@@ -175,7 +175,8 @@ const DEMO = demoStore({
 
 export const NEST = libraryTemplate({
   key: NEST_KEY,
-  version: 2,
+  version: 3,
+  changelog: "Nest v3: product page",
   name: L("نِست", "Nest"),
   description: L(
     "ديكور البيت: أقسام حسب الأوضة، بتتعمل إزاي، الجديد وحكاية الصنّاع. أربع صفحات جاهزة.",
@@ -225,4 +226,5 @@ export const NEST = libraryTemplate({
     },
   ],
   demo: DEMO,
+  productPage: { thumbs: "side", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للمتجر", "Back to the shop"), reviews: L("آراء من سكنوا بها", "From homes that live with it"), related: L("قطع تناسب نفس الغرفة", "Pieces for the same room") } },
 });

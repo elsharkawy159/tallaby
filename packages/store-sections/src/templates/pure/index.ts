@@ -184,7 +184,8 @@ const DEMO = demoStore({
 
 export const PURE = libraryTemplate({
   key: PURE_KEY,
-  version: 2,
+  version: 3,
+  changelog: "Pure v3: product page",
   name: L("بيور", "Pure"),
   description: L(
     "عناية بالبشرة بهدوء: مكونات واضحة، روتين من ٤ خطوات وتقييمات. أربع صفحات جاهزة.",
@@ -234,4 +235,5 @@ export const PURE = libraryTemplate({
     },
   ],
   demo: DEMO,
+  productPage: { thumbs: "bottom", surface: "shelf", band: "paper", extras: ["product-perks"], copy: { back: L("العودة للمتجر", "Back to the shop"), reviews: L("تجارب بشرة حقيقية", "Real skin, real results"), related: L("تكمل روتينك", "Complete your routine") } },
 });
