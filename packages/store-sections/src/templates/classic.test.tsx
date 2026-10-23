@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { ComponentNode, SectionInstance } from "../config/schema";
 import { validateSiteConfig } from "../config/validate";
 import { collectCatalogQueries } from "../core/registry";
+import { DEMO_PRODUCT } from "../core/demo-product";
 import type { RenderContext } from "../core/types";
 import { MAX_ELEMENT_DEPTH, MAX_NODES_PER_SECTION } from "../elements/registry";
 import { countNodes, treeDepth } from "../elements/tree";
@@ -122,7 +123,7 @@ describe("Tallaby Classic template", () => {
     for (const section of sections(fitted)) {
       const products = productsFor(section, product);
       const categories = [{ id: "c1", key: "c1", name: "سماعات", href: "/products?category=c1", image: "https://cdn.test/c1.jpg", productCount: 3 }];
-      const html = renderToStaticMarkup(<SectionRenderer instance={section} registry={storeSectionRegistry} ctx={ctx({ products, categories })} defaultLocale="ar" />);
+      const html = renderToStaticMarkup(<SectionRenderer instance={section} registry={storeSectionRegistry} ctx={{ ...ctx({ products, categories }), product: { ...DEMO_PRODUCT, contentHtml: "<h3>المواصفات</h3><p>بطارية تدوم ٣٠ ساعة وشحن سريع ومقاومة للماء والعرق.</p>" } }} defaultLocale="ar" />);
       if (section.id === "tallaby-blog") continue; // Posts come from the blog loader, not the catalog.
       expect(html.length, section.id).toBeGreaterThan(200);
       if (Object.keys(products).length) {

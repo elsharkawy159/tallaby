@@ -445,13 +445,14 @@ const FRAME_TYPES: ReadonlySet<string> = new Set(["section", "container", "vFlex
  * A storefront section made only of product parts that all draw nothing
  * for this product (no content, no variants, no reviews yet…) plus its
  * frame (`FRAME_TYPES`) would be an empty padded band, so it is not drawn
- * at all. Sections with any other content, sections without product parts,
- * pages without a product, and the editor are unaffected.
+ * at all. On a page without a product (a product section pasted onto a
+ * normal page) every product part draws nothing, so the same section is
+ * not drawn either. Sections with any other content, sections without
+ * product parts, and the editor are unaffected.
  */
 export function productSectionEmpty(section: ComponentNode, ctx: RenderContext, scope?: DataRecord): boolean {
   if (ctx.mode === "edit") return false;
   const product = productOf(ctx, scope);
-  if (!product) return false;
   let parts = 0;
   let empty = 0;
   let content = false;
@@ -461,7 +462,7 @@ export function productSectionEmpty(section: ComponentNode, ctx: RenderContext, 
       return;
     }
     parts += 1;
-    if (productPartEmpty(node as ComponentNode & { type: ProductElementType }, product)) empty += 1;
+    if (!product || productPartEmpty(node as ComponentNode & { type: ProductElementType }, product)) empty += 1;
   });
   return !content && parts > 0 && empty === parts;
 }

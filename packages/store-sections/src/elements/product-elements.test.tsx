@@ -139,6 +139,17 @@ describe("product elements", () => {
     expect(draw(node("productPrice"), product, { mode: "public" })).toContain("EGP 900");
   });
 
+  it("a plain addToCart on the product page never adds a variant product without a variant", () => {
+    const hook = { renderAddToCart: (p: { title: string }) => <b>add {p.title}</b> };
+    expect(product.variants.length).toBeGreaterThan(0);
+    expect(draw(node("addToCart"), product, { mode: "public", ...hook })).toBe("");
+    const edit = draw(node("addToCart"), product, hook);
+    expect(edit).not.toContain("<b>");
+    expect(edit).toContain("Add to cart");
+    const simple = { ...product, variants: [] };
+    expect(draw(node("addToCart"), simple, { mode: "public", ...hook })).toContain("<b>add Earbuds</b>");
+  });
+
   it("no ctx.product in public renders null", () => {
     for (const type of PRODUCT_TYPES) expect(draw(node(type), null, { mode: "public" }), type).toBe("");
     // The editor still draws a sample product.
@@ -215,9 +226,18 @@ describe("product sections with nothing to show", () => {
     expect(publicDraw(section([heading, desktopOnly]), empty)).toContain("<section");
   });
 
-  it("leave sections without product parts, pages without a product, and the editor, alone", () => {
+  it("leave sections without product parts and the editor alone", () => {
     expect(publicDraw(section([heading]), empty)).toContain("<section");
-    expect(publicDraw(section([heading, node("productContent")]), null)).toContain("<section");
+    expect(publicDraw(section([heading]), null)).toContain("<section");
     expect(draw(section([heading, node("productContent")]), empty)).toContain("<section");
+    expect(draw(section([heading, node("productPrice")]), null)).toContain("<section");
+  });
+
+  it("draw no band publicly for a product section on a page without a product", () => {
+    expect(publicDraw(section([heading, node("productContent")]), null)).toBe("");
+    expect(publicDraw(section([node("productGallery"), node("productPrice"), node("productBuyBox")]), null)).toBe("");
+    // The seller's own content beside the parts keeps the band.
+    const paragraph = { id: "p-1", type: "paragraph", props: { text: "Free returns." }, children: [] } as unknown as ComponentNode;
+    expect(publicDraw(section([paragraph, node("productPrice")]), null)).toContain("Free returns.");
   });
 });

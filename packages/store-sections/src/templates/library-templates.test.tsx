@@ -4,6 +4,7 @@ import type { ComponentNode, SectionInstance, SiteConfig } from "../config/schem
 import { validateSiteConfig } from "../config/validate";
 import { STORE_FONTS } from "../core/fonts";
 import { collectCatalogQueries } from "../core/registry";
+import { DEMO_PRODUCT } from "../core/demo-product";
 import type { RenderContext } from "../core/types";
 import { STOCK_INDUSTRIES, peoplePhoto, stockPhoto } from "../designs/stock-photos";
 import { MAX_ELEMENT_DEPTH, MAX_NODES_PER_SECTION } from "../elements/registry";
@@ -158,7 +159,7 @@ describe.each(LIBRARY_TEMPLATES.map((t) => [t.key, t] as const))("library templa
     const fitted = prepareTemplateForStore(config, { defaultLocale: "ar", formIds: Object.fromEntries(templateFormNeeds(config).map((n) => [n, "f1"])) });
     for (const section of sections(fitted)) {
       const products = productsFor(section, product);
-      const html = renderToStaticMarkup(<SectionRenderer instance={section} registry={storeSectionRegistry} ctx={ctx({ products, categories })} defaultLocale="ar" />);
+      const html = renderToStaticMarkup(<SectionRenderer instance={section} registry={storeSectionRegistry} ctx={{ ...ctx({ products, categories }), product: { ...DEMO_PRODUCT, contentHtml: "<h3>المواصفات</h3><p>بطارية تدوم ٣٠ ساعة وشحن سريع ومقاومة للماء والعرق.</p>" } }} defaultLocale="ar" />);
       expect(html.length, section.id).toBeGreaterThan(200);
       if (Object.keys(products).length) expect(html, section.id).toContain("/products/p1");
     }

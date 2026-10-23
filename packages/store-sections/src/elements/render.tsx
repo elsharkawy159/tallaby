@@ -559,7 +559,10 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
       ) : null;
     }
     case "addToCart": {
-      if (scope?.kind === "productList" || scope?.kind === "product") {
+      // A product with variants needs a chosen variant (the buy box does that), so a plain add
+      // button would add it without one: the editor shows the still preview, the storefront nothing.
+      const variantProduct = scope?.kind === "product" && scope.record.variants.length > 0;
+      if (!variantProduct && (scope?.kind === "productList" || scope?.kind === "product")) {
         const button = ctx.renderAddToCart?.(scope.record);
         return button ? (
           <div {...attrs} className="flex">
@@ -567,7 +570,7 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
           </div>
         ) : null;
       }
-      // Outside a product list there is no product to add: a still preview in the editor only.
+      // Outside a product list (or for a variant product) there is nothing to add: a still preview in the editor only.
       return ctx.mode === "edit" ? (
         <div {...attrs} className="flex">
           <span className="inline-flex h-9 items-center justify-center rounded-(--sf-radius,12px) bg-(--sf-brand) px-4 text-xs font-semibold text-(--sf-brand-ink,#fff) opacity-70">

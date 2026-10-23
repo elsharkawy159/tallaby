@@ -215,8 +215,8 @@ describe("product scope", () => {
     expect(page(tree, { mode: "edit" })).toContain("Product name");
   });
 
-  it("addToCart in product scope calls renderAddToCart with the product", () => {
-    const html = page([node("section", {}, [node("addToCart")])], { product: detail, renderAddToCart: (p) => <button>add {p.id}</button> });
+  it("addToCart in product scope calls renderAddToCart with a product without variants", () => {
+    const html = page([node("section", {}, [node("addToCart")])], { product: { ...detail, variants: [] }, renderAddToCart: (p) => <button>add {p.id}</button> });
     expect(html).toContain("add demo-product");
   });
 
