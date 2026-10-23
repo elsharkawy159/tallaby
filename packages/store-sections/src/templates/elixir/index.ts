@@ -248,5 +248,5 @@ export const ELIXIR = libraryTemplate({
     },
   ],
   demo: DEMO,
-  productPage: { gallery: "end", thumbs: "side", tracking: 0.06, button: "outline", band: "shelf", copy: { back: L("العودة إلى الدار", "Back to the house"), reviews: L("ما قاله عملاؤنا", "What our clients say"), related: L("عطور من الدار", "From the house") } },
+  productPage: { gallery: "end", thumbs: "side", surface: "flat", tracking: 0.06, button: "outline", band: "shelf", copy: { back: L("العودة إلى الدار", "Back to the house"), reviews: L("ما قاله عملاؤنا", "What our clients say"), related: L("عطور من الدار", "From the house") } },
 });

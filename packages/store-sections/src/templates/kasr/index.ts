@@ -278,5 +278,5 @@ export const KASR = libraryTemplate({
     { slug: "faq", name: L("الأسئلة الشائعة", "FAQ"), seo: { title: L("الأسئلة الشائعة", "FAQ") }, sections: faq },
   ],
   demo: DEMO,
-  productPage: { thumbs: "side", band: "paper", copy: { back: L("العودة إلى المجموعة", "Back to the collection"), reviews: L("ما قالته من ارتدينها", "In their words"), related: L("قطع تُلبَس معها", "Pieces to wear with it") } },
+  productPage: { thumbs: "side", band: "paper", copy: { back: L("العودة إلى المجموعة", "Back to the collection"), reviews: L("كلمة من جرّبوها", "A word from those who wear it"), related: L("قطع تُلبَس معها", "Pieces to wear with it") } },
 });

@@ -108,8 +108,16 @@ describe.each(LIBRARY_TEMPLATES.map((t) => [t.key, t] as const))("library templa
     const config = template.config();
     const main = productPageOf(config)!.content.sections[0]!;
     const column = walk(main.componentTree).find((n) => n.props.label === "عمود الشراء")!;
-    if (config.designSystem.spacing.borderRadius === 0) expect(column.style?.background).toBeUndefined();
-    else expect(["background", "secondary"]).toContain(column.style?.background); // card or shelf
+    // The effective surface read from the built tree: flat has no background, card "background", shelf "secondary".
+    const surface = column.style?.background === undefined ? "flat" : column.style.background === "secondary" ? "shelf" : "card";
+    expect(["flat", "card", "shelf"]).toContain(surface);
+    expect(column.style?.background === undefined || ["background", "secondary"].includes(column.style.background)).toBe(true);
+    // Templates whose spec sets a surface that differs from the corner default (square → flat, rounded → card).
+    const EXPLICIT: Record<string, string> = { arena: "shelf", pure: "shelf", hearth: "shelf", elixir: "flat" };
+    if (key in EXPLICIT) expect(surface).toBe(EXPLICIT[key]);
+    // A square template is flat unless its spec chose otherwise; a rounded one is never an unexplained flat.
+    else if (config.designSystem.spacing.borderRadius === 0) expect(surface).not.toBe("card");
+    else expect(surface).not.toBe("flat");
   });
 
   it("template product page design ids are <key>-product-*", () => {
