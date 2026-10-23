@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTemplateForStudio } from "@workspace/lib/admin/server";
 import type { EditorInitial } from "@workspace/store-editor/editor.client";
+import { templateDemoProduct } from "@workspace/store-sections/templates";
 import { adminActorId } from "@/app/(dashboard)/_lib/saas-admin.server";
 import { loadLibraryPresets } from "@/app/(builder)/stores/[storeId]/editor/library.data";
 import { storeFontVariables } from "@/app/(builder)/stores/[storeId]/editor/store-fonts";
@@ -63,6 +64,7 @@ export default async function TemplateEditorPage({ params }: { params: Promise<{
     fontClassName: storeFontVariables,
     category: { en: null, ar: null },
     presets,
+    previewProduct: templateDemoProduct(demo),
     title,
   };
 

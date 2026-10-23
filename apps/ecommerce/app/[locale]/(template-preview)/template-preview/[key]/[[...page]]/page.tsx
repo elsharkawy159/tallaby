@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import { formatPricePlain } from "@workspace/lib";
 import { isProductPage, type SiteConfig } from "@workspace/store-sections";
 import {
-  DEMO_PRODUCT,
   PageStyles,
   SITE_ROOT_CLASS,
   SectionRenderer,
@@ -14,7 +13,7 @@ import {
   type RenderContext,
 } from "@workspace/store-sections/render";
 import { CarouselRuntime } from "@workspace/store-sections/client";
-import { prepareTemplateForStore, resolveDemoCatalog, templateFormNeeds, type TemplateMeta } from "@workspace/store-sections/templates";
+import { prepareTemplateForStore, resolveDemoCatalog, templateDemoProduct, templateFormNeeds, type TemplateMeta } from "@workspace/store-sections/templates";
 import { starterPreviewForm } from "@workspace/lib/store-forms/starter";
 import { cn, getPublicUrl } from "@workspace/ui/lib/utils";
 import { templateFrameSrc } from "@/lib/marketing/templates.lib";
@@ -57,7 +56,7 @@ export default async function TemplatePreviewFrame({ params, searchParams }: Pro
   const footer = isThumb ? null : (site.footer ?? null);
   const all = [...(header ? [header] : []), ...sections, ...(footer ? [footer] : [])];
   // The product page is drawn with the demo product, as a store's product page shows a real one.
-  const ctx = buildContext(site, meta, key, routeLocale, locale, all, formIds, isProductPage(page) ? DEMO_PRODUCT : undefined);
+  const ctx = buildContext(site, meta, key, routeLocale, locale, all, formIds, isProductPage(page) ? templateDemoProduct(meta.demo, { locale }) : undefined);
 
   return (
     <div className={cn(storefrontFont.variable, s.root, SITE_ROOT_CLASS, storeFontVariables)} dir={ctx.dir} lang={locale}>

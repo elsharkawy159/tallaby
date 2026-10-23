@@ -31,6 +31,10 @@
       "types": "./src/templates/index.ts",
       "default": "./src/templates/index.ts"
     },
+    "./demo-product": {
+      "types": "./src/templates/demo-product.ts",
+      "default": "./src/templates/demo-product.ts"
+    },
     "./social": {
       "types": "./src/social/platforms.ts",
       "default": "./src/social/platforms.ts"

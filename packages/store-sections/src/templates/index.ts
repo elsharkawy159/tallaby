@@ -8,5 +8,6 @@ export * from "./library-order";
 export * from "./catalog";
 export * from "./meta";
 export * from "./demo-catalog";
+export * from "./demo-product";
 export { ATELIER_KEY, ATELIER_DESIGNS, atelierConfig } from "./atelier";
 export { CLASSIC_KEY, CLASSIC_DESIGNS, classicConfig } from "./classic";
