@@ -192,7 +192,9 @@ const DEMO = demoStore({
 
 export const FOKHAR = libraryTemplate({
   key: FOKHAR_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Fokhar v2: product page",
+  productPage: { surface: "shelf", thumbs: "bottom", band: "paper", extras: ["product-shipping"], copy: { back: L("رجوع للفخار", "Back to the pottery"), reviews: L("سُفر زبايننا", "Customers' tables"), related: L("من نفس الفرن", "From the same firing") } },
   name: L("فخار", "Fokhar"),
   description: L(
     "خزف يدوي: حرقة الأسبوع، من الطين للسفرة، الفخرانية وتغليف في علبتين. أربع صفحات جاهزة.",

@@ -192,7 +192,9 @@ const DEMO = demoStore({
 
 export const SABON = libraryTemplate({
   key: SABON_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Sabon v2: product page",
+  productPage: { thumbs: "bottom", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للصابون", "Back to the soaps"), reviews: L("رأي زبايننا القدام", "From our regulars"), related: L("صابون يتحط جنبه", "Pairs well with") } },
   name: L("صابون", "Sabon"),
   description: L(
     "صابون يدوي ومستلزمات حمام: ٤ قطع بسعر ٣، تسوق حسب الاستخدام، من الزيت للقالب وهدف التوصيل المجاني. أربع صفحات جاهزة.",

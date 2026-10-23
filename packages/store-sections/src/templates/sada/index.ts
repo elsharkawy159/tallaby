@@ -152,7 +152,9 @@ const DEMO = demoStore({
 
 export const SADA = libraryTemplate({
   key: SADA_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Sada v2: product page",
+  productPage: { thumbs: "bottom", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للسماعات", "Back to the audio"), reviews: L("رأي المستمعين", "From listeners"), related: L("اسمع كمان", "Listen to more") } },
   name: L("صدى", "Sada"),
   description: L(
     "محل صوتيات بواجهة داكنة: كلمة كبيرة، مقارنة سماعتين، اختيارنا، التقسيط وآراء المستمعين. أربع صفحات جاهزة.",
@@ -199,5 +201,4 @@ export const SADA = libraryTemplate({
     },
   ],
   demo: DEMO,
-  changelog: "Sada v1: 6 home sections, About, Contact, FAQ pages. Dark home; checkout and system pages keep their own light styling.",
 });

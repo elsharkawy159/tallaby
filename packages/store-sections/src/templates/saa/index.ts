@@ -154,7 +154,9 @@ const DEMO = demoStore({
 
 export const SAA = libraryTemplate({
   key: SAA_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Saa v2: product page",
+  productPage: { surface: "shelf", thumbs: "bottom", band: "paper", extras: ["product-perks"], copy: { back: L("رجوع للساعات", "Back to the watches"), reviews: L("رسايل من واتساب", "Messages from WhatsApp"), related: L("سيور وإكسسوارات", "Straps and extras") } },
   name: L("ساعة", "Saa"),
   description: L(
     "ساعات ذكية: أسبوع بشحنة واحدة، الأكتر لبساً، ليه تشتري مننا، التقسيط ورسايل واتساب. أربع صفحات جاهزة.",

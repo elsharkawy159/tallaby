@@ -178,7 +178,9 @@ const DEMO = demoStore({
 
 export const NADA = libraryTemplate({
   key: NADA_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Nada v2: product page",
+  productPage: { surface: "flat", thumbs: "side", button: "outline", band: "paper", copy: { back: L("رجوع للروتين", "Back to the routine"), reviews: L("رأي اللي جرّبوا الروتين", "From those who tried the routine"), related: L("كمّل روتينك", "Complete your routine") } },
   name: L("ندى", "Nada"),
   description: L(
     "عناية بسيطة ونضيفة: روتين من ٥ منتجات، وفّري مع الكمية ونقط على كل طلب. أربع صفحات جاهزة.",

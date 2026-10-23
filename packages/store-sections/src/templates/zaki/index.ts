@@ -213,7 +213,9 @@ const DEMO = demoStore({
 
 export const ZAKI = libraryTemplate({
   key: ZAKI_KEY,
-  version: 2,
+  version: 3,
+  changelog: "Zaki v3: product page",
+  productPage: { thumbs: "bottom", band: "paper", extras: ["product-perks"], copy: { back: L("رجوع للأجهزة", "Back to the devices"), reviews: L("رأي اللي ركّبوا عندنا", "From homes we installed"), related: L("أجهزة تكمّل بيتك", "More for your smart home") } },
   name: L("زكي", "Zaki"),
   description: L(
     "البيت الذكي والتلفزيون مع التركيب: خدمات الفنيين، احجز فني، أسعار التركيب ومد الضمان. أربع صفحات جاهزة.",

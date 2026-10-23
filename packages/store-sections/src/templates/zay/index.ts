@@ -162,7 +162,9 @@ const DEMO = demoStore({
 
 export const ZAY = libraryTemplate({
   key: ZAY_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Zay v2: product page",
+  productPage: { thumbs: "side", band: "brand", extras: ["product-perks"], copy: { back: L("كل الأساسيات", "All the basics"), reviews: L("اللي جرّبوه على واتساب", "Tried and reviewed on WhatsApp"), related: L("كمّل أسبوعك", "Complete your week") } },
   name: L("زي", "Zay"),
   description: L(
     "أساسيات رجالي: كلمة كبيرة، رف الأسبوع، طقم أيام الشغل، خصم الكمية، المقارنة وآراء واتساب. أربع صفحات جاهزة.",

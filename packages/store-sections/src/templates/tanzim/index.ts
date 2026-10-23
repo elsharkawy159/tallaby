@@ -184,7 +184,9 @@ const DEMO = demoStore({
 
 export const TANZIM = libraryTemplate({
   key: TANZIM_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Tanzim v2: product page",
+  productPage: { thumbs: "side", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للتنظيم", "Back to organising"), reviews: L("رأي اللي نظّموا", "From the organised"), related: L("الأكتر إعادة طلب", "Most reordered") } },
   name: L("تنظيم", "Tanzim"),
   description: L(
     "تنظيم البيت: طقم النملية، وفّر مع الكمية، الأكتر إعادة طلب ومواعيد التوصيل. أربع صفحات جاهزة.",

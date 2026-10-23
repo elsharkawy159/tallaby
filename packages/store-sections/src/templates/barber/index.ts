@@ -194,7 +194,9 @@ const DEMO = demoStore({
 
 export const BARBER = libraryTemplate({
   key: BARBER_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Barber v2: product page",
+  productPage: { surface: "flat", thumbs: "bottom", headingCase: "upper", band: "brand", copy: { back: L("رجوع للمحل", "Back to the shop"), reviews: L("رأي زباين الكرسي", "From the chair"), related: L("كمّل العدّة", "Complete the kit") } },
   name: L("باربر", "Barber"),
   description: L(
     "عناية رجالي: أسعار الكرسي، احجز معاد، طقم الدقن، الباربرز وآراء الزباين. أربع صفحات جاهزة.",

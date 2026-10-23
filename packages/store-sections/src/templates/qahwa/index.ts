@@ -151,7 +151,9 @@ const DEMO = demoStore({
 
 export const QAHWA = libraryTemplate({
   key: QAHWA_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Qahwa v2: product page",
+  productPage: { thumbs: "bottom", band: "brand", copy: { back: L("رجوع للقهوة", "Back to the coffee"), reviews: L("رأي أهل القهوة", "From regulars"), related: L("جنب فنجانك", "Beside your cup") } },
   name: L("قهوة", "Qahwa"),
   description: L(
     "أدوات القهوة في البيت: الكلمة الكبيرة، هدايا لعشاق القهوة، طقم الصبح وكوبون أول طلب. أربع صفحات جاهزة.",

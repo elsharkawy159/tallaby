@@ -161,7 +161,9 @@ const DEMO = demoStore({
 
 export const TANY = libraryTemplate({
   key: TANY_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Tany v2: product page",
+  productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للأجهزة المجدّدة", "Back to renewed devices"), reviews: L("رأي اللي جدّدوا معانا", "From renewed-device owners"), related: L("مجدّد كمان", "Also renewed") } },
   name: L("تاني", "Tany"),
   description: L(
     "إلكترونيات مجددة: وفّر لحد ٤٠٪، بنجدد الجهاز إزاي، الضمان، افتح قبل ما تدفع وتتبع طلبك. أربع صفحات جاهزة.",

@@ -183,7 +183,9 @@ const DEMO = demoStore({
 
 export const KOHL = libraryTemplate({
   key: KOHL_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Kohl v2: product page",
+  productPage: { thumbs: "bottom", band: "brand", copy: { back: L("رجوع للألوان", "Back to the colours"), reviews: L("حيطة الآراء", "The review wall"), related: L("كمّلي المكياج", "Finish the look") } },
   name: L("كحل", "Kohl"),
   description: L(
     "مكياج جريء: كلمة كبيرة، عرض الأسبوع، وفّري مع كل ما تزودي وادعي صاحبتك. أربع صفحات جاهزة.",

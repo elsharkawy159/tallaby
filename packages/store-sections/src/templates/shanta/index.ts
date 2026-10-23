@@ -181,7 +181,9 @@ const DEMO = demoStore({
 
 export const SHANTA = libraryTemplate({
   key: SHANTA_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Shanta v2: product page",
+  productPage: { gallery: "end", thumbs: "side", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للشنط", "Back to the bags"), reviews: L("رأي اللي شالوها", "From those who carry it"), related: L("يمشي معاها", "Carried together") } },
   name: L("شنطة", "Shanta"),
   description: L(
     "شنط جلد: هيرو بنتو، الأكتر شيلاً، طقم شنطة وحافظة، أحسن ٥ هدايا، كلمة المؤسسة والأسئلة. أربع صفحات جاهزة.",
