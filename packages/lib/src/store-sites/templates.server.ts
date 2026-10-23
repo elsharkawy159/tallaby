@@ -335,7 +335,7 @@ export async function applyStoreTemplate(
         .from(storeDesignSystems)
         .where(eq(storeDesignSystems.storeId, storeId));
       const pages = await tx
-        .select({ id: storePages.id, slug: storePages.slug, isHome: storePages.isHome, draftContent: storePages.draftContent, orderIndex: storePages.orderIndex })
+        .select({ id: storePages.id, slug: storePages.slug, isHome: storePages.isHome, kind: storePages.kind, draftContent: storePages.draftContent, orderIndex: storePages.orderIndex })
         .from(storePages)
         .where(eq(storePages.storeId, storeId))
         .orderBy(asc(storePages.orderIndex), asc(storePages.createdAt));
@@ -345,7 +345,7 @@ export async function applyStoreTemplate(
         designSystem: designSystem.success ? designSystem.data : { colors: {}, typography: {}, spacing: {} },
         header: asInstance(store.sharedHeader),
         footer: asInstance(store.sharedFooter),
-        pages: pages.map((p) => ({ slug: p.slug, isHome: p.isHome, content: asContent(p.draftContent) })),
+        pages: pages.map((p) => ({ slug: p.slug, isHome: p.isHome, kind: p.kind === "product" ? ("product" as const) : ("page" as const), content: asContent(p.draftContent) })),
       };
       const merged = mergeTemplateIntoDraft(current, fitted, options.overrideKeys ?? {});
 
@@ -389,6 +389,7 @@ export async function applyStoreTemplate(
               storeId,
               slug: page.slug,
               isHome: false,
+              kind: page.kind,
               name: pageNames[page.slug] ?? { [store.defaultLocale]: page.name },
               seo: page.seo,
               showInNav: page.showInNav,

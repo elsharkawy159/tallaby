@@ -15,6 +15,7 @@ import {
   designSystemToTokens,
   flushHeaderOnMobile,
   storeSectionRegistry,
+  type ProductDetail,
   type RenderContext,
   type StoreProfile,
 } from "@workspace/store-sections/render";
@@ -44,6 +45,7 @@ export function previewRenderContext({
   locale,
   store,
   addToCartLabel,
+  product,
 }: {
   /** Every section drawn (page sections, header, footer), for the catalog queries. */
   sections: SectionInstance[];
@@ -51,10 +53,13 @@ export function previewRenderContext({
   locale: SiteLocale;
   store: StoreProfile;
   addToCartLabel: string;
+  /** The product a product page shows (its template preview). */
+  product?: ProductDetail;
 }): RenderContext {
-  const resolved = resolveCanvasCatalog(collectCatalogQueries(sections, storeSectionRegistry), catalog, locale);
+  const resolved = resolveCanvasCatalog(collectCatalogQueries(sections, storeSectionRegistry, { product }), catalog, locale);
   return {
     mode: "edit",
+    ...(product ? { product } : {}),
     locale,
     dir: locale === "ar" ? "rtl" : "ltr",
     store,
@@ -97,6 +102,7 @@ export function SitePreview({
   device = "desktop",
   fontClassName,
   className,
+  product,
 }: {
   store: StoreProfile;
   catalog: PreviewCatalog;
@@ -110,6 +116,8 @@ export function SitePreview({
   /** Class names defining the store font variables (store-fonts.ts). */
   fontClassName?: string;
   className?: string;
+  /** Draws a product page: the product its elements show. */
+  product?: ProductDetail;
 }) {
   const t = useTranslations("storeEditor.canvas");
   const frame = useRef<HTMLIFrameElement>(null);
@@ -153,8 +161,9 @@ export function SitePreview({
         locale,
         store,
         addToCartLabel: t("addToCart"),
+        product,
       }),
-    [sections, header, footer, catalog, locale, store, t],
+    [sections, header, footer, catalog, locale, store, t, product],
   );
 
   return (

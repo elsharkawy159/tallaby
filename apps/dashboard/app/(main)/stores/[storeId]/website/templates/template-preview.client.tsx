@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { LoaderCircle, Monitor, RotateCcw, Smartphone, Sparkles } from "lucide-react";
 import type { SiteLocale, TemplateDemo } from "@workspace/store-sections";
+import { DEMO_PRODUCT } from "@workspace/store-sections/render";
 import { Button } from "@workspace/ui/components/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@workspace/ui/components/dialog";
 import { cn } from "@workspace/ui/lib/utils";
@@ -157,6 +158,7 @@ export function TemplatePreview({
                   defaultLocale="ar"
                   device={device}
                   fontClassName={fontClassName}
+                  product={page.kind === "product" ? DEMO_PRODUCT : undefined}
                 />
               ) : (
                 <div className="flex h-full items-center justify-center text-sm text-muted-foreground">

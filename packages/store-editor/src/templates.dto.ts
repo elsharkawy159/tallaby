@@ -29,7 +29,7 @@ export type TemplatePreviewView = {
   header: SectionInstance | null;
   footer: SectionInstance | null;
   /** `content` = the whole page content (sections plus page-level styles), for applying one page. */
-  pages: { slug: string; isHome: boolean; name: string; sections: SectionInstance[]; content: PageContent }[];
+  pages: { slug: string; isHome: boolean; /** `product` for the template's product page (previewed with a demo product). */ kind?: "page" | "product"; name: string; sections: SectionInstance[]; content: PageContent }[];
   /** A demo store to preview with (code templates), or null to use the store's own products. */
   demo: TemplateDemo | null;
 };

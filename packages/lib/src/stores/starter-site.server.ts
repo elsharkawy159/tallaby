@@ -108,9 +108,10 @@ export async function seedStarterSite(q: Queryable, store: StarterStore, withDes
         storeId: store.id,
         slug: page.slug,
         isHome: false,
+        kind: page.kind === "product" ? "product" : "page",
         name: pageNames[page.slug] ?? { [locale]: page.name },
         seo: page.seo,
-        showInNav: page.showInNav ?? true,
+        showInNav: page.kind === "product" ? false : (page.showInNav ?? true),
         orderIndex: order,
         draftContent: page.content,
       })

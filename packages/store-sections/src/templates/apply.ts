@@ -5,7 +5,8 @@
  *
  * - The design system becomes the template's (a template is a look).
  * - Each template page replaces the matching draft page's sections (the home
- *   page matches the home page, others by slug). Where a template section has
+ *   page matches the home page, the product page the store's product page,
+ *   others by slug among the normal pages). Where a template section has
  *   the same instance id and section type as one of the store's, the store's
  *   text and image overrides (`overrideKeys`, also per translation) are kept.
  * - Template pages the store does not have are created; the store's other
@@ -14,8 +15,9 @@
  * No React here.
  */
 import type { DesignSystem, PageContent, SectionInstance, SiteConfig } from "../config/schema";
+import { isProductPage, type PageKind } from "../config/product-page.lib";
 
-export type DraftPage = { slug: string; isHome: boolean; content: PageContent };
+export type DraftPage = { slug: string; isHome: boolean; /** Absent means a normal page. */ kind?: PageKind; content: PageContent };
 
 export type DraftSite = {
   designSystem: DesignSystem;
@@ -31,6 +33,8 @@ export type TemplatePageChange = {
   /** The store page this replaces (`null` = a new page). */
   targetSlug: string | null;
   slug: string;
+  /** `product` for the product page. */
+  kind: PageKind;
   name: string;
   showInNav: boolean;
   seo: SiteConfig["pages"][number]["seo"];
@@ -78,13 +82,15 @@ export function mergeTemplateIntoDraft(current: DraftSite, template: SiteConfig,
   const home = current.pages.find((p) => p.isHome);
   const pages: TemplatePageChange[] = [];
   for (const page of template.pages) {
-    const target = page.isHome ? home : current.pages.find((p) => !p.isHome && p.slug === page.slug);
-    // A non-home template page whose slug is the store's home slug has nowhere to go.
-    if (!target && !page.isHome && home?.slug === page.slug) continue;
+    const product = isProductPage(page);
+    const target = page.isHome ? home : product ? current.pages.find(isProductPage) : current.pages.find((p) => !p.isHome && !isProductPage(p) && p.slug === page.slug);
+    // A new page cannot take the slug of one of the store's pages (the home page, or another kind).
+    if (!target && !page.isHome && current.pages.some((p) => p.slug === page.slug)) continue;
     if (!target && page.isHome && !home) continue;
     pages.push({
       targetSlug: target?.slug ?? null,
       slug: target?.slug ?? page.slug,
+      kind: product ? "product" : "page",
       name: page.name,
       showInNav: page.showInNav ?? true,
       seo: page.seo,

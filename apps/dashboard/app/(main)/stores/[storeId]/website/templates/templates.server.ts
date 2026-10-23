@@ -73,7 +73,7 @@ export async function templatePreview(storeId: string, templateKey: string): Pro
         designSystem: config.designSystem,
         header: config.header,
         footer: config.footer,
-        pages: config.pages.map((page) => ({ slug: page.slug, isHome: page.isHome, name: page.name, sections: page.content.sections, content: page.content })),
+        pages: config.pages.map((page) => ({ slug: page.slug, isHome: page.isHome, kind: page.kind, name: page.name, sections: page.content.sections, content: page.content })),
         // Code templates bring a demo store, so the preview looks like the template's kind of shop.
         demo: (await getTemplateMeta(String(templateKey)))?.demo ?? null,
       },

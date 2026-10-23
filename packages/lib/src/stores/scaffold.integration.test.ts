@@ -41,7 +41,12 @@ describe.skipIf(!TEST_DATABASE_URL)("site scaffold (integration)", { timeout: 60
     const content = (await home(w.a.a2)).draftContent as { sections: { source?: string }[] };
     expect(content.sections.map((s) => s.source)[0]).toBe("tallaby-hero@1");
     const pages = await db.select().from(s.storePages).where(eq(s.storePages.storeId, w.a.a2));
-    expect(pages.map((p) => p.slug).sort()).toEqual(["about", "contact", "faq", "home", "privacy", "terms"]);
+    expect(pages.map((p) => p.slug).sort()).toEqual(["about", "contact", "faq", "home", "privacy", "product", "terms"]);
+    // The product page is seeded with kind product and stays out of the menu.
+    const product = pages.find((p) => p.slug === "product")!;
+    expect(product.kind).toBe("product");
+    expect(product.showInNav).toBe(false);
+    expect(pages.filter((p) => p.kind === "product")).toHaveLength(1);
     const forms = await db.select().from(s.storeForms).where(eq(s.storeForms.storeId, w.a.a2));
     expect(forms).toHaveLength(2);
     // The forms are bound in the drafts (newsletter on home, contact on Contact).
@@ -70,7 +75,7 @@ describe.skipIf(!TEST_DATABASE_URL)("site scaffold (integration)", { timeout: 60
     await ensureStoreSiteScaffold(db, w.a.a2);
     const pages = await db.select().from(s.storePages).where(eq(s.storePages.storeId, w.a.a2));
     expect(pages.filter((p) => p.isHome)).toHaveLength(1);
-    expect(pages).toHaveLength(6);
+    expect(pages).toHaveLength(7);
     expect(await db.select().from(s.storeForms).where(eq(s.storeForms.storeId, w.a.a2))).toHaveLength(2);
   });
 });
