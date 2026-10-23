@@ -30,9 +30,11 @@ export const customSection: SectionDefinition<CustomProps> = {
         </SectionShell>
       ) : null;
     }
+    // On a product page every node sits in the current product's scope.
+    const scope = ctx.product ? ({ kind: "product", record: ctx.product } as const) : undefined;
     // A tree section's root node is the <section>; older custom sections keep the padded wrapper.
-    if (tree[0]?.type === "section") return <>{renderElementTree(tree, ctx)}</>;
+    if (tree[0]?.type === "section") return <>{renderElementTree(tree, ctx, 1, scope)}</>;
     // `relative isolate` keeps absolutely positioned elements inside their own section.
-    return <section className="relative isolate py-(--sf-section-y,48px)">{renderElementTree(tree, ctx)}</section>;
+    return <section className="relative isolate py-(--sf-section-y,48px)">{renderElementTree(tree, ctx, 1, scope)}</section>;
   },
 };

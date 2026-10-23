@@ -2,8 +2,10 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import type { ComponentNode } from "../config/schema";
 import { collectCatalogQueries, collectContentQueries, collectFormIds } from "../core/registry";
+import { DEMO_PRODUCT } from "../core/demo-product";
 import type { RenderContext } from "../core/types";
 import { storeSectionRegistry } from "../sections";
+import { customSection } from "../sections/custom";
 import { CATALOG_LIST_ID, boundValue, listRecords, nodeCatalogQuery, nodeContentQuery, nodeFormId, productCatalogSection, treeDataNeeds } from "./data";
 import { renderElementTree } from "./render";
 import { canContain, createNode } from "./tree";
@@ -181,5 +183,47 @@ describe("paginated product lists", () => {
     const single = ctx({ catalog: { products: { grid: [product] }, categories: [], productPages: { grid: { page: 1, totalPages: 1 } } }, productPageHref: () => "/" });
     expect(renderToStaticMarkup(<>{renderElementTree([list], single)}</>)).not.toContain("pager");
     expect(renderToStaticMarkup(<>{renderElementTree([list], ctx({ catalog: { products: { grid: [product] }, categories: [] } }))}</>)).not.toContain("pager");
+  });
+});
+
+describe("product scope", () => {
+  const detail = { ...DEMO_PRODUCT, title: "Pro Headset", price: 900, compareAtPrice: 1200 };
+  const page = (tree: ComponentNode[], over: Partial<RenderContext> = {}) =>
+    renderToStaticMarkup(
+      <customSection.Component props={{}} instance={{ id: "s", sectionId: "custom-section", version: 1, props: {}, componentTree: tree }} ctx={ctx(over)} />,
+    );
+
+  it("bound heading inside a section shows ctx.product title", () => {
+    const html = page([node("section", {}, [node("heading", { bind: "title", text: "Product name" })])], { product: detail });
+    expect(html).toContain("Pro Headset");
+    expect(html).not.toContain("Product name");
+  });
+
+  it("bound price null compareAt hides the node", () => {
+    const tree = [node("section", {}, [node("text", { bind: "price", text: "p" }), node("text", { bind: "compareAtPrice", text: "was" })])];
+    const html = page(tree, { product: { ...detail, compareAtPrice: null } });
+    expect(html).toContain("EGP 900");
+    expect(html).not.toContain("was");
+    expect(boundValue({ kind: "product", record: detail }, "discount", ctx())).toBe("-25%");
+    expect(boundValue({ kind: "product", record: detail }, "brand", ctx())).toBe(detail.brand);
+    expect(boundValue({ kind: "product", record: { ...detail, reviewCount: 0 } }, "reviewCount", ctx())).toBeNull();
+  });
+
+  it("no ctx.product: bound nodes render nothing in public, authored text in edit", () => {
+    const tree = [node("section", {}, [node("heading", { bind: "title", text: "Product name" })])];
+    expect(page(tree)).not.toContain("Product name");
+    expect(page(tree, { mode: "edit" })).toContain("Product name");
+  });
+
+  it("addToCart in product scope calls renderAddToCart with the product", () => {
+    const html = page([node("section", {}, [node("addToCart")])], { product: detail, renderAddToCart: (p) => <button>add {p.id}</button> });
+    expect(html).toContain("add demo-product");
+  });
+
+  it("a productList inside still re-scopes its children", () => {
+    const tree = [node("section", {}, [node("productList", { source: "newest" }, [node("text", { bind: "title" })])])];
+    const html = page(tree, { product: detail, catalog: { products: { productList: [product] }, categories: [] } });
+    expect(html).toContain("Earbuds");
+    expect(html).not.toContain("Pro Headset");
   });
 });

@@ -175,6 +175,34 @@ export type ProductSummary = {
   inStock?: boolean;
 };
 
+export type ProductVariantDetail = {
+  id: string;
+  label: string;
+  color?: string | null;
+  image?: string | null;
+  price: number | null;
+  compareAtPrice?: number | null;
+  quantity: number;
+};
+
+/** Everything the product page draws for one product (`ctx.product`). */
+export type ProductDetail = ProductSummary & {
+  slug: string;
+  description: string | null;
+  contentHtml: string | null;
+  bulletPoints: string[];
+  images: string[];
+  discountPercent: number | null;
+  discountEndsAt: string | null;
+  quantity: number;
+  directCheckout: boolean;
+  variants: ProductVariantDetail[];
+  reviewCount: number;
+  brand: string | null;
+  category: { id: string; name: string } | null;
+  seller: { name: string; rating: number | null; ratingCount: number; freeDelivery: boolean };
+};
+
 export type CategorySummary = {
   id: string;
   key: string;
@@ -301,6 +329,8 @@ export function imageSource(ctx: Pick<RenderContext, "optimizeImage">, url: stri
 export interface RenderContext {
   /** `edit` in the dashboard canvas, `public` on the storefront. */
   mode: "edit" | "public";
+  /** The product a product page shows; seeds the `product` scope of its element trees. */
+  product?: ProductDetail;
   /** Store industry; picks the photos for library photo slots (`designs/photo-slots.ts`). Editor only. */
   industry?: string;
   locale: SiteLocale;

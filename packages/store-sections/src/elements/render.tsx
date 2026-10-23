@@ -142,7 +142,9 @@ const recordKey = (scope: DataRecord) => scope.record.id;
 function scopedProps(node: ComponentNode, ctx: RenderContext, scope: DataRecord | undefined): Record<string, unknown> | null {
   const props = node.props ?? {};
   const target = BIND_TARGET[node.type];
-  if (!scope || !target || typeof props.bind !== "string") return props;
+  if (!target || typeof props.bind !== "string") return props;
+  // A bound node outside any record has nothing to show on the storefront; the editor keeps its authored text.
+  if (!scope) return ctx.mode === "public" ? null : props;
   const value = boundValue(scope, props.bind, ctx);
   if (value === null) return null;
   const next: Record<string, unknown> = { ...props, [target]: value };
@@ -516,7 +518,7 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
       );
     }
     case "wishlistButton": {
-      if (scope?.kind === "productList") {
+      if (scope?.kind === "productList" || scope?.kind === "product") {
         const button = ctx.renderWishlistButton?.(scope.record);
         return button ? (
           <div {...attrs} className="flex">
@@ -556,7 +558,7 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
       ) : null;
     }
     case "addToCart": {
-      if (scope?.kind === "productList") {
+      if (scope?.kind === "productList" || scope?.kind === "product") {
         const button = ctx.renderAddToCart?.(scope.record);
         return button ? (
           <div {...attrs} className="flex">
