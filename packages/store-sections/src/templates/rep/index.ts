@@ -212,7 +212,9 @@ const DEMO = demoStore({
 
 export const REP = libraryTemplate({
   key: REP_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Rep v2: product page",
+  productPage: { surface: "flat", thumbs: "bottom", headingCase: "upper", tracking: 0.06, band: "brand", extras: ["product-perks"], copy: { back: L("رجوع للمعدات", "Back to the gear"), reviews: L("رسايل الأعضاء", "Members' messages"), related: L("كمّل تمرينك بـ", "Train with") } },
   name: L("ريب", "Rep"),
   description: L(
     "نادي تمرين البيت: حسب الهدف، باكدج البداية، أطقم للصحاب، الكوتشات، الأرقام، اتمرن مع صاحبك ورسايل الأعضاء. أربع صفحات جاهزة.",

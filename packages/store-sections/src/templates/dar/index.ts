@@ -218,7 +218,9 @@ const DEMO = demoStore({
 
 export const DAR = libraryTemplate({
   key: DAR_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Dar v2: product page",
+  productPage: { surface: "shelf", thumbs: "side", band: "paper", extras: ["product-shipping"], copy: { back: L("رجوع للمعرض", "Back to the showroom"), reviews: L("رأي أصحاب البيوت", "From homes we furnished"), related: L("قطع تناسب نفس الغرفة", "Pieces for the same room") } },
   name: L("دار", "Dar"),
   description: L(
     "بيت أثاث عائلي: من ١٩٨٢، الأكتر طلبًا، حاسبة التقسيط، زيارة مصمم، قصتنا ورحلتنا، بنشتغل إزاي والمعارض. أربع صفحات جاهزة.",

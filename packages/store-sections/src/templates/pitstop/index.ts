@@ -217,7 +217,9 @@ const DEMO = demoStore({
 
 export const PITSTOP = libraryTemplate({
   key: PITSTOP_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Pitstop v2: product page",
+  productPage: { surface: "card", thumbs: "bottom", band: "brand", extras: ["product-shipping"], copy: { back: L("رجوع لمستلزمات العربية", "Back to car care"), reviews: L("رأي اللي جرّبوا الغسيل", "What drivers say"), related: L("خليها لامعة بين الزيارات", "Keep it clean between visits") } },
   name: L("بيت ستوب", "Pitstop"),
   description: L(
     "عناية عربيات متنقلة: الخدمات، حجز غسيل، الأسعار، طقم بين الزيارات، مناطق التغطية والدعم. أربع صفحات جاهزة.",

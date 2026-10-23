@@ -164,7 +164,9 @@ const DEMO = demoStore({
 
 export const SUFRA = libraryTemplate({
   key: SUFRA_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Sufra v2: product page",
+  productPage: { surface: "card", thumbs: "side", band: "paper", extras: ["product-perks"], copy: { back: L("رجوع للسفرة", "Back to the table"), reviews: L("رأي اللي جرّبوا السفرة", "From tables like yours"), related: L("يكمّل السفرة", "Set the rest of the table") } },
   name: L("سفرة", "Sufra"),
   description: L(
     "أدوات سفرة بتركيز على التوصيل والدفع: يوصل بكره، موسم العزايم، طقم الجمعة، حسب ميزانيتك، طرق الدفع، افتح قبل ما تدفع وطقم المطبخ. أربع صفحات جاهزة.",

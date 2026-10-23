@@ -205,7 +205,9 @@ const DEMO = demoStore({
 
 export const HADAYA = libraryTemplate({
   key: HADAYA_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Hadaya v2: product page",
+  productPage: { surface: "card", thumbs: "bottom", band: "brand", extras: ["product-perks"], copy: { back: L("رجوع للهدايا", "Back to gifts"), reviews: L("رأي الأهالي", "What parents say"), related: L("هدايا تانية حلوة", "More gifts they will love") } },
   name: L("هدايا", "Hadaya"),
   description: L(
     "محل هدايا أطفال: الهدية الصح في دقيقتين، حسب السن، حسب الميزانية، باكدج الحفلة، كوبون وآراء الأهالي. أربع صفحات جاهزة.",

@@ -113,7 +113,7 @@ describe.each(LIBRARY_TEMPLATES.map((t) => [t.key, t] as const))("library templa
     expect(["flat", "card", "shelf"]).toContain(surface);
     expect(column.style?.background === undefined || ["background", "secondary"].includes(String(column.style.background))).toBe(true);
     // Templates whose spec sets a surface that differs from the corner default (square → flat, rounded → card).
-    const EXPLICIT: Record<string, string> = { arena: "shelf", pure: "shelf", hearth: "shelf", elixir: "flat" };
+    const EXPLICIT: Record<string, string> = { arena: "shelf", pure: "shelf", hearth: "shelf", elixir: "flat", bashra: "shelf", dar: "shelf", shabka: "flat" };
     if (key in EXPLICIT) expect(surface).toBe(EXPLICIT[key]);
     // A square template is flat unless its spec chose otherwise; a rounded one is never an unexplained flat.
     else if (config.designSystem.spacing.borderRadius === 0) expect(surface).not.toBe("card");

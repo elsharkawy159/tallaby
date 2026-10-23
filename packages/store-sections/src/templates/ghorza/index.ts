@@ -229,7 +229,9 @@ const DEMO = demoStore({
 
 export const GHORZA = libraryTemplate({
   key: GHORZA_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Ghorza v2: product page",
+  productPage: { surface: "flat", thumbs: "side", button: "outline", tracking: 0.06, band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للتشكيلة", "Back to the collection"), reviews: L("رأي اللي لبسوا غُرزة", "Worn and reviewed"), related: L("كمّل اللوك", "Complete the look") } },
   name: L("غُرزة", "Ghorza"),
   description: L(
     "لبس جاهز وستوديو ترزية: الجديد، لوك العيد، أسعار التظبيط، حجز قياس، الترزية، وعودنا وكارت هدية. أربع صفحات جاهزة.",
