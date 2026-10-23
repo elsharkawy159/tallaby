@@ -161,7 +161,8 @@ const DEMO = demoStore({
 
 export const HEKAYA = libraryTemplate({
   key: HEKAYA_KEY,
-  version: 2,
+  version: 3,
+  changelog: "Hekaya v3: product page",
   name: L("حكاية", "Hekaya"),
   description: L(
     "كتب أطفال: جديد الشهر، اختار سن القارئ، ليه حكاية ودور النشر. أربع صفحات جاهزة.",
@@ -208,4 +209,5 @@ export const HEKAYA = libraryTemplate({
     },
   ],
   demo: DEMO,
+  productPage: { surface: "shelf", thumbs: "side", band: "shelf", copy: { back: L("رجوع للمكتبة", "Back to the bookshop"), reviews: L("رأي القرّاء الصغار وأهاليهم", "Readers and parents say"), related: L("كتب بعدها", "Books to read next") } },
 });

@@ -186,7 +186,8 @@ const DEMO = demoStore({
 
 export const LOFT = libraryTemplate({
   key: LOFT_KEY,
-  version: 2,
+  version: 3,
+  changelog: "Loft v3: product page",
   name: L("لوفت", "Loft"),
   description: L(
     "أثاث مودرن: افتتاحية نصين، تسوق حسب القطعة، ٣ أجيال نجارين وأسئلة التركيب. أربع صفحات جاهزة.",
@@ -229,4 +230,5 @@ export const LOFT = libraryTemplate({
     },
   ],
   demo: DEMO,
+  productPage: { surface: "flat", thumbs: "side", band: "paper", copy: { back: L("رجوع للمعرض", "Back to the showroom"), reviews: L("آراء عملائنا", "Customer reviews"), related: L("قطع تكمل المكان", "Pieces to complete the room") } },
 });

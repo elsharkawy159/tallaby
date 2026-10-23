@@ -22,6 +22,35 @@ const all = [
 const ids = (list: ProductCandidate[]) => list.map((x) => x.id);
 const q = (source: Parameters<typeof selectProducts>[0]["source"], extra = {}) => ({ kind: "products" as const, source, limit: 10, ...extra });
 
+describe("selectProducts related", () => {
+  const rel = (productId: string, categoryId: string | null, extra = {}) => q("related", { relatedTo: { productId, categoryId }, ...extra });
+
+  it("picks same category, excludes current", () => {
+    // a, b, d, e are c1; c is c2.
+    expect(ids(selectProducts(rel("d", "c1", { limit: 3 }), all))).toEqual(["e", "b", "a"]);
+  });
+
+  it("with no category falls back to newest, still excluding current", () => {
+    expect(ids(selectProducts(rel("e", null), all))).toEqual(["d", "c", "b", "a"]);
+  });
+
+  it("with too few fills with newest, no duplicates", () => {
+    // c is the only c2 product: it is current, so everything else fills in.
+    expect(ids(selectProducts(rel("b", "c2", { limit: 4 }), all))).toEqual(["c", "e", "d", "a"]);
+    expect(ids(selectProducts(rel("a", "c2", { limit: 4 }), all))).toEqual(["c", "e", "d", "b"]);
+  });
+
+  it("only selects from candidates given", () => {
+    const store = [p("a"), p("b")];
+    expect(ids(selectProducts(rel("a", "c1"), store))).toEqual(["b"]);
+    expect(selectProducts(rel("zz", "c1"), [])).toEqual([]);
+  });
+
+  it("without relatedTo behaves as newest", () => {
+    expect(ids(selectProducts(q("related", { limit: 2 }), all))).toEqual(["e", "d"]);
+  });
+});
+
 describe("selectProducts", () => {
   it("shows the newest first for all/newest", () => {
     expect(ids(selectProducts(q("newest"), all))).toEqual(["e", "d", "c", "b", "a"]);

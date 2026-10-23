@@ -1,6 +1,6 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import * as DB_SCHEMA from "@workspace/db/schema";
 import { contentOverrideKeys, storeSectionRegistry } from "@workspace/store-sections/render";
@@ -107,7 +107,7 @@ describe.skipIf(!TEST_DATABASE_URL)("store templates (integration)", { timeout: 
     const [a2Store] = await db.select({ live: s.stores.publishedRevisionId }).from(s.stores).where(eq(s.stores.id, w.a.a2));
 
     const applied = await applyStoreTemplate(w.a.sellerId, w.a.a2, "tallaby-classic", w.a.sellerId, OPTIONS, db);
-    expect(applied).toMatchObject({ success: true, data: { templateKey: "tallaby-classic", pagesUpdated: 6, pagesCreated: 0 } });
+    expect(applied).toMatchObject({ success: true, data: { templateKey: "tallaby-classic", pagesUpdated: 7, pagesCreated: 0 } });
 
     const after = await home(w.a.sellerId, w.a.a2);
     const sections = (after.draftContent as { sections: { id: string }[] }).sections;
@@ -130,6 +130,33 @@ describe.skipIf(!TEST_DATABASE_URL)("store templates (integration)", { timeout: 
     expect(sections.map((x) => x.id)).toEqual(["tallaby-hero", "extra"]);
     expect((await getStoreForEditor(w.a.sellerId, w.a.a2, db))!.designSystem.colors).toMatchObject({ primary: "#ff3366" });
     expect(await undoStoreTemplate(w.a.sellerId, w.a.a2, db)).toMatchObject({ success: false, error: "nothing_to_undo" });
+  });
+
+  it("undo keeps the product page: restores one that existed, keeps one the install created", async (t) => {
+    if (!(await classicV3())) return t.skip();
+    const productRows = () =>
+      db
+        .select({ id: s.storePages.id, draftContent: s.storePages.draftContent })
+        .from(s.storePages)
+        .where(and(eq(s.storePages.storeId, w.a.a2), eq(s.storePages.kind, "product")));
+
+    // Existed before the install: its own content comes back.
+    const [existing] = await productRows();
+    if (existing) {
+      const marker = { sections: [{ ...classicConfig().pages[0]!.content.sections[0]!, id: "seller-product-edit" }] };
+      await db.update(s.storePages).set({ draftContent: marker }).where(eq(s.storePages.id, existing.id));
+      expect((await applyStoreTemplate(w.a.sellerId, w.a.a2, "tallaby-classic", w.a.sellerId, OPTIONS, db)).success).toBe(true);
+      expect(await undoStoreTemplate(w.a.sellerId, w.a.a2, db)).toMatchObject({ success: true });
+      expect(await productRows()).toEqual([{ id: existing.id, draftContent: marker }]);
+    }
+
+    // Created by the install (a pre-feature store): undo does not delete it.
+    await db.delete(s.storePages).where(and(eq(s.storePages.storeId, w.a.a2), eq(s.storePages.kind, "product")));
+    expect((await applyStoreTemplate(w.a.sellerId, w.a.a2, "tallaby-classic", w.a.sellerId, OPTIONS, db)).success).toBe(true);
+    const created = await productRows();
+    if (!created.length) return t.skip(); // The DB Classic has no product page yet (0102 not applied).
+    expect(await undoStoreTemplate(w.a.sellerId, w.a.a2, db)).toMatchObject({ success: true });
+    expect(await productRows()).toEqual(created);
   });
 
   it("refuses foreign stores and unknown templates", async () => {

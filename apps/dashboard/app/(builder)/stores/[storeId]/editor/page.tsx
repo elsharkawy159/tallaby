@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getStoreForEditor, getStoreSiteStatus, getStoreTemplateLibraryKeys, listStoreTemplates } from "@workspace/lib/store-sites/server";
 import { storePreviewSecret } from "@workspace/lib/store-sites/preview";
+import { getStorePreviewProduct } from "@workspace/lib/store-sites/preview-product";
 import { storeUrl } from "@workspace/lib/storefront";
 import { findActiveCustomDomainForSubdomain } from "@workspace/lib/storefront/server";
 import { publicStoreSocialLinks } from "@workspace/lib/stores";
@@ -35,13 +36,15 @@ export default async function StoreEditorPage({ params }: { params: Promise<{ st
   const store = await loadStorePage(storeId);
   if (!storeBuilderEnabled(store.sellerId)) notFound();
 
-  const [editor, status, catalog, gallery, presets, customDomain] = await Promise.all([
+  const [editor, status, catalog, gallery, presets, customDomain, previewProduct] = await Promise.all([
     getStoreForEditor(store.sellerId, store.id),
     getStoreSiteStatus(store.sellerId, store.id),
     loadEditorSnapshot(store.sellerId, store.id, store.catalogMode),
     listStoreTemplates(store.sellerId, store.id),
     loadLibraryPresets(),
     findActiveCustomDomainForSubdomain(store.subdomain),
+    // The product page canvas's product: the newest the store shows (uncached, store-checked).
+    getStorePreviewProduct(store.sellerId, store.id, undefined, { locale: asLocale(store.defaultLocale) }).catch(() => null),
   ]);
   // The store's live address: its active custom domain, else its subdomain.
   const liveUrl = storeUrl(store.subdomain, customDomain);
@@ -74,6 +77,7 @@ export default async function StoreEditorPage({ params }: { params: Promise<{ st
       id: page.id,
       slug: page.slug,
       isHome: page.isHome,
+      ...(page.kind === "product" && { kind: "product" as const }),
       name: (page.name ?? {}) as { ar?: string; en?: string },
       seo: (page.seo ?? {}) as Record<string, unknown>,
       showInNav: page.showInNav,
@@ -96,6 +100,7 @@ export default async function StoreEditorPage({ params }: { params: Promise<{ st
     fontClassName: storeFontVariables,
     category: { en: store.storeCategory ?? null, ar: store.storeCategoryAr ?? null },
     presets: presets && preferTemplatePresets(presets, templateKeys),
+    previewProduct,
   };
 
   return <SellerEditor initial={initial} />;

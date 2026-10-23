@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { ComponentNode, SectionInstance } from "../config/schema";
 import { validateSiteConfig } from "../config/validate";
 import { collectCatalogQueries } from "../core/registry";
+import { DEMO_PRODUCT } from "../core/demo-product";
 import type { RenderContext } from "../core/types";
 import { MAX_ELEMENT_DEPTH, MAX_NODES_PER_SECTION } from "../elements/registry";
 import { countNodes, treeDepth } from "../elements/tree";
@@ -12,6 +13,9 @@ import { ATELIER, ATELIER_DESIGNS, atelierConfig } from "./atelier";
 import { CODE_TEMPLATES, TEMPLATE_JSON_END, TEMPLATE_JSON_START, getCodeTemplate, templateConfigJson, templateSeedSql } from "./catalog";
 import { FROZEN_SEEDS, migrationSha256 } from "./frozen-seeds.test-utils";
 import { prepareTemplateForStore, templateFormNeeds } from "./prepare";
+
+/** The product page's product, with content so its content section draws. */
+const PAGE_PRODUCT = { ...DEMO_PRODUCT, contentHtml: "<h3>المواصفات</h3><p>بطارية تدوم ٣٠ ساعة وشحن سريع ومقاومة للماء والعرق.</p>" };
 
 const SEED = "0084_mobile_header_padding.sql";
 
@@ -59,13 +63,14 @@ describe("Atelier template", () => {
     }
   });
 
-  it("has home, about, contact and faq pages with unique node ids", () => {
+  it("has home, about, contact, faq and product pages with unique node ids", () => {
     const config = atelierConfig();
     expect(config.pages.map((p) => [p.slug, p.isHome])).toEqual([
       ["home", true],
       ["about", false],
       ["contact", false],
       ["faq", false],
+      ["product", false],
     ]);
     for (const page of config.pages) expect(ATELIER.pageNames[page.slug]?.ar).toBe(page.name);
     const ids = sections().flatMap((s) => walk(s.componentTree).map((n) => n.id));
@@ -118,10 +123,12 @@ describe("Atelier template", () => {
   it("renders every section with store data, wishlist and cart buttons included", () => {
     const product = { id: "p1", title: "فستان", href: "/products/p1", image: "https://cdn.test/p1.jpg", price: 900, compareAtPrice: 1200, rating: 4.6 };
     const fitted = prepareTemplateForStore(atelierConfig(), { defaultLocale: "ar", formIds: { newsletter: "f1", contact: "f1" } });
+    // Only the product page's sections get the page's product; the other pages render without one.
+    const productSections = new Set(fitted.pages.filter((p) => p.kind === "product").flatMap((p) => p.content.sections));
     for (const section of sections(fitted)) {
       const products = productsFor(section, product);
       const categories = [{ id: "c1", key: "c1", name: "فساتين", href: "/products?category=c1", image: "https://cdn.test/c1.jpg", productCount: 3 }];
-      const html = renderToStaticMarkup(<SectionRenderer instance={section} registry={storeSectionRegistry} ctx={ctx({ products, categories })} defaultLocale="ar" />);
+      const html = renderToStaticMarkup(<SectionRenderer instance={section} registry={storeSectionRegistry} ctx={productSections.has(section) ? { ...ctx({ products, categories }), product: PAGE_PRODUCT } : ctx({ products, categories })} defaultLocale="ar" />);
       expect(html.length, section.id).toBeGreaterThan(200);
       if (Object.keys(products).length) {
         expect(html).toContain('data-add="p1"');

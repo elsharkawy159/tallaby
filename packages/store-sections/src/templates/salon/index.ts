@@ -205,7 +205,9 @@ const DEMO = demoStore({
 
 export const SALON = libraryTemplate({
   key: SALON_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Salon v2: product page",
+  productPage: { surface: "flat", thumbs: "side", gallery: "end", button: "outline", band: "paper", extras: ["product-perks"], copy: { back: L("رجوع للمعرض", "Back to the showroom"), reviews: L("آراء أصحاب البيوت", "From homeowners"), related: L("قطع تناسب الأوضة", "Pieces for the room") } },
   name: L("صالون", "Salon"),
   description: L(
     "أثاث الصالة: بانرات متحركة، الأوض، الأكثر مبيعاً، التقسيط لحد ٢٤ شهر ومواعيد التوصيل. أربع صفحات جاهزة.",

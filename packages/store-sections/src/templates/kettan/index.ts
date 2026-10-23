@@ -188,7 +188,9 @@ const DEMO = demoStore({
 
 export const KETTAN = libraryTemplate({
   key: KETTAN_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Kettan v2: product page",
+  productPage: { surface: "flat", thumbs: "side", button: "outline", band: "paper", copy: { back: L("رجوع للكتان", "Back to the linen"), reviews: L("رأي اللي لبسوا الكتان", "Worn and reviewed"), related: L("كمّل القطعة", "Pair it with") } },
   name: L("كتان", "Kettan"),
   description: L(
     "أساسيات كتان: صورة كبيرة، تسوق بالقطعة، الأكثر مبيعاً، عرضين وآراء العملاء. أربع صفحات جاهزة.",

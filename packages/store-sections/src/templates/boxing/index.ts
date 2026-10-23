@@ -161,7 +161,9 @@ const DEMO = demoStore({
 
 export const BOXING = libraryTemplate({
   key: BOXING_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Lakma v2: product page",
+  productPage: { surface: "flat", thumbs: "bottom", band: "brand", extras: ["product-perks"], copy: { back: L("رجوع للمعدات", "Back to the gear"), reviews: L("رسائل من الجيم", "Messages from the gym"), related: L("كمّل عدّتك", "Complete your kit") } },
   name: L("لكمة", "Lakma"),
   description: L(
     "ملاكمة وقتال بصفحة رئيسية غامقة: خصم الباكدجات، الأكتر استخداماً، باكدج أول أسبوع ولكمة في أرقام. أربع صفحات جاهزة.",

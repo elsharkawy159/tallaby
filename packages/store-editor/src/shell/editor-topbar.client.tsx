@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { useStore } from "zustand";
 import type { SiteLocale } from "@workspace/store-sections";
+import { pagesPanelOrder } from "../lib/editor-pages.lib";
 import { Button } from "@workspace/ui/components/button";
 import {
   DropdownMenu,
@@ -122,7 +123,7 @@ export function EditorTopbar({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-56">
-            {pages.map((p) => (
+            {pagesPanelOrder(pages).map((p) => (
               <DropdownMenuItem key={p.id} onSelect={() => state.setActivePage(p.id)}>
                 <Check className={cn("size-4", p.id !== page.id && "invisible")} aria-hidden />
                 <span className="flex-1 truncate">{nameOf(p.name, uiLocale) || p.slug}</span>

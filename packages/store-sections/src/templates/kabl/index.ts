@@ -171,7 +171,9 @@ const DEMO = demoStore({
 
 export const KABL = libraryTemplate({
   key: KABL_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Kabl v2: product page",
+  productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع لكل الشواحن", "Back to all chargers"), reviews: L("رأي اللي شحنوا بيه", "From people who charge with it"), related: L("يشتغل معاه", "Works with") } },
   name: L("كابل", "Kabl"),
   description: L(
     "شواحن وكابلات: بحث بالموديل أو الوات، الأكثر مبيعاً، اختيار حسب المكان وأكواد توفير. أربع صفحات جاهزة.",

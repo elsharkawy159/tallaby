@@ -40,6 +40,7 @@ import {
 } from "@workspace/store-sections";
 import { ensureStoreSiteScaffold } from "../stores/server";
 import { startFeeTrialIfNeeded } from "../sellers/fee-trial.server";
+import { updateTouchesLockedProductFields } from "./product-page-guard.lib";
 import { storeDraftKey } from "./preview-token";
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -116,6 +117,7 @@ export async function getStoreForEditor(sellerId: string, storeId: string, q: Qu
       name: storePages.name,
       seo: storePages.seo,
       showInNav: storePages.showInNav,
+      kind: storePages.kind,
       orderIndex: storePages.orderIndex,
       draftContent: storePages.draftContent,
       draftVersion: storePages.draftVersion,
@@ -129,7 +131,7 @@ export async function getStoreForEditor(sellerId: string, storeId: string, q: Qu
   return {
     store: rest,
     designSystem: designSystem ?? { colors: {}, typography: {}, spacing: {}, version: 0 },
-    pages,
+    pages: pages.map(({ kind, ...page }) => ({ ...page, ...(kind === "product" && { kind: "product" as const }) })),
   };
 }
 
@@ -209,6 +211,7 @@ async function buildDraftSiteConfig(
         isHome: page.isHome,
         name: (name[store.defaultLocale as keyof LocalizedName] ?? name.ar ?? name.en ?? page.slug).slice(0, 80),
         showInNav: page.showInNav,
+        ...(page.kind === "product" && { kind: "product" as const }),
         seo: page.seo ?? {},
         content: page.draftContent,
       };
@@ -339,6 +342,7 @@ export async function restoreRevisionToDraft(
             .set({
               draftContent: page.content,
               seo: page.seo,
+              kind: page.kind ?? "page",
               draftVersion: sql`${storePages.draftVersion} + 1`,
               updatedAt: sql`now()`,
             })
@@ -352,6 +356,7 @@ export async function restoreRevisionToDraft(
             name: { [store.defaultLocale]: page.name },
             seo: page.seo,
             showInNav: page.showInNav ?? true,
+            kind: page.kind ?? "page",
             orderIndex: index,
             draftContent: page.content,
           });
@@ -538,7 +543,7 @@ export async function saveStoreChrome(
   return row ? { success: true, data: { version: row.version } } : { success: false, error: "version_conflict" };
 }
 
-export type PageWriteError = WriteError | "invalid_input" | "invalid_slug" | "reserved_slug" | "slug_taken" | "too_many_pages";
+export type PageWriteError = WriteError | "invalid_input" | "invalid_slug" | "reserved_slug" | "slug_taken" | "too_many_pages" | "product_page_locked";
 
 /** A new, empty page at the end of the menu. */
 export async function createStorePage(
@@ -611,10 +616,14 @@ export async function updateStorePage(
 
   try {
     const [page] = await q
-      .select({ isHome: storePages.isHome })
+      .select({ isHome: storePages.isHome, kind: storePages.kind })
       .from(storePages)
       .where(and(eq(storePages.id, pageId), eq(storePages.storeId, storeId)));
     if (!page) return { success: false, error: "not_found" };
+    // The product page keeps its slug and stays out of the menu; it can still be renamed.
+    if (page.kind === "product" && updateTouchesLockedProductFields({ slug: input.slug, showInNav: input.showInNav })) {
+      return { success: false, error: "product_page_locked" };
+    }
     if (slug !== undefined && !page.isHome) patch.slug = slug;
     if (Object.keys(patch).length === 0) return { success: true, data: null };
     await q
@@ -634,16 +643,17 @@ export async function deleteStorePage(
   storeId: string,
   pageId: string,
   q: Queryable = db,
-): Promise<SiteResult<null, WriteError | "home_page">> {
+): Promise<SiteResult<null, WriteError | "home_page" | "product_page_locked">> {
   if (!UUID_RE.test(pageId)) return { success: false, error: "not_found" };
   const found = await writableStore(q, sellerId, storeId);
   if ("error" in found) return { success: false, error: found.error };
   const [page] = await q
-    .select({ isHome: storePages.isHome })
+    .select({ isHome: storePages.isHome, kind: storePages.kind })
     .from(storePages)
     .where(and(eq(storePages.id, pageId), eq(storePages.storeId, storeId)));
   if (!page) return { success: false, error: "not_found" };
   if (page.isHome) return { success: false, error: "home_page" };
+  if (page.kind === "product") return { success: false, error: "product_page_locked" };
   await q.delete(storePages).where(and(eq(storePages.id, pageId), eq(storePages.storeId, storeId)));
   return { success: true, data: null };
 }

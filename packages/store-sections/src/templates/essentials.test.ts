@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { ComponentNode, SectionInstance } from "../config/schema";
+import { productPageOf } from "../config/product-page.lib";
+import { validateSiteConfig } from "../config/validate";
 import { nodeCatalogQuery, walkNodes } from "../elements/data";
 import { SECTION_PRESETS } from "../library";
-import { CODE_TEMPLATES, getCodeTemplate } from "./catalog";
+import { CODE_TEMPLATES, LIBRARY_TEMPLATES, getCodeTemplate } from "./catalog";
 import { HOME_GRID_PAGE_SIZE, sectionCategory, templateEssentials } from "./essentials";
 import { preferTemplatePresets, templateLibraryKeys } from "./library-order";
 import { templateFormNeeds } from "./prepare";
@@ -33,7 +35,7 @@ describe("templateEssentials (owner, 2026-10-23)", () => {
       expect(paginated[0]!.props.limit).toBe(HOME_GRID_PAGE_SIZE);
       expect(nodeCatalogQuery(paginated[0]!)).toMatchObject({ paginate: true, limit: HOME_GRID_PAGE_SIZE });
 
-      for (const page of essentials.pages.filter((p) => !p.isHome)) {
+      for (const page of essentials.pages.filter((p) => !p.isHome && p.kind !== "product")) {
         for (const section of page.content.sections) {
           expect(sectionCategory(section) === "page-header" || lists(section) || nodesOf(section).some((n) => n.type === "storeForm")).toBe(true);
         }
@@ -52,6 +54,30 @@ describe("templateEssentials (owner, 2026-10-23)", () => {
     expect(essentials.pages.find((p) => p.slug === "about")!.content.sections.every((s) => sectionCategory(s) === "page-header")).toBe(true);
     expect(templateFormNeeds(templateEssentials(getCodeTemplate("tallaby-classic")!.config()))).not.toContain("newsletter");
   });
+});
+
+describe("templateEssentials keeps the product page's product sections", () => {
+  const extras = ["product-perks", "product-shipping"];
+  const checks = [
+    ...CODE_TEMPLATES.slice(0, 1).map((t) => [t.key, t.config()] as const),
+    ...LIBRARY_TEMPLATES.slice(0, 2).map((t) => [t.key, t.config()] as const),
+  ];
+  for (const [key, full] of checks) {
+    it(`${key}: main, content, reviews and related stay; perks and shipping go`, () => {
+      const before = productPageOf(full)!;
+      const after = productPageOf(templateEssentials(full))!;
+      const types = (s: SectionInstance): string[] => nodesOf(s).map((n) => n.type);
+      const ids = after.content.sections.map((s) => s.id);
+      const hasType = (type: string) => after.content.sections.some((s) => types(s).includes(type));
+      for (const type of ["productGallery", "productBuyBox", "productContent", "productReviews", "productList"]) expect(hasType(type)).toBe(true);
+      for (const s of before.content.sections) {
+        const isExtra = extras.some((e) => s.source?.includes(e) || s.id.includes(e));
+        if (types(s).some((t) => t.startsWith("product"))) expect(ids).toContain(s.id);
+        if (isExtra) expect(ids).not.toContain(s.id);
+      }
+      expect(validateSiteConfig(templateEssentials(full)).success).toBe(true);
+    });
+  }
 });
 
 describe("Add › Sections in template order", () => {

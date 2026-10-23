@@ -147,7 +147,9 @@ const DEMO = demoStore({
 
 export const NOUR = libraryTemplate({
   key: NOUR_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Nour v2: product page",
+  productPage: { thumbs: "bottom", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للإضاءة", "Back to the lights"), reviews: L("من بيوت منوّرة", "From lit-up homes"), related: L("إضاءة تكمّل المكان", "Lighting to finish the room") } },
   name: L("نور", "Nour"),
   description: L(
     "محل إضاءة بصفحة رئيسية غامقة: كلمة كبيرة، الأكتر نوراً، خدمة التركيب والتقسيط. أربع صفحات جاهزة.",

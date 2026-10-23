@@ -247,7 +247,8 @@ const DEMO = demoStore({
 
 export const MODE = libraryTemplate({
   key: MODE_KEY,
-  version: 2,
+  version: 3,
+  changelog: "Mode v3: product page",
   name: L("مود", "Mode"),
   description: L(
     "بوتيك موضة عصري: ألوان جريئة وزوايا ناعمة وأزرار دائرية. أربع صفحات جاهزة.",
@@ -281,4 +282,5 @@ export const MODE = libraryTemplate({
     { slug: "faq", name: L("الأسئلة الشائعة", "FAQ"), seo: { title: L("الأسئلة الشائعة", "FAQ") }, sections: faq },
   ],
   demo: DEMO,
+  productPage: { thumbs: "bottom", band: "paper", copy: { back: L("رجوع للمجموعة", "Back to the drop"), reviews: L("عميلاتنا بيقولوا إيه", "What our customers say"), related: L("كمّلي اللوك", "Complete the look") } },
 });

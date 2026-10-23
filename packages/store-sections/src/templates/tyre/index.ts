@@ -168,7 +168,9 @@ const DEMO = demoStore({
 
 export const TYRE = libraryTemplate({
   key: TYRE_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Kawetch v2: product page",
+  productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للكاوتش", "Back to the tyres"), reviews: L("رأي اللي ركّبوا", "From those who fitted"), related: L("إضافات وقت التركيب", "Add-ons while we fit") } },
   name: L("كاوتش", "Kawetch"),
   description: L(
     "كاوتش وتركيب: بحث بالمقاس، تركيب في البيت، حجز معاد، تقسيط ومساعدة في المقاس. أربع صفحات جاهزة.",

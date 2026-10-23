@@ -1,6 +1,6 @@
 import type { SectionInstance } from "../config/schema";
 import { nodeCatalogQuery, nodeContentQuery, nodeFormId, walkNodes } from "../elements/data";
-import type { AnySectionDefinition, CatalogQuery, ContentQuery, SectionCategory } from "./types";
+import type { AnySectionDefinition, CatalogQuery, ContentQuery, ProductDetail, SectionCategory } from "./types";
 
 export type SectionRegistry = {
   get: (sectionId: string) => AnySectionDefinition | undefined;
@@ -86,11 +86,11 @@ export function collectFormIds(sections: readonly SectionInstance[], registry: S
 }
 
 /** Every catalog query of a page, keyed by section instance id or, for data nodes of tree sections, by node id (for the host resolver). */
-export function collectCatalogQueries(sections: readonly SectionInstance[], registry: SectionRegistry): Record<string, CatalogQuery> {
+export function collectCatalogQueries(sections: readonly SectionInstance[], registry: SectionRegistry, opts?: { product?: ProductDetail }): Record<string, CatalogQuery> {
   const out: Record<string, CatalogQuery> = {};
   for (const instance of sections) {
     walkNodes(instance.componentTree, (node) => {
-      const query = nodeCatalogQuery(node);
+      const query = nodeCatalogQuery(node, opts);
       if (query) out[node.id] = query;
     });
     const definition = registry.get(instance.sectionId);

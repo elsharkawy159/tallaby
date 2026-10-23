@@ -180,7 +180,9 @@ const DEMO = demoStore({
 
 export const MAHR = libraryTemplate({
   key: MAHR_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Mahr v2: product page",
+  productPage: { surface: "flat", thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للدهب", "Back to the gold"), reviews: L("رأي اللي اشتروا", "From those who bought"), related: L("قطع تتشرى معاه", "Pieces often bought with it") } },
   name: L("مهر", "Mahr"),
   description: L(
     "دهب بالجرام: سعر النهارده، الأكتر شراءً، التقسيط، طرق الدفع، المحلات والأسئلة. أربع صفحات جاهزة.",

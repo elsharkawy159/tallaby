@@ -211,7 +211,8 @@ const DEMO = demoStore({
 
 export const BOTANICA = libraryTemplate({
   key: BOTANICA_KEY,
-  version: 3,
+  version: 4,
+  changelog: "Sage v4: product page",
   name: L("سيج", "Sage"),
   description: L(
     "عناية طبيعية بالشعر والجسم: من المزرعة للإزازة، ريفيل، تقييمات ورسالة المؤسسة. أربع صفحات جاهزة.",
@@ -261,4 +262,5 @@ export const BOTANICA = libraryTemplate({
     },
   ],
   demo: DEMO,
+  productPage: { thumbs: "bottom", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للمزرعة", "Back to the farm"), reviews: L("آراء من جرّبوه", "From those who tried it"), related: L("من نفس المزرعة", "From the same farm") } },
 });

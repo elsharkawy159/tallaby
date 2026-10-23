@@ -106,7 +106,7 @@ export type SectionCategory = (typeof SECTION_CATEGORIES)[number];
  * sold in this store's orders (90 and 14 days); `discounted` keeps products
  * whose list price is above the selling price. Never random.
  */
-export const PRODUCT_SOURCES = ["all", "newest", "featured", "category", "selected", "best-sellers", "trending", "discounted"] as const;
+export const PRODUCT_SOURCES = ["all", "newest", "featured", "category", "selected", "best-sellers", "trending", "discounted", "related"] as const;
 export type ProductSource = (typeof PRODUCT_SOURCES)[number];
 export const PRODUCT_SORTS = ["default", "newest", "price-asc", "price-desc", "rating"] as const;
 export type ProductSort = (typeof PRODUCT_SORTS)[number];
@@ -118,6 +118,8 @@ export type CatalogQuery =
       source: ProductSource;
       categoryId?: string | null;
       productIds?: string[];
+      /** `related`: the product page's current product; it is never in the result, its category's products come first. */
+      relatedTo?: { productId: string; categoryId: string | null };
       /** Order after the source has picked; `default` keeps the source's own order. */
       sort?: ProductSort;
       /** Per page when `paginate` is set. */
@@ -174,6 +176,41 @@ export type ProductSummary = {
   rating?: number | null;
   inStock?: boolean;
 };
+
+export type ProductVariantDetail = {
+  id: string;
+  label: string;
+  color?: string | null;
+  image?: string | null;
+  price: number | null;
+  compareAtPrice?: number | null;
+  quantity: number;
+};
+
+/** Everything the product page draws for one product (`ctx.product`). */
+export type ProductDetail = ProductSummary & {
+  slug: string;
+  description: string | null;
+  /**
+   * HTML already sanitised by the host (server) when the ProductDetail is
+   * built; never seller- or client-supplied raw HTML. `productContent` prints it as is.
+   */
+  contentHtml: string | null;
+  bulletPoints: string[];
+  images: string[];
+  discountPercent: number | null;
+  discountEndsAt: string | null;
+  quantity: number;
+  directCheckout: boolean;
+  variants: ProductVariantDetail[];
+  reviewCount: number;
+  brand: string | null;
+  category: { id: string; name: string } | null;
+  seller: { name: string; rating: number | null; ratingCount: number; freeDelivery: boolean };
+};
+
+/** A host's interactive copy of a product element: the product plus the node's props. */
+export type ProductElementHook = (product: ProductDetail, props: Record<string, unknown>) => ReactNode;
 
 export type CategorySummary = {
   id: string;
@@ -301,6 +338,8 @@ export function imageSource(ctx: Pick<RenderContext, "optimizeImage">, url: stri
 export interface RenderContext {
   /** `edit` in the dashboard canvas, `public` on the storefront. */
   mode: "edit" | "public";
+  /** The product a product page shows; seeds the `product` scope of its element trees. */
+  product?: ProductDetail;
   /** Store industry; picks the photos for library photo slots (`designs/photo-slots.ts`). Editor only. */
   industry?: string;
   locale: SiteLocale;
@@ -359,6 +398,17 @@ export interface RenderContext {
    */
   renderSearch?: (search: { placeholder?: string; icon: ReactNode; iconFirst: boolean }) => ReactNode;
   renderAddToCart?: (product: ProductSummary) => ReactNode;
+  /**
+   * Interactive product page parts (storefront only). Each gets the page's
+   * product and the node's props; without one, the element's still rendering
+   * is drawn (`elements/product-elements.tsx`).
+   */
+  renderProductGallery?: ProductElementHook;
+  renderProductPrice?: ProductElementHook;
+  renderProductStock?: ProductElementHook;
+  renderProductVariants?: ProductElementHook;
+  renderProductBuyBox?: ProductElementHook;
+  renderProductReviews?: ProductElementHook;
   /** Wishlist toggle, when the host supports it on this store. */
   renderWishlistButton?: (product: ProductSummary) => ReactNode;
   /** The header's switch to the store's other language (`languageSwitcher` node). */

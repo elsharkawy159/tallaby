@@ -169,7 +169,9 @@ const DEMO = demoStore({
 
 export const SHASHA = libraryTemplate({
   key: SHASHA_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Shasha v2: product page",
+  productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للأجهزة", "Back to the devices"), reviews: L("تجارب مستخدمين", "Verified buyer reviews"), related: L("أجهزة تكمّل جهازك", "Pairs well with this") } },
   name: L("شاشة", "Shasha"),
   description: L(
     "متجر إلكترونيات: بانرات متحركة، الأكثر مبيعاً، الضمان، افتح قبل ما تدفع، مواعيد التوصيل وتتبع طلبك. أربع صفحات جاهزة.",

@@ -169,7 +169,9 @@ const DEMO = demoStore({
 
 export const LULU = libraryTemplate({
   key: LULU_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Lulu v2: product page",
+  productPage: { thumbs: "side", button: "outline", gallery: "end", band: "paper", copy: { back: L("رجوع للؤلؤ", "Back to the pearls"), reviews: L("رأي من لبسته", "From those who wear it"), related: L("لؤلؤ يليق معاه", "Pearls to wear with it") } },
   name: L("لولو", "Lulu"),
   description: L(
     "لولي مية عذبة: هيرو نصين، بنختار إزاي، قطع جديدة، حجز معاينة، كلمة المؤسسة والآراء. أربع صفحات جاهزة.",

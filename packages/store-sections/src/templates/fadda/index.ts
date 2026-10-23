@@ -162,7 +162,8 @@ const DEMO = demoStore({
 
 export const FADDA = libraryTemplate({
   key: FADDA_KEY,
-  version: 2,
+  version: 3,
+  changelog: "Fadda v3: product page",
   name: L("فضة", "Fadda"),
   description: L(
     "ستوديو فضة: آراء الصحافة، الخامات والعناية، ستاكات العملاء ورسالة الصايغة. أربع صفحات جاهزة.",
@@ -212,4 +213,5 @@ export const FADDA = libraryTemplate({
     },
   ],
   demo: DEMO,
+  productPage: { surface: "shelf", thumbs: "side", button: "outline", band: "paper", extras: ["product-perks"], copy: { back: L("رجوع للاستوديو", "Back to the studio"), reviews: L("كلمات من أصحابها", "Words from wearers"), related: L("قطع تتكدّس معها", "Pieces that stack with it") } },
 });

@@ -207,7 +207,9 @@ const DEMO = demoStore({
 
 export const ZAHRA = libraryTemplate({
   key: ZAHRA_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Zahra v2: product page",
+  productPage: { surface: "shelf", thumbs: "bottom", band: "brand", extras: ["product-perks"], copy: { back: L("رجوع للإكسسوارات", "Back to the jewellery"), reviews: L("حائط التقييمات", "The review wall"), related: L("اكمّليها بقطعة", "Pair it with a piece") } },
   name: L("زهرة", "Zahra"),
   description: L(
     "مجوهرات مطلية دهب يومية: هيرو بنتو، أقسام دائرية، هدايا حسب الميزانية، ادّي وخدي وآراء العميلات. أربع صفحات جاهزة.",

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { DATA_NEEDS } from "@workspace/store-sections/render";
-import { REFRESH_INTERVAL_MS, dataAction, failedNeeds, shouldRefresh } from "./editor-data.lib";
+import { DATA_NEEDS, DEMO_PRODUCT } from "@workspace/store-sections/render";
+import { REFRESH_INTERVAL_MS, canvasProduct, dataAction, failedNeeds, shouldRefresh } from "./editor-data.lib";
 
 const store = { id: "fb7bbe96-9838-4a52-952a-42691fde3287", catalogMode: "all" };
 
@@ -46,5 +46,14 @@ describe("shouldRefresh", () => {
     expect(shouldRefresh(1000, 1000 + REFRESH_INTERVAL_MS - 1, false)).toBe(false);
     expect(shouldRefresh(1000, 1001, false, true)).toBe(true);
     expect(shouldRefresh(0, 99_999, true, true)).toBe(false);
+  });
+});
+
+describe("canvasProduct", () => {
+  it("draws the preview product, else the demo product", () => {
+    const real = { ...DEMO_PRODUCT, id: "p1", title: "Real" };
+    expect(canvasProduct(real)).toBe(real);
+    expect(canvasProduct(null)).toBe(DEMO_PRODUCT);
+    expect(canvasProduct(undefined)).toBe(DEMO_PRODUCT);
   });
 });

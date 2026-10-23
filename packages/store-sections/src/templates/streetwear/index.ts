@@ -199,7 +199,8 @@ const DEMO = demoStore({
 
 export const STREETWEAR = libraryTemplate({
   key: STREETWEAR_KEY,
-  version: 2,
+  version: 3,
+  changelog: "Streetwear v3: product page",
   name: L("ستريت وير", "Streetwear"),
   description: L(
     "موضة شارع جريئة: أبيض وأسود وأخضر ليموني، زوايا حادة وخط عريض. أربع صفحات جاهزة.",
@@ -233,4 +234,5 @@ export const STREETWEAR = libraryTemplate({
     { slug: "faq", name: L("الأسئلة الشائعة", "FAQ"), seo: { title: L("الأسئلة الشائعة", "FAQ") }, sections: faq },
   ],
   demo: DEMO,
+  productPage: { thumbs: "side", headingCase: "upper", band: "brand", copy: { back: L("رجوع للشارع", "Back to the street"), reviews: L("الشارع بيقول إيه", "What the street says"), related: L("كمّل اللوك", "Run the full fit") } },
 });

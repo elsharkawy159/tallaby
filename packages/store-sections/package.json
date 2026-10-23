@@ -31,6 +31,10 @@
       "types": "./src/templates/index.ts",
       "default": "./src/templates/index.ts"
     },
+    "./demo-product": {
+      "types": "./src/templates/demo-product.ts",
+      "default": "./src/templates/demo-product.ts"
+    },
     "./social": {
       "types": "./src/social/platforms.ts",
       "default": "./src/social/platforms.ts"
@@ -49,6 +53,7 @@
     "typecheck": "tsc --noEmit",
     "template:sql": "tsx scripts/template-sql.ts",
     "template:meta-sql": "tsx scripts/template-meta-sql.ts",
+    "template:product-page-sql": "tsx scripts/template-product-page-sql.ts",
     "section:sql": "tsx scripts/section-sql.ts"
   },
   "dependencies": {

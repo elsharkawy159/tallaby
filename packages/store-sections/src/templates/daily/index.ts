@@ -188,7 +188,8 @@ const DEMO = demoStore({
 
 export const DAILY = libraryTemplate({
   key: DAILY_KEY,
-  version: 2,
+  version: 3,
+  changelog: "Daily v3: product page",
   name: L("ديلي", "Daily"),
   description: L(
     "أدوات المطبخ والبيت: هدف التوصيل المجاني، عروض الأسبوع وأقسام واضحة. أربع صفحات جاهزة.",
@@ -238,4 +239,5 @@ export const DAILY = libraryTemplate({
     },
   ],
   demo: DEMO,
+  productPage: { thumbs: "bottom", band: "brand", extras: ["product-shipping"], copy: { back: L("رجوع للمتجر", "Back to the shop"), reviews: L("الناس بتقول إيه", "What people say"), related: L("حاجات تحتاجها كمان", "More you may need") } },
 });

@@ -177,7 +177,8 @@ const DEMO = demoStore({
 
 export const HEARTH = libraryTemplate({
   key: HEARTH_KEY,
-  version: 2,
+  version: 3,
+  changelog: "Hearth v3: product page",
   name: L("هيرث", "Hearth"),
   description: L(
     "أدوات طبخ وتقديم: صورة عريضة، إزاي بنختار، كوبون ترحيب وتقييم العملاء. أربع صفحات جاهزة.",
@@ -227,4 +228,5 @@ export const HEARTH = libraryTemplate({
     },
   ],
   demo: DEMO,
+  productPage: { thumbs: "bottom", surface: "shelf", band: "paper", copy: { back: L("رجوع للمطبخ", "Back to the kitchen"), reviews: L("من جرّبوها على سفرتهم", "From those who set their table"), related: L("تكمّل السفرة", "To complete the table") } },
 });

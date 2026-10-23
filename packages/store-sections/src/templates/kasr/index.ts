@@ -243,7 +243,8 @@ const DEMO = demoStore({
 
 export const KASR = libraryTemplate({
   key: KASR_KEY,
-  version: 2,
+  version: 3,
+  changelog: "Kasr v3: product page",
   name: L("قصر", "Kasr"),
   description: L(
     "موضة تحريرية: لوك بوك وفيديو وتقييمات على المنتجات، بخط كلاسيكي وزوايا حادة. أربع صفحات جاهزة.",
@@ -277,4 +278,5 @@ export const KASR = libraryTemplate({
     { slug: "faq", name: L("الأسئلة الشائعة", "FAQ"), seo: { title: L("الأسئلة الشائعة", "FAQ") }, sections: faq },
   ],
   demo: DEMO,
+  productPage: { thumbs: "side", band: "paper", copy: { back: L("العودة إلى المجموعة", "Back to the collection"), reviews: L("كلمة من جرّبوها", "A word from those who wear it"), related: L("قطع تُلبَس معها", "Pieces to wear with it") } },
 });

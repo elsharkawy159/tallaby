@@ -171,7 +171,8 @@ const DEMO = demoStore({
 
 export const DRIVE = libraryTemplate({
   key: DRIVE_KEY,
-  version: 2,
+  version: 3,
+  changelog: "Drive v3: product page",
   name: L("درايف", "Drive"),
   description: L(
     "تكنولوجيا وعناية العربية: بحث الأول، أقسام، أكواد بالمبلغ وأسئلة السواقين. أربع صفحات جاهزة.",
@@ -218,4 +219,5 @@ export const DRIVE = libraryTemplate({
     },
   ],
   demo: DEMO,
+  productPage: { surface: "card", thumbs: "side", band: "paper", extras: ["product-perks"], copy: { back: L("رجوع للمتجر", "Back to the store"), reviews: L("آراء السائقين", "Driver reviews"), related: L("منتجات مشابهة لسيارتك", "Similar for your car") } },
 });

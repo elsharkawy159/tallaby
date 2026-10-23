@@ -195,7 +195,9 @@ const DEMO = demoStore({
 
 export const HALAWA = libraryTemplate({
   key: HALAWA_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Halawa v2: product page",
+  productPage: { surface: "shelf", thumbs: "bottom", band: "paper", extras: ["product-shipping"], copy: { back: L("رجوع للحلويات", "Back to the sweets"), reviews: L("رأي ضيوفنا", "Our guests say"), related: L("كمّل الصينية", "Complete the tray") } },
   name: L("حلاوة", "Halawa"),
   description: L(
     "حلويات شرقي: حملات الموسم، نفسك في إيه، هدايا لكل زيارة، الأكتر طلباً وحكاية ٥٠ سنة. أربع صفحات جاهزة.",

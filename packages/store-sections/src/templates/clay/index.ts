@@ -183,7 +183,8 @@ const DEMO = demoStore({
 
 export const CLAY = libraryTemplate({
   key: CLAY_KEY,
-  version: 2,
+  version: 3,
+  changelog: "Clay v3: product page",
   name: L("كلاي", "Clay"),
   description: L(
     "نحاس وفخار: فيديو طبخ، تسوق بالخامة، العناية بالنحاس وسفرة العملاء. أربع صفحات جاهزة.",
@@ -233,4 +234,5 @@ export const CLAY = libraryTemplate({
     },
   ],
   demo: DEMO,
+  productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للمتجر", "Back to the shop"), reviews: L("الطبخ بيقول إيه", "From the kitchen"), related: L("أدوات من نفس الخامة", "More in the same material") } },
 });

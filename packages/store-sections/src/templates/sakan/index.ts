@@ -169,7 +169,8 @@ const DEMO = demoStore({
 
 export const SAKAN = libraryTemplate({
   key: SAKAN_KEY,
-  version: 2,
+  version: 3,
+  changelog: "Sakan v3: product page",
   name: L("سكن", "Sakan"),
   description: L(
     "أثاث المعيشة والنوم: لوك بوك، تسوق حسب الأوضة، اختار القماش ومواعيد التوصيل. أربع صفحات جاهزة.",
@@ -216,4 +217,5 @@ export const SAKAN = libraryTemplate({
     },
   ],
   demo: DEMO,
+  productPage: { surface: "shelf", thumbs: "side", band: "paper", extras: ["product-shipping"], copy: { back: L("رجوع للمعرض", "Back to the showroom"), reviews: L("آراء سكان البيوت", "What homeowners say"), related: L("قطع لنفس الغرفة", "More for the same room") } },
 });

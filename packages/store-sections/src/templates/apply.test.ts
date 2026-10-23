@@ -67,6 +67,62 @@ describe("applyTemplate merge (P4-05)", () => {
   });
 });
 
+describe("applyTemplate product page", () => {
+  const template = siteConfigSchema.parse({
+    schemaVersion: 1,
+    designSystem: { colors: {}, typography: {}, spacing: {} },
+    pages: [
+      { slug: "home", isHome: true, name: "Home", content: { sections: [] } },
+      {
+        slug: "product",
+        isHome: false,
+        kind: "product",
+        showInNav: false,
+        name: "Product",
+        content: { sections: [{ id: "buy", sectionId: "rich-text", version: 1, props: { title: "T" } }, { id: "extra", sectionId: "rich-text", version: 1, props: {} }] },
+      },
+    ],
+  });
+  const base = (pages: DraftSite["pages"]): DraftSite => ({ designSystem: { colors: {}, typography: {}, spacing: {} }, header: null, footer: null, pages });
+
+  it("apply adds product page when store has none", () => {
+    const result = mergeTemplateIntoDraft(base([{ slug: "home", isHome: true, content: { sections: [] } }]), template, keys);
+    const product = result.pages.find((p) => p.kind === "product");
+    expect(product).toMatchObject({ targetSlug: null, slug: "product", showInNav: false });
+    expect(product!.content.sections.map((s) => s.id)).toEqual(["buy", "extra"]);
+  });
+
+  it("apply replaces product page sections by kind, keeps override keys", () => {
+    const current = base([
+      { slug: "home", isHome: true, content: { sections: [] } },
+      // The seller renamed the product page's slug: it is still matched by kind.
+      { slug: "item", isHome: false, kind: "product", content: { sections: [section("buy", "rich-text", { title: "Mine" })] } },
+    ]);
+    const result = mergeTemplateIntoDraft(current, template, keys);
+    const product = result.pages.find((p) => p.kind === "product")!;
+    expect(product.targetSlug).toBe("item");
+    expect(product.slug).toBe("item");
+    expect(product.content.sections.map((s) => s.id)).toEqual(["buy", "extra"]);
+    expect(product.content.sections[0]!.props).toEqual({ title: "Mine" });
+  });
+
+  it("the product page is never in the nav, whatever the template says", () => {
+    const shown = siteConfigSchema.parse({ ...template, pages: template.pages.map((p) => (p.kind === "product" ? { ...p, showInNav: true } : p)) });
+    expect(shown.pages.find((p) => p.kind === "product")!.showInNav).toBe(true);
+    const result = mergeTemplateIntoDraft(base([{ slug: "home", isHome: true, content: { sections: [] } }]), shown, keys);
+    expect(result.pages.find((p) => p.kind === "product")!.showInNav).toBe(false);
+  });
+
+  it("never merges the product page into a normal page with the same slug", () => {
+    const current = base([
+      { slug: "home", isHome: true, content: { sections: [] } },
+      { slug: "product", isHome: false, content: { sections: [section("keep", "rich-text", {})] } },
+    ]);
+    const result = mergeTemplateIntoDraft(current, template, keys);
+    expect(result.pages.some((p) => p.kind === "product")).toBe(false);
+  });
+});
+
 describe("templateOutline (P4-05 gallery)", () => {
   it("lists each page with its section ids", () => {
     const config = siteConfigSchema.parse({

@@ -223,7 +223,9 @@ const DEMO = demoStore({
 
 export const SHABKA = libraryTemplate({
   key: SHABKA_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Shabka v2: product page",
+  productPage: { surface: "flat", gallery: "end", thumbs: "bottom", button: "outline", band: "brand", extras: ["product-shipping"], copy: { back: L("رجوع للمجوهرات", "Back to the jewellery"), reviews: L("كلمة العرايس والأهل", "Words from brides and families"), related: L("قطع تكمّل الشبكة", "Pieces to complete the set") } },
   name: L("شبكة", "Shabka"),
   description: L(
     "دهب الشبكة والفرح: قياس خاص، هدايا حسب الشخص، الأكتر اختياراً، حجز قياس، كلمة الصايغة، كارت هدية، المحلات والأسئلة. أربع صفحات جاهزة.",

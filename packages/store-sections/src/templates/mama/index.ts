@@ -185,7 +185,9 @@ const DEMO = demoStore({
 
 export const MAMA = libraryTemplate({
   key: MAMA_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Mama v2: product page",
+  productPage: { surface: "shelf", thumbs: "bottom", band: "paper", extras: ["product-shipping"], copy: { back: L("رجوع لأغراض البيبي", "Back to the baby shop"), reviews: L("رأي الماميز", "Mums' reviews"), related: L("حاجات تانية للبيبي", "More for the baby") } },
   name: L("ماما", "Mama"),
   description: L(
     "مستلزمات بيبي هادية: حسب سن البيبي، شنطة الولادة، وعدنا وكارت هدية لمامي جديدة. أربع صفحات جاهزة.",

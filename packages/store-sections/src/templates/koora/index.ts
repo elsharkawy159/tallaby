@@ -170,7 +170,9 @@ const DEMO = demoStore({
 
 export const KOORA = libraryTemplate({
   key: KOORA_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Koora v2: product page",
+  productPage: { thumbs: "bottom", band: "brand", extras: ["product-perks"], copy: { back: L("رجوع للملعب", "Back to the pitch"), reviews: L("رسائل الكباتن", "Messages from captains"), related: L("جهّز الفريق", "Kit out the team") } },
   name: L("كورة", "Koora"),
   description: L(
     "أدوات كورة للفرق: طلبات الفرق، سعر الكمية، اختيارات الكوتش ورسايل الكباتن. أربع صفحات جاهزة.",

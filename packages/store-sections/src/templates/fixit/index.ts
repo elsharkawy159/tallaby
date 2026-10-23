@@ -217,7 +217,9 @@ const DEMO = demoStore({
 
 export const FIXIT = libraryTemplate({
   key: FIXIT_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Fixit v2: product page",
+  productPage: { surface: "card", thumbs: "side", band: "paper", extras: ["product-perks"], copy: { back: L("رجوع للإكسسوارات", "Back to accessories"), reviews: L("رأي اللي جربوا", "What customers say"), related: L("يتركب معاه", "Goes well with") } },
   name: L("فيكس إت", "Fixit"),
   description: L(
     "صيانة موبايل وإكسسوارات: خدمات الصيانة ورحلتها، أسعار حسب الماركة، مقارنة سماعتين، باقات حماية، أدلة شراء والدعم. أربع صفحات جاهزة.",

@@ -12,6 +12,8 @@ import type {
   StockPhotoPage,
   StoreRevisionRow,
 } from "./editor.dto";
+import type { SiteLocale } from "@workspace/store-sections";
+import type { ProductDetail } from "@workspace/store-sections/render";
 import type { TemplateActionResult, TemplatePreviewView } from "./templates.dto";
 import type { EditorLinkOverrides } from "./lib/editor-links.lib";
 
@@ -67,6 +69,12 @@ export type EditorAdapter = {
   saveChrome(part: "header" | "footer", instance: unknown, clientVersion: number): Promise<EditorResult<{ version: number }>>;
   draftVersions?(): Promise<EditorResult<DraftVersions>>;
   refreshData(): Promise<EditorResult<EditorCatalogSnapshot>>;
+  /**
+   * The product page canvas's product: `productId`, or the newest product the
+   * store shows; null when there is none (the canvas draws DEMO_PRODUCT).
+   * Hosts without one (template and section editing) always draw DEMO_PRODUCT.
+   */
+  previewProduct?(productId: string | undefined, locale: SiteLocale): Promise<EditorResult<ProductDetail | null>>;
   publish(): Promise<EditorResult<{ revisionId: string; revisionNumber: number }>>;
 
   // Optional groups; present iff the matching capability is true.

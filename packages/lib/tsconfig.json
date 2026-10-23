@@ -6,6 +6,6 @@
       "@workspace/lib/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*.ts", "index.ts"],
+  "include": ["src/**/*.ts", "scripts/**/*.ts", "index.ts"],
   "exclude": ["node_modules", "dist", "build", "**/*.test.ts"]
 }

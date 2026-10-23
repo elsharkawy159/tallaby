@@ -198,7 +198,9 @@ const DEMO = demoStore({
 
 export const MAWSEM = libraryTemplate({
   key: MAWSEM_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Mawsem v2: product page",
+  productPage: { surface: "flat", thumbs: "side", band: "paper", extras: ["product-shipping"], copy: { back: L("رجوع للموسم", "Back to the season"), reviews: L("لبسوه وقالوا", "Worn and reviewed"), related: L("كمّل الإطلالة", "Complete the look") } },
   name: L("موسم", "Mawsem"),
   description: L(
     "موضة كل يوم: بانرات متحركة، تسوق بالقطعة، الأكثر مبيعاً، عرضين وآراء العملاء. أربع صفحات جاهزة.",

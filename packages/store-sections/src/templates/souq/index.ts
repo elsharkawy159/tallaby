@@ -208,7 +208,9 @@ const DEMO = demoStore({
 
 export const SOUQ = libraryTemplate({
   key: SOUQ_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Souq v2: product page",
+  productPage: { thumbs: "bottom", band: "brand", extras: ["product-shipping"], copy: { back: L("رجوع للسوق", "Back to the aisles"), reviews: L("آراء اللي اشتروا", "From shoppers like you"), related: L("ضيف على سلتك", "Add to your basket") } },
   name: L("سوق", "Souq"),
   description: L(
     "سوبر ماركت أونلاين: هدف التوصيل المجاني، بانرات متحركة، الأقسام، رف النهارده، مناطق الـ٤٥ دقيقة، طرق الدفع والدعم. أربع صفحات جاهزة.",

@@ -175,7 +175,8 @@ const DEMO = demoStore({
 
 export const BASECAMP = libraryTemplate({
   key: BASECAMP_KEY,
-  version: 2,
+  version: 3,
+  changelog: "Basecamp v3: product page",
   name: L("بيس كامب", "Basecamp"),
   description: L(
     "تخييم ورحلات: موسم الصحرا، ليه بيرجعولنا، الماركات وإزاي تأجّر. أربع صفحات جاهزة.",
@@ -222,4 +223,5 @@ export const BASECAMP = libraryTemplate({
     },
   ],
   demo: DEMO,
+  productPage: { surface: "shelf", thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للمعسكر", "Back to camp"), reviews: L("آراء المخيّمين", "Campers' reviews"), related: L("جهّز رحلتك الجاية", "Gear for your next trip") } },
 });

@@ -9,6 +9,7 @@
  */
 import { z } from "zod";
 import { isHttpOrRelativeUrl } from "./url";
+import { PAGE_KINDS, PRODUCT_PAGE_SLUG } from "./product-page.lib";
 
 export const SITE_CONFIG_VERSION = 1 as const;
 
@@ -44,6 +45,9 @@ export const ALLOWED_NODE_TYPES = [
   "carousel", "slide",
   // Header language switch of translated stores (owner, 2026-10-23); additive.
   "languageSwitcher",
+  // Product page elements (template product page, 2026-10-23); additive.
+  "productGallery", "productPrice", "productStock", "productRating", "productVariants",
+  "productBuyBox", "productDetails", "productContent", "productSeller", "productReviews",
 ] as const;
 export type AllowedNodeType = (typeof ALLOWED_NODE_TYPES)[number];
 
@@ -78,7 +82,10 @@ const fontSchema = z.string().trim().min(1).max(60).regex(/^[\p{L}\p{N} _-]+$/u,
 
 const safeImageUrl = z.string().trim().max(2048).refine(isHttpOrRelativeUrl, "unsafe_url");
 
-const slugSchema = z
+const slugFormatSchema = z.string().max(80).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "invalid_slug");
+
+/** Slug rules for normal pages (format plus reserved storefront routes). */
+export const slugSchema = z
   .string()
   .max(80)
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "invalid_slug")
@@ -151,7 +158,8 @@ export const pageSeoSchema = z.object({
 
 export const sitePageSchema = z.object({
   id: idSchema.optional(),
-  slug: slugSchema,
+  kind: z.enum(PAGE_KINDS).optional(),
+  slug: slugFormatSchema,
   isHome: z.boolean().default(false),
   name: z.string().trim().min(1).max(80),
   showInNav: z.boolean().optional(),
@@ -222,12 +230,24 @@ export const siteConfigSchema = z
     if (homes !== 1) {
       ctx.addIssue({ code: "custom", message: "exactly_one_home_page", path: ["pages"] });
     }
+    if (config.pages.filter((p) => p.kind === "product").length > 1) {
+      ctx.addIssue({ code: "custom", message: "one_product_page", path: ["pages"] });
+    }
     const seen = new Set<string>();
     config.pages.forEach((page, index) => {
       if (seen.has(page.slug)) {
         ctx.addIssue({ code: "custom", message: "duplicate_slug", path: ["pages", index, "slug"] });
       }
       seen.add(page.slug);
+      const isProduct = page.kind === "product";
+      if (isProduct && page.slug !== PRODUCT_PAGE_SLUG) {
+        ctx.addIssue({ code: "custom", message: "product_page_slug", path: ["pages", index, "slug"] });
+      } else if (!isProduct && (RESERVED_PAGE_SLUGS as readonly string[]).includes(page.slug)) {
+        ctx.addIssue({ code: "custom", message: "reserved_slug", path: ["pages", index, "slug"] });
+      }
+      if (isProduct && page.isHome) {
+        ctx.addIssue({ code: "custom", message: "product_page_not_home", path: ["pages", index, "isHome"] });
+      }
     });
   });
 

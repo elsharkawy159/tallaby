@@ -232,8 +232,8 @@ A builder preview (verified preview mode) renders the draft, as other pages do.
   demo product (no store catalog). The Admin library-section editor previews
   `product-page` designs with the same demo product. Nothing else in Admin
   changes.
-- Migrations: `0098` (`store_pages.kind`), `0099` (product-page library
-  sections), `0100` (template versions). They go to staging first, then to
+- Migrations: `0098` (`store_pages.kind`), `0100` (product-page library
+  sections), `0101` (template versions). They go to staging first, then to
   production with owner approval (rule 6). CLAUDE.md's migration notes are
   updated.
 - **New stores:** `seedStarterSite` already inserts every template page.
@@ -281,9 +281,10 @@ stores too as we don't have many real stores".
    Classic if it is unset or the template is gone).
 2. Insert it as a `store_pages` draft row (`slug = 'product'`,
    `kind = 'product'`).
-3. If the site has a published revision, append the same page to that
-   revision's snapshot. Only the product page goes live; the seller's other
-   unpublished drafts stay drafts.
+3. If the site has a published revision, publish a new revision whose
+   snapshot is the live snapshot plus the same page (revisions are
+   append-only), and point `stores.published_revision_id` at it. Only the
+   product page goes live; the seller's other unpublished drafts stay drafts.
 4. Bust the store's published-site cache tags.
 
 Each store is one transaction. It reports which stores were changed and which
@@ -294,3 +295,24 @@ go-ahead at run time (rule 4). Its result is logged in `PLAN.md` §23.
 applies through `mergeTemplateIntoDraft`. The page can't be deleted, so the
 builder needs no "add product page" prompt. A store that still somehow lacks
 one falls back to today's layout.
+
+
+## Implementation notes (2026-10-23)
+
+Where the code differs from the spec text above:
+
+- The host sanitises `contentHtml` (`sanitizeRichTextHtml` from `@workspace/tiptap`, when it builds `ProductDetail`) and the product content element prints it as is. This keeps `sanitize-html` out of the editor bundle.
+- The `tracking` (letter-spacing) axis was removed from the template spec: it breaks joined Arabic script and the style system has no locale-scoped styles.
+- The buy box element has a `variant` prop (`solid` or `outline`) that carries the template's button style; the storefront hook honours it.
+- Product sections that draw nothing in public (all their product elements render null) are hidden; sections with seller content stay.
+- Template previews use a template-specific demo product (`templateDemoProduct`) instead of one shared product.
+- The migrations are numbered `0100` (`store_pages.kind`), `0101` (product-page library sections) and `0102` (template product pages), because `0098` was taken by the notifications migration.
+- The product page is never added to the navigation when a template is applied (`showInNav` is forced to false for it).
+- The builder's preview product comes from `getStorePreviewProduct` in `packages/lib`; the storefront maps its own row with `toProductDetail` in `apps/ecommerce`, so there are two mappers to keep in sync.
+- `ProductDetail.quantity` is the total stock (sum of variant quantities when variants exist).
+- Backfill step 3 inserts a new `store_site_revisions` row (number = max + 1 under the store row lock, the live revision's `schema_version` and `template_key`, `published_by` NULL) and repoints `stores.published_revision_id`, because the 0051 trigger makes revisions append-only. The old revision is untouched. It does not change `last_published_at`. The dry run reports the same outcome, revision number included.
+- A plain `addToCart` element placed on the product page draws nothing in public (the still preview in the editor) when the product has variants: only the buy box picks a variant.
+- A section made only of product parts and frame is hidden in public on a page without a product too (a product section pasted onto a normal page).
+- Template undo never deletes the product page: one the install created keeps the template's content; one that existed before gets its previous content back.
+- On store hosts the phone buy bar docks at the bottom edge with safe-area padding (`stickyBuyBarClass(…, { bottomNav: false })`); the marketplace bar is unchanged.
+- Deploy order: `0096`–`0100` before deploying, then `0101` and `0102`, then the backfill; run the read-only `packages/db/scripts/check-unscoped-bound-nodes.sql` before deploying (a bound node outside a list or the product page renders nothing in public).

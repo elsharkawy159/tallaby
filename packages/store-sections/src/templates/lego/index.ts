@@ -175,7 +175,9 @@ const DEMO = demoStore({
 
 export const LEGO = libraryTemplate({
   key: LEGO_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Tarkib v2: product page",
+  productPage: { thumbs: "bottom", band: "brand", extras: ["product-perks"], copy: { back: L("رجوع للألعاب", "Back to the toys"), reviews: L("رأي الأهالي", "Parents' reviews"), related: L("كمّل البناء", "Keep building") } },
   name: L("تركيب", "Tarkib"),
   description: L(
     "لعب تركيب: كلمة كبيرة، اختار حسب السن، أحسن الأطقم، باكدج البداية وآراء الأهالي. أربع صفحات جاهزة.",

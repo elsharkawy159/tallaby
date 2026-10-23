@@ -1,5 +1,5 @@
-import { readdirSync, readFileSync, statSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 /** P4-02 acceptance: the storefront can render sections without pulling in app or editor code. */
@@ -25,8 +25,34 @@ describe("package boundaries", () => {
     expect(offenders.map((o) => o.path)).toEqual([]);
   });
 
-  it("never uses dangerouslySetInnerHTML except for the theme <style>", () => {
-    const offenders = sources.filter(({ path, code }) => code.includes("dangerouslySetInnerHTML") && !/render[\\/]render\.tsx$/.test(path));
+  it("never uses dangerouslySetInnerHTML except for the theme <style> and host-sanitised product content", () => {
+    // The product content element prints `ProductDetail.contentHtml`, which the host sanitises on the
+    // server when it builds the product (core/types.ts); exactly one use, of that field only.
+    const sanitisedProductContent = (path: string, code: string) =>
+      /elements[\\/]product-elements\.tsx$/.test(path) &&
+      code.split("dangerouslySetInnerHTML").length === 2 &&
+      code.includes('const html = product.contentHtml?.trim() ?? "";') &&
+      code.includes("dangerouslySetInnerHTML={{ __html: html }}");
+    const offenders = sources.filter(
+      ({ path, code }) => code.includes("dangerouslySetInnerHTML") && !/render[\\/]render\.tsx$/.test(path) && !sanitisedProductContent(path, code),
+    );
     expect(offenders.map((o) => o.path)).toEqual([]);
+  });
+
+  it("keeps the html sanitizer out of the render entry (the editor's client bundle)", () => {
+    const seen = new Set<string>();
+    const visit = (file: string) => {
+      if (seen.has(file)) return;
+      seen.add(file);
+      const code = readFileSync(file, "utf8");
+      for (const [, spec] of code.matchAll(/(?:from|import)\s+["'](\.{1,2}\/[^"']+)["']/g)) {
+        const base = join(dirname(file), spec!);
+        const target = [base, `${base}.ts`, `${base}.tsx`, join(base, "index.ts"), join(base, "index.tsx")].find((p) => existsSync(p) && statSync(p).isFile());
+        if (target) visit(target);
+      }
+    };
+    visit(join(__dirname, "index.ts"));
+    expect(seen.size).toBeGreaterThan(20);
+    expect([...seen].filter((path) => /config[\\/]sanitize\.ts$/.test(path))).toEqual([]);
   });
 });

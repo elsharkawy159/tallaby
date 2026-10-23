@@ -181,7 +181,9 @@ const DEMO = demoStore({
 
 export const ROKN = libraryTemplate({
   key: ROKN_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Rokn v2: product page",
+  productPage: { thumbs: "bottom", gallery: "end", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للركن", "Back to the corner"), reviews: L("كلمات عملائنا", "Customers' words"), related: L("هدايا صغيرة معاه", "Small gifts to go with it") } },
   name: L("ركن", "Rokn"),
   description: L(
     "ديكور وهدايا: هدايا حسب الشخص، حسب الميزانية، الأكتر إهداءً وكارت هدية. أربع صفحات جاهزة.",

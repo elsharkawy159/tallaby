@@ -163,4 +163,52 @@ describe("siteConfigSchema", () => {
     (config.pages[0]!.seo as Record<string, unknown>).ogImage = "javascript:alert(1)";
     expect(parse(config).success).toBe(false);
   });
+
+  describe("product page", () => {
+    const withPages = (...extra: Record<string, unknown>[]) => {
+      const config = classicTemplateFixture();
+      config.pages.push(...(extra.map((e) => ({ ...config.pages[0]!, isHome: false, ...e })) as never[]));
+      return config;
+    };
+    const messages = (config: unknown) => {
+      const r = parse(config);
+      return r.success ? [] : r.error.issues.map((i) => i.message);
+    };
+
+    it("accepts one product page with slug \"product\"", () => {
+      const r = parse(withPages({ slug: "product", kind: "product", showInNav: false }));
+      expect(r.success).toBe(true);
+      if (r.success) expect(r.data.pages[1]!.kind).toBe("product");
+    });
+
+    it("rejects two product pages", () => {
+      const config = withPages({ slug: "product", kind: "product" }, { slug: "product-2", kind: "product" });
+      expect(messages(config)).toContain("one_product_page");
+    });
+
+    it("rejects kind product with another slug", () => {
+      expect(messages(withPages({ slug: "item", kind: "product" }))).toContain("product_page_slug");
+    });
+
+    it("rejects slug \"product\" on a normal page", () => {
+      const r = parse(withPages({ slug: "product" }));
+      expect(r.success).toBe(false);
+      if (!r.success) {
+        const issue = r.error.issues.find((i) => i.message === "reserved_slug");
+        expect(issue?.path).toEqual(["pages", 1, "slug"]);
+      }
+    });
+
+    it("rejects a product page that isHome", () => {
+      const config = classicTemplateFixture();
+      Object.assign(config.pages[0]!, { slug: "product", kind: "product" });
+      expect(messages(config)).toContain("product_page_not_home");
+    });
+
+    it("config without kind parses unchanged", () => {
+      const r = parse(classicTemplateFixture());
+      expect(r.success).toBe(true);
+      if (r.success) expect("kind" in r.data.pages[0]!).toBe(false);
+    });
+  });
 });

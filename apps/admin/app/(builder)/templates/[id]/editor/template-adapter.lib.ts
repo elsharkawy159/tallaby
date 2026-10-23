@@ -104,6 +104,7 @@ export function siteConfigToEditorInitial(
       id: templatePageId(page.slug),
       slug: page.slug,
       isHome: page.isHome,
+      ...(page.kind === "product" && { kind: "product" as const }),
       name: { ...names[page.slug]! },
       seo: (page.seo ?? {}) as Record<string, unknown>,
       showInNav: page.showInNav ?? true,

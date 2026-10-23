@@ -37,6 +37,7 @@ export const AddToCartButton = ({
   showText = true,
   stock = 1,
   buyNow = false,
+  label,
 }: AddToCartButtonProps) => {
   const { addToCart, isProductLoading } = useCart();
   const router = useRouter();
@@ -97,7 +98,7 @@ export const AddToCartButton = ({
         <span>
           {isLoading
             ? tProduct("adding")
-            : tProduct(buyNow ? "buyNow" : "addToCart")}
+            : (label || tProduct(buyNow ? "buyNow" : "addToCart"))}
         </span>
       )}
     </Button>

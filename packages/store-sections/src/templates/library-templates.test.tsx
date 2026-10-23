@@ -4,6 +4,7 @@ import type { ComponentNode, SectionInstance, SiteConfig } from "../config/schem
 import { validateSiteConfig } from "../config/validate";
 import { STORE_FONTS } from "../core/fonts";
 import { collectCatalogQueries } from "../core/registry";
+import { DEMO_PRODUCT } from "../core/demo-product";
 import type { RenderContext } from "../core/types";
 import { STOCK_INDUSTRIES, peoplePhoto, stockPhoto } from "../designs/stock-photos";
 import { MAX_ELEMENT_DEPTH, MAX_NODES_PER_SECTION } from "../elements/registry";
@@ -15,6 +16,9 @@ import { FROZEN_SEEDS, migrationSha256 } from "./frozen-seeds.test-utils";
 import { prepareTemplateForStore, templateFormNeeds } from "./prepare";
 
 /** Each batch's generated seed migration (regenerate with `template:sql <keys> <file>`). */
+/** The product page's product, with content so its content section draws. */
+const PAGE_PRODUCT = { ...DEMO_PRODUCT, contentHtml: "<h3>المواصفات</h3><p>بطارية تدوم ٣٠ ساعة وشحن سريع ومقاومة للماء والعرق.</p>" };
+
 const SEEDS: Record<string, readonly string[]> = {
   // 0074–0083 seeded v1 by category; 0084 (v2, mobile header padding) also seeds Classic and Atelier first.
   "0084_mobile_header_padding.sql": [
@@ -156,9 +160,11 @@ describe.each(LIBRARY_TEMPLATES.map((t) => [t.key, t] as const))("library templa
     const product = { id: "p1", title: "منتج", href: "/products/p1", image: "https://cdn.test/p1.jpg", price: 900, compareAtPrice: 1200, rating: 4.6 };
     const categories = [{ id: "c1", key: "c1", name: "قسم", href: "/products?category=c1", image: "https://cdn.test/c1.jpg", productCount: 3 }];
     const fitted = prepareTemplateForStore(config, { defaultLocale: "ar", formIds: Object.fromEntries(templateFormNeeds(config).map((n) => [n, "f1"])) });
+    // Only the product page's sections get the page's product; the other pages render without one.
+    const productSections = new Set(fitted.pages.filter((p) => p.kind === "product").flatMap((p) => p.content.sections));
     for (const section of sections(fitted)) {
       const products = productsFor(section, product);
-      const html = renderToStaticMarkup(<SectionRenderer instance={section} registry={storeSectionRegistry} ctx={ctx({ products, categories })} defaultLocale="ar" />);
+      const html = renderToStaticMarkup(<SectionRenderer instance={section} registry={storeSectionRegistry} ctx={productSections.has(section) ? { ...ctx({ products, categories }), product: PAGE_PRODUCT } : ctx({ products, categories })} defaultLocale="ar" />);
       expect(html.length, section.id).toBeGreaterThan(200);
       if (Object.keys(products).length) expect(html, section.id).toContain("/products/p1");
     }

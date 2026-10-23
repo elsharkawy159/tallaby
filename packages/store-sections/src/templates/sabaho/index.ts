@@ -203,7 +203,9 @@ const DEMO = demoStore({
 
 export const SABAHO = libraryTemplate({
   key: SABAHO_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Sabaho v2: product page",
+  productPage: { surface: "card", thumbs: "bottom", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع لفطار الصبح", "Back to breakfast"), reviews: L("رأي اللي بيطلبوا كل صباح", "What morning regulars say"), related: L("ضيفه على طلب الصبح", "Add to tomorrow's order") } },
   name: L("صباحو", "Sabaho"),
   description: L(
     "توصيل فطار وبقالة: هدف التوصيل المجاني، فطار الويك إند، الأكتر إعادة طلب، البوكس الأسبوعي، مناطق ومواعيد التوصيل، كوبون أول طلب وتتبع الطلب. أربع صفحات جاهزة.",

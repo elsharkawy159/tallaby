@@ -191,7 +191,9 @@ const DEMO = demoStore({
 
 export const TAWLA = libraryTemplate({
   key: TAWLA_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Tawla v2: product page",
+  productPage: { gallery: "end", thumbs: "bottom", button: "outline", band: "paper", copy: { back: L("رجوع للسُفرة", "Back to the table"), reviews: L("رأي اللي جهّزوا سُفرتهم", "From laid tables"), related: L("كمّل السُفرة", "Dress the whole table") } },
   name: L("طاولة", "Tawla"),
   description: L(
     "مفارش ومنسوجات: لبّس السفرة، طقم السفرة كاملة، لسه من النول وطريقة العناية. أربع صفحات جاهزة.",

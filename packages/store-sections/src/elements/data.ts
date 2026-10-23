@@ -23,6 +23,7 @@ import {
   type DataNeed,
   type ProductSort,
   type ProductSource,
+  type ProductDetail,
   type ProductSummary,
   type RenderContext,
 } from "../core/types";
@@ -35,10 +36,12 @@ export const DATA_BINDINGS = {
   productList: ["title", "image", "href", "price", "compareAtPrice", "discount", "rating"],
   categoryList: ["name", "image", "href", "productCount"],
   postList: ["title", "excerpt", "image", "href", "date"],
-} as const satisfies Record<DataListType, readonly string[]>;
+  /** The product page's current product (`ctx.product`). */
+  product: ["title", "image", "href", "price", "compareAtPrice", "discount", "rating", "description", "brand", "category", "reviewCount", "seller"],
+} as const satisfies Record<DataListType | "product", readonly string[]>;
 
 export type DataRecord =
-  { kind: "productList"; record: ProductSummary } | { kind: "categoryList"; record: CategorySummary } | { kind: "postList"; record: ContentItemSummary };
+  { kind: "product"; record: ProductDetail } | { kind: "productList"; record: ProductSummary } | { kind: "categoryList"; record: CategorySummary } | { kind: "postList"; record: ContentItemSummary };
 
 /** What each data node type needs from the store (Add-panel chips, empty states). */
 export const DATA_NODE_NEEDS: Record<string, DataNeed> = {
@@ -74,7 +77,7 @@ export function isPaginated(node: ComponentNode): boolean {
 }
 
 /** The catalog query of a data node, or null (not a catalog node, or not set up yet). */
-export function nodeCatalogQuery(node: ComponentNode): CatalogQuery | null {
+export function nodeCatalogQuery(node: ComponentNode, opts?: { product?: ProductDetail }): CatalogQuery | null {
   const props = node.props ?? {};
   if (node.type === "productList") {
     const source = PRODUCT_SOURCES.find((s) => s === props.source) ?? ("newest" satisfies ProductSource);
@@ -90,6 +93,12 @@ export function nodeCatalogQuery(node: ComponentNode): CatalogQuery | null {
     if (source === "selected") {
       const productIds = idsOf(props.productIds);
       return productIds.length ? { kind: "products", source, productIds, sort, limit, ...extra } : null;
+    }
+    if (source === "related") {
+      // Without a current product (any page but the product page) "related" is the newest.
+      const product = opts?.product;
+      if (!product) return { kind: "products", source: "newest", sort, limit, ...extra };
+      return { kind: "products", source, relatedTo: { productId: product.id, categoryId: product.category?.id ?? null }, sort, limit, ...extra };
     }
     return { kind: "products", source, sort, limit, ...extra };
   }
@@ -202,6 +211,31 @@ export function listRecords(node: ComponentNode, ctx: RenderContext): DataRecord
   return [];
 }
 
+/** The fields a product list card and the product page share. */
+function productSummaryValue(p: ProductSummary, bind: string, ctx: RenderContext): string | null {
+  switch (bind) {
+    case "title":
+      return p.title;
+    case "image":
+      return p.image;
+    case "href":
+      return p.href;
+    case "price":
+      return p.price == null ? null : ctx.formatPrice(p.price);
+    case "compareAtPrice":
+      return p.compareAtPrice != null && p.price != null && p.compareAtPrice > p.price ? ctx.formatPrice(p.compareAtPrice) : null;
+    case "discount": {
+      if (p.compareAtPrice == null || p.price == null || p.compareAtPrice <= p.price) return null;
+      const off = Math.round((1 - p.price / p.compareAtPrice) * 100);
+      // Locale percent keeps the minus on the right side in Arabic ("‎-٢٣٪").
+      return off > 0 ? new Intl.NumberFormat(ctx.locale === "ar" ? "ar-EG" : "en-US", { style: "percent", signDisplay: "always" }).format(-off / 100) : null;
+    }
+    case "rating":
+      return p.rating ? new Intl.NumberFormat(ctx.locale === "ar" ? "ar-EG" : "en-US", { maximumFractionDigits: 1 }).format(p.rating) : null;
+  }
+  return null;
+}
+
 /**
  * The value of `bind` for a record: text, a link or an image URL. `null`
  * means "nothing to show" (no sale price, no image), and the node is skipped.
@@ -209,30 +243,24 @@ export function listRecords(node: ComponentNode, ctx: RenderContext): DataRecord
 export function boundValue(scope: DataRecord, bind: unknown, ctx: RenderContext): string | null {
   if (typeof bind !== "string") return null;
   switch (scope.kind) {
-    case "productList": {
+    case "product": {
       const p = scope.record;
       switch (bind) {
-        case "title":
-          return p.title;
-        case "image":
-          return p.image;
-        case "href":
-          return p.href;
-        case "price":
-          return p.price == null ? null : ctx.formatPrice(p.price);
-        case "compareAtPrice":
-          return p.compareAtPrice != null && p.price != null && p.compareAtPrice > p.price ? ctx.formatPrice(p.compareAtPrice) : null;
-        case "discount": {
-          if (p.compareAtPrice == null || p.price == null || p.compareAtPrice <= p.price) return null;
-          const off = Math.round((1 - p.price / p.compareAtPrice) * 100);
-          // Locale percent keeps the minus on the right side in Arabic ("‎-٢٣٪").
-          return off > 0 ? new Intl.NumberFormat(ctx.locale === "ar" ? "ar-EG" : "en-US", { style: "percent", signDisplay: "always" }).format(-off / 100) : null;
-        }
-        case "rating":
-          return p.rating ? new Intl.NumberFormat(ctx.locale === "ar" ? "ar-EG" : "en-US", { maximumFractionDigits: 1 }).format(p.rating) : null;
+        case "description":
+          return p.description || null;
+        case "brand":
+          return p.brand || null;
+        case "category":
+          return p.category?.name ?? null;
+        case "reviewCount":
+          return p.reviewCount > 0 ? new Intl.NumberFormat(ctx.locale === "ar" ? "ar-EG" : "en-US").format(p.reviewCount) : null;
+        case "seller":
+          return p.seller.name || null;
       }
-      return null;
+      return productSummaryValue(p, bind, ctx);
     }
+    case "productList":
+      return productSummaryValue(scope.record, bind, ctx);
     case "categoryList": {
       const c = scope.record;
       switch (bind) {

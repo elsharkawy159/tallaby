@@ -60,6 +60,7 @@ import { ButtonLink, SmartLink, cn } from "../sections/_primitives";
 import { DATA_NODE_NEEDS, boundValue, isDataList, isPaginated, listRecords, nodeFormId, walkNodes, type DataRecord } from "./data";
 import { MAX_ELEMENT_DEPTH, PATTERN_VARIANTS, getElementDefinition, type ElementIconName, type PatternVariant } from "./registry";
 import { VideoElement, VideoPlaylist } from "./render-video";
+import { productSectionEmpty, renderProductElement } from "./product-elements";
 import { SocialIcon } from "../social/icon";
 import { contactRowGone, storeSocialLinks, withStoreContact } from "./store-contact";
 
@@ -142,7 +143,9 @@ const recordKey = (scope: DataRecord) => scope.record.id;
 function scopedProps(node: ComponentNode, ctx: RenderContext, scope: DataRecord | undefined): Record<string, unknown> | null {
   const props = node.props ?? {};
   const target = BIND_TARGET[node.type];
-  if (!scope || !target || typeof props.bind !== "string") return props;
+  if (!target || typeof props.bind !== "string") return props;
+  // A bound node outside any record has nothing to show on the storefront; the editor keeps its authored text.
+  if (!scope) return ctx.mode === "public" ? null : props;
   const value = boundValue(scope, props.bind, ctx);
   if (value === null) return null;
   const next: Record<string, unknown> = { ...props, [target]: value };
@@ -271,7 +274,7 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
 
   switch (definition.type) {
     case "section":
-      if (ctx.mode !== "edit" && missingData(node, ctx)) return null;
+      if (ctx.mode !== "edit" && (missingData(node, ctx) || productSectionEmpty(node, ctx, scope))) return null;
       return (
         <section {...attrs} className="relative isolate overflow-x-clip">
           {kids()}
@@ -516,7 +519,7 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
       );
     }
     case "wishlistButton": {
-      if (scope?.kind === "productList") {
+      if (scope?.kind === "productList" || scope?.kind === "product") {
         const button = ctx.renderWishlistButton?.(scope.record);
         return button ? (
           <div {...attrs} className="flex">
@@ -556,7 +559,10 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
       ) : null;
     }
     case "addToCart": {
-      if (scope?.kind === "productList") {
+      // A product with variants needs a chosen variant (the buy box does that), so a plain add
+      // button would add it without one: the editor shows the still preview, the storefront nothing.
+      const variantProduct = scope?.kind === "product" && scope.record.variants.length > 0;
+      if (!variantProduct && (scope?.kind === "productList" || scope?.kind === "product")) {
         const button = ctx.renderAddToCart?.(scope.record);
         return button ? (
           <div {...attrs} className="flex">
@@ -564,7 +570,7 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
           </div>
         ) : null;
       }
-      // Outside a product list there is no product to add: a still preview in the editor only.
+      // Outside a product list (or for a variant product) there is nothing to add: a still preview in the editor only.
       return ctx.mode === "edit" ? (
         <div {...attrs} className="flex">
           <span className="inline-flex h-9 items-center justify-center rounded-(--sf-radius,12px) bg-(--sf-brand) px-4 text-xs font-semibold text-(--sf-brand-ink,#fff) opacity-70">
@@ -573,6 +579,18 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
         </div>
       ) : null;
     }
+    // Product page parts: the page's product (`product-elements.tsx`).
+    case "productGallery":
+    case "productPrice":
+    case "productStock":
+    case "productRating":
+    case "productVariants":
+    case "productBuyBox":
+    case "productDetails":
+    case "productContent":
+    case "productSeller":
+    case "productReviews":
+      return renderProductElement(definition.type, props, attrs, ctx, scope);
   }
 }
 

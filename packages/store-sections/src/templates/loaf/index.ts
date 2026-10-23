@@ -184,7 +184,8 @@ const DEMO = demoStore({
 
 export const LOAF = libraryTemplate({
   key: LOAF_KEY,
-  version: 2,
+  version: 3,
+  changelog: "Loaf v3: product page",
   name: L("لوف", "Loaf"),
   description: L(
     "مخبز واشتراكات ساوردو: كلمة كبيرة، رف طازة النهارده واشتراك أسبوعي. أربع صفحات جاهزة.",
@@ -227,4 +228,5 @@ export const LOAF = libraryTemplate({
     },
   ],
   demo: DEMO,
+  productPage: { surface: "shelf", thumbs: "bottom", band: "brand", copy: { back: L("رجوع للفرن", "Back to the bakery"), reviews: L("اللي ذاقوه قالوا", "From our regulars"), related: L("من رف النهارده", "From today's shelf") } },
 });

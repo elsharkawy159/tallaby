@@ -2613,6 +2613,8 @@ export const storePages = pgTable("store_pages", {
 	useSharedHeader: boolean("use_shared_header").default(true).notNull(),
 	useSharedFooter: boolean("use_shared_footer").default(true).notNull(),
 	showInNav: boolean("show_in_nav").default(true).notNull(),
+	/** 'page' (default) or 'product': the store's single product-page template (0100). */
+	kind: text().default('page').notNull(),
 	orderIndex: integer("order_index").default(0).notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
@@ -2625,7 +2627,9 @@ export const storePages = pgTable("store_pages", {
 			foreignColumns: [stores.id],
 			name: "store_pages_store_id_fkey"
 		}).onDelete("cascade"),
+	uniqueIndex("store_pages_one_product").using("btree", table.storeId.asc().nullsLast().op("uuid_ops")).where(sql`kind = 'product'`),
 	check("store_pages_slug_format", sql`slug ~ '^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$'`),
+	check("store_pages_kind_check", sql`kind IN ('page', 'product')`),
 ]);
 
 /** Immutable publish snapshots (append-only trigger, 0051). */

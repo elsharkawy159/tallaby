@@ -177,7 +177,8 @@ const DEMO = demoStore({
 
 export const CORE = libraryTemplate({
   key: CORE_KEY,
-  version: 2,
+  version: 3,
+  changelog: "Core v3: product page",
   name: L("كور", "Core"),
   description: L(
     "معدات قوة: منتج مميز بتاج عرض، الأرقام، عرضين والأكثر طلباً. أربع صفحات جاهزة.",
@@ -224,4 +225,5 @@ export const CORE = libraryTemplate({
     },
   ],
   demo: DEMO,
+  productPage: { surface: "flat", thumbs: "side", headingCase: "upper", band: "paper", copy: { back: L("رجوع للمعدات", "Back to the equipment"), reviews: L("آراء الأكثر طلباً", "What buyers say"), related: L("معدات تكمّل الصالة", "Equipment to build out your gym") } },
 });

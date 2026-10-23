@@ -29,7 +29,8 @@ describe("blankTemplateConfig", () => {
 describe("prepareTemplateConfig", () => {
   it("accepts every code template config", () => {
     for (const template of CODE_TEMPLATES) expect(prepareTemplateConfig(template.config()).ok, template.key).toBe(true);
-  });
+    // Building every template config (with its product page) takes a while.
+  }, 60_000);
 
   it("refuses junk and a config without exactly one home page", () => {
     expect(prepareTemplateConfig(null).ok).toBe(false);

@@ -189,7 +189,8 @@ const DEMO = demoStore({
 
 export const TECHHUB = libraryTemplate({
   key: TECHHUB_KEY,
-  version: 2,
+  version: 3,
+  changelog: "TechHub v3: product page",
   name: L("تك هب", "TechHub"),
   description: L(
     "إلكترونيات حديثة: بحث في الأول، أقسام، عرض اليوم وماركات. أربع صفحات جاهزة.",
@@ -239,4 +240,5 @@ export const TECHHUB = libraryTemplate({
     },
   ],
   demo: DEMO,
+  productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للمتجر", "Back to the store"), reviews: L("تقييمات المشترين", "Buyer reviews"), related: L("أجهزة وملحقات مشابهة", "Similar devices and accessories") } },
 });

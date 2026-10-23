@@ -4,3 +4,4 @@ export * from "./sanitize";
 export * from "./header";
 export * from "./validate";
 export { hasDangerousScheme, isHttpOrRelativeUrl } from "./url";
+export * from "./product-page.lib";

@@ -186,7 +186,9 @@ const DEMO = demoStore({
 
 export const LAYALI = libraryTemplate({
   key: LAYALI_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Layali v2: product page",
+  productPage: { surface: "flat", thumbs: "side", gallery: "end", button: "outline", band: "brand", extras: ["product-perks"], copy: { back: L("رجوع لتشكيلة السهرة", "Back to the evening rail"), reviews: L("رأي ضيفات الليلة", "Words from the evening"), related: L("كمّلي اللوك", "Complete the look") } },
   name: L("ليالي", "Layali"),
   description: L(
     "لبس سهرة: جاهزة للسهرة، كمّلي اللوك، جديد الأسبوع، التقسيط، حجز ستايلنج ورأي مميز. أربع صفحات جاهزة.",

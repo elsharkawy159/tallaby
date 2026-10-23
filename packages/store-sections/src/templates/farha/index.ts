@@ -198,7 +198,9 @@ const DEMO = demoStore({
 
 export const FARHA = libraryTemplate({
   key: FARHA_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Farha v2: product page",
+  productPage: { thumbs: "bottom", band: "brand", extras: ["product-perks"], copy: { back: L("رجوع للألعاب", "Back to the toys"), reviews: L("الأهالي قالوا", "What parents say"), related: L("ألعاب كمان للفرحة", "More toys to love") } },
   name: L("فرحة", "Farha"),
   description: L(
     "محل ألعاب: بانرات متحركة، اختار حسب السن، أحسن الأطقم، باكدج البداية، آمن للعب وآراء الأهالي. أربع صفحات جاهزة.",

@@ -3295,7 +3295,9 @@
     "save": "Save",
     "created": "Page created",
     "saved": "Page saved",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "productBadge": "Product page",
+    "productSlug": "The product page shows every product at its own address (/products/…), so its address is fixed and it never shows in the menu."
   },
   "domainSeo": {
     "settingsLink": "Store address and domain moved to Website › Domain & SEO",

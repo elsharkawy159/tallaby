@@ -75,6 +75,7 @@ export default async function AdminStoreEditorPage({ params }: { params: Promise
       id: page.id,
       slug: page.slug,
       isHome: page.isHome,
+      ...(page.kind === "product" && { kind: "product" as const }),
       name: (page.name ?? {}) as { ar?: string; en?: string },
       seo: (page.seo ?? {}) as Record<string, unknown>,
       showInNav: page.showInNav,

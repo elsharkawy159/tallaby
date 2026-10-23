@@ -22,6 +22,8 @@ import {
   getStoreDraftKey,
 } from "@workspace/lib/store-sites/server";
 import { signStorePreviewToken, storePreviewSecret } from "@workspace/lib/store-sites/preview";
+import { getStorePreviewProduct } from "@workspace/lib/store-sites/preview-product";
+import type { ProductDetail } from "@workspace/store-sections/render";
 import { storeUrl } from "@workspace/lib/storefront";
 import { findActiveCustomDomainForSubdomain } from "@workspace/lib/storefront/server";
 import { storeSectionRegistry } from "@workspace/store-sections/render";
@@ -123,6 +125,25 @@ export async function refreshEditorData(storeId: string) {
     const catalog = await getStoreCatalog(seller.sellerId, store.id);
     if (!catalog) return fail("notFound");
     return { success: true, data: await loadEditorSnapshot(seller.sellerId, store.id, catalog.mode) };
+  });
+}
+
+const previewProductLimiter = createRateLimiter({ limit: 120, windowMs: 10 * 60_000 });
+
+/**
+ * The product page canvas's product (template product page spec §5.5):
+ * `productId`, or the newest product the store shows; null when the store
+ * shows none (the canvas draws the demo product). Read-only, store-checked,
+ * never cached; only products this store shows are returned.
+ */
+export async function previewProduct(storeId: string, productId: string | undefined, locale: string) {
+  return withStore<ProductDetail | null>(storeId, {}, async ({ seller, store }) => {
+    if (!previewProductLimiter.check(`${seller.sellerId}:${store.id}`)) return fail("rateLimited");
+    const id = typeof productId === "string" && productId ? productId : undefined;
+    const detail = await getStorePreviewProduct(seller.sellerId, store.id, id, { locale: locale === "en" ? "en" : "ar" });
+    // A picked product the store does not show is "not found", not the demo product.
+    if (id && !detail) return fail("notFound");
+    return { success: true, data: detail };
   });
 }
 

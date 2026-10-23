@@ -167,7 +167,8 @@ const DEMO = demoStore({
 
 export const ARCADE = libraryTemplate({
   key: ARCADE_KEY,
-  version: 2,
+  version: 3,
+  changelog: "Arcade v3: product page",
   name: L("أركيد", "Arcade"),
   description: L(
     "جيمنج وسماعات بالوضع الداكن: خصم كبير، عرضين، ترتيب الأكثر مبيعاً وأرقام. أربع صفحات جاهزة.",
@@ -217,4 +218,5 @@ export const ARCADE = libraryTemplate({
     },
   ],
   demo: DEMO,
+  productPage: { thumbs: "side", headingCase: "upper", band: "brand", copy: { back: L("رجوع للعروض", "Back to the deals"), reviews: L("رأي اللاعبين", "Player reviews"), related: L("كمّل السيتاب", "Level up your setup") } },
 });

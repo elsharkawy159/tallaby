@@ -214,7 +214,9 @@ const DEMO = demoStore({
 
 export const YOGA = libraryTemplate({
   key: YOGA_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Sukoon v2: product page",
+  productPage: { surface: "shelf", thumbs: "side", button: "outline", gallery: "end", band: "paper", copy: { back: L("رجوع للاستوديو", "Back to the studio"), reviews: L("رأي رواد الاستوديو", "From the studio"), related: L("كمّل تمرينك بأدوات تانية", "More gear for your practice") } },
   name: L("سكون", "Sukoon"),
   description: L(
     "يوجا وبيلاتس: المفضل في الستوديو، احجز كلاس، أسعار الكلاسات والمدربين. أربع صفحات جاهزة.",

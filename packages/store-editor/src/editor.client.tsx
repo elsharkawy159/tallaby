@@ -11,6 +11,7 @@ import {
   collectContentQueries,
   designSystemToTokens,
   storeSectionRegistry,
+  type ProductDetail,
   type RenderContext,
   type SectionPreset,
   type StoreProfile,
@@ -23,6 +24,9 @@ import { MediaPicker } from "./media/media-picker.client";
 import { findIndustry } from "./lib/industries.lib";
 import { EditorDndProvider } from "./dnd/editor-dnd.client";
 import { DeviceBanner } from "./canvas/device-banner.client";
+import { PreviewProductPicker } from "./canvas/preview-product-picker.client";
+import { offersProductParts } from "./lib/editor-pages.lib";
+import { usePreviewProduct } from "./state/use-preview-product.client";
 import { EditorCanvas } from "./canvas/editor-canvas.client";
 import { createEditorCommands } from "./lib/editor-commands.lib";
 import { QuickInsertDialog, ShortcutsDialog } from "./shell/editor-dialogs.client";
@@ -85,6 +89,11 @@ export type EditorInitial = {
   fontClassName: string;
   /** Store category from Store settings › General (Explore tab searches). */
   category: { en: string | null; ar: string | null };
+  /**
+   * The product page canvas's first product (the newest the store shows); null or
+   * unset draws DEMO_PRODUCT (template and section editing, a store without products).
+   */
+  previewProduct?: ProductDetail | null;
   /** Library section presets for Add › Sections (Task 10); the built-in library when unset. */
   presets?: SectionPreset[];
   /** Industry id for photo slots; found from `category` when unset. */
@@ -241,6 +250,10 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
   const onFrameKeyDown = useEditorShortcuts(store, commands, shortcutActions);
 
   const page = pages.find((p) => p.id === activePageId) ?? pages[0]!;
+  // The product page draws one product (ctx.product): the preview product, else the demo one.
+  const productPage = offersProductParts(page);
+  const previewProduct = usePreviewProduct(adapter, initial.previewProduct, initial.defaultLocale, locale);
+  const product = productPage ? previewProduct.product : undefined;
   // A picture hovered in Images/Explore: drawn on the canvas only (the drafts are untouched).
   const imagePreview = useStore(store, (s) => s.imagePreview);
   const selection = useStore(store, (s) => s.selection);
@@ -301,8 +314,9 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
       // Static preview of this store's forms (no renderForm in the canvas).
       forms: Object.fromEntries(forms.map((f) => [f.id, f.form])),
       ...(slotIndustry && { industry: slotIndustry }),
+      ...(product && { product }),
     }),
-    [locale, forms, initial.store, t, slotIndustry],
+    [locale, forms, initial.store, t, slotIndustry, product],
   );
 
   const ctx = useMemo<RenderContext>(() => {
@@ -312,7 +326,7 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
       pages: pages
         .filter((p) => p.isHome || p.showInNav)
         .map((p) => ({ name: nameOf(p.name, locale), href: p.isHome ? "/" : `/${p.slug}`, isHome: p.isHome })),
-      catalog: { ...resolveCanvasCatalog(collectCatalogQueries(sections, storeSectionRegistry), catalog, locale), counts },
+      catalog: { ...resolveCanvasCatalog(collectCatalogQueries(sections, storeSectionRegistry, { product }), catalog, locale), counts },
       content: resolveCanvasContent(collectContentQueries(sections, storeSectionRegistry), catalog.posts),
       editorData: {
         state: dataState,
@@ -504,6 +518,15 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
 
         <main className="flex min-w-0 flex-1 flex-col max-md:pb-[calc(3.5rem+env(safe-area-inset-bottom))]">
           <DeviceBanner store={store} />
+          {productPage && (
+            <PreviewProductPicker
+              products={catalog.products}
+              current={previewProduct.productId ? { id: previewProduct.productId, title: previewProduct.product.title } : null}
+              busy={previewProduct.busy}
+              onPick={previewProduct.pick}
+              uiLocale={uiLocale}
+            />
+          )}
           <div className="min-h-0 flex-1">
             <EditorCanvas
               ctx={ctx}
@@ -565,6 +588,7 @@ function EditorShell({ initial, store }: { initial: EditorInitial; store: Editor
         onOpenChange={(open) => setQuickInsert((prev) => ({ ...prev, open }))}
         commands={commands}
         uiLocale={uiLocale}
+        productParts={productPage}
       />
       <ShortcutsDialog open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
       <MediaPicker

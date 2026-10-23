@@ -60,4 +60,26 @@ describe("fromLibrary", () => {
     expect([list.props.source, list.props.limit]).toEqual(["newest", 4]);
     expect(() => build(fromLibrary("tpl", getDesign("products-rail")!, { lists: [{}, {}] }))).toThrow(/2 list patches for 1 lists/);
   });
+
+  it("merges node patches by layer label, before the corner cap", () => {
+    const main = getDesign("product-main")!;
+    const nodes = build(
+      fromLibrary("tpl", main, {
+        corners: 8,
+        nodes: {
+          "صور المنتج": { props: { thumbs: "none" }, style: { order: 2 }, tablet: { order: 0 } },
+          "عمود الشراء": { style: { radius: 24, background: "secondary" }, mobile: { gap: 8 } },
+        },
+      }),
+    );
+    const gallery = nodes.find((n) => n.props.label === "صور المنتج")!;
+    expect(gallery.props.thumbs).toBe("none");
+    // Merged into the design's own styles.
+    expect(gallery.style).toMatchObject({ order: 2, colSpan: 7, position: "sticky" });
+    expect(gallery.breakpointStyles?.tablet).toMatchObject({ order: 0, colSpan: 1 });
+    const column = nodes.find((n) => n.props.label === "عمود الشراء")!;
+    expect(column.style).toMatchObject({ radius: 8, background: "secondary", gap: 14 });
+    expect(column.breakpointStyles?.mobile).toMatchObject({ gap: 8 });
+    expect(() => build(fromLibrary("tpl", main, { nodes: { "غير موجود": { style: { order: 1 } } } }))).toThrow(/node "غير موجود"/);
+  });
 });

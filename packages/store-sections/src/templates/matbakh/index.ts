@@ -198,7 +198,9 @@ const DEMO = demoStore({
 
 export const MATBAKH = libraryTemplate({
   key: MATBAKH_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Matbakh v2: product page",
+  productPage: { thumbs: "side", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للمطبخ", "Back to the kitchen"), reviews: L("رأي اللي طبخوا بيه", "From people who cook with it"), related: L("هتحتاجه كمان", "You may also need") } },
   name: L("مطبخ", "Matbakh"),
   description: L(
     "أساسيات مطبخ عصرية: بحث سريع، أقسام، شلف الأسبوع، على قد الميزانية وافتح قبل ما تدفع. أربع صفحات جاهزة.",

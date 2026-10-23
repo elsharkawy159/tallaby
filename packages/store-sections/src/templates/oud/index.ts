@@ -181,7 +181,9 @@ const DEMO = demoStore({
 
 export const OUD = libraryTemplate({
   key: OUD_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Oud v2: product page",
+  productPage: { surface: "flat", thumbs: "side", gallery: "end", button: "outline", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للدار", "Back to the house"), reviews: L("رأي أهل العطر", "From those who wear it"), related: L("عطور من الدار", "More from the house") } },
   name: L("عود", "Oud"),
   description: L(
     "بيت عطور: المفضلة عندنا، حكاية العيلة، هدايا لكل حد، كارت هدية والفروع. أربع صفحات جاهزة.",

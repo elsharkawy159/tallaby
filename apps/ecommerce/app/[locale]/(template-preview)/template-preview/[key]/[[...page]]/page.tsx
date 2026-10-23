@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { formatPricePlain } from "@workspace/lib";
-import type { SiteConfig } from "@workspace/store-sections";
+import { isProductPage, type SiteConfig } from "@workspace/store-sections";
 import {
   PageStyles,
   SITE_ROOT_CLASS,
@@ -9,10 +9,11 @@ import {
   collectCatalogQueries,
   flushHeaderOnMobile,
   storeSectionRegistry,
+  type ProductDetail,
   type RenderContext,
 } from "@workspace/store-sections/render";
 import { CarouselRuntime } from "@workspace/store-sections/client";
-import { prepareTemplateForStore, resolveDemoCatalog, templateFormNeeds, type TemplateMeta } from "@workspace/store-sections/templates";
+import { prepareTemplateForStore, resolveDemoCatalog, templateDemoProduct, templateFormNeeds, type TemplateMeta } from "@workspace/store-sections/templates";
 import { starterPreviewForm } from "@workspace/lib/store-forms/starter";
 import { cn, getPublicUrl } from "@workspace/ui/lib/utils";
 import { templateFrameSrc } from "@/lib/marketing/templates.lib";
@@ -54,7 +55,8 @@ export default async function TemplatePreviewFrame({ params, searchParams }: Pro
   const header = flushHeaderOnMobile(site.header) ?? null;
   const footer = isThumb ? null : (site.footer ?? null);
   const all = [...(header ? [header] : []), ...sections, ...(footer ? [footer] : [])];
-  const ctx = buildContext(site, meta, key, routeLocale, locale, all, formIds);
+  // The product page is drawn with the demo product, as a store's product page shows a real one.
+  const ctx = buildContext(site, meta, key, routeLocale, locale, all, formIds, isProductPage(page) ? templateDemoProduct(meta.demo, { locale }) : undefined);
 
   return (
     <div className={cn(storefrontFont.variable, s.root, SITE_ROOT_CLASS, storeFontVariables)} dir={ctx.dir} lang={locale}>
@@ -82,6 +84,7 @@ function buildContext(
   sections: SiteConfig["pages"][number]["content"]["sections"],
   /** Form id per ready-made form kind the template binds. */
   formIds: Record<string, string>,
+  product?: ProductDetail,
 ): RenderContext {
   const demo = meta.demo;
   const slugs = new Set(site.pages.filter((p) => !p.isHome).map((p) => p.slug));
@@ -101,9 +104,10 @@ function buildContext(
       url: "https://example.tallaby.com",
     },
     pages: site.pages
-      .filter((p) => p.isHome || p.showInNav !== false)
+      .filter((p) => !isProductPage(p) && (p.isHome || p.showInNav !== false))
       .map((p) => ({ name: meta.pageNames[p.slug]?.[locale] ?? p.name, href: p.isHome ? "/" : `/${p.slug}`, isHome: p.isHome })),
-    catalog: resolveDemoCatalog(collectCatalogQueries(sections, storeSectionRegistry), demo, locale),
+    catalog: resolveDemoCatalog(collectCatalogQueries(sections, storeSectionRegistry, { product }), demo, locale),
+    ...(product ? { product } : {}),
     // Still previews of the template's forms (no renderForm: fields drawn, never submitted).
     forms: Object.fromEntries(
       Object.entries(formIds).flatMap(([kind, id]) => {

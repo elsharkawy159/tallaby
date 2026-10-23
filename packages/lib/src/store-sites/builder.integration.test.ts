@@ -15,6 +15,7 @@ import {
   listStoreRevisions,
   publishStoreSite,
   reorderStorePages,
+  restoreRevisionToDraft,
   saveStoreChrome,
   saveStoreDesignSystem,
   saveStorePageDraft,
@@ -109,6 +110,58 @@ describe.skipIf(!TEST_DATABASE_URL)("store builder (integration)", { timeout: 60
     expect(await deleteStorePage(w.a.sellerId, w.a.a2, w.a.a1Home, db)).toMatchObject({ error: "not_found" });
     expect(await updateStorePage(w.b.sellerId, w.a.a2, aboutId, { showInNav: true }, db)).toMatchObject({ error: "not_found" });
     expect(await deleteStorePage(w.a.sellerId, w.a.a2, aboutId, db)).toEqual({ success: true, data: null });
+  });
+
+  describe("product page", () => {
+    let productId = "";
+
+    beforeAll(async () => {
+      // Store b1 of seller B gets a product page, as the Task 3 seeding will.
+      const [row] = await db
+        .insert(s.storePages)
+        .values({ storeId: w.b.b1, slug: "product", kind: "product", showInNav: false, name: { ar: "صفحة المنتج", en: "Product page" }, orderIndex: 99 })
+        .returning({ id: s.storePages.id });
+      productId = row!.id;
+    });
+
+    it("buildDraftSiteConfig maps kind and the product page validates", async () => {
+      const editor = await getStoreForEditor(w.b.sellerId, w.b.b1, db);
+      expect(editor!.pages.find((p) => p.id === productId)).toMatchObject({ slug: "product", kind: "product", showInNav: false });
+      expect(editor!.pages.filter((p) => p.id !== productId).every((p) => !("kind" in p))).toBe(true);
+      // Publishing validates the draft config built from the rows, product page included.
+      const published = await publishStoreSite(w.b.sellerId, w.b.b1, w.b.sellerId, { allowedSections: ALLOWED }, db);
+      expect(published.success).toBe(true);
+      const site = await getPublishedStoreSite(w.b.b1, db);
+      expect(site!.pages.find((p) => p.slug === "product")).toMatchObject({ kind: "product" });
+    });
+
+    it("deleteStorePage on product page returns product_page_locked", async () => {
+      expect(await deleteStorePage(w.b.sellerId, w.b.b1, productId, db)).toMatchObject({ error: "product_page_locked" });
+      expect(await db.select().from(s.storePages).where(eq(s.storePages.id, productId))).toHaveLength(1);
+    });
+
+    it("updateStorePage cannot change product page slug or showInNav", async () => {
+      expect(await updateStorePage(w.b.sellerId, w.b.b1, productId, { slug: "shop" }, db)).toMatchObject({ error: "product_page_locked" });
+      expect(await updateStorePage(w.b.sellerId, w.b.b1, productId, { showInNav: true }, db)).toMatchObject({ error: "product_page_locked" });
+      expect(await updateStorePage(w.b.sellerId, w.b.b1, productId, { name: { ar: "صفحة التفاصيل" } }, db)).toEqual({ success: true, data: null });
+      const [row] = await db.select().from(s.storePages).where(eq(s.storePages.id, productId));
+      expect(row).toMatchObject({ slug: "product", showInNav: false, kind: "product", name: { ar: "صفحة التفاصيل" } });
+    });
+
+    it("createStorePage with slug product returns reserved_slug", async () => {
+      expect(await createStorePage(w.b.sellerId, w.b.b1, { name: { ar: "x" }, slug: "product" }, db)).toMatchObject({ error: "reserved_slug" });
+    });
+
+    it("restoreRevisionToDraft keeps kind", async () => {
+      const revisions = await listStoreRevisions(w.b.sellerId, w.b.b1, 20, db);
+      const live = revisions?.[0];
+      expect(live).toBeDefined();
+      await db.delete(s.storePages).where(eq(s.storePages.id, productId));
+      const restored = await restoreRevisionToDraft(w.b.sellerId, w.b.b1, live!.id, db);
+      expect(restored.success).toBe(true);
+      const [row] = await db.select().from(s.storePages).where(and(eq(s.storePages.storeId, w.b.b1), eq(s.storePages.slug, "product")));
+      expect(row).toMatchObject({ kind: "product", showInNav: false });
+    });
   });
 
   it("reports unpublished changes from the drafts, not from store settings", async () => {

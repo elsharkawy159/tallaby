@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { ChevronLeft } from "lucide-react";
+import { productPageOf } from "@workspace/store-sections/config";
 import { cn } from "@workspace/ui/lib/utils";
 import { socialShareImageUrl } from "@/lib/metadata";
 import { getProductBySlug } from "@/actions/products";
@@ -10,10 +11,17 @@ import { BASE_URL } from "@/lib/constants";
 import type { ProductLocale } from "@/lib/product-translations";
 import { resolveStorefront, storeShowsProduct } from "@/lib/storefront.server";
 import { isSubdomainOfflineForRequest, STORE_OFFLINE_METADATA } from "@/lib/store-site/offline.server";
+import { getStorefrontSite } from "@/lib/store-site/preview.server";
+import { getDefaultProductVariant } from "@/lib/product-variants";
+import { MetaViewContent } from "@/components/meta/meta-view-content.client";
 import { ProductDisplay } from "@/components/product-page/product-display.client";
 import { ProductContent } from "@/components/product-page/product-content";
 import { ProductTabsWrapper } from "@/components/product-page/product-tabs-wrapper.client";
+import { ProductPageDeepLink, ProductPageProvider } from "@/components/product-page/product-page-provider.client";
+import { productPricing } from "@/components/product-page/product-page.lib";
+import { ProductStructuredData } from "@/components/product-page/product-structured-data";
 import type { Product } from "@/components/product-page/product-page.types";
+import { StoreProductPage } from "../../_components/store-product-page";
 import s from "../../storefront.module.css";
 
 type StorefrontProductPageProps = {
@@ -67,10 +75,27 @@ export default async function StorefrontProductPage({ params }: StorefrontProduc
   const { locale, subdomain, slug } = await params;
   // Website offline: the layout shows the offline page instead.
   if (await isSubdomainOfflineForRequest(subdomain)) return null;
-  const [{ store, product }, t] = await Promise.all([
+  const [{ store, product }, t, tBreadcrumb] = await Promise.all([
     resolveStoreProduct(locale, subdomain, slug),
     getTranslations("storefront"),
+    getTranslations("breadcrumb"),
   ]);
+
+  // The site's own product page (spec §5.4): the published site, or the
+  // verified draft in a builder preview, as every other store page.
+  const { site } = await getStorefrontSite(store.id, store.storeId, store.subdomain);
+  if (site && productPageOf(site)) {
+    // ViewContent carries the price shown on load: the default variant's, else the product's.
+    const { price } = productPricing(product, getDefaultProductVariant(product.productVariants));
+    return (
+      <ProductPageProvider product={product}>
+        <ProductStructuredData product={product} locale={locale as ProductLocale} homeLabel={tBreadcrumb("home")} />
+        <MetaViewContent productId={product.id} value={price} />
+        <ProductPageDeepLink />
+        <StoreProductPage store={store} site={site} locale={locale} product={product} />
+      </ProductPageProvider>
+    );
+  }
 
   return (
     <>

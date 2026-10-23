@@ -29,6 +29,7 @@ import type { EditorCommands } from "../../lib/editor-commands.lib";
 import { LIBRARY_ICONS } from "../../lib/editor-icons.lib";
 import { acceptsCardPreset, presetDataStatus, presetInstance } from "../../lib/editor-library.lib";
 import { recordUse } from "../../lib/editor-palette.lib";
+import { offeredPresets, offersProductParts } from "../../lib/editor-pages.lib";
 import { getInstance, refOf } from "../../lib/editor-selection.lib";
 import { resolveCanvasCatalog, resolveCanvasContent } from "../../lib/editor.lib";
 import type { EditorStore } from "../../state/editor.store";
@@ -71,9 +72,11 @@ export function SectionLibrary({
   const allPresets = useStore(store, (s) => s.presets) ?? SECTION_PRESETS;
   // Header/footer presets replace the shared chrome: only for hosts that save it.
   const keepsChrome = useEditorAdapter().capabilities.designSystem;
+  // The product page category draws the page's product: offered on the product page only.
+  const productParts = useStore(store, (s) => offersProductParts(s.pages.find((p) => p.id === s.activePageId) ?? s.pages[0]));
   const presets = useMemo(
-    () => (keepsChrome ? allPresets : allPresets.filter((p) => !storeSectionRegistry.get(p.sectionId)?.chrome)),
-    [allPresets, keepsChrome],
+    () => offeredPresets(keepsChrome ? allPresets : allPresets.filter((p) => !storeSectionRegistry.get(p.sectionId)?.chrome), productParts),
+    [allPresets, keepsChrome, productParts],
   );
   const selection = useStore(store, (s) => s.selection);
   const selectedInstance = useStore(store, (s) => {
@@ -101,7 +104,11 @@ export function SectionLibrary({
       ...preview.ctx,
       pages: [],
       catalog: {
-        ...resolveCanvasCatalog(collectCatalogQueries([...instances.values()], storeSectionRegistry), preview.catalog, preview.ctx.locale),
+        ...resolveCanvasCatalog(
+          collectCatalogQueries([...instances.values()], storeSectionRegistry, { product: preview.ctx.product }),
+          preview.catalog,
+          preview.ctx.locale,
+        ),
         counts: preview.counts,
       },
       content: resolveCanvasContent(collectContentQueries([...instances.values()], storeSectionRegistry), preview.posts),

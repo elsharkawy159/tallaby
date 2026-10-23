@@ -17,6 +17,17 @@ interface ProductActionsProps {
   className?: string;
   isInCart?: boolean;
   cartItemQuantity?: number;
+  /** Store product page (buy box element): the add button's own text. */
+  addLabel?: string;
+  /** Store product page: the "buy now" text. */
+  buyLabel?: string;
+  /** Store product page: the add button's style. */
+  buttonVariant?: "default" | "outline";
+  /**
+   * Store product page: a full-width "buy now" under the row (Shopify's
+   * dynamic checkout button), for products that are not direct checkout.
+   */
+  showBuyNow?: boolean;
 }
 
 export const ProductActions = ({
@@ -26,6 +37,10 @@ export const ProductActions = ({
   className,
   isInCart: isInCartStatus = false,
   cartItemQuantity = 0,
+  addLabel,
+  buyLabel,
+  buttonVariant,
+  showBuyNow = false,
 }: ProductActionsProps) => {
   const t = useTranslations("product");
   const [quantity, setQuantity] = useState(cartItemQuantity || 1);
@@ -37,8 +52,8 @@ export const ProductActions = ({
     setQuantity(newQuantity);
   };
 
-  return (
-    <div className={cn("flex min-w-0 items-center gap-3", className)}>
+  const row = (
+    <div className={cn("flex min-w-0 items-center gap-3", showBuyNow ? undefined : className)}>
       <ProductQuantitySelector
         initialQuantity={quantity}
         min={1}
@@ -76,14 +91,50 @@ export const ProductActions = ({
               quantity={quantity}
               variantId={selectedVariantId ?? undefined}
               className="h-10.5 w-full rounded-lg text-base md:rounded-full"
-              variant="default"
+              variant={buttonVariant ?? "default"}
               showIcon={true}
               showText={true}
               stock={stockCount}
               buyNow={buyNow}
+              label={buyNow ? buyLabel : addLabel}
             />
           )}
         </div>
+      )}
+    </div>
+  );
+
+  if (!showBuyNow) return row;
+
+  // The second button is drawn in the other style, so the two stay apart.
+  const buyVariant = buttonVariant === "outline" ? "default" : "outline";
+  return (
+    <div className={cn("flex min-w-0 flex-col gap-3", className)}>
+      {row}
+      {hasStock && !buyNow && (
+        isInCartStatus ? (
+          <Button
+            asChild
+            variant={buyVariant}
+            className="h-10.5 w-full rounded-lg text-base md:rounded-full"
+            size="lg"
+          >
+            <Link href="/cart/checkout">{buyLabel || t("buyNow")}</Link>
+          </Button>
+        ) : (
+          <AddToCartButton
+            productId={product.id}
+            quantity={quantity}
+            variantId={selectedVariantId ?? undefined}
+            className="h-10.5 w-full rounded-lg text-base md:rounded-full"
+            variant={buyVariant}
+            showIcon={true}
+            showText={true}
+            stock={stockCount}
+            buyNow
+            label={buyLabel}
+          />
+        )
       )}
     </div>
   );

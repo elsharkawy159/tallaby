@@ -230,7 +230,9 @@ const DEMO = demoStore({
 
 export const BASHRA = libraryTemplate({
   key: BASHRA_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Bashra v2: product page",
+  productPage: { surface: "shelf", thumbs: "bottom", band: "brand", copy: { back: L("رجوع للعناية بالبشرة", "Back to skincare"), reviews: L("رأي أعضاء بشرة", "Member reviews"), related: L("كمّلي روتينك", "Complete your routine") } },
   name: L("بشرة", "Bashra"),
   description: L(
     "عناية حسب نوع البشرة ومكافآت: لاقي روتينك، اختيارنا، خزّني ووفّري، النقط والمستويات، ادعي صاحبتك وآراء الأعضاء. أربع صفحات جاهزة.",

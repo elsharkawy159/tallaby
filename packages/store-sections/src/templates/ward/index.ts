@@ -190,7 +190,9 @@ const DEMO = demoStore({
 
 export const WARD = libraryTemplate({
   key: WARD_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Ward v2: product page",
+  productPage: { surface: "shelf", thumbs: "bottom", band: "paper", copy: { back: L("رجوع لروتينك", "Back to your routine"), reviews: L("بشرتهم قالت", "What their skin says"), related: L("كمّلي الروتين", "Finish the routine") } },
   name: L("ورد", "Ward"),
   description: L(
     "جمال كل يوم: بانرات متحركة، الخمسة، وفّري مع الكمية، نقط على كل طلب وأسئلة. أربع صفحات جاهزة.",

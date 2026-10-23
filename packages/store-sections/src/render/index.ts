@@ -1,6 +1,7 @@
 /** Renderer + section library. React; safe for server components (no hooks). */
 export * from "./render";
 export * from "../core/types";
+export * from "../core/demo-product";
 export * from "../core/registry";
 export * from "../core/slots";
 export * from "../core/locale";

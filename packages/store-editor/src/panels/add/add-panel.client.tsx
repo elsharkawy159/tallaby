@@ -7,9 +7,7 @@ import { useDraggable } from "@dnd-kit/core";
 import { useStore } from "zustand";
 import type { DesignSystem, SiteLocale } from "@workspace/store-sections";
 import {
-  ELEMENT_GROUPS,
   LAYOUT_PRESETS,
-  PALETTE_TYPES,
   getElementDefinition,
   type DataNeed,
   type ElementType,
@@ -32,6 +30,7 @@ import { SectionLibrary } from "./section-library.client";
 import type { TemplatePreviewHost } from "./template-preview-dialog.client";
 import { useEditorAdapter } from "../../adapter.client";
 import { addTabs } from "../../shell/capabilities.lib";
+import { offeredElementGroups, offeredPaletteTypes, offersProductParts } from "../../lib/editor-pages.lib";
 
 const pick = (value: { ar: string; en: string }, locale: string) => (locale === "en" ? value.en : value.ar) || value.ar;
 
@@ -65,6 +64,8 @@ export function AddPanel({
   const tab = useStore(store, (s) => s.addTab);
   const setTab = useStore(store, (s) => s.setAddTab);
   const tabs = addTabs(capabilities);
+  // Product elements draw the page's product: offered on the product page only.
+  const productParts = useStore(store, (s) => offersProductParts(s.pages.find((p) => p.id === s.activePageId) ?? s.pages[0]));
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div role="tablist" className={cn("m-3 mb-0 grid rounded-lg bg-muted p-1", tabs.length === 3 ? "grid-cols-3" : "grid-cols-2")}>
@@ -84,7 +85,7 @@ export function AddPanel({
           </button>
         ))}
       </div>
-      {tab === "elements" && <ElementsTab commands={commands} uiLocale={uiLocale} />}
+      {tab === "elements" && <ElementsTab commands={commands} uiLocale={uiLocale} productParts={productParts} />}
       {tab === "sections" && <SectionLibrary store={store} commands={commands} uiLocale={uiLocale} preview={preview} />}
       {tab === "templates" && capabilities.templates && (
         <PageTemplatesTab store={store} commands={commands} uiLocale={uiLocale} templates={templates.items} currentKey={templates.currentKey} host={templateHost} />
@@ -93,7 +94,7 @@ export function AddPanel({
   );
 }
 
-function ElementsTab({ commands, uiLocale }: { commands: EditorCommands; uiLocale: string }) {
+function ElementsTab({ commands, uiLocale, productParts }: { commands: EditorCommands; uiLocale: string; productParts: boolean }) {
   const t = useTranslations("storeEditor.add");
   const [query, setQuery] = useState("");
   const [usage, setUsage] = useState<{ recent: PaletteKey[]; most: PaletteKey[] }>({ recent: [], most: [] });
@@ -107,7 +108,7 @@ function ElementsTab({ commands, uiLocale }: { commands: EditorCommands; uiLocal
       recordUse(key);
       setUsage({ recent: recentItems(), most: mostUsedItems() });
     };
-    for (const type of PALETTE_TYPES) {
+    for (const type of offeredPaletteTypes(productParts)) {
       const definition = getElementDefinition(type)!;
       const Icon = ELEMENT_ICONS[type];
       const key = `el:${type}` as const;
@@ -133,18 +134,18 @@ function ElementsTab({ commands, uiLocale }: { commands: EditorCommands; uiLocal
       });
     }
     return map;
-  }, [commands, uiLocale]);
+  }, [commands, uiLocale, productParts]);
 
   const filter = (keys: PaletteKey[]) => keys.map((k) => items.get(k)).filter((i): i is Item => Boolean(i) && matchesSearch(query, i!.label, ...i!.keywords));
   const elementKeys = (group: string) =>
-    PALETTE_TYPES.filter((type: ElementType) => getElementDefinition(type)!.group === group).map((type) => `el:${type}` as PaletteKey);
+    offeredPaletteTypes(productParts).filter((type: ElementType) => getElementDefinition(type)!.group === group).map((type) => `el:${type}` as PaletteKey);
   const presetKeys = LAYOUT_PRESETS.map((p: LayoutPreset) => `preset:${p.id}` as PaletteKey);
 
   const groups: { key: string; title: string; icon?: ReactNode; items: Item[]; compact?: boolean }[] = [
     { key: "recent", title: t("recent"), icon: <Clock className="size-4" aria-hidden />, items: query ? [] : filter(usage.recent) },
     { key: "most", title: t("mostUsed"), icon: <Flame className="size-4" aria-hidden />, items: query ? [] : filter(usage.most) },
     { key: "layouts", title: t("layouts"), items: filter(presetKeys), compact: true },
-    ...ELEMENT_GROUPS.map((group) => ({ key: group, title: t(`groups.${group}`), items: filter(elementKeys(group)) })),
+    ...offeredElementGroups(productParts).map((group) => ({ key: group, title: t(`groups.${group}`), items: filter(elementKeys(group)) })),
   ];
   const empty = groups.every((g) => g.items.length === 0);
 

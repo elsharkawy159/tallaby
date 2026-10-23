@@ -178,7 +178,8 @@ const DEMO = demoStore({
 
 export const ARENA = libraryTemplate({
   key: ARENA_KEY,
-  version: 2,
+  version: 3,
+  changelog: "Arena v3: product page",
   name: L("أرينا", "Arena"),
   description: L(
     "أدوات جيمنج بالوضع الداكن: فيلم للمتجر، ماركات، فيديو السيت أب وشروط الضمان. أربع صفحات جاهزة.",
@@ -216,4 +217,5 @@ export const ARENA = libraryTemplate({
     { slug: "faq", name: L("الأسئلة الشائعة", "FAQ"), seo: { title: L("الأسئلة الشائعة", "FAQ") }, sections: faq },
   ],
   demo: DEMO,
+  productPage: { thumbs: "bottom", surface: "shelf", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للمتجر", "Back to the store"), reviews: L("رأي اللي جربوا", "From players who tried it"), related: L("معدات تكمّل السيتاب", "Gear to finish the setup") } },
 });

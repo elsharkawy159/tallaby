@@ -16,6 +16,8 @@ export type EditorPage = {
   id: string;
   slug: string;
   isHome: boolean;
+  /** `"product"`: the store's product page (one per site; fixed slug, never in the menu). Absent: a normal page. */
+  kind?: "product";
   name: { ar?: string; en?: string };
   seo: Record<string, unknown>;
   showInNav: boolean;
