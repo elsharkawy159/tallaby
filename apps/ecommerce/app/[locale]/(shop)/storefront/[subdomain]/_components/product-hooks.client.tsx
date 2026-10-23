@@ -55,7 +55,6 @@ export function StoreProductGallery({ thumbs, zoom }: { thumbs: "side" | "bottom
     <ProductImages
       images={images}
       productName={product.title}
-      productId={product.id}
       description={product.description}
       bulletPoints={bulletPoints}
       thumbs={thumbs}
