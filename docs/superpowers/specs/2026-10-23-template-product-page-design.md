@@ -281,9 +281,10 @@ stores too as we don't have many real stores".
    Classic if it is unset or the template is gone).
 2. Insert it as a `store_pages` draft row (`slug = 'product'`,
    `kind = 'product'`).
-3. If the site has a published revision, append the same page to that
-   revision's snapshot. Only the product page goes live; the seller's other
-   unpublished drafts stay drafts.
+3. If the site has a published revision, publish a new revision whose
+   snapshot is the live snapshot plus the same page (revisions are
+   append-only), and point `stores.published_revision_id` at it. Only the
+   product page goes live; the seller's other unpublished drafts stay drafts.
 4. Bust the store's published-site cache tags.
 
 Each store is one transaction. It reports which stores were changed and which
@@ -309,3 +310,4 @@ Where the code differs from the spec text above:
 - The product page is never added to the navigation when a template is applied (`showInNav` is forced to false for it).
 - The builder's preview product comes from `getStorePreviewProduct` in `packages/lib`; the storefront maps its own row with `toProductDetail` in `apps/ecommerce`, so there are two mappers to keep in sync.
 - `ProductDetail.quantity` is the total stock (sum of variant quantities when variants exist).
+- Backfill step 3 inserts a new `store_site_revisions` row (number = max + 1 under the store row lock, the live revision's `schema_version` and `template_key`, `published_by` NULL) and repoints `stores.published_revision_id`, because the 0051 trigger makes revisions append-only. The old revision is untouched. It does not change `last_published_at`. The dry run reports the same outcome, revision number included.

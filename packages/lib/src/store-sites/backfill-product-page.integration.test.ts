@@ -1,6 +1,6 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import { and, eq } from "drizzle-orm";
+import { and, eq, max } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import * as DB_SCHEMA from "@workspace/db/schema";
 import { productPageOf, siteConfigSchema } from "@workspace/store-sections";
@@ -30,17 +30,35 @@ describe.skipIf(!TEST_DATABASE_URL)("backfill product page (integration)", { tim
     await client.end();
   });
 
-  /** Makes a store look pre-feature: no product draft row, none in any revision snapshot. */
+  /**
+   * Revisions are append-only (0051 trigger), so a test changes the live site the way publish does:
+   * inserts a new revision (copying the live one's schema version and template key) and points the
+   * store at it. Returns the new revision id.
+   */
+  async function publishSnapshot(storeId: string, snapshot: unknown): Promise<string> {
+    const [store] = await db.select({ live: s.stores.publishedRevisionId }).from(s.stores).where(eq(s.stores.id, storeId));
+    const [live] = await db.select().from(s.storeSiteRevisions).where(eq(s.storeSiteRevisions.id, store!.live!));
+    const [{ last } = { last: 0 }] = await db
+      .select({ last: max(s.storeSiteRevisions.revisionNumber) })
+      .from(s.storeSiteRevisions)
+      .where(eq(s.storeSiteRevisions.storeId, storeId));
+    const [row] = await db
+      .insert(s.storeSiteRevisions)
+      .values({ storeId, revisionNumber: (last ?? 0) + 1, schemaVersion: live!.schemaVersion, templateKey: live!.templateKey, snapshot })
+      .returning({ id: s.storeSiteRevisions.id });
+    await db.update(s.stores).set({ publishedRevisionId: row!.id }).where(eq(s.stores.id, storeId));
+    return row!.id;
+  }
+
+  /** Makes a store look pre-feature: no product draft row, and a live snapshot without one. */
   async function stripProductPage(storeId: string) {
     await db.delete(s.storePages).where(and(eq(s.storePages.storeId, storeId), eq(s.storePages.kind, "product")));
-    const revisions = await db.select().from(s.storeSiteRevisions).where(eq(s.storeSiteRevisions.storeId, storeId));
-    for (const r of revisions) {
-      const snap = r.snapshot as { pages: { kind?: string }[] };
-      await db
-        .update(s.storeSiteRevisions)
-        .set({ snapshot: { ...snap, pages: snap.pages.filter((p) => p.kind !== "product") } })
-        .where(eq(s.storeSiteRevisions.id, r.id));
-    }
+    const [store] = await db.select({ live: s.stores.publishedRevisionId }).from(s.stores).where(eq(s.stores.id, storeId));
+    if (!store?.live) return;
+    const [live] = await db.select().from(s.storeSiteRevisions).where(eq(s.storeSiteRevisions.id, store.live));
+    const snap = live!.snapshot as { pages: { kind?: string }[] };
+    if (!snap.pages.some((p) => p.kind === "product")) return;
+    await publishSnapshot(storeId, { ...snap, pages: snap.pages.filter((p) => p.kind !== "product") });
   }
 
   const productRows = (storeId: string) =>
@@ -63,8 +81,10 @@ describe.skipIf(!TEST_DATABASE_URL)("backfill product page (integration)", { tim
     await db.update(s.stores).set({ templateKey: "tallaby-classic" }).where(eq(s.stores.id, w.a.a2));
   });
 
-  it("adds draft row and appends to latest published revision", async () => {
+  it("adds the draft row and publishes a new live revision; the old revision is unchanged", async () => {
     const before = await revisionCount(w.a.a1);
+    const old = await liveRevision(w.a.a1);
+    const [oldRow] = await db.select().from(s.storeSiteRevisions).where(eq(s.storeSiteRevisions.id, old.id));
     const out = await backfillStoreProductPageDetailed(db, w.a.a1);
     expect(out.result).toBe("added");
     expect(out.publishedUpdated).toBe(true);
@@ -73,11 +93,26 @@ describe.skipIf(!TEST_DATABASE_URL)("backfill product page (integration)", { tim
     expect(rows).toHaveLength(1);
     expect(rows[0]).toMatchObject({ slug: "product", kind: "product", isHome: false, showInNav: false });
 
-    const live = await liveSnapshot(w.a.a1);
+    const now = await liveRevision(w.a.a1);
+    expect(now.id).not.toBe(old.id);
+    const [newRow] = await db.select().from(s.storeSiteRevisions).where(eq(s.storeSiteRevisions.id, now.id));
+    expect(newRow).toMatchObject({
+      revisionNumber: oldRow!.revisionNumber + 1,
+      schemaVersion: oldRow!.schemaVersion,
+      templateKey: oldRow!.templateKey,
+      publishedBy: null,
+    });
+    expect(out.revisionNumber).toBe(newRow!.revisionNumber);
+    const live = siteConfigSchema.parse(now.snapshot);
+    expect(live.pages.filter((p) => p.kind === "product")).toHaveLength(1);
     const page = productPageOf(live);
     expect(page).toMatchObject({ slug: "product", kind: "product", isHome: false });
     expect(page?.id).toBe(rows[0]!.id);
-    expect(await revisionCount(w.a.a1)).toBe(before);
+    expect(live.pages.filter((p) => p.kind !== "product")).toEqual(siteConfigSchema.parse(old.snapshot).pages);
+    expect(await revisionCount(w.a.a1)).toBe(before + 1);
+
+    const [oldAfter] = await db.select().from(s.storeSiteRevisions).where(eq(s.storeSiteRevisions.id, old.id));
+    expect(oldAfter).toEqual(oldRow);
   });
 
   it("draft-only store gets draft row only", async () => {
@@ -118,11 +153,18 @@ describe.skipIf(!TEST_DATABASE_URL)("backfill product page (integration)", { tim
     expect(liveAfter.pages.filter((p) => p.kind !== "product")).toEqual(liveBefore.pages);
   });
 
-  it("dry run writes nothing", async () => {
-    const out = await backfillStoreProductPageDetailed(db, w.a.a1, { dryRun: true });
-    expect(out.result).toBe("added");
+  it("dry run writes nothing and reports what apply does", async () => {
+    const before = await revisionCount(w.a.a1);
+    const liveId = (await liveRevision(w.a.a1)).id;
+    const dry = await backfillStoreProductPageDetailed(db, w.a.a1, { dryRun: true });
+    expect(dry.result).toBe("added");
     expect(await productRows(w.a.a1)).toHaveLength(0);
     expect(productPageOf(await liveSnapshot(w.a.a1))).toBeUndefined();
+    expect(await revisionCount(w.a.a1)).toBe(before);
+    expect((await liveRevision(w.a.a1)).id).toBe(liveId);
+
+    const applied = await backfillStoreProductPageDetailed(db, w.a.a1);
+    expect(applied).toEqual(dry);
   });
 
   it("skips a store whose /product slug is a normal page", async () => {
@@ -147,13 +189,14 @@ describe.skipIf(!TEST_DATABASE_URL)("backfill product page (integration)", { tim
 
   it("skips a store whose live snapshot is invalid", async () => {
     const live = await liveRevision(w.a.a2);
-    await db.update(s.storeSiteRevisions).set({ snapshot: { schemaVersion: 1, pages: "broken" } }).where(eq(s.storeSiteRevisions.id, live.id));
+    const broken = await publishSnapshot(w.a.a2, { schemaVersion: 1, pages: "broken" });
     try {
       const out = await backfillStoreProductPageDetailed(db, w.a.a2);
       expect(out.result).toBe("skipped");
       expect(await productRows(w.a.a2)).toHaveLength(0);
+      expect((await liveRevision(w.a.a2)).id).toBe(broken);
     } finally {
-      await db.update(s.storeSiteRevisions).set({ snapshot: live.snapshot }).where(eq(s.storeSiteRevisions.id, live.id));
+      await db.update(s.stores).set({ publishedRevisionId: live.id }).where(eq(s.stores.id, w.a.a2));
     }
   });
 });

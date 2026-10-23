@@ -10,9 +10,13 @@
  *    DB default template, else the code default (`DEFAULT_TEMPLATE`);
  * 3. fit it to the store like "Use template" does (`prepareTemplateForStore`: language, name);
  * 4. insert it as a `store_pages` draft row (`kind = 'product'`, not in the nav);
- * 5. when the store has a live revision, append the same page to that revision's snapshot in place
- *    (no new revision, so it is not a publish by the seller; the seller's other drafts stay drafts).
- *    The whole snapshot is re-validated first; when it is invalid the store is skipped.
+ * 5. when the store has a live revision, insert a NEW revision (revisions are append-only, 0051 trigger
+ *    `store_site_revisions_immutable`): its snapshot is the live snapshot plus the same page, with the
+ *    live revision's schema_version and template_key, revision_number = max + 1 (under the store lock),
+ *    published_by NULL (not a publish by the seller); then point `stores.published_revision_id` at it.
+ *    The old revision is not changed, and the seller's other drafts stay drafts (the new snapshot is
+ *    built from the live one, never from the drafts). The whole snapshot is re-validated first; when
+ *    it is invalid the store is skipped.
  *
  * Idempotent: a store with a product page is skipped. Cache invalidation is the caller's job after
  * commit (`publishedUpdated` says whether the live site changed). Server-only; no money or ledger.
@@ -32,8 +36,10 @@ export type BackfillOutcome = {
   reason: string;
   /** Template the page came from; null when the store was skipped before choosing. */
   templateKey: string | null;
-  /** True when the live revision's snapshot was changed (the caller busts the published-site cache). */
+  /** True when a new live revision was (in a dry run: would be) published; the caller busts the published-site cache. */
   publishedUpdated: boolean;
+  /** Number of the new live revision; null when the store has no live revision or was skipped. */
+  revisionNumber: number | null;
   sellerId: string | null;
   subdomain: string | null;
 };
@@ -45,6 +51,7 @@ const skipped = (reason: string, extra: Partial<BackfillOutcome> = {}): Backfill
   reason,
   templateKey: null,
   publishedUpdated: false,
+  revisionNumber: null,
   sellerId: null,
   subdomain: null,
   ...extra,
@@ -116,10 +123,14 @@ export async function backfillStoreProductPageDetailed(q: Queryable, storeId: st
     const page = { ...fitted, id: pageId, name: snapshotName, slug: PRODUCT_PAGE_SLUG, kind: "product" as const, isHome: false, showInNav: false };
 
     // The live snapshot, when the store has one: validated whole with the page appended, before any write.
-    let snapshotUpdate: { id: string; snapshot: SiteConfig } | null = null;
+    let nextRevision: { revisionNumber: number; schemaVersion: number; templateKey: string; snapshot: SiteConfig } | null = null;
     if (store.publishedRevisionId) {
       const [revision] = await tx
-        .select({ id: storeSiteRevisions.id, snapshot: storeSiteRevisions.snapshot })
+        .select({
+          snapshot: storeSiteRevisions.snapshot,
+          schemaVersion: storeSiteRevisions.schemaVersion,
+          templateKey: storeSiteRevisions.templateKey,
+        })
         .from(storeSiteRevisions)
         .where(and(eq(storeSiteRevisions.id, store.publishedRevisionId), eq(storeSiteRevisions.storeId, storeId)))
         .limit(1);
@@ -134,7 +145,17 @@ export async function backfillStoreProductPageDetailed(q: Queryable, storeId: st
         }
         const next = validateSiteConfig({ ...live.data, pages: [...live.data.pages, page] });
         if (!next.success) return skipped("live snapshot invalid with the product page", { ...who, templateKey: template.key });
-        snapshotUpdate = { id: revision.id, snapshot: next.data };
+        // Same numbering as publishStoreSite; in apply mode the store row lock serialises it with publishes.
+        const [{ last } = { last: 0 }] = await tx
+          .select({ last: max(storeSiteRevisions.revisionNumber) })
+          .from(storeSiteRevisions)
+          .where(eq(storeSiteRevisions.storeId, storeId));
+        nextRevision = {
+          revisionNumber: (last ?? 0) + 1,
+          schemaVersion: revision.schemaVersion,
+          templateKey: revision.templateKey,
+          snapshot: next.data,
+        };
       }
     }
 
@@ -157,16 +178,21 @@ export async function backfillStoreProductPageDetailed(q: Queryable, storeId: st
         .onConflictDoNothing()
         .returning({ id: storePages.id });
       if (!inserted.length) return skipped("a product page was added concurrently", { ...who, templateKey: template.key });
-      if (snapshotUpdate) {
-        await tx.update(storeSiteRevisions).set({ snapshot: snapshotUpdate.snapshot }).where(eq(storeSiteRevisions.id, snapshotUpdate.id));
+      if (nextRevision) {
+        const [revision] = await tx
+          .insert(storeSiteRevisions)
+          .values({ storeId, ...nextRevision, publishedBy: null })
+          .returning({ id: storeSiteRevisions.id });
+        await tx.update(stores).set({ publishedRevisionId: revision!.id }).where(eq(stores.id, storeId));
       }
     }
 
     return {
       result: "added",
-      reason: snapshotUpdate ? "added (draft and live revision)" : "added (draft only)",
+      reason: nextRevision ? `added (draft and new live revision #${nextRevision.revisionNumber})` : "added (draft only)",
       templateKey: template.key,
-      publishedUpdated: Boolean(snapshotUpdate),
+      publishedUpdated: Boolean(nextRevision),
+      revisionNumber: nextRevision?.revisionNumber ?? null,
       ...who,
     };
   });

@@ -6,8 +6,8 @@
  *   DATABASE_URL=postgres://... pnpm --filter @workspace/lib backfill:product-pages --apply    (writes)
  *
  * Dry run is the default. DATABASE_URL must be set explicitly in the environment (never read from
- * a file by this script); only its host is printed. After each store that changed its live
- * snapshot, the published-site cache tags are broadcast to the other apps (needs REVALIDATE_SECRET
+ * a file by this script); only its host is printed. A published store gets a new live revision
+ * (old live snapshot + the product page; revisions are append-only). After each such store, the published-site cache tags are broadcast to the other apps (needs REVALIDATE_SECRET
  * and ECOMMERCE_URL in the environment; without them the cache clears by its TTL).
  * Production runs need the owner's go-ahead (CLAUDE.md rule 4).
  */
@@ -44,8 +44,8 @@ async function main() {
         const out = await backfillStoreProductPageDetailed(db, id, { dryRun: !apply });
         totals[out.result] += 1;
         console.log(`${id} ${out.subdomain ?? "-"} template=${out.templateKey ?? "-"} ${out.result}${apply || out.result === "skipped" ? "" : " (would add)"}: ${out.reason}`);
+        if (out.publishedUpdated) totals.liveUpdated += 1;
         if (apply && out.publishedUpdated && out.sellerId && out.subdomain) {
-          totals.liveUpdated += 1;
           await broadcastInvalidation(invalidateStoreSite(out.sellerId, id, out.subdomain), "admin");
         }
       } catch (error) {
@@ -53,7 +53,7 @@ async function main() {
         console.log(`${id} - template=- failed: ${errorLine(error)}`);
       }
     }
-    console.log(`Stores: ${ids.length}. ${apply ? "Added" : "Would add"}: ${totals.added}. Skipped: ${totals.skipped}. Failed: ${totals.failed}. Live snapshots ${apply ? "updated" : "to update"}: ${apply ? totals.liveUpdated : "see per-store lines"}.`);
+    console.log(`Stores: ${ids.length}. ${apply ? "Added" : "Would add"}: ${totals.added}. Skipped: ${totals.skipped}. Failed: ${totals.failed}. New live revisions ${apply ? "published" : "to publish"}: ${totals.liveUpdated}.`);
     if (totals.failed) process.exitCode = 1;
   } catch (error) {
     console.error(`Backfill aborted: ${errorLine(error)}`);
