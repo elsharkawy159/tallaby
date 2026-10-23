@@ -211,6 +211,8 @@ seller can insert the newer version (the `source` field lets the editor say "a n
 9. Within limits: ≤ 400 nodes, depth ≤ 12; a snapshot test per design; the boundary test passes.
 10. No scripts, iframes, HTML strings or CSS text; links via `safeHref`, images via `ctx.imageUrl`.
 
+**Product elements (2026-10-23).** The product page elements (gallery, price, variant picker, buy box, product content and so on) read a product scope that the host provides (`ProductDetail`), not store-wide data nodes. In the editor they are still renderings of the preview product; on the storefront the host hooks (cart, wishlist, reviews) make them live. They hold no seller HTML: product content is sanitised by the host and printed as is. Rule 7 applies to them (render nothing publicly when empty). The `product-page` library category is offered only while editing the product page.
+
 ## 7. Suggested order (for the plan)
 
 1. Schema + validation (`section` root, `source`, limits, `bind`, new node types).

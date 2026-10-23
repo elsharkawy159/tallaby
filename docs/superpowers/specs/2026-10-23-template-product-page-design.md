@@ -294,3 +294,18 @@ go-ahead at run time (rule 4). Its result is logged in `PLAN.md` §23.
 applies through `mergeTemplateIntoDraft`. The page can't be deleted, so the
 builder needs no "add product page" prompt. A store that still somehow lacks
 one falls back to today's layout.
+
+
+## Implementation notes (2026-10-23)
+
+Where the code differs from the spec text above:
+
+- The host sanitises `contentHtml` (`sanitizeRichTextHtml` from `@workspace/tiptap`, when it builds `ProductDetail`) and the product content element prints it as is. This keeps `sanitize-html` out of the editor bundle.
+- The `tracking` (letter-spacing) axis was removed from the template spec: it breaks joined Arabic script and the style system has no locale-scoped styles.
+- The buy box element has a `variant` prop (`solid` or `outline`) that carries the template's button style; the storefront hook honours it.
+- Product sections that draw nothing in public (all their product elements render null) are hidden; sections with seller content stay.
+- Template previews use a template-specific demo product (`templateDemoProduct`) instead of one shared product.
+- The migrations are numbered `0099` (`store_pages.kind`), `0100` (product-page library sections) and `0101` (template product pages), because `0098` was taken by the notifications migration.
+- The product page is never added to the navigation when a template is applied (`showInNav` is forced to false for it).
+- The builder's preview product comes from `getStorePreviewProduct` in `packages/lib`; the storefront maps its own row with `toProductDetail` in `apps/ecommerce`, so there are two mappers to keep in sync.
+- `ProductDetail.quantity` is the total stock (sum of variant quantities when variants exist).
