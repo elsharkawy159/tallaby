@@ -14,6 +14,9 @@ import { DEFAULT_TEMPLATE, TEMPLATE_JSON_END, TEMPLATE_JSON_START, getCodeTempla
 import { FROZEN_SEEDS, migrationSha256 } from "./frozen-seeds.test-utils";
 import { prepareTemplateForStore, templateFormNeeds } from "./prepare";
 
+/** The product page's product, with content so its content section draws. */
+const PAGE_PRODUCT = { ...DEMO_PRODUCT, contentHtml: "<h3>المواصفات</h3><p>بطارية تدوم ٣٠ ساعة وشحن سريع ومقاومة للماء والعرق.</p>" };
+
 const SEED = "0084_mobile_header_padding.sql";
 
 const walk = (nodes: readonly ComponentNode[] | undefined): ComponentNode[] => (nodes ?? []).flatMap((n) => [n, ...walk(n.children)]);
@@ -120,10 +123,12 @@ describe("Tallaby Classic template", () => {
   it("renders every section with store data, wishlist and cart buttons included", () => {
     const product = { id: "p1", title: "سماعة", href: "/products/p1", image: "https://cdn.test/p1.jpg", price: 900, compareAtPrice: 1200, rating: 4.6 };
     const fitted = prepareTemplateForStore(classicConfig(), { defaultLocale: "ar", formIds: { newsletter: "f1", contact: "f1" } });
+    // Only the product page's sections get the page's product; the other pages render without one.
+    const productSections = new Set(fitted.pages.filter((p) => p.kind === "product").flatMap((p) => p.content.sections));
     for (const section of sections(fitted)) {
       const products = productsFor(section, product);
       const categories = [{ id: "c1", key: "c1", name: "سماعات", href: "/products?category=c1", image: "https://cdn.test/c1.jpg", productCount: 3 }];
-      const html = renderToStaticMarkup(<SectionRenderer instance={section} registry={storeSectionRegistry} ctx={{ ...ctx({ products, categories }), product: { ...DEMO_PRODUCT, contentHtml: "<h3>المواصفات</h3><p>بطارية تدوم ٣٠ ساعة وشحن سريع ومقاومة للماء والعرق.</p>" } }} defaultLocale="ar" />);
+      const html = renderToStaticMarkup(<SectionRenderer instance={section} registry={storeSectionRegistry} ctx={productSections.has(section) ? { ...ctx({ products, categories }), product: PAGE_PRODUCT } : ctx({ products, categories })} defaultLocale="ar" />);
       if (section.id === "tallaby-blog") continue; // Posts come from the blog loader, not the catalog.
       expect(html.length, section.id).toBeGreaterThan(200);
       if (Object.keys(products).length) {
