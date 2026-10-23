@@ -3,13 +3,15 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { LoaderCircle, Plus, Trash2 } from "lucide-react";
+import { LoaderCircle, Package, Plus, Trash2 } from "lucide-react";
+import { isProductPage } from "@workspace/store-sections";
 import { useStore } from "zustand";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { cn } from "@workspace/ui/lib/utils";
 import { useEditorAdapter } from "../adapter.client";
+import { pagesPanelOrder } from "../lib/editor-pages.lib";
 import { hasPendingChanges, type EditorPage, type EditorStore } from "../state/editor.store";
 
 export const nameOf = (value: { ar?: string; en?: string }, locale: string) => (locale === "en" ? value.en || value.ar : value.ar || value.en) || "";
@@ -63,15 +65,22 @@ export function PagesPanel({ store, uiLocale }: { store: EditorStore; uiLocale: 
   return (
     <div className="space-y-4">
       <ul className="space-y-1">
-        {state.pages.map((page) => (
+        {pagesPanelOrder(state.pages).map((page) => (
           <li key={page.id} className={cn("flex items-center gap-2 rounded-md border px-2 py-1.5 text-sm", page.id === state.activePageId && "border-primary")}>
             <button type="button" className="min-w-0 flex-1 truncate text-start" onClick={() => state.setActivePage(page.id)}>
               {nameOf(page.name, uiLocale) || page.slug}
               <span dir="ltr" className="ms-1 text-xs text-muted-foreground">
-                /{page.isHome ? "" : page.slug}
+                {/* The product page draws every product, at /products/<slug>. */}
+                /{page.isHome ? "" : isProductPage(page) ? "products/…" : page.slug}
               </span>
             </button>
-            {!page.isHome && (
+            {isProductPage(page) ? (
+              // Fixed page: no menu toggle, no delete (the server refuses both too).
+              <span className="inline-flex shrink-0 items-center gap-1 rounded bg-muted px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground">
+                <Package className="size-3" aria-hidden />
+                {t("productBadge")}
+              </span>
+            ) : !page.isHome && (
               <>
                 <button type="button" className="text-xs text-muted-foreground underline-offset-2 hover:underline" onClick={() => void toggleNav(page)}>
                   {page.showInNav ? t("inMenu") : t("hidden")}

@@ -7,7 +7,7 @@
  * written); every one is scoped to the session seller by its page, and the
  * store-scoped ones carry the store id from the editor URL.
  */
-import type { DataNeed } from "@workspace/store-sections/render";
+import { DEMO_PRODUCT, type DataNeed, type ProductDetail } from "@workspace/store-sections/render";
 import type { EditorStoreData } from "../editor.dto";
 
 export type DataAction = { kind: "link"; href: string } | { kind: "pages" };
@@ -61,4 +61,9 @@ export const REFRESH_INTERVAL_MS = 5_000;
 export function shouldRefresh(lastAt: number, now: number, inFlight: boolean, force = false): boolean {
   if (inFlight) return false;
   return force || now - lastAt >= REFRESH_INTERVAL_MS;
+}
+
+/** The product the product page canvas draws: the host's preview product, else the built-in demo product. */
+export function canvasProduct(preview: ProductDetail | null | undefined): ProductDetail {
+  return preview ?? DEMO_PRODUCT;
 }

@@ -33,6 +33,8 @@ export type WebsitePageRow = {
   id: string;
   slug: string;
   isHome: boolean;
+  /** The store's product page (fixed slug, never in the menu). */
+  kind?: "product";
   name: { ar?: string; en?: string };
   seo: WebsitePageSeo;
   showInNav: boolean;

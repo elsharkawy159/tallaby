@@ -1,12 +1,13 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { LAYOUT_PRESETS, PALETTE_TYPES, getElementDefinition } from "@workspace/store-sections/render";
+import { LAYOUT_PRESETS, getElementDefinition } from "@workspace/store-sections/render";
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@workspace/ui/components/command";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@workspace/ui/components/dialog";
 import type { EditorCommands } from "../lib/editor-commands.lib";
 import { ELEMENT_ICONS, PRESET_ICONS, SECTION_GROUP_ICONS } from "../lib/editor-icons.lib";
 import { recordUse, sectionGroups } from "../lib/editor-palette.lib";
+import { offeredPaletteTypes } from "../lib/editor-pages.lib";
 import { SHORTCUTS } from "../state/use-editor-shortcuts.client";
 
 const pick = (value: { ar: string; en: string }, locale: string) => (locale === "en" ? value.en : value.ar) || value.ar;
@@ -21,12 +22,15 @@ export function QuickInsertDialog({
   index,
   commands,
   uiLocale,
+  productParts = false,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   index: number | null;
   commands: EditorCommands;
   uiLocale: string;
+  /** The page is the product page: product elements are offered too. */
+  productParts?: boolean;
 }) {
   const t = useTranslations("storeEditor.quickInsert");
   const tAdd = useTranslations("storeEditor.add");
@@ -78,7 +82,7 @@ export function QuickInsertDialog({
           })}
         </CommandGroup>
         <CommandGroup heading={tAdd("tabs.elements")}>
-          {PALETTE_TYPES.map((type) => {
+          {offeredPaletteTypes(productParts).map((type) => {
             const definition = getElementDefinition(type)!;
             const Icon = ELEMENT_ICONS[type];
             return (

@@ -30,6 +30,7 @@ export async function loadWebsitePages(store: StoreRow): Promise<WebsitePageRow[
     id: page.id,
     slug: page.slug,
     isHome: page.isHome,
+    ...(page.kind === "product" && { kind: "product" as const }),
     name: (page.name ?? {}) as { ar?: string; en?: string },
     seo: (page.seo ?? {}) as WebsitePageRow["seo"],
     showInNav: page.showInNav,

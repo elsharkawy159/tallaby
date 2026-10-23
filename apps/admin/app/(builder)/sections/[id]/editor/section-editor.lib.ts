@@ -14,6 +14,8 @@ export const SECTION_PAGE_ID = "section";
 export type SectionEditorRow = {
   id: string;
   key: string;
+  /** Library category; a `product-page` section is edited on a product page (product elements, ctx.product). */
+  category?: string;
   name: unknown;
   /** draft_tree ?? tree (slot form). */
   tree: NodeTemplate;
@@ -68,6 +70,8 @@ export function sectionEditorInitial(
         id: SECTION_PAGE_ID,
         slug: "section",
         isHome: true,
+        // Product page sections draw the demo product and may hold product elements.
+        ...(row.category === "product-page" && { kind: "product" as const }),
         name: { ar: name.ar ?? row.key, en: name.en ?? row.key },
         seo: {},
         showInNav: false,

@@ -18,7 +18,8 @@
     "drizzle-orm": "0.45.1",
     "stripe": "^22.1.1",
     "zod": "^4.2.1",
-    "@workspace/store-sections": "workspace:*"
+    "@workspace/store-sections": "workspace:*",
+    "@workspace/tiptap": "workspace:*"
   },
   "types": "index.ts",
   "exports": {
@@ -165,6 +166,10 @@
     "./store-sites/catalog-data.lib": {
       "types": "./src/store-sites/catalog-data.lib.ts",
       "default": "./src/store-sites/catalog-data.lib.ts"
+    },
+    "./store-sites/preview-product": {
+      "types": "./src/store-sites/preview-product.server.ts",
+      "default": "./src/store-sites/preview-product.server.ts"
     },
     "./store-sites/preview": {
       "types": "./src/store-sites/preview-token.ts",

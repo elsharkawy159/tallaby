@@ -12,6 +12,7 @@ import {
   listForms,
   listRevisions,
   previewLink,
+  previewProduct,
   publish,
   refreshEditorData,
   draftVersions,
@@ -61,6 +62,7 @@ export function useSellerEditorAdapter(storeId: string, capabilities?: Partial<E
       saveChrome: (part, instance, clientVersion) => saveChrome(storeId, part, instance, clientVersion),
       draftVersions: () => draftVersions(storeId),
       refreshData: () => refreshEditorData(storeId),
+      previewProduct: (productId, locale) => previewProduct(storeId, productId, locale),
       publish: () => publish(storeId),
       pages: {
         create: (input) => createPage(storeId, input),

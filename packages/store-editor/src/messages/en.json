@@ -46,7 +46,13 @@
       "toggleHidden": "Hide/show on this device",
       "dragToMove": "Drag to move",
       "dragItemToMove": "Drag to move this item",
-      "itemTitle": "Item {position}"
+      "itemTitle": "Item {position}",
+      "previewProduct": {
+        "label": "Preview with",
+        "demo": "Demo product",
+        "noProducts": "Your store has no products yet, so a demo product is shown.",
+        "hint": "Changes the preview only; nothing is saved."
+      }
     },
     "inspector": {
       "empty": "Select a section on the page to edit it.",
@@ -143,7 +149,8 @@
       "name": "Name",
       "slug": "Address",
       "slugHint": "Lowercase letters, numbers and dashes, e.g. about-us.",
-      "create": "Create page"
+      "create": "Create page",
+      "productBadge": "Product page"
     },
     "errors": {
       "notFound": "This store or page wasn't found.",

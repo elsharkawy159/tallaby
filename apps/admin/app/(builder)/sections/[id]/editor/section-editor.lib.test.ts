@@ -32,6 +32,12 @@ describe("sectionEditorInitial", () => {
     expect(initial.catalog.products.length).toBeGreaterThan(0);
   });
 
+  it("edits a product page section on a product page (demo product, product elements)", () => {
+    const options = { demo, designSystem: { colors: {}, typography: {}, spacing: {} }, fontClassName: "f" };
+    expect(sectionEditorInitial({ ...row(), category: "product-page" }, options).pages[0]!.kind).toBe("product");
+    expect(sectionEditorInitial({ ...row(), category: "hero" }, options).pages[0]!.kind).toBeUndefined();
+  });
+
   it("marks a never-published section as not live", () => {
     const initial = sectionEditorInitial({ ...row(), version: 0 }, { demo, designSystem: { colors: {}, typography: {}, spacing: {} }, fontClassName: "" });
     expect(initial.isLive).toBe(false);

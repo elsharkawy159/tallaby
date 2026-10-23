@@ -753,6 +753,9 @@ importers:
       '@workspace/store-sections':
         specifier: workspace:*
         version: link:../store-sections
+      '@workspace/tiptap':
+        specifier: workspace:*
+        version: link:../tiptap
       drizzle-orm:
         specifier: 0.45.1
         version: 0.45.1(@upstash/redis@1.36.0)(pg@8.16.3)(postgres@3.4.7)

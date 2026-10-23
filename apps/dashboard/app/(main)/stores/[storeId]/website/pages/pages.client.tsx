@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { ArrowDown, ArrowUp, FileText, Home, LoaderCircle, Pencil, Plus, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, FileText, Home, LoaderCircle, Package, Pencil, Plus, Trash2 } from "lucide-react";
 
 import {
   AlertDialog,
@@ -181,16 +181,22 @@ export function WebsitePages({ storeId, initial, readOnly }: { storeId: string; 
                 {page.isHome && <Home className="size-4 text-muted-foreground" aria-hidden />}
                 <span className="truncate text-sm font-semibold">{pageName(page.name, locale) || page.slug}</span>
                 {page.isHome && <Badge variant="secondary">{t("home")}</Badge>}
+                {page.kind === "product" && (
+                  <Badge variant="secondary">
+                    <Package aria-hidden />
+                    {t("productBadge")}
+                  </Badge>
+                )}
                 {page.seo.noindex && <Badge variant="outline">{t("noindexBadge")}</Badge>}
               </div>
               <p dir="ltr" className="truncate text-start font-mono text-xs text-muted-foreground rtl:text-end">
-                {page.isHome ? "/" : `/${page.slug}`}
+                {page.isHome ? "/" : page.kind === "product" ? "/products/…" : `/${page.slug}`}
               </p>
             </div>
             <label className="flex items-center gap-2 text-xs text-muted-foreground">
               <Switch
                 checked={page.isHome || page.showInNav}
-                disabled={readOnly || page.isHome}
+                disabled={readOnly || page.isHome || page.kind === "product"}
                 onCheckedChange={(checked) => toggleNav(page, checked)}
                 aria-label={t("showInNav")}
               />
@@ -207,7 +213,8 @@ export function WebsitePages({ storeId, initial, readOnly }: { storeId: string; 
               >
                 <Pencil className="size-4" />
               </Button>
-              {!page.isHome && (
+              {/* The product page is fixed: it is never deleted (the server refuses too). */}
+              {!page.isHome && page.kind !== "product" && (
                 <Button
                   type="button"
                   variant="ghost"
@@ -295,6 +302,9 @@ function PageForm({
   const te = useTranslations("storeEditor");
   const isNew = page === "new";
   const isHome = !isNew && page.isHome;
+  // The product page keeps its address and stays out of the menu (the server refuses changes).
+  const isProduct = !isNew && page.kind === "product";
+  const fixedSlug = isHome || isProduct;
   const [form, setForm] = useState<FormState>(isNew ? EMPTY_FORM : toForm(page));
   const [slugEdited, setSlugEdited] = useState(!isNew);
   const [slugError, setSlugError] = useState<SlugProblem | null>(null);
@@ -307,7 +317,7 @@ function PageForm({
     event.preventDefault();
     if (!hasName) return;
     const slug = form.slug.trim().toLowerCase();
-    if (!isHome) {
+    if (!fixedSlug) {
       const problem = checkSlug(slug, pages, isNew ? undefined : page.id);
       setSlugError(problem);
       if (problem) return;
@@ -325,7 +335,7 @@ function PageForm({
         }
         // New pages get their SEO and menu setting right after creation.
         const updated = await updatePage(storeId, id, {
-          ...(isNew ? {} : { name, ...(isHome ? {} : { slug }) }),
+          ...(isNew ? {} : { name, ...(fixedSlug ? {} : { slug }) }),
           seo,
           showInNav: form.showInNav,
         });
@@ -338,8 +348,9 @@ function PageForm({
         toast.success(t(isNew ? "created" : "saved"));
         onSaved({
           id,
-          slug: isHome ? (page as WebsitePageRow).slug : slug,
+          slug: fixedSlug ? (page as WebsitePageRow).slug : slug,
           isHome,
+          ...(isProduct && { kind: "product" as const }),
           name,
           seo,
           showInNav: form.showInNav,
@@ -392,7 +403,7 @@ function PageForm({
               dir="ltr"
               className={cn(FIELD_CLASS, "font-mono", slugError && "border-destructive")}
               value={isHome ? "/" : form.slug}
-              disabled={isHome}
+              disabled={fixedSlug}
               maxLength={64}
               aria-invalid={Boolean(slugError)}
               aria-describedby="page-slug-hint"
@@ -403,12 +414,12 @@ function PageForm({
               }}
             />
             <p id="page-slug-hint" className={cn("text-xs", slugError ? "text-destructive" : "text-muted-foreground")}>
-              {isHome ? t("homeSlug") : slugError ? te(`errors.${slugError}`) : t("slugHint")}
+              {isHome ? t("homeSlug") : isProduct ? t("productSlug") : slugError ? te(`errors.${slugError}`) : t("slugHint")}
             </p>
           </div>
           <label className="flex items-center justify-between gap-3 text-sm">
             {t("showInNav")}
-            <Switch checked={isHome || form.showInNav} disabled={isHome} onCheckedChange={(checked) => set("showInNav", checked)} />
+            <Switch checked={isHome || form.showInNav} disabled={fixedSlug} onCheckedChange={(checked) => set("showInNav", checked)} />
           </label>
         </fieldset>
 
