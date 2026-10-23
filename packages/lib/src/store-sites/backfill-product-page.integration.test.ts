@@ -1,9 +1,10 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import { and, desc, eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import * as DB_SCHEMA from "@workspace/db/schema";
 import { productPageOf, siteConfigSchema } from "@workspace/store-sections";
+import { getStoreSiteStatus, publishStoreSite } from "./server";
 import { createIsolationWorld, type IsolationWorld } from "../stores/isolation.fixtures";
 import { backfillStoreProductPage, backfillStoreProductPageDetailed } from "./backfill-product-page.server";
 
@@ -45,10 +46,16 @@ describe.skipIf(!TEST_DATABASE_URL)("backfill product page (integration)", { tim
   const productRows = (storeId: string) =>
     db.select().from(s.storePages).where(and(eq(s.storePages.storeId, storeId), eq(s.storePages.kind, "product")));
   const revisionCount = async (storeId: string) => (await db.select().from(s.storeSiteRevisions).where(eq(s.storeSiteRevisions.storeId, storeId))).length;
-  const liveSnapshot = async (storeId: string) => {
-    const [row] = await db.select().from(s.storeSiteRevisions).where(eq(s.storeSiteRevisions.storeId, storeId)).orderBy(desc(s.storeSiteRevisions.revisionNumber)).limit(1);
-    return siteConfigSchema.parse(row!.snapshot);
+  /** The live revision, found the way the storefront finds it (stores.published_revision_id). */
+  const liveRevision = async (storeId: string) => {
+    const [row] = await db
+      .select({ id: s.storeSiteRevisions.id, snapshot: s.storeSiteRevisions.snapshot })
+      .from(s.stores)
+      .innerJoin(s.storeSiteRevisions, eq(s.storeSiteRevisions.id, s.stores.publishedRevisionId))
+      .where(eq(s.stores.id, storeId));
+    return row!;
   };
+  const liveSnapshot = async (storeId: string) => siteConfigSchema.parse((await liveRevision(storeId)).snapshot);
 
   beforeEach(async () => {
     await stripProductPage(w.a.a1);
@@ -124,5 +131,29 @@ describe.skipIf(!TEST_DATABASE_URL)("backfill product page (integration)", { tim
     expect(out.result).toBe("skipped");
     expect(await productRows(w.a.a2)).toHaveLength(0);
     await db.delete(s.storePages).where(and(eq(s.storePages.storeId, w.a.a2), eq(s.storePages.slug, "product")));
+  });
+
+  it("keeps an in-sync published store free of unpublished changes (English store)", async () => {
+    await db.update(s.stores).set({ defaultLocale: "en" }).where(eq(s.stores.id, w.a.a2));
+    const published = await publishStoreSite(w.a.sellerId, w.a.a2, w.a.sellerId, {}, db);
+    expect(published.success).toBe(true);
+    expect((await getStoreSiteStatus(w.a.sellerId, w.a.a2, db))?.hasUnpublishedChanges).toBe(false);
+
+    await stripProductPage(w.a.a2);
+    expect((await backfillStoreProductPageDetailed(db, w.a.a2)).publishedUpdated).toBe(true);
+    expect((await getStoreSiteStatus(w.a.sellerId, w.a.a2, db))?.hasUnpublishedChanges).toBe(false);
+    await db.update(s.stores).set({ defaultLocale: "ar" }).where(eq(s.stores.id, w.a.a2));
+  });
+
+  it("skips a store whose live snapshot is invalid", async () => {
+    const live = await liveRevision(w.a.a2);
+    await db.update(s.storeSiteRevisions).set({ snapshot: { schemaVersion: 1, pages: "broken" } }).where(eq(s.storeSiteRevisions.id, live.id));
+    try {
+      const out = await backfillStoreProductPageDetailed(db, w.a.a2);
+      expect(out.result).toBe("skipped");
+      expect(await productRows(w.a.a2)).toHaveLength(0);
+    } finally {
+      await db.update(s.storeSiteRevisions).set({ snapshot: live.snapshot }).where(eq(s.storeSiteRevisions.id, live.id));
+    }
   });
 });

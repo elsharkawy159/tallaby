@@ -109,7 +109,11 @@ export async function backfillStoreProductPageDetailed(q: Queryable, storeId: st
     const fitted = productPageOf(prepareTemplateForStore(template.config, { defaultLocale: locale, storeName: store.name, formIds: {} }));
     if (!fitted) return skipped(`template ${template.key} has no product page`, { ...who, templateKey: template.key });
     const pageId = randomUUID();
-    const page = { ...fitted, id: pageId, slug: PRODUCT_PAGE_SLUG, kind: "product" as const, isHome: false, showInNav: false };
+    // Same name rule as seedStarterSite for the row, and the snapshot gets what buildDraftSiteConfig
+    // would read back from that row, so the live snapshot equals the drafts (no false "unpublished changes").
+    const rowName: Record<string, string> = template.meta.pageNames.product ?? { [locale]: fitted.name };
+    const snapshotName = (rowName[store.defaultLocale] ?? rowName.ar ?? rowName.en ?? PRODUCT_PAGE_SLUG).slice(0, 80);
+    const page = { ...fitted, id: pageId, name: snapshotName, slug: PRODUCT_PAGE_SLUG, kind: "product" as const, isHome: false, showInNav: false };
 
     // The live snapshot, when the store has one: validated whole with the page appended, before any write.
     let snapshotUpdate: { id: string; snapshot: SiteConfig } | null = null;
@@ -120,6 +124,9 @@ export async function backfillStoreProductPageDetailed(q: Queryable, storeId: st
         .where(and(eq(storeSiteRevisions.id, store.publishedRevisionId), eq(storeSiteRevisions.storeId, storeId)))
         .limit(1);
       if (revision) {
+        // No `allowedSections`: that registry lives in the render layer, which this server module does
+        // not import. The page's sections come from a template that passed validateSiteConfig, and
+        // the live ones were validated when they were published.
         const live = validateSiteConfig(revision.snapshot);
         if (!live.success) return skipped("live snapshot is invalid before the change", { ...who, templateKey: template.key });
         if (productPageOf(live.data) || live.data.pages.some((p) => p.slug === PRODUCT_PAGE_SLUG)) {
@@ -141,7 +148,7 @@ export async function backfillStoreProductPageDetailed(q: Queryable, storeId: st
           slug: PRODUCT_PAGE_SLUG,
           isHome: false,
           kind: "product",
-          name: template.meta.pageNames.product ?? { ar: "صفحة المنتج", en: "Product page" },
+          name: rowName,
           seo: page.seo,
           showInNav: false,
           orderIndex: (last ?? 0) + 1,

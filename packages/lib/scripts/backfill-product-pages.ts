@@ -27,30 +27,46 @@ async function main() {
   }
   console.log(`Target database host: ${host}`);
   console.log(apply ? "Mode: APPLY (writes)" : "Mode: dry run (no writes; pass --apply to write)");
+  if (apply && (!process.env.REVALIDATE_SECRET || !process.env.ECOMMERCE_URL)) {
+    console.warn("WARNING: REVALIDATE_SECRET and/or ECOMMERCE_URL is not set. The storefront cache will not be cleared now; it clears only when its TTL expires.");
+  }
 
   // Imported after the check so @workspace/db only connects once the target is confirmed.
   const { db } = await import("@workspace/db");
   const { backfillStoreProductPageDetailed, listBackfillStoreIds } = await import("../src/store-sites/backfill-product-page.server");
   const { broadcastInvalidation, invalidateStoreSite } = await import("@workspace/cache");
 
-  const ids = await listBackfillStoreIds(db);
-  const totals = { added: 0, skipped: 0, failed: 0, liveUpdated: 0 };
-  for (const id of ids) {
-    try {
-      const out = await backfillStoreProductPageDetailed(db, id, { dryRun: !apply });
-      totals[out.result] += 1;
-      console.log(`${id} ${out.subdomain ?? "-"} template=${out.templateKey ?? "-"} ${out.result}${apply || out.result === "skipped" ? "" : " (would add)"}: ${out.reason}`);
-      if (apply && out.publishedUpdated && out.sellerId && out.subdomain) {
-        totals.liveUpdated += 1;
-        await broadcastInvalidation(invalidateStoreSite(out.sellerId, id, out.subdomain), "admin");
+  try {
+    const ids = await listBackfillStoreIds(db);
+    const totals = { added: 0, skipped: 0, failed: 0, liveUpdated: 0 };
+    for (const id of ids) {
+      try {
+        const out = await backfillStoreProductPageDetailed(db, id, { dryRun: !apply });
+        totals[out.result] += 1;
+        console.log(`${id} ${out.subdomain ?? "-"} template=${out.templateKey ?? "-"} ${out.result}${apply || out.result === "skipped" ? "" : " (would add)"}: ${out.reason}`);
+        if (apply && out.publishedUpdated && out.sellerId && out.subdomain) {
+          totals.liveUpdated += 1;
+          await broadcastInvalidation(invalidateStoreSite(out.sellerId, id, out.subdomain), "admin");
+        }
+      } catch (error) {
+        totals.failed += 1;
+        console.log(`${id} - template=- failed: ${errorLine(error)}`);
       }
-    } catch (error) {
-      totals.failed += 1;
-      console.log(`${id} - template=- failed: ${error instanceof Error ? error.message : String(error)}`);
     }
+    console.log(`Stores: ${ids.length}. ${apply ? "Added" : "Would add"}: ${totals.added}. Skipped: ${totals.skipped}. Failed: ${totals.failed}. Live snapshots ${apply ? "updated" : "to update"}: ${apply ? totals.liveUpdated : "see per-store lines"}.`);
+    if (totals.failed) process.exitCode = 1;
+  } catch (error) {
+    console.error(`Backfill aborted: ${errorLine(error)}`);
+    process.exitCode = 1;
+  } finally {
+    await db.$client.end({ timeout: 5 });
   }
-  console.log(`Stores: ${ids.length}. ${apply ? "Added" : "Would add"}: ${totals.added}. Skipped: ${totals.skipped}. Failed: ${totals.failed}. Live snapshots ${apply ? "updated" : "to update"}: ${apply ? totals.liveUpdated : "see per-store lines"}.`);
-  process.exit(totals.failed ? 1 : 0);
+}
+
+/** One line, message only (no stack), with anything that looks like a connection URL masked. */
+function errorLine(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error);
+  return (message.split(/\r?\n/)[0] ?? "").replace(/postgres(?:ql)?:\/\/\S+/gi, "postgres://***").slice(0, 300);
 }
 
 void main();
