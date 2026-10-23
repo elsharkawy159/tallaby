@@ -9,7 +9,8 @@ import { storeSectionRegistry } from "../sections";
 import { collectCatalogQueries, collectContentQueries } from "../core/registry";
 import { treeDataNeeds } from "../elements/data";
 import { LIBRARY_CATEGORY_IDS } from "../library/types";
-import { DESIGNS, STOCK_INDUSTRIES, getDesign, instantiateDesign } from ".";
+import { DEMO_PRODUCT } from "../core/demo-product";
+import { DESIGNS, STOCK_INDUSTRIES, getDesign, instantiateDesign, type Design } from ".";
 
 /** Designs this test expects to exist; each later design adds its id here. */
 const EXPECTED = [
@@ -39,7 +40,7 @@ const EXPECTED = [
   ...["track-ask", "track-steps", "track-returns", "track-reschedule", "track-rate", "track-problem"],
   ...["text-policy", "text-centered", "text-callout", "text-columns", "text-quote", "text-steps", "text-lead", "text-statement", "text-terms", "text-note"],
   ...["page-header", "page-banner", "page-image", "page-subcategories", "page-promo", "page-toolbar", "page-brand", "page-split", "page-centered", "page-count"],
-  ...["product-perks", "product-shipping"],
+  ...["product-main", "product-content", "product-reviews", "product-related", "product-perks", "product-shipping"],
   ...["cart-extras", "cart-empty", "cart-free-delivery", "cart-coupon"],
   ...["footer-classic", "footer-line", "footer-wordmark", "footer-signup", "footer-centered", "footer-ruled", "footer-signoff", "footer-panel", "footer-help", "footer-links"],
 ];
@@ -95,6 +96,10 @@ function withStoreData(instance: ReturnType<typeof instantiateDesign>) {
   return { instance: filled, data };
 }
 
+/** Product page designs render on a product page, with its product (and its rich content). */
+const PAGE_PRODUCT = { ...DEMO_PRODUCT, contentHtml: "<h2>عن السماعة</h2><p>صوت نقي طول اليوم.</p>" };
+const pageData = (design: Design): Partial<RenderContext> => (design.category === "product-page" ? { product: PAGE_PRODUCT } : {});
+
 describe("section designs", () => {
   it.each(EXPECTED)("%s is registered", (id) => {
     expect(getDesign(id)).toBeDefined();
@@ -124,7 +129,7 @@ describe("section designs", () => {
     for (const locale of ["ar", "en"] as const) {
       for (const mode of ["edit", "public"] as const) {
         const html = renderToStaticMarkup(
-          <SectionRenderer instance={instance} registry={storeSectionRegistry} ctx={ctx({ ...data, locale, mode, dir: locale === "ar" ? "rtl" : "ltr" })} />,
+          <SectionRenderer instance={instance} registry={storeSectionRegistry} ctx={ctx({ ...data, ...pageData(design), locale, mode, dir: locale === "ar" ? "rtl" : "ltr" })} />,
         );
         expect(html).toContain("<section data-node-id=");
       }
@@ -133,7 +138,7 @@ describe("section designs", () => {
 
   it.each(DESIGNS.map((d) => [d.id, d] as const))("%s matches its snapshot (ar, public)", (_id, design) => {
     const { instance, data } = withStoreData(instantiateDesign(design, { id: "d1" }));
-    expect(renderToStaticMarkup(<SectionRenderer instance={instance} registry={storeSectionRegistry} ctx={ctx(data)} />)).toMatchSnapshot();
+    expect(renderToStaticMarkup(<SectionRenderer instance={instance} registry={storeSectionRegistry} ctx={ctx({ ...data, ...pageData(design) })} />)).toMatchSnapshot();
   });
 
   it.each(DESIGNS.map((d) => [d.id, d] as const))("%s keeps image frames sized without a photo", (_id, design) => {
@@ -168,7 +173,7 @@ describe("section designs", () => {
   const dataDesigns = DESIGNS.filter((d) => treeDataNeeds(instantiateDesign(d, { id: "d1" }).componentTree).length > 0);
 
   it("covers the store-data categories", () => {
-    expect(new Set(dataDesigns.map((d) => d.category))).toEqual(new Set(["headers", "hero", "categories", "products", "bundles", "finder", "promotions", "payment", "video", "gallery", "blog", "newsletter", "popups", "loyalty", "services", "contact", "tracking", "page-header", "cart", "footers"]));
+    expect(new Set(dataDesigns.map((d) => d.category))).toEqual(new Set(["headers", "hero", "categories", "products", "bundles", "finder", "promotions", "payment", "video", "gallery", "blog", "newsletter", "popups", "loyalty", "services", "contact", "tracking", "page-header", "product-page", "cart", "footers"]));
   });
 
   it.each(dataDesigns.map((d) => [d.id, d] as const))("%s draws real records, and nothing publicly without them", (_id, design) => {

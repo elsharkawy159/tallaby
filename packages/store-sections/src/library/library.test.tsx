@@ -145,7 +145,14 @@ describe("search and filters", () => {
   it("filters by category, subcategory and capability", () => {
     expect(filterPresets({ category: "hero" }).map((p) => p.id)).toEqual(HERO_DESIGNS.map((d) => d.id.replace("hero-", "hero.")));
     expect(filterPresets({ category: "hero", subcategory: "split" }).map((p) => p.id)).toEqual(["hero.classic", "hero.halves"]);
-    expect(filterPresets({ category: "product-page" }).map((p) => p.id)).toEqual(["product-page.perks", "product-page.shipping"]);
+    expect(filterPresets({ category: "product-page" }).map((p) => p.id)).toEqual([
+      "product-page.main",
+      "product-page.content",
+      "product-page.reviews",
+      "product-page.related",
+      "product-page.perks",
+      "product-page.shipping",
+    ]);
     // Designs with data nodes are dynamic and list the store data they need.
     const dynamic = filterPresets({ capabilities: ["dynamic"] });
     expect(dynamic.map((p) => p.category)).toContain("products");
