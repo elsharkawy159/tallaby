@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Globe, Link2, ShoppingBag, Store } from "lucide-react";
+import { formatCurrency } from "@workspace/lib";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card";
@@ -17,6 +18,7 @@ import {
 } from "@workspace/lib/admin";
 import {
   STORE_SORT_IDS,
+  getStoreDirectoryStats,
   listStoreTemplateKeys,
   listStoresForAdmin,
   type AdminStoreListInput,
@@ -24,6 +26,7 @@ import {
 import { storeHostname, storeUrl } from "@workspace/lib/storefront";
 import { getCurrentAdminUser } from "@/lib/auth/admin-auth";
 import { AdminPager, buildHref } from "../_components/admin-pager";
+import { KpiCard, KpiGrid, percentOf } from "../_components/cards/kpi-card";
 import { AdminTable, type AdminTableColumn } from "../_components/admin-table/admin-table";
 import { SORT_PARAM, parseSortParam } from "../_components/admin-table/admin-table.lib";
 import { SiteStatusBadge, StoreStatusBadge, formatAdminDate } from "./stores.lib";
@@ -69,6 +72,10 @@ export default async function StoresPage({ searchParams }: PageProps) {
           forms, content and audit trail.
         </p>
       </div>
+
+      <Suspense fallback={<KpiSkeleton />}>
+        <StoreKpis />
+      </Suspense>
 
       <div className="space-y-2">
         <div className="flex flex-wrap gap-2">
@@ -229,6 +236,56 @@ async function StoresTable({
         <AdminPager page={input.page} pages={pageCount(total)} href={(p) => link({ page: p })} />
       </CardContent>
     </Card>
+  );
+}
+
+async function StoreKpis() {
+  await getCurrentAdminUser();
+  let stats: Awaited<ReturnType<typeof getStoreDirectoryStats>>;
+  try {
+    stats = await getStoreDirectoryStats();
+  } catch (error) {
+    logServerError("admin", "store directory stats failed", {}, error);
+    return null;
+  }
+  return (
+    <KpiGrid>
+      <KpiCard
+        label="Stores"
+        value={stats.totalStores}
+        icon={<Store />}
+        today={stats.newToday}
+        hint={`${stats.newThisMonth.toLocaleString("en-EG")} new this month${stats.suspended ? `, ${stats.suspended} suspended` : ""}`}
+      />
+      <KpiCard
+        label="Website published"
+        value={stats.published}
+        icon={<Globe />}
+        hint={`${percentOf(stats.published, stats.totalStores)} of stores, ${stats.drafts.toLocaleString("en-EG")} drafts, ${stats.unpublished.toLocaleString("en-EG")} switched off`}
+      />
+      <KpiCard
+        label="Custom domains"
+        value={stats.activeDomains}
+        icon={<Link2 />}
+        hint={stats.failingDomains > 0 ? `${stats.failingDomains.toLocaleString("en-EG")} failing` : "None failing"}
+      />
+      <KpiCard
+        label="Store orders (last 30 days)"
+        value={stats.orders30d}
+        icon={<ShoppingBag />}
+        hint={`${formatCurrency(stats.revenue30d)} from ${stats.storesWithOrders30d.toLocaleString("en-EG")} ${stats.storesWithOrders30d === 1 ? "store" : "stores"}`}
+      />
+    </KpiGrid>
+  );
+}
+
+function KpiSkeleton() {
+  return (
+    <KpiGrid>
+      {Array.from({ length: 4 }, (_, i) => (
+        <Skeleton key={i} className="h-[7.5rem] w-full rounded-xl" />
+      ))}
+    </KpiGrid>
   );
 }
 

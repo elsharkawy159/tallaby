@@ -126,7 +126,7 @@ export const SellersClientWrapper = ({
         serverSide={{
           rowCount: totalCount,
           defaultSort: SELLERS_DEFAULT_SORT,
-          searchPlaceholder: "Search name, slug, email or phone…",
+          searchPlaceholder: "Search seller, store, email or phone…",
         }}
       />
     </div>

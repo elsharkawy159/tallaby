@@ -1,4 +1,23 @@
+import type { HeardAboutUsSource } from "@workspace/lib/sellers";
+
 export type SellerStatus = "pending" | "approved" | "suspended" | "restricted";
+
+/** One live store of a seller, as listed on the sellers directory. */
+export interface SellerStoreSummary {
+  id: string;
+  name: string;
+  subdomain: string;
+  /** draft | published | unpublished */
+  siteStatus: string;
+  isPrimary: boolean;
+  /** Active custom domain, if any. */
+  domain: string | null;
+}
+
+export interface HeardAboutUsCount {
+  source: HeardAboutUsSource | "unknown";
+  count: number;
+}
 
 export interface Seller {
   /** SaaS account facts (docs/admin-saas.md §3.10). */
@@ -7,6 +26,15 @@ export interface Seller {
   feeTrialEndsAt?: string | null;
   storeCount?: number;
   lastOrderAt?: string | null;
+  /** Live stores, primary first. */
+  stores?: SellerStoreSummary[];
+  /** Where the seller heard about Tallaby (0099); null = not answered yet. */
+  heardAboutUs?: string | null;
+  heardAboutUsOther?: string | null;
+  /** The owner's user account (sellers.id = users.id). */
+  ownerName?: string | null;
+  ownerEmail?: string | null;
+  ownerPhone?: string | null;
   id: string;
   businessName: string;
   displayName: string;
@@ -75,8 +103,21 @@ export interface SellerStats {
   activeSellers: number;
   pendingSellers: number;
   suspendedSellers: number;
+  newSellersToday: number;
+  newSellersThisMonth: number;
+  /** Sellers with at least one published store website. */
+  sellersWithPublishedSite: number;
+  /** Live (not deleted) stores across all sellers. */
+  totalStores: number;
+  /** Sellers with an order item in the last 30 days. */
+  sellersSellingLast30Days: number;
+  /** In the 7-day no-fee trial now. */
+  sellersInTrial: number;
+  negativeWallets: number;
   totalProducts: number;
   totalRevenue: number;
+  /** Every source plus "unknown", in pop-up order. */
+  heardAboutUs: HeardAboutUsCount[];
 }
 
 export interface SellerActionData {

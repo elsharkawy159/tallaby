@@ -3756,5 +3756,24 @@
         "body": "A customer left a {rating}-star review."
       }
     }
+  },
+  "heardAboutUsDialog": {
+    "title": "Where did you hear about Tallaby?",
+    "description": "One quick question. Your answer helps us reach more sellers like you.",
+    "sources": {
+      "facebook": "Facebook",
+      "instagram": "Instagram",
+      "youtube": "YouTube",
+      "tiktok": "TikTok",
+      "google": "Google",
+      "friend": "A friend",
+      "other": "Other"
+    },
+    "otherPlaceholder": "Tell us where (optional)",
+    "save": "Save answer",
+    "saving": "Saving…",
+    "later": "Later",
+    "saved": "Thanks! Your answer is saved.",
+    "error": "Your answer could not be saved. Try again."
   }
 }

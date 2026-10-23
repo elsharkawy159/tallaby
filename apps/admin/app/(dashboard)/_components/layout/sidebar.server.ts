@@ -40,8 +40,13 @@ export const getSidebarCounts = cache(async function getSidebarCounts(): Promise
       SELECT
         (SELECT count(*)::int FROM ${users}
           WHERE ${users.isGuest} = false
+            AND ${users.role} = 'customer'
+            AND NOT EXISTS (SELECT 1 FROM ${sellers} WHERE ${sellers.id} = ${users.id})
             AND ${users.createdAt} >= (date_trunc('day', now() AT TIME ZONE 'Africa/Cairo') AT TIME ZONE 'Africa/Cairo')
         ) AS new_customers,
+        (SELECT count(*)::int FROM ${sellers}
+          WHERE ${sellers.createdAt} >= (date_trunc('day', now() AT TIME ZONE 'Africa/Cairo') AT TIME ZONE 'Africa/Cairo')
+        ) AS new_sellers,
         (SELECT count(*)::int FROM ${carts}
           WHERE ${carts.status} = 'active'
             AND ${carts.reminderSentAt} IS NULL
@@ -72,6 +77,7 @@ export const getSidebarCounts = cache(async function getSidebarCounts(): Promise
 
     return {
       newCustomers: Number(row.new_customers ?? 0),
+      newSellers: Number(row.new_sellers ?? 0),
       unremindedCarts: Number(row.unreminded_carts ?? 0),
       pendingOrders: Number(row.pending_orders ?? 0),
       pendingProducts: Number(row.pending_products ?? 0),

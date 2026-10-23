@@ -1,7 +1,9 @@
 /** Actionable counts only — each one is something an admin should look at. */
 export interface SidebarCounts {
-  /** Customers who signed up today (Cairo time). */
+  /** Customers (not sellers or staff) who signed up today (Cairo time). */
   newCustomers: number;
+  /** Sellers who signed up today (Cairo time). */
+  newSellers: number;
   /** Active carts with items that haven't been sent a reminder yet. */
   unremindedCarts: number;
   pendingOrders: number;
@@ -37,6 +39,7 @@ export const SIDEBAR_COUNT_BADGE_CLASS =
 
 export const EMPTY_SIDEBAR_COUNTS: SidebarCounts = {
   newCustomers: 0,
+  newSellers: 0,
   unremindedCarts: 0,
   pendingOrders: 0,
   pendingProducts: 0,

@@ -7,7 +7,6 @@ import type { Customer, CustomersPageProps } from "./customers.types";
 import { CustomersContent } from "./customers.client";
 import { parseCustomersParams } from "./customers.params";
 import { CustomersSkeleton } from "./customers.skeleton";
-import { sellerIdsAmong } from "../_components/entity/relations.server";
 
 async function CustomersDataContent({ searchParams }: CustomersPageProps) {
   // Awaited here, inside the Suspense boundary, rather than in the page — so
@@ -26,12 +25,10 @@ async function CustomersDataContent({ searchParams }: CustomersPageProps) {
     );
   }
 
-  const rows = customersResult.data as Customer[];
-  const sellerIds = await sellerIdsAmong(rows.map((customer) => customer.id)).catch(() => new Set<string>());
 
   return (
     <CustomersContent
-      customers={rows.map((customer) => ({ ...customer, sellerId: sellerIds.has(customer.id) ? customer.id : null }))}
+      customers={customersResult.data as Customer[]}
       totalCount={customersResult.totalCount}
       stats={statsResult.data}
     />

@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import type { ColumnDef } from "@tanstack/react-table";
-import { CheckCircle, MoreHorizontal, Star } from "lucide-react";
+import { CheckCircle, MoreHorizontal } from "lucide-react";
+import { HEARD_ABOUT_US_LABELS, HEARD_ABOUT_US_SOURCES, isHeardAboutUsSource } from "@workspace/lib/sellers";
 import { Button } from "@workspace/ui/components/button";
 import {
   Avatar,
@@ -19,11 +20,7 @@ import {
 } from "@workspace/ui/components/dropdown-menu";
 import { DataTableColumnHeader } from "../../_components/data-table/data-table-column-header";
 import type { DataTableFilter } from "../../_components/data-table/data-table.types";
-import {
-  CommissionExemptToggle,
-  FreeDeliveryToggle,
-  StatusBadge,
-} from "../sellers.chunks";
+import { StatusBadge } from "../sellers.chunks";
 import {
   canApproveSeller,
   canReactivateSeller,
@@ -32,12 +29,12 @@ import {
   formatDate,
   getBusinessTypeOptions,
   getInitials,
-  getRatingDisplay,
   getStatusOptions,
 } from "../sellers.lib";
 import type { Seller } from "../sellers.types";
 import { customerHref, ordersHref, sellerHref, sellerWalletHref } from "../../_components/entity/entity-href.lib";
 import { PlatformFeeSummary } from "../../_components/entity/platform-fee.chunks";
+import { StoreSiteLink } from "../../_components/entity/store-site-link";
 
 /** Server-side filters (URL params) for the sellers table. */
 export const sellersFilters: DataTableFilter[] = [
@@ -56,19 +53,19 @@ export const sellersFilters: DataTableFilter[] = [
     ],
   },
   {
-    id: "commission",
-    title: "Platform fee",
+    id: "source",
+    title: "Heard from",
     options: [
-      { value: "exempt", label: "Fee exempt" },
-      { value: "charged", label: "EGP 5 per order" },
+      ...HEARD_ABOUT_US_SOURCES.map((value) => ({ value, label: HEARD_ABOUT_US_LABELS[value] })),
+      { value: "unknown", label: "Not answered" },
     ],
   },
   {
-    id: "delivery",
-    title: "Delivery",
+    id: "site",
+    title: "Website",
     options: [
-      { value: "free", label: "Free delivery" },
-      { value: "paid", label: "Paid delivery" },
+      { value: "published", label: "Published" },
+      { value: "not_published", label: "Not published" },
     ],
   },
   {
@@ -95,27 +92,85 @@ export function getSellersColumns(
       meta: { label: "Seller" },
       cell: ({ row }) => {
         const seller = row.original;
+        const name = seller.ownerName?.trim() || seller.displayName || seller.businessName;
+        const contact = seller.ownerEmail || seller.supportEmail;
+        const phone = seller.ownerPhone || seller.supportPhone;
         return (
           <div className="flex items-center gap-3">
-            <Avatar className="h-10 w-10">
+            <Avatar className="h-9 w-9">
               <AvatarImage src={seller.logoUrl || undefined} />
-              <AvatarFallback>{getInitials(seller.businessName)}</AvatarFallback>
+              <AvatarFallback>{getInitials(name)}</AvatarFallback>
             </Avatar>
             <div className="min-w-0">
-              <Link
-                href={sellerHref(seller.id)}
-                className="block max-w-52 truncate font-medium hover:underline"
-                title={seller.businessName}
-              >
-                {seller.businessName}
-              </Link>
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <span className="max-w-44 truncate">{seller.displayName}</span>
+              <div className="flex items-center gap-1">
+                <Link
+                  href={sellerHref(seller.id)}
+                  className="block max-w-48 truncate font-medium hover:underline"
+                  title={name}
+                >
+                  {name}
+                </Link>
                 {seller.isVerified && (
-                  <CheckCircle className="h-3 w-3 shrink-0 text-blue-500" />
+                  <CheckCircle className="h-3 w-3 shrink-0 text-blue-500" aria-label="Verified" />
                 )}
               </div>
+              <div className="max-w-52 truncate text-xs text-muted-foreground" dir="ltr" title={contact}>
+                {contact}
+              </div>
+              {phone && (
+                <div className="text-xs text-muted-foreground tabular-nums" dir="ltr">
+                  {phone}
+                </div>
+              )}
             </div>
+          </div>
+        );
+      },
+    },
+    {
+      id: "store",
+      header: "Store",
+      enableSorting: false,
+      meta: { label: "Store" },
+      cell: ({ row }) => {
+        const seller = row.original;
+        const [store, ...more] = seller.stores ?? [];
+        if (!store) {
+          return <span className="text-sm text-muted-foreground">No store yet</span>;
+        }
+        return (
+          <div className="space-y-0.5">
+            <StoreSiteLink store={store} domain={store.domain} />
+            {more.length > 0 && (
+              <Link
+                href={`/stores?seller=${seller.id}`}
+                className="ms-4 block text-xs text-muted-foreground hover:underline"
+              >
+                +{more.length} more {more.length === 1 ? "store" : "stores"}
+              </Link>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      id: "heardAboutUs",
+      header: "Heard from",
+      enableSorting: false,
+      meta: { label: "Heard from" },
+      cell: ({ row }) => {
+        const { heardAboutUs, heardAboutUsOther } = row.original;
+        if (!isHeardAboutUsSource(heardAboutUs)) {
+          return <span className="text-sm text-muted-foreground">Not answered</span>;
+        }
+        return (
+          <div className="text-sm">
+            {HEARD_ABOUT_US_LABELS[heardAboutUs]}
+            {heardAboutUsOther && (
+              <div className="max-w-40 truncate text-xs text-muted-foreground" title={heardAboutUsOther}>
+                {heardAboutUsOther}
+              </div>
+            )}
           </div>
         );
       },
@@ -143,18 +198,6 @@ export function getSellersColumns(
       ),
     },
     {
-      id: "stores",
-      header: "Stores",
-      enableSorting: false,
-      meta: { label: "Stores" },
-      cell: ({ row }) => (
-        <Link href={`/stores?seller=${row.original.id}`} className="flex flex-col hover:underline">
-          <span>{row.original.storeCount ?? 0}</span>
-          <span className="text-xs text-muted-foreground">plan {row.original.plan ?? "free"}</span>
-        </Link>
-      ),
-    },
-    {
       id: "platformFee",
       header: "Platform fee",
       enableSorting: false,
@@ -170,50 +213,6 @@ export function getSellersColumns(
         <div className="whitespace-nowrap text-sm text-muted-foreground">
           {row.original.lastOrderAt ? formatDate(row.original.lastOrderAt) : "—"}
         </div>
-      ),
-    },
-    {
-      accessorKey: "storeRating",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Rating" />
-      ),
-      meta: { label: "Rating" },
-      cell: ({ row }) => (
-        <div className="flex flex-col">
-          <div className="flex items-center">
-            <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-            <span className="ml-1 font-medium">
-              {getRatingDisplay(row.original)}
-            </span>
-          </div>
-          <div className="text-xs text-muted-foreground">
-            {row.original.totalRatings} reviews
-          </div>
-        </div>
-      ),
-    },
-    {
-      accessorKey: "isCommissionExempt",
-      header: "Fee exempt",
-      enableSorting: false,
-      meta: { label: "Fee exempt" },
-      cell: ({ row }) => (
-        <CommissionExemptToggle
-          sellerId={row.original.id}
-          isCommissionExempt={row.original.isCommissionExempt}
-        />
-      ),
-    },
-    {
-      accessorKey: "freeDelivery",
-      header: "Free delivery",
-      enableSorting: false,
-      meta: { label: "Free delivery" },
-      cell: ({ row }) => (
-        <FreeDeliveryToggle
-          sellerId={row.original.id}
-          freeDelivery={row.original.freeDelivery}
-        />
       ),
     },
     {

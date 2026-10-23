@@ -36,7 +36,7 @@ export function parseCustomersParams(
   searchParams: RawSearchParams
 ): AdminCustomersQuery {
   const query = parseTableSearchParams(searchParams, {
-    filters: ["role", "verification", "accountStatus", "account"] as const,
+    filters: ["origin", "verification", "accountStatus", "account"] as const,
     sortable: SORTABLE,
     defaultSort: CUSTOMERS_DEFAULT_SORT,
   });
@@ -52,6 +52,7 @@ export function parseCustomersParams(
     search: query.search || undefined,
     view: view ?? "all",
     ...query.filters,
+    storeId: typeof searchParams.store === "string" ? searchParams.store : undefined,
     createdFrom: parseDateParam(searchParams.createdFrom),
     createdTo: parseDateParam(searchParams.createdTo, true),
   };

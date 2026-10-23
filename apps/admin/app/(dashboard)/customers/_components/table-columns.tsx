@@ -20,8 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu";
 import Link from "next/link";
-import { Store } from "lucide-react";
-import { sellerHref } from "@/app/(dashboard)/_components/entity/entity-href.lib";
+import { StoreSiteLink } from "@/app/(dashboard)/_components/entity/store-site-link";
 import {
   Avatar,
   AvatarImage,
@@ -42,15 +41,12 @@ import {
 /** Server-side filters (URL params) for the customers table. */
 export const customersFilters: DataTableFilter[] = [
   {
-    id: "role",
-    title: "Role",
+    id: "origin",
+    title: "Came from",
     options: [
-      { label: "Customer", value: "customer" },
-      { label: "Seller", value: "seller" },
-      { label: "Admin", value: "admin" },
-      { label: "Support", value: "support" },
-      { label: "Driver", value: "driver" },
-      { label: "Marketing", value: "marketing" },
+      { label: "A seller's store", value: "store" },
+      { label: "Marketplace", value: "marketplace" },
+      { label: "No orders yet", value: "none" },
     ],
   },
   {
@@ -145,44 +141,31 @@ export function getCustomersColumns({
       },
     },
     {
-      accessorKey: "role",
-      header: "Role",
+      id: "origin",
+      header: "Came from",
       enableSorting: false,
-      meta: { label: "Role" },
+      meta: { label: "Came from" },
       cell: ({ row }) => {
-        const role = row.getValue("role") as string;
-
-        let badgeVariant: "default" | "secondary" | "outline";
-        switch (role) {
-          case "admin":
-            badgeVariant = "default";
-            break;
-          case "seller":
-            badgeVariant = "secondary";
-            break;
-          default:
-            badgeVariant = "outline";
-        }
-
-        const sellerId = row.original.sellerId;
+        const { originStore, totalOrders } = row.original;
+        if (originStore) return <StoreSiteLink store={originStore} />;
         return (
-          <div className="flex flex-wrap items-center gap-1">
-            {role !== "seller" || !sellerId ? (
-              <Badge variant={badgeVariant} className="capitalize">
-                {role}
-              </Badge>
-            ) : null}
-            {sellerId ? (
-              <Badge asChild variant="secondary" className="hover:bg-primary-soft">
-                <Link href={sellerHref(sellerId)} title="Open seller account">
-                  <Store className="me-1 size-3" aria-hidden />
-                  Seller
-                </Link>
-              </Badge>
-            ) : null}
-          </div>
+          <span className="text-sm text-muted-foreground">
+            {(totalOrders ?? 0) > 0 ? "Marketplace" : "No orders yet"}
+          </span>
         );
       },
+    },
+    {
+      accessorKey: "isGuest",
+      header: "Account",
+      enableSorting: false,
+      meta: { label: "Account" },
+      cell: ({ row }) =>
+        row.original.isGuest ? (
+          <Badge variant="outline" className="font-normal">Guest</Badge>
+        ) : (
+          <Badge variant="secondary" className="font-normal">Registered</Badge>
+        ),
     },
     {
       accessorKey: "isVerified",

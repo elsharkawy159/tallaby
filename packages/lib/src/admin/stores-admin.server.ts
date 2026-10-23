@@ -130,6 +130,64 @@ export async function listStoresForAdmin(input: AdminStoreListInput, q: Queryabl
 
 export type AdminStoreListRow = Awaited<ReturnType<typeof listStoresForAdmin>>["rows"][number];
 
+export interface AdminStoreDirectoryStats {
+  totalStores: number;
+  newToday: number;
+  newThisMonth: number;
+  published: number;
+  drafts: number;
+  unpublished: number;
+  suspended: number;
+  activeDomains: number;
+  failingDomains: number;
+  /** Storefront orders (orders.store_id set) in the last 30 days. */
+  orders30d: number;
+  revenue30d: number;
+  /** Stores with at least one storefront order in the last 30 days. */
+  storesWithOrders30d: number;
+}
+
+/** Header KPIs of the store directory. "Today" is the Cairo day. One round trip. */
+export async function getStoreDirectoryStats(q: Queryable = db): Promise<AdminStoreDirectoryStats> {
+  const result = await q.execute(sql`
+    SELECT
+      count(*)::int AS total,
+      count(*) FILTER (WHERE st.created_at >= (date_trunc('day', now() AT TIME ZONE 'Africa/Cairo') AT TIME ZONE 'Africa/Cairo'))::int AS new_today,
+      count(*) FILTER (WHERE st.created_at >= (date_trunc('month', now() AT TIME ZONE 'Africa/Cairo') AT TIME ZONE 'Africa/Cairo'))::int AS new_month,
+      count(*) FILTER (WHERE st.site_status = 'published')::int AS published,
+      count(*) FILTER (WHERE st.site_status = 'draft')::int AS drafts,
+      count(*) FILTER (WHERE st.site_status = 'unpublished')::int AS unpublished,
+      count(*) FILTER (WHERE st.status = 'suspended')::int AS suspended,
+      (SELECT count(*)::int FROM seller_custom_domains cd WHERE cd.status = 'active') AS active_domains,
+      (SELECT count(*)::int FROM seller_custom_domains cd WHERE cd.status = 'failed') AS failing_domains,
+      (SELECT count(*)::int FROM orders o
+        WHERE o.store_id IS NOT NULL AND o.created_at >= now() - interval '30 days') AS orders_30d,
+      (SELECT coalesce(sum(o.total_amount), 0)::float FROM orders o
+        WHERE o.store_id IS NOT NULL AND o.created_at >= now() - interval '30 days'
+          AND coalesce(o.status::text, '') NOT IN ('cancelled', 'refunded', 'returned')) AS revenue_30d,
+      (SELECT count(DISTINCT o.store_id)::int FROM orders o
+        WHERE o.store_id IS NOT NULL AND o.created_at >= now() - interval '30 days') AS stores_with_orders
+    FROM stores st
+    WHERE st.deleted_at IS NULL
+  `);
+  const row = ([...result][0] ?? {}) as Record<string, unknown>;
+  const n = (key: string) => Number(row[key] ?? 0);
+  return {
+    totalStores: n("total"),
+    newToday: n("new_today"),
+    newThisMonth: n("new_month"),
+    published: n("published"),
+    drafts: n("drafts"),
+    unpublished: n("unpublished"),
+    suspended: n("suspended"),
+    activeDomains: n("active_domains"),
+    failingDomains: n("failing_domains"),
+    orders30d: n("orders_30d"),
+    revenue30d: n("revenue_30d"),
+    storesWithOrders30d: n("stores_with_orders"),
+  };
+}
+
 /** Template keys in use, for the directory filter. */
 export async function listStoreTemplateKeys(q: Queryable = db): Promise<string[]> {
   const rows = await q

@@ -72,8 +72,8 @@ export const sidebarSections: SidebarSection[] = [
         title: "Sellers",
         href: "/sellers",
         icon: UserRound,
-        countKey: "pendingSellers",
-        countLabel: "Sellers awaiting approval",
+        countKey: "newSellers",
+        countLabel: "New sellers today",
       },
       {
         key: "customers",

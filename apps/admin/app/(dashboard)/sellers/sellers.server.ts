@@ -7,7 +7,10 @@ import {
   orderItems,
   orders,
   products,
+  stores,
+  sellerCustomDomains,
 } from "@workspace/db";
+import { HEARD_ABOUT_US_SOURCES, isHeardAboutUsSource } from "@workspace/lib/sellers";
 
 import {
   eq,
@@ -40,10 +43,12 @@ import {
   sellerUpdateSchema,
 } from "./sellers.dto";
 import type {
+  HeardAboutUsCount,
   Seller,
   SellerDetail,
   SellerStats,
   SellerStatus,
+  SellerStoreSummary,
 } from "./sellers.types";
 
 const SELLER_STATUSES = ["pending", "approved", "suspended", "restricted"] as const;
@@ -69,6 +74,10 @@ export interface SellersQuery {
   delivery?: string[];
   /** "negative" | "non_negative" store-wallet balance (PLAN.md P6-08) */
   wallet?: string[];
+  /** HEARD_ABOUT_US_SOURCES values, or "unknown" for not answered yet (0099). */
+  source?: string[];
+  /** "published" | "not_published": has at least one published store website. */
+  site?: string[];
   joinedFrom?: string;
   joinedTo?: string;
   sort?: { id: SellersSortId; desc: boolean } | null;
@@ -122,6 +131,21 @@ export async function getSellers(query: SellersQuery = {}) {
       );
     }
 
+    const sources = (query.source ?? []).filter(isHeardAboutUsSource);
+    const sourceConditions: SQL[] = [];
+    if (sources.length) sourceConditions.push(inArray(sellers.heardAboutUs, sources));
+    if (query.source?.includes("unknown")) sourceConditions.push(sql`${sellers.heardAboutUs} IS NULL`);
+    if (sourceConditions.length) conditions.push(or(...sourceConditions)!);
+
+    const site = new Set(query.site ?? []);
+    if (site.size === 1) {
+      const hasPublished = sql`EXISTS (
+        SELECT 1 FROM ${stores} st
+        WHERE st.seller_id = ${sellers.id} AND st.deleted_at IS NULL AND st.site_status = 'published'
+      )`;
+      conditions.push(site.has("published") ? hasPublished : sql`NOT ${hasPublished}`);
+    }
+
     if (query.joinedFrom) conditions.push(gte(sellers.joinDate, query.joinedFrom));
     if (query.joinedTo) conditions.push(lt(sellers.joinDate, query.joinedTo));
 
@@ -134,7 +158,15 @@ export async function getSellers(query: SellersQuery = {}) {
           ilike(sellers.displayName, pattern),
           ilike(sellers.slug, pattern),
           ilike(sellers.supportEmail, pattern),
-          ilike(sellers.supportPhone, pattern)
+          ilike(sellers.supportPhone, pattern),
+          ilike(users.fullName, pattern),
+          ilike(users.email, pattern),
+          ilike(users.phone, pattern),
+          sql`EXISTS (
+            SELECT 1 FROM ${stores} st
+            WHERE st.seller_id = ${sellers.id} AND st.deleted_at IS NULL
+              AND (st.name ILIKE ${pattern} OR st.subdomain ILIKE ${pattern})
+          )`
         )!
       );
     }
@@ -203,10 +235,16 @@ export async function getSellers(query: SellersQuery = {}) {
         plan: sellers.plan,
         feeTrialEligible: sellers.feeTrialEligible,
         feeTrialEndsAt: sellers.feeTrialEndsAt,
+        heardAboutUs: sellers.heardAboutUs,
+        heardAboutUsOther: sellers.heardAboutUsOther,
+        ownerName: users.fullName,
+        ownerEmail: users.email,
+        ownerPhone: users.phone,
         storeCount: sql<number>`(SELECT count(*)::int FROM stores st WHERE st.seller_id = ${sellers.id} AND st.deleted_at IS NULL)`,
         lastOrderAt: sql<string | null>`(SELECT max(oi.created_at)::text FROM order_items oi WHERE oi.seller_id = ${sellers.id})`,
       })
       .from(sellers)
+      .leftJoin(users, eq(users.id, sellers.id))
       .where(whereClause)
       .orderBy(sql`${direction(sortColumn)} nulls last`, asc(sellers.id))
       .limit(limit)
@@ -215,7 +253,10 @@ export async function getSellers(query: SellersQuery = {}) {
     const [countRow] = await db
       .select({ count: count() })
       .from(sellers)
+      .leftJoin(users, eq(users.id, sellers.id))
       .where(whereClause);
+
+    const storesBySeller = await loadSellerStores(sellersData.map((seller) => seller.id));
 
     // Cast the JSON fields to proper types
     const typedSellersData = sellersData.map((seller) => ({
@@ -243,6 +284,7 @@ export async function getSellers(query: SellersQuery = {}) {
       createdAt: seller.createdAt ?? new Date().toISOString(),
       updatedAt: seller.updatedAt ?? new Date().toISOString(),
       storeCount: Number(seller.storeCount ?? 0),
+      stores: storesBySeller.get(seller.id) ?? [],
     }));
 
     return {
@@ -256,6 +298,43 @@ export async function getSellers(query: SellersQuery = {}) {
   }
 }
 
+/** Every live store of these sellers, primary first, with its active custom domain. */
+async function loadSellerStores(sellerIds: string[]) {
+  const bySeller = new Map<string, SellerStoreSummary[]>();
+  if (!sellerIds.length) return bySeller;
+  const rows = await db
+    .select({
+      id: stores.id,
+      sellerId: stores.sellerId,
+      name: stores.name,
+      subdomain: stores.subdomain,
+      siteStatus: stores.siteStatus,
+      isPrimary: stores.isPrimary,
+      domain: sql<string | null>`(
+        SELECT cd.domain FROM ${sellerCustomDomains} cd
+        WHERE cd.store_id = ${stores.id} AND cd.status = 'active'
+        ORDER BY cd.created_at LIMIT 1
+      )`,
+    })
+    .from(stores)
+    .where(and(inArray(stores.sellerId, sellerIds), sql`${stores.deletedAt} IS NULL`))
+    .orderBy(desc(stores.isPrimary), asc(stores.createdAt));
+  for (const row of rows) {
+    const list = bySeller.get(row.sellerId) ?? [];
+    list.push({
+      id: row.id,
+      name: row.name,
+      subdomain: row.subdomain,
+      siteStatus: row.siteStatus,
+      isPrimary: row.isPrimary,
+      domain: row.domain ?? null,
+    });
+    bySeller.set(row.sellerId, list);
+  }
+  return bySeller;
+}
+
+/** Header KPIs, tab counts and the "heard about us" breakdown. One round trip. */
 export async function getSellerStats(): Promise<{
   success: boolean;
   data?: SellerStats;
@@ -264,59 +343,59 @@ export async function getSellerStats(): Promise<{
   try {
     await getCurrentAdminUser();
 
-    // Get total sellers count
-    const totalSellersResult = await db
-      .select({ count: count() })
-      .from(sellers);
+    const today = sql`(date_trunc('day', now() AT TIME ZONE 'Africa/Cairo') AT TIME ZONE 'Africa/Cairo')`;
+    const monthStart = sql`(date_trunc('month', now() AT TIME ZONE 'Africa/Cairo') AT TIME ZONE 'Africa/Cairo')`;
+    const result = await db.execute(sql`
+      SELECT
+        (SELECT count(*)::int FROM ${sellers}) AS total,
+        (SELECT count(*)::int FROM ${sellers} WHERE ${sellers.status} = 'approved') AS approved,
+        (SELECT count(*)::int FROM ${sellers} WHERE ${sellers.status} = 'pending') AS pending,
+        (SELECT count(*)::int FROM ${sellers} WHERE ${sellers.status} = 'suspended') AS suspended,
+        (SELECT count(*)::int FROM ${sellers} WHERE ${sellers.createdAt} >= ${today}) AS new_today,
+        (SELECT count(*)::int FROM ${sellers} WHERE ${sellers.createdAt} >= ${monthStart}) AS new_this_month,
+        (SELECT count(DISTINCT st.seller_id)::int FROM ${stores} st
+          WHERE st.deleted_at IS NULL AND st.site_status = 'published') AS with_published_site,
+        (SELECT count(*)::int FROM ${stores} st WHERE st.deleted_at IS NULL) AS store_count,
+        (SELECT count(DISTINCT oi.seller_id)::int FROM ${orderItems} oi
+          WHERE oi.created_at >= now() - interval '30 days') AS selling_30d,
+        (SELECT count(*)::int FROM ${sellers}
+          WHERE ${sellers.feeTrialEndsAt} > now() AND NOT ${sellers.isCommissionExempt}) AS in_trial,
+        (SELECT count(*)::int FROM ${sellers} WHERE coalesce(${sellers.walletBalance}, 0) < 0) AS negative_wallets,
+        (SELECT count(*)::int FROM ${products}) AS products,
+        (SELECT coalesce(sum(${orderItems.price}), 0)::float FROM ${orderItems}) AS revenue,
+        (SELECT coalesce(json_object_agg(src, n), '{}'::json) FROM (
+          SELECT coalesce(${sellers.heardAboutUs}, 'unknown') AS src, count(*)::int AS n
+          FROM ${sellers} GROUP BY 1
+        ) h) AS heard
+    `);
 
-    const totalSellers = totalSellersResult[0]?.count || 0;
-
-    // Get active sellers count
-    const activeSellersResult = await db
-      .select({ count: count() })
-      .from(sellers)
-      .where(eq(sellers.status, "approved"));
-
-    const activeSellers = activeSellersResult[0]?.count || 0;
-
-    // Get pending sellers count
-    const pendingSellersResult = await db
-      .select({ count: count() })
-      .from(sellers)
-      .where(eq(sellers.status, "pending"));
-
-    const pendingSellers = pendingSellersResult[0]?.count || 0;
-
-    // Get suspended sellers count
-    const suspendedSellersResult = await db
-      .select({ count: count() })
-      .from(sellers)
-      .where(eq(sellers.status, "suspended"));
-
-    const suspendedSellers = suspendedSellersResult[0]?.count || 0;
-
-
-
-    const totalProductsResult = await db
-      .select({ count: count() })
-      .from(products);
-
-    const totalProducts = totalProductsResult[0]?.count || 0;
-
-    // Get total revenue (sum of all order items)
-    const totalRevenueResult = await db
-      .select({ total: sum(orderItems.price) })
-      .from(orderItems);
-
-    const totalRevenue = Number(totalRevenueResult[0]?.total || 0);
+    const rows = Array.isArray(result)
+      ? result
+      : ((result as { rows?: Array<Record<string, unknown>> }).rows ?? []);
+    const row = (rows[0] ?? {}) as Record<string, unknown>;
+    const heardRaw =
+      typeof row.heard === "string"
+        ? (JSON.parse(row.heard) as Record<string, number>)
+        : ((row.heard ?? {}) as Record<string, number>);
+    const heardAboutUs: HeardAboutUsCount[] = [...HEARD_ABOUT_US_SOURCES, "unknown" as const].map(
+      (source) => ({ source, count: Number(heardRaw[source] ?? 0) }),
+    );
 
     const stats: SellerStats = {
-      totalSellers,
-      activeSellers,
-      pendingSellers,
-      suspendedSellers,
-      totalProducts,
-      totalRevenue,
+      totalSellers: Number(row.total ?? 0),
+      activeSellers: Number(row.approved ?? 0),
+      pendingSellers: Number(row.pending ?? 0),
+      suspendedSellers: Number(row.suspended ?? 0),
+      newSellersToday: Number(row.new_today ?? 0),
+      newSellersThisMonth: Number(row.new_this_month ?? 0),
+      sellersWithPublishedSite: Number(row.with_published_site ?? 0),
+      totalStores: Number(row.store_count ?? 0),
+      sellersSellingLast30Days: Number(row.selling_30d ?? 0),
+      sellersInTrial: Number(row.in_trial ?? 0),
+      negativeWallets: Number(row.negative_wallets ?? 0),
+      totalProducts: Number(row.products ?? 0),
+      totalRevenue: Number(row.revenue ?? 0),
+      heardAboutUs,
     };
 
     return { success: true, data: stats };

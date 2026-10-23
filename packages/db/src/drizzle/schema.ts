@@ -445,9 +445,18 @@ export const sellers = pgTable("sellers", {
 	/** 'store_created' (0067) | 'publish' | 'product_active' | 'admin' (0059). */
 	feeTrialStartTrigger: text("fee_trial_start_trigger"),
 	feePlanEffectiveAt: timestamp("fee_plan_effective_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	/** Where the seller heard about Tallaby, asked once on the dashboard (0099). Values: HEARD_ABOUT_US_SOURCES. */
+	heardAboutUs: text("heard_about_us"),
+	/** Free text for heard_about_us = 'other', max 120 chars (0099). */
+	heardAboutUsOther: text("heard_about_us_other"),
+	/** When the seller answered; NULL = not asked yet (0099). */
+	heardAboutUsAt: timestamp("heard_about_us_at", { withTimezone: true, mode: 'string' }),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 }, (table) => [
+	index("sellers_heard_about_us_idx").using("btree", table.heardAboutUs.asc().nullsLast().op("text_ops")).where(sql`heard_about_us IS NOT NULL`),
+	check("sellers_heard_about_us_check", sql`heard_about_us IS NULL OR heard_about_us IN ('facebook', 'instagram', 'youtube', 'tiktok', 'google', 'friend', 'other')`),
+	check("sellers_heard_about_us_other_check", sql`heard_about_us_other IS NULL OR char_length(heard_about_us_other) <= 120`),
 	uniqueIndex("sellers_subdomain_key").using("btree", table.subdomain.asc().nullsLast().op("text_ops")),
 	index("seller_business_name_idx").using("btree", table.businessName.asc().nullsLast().op("text_ops")),
 	index("seller_display_name_idx").using("btree", table.displayName.asc().nullsLast().op("text_ops")),

@@ -1,14 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/card";
 import { Tabs, TabsList, TabsTrigger } from "@workspace/ui/components/tabs";
-import { Users } from "lucide-react";
+import { ShoppingBag, Store, Users, Wallet } from "lucide-react";
+import { KpiCard, KpiGrid, percentOf } from "../_components/cards/kpi-card";
 import {
   customersFilters,
   getCustomersColumns,
@@ -47,70 +42,33 @@ export function CustomersContent({
 
   return (
     <>
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-4 mb-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center">
-              <Users className="h-4 w-4 mr-2 text-gray-500" />
-              Total Customers
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalCustomers}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.newCustomersThisMonth} new this month
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">
-              Verified Customers
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.verifiedCustomers}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.totalCustomers > 0
-                ? (
-                    (stats.verifiedCustomers / stats.totalCustomers) *
-                    100
-                  ).toFixed(1)
-                : 0}
-              % of total
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">
-              Avg. Spend per Customer
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(stats.averageSpendPerCustomer)}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Lifetime value per buying customer
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">
-              Avg. Order Value
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(stats.averageOrderValue)}
-            </div>
-            <p className="text-xs text-muted-foreground">Per order</p>
-          </CardContent>
-        </Card>
-      </div>
+      <KpiGrid className="mb-6">
+        <KpiCard
+          label="Customers"
+          value={stats.totalCustomers}
+          icon={<Users />}
+          today={stats.newCustomersToday}
+          hint={`${stats.newCustomersThisMonth.toLocaleString("en-EG")} new this month, ${stats.guestCustomers.toLocaleString("en-EG")} guests`}
+        />
+        <KpiCard
+          label="Came from a seller's store"
+          value={stats.customersFromStores}
+          icon={<Store />}
+          hint={`${percentOf(stats.customersFromStores, stats.buyers)} of buyers, from ${stats.originStoreCount.toLocaleString("en-EG")} ${stats.originStoreCount === 1 ? "store" : "stores"}`}
+        />
+        <KpiCard
+          label="Avg. spend per customer"
+          value={formatCurrency(stats.averageSpendPerCustomer)}
+          icon={<Wallet />}
+          hint={`Across ${stats.buyers.toLocaleString("en-EG")} customers who ordered`}
+        />
+        <KpiCard
+          label="Avg. order value"
+          value={formatCurrency(stats.averageOrderValue)}
+          icon={<ShoppingBag />}
+          hint={`${stats.highValueCustomers.toLocaleString("en-EG")} customers spent over EGP 1,000`}
+        />
+      </KpiGrid>
 
       <Tabs
         value={activeView}

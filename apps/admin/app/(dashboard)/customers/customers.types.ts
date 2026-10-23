@@ -21,6 +21,15 @@ export interface CustomerAddress {
   updatedAt: string | null;
 }
 
+export interface CustomerOriginStore {
+  id: string;
+  name: string;
+  subdomain: string;
+  /** draft | published | unpublished */
+  siteStatus: string;
+  sellerId: string;
+}
+
 export interface Customer {
   id: string;
   fullName: string | null;
@@ -43,8 +52,8 @@ export interface Customer {
   createdAt: string | null;
   updatedAt: string | null;
   isAvailable: boolean | null;
-  /** Set when this account also owns a seller account (`sellers.id = users.id`). */
-  sellerId?: string | null;
+  /** The store of the customer's first order. Null for marketplace orders or no orders. */
+  originStore?: CustomerOriginStore | null;
   totalOrders?: number;
   totalSpent?: number;
   lastOrderDate?: string | null;
@@ -72,6 +81,14 @@ export interface CustomerWithDetails extends Customer {
 
 export interface CustomerStats {
   totalCustomers: number;
+  guestCustomers: number;
+  newCustomersToday: number;
+  /** Customers whose first order was on a seller's storefront. */
+  customersFromStores: number;
+  /** Distinct stores those customers came from. */
+  originStoreCount: number;
+  /** Customers with at least one order. */
+  buyers: number;
   verifiedCustomers: number;
   unverifiedCustomers: number;
   suspendedCustomers: number;

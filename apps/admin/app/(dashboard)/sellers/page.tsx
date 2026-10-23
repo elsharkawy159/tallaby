@@ -13,8 +13,16 @@ const EMPTY_STATS: SellerStats = {
   activeSellers: 0,
   pendingSellers: 0,
   suspendedSellers: 0,
+  newSellersToday: 0,
+  newSellersThisMonth: 0,
+  sellersWithPublishedSite: 0,
+  totalStores: 0,
+  sellersSellingLast30Days: 0,
+  sellersInTrial: 0,
+  negativeWallets: 0,
   totalProducts: 0,
   totalRevenue: 0,
+  heardAboutUs: [],
 };
 
 async function SellersPageData({
