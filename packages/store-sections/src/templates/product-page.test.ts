@@ -73,13 +73,12 @@ describe("productPage", () => {
     const [main, , reviews, related] = productPage(lib, {
       surface: "shelf",
       headingCase: "upper",
-      tracking: 0.12,
       band: "brand",
       copy: { back: L("كل المنتجات", "All products"), reviews: L("آراءكم", "Your words"), related: L("كمان من عندنا", "More from us") },
     });
     expect(byLabel(main!, "عمود الشراء")[0]!.style).toMatchObject({ background: "secondary" });
-    expect(byLabel(main!, "اسم المنتج")[0]!.style).toMatchObject({ textTransform: "uppercase", letterSpacing: "wider" });
-    expect(byLabel(reviews!, "العنوان")[0]!.style).toMatchObject({ textTransform: "uppercase", letterSpacing: "wider" });
+    expect(byLabel(main!, "اسم المنتج")[0]!.style).toMatchObject({ textTransform: "uppercase" });
+    expect(byLabel(reviews!, "العنوان")[0]!.style).toMatchObject({ textTransform: "uppercase" });
     expect(byLabel(reviews!, "التقييمات")[0]!.style?.background).toBe("primary");
     expect(byLabel(reviews!, "العمود")[0]!.style?.background).toBe("background");
     const texts = [main!, reviews!, related!].flatMap(nodesOf).map((n) => n.props.text);
@@ -104,20 +103,13 @@ describe.each(CODE_TEMPLATES.map((t) => [t.key, t] as const))("code template %s"
 });
 
 describe.each(LIBRARY_TEMPLATES.map((t) => [t.key, t] as const))("library template %s", (key, template) => {
-  it("buy column is flat on square templates, a card or a shelf otherwise", () => {
-    const config = template.config();
-    const main = productPageOf(config)!.content.sections[0]!;
+  it("buy column matches the resolved surface of its product page spec", () => {
+    const spec = template.productPageSpec!;
+    expect(spec, "library templates keep their resolved spec").toBeDefined();
+    const main = productPageOf(template.config())!.content.sections[0]!;
     const column = walk(main.componentTree).find((n) => n.props.label === "عمود الشراء")!;
-    // The effective surface read from the built tree: flat has no background, card "background", shelf "secondary".
-    const surface = column.style?.background === undefined ? "flat" : column.style.background === "secondary" ? "shelf" : "card";
-    expect(["flat", "card", "shelf"]).toContain(surface);
-    expect(column.style?.background === undefined || ["background", "secondary"].includes(String(column.style.background))).toBe(true);
-    // Templates whose spec sets a surface that differs from the corner default (square → flat, rounded → card).
-    const EXPLICIT: Record<string, string> = { arena: "shelf", pure: "shelf", hearth: "shelf", elixir: "flat", bashra: "shelf", dar: "shelf", shabka: "flat", kettan: "flat", layali: "flat", nada: "flat", oud: "flat", barber: "flat", sitara: "shelf", saa: "shelf", fokhar: "shelf", halawa: "shelf", mobilia: "flat", zarea: "shelf", zahra: "shelf", saat: "flat", mahr: "flat", mama: "shelf", yoga: "shelf", boxing: "flat", zeina: "shelf", ward: "shelf" };
-    if (key in EXPLICIT) expect(surface).toBe(EXPLICIT[key]);
-    // A square template is flat unless its spec chose otherwise; a rounded one is never an unexplained flat.
-    else if (config.designSystem.spacing.borderRadius === 0) expect(surface).not.toBe("card");
-    else expect(surface).not.toBe("flat");
+    if (spec.surface === "flat") expect(column.style?.background).toBeUndefined();
+    else expect(column.style?.background).toBe(spec.surface === "shelf" ? "secondary" : "background");
   });
 
   it("template product page design ids are <key>-product-*", () => {

@@ -225,5 +225,5 @@ export const CORE = libraryTemplate({
     },
   ],
   demo: DEMO,
-  productPage: { surface: "flat", thumbs: "side", headingCase: "upper", tracking: 0.06, band: "paper", copy: { back: L("رجوع للمعدات", "Back to the equipment"), reviews: L("آراء الأكثر طلباً", "What buyers say"), related: L("معدات تكمّل الصالة", "Equipment to build out your gym") } },
+  productPage: { surface: "flat", thumbs: "side", headingCase: "upper", band: "paper", copy: { back: L("رجوع للمعدات", "Back to the equipment"), reviews: L("آراء الأكثر طلباً", "What buyers say"), related: L("معدات تكمّل الصالة", "Equipment to build out your gym") } },
 });

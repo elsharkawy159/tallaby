@@ -230,5 +230,5 @@ export const LOFT = libraryTemplate({
     },
   ],
   demo: DEMO,
-  productPage: { surface: "shelf", thumbs: "side", band: "paper", copy: { back: L("رجوع للمعرض", "Back to the showroom"), reviews: L("آراء عملائنا", "Customer reviews"), related: L("قطع تكمل المكان", "Pieces to complete the room") } },
+  productPage: { surface: "flat", thumbs: "side", band: "paper", copy: { back: L("رجوع للمعرض", "Back to the showroom"), reviews: L("آراء عملائنا", "Customer reviews"), related: L("قطع تكمل المكان", "Pieces to complete the room") } },
 });

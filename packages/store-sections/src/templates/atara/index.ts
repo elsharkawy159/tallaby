@@ -188,7 +188,7 @@ export const ATARA = libraryTemplate({
   key: ATARA_KEY,
   version: 2,
   changelog: "Atara v2: product page",
-  productPage: { thumbs: "bottom", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للعطارة", "Back to the spices"), reviews: L("رأي الجيران", "The neighbours say"), related: L("يتحط جنبه في المطبخ", "Next to it in the kitchen") } },
+  productPage: { thumbs: "bottom", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للعطارة", "Back to the spices"), reviews: L("رأي الجيران", "The neighbours say"), related: L("يتحط جنبه في المطبخ", "Pair it in your kitchen") } },
   name: L("عطارة", "Atara"),
   description: L(
     "توابل وأعشاب: بيتطحن طازة، طقم المطبخ، الأكتر إعادة طلب، كوبون أول طلب وآراء الجيران. أربع صفحات جاهزة.",

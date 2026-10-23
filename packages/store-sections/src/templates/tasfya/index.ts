@@ -180,7 +180,7 @@ export const TASFYA = libraryTemplate({
   key: TASFYA_KEY,
   version: 2,
   changelog: "Tasfya v2: product page",
-  productPage: { thumbs: "bottom", headingCase: "upper", band: "brand", extras: ["product-perks"], copy: { back: L("رجوع للأوتلت", "Back to the outlet"), reviews: L("اللي اشتروا قالوا", "Shoppers say"), related: L("لحّق العروض", "Grab more deals") } },
+  productPage: { thumbs: "bottom", band: "brand", extras: ["product-perks"], copy: { back: L("رجوع للأوتلت", "Back to the outlet"), reviews: L("اللي اشتروا قالوا", "Shoppers say"), related: L("لحّق العروض", "Grab more deals") } },
   name: L("تصفية", "Tasfya"),
   description: L(
     "أوتلت موضة: شريط العروض، خصم ٦٠٪، لسه نازل، عرض النهارده، تسوق بالميزانية، كل ما تزود توفّر وافتح قبل ما تدفع. أربع صفحات جاهزة.",

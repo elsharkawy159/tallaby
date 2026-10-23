@@ -235,5 +235,5 @@ export const MOTO = libraryTemplate({
     },
   ],
   demo: DEMO,
-  productPage: { surface: "shelf", thumbs: "side", headingCase: "upper", tracking: 0.06, band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للجراج", "Back to the garage"), reviews: L("آراء الراكبين", "Riders' reviews"), related: L("جهّز قبل الطريق", "Gear up before the ride") } },
+  productPage: { surface: "shelf", thumbs: "side", headingCase: "upper", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للجراج", "Back to the garage"), reviews: L("آراء الراكبين", "Riders' reviews"), related: L("جهّز قبل الطريق", "Gear up before the ride") } },
 });

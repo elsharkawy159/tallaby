@@ -218,5 +218,5 @@ export const ARCADE = libraryTemplate({
     },
   ],
   demo: DEMO,
-  productPage: { thumbs: "side", headingCase: "upper", tracking: 0.06, band: "brand", copy: { back: L("رجوع للعروض", "Back to the deals"), reviews: L("رأي اللاعبين", "Player reviews"), related: L("كمّل السيتاب", "Level up your setup") } },
+  productPage: { thumbs: "side", headingCase: "upper", band: "brand", copy: { back: L("رجوع للعروض", "Back to the deals"), reviews: L("رأي اللاعبين", "Player reviews"), related: L("كمّل السيتاب", "Level up your setup") } },
 });

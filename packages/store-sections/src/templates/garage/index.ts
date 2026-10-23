@@ -214,5 +214,5 @@ export const GARAGE = libraryTemplate({
     },
   ],
   demo: DEMO,
-  productPage: { surface: "card", thumbs: "side", headingCase: "upper", tracking: 0.06, band: "brand", extras: ["product-perks"], copy: { back: L("رجوع للجراج", "Back to the garage"), reviews: L("سواقين بيقولوا إيه", "What drivers say"), related: L("ترقيات صغيرة كمان", "More small upgrades") } },
+  productPage: { surface: "card", thumbs: "side", headingCase: "upper", band: "brand", extras: ["product-perks"], copy: { back: L("رجوع للجراج", "Back to the garage"), reviews: L("سواقين بيقولوا إيه", "What drivers say"), related: L("ترقيات صغيرة كمان", "More small upgrades") } },
 });

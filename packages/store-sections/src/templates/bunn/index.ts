@@ -175,7 +175,7 @@ export const BUNN = libraryTemplate({
   key: BUNN_KEY,
   version: 2,
   changelog: "Bunn v2: product page",
-  productPage: { thumbs: "side", band: "brand", copy: { back: L("رجوع للمحمصة", "Back to the roastery"), reviews: L("رأي شاربي القهوة", "From coffee drinkers"), related: L("كوب تاني معاه", "Another cup to try") } },
+  productPage: { thumbs: "side", band: "brand", copy: { back: L("رجوع للمحمصة", "Back to the roastery"), reviews: L("رأي شاربي القهوة", "From coffee drinkers"), related: L("جرّب معاه كمان", "More to try") } },
   name: L("بُن", "Bunn"),
   description: L(
     "اشتراك قهوة مختصة: كلمة تحميص الكبيرة، اشترك ووفّر، ابدأ من هنا، طريقة التحضير، نقط بن ورسايل الصبح. أربع صفحات جاهزة.",

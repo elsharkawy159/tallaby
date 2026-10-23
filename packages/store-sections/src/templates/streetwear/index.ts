@@ -234,5 +234,5 @@ export const STREETWEAR = libraryTemplate({
     { slug: "faq", name: L("الأسئلة الشائعة", "FAQ"), seo: { title: L("الأسئلة الشائعة", "FAQ") }, sections: faq },
   ],
   demo: DEMO,
-  productPage: { thumbs: "side", headingCase: "upper", tracking: 0.06, band: "brand", copy: { back: L("رجوع للشارع", "Back to the street"), reviews: L("الشارع بيقول إيه", "What the street says"), related: L("كمّل اللوك", "Run the full fit") } },
+  productPage: { thumbs: "side", headingCase: "upper", band: "brand", copy: { back: L("رجوع للشارع", "Back to the street"), reviews: L("الشارع بيقول إيه", "What the street says"), related: L("كمّل اللوك", "Run the full fit") } },
 });

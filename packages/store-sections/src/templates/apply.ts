@@ -92,7 +92,7 @@ export function mergeTemplateIntoDraft(current: DraftSite, template: SiteConfig,
       slug: target?.slug ?? page.slug,
       kind: product ? "product" : "page",
       name: page.name,
-      showInNav: page.showInNav ?? true,
+      showInNav: product ? false : (page.showInNav ?? true),
       seo: page.seo,
       content: mergeContent(target?.content, page.content, overrideKeys),
     });

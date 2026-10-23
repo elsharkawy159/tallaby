@@ -106,6 +106,13 @@ describe("applyTemplate product page", () => {
     expect(product.content.sections[0]!.props).toEqual({ title: "Mine" });
   });
 
+  it("the product page is never in the nav, whatever the template says", () => {
+    const shown = siteConfigSchema.parse({ ...template, pages: template.pages.map((p) => (p.kind === "product" ? { ...p, showInNav: true } : p)) });
+    expect(shown.pages.find((p) => p.kind === "product")!.showInNav).toBe(true);
+    const result = mergeTemplateIntoDraft(base([{ slug: "home", isHome: true, content: { sections: [] } }]), shown, keys);
+    expect(result.pages.find((p) => p.kind === "product")!.showInNav).toBe(false);
+  });
+
   it("never merges the product page into a normal page with the same slug", () => {
     const current = base([
       { slug: "home", isHome: true, content: { sections: [] } },

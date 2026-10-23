@@ -214,5 +214,5 @@ export const PACE = libraryTemplate({
     },
   ],
   demo: DEMO,
-  productPage: { surface: "card", thumbs: "side", headingCase: "upper", tracking: 0.06, band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للجيم", "Back to the gym"), reviews: L("آراء المتدرّبين", "Athlete reviews"), related: L("كمّل تجهيزك", "Complete your kit") } },
+  productPage: { surface: "card", thumbs: "side", headingCase: "upper", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للجيم", "Back to the gym"), reviews: L("آراء المتدرّبين", "Athlete reviews"), related: L("كمّل تجهيزك", "Complete your kit") } },
 });

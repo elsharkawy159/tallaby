@@ -26,8 +26,6 @@ export type ProductPageSpec = {
   surface?: "flat" | "card" | "shelf";
   /** Heading case of the product name and section titles; default "none". */
   headingCase?: "none" | "upper";
-  /** Heading letter-spacing in em, drawn with the nearest style step; default 0. */
-  tracking?: number;
   /** Buy box primary button (the buy box `variant`); default "solid". */
   button?: "solid" | "outline";
   /** Reviews section background; default "shelf". */
@@ -54,22 +52,8 @@ const BACK_COPY = "العودة للمتجر";
 const REVIEWS_COPY = "رأي اللي جربوه";
 const RELATED_COPY = "ممكن يعجبك كمان";
 
-/** The `letterSpacing` steps (em), nearest first. */
-const TRACKING = [
-  ["tight", -0.02],
-  ["normal", 0],
-  ["wide", 0.06],
-  ["wider", 0.14],
-] as const;
-
 function headingStyle(spec: ProductPageSpec): StyleValues | undefined {
-  const tracking = spec.tracking ?? 0;
-  const [step] = TRACKING.reduce((best, s) => (Math.abs(s[1] - tracking) < Math.abs(best[1] - tracking) ? s : best));
-  const style: StyleValues = {
-    ...(spec.headingCase === "upper" && { textTransform: "uppercase" }),
-    ...(step !== "normal" && { letterSpacing: step }),
-  };
-  return Object.keys(style).length ? style : undefined;
+  return spec.headingCase === "upper" ? { textTransform: "uppercase" } : undefined;
 }
 
 const PANEL = { paddingTop: 28, paddingBottom: 28, paddingStart: 28, paddingEnd: 28, radius: 24 } as const;

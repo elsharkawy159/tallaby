@@ -2,6 +2,7 @@
 import type { SiteConfig } from "../config/schema";
 import type { Localized } from "../core/types";
 import type { Design } from "../designs/builder";
+import type { ProductPageSpec } from "./_product-page";
 
 /**
  * A preview catalog: what the templates gallery shows instead of the
@@ -51,4 +52,6 @@ export type TemplateDefinition = {
   demo: TemplateDemo;
   /** The template's own section designs (not in the section library). */
   designs: readonly Design[];
+  /** The resolved product page spec (library-built templates only): defaults filled in, `surface` always set. */
+  productPageSpec?: Readonly<ProductPageSpec>;
 };
