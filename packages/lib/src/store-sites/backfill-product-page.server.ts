@@ -24,7 +24,7 @@
 import { randomUUID } from "node:crypto";
 import { and, asc, db, eq, isNull, max, storePages, storeSiteRevisions, stores, templateVersions, templates } from "@workspace/db";
 import { productPageOf, validateSiteConfig, PRODUCT_PAGE_SLUG, type SiteConfig } from "@workspace/store-sections";
-import { DEFAULT_TEMPLATE, prepareTemplateForStore, resolveTemplateMeta, templateMeta, type TemplateMeta } from "@workspace/store-sections/templates";
+import { DEFAULT_TEMPLATE, prepareTemplateForStore, resolveTemplateMeta, templateEssentials, templateMeta, type TemplateMeta } from "@workspace/store-sections/templates";
 import { loadDefaultTemplate } from "./template-rows.server";
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -113,7 +113,7 @@ export async function backfillStoreProductPageDetailed(q: Queryable, storeId: st
 
     const template = await pickTemplate(tx, store.templateKey);
     const locale = store.defaultLocale === "en" ? "en" : "ar";
-    const fitted = productPageOf(prepareTemplateForStore(template.config, { defaultLocale: locale, storeName: store.name, formIds: {} }));
+    const fitted = productPageOf(prepareTemplateForStore(templateEssentials(template.config), { defaultLocale: locale, storeName: store.name, formIds: {} }));
     if (!fitted) return skipped(`template ${template.key} has no product page`, { ...who, templateKey: template.key });
     const pageId = randomUUID();
     // Same name rule as seedStarterSite for the row, and the snapshot gets what buildDraftSiteConfig
