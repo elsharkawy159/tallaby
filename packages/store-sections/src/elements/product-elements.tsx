@@ -17,7 +17,8 @@ import { sectionText } from "../core/copy";
 import { DEMO_PRODUCT } from "../core/demo-product";
 import { IMAGE_SIZES, imageSource, type ProductDetail, type ProductElementHook, type RenderContext } from "../core/types";
 import { cn } from "../sections/_primitives";
-import type { DataRecord } from "./data";
+import type { ComponentNode } from "../config/schema";
+import { walkNodes, type DataRecord } from "./data";
 import type { ElementType } from "./registry";
 
 export const PRODUCT_ELEMENT_TYPES = [
@@ -401,6 +402,56 @@ function Reviews({ product, attrs, ctx }: StillProps) {
       {count <= 0 && <p className="rounded-(--sf-radius,12px) bg-(--sf-shelf) p-6 text-center text-sm text-(--sf-muted)">{sectionText("reviewsEmpty", ctx.locale)}</p>}
     </div>
   );
+}
+
+const isProductElement = (type: string): type is ProductElementType => (PRODUCT_ELEMENT_TYPES as readonly string[]).includes(type);
+
+/** Hidden on desktop, tablet and phone alike (`hidden` is per device, style.ts). */
+function hiddenEverywhere(node: ComponentNode): boolean {
+  return node.style?.hidden === true && node.breakpointStyles?.tablet?.hidden === true && node.breakpointStyles?.mobile?.hidden === true;
+}
+
+/**
+ * The storefront draws nothing for this product part: it has no data for
+ * it (the same checks the stills and the host hooks make), or it is hidden
+ * on every device.
+ */
+function productPartEmpty(node: ComponentNode & { type: ProductElementType }, product: ProductDetail): boolean {
+  if (hiddenEverywhere(node)) return true;
+  const props = node.props ?? {};
+  switch (node.type) {
+    case "productRating":
+      return product.reviewCount <= 0;
+    case "productVariants":
+      return product.variants.length === 0;
+    case "productDetails":
+      return !(props.showDescription !== false && product.description?.trim()) && !(props.showBullets !== false && product.bulletPoints.some((point) => point.trim()));
+    case "productContent":
+      return !product.contentHtml?.trim();
+    default:
+      return false;
+  }
+}
+
+/**
+ * A storefront section whose product parts all draw nothing for this
+ * product (no content, no variants, no reviews yet…) would be an empty
+ * padded band, so it is not drawn at all; its headings only label the
+ * missing part. Sections without product parts, pages without a product,
+ * and the editor are unaffected.
+ */
+export function productSectionEmpty(section: ComponentNode, ctx: RenderContext, scope?: DataRecord): boolean {
+  if (ctx.mode === "edit") return false;
+  const product = productOf(ctx, scope);
+  if (!product) return false;
+  let parts = 0;
+  let empty = 0;
+  walkNodes([section], (node) => {
+    if (!isProductElement(node.type)) return;
+    parts += 1;
+    if (productPartEmpty(node as ComponentNode & { type: ProductElementType }, product)) empty += 1;
+  });
+  return parts > 0 && empty === parts;
 }
 
 const STILLS: Record<ProductElementType, (p: StillProps) => ReactNode> = {

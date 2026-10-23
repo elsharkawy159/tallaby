@@ -17,6 +17,8 @@ import {
 export interface StoreSitemapPage {
   slug: string;
   isHome: boolean;
+  /** "product": the store's product page template, never a URL of its own. */
+  kind?: "page" | "product";
   seo?: { noindex?: boolean };
 }
 
@@ -50,7 +52,7 @@ const SAFE_PATH = /^(?:\/[a-z0-9][a-z0-9-]*){1,4}$/;
 
 /**
  * Every indexable URL of one store: home, published builder pages (except
- * the home page, which is "/", and pages marked noindex), the store's own
+ * the home page, which is "/", the product page template, and pages marked noindex), the store's own
  * products, then provider URLs. Nothing at all for a store kept out of
  * search, so the sitemap never contradicts the pages' `noindex`.
  */
@@ -61,7 +63,7 @@ export function buildStoreSitemapEntries(input: StoreSitemapInput): SitemapEntry
     sharedPathEntries(baseUrl, path, { type: "page", ...fields }, () => label);
 
   const pageEntries = input.pages
-    .filter((p) => !p.isHome && !p.seo?.noindex && isValidSlug(p.slug) && SAFE_PATH.test(`/${p.slug}`))
+    .filter((p) => !p.isHome && p.kind !== "product" && !p.seo?.noindex && isValidSlug(p.slug) && SAFE_PATH.test(`/${p.slug}`))
     .flatMap((p) => page(`/${p.slug}`, { lastModified: null, changeFrequency: "weekly", priority: 0.6 }));
 
   const extraEntries = (input.extra ?? [])

@@ -174,3 +174,40 @@ describe("product elements", () => {
     expect(draw(node("productDetails", { showDescription: true, showBullets: false }), withBullets)).not.toContain("Fast charging");
   });
 });
+
+describe("product sections with nothing to show", () => {
+  const section = (children: ComponentNode[]): ComponentNode => ({ id: "s-1", type: "section", props: {}, children }) as ComponentNode;
+  const heading = { id: "h-1", type: "heading", props: { text: "About this product", level: "h2" }, children: [] } as unknown as ComponentNode;
+  const empty: ProductDetail = { ...product, contentHtml: null, reviewCount: 0, variants: [], description: null, bulletPoints: [] };
+  const publicDraw = (n: ComponentNode, p: ProductDetail | null) => draw(n, p, { mode: "public" });
+
+  it("draw no band publicly when every product part in them is empty for this product", () => {
+    expect(publicDraw(section([heading, node("productContent")]), empty)).toBe("");
+    expect(publicDraw(section([node("productRating"), node("productVariants"), node("productDetails")]), empty)).toBe("");
+    // Details with only the description switched off and no bullets: nothing either.
+    expect(publicDraw(section([node("productDetails", { showDescription: false })]), { ...empty, description: "Soft." })).toBe("");
+  });
+
+  it("keep the band when one product part draws something", () => {
+    const withContent = { ...empty, contentHtml: "<p>Hi</p>" };
+    expect(publicDraw(section([heading, node("productContent")]), withContent)).toContain("<section");
+    expect(publicDraw(section([node("productContent"), node("productReviews")]), empty)).toContain("<section");
+  });
+
+  it("count a product part hidden on every device as empty", () => {
+    const hidden = {
+      ...node("productReviews"),
+      style: { hidden: true },
+      breakpointStyles: { tablet: { hidden: true }, mobile: { hidden: true } },
+    } as ComponentNode;
+    expect(publicDraw(section([heading, hidden]), empty)).toBe("");
+    const desktopOnly = { ...hidden, breakpointStyles: { tablet: { hidden: true } } } as ComponentNode;
+    expect(publicDraw(section([heading, desktopOnly]), empty)).toContain("<section");
+  });
+
+  it("leave sections without product parts, pages without a product, and the editor, alone", () => {
+    expect(publicDraw(section([heading]), empty)).toContain("<section");
+    expect(publicDraw(section([heading, node("productContent")]), null)).toContain("<section");
+    expect(draw(section([heading, node("productContent")]), empty)).toContain("<section");
+  });
+});

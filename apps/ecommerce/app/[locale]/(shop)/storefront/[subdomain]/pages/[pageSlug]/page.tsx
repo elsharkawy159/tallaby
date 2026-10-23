@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { storeUrl } from "@workspace/lib/storefront";
+import { isProductPage } from "@workspace/store-sections/config";
 import { routing } from "@/i18n/routing";
 import { getStorefrontSite } from "@/lib/store-site/preview.server";
 import { isSubdomainOfflineForRequest, STORE_OFFLINE_METADATA } from "@/lib/store-site/offline.server";
@@ -24,6 +25,8 @@ async function resolvePage(locale: string, subdomain: string, pageSlug: string) 
   // In preview (P4-08) this is the verified draft, so unpublished pages open too.
   const { site, preview } = await getStorefrontSite(store.id, store.storeId, store.subdomain);
   const page = site?.pages.find((p) => p.slug === pageSlug && !p.isHome);
+  // The product page is a template for /products/{slug}, never a page of its own.
+  if (page && isProductPage(page)) notFound();
   if (!site || !page) {
     const prefix = locale === routing.defaultLocale ? "" : `/${locale}`;
     redirect(`${marketplaceOrigin()}${prefix}/${pageSlug}`);

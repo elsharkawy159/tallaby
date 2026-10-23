@@ -13,6 +13,12 @@ interface ProductImagesProps {
   productId?: string;
   description?: string | null;
   bulletPoints?: string[];
+  /** Desktop thumbnails: beside the photo (default), below it, or none. Phones always swipe. */
+  thumbs?: "side" | "bottom" | "none";
+  /** Hover zoom on desktop (default on). */
+  zoom?: boolean;
+  /** Phones: the photo recedes as the page scrolls (the marketplace's pinned stage; default on). */
+  recede?: boolean;
 }
 
 export const ProductImages = ({
@@ -21,6 +27,9 @@ export const ProductImages = ({
   productId,
   description,
   bulletPoints,
+  thumbs = "side",
+  zoom = true,
+  recede = true,
 }: ProductImagesProps) => {
   const [selectedImage, setSelectedImage] = useState(images[0]);
   const [hoveredImage, setHoveredImage] = useState<string | null>(null);
@@ -62,7 +71,7 @@ export const ProductImages = ({
     <>
       {/* Mobile: pinned stage that recedes as the details sheet slides over
           it (scroll-driven, see .product-stage-recede in globals.css). */}
-      <div className="product-stage-recede relative block origin-top lg:hidden">
+      <div className={recede ? "product-stage-recede relative block origin-top lg:hidden" : "relative block origin-top lg:hidden"}>
         <MobileImageCarousel
           key={images.join("|")}
           images={images}
@@ -82,8 +91,9 @@ export const ProductImages = ({
       </div>
 
       {/* Desktop Gallery */}
-      <div className="hidden w-full gap-4 lg:flex">
-        <div className="flex w-16 shrink-0 flex-col gap-2.5">
+      <div className={thumbs === "bottom" ? "hidden w-full flex-col-reverse gap-4 lg:flex" : "hidden w-full gap-4 lg:flex"}>
+        {thumbs !== "none" && (
+        <div className={thumbs === "bottom" ? "flex flex-wrap gap-2.5 [&>button]:w-16" : "flex w-16 shrink-0 flex-col gap-2.5"}>
           {images.map((image, index) => (
             <button
               key={index}
@@ -111,14 +121,15 @@ export const ProductImages = ({
             </button>
           ))}
         </div>
+        )}
 
         <div className="relative flex-1 z-[999]">
           <div
             ref={mainImageRef}
-            className="relative aspect-square w-full cursor-zoom-in overflow-hidden rounded-[2rem]"
-            onMouseMove={handleMouseMove}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
+            className={zoom ? "relative aspect-square w-full cursor-zoom-in overflow-hidden rounded-[2rem]" : "relative aspect-square w-full overflow-hidden rounded-[2rem]"}
+            onMouseMove={zoom ? handleMouseMove : undefined}
+            onMouseEnter={zoom ? handleMouseEnter : undefined}
+            onMouseLeave={zoom ? handleMouseLeave : undefined}
           >
             <ImageWithFallback
               src={
@@ -136,7 +147,7 @@ export const ProductImages = ({
           </div>
 
           {/* Magnified view - only on larger screens */}
-          {showZoom && (
+          {zoom && showZoom && (
             <div className="pointer-events-none absolute top-0 z-[999] hidden h-full w-full overflow-hidden rounded-[2rem] bg-white shadow-lg ring-1 ring-black/5 xl:block">
               <div
                 className="w-full h-full bg-cover bg-no-repeat z-[999]"

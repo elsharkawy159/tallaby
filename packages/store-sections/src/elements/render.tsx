@@ -60,7 +60,7 @@ import { ButtonLink, SmartLink, cn } from "../sections/_primitives";
 import { DATA_NODE_NEEDS, boundValue, isDataList, isPaginated, listRecords, nodeFormId, walkNodes, type DataRecord } from "./data";
 import { MAX_ELEMENT_DEPTH, PATTERN_VARIANTS, getElementDefinition, type ElementIconName, type PatternVariant } from "./registry";
 import { VideoElement, VideoPlaylist } from "./render-video";
-import { renderProductElement } from "./product-elements";
+import { productSectionEmpty, renderProductElement } from "./product-elements";
 import { SocialIcon } from "../social/icon";
 import { contactRowGone, storeSocialLinks, withStoreContact } from "./store-contact";
 
@@ -274,7 +274,7 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
 
   switch (definition.type) {
     case "section":
-      if (ctx.mode !== "edit" && missingData(node, ctx)) return null;
+      if (ctx.mode !== "edit" && (missingData(node, ctx) || productSectionEmpty(node, ctx, scope))) return null;
       return (
         <section {...attrs} className="relative isolate overflow-x-clip">
           {kids()}

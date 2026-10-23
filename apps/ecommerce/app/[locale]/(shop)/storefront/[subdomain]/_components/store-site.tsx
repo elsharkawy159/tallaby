@@ -13,7 +13,7 @@ import {
   flushHeaderOnMobile,
   withLanguageSwitcher,
   storeSectionRegistry,
-  type NavPage,
+  type ProductDetail,
   type RenderContext,
 } from "@workspace/store-sections/render";
 import { getPublicUrl } from "@workspace/ui/lib/utils";
@@ -23,6 +23,7 @@ import { formatContentDate, toContentSummary } from "@/lib/store-cms/cms.lib";
 import { getCachedSectionContent } from "@/lib/store-cms/cms.server";
 import { resolveStoreCatalog, toProductSummaries, type ResolvedCatalog } from "@/lib/store-site/catalog.server";
 import { optimizeStoreImage } from "@/lib/store-site/optimize-image.lib";
+import { siteNavPages } from "@/lib/store-site/site-nav.lib";
 import { catalogStoreId, type Storefront } from "@/lib/storefront.server";
 import { CartSheet } from "./cart-sheet.client";
 import { StoreCartBadge } from "./store-cart-badge.client";
@@ -31,18 +32,48 @@ import { StoreForm } from "./store-form.client";
 import { StorefrontLanguageSwitcher } from "./storefront-language.client";
 import { StoreWishlistButton } from "./store-wishlist-button.client";
 import { storefrontFont } from "./storefront-font";
+import {
+  StoreProductBuyBox,
+  StoreProductGallery,
+  StoreProductPrice,
+  StoreProductReviews,
+  StoreProductStock,
+  StoreProductVariants,
+} from "./product-hooks.client";
 
 /**
  * Published builder sites on a store host (PLAN.md P5-01). Every section is
  * a tree section from @workspace/store-sections (CLAUDE.md rule 17).
  */
 
-function navPages(site: SiteConfig, locale: string): NavPage[] {
-  return site.pages
-    .filter((page) => page.isHome || page.showInNav !== false)
-    .map((page) => ({ name: page.name, href: page.isHome ? "/" : `/${page.slug}`, isHome: page.isHome }))
-    .map((page) => ({ ...page, name: page.isHome && locale === "en" && page.name === "الرئيسية" ? "Home" : page.name }));
-}
+const textProp = (value: unknown) => (typeof value === "string" && value.trim() ? value.slice(0, 60) : undefined);
+
+/**
+ * The product page's interactive parts (template product page spec §5.3).
+ * They read the product and its selected variant from the
+ * `ProductPageProvider` around the page; the node's props pick their look.
+ */
+const PRODUCT_HOOKS: Pick<
+  RenderContext,
+  "renderProductGallery" | "renderProductPrice" | "renderProductStock" | "renderProductVariants" | "renderProductBuyBox" | "renderProductReviews"
+> = {
+  renderProductGallery: (_product, props) => (
+    <StoreProductGallery thumbs={props.thumbs === "bottom" || props.thumbs === "none" ? props.thumbs : "side"} zoom={props.zoom !== false} />
+  ),
+  renderProductPrice: (_product, props) => <StoreProductPrice showDiscount={props.showDiscount !== false} showCountdown={props.showCountdown !== false} />,
+  renderProductStock: () => <StoreProductStock />,
+  renderProductVariants: () => <StoreProductVariants />,
+  renderProductBuyBox: (_product, props) => (
+    <StoreProductBuyBox
+      buyNow={props.buyNow !== false}
+      stickyMobile={props.stickyMobile !== false}
+      variant={props.variant === "outline" ? "outline" : "solid"}
+      addLabel={textProp(props.addLabel)}
+      buyLabel={textProp(props.buyLabel)}
+    />
+  ),
+  renderProductReviews: () => <StoreProductReviews />,
+};
 
 async function buildContext(
   store: Storefront,
@@ -50,8 +81,10 @@ async function buildContext(
   locale: string,
   sections: SiteConfig["pages"][number]["content"]["sections"],
   paging?: ProductPaging,
+  /** The product of a product page: seeds its elements and the "related" lists. */
+  product?: ProductDetail,
 ): Promise<RenderContext> {
-  const queries = collectCatalogQueries(sections, storeSectionRegistry);
+  const queries = collectCatalogQueries(sections, storeSectionRegistry, product ? { product } : undefined);
   // Paginated product lists show the requested page (`?page=N`).
   for (const query of Object.values(queries)) if (query.kind === "products" && query.paginate) query.page = paging?.page ?? 1;
   const formIds = collectFormIds(sections, storeSectionRegistry);
@@ -86,7 +119,7 @@ async function buildContext(
       social: store.social ?? [],
       policies: [],
     },
-    pages: navPages(site, locale),
+    pages: siteNavPages(site, locale),
     catalog: {
       products: catalog.products,
       categories: catalog.categories,
@@ -122,6 +155,7 @@ async function buildContext(
     renderWishlistButton: (product) => <StoreWishlistButton productId={product.id} />,
     forms,
     renderForm: (form, instanceId) => <StoreForm form={form} instanceId={instanceId} />,
+    ...(product && { product, ...PRODUCT_HOOKS }),
   };
 }
 
@@ -191,6 +225,7 @@ export async function StoreSitePage({
   page,
   locale,
   productPage = 1,
+  product,
 }: {
   store: Storefront;
   site: SiteConfig;
@@ -198,12 +233,18 @@ export async function StoreSitePage({
   locale: string;
   /** `?page=N` of the request, for paginated product lists (the home page's main grid). */
   productPage?: number;
+  /** The product page's product (`/products/{slug}`); the page is then the site's product page. */
+  product?: ProductDetail;
 }) {
-  const path = page.isHome ? "/" : `/${page.slug}`;
-  const ctx = await buildContext(store, site, locale, page.content.sections, {
-    page: productPage,
-    href: (n) => (n > 1 ? `${path}?page=${n}` : path),
-  });
+  const path = product ? product.href : page.isHome ? "/" : `/${page.slug}`;
+  const ctx = await buildContext(
+    store,
+    site,
+    locale,
+    page.content.sections,
+    { page: productPage, href: (n) => (n > 1 ? `${path}?page=${n}` : path) },
+    product,
+  );
   // The storefront layout owns <main>, so the sections render directly.
   return (
     <>
