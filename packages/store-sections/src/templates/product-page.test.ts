@@ -81,6 +81,8 @@ describe("productPage", () => {
     expect(byLabel(reviews!, "العنوان")[0]!.style).toMatchObject({ textTransform: "uppercase" });
     expect(byLabel(reviews!, "التقييمات")[0]!.style?.background).toBe("primary");
     expect(byLabel(reviews!, "العمود")[0]!.style?.background).toBe("background");
+    // The panel spans the band like the related products below, not a 960px column.
+    expect(byLabel(reviews!, "الحاوية")[0]!.style?.maxWidth).toBe("100%");
     const texts = [main!, reviews!, related!].flatMap(nodesOf).map((n) => n.props.text);
     expect(texts).toEqual(expect.arrayContaining(["كل المنتجات", "آراءكم", "كمان من عندنا"]));
   });

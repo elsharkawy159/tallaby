@@ -46,6 +46,7 @@ const TITLE = "اسم المنتج";
 const BUY_BOX = "زر الشراء";
 const REVIEWS = "التقييمات";
 const REVIEWS_COLUMN = "العمود";
+const REVIEWS_CONTAINER = "الحاوية";
 const SECTION_TITLE = "العنوان";
 // The designs' copy the template copy replaces.
 const BACK_COPY = "العودة للمتجر";
@@ -70,6 +71,8 @@ function bandNodes(band: NonNullable<ProductPageSpec["band"]>): Record<string, N
   if (band === "shelf") return { [REVIEWS]: { style: { background: "secondary" } } };
   return {
     [REVIEWS]: { style: { background: "primary" } },
+    // As wide as the related products below: the panel spans the band, not a 960px column.
+    [REVIEWS_CONTAINER]: { style: { maxWidth: "100%" } },
     [REVIEWS_COLUMN]: { style: { ...PANEL, background: "background" }, mobile: PANEL_MOBILE },
   };
 }
