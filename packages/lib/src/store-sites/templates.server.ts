@@ -26,6 +26,7 @@ import {
   eq,
   inArray,
   isNull,
+  ne,
   sellers,
   sql,
   storeDesignSystems,
@@ -462,7 +463,8 @@ export type UndoTemplateError = "not_found" | "store_read_only" | "nothing_to_un
 /**
  * Puts back the drafts saved by this store's latest install (changes made
  * after it are replaced too; the UI says so). Pages the install created are
- * removed. Only the latest install can be undone, once.
+ * removed, except the product page (a store keeps one; it keeps the
+ * template's content). Only the latest install can be undone, once.
  */
 export async function undoStoreTemplate(
   sellerId: string,
@@ -509,7 +511,16 @@ export async function undoStoreTemplate(
       if (saved.createdPageIds.length) {
         await tx
           .delete(storePages)
-          .where(and(eq(storePages.storeId, storeId), eq(storePages.isHome, false), inArray(storePages.id, saved.createdPageIds)));
+          .where(
+            and(
+              eq(storePages.storeId, storeId),
+              eq(storePages.isHome, false),
+              // The product page stays: a store always keeps one (spec §8); one that existed
+              // before the install had its content restored above with the other pages.
+              ne(storePages.kind, "product"),
+              inArray(storePages.id, saved.createdPageIds),
+            ),
+          );
       }
       await tx.update(templateInstalls).set({ undoneAt: sql`now()` }).where(eq(templateInstalls.id, install.id));
       return { templateKey: saved.templateKey };
