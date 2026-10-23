@@ -169,6 +169,19 @@ export async function resolveStoreCatalog(
         products[instanceId] = result.summaries;
         return;
       }
+      // Same category first, then the newest; never the current product. Fetches one extra row to drop it.
+      if (query.source === "related" && query.relatedTo) {
+        const { productId, categoryId } = query.relatedTo;
+        const same = categoryId ? (await fetchPage({ categoryIds: [categoryId] }, query.limit + 1)).summaries.filter((p) => p.id !== productId) : [];
+        const picked = same.slice(0, query.limit);
+        if (picked.length < query.limit) {
+          const have = new Set([productId, ...picked.map((p) => p.id)]);
+          const fill = (await fetchPage({}, query.limit + picked.length + 1)).summaries.filter((p) => !have.has(p.id));
+          picked.push(...fill.slice(0, query.limit - picked.length));
+        }
+        products[instanceId] = picked;
+        return;
+      }
       let categoryIds: string[] | undefined;
       if (query.source === "category") {
         const category = storeCategories.find((c) => c.key === query.categoryId || c.categoryIds.includes(query.categoryId ?? ""));

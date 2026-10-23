@@ -199,6 +199,7 @@ const SOURCE_LABELS: Record<(typeof PRODUCT_SOURCES)[number], Localized> = {
   "best-sellers": L("الأكثر مبيعًا", "Best sellers"),
   trending: L("الرائجة الآن", "Trending"),
   discounted: L("عليها خصم", "On sale"),
+  related: L("منتجات مشابهة", "Related products"),
 };
 const SORT_LABELS: Record<(typeof PRODUCT_SORTS)[number], Localized> = {
   default: L("ترتيب المصدر", "Source order"),

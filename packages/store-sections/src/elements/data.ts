@@ -77,7 +77,7 @@ export function isPaginated(node: ComponentNode): boolean {
 }
 
 /** The catalog query of a data node, or null (not a catalog node, or not set up yet). */
-export function nodeCatalogQuery(node: ComponentNode): CatalogQuery | null {
+export function nodeCatalogQuery(node: ComponentNode, opts?: { product?: ProductDetail }): CatalogQuery | null {
   const props = node.props ?? {};
   if (node.type === "productList") {
     const source = PRODUCT_SOURCES.find((s) => s === props.source) ?? ("newest" satisfies ProductSource);
@@ -93,6 +93,12 @@ export function nodeCatalogQuery(node: ComponentNode): CatalogQuery | null {
     if (source === "selected") {
       const productIds = idsOf(props.productIds);
       return productIds.length ? { kind: "products", source, productIds, sort, limit, ...extra } : null;
+    }
+    if (source === "related") {
+      // Without a current product (any page but the product page) "related" is the newest.
+      const product = opts?.product;
+      if (!product) return { kind: "products", source: "newest", sort, limit, ...extra };
+      return { kind: "products", source, relatedTo: { productId: product.id, categoryId: product.category?.id ?? null }, sort, limit, ...extra };
     }
     return { kind: "products", source, sort, limit, ...extra };
   }

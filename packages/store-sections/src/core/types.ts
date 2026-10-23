@@ -106,7 +106,7 @@ export type SectionCategory = (typeof SECTION_CATEGORIES)[number];
  * sold in this store's orders (90 and 14 days); `discounted` keeps products
  * whose list price is above the selling price. Never random.
  */
-export const PRODUCT_SOURCES = ["all", "newest", "featured", "category", "selected", "best-sellers", "trending", "discounted"] as const;
+export const PRODUCT_SOURCES = ["all", "newest", "featured", "category", "selected", "best-sellers", "trending", "discounted", "related"] as const;
 export type ProductSource = (typeof PRODUCT_SOURCES)[number];
 export const PRODUCT_SORTS = ["default", "newest", "price-asc", "price-desc", "rating"] as const;
 export type ProductSort = (typeof PRODUCT_SORTS)[number];
@@ -118,6 +118,8 @@ export type CatalogQuery =
       source: ProductSource;
       categoryId?: string | null;
       productIds?: string[];
+      /** `related`: the product page's current product; it is never in the result, its category's products come first. */
+      relatedTo?: { productId: string; categoryId: string | null };
       /** Order after the source has picked; `default` keeps the source's own order. */
       sort?: ProductSort;
       /** Per page when `paginate` is set. */
