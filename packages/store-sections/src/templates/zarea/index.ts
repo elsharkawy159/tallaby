@@ -194,7 +194,9 @@ const DEMO = demoStore({
 
 export const ZAREA = libraryTemplate({
   key: ZAREA_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Zarea v2: product page",
+  productPage: { surface: "shelf", thumbs: "bottom", band: "paper", extras: ["product-perks"], copy: { back: L("رجوع للنباتات", "Back to the plants"), reviews: L("ركن أخضر عند عملائنا", "Customers' green corners"), related: L("نبات تاني يعيش معاه", "A plant to live beside it") } },
   name: L("زرعة", "Zarea"),
   description: L(
     "نباتات وأصص: ضمان ٣٠ يوم، اختار حسب النور، العناية في خطوات وأركان العملاء الخضرا. أربع صفحات جاهزة.",

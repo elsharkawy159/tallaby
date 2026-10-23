@@ -180,7 +180,9 @@ const DEMO = demoStore({
 
 export const SABAHA = libraryTemplate({
   key: SABAHA_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Sabaha v2: product page",
+  productPage: { thumbs: "bottom", band: "brand", extras: ["product-shipping"], copy: { back: L("رجوع لعالم الصيف", "Back to the summer shop"), reviews: L("رأي الصيف", "Summer reviews"), related: L("خد معاه على البحر", "Take along to the beach") } },
   name: L("سباحة", "Sabaha"),
   description: L(
     "سباحة وبحر: كلمة الصيف الكبيرة، بنوصل للبحر، شنطة البحر وكود أول طلب. أربع صفحات جاهزة.",

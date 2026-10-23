@@ -163,7 +163,9 @@ const DEMO = demoStore({
 
 export const MADRASA = libraryTemplate({
   key: MADRASA_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Madrasa v2: product page",
+  productPage: { thumbs: "side", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للمستلزمات", "Back to the supplies"), reviews: L("رأي أولياء الأمور", "Parents say"), related: L("أضفه لقائمتك", "Add to your list") } },
   name: L("مدرسة", "Madrasa"),
   description: L(
     "أدوات مدرسية: ابحث في اللستة، ابعت اللستة، في كل لستة وباكدج البداية. أربع صفحات جاهزة.",

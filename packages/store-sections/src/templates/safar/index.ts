@@ -163,7 +163,9 @@ const DEMO = demoStore({
 
 export const SAFAR = libraryTemplate({
   key: SAFAR_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Safar v2: product page",
+  productPage: { thumbs: "bottom", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للعدة", "Back to the gear"), reviews: L("رسائل من الطريق", "Messages from the road"), related: L("جهّز رحلتك", "Pack for your trip") } },
   name: L("سفر", "Safar"),
   description: L(
     "أدوات رحلات وتخييم: بوستر الرحلة، باكدج الصحرا، أدوات جديدة، أيام التوصيل وآراء من الطريق. أربع صفحات جاهزة.",

@@ -174,7 +174,9 @@ const DEMO = demoStore({
 
 export const SAAT = libraryTemplate({
   key: SAAT_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Saat v2: product page",
+  productPage: { surface: "flat", thumbs: "side", button: "outline", band: "paper", extras: ["product-perks"], copy: { back: L("رجوع للساعات", "Back to the watches"), reviews: L("رأي أصحاب الساعات", "From watch owners"), related: L("ساعات تانية للمقارنة", "More watches to compare") } },
   name: L("ساعات", "Saat"),
   description: L(
     "ساعات كلاسيك: هيرو نصين، عقارب ولا سمارت، التقسيط، أسعار الصيانة والفروع. أربع صفحات جاهزة.",

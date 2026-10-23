@@ -214,7 +214,9 @@ const DEMO = demoStore({
 
 export const ZEINA = libraryTemplate({
   key: ZEINA_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Zeina v2: product page",
+  productPage: { surface: "shelf", thumbs: "bottom", gallery: "end", band: "paper", extras: ["product-perks"], copy: { back: L("رجوع للمقصورة", "Back to the cabin"), reviews: L("من عربيات عملائنا", "From customers' cars"), related: L("حاجات تكمّل الداخلية", "More for the interior") } },
   name: L("زينة", "Zeina"),
   description: L(
     "تزيين العربية من جوه: تسوق بالمكان، طقم الراحة، شارك ووفّر وآراء العملاء. أربع صفحات جاهزة.",

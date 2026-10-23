@@ -209,7 +209,9 @@ const DEMO = demoStore({
 
 export const MOBILIA = libraryTemplate({
   key: MOBILIA_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Mobilia v2: product page",
+  productPage: { surface: "flat", thumbs: "side", button: "outline", gallery: "end", band: "paper", extras: ["product-perks"], copy: { back: L("رجوع للمعرض", "Back to the showroom"), reviews: L("رأي أصحاب البيوت", "From homes it lives in"), related: L("يكمّل الغرفة", "Completes the room") } },
   name: L("موبيليا", "Mobilia"),
   description: L(
     "أثاث مودرن بسيط: الأوض، الأكثر مبيعاً، التقسيط لحد ٢٤ شهر ومواعيد التوصيل. أربع صفحات جاهزة.",

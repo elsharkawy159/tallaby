@@ -180,7 +180,9 @@ const DEMO = demoStore({
 
 export const HIKAYA = libraryTemplate({
   key: HIKAYA_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Hikaya v2: product page",
+  productPage: { thumbs: "bottom", band: "brand", copy: { back: L("رجوع للحكايات", "Back to the stories"), reviews: L("آراء قبل النوم", "Bedtime reviews"), related: L("حكايات تانية للقراءة", "More stories to read") } },
   name: L("حكاية", "Hikaya"),
   description: L(
     "نادي كتب أطفال: بوكس الشهر، بيحبوا إيه، الاشتراك، نقط القراية ورف الكتب. أربع صفحات جاهزة.",

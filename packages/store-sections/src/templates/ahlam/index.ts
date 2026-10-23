@@ -170,7 +170,9 @@ const DEMO = demoStore({
 
 export const AHLAM = libraryTemplate({
   key: AHLAM_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Ahlam v2: product page",
+  productPage: { thumbs: "side", gallery: "end", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للغرف", "Back to the rooms"), reviews: L("رأي أصحاب الغرف", "From the families"), related: L("قطع تكمّل الغرفة", "Pieces to finish the room") } },
   name: L("أحلام", "Ahlam"),
   description: L(
     "ديكور أوضة أطفال: احجز زيارة تصميم، قسّط على ١٢ شهر، الأكتر اختياراً ومواعيد التوصيل. أربع صفحات جاهزة.",

@@ -187,7 +187,9 @@ const DEMO = demoStore({
 
 export const KAHRABA = libraryTemplate({
   key: KAHRABA_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Kahraba v2: product page",
+  productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للشواحن", "Back to the chargers"), reviews: L("رأي أصحاب الشواحن", "From charger owners"), related: L("إكسسوارات للعربية", "Accessories for the car") } },
   name: L("كهربا", "Kahraba"),
   description: L(
     "شحن العربيات الكهربا: شاحن البيت، خطوات التركيب، احجز معاينة، مد الضمان وأسئلة. أربع صفحات جاهزة.",

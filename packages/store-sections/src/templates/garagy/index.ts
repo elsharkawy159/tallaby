@@ -181,7 +181,9 @@ const DEMO = demoStore({
 
 export const GARAGY = libraryTemplate({
   key: GARAGY_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Garagy v2: product page",
+  productPage: { thumbs: "side", band: "paper", copy: { back: L("رجوع للخدمات", "Back to the services"), reviews: L("رأي أعضاء النادي", "From club members"), related: L("خدمة تانية للعربية", "Another car service") } },
   name: L("جراجي", "Garagy"),
   description: L(
     "اشتراك عناية العربية: باقات شهرية، النقط ودرجات العضوية، اصرف نقطك والدعم. أربع صفحات جاهزة.",

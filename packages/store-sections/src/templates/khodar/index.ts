@@ -168,7 +168,9 @@ const DEMO = demoStore({
 
 export const KHODAR = libraryTemplate({
   key: KHODAR_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Khodar v2: product page",
+  productPage: { thumbs: "bottom", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للسوق", "Back to the market"), reviews: L("اللي طلبوا قالوا", "From people who ordered"), related: L("كمّل سلتك", "Fill your basket") } },
   name: L("خضار", "Khodar"),
   description: L(
     "خضار وفاكهة طازة: هدف التوصيل المجاني، بحث سريع، بوكس الأسبوع، آخر ميعاد ٣ العصر وتتبع الطلب. أربع صفحات جاهزة.",

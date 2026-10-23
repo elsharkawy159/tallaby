@@ -164,7 +164,9 @@ const DEMO = demoStore({
 
 export const NUQRA = libraryTemplate({
   key: NUQRA_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Nuqra v2: product page",
+  productPage: { thumbs: "side", button: "outline", band: "brand", extras: ["product-perks"], copy: { back: L("رجوع للفضة", "Back to the silver"), reviews: L("من واتساب العملاء", "From customers on WhatsApp"), related: L("قطع تلبس معاه", "Pieces to wear with it") } },
   name: L("نقرة", "Nuqra"),
   description: L(
     "فضة رجالي: بوستر بستيكر السعر، القطع الأساسية، خدمات بعد البيع، مقارنة ورسايل الواتساب. أربع صفحات جاهزة.",

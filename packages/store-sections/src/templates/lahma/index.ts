@@ -194,7 +194,9 @@ const DEMO = demoStore({
 
 export const LAHMA = libraryTemplate({
   key: LAHMA_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Lahma v2: product page",
+  productPage: { thumbs: "bottom", band: "brand", extras: ["product-shipping"], copy: { back: L("رجوع للقطعيات", "Back to the cuts"), reviews: L("زباين الجزارة بيقولوا", "The regulars say"), related: L("حاجة تكمّل الشوي", "Goes with the grill") } },
   name: L("لحمة", "Lahma"),
   description: L(
     "جزارة وبوكسات لحوم: بوستر بوكسات العيد، قطعيات الأسبوع، باكدج الشوي، توصيل مبرد وافتح قبل ما تدفع. أربع صفحات جاهزة.",

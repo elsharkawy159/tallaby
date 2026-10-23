@@ -178,7 +178,9 @@ const DEMO = demoStore({
 
 export const DARRAGA = libraryTemplate({
   key: DARRAGA_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Darraga v2: product page",
+  productPage: { thumbs: "side", band: "shelf", extras: ["product-perks"], copy: { back: L("رجوع للدراجات", "Back to the bikes"), reviews: L("رأي الراكبين", "From the riders"), related: L("جهّز قبل أول مشوار", "Gear up for your first ride") } },
   name: L("عجلة", "Darraga"),
   description: L(
     "عجل وورشة: صيانة في يوم، أسعار الورشة، أساسيات أول مشوار وعنوان الورشة. أربع صفحات جاهزة.",

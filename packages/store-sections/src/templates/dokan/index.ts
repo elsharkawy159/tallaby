@@ -185,7 +185,9 @@ const DEMO = demoStore({
 
 export const DOKAN = libraryTemplate({
   key: DOKAN_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Dokan v2: product page",
+  productPage: { thumbs: "side", band: "shelf", extras: ["product-shipping"], copy: { back: L("رجوع للدكان", "Back to the shop"), reviews: L("رأي أهل الحي", "The neighbourhood says"), related: L("هات معاه كمان", "Grab with it") } },
   name: L("دكان", "Dokan"),
   description: L(
     "سوبر ماركت الحي: هدف التوصيل المجاني، الأقسام، رف النهارده، مناطق الـ٤٥ دقيقة، طرق الدفع وواتساب الدكان. أربع صفحات جاهزة.",

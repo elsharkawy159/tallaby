@@ -188,7 +188,9 @@ const DEMO = demoStore({
 
 export const MAFRASH = libraryTemplate({
   key: MAFRASH_KEY,
-  version: 1,
+  version: 2,
+  changelog: "Mafrash v2: product page",
+  productPage: { thumbs: "side", band: "paper", extras: ["product-perks"], copy: { back: L("رجوع للمفارش", "Back to the bedding"), reviews: L("رأي اللي نام عليها", "From people who slept on it"), related: L("يكمّل السرير", "Finish the bed") } },
   name: L("مفرش", "Mafrash"),
   description: L(
     "مفارش وملايات: تجربة ٣٠ ليلة، طقم السرير، قطن مصري، ألوان جديدة وشارك نومة حلوة. أربع صفحات جاهزة.",
