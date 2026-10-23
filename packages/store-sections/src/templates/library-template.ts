@@ -4,10 +4,15 @@
  * turns a compact description (look, chrome, pages, demo store) into a
  * `TemplateDefinition` like Atelier's. No React here.
  */
+import { PRODUCT_PAGE_SLUG } from "../config/product-page.lib";
 import { SITE_CONFIG_VERSION, type SiteConfig, type SitePage } from "../config/schema";
 import type { Localized } from "../core/types";
 import type { StoreFontName } from "../core/fonts";
+import { getDesign } from "../designs";
 import { instantiateDesign, type Design } from "../designs/builder";
+import { fromLibrary } from "./_library";
+import type { Lib } from "./_pages";
+import { PRODUCT_PAGE_NAME, productPage, productSitePage, type ProductPageSpec } from "./_product-page";
 import type { TemplateDefinition, TemplateDemo } from "./types";
 
 export type LibraryTemplatePage = {
@@ -36,12 +41,23 @@ export type LibraryTemplateSpec = {
   pages: readonly LibraryTemplatePage[];
   demo: TemplateDemo;
   changelog?: string;
+  /**
+   * The template's `fromLibrary` bound to its key, for its product page.
+   * Default: library designs with the template's corners (what every
+   * library template's own `lib` does).
+   */
+  lib?: Lib;
+  /** How its product page looks; the page is always added after `pages`. */
+  productPage?: ProductPageSpec;
 };
 
 /** A design as a template section: its id doubles as the instance id, so a re-apply keeps matching sections. */
 const section = (design: Design) => instantiateDesign(design, { id: design.id, defaultLocale: "ar" });
 
 export function libraryTemplate(spec: LibraryTemplateSpec): TemplateDefinition {
+  const lib: Lib = spec.lib ?? ((id, patch) => fromLibrary(spec.key, getDesign(id)!, { corners: spec.radius, ...patch }));
+  // Square templates get a flat buy column, rounded ones a card.
+  const product = productPage(lib, { surface: spec.radius === 0 ? "flat" : "card", ...spec.productPage });
   const config = (): SiteConfig => ({
     schemaVersion: SITE_CONFIG_VERSION,
     designSystem: {
@@ -52,16 +68,19 @@ export function libraryTemplate(spec: LibraryTemplateSpec): TemplateDefinition {
     header: section(spec.header),
     footer: section(spec.footer),
     settings: { defaultLocale: "ar", locales: ["ar", "en"] },
-    pages: spec.pages.map(
-      (page, index): SitePage => ({
-        slug: page.slug,
-        isHome: index === 0,
-        name: page.name.ar,
-        showInNav: true,
-        seo: { ...(page.seo?.title && { title: page.seo.title.ar }), ...(page.seo?.description && { description: page.seo.description.ar }) },
-        content: { sections: page.sections.map(section) },
-      }),
-    ),
+    pages: [
+      ...spec.pages.map(
+        (page, index): SitePage => ({
+          slug: page.slug,
+          isHome: index === 0,
+          name: page.name.ar,
+          showInNav: true,
+          seo: { ...(page.seo?.title && { title: page.seo.title.ar }), ...(page.seo?.description && { description: page.seo.description.ar }) },
+          content: { sections: page.sections.map(section) },
+        }),
+      ),
+      productSitePage(product),
+    ],
   });
   const home = spec.pages[0]!;
   return {
@@ -79,9 +98,9 @@ export function libraryTemplate(spec: LibraryTemplateSpec): TemplateDefinition {
         .join(", ")} pages`,
     palette: spec.palette,
     config,
-    pageNames: Object.fromEntries(spec.pages.map((p) => [p.slug, p.name])),
+    pageNames: { ...Object.fromEntries(spec.pages.map((p) => [p.slug, p.name])), [PRODUCT_PAGE_SLUG]: PRODUCT_PAGE_NAME },
     demo: spec.demo,
-    designs: [spec.header, ...spec.pages.flatMap((p) => p.sections), spec.footer],
+    designs: [spec.header, ...spec.pages.flatMap((p) => p.sections), ...product, spec.footer],
   };
 }
 

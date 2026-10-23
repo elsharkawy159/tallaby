@@ -27,7 +27,8 @@ describe("template seeds are insert-only", () => {
     const sql = statements(templateSeedSql(getCodeTemplate("tallaby-classic")!, "x"));
     expect(sql).toMatch(/NOT EXISTS \(SELECT 1 FROM templates WHERE key = 'tallaby-classic'\)/);
     expect(statements(templatesSeedSql(CODE_TEMPLATES, "x"))).not.toMatch(/DO UPDATE/i);
-  });
+    // Building every template config (with its product page) takes a while.
+  }, 60_000);
 });
 
 describe("template meta", () => {

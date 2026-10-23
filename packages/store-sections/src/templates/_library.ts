@@ -20,7 +20,19 @@
  */
 import type { Localized } from "../core/types";
 import { createTreeBuilder, defineDesign, type Design, type DesignPhotos, type DesignText } from "../designs/builder";
+import type { StyleValues } from "../elements/style";
 import type { NodeTemplate } from "../elements/tree";
+
+/**
+ * Props and styles merged into the nodes with one layer label: `style` into
+ * the node's own style, `tablet` / `mobile` into its breakpoint styles.
+ */
+export type NodePatch = {
+  props?: Readonly<Record<string, string | number | boolean>>;
+  style?: StyleValues;
+  tablet?: StyleValues;
+  mobile?: StyleValues;
+};
 
 /** A list setting: `null` removes it (e.g. a fixed `source`). */
 export type ListPatch = { source?: string | null; sort?: string | null; limit?: number | null };
@@ -37,6 +49,12 @@ export type LibraryPatch = DesignPhotos & {
   links?: Readonly<Record<string, string | readonly (string | undefined)[]>>;
   /** The design's data lists, in tree order; `undefined` keeps one as it is. */
   lists?: readonly (ListPatch | undefined)[];
+  /**
+   * The design's layer labels (Arabic, as the design writes them) → props
+   * and styles for every node with that label, merged before the corner cap.
+   * Every label must be found.
+   */
+  nodes?: Readonly<Record<string, NodePatch>>;
   /** The ready-made form its `storeForm` nodes get (default from the category). */
   form?: string;
   /** Overrides of the design's name / description in the editor. */
@@ -99,6 +117,20 @@ function onAccent(node: NodeTemplate, inside: boolean): NodeTemplate {
     next = { ...node, style: swapped as NodeTemplate["style"] };
   }
   return { ...next, children: node.children?.map((child) => onAccent(child, here)) };
+}
+
+/** A node with `patch` merged into its props and styles. */
+function patchNode(node: NodeTemplate, patch: NodePatch): NodeTemplate {
+  const breakpoints = { ...(node.breakpointStyles as Record<string, StyleValues> | undefined) };
+  for (const bp of ["tablet", "mobile"] as const) {
+    if (patch[bp]) breakpoints[bp] = { ...breakpoints[bp], ...patch[bp] };
+  }
+  return {
+    ...node,
+    ...(patch.props && { props: { ...node.props, ...patch.props } as NodeTemplate["props"] }),
+    ...(patch.style && { style: { ...(node.style as StyleValues | undefined), ...patch.style } as NodeTemplate["style"] }),
+    ...(Object.keys(breakpoints).length && { breakpointStyles: breakpoints as NodeTemplate["breakpointStyles"] }),
+  };
 }
 
 const FULL_ROUND = 999;
@@ -170,6 +202,9 @@ export function fromLibrary(templateKey: string, design: Design, patch: LibraryP
           }
         }
         if (node.type === "storeForm" && form) props.formTemplate = form;
+        const label = (node.props as Props).label;
+        const nodePatch = typeof label === "string" ? patch.nodes?.[label] : undefined;
+        if (nodePatch) used.add(`node:${label}`);
         // The library's placeholder name (original copy) → the store's name on "Use template".
         const original = (node.props as Props).text;
         if (!props.role || props.role === "title") {
@@ -177,7 +212,8 @@ export function fromLibrary(templateKey: string, design: Design, patch: LibraryP
           else if (chrome && original === PLACEHOLDER_INITIAL) props.role = "storeInitial";
           else if (typeof original === "string" && original.startsWith("©") && original.includes(PLACEHOLDER_NAME)) props.role = "copyright";
         }
-        return { ...node, props: props as NodeTemplate["props"], children: node.children?.map(visit) };
+        const next = { ...node, props: props as NodeTemplate["props"], children: node.children?.map(visit) };
+        return nodePatch ? patchNode(next, nodePatch) : next;
       };
 
       const built = onAccent(visit(tree), false);
@@ -185,6 +221,9 @@ export function fromLibrary(templateKey: string, design: Design, patch: LibraryP
       const missing = [
         ...[...text.keys()].filter((ar) => !used.has(`text:${ar}`)).map((ar) => `text "${ar}"`),
         ...[...links.keys()].filter((href) => !used.has(`link:${href}`)).map((href) => `link "${href}"`),
+        ...Object.keys(patch.nodes ?? {})
+          .filter((label) => !used.has(`node:${label}`))
+          .map((label) => `node "${label}"`),
         ...[...links.entries()]
           .filter(([href, swap]) => typeof swap !== "string" && swap.length !== (linkSeen.get(href) ?? 0))
           .map(([href, swap]) => `${swap.length} swaps for ${linkSeen.get(href) ?? 0} "${href}" links`),
