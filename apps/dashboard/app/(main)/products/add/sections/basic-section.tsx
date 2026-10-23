@@ -94,8 +94,9 @@ export function BasicSection({
                     className={cn(FIELD_CLASS, contentDirClass(loc))}
                     onChange={(e) => {
                       field.onChange(e.target.value);
-                      if (!slugEdited) {
-                        form.setValue(`localized.${loc}.slug`, toSlug(e.target.value), {
+                      // One slug per product, from the English name (the server saves it for both languages).
+                      if (!slugEdited && loc === "en") {
+                        form.setValue("localized.en.slug", toSlug(e.target.value), {
                           shouldValidate: form.formState.submitCount > 0,
                         });
                       }

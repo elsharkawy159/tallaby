@@ -42,6 +42,8 @@ export const ALLOWED_NODE_TYPES = [
   "videoPlaylist", "videoItem",
   // Banner carousel (Claude Design templates 101–110, 2026-10-23); additive.
   "carousel", "slide",
+  // Header language switch of translated stores (owner, 2026-10-23); additive.
+  "languageSwitcher",
 ] as const;
 export type AllowedNodeType = (typeof ALLOWED_NODE_TYPES)[number];
 

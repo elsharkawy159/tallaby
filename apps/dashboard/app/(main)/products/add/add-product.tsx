@@ -61,6 +61,8 @@ interface AddProductProps {
    * with updateProduct. No local draft, import or bulk mode.
    */
   edit?: { productId: string; defaultValues: AddProductFormData }
+  /** Extra header buttons shown before Save (edit mode's Publish and Preview). */
+  headerActions?: React.ReactNode
 }
 
 const LOCALE_LABELS: Record<SupportedLocale, string> = {
@@ -75,6 +77,7 @@ export default function AddProduct ({
   sellerTaxonomy,
   linkHost = null,
   edit,
+  headerActions,
 }: AddProductProps) {
   const isEdit = Boolean(edit)
   const router = useRouter()
@@ -269,7 +272,7 @@ export default function AddProduct ({
           <div className="mx-auto flex max-w-[1240px] flex-wrap items-center gap-x-4 gap-y-2.5 px-4 py-3 sm:px-6 sm:py-3.5">
             <h1 className="text-[17px] leading-snug font-bold sm:text-xl">{isEdit ? t("editTitle") : t("newTitle")}</h1>
             {!isEdit && <SaveStatus status={draft.status} />}
-            <div className="flex w-full items-center gap-2 sm:ms-auto sm:w-auto">
+            <div className="flex w-full flex-wrap items-center gap-2 sm:ms-auto sm:w-auto">
               <LocaleSwitch value={activeLocale} onChange={setActiveLocale} />
               {!isEdit && (
                 <>
@@ -294,6 +297,7 @@ export default function AddProduct ({
                   </Button>
                 </>
               )}
+              {headerActions}
               <div className="hidden lg:block">{publishButton()}</div>
             </div>
           </div>

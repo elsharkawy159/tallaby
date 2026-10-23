@@ -4,7 +4,7 @@ import type { ComponentNode } from "../config/schema";
 import { collectCatalogQueries, collectContentQueries, collectFormIds } from "../core/registry";
 import type { RenderContext } from "../core/types";
 import { storeSectionRegistry } from "../sections";
-import { boundValue, listRecords, nodeCatalogQuery, nodeContentQuery, nodeFormId, treeDataNeeds } from "./data";
+import { CATALOG_LIST_ID, boundValue, listRecords, nodeCatalogQuery, nodeContentQuery, nodeFormId, productCatalogSection, treeDataNeeds } from "./data";
 import { renderElementTree } from "./render";
 import { canContain, createNode } from "./tree";
 
@@ -123,5 +123,63 @@ describe("nesting", () => {
     expect(canContain(tree, outer.id, createNode("postList", makeId))).toBe(false);
     expect(canContain(tree, outer.id, createNode("text", makeId))).toBe(true);
     expect(canContain(tree, "root", createNode("postList", makeId))).toBe(true);
+  });
+});
+
+describe("productCatalogSection", () => {
+  const page = (isHome: boolean, tree: ComponentNode[]) =>
+    ({ slug: isHome ? "home" : "about", isHome, name: "p", seo: {}, content: { sections: [{ id: `s-${isHome}`, sectionId: "custom-section", version: 1, props: {}, componentTree: tree }] } }) as never;
+
+  it("reuses the home page's product card in a catalog grid", () => {
+    const homeCard = node("text", { bind: "title" }, [], "home-title");
+    const otherCard = node("text", { bind: "title" }, [], "other-title");
+    const homeList = { ...node("productList", { source: "featured", limit: 4 }, [homeCard], "home-list"), style: { gap: 20 }, breakpointStyles: { mobile: { gap: 12 } } } as ComponentNode;
+    const instance = productCatalogSection([page(false, [node("section", {}, [node("productList", {}, [otherCard], "other-list")])]), page(true, [node("section", {}, [homeList])])]);
+    const list = instance?.componentTree?.[0]?.children[0];
+    expect(list?.id).toBe(CATALOG_LIST_ID);
+    expect(list?.children).toEqual([homeCard]);
+    expect(list?.style).toEqual({ columns: 4, gap: 20 });
+    expect(list?.breakpointStyles).toEqual({ tablet: { columns: 3 }, mobile: { columns: 2, gap: 12 } });
+
+    const html = renderToStaticMarkup(<>{renderElementTree(instance!.componentTree, ctx({ catalog: { products: { [CATALOG_LIST_ID]: [product] }, categories: [] } }))}</>);
+    expect(html).toContain("Earbuds");
+  });
+
+  it("is null when the site has no product list", () => {
+    expect(productCatalogSection([page(true, [node("section", {}, [node("heading", { text: "Hi" })])])])).toBeNull();
+  });
+});
+
+describe("paginated product lists", () => {
+  const card = node("text", { bind: "title", text: "Name" }, [], "title");
+  const list = node("productList", { source: "newest", limit: 12, offset: 2, paginate: true }, [card], "grid");
+
+  it("asks for one page of `limit` products and skips no lead record", () => {
+    expect(nodeCatalogQuery(list)).toEqual({ kind: "products", source: "newest", sort: "default", limit: 12, paginate: true });
+    const records = Array.from({ length: 12 }, (_, i) => ({ ...product, id: `p${i}`, title: `P${i}` }));
+    expect(listRecords(list, ctx({ catalog: { products: { grid: records }, categories: [] } }))[0]?.record).toMatchObject({ id: "p0" });
+  });
+
+  it("draws page links from the host's page state", () => {
+    const html = renderToStaticMarkup(
+      <>
+        {renderElementTree(
+          [list],
+          ctx({
+            catalog: { products: { grid: [product] }, categories: [], productPages: { grid: { page: 2, totalPages: 5 } } },
+            productPageHref: (n) => (n > 1 ? `/?page=${n}` : "/"),
+          }),
+        )}
+      </>,
+    );
+    expect(html).toContain('data-part="pager"');
+    expect(html).toContain('href="/"');
+    expect(html).toContain('href="/?page=3"');
+    expect(html).toContain('href="/?page=5"');
+    expect(html).toContain('aria-current="page"');
+    // One page, or no page links from the host: no pager.
+    const single = ctx({ catalog: { products: { grid: [product] }, categories: [], productPages: { grid: { page: 1, totalPages: 1 } } }, productPageHref: () => "/" });
+    expect(renderToStaticMarkup(<>{renderElementTree([list], single)}</>)).not.toContain("pager");
+    expect(renderToStaticMarkup(<>{renderElementTree([list], ctx({ catalog: { products: { grid: [product] }, categories: [] } }))}</>)).not.toContain("pager");
   });
 });

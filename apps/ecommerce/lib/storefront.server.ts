@@ -131,6 +131,7 @@ export function getStorefrontBySubdomain(subdomain: string) {
           seo: stores.seo,
           settings: stores.settings,
           siteStatus: stores.siteStatus,
+          supportedLocales: stores.supportedLocales,
           sellerId: sellers.id,
           slug: sellers.slug,
           storeRating: sellers.storeRating,
@@ -203,10 +204,12 @@ export function getStorefrontBySubdomain(subdomain: string) {
          * and "unpublished" show "store offline" on every storefront route.
          */
         siteStatus: row.siteStatus as StoreSiteStatus,
+        /** Store settings › Languages: more than one means the header gets a language switcher. */
+        supportedLocales: row.supportedLocales,
       };
     },
-    // v9: + siteStatus (offline stores). v6: + seo (P4-14) and social links (P4-15). v4: resolves through stores (P5-00).
-    [`storefront-v9-${subdomain}`],
+    // v10: + supportedLocales (header language switcher). v9: + siteStatus (offline stores). v6: + seo (P4-14) and social links (P4-15). v4: resolves through stores (P5-00).
+    [`storefront-v10-${subdomain}`],
     { tags: ["sellers", sellerTags.subdomain(subdomain)], revalidate: 3600 },
   )();
 }

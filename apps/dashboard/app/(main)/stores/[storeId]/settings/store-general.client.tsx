@@ -38,6 +38,7 @@ import {
 import { Separator } from "@workspace/ui/components/separator";
 import { Textarea } from "@workspace/ui/components/textarea";
 import { BUTTON_CLASS, FIELD_CLASS, FieldHint, LabelNote, SectionCard, TEXTAREA_CLASS } from "@/components/form/form-ui";
+import { PageActionBar } from "@/components/layout/page-action-bar";
 import { BannerField, LogoField } from "@/components/stores/brand-image-fields.client";
 import { STORE_INDUSTRIES, findIndustry } from "@/lib/stores/industries.lib";
 import { cn } from "@/lib/utils";
@@ -148,6 +149,12 @@ export function StoreGeneralForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5" noValidate>
+        <PageActionBar>
+          <Button type="submit" className={BUTTON_CLASS} disabled={disabled || !dirty}>
+            {isPending ? <LoaderCircle className="animate-spin" /> : <Save />}
+            {t("save")}
+          </Button>
+        </PageActionBar>
         {readOnly && <p className="rounded-lg border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">{t("readOnly")}</p>}
 
         {/* Two columns on desktop: the store's identity, then contact, languages and currency. */}
@@ -377,12 +384,6 @@ export function StoreGeneralForm({
 
         <StoreCatalogSections catalog={catalog} products={catalogProps.products} maxProducts={catalogProps.maxProducts} disabled={disabled} />
 
-        <div className="sticky bottom-0 flex justify-end border-t bg-background/95 py-3 backdrop-blur">
-          <Button type="submit" className={BUTTON_CLASS} disabled={disabled || !dirty}>
-            {isPending ? <LoaderCircle className="animate-spin" /> : <Save />}
-            {t("save")}
-          </Button>
-        </div>
       </form>
     </Form>
   );

@@ -11,6 +11,7 @@ import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { Switch } from "@workspace/ui/components/switch";
 import { BUTTON_CLASS, FIELD_CLASS, FieldHint, SectionCard } from "@/components/form/form-ui";
+import { PageActionBar } from "@/components/layout/page-action-bar";
 import { cn } from "@/lib/utils";
 import { saveStoreSocial } from "./social.server";
 import { toSocialPayload, type SocialRow } from "./social.dto";
@@ -70,6 +71,12 @@ export function StoreSocialLinks({
 
   return (
     <div className="space-y-5">
+      <PageActionBar>
+        <Button type="button" className={BUTTON_CLASS} disabled={disabled || invalid || !dirty} onClick={onSave}>
+          {isPending ? <LoaderCircle className="animate-spin" /> : <Save />}
+          {t("save")}
+        </Button>
+      </PageActionBar>
       {readOnly && <p className="rounded-lg border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">{t("readOnly")}</p>}
 
       <SectionCard id="links" icon={Share2} title={t("title")} description={t("description")}>
@@ -93,7 +100,7 @@ export function StoreSocialLinks({
                   <Input
                     className={cn(FIELD_CLASS, error && "border-destructive")}
                     dir="ltr"
-                    inputMode={platform.input === "phone" ? "tel" : "url"}
+                    inputMode={platform.input === "phone" ? "text" : "url"}
                     placeholder={platform.placeholder}
                     value={row.value}
                     disabled={disabled}
@@ -182,12 +189,6 @@ export function StoreSocialLinks({
         </div>
       </SectionCard>
 
-      <div className="flex justify-end">
-        <Button type="button" className={BUTTON_CLASS} disabled={disabled || invalid || !dirty} onClick={onSave}>
-          {isPending ? <LoaderCircle className="animate-spin" /> : <Save />}
-          {t("save")}
-        </Button>
-      </div>
     </div>
   );
 }

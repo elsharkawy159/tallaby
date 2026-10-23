@@ -33,8 +33,9 @@ export type StoreTab =
   | "media"
   | "audit";
 
+/** The store page is one page; `tab` jumps to that section. */
 export function storeHref(storeId: string, tab?: StoreTab): string {
-  return withTab(`/stores/${storeId}`, tab);
+  return tab && tab !== "overview" ? `/stores/${storeId}#${tab}` : `/stores/${storeId}`;
 }
 
 export function orderHref(orderId: string): string {

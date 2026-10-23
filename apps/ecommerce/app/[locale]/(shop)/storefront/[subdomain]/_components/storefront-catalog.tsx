@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense, type ReactNode } from "react";
 import { getTranslations } from "next-intl/server";
 import { PackageSearch, Search } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
@@ -27,6 +27,7 @@ export async function StorefrontCatalog({
   categories,
   query,
   basePath = "/",
+  renderProducts,
 }: {
   sellerId: string;
   /** Set when the store shows a selected catalog (D24). */
@@ -36,6 +37,8 @@ export async function StorefrontCatalog({
   query: StoreQuery;
   /** The page pagination and "clear filters" link to (the classic home, or /products). */
   basePath?: string;
+  /** Draws a page of products in the site's own card (builder sites); the default card otherwise. */
+  renderProducts?: (rows: unknown[]) => ReactNode;
 }) {
   const t = await getTranslations("storefront");
   const tStores = await getTranslations("pages.stores");
@@ -87,6 +90,7 @@ export async function StorefrontCatalog({
           categoryIds={active?.categoryIds}
           query={query}
           basePath={basePath}
+          renderProducts={renderProducts}
         />
       </Suspense>
     </section>
@@ -100,6 +104,7 @@ async function CatalogGrid({
   categoryIds,
   query,
   basePath,
+  renderProducts,
 }: {
   sellerId: string;
   catalogStoreId?: string;
@@ -107,6 +112,7 @@ async function CatalogGrid({
   categoryIds?: string[];
   query: StoreQuery;
   basePath: string;
+  renderProducts?: (rows: unknown[]) => ReactNode;
 }) {
   const tStores = await getTranslations("pages.stores");
   const result = await getProducts({
@@ -146,11 +152,15 @@ async function CatalogGrid({
         {tStores("resultsCount", { count: total })}
         {query.search && <> {tStores("resultsFor", { query: query.search })}</>}
       </p>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
-        {products.map((product) => (
-          <ProductCard key={product.id as string} {...(product as unknown as ProductCardProps)} />
-        ))}
-      </div>
+      {renderProducts ? (
+        renderProducts(products)
+      ) : (
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
+          {products.map((product) => (
+            <ProductCard key={product.id as string} {...(product as unknown as ProductCardProps)} />
+          ))}
+        </div>
+      )}
       {totalPages > 1 && <StorePagination basePath={basePath} query={query} totalPages={totalPages} />}
     </>
   );

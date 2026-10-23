@@ -52,7 +52,7 @@ export function IntegrationsTable({ rows, showStore = false }: { rows: Integrati
           store: (
             <div className="text-sm">
               {row.storeId ? (
-                <Link href={`/stores/${row.storeId}?tab=integrations`} className="hover:underline">
+                <Link href={`/stores/${row.storeId}#integrations`} className="hover:underline">
                   {row.storeName}
                 </Link>
               ) : (

@@ -92,20 +92,33 @@ export function storeSubdomainFromHost(host: string | null | undefined): string 
   return null;
 }
 
-/**
- * Public URL of a store, e.g. `https://faster.tallaby.com`, or its own
- * domain (`https://faster-eg.com`) once one is active.
- */
-export function storeUrl(subdomain: string, customDomain?: string | null): string {
-  if (customDomain) return `https://${customDomain}`;
-  const root = storefrontRootDomain();
-  const protocol = root.startsWith("localhost") ? "http" : "https";
-  return `${protocol}://${subdomain}.${root}`;
+/** True when storefronts run on `*.localhost` (local development). */
+export function isLocalStorefrontRoot(): boolean {
+  return storefrontRootDomain().startsWith("localhost");
 }
 
-/** Hostname only, for display: `faster.tallaby.com` or `faster-eg.com`. */
+/** A `*.localhost` request host (local development). */
+export function isLocalHost(host: string | null | undefined): boolean {
+  const hostname = hostnameOf(host);
+  return hostname === "localhost" || hostname.endsWith(".localhost");
+}
+
+/**
+ * Public URL of a store, e.g. `https://faster.tallaby.com`, or its own
+ * domain (`https://faster-eg.com`) once one is active. In local development
+ * a store keeps its `*.localhost` subdomain: its custom domain is production.
+ */
+export function storeUrl(subdomain: string, customDomain?: string | null): string {
+  const local = isLocalStorefrontRoot();
+  if (customDomain && (!local || !subdomain)) return `https://${customDomain}`;
+  const root = storefrontRootDomain();
+  return `${local ? "http" : "https"}://${subdomain}.${root}`;
+}
+
+/** Hostname only, for display: `faster.tallaby.com` or `faster-eg.com` (the subdomain in local development). */
 export function storeHostname(subdomain: string, customDomain?: string | null): string {
-  return customDomain || `${subdomain}.${storefrontRootDomain()}`;
+  if (customDomain && (!isLocalStorefrontRoot() || !subdomain)) return customDomain;
+  return `${subdomain}.${storefrontRootDomain()}`;
 }
 
 /* Custom domains (faster-eg.com). Same rules as migration 0048. */

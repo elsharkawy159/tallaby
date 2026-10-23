@@ -53,6 +53,8 @@ export type Design = {
   description: Localized;
   keywords: readonly string[];
   tree: (t: TreeBuilder) => NodeTemplate;
+  /** A template's copy of a library design (`templates/_library.ts`): the library design's id. */
+  libraryId?: string;
 };
 
 const DESIGN_ID_RE = /^[a-z0-9-]+$/;

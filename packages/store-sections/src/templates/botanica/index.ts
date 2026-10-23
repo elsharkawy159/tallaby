@@ -3,7 +3,7 @@
  * "Storefront Templates"): cream paper, a deep olive for actions and a
  * honey highlight, Noto Naskh Arabic headings over IBM Plex Sans Arabic and
  * soft 24px corners. A farm-to-bottle store: the farm panel, the promise,
- * seed to bottle, a refill offer, product reviews, the year in numbers and
+ * best sellers, seed to bottle, a refill offer, product reviews, the year in numbers and
  * the founder's letter. Built from section library designs (`fromLibrary`).
  *
  * Photos: Pexels, each checked by eye (2026-10-20): rosemary, amber oil
@@ -91,6 +91,14 @@ const home: Design[] = [
       "استرجاع سهل": L("من المزرعة للباب", "Farm to door"),
       "١٤ يومًا لتغيّر رأيك": L("بيتعصر ويتشحن في نفس الأسبوع.", "Pressed and shipped the same week."),
     },
+  }),
+  lib("products-grid", {
+    text: {
+      "وصل حديثًا": L("الأكثر طلباً", "Best sellers"),
+      "أحدث المنتجات اللي نزلت المتجر.": L("الزيوت والصابون اللي عملاءنا بيرجعولها.", "The oils and soaps our customers come back for."),
+    },
+    links: { "/products": BEST },
+    lists: [{ source: "best-sellers", limit: 4 }],
   }),
   lib("about-stories", {
     photo: [undefined, PHOTOS.rosemaryField, PHOTOS.amberBottles, PHOTOS.soapRow],
@@ -203,7 +211,7 @@ const DEMO = demoStore({
 
 export const BOTANICA = libraryTemplate({
   key: BOTANICA_KEY,
-  version: 2,
+  version: 3,
   name: L("سيج", "Sage"),
   description: L(
     "عناية طبيعية بالشعر والجسم: من المزرعة للإزازة، ريفيل، تقييمات ورسالة المؤسسة. أربع صفحات جاهزة.",

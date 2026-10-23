@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { stores, storeProducts, storeDesignSystems, storePages, storeSiteRevisions, templates, templateVersions, templateInstalls, mediaFolders, mediaAssets, savedBlocks, storeForms, storeFormSubmissions, cmsCollections, cmsItems, cmsItemRevisions, storeIntegrations, storeShippingZones, storeSettingsAudit, sellerWalletTopUps, adminAuditLog, platformBlogPosts, sellerProductCategories, sellerProductBrands, librarySections } from "./schema";
+import { stores, storeProducts, storeDesignSystems, storePages, storeSiteRevisions, templates, templateVersions, templateInstalls, mediaFolders, mediaAssets, savedBlocks, storeForms, storeFormSubmissions, cmsCollections, cmsItems, cmsItemRevisions, storeIntegrations, storeShippingZones, storeSettingsAudit, sellerWalletTopUps, adminAuditLog, platformBlogPosts, sellerProductCategories, sellerProductBrands, librarySections, adminNotifications, sellerNotifications } from "./schema";
 import { users, deliveries, shipments, orders, payments, paymentMethods, carts, categories, sellers, coupons, notifications, contacts, userAddresses, products, productVariants, refunds, returns, orderItems, shipmentItems, productQuestions, shippingAddresses, couponUsage, cartItems, reviews, returnItems, reviewVotes, searchLogs, sellerDocuments, sellerPayoutItems, sellerPayouts, reviewComments, userDevices, wishlistItems, wishlists, brands, productAnswers, userRewards, productTranslations, digitalProducts, digitalOrders, sellerCategories, sellerWallet, walletTransactions, digitalFiles, licenseKeys, digitalBundleItems, digitalAccessLogs, shippingProviders, shipmentBatches, shipmentBatchItems, userWallets, userWalletTransactions, walletTopUps, walletPayoutRequests, affiliates, affiliateCommissions } from "./schema";
 
 export const deliveriesRelations = relations(deliveries, ({one}) => ({
@@ -1090,5 +1090,27 @@ export const librarySectionsRelations = relations(librarySections, ({one}) => ({
 		fields: [librarySections.updatedBy],
 		references: [users.id],
 		relationName: "librarySectionsUpdatedBy"
+	}),
+}));
+
+export const adminNotificationsRelations = relations(adminNotifications, ({one}) => ({
+	seller: one(sellers, {
+		fields: [adminNotifications.sellerId],
+		references: [sellers.id]
+	}),
+	store: one(stores, {
+		fields: [adminNotifications.storeId],
+		references: [stores.id]
+	}),
+}));
+
+export const sellerNotificationsRelations = relations(sellerNotifications, ({one}) => ({
+	seller: one(sellers, {
+		fields: [sellerNotifications.sellerId],
+		references: [sellers.id]
+	}),
+	store: one(stores, {
+		fields: [sellerNotifications.storeId],
+		references: [stores.id]
 	}),
 }));

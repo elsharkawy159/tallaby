@@ -1,5 +1,6 @@
 import { getSellerProducts } from "@/actions/products";
 import { parsePriceJson } from "@workspace/lib";
+import { loadProductStoreLinks } from "./product-store-links.data";
 import { VendorProductsSection, type VendorProduct } from "./vendor-products.section";
 
 export async function VendorProductsData() {
@@ -7,7 +8,7 @@ export async function VendorProductsData() {
     offset: 0,
   });
 
-  const rows: VendorProduct[] = (data || []).map((p) => {
+  const products: Omit<VendorProduct, "storeUrl">[] = (data || []).map((p) => {
     const translations = p.productTranslations ?? [];
     const enTranslation = translations.find((t) => t.locale === "en");
     const arTranslation = translations.find((t) => t.locale === "ar");
@@ -43,6 +44,9 @@ export async function VendorProductsData() {
       reviewCount: p.reviewCount ?? 0,
     };
   });
+
+  const storeLinks = await loadProductStoreLinks(products.map((p) => ({ id: p.id, slug: p.slug ?? null })));
+  const rows: VendorProduct[] = products.map((p) => ({ ...p, storeUrl: storeLinks.get(p.id) ?? null }));
 
   return <VendorProductsSection products={rows} total={totalCount || 0} />;
 }

@@ -11,6 +11,8 @@ import { DEFAULT_COMMISSION_RATE } from "@/lib/utils/product-pricing.lib";
 import { requireSeller } from "@/lib/auth/require-seller.server";
 import { loadSellerTaxonomyOptions } from "../../categories-brands/categories-brands.data";
 import { loadProductLinkHost } from "../../add/product-link-host.data";
+import { loadProductStoreLinks } from "../../_components/product-store-links.data";
+import type { EditProductStatus } from "./edit-product-actions.client";
 import type { CategoryOption, BrandOption } from "../../add/add-product.schema";
 
 export const dynamic = "force-dynamic";
@@ -59,9 +61,14 @@ export default async function EditProductPage({
     sellerPricing
   );
 
+  const slug = defaultValues.localized?.en?.slug?.trim() || null;
+  const storeLinks = await loadProductStoreLinks([{ id: productId, slug }]);
+
   return (
     <EditProduct
       productId={productId}
+      status={(product.status ?? "draft") as EditProductStatus}
+      previewUrl={storeLinks.get(productId) ?? null}
       defaultValues={defaultValues}
       categories={categories}
       brands={brands}

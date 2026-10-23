@@ -34,6 +34,7 @@ import type { Line, Point, Rect } from "./canvas-geometry.lib";
 import { sampleCanvas, type CanvasSample } from "./canvas-probe.client";
 import { CANVAS_DROP_ID, isCanvasPayload, type CanvasPayload, type DragData, type DragPayload, type DropPlan } from "./dnd.types";
 import { planDrop } from "./drop-plan.lib";
+import { trackPointer } from "./pointer-tracker.lib";
 
 /** What the canvas draws for the current target, in frame viewport coordinates. */
 export type DropMarker =
@@ -127,11 +128,12 @@ export function EditorDndProvider({
   }));
   const [overlay, setOverlay] = useState<DragData | null>(null);
   const [ghost, setGhost] = useState<Ghost | null>(null);
-  const drag = useRef<{ payload: CanvasPayload | null; origin: Point | null; pointer: Point | null; raf: number }>({
+  // `untrack` stops following the pointer (null for a keyboard drag, which has none).
+  const drag = useRef<{ payload: CanvasPayload | null; pointer: Point | null; raf: number; untrack: (() => void) | null }>({
     payload: null,
-    origin: null,
     pointer: null,
     raf: 0,
+    untrack: null,
   });
   const importing = useRef(new Set<string>());
 
@@ -200,7 +202,8 @@ export function EditorDndProvider({
 
   const finish = () => {
     if (drag.current.raf) cancelAnimationFrame(drag.current.raf);
-    drag.current = { payload: null, origin: null, pointer: null, raf: 0 };
+    drag.current.untrack?.();
+    drag.current = { payload: null, pointer: null, raf: 0, untrack: null };
     value.dnd.setState({ active: null, plan: null, marker: null });
     setOverlay(null);
     setGhost(null);
@@ -209,13 +212,23 @@ export function EditorDndProvider({
   // A drag never outlives the editor.
   useEffect(() => () => {
     if (drag.current.raf) cancelAnimationFrame(drag.current.raf);
+    drag.current.untrack?.();
   }, []);
 
   const onDragStart = (event: DragStartEvent) => {
     const data = event.active.data.current as DragData | undefined;
     if (!data) return;
+    const payload = isCanvasPayload(data.payload) ? data.payload : null;
     const origin = getEventCoordinates(event.activatorEvent);
-    drag.current = { payload: isCanvasPayload(data.payload) ? data.payload : null, origin, pointer: origin, raf: 0 };
+    drag.current.untrack?.();
+    drag.current = { payload, pointer: origin, raf: 0, untrack: null };
+    // Mouse and touch: the target follows the real pointer (pointer-tracker.lib says why not `event.delta`).
+    if (payload && origin) {
+      drag.current.untrack = trackPointer(window, (point) => {
+        drag.current.pointer = point;
+        schedule();
+      });
+    }
     value.dnd.setState({ active: data, plan: null, marker: null });
     setOverlay(data);
     // An element, part or item dragged on the canvas shows itself under the pointer.
@@ -237,16 +250,11 @@ export function EditorDndProvider({
     }
   };
 
+  // Keyboard drags only (mouse and touch follow the pointer): the dragged item's centre stands in for it.
   const onDragMove = (event: DragMoveEvent) => {
-    if (!drag.current.payload) return;
-    const { origin } = drag.current;
-    if (origin) {
-      drag.current.pointer = { x: origin.x + event.delta.x, y: origin.y + event.delta.y };
-    } else {
-      // Keyboard: the dragged item's centre stands in for the pointer.
-      const rect = event.active.rect.current.translated;
-      if (rect) drag.current.pointer = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-    }
+    if (!drag.current.payload || drag.current.untrack) return;
+    const rect = event.active.rect.current.translated;
+    if (rect) drag.current.pointer = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
     schedule();
   };
 

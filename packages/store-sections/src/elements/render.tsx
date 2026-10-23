@@ -57,9 +57,11 @@ import { CarouselElement, SlideElement } from "./render-carousel";
 import { FORM_SUBMIT_CLASS, FormFieldsView, formCopy } from "../sections/forms";
 import { resolvePhotoSlot } from "../designs/photo-slots";
 import { ButtonLink, SmartLink, cn } from "../sections/_primitives";
-import { DATA_NODE_NEEDS, boundValue, isDataList, listRecords, nodeFormId, walkNodes, type DataRecord } from "./data";
+import { DATA_NODE_NEEDS, boundValue, isDataList, isPaginated, listRecords, nodeFormId, walkNodes, type DataRecord } from "./data";
 import { MAX_ELEMENT_DEPTH, PATTERN_VARIANTS, getElementDefinition, type ElementIconName, type PatternVariant } from "./registry";
 import { VideoElement, VideoPlaylist } from "./render-video";
+import { SocialIcon } from "../social/icon";
+import { contactRowGone, storeSocialLinks, withStoreContact } from "./store-contact";
 
 const ICONS: Record<ElementIconName, LucideIcon> = {
   star: Star,
@@ -166,12 +168,87 @@ function missingData(node: ComponentNode, ctx: RenderContext): boolean {
   return formMissing || lists.some((l) => l.empty && !l.optional) || (lists.length > 0 && lists.every((l) => l.empty));
 }
 
+/** First descendant of a type (depth-first), for reading a row's stencil. */
+function findNode(node: ComponentNode, type: string, depth = 0): ComponentNode | null {
+  if (node.type === type) return node;
+  if (depth > 4) return null;
+  for (const child of node.children) {
+    const found = findNode(child, type, depth + 1);
+    if (found) return found;
+  }
+  return null;
+}
+
+/**
+ * A `role: "social"` row draws the store's own social links (Website › Social
+ * media), each in the style of the row's first link: the clones keep that
+ * link's and its icon's node ids, so the scoped CSS applies to every one.
+ * `undefined`: draw the row as authored (no stencil, or the editor and the
+ * store has no links yet). Publicly a store without links gets no row.
+ */
+function renderSocialRow(node: ComponentNode, ctx: RenderContext, attrs: Record<string, string>): ReactNode | undefined {
+  const stencil = node.children.find((child) => child.type === "linkBlock");
+  const icon = stencil ? findNode(stencil, "icon") : null;
+  if (!stencil) return undefined;
+  const links = storeSocialLinks(ctx);
+  if (!links.length) return ctx.mode === "edit" ? undefined : null;
+  return (
+    <div {...attrs} className="flex min-w-0 flex-row flex-wrap">
+      {links.map((link) => (
+        <SmartLink key={link.platform} ctx={ctx} href={link.url} label={link.label} className="block min-w-0">
+          <span data-node-id={stencil.id} data-node-type="linkBlock" className="block">
+            <span {...(icon && { "data-node-id": icon.id, "data-node-type": "icon" })} className="inline-flex">
+              <SocialIcon platform={link.platform} className="size-[1em]" />
+            </span>
+          </span>
+        </SmartLink>
+      ))}
+    </div>
+  );
+}
+
+/** Nodes a header's search link draws its look with; anything else keeps it a plain link. */
+const SEARCH_LINK_PARTS = new Set(["hFlex", "vFlex", "div", "icon", "text"]);
+
+/**
+ * A header search link: a link to the shop page holding one search icon and
+ * at most one text (the placeholder). The host draws a working search there.
+ */
+function searchLinkParts(node: ComponentNode, href: string): { icon: ComponentNode; text: ComponentNode | null; iconFirst: boolean } | null {
+  if (!/^\/products\/?$/.test(href)) return null;
+  const parts: ComponentNode[] = [];
+  walkNodes(node.children, (child) => parts.push(child));
+  if (parts.some((part) => !SEARCH_LINK_PARTS.has(part.type))) return null;
+  const icons = parts.filter((part) => part.type === "icon");
+  const texts = parts.filter((part) => part.type === "text");
+  const icon = icons[0];
+  if (icons.length !== 1 || icon?.props.name !== "search" || texts.length > 1) return null;
+  const text = texts[0] ?? null;
+  return { icon, text, iconFirst: !text || parts.indexOf(icon) < parts.indexOf(text) };
+}
+
+/** A header cart link: to the cart page, with an icon (a footer's "Cart" text link gets no count). */
+function isCartLink(node: ComponentNode, href: string): boolean {
+  if (node.props.role !== "cart" && !/^\/cart\/?$/.test(href)) return false;
+  let icon = false;
+  walkNodes(node.children, (child) => {
+    if (child.type === "icon") icon = true;
+  });
+  return icon;
+}
+
 function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scope?: DataRecord): ReactNode {
   const definition = getElementDefinition(node.type);
   if (!definition || depth > MAX_ELEMENT_DEPTH) return null;
-  const props = scopedProps(node, ctx, scope);
-  if (!props) return null;
+  const bound = scopedProps(node, ctx, scope);
+  // Demo phone / email / WhatsApp values become the store's own (store-contact.ts).
+  const props = bound && withStoreContact(node, bound, ctx);
+  if (!props || contactRowGone(node, ctx)) return null;
   const attrs = { "data-node-id": node.id, "data-node-type": node.type };
+  if (props.role === "social") {
+    const row = renderSocialRow(node, ctx, attrs);
+    if (row !== undefined) return row;
+  }
   const kids = () => {
     if (!definition.container) return null;
     if (!node.children.length && ctx.mode === "edit") {
@@ -351,14 +428,31 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
     }
     case "listItem":
       return <li {...attrs}>{str(props.text, 300)}</li>;
-    case "linkBlock":
+    case "linkBlock": {
+      const href = str(props.href, 2048);
+      const search = ctx.renderSearch ? searchLinkParts(node, href) : null;
+      if (search && ctx.renderSearch) {
+        // The link's own box (border, padding, colours) holds the working search.
+        return (
+          <div {...attrs} className="relative block min-w-0">
+            {ctx.renderSearch({
+              placeholder: search.text ? str(search.text.props.text, 120) || undefined : undefined,
+              icon: renderNode(search.icon, ctx, depth + 1, scope),
+              iconFirst: search.iconFirst,
+            })}
+          </div>
+        );
+      }
+      const badge = isCartLink(node, href) ? ctx.renderCartBadge?.() : null;
       return (
-        <SmartLink ctx={ctx} href={str(props.href, 2048)} className="block min-w-0">
-          <span {...attrs} className="block">
+        <SmartLink ctx={ctx} href={href} className="block min-w-0">
+          <span {...attrs} className={cn("block", badge != null && "relative")}>
             {kids()}
+            {badge}
           </span>
         </SmartLink>
       );
+    }
     case "textLink":
       return (
         <SmartLink ctx={ctx} href={str(props.href, 2048)} className="font-medium text-(--sf-brand) underline underline-offset-4">
@@ -380,12 +474,20 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
           </div>
         );
       }
-      return (
+      const grid = (
         <div {...attrs} className="grid min-w-0">
           {records.map((record) =>
             node.children.map((child) => <ElementFragment key={`${recordKey(record)}-${child.id}`} node={child} ctx={ctx} depth={depth + 1} scope={record} />),
           )}
         </div>
+      );
+      return isPaginated(node) ? (
+        <>
+          {grid}
+          <ProductPager node={node} ctx={ctx} />
+        </>
+      ) : (
+        grid
       );
     }
     case "storeForm": {
@@ -434,6 +536,25 @@ function renderNode(node: ComponentNode, ctx: RenderContext, depth: number, scop
         </div>
       ) : null;
     }
+    case "languageSwitcher": {
+      const button = ctx.renderLanguageSwitcher?.();
+      if (button) {
+        return (
+          <div {...attrs} className="flex">
+            {button}
+          </div>
+        );
+      }
+      // The editor has no navigation: a still copy of the storefront switch.
+      return ctx.mode === "edit" ? (
+        <div {...attrs} className="flex">
+          <span className="inline-flex h-10 items-center gap-1.5 rounded-full px-2.5 text-sm font-medium">
+            <Globe className="size-4" aria-hidden />
+            <span className="max-sm:sr-only">{sectionText("otherLanguage", ctx.locale)}</span>
+          </span>
+        </div>
+      ) : null;
+    }
     case "addToCart": {
       if (scope?.kind === "productList") {
         const button = ctx.renderAddToCart?.(scope.record);
@@ -462,4 +583,54 @@ export function renderElementTree(nodes: readonly ComponentNode[] | undefined, c
 
 function ElementFragment({ node, ctx, depth, scope }: { node: ComponentNode; ctx: RenderContext; depth: number; scope?: DataRecord }) {
   return <>{renderNode(node, ctx, depth, scope)}</>;
+}
+
+/** Page numbers around the current one, with the first and last; `null` marks a gap. */
+function pageWindow(page: number, total: number): (number | null)[] {
+  const pages = [...new Set([1, page - 1, page, page + 1, total])].filter((p) => p >= 1 && p <= total).sort((a, b) => a - b);
+  return pages.flatMap((p, i) => (i > 0 && p - pages[i - 1]! > 1 ? [null, p] : [p]));
+}
+
+/**
+ * Page links under a paginated product list (`paginate`). The storefront
+ * reports the page (`catalog.productPages`); the editor shows page 1 of the
+ * store's products. Nothing when everything fits on one page.
+ */
+function ProductPager({ node, ctx }: { node: ComponentNode; ctx: RenderContext }) {
+  const perPage = Math.max(1, Number(node.props?.limit) || 8);
+  const known = ctx.catalog.productPages?.[node.id];
+  const state = known ?? (ctx.mode === "edit" ? { page: 1, totalPages: Math.ceil((ctx.catalog.counts?.products ?? 0) / perPage) } : null);
+  if (!state || state.totalPages <= 1 || (!ctx.productPageHref && ctx.mode !== "edit")) return null;
+  const href = (page: number) => ctx.productPageHref?.(page) ?? "";
+  const ar = ctx.locale === "ar";
+  const item = "flex h-10 min-w-10 items-center justify-center rounded-full px-3 text-sm font-semibold tabular-nums";
+  return (
+    <nav aria-label={ar ? "صفحات المنتجات" : "Product pages"} data-part="pager" className="mt-8 flex flex-wrap items-center justify-center gap-1.5">
+      {state.page > 1 && (
+        <SmartLink ctx={ctx} href={href(state.page - 1)} className={cn(item, "border border-(--sf-line)")}>
+          {ar ? "السابق" : "Previous"}
+        </SmartLink>
+      )}
+      {pageWindow(state.page, state.totalPages).map((p, i) =>
+        p === null ? (
+          <span key={`gap-${i}`} aria-hidden className="px-1 opacity-60">
+            …
+          </span>
+        ) : p === state.page ? (
+          <span key={p} aria-current="page" className={cn(item, "bg-(--sf-brand) text-(--sf-brand-ink)")}>
+            {p}
+          </span>
+        ) : (
+          <SmartLink key={p} ctx={ctx} href={href(p)} className={cn(item, "hover:bg-(--sf-shelf)")}>
+            {p}
+          </SmartLink>
+        ),
+      )}
+      {state.page < state.totalPages && (
+        <SmartLink ctx={ctx} href={href(state.page + 1)} className={cn(item, "border border-(--sf-line)")}>
+          {ar ? "التالي" : "Next"}
+        </SmartLink>
+      )}
+    </nav>
+  );
 }

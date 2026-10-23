@@ -38,6 +38,7 @@ import {
   TEXTAREA_CLASS,
   ToggleRow,
 } from "@/components/form/form-ui";
+import { PageActionBar } from "@/components/layout/page-action-bar";
 import { MediaPicker } from "@/components/media/media-adapter.client";
 import { cn } from "@/lib/utils";
 import { parseTags, toPostInput } from "./blog.lib";
@@ -163,6 +164,13 @@ export function PostEditor({
           )}
         </div>
       </div>
+
+      <PageActionBar title={dirty ? t("unsaved") : t("noChanges")}>
+        <Button type="button" className={BUTTON_CLASS} disabled={!canSave} onClick={onSave}>
+          {isPending ? <LoaderCircle className="animate-spin" /> : <Save />}
+          {t(`save.${form.mode}`)}
+        </Button>
+      </PageActionBar>
 
       {readOnly && <p className="rounded-lg border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">{t("readOnly")}</p>}
 
@@ -403,13 +411,6 @@ export function PostEditor({
         </SectionCard>
       )}
 
-      <div className="sticky bottom-0 flex flex-wrap items-center justify-end gap-2 border-t bg-background/95 py-3 backdrop-blur">
-        <FieldHint className="me-auto">{dirty ? t("unsaved") : t("noChanges")}</FieldHint>
-        <Button type="button" className={BUTTON_CLASS} disabled={!canSave} onClick={onSave}>
-          {isPending ? <LoaderCircle className="animate-spin" /> : <Save />}
-          {t(`save.${form.mode}`)}
-        </Button>
-      </div>
     </div>
   );
 }

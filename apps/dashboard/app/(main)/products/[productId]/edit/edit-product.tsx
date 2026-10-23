@@ -8,9 +8,13 @@ import type {
 } from "../../add/add-product.schema";
 import type { SellerPricingSettings } from "@/lib/utils/product-pricing.lib";
 import type { SellerTaxonomyOption } from "../../categories-brands/categories-brands.dto";
+import { EditProductActions, type EditProductStatus } from "./edit-product-actions.client";
 
 interface EditProductProps {
   productId: string;
+  status: EditProductStatus;
+  /** The product page on the seller's store; null when no store shows it. */
+  previewUrl: string | null;
   defaultValues: AddProductFormData;
   categories: CategoryOption[];
   brands: BrandOption[];
@@ -23,6 +27,8 @@ interface EditProductProps {
 /** The add-product form in edit mode, so both pages look and behave the same. */
 export function EditProduct({
   productId,
+  status,
+  previewUrl,
   defaultValues,
   categories,
   brands,
@@ -38,6 +44,7 @@ export function EditProduct({
       sellerTaxonomy={sellerTaxonomy}
       linkHost={linkHost}
       edit={{ productId, defaultValues }}
+      headerActions={<EditProductActions productId={productId} status={status} previewUrl={previewUrl} />}
     />
   );
 }

@@ -7,7 +7,6 @@ import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import { MoreVertical, PlusIcon, Star } from "lucide-react";
 import { deleteProduct } from "@/actions/products";
-import { getStorefrontProductUrl } from "@/lib/constants";
 import { TableSection } from "@workspace/ui/components/table-section";
 import {
   DropdownMenu,
@@ -38,6 +37,8 @@ export type VendorProduct = {
   id: string;
   title: string;
   slug?: string | null;
+  /** The product page on the seller's own store (custom domain, else subdomain). */
+  storeUrl?: string | null;
   sku?: string | null;
   description?: string | null;
   images?: string[] | null;
@@ -258,10 +259,10 @@ export function VendorProductsSection({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {row.original.slug && (
+              {row.original.storeUrl && (
                 <DropdownMenuItem asChild>
                   <a
-                    href={getStorefrontProductUrl(row.original.slug)}
+                    href={row.original.storeUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full h-full block"

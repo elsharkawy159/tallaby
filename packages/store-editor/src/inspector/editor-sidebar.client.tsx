@@ -5,12 +5,15 @@ import { useTranslations } from "next-intl";
 import { MousePointerClick, Paintbrush, PenLine } from "lucide-react";
 import { useStore } from "zustand";
 import type { ComponentNode } from "@workspace/store-sections";
-import { getElementDefinition, storeSectionRegistry, updateNode } from "@workspace/store-sections/render";
+import { LANGUAGE_SWITCHER_PROP, getElementDefinition, languageSwitcherOn, storeSectionRegistry, updateNode } from "@workspace/store-sections/render";
+import { Label } from "@workspace/ui/components/label";
+import { Switch } from "@workspace/ui/components/switch";
 import { cn } from "@workspace/ui/lib/utils";
 import { styleTargetOf, type EditorCommands } from "../lib/editor-commands.lib";
 import { AgentDock } from "./agent-dock.client";
 import { SidebarHeader } from "./sidebar-header.client";
 import { ElementInspector, SectionInspector } from "./editor-inspector.client";
+import { SectionSettings } from "./section-settings.client";
 import { getInstance, getNode, partField, refOf, selectionLabel, withTree } from "../lib/editor-selection.lib";
 import { clearDeviceOverrides, clearStyle, setStyle, styleKindOf } from "../lib/editor-style.lib";
 import type { EditorCategory, EditorForm, EditorProduct } from "../editor.dto";
@@ -33,6 +36,7 @@ export function EditorSidebar({
   catalog,
   uiLocale,
   commands,
+  translated = false,
 }: {
   store: EditorStore;
   commands: EditorCommands;
@@ -40,6 +44,8 @@ export function EditorSidebar({
   readOnly: boolean;
   catalog: Catalog;
   uiLocale: string;
+  /** The store has more than one language: the navbar offers its language switcher. */
+  translated?: boolean;
 }) {
   const t = useTranslations("storeEditor.sidebar");
   const selection = useStore(store, (s) => s.selection);
@@ -92,6 +98,16 @@ export function EditorSidebar({
 
   const editNode = (next: ComponentNode) =>
     state.editSection(ref, (i) => withTree(i, (nodes) => updateNode(nodes, next.id, () => next)), `content:${selectionKey}`);
+  const settingsProps = {
+    onEditTree: (update: (nodes: ComponentNode[]) => ComponentNode[], key: string) =>
+      state.editSection(ref, (i) => withTree(i, update), `content:${selectionKey}:${key}`),
+    locale,
+    defaultLocale,
+    uiLocale,
+    catalog,
+    storeId,
+    readOnly,
+  };
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -128,8 +144,31 @@ export function EditorSidebar({
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto p-4">
+        {tab === "content" && ref.target === "header" && translated && (
+          // Shown by default on a translated store; hiding it stores `languageSwitcher: false` on the header.
+          <fieldset disabled={readOnly} className="mb-4 space-y-2 rounded-md border p-3">
+            <legend className="px-1 text-xs font-medium text-muted-foreground">{t("navbar")}</legend>
+            <div className="flex items-center justify-between gap-3">
+              <Label htmlFor="navbar-language-switcher">{t("languageSwitcher")}</Label>
+              <Switch
+                id="navbar-language-switcher"
+                checked={languageSwitcherOn(instance)}
+                onCheckedChange={(on) =>
+                  state.editSection(ref, (i) => {
+                    const { [LANGUAGE_SWITCHER_PROP]: _, ...props } = i.props;
+                    return { ...i, props: on ? props : { ...props, [LANGUAGE_SWITCHER_PROP]: false } };
+                  })
+                }
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">{t("languageSwitcherHint")}</p>
+          </fieldset>
+        )}
         {tab === "content" ? (
-          node ? (
+          node?.type === "carousel" ? (
+            // A selected carousel also lists its slides' photos (the section's options show the same).
+            <SectionSettings key={node.id} tree={[node]} {...settingsProps} />
+          ) : node ? (
             <ElementInspector
               key={node.id}
               node={node}
@@ -165,7 +204,15 @@ export function EditorSidebar({
                 </div>
               )}
               {instance.sectionId === "custom-section" && !selection.part && (
-                <p className="rounded-md bg-muted/60 p-2.5 text-xs text-muted-foreground">{t("customHint")}</p>
+                <>
+                  <p className="rounded-md bg-muted/60 p-2.5 text-xs text-muted-foreground">{t("customHint")}</p>
+                  <SectionSettings
+                    key={instance.id}
+                    tree={instance.componentTree ?? []}
+                    onSelectNode={(nodeId) => state.select({ ...ref, nodeId })}
+                    {...settingsProps}
+                  />
+                </>
               )}
               <SectionInspector
                 key={instance.id}

@@ -11,6 +11,7 @@ import { StoreSitePage } from "../../_components/store-site";
 
 type StorePageProps = {
   params: Promise<{ locale: string; subdomain: string; pageSlug: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 /**
@@ -46,11 +47,14 @@ export async function generateMetadata({ params }: StorePageProps): Promise<Meta
   };
 }
 
-export default async function StoreBuilderPage({ params }: StorePageProps) {
+export default async function StoreBuilderPage({ params, searchParams }: StorePageProps) {
   const { locale, subdomain, pageSlug } = await params;
+  const { page: pageParam } = await searchParams;
   // Website offline: the layout shows the offline page; no marketplace redirect.
   if (await isSubdomainOfflineForRequest(subdomain)) return null;
   const { store, site, page } = await resolvePage(locale, subdomain, pageSlug);
   if (!page) notFound();
-  return <StoreSitePage store={store} site={site} page={page} locale={locale} />;
+  // Paginated product lists show page `?page=N`.
+  const productPage = Math.max(1, Math.floor(Number(Array.isArray(pageParam) ? pageParam[0] : pageParam) || 1));
+  return <StoreSitePage store={store} site={site} page={page} locale={locale} productPage={productPage} />;
 }

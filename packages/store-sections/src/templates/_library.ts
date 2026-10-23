@@ -124,6 +124,7 @@ export function fromLibrary(templateKey: string, design: Design, patch: LibraryP
   return defineDesign({
     ...design,
     id: `${templateKey}-${patch.as ?? design.id}`,
+    libraryId: design.libraryId ?? design.id,
     ...(patch.name && { name: patch.name }),
     tree: () => {
       const tree = design.tree(createTreeBuilder(undefined, { photo: strict(patch.photo, "photo"), person: strict(patch.person, "person") }));

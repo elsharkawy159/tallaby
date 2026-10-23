@@ -94,7 +94,8 @@ export type ElementType =
   | "postList"
   | "storeForm"
   | "addToCart"
-  | "wishlistButton";
+  | "wishlistButton"
+  | "languageSwitcher";
 
 export interface ElementDefinition {
   type: ElementType;
@@ -701,6 +702,7 @@ export const ELEMENT_DEFINITIONS: readonly ElementDefinition[] = [
         options: PRODUCT_SORTS.map((value) => ({ value, label: SORT_LABELS[value] })),
       },
       { key: "limit", label: L("أقصى عدد", "Maximum"), type: "number", group: "data", min: 1, max: 24 },
+      { key: "paginate", label: L("تقسيم على صفحات", "Split into pages"), type: "switch", group: "data" },
     ],
   },
   {
@@ -760,6 +762,15 @@ export const ELEMENT_DEFINITIONS: readonly ElementDefinition[] = [
     defaultProps: {},
     fields: [],
   },
+  {
+    type: "languageSwitcher",
+    group: "data",
+    label: L("تبديل اللغة", "Language switcher"),
+    keywords: ["language", "translation", "locale", "لغة", "ترجمة"],
+    container: false,
+    defaultProps: {},
+    fields: [],
+  },
 ];
 
 const BY_TYPE = new Map(ELEMENT_DEFINITIONS.map((d) => [d.type, d]));
@@ -770,9 +781,10 @@ export function getElementDefinition(type: string): ElementDefinition | undefine
 
 /**
  * List and playlist items come with their list; a section is only a tree's root. Accordion
- * items stay in the palette so an emptied accordion can be refilled.
+ * items stay in the palette so an emptied accordion can be refilled. The language switcher
+ * is added to the header for translated stores (`withLanguageSwitcher`), never by hand.
  */
-const NOT_IN_PALETTE: readonly ElementType[] = ["listItem", "videoItem", "section"];
+const NOT_IN_PALETTE: readonly ElementType[] = ["listItem", "videoItem", "section", "languageSwitcher"];
 
 /** Types shown in the palette. */
 export const PALETTE_TYPES: readonly ElementType[] = ELEMENT_DEFINITIONS.filter((d) => !NOT_IN_PALETTE.includes(d.type)).map((d) => d.type);

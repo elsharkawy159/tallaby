@@ -40,6 +40,7 @@ import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { Textarea } from "@workspace/ui/components/textarea";
 import { BUTTON_CLASS, FIELD_CLASS, SectionCard, SMALL_BUTTON_CLASS, TEXTAREA_CLASS, ToggleRow } from "@/components/form/form-ui";
+import { PageActionBar } from "@/components/layout/page-action-bar";
 import { cn } from "@/lib/utils";
 import { saveForm } from "../forms.server";
 
@@ -158,22 +159,23 @@ export function FormEditor({
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-wrap items-center gap-2">
-        <Button asChild variant="ghost" size="sm" className={SMALL_BUTTON_CLASS}>
-          <Link href={`/stores/${storeId}/website/forms`}>
-            <ArrowRight className="hidden rtl:block" />
-            <ArrowLeft className="rtl:hidden" />
-            {t("editor.back")}
-          </Link>
-        </Button>
-        <div className="ms-auto flex items-center gap-2">
-          {dirty && <span className="text-xs text-muted-foreground">{t("editor.unsaved")}</span>}
-          <Button type="button" className={BUTTON_CLASS} disabled={disabled || !dirty} onClick={onSave}>
-            {isPending ? <LoaderCircle className="animate-spin" /> : <Save />}
-            {t("editor.save")}
+      <PageActionBar
+        title={
+          <Button asChild variant="ghost" size="sm" className={SMALL_BUTTON_CLASS}>
+            <Link href={`/stores/${storeId}/website/forms`}>
+              <ArrowRight className="hidden rtl:block" />
+              <ArrowLeft className="rtl:hidden" />
+              {t("editor.back")}
+            </Link>
           </Button>
-        </div>
-      </div>
+        }
+      >
+        {dirty && <span className="text-xs text-muted-foreground">{t("editor.unsaved")}</span>}
+        <Button type="button" className={BUTTON_CLASS} disabled={disabled || !dirty} onClick={onSave}>
+          {isPending ? <LoaderCircle className="animate-spin" /> : <Save />}
+          {t("editor.save")}
+        </Button>
+      </PageActionBar>
       {readOnly && <p className="rounded-lg border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">{t("readOnly")}</p>}
 
       <SectionCard id="form-settings" icon={Settings2} title={t("editor.settingsTitle")} description={t("editor.settingsDescription")}>

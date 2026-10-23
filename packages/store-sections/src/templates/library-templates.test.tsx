@@ -10,7 +10,7 @@ import { MAX_ELEMENT_DEPTH, MAX_NODES_PER_SECTION } from "../elements/registry";
 import { countNodes, treeDepth } from "../elements/tree";
 import { SectionRenderer } from "../render/render";
 import { storeSectionRegistry } from "../sections";
-import { LIBRARY_TEMPLATES, TEMPLATE_JSON_END, TEMPLATE_JSON_START, getCodeTemplate, getTemplateDesign, templateConfigJson, templatesSeedSql } from "./catalog";
+import { CODE_TEMPLATES, LIBRARY_TEMPLATES, TEMPLATE_JSON_END, TEMPLATE_JSON_START, getCodeTemplate, getTemplateDesign, templateConfigJson, templatesSeedSql } from "./catalog";
 import { FROZEN_SEEDS, migrationSha256 } from "./frozen-seeds.test-utils";
 import { prepareTemplateForStore, templateFormNeeds } from "./prepare";
 
@@ -174,6 +174,14 @@ describe.each(LIBRARY_TEMPLATES.map((t) => [t.key, t] as const))("library templa
     for (const c of template.demo.categories) expect(c.productCount, c.id).toBeGreaterThan(0);
     expect(new Set(template.demo.products.map((p) => p.slug)).size).toBe(template.demo.products.length);
     expect(template.demo.products.some((p) => p.isFeatured)).toBe(true);
+  });
+});
+
+describe("every code template's home page", () => {
+  it.each(CODE_TEMPLATES.map((t) => [t.key, t] as const))("%s has at least one product grid", (_key, template) => {
+    const home = template.config().pages.find((p) => p.isHome)!;
+    const nodes = home.content.sections.flatMap((s) => walk(s.componentTree));
+    expect(nodes.some((n) => n.type === "productList")).toBe(true);
   });
 });
 

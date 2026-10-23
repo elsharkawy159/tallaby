@@ -65,6 +65,18 @@ describe("social platforms (P4-15)", () => {
     expect(whatsappDigits("0101-234-5678")).toBe("201012345678");
   });
 
+  it("takes WhatsApp usernames as https://wa.me/@<username>", () => {
+    expect(normalizeSocialLink("whatsapp", "@tallaby")).toBe("https://wa.me/@tallaby");
+    expect(normalizeSocialLink("whatsapp", "tallaby.store_1")).toBe("https://wa.me/@tallaby.store_1");
+    expect(normalizeSocialLink("whatsapp", "https://wa.me/@tallaby")).toBe("https://wa.me/@tallaby");
+    expect(normalizeSocialLink("whatsapp", "wa.me/@tallaby/")).toBe("https://wa.me/@tallaby");
+    expect(normalizeSocialLink("whatsapp", "@12345678")).toBeNull();
+    expect(normalizeSocialLink("whatsapp", "@ab")).toBeNull();
+    expect(normalizeSocialLink("whatsapp", "@tal laby")).toBeNull();
+    expect(normalizeSocialLink("whatsapp", "https://wa.me/@bad!name")).toBeNull();
+    expect(normalizeSocialLink("whatsapp", "https://evil.com/@tallaby")).toBeNull();
+  });
+
   it.each([
     "201207341113",
     "+201207341113",

@@ -120,7 +120,11 @@ export type CatalogQuery =
       productIds?: string[];
       /** Order after the source has picked; `default` keeps the source's own order. */
       sort?: ProductSort;
+      /** Per page when `paginate` is set. */
       limit: number;
+      /** Split into pages: the host resolves page `page` (1-based) and reports `catalog.productPages`. */
+      paginate?: boolean;
+      page?: number;
     }
   | { kind: "categories"; limit: number }
   /** The seller's brand list (`seller_product_brands`, 0068). */
@@ -317,6 +321,8 @@ export interface RenderContext {
     reviewStats?: ReviewStats | null;
     /** Coupons by coupon id. */
     coupons?: Record<string, CouponSummary>;
+    /** The current page of each paginated product list, by list node id. */
+    productPages?: Record<string, { page: number; totalPages: number }>;
     /**
      * Editor only: how many records the store has per need, so an empty
      * section can tell "no products at all" from "none match this filter".
@@ -339,11 +345,24 @@ export interface RenderContext {
    */
   optimizeImage?: (url: string, sizes: string) => OptimizedImage;
   formatPrice: (amount: number) => string;
+  /** The link to another page of the current page's paginated product lists (`?page=N`). Without it, no page links. */
+  productPageHref?: (page: number) => string;
   /** Host-provided interactive pieces (the storefront cart, or editor placeholders). */
   renderCartButton?: () => ReactNode;
+  /** The live cart count drawn on a header's cart link (`/cart`); nothing while the cart is empty. */
+  renderCartBadge?: () => ReactNode;
+  /**
+   * A working product search in place of a header search link (a `/products`
+   * link holding a search icon): a search box when the link shows
+   * `placeholder` text, else a search button. `icon` is the link's own icon,
+   * already drawn; `iconFirst` keeps the authored order of icon and text.
+   */
+  renderSearch?: (search: { placeholder?: string; icon: ReactNode; iconFirst: boolean }) => ReactNode;
   renderAddToCart?: (product: ProductSummary) => ReactNode;
   /** Wishlist toggle, when the host supports it on this store. */
   renderWishlistButton?: (product: ProductSummary) => ReactNode;
+  /** The header's switch to the store's other language (`languageSwitcher` node). */
+  renderLanguageSwitcher?: () => ReactNode;
   /** Customer account link or menu, when the host supports it. */
   renderAccountButton?: () => ReactNode;
   /** A live countdown to `endsAt` (ISO). Without it, sections print the end date. */
