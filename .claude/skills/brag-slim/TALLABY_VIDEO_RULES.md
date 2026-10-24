@@ -10,7 +10,7 @@ Goal: every video should look like it came from a serious, well-funded Egyptian 
 
 - **Source of truth:** `MARKETING_PROJECT.md` (Confirmed beats Proposed; never use anything marked Avoid), then `PROJECT_DESCRIPTION.md`. Before claiming a feature, check the code: only show **Live** features, never "Planned" ones.
 - **Brand name:** Arabic **طلبي** (pronounced *ṭalabi*), never **تالابي**. Latin **Tallaby** / **tallaby.com**.
-- **The only official slogan:** **"متجرك الشامل"**. Don't invent other slogans as if they were official.
+- **No slogan in videos:** never say or show **"متجرك الشامل"** in a video (voiceover, captions, end card) (owner, 2026-10-24). Don't invent other slogans either.
 - **Never** invent numbers, stats, testimonials, awards, customer names or quotes. Never promise card payment or "free shipping over 500 EGP" (both are switched off). Delivery times are estimates, never guarantees.
 - **No real data on screen:** no real seller, customer, phone number (except the official support number), email or order. Use fictional Egyptian stand-ins (store names like "متجر نور", "بيت الكروشيه", "Koko Kids"; prices like `299 ج.م`).
 - **Seller CTA link:** `tallaby.com/sell`.
@@ -47,8 +47,9 @@ One master file works for Instagram Reels, Facebook Reels and TikTok:
 **Safe zones:** the app UI covers parts of a Reel, so keep all text, faces, the logo and the CTA inside the centre safe area:
 - top 220 px: no text (account name and audio label)
 - bottom 420 px: no text (caption, buttons)
-- right 140 px **and** left 60 px: no text (like/comment/share icons; Arabic RTL layouts put the eye on the right, so check that edge)
-- That leaves a safe box of about **880×1280 px**, centred slightly above the middle. Backgrounds and motion can fill the full frame.
+- left **and** right 130 px: no text (like/comment/share icons sit on the right; keep the margins equal)
+- That leaves a safe box of about **820×1280 px** (x 130–950, y 220–1500).
+- **Everything is centred on the frame's vertical axis (x = 540)** (owner, 2026-10-24): every headline, caption, phone, card, logo and button is horizontally centred, with equal left and right margins. Never shift the layout towards one side to dodge the icons; shrink it instead. Check stills for left/right balance before rendering.
 
 **Cover frame:** frame 0 (the poster, per `SKILL.md`) must be a strong, settled frame with a short Arabic headline (3–5 words) inside the safe box. It is also the grid thumbnail on Instagram, so it must read when cropped to 4:5 and 1:1 around the centre.
 
@@ -60,7 +61,7 @@ One master file works for Instagram Reels, Facebook Reels and TikTok:
 | 2–6 s | **The pain** | The seller's real problem, shown (a messy WhatsApp chat, a notebook full of orders). Keep it fast. |
 | 6–22 s | **The solution, in use** | The real طلبي UI doing the job: entry → key action → result (for example: pick a template → add a product → store live at `nour.tallaby.com`). 2–3 beats, each with one clear benefit. |
 | 22–26 s | **The payoff** | The result the seller cares about: an order arriving, a beautiful store on a phone, a delivered order. |
-| last 3–4 s | **CTA + brand** | Logo, "متجرك الشامل", and one CTA: **"ابدأ متجرك دلوقتي — tallaby.com/sell"**, with a gold button. Hold it for at least 2.5 s. |
+| last 3–4 s | **CTA + brand** | Logo and one CTA: **"ابدأ متجرك دلوقتي — tallaby.com/sell"**, with a gold button. No slogan. Hold it for at least 2.5 s. |
 
 **Hooks that work** (write new ones in this spirit, in Egyptian Arabic, at most about 7 words):
 - "لسه بتاخد الأوردرات على الواتساب؟"
@@ -89,7 +90,8 @@ One master file works for Instagram Reels, Facebook Reels and TikTok:
 
 ## 6. Voiceover (Egyptian accent)
 
-- **Always** add a voiceover, in **natural Egyptian colloquial Arabic (عامية مصرية)**, never Modern Standard Arabic (فصحى). Friendly, confident, warm, like a smart Egyptian friend explaining something that excites them. Not a news anchor, not a shouting ad.
+- **Always** add a voiceover, in **natural Egyptian colloquial Arabic (عامية مصرية)**, never Modern Standard Arabic (فصحى). Friendly, confident, warm, like a smart Egyptian friend explaining something. Not a news anchor, not a shouting ad.
+- **One steady tone for the whole video** (owner, 2026-10-24): the same calm, warm energy from the first word to the last. No scene gets louder, faster or more excited than the rest. Write the script **without emotion/audio tags** (`[excited]`, `[curious]`, `[confidently]`…): pauses come from punctuation only. If the model still drifts, regenerate with one neutral tag such as `[warmly]` at the very start and nothing after it.
 - **Tool:** the ElevenLabs connector (`creative_generate_speech`). Before prompting, check `creative_get_model_guide` for the best model for Arabic (prefer the most expressive one available, such as Eleven v3).
 - **Default voice (the brand voice):** **Tamer**, `voice_id: mX8opBj7bbi4G2cE9j2w` (Egyptian, middle-aged male, energetic yet warm, made for tech and premium brand ads). Use the same voice in every video so the brand sounds consistent.
   - Backup if Tamer is unavailable: **Omar**, `erFJevGCT0rMZPhBbaep` (deep, confident Egyptian).
@@ -107,7 +109,7 @@ One master file works for Instagram Reels, Facebook Reels and TikTok:
 
 ## 7. Music, sound and mix
 
-- Music is original (built per `SKILL.md` "Sound"), modern and upbeat: light Arabic-pop or Mahraganat-inspired percussion, or clean electronic, around 100–120 BPM. Never copyrighted tracks.
+- Music: the `/brag` bundled tracks (`.claude/skills/brag/assets/music/`, CC BY 4.0 by Sascha Ende) or original music built for the video. Never other copyrighted tracks. **When a bundled track is used, the post text must end with the credit line "Music: Sascha Ende, ende.app (CC BY 4.0)".**
 - Cuts land on the beat. A soft "whoosh" on transitions and a light "tap" on simulated clicks, mixed quietly under the music.
 - **Mix:** voiceover in front and always clear. Music ducks 10–14 dB under the voice and comes back up in gaps and at the end.
 - **Loudness:** overall about **-14 LUFS integrated**, true peak at most **-1 dBTP**. Check with `ffmpeg -af ebur128` (or `loudnorm`) before delivering.
@@ -116,7 +118,8 @@ One master file works for Instagram Reels, Facebook Reels and TikTok:
 
 - In Egyptian Arabic. First line = the hook (it shows before "more").
 - 2–4 short lines: the pain, the solution, the CTA **"ابدأ متجرك دلوقتي: tallaby.com/sell"** (on Instagram say "اللينك في البايو", since links in captions aren't clickable).
-- 3–6 relevant hashtags, Arabic and English mixed: `#طلبي #متجرك_الشامل #Tallaby #بيع_أونلاين #تجارة_إلكترونية #مصر`.
+- 3–6 relevant hashtags, Arabic and English mixed: `#طلبي #Tallaby #بيع_أونلاين #تجارة_إلكترونية #مصر`.
+- If the music is a `/brag` bundled track, add the credit line last: "Music: Sascha Ende, ende.app (CC BY 4.0)".
 - Emoji sparingly (at most 2–3). No ALL CAPS, no false urgency, no "excited to share".
 
 ## 9. Topics
@@ -127,7 +130,8 @@ The topic comes from [`TALLABY_VIDEO_TOPICS.md`](TALLABY_VIDEO_TOPICS.md): how t
 
 - [ ] `ffprobe`: 1080×1920, 30 fps, H.264 `yuv420p`, AAC 48 kHz, duration 20–35 s, size under 45 MB, `faststart` on.
 - [ ] Loudness about -14 LUFS, true peak at most -1 dBTP; voice clear over the music on phone speakers.
-- [ ] Stills from every scene and mid-transition: no text outside the safe box, no overflow, no broken Arabic shaping, Latin digits only.
+- [ ] Stills from every scene and mid-transition: no text outside the safe box, no overflow, no broken Arabic shaping, Latin digits only, and the layout centred on x = 540 (equal left/right margins).
+- [ ] No "متجرك الشامل" anywhere in the video; the voiceover keeps one steady tone (no emotion tags in the script).
 - [ ] Hook visible and spoken within the first second; CTA held at least 2.5 s at the end.
 - [ ] Captions match the voiceover word for word, and طلبي is pronounced correctly.
 - [ ] No invented stats, no Planned features, no real personal data, no promises the brand guide marks Avoid.

@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "defaultMode": "bypassPermissions",
+    "allow": [
+      "Bash",
+      "Read",
+      "Edit",
+      "Write",
+      "NotebookEdit",
+      "Glob",
+      "Grep",
+      "WebFetch",
+      "WebSearch",
+      "Skill",
+      "Agent",
+      "Artifact",
+      "mcp__Buffer",
+      "mcp__ElevenLabs",
+      "mcp__ElevenLabs-ae49d727",
+      "mcp__Supabase",
+      "mcp__claude-code-remote",
+      "mcp__github"
+    ]
+  },
+  "skipDangerousModePermissionPrompt": true
+}
