@@ -119,22 +119,9 @@ One master file works for Instagram Reels, Facebook Reels and TikTok:
 - 3–6 relevant hashtags, Arabic and English mixed: `#طلبي #متجرك_الشامل #Tallaby #بيع_أونلاين #تجارة_إلكترونية #مصر`.
 - Emoji sparingly (at most 2–3). No ALL CAPS, no false urgency, no "excited to share".
 
-## 9. Content pillars (rotate, never repeat back to back)
+## 9. Topics
 
-Only Live features; check the code first.
-
-1. Your own store link in a minute (`yourstore.tallaby.com`, custom domain)
-2. Website builder and ready-made templates (beautiful store, no code)
-3. From DM chaos to clean orders (orders list, statuses)
-4. Delivery and cash on delivery with طلبي riders
-5. Store wallet and getting paid
-6. Coupons and promotions
-7. Products: variants, Excel import, import from a link
-8. The طلبي marketplace: reach customers beyond your followers
-9. Tallaby Fulfillment: we store, pack and deliver for you
-10. Arabic-first and mobile-first, made for Egyptian sellers
-
-When running daily, check the last 14 days of posts and pick a pillar and hook not used in that time.
+The topic comes from [`TALLABY_VIDEO_TOPICS.md`](TALLABY_VIDEO_TOPICS.md): how to pick today's topic, the full topic bank (sellers only for now), new features first, the seasonal calendar and the used-topics log. Never make a video about a topic that is not live.
 
 ## 10. Final QA checklist (before delivering)
 

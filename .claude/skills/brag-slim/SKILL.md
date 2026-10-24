@@ -5,7 +5,7 @@ description: Turn a project directory or a website URL into a short, shareable l
 
 # /brag-slim
 
-**Tallaby (طلبي):** before step 1, read [`TALLABY_VIDEO_RULES.md`](TALLABY_VIDEO_RULES.md) in this folder and follow it. It sets the format (9:16 vertical), the Egyptian Arabic voiceover, the brand rules, the video flow and the QA checklist, and it wins wherever it conflicts with this file.
+**Tallaby (طلبي):** before step 1, read [`TALLABY_VIDEO_RULES.md`](TALLABY_VIDEO_RULES.md) and [`TALLABY_VIDEO_TOPICS.md`](TALLABY_VIDEO_TOPICS.md) in this folder and follow them. The topics file decides what today's video is about (sellers only for now) and must be updated with the topic used. It sets the format (9:16 vertical), the Egyptian Arabic voiceover, the brand rules, the video flow and the QA checklist, and it wins wherever it conflicts with this file.
 
 You built it. Now brag. You make the whole video yourself — story, visuals, audio, render — with whatever tools are on the machine.
 
