@@ -119,7 +119,7 @@ The gold button carries a short version of the same line (for example "إفتح 
 
 ## 7. Music, sound and mix
 
-- Music: the `/brag` bundled tracks (`.claude/skills/brag/assets/music/`, CC BY 4.0 by Sascha Ende) or original music built for the video. Never other copyrighted tracks. **When a bundled track is used, the post text must end with the credit line "Music: Sascha Ende, ende.app (CC BY 4.0)".**
+- **Music: original only** (owner, 2026-10-25: captions stay simple, with no credit lines). Build an original track for each video (for example a short Python/numpy synth: warm pad, Egyptian doum-tak percussion, soft bass, whooshes on the cuts, a bell on the logo). Never use tracks that need attribution, including the `/brag` bundled CC BY music, and never other copyrighted music.
 - Cuts land on the beat. A soft "whoosh" on transitions and a light "tap" on simulated clicks, mixed quietly under the music.
 - **Mix:** voiceover in front and always clear. Music ducks 10–14 dB under the voice and comes back up in gaps and at the end.
 - **Loudness:** overall about **-14 LUFS integrated**, true peak at most **-1 dBTP**. Check with `ffmpeg -af ebur128` (or `loudnorm`) before delivering.
@@ -129,7 +129,7 @@ The gold button carries a short version of the same line (for example "إفتح 
 - In Egyptian Arabic. First line = the hook (it shows before "more").
 - 2–4 short lines: the pain, the solution, and the same closing line as the video, ending with **tallaby.com** (Facebook: `https://tallaby.com`). Never "اللينك في البايو".
 - 3–6 relevant hashtags, Arabic and English mixed: `#طلبي #Tallaby #بيع_أونلاين #تجارة_إلكترونية #مصر`.
-- If the music is a `/brag` bundled track, add the credit line last: "Music: Sascha Ende, ende.app (CC BY 4.0)".
+- Keep the caption simple: no credit lines, no "Music:" lines.
 - Emoji sparingly (at most 2–3). No ALL CAPS, no false urgency, no "excited to share".
 
 ## 9. Topics
