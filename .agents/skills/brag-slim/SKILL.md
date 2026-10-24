@@ -5,6 +5,8 @@ description: Turn a project directory or a website URL into a short, shareable l
 
 # /brag-slim
 
+**Tallaby (طلبي):** before step 1, read [`TALLABY_VIDEO_RULES.md`](TALLABY_VIDEO_RULES.md) in this folder and follow it. It sets the format (9:16 vertical), the Egyptian Arabic voiceover, the brand rules, the video flow and the QA checklist, and it wins wherever it conflicts with this file.
+
 You built it. Now brag. You make the whole video yourself — story, visuals, audio, render — with whatever tools are on the machine.
 
 Whatever the tone, it should feel like a modern, slick, polished launch video: nothing on screen or in the soundtrack that doesn't earn its place.
